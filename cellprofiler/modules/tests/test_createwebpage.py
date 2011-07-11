@@ -270,7 +270,9 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
         measurements = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
         
-        self.assertTrue(module.prepare_run(pipeline, image_set_list, None))
+        self.assertTrue(module.prepare_run(
+            cpw.Workspace(pipeline, module, None, None, measurements, 
+                          image_set_list, None)))
         module.prepare_group(pipeline, image_set_list, {},
                              np.arange(1, len(image_paths)+1))
         for i in range(len(image_paths)):

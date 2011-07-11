@@ -66,7 +66,8 @@ class TestColorToGray(unittest.TestCase):
         measurements = cpm.Measurements()
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
-        inj.prepare_run(pipeline, image_set_list, None)
+        inj.prepare_run(Workspace(pipeline, inj, None, None, measurements, 
+                                  image_set_list, None))
         inj.prepare_group(pipeline, image_set_list, {}, [1])
         image_set = image_set_list.get_image_set(0)
         inj.run(Workspace(pipeline,inj,image_set,object_set,measurements,None))
@@ -101,7 +102,8 @@ class TestColorToGray(unittest.TestCase):
         measurements = cpm.Measurements()
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
-        inj.prepare_run(pipeline, image_set_list, None)
+        inj.prepare_run(Workspace(pipeline, inj, None, None, measurements, 
+                                  image_set_list, None))
         inj.prepare_group(pipeline, image_set_list, {}, [1])
         image_set = image_set_list.get_image_set(0)
         inj.run(Workspace(pipeline,inj,image_set,object_set,measurements,None))

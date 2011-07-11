@@ -440,13 +440,22 @@ class CPModule(object):
         """
         pass
     
-    def prepare_run(self, pipeline, image_set_list, frame):
+    def prepare_run(self, workspace):
         """Prepare the image set list for a run (& whatever else you want to do)
         
-        pipeline - the pipeline being run
-        image_set_list - add any image sets to the image set list
-        frame - parent frame of application if GUI enabled, None if GUI
-                disabled
+        workspace - holds the following crucial structures:
+        
+            pipeline - the pipeline being run
+            
+            module - this module
+            
+            measurements - measurements structure that can be populated with
+                           image set file names and metadata.
+            
+            image_set_list - add any image sets to the image set list
+            
+            frame - parent frame of application if GUI enabled, None if GUI
+                    disabled
         
         return True if operation completed, False if aborted 
         """

@@ -1122,7 +1122,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.separate_object_tables.value = E.OT_COMBINE
             if not self.__at_broad:
                 self.skipTest("Skipping actual DB work, not at the Broad.")
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -1171,7 +1171,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -1238,7 +1238,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.post_run(workspace)
@@ -1468,7 +1468,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -1518,7 +1518,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -1576,7 +1576,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.objects_choice.value = E.O_ALL
             module.max_column_size.value = 50
             module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -1637,7 +1637,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         self.assertTrue(isinstance(m, cpmeas.Measurements))
         m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
         try:
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                      {}, [1])
             module.run(workspace)
@@ -1663,7 +1663,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run_as_data_tool(workspace)
@@ -1718,7 +1718,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -1779,7 +1779,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.objects_choice.value = E.O_NONE
             module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -1833,7 +1833,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -1892,7 +1892,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run_as_data_tool(workspace)
@@ -2091,7 +2091,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -2137,7 +2137,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -2278,7 +2278,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -2337,7 +2337,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -2386,7 +2386,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -2442,7 +2442,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.objects_choice.value = E.O_ALL
             module.max_column_size.value = 50
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -2500,7 +2500,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.objects_choice.value = E.O_ALL
             module.max_column_size.value = 50
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -2600,7 +2600,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -2678,7 +2678,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_mean_well.value = True
             module.wants_agg_median_well.value = True
             module.wants_agg_std_dev_well.value = True
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -2729,7 +2729,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             module.wants_agg_mean_well.value = True
             module.wants_agg_median_well.value = True
             module.wants_agg_std_dev_well.value = True
-            module.prepare_run(workspace.pipeline, workspace.image_set_list,None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list,
                                  {}, [1])
             module.run(workspace)
@@ -2787,7 +2787,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             self.assertEqual(len(columns), 1)
             expected_thumbnail_column = "Thumbnail_" + IMAGE_NAME
             self.assertEqual(columns[0][1], expected_thumbnail_column)
-            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list, {}, [1])
             module.run(workspace)
             module.post_run(workspace)
@@ -2824,7 +2824,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             self.assertEqual(len(columns), 1)
             expected_thumbnail_column = "Thumbnail_" + IMAGE_NAME
             self.assertEqual(columns[0][1], expected_thumbnail_column)
-            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list, {}, [1])
             module.run(workspace)
             module.post_run(workspace)
@@ -2860,7 +2860,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         module.wants_agg_std_dev.value = False
         try:
             module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list, 
                                  {}, np.arange(count)+1)
             for i in range(count):
@@ -2947,7 +2947,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         module.wants_agg_std_dev.value = False
         try:
             module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list, 
                                  {}, np.arange(count)+1)
             for i in range(count):
@@ -3042,7 +3042,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         module.wants_agg_std_dev.value = False
         try:
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list, 
                                  {}, np.arange(count)+1)
             for i in range(count):
@@ -3123,7 +3123,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         module.wants_agg_std_dev.value = False
         try:
             module.separate_object_tables.value = E.OT_PER_OBJECT
-            module.prepare_run(workspace.pipeline, workspace.image_set_list, None)
+            module.prepare_run(workspace)
             module.prepare_group(workspace.pipeline, workspace.image_set_list, 
                                  {}, np.arange(count)+1)
             for i in range(count):

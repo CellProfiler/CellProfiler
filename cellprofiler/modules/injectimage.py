@@ -52,8 +52,8 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         """Write the module's state, informally, to a text file
         """
     
-    def prepare_run(self, pipeline, image_set_list, frame):
-        image_set_list.get_image_set(0)
+    def prepare_run(self, workspace):
+        workspace.image_set_list.get_image_set(0)
         return True
     
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):

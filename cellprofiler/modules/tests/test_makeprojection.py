@@ -195,7 +195,9 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         module.projection_type.value = projection_type
         module.frequency.value = frequency
         pipeline.add_module(module)
-        module.prepare_run(pipeline, image_set_list, None)
+        m = cpmeas.Measurements()
+        module.prepare_run(cpw.Workspace(
+            pipeline, module, None, None, m, image_set_list))
         module.prepare_group(pipeline, image_set_list, {},
                              range(1,len(images_and_masks)+1))
         for i in range(image_count):
@@ -204,7 +206,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             workspace = cpw.Workspace(pipeline, module, 
                                       image_set_list.get_image_set(i),
                                       cpo.ObjectSet(),
-                                      cpmeas.Measurements(),
+                                      m,
                                       image_set_list)
             module.run(workspace)
             image = workspace.image_set.get_image(PROJECTED_IMAGE_NAME)

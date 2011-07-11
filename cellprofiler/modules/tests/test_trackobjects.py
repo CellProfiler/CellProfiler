@@ -358,7 +358,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
 
         if fn:
             fn(module, None, 0)
-        module.prepare_run(pipeline, image_set_list, None)
+        module.prepare_run(cpw.Workspace(pipeline, module, None, None,
+                                         measurements, image_set_list))
         
         first = True
         for labels, index in zip(labels_list, range(len(labels_list))):
@@ -1389,7 +1390,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         pipeline.add_module(module)
         image_set_list = cpi.ImageSetList()
 
-        module.prepare_run(pipeline, image_set_list, None)
+        module.prepare_run(cpw.Workspace(
+            pipeline, module, None, None, measurements, image_set_list))
         
         first = True
         object_set = cpo.ObjectSet()

@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 import cellprofiler.cpmodule
 import cellprofiler.preferences
-import cellprofiler.cpimage
+import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects
 import cellprofiler.workspace as cpw
@@ -1015,7 +1015,6 @@ class Pipeline(object):
                      form of a numpy array.
         """
         import cellprofiler.settings as cps
-        import cpimage
         from cellprofiler import objects as cpo
 
         output_image_names = self.find_external_output_images()
@@ -1027,11 +1026,11 @@ class Pipeline(object):
             assert name in image_dict, 'Image named "%s" was not provided in the input dictionary'%(name)
         
         # Create image set from provided dict
-        image_set_list = cpimage.ImageSetList()
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         for image_name in input_image_names:
             input_pixels = image_dict[image_name]
-            image_set.add(image_name, cpimage.Image(input_pixels))
+            image_set.add(image_name, cpi.Image(input_pixels))
         object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
 
@@ -1117,9 +1116,17 @@ class Pipeline(object):
             assert isinstance(image_set_start, int), "Image set start must be an integer"
         if image_set_end is not None:
             assert isinstance(image_set_end, int), "Image set end must be an integer"
+        if initial_measurements is None:
+            measurements = cpmeas.Measurements(image_set_start)
+        else:
+            measurements = initial_measurements
+            
+        image_set_list = cpi.ImageSetList()
+        workspace = cpw.Workspace(self, None, None, None,
+                                  measurements, image_set_list, frame)
 
-        with self.prepared_run(self, frame) as image_set_list:
-            if image_set_list == None:
+        try:
+            if not self.prepare_run(workspace):
                 return
 
             # Keep track of progress for the benefit of the progress window.
@@ -1127,7 +1134,6 @@ class Pipeline(object):
                                   for image_number, _, _, _ in group(image_set_list)])
             image_set_count = -1
 
-            measurements = None
             last_image_number = None
             pipeline_stats_logger.info("Times reported are CPU times for each module, not wall-clock time")
             for group_number, group_index, image_number, closure in group(image_set_list):
@@ -1143,18 +1149,7 @@ class Pipeline(object):
                 if last_image_number is not None:
                     image_set_list.purge_image_set(last_image_number-1)
                 last_image_number = image_number
-                if measurements is None:
-                    if initial_measurements is None:
-                        measurements = cpmeas.Measurements(
-                            image_set_start=image_number)
-                        measurements.initialize([c[:3] for c in columns])
-                    else:
-                        measurements = initial_measurements
-                        measurements.next_image_set(image_number, erase=True)
-                else:
-                    measurements.next_image_set(image_number, erase=True)
-                # This is added by ExportToDatabase
-                #measurements.add_image_measurement(IMAGE_NUMBER, image_number)
+                measurements.next_image_set(image_number, erase=True)
                 measurements.group_number = group_number
                 measurements.group_index = group_index
                 numberof_windows = 0;
@@ -1277,45 +1272,53 @@ class Pipeline(object):
                 # Record the status after post_run
                 #
                 measurements.add_experiment_measurement(EXIT_STATUS,exit_status)
-
-    class prepared_run:
-        def __init__(self, pipeline, frame):
-            self.pipeline = pipeline
-            self.frame = frame
-        def __enter__(self):
-            return self.pipeline.prepare_run(self.frame)
-        def __exit__(self, type, value, traceback):
-            self.pipeline.end_run()
+        finally:
+            self.end_run()
     
     def end_run(self):
         '''Tell everyone that a run is ending'''
         self.notify_listeners(EndRunEvent())
         
-    def prepare_run(self, frame, test_mode = None, combine_path_and_file = False):
+    def prepare_run(self, workspace):
         """Do "prepare_run" on each module to initialize the image_set_list
         
-        returns the image_set_list or None if an exception was thrown
-        """
-        if test_mode is None:
-            test_mode = self.test_mode
-        image_set_list = cellprofiler.cpimage.ImageSetList(test_mode)
-        image_set_list.combine_path_and_file = combine_path_and_file
+        workspace - workspace for the run
         
+             pipeline - this pipeline
+             
+             image_set_list - the image set list for the run. The modules
+                              should set this up with the image sets they need.
+                              The caller can set test mode and
+                              "combine_path_and_file" on the image set before
+                              the call.
+                              
+             measurements - the modules should record URL information here
+             
+             frame - the CPFigureFrame if not headless
+             
+             Returns True if all modules succeeded, False if any module reported
+             failure or threw an exception
+             
+        test_mode - None = use pipeline's test mode, True or False to set explicitly
+        """
+        assert(isinstance(workspace, cpw.Workspace))
         for module in self.modules():
             try:
-                if not module.prepare_run(self, image_set_list, frame):
-                    return None
+                workspace.set_module(module)
+                workspace.show_frame(module.show_window)
+                if not module.prepare_run(workspace):
+                    return False
             except Exception,instance:
                 logging.error("Failed to prepare run for module %s",
                               module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
-                    return None
-        assert not any([len(image_set_list.get_image_set(i).providers)
-                        for i in range(image_set_list.count())]),\
+                    return False
+        assert not any([len(workspace.image_set_list.get_image_set(i).providers)
+                        for i in range(workspace.image_set_list.count())]),\
                "Image providers cannot be added in prepare_run. Please add them in prepare_group instead"
-        return image_set_list
+        return True
     
     def post_run(self, measurements, image_set_list, frame):
         """Do "post_run" on each module to perform aggregation tasks

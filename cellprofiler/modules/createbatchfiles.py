@@ -177,8 +177,13 @@ class CreateBatchFiles(cpm.CPModule):
         result += [self.add_mapping_button, self.check_path_button]
         return result
     
-    def prepare_run(self, pipeline, image_set_list, frame):
+    def prepare_run(self, workspace):
         '''Invoke the image_set_list pickling mechanism and save the pipeline'''
+        
+        pipeline = workspace.pipeline
+        image_set_list = workspace.image_set_list
+        frame = workspace.frame
+        
         if pipeline.test_mode:
             return True
         if self.batch_mode.value:

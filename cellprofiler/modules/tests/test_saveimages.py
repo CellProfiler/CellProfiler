@@ -1404,7 +1404,8 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         if fn is not None:
             fn(module)
         pipeline.add_module(module)
-        self.assertTrue(module.prepare_run(pipeline, image_set_list))
+        self.assertTrue(module.prepare_run(cpw.Workspace(
+            pipeline, module, None, None, measurements, image_set_list)))
         is_first = True
         frame_iterator = iter(frames)
         first_image_set = True

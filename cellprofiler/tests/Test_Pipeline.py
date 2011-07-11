@@ -54,7 +54,9 @@ def exploding_pipeline(test):
     def fn(pipeline,event):
         if isinstance(event, cpp.RunExceptionEvent):
             import traceback
-            test.assertFalse(event.error.message, "".join(traceback.format_tb(event.tb)))
+            test.assertFalse(
+                isinstance(event, cpp.RunExceptionEvent),
+                "\n".join ([event.error.message] + traceback.format_tb(event.tb)))
     x.add_listener(fn)
     return x
          
@@ -62,7 +64,6 @@ class TestPipeline(unittest.TestCase):
     
     def test_00_00_init(self):
         x = cpp.Pipeline()
-        
     def test_01_01_load_mat(self):
         '''Regression test of img-942, load a batch data pipeline with notes'''
         data = ('eJyVd3VQFN7bLwiKSAtIs7T00p1SUgLSXZIqtdTCLogoISUgHYuggkgo3Q1L'
@@ -435,7 +436,8 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         keys = ('foo','bar')
         groupings = (({'foo':'foo-A','bar':'bar-A'},(1,3)),
                      ({'foo':'foo-B','bar':'bar-B'},(2,4)))
-        def prepare_run(pipeline, image_set_list, frame):
+        def prepare_run(workspace):
+            image_set_list = workspace.image_set_list
             self.assertEqual(expects[0], 'PrepareRun')
             for i in range(4):
                 image_set_list.get_image_set(i)
@@ -516,10 +518,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         groupings = (({'foo':'foo-A','bar':'bar-A'},(1,4)),
                      ({'foo':'foo-B','bar':'bar-B'},(2,5)),
                      ({'foo':'foo-C','bar':'bar-C'},(3,6)))
-        def prepare_run(pipeline, image_set_list, frame):
+        def prepare_run(workspace):
             self.assertEqual(expects[0], 'PrepareRun')
             for i in range(6):
-                image_set_list.get_image_set(i)
+                workspace.image_set_list.get_image_set(i)
             expects[0], expects[1] = ('PrepareGroup', 1)
             return True
         def prepare_group(pipeline, image_set_list, grouping,*args):
@@ -801,8 +803,8 @@ class MyClassForTest1101(cellprofiler.cpmodule.CPModule):
     def module_class(self):
         return "cellprofiler.tests.Test_Pipeline.MyClassForTest1101"
 
-    def prepare_run(self, pipeline, image_set_list, *args):
-        image_set = image_set_list.get_image_set(0)
+    def prepare_run(self, workspace, *args):
+        image_set = workspace.image_set_list.get_image_set(0)
         return True
         
     def prepare_group(self, pipeline, image_set_list, *args):

@@ -357,8 +357,10 @@ class OmeroLoadImages(cpm.CPModule):
 		'''This module creates image sets so it is a load module'''
 		return True
 
-	def prepare_run(self, pipeline, image_set_list, frame):
+	def prepare_run(self, workspace):
 		'''Set up omero image providers inside the image_set_list'''
+		pipeline = workspace.pipeline
+		image_set_list = workspace.image_set_list
 		if pipeline.in_batch_mode():
 			#TODO: Rewrite the OmeroImageProvider such that it can be used in batch mode 
 			#e.g. omero session keys could be used to attach to existing sessions to

@@ -213,12 +213,12 @@ class SendEmail(cpm.CPModule):
     def is_interactive(self):
         return False
     
-    def prepare_run(self, pipeline, image_set_list, frame):
+    def prepare_run(self, workspace):
         '''Prepare to run the first image in the image set'''
         email_me = [ group.message.value for group in self.when
                      if group.choice == S_FIRST ]
         
-        d = self.get_dictionary(image_set_list)
+        d = self.get_dictionary(workspace.image_set_list)
         d[K_EMAIL] = email_me
         d[K_CYCLE] = 0
         d[K_RESULT] = "No email sent"

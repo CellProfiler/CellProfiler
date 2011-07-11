@@ -419,8 +419,8 @@ class SaveImages(cpm.CPModule):
         '''Return the runtime dictionary associated with this module'''
         return image_set_list.legacy_fields[self.module_key]
     
-    def prepare_run(self, pipeline, image_set_list, *args):
-        image_set_list.legacy_fields[self.module_key] = {}
+    def prepare_run(self, workspace, *args):
+        workspace.image_set_list.legacy_fields[self.module_key] = {}
         return True
 
     def prepare_group(self, pipeline, image_set_list, 

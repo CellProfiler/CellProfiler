@@ -22,6 +22,8 @@ set_headless()
 from cellprofiler.modules.injectimage import InjectImage
 import cellprofiler.cpimage
 import cellprofiler.pipeline
+import cellprofiler.measurements as cpmeas
+import cellprofiler.workspace as cpw
 
 class testInjectImage(unittest.TestCase):
     def test_00_00_init(self):
@@ -33,7 +35,8 @@ class testInjectImage(unittest.TestCase):
         image_set_list = cellprofiler.cpimage.ImageSetList()
         ii = InjectImage("my_image", image)
         pipeline = cellprofiler.pipeline.Pipeline()
-        ii.prepare_run(pipeline, image_set_list, None)
+        ii.prepare_run(cpw.Workspace(pipeline, ii, None, None,
+                                     cpmeas.Measurements(), image_set_list))
         ii.prepare_group(pipeline, image_set_list, {}, [1])
         image_set = image_set_list.get_image_set(0)
         self.assertTrue(image_set,"No image set returned from ImageSetList.GetImageSet")

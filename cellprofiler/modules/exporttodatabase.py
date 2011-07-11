@@ -1117,10 +1117,13 @@ class ExportToDatabase(cpm.CPModule):
             os.makedirs(path)
         return os.path.join(path,file)
     
-    def prepare_run(self, pipeline, image_set_list, frame):
+    def prepare_run(self, workspace):
         '''Prepare to run the pipeline
         Establish a connection to the database.'''
 
+        pipeline = workspace.pipeline
+        image_set_list = workspace.image_set_list
+        
         if pipeline.test_mode:
             return True
 
@@ -1218,8 +1221,7 @@ class ExportToDatabase(cpm.CPModule):
         ExportToDatabase has two modes - writing CSVs and writing directly.
         We write CSVs in post_run. We write directly in run.
         '''
-        if not self.prepare_run(workspace.pipeline, workspace.image_set_list,
-                                workspace.frame):
+        if not self.prepare_run(workspace):
             return
         self.prepare_group(workspace.pipeline,
                            workspace.image_set_list, None, None)

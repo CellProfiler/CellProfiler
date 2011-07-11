@@ -1410,9 +1410,12 @@ class LoadImages(cpmodule.CPModule):
         '''LoadImages creates image sets so it is a load module'''
         return True
     
-    def prepare_run(self, pipeline, image_set_list, frame):
+    def prepare_run(self, workspace):
         """Set up all of the image providers inside the image_set_list
         """
+        pipeline = workspace.pipeline
+        image_set_list = workspace.image_set_list
+        frame = workspace.frame
         if pipeline.in_batch_mode():
             # Don't set up if we're going to retrieve the image set list
             # from batch mode

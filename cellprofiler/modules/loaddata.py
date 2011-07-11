@@ -693,7 +693,9 @@ class LoadData(cpm.CPModule):
         '''LoadData can make image sets so it's a load module'''
         return True
     
-    def prepare_run(self, pipeline, image_set_list, frame):
+    def prepare_run(self, workspace):
+        pipeline = workspace.pipeline
+        image_set_list = workspace.image_set_list
         '''Load the CSV file at the outset and populate the image set list'''
         if pipeline.in_batch_mode():
             if os.path.exists(self.csv_path):

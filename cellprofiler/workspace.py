@@ -69,6 +69,7 @@ class Workspace(object):
         self.__measurements = measurements
         self.__image_set_list = image_set_list
         self.__frame = frame
+        self.__do_show = frame is not None
         self.__outlines = outlines
         self.__windows_used = []
         self.__create_new_window = create_new_window
@@ -168,9 +169,14 @@ class Workspace(object):
 
         If the frame is present, a module should do its display
         """
-        return self.__frame
+        if self.__do_show:
+            return self.__frame
+        return None
 
     frame = property(get_frame)
+    
+    def show_frame(self, do_show):
+        self.__do_show = do_show
     
     def get_display(self):
         """True to provide a gui display"""
@@ -226,6 +232,10 @@ class Workspace(object):
         return self.__module
     
     module = property(get_module)
+    
+    def set_module(self, module):
+        """Set the module currently being run"""
+        self.__module = module
     
     @property
     def is_last_image_set(self):

@@ -18,6 +18,8 @@ import unittest
 
 import wx
 
+import cellprofiler.preferences as cpprefs
+cpprefs.set_headless()
 import cellprofiler.cellprofilerapp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps

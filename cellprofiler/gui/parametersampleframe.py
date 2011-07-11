@@ -21,8 +21,10 @@ import wx.lib.agw.floatspin as fs
 import cellprofiler.cpmodule
 import cellprofiler.measurements as cpm
 import cellprofiler.objects as cpo
+import cellprofiler.cpimage as cpi
 import cellprofiler.preferences
 import cellprofiler.settings as settings
+import cellprofiler.workspace as cpw
 
 PARAM_CLASS_TEXT_LABEL = 'Input text label'
 PARAM_CLASS_BOUNDED_DISCRETE = 'Bounded, discrete'
@@ -556,8 +558,11 @@ class ParameterSampleFrame(wx.Frame):
         self.__measurements = cpm.Measurements(can_overwrite=True)
         self.__object_set = cpo.ObjectSet(can_overwrite=True)
         try:
-            self.__image_set_list = self.__pipeline.prepare_run(self.__frame)
-            if self.__image_set_list is None:
+            self.__image_set_list = cpi.ImageSetList()
+            workspace = cpw.Workspace(self.__pipeline, None, None, None,
+                                      self.__measurements, image_set_list,
+                                      self.__frame)
+            if not self.__pipeline.prepare_run(workspace):
                 print 'Error: failed to get image sets'
             self.__keys, self.__groupings = self.__pipeline.get_groupings(self.__image_set_list)
         except ValueError, v:

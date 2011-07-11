@@ -90,7 +90,9 @@ class testLoadImages(unittest.TestCase):
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(l)
-        l.prepare_run(pipeline, image_set_list, None)
+        l.prepare_run(W.Workspace(pipeline, l, None, None,
+                                  measurements.Measurements(),
+                                  image_set_list))
         self.assertEqual(image_set_list.count(),1,"Expected one image set in the list")
         l.prepare_group(pipeline, image_set_list, (), [1])
         image_set = image_set_list.get_image_set(0)
@@ -115,7 +117,8 @@ class testLoadImages(unittest.TestCase):
         pipeline = P.Pipeline()
         pipeline.add_module(l)
         pipeline.add_listener(self.error_callback)
-        l.prepare_run(pipeline, image_set_list, None)
+        l.prepare_run(W.Workspace(
+            pipeline, l, None, None, measurements.Measurements(), image_set_list))
         self.assertEqual(image_set_list.count(),1,"Expected one image set, there were %d"%(image_set_list.count()))
         image_set = image_set_list.get_image_set(0)
         l.prepare_group(pipeline, image_set_list, (), [1])
@@ -136,7 +139,8 @@ class testLoadImages(unittest.TestCase):
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
         pipeline.add_module(l)
-        l.prepare_run(pipeline, image_set_list,None)
+        l.prepare_run(W.Workspace(
+            pipeline, l, None, None, measurements.Measurements(), image_set_list))
         self.assertEqual(image_set_list.count(),1,"Expected one image set in the list")
         l.prepare_group(pipeline, image_set_list, (), [1])
         image_set = image_set_list.get_image_set(0)
@@ -211,7 +215,9 @@ class testLoadImages(unittest.TestCase):
                     image_set_list = I.ImageSetList()
                     pipeline = P.Pipeline()
                     pipeline.add_module(l)
-                    l.prepare_run(pipeline, image_set_list,None)
+                    l.prepare_run(W.Workspace(pipeline, l, None, None,
+                                              measurements.Measurements(),
+                                              image_set_list))
                     nsets = 12 / group_size
                     self.assertEqual(image_set_list.count(), nsets)
                     l.prepare_group(pipeline, image_set_list, (), 
@@ -1304,7 +1310,9 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(module)
         
         image_set_list = I.ImageSetList()
-        self.assertTrue(module.prepare_run(pipeline, image_set_list, None))
+        m = measurements.Measurements()
+        self.assertTrue(module.prepare_run(
+            W.Workspace(pipeline, module, None, None, m, image_set_list)))
         self.assertEqual(image_set_list.count(), 1)
         key_names, group_list = pipeline.get_groupings(image_set_list)
         self.assertEqual(len(group_list), 1)
@@ -1314,7 +1322,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                                measurements.Measurements(), image_set_list)
+                                m, image_set_list)
         module.run(workspace)
         image = image_set.get_image(IMAGE_NAME)
         pixels = image.pixel_data
@@ -1366,7 +1374,9 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
         image_set_list = I.ImageSetList()
-        load_images.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        load_images.prepare_run(W.Workspace(
+            pipeline, load_images, None, None, m, image_set_list))
         self.assertEqual(image_set_list.count(),2)
         load_images.prepare_group(pipeline, image_set_list, (), [1,2])
         image_set = image_set_list.get_image_set(0)
@@ -1374,7 +1384,6 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                          filenames[0])
         self.assertEqual(image_set.get_image_provider("Channel2").get_filename(),
                          filenames[1])
-        m = measurements.Measurements()
         w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
                         image_set_list)
         load_images.run(w)
@@ -1452,8 +1461,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
         image_set_list = I.ImageSetList()
-        self.assertRaises(ValueError, load_images.prepare_run, pipeline, 
-                          image_set_list, None)
+        self.assertRaises(ValueError, load_images.prepare_run, 
+                          W.Workspace(pipeline, load_images, None, None,
+                                      measurements.Measurements(), 
+                                      image_set_list))
             
     def test_06_04_conflict(self):
         """Test expected failure when two images have the same metadata"""
@@ -1490,8 +1501,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
             image_set_list = I.ImageSetList()
-            self.assertRaises(ValueError,load_images.prepare_run, pipeline, 
-                              image_set_list, None)
+            self.assertRaises(
+                ValueError, load_images.prepare_run, W.Workspace(
+                    pipeline, load_images, None, None, 
+                    measurements.Measurements(), image_set_list))
         finally:
             for filename in filenames:
                 os.remove(os.path.join(directory,filename))
@@ -1551,7 +1564,9 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
             image_set_list = I.ImageSetList()
-            load_images.prepare_run(pipeline, image_set_list, None)
+            load_images.prepare_run(
+                W.Workspace(pipeline, load_images, None, None, 
+                            measurements.Measurements(), image_set_list))
             for i in range(12):
                 iset = image_set_list.legacy_fields["LoadImages:1"][i]
                 ctags = re.search(load_images.images[0].file_metadata.value,
@@ -1618,7 +1633,9 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 pipeline.add_module(load_images)
                 pipeline.add_listener(self.error_callback)
                 image_set_list = I.ImageSetList()
-                load_images.prepare_run(pipeline, image_set_list, None)
+                load_images.prepare_run(W.Workspace(
+                    pipeline, load_images, None, None,
+                    measurements.Measurements(), image_set_list))
                 d = dict(plate = "MMD-ControlSet-plateA-2008-08-06",
                          well_row = "A",
                          well_col = "12",
@@ -1683,9 +1700,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
             image_set_list = I.ImageSetList()
-            self.assertTrue(load_images.prepare_run(pipeline, image_set_list, None))
-            self.assertEqual(image_set_list.count(), len(filenames))
             m = measurements.Measurements()
+            self.assertTrue(load_images.prepare_run(W.Workspace(
+                pipeline, load_images, None, None, m, image_set_list)))
+            self.assertEqual(image_set_list.count(), len(filenames))
             load_images.prepare_group(pipeline, image_set_list, {}, np.arange(1, len(filenames)+1))
             for i, (path, file_name) in enumerate(filenames):
                 if i > 0:
@@ -1754,9 +1772,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
             image_set_list = I.ImageSetList()
-            self.assertTrue(load_images.prepare_run(pipeline, image_set_list, None))
-            self.assertEqual(image_set_list.count(), len(expected_filenames))
             m = measurements.Measurements()
+            self.assertTrue(load_images.prepare_run(W.Workspace(
+                pipeline, load_images, None, None, m, image_set_list)))
+            self.assertEqual(image_set_list.count(), len(expected_filenames))
             load_images.prepare_group(pipeline, image_set_list, {}, 
                                       np.arange(1, len(expected_filenames)+1))
             for i, (path, file_name) in enumerate(expected_filenames):
@@ -2068,8 +2087,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
-        image_set_list = pipeline.prepare_run(None)
-        self.assertTrue(isinstance(image_set_list, I.ImageSetList))
+        image_set_list = I.ImageSetList()
+        self.assertTrue(pipeline.prepare_run(W.Workspace(
+            pipeline, None, None, None, measurements.Measurements(),
+            image_set_list)))
         keys, groupings = module.get_groupings(image_set_list)
         self.assertEqual(len(keys), 1)
         self.assertEqual(keys[0], "ROW")
@@ -2105,11 +2126,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
-        module.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        module.prepare_run(W.Workspace(pipeline, module, None, None,
+                                       m, image_set_list))
         self.assertEqual(image_set_list.count(), 65)
         module.prepare_group(pipeline, image_set_list, (), [1,2,3])
         image_set = image_set_list.get_image_set(0)
-        m = measurements.Measurements()
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
                                 image_set_list)
@@ -2154,10 +2176,11 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
-        module.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
+                                       image_set_list))
         module.prepare_group(pipeline, image_set_list, (), [1,2,3])
         image_set = image_set_list.get_image_set(0)
-        m = measurements.Measurements()
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
                                 image_set_list)
@@ -2195,12 +2218,13 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
-        module.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
+                                       image_set_list))
         keys, groupings = module.get_groupings(image_set_list)
         self.assertTrue("FileName" in keys)
         self.assertTrue("Series" in keys)
         self.assertEqual(len(groupings), 4)
-        m = measurements.Measurements()
         for grouping, image_numbers in groupings:
             module.prepare_group(pipeline, image_set_list, grouping, image_numbers)
             for image_number in image_numbers:
@@ -2250,11 +2274,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
-        module.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
+                                       image_set_list))
         self.assertEqual(image_set_list.count(), 13)
         module.prepare_group(pipeline, image_set_list, (), np.arange(1,16))
         image_set = image_set_list.get_image_set(0)
-        m = measurements.Measurements()
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
                                 image_set_list)
@@ -2320,11 +2345,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
-        module.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
+                                       image_set_list))
         self.assertEqual(image_set_list.count(), 13)
         module.prepare_group(pipeline, image_set_list, (), np.arange(1,16))
         image_set = image_set_list.get_image_set(0)
-        m = measurements.Measurements()
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
                                 image_set_list)
@@ -2385,12 +2411,13 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
-        module.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m, 
+                                       image_set_list))
         keys, groupings = module.get_groupings(image_set_list)
         self.assertTrue("FileName" in keys)
         self.assertTrue("Series" in keys)
         self.assertEqual(len(groupings), 4)
-        m = measurements.Measurements()
         for group_number, (grouping, image_numbers) in enumerate(groupings):
             module.prepare_group(pipeline, image_set_list, grouping, image_numbers)
             for group_index, image_number in enumerate(image_numbers):
@@ -2441,12 +2468,13 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
-        module.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m, 
+                                       image_set_list))
         keys, groupings = module.get_groupings(image_set_list)
         self.assertTrue("FileName" in keys)
         self.assertTrue("Series" in keys)
         self.assertEqual(len(groupings), 4)
-        m = measurements.Measurements()
         for group_number, (grouping, image_numbers) in enumerate(groupings):
             module.prepare_group(pipeline, image_set_list, grouping, image_numbers)
             
@@ -2493,10 +2521,11 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
-        module.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m, 
+                                       image_set_list))
         module.prepare_group(pipeline, image_set_list, (), [1])
         image_set = image_set_list.get_image_set(0)
-        m = measurements.Measurements()
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
                                 image_set_list)
@@ -2510,7 +2539,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pixel_data = image.pixel_data
         module.images[0].channels[0].rescale.value = True
         image_set_list = I.ImageSetList()
-        module.prepare_run(pipeline, image_set_list, None)
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
+                                       image_set_list))
         module.prepare_group(pipeline, image_set_list, (), [1])
         image_set = image_set_list.get_image_set(0)
         m = measurements.Measurements()
@@ -2537,11 +2567,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             pipeline.add_module(module)
             pipeline.add_listener(self.error_callback)
             image_set_list = I.ImageSetList()
-            module.prepare_run(pipeline, image_set_list, None)
+            m = measurements.Measurements(True)
+            module.prepare_run(W.Workspace(pipeline, module, None, None, m,
+                                           image_set_list))
             module.prepare_group(pipeline, image_set_list, (), np.arange(96))
             for j in range(96):
                 image_set = image_set_list.get_image_set(j)
-                m = measurements.Measurements()
                 workspace = W.Workspace(pipeline, module, image_set,
                                         cpo.ObjectSet(), m,
                                         image_set_list)
@@ -2572,10 +2603,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
-        module.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
+                                       image_set_list))
         module.prepare_group(pipeline, image_set_list, (), [0])
         workspace = W.Workspace(pipeline, module, image_set_list.get_image_set(0), 
-                                cpo.ObjectSet(), measurements.Measurements(),
+                                cpo.ObjectSet(), m,
                                 image_set_list)
         return workspace, module
     
@@ -2673,7 +2706,9 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(module)
-        module.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
+                                       image_set_list))
         def fn_alter_path(pathname, **varargs):
             is_path = (pathname == orig_path)
             is_file = re.match(file_regexp, pathname) is not None
@@ -2711,7 +2746,9 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(module)
-        module.prepare_run(pipeline, image_set_list, None)
+        m = measurements.Measurements()
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
+                                       image_set_list))
         def fn_alter_path(pathname, **varargs):
             is_fullpath = (os.path.join(orig_path, file_name) == pathname)
             is_path = (orig_path == pathname)
@@ -2747,10 +2784,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.module_num = 1
         image_set_list = I.ImageSetList()
+        m = measurements.Measurements()
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(module)
-        module.prepare_run(pipeline, image_set_list, None)
+        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
+                                       image_set_list))
         def fn_alter_path(pathname, **varargs):
             is_fullpath = (os.path.join(orig_path, file_name) == pathname)
             is_path = (orig_path == pathname)
@@ -2801,7 +2840,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         m = measurements.Measurements()
-        self.assertTrue(module.prepare_run(pipeline, image_set_list, None))
+        self.assertTrue(module.prepare_run(W.Workspace(
+            pipeline, module, None, None, m, image_set_list)))
         self.assertEqual(image_set_list.count(), 1)
         key_names, group_list = pipeline.get_groupings(image_set_list)
         self.assertEqual(len(group_list), 1)

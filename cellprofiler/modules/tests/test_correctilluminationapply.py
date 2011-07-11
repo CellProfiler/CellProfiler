@@ -170,13 +170,15 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.corrected_image_name.value = "OutputImage"
         image.divide_or_subtract.value = cpmcia.DOS_DIVIDE
         image.rescale_option = cpmcia.RE_NONE
-        image_set_list = pipeline.prepare_run(None)
+        image_set_list = cpi.ImageSetList()
+        measurements = cpm.Measurements()
+        pipeline.prepare_run(cpw.Workspace(pipeline, None, None, None,
+                                           measurements, image_set_list))
         input_module.prepare_group(pipeline, image_set_list, {}, [1])
         illum_module.prepare_group(pipeline, image_set_list, {}, [1])
         module.prepare_group(pipeline, image_set_list, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        measurements = cpm.Measurements()
         workspace = cpw.Workspace(pipeline,
                                   input_module,
                                   image_set,
@@ -213,13 +215,16 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.corrected_image_name.value = "OutputImage"
         image.divide_or_subtract.value = cpmcia.DOS_SUBTRACT
         image.rescale_option = cpmcia.RE_NONE
-        image_set_list = pipeline.prepare_run(None)
+        measurements = cpm.Measurements()
+        image_set_list = cpi.ImageSetList()
+        measurements = cpm.Measurements()
+        pipeline.prepare_run(cpw.Workspace(pipeline, None, None, None,
+                                           measurements, image_set_list))
         input_module.prepare_group(pipeline, image_set_list, {}, [1])
         illum_module.prepare_group(pipeline, image_set_list, {}, [1])
         module.prepare_group(pipeline, image_set_list, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
-        measurements = cpm.Measurements()
         workspace = cpw.Workspace(pipeline,
                                   input_module,
                                   image_set,

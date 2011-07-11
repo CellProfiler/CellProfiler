@@ -140,9 +140,6 @@ class MakeProjection(cpm.CPModule):
             result += [self.frequency]
         return result
 
-    def prepare_run(self, pipeline, image_set_list, frame):
-        return True
-    
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
         '''Reset the aggregate image at the start of group processing'''
         if len(image_numbers) > 0:

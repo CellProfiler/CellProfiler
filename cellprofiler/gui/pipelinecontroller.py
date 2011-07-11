@@ -891,9 +891,12 @@ class PipelineController:
         assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
         self.__pipeline.test_mode = True
         try:
-            self.__debug_image_set_list = \
-                self.__pipeline.prepare_run(self.__frame)
-            if self.__debug_image_set_list is None:
+            self.__debug_image_set_list = cpi.ImageSetList(True)
+            workspace = cpw.Workspace(self.__pipeline, None, None, None,
+                                      self.__debug_measurements,
+                                      self.__debug_image_set_list,
+                                      self.__frame)
+            if not self.__pipeline.prepare_run(workspace):
                 raise ValueError("Failed to get image sets")
             self.__keys, self.__groupings = self.__pipeline.get_groupings(
                 self.__debug_image_set_list)

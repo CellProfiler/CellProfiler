@@ -15,6 +15,9 @@ import cellprofiler.preferences
 cellprofiler.preferences.set_headless()
 import cellprofiler.modules
 import cellprofiler.pipeline as cpp
+import cellprofiler.cpimage as cpi
+import cellprofiler.workspace as cpw
+import cellprofiler.measurements as cpmeas
 from cellprofiler.modules.createbatchfiles import F_BATCH_DATA, CreateBatchFiles
 import RunBatch
 import email.message
@@ -147,7 +150,11 @@ if os.path.exists(batch_file):
         pipeline.load(batch_file)
         if had_problem[0]:
             raise RuntimeError("Failed to load batch file")
-        image_set_list = pipeline.prepare_run(None)
+        image_set_list = cpi.ImageSetList()
+        measurements = cpmeas.Measurements()
+        workspace = cpw.Workspace(pipeline, None, None, None, measurements,
+                                  image_set_list)
+        pipeline.prepare_run(workspace)
         if had_problem[0]:
             raise RuntimeError("Failed to prepare batch file")
         grouping_keys, groups = pipeline.get_groupings(image_set_list)

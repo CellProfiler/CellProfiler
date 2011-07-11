@@ -240,9 +240,9 @@ class CreateWebPage(cpm.CPModule):
         '''Return the set of file names'''
         return self.get_dictionary(image_set_list)["Filenames"]
         
-    def prepare_run(self, pipeline, image_set_list, frame):
+    def prepare_run(self, workspace):
         '''Initialize the dictionary of file names here'''
-        d = self.get_dictionary(image_set_list)
+        d = self.get_dictionary(workspace.image_set_list)
         d["Filenames"] = {}
         return True
         

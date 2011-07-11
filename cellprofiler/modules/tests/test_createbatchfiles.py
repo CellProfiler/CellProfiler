@@ -427,9 +427,13 @@ class TestCreateBatchFiles(unittest.TestCase):
                 mapping = module.mappings[0]
                 mapping.local_directory.value = ipath
                 self.assertFalse(pipeline.in_batch_mode())
-                image_set_list = pipeline.prepare_run(None)
+                measurements = cpmeas.Measurements()
+                image_set_list = cpi.ImageSetList()
+                result = pipeline.prepare_run(
+                    cpw.Workspace(pipeline, None, None, None,
+                                  measurements, image_set_list))
                 self.assertFalse(pipeline.in_batch_mode())
-                self.assertTrue(image_set_list is None)
+                self.assertFalse(result)
                 self.assertFalse(module.batch_mode.value)
                 self.assertTrue(os.path.exists(bfile))
                 pipeline = cpp.Pipeline()
@@ -439,7 +443,11 @@ class TestCreateBatchFiles(unittest.TestCase):
                     pipeline.load(fd)
                 finally:
                     fd.close()
-                image_set_list = pipeline.prepare_run(None)
+                measurements = cpmeas.Measurements()
+                image_set_list = cpi.ImageSetList()
+                result = pipeline.prepare_run(
+                    cpw.Workspace(pipeline, None, None, None,
+                                  measurements, image_set_list))
                 self.assertTrue(pipeline.in_batch_mode())
                 module = pipeline.modules()[1]
                 self.assertTrue(isinstance(module, C.CreateBatchFiles))

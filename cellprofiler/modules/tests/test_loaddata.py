@@ -606,7 +606,9 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
         module.wants_image_groupings.value = True
         module.metadata_fields.value = "ROW"
         image_set_list = cpi.ImageSetList()
-        module.prepare_run(pipeline, image_set_list, None)
+        measurements = cpmeas.Measurements()
+        module.prepare_run(cpw.Workspace(pipeline, module, None,
+                                         None, measurements, image_set_list))
         keys, groupings = module.get_groupings(image_set_list)
         self.assertEqual(len(keys), 1)
         self.assertEqual(keys[0], "ROW")
@@ -719,7 +721,10 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         assert isinstance(module, L.LoadData)
         module.wants_images.value = True
         try:
-            image_set_list = pipeline.prepare_run(None)
+            image_set_list = cpi.ImageSetList()
+            measurements = cpmeas.Measurements()
+            pipeline.prepare_run(cpw.Workspace(
+                pipeline, module, None, None, measurements, image_set_list))
             key_names, g = pipeline.get_groupings(image_set_list)
             self.assertEqual(len(g), 1)
             module.prepare_group(pipeline, image_set_list, g[0][0], g[0][1])
@@ -763,7 +768,10 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                          unicode_value.encode('utf8')))
             pipeline, module, _ = self.make_pipeline(csv_text, csv_path)
             image_set_list = cpi.ImageSetList()
-            self.assertTrue(module.prepare_run(pipeline, image_set_list, None))
+            measurements = cpmeas.Measurements()
+            self.assertTrue(module.prepare_run(
+                cpw.Workspace(pipeline, module, None, None,
+                              measurements, image_set_list)))
             self.assertEqual(image_set_list.count(), 1)
             key_names, group_list = pipeline.get_groupings(image_set_list)
             self.assertEqual(len(group_list), 1)

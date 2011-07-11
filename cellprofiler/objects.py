@@ -535,8 +535,14 @@ class Objects(object):
         parents = np.hstack(
             (parents[order], np.ones(max_child-1, int) * max_parent))
         children = np.hstack((children[order], np.arange(1,max_child)))
-        _, first_indexes = np.unique(children, return_index = True)
-        parents_of_children = parents[first_indexes]
+        #
+        # Get the parent with the lowest index or "max_parent" if none
+        #
+        order = np.lexsort((parents, children))
+        parents = parents[order]
+        children = children[order]
+        first = np.hstack([[True], children[:-1] != children[1:]])
+        parents_of_children = parents[first]
         parents_of_children[parents_of_children == max_parent] = 0
         return children_per_parent, parents_of_children
     

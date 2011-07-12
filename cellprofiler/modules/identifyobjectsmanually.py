@@ -55,7 +55,7 @@ class IdentifyObjectsManually(I.Identify):
             doc = """Check this setting to save the outlines around the objects
             as a binary image.""")
         
-        self.outlines_name = cps.ImageNameProvider(
+        self.outlines_name = cps.OutlineNameProvider(
             "Name the outlines", "CellOutlines",
             doc = """<i>(Used only if outlines are to be saved)</i><br>What do you want to call the outlines image? You can refer to
             this image in subsequent modules, such as <b>SaveImages</b>.""")

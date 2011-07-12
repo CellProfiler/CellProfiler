@@ -708,7 +708,7 @@ class PipelineController:
         
         #We start the server here, either to serve to workers or ourselves.
         run_multi = multiprocess_server.run_multiprocess() 
-        serve_here = cpdistributed.run_distributed() #or run_multi
+        serve_here = cpdistributed.run_distributed() or run_multi
         
         if serve_here:
             try:

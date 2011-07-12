@@ -20,6 +20,8 @@ import numpy as np
 import wx
 import cellprofiler.preferences as cpprefs
 import cellprofiler.distributed as cpdistributed
+import cellprofiler.multiprocess_server as cpmultiprocess
+
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.help import \
      DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, OUTPUT_FILENAME_HELP
@@ -277,7 +279,8 @@ class PreferencesView:
         # begin tracking progress
         self.__progress_watcher = ProgressWatcher(self.__progress_panel,
                                                   self.update_progress,
-                                                  distributed=cpdistributed.run_distributed())
+                                                  distributed=cpdistributed.run_distributed()
+                                                  or cpmultiprocess.run_multiprocess())
         
     def on_pipeline_progress(self, *args):
         self.__progress_watcher.on_pipeline_progress(*args)

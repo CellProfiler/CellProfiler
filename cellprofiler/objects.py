@@ -357,7 +357,7 @@ class Objects(object):
             histogram = self.histogram_from_ijv(self.ijv, children.ijv)
         else:
             histogram = self.histogram_from_labels(self.segmented, children.segmented)
-        return relate_histogram(histogram)
+        return self.relate_histogram(histogram)
     
     def relate_labels(self, parent_labels, child_labels):
         '''relate the object numbers in one label to those in another

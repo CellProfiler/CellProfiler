@@ -218,6 +218,8 @@ RUN_DISTRIBUTED = "RunDistributed"
 WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
 USE_MORE_FIGURE_SPACE = "UseMoreFigureSpace"
 
+RUN_MULTIPROCESS = "RunMultiprocess"
+
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
 
@@ -225,7 +227,7 @@ def recent_file(index, category=""):
 ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
              COLORMAP, DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY,
              IJ_PLUGIN_DIRECTORY, MODULEDIRECTORY, PLUGIN_DIRECTORY,
-             PRIMARY_OUTLINE_COLOR, RUN_DISTRIBUTED, SECONDARY_OUTLINE_COLOR,
+             PRIMARY_OUTLINE_COLOR, RUN_DISTRIBUTED, RUN_MULTIPROCESS,SECONDARY_OUTLINE_COLOR,
              SHOW_ANALYSIS_COMPLETE_DLG, SHOW_BAD_SIZES_DLG, 
              SHOW_EXITING_TEST_MODE_DLG, SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
              TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
@@ -546,6 +548,30 @@ def remove_run_distributed_listener(listener):
     """Remove a previously-added image directory listener
     """
     __run_distributed_listeners.remove(listener)
+
+__run_multiprocess = None
+__run_multiprocess_listeners = []  
+def get_run_multiprocess():
+    global __run_multiprocess
+    if __run_multiprocess is not None:
+        return __run_multiprocess
+    if not get_config().Exists(RUN_MULTIPROCESS):
+        __run_multiprocess = False
+        return False
+    return get_config().ReadBool(RUN_MULTIPROCESS)
+
+def set_run_multiprocess(value):
+    global __run_multiprocess
+    get_config().WriteBool(RUN_MULTIPROCESS, bool(value))
+    __run_multiprocess = bool(value)
+    for listener in __run_multiprocess_listeners:
+        listener(PreferenceChangedEvent(__run_multiprocess))
+
+def add_run_multiprocess_listener(listener):
+    __run_multiprocess_listeners.append(listener)
+
+def remove_run_multiprocess_listener(listener):
+    __run_multiprocess_listeners.remove(listener)
 
 __recent_files = {}
 def get_recent_files(category=""):

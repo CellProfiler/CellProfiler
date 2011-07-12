@@ -38,6 +38,8 @@ from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 import cellprofiler.gui.parametersampleframe as psf
 import cellprofiler.distributed as cpdistributed
 
+import cellprofiler.multiprocess_server as multiprocess_server
+
 logger = logging.getLogger(__name__)
 RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
 WRITING_MAT_FILE = "Writing .MAT measurements file..."
@@ -675,7 +677,7 @@ class PipelineController:
         cpprefs.set_default_output_directory(pipeline_details.default_output_folder)
         cpprefs.set_output_file_name(pipeline_details.measurements_file)
         self.on_analyze_images(event)
-        
+ 
     def on_analyze_images(self, event):
         '''Handle a user request to start running the pipeline'''
         ##################################
@@ -703,8 +705,12 @@ class PipelineController:
         # Start the pipeline
         #
         ##################################
-
-        if cpdistributed.run_distributed():
+        
+        #We start the server here, either to serve to workers or ourselves.
+        run_multi = multiprocess_server.run_multiprocess() 
+        serve_here = cpdistributed.run_distributed() #or run_multi
+        
+        if serve_here:
             try:
                 self.__module_view.disable()
                 self.__frame.preferences_view.on_analyze_images()
@@ -715,6 +721,11 @@ class PipelineController:
                     self.__running_pipeline.close()
                 self.__running_pipeline = self.__distributor.run_with_yield()
                 self.__pipeline_measurements = self.__running_pipeline.next()
+                             
+                if run_multi:
+                    print 'Running multiple workers in distributed workflow'
+                    donejobs = multiprocess_server.run_multiple_workers(self.__distributor.server_URL)
+
             except Exception, e:
                 # Catastrophic failure
                 display_error_dialog(self.__frame,
@@ -723,7 +734,7 @@ class PipelineController:
                                      "Failure in distributed work startup",
                                      sys.exc_info()[2])
                 self.stop_running()
-            return
+            return    
 
         output_path = self.get_output_file_path()
         if output_path:

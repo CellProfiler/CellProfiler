@@ -91,7 +91,10 @@ class HDF5Dict(object):
 
     # XXX - document how data is stored in hdf5 (basically, /Measurements/Object/Feature)
 
-    def __init__(self, hdf5_filename, top_level_group_name="Measurements"):
+    def __init__(self, hdf5_filename, 
+                 top_level_group_name="Measurements",
+                 is_temporary = False,
+                 copy = None):
         self.filename = hdf5_filename
         # assert not os.path.exists(self.filename)  # currently, don't allow overwrite
         self.hdf5_file = h5py.File(self.filename, 'w')
@@ -101,13 +104,27 @@ class HDF5Dict(object):
         self.lock = threading.RLock()  # h5py is thread safe, but does not support simultaneous read/write
         self.must_exist = False
         self.chunksize = 1024
+        self.is_temporary = is_temporary
+        if copy is not None:
+            for object_name in copy.keys():
+                object_group = copy[object_name]
+                self.top_group.copy(object_group, self.top_group)
+                for feature_name in object_group.keys():
+                    d = self.indices[object_name, feature_name] = {}
+                    hdf5_index = object_group[feature_name]['index']
+                    for num_idx, start, stop in hdf5_index:
+                        d[num_idx] = slice(start, stop)
 
     def __del__(self):
-        try:
+        if self.is_temporary:
+            try:
+                self.hdf5_file.close()
+                os.unlink(self.filename)
+            except Exception, e:
+                pass
+        else:
+            self.hdf5_file.flush()
             self.hdf5_file.close()
-            os.unlink(self.filename)
-        except Exception, e:
-            pass
 
     def __getitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
@@ -201,7 +218,7 @@ class HDF5Dict(object):
             # reserved value of -1 means deleted
             idx = self.top_group[object_name][feature_name]['index']
             idx[np.flatnonzero(idx[:, 0] == num_idx), 0] = -1
-
+            
     def has_data(self, object_name, feature_name, num_idx):
         return num_idx in self.indices.get((object_name, feature_name), [])
 
@@ -300,6 +317,20 @@ class HDF5Dict(object):
     def second_level_names(self, object_name):
         with self.lock:
             return self.top_group[object_name].keys()
+        
+def get_top_level_group(filename, group_name = 'Measurements', open_mode='r'):
+    '''Open and return the Measurements HDF5 group
+    
+    filename - path to HDF5 file
+    
+    group_name - name of top-level group, defaults to Measurements group
+    
+    open_mode - open mode for file: 'r' for read, 'w' for write
+    
+    returns the hdf5 file object (which must be closed) and the top-level group
+    '''
+    f = h5py.File(filename, open_mode)
+    return f, f.get(group_name)
 
 if __name__ == '__main__':
     h = HDF5Dict('temp.hdf5')

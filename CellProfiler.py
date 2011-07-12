@@ -443,7 +443,7 @@ try:
                         time.sleep(20 + random.randint(1, 10)) # avoid hammering server
                         continue
                 else:
-                    print 'Running multiple workers in distributed workflow'
+                    #Running multiple workers in distributed mode
                     continue_looping = False
                     import cellprofiler.multiprocess_server as multiprocess_server
                     donejobs = multiprocess_server.run_multiple_workers(options.worker_mode_URL)
@@ -454,26 +454,11 @@ try:
                 groups = dict(kvs)
             else:
                 groups = None
-            
-            import time
-            if(False):#options.worker_mode_URL is None and options.run_multiprocess):
-                import cellprofiler.multiprocess_server as multiprocess_server
-                output_file = os.path.join(cpprefs.get_default_output_directory(),
-                        cpprefs.get_output_file_name())
-                start_time = time.time()
-                measurements = multiprocess_server.run_multi(pipeline,image_set_start = image_set_start,
-                                                   image_set_end = image_set_end,
-                                                   grouping = groups,
-                                                   output_file = output_file )
-                end_time = time.time()
-            else:
-                start_time = time.time()
-                measurements = pipeline.run(image_set_start=image_set_start, 
-                                    image_set_end=image_set_end,
-                                    grouping=groups)
-                end_time = time.time()
-            elapsed_time = end_time - start_time
-            print 'Elapsed Time: %s' % (elapsed_time)
+        
+            measurements = pipeline.run(image_set_start=image_set_start, 
+                                image_set_end=image_set_end,
+                                grouping=groups)
+        
             if options.worker_mode_URL is not None:
                 try:
                     assert measurements is not None

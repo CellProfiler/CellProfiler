@@ -15,7 +15,7 @@ __version__="$Revision$"
 
 import decorator
 import numpy as np
-import scipy.sparse
+from scipy.sparse import coo_matrix
 
 from cellprofiler.cpmath.cpmorphology import all_connected_components
 from cellprofiler.cpmath.outline import outline
@@ -296,31 +296,7 @@ class Objects(object):
         if self.parent_image == None:
             raise ValueError("Images are of different size and no parent image")
         return self.parent_image.crop_image_similarly(image)
-    
-    def relate_children(self, children):
-        """Relate the object numbers in one label to the object numbers in another
-        
-        children - another "objects" instance: the labels of children within
-                   the parent which is "self"
-        
-        Returns two 1-d arrays. The first gives the number of children within
-        each parent. The second gives the mapping of each child to its parent's
-        object number.
-        """
-        if self.has_ijv or children.has_ijv:
-            return self.relate_ijv(self.ijv, children.ijv)
-        
-        parent_labels = self.segmented
-        child_labels = children.segmented
-        # Apply cropping to the parent if done to the child
-        try:
-            parent_labels  = children.crop_image_similarly(parent_labels)
-        except ValueError:
-            # If parents and children are not similarly cropped, take the LCD
-            parent_labels, child_labels = crop_labels_and_image(parent_labels,
-                                                                child_labels)
-        return self.relate_labels(parent_labels, child_labels)
-    
+
     def make_ijv_outlines(self, colors):
         '''Make ijv-style color outlines
         
@@ -366,186 +342,98 @@ class Objects(object):
             alpha[my_labels != 0] += 1
         image[alpha > 0, :] /= alpha[alpha > 0][:, np.newaxis]
         return image
-    
-    @staticmethod
-    def relate_labels(parent_labels, child_labels):
+
+    def relate_children(self, children):
         """Relate the object numbers in one label to the object numbers in another
-        
-        parent_labels - the parents which contain the children
-        child_labels - the children to be mapped to a parent
-        
+
+        children - another "objects" instance: the labels of children within
+                   the parent which is "self"
+
         Returns two 1-d arrays. The first gives the number of children within
         each parent. The second gives the mapping of each child to its parent's
         object number.
         """
+        if self.has_ijv or children.has_ijv:
+            histogram = self.histogram_from_ijv(self.ijv, children.ijv)
+        else:
+            histogram = self.histogram_from_labels(self.segmented, children.segmented)
+
+        parent_count = histogram.shape[0] - 1
+        child_count = histogram.shape[1] - 1
+
+        parents_of_children = np.argmax(histogram, axis=0)
+        #
+        # Create a histogram of # of children per parent
+        children_per_parent = np.histogram(parents_of_children[1:], np.arange(parent_count + 2))[0][1:]
+
+        #
+        # Make sure to remove the background elements at index 0
+        #
+        return children_per_parent, parents_of_children[1:]
+
+    @staticmethod
+    def histogram_from_labels(parent_labels, child_labels):
+        """Find per pixel overlap of parent labels and child labels
+
+        parent_labels - the parents which contain the children
+        child_labels - the children to be mapped to a parent
+
+        Returns a 2d array of overlap between each parent and child.
+        Note that the first row and column are empty, as these
+        correspond to parent and child labels of 0.
+
+        """
         parent_count = np.max(parent_labels)
         child_count = np.max(child_labels)
-        any_parents = (parent_count > 0)
-        any_children = (child_count > 0)
-        if (not any_parents) and (not any_children):
-            return np.zeros((0,), int),np.zeros((0,), int)
-        elif (not any_parents):
-            return np.zeros((0,), int),np.zeros((child_count,), int)
-        elif (not any_children):
-            return np.zeros((parent_count,), int), np.zeros((0,), int)
         #
         # Only look at points that are labeled in parent and child
         #
-        not_zero = np.logical_and(parent_labels > 0,
-                                     child_labels > 0)
+        not_zero = (parent_labels > 0) & (child_labels > 0)
         not_zero_count = np.sum(not_zero)
-         
-        histogram = scipy.sparse.coo_matrix((np.ones((not_zero_count,)),
-                                             (parent_labels[not_zero],
-                                              child_labels[not_zero])),
-                                             shape=(parent_count+1,child_count+1))
         #
         # each row (axis = 0) is a parent
         # each column (axis = 1) is a child
         #
-        histogram = histogram.toarray()
-        parents_of_children = np.argmax(histogram,axis=0)
-        #
-        # Create a histogram of # of children per parent
-        poc_histogram = scipy.sparse.coo_matrix((np.ones((child_count+1,)),
-                                                 (parents_of_children,
-                                                  np.zeros((child_count+1,),int))),
-                                                 shape=(parent_count+1,1))
-        children_per_parent = poc_histogram.toarray().flatten()
-        #
-        # Make sure to remove the background elements at index 0. Also,
-        # there's something screwy about the arrays returned here - you
-        # get "data type not supported" errors unless you reconstruct
-        # the results.
-        #
-        children_per_parent = np.array(children_per_parent[1:].tolist(), int)
-        parents_of_children = np.array(parents_of_children[1:].tolist(), int)
-        return children_per_parent, parents_of_children
-    
+        return coo_matrix((np.ones((not_zero_count,)),
+                           (parent_labels[not_zero],
+                            child_labels[not_zero])),
+                          shape=(parent_count + 1, child_count + 1)).toarray()
+
     @staticmethod
-    def relate_ijv(parent_ijv, child_ijv):
-        '''Relate parent and child segmentations if represented as IJV
-        
-        parent_ijv - N x 3 vector of i,j coordinate + v label
-        
-        child_ijv - N x 3 vector of labeled points
-        returns a tuple:
-        
-        # of children per parent
-        
-        vector of parents of each child
-        '''
-        if len(parent_ijv) == 0 or len(child_ijv) == 0:
-            return (np.zeros(len(parent_ijv)), np.zeros(len(child_ijv)))
-        max_parent = np.max(parent_ijv[:,2]) + 1
-        max_child = np.max(child_ijv[:,2]) + 1
-        #
-        # Stack the two vectors, negate the child indices to distingush them
-        #
-        child_v_flipper = np.array([1,1,-1])
-        all_ijv = np.vstack([
-            parent_ijv, child_ijv[:,:] * child_v_flipper[np.newaxis,:]])
-        #
-        # Order them by position, then label
-        #
-        order = np.lexsort((all_ijv[:,2], all_ijv[:,1], all_ijv[:,0]))
-        all_ijv = all_ijv[order]
-        #
-        # Find first at each position.
-        #
-        first = np.hstack((
-            [True], ~ np.all(all_ijv[:-1,:2] == all_ijv[1:,:2], 1)))
-        #
-        # Eliminate any first that's followed by another first. These are
-        # unique.
-        #
-        unique = np.hstack((first[:-1] & first[1:], [first[-1]]))
-        if np.all(unique):
-            return (np.zeros(max_parent-1, int),
-                    np.zeros(max_child-1, int))
-        
-        all_ijv = all_ijv[~unique,:]
-        first = first[~unique]
-        #
-        # indices of the firsts and counts at each coordinate
-        #
-        indices = np.argwhere(first).ravel()
-        counts = np.hstack((indices[1:] - indices[:-1], 
-                            [len(all_ijv) - indices[-1]]))
-        #
-        # Find the number of parents in each coordinate.
-        # It's the cumulative count at the last index in each group minus
-        # the count for the previous group.
-        #
-        parent_count = np.cumsum(all_ijv[:,2] > 0)
-        parent_count = np.hstack((parent_count[indices[1:]-1], 
-                                  [parent_count[-1]]))
-        parent_count = np.hstack(([parent_count[0]],
-                                  parent_count[1:] - parent_count[:-1]))
-        no_pairs = (parent_count == 0) | (parent_count == counts)
-        #
-        # Reduce the indices and counts to parent / child pairs
-        #
-        indices = indices[~ no_pairs]
-        counts = counts[~ no_pairs]
-        parent_count = parent_count[~ no_pairs]
-        child_count = counts - parent_count
-        #
-        # Flip the sign of the children, now that we can separate them into
-        # children = indices:indices+child_count
-        # parents = indices + child_count:counts
-        #
-        all_ijv[:,2] = np.abs(all_ijv[:,2])
-        #
-        # There are parent_count + child_count combinations at each.
-        # We want a vector of parents and a vector of children.
-        #
-        combinations = parent_count * child_count
-        combination_indices = np.hstack(([0], np.cumsum(combinations[:-1])))
-        total = combination_indices[-1] + combinations[-1]
-        #
-        # Number the combination slots starting at zero for each coordinate
-        #
-        back_index = np.zeros(total, int)
-        back_index[combination_indices[1:]] = 1
-        back_index = np.cumsum(back_index)
-        slot = np.arange(total) - combination_indices[back_index]
-        #
-        # child_index = slot % child_count
-        # parent_index = slot / child_count
-        #
-        parents = all_ijv[indices[back_index] + 
-                          (slot / child_count[back_index]).astype(int) +
-                          child_count[back_index], 2]
-        children = all_ijv[indices[back_index] + 
-                           slot % child_count[back_index], 2]
-        #
-        # Find the indexes of unique combinations of parents and children
-        #
-        _, first_indexes = np.unique(parents * max_child + children, 
-                                     return_index = True)
-        parents = parents[first_indexes]
-        children = children[first_indexes]
-        children_per_parent = np.bincount(parents)[1:]
-        if len(children_per_parent) < max_parent - 1:
-            nextras = max_parent - len(children_per_parent) - 1
-            children_per_parent = np.hstack((children_per_parent,
-                                             np.zeros(nextras, int)))
-        order = np.lexsort((parents, children))
-        parents = np.hstack(
-            (parents[order], np.ones(max_child-1, int) * max_parent))
-        children = np.hstack((children[order], np.arange(1,max_child)))
-        #
-        # Get the parent with the lowest index or "max_parent" if none
-        #
-        order = np.lexsort((parents, children))
-        parents = parents[order]
-        children = children[order]
-        first = np.hstack([[True], children[:-1] != children[1:]])
-        parents_of_children = parents[first]
-        parents_of_children[parents_of_children == max_parent] = 0
-        return children_per_parent, parents_of_children
-    
+    def histogram_from_ijv(parent_ijv, child_ijv):
+        """Find per pixel overlap of parent labels and child labels,
+        stored in ijv format.
+
+        parent_ijv - the parents which contain the children
+        child_ijv - the children to be mapped to a parent
+
+        Returns a 2d array of overlap between each parent and child.
+        Note that the first row and column are empty, as these
+        correspond to parent and child labels of 0.
+
+        """
+        parent_count = 0 if (parent_ijv.shape[0] == 0) else np.max(parent_ijv[:, 2])
+        child_count = 0 if (child_ijv.shape[0] == 0) else np.max(child_ijv[:, 2])
+
+        if parent_count == 0 or child_count == 0:
+            return np.zeros((parent_count + 1, child_count + 1), int)
+
+        dim_i = max(np.max(parent_ijv[:, 0]), np.max(child_ijv[:, 0])) + 1
+        dim_j = max(np.max(parent_ijv[:, 1]), np.max(child_ijv[:, 1])) + 1
+        parent_linear_ij = parent_ijv[:, 0] + dim_i * parent_ijv[:, 1]
+        child_linear_ij = child_ijv[:, 0] + dim_i * child_ijv[:, 1]
+
+        parent_matrix = coo_matrix((np.ones((parent_ijv.shape[0],)),
+                                    (parent_ijv[:, 2], parent_linear_ij)),
+                                   shape=(parent_count + 1, dim_i * dim_j))
+        child_matrix = coo_matrix((np.ones((child_ijv.shape[0],)),
+                                   (child_linear_ij, child_ijv[:, 2])),
+                                  shape=(dim_i * dim_j, child_count + 1))
+        # I surely do not understand the sparse code.  Converting both
+        # arrays to csc gives the best peformance... Why not p.csr and
+        # c.csc?
+        return (parent_matrix.tocsc() * child_matrix.tocsc()).toarray()
+
     @memoize_method
     def get_indices(self):
         """Get the indices for a scipy.ndimage-style function from the segmented labels

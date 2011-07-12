@@ -4081,3 +4081,26 @@ def is_obtuse(p1, v, p2):
     Dvp1y = p1y - vy
     return Dvp1x * Dx + Dvp1y * Dy > 0
     
+def single_shortest_paths(start_node, weights):
+    '''Find the shortest path from the start node to all others
+    
+    start_node - index of the node to start at
+    weights - n x n matrix giving the cost of going from i to j
+    
+    returns a vector giving the predecessor index for each node
+    and a vector of the cost of reaching each node from the start node
+    '''
+    
+    n = weights.shape[0]
+    predecessors = np.ones(n, int) * start_node
+    path_cost = weights[start_node, :]
+    to_do = np.delete(np.arange(n), start_node)
+    while to_do.shape[0] > 0:
+        best_node_idx = np.argmin(path_cost[to_do])
+        best_node = to_do[best_node_idx]
+        to_do = np.delete(to_do, best_node_idx)
+        alt_cost = path_cost[best_node] + weights[best_node, to_do]
+        to_relax = alt_cost < path_cost[to_do]
+        path_cost[to_do[to_relax]] = alt_cost[to_relax]
+        predecessors[to_do[to_relax]] = best_node
+    return predecessors, path_cost

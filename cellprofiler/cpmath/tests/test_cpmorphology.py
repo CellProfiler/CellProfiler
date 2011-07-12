@@ -23,6 +23,7 @@ import scipy.io.matlab
 
 import cellprofiler.cpmath.cpmorphology as morph
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
+from cellprofiler.cpmath.filter import permutations
 
 class TestFillLabeledHoles(unittest.TestCase):
     def test_01_00_zeros(self):
@@ -3492,3 +3493,73 @@ class TestIsObtuse(unittest.TestCase):
         result = morph.is_obtuse(p1, v, p2)
         is_obtuse = theta > np.pi / 2
         np.testing.assert_array_equal(result, is_obtuse)
+        
+class TestSingleShortestPaths(unittest.TestCase):
+    def test_00_00_one_node(self):
+        p, c = morph.single_shortest_paths(0, np.zeros((1,1)))
+        self.assertEqual(len(p), 1)
+        self.assertEqual(p[0], 0)
+        self.assertEqual(len(c), 1)
+        self.assertEqual(c[0], 0)
+        
+    def test_01_01_two_nodes(self):
+        p, c = morph.single_shortest_paths(0, np.array([[0,1],[1,0]]))
+        self.assertEqual(len(p), 2)
+        self.assertEqual(p[0], 0)
+        self.assertEqual(p[1], 0)
+        self.assertEqual(len(c), 2)
+        self.assertEqual(c[0], 0)
+        self.assertEqual(c[1], 1)
+        
+    def test_01_02_two_nodes_backwards(self):
+        p, c = morph.single_shortest_paths(1, np.array([[0,1],[1,0]]))
+        self.assertEqual(len(p), 2)
+        self.assertEqual(p[0], 1)
+        self.assertEqual(p[1], 1)
+        self.assertEqual(len(c), 2)
+        self.assertEqual(c[0], 1)
+        self.assertEqual(c[1], 0)
+        
+    def test_01_03_5x5(self):
+        # All paths from 0 to 4
+        all_permutations = np.array([
+            [ 0, 0, 0, 0, 4],
+            [ 0, 0, 0, 1, 4],
+            [ 0, 0, 0, 2, 4],
+            [ 0, 0, 0, 3, 4],
+            [ 0, 0, 1, 2, 4],
+            [ 0, 0, 1, 3, 4],
+            [ 0, 0, 2, 1, 4],
+            [ 0, 0, 2, 3, 4],
+            [ 0, 0, 3, 1, 4],
+            [ 0, 0, 3, 2, 4],
+            [ 0, 1, 2, 3, 4],
+            [ 0, 1, 3, 2, 4],
+            [ 0, 2, 1, 3, 4],
+            [ 0, 2, 3, 1, 4],
+            [ 0, 3, 1, 2, 4],
+            [ 0, 3, 2, 1, 4]
+        ])
+        r = np.random.RandomState()
+        r.seed(13)
+        for _ in range(1000):
+            c = r.uniform(size=(5,5))
+            c[np.arange(5), np.arange(5)] = 0
+            steps = c[all_permutations[:, :-1],
+                      all_permutations[:, 1:]]
+            all_costs = np.sum(steps, 1)
+            best_path = all_permutations[np.argmin(all_costs)]
+            best_path = list(reversed(best_path[best_path != 0][:-1]))
+            best_score = np.min(all_costs)
+            paths, scores = morph.single_shortest_paths(0, c)
+            self.assertEqual(scores[4], best_score)
+            step_count = 0
+            found_path = []
+            i = 4
+            while step_count != 5 and paths[i] != 0:
+                i = paths[i]
+                found_path.append(i)
+                step_count += 1
+            self.assertEqual(len(found_path), len(best_path))
+            self.assertTrue(all([a == b for a,b in zip(found_path, best_path)]))
+            

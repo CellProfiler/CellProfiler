@@ -262,7 +262,7 @@ class LoadSingleImage(cpm.CPModule):
         while len(self.file_settings) < count:
             self.add_file()
 
-    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+    def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Prepare to create a batch file
         
         This function is called when CellProfiler is about to create a

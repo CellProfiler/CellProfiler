@@ -510,21 +510,28 @@ class CPModule(object):
         """
         pass
     
-    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+    def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Prepare to create a batch file
         
         This function is called when CellProfiler is about to create a
-        file for batch processing. It will pickle the image set list's
-        "legacy_fields" dictionary. This callback lets a module prepare for
-        saving.
+        file for batch processing. It gives a module an opportunity to
+        change its settings and measurements to adapt to file mount differences
+        between the machine that created the pipeline and the machines that
+        will run the pipeline. You should implement prepare_to_create_batch
+        if your module stores paths in settings or measurements. You should
+        call fn_alter_path(path) to update any paths to those of the target
+        machine.
         
-        pipeline - the pipeline to be saved
-        image_set_list - the image set list to be saved
+        workspace - the workspace including the pipeline, the image_set_list
+                    and the measurements that need to be modified.
+                    
         fn_alter_path - this is a function that takes a pathname on the local
                         host and returns a pathname on the remote host. It
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
+                        
+        Returns True if it succeeds.
         '''
         return True
     

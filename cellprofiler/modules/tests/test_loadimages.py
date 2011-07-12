@@ -2707,8 +2707,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(module)
         m = measurements.Measurements()
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
-                                       image_set_list))
+        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
+        module.prepare_run(workspace)
         def fn_alter_path(pathname, **varargs):
             is_path = (pathname == orig_path)
             is_file = re.match(file_regexp, pathname) is not None
@@ -2717,7 +2717,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 return target_path
             else:
                 return pathname
-        module.prepare_to_create_batch(pipeline, image_set_list, fn_alter_path)
+        module.prepare_to_create_batch(workspace, fn_alter_path)
         key_names, group_list = pipeline.get_groupings(image_set_list)
         self.assertEqual(len(group_list), 1)
         group_keys, image_numbers = group_list[0]
@@ -2747,8 +2747,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(module)
         m = measurements.Measurements()
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
-                                       image_set_list))
+        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
+        module.prepare_run(workspace)
         def fn_alter_path(pathname, **varargs):
             is_fullpath = (os.path.join(orig_path, file_name) == pathname)
             is_path = (orig_path == pathname)
@@ -2757,7 +2757,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 return os.path.join(target_path, file_name)
             else:
                 return target_path
-        module.prepare_to_create_batch(pipeline, image_set_list, fn_alter_path)
+        module.prepare_to_create_batch(workspace, fn_alter_path)
         key_names, group_list = pipeline.get_groupings(image_set_list)
         self.assertEqual(len(group_list), 1)
         group_keys, image_numbers = group_list[0]
@@ -2788,8 +2788,9 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(module)
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
-                                       image_set_list))
+        workspace = W.Workspace(pipeline, module, None, None, m,
+                                       image_set_list)
+        module.prepare_run(workspace)
         def fn_alter_path(pathname, **varargs):
             is_fullpath = (os.path.join(orig_path, file_name) == pathname)
             is_path = (orig_path == pathname)
@@ -2798,7 +2799,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 return os.path.join(target_path, file_name)
             else:
                 return target_path
-        module.prepare_to_create_batch(pipeline, image_set_list, fn_alter_path)
+        module.prepare_to_create_batch(workspace, fn_alter_path)
         key_names, group_list = pipeline.get_groupings(image_set_list)
         self.assertEqual(len(group_list), 4)
         for i, (group_keys, image_numbers) in enumerate(group_list):

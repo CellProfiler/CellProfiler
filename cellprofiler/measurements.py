@@ -15,12 +15,14 @@ from __future__ import with_statement
 
 __version__ = "$Revision$"
 
+import logging
+logger = logging.getLogger(__name__)
 import numpy as np
 import re
 from scipy.io.matlab import loadmat
 from itertools import repeat
 import cellprofiler.preferences as cpprefs
-from cellprofiler.utilities.hdf5_dict import HDF5Dict
+from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group
 import tempfile
 import numpy as np
 import warnings
@@ -115,21 +117,43 @@ class Measurements(object):
     """
     def __init__(self,
                  can_overwrite=False,
-                 image_set_start=None):
+                 image_set_start=None,
+                 filename = None,
+                 copy = None):
         """Create a new measurements collection
 
         can_overwrite - if True, overwriting measurements during operation
                         is allowed. We turn this on for debugging.
         image_set_start - the index of the first image set in the image set list
                           or None to start at the beginning
+        filename - store the measurement in an HDF5 file with this name
+        copy - initialize by copying measurements from here, either an HDF5Dict
+               or an H5py group or file.
         """
-        # XXX - clean up on destruction of measurements, allow saving of partial results
-        dir = cpprefs.get_default_output_directory()
-        if not os.path.exists(dir):
-            dir = None
-        fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
-        self.hdf5_dict = HDF5Dict(filename)
-        os.close(fd)
+        # XXX - allow saving of partial results
+        if filename is None:
+            dir = cpprefs.get_default_output_directory()
+            if not os.path.exists(dir):
+                dir = None
+            fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
+            is_temporary = True
+        else:
+            is_temporary = False
+        if isinstance(copy, Measurements):
+            with copy.hdf5_dict.lock:
+                self.hdf5_dict = HDF5Dict(
+                    filename, 
+                    is_temporary = is_temporary,
+                    copy = copy.hdf5_dict.top_group)
+        elif hasattr(copy, '__getitem__') and hasattr(copy, 'keys'):
+            self.hdf5_dict = HDF5Dict(
+                filename,
+                is_temporary = is_temporary,
+                copy = copy)
+        else:
+            self.hdf5_dict = HDF5Dict(filename, is_temporary = is_temporary)
+        if is_temporary:
+            os.close(fd)
 
         self.image_set_number = image_set_start or 1
         self.image_set_start = image_set_start
@@ -139,7 +163,7 @@ class Measurements(object):
         self.__initialized_explicitly = False
         self.__relationships = set()
         self.__relationship_names = set()
-
+        
     def initialize(self, measurement_columns):
         '''Initialize the measurements with a list of objects and features
 
@@ -650,6 +674,29 @@ class Measurements(object):
                     stdev = values.std() if values is not None else np.NaN
                     d[stdev_feature_name] = stdev
         return d
+    
+def load_measurements(filename, dest_file = None, can_overwrite = False):
+    '''Load measurements from an HDF5 file
+    
+    filename - path to file containing the measurements
+    
+    dest_file - path to file to be created. This file is used as the backing
+                store for the measurements.
+                
+    can_overwrite - True to allow overwriting of existing measurements
+    
+    returns a Measurements object
+    '''
+    try:
+        f, top_level = get_top_level_group(filename)
+        m = Measurements(can_overwrite, filename=dest_file, copy = top_level)
+        f.close()
+        return m
+    except:
+        # Fall back to matlab
+        m = Measurements(can_overwrite = can_overwrite, filename = dest_file)
+        m.load(filename)
+        return m
 
 class MetadataGroup(dict):
     """A set of metadata tag values and the image set indexes that match
@@ -723,13 +770,6 @@ def is_well_column_token(x):
     '''true if the string represents a well column metadata tag'''
     return x.lower() in ("wellcol", "well_col", "wellcolumn", "well_column",
                          "column", "col")
-
-def load_measurements(measurements_file_name):
-    '''Load measurements from a .mat file'''
-
-    m = Measurements()
-    m.load(measurements_file_name)
-    return m
 
 def get_agg_measurement_name(agg, object_name, feature):
     '''Return the name of an aggregate measurement

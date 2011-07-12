@@ -432,7 +432,7 @@ class SaveImages(cpm.CPModule):
             d['CURRENT_FRAME'] = 0
         return True
     
-    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+    def prepare_to_create_batch(self, workspace, fn_alter_path):
         self.pathname.alter_for_create_batch_files(fn_alter_path)
         
     def run(self,workspace):

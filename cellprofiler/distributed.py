@@ -64,8 +64,7 @@ class Distributor(object):
         workspace = cpw.Workspace(pipeline, None, None, None, measurements,
                                   image_set_list)
                                   
-        image_set_list = pipeline.prepare_run(workspace)
-        if not image_set_list:
+        if not pipeline.prepare_run(workspace):
             raise RuntimeError('Could not create image set list for distributed processing.')
 
         # start server, get base URL
@@ -74,7 +73,7 @@ class Distributor(object):
 
         # call prepare_to_create_batch to turn files into URLs
         self.URL_map.clear()
-        pipeline.prepare_to_create_batch(image_set_list, self.rewrite_to_URL)
+        pipeline.prepare_to_create_batch(workspace, self.rewrite_to_URL)
 
         # add a CreateBatchFiles module at the end of the pipeline,
         # and set it up for saving the pipeline state

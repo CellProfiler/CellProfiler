@@ -72,7 +72,7 @@ class IdentifyObjectsManually(I.Identify):
             result += [ self.outlines_name ]
         return result
     
-    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+    def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''This module cannot be used in a batch context'''
         raise ValueError("The IdentifyObjectsManually module cannot be run in batch mode")
     

@@ -38,9 +38,11 @@ import zlib
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
+import cellprofiler.workspace as cpw
 
 '''# of settings aside from the mappings'''
 S_FIXED_COUNT = 7
@@ -187,10 +189,10 @@ class CreateBatchFiles(cpm.CPModule):
         if pipeline.test_mode:
             return True
         if self.batch_mode.value:
-            self.enter_batch_mode(pipeline, image_set_list)
+            self.enter_batch_mode(workspace)
             return True
         else:
-            self.save_pipeline(pipeline, image_set_list, frame)
+            self.save_pipeline(workspace)
             return False
     
     def run(self, workspace):
@@ -223,7 +225,7 @@ class CreateBatchFiles(cpm.CPModule):
             raise cps.ValidationError("CreateBatchFiles will not produce output in Test Mode",
                                       self.wants_default_output_directory)
         
-    def save_pipeline(self, pipeline, image_set_list, frame=None, outf=None):
+    def save_pipeline(self, workspace, outf=None):
         '''Save the pipeline in Batch_data.mat
         
         Save the pickled image_set_list state in a setting and put this
@@ -232,10 +234,18 @@ class CreateBatchFiles(cpm.CPModule):
         if outf is not None, it is used as a file object destination.
         '''
         from cellprofiler.utilities.get_revision import version
+        image_set_list = workspace.image_set_list
+        pipeline = workspace.pipeline
+        m = cpmeas.Measurements(copy = workspace.measurements)
         assert isinstance(image_set_list, cpi.ImageSetList)
         assert isinstance(pipeline, cpp.Pipeline)
+        assert isinstance(m, cpmeas.Measurements)
+
         pipeline = pipeline.copy()
-        pipeline.prepare_to_create_batch(image_set_list, self.alter_path)
+        target_workspace = cpw.Workspace(pipeline, None, None, None,
+                                         m, image_set_list,
+                                         workspace.frame)
+        pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
         bizarro_self = pipeline.module(self.module_num)
         assert isinstance(bizarro_self, CreateBatchFiles)
         state = image_set_list.save_state()
@@ -271,8 +281,10 @@ class CreateBatchFiles(cpm.CPModule):
         '''Tell the system whether we are in batch mode on the cluster'''
         return self.batch_mode.value
     
-    def enter_batch_mode(self, pipeline, image_set_list):
+    def enter_batch_mode(self, workspace):
         '''Restore the image set list from its setting as we go into batch mode'''
+        image_set_list = workspace.image_set_list
+        pipeline = workspace.pipeline
         assert isinstance(image_set_list, cpi.ImageSetList)
         assert isinstance(pipeline, cpp.Pipeline)
         state = zlib.decompress(self.batch_state.tostring())

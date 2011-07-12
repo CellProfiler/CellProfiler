@@ -1348,7 +1348,7 @@ class Pipeline(object):
                     return "Failure"
         return "Complete"
     
-    def prepare_to_create_batch(self, image_set_list, fn_alter_path):
+    def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Prepare to create a batch file
         
         This function is called when CellProfiler is about to create a
@@ -1356,16 +1356,18 @@ class Pipeline(object):
         "legacy_fields" dictionary. This callback lets a module prepare for
         saving.
         
-        image_set_list - the image set list to be saved
+        workspace - the workspace to be saved
         fn_alter_path - this is a function that takes a pathname on the local
                         host and returns a pathname on the remote host. It
                         handles issues such as replacing backslashes and
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
         '''
+        assert workspace.pipeline == self
         for module in self.modules():
             try:
-                module.prepare_to_create_batch(self, image_set_list, 
+                workspace.set_module(module)
+                module.prepare_to_create_batch(workspace, 
                                                fn_alter_path)
             except Exception, instance:
                 logger.error("Failed to collect batch information for module %s",

@@ -357,7 +357,27 @@ class Objects(object):
             histogram = self.histogram_from_ijv(self.ijv, children.ijv)
         else:
             histogram = self.histogram_from_labels(self.segmented, children.segmented)
+        return relate_histogram(histogram)
+    
+    def relate_labels(self, parent_labels, child_labels):
+        '''relate the object numbers in one label to those in another
+        
+        parent_labels - 2d label matrix of parent labels
+        
+        child_labels - 2d label matrix of child labels
+        
+        Returns two 1-d arrays. The first gives the number of children within
+        each parent. The second gives the mapping of each child to its parent's
+        object number.
+        '''
+        histogram = self.histogram_from_labels(parent_labels, child_labels)
+        return self.relate_histogram(histogram)
 
+    def relate_histogram(self, histogram):
+        '''Return child counts and parents of children given a histogram
+        
+        histogram - histogram from histogram_from_ijv or histogram_from_labels
+        '''
         parent_count = histogram.shape[0] - 1
         child_count = histogram.shape[1] - 1
 
@@ -385,6 +405,12 @@ class Objects(object):
         """
         parent_count = np.max(parent_labels)
         child_count = np.max(child_labels)
+        #
+        # If the labels are different shapes, crop to shared shape.
+        #
+        common_shape = np.minimum(parent_labels.shape, child_labels.shape)
+        parent_labels = parent_labels[0:common_shape[0], 0:common_shape[1]]
+        child_labels = child_labels[0:common_shape[0], 0:common_shape[1]]
         #
         # Only look at points that are labeled in parent and child
         #

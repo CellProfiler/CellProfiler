@@ -813,9 +813,13 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             
     
 class C0(cpm.CPModule):
+    module_name = 'C0'
+    variable_revision_number = 1
     def create_settings(self):
-        module_name = 'C0'
         self.callback = None
+        
+    def settings(self):
+        return []
         
     def run(self, workspace):
         self.callback(workspace)       

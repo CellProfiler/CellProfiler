@@ -413,6 +413,7 @@ class TestCreateBatchFiles(unittest.TestCase):
             ipath = os.path.join(T.example_images_directory(),'ExampleSBSImages')
             bpath = tempfile.mkdtemp()
             bfile = os.path.join(bpath,C.F_BATCH_DATA)
+            hfile = os.path.join(bpath, C.F_BATCH_DATA_H5)
             try:
                 li = pipeline.modules()[0]
                 self.assertTrue(isinstance(li, LI.LoadImages))
@@ -438,32 +439,35 @@ class TestCreateBatchFiles(unittest.TestCase):
                 self.assertTrue(os.path.exists(bfile))
                 pipeline = cpp.Pipeline()
                 pipeline.add_listener(callback)
-                fd = open(bfile,'rb')
-                try:
-                    pipeline.load(fd)
-                finally:
-                    fd.close()
-                measurements = cpmeas.Measurements()
-                image_set_list = cpi.ImageSetList()
-                result = pipeline.prepare_run(
-                    cpw.Workspace(pipeline, None, None, None,
-                                  measurements, image_set_list))
-                self.assertTrue(pipeline.in_batch_mode())
-                module = pipeline.modules()[1]
-                self.assertTrue(isinstance(module, C.CreateBatchFiles))
-                self.assertTrue(module.batch_mode.value)
-                self.assertTrue(isinstance(image_set_list, cpi.ImageSetList))
-                self.assertEqual(image_set_list.count(), 96)
-                pipeline.prepare_group(image_set_list, {}, range(1,97))
-                for i in range(96):
-                    image_set = image_set_list.get_image_set(i)
-                    for image_name in ('DNA', 'Cytoplasm'):
-                        provider = image_set.get_image_provider(image_name)
-                        self.assertEqual(provider.get_pathname(), 
-                                         '\\imaging\\analysis' if windows_mode
-                                         else '/imaging/analysis')
-                        
+                for filename in (bfile, hfile):
+                    fd = open(filename,'rb')
+                    try:
+                        pipeline.load(fd)
+                    finally:
+                        fd.close()
+                    measurements = cpmeas.Measurements()
+                    image_set_list = cpi.ImageSetList()
+                    result = pipeline.prepare_run(
+                        cpw.Workspace(pipeline, None, None, None,
+                                      measurements, image_set_list))
+                    self.assertTrue(pipeline.in_batch_mode())
+                    module = pipeline.modules()[1]
+                    self.assertTrue(isinstance(module, C.CreateBatchFiles))
+                    self.assertTrue(module.batch_mode.value)
+                    self.assertTrue(isinstance(image_set_list, cpi.ImageSetList))
+                    self.assertEqual(image_set_list.count(), 96)
+                    pipeline.prepare_group(image_set_list, {}, range(1,97))
+                    for i in range(96):
+                        image_set = image_set_list.get_image_set(i)
+                        for image_name in ('DNA', 'Cytoplasm'):
+                            provider = image_set.get_image_provider(image_name)
+                            self.assertEqual(provider.get_pathname(), 
+                                             '\\imaging\\analysis' if windows_mode
+                                             else '/imaging/analysis')
+                    del measurements
             finally:
                 if os.path.exists(bfile):
                     os.unlink(bfile)
+                if os.path.exists(hfile):
+                    os.unlink(hfile)
                 os.rmdir(bpath)

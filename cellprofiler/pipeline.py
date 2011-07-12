@@ -140,6 +140,16 @@ H_FROM_MATLAB = 'FromMatlab'
 '''The cookie that identifies a file as a CellProfiler pipeline'''
 COOKIE = "CellProfiler Pipeline: http://www.cellprofiler.org"
 
+'''HDF5 file header according to the specification
+
+see http://www.hdfgroup.org/HDF5/doc/H5.format.html#FileMetaData
+'''
+HDF5_HEADER = (chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) +
+               chr (26) + chr(10))
+C_PIPELINE = "Pipeline"
+F_PIPELINE = "Pipeline"
+M_PIPELINE = "_".join((C_PIPELINE,F_PIPELINE))
+
 def add_all_images(handles,image_set, object_set):
     """ Add all images to the handles structure passed
     
@@ -489,6 +499,7 @@ class Pipeline(object):
         
         fd_or_filename - either the name of a file or a file-like object
         """
+        filename = None
         if hasattr(fd_or_filename,'seek') and hasattr(fd_or_filename,'read'):
             fd = fd_or_filename
             needs_close = False
@@ -503,8 +514,9 @@ class Pipeline(object):
                 fd.write(text)
             fd.seek(0)
         elif os.path.exists(fd_or_filename):
-            fd = open(fd_or_filename,'r')
+            fd = open(fd_or_filename,'rb')
             needs_close = True
+            filename = fd_or_filename
         else:
             # Assume is string URL
             parsed_path = urlparse.urlparse(fd_or_filename)
@@ -521,6 +533,22 @@ class Pipeline(object):
             fd.close()
         else:
             fd.seek(0)
+        if header[:8] == HDF5_HEADER:
+            if filename is None:
+                fid, filename = tempfile.mkstemp(".h5")
+                fd_out = os.fdopen(fid, "wb")
+                fd_out.write(fd.read())
+                fd_out.close()
+                self.load(filename)
+                os.unlink(filename)
+                return
+            else:
+                m = cpmeas.load_measurements(filename)
+                pipeline_text = m.get_experiment_measurement(M_PIPELINE)
+                pipeline_text = pipeline_text.encode('us-ascii')
+                self.load(StringIO.StringIO(pipeline_text))
+                return
+                
         if has_mat_read_error:
             try:
                 handles=scipy.io.matlab.mio.loadmat(fd_or_filename, 
@@ -846,6 +874,13 @@ class Pipeline(object):
             root['handles'][key][0,0]=value
         self.savemat(filename, root)
 
+    def write_pipeline_measurement(self, m):
+        '''Write the pipeline experiment measurement to the measurements'''
+        assert(isinstance(m, cpmeas.Measurements))
+        fd = StringIO.StringIO()
+        self.savetxt(fd)
+        m.add_measurement(cpmeas.EXPERIMENT, M_PIPELINE, fd.getvalue(), 
+                          can_overwrite = True)
         
     def savemat(self, filename, root):
         '''Save a handles structure accounting for scipy version compatibility to a filename or file-like object'''
@@ -1302,6 +1337,9 @@ class Pipeline(object):
         test_mode - None = use pipeline's test mode, True or False to set explicitly
         """
         assert(isinstance(workspace, cpw.Workspace))
+        m = workspace.measurements
+        self.write_pipeline_measurement(m)
+
         for module in self.modules():
             try:
                 workspace.set_module(module)
@@ -1728,8 +1766,10 @@ class Pipeline(object):
                                   else terminating_module.module_num)
         if self.__measurement_columns.has_key(terminating_module_num):
             return self.__measurement_columns[terminating_module_num]
-        columns = [(cpmeas.IMAGE, GROUP_NUMBER, cpmeas.COLTYPE_INTEGER),
-                   (cpmeas.IMAGE, GROUP_INDEX, cpmeas.COLTYPE_INTEGER)]
+        columns = [
+            (cpmeas.EXPERIMENT, M_PIPELINE, cpmeas.COLTYPE_LONGBLOB),
+            (cpmeas.IMAGE, GROUP_NUMBER, cpmeas.COLTYPE_INTEGER),
+            (cpmeas.IMAGE, GROUP_INDEX, cpmeas.COLTYPE_INTEGER)]
         should_write_columns = True
         for module in self.modules():
             if (terminating_module is not None and 

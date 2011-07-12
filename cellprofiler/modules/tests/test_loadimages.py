@@ -1121,6 +1121,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         load_images.module_num = 1
         outer_self = self
         class CheckImage(CPM.CPModule):
+            variable_revision_number = 1
+            module_name = "CheckImage"
+            def settings(self):
+                return []
             def run(self,workspace):
                 image = workspace.image_set.get_image('Orig')
                 matfh.close()
@@ -1161,6 +1165,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         load_images.module_num = 1
         outer_self = self
         class CheckImage(CPM.CPModule):
+            variable_revision_number = 1
+            module_name = "CheckImage"
+            def settings(self):
+                return []
             def run(self,workspace):
                 image = workspace.image_set.get_image('Orig')
                 matfh.close()
@@ -1197,6 +1205,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         load_images.module_num = 1
         outer_self = self
         class CheckImage(CPM.CPModule):
+            variable_revision_number = 1
+            module_name = "CheckImage"
+            def settings(self):
+                return []
             def run(self,workspace):
                 image = workspace.image_set.get_image('Orig')
                 matfh.close()
@@ -1241,6 +1253,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         load_images.module_num = 1
         outer_self = self
         class CheckImage(CPM.CPModule):
+            variable_revision_number = 1
+            module_name = "CheckImage"
+            def settings(self):
+                return []
             def run(self,workspace):
                 image = workspace.image_set.get_image('Orig',
                                                       must_be_grayscale=True)

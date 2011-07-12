@@ -92,7 +92,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
             module.each_or_all.value = ea
             for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
-                module.intensity_choice = intensity_choice
+                module.intensity_choice.value = intensity_choice
                 for dilate_objects in (True, False):
                     module.dilate_objects.value = dilate_objects
                     for rescale_option in (cps.YES, cps.NO, calc.RE_MEDIAN):
@@ -152,7 +152,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
             module.each_or_all.value = ea
             for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
-                module.intensity_choice = intensity_choice
+                module.intensity_choice.value = intensity_choice
                 for dilate_objects in (True, False):
                     module.dilate_objects.value = dilate_objects
                     for smoothing_method \
@@ -213,7 +213,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
             module.each_or_all.value = ea
             for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
-                module.intensity_choice = intensity_choice
+                module.intensity_choice.value = intensity_choice
                 for smoothing_method \
                  in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
                      calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 

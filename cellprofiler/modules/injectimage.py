@@ -23,6 +23,7 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
     image set.
     """
     module_name = "InjectImage"
+    variable_revision_number = 1
 
     def __init__(self, image_name, image, mask=None, release_image = False):
         super(InjectImage,self).__init__()
@@ -31,6 +32,9 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         self.__mask  = mask
         self.image_name = cellprofiler.settings.NameProvider("Hardwired image name","imagegroup",image_name) 
         self.__release_image = release_image
+    
+    def settings(self):
+        return [self.image_name]
     
     def visible_settings(self):
         return [self.image_name]
@@ -110,6 +114,7 @@ class InjectObjects(cellprofiler.cpmodule.CPModule):
     """Inject objects with labels into the pipeline"""
     
     module_name = "InjectObjects"
+    variable_revision_number = 1
 
     def __init__(self,object_name, segmented, unedited_segmented=None, small_removed_segmented=None):
         """Initialize the module with the objects for the object set

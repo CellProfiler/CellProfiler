@@ -52,6 +52,9 @@ S_PER_MAPPING = 2
 '''Name of the batch data file'''
 F_BATCH_DATA = 'Batch_data.mat'
 
+'''Name of the .h5 batch data file'''
+F_BATCH_DATA_H5 = 'Batch_data.h5'
+
 class CreateBatchFiles(cpm.CPModule):
     #
     # How it works:
@@ -234,9 +237,17 @@ class CreateBatchFiles(cpm.CPModule):
         if outf is not None, it is used as a file object destination.
         '''
         from cellprofiler.utilities.get_revision import version
+
+        if self.wants_default_output_directory.value:
+            path = cpprefs.get_default_output_directory()
+        else:
+            path = cpprefs.get_absolute_path(self.custom_output_directory.value)
+        h5_path = os.path.join(path, F_BATCH_DATA_H5)
+        
         image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
-        m = cpmeas.Measurements(copy = workspace.measurements)
+        m = cpmeas.Measurements(copy = workspace.measurements,
+                                filename = h5_path)
         assert isinstance(image_set_list, cpi.ImageSetList)
         assert isinstance(pipeline, cpp.Pipeline)
         assert isinstance(m, cpmeas.Measurements)
@@ -258,21 +269,19 @@ class CreateBatchFiles(cpm.CPModule):
         bizarro_self.default_image_directory.value = \
                     self.alter_path(cpprefs.get_default_image_directory())
         bizarro_self.batch_mode.value = True
+        pipeline.write_pipeline_measurement(m)
+        
 
         if outf is None:
-            if self.wants_default_output_directory.value:
-                path = cpprefs.get_default_output_directory()
-            else:
-                path = cpprefs.get_absolute_path(self.custom_output_directory.value)
-            path = os.path.join(path, F_BATCH_DATA)
-            if os.path.exists(path) and frame is not None:
+            mat_path = os.path.join(path, F_BATCH_DATA)
+            if os.path.exists(mat_path) and workspace.frame is not None:
                 import wx
                 if (wx.MessageBox("%s already exists. Do you want to overwrite it?"%
-                                  path,
+                                  mat_path,
                                   "Overwriting %s" % F_BATCH_DATA,
-                                  wx.YES_NO, frame) == wx.NO):
+                                  wx.YES_NO, workspace.frame) == wx.NO):
                     return
-            pipeline.save(path, format=cpp.FMT_MATLAB) # Matlab... it's like the vestigial hole in the head of CP.
+            pipeline.save(mat_path, format=cpp.FMT_MATLAB) # Matlab... it's like the vestigial hole in the head of CP.
         else:
             pipeline.save(outf, format=cpp.FMT_NATIVE)
 

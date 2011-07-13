@@ -228,14 +228,16 @@ def add_all_measurements(handles, measurements):
     """Add all measurements from our measurements object into the numpy structure passed
     
     """
-    measurements_dtype = make_cell_struct_dtype(measurements.get_object_names())
+    object_names = [name for name in measurements.get_object_names()
+                    if len(measurements.get_feature_names(name)) > 0]
+    measurements_dtype = make_cell_struct_dtype(object_names)
     npy_measurements = np.ndarray((1,1),dtype=measurements_dtype)
     handles[MEASUREMENTS]=npy_measurements
     image_numbers = measurements.get_image_numbers()
     max_image_number = np.max(image_numbers)
     has_image_number = np.zeros(max_image_number + 1, bool)
     has_image_number[image_numbers] = True
-    for object_name in measurements.get_object_names():
+    for object_name in object_names:
         if object_name == cpmeas.EXPERIMENT:
             continue
         mapping = map_feature_names(measurements.get_feature_names(object_name))

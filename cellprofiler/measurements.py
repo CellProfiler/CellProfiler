@@ -268,7 +268,8 @@ class Measurements(object):
             omeas = m[object_name][0, 0]
             for feature_name in omeas.dtype.fields.keys():
                 if object_name == IMAGE:
-                    values = [x.flatten()[0] for x in omeas[feature_name][0]]
+                    values = [None if len(x) == 0 else x.flatten()[0] 
+                              for x in omeas[feature_name][0]]
                 elif object_name == EXPERIMENT:
                     value = omeas[feature_name][0, 0].flatten()[0]
                     self.add_experiment_measurement(feature_name, value)
@@ -458,6 +459,8 @@ class Measurements(object):
                 self.hdf5_dict[IMAGE, 'ImageNumber', image_set_number] = image_set_number
         else:
             self.hdf5_dict[object_name, feature_name, image_set_number] = data
+            if not self.hdf5_dict.has_data(IMAGE, IMAGE_NUMBER, image_set_number):
+                self.hdf5_dict[IMAGE, IMAGE_NUMBER, image_set_number] = image_set_number
             if not self.hdf5_dict.has_data(object_name, 'ObjectNumber', image_set_number):
                 self.hdf5_dict[object_name, 'ImageNumber', image_set_number] = [image_set_number] * len(data)
                 self.hdf5_dict[object_name, 'ObjectNumber', image_set_number] = np.arange(1, len(data) + 1)

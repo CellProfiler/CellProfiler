@@ -630,7 +630,9 @@ class Morph(cpm.CPModule):
             elif function_name == F_FILL:
                 return morph.fill(pixel_data, mask, count)
             elif function_name == F_FILL_SMALL:
-                return morph.fill_labeled_holes(pixel_data, count, mask)
+                def small_fn(area, foreground):
+                    return (not foreground) and (area <= count)
+                return morph.fill_labeled_holes(pixel_data, mask, small_fn)
             elif function_name == F_HBREAK:
                 return morph.hbreak(pixel_data, mask, count)
             elif function_name == F_INVERT:

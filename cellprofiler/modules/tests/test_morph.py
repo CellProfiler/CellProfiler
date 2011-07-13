@@ -301,10 +301,10 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
         output = image_set.get_image(OUTPUT_IMAGE_NAME)
         return output.pixel_data
     
-    def binary_tteesstt(self, function_name, function, gray_out = False, scale=None):
+    def binary_tteesstt(self, function_name, function, gray_out=False, scale=None, custom_repeats=None):
         np.random.seed(map(ord,function_name))
         input = np.random.uniform(size=(20,20)) > .7
-        output = self.execute(input, function_name, scale=scale)
+        output = self.execute(input, function_name, scale=scale, custom_repeats=custom_repeats)
         if scale is None:
             expected = function(input)
         else:
@@ -349,6 +349,13 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
     
     def test_02_08_binary_fill(self):
         self.binary_tteesstt('fill', cpmorph.fill)
+
+    def test_02_08a_binary_fill_small(self):
+        def small_hole_fn(area, is_foreground):
+            return area <= 2
+        def fun(im, footprint=None):
+            return cpmorph.fill_labeled_holes(im, size_fn=small_hole_fn)
+        self.binary_tteesstt('fill small holes', fun, custom_repeats=2)
     
     def test_02_09_binary_hbreak(self):
         self.binary_tteesstt('hbreak', cpmorph.hbreak)

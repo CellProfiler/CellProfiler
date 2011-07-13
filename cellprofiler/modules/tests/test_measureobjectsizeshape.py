@@ -387,7 +387,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         self.assertEqual(max_radius[1], 3)
             
     def features_and_columns_match(self, measurements, module):
-        self.assertEqual(len(measurements.get_object_names()), 2)
+        self.assertEqual(len(measurements.get_object_names()), 3)
         self.assertTrue('SomeObjects' in measurements.get_object_names())
         self.assertTrue('OtherObjects' in measurements.get_object_names())
         features = measurements.get_feature_names('SomeObjects')

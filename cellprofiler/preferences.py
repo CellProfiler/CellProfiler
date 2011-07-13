@@ -217,6 +217,7 @@ WRITE_MAT = "WriteMAT"
 RUN_DISTRIBUTED = "RunDistributed"
 WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
 USE_MORE_FIGURE_SPACE = "UseMoreFigureSpace"
+WRITE_HDF5 = "WriteHDF5"
 
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
@@ -809,20 +810,29 @@ def set_show_report_bad_sizes_dlg(value):
 __write_MAT_files = None
 
 def get_write_MAT_files():
-    '''Return true to write measurements as .mat files at end of run'''
+    '''Determine whether to write measurements in .MAT files, .h5 files or not at all
+
+    returns True to write .MAT, WRITE_HDF5 to write .h5 files, False to not write
+    '''
     global __write_MAT_files
     if __write_MAT_files is not None:
         return __write_MAT_files
     if not get_config().Exists(WRITE_MAT):
         return True
-    return config_read(WRITE_MAT) == "True"
+    value = config_read(WRITE_MAT)
+    if value == "True":
+        return True
+    if value == WRITE_HDF5:
+        return WRITE_HDF5
+    return False
 
 def set_write_MAT_files(value):
     '''Set the "Write MAT files" flag'''
     global __write_MAT_files
     __write_MAT_files = value
     config_write(WRITE_MAT,
-                       "True" if value else "False")
+                 WRITE_HDF5 if value == WRITE_HDF5
+                 else "True" if value else "False")
 
 __warn_about_old_pipeline = None
 def get_warn_about_old_pipeline():

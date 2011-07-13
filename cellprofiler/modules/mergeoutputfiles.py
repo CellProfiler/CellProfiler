@@ -300,13 +300,12 @@ class MergeOutputFiles(cpm.CPModule):
                     has_error[0] = True
 
             pipeline.add_listener(callback)
-            pipeline.load(sources[0])
-            if has_error[0]:
-                return
 
             # distributed processing passes a list of functions, not a
             # list of filenames.
             pipeline.load(sources[0]() if callable(sources[0]) else sources[0])
+            if has_error[0]:
+                return
             mdest = cpmeas.Measurements()
             image_set_count = 0
             for source in sources:

@@ -599,6 +599,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             self.assertEqual(row[1],"Hello, world")
             self.assertRaises(StopIteration,reader.next)
         finally:
+            del m
             fd.close()
             
     def test_01_02_two_experiment_measurements(self):
@@ -1287,6 +1288,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             self.assertEqual(row[d["Count_my_objects"]],"6")
             self.assertRaises(StopIteration,reader.next)
         finally:
+            del m
             fd.close()
             
     def test_05_03_aggregate_and_filtered(self):

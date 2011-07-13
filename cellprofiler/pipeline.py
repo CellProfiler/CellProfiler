@@ -231,6 +231,10 @@ def add_all_measurements(handles, measurements):
     measurements_dtype = make_cell_struct_dtype(measurements.get_object_names())
     npy_measurements = np.ndarray((1,1),dtype=measurements_dtype)
     handles[MEASUREMENTS]=npy_measurements
+    image_numbers = measurements.get_image_numbers()
+    max_image_number = np.max(image_numbers)
+    has_image_number = np.zeros(max_image_number + 1, bool)
+    has_image_number[image_numbers] = True
     for object_name in measurements.get_object_names():
         if object_name == cpmeas.EXPERIMENT:
             continue
@@ -239,17 +243,17 @@ def add_all_measurements(handles, measurements):
         object_measurements = np.ndarray((1,1),dtype=object_dtype)
         npy_measurements[object_name][0,0] = object_measurements
         for field, feature_name in mapping.iteritems():
-            feature_measurements = np.ndarray((1, measurements.image_set_number),
+            feature_measurements = np.ndarray((1, max_image_number),
                                               dtype='object')
             object_measurements[field][0,0] = feature_measurements
-            for i in range(0, measurements.image_set_number):
-                ddata = measurements.get_measurement(object_name, feature_name, i + 1)
+            for i in np.argwhere(~ has_image_number[1:]).flatten():
+                feature_measurements[0, i] = np.zeros(0)
+            for i in measurements.get_image_numbers():
+                ddata = measurements.get_measurement(object_name, feature_name, i)
                 if np.isscalar(ddata) and np.isreal(ddata):
-                    feature_measurements[0,i] = np.array([ddata])
-                elif ddata is None:
-                    feature_measurements[0,i] = np.array([])
-                else:
-                    feature_measurements[0,i] = ddata
+                    feature_measurements[0, i-1] = np.array([ddata])
+                elif ddata is not None:
+                    feature_measurements[0,i-1] = ddata
     if cpmeas.EXPERIMENT in measurements.object_names:
         mapping = map_feature_names(measurements.get_feature_names(cpmeas.EXPERIMENT))
         object_dtype = make_cell_struct_dtype(mapping.keys())
@@ -1086,7 +1090,8 @@ class Pipeline(object):
             frame = None, 
             image_set_start = 1, 
             image_set_end = None,
-            grouping = None):
+            grouping = None,
+            measurements_filename = None):
         """Run the pipeline
         
         Run the pipeline, returning the measurements made
@@ -1096,10 +1101,16 @@ class Pipeline(object):
         image_set_end - the index of the last image to be run + 1
         grouping - a dictionary that gives the keys and values in the
                    grouping to run or None to run all groupings
+        measurements_filename - name of file to use for measurements
         """
-        measurements = cellprofiler.measurements.Measurements()
+        measurements = cellprofiler.measurements.Measurements(
+            image_set_start = image_set_start,
+            filename = measurements_filename)
+        measurements.is_first_image = True
         for m in self.run_with_yield(frame, image_set_start, image_set_end,
-                                     grouping, run_in_background=False):
+                                     grouping, 
+                                     run_in_background=False,
+                                     initial_measurements = measurements):
             measurements = m
         return measurements
 
@@ -1168,7 +1179,7 @@ class Pipeline(object):
             num_image_sets = sum([image_number is not None 
                                   for image_number, _, _, _ in group(image_set_list)])
             image_set_count = -1
-
+            is_first_image_set = True
             last_image_number = None
             pipeline_stats_logger.info("Times reported are CPU times for each module, not wall-clock time")
             for group_number, group_index, image_number, closure in group(image_set_list):
@@ -1185,6 +1196,10 @@ class Pipeline(object):
                     image_set_list.purge_image_set(last_image_number-1)
                 last_image_number = image_number
                 measurements.next_image_set(image_number, erase=True)
+                if is_first_image_set:
+                    measurements.image_set_start = image_number
+                    measurements.is_first_image = True
+                    is_first_image_set = False
                 measurements.group_number = group_number
                 measurements.group_index = group_index
                 numberof_windows = 0;

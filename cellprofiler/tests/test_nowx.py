@@ -107,7 +107,8 @@ class TestNoWX(unittest.TestCase):
                         break
                 if not removed_something:
                     break
-            pipeline.run(image_set_end = 1)
+            m = pipeline.run(image_set_end = 1)
+            del m
         finally:
             for file_name in os.listdir(output_dir):
                 try:

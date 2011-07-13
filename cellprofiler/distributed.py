@@ -87,7 +87,7 @@ class Distributor(object):
 
         # save and compress the pipeline
         pipeline_txt = StringIO.StringIO()
-        module.save_pipeline(pipeline, image_set_list, outf=pipeline_txt)
+        module.save_pipeline(workspace, outf=pipeline_txt)
         pipeline_blob = zlib.compress(pipeline_txt.getvalue())
         pipeline_fd, pipeline_path = tempfile.mkstemp()
         self.pipeline_path = pipeline_path

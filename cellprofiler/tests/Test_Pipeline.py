@@ -579,7 +579,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.add_module(module)
         measurements = pipeline.run(grouping = {'foo':'foo-B', 'bar':'bar-B'})
         self.assertEqual(expects[0], 'Done')
-        image_numbers = measurements.get_all_measurements("Image","mymeasurement")
+        image_numbers = measurements.get_image_numbers()
         self.assertEqual(len(image_numbers), 2)
         self.assertTrue(np.all(image_numbers == np.array([2,5])))
     

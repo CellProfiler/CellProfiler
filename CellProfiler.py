@@ -437,9 +437,12 @@ try:
                 groups = dict(kvs)
             else:
                 groups = None
-            measurements = pipeline.run(image_set_start=image_set_start, 
-                                        image_set_end=image_set_end,
-                                        grouping=groups)
+            use_hdf5 = len(args) > 0 and not args[0].lower().endswith(".mat")
+            measurements = pipeline.run(
+                image_set_start=image_set_start, 
+                image_set_end=image_set_end,
+                grouping=groups,
+                measurements_filename = None if not use_hdf5 else args[0])
             if options.worker_mode_URL is not None:
                 try:
                     assert measurements is not None
@@ -452,7 +455,7 @@ try:
                     logging.root.info("Continuing...")
                     time.sleep(20 + random.randint(1, 10)) # avoid hammering server
                     continue
-            elif len(args) > 0:
+            elif len(args) > 0 and not use_hdf5:
                 pipeline.save_measurements(args[0], measurements)
             if options.done_file is not None:
                 if (measurements is not None and 

@@ -655,9 +655,10 @@ All rights reserved."""
             #
             module.run_as_data_tool()
             return
-        dlg = wx.FileDialog(self, "Choose data output file for %s data tool" %
-                            tool_name, wildcard="*.mat",
-                            style=(wx.FD_OPEN | wx.FILE_MUST_EXIST))
+        dlg = wx.FileDialog(
+            self, "Choose data output file for %s data tool" %
+            tool_name, wildcard = "Measurements file(*.mat,*.h5)|*.mat;*.h5",
+            style=(wx.FD_OPEN | wx.FILE_MUST_EXIST))
         if dlg.ShowModal() == wx.ID_OK:
             DataToolFrame(self, 
                           module_name=tool_name,

@@ -30,6 +30,10 @@ WELCOME_MESSAGE = 'Welcome to CellProfiler'
 ANALYZE_IMAGES = 'Analyze Images'
 START_WORK_SERVER = 'Start Distributed Computation'
 
+WRITE_MAT_FILE = "Matlab"
+WRITE_HDF_FILE = "HDF5"
+DO_NOT_WRITE_MEASUREMENTS = "Do not write measurements"
+
 class PreferencesView:
     """View / controller for the preferences that get displayed in the main window
     
@@ -158,19 +162,44 @@ class PreferencesView:
                 self.__allow_output_filename_overwrite_check_box.Value)
         self.__allow_output_filename_overwrite_check_box.Bind(
             wx.EVT_CHECKBOX, on_allow_checkbox)
-        self.__write_measurements_check_box = \
-            wx.CheckBox(panel, label = "Write output file?")
-        self.__write_measurements_check_box.Value = \
-            cpprefs.get_write_MAT_files()
-        self.__show_output_filename(cpprefs.get_write_MAT_files())
-        def on_write_MAT_files_checkbox(event):
-            wants_write = self.__write_measurements_check_box.Value
-            cpprefs.set_write_MAT_files(wants_write)
+        self.__write_measurements_combo_box = \
+            wx.Choice(panel, choices = 
+                      [WRITE_HDF_FILE, WRITE_MAT_FILE, 
+                       DO_NOT_WRITE_MEASUREMENTS])
+        measurements_mode = cpprefs.get_write_MAT_files()
+        if measurements_mode == cpprefs.WRITE_HDF5:
+            self.__write_measurements_combo_box.SetSelection(0)
+            self.__output_filename_edit_box.Value = "DefaultOut.h5"
+        elif measurements_mode is True:
+            self.__write_measurements_combo_box.SetSelection(1)
+        else:
+            self.__write_measurements_combo_box.SetSelection(2)
+            
+        self.__show_output_filename(cpprefs.get_write_MAT_files() is not False)
+        def on_write_MAT_files_combo_box(event):
+            sel = self.__write_measurements_combo_box.GetSelection()
+            output_filename = self.__output_filename_edit_box.Value
+            if sel == 0:
+                cpprefs.set_write_MAT_files(cpprefs.WRITE_HDF5)
+                wants_write = True
+                if output_filename.lower().endswith('.mat'):
+                    output_filename = output_filename[:-4] + u".h5"
+            elif sel == 1:
+                cpprefs.set_write_MAT_files(True)
+                wants_write = True
+                if output_filename.lower().endswith('.h5'):
+                    output_filename = output_filename[:-3] + u".mat"
+            else:
+                cpprefs.set_write_MAT_files(False)
+                wants_write = False
+                
+            if output_filename != self.__output_filename_edit_box.Value:
+                self.__output_filename_edit_box.Value = output_filename
             self.__show_output_filename(wants_write)
             panel.Layout()
             
-        self.__write_measurements_check_box.Bind(
-            wx.EVT_CHECKBOX, on_write_MAT_files_checkbox)
+        self.__write_measurements_combo_box.Bind(
+            wx.EVT_CHOICE, on_write_MAT_files_combo_box)
         output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
         if not cpdistributed.run_distributed():
             self.__analyze_images_button = wx.Button(panel, -1, ANALYZE_IMAGES)
@@ -182,7 +211,8 @@ class PreferencesView:
                        (self.__output_filename_text,0,wx.ALIGN_CENTER,1),
                        (self.__output_filename_edit_box,3,wx.ALL,1),
                        (self.__allow_output_filename_overwrite_check_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
-                       (self.__write_measurements_check_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
+                       (wx.StaticText(panel, label = "Measurements file format:"), 0, wx.ALIGN_CENTER | wx.ALL, 1),
+                       (self.__write_measurements_combo_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
                        (self.__analyze_images_button,0,wx.ALL,1),
                        (self.__stop_analysis_button, 0, wx.ALL,1)])
         sizer.Hide(self.__stop_analysis_button)

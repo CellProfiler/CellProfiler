@@ -125,7 +125,7 @@ class DataToolFrame(wx.Frame):
     
     def on_load_measurements(self, event):
         dlg = wx.FileDialog(self, "Load a measurements file",
-                            wildcard = "Measurements file (*.mat)|*.mat",
+                            wildcard = "Measurements file (*.mat,*.h5)|*.mat;*.h5",
                             style = wx.FD_OPEN)
         if dlg.ShowModal() == wx.ID_OK:
             self.load_measurements(dlg.GetPath())
@@ -151,21 +151,25 @@ class DataToolFrame(wx.Frame):
         sizer.Add(choose_sizer, 1, wx.EXPAND | wx.ALL, 5)
         choose_sizer.Add(wx.StaticText(dlg, -1, label="Image set:"),
                          0, wx.ALIGN_RIGHT | wx.ALIGN_CENTER_VERTICAL)
+        metadata_db = {}
         metadata_features = [ 
             x for x in self.measurements.get_feature_names(cpmeas.IMAGE)
             if x.startswith('Metadata')]
-        metadata_values = [ 
-            self.measurements.get_all_measurements(cpmeas.IMAGE, feature)
-            for feature in metadata_features]
-        metadata_kv = [ ','.join(['%s=%s' % (feature, value[i])
-                                  for feature, value in zip(metadata_features,
-                                                            metadata_values)])
-                        for i in range(self.measurements.image_set_count)]
-        choices = ["%d: %s" % (i+1, metadata_kv[i])
-                   for i in range(self.measurements.image_set_count)]
+        sel = None
+        for i in self.measurements.get_image_numbers():
+            metadata_key = ','.join(['%s=%s' % (
+                feature, 
+                self.measurements.get_measurement(cpmeas.IMAGE, feature, i))
+                                     for feature in metadata_features])
+            metadata_db[i] = metadata_key
+            if i == self.measurements.image_set_number:
+                sel = i
+        choices = ["%d: %s" % (i, metadata_db[i])
+                   for i in self.measurements.get_image_numbers()]
         choice_ctl = wx.Choice(dlg, -1, choices=choices)
         # Select the current image set
-        choice_ctl.SetSelection(self.measurements.image_set_index)
+        if sel is not None:
+            choice_ctl.SetSelection(sel)
         choose_sizer.Add(choice_ctl, 1, wx.EXPAND | wx.LEFT, 5)
         button_sizer = wx.StdDialogButtonSizer()
         ok_button = wx.Button(dlg, wx.ID_OK)
@@ -184,8 +188,8 @@ class DataToolFrame(wx.Frame):
             self.measurements.image_set_number = index+1
         
     def load_measurements(self, measurements_file_name):
-        self.measurements = cpmeas.Measurements(can_overwrite = True)
-        self.measurements.load(measurements_file_name)
+        self.measurements = cpmeas.load_measurements(
+            measurements_file_name, can_overwrite = True)
         # Start on the first image
         self.measurements.next_image_set(1)
         

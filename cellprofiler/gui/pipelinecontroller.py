@@ -734,8 +734,14 @@ class PipelineController:
                 self.__running_pipeline.close()
             self.__output_path = output_path
             self.__frame.preferences_view.on_analyze_images()
-            self.__running_pipeline = self.__pipeline.run_with_yield(self.__frame,
-                                                                     status_callback=self.status_callback)
+            if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
+                m = cpm.Measurements(filename = output_path)
+            else:
+                m = None
+            self.__running_pipeline = self.__pipeline.run_with_yield(
+                self.__frame,
+                status_callback=self.status_callback,
+                initial_measurements = m)
             try:
                 # Start the first module.
                 self.__pipeline_measurements = self.__running_pipeline.next()
@@ -745,7 +751,8 @@ class PipelineController:
                 # like CreateBatchFiles)
                 #
                 self.stop_running()
-                if self.__pipeline_measurements is not None and cpprefs.get_write_MAT_files():
+                if (self.__pipeline_measurements is not None and 
+                    cpprefs.get_write_MAT_files() is True):
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
                     self.__pipeline_measurements = None
                     self.__output_path = None
@@ -801,7 +808,8 @@ class PipelineController:
                 # like CreateBatchFiles)
                 #
                 self.stop_running()
-                if self.__pipeline_measurements is not None and cpprefs.get_write_MAT_files():
+                if (self.__pipeline_measurements is not None and 
+                    cpprefs.get_write_MAT_files() is True):
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
                     self.__pipeline_measurements = None
                     self.__output_path = None
@@ -847,6 +855,8 @@ class PipelineController:
             self.save_measurements()
         
     def save_measurements(self):
+        if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
+            return
         dlg = wx.FileDialog(self.__frame,
                             "Save measurements to a file",
                             wildcard="CellProfiler measurements (*.mat)|*.mat",
@@ -1221,7 +1231,8 @@ class PipelineController:
                     event.RequestMore()
             except StopIteration:
                 self.stop_running()
-                if self.__pipeline_measurements != None and cpprefs.get_write_MAT_files():
+                if (self.__pipeline_measurements != None and 
+                    cpprefs.get_write_MAT_files() is True):
                     self.__frame.preferences_view.set_message_text(
                         WRITING_MAT_FILE)
                     try:

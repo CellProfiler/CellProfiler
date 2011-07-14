@@ -65,7 +65,8 @@ class Distributor(object):
         #Hack
         server_URL = self.work_server.base_URL()
         if 'localhost' in server_URL:
-            self.work_server.base_URL = lambda: 'http://%s:%s' % ('localhost',port)
+            act_port = server_URL.split(':')[-1]
+            self.work_server.base_URL = lambda: 'http://%s:%s' % ('localhost',act_port)
         self.server_URL = self.work_server.base_URL()
         
         # call prepare_to_create_batch to turn files into URLs

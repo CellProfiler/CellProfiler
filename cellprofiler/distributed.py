@@ -40,6 +40,7 @@ class Distributor(object):
         self.status_callback = None
         self.pipeline_path = None
         self.frame = frame
+        self.measurements = None
 
     def start_serving(self, pipeline, port, output_file, status_callback=None):
         # Make sure the previous server has stopped
@@ -60,8 +61,8 @@ class Distributor(object):
         # create the image list
         image_set_list = cpi.ImageSetList()
         image_set_list.combine_path_and_file = True
-        measurements = cpmeas.Measurements()
-        workspace = cpw.Workspace(pipeline, None, None, None, measurements,
+        self.measurements = cpmeas.Measurements(filename = self.output_file)
+        workspace = cpw.Workspace(pipeline, None, None, None, self.measurements,
                                   image_set_list)
                                   
         if not pipeline.prepare_run(workspace):
@@ -69,6 +70,11 @@ class Distributor(object):
 
         # start server, get base URL
         self.work_server = nuageux.Server('CellProfiler work server', data_callback=self.data_server, validate_result=self.validate_result)
+        #Hack
+        server_URL = self.work_server.base_URL()
+        if 'localhost' in server_URL:
+            act_port = server_URL.split(':')[-1]
+            self.work_server.base_URL = lambda: 'http://%s:%s' % ('localhost',act_port)
         self.server_URL = self.work_server.base_URL()
 
         # call prepare_to_create_batch to turn files into URLs
@@ -114,19 +120,30 @@ class Distributor(object):
         # use the same code path as a non-distributed computation for
         # tracking results and updating the GUI.
 
-        # Returned results are concatenated into this file, which is
-        # passed to MergeOutputFiles in pieces, below.
-        finished_fd = tempfile.TemporaryFile(dir=os.path.dirname(self.output_file))
-        finished_offsets = []
+        # Returned results are combined as they are received in
+        # an HDF5 dict via self.measurements instance
+        jobs_finished = 0
         while True:
             finished_job = self.work_server.fetch_result()
             if finished_job is not None:
                 if finished_job['pipeline_hash'][0] == self.pipeline_blob_hash:
-                    data_start = finished_fd.tell()
-                    finished_fd.write(finished_job['measurements'][0])
-                    finished_offsets += [(data_start, len(finished_job['measurements'][0]))]
+
+                    #Read data, write to temp file, load into HDF5_dict instance
+                    raw_dat = finished_job['measurements'][0]
+                    meas_str = zlib.decompress(raw_dat)
+
+                    temp_hdf5 = tempfile.NamedTemporaryFile(dir=os.path.dirname(self.output_file))
+                    temp_hdf5.write(meas_str)
+                    temp_hdf5.flush()
+
+                    curr_meas = cpmeas.load_measurements(filename=temp_hdf5.name)
+                    self.measurements.combine_measurements(curr_meas,can_overwrite = True)
+                    del curr_meas
+
+                    jobs_finished += 1
+
                     if self.status_callback:
-                        self.status_callback(self.total_jobs, len(finished_offsets))
+                        self.status_callback(self.total_jobs, jobs_finished)
                 else:
                     # out of date result?
                     print "ignored mismatched pipeline hash", finished_job['pipeline_hash'][0], self.pipeline_blob_hash
@@ -134,27 +151,9 @@ class Distributor(object):
                 # pretend to be busy
                 time.sleep(0.1)
 
-            if len(finished_offsets) == self.total_jobs:
+            if jobs_finished == self.total_jobs:
                 # when finished, stop serving
                 self.stop_serving()
-                # merge output files.
-                finished_fd.flush()
-                def nth_output_file(n):
-                    start, numbytes = finished_offsets[n]
-                    def create_nth_output():
-                        self.__str__
-                        tmpfile = tempfile.TemporaryFile(dir=os.path.dirname(self.output_file))
-                        finished_fd.seek(start)
-                        tmpfile.write(zlib.decompress(finished_fd.read(numbytes)))
-                        tmpfile.flush()
-                        return tmpfile
-                    creator = create_nth_output
-                    creator.__str__ = lambda _: "%d-th output file"%(n + 1)
-                    return creator
-                MergeOutputFiles.merge_files(self.output_file,
-                                             [nth_output_file(n) for n in range(self.total_jobs)],
-                                             force_headless=True)
-                # stop iteration
                 return
 
             # this is part of the pipeline mimicry
@@ -237,12 +236,12 @@ class JobInfo(object):
         return StringIO.StringIO(zlib.decompress(self.pipeline_blob))
 
     def report_measurements(self, pipeline, measurements):
-        out_measurements = StringIO.StringIO()
-        pipeline.save_measurements(out_measurements, measurements)
+        meas_file = open(measurements.hdf5_dict.filename,'r+b')
+        out_measurements = meas_file.read()
         nuageux.report_result(self.base_url, self.job_num,
                               image_num=str(self.image_set_start),
                               pipeline_hash=self.pipeline_hash,
-                              measurements=zlib.compress(out_measurements.getvalue()))
+                              measurements=zlib.compress(out_measurements))
 
 def fetch_work(base_URL):
     jobinfo = JobInfo(base_URL)

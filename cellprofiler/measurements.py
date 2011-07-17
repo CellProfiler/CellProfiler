@@ -569,14 +569,14 @@ class Measurements(object):
 
         for obj_name in obj_names:
             if obj_name == EXPERIMENT:
-                exp_overwrite = False
+                obj_overwrite = False
             else:
-                exp_overwrite = True and can_overwrite
+                obj_overwrite = True and can_overwrite
             feature_names = measurements.get_feature_names(obj_name)
             image_numbers = measurements.get_image_numbers()
 
             for feat_name in feature_names:
-                if(self.has_feature(obj_name, feat_name) and not exp_overwrite):
+                if(self.has_feature(obj_name, feat_name) and not obj_overwrite):
                     continue
                 for img_num in image_numbers:
                     dat = measurements.get_measurement(obj_name,feat_name,img_num)

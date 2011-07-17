@@ -481,6 +481,10 @@ class Measurements(object):
         image_numbers.sort()
         return image_numbers
 
+    def get_image_count(self):
+        image_numbers = self.get_image_numbers()
+        return len(image_numbers)
+
     def has_feature(self, object_name, feature_name):
         return self.hdf5_dict.has_feature(object_name, feature_name)
 

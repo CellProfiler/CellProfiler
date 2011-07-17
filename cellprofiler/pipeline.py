@@ -239,11 +239,14 @@ def add_all_measurements(handles, measurements):
         object_measurements = np.ndarray((1,1),dtype=object_dtype)
         npy_measurements[object_name][0,0] = object_measurements
         for field, feature_name in mapping.iteritems():
-            feature_measurements = np.ndarray((1, measurements.image_set_number),
+            image_set_count = measurements.get_image_count()
+            image_numbers = measurements.get_image_numbers()
+            feature_measurements = np.ndarray((1, image_set_count),
                                               dtype='object')
             object_measurements[field][0,0] = feature_measurements
-            for i in range(0, measurements.image_set_number):
-                ddata = measurements.get_measurement(object_name, feature_name, i + 1)
+            for i in range(0, image_set_count):
+                img_num = image_numbers[i]
+                ddata = measurements.get_measurement(object_name, feature_name, img_num)
                 if np.isscalar(ddata) and np.isreal(ddata):
                     feature_measurements[0,i] = np.array([ddata])
                 elif ddata is None:

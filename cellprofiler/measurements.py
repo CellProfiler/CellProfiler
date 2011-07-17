@@ -551,6 +551,31 @@ class Measurements(object):
             else:
                 self.add_measurement(object_name, feature_name, val, can_overwrite=True, image_set_number=idx + 1)
 
+    def combine_measurements(self,measurements,can_overwrite= False):
+        """
+        Add the measurements in 'measurements' object to this one.
+        All restrictions enforced in add_measurement on over-writing data, or adding new data where none existed,
+        are enforced here. 'Experiment' measurements written if they don't already exist, but never overwritten
+        """
+
+        assert isinstance(measurements,Measurements)
+        obj_names = measurements.get_object_names()
+
+        for obj_name in obj_names:
+            if obj_name == EXPERIMENT:
+                exp_overwrite = False
+            else:
+                exp_overwrite = True and can_overwrite
+            feature_names = measurements.get_feature_names(obj_name)
+            image_numbers = measurements.get_image_numbers()
+
+            for feat_name in feature_names:
+                if(self.has_feature(obj_name, feat_name) and not exp_overwrite):
+                    continue
+                for img_num in image_numbers:
+                    dat = measurements.get_measurement(obj_name,feat_name,img_num)
+                    self.add_measurement(obj_name,feat_name,dat,can_overwrite= can_overwrite,image_set_number = img_num)
+
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement
         """

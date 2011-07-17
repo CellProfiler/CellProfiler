@@ -254,7 +254,62 @@ class TestMeasurements(unittest.TestCase):
             except:
                 print "Failed to remove file %s" % filename
         
+    def test_09_01_combine(self):
+        obj_nums = xrange(0,2)
+        fet_nums = xrange(0,3)
+        img_nums_1 = xrange(1,5)
+        img_nums_2 = xrange(5,8)
+        all_img_nums = xrange(min(img_nums_1),max(img_nums_2))
         
+        mknums = lambda pre,post: ['%s_%s' % (pre,pst) for pst in post]
+        obj_names = [cpmeas.EXPERIMENT,cpmeas.IMAGE,cpmeas.OBJECT]
+        fet_names = mknums('Feat',fet_nums)
+        
+        r = np.random.RandomState()
+        r.seed(3)
+        
+        set1 = cpmeas.Measurements()
+        set2 = cpmeas.Measurements()
+        ideal_comb = cpmeas.Measurements()
+        
+        for obj_name in obj_names:
+            for feat_name in fet_names:
+                if(obj_name == cpmeas.EXPERIMENT):
+                    img_nums = [0]
+                else:
+                    img_nums = all_img_nums
+                for img_num in img_nums:
+                    sz = img_num % 3 + 1
+                    data = r.randint(0,10,sz)
+                    ideal_comb.add_measurement(obj_name,feat_name,data,can_overwrite= False,image_set_number = img_num)
+                    
+                    subsets = None
+                    if img_num in img_nums_1:
+                        subsets = [set1]
+                    elif img_num in img_nums_2:
+                        subsets = [set2]
+                    else:
+                        subsets = [set1,set2]
+                    for subset in subsets:
+                        subset.add_measurement(obj_name,feat_name,data,can_overwrite= False,image_set_number = img_num)
+                    
+        
+        #Combine subsets and compare to overall measurements set
+        set1.combine_measurements(set2)
+        self.tst_compare_measurements(ideal_comb,set1)
+        
+    def tst_compare_measurements(self,ideal_meas,act_meas):
+        obj_names = ideal_meas.get_object_names()
+        for obj_name in obj_names:
+            feature_names = ideal_meas.get_feature_names(obj_name)
+            image_numbers = ideal_meas.get_image_numbers()
+            
+            for feat_name in feature_names:
+                for img_num in image_numbers:
+                    ideal_dat = ideal_meas.get_measurement(obj_name,feat_name,img_num)
+                    act_dat = act_meas.get_measurement(obj_name,feat_name,img_num)
+                    np.testing.assert_equal(act_dat,ideal_dat,'Data at %s.%s num %d not equal' % (obj_name,feat_name,img_num),verbose = True)
+                    
 
 if __name__ == "__main__":
     unittest.main()

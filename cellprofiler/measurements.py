@@ -442,25 +442,24 @@ class Measurements(object):
                 return unicode(v).encode('unicode_escape')
             return v
 
+        index = image_set_number
         if object_name == EXPERIMENT:
-            if not np.isscalar(data) and data is not None:
-                data = data[0]
-            if data is None:
-                data = []
-            self.hdf5_dict[EXPERIMENT, feature_name, 0] = wrap_string(data)
-        elif object_name == IMAGE:
-            if not np.isscalar(data) and data is not None:
-                data = data[0]
-            if data is None:
-                data = []
-            self.hdf5_dict[IMAGE, feature_name, image_set_number] = wrap_string(data)
-            if not self.hdf5_dict.has_data(object_name, 'ImageNumber', image_set_number):
+            index = 0
+            
+        if object_name == IMAGE and not self.hdf5_dict.has_data(object_name, 'ImageNumber', image_set_number):
                 self.hdf5_dict[IMAGE, 'ImageNumber', image_set_number] = image_set_number
+        
+        if object_name == EXPERIMENT or object_name == IMAGE:
+            if not np.isscalar(data) and data is not None:
+                data = data[0]
+            if data is None:
+                data = []
+            self.hdf5_dict[object_name, feature_name, index] = wrap_string(data)
         else:
             self.hdf5_dict[object_name, feature_name, image_set_number] = data
             if not self.hdf5_dict.has_data(object_name, 'ObjectNumber', image_set_number):
                 self.hdf5_dict[object_name, 'ImageNumber', image_set_number] = [image_set_number] * len(data)
-                self.hdf5_dict[object_name, 'ObjectNumber', image_set_number] = np.arange(1, len(data) + 1)
+                self.hdf5_dict[object_name, 'ObjectNumber', image_set_number] = np.arange(1, len(data) + 1) 
 
     def get_object_names(self):
         """The list of object names (including Image) that have measurements

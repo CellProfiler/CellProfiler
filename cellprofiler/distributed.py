@@ -52,7 +52,7 @@ class Distributor(object):
         # make sure createbatchfiles is not in the pipeline
         if 'CreateBatchFiles' in [module.module_name for module in pipeline.modules()]:
             # XXX - should offer to ignore?
-            raise RuntimeException('CreateBatchFiles should not be used with distributed processing.')
+            raise RuntimeError('CreateBatchFiles should not be used with distributed processing.')
 
         # duplicate pipeline
         pipeline = pipeline.copy()
@@ -87,7 +87,7 @@ class Distributor(object):
 
         # save and compress the pipeline
         pipeline_txt = StringIO.StringIO()
-        module.save_pipeline(pipeline, image_set_list, outf=pipeline_txt)
+        module.save_pipeline(workspace, outf=pipeline_txt)
         pipeline_blob = zlib.compress(pipeline_txt.getvalue())
         pipeline_fd, pipeline_path = tempfile.mkstemp()
         self.pipeline_path = pipeline_path
@@ -202,7 +202,7 @@ class Distributor(object):
             print "bad data request", request, e
             return '', 'application/octet-stream'
 
-    def image_writer():
+    def image_writer(self):
         # TO BE DONE
         pass
 

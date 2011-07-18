@@ -442,25 +442,24 @@ class Measurements(object):
                 return unicode(v).encode('unicode_escape')
             return v
 
+        index = image_set_number
         if object_name == EXPERIMENT:
-            if not np.isscalar(data) and data is not None:
-                data = data[0]
-            if data is None:
-                data = []
-            self.hdf5_dict[EXPERIMENT, feature_name, 0] = wrap_string(data)
-        elif object_name == IMAGE:
-            if not np.isscalar(data) and data is not None:
-                data = data[0]
-            if data is None:
-                data = []
-            self.hdf5_dict[IMAGE, feature_name, image_set_number] = wrap_string(data)
-            if not self.hdf5_dict.has_data(object_name, 'ImageNumber', image_set_number):
+            index = 0
+            
+        if object_name == IMAGE and not self.hdf5_dict.has_data(object_name, 'ImageNumber', image_set_number):
                 self.hdf5_dict[IMAGE, 'ImageNumber', image_set_number] = image_set_number
+        
+        if object_name == EXPERIMENT or object_name == IMAGE:
+            if not np.isscalar(data) and data is not None and len(data) > 0:
+                data = data[0]
+            if data is None:
+                data = []
+            self.hdf5_dict[object_name, feature_name, index] = wrap_string(data)
         else:
             self.hdf5_dict[object_name, feature_name, image_set_number] = data
             if not self.hdf5_dict.has_data(object_name, 'ObjectNumber', image_set_number):
                 self.hdf5_dict[object_name, 'ImageNumber', image_set_number] = [image_set_number] * len(data)
-                self.hdf5_dict[object_name, 'ObjectNumber', image_set_number] = np.arange(1, len(data) + 1)
+                self.hdf5_dict[object_name, 'ObjectNumber', image_set_number] = np.arange(1, len(data) + 1) 
 
     def get_object_names(self):
         """The list of object names (including Image) that have measurements
@@ -480,6 +479,10 @@ class Measurements(object):
             self.hdf5_dict.get_indices(IMAGE, IMAGE_NUMBER), int)
         image_numbers.sort()
         return image_numbers
+
+    def get_image_count(self):
+        image_numbers = self.get_image_numbers()
+        return len(image_numbers)
 
     def has_feature(self, object_name, feature_name):
         return self.hdf5_dict.has_feature(object_name, feature_name)
@@ -505,10 +508,17 @@ class Measurements(object):
             if isinstance(v, str):
                 return unicode(str(v)).decode('unicode_escape')
             return v
+        
+        def helper(data):
+            if len(data) > 0:
+                return data[0]
+            else:
+                return np.array([])
+            
         if object_name == EXPERIMENT:
-            return unwrap_string(self.hdf5_dict[EXPERIMENT, feature_name, 0][0])
+            return unwrap_string(helper(self.hdf5_dict[EXPERIMENT, feature_name, 0]))
         if object_name == IMAGE:
-            return unwrap_string(self.hdf5_dict[IMAGE, feature_name, image_set_number][0])
+            return unwrap_string(helper(self.hdf5_dict[IMAGE, feature_name, image_set_number]))
         vals = self.hdf5_dict[object_name, feature_name, image_set_number]
         if vals is None:
             return np.array([])
@@ -546,6 +556,31 @@ class Measurements(object):
                     del self.hdf5_dict[object_name, feature_name, idx + 1]
             else:
                 self.add_measurement(object_name, feature_name, val, can_overwrite=True, image_set_number=idx + 1)
+
+    def combine_measurements(self,measurements,can_overwrite= False):
+        """
+        Add the measurements in 'measurements' object to this one.
+        All restrictions enforced in add_measurement on over-writing data, or adding new data where none existed,
+        are enforced here. 'Experiment' measurements written if they don't already exist, but never overwritten
+        """
+
+        assert isinstance(measurements,Measurements)
+        obj_names = measurements.get_object_names()
+
+        for obj_name in obj_names:
+            if obj_name == EXPERIMENT:
+                obj_overwrite = False
+            else:
+                obj_overwrite = True and can_overwrite
+            feature_names = measurements.get_feature_names(obj_name)
+            image_numbers = measurements.get_image_numbers()
+
+            for feat_name in feature_names:
+                if(self.has_feature(obj_name, feat_name) and not obj_overwrite):
+                    continue
+                for img_num in image_numbers:
+                    dat = measurements.get_measurement(obj_name,feat_name,img_num)
+                    self.add_measurement(obj_name,feat_name,dat,can_overwrite= can_overwrite,image_set_number = img_num)
 
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement

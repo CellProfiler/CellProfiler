@@ -1175,7 +1175,7 @@ class ExportToDatabase(cpm.CPModule):
                     return True
                 import wx
                 dlg = wx.MessageDialog(
-                    frame, 
+                    workspace.frame, 
                     'ExportToDatabase will overwrite the %s. OK?' % table_msg,
                                     'Overwrite tables?', 
                                     style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)

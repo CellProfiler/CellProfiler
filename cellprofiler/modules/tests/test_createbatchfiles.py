@@ -436,35 +436,33 @@ class TestCreateBatchFiles(unittest.TestCase):
                 self.assertFalse(pipeline.in_batch_mode())
                 self.assertFalse(result)
                 self.assertFalse(module.batch_mode.value)
-                self.assertTrue(os.path.exists(bfile))
                 pipeline = cpp.Pipeline()
                 pipeline.add_listener(callback)
-                for filename in (bfile, hfile):
-                    fd = open(filename,'rb')
-                    try:
-                        pipeline.load(fd)
-                    finally:
-                        fd.close()
-                    measurements = cpmeas.Measurements()
-                    image_set_list = cpi.ImageSetList()
-                    result = pipeline.prepare_run(
-                        cpw.Workspace(pipeline, None, None, None,
-                                      measurements, image_set_list))
-                    self.assertTrue(pipeline.in_batch_mode())
-                    module = pipeline.modules()[1]
-                    self.assertTrue(isinstance(module, C.CreateBatchFiles))
-                    self.assertTrue(module.batch_mode.value)
-                    self.assertTrue(isinstance(image_set_list, cpi.ImageSetList))
-                    self.assertEqual(image_set_list.count(), 96)
-                    pipeline.prepare_group(image_set_list, {}, range(1,97))
-                    for i in range(96):
-                        image_set = image_set_list.get_image_set(i)
-                        for image_name in ('DNA', 'Cytoplasm'):
-                            provider = image_set.get_image_provider(image_name)
-                            self.assertEqual(provider.get_pathname(), 
-                                             '\\imaging\\analysis' if windows_mode
-                                             else '/imaging/analysis')
-                    del measurements
+                fd = open(hfile,'rb')
+                try:
+                    pipeline.load(fd)
+                    fd.seek(0)
+                finally:
+                    fd.close()
+                
+                measurements = cpmeas.load_measurements(hfile)
+                image_set_list = cpi.ImageSetList()
+                self.assertTrue(pipeline.in_batch_mode())
+                module = pipeline.modules()[1]
+                self.assertTrue(isinstance(module, C.CreateBatchFiles))
+                self.assertTrue(module.batch_mode.value)
+                image_numbers = measurements.get_image_numbers()
+                self.assertTrue([x == i+1 for i, x in enumerate(image_numbers)])
+                pipeline.prepare_group(image_set_list, {}, range(1,97))
+                for i in range(96):
+                    image_set = image_set_list.get_image_set(i)
+                    for image_name in ('DNA', 'Cytoplasm'):
+                        pathname = measurements.get_measurement(
+                            cpmeas.IMAGE, "PathName_"+image_name, i+1)
+                        self.assertEqual(pathname, 
+                                         '\\imaging\\analysis' if windows_mode
+                                         else '/imaging/analysis')
+                del measurements
             finally:
                 if os.path.exists(bfile):
                     os.unlink(bfile)

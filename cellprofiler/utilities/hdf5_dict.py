@@ -127,13 +127,24 @@ class HDF5Dict(object):
             self.hdf5_file.close()
 
     def __getitem__(self, idxs):
-        assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
+        assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name[, integer])"
         assert isinstance(idxs[0], basestring) and isinstance(idxs[1], basestring), "First two indices must be of type str."
-        assert isinstance(idxs[2], int) and idxs[2] >= 0, "Third index must be a non-negative integer"
+        assert ((not np.isscalar(idxs[2]) and np.all(idxs[2] >= 0))
+                or (isinstance(idxs[2], int) and idxs[2] >= 0)),\
+               "Third index must be a non-negative integer or integer array"
 
         object_name, feature_name, num_idx = idxs
         feature_exists = self.has_feature(object_name, feature_name)
         assert feature_exists
+        if not np.isscalar(num_idx):
+            with self.lock:
+                indices = self.indices[(object_name, feature_name)]
+                dataset = self.get_dataset(object_name, feature_name)
+                return [None if (isinstance(dest, slice) and 
+                                 dest.start is not None and 
+                                 dest.start == dest.stop) else dataset[dest]
+                        for dest in [ indices.get(image_number, slice(0,0))
+                                      for image_number in num_idx]]
 
         if not self.has_data(*idxs):
             return None
@@ -241,7 +252,7 @@ class HDF5Dict(object):
         with self.lock:
             feature_group = self.top_group[object_name].require_group(feature_name)
             self.indices.setdefault((object_name, feature_name), {})
-
+            
     def find_index_or_slice(self, idxs, values=None):
         '''Find the linear indexes or slice for a particular set of
         indexes "idxs", and check that values could be stored in that
@@ -303,6 +314,9 @@ class HDF5Dict(object):
 
     def get_indices(self, object_name, feature_name):
         # CellProfiler expects these in write order
+        if not (self.has_object(object_name) and 
+                self.has_feature(object_name, feature_name)):
+            return []
         with self.lock:
             if 'index' in self.top_group[object_name][feature_name]:
                 idxs = self.top_group[object_name][feature_name]['index'][:, 0][:]

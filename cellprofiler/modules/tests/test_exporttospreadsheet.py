@@ -567,6 +567,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
             self.assertRaises(StopIteration,reader.next)
         finally:
             fd.close()
+            del m
     
     def test_01_01_experiment_measurement(self):
         '''Test writing one experiment measurement'''
@@ -1638,7 +1639,11 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
     # LoadData with data
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
         metadata_name = "Metadata_Bar"
-        info = ('Image_FileName_Foo','Image_PathName_Foo',metadata_name,input_dir,input_dir)
+        info = ('Image_FileName_Foo',
+                'Image_PathName_Foo',
+                metadata_name,
+                input_dir,
+                input_dir)
         csv_text = '''"%s","%s","%s"
 "Channel1-01-A-01.tif","%s","Hi"
 "Channel1-02-A-02.tif","%s","Hello"

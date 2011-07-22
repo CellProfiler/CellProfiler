@@ -909,7 +909,7 @@ class PipelineController:
             if not self.__pipeline.prepare_run(workspace):
                 raise ValueError("Failed to get image sets")
             self.__keys, self.__groupings = self.__pipeline.get_groupings(
-                self.__debug_image_set_list)
+                workspace)
         except ValueError, v:
             message = "Error while preparing for run:\n%s"%(v)
             wx.MessageBox(message, "Pipeline error", wx.OK | wx.ICON_ERROR, self.__frame)

@@ -238,11 +238,14 @@ class CreateBatchFiles(cpm.CPModule):
         '''
         from cellprofiler.utilities.get_revision import version
 
-        if self.wants_default_output_directory.value:
-            path = cpprefs.get_default_output_directory()
+        if outf is None:
+            if self.wants_default_output_directory.value:
+                path = cpprefs.get_default_output_directory()
+            else:
+                path = cpprefs.get_absolute_path(self.custom_output_directory.value)
+            h5_path = os.path.join(path, F_BATCH_DATA_H5)
         else:
-            path = cpprefs.get_absolute_path(self.custom_output_directory.value)
-        h5_path = os.path.join(path, F_BATCH_DATA_H5)
+            h5_path = outf
         
         image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
@@ -258,11 +261,7 @@ class CreateBatchFiles(cpm.CPModule):
                                          workspace.frame)
         pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
         bizarro_self = pipeline.module(self.module_num)
-        assert isinstance(bizarro_self, CreateBatchFiles)
-        state = image_set_list.save_state()
-        state = zlib.compress(state)
         bizarro_self.revision.value = version
-        bizarro_self.batch_state = np.array(state)
         if self.wants_default_output_directory:
             bizarro_self.custom_output_directory.value = \
                         self.alter_path(cpprefs.get_default_output_directory())
@@ -270,21 +269,7 @@ class CreateBatchFiles(cpm.CPModule):
                     self.alter_path(cpprefs.get_default_image_directory())
         bizarro_self.batch_mode.value = True
         pipeline.write_pipeline_measurement(m)
-        
-
-        if outf is None:
-            mat_path = os.path.join(path, F_BATCH_DATA)
-            if os.path.exists(mat_path) and workspace.frame is not None:
-                import wx
-                if (wx.MessageBox("%s already exists. Do you want to overwrite it?"%
-                                  mat_path,
-                                  "Overwriting %s" % F_BATCH_DATA,
-                                  wx.YES_NO, workspace.frame) == wx.NO):
-                    return
-            pipeline.save(mat_path, format=cpp.FMT_MATLAB) # Matlab... it's like the vestigial hole in the head of CP.
-        else:
-            pipeline.save(outf, format=cpp.FMT_NATIVE)
-
+        del m
 
     def in_batch_mode(self):
         '''Tell the system whether we are in batch mode on the cluster'''

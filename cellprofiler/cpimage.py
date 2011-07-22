@@ -518,6 +518,11 @@ class ImageSet(object):
     
     number = property(get_number)
     
+    @property
+    def image_number(self):
+        '''The image number as used in measurements and the database'''
+        return self.__number + 1
+    
     def get_keys(self):
         """The keys that uniquely identify the image set
         """
@@ -659,7 +664,6 @@ class ImageSetList(object):
         if not isinstance(keys_or_number, dict):
             keys = {'number':keys_or_number }
             number = keys_or_number
-            assert number <= len(self.__image_sets)
             if self.__associating_by_key is None:
                 self.__associating_by_key = False
             k = make_dictionary_key(keys)
@@ -671,9 +675,11 @@ class ImageSetList(object):
             else:
                 number = len(self.__image_sets)
             self.__associating_by_key = True
-        if number == len(self.__image_sets):
+        if number >= len(self.__image_sets):
+            self.__image_sets += [ None ]*(number - len(self.__image_sets)+1)
+        if self.__image_sets[number] is None:
             image_set = ImageSet(number, keys, self.__legacy_fields)
-            self.__image_sets.append(image_set)
+            self.__image_sets[number] = image_set
             self.__image_sets_by_key[k] = image_set
             if self.associating_by_key:
                 k = make_dictionary_key(dict(number=number))

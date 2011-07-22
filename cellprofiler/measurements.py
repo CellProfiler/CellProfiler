@@ -122,8 +122,7 @@ class Measurements(object):
                  copy = None):
         """Create a new measurements collection
 
-        can_overwrite - if True, overwriting measurements during operation
-                        is allowed. We turn this on for debugging.
+        can_overwrite - DEPRECATED and has no effect
         image_set_start - the index of the first image set in the image set list
                           or None to start at the beginning
         filename - store the measurement in an HDF5 file with this name
@@ -158,7 +157,6 @@ class Measurements(object):
         self.image_set_number = image_set_start or 1
         self.image_set_start = image_set_start
 
-        self.__can_overwrite = can_overwrite
         self.__is_first_image = True
         self.__initialized_explicitly = False
         self.__relationships = set()
@@ -196,31 +194,13 @@ class Measurements(object):
             self.hdf5_dict.add_feature(object_name, feature)
         self.__initialized_explicitly = True
 
-    def next_image_set(self, explicit_image_set_number=None, erase=False):
+    def next_image_set(self, explicit_image_set_number=None):
         assert explicit_image_set_number is None or explicit_image_set_number > 0
         if explicit_image_set_number is None:
             self.image_set_number += 1
         else:
             self.image_set_number = explicit_image_set_number
         self.__is_first_image = False
-
-        if erase:
-            # HDF5 doesn't have an easy way to remove rows, so we
-            # just overwrite this imagenumber with 0 in all the
-            # tables.
-            #
-            # The primary use case for overwriting is for testing, so
-            # I don't think we need to pack the data, ever. -Ray
-            for object_name in self.get_object_names():
-                if object_name != EXPERIMENT:
-                    self.erase(object_name, self.image_set_number)
-
-    def erase(self, object_name, image_set_number):
-        for feature_name in self.get_feature_names(object_name):
-            del self.hdf5_dict[object_name, feature_name, image_set_number]
-        for feature_name in 'ImageNumber', 'ObjectNumber':
-            if self.hdf5_dict.has_data(object_name, feature_name, image_set_number):
-                del self.hdf5_dict[object_name, feature_name, image_set_number]
 
     @property
     def image_set_count(self):
@@ -289,7 +269,7 @@ class Measurements(object):
         """Add a measurement to the "Image" category
 
         """
-        self.add_measurement(IMAGE, feature_name, data, can_overwrite)
+        self.add_measurement(IMAGE, feature_name, data)
 
     def add_experiment_measurement(self, feature_name, data):
         """Add an experiment measurement to the measurement
@@ -303,7 +283,7 @@ class Measurements(object):
         return self.get_current_image_measurement(GROUP_NUMBER)
 
     def set_group_number(self, group_number, can_overwrite=False):
-        self.add_image_measurement(GROUP_NUMBER, group_number, can_overwrite)
+        self.add_image_measurement(GROUP_NUMBER, group_number)
 
     group_number = property(get_group_number, set_group_number)
 
@@ -315,6 +295,35 @@ class Measurements(object):
         self.add_image_measurement(GROUP_INDEX, group_index)
 
     group_index = property(get_group_index, set_group_index)
+    
+    def get_groupings(self, features):
+        '''Return groupings of image sets based on feature values
+        
+        features - a sequence of feature names
+                   
+        returns groupings suitable for return from CPModule.get_groupings.
+        
+        group_list - a sequence composed of two-tuples.
+                     the first element of the tuple is a dictionary giving
+                     the metadata values for the metadata keys
+                     the second element of the tuple is a sequence of
+                     image numbers comprising the image sets of the group
+        For instance, an experiment might have key_names of 'Metadata_Row'
+        and 'Metadata_Column' and a group_list of:
+        [ ({'Metadata_Row':'A','Metadata_Column':'01'}, [1,97,193]),
+          ({'Metadata_Row':'A','Metadata_Column':'02'), [2,98,194]),... ]
+        '''
+        d = {}
+        image_numbers = self.get_image_numbers()
+        values = [self.get_measurement(IMAGE, feature, image_numbers)
+                  for feature in features]
+        for i, image_number in enumerate(image_numbers):
+            key = tuple([(k, v[i]) for k, v in zip(features, values)])
+            if not d.has_key(key):
+                d[key] = []
+            d[key].append(image_number)
+        return [ (dict(k), d[k]) for k in sorted(d.keys()) ]
+            
 
     def add_relate_measurement(
         self, module_number,
@@ -401,7 +410,8 @@ class Measurements(object):
             temp['object_number2'] = grp['object_number2']
             return temp.view(np.recarray)
 
-    def add_measurement(self, object_name, feature_name, data, can_overwrite=False, image_set_number=None):
+    def add_measurement(self, object_name, feature_name, data, 
+                        can_overwrite=False, image_set_number=None):
         """Add a measurement or, for objects, an array of measurements to the set
 
         This is the classic interface - like CPaddmeasurements:
@@ -409,34 +419,12 @@ class Measurements(object):
         FeatureName - the feature name, encoded with underbars for category/measurement/image/scale
         Data - the data item to be stored
         """
-        can_overwrite = can_overwrite or self.__can_overwrite
         if image_set_number is None:
             image_set_number = self.image_set_number
 
         # some code adds ImageNumber and ObjectNumber measurements explicitly
         if feature_name in (IMAGE_NUMBER, OBJECT_NUMBER):
             return
-
-        fail_if_missing = not (can_overwrite or (self.is_first_image and not self.__initialized_explicitly) or (object_name == EXPERIMENT))
-        if fail_if_missing:
-            assert object_name in self.get_object_names(), \
-                ("Object %s requested for the first time in image set number %d" % \
-                     (object_name, self.image_set_number))
-            assert feature_name in self.get_feature_names(object_name), \
-                ("Feature %s.%s added for the first time in image set # %d (%s %s %s)" % \
-                     (object_name, feature_name, self.image_set_number, can_overwrite, self.is_first_image, self.__initialized_explicitly))
-
-        # XXX - Why is this here?  To allow repeated columns in Metadata?
-        if (not can_overwrite and
-            object_name == IMAGE and feature_name.startswith(C_METADATA)
-            and self.has_measurements(object_name, feature_name, image_set_number)):
-            assert self.get_measurement(IMAGE, feature_name, image_set_number) == data, '%s != %s at img # %d' % \
-                (self.get_measurement(IMAGE, feature_name, image_set_number), data, image_set_number)
-        else:
-            assert (can_overwrite or not
-                    self.has_measurements(object_name, feature_name, image_set_number)),\
-                    ("Feature %s.%s has already been set for image cycle %d" %
-                     (object_name, feature_name, image_set_number))
 
         def wrap_string(v):
             if isinstance(v, basestring):
@@ -464,6 +452,16 @@ class Measurements(object):
             if not self.hdf5_dict.has_data(object_name, 'ObjectNumber', image_set_number):
                 self.hdf5_dict[object_name, 'ImageNumber', image_set_number] = [image_set_number] * len(data)
                 self.hdf5_dict[object_name, 'ObjectNumber', image_set_number] = np.arange(1, len(data) + 1)
+                
+    def remove_measurement(self, object_name, feature_name, image_number):
+        '''Remove the measurement for the given image number
+        
+        object_name - the measurement's object. If other than Image or Experiment,
+                      will remove measurements for all objects
+        feature_name - name of the measurement feature
+        image_number - the image set's image number
+        '''
+        del self.hdf5_dict[object_name, feature_name, image_number]
 
     def get_object_names(self):
         """The list of object names (including Image) that have measurements
@@ -502,7 +500,19 @@ class Measurements(object):
         return self.get_measurement(object_name, feature_name, self.image_set_number)
 
     def get_measurement(self, object_name, feature_name, image_set_number=None):
-        """Return the value for the named measurement and indicated image set"""
+        """Return the value for the named measurement and indicated image set
+        
+        object_name - the name of one of the objects or one of the generic
+                      names such as Image or Experiment
+                      
+        feature_name - the name of the feature to retrieve 
+        
+        image_set_number - the current image set by default, a single 
+                           image set number to get measurements for one
+                           image set or a sequence of image numbers to
+                           return measurements for each of the image sets
+                           listed.
+        """
         def unwrap_string(v):
             # hdf5 returns string columns as a wrapped type
             if isinstance(v, str):
@@ -510,12 +520,19 @@ class Measurements(object):
             return v
         if object_name == EXPERIMENT:
             return unwrap_string(self.hdf5_dict[EXPERIMENT, feature_name, 0][0])
-        if object_name == IMAGE:
-            return unwrap_string(self.hdf5_dict[IMAGE, feature_name, image_set_number][0])
+        if image_set_number is None:
+            image_set_number = self.image_set_number
         vals = self.hdf5_dict[object_name, feature_name, image_set_number]
         if vals is None:
-            return np.array([])
-        return vals.flatten()
+            return None
+        if object_name == IMAGE:
+            if np.isscalar(image_set_number):
+                return None if len(vals) == 0 else unwrap_string(vals[0])
+            else:
+                return np.array([unwrap_string(v[0]) for v in vals])
+        if np.isscalar(image_set_number):
+            return np.array([]) if vals is None else vals.flatten()
+        return [np.array([]) if v is None else v.flatten() for v in vals]
 
     def has_measurements(self, object_name, feature_name, image_set_number):
         if object_name == EXPERIMENT:
@@ -526,15 +543,11 @@ class Measurements(object):
         return self.has_measurements(object_name, feature_name, self.image_set_number)
 
     def get_all_measurements(self, object_name, feature_name):
-        warnings.warn("get_all_measurements() is deprecated.  Use get_measurement()", DeprecationWarning, stacklevel=2)
-
-        assert self.hdf5_dict.has_feature(object_name, feature_name) or feature_name in ('ImageNumber', 'ObjectNumber')
-        if object_name == EXPERIMENT:
-            return self.hdf5_dict[EXPERIMENT, feature_name, 0][0]
-        vals = [self.get_measurement(object_name, feature_name, idx) for idx in self.hdf5_dict.get_indices(object_name, 'ImageNumber')]
-        if object_name == IMAGE:
-            return np.array(vals)
-        return vals
+        warnings.warn("get_all_measurements is deprecated. Please use "
+                      "get_measurements with an array of image numbers instead",
+                      DeprecationWarning)
+        return self.get_measurement(object_name, feature_name,
+                                    self.get_image_numbers())
 
     def add_all_measurements(self, object_name, feature_name, values):
         '''Add a list of measurements for all image sets
@@ -548,7 +561,8 @@ class Measurements(object):
                 if self.hdf5_dict.has_feature(object_name, feature_name):
                     del self.hdf5_dict[object_name, feature_name, idx + 1]
             else:
-                self.add_measurement(object_name, feature_name, val, can_overwrite=True, image_set_number=idx + 1)
+                self.add_measurement(object_name, feature_name, val, 
+                                     image_set_number=idx + 1)
 
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement
@@ -609,22 +623,106 @@ class Measurements(object):
         # The flat_dictionary has a row of tag values as a key
         #
         flat_dictionary = {}
-        for image_number in self.get_image_numbers():
-            values = [self.get_measurement(
-                IMAGE, "%s_%s" % (C_METADATA, tag), image_number)
-                      for tag in tags]
-            values = [ x if np.isscalar(x) else x[0] for x in values]
-            key = tuple(values)
+        image_numbers = self.get_image_numbers()
+        values = [self.get_measurement(
+            IMAGE, "%s_%s" % (C_METADATA, tag), image_numbers)
+                  for tag in tags]
+        for i, image_number in enumerate(image_numbers):
+            key = tuple([(k, v[i]) for k, v in zip(tags, values)])
             if not flat_dictionary.has_key(key):
                 flat_dictionary[key] = []
             flat_dictionary[key].append(image_number)
         result = []
         for row in flat_dictionary.keys():
-            tag_dictionary = {}
-            tag_dictionary.update(zip(tags, row))
+            tag_dictionary = dict(row)
             result.append(MetadataGroup(tag_dictionary, flat_dictionary[row]))
         return result
+    
+    def match_metadata(self, features, values):
+        '''Match vectors of metadata values to existing measurements
+        
+        This method finds the image sets that match each row in a vector
+        of metadata values. Imagine being given an image set with metadata
+        values of plate, well and site and annotations for each well
+        with metadata values of plate and well and annotation. You'd like
+        to match each annotation with all of the sites for it's well. This
+        method will return the image numbers that match.
+        
+        The method can also be used to match images, for instance when
+        different illumination correction functions need to be matched
+        against plates or sites.
+        
+        features - the measurement names for the incoming metadata
+        
+        values - a sequence of vectors, one per feature, giving the
+                 metadata values to be matched.
 
+        returns a sequence of vectors of image numbers of equal length
+        to the values. An exception is thrown if the metadata for more
+        than one row in the values matches the same image set unless the number
+        of values in each vector equals the number of image sets - in that case,
+        the vectors are assumed to be arranged in the correct order already.
+        '''
+        #
+        # Get image features populated by previous modules. If there are any,
+        # then we launch the desperate heuristics that attempt to match
+        # to them, either by order or by common metadata
+        #
+        image_set_count = len(self.get_image_numbers())
+        by_order = [[i+1] for i in range(len(values[0]))]
+        if image_set_count == 0:
+            return by_order
+        
+        image_features = self.get_feature_names(IMAGE)
+        metadata_features = [x for x in image_features
+                             if x.startswith(C_METADATA + "_")]
+        common_features = [x for x in metadata_features
+                           if x in features]
+        if len(common_features) == 0:
+            if image_set_count > len(values[0]):
+                raise ValueError(
+                    "The measurements and data have no metadata in common")
+            return by_order
+        #
+        # This reduces numberlike things to integers so that they can be
+        # more loosely matched.
+        #
+        def cast(x):
+            if x.isdigit():
+                return int(x)
+            return x
+        
+        common_tags = [f[(len(C_METADATA)+1):] for f in common_features]
+        groupings = self.group_by_metadata(common_tags)
+        groupings = dict([(tuple([cast(d[f]) for f in common_tags]), 
+                           d.image_numbers)
+                          for d in groupings])
+        if image_set_count == len(values[0]):
+            #
+            # Test whether the common features uniquely identify
+            # all image sets. If so, then we can match by metadata
+            # and that will be correct, even when the user wants to
+            # match by order (assuming the user really did match
+            # the metadata)
+            #
+            if any([len(v) != 1 for v in groupings.values()]):
+                return by_order
+        #
+        # Create a list of values that matches the common_features
+        #
+        result = []
+        vv = [values[features.index(c)] for c in common_features]
+        for i in range(len(values[0])):
+            key = tuple([cast(vvv[i]) for vvv in vv])
+            if not groupings.has_key(key):
+                raise ValueError(
+                    "There was no image set whose metadata matched row %d.\n"
+                    "Metadata values: " +
+                    ", ".join(["%s = %s" % (k, v)
+                               for k,v in zip(common_features, key)]))
+            result.append(groupings[key])
+        return result
+        
     def agg_ignore_object(self, object_name):
         """Ignore objects (other than 'Image') if this returns true"""
         if object_name in (EXPERIMENT, NEIGHBORS):
@@ -678,7 +776,7 @@ class Measurements(object):
                     d[stdev_feature_name] = stdev
         return d
     
-def load_measurements(filename, dest_file = None, can_overwrite = False):
+def load_measurements(filename, dest_file = None):
     '''Load measurements from an HDF5 file
     
     filename - path to file containing the measurements
@@ -692,12 +790,12 @@ def load_measurements(filename, dest_file = None, can_overwrite = False):
     '''
     try:
         f, top_level = get_top_level_group(filename)
-        m = Measurements(can_overwrite, filename=dest_file, copy = top_level)
+        m = Measurements(filename=dest_file, copy = top_level)
         f.close()
         return m
     except:
         # Fall back to matlab
-        m = Measurements(can_overwrite = can_overwrite, filename = dest_file)
+        m = Measurements(filename = dest_file)
         m.load(filename)
         return m
 

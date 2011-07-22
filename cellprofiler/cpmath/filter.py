@@ -1470,6 +1470,8 @@ def convex_hull_transform(image, levels=256, mask = None,
              np.arange(levels).astype(image.dtype) * 
              (img_max - img_min) / float(levels-1))
     image = ((image - img_min) * (levels-1) / (img_max - img_min))
+    if mask is not None:
+        image[~mask] = 0
     #
     # If there are more than 16 levels, we do the method first at a coarse
     # scale. The dark objects can produce points at every level, so doing
@@ -1478,23 +1480,22 @@ def convex_hull_transform(image, levels=256, mask = None,
     #
     if levels > pass_cutoff:
         sub_levels = int(np.sqrt(levels))
-        rough_image = convex_hull_transform(np.floor(image), sub_levels, mask)
+        rough_image = convex_hull_transform(np.floor(image), sub_levels)
         image = np.maximum(image, rough_image)
         del rough_image
     image = image.astype(int)
     #
     # Get rid of any levels that have no representatives
     #
-    unique = np.unique(image[mask])
+    unique = np.unique(image)
     new_values = np.zeros(levels, int)
     new_values[unique] = np.arange(len(unique))
     scale = scale[unique]
-    image[mask] = new_values[image[mask]]
+    image = new_values[image]
     #
     # Start by constructing the list of points which are local maxima
     #
-    min_image = grey_erosion(image, mask=mask, 
-                             footprint = np.ones((3,3), bool)).astype(int)
+    min_image = grey_erosion(image, footprint = np.ones((3,3), bool)).astype(int)
     #
     # Set the borders of the min_image to zero so that the border pixels
     # will be in all convex hulls below their intensity
@@ -1505,10 +1506,7 @@ def convex_hull_transform(image, levels=256, mask = None,
     min_image[:, -1] = 0
     
     i,j = np.mgrid[0:image.shape[0], 0:image.shape[1]]
-    if mask is not None:
-        mask = mask & (image > min_image)
-    else:
-        mask = image > min_image
+    mask = image > min_image
         
     i = i[mask]
     j = j[mask]

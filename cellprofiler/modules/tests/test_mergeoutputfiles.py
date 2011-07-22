@@ -55,9 +55,10 @@ class TestMergeOutputFiles(unittest.TestCase):
             
     def write_object_measurements(self, m, object_name, feature, object_counts):
         self.assertTrue(isinstance(m, cpmeas.Measurements))
-        object_measurements = [np.random.uniform(size = i)
-                               for i in object_counts]
-        m.add_all_measurements(object_name, feature, object_measurements)
+        for i, count in enumerate(object_counts):
+            object_measurements = np.random.uniform(size = i)
+            m.add_measurement(object_name, feature, object_measurements,
+                              image_set_number = i+1)
             
     def write_experiment_measurement(self, m, feature):
         self.assertTrue(isinstance(m, cpmeas.Measurements))

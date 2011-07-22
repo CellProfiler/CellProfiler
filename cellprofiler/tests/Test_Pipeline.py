@@ -509,11 +509,11 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertEqual(expects[0], 'Done')
         image_numbers = measurements.get_all_measurements("Image","mymeasurement")
         self.assertEqual(len(image_numbers), 4)
-        self.assertTrue(np.all(image_numbers == np.array([1,3,2,4])))
+        self.assertTrue(np.all(image_numbers == np.array([1,2,3,4])))
         group_numbers = measurements.get_all_measurements("Image","Group_Number")
-        self.assertTrue(np.all(group_numbers == np.array([1,1,2,2])))
+        self.assertTrue(np.all(group_numbers == np.array([1,2,1,2])))
         group_indexes = measurements.get_all_measurements("Image","Group_Index")
-        self.assertTrue(np.all(group_indexes == np.array([1,2,1,2])))
+        self.assertTrue(np.all(group_indexes == np.array([1,1,2,2])))
          
     def test_10_02_one_group(self):
         '''Test running a pipeline on one group'''
@@ -833,6 +833,7 @@ class MyClassForTest1101(cpm.CPModule):
 
     def prepare_run(self, workspace, *args):
         image_set = workspace.image_set_list.get_image_set(0)
+        workspace.measurements.add_measurement("Image", "Foo", 1)
         return True
         
     def prepare_group(self, pipeline, image_set_list, *args):
@@ -864,7 +865,7 @@ class GroupModule(cpm.CPModule):
         self.get_measurement_columns_callback = get_measurement_columns_callback
     def settings(self):
         return []
-    def get_groupings(self, image_set_list):
+    def get_groupings(self, workspace):
         return self.groupings
     def prepare_run(self, *args):
         if self.prepare_run_callback is not None:

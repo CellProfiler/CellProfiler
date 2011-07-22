@@ -13,8 +13,12 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
+import hashlib
+import numpy as np
+
 import cellprofiler.cpmodule
 import cellprofiler.cpimage
+import cellprofiler.measurements as cpmeas
 import cellprofiler.settings
 import cellprofiler.objects
 
@@ -58,6 +62,12 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
     
     def prepare_run(self, workspace):
         workspace.image_set_list.get_image_set(0)
+        digest = hashlib.md5()
+        digest.update(np.ascontiguousarray(self.__image).data)
+
+        workspace.measurements.add_measurement(
+            cpmeas.IMAGE,"MD5Digest_%s" % self.__image_name, 1,
+            image_set_number = 1)
         return True
     
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):

@@ -22,6 +22,7 @@ import re
 import unittest
 import tempfile
 import time
+import urllib
 import sys
 import zlib
 from StringIO import StringIO
@@ -43,6 +44,7 @@ import cellprofiler.workspace as W
 from cellprofiler.modules.tests import example_images_directory
 
 IMAGE_NAME = "image"
+ALT_IMAGE_NAME = "altimage"
 OBJECTS_NAME = "objects"
 OUTLINES_NAME = "outlines"
 
@@ -90,12 +92,13 @@ class testLoadImages(unittest.TestCase):
         pipeline = P.Pipeline()
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(l)
-        l.prepare_run(W.Workspace(pipeline, l, None, None,
-                                  measurements.Measurements(),
-                                  image_set_list))
+        m = measurements.Measurements()
+        l.prepare_run(W.Workspace(pipeline, l, None, None, m, image_set_list))
         self.assertEqual(image_set_list.count(),1,"Expected one image set in the list")
         l.prepare_group(pipeline, image_set_list, (), [1])
         image_set = image_set_list.get_image_set(0)
+        l.run(W.Workspace(pipeline, l, image_set, cpo.ObjectSet(),
+                          m, image_set_list))
         self.assertEqual(len(image_set.get_names()),1)
         self.assertEqual(image_set.get_names()[0],"my_image")
         self.assertTrue(image_set.get_image("my_image"))
@@ -117,11 +120,13 @@ class testLoadImages(unittest.TestCase):
         pipeline = P.Pipeline()
         pipeline.add_module(l)
         pipeline.add_listener(self.error_callback)
-        l.prepare_run(W.Workspace(
-            pipeline, l, None, None, measurements.Measurements(), image_set_list))
+        m = measurements.Measurements()
+        l.prepare_run(W.Workspace(pipeline, l, None, None, m, image_set_list))
         self.assertEqual(image_set_list.count(),1,"Expected one image set, there were %d"%(image_set_list.count()))
-        image_set = image_set_list.get_image_set(0)
         l.prepare_group(pipeline, image_set_list, (), [1])
+        image_set = image_set_list.get_image_set(0)
+        l.run(W.Workspace(pipeline, l, image_set, cpo.ObjectSet(), 
+                          m, image_set_list))
         self.assertEqual(len(image_set.get_names()),4)
         for i in range(0,4):
             self.assertTrue("my_image%d"%(i) in image_set.get_names())
@@ -138,12 +143,14 @@ class testLoadImages(unittest.TestCase):
         l.module_num = 1
         image_set_list = I.ImageSetList()
         pipeline = P.Pipeline()
+        m = measurements.Measurements()
         pipeline.add_module(l)
-        l.prepare_run(W.Workspace(
-            pipeline, l, None, None, measurements.Measurements(), image_set_list))
+        l.prepare_run(W.Workspace(pipeline, l, None, None, m, image_set_list))
         self.assertEqual(image_set_list.count(),1,"Expected one image set in the list")
         l.prepare_group(pipeline, image_set_list, (), [1])
         image_set = image_set_list.get_image_set(0)
+        l.run(W.Workspace(pipeline, l, image_set, cpo.ObjectSet(), m,
+                          image_set_list))
         self.assertEqual(len(image_set.get_names()),1)
         self.assertEqual(image_set.get_names()[0],"my_image")
         self.assertTrue(image_set.get_image("my_image"))
@@ -215,14 +222,13 @@ class testLoadImages(unittest.TestCase):
                     image_set_list = I.ImageSetList()
                     pipeline = P.Pipeline()
                     pipeline.add_module(l)
-                    l.prepare_run(W.Workspace(pipeline, l, None, None,
-                                              measurements.Measurements(),
+                    m = measurements.Measurements()
+                    l.prepare_run(W.Workspace(pipeline, l, None, None, m,
                                               image_set_list))
                     nsets = 12 / group_size
                     self.assertEqual(image_set_list.count(), nsets)
                     l.prepare_group(pipeline, image_set_list, (), 
                                     list(range(1, nsets+1)))
-                    m = measurements.Measurements()
                     for i in range(0, nsets):
                         if i > 0:
                             m.next_image_set(i + 1)
@@ -609,7 +615,7 @@ LoadImages:[module_num:1|svn_version:\'9799\'|variable_revision_number:6|show_wi
         self.assertTrue(module.group_by_metadata)
         self.assertFalse(module.exclude)
         self.assertEqual(len(module.metadata_fields.selections), 3)
-        self.assertEqual(module.metadata_fields.selections[0], LI.M_SERIES)
+        self.assertEqual(module.metadata_fields.selections[0], LI.C_SERIES)
         self.assertEqual(module.metadata_fields.selections[1], LI.M_T)
         self.assertEqual(module.metadata_fields.selections[2], LI.M_Z)
         self.assertEqual(module.image_count.value, 1)
@@ -679,7 +685,7 @@ LoadImages:[module_num:1|svn_version:\'9976\'|variable_revision_number:7|show_wi
         self.assertTrue(module.group_by_metadata)
         self.assertFalse(module.exclude)
         self.assertEqual(len(module.metadata_fields.selections), 3)
-        self.assertEqual(module.metadata_fields.selections[0], LI.M_SERIES)
+        self.assertEqual(module.metadata_fields.selections[0], LI.C_SERIES)
         self.assertEqual(module.metadata_fields.selections[1], LI.M_T)
         self.assertEqual(module.metadata_fields.selections[2], LI.M_Z)
         self.assertEqual(module.image_count.value, 1)
@@ -751,7 +757,7 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:8|show_w
         self.assertTrue(module.group_by_metadata)
         self.assertFalse(module.exclude)
         self.assertEqual(len(module.metadata_fields.selections), 3)
-        self.assertEqual(module.metadata_fields.selections[0], LI.M_SERIES)
+        self.assertEqual(module.metadata_fields.selections[0], LI.C_SERIES)
         self.assertEqual(module.metadata_fields.selections[1], LI.M_T)
         self.assertEqual(module.metadata_fields.selections[2], LI.M_Z)
         self.assertEqual(module.image_count.value, 1)
@@ -829,7 +835,7 @@ LoadImages:[module_num:1|svn_version:\'10503\'|variable_revision_number:9|show_w
         self.assertTrue(module.group_by_metadata)
         self.assertFalse(module.exclude)
         self.assertEqual(len(module.metadata_fields.selections), 3)
-        self.assertEqual(module.metadata_fields.selections[0], LI.M_SERIES)
+        self.assertEqual(module.metadata_fields.selections[0], LI.C_SERIES)
         self.assertEqual(module.metadata_fields.selections[1], LI.M_T)
         self.assertEqual(module.metadata_fields.selections[2], LI.M_Z)
         self.assertEqual(module.image_count.value, 1)
@@ -1327,10 +1333,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         
         image_set_list = I.ImageSetList()
         m = measurements.Measurements()
-        self.assertTrue(module.prepare_run(
-            W.Workspace(pipeline, module, None, None, m, image_set_list)))
+        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
+        self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(image_set_list.count(), 1)
-        key_names, group_list = pipeline.get_groupings(image_set_list)
+        key_names, group_list = pipeline.get_groupings(workspace)
         self.assertEqual(len(group_list), 1)
         grouping, image_numbers = group_list[0]
         self.assertEqual(len(image_numbers), 1)
@@ -1391,18 +1397,19 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(load_images)
         image_set_list = I.ImageSetList()
         m = measurements.Measurements()
-        load_images.prepare_run(W.Workspace(
-            pipeline, load_images, None, None, m, image_set_list))
+        workspace = W.Workspace(pipeline, load_images, None, None, m, 
+                                image_set_list)
+        load_images.prepare_run(workspace)
         self.assertEqual(image_set_list.count(),2)
         load_images.prepare_group(pipeline, image_set_list, (), [1,2])
         image_set = image_set_list.get_image_set(0)
+        w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
+                        image_set_list)
+        load_images.run(w)
         self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
                          filenames[0])
         self.assertEqual(image_set.get_image_provider("Channel2").get_filename(),
                          filenames[1])
-        w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
-                        image_set_list)
-        load_images.run(w)
         self.assertEqual(m.get_current_measurement("Image", "Metadata_plate"),
                          "MMD-ControlSet-plateA-2008-08-06")
         self.assertEqual(m.get_current_measurement("Image", "Metadata_well_row"),
@@ -1414,14 +1421,14 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertEqual(m.get_current_measurement("Image", "Metadata_site"),
                          "1")
         image_set = image_set_list.get_image_set(1)
+        m.next_image_set(2)
+        w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
+                        image_set_list)
+        load_images.run(w)
         self.assertEqual(image_set.get_image_provider("Channel1").get_filename(),
                          filenames[2])
         self.assertEqual(image_set.get_image_provider("Channel2").get_filename(),
                          filenames[3])
-        m = measurements.Measurements()
-        w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
-                        image_set_list)
-        load_images.run(w)
         self.assertEqual(m.get_current_measurement("Image", "Metadata_plate"),
                          "MMD-ControlSet-plateA-2008-08-06")
         self.assertEqual(m.get_current_measurement("Image", "Metadata_well_row"),
@@ -1649,15 +1656,16 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 pipeline.add_module(load_images)
                 pipeline.add_listener(self.error_callback)
                 image_set_list = I.ImageSetList()
-                load_images.prepare_run(W.Workspace(
-                    pipeline, load_images, None, None,
-                    measurements.Measurements(), image_set_list))
+                m = measurements.Measurements()
+                workspace = W.Workspace(pipeline, load_images, None, None,
+                                        m, image_set_list)
+                load_images.prepare_run(workspace)
                 d = dict(plate = "MMD-ControlSet-plateA-2008-08-06",
                          well_row = "A",
                          well_col = "12",
                          Well = "A12",
                          site = "1")
-                key_names, groupings = load_images.get_groupings(image_set_list)
+                key_names, groupings = load_images.get_groupings(workspace)
                 self.assertEqual(len(groupings), 2)
                 my_groups = [x for x in groupings
                              if all([d[key_name] == x[0][key_name]
@@ -1666,6 +1674,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 load_images.prepare_group(pipeline, image_set_list,
                                           d,  my_groups[0][1])
                 image_set = image_set_list.get_image_set(d)
+                load_images.run(W.Workspace(pipeline, load_images, image_set,
+                                            cpo.ObjectSet(), m, image_set_list))
                 image = image_set.get_image("Channel1")
                 self.assertEqual(image.file_name, filenames[chosen])
             finally:
@@ -1728,9 +1738,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 w = W.Workspace(pipeline, load_images, image_set,
                                 cpo.ObjectSet(), m, image_set_list)
                 load_images.run(w)
-                image_provider = image_set.get_image_provider("my_image")
-                self.assertEqual(image_provider.get_pathname(), directory)
-                self.assertEqual(image_provider.get_filename(), os.path.join(path, file_name))
+                image = image_set.get_image("my_image")
+                self.assertEqual(tuple(image.pixel_data.shape), (48, 32))
                 f = m.get_current_image_measurement("FileName_my_image")
                 self.assertEqual(f, file_name)
                 p = m.get_current_image_measurement("PathName_my_image")
@@ -1801,9 +1810,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 w = W.Workspace(pipeline, load_images, image_set,
                                 cpo.ObjectSet(), m, image_set_list)
                 load_images.run(w)
-                image_provider = image_set.get_image_provider("my_image")
-                self.assertEqual(image_provider.get_pathname(), directory)
-                self.assertEqual(image_provider.get_filename(), os.path.join(path, file_name))
+                image = image_set.get_image("my_image")
+                self.assertEqual(tuple(image.pixel_data.shape), (48, 32))
                 f = m.get_current_image_measurement("FileName_my_image")
                 self.assertEqual(f, file_name)
                 p = m.get_current_image_measurement("PathName_my_image")
@@ -1863,12 +1871,14 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         module = pipeline.module(1)
         expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'), 
                          ('Image', 'PathName_DNA', 'varchar(256)'),
+                         ('Image', 'URL_DNA', 'varchar(256)'),
                          ('Image', 'MD5Digest_DNA', 'varchar(32)'),
                          ('Image', 'Scaling_DNA', 'float'),
                          ('Image', 'Metadata_WellRow', 'varchar(128)'), 
                          ('Image', 'Metadata_WellCol', 'varchar(128)'), 
                          ('Image', 'FileName_Cytoplasm', 'varchar(128)'), 
                          ('Image', 'PathName_Cytoplasm', 'varchar(256)'), 
+                         ('Image', 'URL_Cytoplasm', 'varchar(256)'),
                          ('Image', 'MD5Digest_Cytoplasm', 'varchar(32)'),
                          ('Image', 'Scaling_Cytoplasm', 'float'),
                          ('Image', 'Metadata_Well', 'varchar(128)'),
@@ -1926,7 +1936,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.load(fd)
         module = pipeline.module(1)
         results = module.get_categories(pipeline, measurements.IMAGE)
-        expected = ['FileName', 'PathName', 'MD5Digest', 'Metadata', 'Scaling', 'Height', 'Width']
+        expected = ['FileName', 'PathName', 'URL', 'MD5Digest', 'Metadata', 
+                    'Scaling', 'Height', 'Width']
         assert set(results) == set(expected)
         
     def test_07_04_get_movie_measurements(self):
@@ -1934,11 +1945,13 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         module = LI.LoadImages()
         base_expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'), 
                               ('Image', 'PathName_DNA', 'varchar(256)'),
+                              ('Image', 'URL_DNA', 'varchar(256)'),
                               ('Image', 'MD5Digest_DNA', 'varchar(32)'),
                               ('Image', 'Scaling_DNA', 'float'),
                               ('Image', 'Height_DNA', 'integer'),
                               ('Image', 'Width_DNA', 'integer'),
-                              ('Image', 'Metadata_T', 'integer')]
+                              ('Image', 'Metadata_T', 'integer'),
+                              ('Image', 'Frame_DNA', 'integer')]
         file_expected_cols = [
             ('Image', 'Metadata_WellRow', 'varchar(128)'), 
             ('Image', 'Metadata_WellCol', 'varchar(128)'),
@@ -1964,7 +1977,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 for column in columns:
                     self.assertTrue(column in expected_cols)
                 categories = module.get_categories(None, measurements.IMAGE)
-                self.assertEqual(len(categories), 7)
+                self.assertEqual(len(categories), 9)
                 category_dict = {}
                 for column in expected_cols:
                     category, feature = column[1].split("_",1)
@@ -1986,13 +1999,15 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         module = LI.LoadImages()
         base_expected_cols = [('Image', 'FileName_DNA', 'varchar(128)'), 
                               ('Image', 'PathName_DNA', 'varchar(256)'),
+                              ('Image', 'URL_DNA', 'varchar(256)'),
                               ('Image', 'MD5Digest_DNA', 'varchar(32)'),
                               ('Image', 'Scaling_DNA', 'float'),
                               ('Image', 'Metadata_T', 'integer'),
                               ('Image', 'Metadata_Z', 'integer'),
                               ('Image', 'Height_DNA', 'integer'),
                               ('Image', 'Width_DNA', 'integer'),
-                              ('Image', 'Metadata_Series', 'integer')]
+                              ('Image', 'Series_DNA', 'integer'),
+                              ('Image', 'Frame_DNA', 'integer')]
         file_expected_cols = [
             ('Image', 'Metadata_WellRow', 'varchar(128)'), 
             ('Image', 'Metadata_WellCol', 'varchar(128)'),
@@ -2017,7 +2032,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             for column in columns:
                 self.assertTrue(column in expected_cols)
             categories = module.get_categories(None, measurements.IMAGE)
-            self.assertEqual(len(categories), 7)
+            self.assertEqual(len(categories), 10)
             category_dict = {}
             for column in expected_cols:
                 category, feature = column[1].split("_",1)
@@ -2058,7 +2073,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         channel.object_name.value = OBJECTS_NAME
         for object_name, expected_categories in (
             (measurements.IMAGE, 
-             (LI.C_OBJECTS_FILE_NAME, LI.C_OBJECTS_PATH_NAME, LI.I.C_COUNT)),
+             (LI.C_OBJECTS_FILE_NAME, LI.C_OBJECTS_PATH_NAME, 
+              LI.C_OBJECTS_URL, LI.I.C_COUNT)),
             (OBJECTS_NAME, (LI.I.C_LOCATION, LI.I.C_NUMBER)),
             ("Foo", [])):
             categories = module.get_categories(None, object_name)
@@ -2104,10 +2120,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_module(module)
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
-        self.assertTrue(pipeline.prepare_run(W.Workspace(
-            pipeline, None, None, None, measurements.Measurements(),
-            image_set_list)))
-        keys, groupings = module.get_groupings(image_set_list)
+        m = measurements.Measurements()
+        workspace = W.Workspace(
+            pipeline, None, None, None, m,
+            image_set_list)
+        self.assertTrue(pipeline.prepare_run(workspace))
+        keys, groupings = module.get_groupings(workspace)
         self.assertEqual(len(keys), 1)
         self.assertEqual(keys[0], "ROW")
         self.assertEqual(len(groupings), 8)
@@ -2118,7 +2136,9 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                  grouping[1])
             for image_number in grouping[1]:
                 image_set = image_set_list.get_image_set(image_number-1)
-                self.assertEqual(image_set.keys["ROW"], row)
+                m.next_image_set(image_number)
+                module.run(W.Workspace(pipeline, module, image_set,
+                                       cpo.ObjectSet(), m, image_set_list))
                 provider = image_set.get_image_provider("MyImage")
                 self.assertTrue(isinstance(provider, LI.LoadImagesImageProvider))
                 match = re.search(module.images[0].file_metadata.value,
@@ -2206,7 +2226,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         img1 = image.pixel_data
         self.assertEqual(tuple(img1.shape), (1040,1388))
         image_set = image_set_list.get_image_set(1)
-        m = measurements.Measurements()
+        m.next_image_set(2)
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
                                 image_set_list)
@@ -2235,10 +2255,11 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
         m = measurements.Measurements()
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
-                                       image_set_list))
-        keys, groupings = module.get_groupings(image_set_list)
-        self.assertTrue("FileName" in keys)
+        workspace = W.Workspace(pipeline, module, None, None, m,
+                                       image_set_list)
+        module.prepare_run(workspace)
+        keys, groupings = module.get_groupings(workspace)
+        self.assertTrue("URL" in keys)
         self.assertTrue("Series" in keys)
         self.assertEqual(len(groupings), 4)
         for grouping, image_numbers in groupings:
@@ -2249,11 +2270,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                         cpo.ObjectSet(), m,
                                         image_set_list)
                 module.run(workspace)
-                for feature, expected in ((LI.M_SERIES, grouping[LI.M_SERIES]),
-                                          (LI.M_Z, 0),
-                                          (LI.M_T, 0)):
-                    value = m.get_current_image_measurement(
-                        measurements.C_METADATA + "_" + feature)
+                for feature, expected in (("Series_Green", grouping[LI.C_SERIES]),
+                                          ("Metadata_Z", 0),
+                                          ("Metadata_T", 0)):
+                    value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
                 red_image = image_set.get_image("Red")
                 green_image = image_set.get_image("Green")
@@ -2306,9 +2326,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertEqual(tuple(img1.shape), (264,542,3))
         self.assertAlmostEqual(np.mean(img1), .07897, 3)
         self.assertTrue('Channel03' in image_set.get_names())
-        provider = image_set.get_image_provider("Channel03")
-        self.assertTrue(isinstance(provider, LI.LoadImagesMovieFrameProvider))
-        self.assertEqual(provider.get_frame(), 2)
+        self.assertEqual(m.get_current_image_measurement("Frame_Channel03"), 2)
         image = image_set.get_image('Channel03')
         img3 = image.pixel_data
         self.assertEqual(tuple(img3.shape), (264,542,3))
@@ -2328,9 +2346,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertAlmostEqual(np.mean(img2), .07860, 3)
         t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
         self.assertEqual(t, 1)
-        provider = image_set.get_image_provider("Channel03")
-        self.assertTrue(isinstance(provider, LI.LoadImagesMovieFrameProvider))
-        self.assertEqual(provider.get_frame(), 7)
+        self.assertEqual(m.get_current_image_measurement("Frame_Channel03"), 7)
         
     def test_09_05_group_separated_avi_frames(self):
         #
@@ -2376,10 +2392,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         img1 = image.pixel_data
         self.assertEqual(tuple(img1.shape), (264,542,3))
         self.assertAlmostEqual(np.mean(img1), .07897, 3)
-        self.assertTrue('Channel03' in image_set.get_names())
-        provider = image_set.get_image_provider("Channel03")
-        self.assertTrue(isinstance(provider, LI.LoadImagesMovieFrameProvider))
-        self.assertEqual(provider.get_frame(), 26)
+        self.assertEqual(m.get_current_image_measurement("Frame_Channel03"), 26)
         image = image_set.get_image('Channel03')
         img3 = image.pixel_data
         self.assertEqual(tuple(img3.shape), (264,542,3))
@@ -2393,18 +2406,14 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                 image_set_list)
         module.run(workspace)
         self.assertTrue('Channel01' in image_set.get_names())
-        provider = image_set.get_image_provider("Channel01")
-        self.assertTrue(isinstance(provider, LI.LoadImagesMovieFrameProvider))
-        self.assertEqual(provider.get_frame(), 1)
+        self.assertEqual(m.get_current_image_measurement("Frame_Channel01"), 1)
         image = image_set.get_image('Channel01')
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (264,542,3))
         self.assertAlmostEqual(np.mean(img2), .079923, 3)
         t = m.get_current_image_measurement("_".join((measurements.C_METADATA, LI.M_T)))
         self.assertEqual(t, 1)
-        provider = image_set.get_image_provider("Channel03")
-        self.assertTrue(isinstance(provider, LI.LoadImagesMovieFrameProvider))
-        self.assertEqual(provider.get_frame(), 27)
+        self.assertEqual(m.get_current_image_measurement("Frame_Channel03"), 27)
         
     def test_09_06_load_flex_interleaved(self):
         # needs better test case file
@@ -2428,10 +2437,11 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
         m = measurements.Measurements()
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m, 
-                                       image_set_list))
-        keys, groupings = module.get_groupings(image_set_list)
-        self.assertTrue("FileName" in keys)
+        workspace = W.Workspace(pipeline, module, None, None, m, 
+                                image_set_list)
+        module.prepare_run(workspace)
+        keys, groupings = module.get_groupings(workspace)
+        self.assertTrue("URL" in keys)
         self.assertTrue("Series" in keys)
         self.assertEqual(len(groupings), 4)
         for group_number, (grouping, image_numbers) in enumerate(groupings):
@@ -2444,19 +2454,15 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                         cpo.ObjectSet(), m,
                                         image_set_list)
                 module.run(workspace)
-                for feature, expected in ((LI.M_SERIES, grouping[LI.M_SERIES]),
-                                          (LI.M_Z, 0),
-                                          (LI.M_T, 0)):
-                    value = m.get_current_image_measurement(
-                        measurements.C_METADATA + "_" + feature)
+                for feature, expected in (("Series_Green", grouping[LI.C_SERIES]),
+                                          ("Series_Red", grouping[LI.C_SERIES]),
+                                          ("Frame_Red", group_index * 2),
+                                          ("Frame_Green", group_index * 2 + 1),
+                                          ("Metadata_Z", 0),
+                                          ("Metadata_T", 0)):
+                    value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
                 
-                red_image_provider = image_set.get_image_provider("Red")
-                green_image_provider = image_set.get_image_provider("Green")
-                self.assertEqual(red_image_provider.get_c(), 0)
-                self.assertEqual(green_image_provider.get_c(), 1)
-                self.assertEqual(red_image_provider.get_t(), 0)
-                self.assertEqual(green_image_provider.get_t(), 0)
                 red_image = image_set.get_image("Red")
                 green_image = image_set.get_image("Green")
                 self.assertEqual(tuple(red_image.pixel_data.shape),
@@ -2485,10 +2491,11 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
         m = measurements.Measurements()
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m, 
-                                       image_set_list))
-        keys, groupings = module.get_groupings(image_set_list)
-        self.assertTrue("FileName" in keys)
+        workspace = W.Workspace(pipeline, module, None, None, m, 
+                                image_set_list)
+        module.prepare_run(workspace)
+        keys, groupings = module.get_groupings(workspace)
+        self.assertTrue("URL" in keys)
         self.assertTrue("Series" in keys)
         self.assertEqual(len(groupings), 4)
         for group_number, (grouping, image_numbers) in enumerate(groupings):
@@ -2502,19 +2509,15 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 m.add_image_measurement(cpp.GROUP_INDEX, group_index)
                 m.add_image_measurement(cpp.GROUP_NUMBER, group_number)
                 module.run(workspace)
-                for feature, expected in ((LI.M_SERIES, grouping[LI.M_SERIES]),
-                                          (LI.M_Z, 0),
-                                          (LI.M_T, 0)):
-                    value = m.get_current_image_measurement(
-                        measurements.C_METADATA + "_" + feature)
+                for feature, expected in (("Series_Red", grouping[LI.C_SERIES]),
+                                          ("Series_Green", grouping[LI.C_SERIES]),
+                                          ("Frame_Red", 0),
+                                          ("Frame_Green", 1),
+                                          ("Metadata_Z", 0),
+                                          ("Metadata_T", 0)):
+                    value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
                 
-                red_image_provider = image_set.get_image_provider("Red")
-                green_image_provider = image_set.get_image_provider("Green")
-                self.assertEqual(red_image_provider.get_c(), 0)
-                self.assertEqual(green_image_provider.get_c(), 1)
-                self.assertEqual(red_image_provider.get_t(), 0)
-                self.assertEqual(green_image_provider.get_t(), 0)
                 red_image = image_set.get_image("Red")
                 green_image = image_set.get_image("Green")
                 self.assertEqual(tuple(red_image.pixel_data.shape),
@@ -2559,7 +2562,6 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                        image_set_list))
         module.prepare_group(pipeline, image_set_list, (), [1])
         image_set = image_set_list.get_image_set(0)
-        m = measurements.Measurements()
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
                                 image_set_list)
@@ -2713,6 +2715,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         orig_path = os.path.join(T.example_images_directory(),"ExampleSBSImages")
         module.location.custom_path = orig_path
         target_path = orig_path.replace("ExampleSBSImages", "ExampleTrackObjects")
+        url_path = LI.url2pathname(LI.pathname2url(orig_path))
             
         file_regexp = "^Channel1-[0-9]{2}-[A-P]-[0-9]{2}.tif$"
         module.images[0].common_text.value = file_regexp
@@ -2728,22 +2731,35 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         def fn_alter_path(pathname, **varargs):
             is_path = (pathname == orig_path)
             is_file = re.match(file_regexp, pathname) is not None
-            self.assertTrue(is_path or is_file)
-            if is_path:
+            if not (is_path or is_file):
+                self.assertTrue(pathname.startswith(url_path))
+                file_part = pathname[(len(url_path)+1):]
+                self.assertTrue(re.match(file_regexp, file_part) is not None)
+                return os.path.join(target_path, file_part)
+            elif is_path:
                 return target_path
             else:
                 return pathname
         module.prepare_to_create_batch(workspace, fn_alter_path)
-        key_names, group_list = pipeline.get_groupings(image_set_list)
+        key_names, group_list = pipeline.get_groupings(workspace)
         self.assertEqual(len(group_list), 1)
         group_keys, image_numbers = group_list[0]
         self.assertEqual(len(image_numbers), 96)
         module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
         for image_number in image_numbers:
-            image_set = image_set_list.get_image_set(image_number-1)
-            image_provider = image_set.get_image_provider(IMAGE_NAME)
-            self.assertTrue(isinstance(image_provider, LI.LoadImagesImageProvider))
-            self.assertEqual(image_provider.get_pathname(), target_path)
+            path = m.get_measurement(measurements.IMAGE,
+                                     LI.C_PATH_NAME + "_" + IMAGE_NAME,
+                                     image_set_number = image_number)
+            self.assertEqual(path, target_path)
+            file_name = m.get_measurement(measurements.IMAGE,
+                                          LI.C_FILE_NAME + "_" + IMAGE_NAME, 
+                                          image_set_number = image_number)
+            self.assertTrue(re.match(file_regexp, file_name) is not None)
+            url = m.get_measurement(measurements.IMAGE,
+                                    LI.C_URL + "_" + IMAGE_NAME,
+                                    image_set_number = image_number)
+            self.assertEqual(url, LI.pathname2url(
+                os.path.join(path, file_name)))
     
     def test_13_02_batch_movies(self):
         module = LI.LoadImages()
@@ -2753,8 +2769,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         orig_path = T.testimages_directory()
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")
+        orig_url = LI.pathname2url(orig_path)
             
         file_name = "DrosophilaEmbryo_GFPHistone.avi"
+        target_url = LI.pathname2url(os.path.join(target_path, file_name))
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.module_num = 1
@@ -2768,23 +2786,30 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         def fn_alter_path(pathname, **varargs):
             is_fullpath = (os.path.join(orig_path, file_name) == pathname)
             is_path = (orig_path == pathname)
-            self.assertTrue(is_fullpath or is_path)
+            is_file = (pathname == file_name)
+            if not (is_fullpath or is_path or is_file):
+                self.assertTrue(pathname.startswith(orig_url))
+                self.assertEqual(pathname[(len(orig_url)+1):], file_name)
+                return target_url
+            elif is_file:
+                return pathname
             if is_fullpath:
                 return os.path.join(target_path, file_name)
             else:
                 return target_path
         module.prepare_to_create_batch(workspace, fn_alter_path)
-        key_names, group_list = pipeline.get_groupings(image_set_list)
+        key_names, group_list = pipeline.get_groupings(workspace)
         self.assertEqual(len(group_list), 1)
         group_keys, image_numbers = group_list[0]
         self.assertEqual(len(image_numbers), 65)
         module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
         for image_number in image_numbers:
-            image_set = image_set_list.get_image_set(image_number-1)
-            image_provider = image_set.get_image_provider(IMAGE_NAME)
-            self.assertTrue(isinstance(image_provider, LI.LoadImagesMovieFrameProvider))
-            self.assertEqual(image_provider.get_pathname(), target_path)
-            self.assertEqual(image_provider.get_t(), image_number-1)
+            self.assertEqual(m.get_measurement(
+                measurements.IMAGE, "PathName_" + IMAGE_NAME, 
+                image_set_number = image_number), target_path)
+            self.assertEqual(m.get_measurement(
+                measurements.IMAGE, "Metadata_T", 
+                image_set_number = image_number), image_number-1)
     
     def test_13_03_batch_flex(self):
         module = LI.LoadImages()
@@ -2792,10 +2817,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
         module.file_types.value = LI.FF_OTHER_MOVIES
         orig_path = T.testimages_directory()
+        orig_url = LI.pathname2url(orig_path)
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")
             
         file_name = "RLM1 SSN3 300308 008015000.flex"
+        target_url = LI.pathname2url(os.path.join(orig_path, file_name))
         module.images[0].common_text.value = file_name
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.module_num = 1
@@ -2810,27 +2837,29 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         def fn_alter_path(pathname, **varargs):
             is_fullpath = (os.path.join(orig_path, file_name) == pathname)
             is_path = (orig_path == pathname)
-            self.assertTrue(is_fullpath or is_path)
+            is_file = pathname == file_name
+            if not (is_fullpath or is_path or is_file):
+                self.assertTrue(pathname.startswith(orig_url))
+                self.assertEqual(pathname[(len(orig_url)+1):], file_name)
+                return target_url
             if is_fullpath:
                 return os.path.join(target_path, file_name)
             else:
                 return target_path
         module.prepare_to_create_batch(workspace, fn_alter_path)
-        key_names, group_list = pipeline.get_groupings(image_set_list)
+        key_names, group_list = pipeline.get_groupings(workspace)
         self.assertEqual(len(group_list), 4)
         for i, (group_keys, image_numbers) in enumerate(group_list):
             self.assertEqual(len(image_numbers), 1)
             module.prepare_group(pipeline, image_set_list, group_keys, 
                                  image_numbers)
             for image_number in image_numbers:
-                image_set = image_set_list.get_image_set(image_number-1)
-                image_provider = image_set.get_image_provider(IMAGE_NAME)
-                self.assertTrue(isinstance(image_provider, LI.LoadImagesFlexFrameProvider))
-                self.assertEqual(image_provider.get_pathname(), target_path)
-                self.assertEqual(image_provider.get_series(), i)
-                self.assertEqual(image_provider.get_t(), 0)
-                self.assertEqual(image_provider.get_z(), 0)
-                self.assertEqual(image_provider.get_c(), 0)
+                self.assertEqual(m.get_measurement(
+                    measurements.IMAGE,
+                    "PathName_" + IMAGE_NAME, image_number), target_path)
+                self.assertEqual(m.get_measurement(
+                    measurements.IMAGE, LI.C_SERIES + "_" + IMAGE_NAME,
+                    image_number), i)
     
     def test_14_01_load_unicode(self):
         '''Load an image from a unicode - encoded location'''
@@ -2857,20 +2886,20 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         m = measurements.Measurements()
-        self.assertTrue(module.prepare_run(W.Workspace(
-            pipeline, module, None, None, m, image_set_list)))
+        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
+        self.assertTrue(module.prepare_run(workspace))
         self.assertEqual(image_set_list.count(), 1)
-        key_names, group_list = pipeline.get_groupings(image_set_list)
+        key_names, group_list = pipeline.get_groupings(workspace)
         self.assertEqual(len(group_list), 1)
         group_keys, image_numbers = group_list[0]
         self.assertEqual(len(image_numbers), 1)
         module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
         image_set = image_set_list.get_image_set(image_numbers[0]-1)
-        image_provider = image_set.get_image_provider(IMAGE_NAME)
-        self.assertEqual(image_provider.get_filename(), filename)
         workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                 m, image_set_list)
         module.run(workspace)
+        image_provider = image_set.get_image_provider(IMAGE_NAME)
+        self.assertEqual(image_provider.get_filename(), filename)
         pixel_data = image_set.get_image(IMAGE_NAME).pixel_data
         self.assertEqual(tuple(pixel_data.shape[:2]), tuple(T.raw_8_1_shape))
         file_feature = '_'.join((LI.C_FILE_NAME, IMAGE_NAME))
@@ -2880,6 +2909,66 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         path_measurement = m.get_current_image_measurement(path_feature)
         self.assertEqual(os.path.split(directory)[1],
                          os.path.split(path_measurement)[1])
+
+    def make_prepare_run_workspace(self, file_names):
+        '''Make a workspace and image files for prepare_run
+        
+        file_names - a list of file names of files to create in self.directory
+        
+        returns tuple of workspace and module
+        '''
+        self.directory = tempfile.mkdtemp()
+        data = base64.b64decode(T.png_8_1)
+        for file_name in file_names:
+            path = os.path.join(self.directory, file_name)
+            fd = open(path, "wb")
+            fd.write(data)
+            fd.close()
+        
+        module = LI.LoadImages()
+        module.module_num = 1
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = self.directory
+        
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, (
+                cpp.LoadExceptionEvent, cpp.RunExceptionEvent)))
+        pipeline.add_listener(callback)
+        pipeline.add_module(module)
+        m = measurements.Measurements()
+        image_set_list = I.ImageSetList()
+        return (W.Workspace(pipeline, module, None, None, m, image_set_list),
+                module)
+            
+    def test_15_01_prepare_run_measurements(self):
+        filenames = ["channel1-A01.png", "channel2-A01.png",
+                     "channel1-A02.png", "channel2-A02.png"]
+        workspace, module = self.make_prepare_run_workspace(filenames)
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        module.match_method.value = LI.MS_EXACT_MATCH
+        module.add_imagecb()
+        module.images[0].common_text.value = "channel1-"
+        module.images[1].common_text.value = "channel2-"
+        module.images[0].channels[0].image_name.value = IMAGE_NAME
+        module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
+        self.assertTrue(module.prepare_run(workspace))
+        
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, measurements.Measurements))
+        for i in range(1,3):
+            for j, image_name in ((1, IMAGE_NAME), (2, ALT_IMAGE_NAME)):
+                filename = "channel%d-A0%d.png" % (j, i)
+                full_path = os.path.join(self.directory, filename)
+                url = "file:" + urllib.pathname2url(full_path)
+                for category, expected in (
+                    ( LI.C_FILE_NAME, filename),
+                    ( LI.C_PATH_NAME, self.directory ),
+                    ( LI.C_URL, url)):
+                    value = m.get_measurement(measurements.IMAGE,
+                                              "_".join((category, image_name)),
+                                              i)
+                    self.assertEqual(value, expected)
             
 if __name__=="main":
     unittest.main()

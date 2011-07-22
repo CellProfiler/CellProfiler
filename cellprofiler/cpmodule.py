@@ -535,10 +535,13 @@ class CPModule(object):
         '''
         return True
     
-    def get_groupings(self, image_set_list):
+    def get_groupings(self, workspace):
         '''Return the image groupings of the image sets in an image set list
         
         get_groupings is called after prepare_run
+        
+        workspace - a workspace with an image_set_list and measurements
+                    as prepared by prepare_run.
         
         returns a tuple of key_names and group_list:
         key_names - the names of the keys that identify the groupings

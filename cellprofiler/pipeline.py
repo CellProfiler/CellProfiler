@@ -256,6 +256,8 @@ def add_all_measurements(handles, measurements):
                     feature_measurements[0, i-1] = np.array([ddata])
                 elif ddata is not None:
                     feature_measurements[0,i-1] = ddata
+                else:
+                    feature_measurements[0, i-1] = np.zeros(0)
     if cpmeas.EXPERIMENT in measurements.object_names:
         mapping = map_feature_names(measurements.get_feature_names(cpmeas.EXPERIMENT))
         object_dtype = make_cell_struct_dtype(mapping.keys())
@@ -1133,10 +1135,10 @@ class Pipeline(object):
         Run the pipeline, returning the measurements made
         """
 
-        def group(image_set_list):
+        def group(workspace):
             """Enumerate relevant image sets.  This function is
             side-effect free, so it can be called more than once."""
-            keys, groupings = self.get_groupings(image_set_list)
+            keys, groupings = self.get_groupings(workspace)
             if grouping is not None and set(keys) != set(grouping.keys()):
                 raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)"%(
                         ", ".join(grouping.keys()), ", ".join(keys)))
@@ -1176,15 +1178,40 @@ class Pipeline(object):
         try:
             if not self.prepare_run(workspace):
                 return
+            #
+            # Remove image sets outside of the requested ranges
+            #
+            image_numbers = measurements.get_image_numbers()
+            to_remove = []
+            if image_set_start is not None:
+                to_remove += [x for x in image_numbers
+                              if x < image_set_start]
+                image_numbers = [x for x in image_numbers 
+                                 if x >= image_set_start]
+            if image_set_end is not None:
+                to_remove += [x for x in image_numbers
+                              if x > image_set_end]
+                image_numbers = [x for x in image_numbers
+                                 if x <= image_set_end]
+            if grouping is not None:
+                keys, groupings = self.get_groupings(workspace)
+                for grouping_keys, grouping_image_numbers in groupings:
+                    if grouping_keys != grouping:
+                        to_remove += list(grouping_image_numbers)
+            if (len(to_remove) > 0 and 
+                measurements.has_feature(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER)):
+                for image_number in np.unique(to_remove):
+                    measurements.remove_measurement(
+                        cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, image_number)
 
             # Keep track of progress for the benefit of the progress window.
-            num_image_sets = sum([image_number is not None 
-                                  for image_number, _, _, _ in group(image_set_list)])
+            num_image_sets = len(measurements.get_image_numbers())
             image_set_count = -1
             is_first_image_set = True
             last_image_number = None
             pipeline_stats_logger.info("Times reported are CPU times for each module, not wall-clock time")
-            for group_number, group_index, image_number, closure in group(image_set_list):
+            for group_number, group_index, image_number, closure \
+                in group(workspace):
                 if image_number is None:
                     if not closure(workspace):
                         measurements.add_experiment_measurement(EXIT_STATUS,
@@ -1197,7 +1224,7 @@ class Pipeline(object):
                 if last_image_number is not None:
                     image_set_list.purge_image_set(last_image_number-1)
                 last_image_number = image_number
-                measurements.next_image_set(image_number, erase=True)
+                measurements.next_image_set(image_number)
                 if is_first_image_set:
                     measurements.image_set_start = image_number
                     measurements.is_first_image = True
@@ -1432,7 +1459,7 @@ class Pipeline(object):
                 if event.cancel_run:
                     return
     
-    def get_groupings(self, image_set_list):
+    def get_groupings(self, workspace):
         '''Return the image groupings of the image sets in an image set list
         
         returns a tuple of key_names and group_list:
@@ -1450,7 +1477,8 @@ class Pipeline(object):
         groupings = None
         grouping_module = None
         for module in self.modules():
-            new_groupings = module.get_groupings(image_set_list)
+            workspace.set_module(module)
+            new_groupings = module.get_groupings(workspace)
             if new_groupings is None:
                 continue
             if groupings is None:
@@ -1464,10 +1492,7 @@ class Pipeline(object):
                                   module.module_num,
                                   module.module_name))
         if groupings is None:
-            if image_set_list is not None:
-                return ((), (((),range(1, image_set_list.count()+1)),))
-            else:
-                raise ValueError("No image sets defined for current pipeline!")
+            return ((), (((),workspace.measurements.get_image_numbers()),))
         return groupings
     
     def get_undefined_metadata_tags(self, pattern):

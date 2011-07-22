@@ -161,15 +161,21 @@ import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
-from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME
-from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
+from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME
+from cellprofiler.modules.loadimages import C_OBJECTS_PATH_NAME
+from cellprofiler.modules.loadimages import C_OBJECTS_URL
+from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
+from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH
 from cellprofiler.modules.loadimages import bad_sizes_warning
 from cellprofiler.modules.loadimages import convert_image_to_objects
+from cellprofiler.modules.loadimages import pathname2url, url2pathname
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
      ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 
+IMAGE_CATEGORIES = (C_URL, C_FILE_NAME, C_PATH_NAME)
+OBJECTS_CATEGORIES = (C_OBJECTS_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME)
 DIR_NONE = 'None'
 DIR_OTHER = 'Elsewhere...'
 DIR_ALL = [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, 
@@ -661,24 +667,31 @@ class LoadData(cpm.CPModule):
         entry["header"] = [header_to_column(column) for column in header]
         return entry["header"]
         
+    def get_image_names(self, do_not_cache = False):
+        header = self.get_header(do_not_cache=do_not_cache)
+        return [get_image_name(field)
+                for field in header
+                if is_file_name_feature(field)]
+    
+    def get_object_names(self, do_not_cache = False):
+        header = self.get_header(do_not_cache=do_not_cache)
+        return [get_objects_name(field)
+                for field in header
+                if is_objects_file_name_feature(field)]
+        
+        
     def other_providers(self, group):
         '''Get name providers from the CSV header'''
         if group=='imagegroup' and self.wants_images.value:
             try:
                 # do not load URLs automatically
-                header = self.get_header(do_not_cache=True)
-                return [get_image_name(field)
-                        for field in header
-                        if is_file_name_feature(field)]
+                return self.get_image_names(do_not_cache = True)
             except Exception,e:
                 return []
         elif group == 'objectgroup' and self.wants_images:
             try:
                 # do not load URLs automatically
-                header = self.get_header(do_not_cache=True)
-                return [get_objects_name(field)
-                        for field in header
-                        if is_objects_file_name_feature(field)]
+                return self.get_object_names(do_not_cache = True)
             except Exception,e:
                 return []
             
@@ -695,20 +708,17 @@ class LoadData(cpm.CPModule):
     
     def prepare_run(self, workspace):
         pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
         '''Load the CSV file at the outset and populate the image set list'''
         if pipeline.in_batch_mode():
-            if os.path.exists(self.csv_path):
-                return True
-            raise ValueError(('''Can't find the CSV file, "%s". ''' 
-                              '''Please check that the name matches exactly, '''
-                              '''including the case''') % self.csv_path)
+            return True
         fd = self.open_csv()
         reader = csv.reader(fd)
         header = [header_to_column(column) for column in reader.next()]
         if header[0].startswith('ELN_RUN_ID'):
             reader = self.convert()
-            header = reader.dtype.names
+            header = list(reader.dtype.names)
         if self.wants_rows.value:
             # skip initial rows
             n_to_skip = self.row_range.min-1
@@ -743,112 +753,125 @@ class LoadData(cpm.CPModule):
                             len(row), len(header))
                 raise ValueError(text)
         #
-        # Arrange the metadata in columns
+        # Find the metadata, object_name and image_name columns
         #
-        dictionary = {}
-        metadata = {}
-        images = {}
-        objects = {}
-        previous_columns = [x for x in pipeline.get_measurement_columns(self)
-                            if x[0] == cpmeas.IMAGE and x[1] in header]
-        previous_dict = {}
-        for object_name, feature, coltype in previous_columns:
-            previous_dict[feature] = coltype
-        well_column_data = None
-        well_row_data = None
-        for i, feature in enumerate(header):
-            column = [row[i] for row in rows]
-            if feature.startswith('Metadata_'):
-                key = feature[len('Metadata_'):]
-                column = np.array(column)
-                if previous_dict.has_key(feature):
-                    dictionary[feature] = best_cast(column, previous_dict[feature])
-                elif cpmeas.is_well_column_token(key):
-                    # Always keep well columns as strings
-                    dictionary[feature] = column
-                else:
-                    dictionary[feature] = best_cast(column)
-                if cpmeas.is_well_row_token(key):
-                    well_row_data = column
-                if cpmeas.is_well_column_token(key):
-                    well_column_data = column
-                metadata[key] = dictionary[feature]
-            elif (self.wants_images.value and
-                  is_file_name_feature(feature)):
-                column = np.array(column)
-                image = get_image_name(feature)
-                if not images.has_key(image):
-                    images[image] = {}
-                images[image][C_FILE_NAME] = column
-                dictionary[feature] = column
-            elif (self.wants_images.value and
-                  is_path_name_feature(feature)):
-                column = np.array(column)
-                image = get_image_name(header[i])
-                if not images.has_key(image):
-                    images[image] = {}
-                images[image][C_PATH_NAME] = column
-                dictionary[feature] = column
-            elif (self.wants_images.value and
-                  is_objects_file_name_feature(feature)):
-                column = np.array(column)
-                objects_name = get_objects_name(feature)
-                if not objects.has_key(objects_name):
-                    objects[objects_name] = {}
-                objects[objects_name][C_OBJECTS_FILE_NAME] = column
-                dictionary[feature] = column
-            elif (self.wants_images.value and
-                  is_objects_path_name_feature(feature)):
-                column = np.array(column)
-                objects_name = get_objects_name(feature)
-                if not objects.has_key(objects_name):
-                    objects[objects_name] = {}
-                objects[objects_name][C_OBJECTS_PATH_NAME] = column
-                dictionary[feature] = column
+        metadata_columns = {}
+        object_columns  = {}
+        image_columns = {}
+        well_row_column =  well_column_column = well_well_column = None
+        for i, column in enumerate(header):
+            if column.find("_") == -1:
+                category = ""
+                feature = column
             else:
-                dictionary[feature] = best_cast(column)
-        if self.has_synthetic_well_metadata():
-            dictionary[cpmeas.FTR_WELL] = np.array([r+c for r,c in zip(
-                well_row_data, well_column_data)])
-            metadata[cpmeas.FTR_WELL] = dictionary[cpmeas.FTR_WELL]
-        
-        for image in images.keys():
-            if not images[image].has_key(C_FILE_NAME):
-                raise ValueError('The CSV file has a PathName_%s metadata column without a corresponding FileName_%s column'%
-                                 (image,image))
-        for objects_name in objects.keys():
-            if not objects[objects_name].has_key(C_OBJECTS_FILE_NAME):
-                raise ValueError('The CSV file has an ObjectsPathName_%s metadata column without a corresponding ObjectsFileName_%s column'%
-                                 (objects_name,objects_name))
+                category, feature = column.split("_", 1)
+            if category in IMAGE_CATEGORIES:
+                if not image_columns.has_key(feature):
+                    image_columns[feature] = []
+                image_columns[feature].append(i)
+            elif category in OBJECTS_CATEGORIES:
+                if not object_columns.has_key(feature):
+                    object_columns[feature] = []
+                object_columns[feature].append(i)
+            else:
+                metadata_columns[column] = i
+                if category == cpmeas.C_METADATA:
+                    if feature.lower() == cpmeas.FTR_WELL.lower():
+                        well_well_column = i
+                    elif cpmeas.is_well_row_token(feature):
+                        well_row_column = i
+                    elif cpmeas.is_well_column_token(feature):
+                        well_column_column = i
                 
+        if (well_row_column is not None and well_column_column is not None and
+            well_well_column is None):
+            # add a synthetic well column
+            metadata_columns[cpmeas.M_WELL] = len(header)
+            header.append(cpmeas.M_WELL)
+            for row in rows:
+                row.append(row[well_row_column] + row[well_column_column])
         if self.wants_images:
             #
-            # Populate the image set list 
+            # Add synthetic object and image columns
             #
-            use_key = (image_set_list.associating_by_key != False)
-            add_number = (image_set_list.associating_by_key is None)
-            for i in range(len(rows)):
-                if len(metadata) and use_key:
-                    key = {}
-                    for k in metadata.keys():
-                        md = metadata[k][i]
-                        if hasattr(md, "dtype"):
-                            if md.dtype.name.startswith('string'):
-                                md = str(md)
-                            elif md.dtype.name.startswith('int'):
-                                md = int(md)
-                            elif md.dtype.name.startswith('float'):
-                                md = float(md)
-                        key[k] = md
-                    if add_number:
-                        key["number"] = i
-                    image_set = image_set_list.get_image_set(key)
+            if self.image_directory.dir_choice == cps.NO_FOLDER_NAME:
+                path_base = ""
+            else:
+                path_base = self.image_path 
+            for d, url_category, file_name_category, path_name_category in (
+                ( image_columns, C_URL, C_FILE_NAME, C_PATH_NAME),
+                ( object_columns, C_OBJECTS_URL, C_OBJECTS_FILE_NAME, 
+                  C_OBJECTS_PATH_NAME)):
+                for name in d.keys():
+                    url_column = file_name_column = path_name_column = None
+                    for k in d[name]:
+                        if header[k].startswith(url_category):
+                            url_column = k
+                        elif header[k].startswith(file_name_category):
+                            file_name_column = k
+                        elif header[k].startswith(path_name_category):
+                            path_name_column = k
+                    if url_column is None:
+                        if file_name_column is None:
+                            raise ValueError(
+                                ("LoadData needs a %s_%s column to match the "
+                                 "%s_%s column") % (file_name_category, image_name,
+                                                    path_name_category, image_name))
+                        #
+                        # Add URL column
+                        #
+                        d[name].append(len(header))
+                        url_feature = "_".join((url_category, name))
+                        header.append(url_feature)
+                        for row in rows:
+                            if path_name_column is None:
+                                fullname = os.path.join(path_base,
+                                                        row[file_name_column])
+                            else:
+                                fullname = os.path.join(path_base,
+                                                        row[path_name_column],
+                                                        row[file_name_column])
+                            url = pathname2url(fullname)
+                            row.append(url)
+        column_type = {}
+        for column in self.get_measurement_columns(pipeline):
+            column_type[column[1]] = column[2]
+        
+        previous_column_types = dict([
+            (c[1], c[2]) for c in pipeline.get_measurement_columns(self)
+            if c[0] == cpmeas.IMAGE])
+        #
+        # Arrange the metadata into columns
+        #
+        columns = {}
+        for index, feature in enumerate(header):
+            c = []
+            columns[feature] = c
+            for row in rows:
+                value = row[index]
+                if column_type.has_key(feature):
+                    datatype = column_type[feature]
                 else:
-                    image_set = image_set_list.get_image_set(i)
-        #
-        # Hide the measurements in the image_set_list
-        #
-        image_set_list.legacy_fields[self.legacy_field_key] = dictionary
+                    datatype = previous_column_types[feature]
+                if datatype == cpmeas.COLTYPE_INTEGER:
+                    value = int(value)
+                elif datatype == cpmeas.COLTYPE_FLOAT:
+                    value = float(value)
+                c.append(value)
+        
+        if len(metadata_columns) == 0:
+            image_numbers = [[i] for i in range(1, len(rows) + 1)]
+        else:
+            image_numbers = m.match_metadata(
+                metadata_columns.keys(), 
+                [columns[k] for k in metadata_columns.keys()])
+        for i, image_sets in enumerate(image_numbers):
+            for feature, values in columns.iteritems():
+                if column_type.has_key(feature):
+                    for image_number in image_sets:
+                        m.add_measurement(cpmeas.IMAGE, feature, values[i], 
+                                          image_set_number = image_number)
+                
         return True
     
     def prepare_to_create_batch(self, workspace, fn_alter_path):
@@ -867,155 +890,124 @@ class LoadData(cpm.CPModule):
                         mapping mountpoints. It should be called for every
                         pathname stored in the settings or legacy fields.
         '''
-        image_set_list = workspace.image_set_list
-        dictionary = image_set_list.legacy_fields[self.legacy_field_key]
-        path_keys = [key for key in dictionary.keys()
-                     if is_path_name_feature(key) or
-                     is_objects_path_name_feature(key)]
-        for key in path_keys:
-            dictionary[key] = np.array([fn_alter_path(path) 
-                                        for path in dictionary[key]])
+        
+        if self.wants_images:
+            m = workspace.measurements
+            assert isinstance(m, cpmeas.Measurements)
+            image_numbers = m.get_image_numbers()
+            all_image_features = m.get_feature_names(cpmeas.IMAGE)
+            for url_category, file_category, path_category, names in (
+                (C_URL, C_FILE_NAME, C_PATH_NAME, self.get_image_names()),
+                (C_OBJECTS_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,
+                 self.get_object_names())):
+                for name in names:
+                    url_feature = "_".join((url_category, name))
+                    if path_feature in all_image_features:
+                        path_feature = "_".join((path_category, name))
+                    else:
+                        path_feature = None
+                    if file_feature in all_image_features:
+                        file_feature = "_".join((file_category, name))
+                    else:
+                        file_feature = None
+                    urls = m.get_measurement(cpmeas.IMAGE,
+                                             url_feature,
+                                             image_set_number = image_numbers)
+                    for image_number, url in zip(image_numbers, urls):
+                        if url.lower().startswith("file:"):
+                            fullname = url2pathname(url)
+                            fullname = fn_alter_path(fullname)
+                            path, filename = os.path.split(fullname)
+                            url = unicode(pathname2url(fullname), "utf-8")
+                            m.add_measurement(cpmeas.IMAGE, url_feature, url,
+                                              image_set_number = image_number)
+                            if file_feature is not None:
+                                m.add_measurement(
+                                    cpmeas.IMAGE, file_feature,
+                                    filename, 
+                                    image_set_number = image_number)
+                            if path_feature is not None:
+                                m.add_measurement(
+                                    cpmeas.IMAGE, path_feature,
+                                    path, image_set_number = image_number)
         
         self.csv_directory.alter_for_create_batch_files(fn_alter_path)
         self.image_directory.alter_for_create_batch_files(fn_alter_path)
         return True
     
-    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
-        dictionary = image_set_list.legacy_fields[self.legacy_field_key]
-        image_names = self.other_providers('imagegroup')
-        if self.wants_images.value:
-            for image_number in image_numbers:
-                index = image_number -1
-                image_set = image_set_list.get_image_set(index)
-                for image_name in image_names:
-                    ip = self.fetch_provider(image_name, dictionary, index)
-                    image_set.providers.append(ip)
-
-    def fetch_provider(self, name, dictionary, index, is_image_name = True):
+    def fetch_provider(self, name, measurements, is_image_name = True):
         path_base = self.image_path
         if is_image_name:
-            path_name_feature = make_path_name_feature(name)
-            file_name_feature = make_file_name_feature(name)
+            url_feature = C_URL + "_" + name
         else:
-            path_name_feature = make_objects_path_name_feature(name)
-            file_name_feature = make_objects_file_name_feature(name)
-            
-        if dictionary.has_key(path_name_feature):
-            path = dictionary[path_name_feature][index]
-            if self.image_directory.dir_choice != cps.NO_FOLDER_NAME:
-                path = os.path.join(path_base, path)
-        else:
-            path = path_base
-        filename = dictionary[file_name_feature][index]
+            url_feature = C_OBJECTS_URL + "_" + name
+        url = measurements.get_measurement(cpmeas.IMAGE, url_feature)
+        url = url.encode('utf-8')
+        full_filename = url2pathname(url)
+        path, filename = os.path.split(full_filename)
         return LoadImagesImageProvider(
             name, path, filename, self.rescale.value and is_image_name)
         
     def run(self, workspace):
-        '''Populate the image measurements on each run iteration'''
+        '''Populate the images and objects'''
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        dictionary = workspace.image_set_list.legacy_fields[self.legacy_field_key]
+        image_set = workspace.image_set
+        object_set = workspace.object_set
         statistics = []
-        image_set_keys = workspace.image_set.keys
-        image_size = None
-        first_filename = None
-        if (len(image_set_keys.keys()) > 1 or
-            image_set_keys.keys()[0]!= 'number'):
-            # Match keys against each dictionary entry
-            for index in range(len(dictionary.values()[0])):
-                failure = False
-                for key in image_set_keys.keys():
-                    md_key = "%s_%s"%(cpmeas.C_METADATA, key)
-                    if dictionary.has_key(md_key):
-                        column_value = dictionary[md_key][index]
-                        isk = image_set_keys[key]
-                        if isinstance(column_value, (int, float)):
-                            try:
-                                if float(isk) == column_value:
-                                    continue
-                            except:
-                                pass
-                        if column_value != isk:
-                            failure = True
-                            break
-                if not failure:
-                    break
-        else:
-            index = m.image_set_number-1
         features = [x[1] for x in 
                     self.get_measurement_columns(workspace.pipeline)
-                    if dictionary.has_key(x[1])]
+                    if x[0] == cpmeas.IMAGE]
         
-        for feature_name in features:
-            value = dictionary[feature_name][index]
-            workspace.measurements.add_image_measurement(feature_name, value)
-            
-        for feature_name in sorted(dictionary.keys()):
-            value = dictionary[feature_name][index]
-            statistics += [[feature_name, value]]
-        #
-        # Add a metadata well measurement if only row and column exist
-        #
-        tokens = [feature for category, feature in
-                  [x.split('_',1) for x in dictionary.keys()
-                  if x.startswith(cpmeas.C_METADATA+"_")]]
-        if cpmeas.FTR_WELL not in tokens:
-            row_tokens = [x for x in tokens if cpmeas.is_well_row_token(x)]
-            col_tokens = [x for x in tokens if cpmeas.is_well_column_token(x)]
-            if len(row_tokens) > 0 and len(col_tokens) > 0:
-                md_well = '_'.join((cpmeas.C_METADATA, cpmeas.FTR_WELL))
-                row = dictionary['_'.join((cpmeas.C_METADATA, row_tokens[0]))]
-                col = dictionary['_'.join((cpmeas.C_METADATA, col_tokens[0]))]
-                row = row[index]
-                col = col[index]
-                if isinstance(col, int):
-                    col = "%02d" % col
-                well = row + col
-                m.add_image_measurement(md_well, well)
-        #
-        # Calculate the MD5 hash of every image
-        #
-        for image_name in self.other_providers('imagegroup'):
-            md5 = hashlib.md5()
-            image = workspace.image_set.get_image(image_name)
-            pixel_data = image.pixel_data
-            md5.update(np.ascontiguousarray(pixel_data).data)
-            m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)),
-                                    md5.hexdigest())
-            m.add_image_measurement("_".join((C_SCALING,image_name)), 
-                                    image.scale)
-            m.add_image_measurement("_".join((C_HEIGHT, image_name)),
-                                    int(pixel_data.shape[0]))
-            m.add_image_measurement("_".join((C_WIDTH, image_name)), 
-                                    int(pixel_data.shape[1]))
-            if image_size is None:
-                image_size = tuple(pixel_data.shape[:2])
-                first_filename = image.file_name
-            elif tuple(pixel_data.shape[:2]) != image_size:
-                warning = bad_sizes_warning(image_size, first_filename,
-                                            pixel_data.shape, image.file_name)
-                if workspace.frame is not None:
-                    workspace.display_data.warning = warning
-                else:
-                    print warning
+        if self.wants_images:
+            #
+            # Load the image. Calculate the MD5 hash of every image
+            #
+            image_size = None
+            for image_name in self.other_providers('imagegroup'):
+                provider = self.fetch_provider(image_name, m)
+                image_set.get_providers().append(provider)
+                md5 = hashlib.md5()
+                image = workspace.image_set.get_image(image_name)
+                pixel_data = image.pixel_data
+                md5.update(np.ascontiguousarray(pixel_data).data)
+                m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)),
+                                        md5.hexdigest())
+                m.add_image_measurement("_".join((C_SCALING,image_name)), 
+                                        image.scale)
+                m.add_image_measurement("_".join((C_HEIGHT, image_name)),
+                                        int(pixel_data.shape[0]))
+                m.add_image_measurement("_".join((C_WIDTH, image_name)), 
+                                        int(pixel_data.shape[1]))
+                if image_size is None:
+                    image_size = tuple(pixel_data.shape[:2])
+                    first_filename = image.file_name
+                elif tuple(pixel_data.shape[:2]) != image_size:
+                    warning = bad_sizes_warning(image_size, first_filename,
+                                                pixel_data.shape, image.file_name)
+                    if workspace.frame is not None:
+                        workspace.display_data.warning = warning
+                    else:
+                        print warning
         #
         # Process any object tags
         #
-        if self.wants_images:
-            objects_names = get_object_names(dictionary.keys())
+            objects_names = self.get_object_names()
             for objects_name in objects_names:
                 provider = self.fetch_provider(
-                    objects_name, dictionary, index, is_image_name = False)
+                    objects_name, m, is_image_name = False)
                 image = provider.provide_image(workspace.image_set)
                 pixel_data = convert_image_to_objects(image.pixel_data)
                 o = cpo.Objects()
                 o.segmented = pixel_data
-                object_set = workspace.object_set
-                assert isinstance(object_set, cpo.ObjectSet)
                 object_set.add_objects(o, objects_name)
                 I.add_object_count_measurements(m, objects_name, o.count)
                 I.add_object_location_measurements(m, objects_name, pixel_data)
                 
+        for feature_name in sorted(features):
+            value = m.get_measurement(cpmeas.IMAGE, feature_name)
+            statistics.append((feature_name, value))
+            
         if not workspace.frame is None:
             workspace.display_data.statistics = statistics
             
@@ -1033,7 +1025,7 @@ class LoadData(cpm.CPModule):
                 workspace.measurements.image_set_number),subplots=(1,1))
         figure.subplot_table(0,0, workspace.display_data.statistics,[.3,.7])
     
-    def get_groupings(self, image_set_list):
+    def get_groupings(self, workspace):
         '''Return the image groupings of the image sets
 
         See CPModule for documentation
@@ -1041,10 +1033,13 @@ class LoadData(cpm.CPModule):
         if (self.wants_images.value and 
             self.wants_image_groupings.value and
             len(self.metadata_fields.selections) > 0):
-            keys = self.metadata_fields.selections
+            keys = ["_".join((cpmeas.C_METADATA, k)) 
+                    for k in self.metadata_fields.selections]
             if len(keys) == 0:
                 return None
-            return image_set_list.get_groupings(keys)
+            m = workspace.measurements
+            assert isinstance(m, cpmeas.Measurements)
+            return keys, m.get_groupings(keys)
         return None
 
     def get_measurement_columns(self, pipeline):
@@ -1118,6 +1113,7 @@ class LoadData(cpm.CPModule):
                    for colname, coltype in zip(header, coltypes)
                    if colname not in previous_fields]
         for feature, coltype in (
+            (C_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
             (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
             (C_SCALING, cpmeas.COLTYPE_FLOAT),
             (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
@@ -1130,6 +1126,9 @@ class LoadData(cpm.CPModule):
         if self.wants_images:
             for object_name in get_object_names(header):
                 result += I.get_object_measurement_columns(object_name)
+                url_feature = C_OBJECTS_URL + "_" + object_name
+                result.append((cpmeas.IMAGE, url_feature, 
+                               cpmeas.COLTYPE_VARCHAR_PATH_NAME))
         #
         # Try to make a well column out of well row and well column
         #

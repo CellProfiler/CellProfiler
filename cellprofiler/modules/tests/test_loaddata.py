@@ -385,7 +385,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             
         c0 = C0()
         c0.callback = callback
-        c0.module_num = 1
+        c0.module_num = 2
         pipeline.add_module(c0)
                 
         try:
@@ -425,7 +425,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         try:
             module.wants_images.value = False
             pipeline.run()
-            self.assertFalse(c0_ran[0])
+            self.assertTrue(c0_ran[0])
         finally:
             os.remove(filename)
     
@@ -574,6 +574,7 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
         pipeline, module, filename = self.make_pipeline(csv_text)
         columns = module.get_measurement_columns(pipeline)
         expected_columns = (
+            (cpmeas.IMAGE, L.C_OBJECTS_URL + "_" + OBJECTS_NAME),
             (cpmeas.IMAGE, L.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME),
             (cpmeas.IMAGE, L.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME),
             (cpmeas.IMAGE, L.I.C_COUNT + "_" + OBJECTS_NAME),
@@ -607,21 +608,26 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
         module.metadata_fields.value = "ROW"
         image_set_list = cpi.ImageSetList()
         measurements = cpmeas.Measurements()
-        module.prepare_run(cpw.Workspace(pipeline, module, None,
-                                         None, measurements, image_set_list))
-        keys, groupings = module.get_groupings(image_set_list)
+        workspace = cpw.Workspace(pipeline, module, None,
+                                  None, measurements, image_set_list)
+        module.prepare_run(workspace)
+        keys, groupings = module.get_groupings(workspace)
         self.assertEqual(len(keys), 1)
-        self.assertEqual(keys[0], "ROW")
+        self.assertEqual(keys[0], "Metadata_ROW")
         self.assertEqual(len(groupings), 8)
-        my_rows = [g[0]["ROW"] for g in groupings]
+        my_rows = [g[0]["Metadata_ROW"] for g in groupings]
         my_rows.sort()
         self.assertEqual(''.join(my_rows), 'ABCDEFGH')
         for grouping in groupings:
-            row = grouping[0]["ROW"]
+            row = grouping[0]["Metadata_ROW"]
             module.prepare_group(pipeline, image_set_list, grouping[0], grouping[1])
             for image_number in grouping[1]:
                 image_set = image_set_list.get_image_set(image_number-1)
-                self.assertEqual(image_set.keys["ROW"], row)
+                measurements.next_image_set(image_number)
+                workspace = cpw.Workspace(pipeline, module, image_set,
+                                          cpo.ObjectSet(), measurements,
+                                          image_set_list)
+                module.run(workspace)
                 provider = image_set.get_image_provider("Cytoplasm")
                 match = re.search(pattern, provider.get_filename())
                 self.assertTrue(match)
@@ -651,7 +657,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             c0_ran[0] = True    
         c0 = C0()
         c0.callback = callback
-        c0.module_num = 1
+        c0.module_num = 2
         pipeline.add_module(c0)
                 
         try:
@@ -691,7 +697,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                     c0_image.append(pixels.copy())
                 c0 = C0()
                 c0.callback = callback
-                c0.module_num = 1
+                c0.module_num = 2
                 pipeline.add_module(c0)
                 pipeline.run()
             finally:
@@ -723,24 +729,26 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
         try:
             image_set_list = cpi.ImageSetList()
             measurements = cpmeas.Measurements()
-            pipeline.prepare_run(cpw.Workspace(
-                pipeline, module, None, None, measurements, image_set_list))
-            key_names, g = pipeline.get_groupings(image_set_list)
+            workspace = cpw.Workspace(
+                pipeline, module, None, None, measurements, image_set_list)
+            pipeline.prepare_run(workspace)
+            key_names, g = pipeline.get_groupings(workspace)
             self.assertEqual(len(g), 1)
             module.prepare_group(pipeline, image_set_list, g[0][0], g[0][1])
             image_set = image_set_list.get_image_set(g[0][1][0]-1)
             object_set = cpo.ObjectSet()
-            m = cpmeas.Measurements()
             workspace = cpw.Workspace(pipeline, module, image_set,
-                                      object_set, m, image_set_list)
+                                      object_set, measurements, image_set_list)
             module.run(workspace)
             objects = object_set.get_objects(OBJECTS_NAME)
             self.assertTrue(np.all(objects.segmented == labels))
-            self.assertEqual(m.get_current_image_measurement(L.I.FF_COUNT % OBJECTS_NAME), 9)
+            self.assertEqual(measurements.get_current_image_measurement(
+                L.I.FF_COUNT % OBJECTS_NAME), 9)
             for feature in (L.I.M_LOCATION_CENTER_X, 
                             L.I.M_LOCATION_CENTER_Y, 
                             L.I.M_NUMBER_OBJECT_NUMBER):
-                value = m.get_current_measurement(OBJECTS_NAME, feature)
+                value = measurements.get_current_measurement(
+                    OBJECTS_NAME, feature)
                 self.assertEqual(len(value), 9)
         finally:
             os.remove(name)
@@ -768,18 +776,17 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                          unicode_value.encode('utf8')))
             pipeline, module, _ = self.make_pipeline(csv_text, csv_path)
             image_set_list = cpi.ImageSetList()
-            measurements = cpmeas.Measurements()
-            self.assertTrue(module.prepare_run(
-                cpw.Workspace(pipeline, module, None, None,
-                              measurements, image_set_list)))
-            self.assertEqual(image_set_list.count(), 1)
-            key_names, group_list = pipeline.get_groupings(image_set_list)
+            m = cpmeas.Measurements()
+            workspace = cpw.Workspace(pipeline, module, None, None,
+                                      m, image_set_list)
+            self.assertTrue(module.prepare_run(workspace))
+            self.assertEqual(len(m.get_image_numbers()), 1)
+            key_names, group_list = pipeline.get_groupings(workspace)
             self.assertEqual(len(group_list), 1)
             group_keys, image_numbers = group_list[0]
             self.assertEqual(len(image_numbers), 1)
             module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
             image_set = image_set_list.get_image_set(image_numbers[0]-1)
-            m = cpmeas.Measurements()
             workspace = cpw.Workspace(pipeline, module, image_set,
                                       cpo.ObjectSet(), m, image_set_list)
             module.run(workspace)

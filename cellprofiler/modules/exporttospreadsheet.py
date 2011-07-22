@@ -568,7 +568,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         workspace - workspace containing the measurements
         """
         from loaddata import is_path_name_feature, is_file_name_feature
-        from loadimages import C_PATH_NAME, C_FILE_NAME
+        from loadimages import C_PATH_NAME, C_FILE_NAME, C_URL
         from loadimages import C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
 
         def ignore_feature(feature_name):
@@ -581,7 +581,8 @@ class ExportToSpreadsheet(cpm.CPModule):
                 feature_name.startswith('Description_') or 
                 feature_name.startswith('ModuleError_') or 
                 feature_name.startswith('TimeElapsed_') or 
-                feature_name.startswith('ExecutionTime_') or 
+                feature_name.startswith('ExecutionTime_') or
+                feature_name.startswith(C_URL) or
                 feature_name.startswith(C_MD5_DIGEST) or
                 feature_name.startswith(C_SCALING) or
                 feature_name.startswith(C_HEIGHT) or

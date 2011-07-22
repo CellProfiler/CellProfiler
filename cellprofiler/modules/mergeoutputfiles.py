@@ -307,7 +307,6 @@ class MergeOutputFiles(cpm.CPModule):
             if has_error[0]:
                 return
             mdest = cpmeas.Measurements()
-            image_set_count = 0
             for source in sources:
                 if not is_headless:
                     count += 1
@@ -316,62 +315,36 @@ class MergeOutputFiles(cpm.CPModule):
                         return
                 # distributed processing passes a list of functions
                 msource = cpmeas.load_measurements(source() if callable(source) else source)
-                source_image_set_count = 0
+                dest_image_numbers = mdest.get_image_numbers()
+                source_image_numbers = msource.get_image_numbers()
+                if len(dest_image_numbers) == 0:
+                    offset_source_image_numbers =  source_image_numbers
+                else:
+                    offset_source_image_numbers = (
+                        np.max(dest_image_numbers) + source_image_numbers)
                 for object_name in msource.get_object_names():
                     if object_name in mdest.get_object_names():
                         destfeatures = mdest.get_feature_names(object_name)
                     else:
                         destfeatures = []
                     for feature in msource.get_feature_names(object_name):
-                        src_values = msource.get_all_measurements(object_name,
-                                                                  feature)
-                        if np.isscalar(src_values):
-                            # For something like "Experiment", there is a single
-                            # value. Keep the first value seen among all sources.
-                            #
-                            if not feature in destfeatures:
-                                mdest.add_all_measurements(object_name, feature,
-                                                           [src_values])
-                        else:
-                            source_image_count = max(source_image_set_count,
-                                                     len(src_values))
-                            if feature in destfeatures:
-                                dest_values = mdest.get_all_measurements(object_name,
-                                                                         feature)
-                                if not isinstance(dest_values, list):
-                                    dest_values = dest_values.tolist()
-                            else:
-                                dest_values = [None] * image_set_count
-
-                            if isinstance(src_values, list):
-                                dest_values += src_values
-                            else:
-                                dest_values += src_values.tolist()
-                            mdest.add_all_measurements(object_name, feature, dest_values)
+                        if object_name == cpmeas.EXPERIMENT:
+                            if not mdest.has_feature(object_name, feature):
+                                src_value = msource.get_experiment_measurement(
+                                    feature)
+                                mdest.add_experiment_measurement(feature,
+                                                                 src_value)
+                            continue
+                        src_values = msource.get_measurement(
+                            object_name,
+                            feature,
+                            image_set_number = source_image_numbers)
+                        for image_number, value in zip(
+                            offset_source_image_numbers, src_values):
+                            mdest.add_measurement(
+                                object_name, feature, value,
+                                image_set_number = image_number)
                     destset = set(destfeatures)
-                    #
-                    # These are features that are in the destination, but not
-                    # in the source. We have to add Nones to the destination.
-                    #
-                    for feature in destset.difference(
-                        msource.get_feature_names(object_name)):
-                        dest_values = mdest.get_all_measurements(
-                            object_name, feature)
-                        dest_values += [None] * source_image_count
-                #
-                # The source may not have all of the objects that are in
-                # the destination. Add blanks here.
-                #
-                destobjects = set(mdest.get_object_names())
-                for object_name in destobjects.difference(
-                    msource.get_object_names()):
-                    for feature in mdest.get_feature_names(object_name):
-                        dest_values = mdest.get_all_measurements(
-                            object_name, feature)
-                        dest_values += [None] * source_image_count
-                        mdest.add_all_measurements(object_name, feature, dest_values)
-                image_set_count += source_image_count
-            mdest.image_set_number = image_set_count
             if not is_headless:
                 keep_going, skip = progress.Update(count+1, "Saving to "+destination)
                 if not keep_going:

@@ -132,7 +132,7 @@ class Measurements(object):
         # XXX - allow saving of partial results
         if filename is None:
             dir = cpprefs.get_default_output_directory()
-            if not os.path.exists(dir):
+            if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
                 dir = None
             fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
             is_temporary = True

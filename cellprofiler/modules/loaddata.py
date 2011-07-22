@@ -902,18 +902,17 @@ class LoadData(cpm.CPModule):
                  self.get_object_names())):
                 for name in names:
                     url_feature = "_".join((url_category, name))
-                    if path_feature in all_image_features:
-                        path_feature = "_".join((path_category, name))
-                    else:
+                    path_feature = "_".join((path_category, name))
+                    if path_feature not in all_image_features:
                         path_feature = None
-                    if file_feature in all_image_features:
-                        file_feature = "_".join((file_category, name))
-                    else:
+                    file_feature = "_".join((file_category, name))
+                    if file_feature not in all_image_features:
                         file_feature = None
                     urls = m.get_measurement(cpmeas.IMAGE,
                                              url_feature,
                                              image_set_number = image_numbers)
                     for image_number, url in zip(image_numbers, urls):
+                        url = url.encode("utf-8")
                         if url.lower().startswith("file:"):
                             fullname = url2pathname(url)
                             fullname = fn_alter_path(fullname)

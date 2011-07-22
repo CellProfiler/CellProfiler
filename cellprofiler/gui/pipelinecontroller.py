@@ -735,6 +735,9 @@ class PipelineController:
             self.__output_path = output_path
             self.__frame.preferences_view.on_analyze_images()
             if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
+                if self.__pipeline_measurements is not None:
+                    del self.__pipeline_measurements
+                    self.__pipeline_measurements = None
                 m = cpm.Measurements(filename = output_path)
             else:
                 m = None
@@ -1260,6 +1263,7 @@ class PipelineController:
                                 break
                     self.__pipeline_measurements = None
                     self.__output_path = None
+                del self.__pipeline_measurements
                 if len(self.pipeline_list) > 0:
                     self.run_next_pipeline(event)
                     return

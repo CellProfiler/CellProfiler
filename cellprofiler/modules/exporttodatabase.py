@@ -1202,7 +1202,7 @@ class ExportToDatabase(cpm.CPModule):
         d[D_IMAGE_SET_INDEX] = []
         d[C_IMAGE_NUMBER] = []
 
-    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
+    def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Alter the output directory path for the remote batch host'''
         self.directory.alter_for_create_batch_files(fn_alter_path)
         return True

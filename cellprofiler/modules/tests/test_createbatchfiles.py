@@ -453,6 +453,9 @@ class TestCreateBatchFiles(unittest.TestCase):
                 self.assertTrue(module.batch_mode.value)
                 image_numbers = measurements.get_image_numbers()
                 self.assertTrue([x == i+1 for i, x in enumerate(image_numbers)])
+                workspace = cpw.Workspace(pipeline, None, None, None,
+                                          measurements, image_set_list)
+                pipeline.prepare_run(workspace)
                 pipeline.prepare_group(image_set_list, {}, range(1,97))
                 for i in range(96):
                     image_set = image_set_list.get_image_set(i)

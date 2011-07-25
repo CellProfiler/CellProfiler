@@ -281,8 +281,6 @@ class CreateBatchFiles(cpm.CPModule):
         pipeline = workspace.pipeline
         assert isinstance(image_set_list, cpi.ImageSetList)
         assert isinstance(pipeline, cpp.Pipeline)
-        state = zlib.decompress(self.batch_state.tostring())
-        image_set_list.load_state(state)
         if self.distributed_mode:
             import tempfile
             try:

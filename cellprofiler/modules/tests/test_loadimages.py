@@ -2788,7 +2788,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             is_path = (orig_path == pathname)
             is_file = (pathname == file_name)
             if not (is_fullpath or is_path or is_file):
-                self.assertTrue(pathname.startswith(orig_url))
+                self.assertTrue(
+                    pathname.startswith(orig_url),
+                    """Expected pathname = "%s" to start with "%s".""" %
+                    (pathname, orig_url))
                 self.assertEqual(pathname[(len(orig_url)+1):], file_name)
                 return target_url
             elif is_file:
@@ -2839,7 +2842,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             is_path = (orig_path == pathname)
             is_file = pathname == file_name
             if not (is_fullpath or is_path or is_file):
-                self.assertTrue(pathname.startswith(orig_url))
+                self.assertTrue(
+                    pathname.startswith(orig_url),
+                    """Expected pathname = "%s" to start with "%s".""" %
+                    (pathname, orig_url))
                 self.assertEqual(pathname[(len(orig_url)+1):], file_name)
                 return target_url
             if is_fullpath:

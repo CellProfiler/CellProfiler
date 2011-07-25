@@ -2770,6 +2770,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")
         orig_url = LI.pathname2url(orig_path)
+        # Can switch cases in Windows.
+        orig_url_path = LI.url2pathname(orig_url)
             
         file_name = "DrosophilaEmbryo_GFPHistone.avi"
         target_url = LI.pathname2url(os.path.join(target_path, file_name))
@@ -2789,11 +2791,11 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             is_file = (pathname == file_name)
             if not (is_fullpath or is_path or is_file):
                 self.assertTrue(
-                    pathname.startswith(orig_url),
+                    pathname.startswith(orig_url_path),
                     """Expected pathname = "%s" to start with "%s".""" %
                     (pathname, orig_url))
-                self.assertEqual(pathname[(len(orig_url)+1):], file_name)
-                return target_url
+                self.assertEqual(pathname[(len(orig_url_path)+1):], file_name)
+                return target_path
             elif is_file:
                 return pathname
             if is_fullpath:
@@ -2843,11 +2845,11 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             is_file = pathname == file_name
             if not (is_fullpath or is_path or is_file):
                 self.assertTrue(
-                    pathname.startswith(orig_url),
+                    pathname.startswith(orig_url_path),
                     """Expected pathname = "%s" to start with "%s".""" %
                     (pathname, orig_url))
-                self.assertEqual(pathname[(len(orig_url)+1):], file_name)
-                return target_url
+                self.assertEqual(pathname[(len(orig_url_path)+1):], file_name)
+                return target_path
             if is_fullpath:
                 return os.path.join(target_path, file_name)
             else:

@@ -1945,6 +1945,19 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         count = measurements.get_measurement(
                             cpmeas.IMAGE, ftr_count, image_number)
                         max_count = max(max_count, int(count))
+                    column_values = []
+                    for column in columns:
+                        object_name, feature, coltype = column[:3]
+                        values = measurements.get_measurement(
+                            object_name, feature, image_number)
+                        
+                        if len(values) < max_count:
+                            values = list(values) + [None] * (max_count - len(values))
+                        values = [
+                            None if v is None or np.isnan(v) or np.isinf(v)
+                            else str(v)
+                            for v in values]
+                        column_values.append(values)
                     object_cols = []
                     if not post_group:
                         object_cols += [C_IMAGE_NUMBER]
@@ -1970,17 +1983,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         else:
                             object_row = []
                             
-                        for column in columns:
+                        for column, values in zip(columns, column_values):
                             object_name, feature, coltype = column[:3]
-                            values = measurements.get_measurement(
-                                object_name, feature, image_number)
-                            if (values is None or len(values) <= j or
-                                np.isnan(values[j]) or
-                                np.isinf(values[j])):
-                                value = None
-                            else:
-                                value = str(values[j])
-                            object_row.append(value)
+                            object_row.append(values[j])
                         if post_group:
                             object_row.append(object_numbers[j])
                         object_rows.append(object_row)

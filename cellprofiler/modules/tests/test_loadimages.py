@@ -2825,6 +2825,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         orig_url = LI.pathname2url(orig_path)
         module.location.custom_path = orig_path
         target_path = os.path.join(orig_path, "Images")
+        # Can switch cases in Windows.
+        orig_url_path = LI.url2pathname(orig_url)
             
         file_name = "RLM1 SSN3 300308 008015000.flex"
         target_url = LI.pathname2url(os.path.join(orig_path, file_name))

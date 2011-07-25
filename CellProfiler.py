@@ -400,6 +400,13 @@ try:
             import cellprofiler.measurements as cpmeas
             continue_looping = False # distributed workers reset this, below
             pipeline = Pipeline()
+            measurements = None
+            try:
+                import h5py
+                if h5py.is_hdf5(options.pipeline_filename):
+                    measurements = cpmeas.load_measurements(options.pipeline_filename)
+            except:
+                logging.root.info("Failed to load measurements from pipeline")
             if options.worker_mode_URL is None:
                 # normal behavior
                 pipeline.load(options.pipeline_filename)
@@ -442,7 +449,8 @@ try:
                 image_set_start=image_set_start, 
                 image_set_end=image_set_end,
                 grouping=groups,
-                measurements_filename = None if not use_hdf5 else args[0])
+                measurements_filename = None if not use_hdf5 else args[0],
+                initial_measurements = measurements)
             if options.worker_mode_URL is not None:
                 try:
                     assert measurements is not None

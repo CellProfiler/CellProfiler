@@ -1095,7 +1095,8 @@ class Pipeline(object):
             image_set_start = 1, 
             image_set_end = None,
             grouping = None,
-            measurements_filename = None):
+            measurements_filename = None,
+            initial_measurements = None):
         """Run the pipeline
         
         Run the pipeline, returning the measurements made
@@ -1109,7 +1110,8 @@ class Pipeline(object):
         """
         measurements = cellprofiler.measurements.Measurements(
             image_set_start = image_set_start,
-            filename = measurements_filename)
+            filename = measurements_filename,
+            copy = initial_measurements)
         measurements.is_first_image = True
         for m in self.run_with_yield(frame, image_set_start, image_set_end,
                                      grouping, 

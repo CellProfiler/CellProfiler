@@ -1236,54 +1236,60 @@ class MeasureImageQuality(cpm.CPModule):
             # Rearrangement/consolidation of settings
             assert len(setting_values) % SETTINGS_PER_GROUP_V3 == 0
             num_images = len(setting_values) / SETTINGS_PER_GROUP_V3
-            new_settings = [O_SELECT, str(num_images)] # images_choice, image_count
-            new_settings += ["1"]*num_images     # scale_count
-            new_settings += ["1"]*num_images     # threshold_count
             
-            '''Since some settings are new/consolidated and can be repeated, make 
-               sure 'yes' is listed only once per image to prevent validation errors'''
+            '''Since some settings are new/consolidated and can be repeated, handle
+            the old settings by using a dict'''
+            # Initialize the dictionary by image name
             d = {}
-            d["scaling"] = {}
-            d["saturation"] = {}
-            d["blur"] = {}
-            d["intensity"] = {}
-            d["threshold"] = {}
+            unique_image_names = []
             for idx in range(num_images):
                 # Get the settings belonging to each image
                 im_settings = setting_values[(idx * SETTINGS_PER_GROUP_V3):(idx * SETTINGS_PER_GROUP_V3 + SETTINGS_PER_GROUP_V3)]
-                
-                # Check scaling, intensity, saturation and blur
+                unique_image_names += [im_settings[0]]
+            unique_image_names = sorted(set(unique_image_names), key=unique_image_names.index) 
+            # Assume that the user doesn't want blur and thresholds
+            for image_name in unique_image_names:
+                d[image_name] = {}
+                d[image_name]["wants_scaling"] = True
+                d[image_name]["wants_saturation"] = False
+                d[image_name]["wants_blur"] = False
+                d[image_name]["blur_scales"] = []
+                d[image_name]["wants_intensity"] = True
+                d[image_name]["wants_threshold"] = False
+                d[image_name]["threshold_methods"] = []
+            
+            for idx in range(num_images):
+                im_settings = setting_values[(idx * SETTINGS_PER_GROUP_V3):(idx * SETTINGS_PER_GROUP_V3 + SETTINGS_PER_GROUP_V3)]
                 image_name = im_settings[0]
-                key = image_name
-                d["scaling"][key] = (key not in d["scaling"])
-                d["intensity"][key] = (key not in d["intensity"])
-                if key not in d["blur"]:
-                    d["blur"][key] = (im_settings[1] == cps.YES or im_settings[7] == cps.YES)
-                else:
-                    d["blur"][key] = not d["blur"][key] and (im_settings[1] == cps.YES or im_settings[7] == cps.YES)
-                if key not in d["saturation"]:
-                    d["saturation"][key] = (im_settings[3] == cps.YES)
-                else:
-                    d["saturation"][key] = not d["saturation"][key] and (im_settings[3] == cps.YES)
+                # Set blur and thresholds if the user sets any of the setting groups.
+                d[image_name]["wants_saturation"] = d[image_name]["wants_saturation"] or (im_settings[3] == cps.YES)
+                d[image_name]["wants_blur"] = d[image_name]["wants_blur"] or (im_settings[1] == cps.YES or im_settings[7] == cps.YES)
+                d[image_name]["wants_threshold"] =  d[image_name] ["wants_threshold"]or (im_settings[4] == cps.YES)
+                #  Collect blur scales and threshold methods
+                d[image_name]["blur_scales"] += [im_settings[2]]
+                d[image_name]["threshold_methods"] += [im_settings[5:7] + im_settings[8:]]
+            
+            # Uniquify the scales and threshold methods
+            import itertools
+            for image_name in d.keys():
+                d[image_name]["blur_scales"] = list(set(d[image_name]["blur_scales"]))
+                d[image_name]["threshold_methods"] = [k for k,v in itertools.groupby(sorted(d[image_name]["threshold_methods"]))]
                 
-                new_settings += [image_name,                                  # image_name 
-                                 cps.YES if d["scaling"][key] else cps.NO,    # include_image_scalings
-                                 cps.YES if d["blur"][key]    else cps.NO,    # check_blur
-                                 im_settings[2],                              # scale
-                                 cps.YES if d["saturation"][key] else cps.NO, # check_saturation
-                                 cps.YES if d["intensity"][key]  else cps.NO] # check_intensity
-                
-                # Threshold is different, so making the key more complicated
-                key = "%s%s%s%s"%(image_name,im_settings[5],im_settings[6],"".join(im_settings[8:]))
-                if key not in d["threshold"]:
-                    d["threshold"][key] = (im_settings[4] == cps.YES)
-                else:
-                    d["threshold"][key] = not d["threshold"][key] and (im_settings[4] == cps.YES)
-                    
-                new_settings += [cps.YES if d["threshold"][key]  else cps.NO, # calculate_threshold, 
-                                 cps.NO]                                      # use_all_threshold_methods
-                new_settings += im_settings[5:7]                              # threshold_method, object_fraction
-                new_settings += im_settings[8:]                               # two_class_otsu, use_weighted_variance, assign_middle_to_foreground
+            # Create the new settings
+            new_settings = [O_SELECT, str(len(unique_image_names))]                                              # images_choice, image_count
+            new_settings += [str(len(d[image_name]["blur_scales"])) for image_name in unique_image_names]        # scale_count
+            new_settings += [str(len(d[image_name]["threshold_methods"])) for image_name in unique_image_names]  # threshold_count
+            for image_name in unique_image_names:
+                new_settings += [image_name,                                               # image_name 
+                                 cps.YES if d[image_name]["wants_scaling"] else cps.NO,    # include_image_scalings
+                                 cps.YES if d[image_name]["wants_blur"]    else cps.NO]    # check_blur
+                new_settings += [k for k in d[image_name]["blur_scales"]]                  # scale
+                new_settings += [cps.YES if d[image_name]["wants_saturation"] else cps.NO, # check_saturation
+                                 cps.YES if d[image_name]["wants_intensity"]  else cps.NO, # check_intensity
+                                 cps.YES if d[image_name]["wants_threshold"]  else cps.NO, # calculate_threshold, 
+                                 cps.NO]                                                   # use_all_threshold_methods
+                for k in d[image_name]["threshold_methods"]:
+                    new_settings += k            # threshold_method, object_fraction, two_class_otsu, use_weighted_variance, assign_middle_to_foreground
                 
             setting_values = new_settings
             variable_revision_number = 4

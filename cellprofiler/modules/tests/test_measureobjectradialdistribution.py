@@ -454,3 +454,62 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
         centers = np.zeros((35,35), int)
         centers[15,20] = 1
         m = self.run_module(image, labels, centers)
+
+    def test_05_01_more_labels_than_centers(self):
+        '''Regression test of img-1463'''
+        np.random.seed(51)
+        i,j = np.mgrid[0:100,0:100]
+        ir = (i % 10) - 5
+        jr = (j % 10) - 5
+        il = (i / 10).astype(int)
+        jl = (j / 10).astype(int)
+        ll = il + jl * 10 + 1
+        
+        center_labels = np.zeros((100,100), int)
+        center_labels[ir**2 + jr**2 < 25] = ll[ir**2 + jr**2 < 25]
+        
+        labels = np.zeros((100,100), int)
+        i = np.random.randint(1,98, 2000)
+        j = np.random.randint(1,98, 2000)
+        order = np.lexsort((i,j))
+        i = i[order]
+        j = j[order]
+        duplicate = np.hstack([[False], (i[:-1] == i[1:]) & (j[:-1] == j[1:])])
+        i = i[~duplicate]
+        j = j[~duplicate]
+        labels[i,j] = np.arange(1, len(i)+1)
+        image = np.random.uniform(size=(100,100))
+        #
+        # Crash here prior to fix
+        #
+        m = self.run_module(image, labels, center_labels)
+        
+    def test_05_02_more_centers_than_labels(self):
+        '''Regression test of img-1463'''
+        np.random.seed(51)
+        i,j = np.mgrid[0:100,0:100]
+        ir = (i % 10) - 5
+        jr = (j % 10) - 5
+        il = (i / 10).astype(int)
+        jl = (j / 10).astype(int)
+        ll = il + jl * 10 + 1
+        
+        labels = np.zeros((100,100), int)
+        labels[ir**2 + jr**2 < 25] = ll[ir**2 + jr**2 < 25]
+        
+        center_labels = np.zeros((100,100), int)
+        i = np.random.randint(1,98, 2000)
+        j = np.random.randint(1,98, 2000)
+        order = np.lexsort((i,j))
+        i = i[order]
+        j = j[order]
+        duplicate = np.hstack([[False], (i[:-1] == i[1:]) & (j[:-1] == j[1:])])
+        i = i[~duplicate]
+        j = j[~duplicate]
+        center_labels[i,j] = np.arange(1, len(i)+1)
+        image = np.random.uniform(size=(100,100))
+        #
+        # Crash here prior to fix
+        #
+        m = self.run_module(image, labels, center_labels)
+        

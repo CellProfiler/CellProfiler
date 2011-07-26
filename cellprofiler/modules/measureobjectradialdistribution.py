@@ -317,6 +317,10 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         else:
             d_to_edge = distance_to_edge(labels)
             if center_object_name is not None:
+                #
+                # Use the center of the centering objects to assign a center
+                # to each labeled pixel using propagation
+                #
                 center_objects=workspace.object_set.get_objects(center_object_name)
                 center_labels, cmask = cpo.size_similarly(
                     labels, center_objects.segmented)
@@ -327,11 +331,42 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 i,j = (centers_of_labels(center_labels) + .5).astype(int)
                 ig = i[good]
                 jg = j[good]
+                lg = np.arange(1, len(i)+1)[good]
                 center_labels = np.zeros(center_labels.shape, int)
-                center_labels[ig,jg] = labels[ig,jg] ## TODO: This is incorrect when objects are annular.  Retrieves label# = 0
+                center_labels[ig,jg] = lg
                 cl,d_from_center = propagate(np.zeros(center_labels.shape),
                                              center_labels,
                                              labels != 0, 1)
+                #
+                # Erase the centers that fall outside of labels
+                #
+                cl[labels == 0] = 0
+                #
+                # If objects are hollow or crescent-shaped, there may be
+                # objects without center labels. As a backup, find the
+                # center that is the closest to the center of mass.
+                #
+                missing_mask = (labels != 0) & (cl == 0)
+                missing_labels = np.unique(labels[missing_mask])
+                if len(missing_labels):
+                    all_centers = centers_of_labels(labels)
+                    missing_i_centers, missing_j_centers = \
+                                     all_centers[:, missing_labels-1]
+                    di = missing_i_centers[:, np.newaxis] - ig[np.newaxis, :]
+                    dj = missing_j_centers[:, np.newaxis] - jg[np.newaxis, :]
+                    missing_best = lg[np.lexsort((di*di + dj*dj, ))[:, 0]]
+                    best = np.zeros(np.max(labels) + 1, int)
+                    best[missing_labels] = missing_best
+                    cl[missing_mask] = best[labels[missing_mask]]
+                    #
+                    # Now compute the crow-flies distance to the centers
+                    # of these pixels from whatever center was assigned to
+                    # the object.
+                    #
+                    iii, jjj = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+                    di = iii[missing_mask] - i[cl[missing_mask] - 1]
+                    dj = jjj[missing_mask] - j[cl[missing_mask] - 1]
+                    d_from_center[missing_mask] = np.sqrt(di*di + dj*dj)
             else:
                 # Find the point in each object farthest away from the edge.
                 # This does better than the centroid:

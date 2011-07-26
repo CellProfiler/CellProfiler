@@ -28,7 +28,8 @@ levels. There are then 8x8 possible ways to categorize a pixel with its
 scale-neighbor. <b>MeasureTexture</b> forms the 8x8 co-occurrence matrix
 by counting how many pixels and neighbors have each of the 8x8 intensity
 combinations. Thirteen features are then calculated for the image by performing
-mathematical operations on the co-occurrence matrix:
+mathematical operations on the co-occurrence matrix (the forumulas can be found 
+<a href="http://murphylab.web.cmu.edu/publications/boland/boland_node26.html">here</a>):
 <ul>
 <li><i>H1:</i> Angular Second Moment</li>
 <li><i>H2:</i> Contrast</li>

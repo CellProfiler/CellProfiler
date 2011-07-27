@@ -35,6 +35,7 @@ from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
 import cellprofiler.utilities.get_revision as get_revision
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
 import cellprofiler.gui.parametersampleframe as psf
 import cellprofiler.distributed as cpdistributed
 
@@ -1144,20 +1145,18 @@ class PipelineController:
         super_sizer.Add(wx.StaticText(dialog, label = "Select an image cycle for testing:"),0,wx.EXPAND|wx.ALL,5)
         choices = []
         indexes = []
+        m = self.__debug_measurements
+        features = [f for f in 
+                    m.get_feature_names(cpm.IMAGE)
+                    if f.split("_")[0] in (cpm.C_METADATA, C_FILE_NAME,
+                                           C_PATH_NAME, C_FRAME)]
         for image_number in self.__groupings[self.__grouping_index][1]:
             indexes.append(image_number)
-            image_set = self.__debug_image_set_list.get_image_set(image_number-1)
-            assert isinstance(image_set, cpi.ImageSet)
-            text = []
-            for provider in image_set.providers:
-                if hasattr(provider, "get_filename"):
-                    text.append(provider.get_name()+":"+provider.get_filename())
-                # Add frame info for movie files
-                if hasattr(provider, "get_series"):
-                    text[-1] += ": Z="+str(provider.get_z())+": T="+str(provider.get_t())
-                if hasattr(provider, "get_frame"):
-                    text[-1] += ": Frame="+str(provider.get_frame())
-            text = ', '.join(text)
+            text = ', '.join([
+                "%s=%s" % (f, m.get_measurement(cpm.IMAGE, f, 
+                                                image_set_number = image_number))
+                for f in features])
+                                                              
             choices.append(text)
         if len(choices) == 0:
             wx.MessageBox("Sorry, there are no available images. Check your LoadImages module's settings",
@@ -1183,7 +1182,8 @@ class PipelineController:
             for i, (grouping, image_numbers) in enumerate(self.__groupings):
                 if image_number in image_numbers:
                     self.__grouping_index = i
-                    self.__within_group_index = image_numbers.index(image_number)
+                    self.__within_group_index = \
+                        list(image_numbers).index(image_number)
                     break
             
     def on_debug_reload(self, event):

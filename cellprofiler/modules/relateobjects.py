@@ -415,7 +415,8 @@ class RelateObjects(cpm.CPModule):
             grandparents_of = meas.get_current_measurement(primary_parent,
                                                            parent_feature)
             mask = primary_parents_of != 0
-            parents_of = np.zeros(primary_parents_of.shape[0], int)
+            parents_of = np.zeros(primary_parents_of.shape[0], 
+                                  grandparents_of.dtype)
             parents_of[mask] = grandparents_of[primary_parents_of[mask]-1]
         elif primary_parent_feature in meas.get_feature_names(parent_name):
             primary_parents_of = meas.get_current_measurement(

@@ -20,6 +20,9 @@ import unittest
 import cellprofiler.cpmath.threshold as T
 
 class TestThreshold(unittest.TestCase):
+    def test_01_00_nothing(self):
+        result = T.get_otsu_threshold(-np.ones((10,10)))
+        
     def test_01_01_negative_log_otsu(self):
         '''regression test of img-1466'''
         

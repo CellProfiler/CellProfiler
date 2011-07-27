@@ -301,11 +301,11 @@ def get_otsu_threshold(image, mask = None,
                        assign_middle_to_foreground = True):
     if not mask is None:
         image = image[mask]
-        if len(image) == 0:
-            return 1
     else:
         image = np.array(image.flat)
-    image = image[image > 0]
+    image = image[image >= 0]
+    if len(image) == 0:
+        return 1
     image, d = log_transform(image)
     if two_class_otsu:
         if use_weighted_variance:

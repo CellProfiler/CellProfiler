@@ -539,7 +539,8 @@ class Morph(cpm.CPModule):
             
             pixel_data = self.run_function(function.function.value,
                                            pixel_data, mask, count,
-                                           function.scale.value)
+                                           function.scale.value,
+                                           function.custom_repeats.value)
         new_image = cpi.Image(pixel_data, parent_image = image) 
         workspace.image_set.add(self.output_image_name.value, new_image)
         if not workspace.frame is None:
@@ -562,7 +563,8 @@ class Morph(cpm.CPModule):
                                                 sharex = figure.subplot(0,0),
                                                 sharey = figure.subplot(0,0))
     
-    def run_function(self, function_name, pixel_data, mask, count, scale):
+    def run_function(self, function_name, pixel_data, mask, count, scale,
+                     custom_repeats):
         '''Apply the function once to the image, returning the result'''
         is_binary =  pixel_data.dtype.kind == 'b'
         strel = morph.strel_disk(scale / 2.0)
@@ -631,7 +633,7 @@ class Morph(cpm.CPModule):
                 return morph.fill(pixel_data, mask, count)
             elif function_name == F_FILL_SMALL:
                 def small_fn(area, foreground):
-                    return (not foreground) and (area <= count)
+                    return (not foreground) and (area <= custom_repeats)
                 return morph.fill_labeled_holes(pixel_data, mask, small_fn)
             elif function_name == F_HBREAK:
                 return morph.hbreak(pixel_data, mask, count)

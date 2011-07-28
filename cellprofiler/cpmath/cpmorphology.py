@@ -3684,7 +3684,10 @@ def pairwise_permutations(i, j):
     #              0 , 0 , 0 , 0,  1,  1 , 1)
     # to label each member of d_i
     #
-    d_r[dest_idx[1:][dest_idx[1:] < dest_size]] += 1
+    not_empty_indices = np.arange(0, len(dest_idx)-1)
+    not_empty_indices = not_empty_indices[dest_idx[:-1] != dest_idx[1:]]
+    increments = not_empty_indices - np.hstack([[0], not_empty_indices[:-1]])
+    d_r[dest_idx[not_empty_indices]] = increments
     d_r = np.cumsum(d_r)
     d_i = r_to_i[d_r]
     #

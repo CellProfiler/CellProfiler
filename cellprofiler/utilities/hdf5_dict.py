@@ -119,7 +119,19 @@ class HDF5Dict(object):
         mgroup = self.hdf5_file.create_group(top_level_group_name)
         self.top_group = mgroup.create_group(run_group_name)
         self.indices = {}  # nested indices for data slices, indexed by (object, feature) then by numerical index
-        self.lock = threading.RLock()  # h5py is thread safe, but does not support simultaneous read/write
+        class HDF5Lock:
+            def __init__(self):
+                self.lock = threading.RLock()
+            def __enter__(self):
+                self.lock.acquire()
+                h5py.highlevel.phil.acquire()
+                
+            def __exit__(self, t, v, tb):
+                h5py.highlevel.phil.release()
+                self.lock.release()
+                
+        self.lock = HDF5Lock()
+                
         self.must_exist = False
         self.chunksize = 1024
         if copy is not None:

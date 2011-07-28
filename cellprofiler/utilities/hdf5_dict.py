@@ -124,10 +124,12 @@ class HDF5Dict(object):
                 self.lock = threading.RLock()
             def __enter__(self):
                 self.lock.acquire()
-                h5py.highlevel.phil.acquire()
+                if hasattr(h5py.highlevel, "phil"):
+                    h5py.highlevel.phil.acquire()
                 
             def __exit__(self, t, v, tb):
-                h5py.highlevel.phil.release()
+                if hasattr(h5py.highlevel, "phil"):
+                    h5py.highlevel.phil.release()
                 self.lock.release()
                 
         self.lock = HDF5Lock()

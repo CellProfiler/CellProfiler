@@ -398,5 +398,96 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(result[1][0], 1)
         self.assertEqual(result[1][1], 3)
         
+    def test_12_00_load_version_0(self):
+        data = ('eJzr9HBx4+WS4mIAAQ4OBhYGAQZk8B8KTiig8mHyCVCaEUp3QOkVTDBxRrCc'
+                'BFRcEGo+urqQIFdXkOr/aABmzwNWCM3BMApGIvBwdQwA0RFQPiw9nWBCVeeb'
+                'mlhcWpSam5pXUgziw9KlA5n24kq/HswQfgY0XRJKvy84IfRo+h2ZAD39wkrZ'
+                'DlZUdZ65iempDIh060GhvcF+/i6gFAxLdwrMFBo4QgGuciCAHcIvgOZvQuXA'
+                'B14IDTNnFIwsgF4OKEDpCZyo6sDlgF9pblJqEZiflp8PpmHlggWJ9qKXAxrs'
+                'JBowCsAAVzkQwQ3hV0DzN6FywANqAGprexSMFICrPTuDF1VdSmJJIojOzEtJ'
+                'rWCgvD0LKQeY4OWAATd+9TB3LZAi08JhChgZ2CBxAY0QVmCIgphMTExgEWZg'
+                'zgYxBIABzQJWoQDVB8nxjIwwcyCAAxjSIDYzowe0SGBBsU8IGmMgNbzNhn6I'
+                'HvTgAIwMCL+AaEsDVP4oGAWjYBSMglEwCoYfQG9XWvDjVw/r90yQpKWrhh4g'
+                'v10JaakzwuddIAA23IdoX/pAg54HxV7k9qU8uH3ZQEVfkQ9w9bdPQPsjL2Qg'
+                'NKH+doEchB7tb49MgKu/zSGLqo7a/W3a9RMjCPYTwwdhPxG9nkiQxascnl93'
+                'yNPSVUMP0L6eiCFYT+QMonoCAIv/qlY=')
+        data = zlib.decompress(base64.b64decode(data))
+        fid, name = tempfile.mkstemp(".h5")
+        m = None
+        try:
+            fd = os.fdopen(fid, "wb")
+            fd.write(data)
+            fd.close()
+            m = cpmeas.load_measurements(name)
+            self.assertEqual(tuple(m.get_image_numbers()), (1,))
+            self.assertEqual(m.get_measurement(cpmeas.IMAGE, "foo",
+                                               image_set_number = 1), 12345)
+        finally:
+            if m is not None:
+                del m
+            os.unlink(name)
+    
+    def test_12_01_load_version_1(self):
+        data = ('eJzt3E9sFFUcwPH3Zrft0lIpDUGCBWqiUg8124ZAQQslUqwxtkSQlAvplu7a'
+                'Ymlr/yQ9mWKIKZgoRw5GS2JMI2rqQSFeEE94MZyM8WBKwMDBIkFDMGDrzr73'
+                'dneGzi4sq7vd/X44/Hbe/HZmOrx582aT+R1v27W7snxtubAFAsIvqkSyBW3/'
+                'UelYNuu7dJQ6Tuo4bZl2GVu3Rrev1Nt35+17rbXVzl5wMfsJ+lUMCBSjttad'
+                'e+zYqZdrdbxoOfP2h4dH+gYHxKvh0MjYcPhIeGB0xG43/bPpIfcrRan6rt5A'
+                'SbQH2h8ty4q1+KL92f5QFe2Y/qQjk7qfS2m2owSiV4L92Se7dFf2O/ZXrXu4'
+                'nfPr8Yb2xJWSH/a2d+ySwoqPEuMlqfPN9Vrr+y+PaunxGhen9Pn8rkzFdOPi'
+                'nWoVGReLk9e4OFvmzGsMNjTUB7fUNzbVNzTaHzY1xtozHxcX779demCYqDZ5'
+                '0THi4NwFWSnEcmvq7vzpucsT9+zWK+U75oX/czH7ijjstbUvdbf+Uc1P0l4N'
+                '+5er6JzDoFi4rwbTn26UO/N6QqMhO/YN9ITHReIqaMlwv1KULT5L8Ik0swR1'
+                'hFJPE8xkxvTriuh1aa+ReoUV264UI71jkUh/OD53kLq9JxzpD40m2uOzDcvq'
+                '/FC3+ZOmHMmzDd8Je7aR6RlwMrMEc1faXZE631yvH1VmZfcFw3P2mbZf1alo'
+                'OfuVmYSZ/mWWE/3EV9ut2/wqPbbZ+/vJUJb/0gcTu5Msi36wpq4vXH/72C+l'
+                '0c9NWzrmRUl01cUnpQgGxMxL32+v+G3yxEarf/j8+qF9V2uit6UzpU81yLDn'
+                '0+gnann1ChXd40hQx80rnMfTHRqOxZePhN4It48d6Q6r5Y7uw+FDo4kGM77U'
+                'pfn7vI5v+lO1/I3H8Zn8n1zHl+1xzj7JDStFbUC0bH3vqwMnjz3z1sZ37n3w'
+                '8bWr1u5vXz+7Ifji7+v+ERPnm5uX+VXfSnfHFo+rwB27OHn15KlqZ17sCovG'
+                '9rFD/eG+R+/J6g4l43eoJh6gMuI1YvWuUsuTq1VMNw4EntDxfzpu5Bev59jp'
+                '1c68yOBgLLrvuJk+x7pnqi2rUueb+9SNxx5yRwXOaxwY0g0n16qYbhzoWqci'
+                '84Hi5DUfmFnrzMv2zNb9u/a7aW5EZnXbmpRpRWcJ/BJy84Buy8UvIXtqUueb'
+                '/je9Piu7Lxg5+CXk3Abdlo+/hNj3UbnYfTSY+ns3n3U16CvA51wEAABAgZBJ'
+                '0UqKAAAAAAAAAAAAAAAAAAAAAAAgf3i9N/q0R/4P7joXfkcAAAAFKNM6E539'
+                'rgbqTAAAABQ06kwAAAAAAAAAAAAAAAAAAAAAAJD/vN4brfHI7wm4GqgzAQBA'
+                'wbPnC2KxOhPaxWkV3dMEFId0/aP2jIpVuTpA5NTe9o5dUvji//+zf6TOr9Vx'
+                'qEmmSouPN++veISDW0KkKFPvbuvTUhI9A7F3t32qxT7D9oeqgHk2q9XfW6Oi'
+                'VF80z23mOq0QTbHvSf0SuBXbrhQjvWORSH84ni91e0840h8aTbQHotu3v++z'
+                'rJlrus2f9HhYrf+n7JwdJxrahWjJyvlQ/cqK94Oqz1Lnm/7X+3lWdl8wpCjN'
+                'sF/VqWipL5oaAqaOlOlfZjnRT3zjX+g2v0qPbfb+fjKU5b/0wWRaV2vmrKuB'
+                'uloAAAAFzUqKpqYWcz4AAAAAAAAAAAAAAAAAAAAAAPKL13uj9R75z7kLIlBX'
+                'CwCAgidj/4SuziLESl2hJHBTLdfdUjFdfaWZP1WkvlJxamvduceOnXrZ9Ke2'
+                'W868ntBoyI59Az3hcREv95JxNZ4lUI+oJaiPLRf1iKZupUyPX693/srK7gtG'
+                'DuoRBW7rtkKqR9QSv8I16hEBAAAUNOoRAQAAAAAAAAAAAAAAAAAAAACQ/7ze'
+                'G13nkV9zdPH3RXlnAACAwuVVj+hUk5oXnNumYrp6RC0vqDzqERUnr3pEP29z'
+                'zi+LsB7RpfEc1iMKPi9T5pvrdbI5dV6xyUE9olPbE/2kYOoRXWqjHhEAAEAx'
+                'oR4RAAAAAAAAAAAAAAAAAAAAAAD572HrEW2lHhEAAEVn/ODcBVkpxHJr6u78'
+                '6bnLE/fs+cCV8h3zwp+07s2FS7fvTGzeGl03+7Uc/FuU3bdyU7NeeVuU/Qv/'
+                'J+C3')        
+        data = zlib.decompress(base64.b64decode(data))
+        fid, name = tempfile.mkstemp(".h5")
+        m = None
+        try:
+            fd = os.fdopen(fid, "wb")
+            fd.write(data)
+            fd.close()
+            m = cpmeas.load_measurements(name)
+            self.assertEqual(tuple(m.get_image_numbers()), (1,2))
+            self.assertEqual(m.get_measurement(cpmeas.IMAGE, "foo",
+                                               image_set_number = 1), 12345)
+            self.assertEqual(m.get_measurement(cpmeas.IMAGE, "foo",
+                                               image_set_number = 2), 23456)
+            for image_number, expected in ((1, np.array([234567, 123456])),
+                                           (2, np.array([123456, 234567]))):
+                values = m.get_measurement("Nuclei", "bar", 
+                                           image_set_number = image_number)
+                self.assertEqual(len(expected), len(values))
+                self.assertTrue(np.all(expected == values))
+        finally:
+            if m is not None:
+                del m
+            os.unlink(name)
+        
 if __name__ == "__main__":
     unittest.main()

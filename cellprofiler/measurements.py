@@ -23,6 +23,7 @@ from scipy.io.matlab import loadmat
 from itertools import repeat
 import cellprofiler.preferences as cpprefs
 from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group
+from cellprofiler.utilities.hdf5_dict import VERSION
 import tempfile
 import numpy as np
 import warnings
@@ -776,7 +777,8 @@ class Measurements(object):
                     d[stdev_feature_name] = stdev
         return d
     
-def load_measurements(filename, dest_file = None):
+def load_measurements(filename, dest_file = None, can_overwrite = False,
+                      run_name = None):
     '''Load measurements from an HDF5 file
     
     filename - path to file containing the measurements
@@ -784,15 +786,28 @@ def load_measurements(filename, dest_file = None):
     dest_file - path to file to be created. This file is used as the backing
                 store for the measurements.
                 
-    can_overwrite - True to allow overwriting of existing measurements
+    can_overwrite - True to allow overwriting of existing measurements (not
+                    supported any longer)
+                    
+    run_name - name of the run (an HDF file can contain measurements
+               from multiple runs). By default, takes the last.
     
     returns a Measurements object
     '''
     try:
         f, top_level = get_top_level_group(filename)
-        m = Measurements(filename=dest_file, copy = top_level)
-        f.close()
-        return m
+        try:
+            if VERSION in f.keys():
+                if run_name is not None:
+                    top_level = top_level[run_name]
+                else:
+                    # Assume that the user wants the last one
+                    last_key = sorted(top_level.keys())[-1]
+                    top_level = top_level[last_key]
+            m = Measurements(filename=dest_file, copy = top_level)
+            return m
+        finally:
+            f.close()
     except:
         # Fall back to matlab
         m = Measurements(filename = dest_file)

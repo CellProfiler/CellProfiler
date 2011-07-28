@@ -26,6 +26,9 @@ import numpy as np
 import h5py
 import time
 
+version_number = 1
+VERSION = "Version"
+
 # h5py is nice, but not being able to make zero-length selections is a pain.
 orig_hdf5_getitem = h5py.Dataset.__getitem__
 def new_getitem(self, args):
@@ -86,25 +89,39 @@ class HDF5Dict(object):
 
     If the 'must_exist' flag is set, it is an error to add a new
     object or feature that does not exist.
-
+    
+    The measurements data is stored in groups corresponding to object names
+    (with special objects, "Image" = image set measurements and "Experiment" = 
+    experiment measurements. Each object feature has its own group under
+    the object group. The feature group has two data sets. The first data set
+    is "index" and holds indexes into the second data set whose name is "data".
+    "index" is an N x 3 integer array where N is the number of image sets
+    with this feature measurement and the three row values are the image number
+    of that row's measurements, the offset to the first data element for
+    the feature measurement for that image number in the "data" dataset 
+    and the offset to one past the last data element.
     '''
 
     # XXX - document how data is stored in hdf5 (basically, /Measurements/Object/Feature)
 
     def __init__(self, hdf5_filename, 
-                 top_level_group_name="Measurements",
+                 top_level_group_name = "Measurements",
+                 run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S"),
                  is_temporary = False,
                  copy = None):
+        self.is_temporary = is_temporary
         self.filename = hdf5_filename
         # assert not os.path.exists(self.filename)  # currently, don't allow overwrite
         self.hdf5_file = h5py.File(self.filename, 'w')
+        vdataset = self.hdf5_file.create_dataset(
+            VERSION, data = np.array([version_number], int))
         self.top_level_group_name = top_level_group_name
-        self.top_group = self.hdf5_file.create_group(top_level_group_name)
+        mgroup = self.hdf5_file.create_group(top_level_group_name)
+        self.top_group = mgroup.create_group(run_group_name)
         self.indices = {}  # nested indices for data slices, indexed by (object, feature) then by numerical index
         self.lock = threading.RLock()  # h5py is thread safe, but does not support simultaneous read/write
         self.must_exist = False
         self.chunksize = 1024
-        self.is_temporary = is_temporary
         if copy is not None:
             for object_name in copy.keys():
                 object_group = copy[object_name]
@@ -331,7 +348,7 @@ class HDF5Dict(object):
     def second_level_names(self, object_name):
         with self.lock:
             return self.top_group[object_name].keys()
-        
+
 def get_top_level_group(filename, group_name = 'Measurements', open_mode='r'):
     '''Open and return the Measurements HDF5 group
     

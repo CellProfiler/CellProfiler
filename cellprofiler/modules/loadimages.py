@@ -105,7 +105,7 @@ import identify as I
 from cellprofiler.utilities.relpath import relpath
 from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
-     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
+     DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
      IO_FOLDER_CHOICE_HELP_TEXT, \
      get_show_report_bad_sizes_dlg, set_show_report_bad_sizes_dlg, \
@@ -387,8 +387,8 @@ class LoadImages(cpmodule.CPModule):
             dir_choices = [
                 DEFAULT_INPUT_FOLDER_NAME,  DEFAULT_OUTPUT_FOLDER_NAME,
                 ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
-                DEFAULT_OUTPUT_SUBFOLDER_NAME],
-            allow_metadata = False,
+                DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME],
+            allow_metadata = False, support_urls = cps.SUPPORT_URLS_SHOW_DIR,
             doc ="""Select the folder containing the images to be loaded. 
             %(IO_FOLDER_CHOICE_HELP_TEXT)s"""%globals())
 
@@ -1488,9 +1488,12 @@ class LoadImages(cpmodule.CPModule):
         for i in range(image_set_count):
             for j, image_name in enumerate(image_names):
                 image_number = i+1
+                if self.location.dir_choice == URL_FOLDER_NAME:
+                    full_path = root + "/" + list_of_lists[j, i]
+                else:
+                    full_path = os.path.join(root, list_of_lists[j, i])
                 self.write_measurements(
-                    m, image_number, self.images[j],
-                    os.path.join(root, list_of_lists[j, i]))
+                    m, image_number, self.images[j], full_path)
                                
         return True
     
@@ -1602,8 +1605,14 @@ class LoadImages(cpmodule.CPModule):
                 keys[tag] = value
             cpimageset = image_set_list.get_image_set(keys)
             for i in range(len(self.images)):
-                path = os.path.join(image_set[1][i][0],image_set[1][i][1])
-                full_path = os.path.join(root,path)
+                if self.location.dir_choice == cps.URL_FOLDER_NAME:
+                    full_path = root
+                    if len(image_set[1][i][0]) > 0:
+                        full_path += "/" + image_set[1][i][0]
+                    full_path += "/" + image_set[1][i][1]
+                else:
+                    path = os.path.join(image_set[1][i][0],image_set[1][i][1])
+                    full_path = os.path.join(root, path)
                 self.write_measurements(
                     workspace.measurements,
                     cpimageset.number + 1,
@@ -2486,36 +2495,51 @@ class LoadImages(cpmodule.CPModule):
         if not use_cached:
             import time
             start_time = time.clock()
+            listdir = lambda path: [ 
+                x for x in os.listdir(path)
+                if os.path.isfile(os.path.join(path, x))]
+            my_relpath = relpath
+            realpath = os.path.realpath
+            join = os.path.join
+            if (root.lower().startswith("http:") or 
+                root.lower().startswith("https:")):
+                from cellprofiler.utilities.read_directory_url \
+                     import walk_url, read_directory_url, IS_FILE
+                w = walk_url(root, topdown = True)
+                listdir = lambda path: [ x for x,y in read_directory_url(path)
+                                         if y == IS_FILE]
+                my_relpath = lambda dirpath, root: dirpath[(len(root)+1):]
+                realpath = lambda x: x
+                join = lambda *x: "/".join(x)
+            elif sys.version_info[0] == 2 and sys.version_info[1] < 6:
+                w = os.walk(root, topdown=True)
+            else:
+                w = os.walk(root, topdown=True, followlinks=True)
             if self.analyze_sub_dirs():
                 if self.descend_subdirectories == SUB_SOME:
                     prohibited = self.subdirectory_filter.get_selections()
                 else:
                     prohibited = []
                 files = []
-                if sys.version_info[0] == 2 and sys.version_info[1] < 6:
-                    w = os.walk(root, topdown=True)
-                else:
-                    w = os.walk(root, topdown=True, followlinks=True)
                 seen_dirs = set()
                 for dirpath, dirnames, filenames in w:
-                    path = relpath(dirpath, root)
+                    path = my_relpath(dirpath, root)
                     if (path in prohibited) or (os.path.realpath(dirpath) in seen_dirs):
                         # Don't descend into prohibited directories, and avoid infinite loops from links
                         del dirnames[:]
                         continue
                     # update list of visited paths
-                    seen_dirs.add(os.path.realpath(dirpath))
+                    seen_dirs.add(realpath(dirpath))
                     dirnames.sort() # try to ensure consistent behavior.  Is this needed?
                     if path == os.path.curdir:
                         files += [(file_name, file_name) 
                                   for file_name in filenames]
                     else:
-                        files += [(os.path.join(path, file_name), file_name)
+                        files += [(join(path, file_name), file_name)
                                   for file_name in filenames]
             else:
                 files = [ (file_name, file_name)
-                          for file_name in sorted(os.listdir(root))
-                          if os.path.isfile(os.path.join(root, file_name))]
+                          for file_name in sorted(listdir(root))]
             how_long = time.clock() - start_time
             cached_file_lists[self.image_directory()] = (how_long, files)
             
@@ -3315,12 +3339,16 @@ FILE_SCHEME = "file:"
 def pathname2url(path):
     '''Convert the unicode path to a file: url'''
     utf8_path = path.encode('utf-8')
+    if any([utf8_path.lower().startswith(x) for x in ("http", "https")]):
+        return utf8_path
     return FILE_SCHEME + urllib.pathname2url(utf8_path)
 
 def is_file_url(url):
     return url.lower().startswith(FILE_SCHEME)
 
 def url2pathname(url):
+    if any([url.lower().startswith(x) for x in ("http", "https")]):
+        return url
     assert is_file_url(url)
     utf8_url = urllib.url2pathname(url[len(FILE_SCHEME):])
     return unicode(utf8_url, 'utf-8')

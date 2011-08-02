@@ -1035,8 +1035,13 @@ class ModuleView:
                                 cps.DEFAULT_OUTPUT_SUBFOLDER_NAME):
                 custom_label.Label = "Sub-folder:"
             elif v.dir_choice == cps.URL_FOLDER_NAME:
-                custom_label.Hide()
-                custom_ctrl.Hide()
+                if v.support_urls == cps.SUPPORT_URLS_SHOW_DIR:
+                    custom_label.Label = "URL:"
+                    custom_label.Show()
+                    custom_ctrl.Show()
+                else:
+                    custom_label.Hide()
+                    custom_ctrl.Hide()
                 browse_ctrl.Hide()
             if custom_ctrl.Value != v.custom_path:
                 custom_ctrl.Value = v.custom_path

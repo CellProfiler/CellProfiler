@@ -62,6 +62,8 @@ AVAILABLE_ON_LAST_ATTRIBUTE = "available_on_last"
 '''Indicates that the control can contain metadata tags'''
 METADATA_ATTRIBUTE = "metadata"
 
+SUPPORT_URLS_SHOW_DIR = "show_directory"
+
 class Setting(object):
     """A module setting which holds a single string value
     
@@ -252,6 +254,7 @@ class DirectoryPath(Text):
                 dir_choices[0], "None")
         self.dir_choices = dir_choices
         self.allow_metadata = allow_metadata
+        self.support_urls = support_urls
         super(DirectoryPath,self).__init__(text, value, *args, **kwargs)
         
     def split_parts(self):

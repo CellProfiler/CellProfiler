@@ -51,6 +51,10 @@ TM_KAPUR                        = "Kapur"
 TM_KAPUR_GLOBAL                 = "Kapur Global"
 TM_KAPUR_ADAPTIVE               = "Kapur Adaptive"
 TM_KAPUR_PER_OBJECT             = "Kapur PerObject"
+TM_MCT                          = "MCT"
+TM_MCT_GLOBAL                   = "MCT Global"
+TM_MCT_ADAPTIVE                 = "MCT Adaptive"
+TM_MCT_PER_OBJECT               = "MCT PerObject"
 TM_MANUAL                       = "Manual"
 TM_MEASUREMENT                  = "Measurement"
 TM_BINARY_IMAGE                 = "Binary image"
@@ -69,6 +73,7 @@ TM_METHODS =  [TM_OTSU_GLOBAL, TM_OTSU_ADAPTIVE, TM_OTSU_PER_OBJECT,
                TM_ROBUST_BACKGROUND_GLOBAL, TM_ROBUST_BACKGROUND_ADAPTIVE, TM_ROBUST_BACKGROUND_PER_OBJECT,
                TM_RIDLER_CALVARD_GLOBAL, TM_RIDLER_CALVARD_ADAPTIVE, TM_RIDLER_CALVARD_PER_OBJECT,
                TM_KAPUR_GLOBAL, TM_KAPUR_ADAPTIVE, TM_KAPUR_PER_OBJECT,
+               TM_MCT_GLOBAL, TM_MCT_ADAPTIVE, TM_MCT_PER_OBJECT,
                TM_MANUAL, TM_BINARY_IMAGE, TM_MEASUREMENT]
 
 TM_GLOBAL_METHODS = [TM_OTSU_GLOBAL, TM_MOG_GLOBAL, TM_BACKGROUND_GLOBAL,
@@ -207,6 +212,8 @@ def get_global_threshold(threshold_method, image, mask = None,
         return get_ridler_calvard_threshold(image, mask)
     elif threshold_method == TM_KAPUR:
         return get_kapur_threshold(image,mask)
+    elif threshold_method == TM_MCT:
+        return get_maximum_correlation_threshold(image, mask)
     else:
         raise NotImplementedError("%s algorithm not implemented"%(threshold_method))
 
@@ -581,6 +588,65 @@ def get_kapur_threshold(image, mask=None):
     entry = np.argmin(sum_entropy);
     return 2**((histogram_values[entry] + histogram_values[entry+1]) / 2);
 
+def get_maximum_correlation_threshold(image, mask = None, bins = 256):
+    '''Return the maximum correlation threshold of the image
+    
+    image - image to be thresholded
+    
+    mask - mask of relevant pixels
+    
+    bins - # of value bins to use
+    
+    This is an implementation of the maximum correlation threshold as
+    described in Padmanabhan, "A novel algorithm for optimal image thresholding
+    of biological data", Journal of Neuroscience Methods 193 (2010) p 380-384
+    '''
+    
+    if mask is not None:
+        image = image[mask]
+    image = image.ravel()
+    nm = len(image)
+    if nm == 0:
+        return 0
+    
+    #
+    # Bin the image
+    #
+    min_value = np.min(image)
+    max_value = np.max(image)
+    if min_value == max_value:
+        return min_value
+    image = ((image - min_value) * (bins - 1) / 
+             (max_value - min_value)).astype(int)
+    histogram = np.bincount(image)
+    #
+    # Compute (j - mean) and (j - mean) **2
+    mean_value = np.mean(image)
+    diff = np.arange(len(histogram)) - mean_value
+    diff2 = diff * diff
+    ndiff = histogram * diff
+    ndiff2 = histogram * diff2
+    #
+    # This is the sum over all j of (j-mean)**2. It's a constant that could
+    # be factored out, but I follow the method and use it anyway.
+    #
+    sndiff2 = np.sum(ndiff2) 
+    #
+    # Compute the cumulative sum from i to m which is the cumsum at m
+    # minus the cumsum at i-1
+    cndiff = np.cumsum(ndiff)
+    numerator = np.hstack([[cndiff[-1]], cndiff[-1] - cndiff[:-1]])
+    #
+    # For the bottom, we need (Nm - Ni) * Ni / Nm
+    #
+    ni = nm - np.hstack([[0], np.cumsum(histogram[:-1])]) # number of pixels above i-1
+    denominator = np.sqrt(sndiff2 * (nm - ni) * ni / nm)
+    #
+    mct = numerator / denominator
+    mct[denominator == 0] = 0
+    my_bin = np.argmax(mct)-1
+    return min_value + my_bin * (max_value - min_value) / (bins - 1)
+    
 def weighted_variance(image,mask,threshold):
     """Compute the log-transformed variance of foreground and background"""
     if not np.any(mask):

@@ -132,7 +132,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             one of your images, you might check whether the automatically calculated
             threshold was unusually high or low compared to the other images.
             
-            <p>There are six methods for finding thresholds automatically:
+            <p>There are seven methods for finding thresholds automatically:
             <ul><li><i>Otsu:</i> This method is probably best if you are not able 
             to make certain assumptions about every images in your experiment, 
             especially if the percentage of the image covered by regions 
@@ -186,6 +186,14 @@ class Identify(cellprofiler.cpmodule.CPModule):
             log-transforming its values, then searching for the threshold that
             maximizes the sum of entropies of the foreground and background
             pixel values, when treated as separate distributions.</li>
+            <li><i>Maximum correlation:</i>This is an implementation of the
+            method described in <i>Padmanabhan</i>, <b>A novel algorithm for
+            optimal image thresholding of biological data</b>, Journal of 
+            Neuroscience Methods 193 (2010) 380-384. It computes the maximum
+            correlation between the binary mask created by thresholding and
+            the thresholded image and is somewhat similar mathematically to
+            Otsu. The authors claim superior results when thresholding images
+            of neurites and other images that have sparse foreground densities.</li>
             </ul>
             
             <p>You can also choose between <i>Global</i>, <i>Adaptive</i>, and 

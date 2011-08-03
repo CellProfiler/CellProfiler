@@ -15,7 +15,8 @@ worm's pieces together.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
+# Commented out in branch to prevent revision jump
+#__version__="$Revision$"
 
 import numpy as np
 import matplotlib.mlab as mlab
@@ -777,7 +778,7 @@ class UntangleWorms(cpm.CPModule):
             #
             if CAROLINAS_HACK:
                 path = cpprefs.get_default_output_directory()
-                name = "%d.mat" % measurements.get_image_set_number()
+                name = "%d.mat" % measurements.image_set_number
                 from scipy.io import savemat
                 d = dict(i = ijv[:,0], j=ijv[:,1], label=ijv[:,2])
                 savemat(os.path.join(path, name), d)
@@ -2102,6 +2103,11 @@ class UntangleWorms(cpm.CPModule):
         j = np.delete(j,index[1:])
         index = index - np.arange(len(index))
         count -= 1
+        #
+        # Get rid of all segments that are 1 long. Those will be joined
+        # by the segments around them.
+        #
+        index, count = index[count !=0], count[count != 0]
         #
         # Find the control point and within-control-point index of each point
         #

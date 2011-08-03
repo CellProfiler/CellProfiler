@@ -147,6 +147,9 @@ class HDF5Dict(object):
                         d[num_idx] = slice(start, stop)
 
     def __del__(self):
+        if not hasattr(self, "hdf5_file"):
+            # This happens if the constructor could not open the hdf5 file
+            return
         if self.is_temporary:
             try:
                 self.hdf5_file.close()

@@ -852,6 +852,7 @@ class PipelineController:
         self.stop_running()
         if self.__pipeline_measurements is not None:
             self.save_measurements()
+        del self.__pipeline_measurements
         self.__pipeline_measurements = None
     
     def on_save_measurements(self, event):
@@ -1261,9 +1262,9 @@ class PipelineController:
                             else:
                                 self.__frame.preferences_view.set_message_text("")
                                 break
-                    self.__pipeline_measurements = None
                     self.__output_path = None
                 del self.__pipeline_measurements
+                self.__pipeline_measurements = None
                 if len(self.pipeline_list) > 0:
                     self.run_next_pipeline(event)
                     return

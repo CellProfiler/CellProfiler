@@ -200,6 +200,76 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
             self.assertEqual(module.object_groups[1].object_name, "Nuclei")
             self.assertEqual(len(module.scale_groups), 2)
             self.assertEqual(module.scale_groups[0].scale, 3)
+            self.assertEqual(len(module.scale_groups[0].angles.get_selections()),1)
+            self.assertEqual(module.scale_groups[0].angles.get_selections()[0], M.H_HORIZONTAL)
+            self.assertEqual(module.scale_groups[1].scale, 5)
+            self.assertEqual(len(module.scale_groups[1].angles.get_selections()),1)
+            self.assertEqual(module.scale_groups[1].angles.get_selections()[0], M.H_HORIZONTAL)
+            self.assertEqual(module.wants_gabor, wants_gabor)
+            self.assertEqual(module.gabor_angles, 6)
+        
+    def test_01_03_load_v3(self):
+        data = """CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10865
+
+MeasureTexture:[module_num:1|svn_version:\'1\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Hidden:2
+    Hidden:2
+    Hidden:2
+    Select an image to measure:rawDNA
+    Select an image to measure:rawGFP
+    Select objects to measure:Cells
+    Select objects to measure:Nuclei
+    Texture scale to measure:3
+    Angles to measure:Horizontal,Vertical
+    Texture scale to measure:5
+    Angles to measure:Diagonal,Anti-diagonal
+    Measure Gabor features?:Yes
+    Number of angles to compute for Gabor:6
+
+MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+    Hidden:2
+    Hidden:2
+    Hidden:2
+    Select an image to measure:rawDNA
+    Select an image to measure:rawGFP
+    Select objects to measure:Cells
+    Select objects to measure:Nuclei
+    Texture scale to measure:3
+    Angles to measure:Horizontal,Vertical
+    Texture scale to measure:5
+    Angles to measure:Diagonal,Anti-diagonal
+    Measure Gabor features?:No
+    Number of angles to compute for Gabor:6
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()),2)
+        for i, wants_gabor in enumerate((True, False)):
+            module = pipeline.modules()[i]
+            self.assertTrue(isinstance(module, M.MeasureTexture))
+            self.assertEqual(len(module.image_groups), 2)
+            self.assertEqual(module.image_groups[0].image_name, "rawDNA")
+            self.assertEqual(module.image_groups[1].image_name, "rawGFP")
+            self.assertEqual(len(module.object_groups), 2)
+            self.assertEqual(module.object_groups[0].object_name, "Cells")
+            self.assertEqual(module.object_groups[1].object_name, "Nuclei")
+            self.assertEqual(len(module.scale_groups), 2)
+            self.assertEqual(module.scale_groups[0].scale, 3)
+            angles = module.scale_groups[0].angles.get_selections()
+            self.assertEqual(len(angles),2)
+            self.assertTrue(M.H_HORIZONTAL in angles)
+            self.assertTrue(M.H_VERTICAL in angles)
+            
+            angles = module.scale_groups[1].angles.get_selections()
+            self.assertEqual(len(angles),2)
+            self.assertTrue(M.H_DIAGONAL in angles)
+            self.assertTrue(M.H_ANTIDIAGONAL in angles)
+            
             self.assertEqual(module.scale_groups[1].scale, 5)
             self.assertEqual(module.wants_gabor, wants_gabor)
             self.assertEqual(module.gabor_angles, 6)
@@ -225,6 +295,8 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
         order_python = np.lexsort((centers[:,X],centers[:,Y]))
         workspace, module = self.make_workspace(image, labels, convert = False)
         module.scale_groups[0].scale.value = 3
+        my_angle = M.H_HORIZONTAL
+        module.scale_groups[0].angles.value = my_angle
 
         module.run(workspace)
         m = workspace.measurements
@@ -234,7 +306,8 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
             
         for measurement in M.F_HARALICK:
             mname = '%s_%s_%s_%d'%(M.TEXTURE, measurement, INPUT_IMAGE_NAME, 3)
-            pytm = m.get_current_measurement(INPUT_OBJECTS_NAME, mname)
+            pymname = mname + "_" + M.H_TO_A[my_angle]
+            pytm = m.get_current_measurement(INPUT_OBJECTS_NAME, pymname)
             tm = texture_measurements[mname][0,0][:,]
             error_count = 0
             for i in range(count):
@@ -262,7 +335,8 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
          ('Texture_InfoMeas1_Cytoplasm_3',-0.4236),
          ('Texture_InfoMeas2_Cytoplasm_3',0.6609))
         for feature_name, value in image_measurements:
-            pytm = m.get_current_image_measurement(feature_name)
+            py_feature_name = feature_name + "_" + M.H_TO_A[my_angle]
+            pytm = m.get_current_image_measurement(py_feature_name)
             self.assertAlmostEqual(pytm, value,3,
                                    "%s failed. Python=%f, Matlab=%f" %
                                    (feature_name, pytm, value))
@@ -274,14 +348,37 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:2|show_w
         i,j = np.mgrid[0:100,0:100]
         labels = (i/10).astype(int) + (j/10).astype(int) * 10 + 1
         workspace, module = self.make_workspace(image, labels)
+        self.assertTrue(isinstance(module, M.MeasureTexture))
         module.scale_groups[0].scale.value = 2
+        module.scale_groups[0].angles.value = ",".join(M.H_ALL)
         module.run(workspace)
         m = workspace.measurements
+        all_measurements = module.get_measurements(
+            workspace.pipeline, INPUT_OBJECTS_NAME, M.TEXTURE)
+        all_columns = module.get_measurement_columns(workspace.pipeline)
+        self.assertTrue(all([oname in (INPUT_OBJECTS_NAME, cpmeas.IMAGE)
+                             for oname, feature, coltype in all_columns]))
+        all_column_features = [
+            feature for oname, feature, coltype in all_columns
+            if oname == INPUT_OBJECTS_NAME]
+        self.assertTrue(all([any([oname == cpmeas.IMAGE and feature == afeature
+                                  for oname, feature, coltype in all_columns])
+                             for afeature in all_column_features]))
         for measurement in M.F_HARALICK:
-            mname = '%s_%s_%s_%d'%(M.TEXTURE, measurement, INPUT_IMAGE_NAME, 2)
-            values = m.get_current_measurement(INPUT_OBJECTS_NAME, mname)
-            self.assertTrue(np.all(values != 0))
-        
+            self.assertTrue(measurement in all_measurements)
+            self.assertTrue(
+                INPUT_IMAGE_NAME in module.get_measurement_images(
+                    workspace.pipeline, INPUT_OBJECTS_NAME, M.TEXTURE, measurement))
+            all_scales = module.get_measurement_scales(
+                workspace.pipeline, INPUT_OBJECTS_NAME, M.TEXTURE,
+                measurement, INPUT_IMAGE_NAME)
+            for angle in M.H_ALL:
+                mname = '%s_%s_%s_%d_%s'%(
+                    M.TEXTURE, measurement, INPUT_IMAGE_NAME, 2, M.H_TO_A[angle])
+                self.assertTrue(mname in all_column_features)
+                values = m.get_current_measurement(INPUT_OBJECTS_NAME, mname)
+                self.assertTrue(np.all(values != 0))
+                self.assertTrue("%d_%s" % (2, M.H_TO_A[angle]) in all_scales)
         
     def test_03_01_gabor_null(self):
         '''Test for no score on a uniform image'''

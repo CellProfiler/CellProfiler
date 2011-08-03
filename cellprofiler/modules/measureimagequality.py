@@ -854,7 +854,7 @@ class MeasureImageQuality(cpm.CPModule):
             for scale_group in image_group.scale_groups:
                 scale = scale_group.scale.value
                     
-                value = Haralick(pixel_data, image_labels, scale).H3()
+                value = Haralick(pixel_data, image_labels, 0, scale).H3()
                 if not np.isfinite(value):
                     value = 0.0
                 workspace.add_measurement(cpmeas.IMAGE, "%s_%s_%s_%d"%

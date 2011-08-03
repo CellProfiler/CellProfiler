@@ -45,7 +45,7 @@ def quantize(image, nlevels):
     tmp = np.array(image // (1.0 / nlevels), dtype='i1')
     return tmp.clip(0, nlevels - 1)
 
-def cooccurrence(quantized_image, labels, scale=3):
+def cooccurrence(quantized_image, labels, scale_i=3, scale_j=0):
     """Calculates co-occurrence matrices for all the objects in the image.
 
     Return an array P of shape (nobjects, nlevels, nlevels) such that
@@ -65,11 +65,31 @@ def cooccurrence(quantized_image, labels, scale=3):
     labels = labels.astype(int)
     nlevels = quantized_image.max() + 1
     nobjects = labels.max()
-    image_a = quantized_image[:, :-scale]
-    image_b = quantized_image[:, scale:]
-    labels_ab = labels[:, :-scale]
-    equilabel = ((labels[:, :-scale] == labels[:, scale:]) & 
-                 (labels[:,:-scale] > 0))
+    if scale_i < 0:
+        scale_i = -scale_i
+        scale_j = -scale_j
+    if scale_i == 0 and scale_j > 0:
+        image_a = quantized_image[:, :-scale_j]
+        image_b = quantized_image[:, scale_j:]
+        labels_ab = labels_a = labels[:, :-scale_j]
+        labels_b = labels[:, scale_j:]
+    elif scale_i > 0 and scale_j == 0:
+        image_a = quantized_image[:-scale_i, :]
+        image_b = quantized_image[scale_i:, :]
+        labels_ab = labels_a = labels[:-scale_i, :]
+        labels_b = labels[scale_i:, :]
+    elif scale_i > 0 and scale_j > 0:
+        image_a = quantized_image[:-scale_i, :-scale_j]
+        image_b = quantized_image[scale_i:, scale_j:]
+        labels_ab = labels_a = labels[:-scale_i, :-scale_j]
+        labels_b = labels[scale_i:, scale_j:]
+    else:
+        # scale_j should be negative
+        image_a = quantized_image[:-scale_i, -scale_j:]
+        image_b = quantized_image[scale_i:, :scale_j]
+        labels_ab = labels_a = labels[:-scale_i, -scale_j:]
+        labels_b = labels[scale_i:, :scale_j]
+    equilabel = ((labels_a == labels_b) & (labels_a > 0))
     if np.any(equilabel):
 
         Q = (nlevels*nlevels*(labels_ab[equilabel]-1)+
@@ -79,7 +99,7 @@ def cooccurrence(quantized_image, labels, scale=3):
             S = np.zeros(nobjects*nlevels*nlevels-R.size)
             R = np.hstack((R, S))
         P = R.reshape(nobjects, nlevels, nlevels)
-        pixel_count = fix(scind.sum(equilabel, labels[:,:-scale],
+        pixel_count = fix(scind.sum(equilabel, labels_ab,
                                     np.arange(nobjects, dtype=np.int32)+1))
         pixel_count = np.tile(pixel_count[:,np.newaxis,np.newaxis],
                               (1,nlevels,nlevels))
@@ -100,7 +120,7 @@ class Haralick(object):
     erroneous formulas for the Haralick features in the
     literature.  There is also an error in the original paper.
     """
-    def __init__(self, image, labels, scale, nlevels=8, mask=None):
+    def __init__(self, image, labels, scale_i, scale_j, nlevels=8, mask=None):
         """
         image   -- 2-D numpy array of 32-bit floating-point numbers.
         labels  -- 2-D numpy array of integers.
@@ -112,7 +132,7 @@ class Haralick(object):
             labels[~mask] = 0
         normalized = normalized_per_object(image, labels)
         quantized = quantize(normalized, nlevels)
-        self.P,nlevels = cooccurrence(quantized, labels, scale)
+        self.P,nlevels = cooccurrence(quantized, labels, scale_i, scale_j)
 
         self.nobjects = labels.max()
         px = self.P.sum(2) # nobjects x nlevels

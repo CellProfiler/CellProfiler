@@ -116,7 +116,7 @@ SMC-3(6):610-621.</li>
 # Website: http://www.cellprofiler.org
 
 
-__version__="$Revision: 1 $"
+__version__ = "$Revision$"
 
 import numpy as np
 import scipy.ndimage as scind
@@ -143,10 +143,24 @@ DifferenceVariance DifferenceEntropy InfoMeas1 InfoMeas2""".split()
 
 F_GABOR = "Gabor"
 
+H_HORIZONTAL = "Horizontal"
+A_HORIZONTAL = "0"
+H_VERTICAL = "Vertical"
+A_VERTICAL = "90"
+H_DIAGONAL = "Diagonal"
+A_DIAGONAL = "45"
+H_ANTIDIAGONAL = "Anti-diagonal"
+A_ANTIDIAGONAL = "135"
+H_ALL = (H_HORIZONTAL, H_VERTICAL, H_DIAGONAL, H_ANTIDIAGONAL)
+
+H_TO_A = { H_HORIZONTAL: A_HORIZONTAL,
+           H_VERTICAL: A_VERTICAL,
+           H_DIAGONAL: A_DIAGONAL,
+           H_ANTIDIAGONAL: A_ANTIDIAGONAL }
 class MeasureTexture(cpm.CPModule):
 
     module_name = "MeasureTexture"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = 'Measurement'
 
     def create_settings(self):
@@ -190,11 +204,12 @@ class MeasureTexture(cpm.CPModule):
     def settings(self):
         """The settings as they appear in the save file."""
         result = [self.image_count, self.object_count, self.scale_count]
-        for groups, element in [(self.image_groups, 'image_name'),
-                                (self.object_groups, 'object_name'),
-                                (self.scale_groups, 'scale')]:
+        for groups, elements in [(self.image_groups, ['image_name']),
+                                (self.object_groups, ['object_name']),
+                                (self.scale_groups, ['scale', 'angles'])]:
             for group in groups:
-                result += [getattr(group, element)]
+                for element in elements:
+                    result += [getattr(group, element)]
         result += [self.wants_gabor, self.gabor_angles]
         return result
 
@@ -284,6 +299,22 @@ class MeasureTexture(cpm.CPModule):
                                  smaller than most of your objects. For very small objects (smaller than 
                                  the scale of texture you are measuring), the texture cannot be measured 
                                  and will result in a undefined value in the output file."""))
+        group.append('angles', cps.MultiChoice(
+            "Angles to measure", H_ALL, H_ALL,
+        doc = """The Haralick texture measurements are based on the correlation
+        between pixels offset by the scale in one of four directions:
+        <p><ul>
+        <li><i>%(H_HORIZONTAL)s</i> - the correlated pixel is "scale" pixels
+        to the right of the pixel of interest.</li>
+        <li><i>%(H_VERTICAL)s</i> - the correlated pixel is "scale" pixels
+        below the pixel of interest.</li>
+        <li><i>%(H_DIAGONAL)s</i> - the correlated pixel is "scale" pixels
+        to the right and "scale" pixels below the pixel of interest.</li>
+        <li><i>%(H_ANTIDIAGONAL)s</i> - the correlated pixel is "scale"
+        pixels to the left and "scale" pixels below the pixel of interest.</li>
+        </ul><p>
+        Choose one or more directions to measure.""" % globals()))
+                                
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this scale", self.scale_groups, group))
         self.scale_groups.append(group)
@@ -369,7 +400,12 @@ class MeasureTexture(cpm.CPModule):
         '''
         if len(self.get_measurement_images(pipeline, object_name, category,
                                            measurement)) > 0:
-            return [x.scale.value for x in self.scale_groups]
+            if measurement == F_GABOR:
+                return [x.scale.value for x in self.scale_groups]
+            
+            return sum([["%d_%s" % (x.scale.value, H_TO_A[h])
+                         for h in x.angles.get_selections()]
+                        for x in self.scale_groups], [])
         return []
     
     def get_measurement_columns(self, pipeline):
@@ -378,17 +414,39 @@ class MeasureTexture(cpm.CPModule):
         for feature in self.get_features():
             for im in self.image_groups:
                 for sg in self.scale_groups:
-                    cols += [('Image',
-                              '%s_%s_%s_%d'%(TEXTURE, feature, im.image_name.value, sg.scale.value),
-                              'float')]
-                   
+                    if feature == F_GABOR:
+                        cols += [(cpmeas.IMAGE,
+                                  '%s_%s_%s_%d' % (TEXTURE, feature, 
+                                                   im.image_name.value, 
+                                                   sg.scale.value),
+                                  cpmeas.COLTYPE_FLOAT)]
+                    else:
+                        for angle in sg.angles.get_selections():
+                            cols += [(cpmeas.IMAGE,
+                                      '%s_%s_%s_%d_%s' % (
+                                          TEXTURE, feature, im.image_name.value, 
+                                          sg.scale.value, H_TO_A[angle]),
+                                      cpmeas.COLTYPE_FLOAT)]
+                            
         for ob in self.object_groups:
             for feature in self.get_features():
                 for im in self.image_groups:
                     for sg in self.scale_groups:
-                        cols += [(ob.object_name.value,
-                                  "%s_%s_%s_%d"%(TEXTURE, feature, im.image_name.value, sg.scale.value),
-                                  'float')]
+                        if feature == F_GABOR:
+                            cols += [(ob.object_name.value,
+                                      "%s_%s_%s_%d" % (
+                                          TEXTURE, feature, im.image_name.value, 
+                                          sg.scale.value),
+                                      cpmeas.COLTYPE_FLOAT)]
+                        else:
+                            for angle in sg.angles.get_selections():
+                                cols += [(ob.object_name.value,
+                                          "%s_%s_%s_%d_%s" % (
+                                              TEXTURE, feature, 
+                                              im.image_name.value, 
+                                              sg.scale.value, H_TO_A[angle]),
+                                          cpmeas.COLTYPE_FLOAT)]
+                                
         return cols
 
     def is_interactive(self):
@@ -402,14 +460,16 @@ class MeasureTexture(cpm.CPModule):
             image_name = image_group.image_name.value
             for scale_group in self.scale_groups:
                 scale = scale_group.scale.value
-                statistics += self.run_image(image_name, scale, workspace)
                 if self.wants_gabor:
                     statistics += self.run_image_gabor(image_name, scale, workspace)
+                for angle in scale_group.angles.get_selections():
+                    statistics += self.run_image(image_name, scale, angle, 
+                                                 workspace)
                 for object_group in self.object_groups:
                     object_name = object_group.object_name.value
-                    statistics += self.run_one(image_name, 
-                                               object_name,
-                                               scale, workspace)
+                    for angle in scale_group.angles.get_selections():
+                        statistics += self.run_one(
+                            image_name, object_name, scale, angle, workspace)
                     if self.wants_gabor:
                         statistics += self.run_one_gabor(image_name, 
                                                          object_name, 
@@ -424,7 +484,7 @@ class MeasureTexture(cpm.CPModule):
         figure.subplot_table(0, 0, workspace.display_data.statistics,
                              ratio=(.20,.20,.20,.20,.20))
     
-    def run_one(self, image_name, object_name, scale, workspace):
+    def run_one(self, image_name, object_name, scale, angle, workspace):
         """Run, computing the area measurements for a single map of objects"""
         statistics = []
         image = workspace.image_set.get_image(image_name,
@@ -452,26 +512,33 @@ class MeasureTexture(cpm.CPModule):
             
         if np.all(labels == 0):
             for name in F_HARALICK:
-                statistics += self.record_measurement(workspace, 
-                                                      image_name, 
-                                                      object_name, 
-                                                      scale,
-                                                      name, 
-                                                      np.zeros((0,)))
+                statistics += self.record_measurement(
+                    workspace, image_name, object_name, 
+                    str(scale) + "_" + H_TO_A[angle], name, np.zeros((0,)))
         else:
+            scale_i, scale_j = self.get_angle_ij(angle, scale)
+                
             for name, value in zip(F_HARALICK, Haralick(pixel_data,
                                                         labels,
-                                                        scale,
+                                                        scale_i,
+                                                        scale_j,
                                                         mask=mask).all()):
-                statistics += self.record_measurement(workspace, 
-                                                      image_name, 
-                                                      object_name, 
-                                                      scale,
-                                                      name, 
-                                                      value)
+                statistics += self.record_measurement(
+                    workspace, image_name, object_name, 
+                    str(scale) + "_" + H_TO_A[angle], name, value)
         return statistics
 
-    def run_image(self, image_name, scale, workspace):
+    def get_angle_ij(self, angle, scale):
+        if angle == H_VERTICAL:
+            return scale, 0
+        elif angle == H_HORIZONTAL:
+            return 0, scale
+        elif angle == H_DIAGONAL:
+            return scale, scale
+        elif angle == H_ANTIDIAGONAL:
+            return scale, -scale
+        
+    def run_image(self, image_name, scale, angle, workspace):
         '''Run measurements on image'''
         statistics = []
         image = workspace.image_set.get_image(image_name,
@@ -480,14 +547,14 @@ class MeasureTexture(cpm.CPModule):
         image_labels = np.ones(pixel_data.shape, int)
         if image.has_mask:
             image_labels[~ image.mask] = 0
+        scale_i, scale_j = self.get_angle_ij(angle, scale)
         for name, value in zip(F_HARALICK, Haralick(pixel_data,
                                                     image_labels,
-                                                    scale).all()):
-            statistics += self.record_image_measurement(workspace, 
-                                                        image_name, 
-                                                        scale,
-                                                        name, 
-                                                        value)
+                                                    scale_i,
+                                                    scale_j).all()):
+            statistics += self.record_image_measurement(
+                workspace, image_name, str(scale) + "_" + H_TO_A[angle],
+                name, value)
         return statistics
         
     def run_one_gabor(self, image_name, object_name, scale, workspace):
@@ -566,10 +633,10 @@ class MeasureTexture(cpm.CPModule):
         measurements"""
         data = fix(result)
         data[~np.isfinite(data)] = 0
-        workspace.add_measurement(object_name, 
-                                  "%s_%s_%s_%d"%
-                                  (TEXTURE, feature_name,image_name, scale), 
-                                  data)
+        workspace.add_measurement(
+            object_name, 
+            "%s_%s_%s_%s" % (TEXTURE, feature_name,image_name, str(scale)), 
+            data)
         statistics = [[image_name, object_name, 
                        "%s %s"%(aggregate_name, feature_name), scale, 
                        "%.2f"%fn(data) if len(data) else "-"]
@@ -587,9 +654,9 @@ class MeasureTexture(cpm.CPModule):
         measurements"""
         if not np.isfinite(result):
             result = 0
-        workspace.measurements.add_image_measurement("%s_%s_%s_%d"%
+        workspace.measurements.add_image_measurement("%s_%s_%s_%s"%
                                                      (TEXTURE, feature_name,
-                                                      image_name, scale), 
+                                                      image_name, str(scale)), 
                                                      result)
         statistics = [[image_name, "-", 
                        feature_name, scale, 
@@ -630,4 +697,19 @@ class MeasureTexture(cpm.CPModule):
             #
             setting_values = setting_values[:-1] + [cps.YES] + setting_values[-1:]
             variable_revision_number = 2
+        if not from_matlab and variable_revision_number == 2:
+            #
+            # Added angles
+            #
+            image_count = int(setting_values[0])
+            object_count = int(setting_values[1])
+            scale_count = int(setting_values[2])
+            scale_offset = 3 + image_count + object_count
+            new_setting_values = setting_values[:scale_offset]
+            for scale in setting_values[scale_offset:(scale_offset+scale_count)]:
+                new_setting_values += [scale, H_HORIZONTAL] 
+            new_setting_values += setting_values[(scale_offset+scale_count):]
+            setting_values = new_setting_values
+            variable_revision_number = 3
+                
         return setting_values, variable_revision_number, from_matlab

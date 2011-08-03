@@ -397,6 +397,11 @@ class PipelineController:
                 return False
         return True
     
+    def on_close(self):
+        self.close_debug_measurements()
+        if self.__running_pipeline is not None:
+            self.stop_running()
+    
     def __on_pipeline_event(self,caller,event):
         if isinstance(event,cellprofiler.pipeline.RunExceptionEvent):
             error_msg = None
@@ -900,6 +905,7 @@ class PipelineController:
         self.__frame.preferences_view.start_debugging()
         self.__test_controls_panel.Show()
         self.__test_controls_panel.GetParent().GetSizer().Layout()
+        self.close_debug_measurements()
         self.__debug_measurements = cpm.Measurements(can_overwrite=True)
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
@@ -932,6 +938,10 @@ class PipelineController:
             return False
         return True
     
+    def close_debug_measurements(self):
+        del self.__debug_measurements
+        self.__debug_measurements = None
+        
     def on_debug_stop(self, event):
         self.stop_debugging()
 
@@ -942,7 +952,7 @@ class PipelineController:
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.__frame.enable_debug_commands(False)
         self.__debug_image_set_list = None
-        self.__debug_measurements = None
+        self.close_debug_measurements()
         self.__debug_object_set = None
         self.__debug_outlines = None
         self.__debug_grids = None

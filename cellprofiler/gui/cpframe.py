@@ -157,6 +157,7 @@ class CPFrame(wx.Frame):
         self.tbicon.Destroy()
         self.__directory_view.close()
         self.__preferences_view.close()
+        self.pipeline_controller.on_close()
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):

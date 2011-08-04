@@ -182,19 +182,24 @@ class CorrectIlluminationApply(cpm.CPModule):
         illum_correct_name = image.illum_correct_function_image_name.value
         corrected_image_name = image.corrected_image_name.value
         #
-        # Get grayscale images from the image set
+        # Get images from the image set
         #
-        orig_image = workspace.image_set.get_image(image_name,
-                                                   must_be_grayscale=True)
-        illum_function = workspace.image_set.get_image(illum_correct_name,
-                                                       must_be_grayscale=True)
+        orig_image = workspace.image_set.get_image(image_name)
+        illum_function = workspace.image_set.get_image(illum_correct_name)
+        illum_function_pixel_data = illum_function.pixel_data
+        if orig_image.pixel_data.ndim == 2:
+            illum_function = workspace.image_set.get_image(
+                illum_correct_name, must_be_grayscale=True)
+        else:
+            if illum_function_pixel_data.ndim == 2:
+                illum_function_pixel_data = illum_function_pixel_data[:,:,np.newaxis]
         #
         # Either divide or subtract the illumination image from the original
         #
         if image.divide_or_subtract == DOS_DIVIDE:
-            output_pixels = orig_image.pixel_data / illum_function.pixel_data
+            output_pixels = orig_image.pixel_data / illum_function_pixel_data
         elif image.divide_or_subtract == DOS_SUBTRACT:
-            output_pixels = orig_image.pixel_data - illum_function.pixel_data
+            output_pixels = orig_image.pixel_data - illum_function_pixel_data
             output_pixels[output_pixels < 0] = 0
         else:
             raise ValueError("Unhandled option for divide or subtract: %s"%
@@ -212,31 +217,38 @@ class CorrectIlluminationApply(cpm.CPModule):
                 workspace.measurements.image_set_number),subplots=(3,len(self.images)))
         for j, image in enumerate(self.images):
             image_name = image.image_name.value
-            illum_correct_function_image_name = image.illum_correct_function_image_name.value
+            illum_correct_function_image_name = \
+                image.illum_correct_function_image_name.value
             corrected_image_name = image.corrected_image_name.value
-            orig_image = workspace.image_set.get_image(image_name,
-                                                       must_be_grayscale=True)
-            illum_image = workspace.image_set.get_image(illum_correct_function_image_name,
-                                                        must_be_grayscale=True)
+            orig_image = workspace.image_set.get_image(image_name)
+            illum_image = workspace.image_set.get_image(
+                illum_correct_function_image_name)
             corrected_image = workspace.image_set.get_image(corrected_image_name)
 
-            figure.subplot_imshow_grayscale(0, j, orig_image.pixel_data,
-                                            "Original image: %s" % image_name,
-                                            sharex=figure.subplot(0,0),
-                                            sharey=figure.subplot(0,0))
+            def imshow(x, y, image, *args, **kwargs):
+                if image.pixel_data.ndim == 2:
+                    f = figure.subplot_imshow_grayscale
+                else:
+                    f = figure.subplot_imshow_color
+                return f(x, y, image.pixel_data, *args, **kwargs)
+            
+            imshow(0, j, orig_image,
+                   "Original image: %s" % image_name,
+                   sharex=figure.subplot(0,0),
+                   sharey=figure.subplot(0,0))
             title = ("Illumination function: %s\nmin=%f, max=%f" %
                      (illum_correct_function_image_name,
                       round(illum_image.pixel_data.min(),4),
                       round(illum_image.pixel_data.max(),4)))
 
-            figure.subplot_imshow_grayscale(1, j, illum_image.pixel_data, title,
-                                            sharex=figure.subplot(0,0),
-                                            sharey=figure.subplot(0,0))
-            figure.subplot_imshow_grayscale(2, j, corrected_image.pixel_data,
-                                            "Final image: %s" %
-                                            corrected_image_name,
-                                            sharex=figure.subplot(0,0),
-                                            sharey=figure.subplot(0,0))
+            imshow(1, j, illum_image, title,
+                   sharex=figure.subplot(0,0),
+                   sharey=figure.subplot(0,0))
+            imshow(2, j, corrected_image,
+                   "Final image: %s" %
+                   corrected_image_name,
+                   sharex=figure.subplot(0,0),
+                   sharey=figure.subplot(0,0))
 
     def is_interactive(self):
         return False

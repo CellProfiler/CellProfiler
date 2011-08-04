@@ -1729,7 +1729,11 @@ class ModuleSizer(wx.PySizer):
 
     def get_row_height(self, j):
         height = 0
+        item_indices = [self.GetItemIndex(cc.GetSizer() if cc.IsSizer() else cc.GetWindow()) for cc in self.GetChildren() if cc.IsSizer() or cc.IsWindow()]
         for i in range(self.__cols):
+            item_index = self.idx(i,j)
+            if item_index not in item_indices:
+                continue
             item = self.GetItem(self.idx(i,j))
             if item is None:
                 continue

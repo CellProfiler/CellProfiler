@@ -68,13 +68,15 @@ class TestCrop(unittest.TestCase):
             self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
         pipeline.add_listener(callback)
         pipeline.add_module(module)
+        m = cpm.Measurements()
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,
                                   object_set,
-                                  cpm.Measurements(),
+                                  m,
                                   image_set_list)
-        module.prepare_group(pipeline, image_set_list, None, None)
+        m.add_measurement(cpm.IMAGE, cpm.GROUP_INDEX, 0, image_set_number = 1)
+        m.add_measurement(cpm.IMAGE, cpm.GROUP_NUMBER, 1, image_set_number = 1)
         return workspace, module
     
     def test_00_00_zeros(self):

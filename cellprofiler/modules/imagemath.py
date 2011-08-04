@@ -280,6 +280,11 @@ class ImageMath(cpm.CPModule):
             else:
                 op = np.divide
             for pd, mask in zip(pixel_data[1:], masks[1:]):
+                if not np.isscalar(pd) and output_pixel_data.ndim != pd.ndim:
+                    if output_pixel_data.ndim == 2:
+                        output_pixel_data = output_pixel_data[:,:,np.newaxis]
+                    if pd.ndim == 2:
+                        pd = pd[:,:,np.newaxis]
                 output_pixel_data = op(output_pixel_data, pd)
                 if self.ignore_mask == True:
                     continue

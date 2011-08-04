@@ -278,29 +278,11 @@ class Crop(cpm.CPModule):
         result += [self.remove_rows_and_columns]
         return result
    
-    def prepare_group(self, pipeline, image_set_list, grouping,
-                      image_numbers):
-        '''Prepare to start processing a new grouping
-        
-        pipeline - the pipeline being run
-        image_set_list - the image_set_list for the experiment. Add image
-                         providers to the image set list here.
-        grouping - a dictionary that describes the key for the grouping.
-                   For instance, { 'Metadata_Row':'A','Metadata_Column':'01'}
-        image_numbers - a sequence of the image numbers within the
-                   group (image sets can be retreved as
-                   image_set_list.get_image_set(image_numbers[i]-1)
-        
-        prepare_group is called once after prepare_run if there are no
-        groups.
-        '''
-        d = self.get_dictionary(image_set_list)
-        d[D_FIRST_IMAGE_SET] = True
-    
     def run(self,workspace):
-        d = self.get_dictionary(workspace.image_set_list)
-        first_image_set = d[D_FIRST_IMAGE_SET]
-        d[D_FIRST_IMAGE_SET] = False
+        first_image_set = workspace.measurements.get_current_image_measurement(
+            cpmeas.GROUP_INDEX) == 0
+        image_set_list = workspace.image_set_list
+        d = self.get_dictionary(image_set_list)
         orig_image = workspace.image_set.get_image(self.image_name.value)
         recalculate_flag = (self.shape not in (SH_ELLIPSE, SH_RECTANGLE) or
                             self.individual_or_once == IO_INDIVIDUALLY or

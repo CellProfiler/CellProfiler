@@ -2594,10 +2594,10 @@ class LoadImages(cpmodule.CPModule):
         Returns true if in image mode and an image extension
         or if in movie mode and extension is a movie extension.
         """
-        if not is_image(filename):
-            return False
-        if (self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES)
-            and not is_movie(filename)):
+        if self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES, FF_OTHER_MOVIES):
+            if not is_movie(filename):
+                return False
+        elif not is_image(filename):
             return False
         if ((self.text_to_exclude() != cps.DO_NOT_USE) and
             self.exclude and (filename.find(self.text_to_exclude()) >= 0)):

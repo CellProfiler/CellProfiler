@@ -465,7 +465,6 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                     for i,image_number in enumerate(image_numbers):
                         image_set = image_set_list.get_image_set(image_number-1)
                         image     = image_set.get_image(self.image_name.value,
-                                                        must_be_grayscale=True,
                                                         cache = False)
                         output_image_provider.add_image(image)
                         if progress_dialog is not None:
@@ -487,8 +486,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 # We are accumulating a pipeline image. Add this image set's
                 # image to the output image provider.
                 # 
-                orig_image = workspace.image_set.get_image(self.image_name.value,
-                                                           must_be_grayscale=True)
+                orig_image = workspace.image_set.get_image(self.image_name.value)
                 output_image_provider.add_image(orig_image)
 
             # fetch images for display
@@ -496,15 +494,14 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             dilated_image = output_image_provider.provide_dilated_image()
             output_image = output_image_provider.provide_image(workspace.image_set)
         else:
-            orig_image = workspace.image_set.get_image(self.image_name.value,
-                                                       must_be_grayscale=True)
+            orig_image = workspace.image_set.get_image(self.image_name.value)
             pixels = orig_image.pixel_data
             avg_image       = self.preprocess_image_for_averaging(orig_image)
             dilated_image   = self.apply_dilation(avg_image, orig_image)
             smoothed_image  = self.apply_smoothing(dilated_image, orig_image)
             output_image    = self.apply_scaling(smoothed_image, orig_image)
             # for illumination correction, we want the smoothed function to extend beyond the mask.
-            output_image.mask = np.ones(output_image.pixel_data.shape, bool)
+            output_image.mask = np.ones(output_image.pixel_data.shape[:2], bool)
 
             if self.save_average_image.value:
                 workspace.image_set.add(self.average_image_name.value,
@@ -526,17 +523,22 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         
         figure = workspace.create_or_find_figure(title="CorrectIlluminationCalculate, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(2,2))
-        figure.subplot_imshow_grayscale(0, 0, avg_image.pixel_data, 
-                                        "Averaged image")
+        def imshow(x, y, image, *args, **kwargs):
+            if image.pixel_data.ndim == 2:
+                f = figure.subplot_imshow_grayscale
+            else:
+                f = figure.subplot_imshow_color
+            return f(x, y, image.pixel_data, *args, **kwargs)
+        imshow(0, 0, avg_image, "Averaged image")
         pixel_data = output_image.pixel_data
-        figure.subplot_imshow_grayscale(0, 1, pixel_data,
-                                        "Final illumination function",
-                                        sharex=figure.subplot(0,0),
-                                        sharey=figure.subplot(0,0))
-        figure.subplot_imshow_grayscale(1, 0, dilated_image.pixel_data,
-                                        "Dilated image",
-                                        sharex=figure.subplot(0,0),
-                                        sharey=figure.subplot(0,0))
+        imshow(0, 1, output_image,
+               "Final illumination function",
+               sharex=figure.subplot(0,0),
+               sharey=figure.subplot(0,0))
+        imshow(1, 0, dilated_image,
+               "Dilated image",
+               sharex=figure.subplot(0,0),
+               sharey=figure.subplot(0,0))
         statistics = [["Min value", round(np.min(output_image.pixel_data),2)],
                       ["Max value", round(np.max(output_image.pixel_data),2)],
                       ["Calculation type", self.intensity_choice.value]
@@ -571,8 +573,13 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                                               self.object_dilation_radius.value*3)
             def fn(image):
                 return scind.convolve(image, kernel, mode='constant', cval=0)
-            dilated_pixels = smooth_with_function_and_mask(image.pixel_data,
-                                                           fn, image.mask)
+            if image.pixel_data.ndim == 2:
+                dilated_pixels = smooth_with_function_and_mask(
+                    image.pixel_data, fn, image.mask)
+            else:
+                dilated_pixels = np.dstack([
+                    smooth_with_function_and_mask(x, fn, image.mask)
+                    for x in image.pixel_data.transpose(2, 0, 1)])
             return cpi.Image(dilated_pixels, parent_image = orig_image)
         else:
             return image
@@ -598,21 +605,30 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         if (self.intensity_choice == IC_REGULAR or 
             self.smoothing_method == SM_SPLINES):
             if orig_image.has_mask:
-                pixels[np.logical_not(orig_image.mask)] = 0
+                if pixels.ndim == 2:
+                    pixels[~ orig_image.mask] = 0
+                else:
+                    pixels[~ orig_image.mask, :] = 0
                 avg_image = cpi.Image(pixels, parent_image = orig_image)
             else:
                 avg_image = orig_image
         else:
             # For background, we create a labels image using the block
             # size and find the minimum within each block.
-            labels, indexes = cpmm.block(pixels.shape,
+            labels, indexes = cpmm.block(pixels.shape[:2],
                                          (self.block_size.value,
                                           self.block_size.value))
             if orig_image.has_mask:
-                labels[np.logical_not(orig_image.mask)] = -1
-            minima = fix(scind.minimum(pixels, labels, indexes))
+                labels[~ orig_image.mask] = -1
+                
             min_block = np.zeros(pixels.shape)
-            min_block[labels != -1] = minima[labels[labels != -1]]
+            if pixels.ndim == 2:
+                minima = fix(scind.minimum(pixels, labels, indexes))
+                min_block[labels != -1] = minima[labels[labels != -1]]
+            else:
+                for i in range(pixels.shape[2]):
+                    minima = fix(scind.minimum(pixels[:,:,i], labels, indexes))
+                    min_block[labels != -1, i] = minima[labels[labels != -1]]
             avg_image = cpi.Image(min_block, parent_image = orig_image)
         return avg_image
         
@@ -716,26 +732,30 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         """
         if self.rescale_option == cps.NO:
             return image
-        pixel_data = image.pixel_data
-        if image.has_mask:
-            sorted_pixel_data = pixel_data[np.logical_and(pixel_data>0,
-                                                          image.mask)]
+        def scaling_fn_2d(pixel_data):
+            if image.has_mask:
+                sorted_pixel_data = pixel_data[(pixel_data > 0) & image.mask]
+            else:
+                sorted_pixel_data = pixel_data[pixel_data > 0]
+            if sorted_pixel_data.shape[0] == 0:
+                return pixel_data
+            sorted_pixel_data.sort()
+            if self.rescale_option == cps.YES:
+                idx = int(sorted_pixel_data.shape[0] * ROBUST_FACTOR)
+                robust_minimum = sorted_pixel_data[idx]
+                pixel_data = pixel_data.copy()
+                pixel_data[pixel_data < robust_minimum] = robust_minimum
+            elif self.rescale_option == RE_MEDIAN:
+                idx = int(sorted_pixel_data.shape[0]/2)
+                robust_minimum = sorted_pixel_data[idx]
+            if robust_minimum == 0:
+                return pixel_data
+            return pixel_data / robust_minimum
+        if image.pixel_data.ndim == 2:
+            output_pixels = scaling_fn_2d(image.pixel_data)
         else:
-            sorted_pixel_data = pixel_data[pixel_data > 0]
-        if sorted_pixel_data.shape[0] == 0:
-            return image
-        sorted_pixel_data.sort()
-        if self.rescale_option == cps.YES:
-            idx = int(sorted_pixel_data.shape[0] * ROBUST_FACTOR)
-            robust_minimum = sorted_pixel_data[idx]
-            pixel_data = pixel_data.copy()
-            pixel_data[pixel_data < robust_minimum] = robust_minimum
-        elif self.rescale_option == RE_MEDIAN:
-            idx = int(sorted_pixel_data.shape[0]/2)
-            robust_minimum = sorted_pixel_data[idx]
-        if robust_minimum == 0:
-            return image
-        output_pixels = pixel_data / robust_minimum
+            output_pixels = np.dstack([
+                scaling_fn_2d(x) for x in image.pixel_data.transpose(2, 0, 1)])
         output_image = cpi.Image(output_pixels, parent_image = orig_image)
         return output_image
     
@@ -880,11 +900,16 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         if self.__image_sum == None:
             self.__image_sum = np.zeros(pixel_data.shape, 
                                         pixel_data.dtype)
-            self.__mask_count = np.zeros(pixel_data.shape,
+            self.__mask_count = np.zeros(pixel_data.shape[:2],
                                          np.int32)
         if image.has_mask:
             mask = image.mask
-            self.__image_sum[mask] = self.__image_sum[mask] + pixel_data[mask]
+            if self.__image_sum.ndim == 2:
+                self.__image_sum[mask] = \
+                    self.__image_sum[mask] + pixel_data[mask]
+            else:
+                self.__image_sum[mask, :] = \
+                    self.__image_sum[mask, :] + pixel_data[mask, :]
             self.__mask_count[mask] = self.__mask_count[mask]+1
         else:
             self.__image_sum = self.__image_sum + pixel_data
@@ -920,7 +945,12 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         pixel_data = np.zeros(self.__image_sum.shape,
                               self.__image_sum.dtype)
         mask = self.__mask_count > 0
-        pixel_data[mask] = self.__image_sum[mask] / self.__mask_count[mask]
+        if pixel_data.ndim == 2:
+            pixel_data[mask] = self.__image_sum[mask] / self.__mask_count[mask]
+        else:
+            for i in range(pixel_data.shape[2]):
+                pixel_data[mask, i] = \
+                    self.__image_sum[mask, i] / self.__mask_count[mask]
         self.__cached_avg_image = cpi.Image(pixel_data, mask)
         self.__cached_dilated_image =\
             self.__module.apply_dilation(self.__cached_avg_image)

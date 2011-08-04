@@ -76,31 +76,91 @@ class TestCorrectImage_Calculate(unittest.TestCase):
 
     def test_00_00_zeros(self):
         """Test all combinations of options with an image of all zeros"""
+        for image in (np.zeros((10,10)), np.zeros((10,10,3))):
+            pipeline = cpp.Pipeline()
+            pipeline.add_listener(self.error_callback)
+            inj_module = inj.InjectImage("MyImage", image)
+            inj_module.module_num = 1
+            pipeline.add_module(inj_module)
+            module = calc.CorrectIlluminationCalculate()
+            module.module_num = 2
+            pipeline.add_module(module)
+            module.image_name.value = "MyImage"
+            module.illumination_image_name.value = "OutputImage"
+            module.save_average_image.value = True
+            module.save_dilated_image.value = True
+            
+            for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
+                module.each_or_all.value = ea
+                for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
+                    module.intensity_choice.value = intensity_choice
+                    for dilate_objects in (True, False):
+                        module.dilate_objects.value = dilate_objects
+                        for rescale_option in (cps.YES, cps.NO, calc.RE_MEDIAN):
+                            module.rescale_option.value = rescale_option
+                            for smoothing_method \
+                             in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
+                                 calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
+                                 calc.SM_TO_AVERAGE, calc.SM_SPLINES, 
+                                 calc.SM_CONVEX_HULL):
+                                module.smoothing_method.value = smoothing_method
+                                for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
+                                           calc.FI_OBJECT_SIZE):
+                                    module.automatic_object_width.value = ow
+                                    measurements = cpm.Measurements()
+                                    image_set_list = cpi.ImageSetList()
+                                    pipeline.prepare_run(
+                                        cpw.Workspace(pipeline, None, None, None,
+                                                      measurements, image_set_list))
+                                    inj_module.prepare_group(pipeline, image_set_list, {}, [1])
+                                    module.prepare_group(pipeline, image_set_list, {}, [1])
+                                    image_set = image_set_list.get_image_set(0)
+                                    object_set = cpo.ObjectSet()
+                                    workspace = cpw.Workspace(pipeline,
+                                                              inj_module,
+                                                              image_set,
+                                                              object_set,
+                                                              measurements,
+                                                              image_set_list)
+                                    inj_module.run(workspace)
+                                    module.run(workspace)
+                                    image = image_set.get_image("OutputImage")
+                                    self.assertTrue(image != None)
+                                    self.assertTrue(np.all(image.pixel_data == 0),
+                                                    """Failure case:
+                intensity_choice = %(intensity_choice)s
+                dilate_objects = %(dilate_objects)s
+                rescale_option = %(rescale_option)s
+                smoothing_method = %(smoothing_method)s
+                automatic_object_width = %(ow)s"""%locals())
+
+    def test_01_01_ones_image(self):
+        """The illumination correction of an image of all ones should be uniform
+        
+        """
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
-        inj_module = inj.InjectImage("MyImage",np.zeros((10,10)))
-        inj_module.module_num = 1
-        pipeline.add_module(inj_module)
-        module = calc.CorrectIlluminationCalculate()
-        module.module_num = 2
-        pipeline.add_module(module)
-        module.image_name.value = "MyImage"
-        module.illumination_image_name.value = "OutputImage"
-        module.save_average_image.value = True
-        module.save_dilated_image.value = True
-        
-        for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
-            module.each_or_all.value = ea
-            for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
-                module.intensity_choice.value = intensity_choice
-                for dilate_objects in (True, False):
-                    module.dilate_objects.value = dilate_objects
-                    for rescale_option in (cps.YES, cps.NO, calc.RE_MEDIAN):
-                        module.rescale_option.value = rescale_option
+        for image in ((np.ones((10, 10)), np.ones((10, 10, 3)))):
+            inj_module = inj.InjectImage("MyImage", image)
+            inj_module.module_num = 1
+            pipeline.add_module(inj_module)
+            module = calc.CorrectIlluminationCalculate()
+            module.module_num = 2
+            pipeline.add_module(module)
+            module.image_name.value = "MyImage"
+            module.illumination_image_name.value = "OutputImage"
+            module.rescale_option.value = cps.YES
+            
+            for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
+                module.each_or_all.value = ea
+                for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
+                    module.intensity_choice.value = intensity_choice
+                    for dilate_objects in (True, False):
+                        module.dilate_objects.value = dilate_objects
                         for smoothing_method \
                          in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
                              calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
-                             calc.SM_TO_AVERAGE, calc.SM_SPLINES, 
+                             calc.SM_TO_AVERAGE, calc.SM_SPLINES,
                              calc.SM_CONVEX_HULL):
                             module.smoothing_method.value = smoothing_method
                             for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
@@ -125,41 +185,43 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                 module.run(workspace)
                                 image = image_set.get_image("OutputImage")
                                 self.assertTrue(image != None)
-                                self.assertTrue(np.all(image.pixel_data == 0),
-                                                """Failure case:
-            intensity_choice = %(intensity_choice)s
-            dilate_objects = %(dilate_objects)s
-            rescale_option = %(rescale_option)s
-            smoothing_method = %(smoothing_method)s
-            automatic_object_width = %(ow)s"""%locals())
-
-    def test_01_01_ones_image(self):
-        """The illumination correction of an image of all ones should be uniform
+                                self.assertTrue(np.all(np.std(image.pixel_data) < .00001),
+                                                    """Failure case:
+                each_or_all            = %(ea)s
+                intensity_choice       = %(intensity_choice)s
+                dilate_objects         = %(dilate_objects)s
+                smoothing_method       = %(smoothing_method)s
+                automatic_object_width = %(ow)s"""%locals())
         
-        """
+    def test_01_02_masked_image(self):
+        """A masked image should be insensitive to points outside the mask"""
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.error_callback)
-        inj_module = inj.InjectImage("MyImage",np.ones((10,10)))
-        inj_module.module_num = 1
-        pipeline.add_module(inj_module)
-        module = calc.CorrectIlluminationCalculate()
-        module.module_num = 2
-        pipeline.add_module(module)
-        module.image_name.value = "MyImage"
-        module.illumination_image_name.value = "OutputImage"
-        module.rescale_option.value = cps.YES
-        
-        for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
-            module.each_or_all.value = ea
-            for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
-                module.intensity_choice.value = intensity_choice
-                for dilate_objects in (True, False):
-                    module.dilate_objects.value = dilate_objects
+        np.random.seed(12)
+        for image in (np.random.uniform(size=(10,10)), 
+                      np.random.uniform(size=(10, 10, 3))):
+            mask  = np.zeros((10,10),bool)
+            mask[2:7,3:8] = True
+            image[mask] = 1
+            inj_module = inj.InjectImage("MyImage", image, mask)
+            inj_module.module_num = 1
+            pipeline.add_module(inj_module)
+            module = calc.CorrectIlluminationCalculate()
+            module.module_num = 2
+            pipeline.add_module(module)
+            module.image_name.value = "MyImage"
+            module.illumination_image_name.value = "OutputImage"
+            module.rescale_option.value = cps.YES
+            module.dilate_objects.value = False
+            
+            for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
+                module.each_or_all.value = ea
+                for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
+                    module.intensity_choice.value = intensity_choice
                     for smoothing_method \
                      in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
                          calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
-                         calc.SM_TO_AVERAGE, calc.SM_SPLINES,
-                         calc.SM_CONVEX_HULL):
+                         calc.SM_TO_AVERAGE, calc.SM_CONVEX_HULL):
                         module.smoothing_method.value = smoothing_method
                         for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
                                    calc.FI_OBJECT_SIZE):
@@ -183,70 +245,12 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                             module.run(workspace)
                             image = image_set.get_image("OutputImage")
                             self.assertTrue(image != None)
-                            self.assertTrue(np.all(np.std(image.pixel_data) < .00001),
+                            self.assertTrue(np.all(abs(image.pixel_data[mask] - 1 < .00001)),
                                                 """Failure case:
-            each_or_all            = %(ea)s
-            intensity_choice       = %(intensity_choice)s
-            dilate_objects         = %(dilate_objects)s
-            smoothing_method       = %(smoothing_method)s
-            automatic_object_width = %(ow)s"""%locals())
-        
-    def test_01_02_masked_image(self):
-        """A masked image should be insensitive to points outside the mask"""
-        pipeline = cpp.Pipeline()
-        pipeline.add_listener(self.error_callback)
-        image = np.random.uniform(size=(10,10))
-        mask  = np.zeros((10,10),bool)
-        mask[2:7,3:8] = True
-        image[mask] = 1
-        inj_module = inj.InjectImage("MyImage", image, mask)
-        inj_module.module_num = 1
-        pipeline.add_module(inj_module)
-        module = calc.CorrectIlluminationCalculate()
-        module.module_num = 2
-        pipeline.add_module(module)
-        module.image_name.value = "MyImage"
-        module.illumination_image_name.value = "OutputImage"
-        module.rescale_option.value = cps.YES
-        module.dilate_objects.value = False
-        
-        for ea in (calc.EA_EACH, calc.EA_ALL_ACROSS, calc.EA_ALL_FIRST):
-            module.each_or_all.value = ea
-            for intensity_choice in (calc.IC_BACKGROUND, calc.IC_REGULAR):
-                module.intensity_choice.value = intensity_choice
-                for smoothing_method \
-                 in (calc.SM_NONE, calc.SM_FIT_POLYNOMIAL, 
-                     calc.SM_GAUSSIAN_FILTER, calc.SM_MEDIAN_FILTER, 
-                     calc.SM_TO_AVERAGE, calc.SM_CONVEX_HULL):
-                    module.smoothing_method.value = smoothing_method
-                    for ow in (calc.FI_AUTOMATIC, calc.FI_MANUALLY, 
-                               calc.FI_OBJECT_SIZE):
-                        module.automatic_object_width.value = ow
-                        measurements = cpm.Measurements()
-                        image_set_list = cpi.ImageSetList()
-                        pipeline.prepare_run(
-                            cpw.Workspace(pipeline, None, None, None,
-                                          measurements, image_set_list))
-                        inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-                        module.prepare_group(pipeline, image_set_list, {}, [1])
-                        image_set = image_set_list.get_image_set(0)
-                        object_set = cpo.ObjectSet()
-                        workspace = cpw.Workspace(pipeline,
-                                                  inj_module,
-                                                  image_set,
-                                                  object_set,
-                                                  measurements,
-                                                  image_set_list)
-                        inj_module.run(workspace)
-                        module.run(workspace)
-                        image = image_set.get_image("OutputImage")
-                        self.assertTrue(image != None)
-                        self.assertTrue(np.all(abs(image.pixel_data[mask] - 1 < .00001)),
-                                            """Failure case:
-            each_or_all            = %(ea)s
-            intensity_choice       = %(intensity_choice)s
-            smoothing_method       = %(smoothing_method)s
-            automatic_object_width = %(ow)s"""%locals())
+                each_or_all            = %(ea)s
+                intensity_choice       = %(intensity_choice)s
+                smoothing_method       = %(smoothing_method)s
+                automatic_object_width = %(ow)s"""%locals())
     
     def test_02_02_Background(self):
         """Test an image with four distinct backgrounds"""

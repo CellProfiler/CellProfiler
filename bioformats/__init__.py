@@ -143,3 +143,5 @@ if __init_logger:
         logger.error("Failed to initialize log4j\n", exc_info=True)
     finally:
         jutil.detach()
+
+from formatreader import load_using_bioformats

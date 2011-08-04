@@ -64,15 +64,12 @@ try:
     import bioformats.formatreader as formatreader
     import bioformats.metadatatools as metadatatools
     import cellprofiler.utilities.jutil as jutil
-    jutil.attach()
-    try:
-        FormatTools = formatreader.make_format_tools_class()
-        ImageReader = formatreader.make_image_reader_class()
-        ChannelSeparator = formatreader.make_reader_wrapper_class(
-            "loci/formats/ChannelSeparator")
-        has_bioformats = True
-    finally:
-        jutil.detach()
+    from bioformats import load_using_bioformats
+    FormatTools = formatreader.make_format_tools_class()
+    ImageReader = formatreader.make_image_reader_class()
+    ChannelSeparator = formatreader.make_reader_wrapper_class(
+        "loci/formats/ChannelSeparator")
+    has_bioformats = True
 except:
     logger.warning("Failed to load bioformats", exc_info=True)
     has_bioformats = False
@@ -3037,156 +3034,7 @@ def load_using_PIL(path, index=0, seekfn=None, rescale = True, wants_max_intensi
         return img, scale
     return img
 
-def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
-                          rescale = True,
-                          wants_max_intensity = False,
-                          channel_names = None):
-    '''Load the given image file using the Bioformats library
-    
-    path: path to the file
-    z: the frame index in the z (depth) dimension.
-    t: the frame index in the time dimension.
-    channel_names: None if you don't want them, a list which will be filled if you do
-    
-    Returns either a 2-d (grayscale) or 3-d (2-d + 3 RGB planes) image
-    '''
-    #
-    # Bioformats is more picky about slashes than Python
-    #
-    if sys.platform.startswith("win"):
-        path = path.replace("/",os.path.sep)
-    try:
-        jutil.attach()
-        #
-        # Bypass the ImageReader and scroll through the class list. The
-        # goal here is to ask the FormatHandler if it thinks it could
-        # possibly parse the file, then only give the FormatReader access
-        # to the open file stream so it can't damage the file server.
-        #
-        
-        env = jutil.get_env()
-        class_list = formatreader.get_class_list()
-        stream = jutil.make_instance('loci/common/RandomAccessInputStream',
-                                     '(Ljava/lang/String;)V', path)
-        filename = os.path.split(path)[1]
-        IFormatReader = formatreader.make_iformat_reader_class()
-        for klass in env.get_object_array_elements(class_list.get_classes()):
-            wclass = jutil.get_class_wrapper(klass, True)
-            maybe_rdr = IFormatReader()
-            maybe_rdr.o = wclass.newInstance()
-            maybe_rdr.setGroupFiles(False)
-            if maybe_rdr.suffixNecessary:
-                if not maybe_rdr.isThisTypeSZ(filename, False):
-                    continue
-                if maybe_rdr.suffixSufficient:
-                    rdr = maybe_rdr
-                    break
-            if (maybe_rdr.isThisTypeStream(stream)):
-                rdr = maybe_rdr
-                break
-        if rdr is None:
-            raise ValueError("Could not find a Bio-Formats reader for %s", path)
-        mdoptions = metadatatools.get_metadata_options(metadatatools.ALL)
-        rdr.setMetadataOptions(mdoptions)
-        metadata = metadatatools.createOMEXMLMetadata()
-        rdr.setMetadataStore(metadata)
-        rdr.setId(path)
-        width = rdr.getSizeX()
-        height = rdr.getSizeY()
-        pixel_type = rdr.getPixelType()
-        little_endian = rdr.isLittleEndian()
-        if pixel_type == FormatTools.INT8:
-            dtype = np.char
-            scale = 255
-        elif pixel_type == FormatTools.UINT8:
-            dtype = np.uint8
-            scale = 255
-        elif pixel_type == FormatTools.UINT16:
-            dtype = '<u2' if little_endian else '>u2'
-            scale = 65535
-        elif pixel_type == FormatTools.INT16:
-            dtype = '<i2' if little_endian else '>i2'
-            scale = 65535
-        elif pixel_type == FormatTools.UINT32:
-            dtype = '<u4' if little_endian else '>u4'
-            scale = 2**32
-        elif pixel_type == FormatTools.INT32:
-            dtype = '<i4' if little_endian else '>i4'
-            scale = 2**32-1
-        elif pixel_type == FormatTools.FLOAT:
-            dtype = '<f4' if little_endian else '>f4'
-            scale = 1
-        elif pixel_type == FormatTools.DOUBLE:
-            dtype = '<f8' if little_endian else '>f8'
-            scale = 1
-        max_sample_value = rdr.getMetadataValue('MaxSampleValue')
-        if max_sample_value is not None:
-            try:
-                scale = formatreader.jutil.call(max_sample_value, 
-                                                'intValue', '()I')
-            except:
-                logger.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
-        if series is not None:
-            rdr.setSeries(series)
-        if index is not None:
-            image = np.frombuffer(rdr.openBytes(index), dtype)
-            if len(image) / height / width in (3,4):
-                image.shape = (height, width, int(len(image) / height / width))
-            else:
-                image.shape = (height, width)
-        elif rdr.isRGB() and rdr.isInterleaved():
-            index = rdr.getIndex(z,0,t)
-            image = np.frombuffer(rdr.openBytes(index), dtype)
-            image.shape = (height, width, 3)
-        elif c is not None and rdr.getRGBChannelCount() == 1:
-            index = rdr.getIndex(z,c,t)
-            image = np.frombuffer(rdr.openBytes(index), dtype)
-            image.shape = (height, width)
-        elif rdr.getRGBChannelCount() > 1:
-            rdr.close()
-            rdr = ImageReader()
-            rdr.allowOpenToCheckType(False)
-            rdr = ChannelSeparator(rdr)
-            rdr.setGroupFiles(False)
-            rdr.setId(path)
-            red_image, green_image, blue_image = [
-                np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)),dtype)
-                for i in range(3)]
-            image = np.dstack((red_image, green_image, blue_image))
-            image.shape=(height,width,3)
-        elif rdr.getSizeC() > 1:
-            images = [np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)), dtype)
-                      for i in range(rdr.getSizeC())]
-            image = np.dstack(images)
-            image.shape = (height, width, rdr.getSizeC())
-            if not channel_names is None:
-                metadata = metadatatools.MetadataRetrieve(metadata)
-                for i in range(rdr.getSizeC()):
-                    index = rdr.getIndex(z, 0, t)
-                    channel_name = metadata.getChannelName(index, i)
-                    if channel_name is None:
-                        channel_name = metadata.getChannelID(index, i)
-                    channel_names.append(channel_name)
-        else:
-            index = rdr.getIndex(z,0,t)
-            image = np.frombuffer(rdr.openBytes(index),dtype)
-            image.shape = (height,width)
-            
-        rdr.close()
-        del rdr
-        #
-        # Run the Java garbage collector here.
-        #
-        formatreader.jutil.static_call("java/lang/System",
-                                       "gc","()V")
-        if rescale:
-            image = image.astype(np.float32) / float(scale)
-    finally:
-        jutil.detach()
-    if wants_max_intensity:
-        return image, scale
-    return image
-    
+   
 class LoadImagesMovieFrameProvider(LoadImagesImageProviderBase):
     """Provide an image by filename:frame, loading the file as it is requested
     """

@@ -324,7 +324,9 @@ class CalculateStatistics(cpm.CPModule):
         for i, image_number in enumerate(image_numbers):
             values = measurements.get_measurement(
                 object_name, feature_name, image_number)
-            if np.isscalar(values):
+            if values is None:
+                result[i] = np.nan
+            elif np.isscalar(values):
                 result[i] = values
             elif np.any(np.isfinite(values)):
                 values = np.array(values)
@@ -794,7 +796,9 @@ def write_figures(prefix, directory, dose_name,
         ax = f.add_subplot(1,1,1)
         x = np.linspace(0, np.max(dose_data), num=100)
         y = sigmoid(fcoeffs, x)
-        ax.plot(y)
+        ax.plot(x, y)
+        dose_y = sigmoid(fcoeffs, dose_data)
+        ax.plot(dose_data, dose_y, "o")
         ax.set_xlabel('Dose')
         ax.set_ylabel('Response')
         ax.set_title('%s_%s'%(object_name, feature_name))

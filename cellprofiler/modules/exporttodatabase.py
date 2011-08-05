@@ -1128,7 +1128,7 @@ class ExportToDatabase(cpm.CPModule):
             for group in self.filter_field_groups:
                 if not re.match("^[A-Za-z0-9_]*$",group.filter_name.value) or group.filter_name.value == '':
                     raise cps.ValidationError("CellProfiler Analyst will not recognize this filter name because it has invalid characters.",group.filter_name)
-                if not re.match("^[A-Za-z0-9_]*$",group.filter_statement.value) or group.filter_statement.value == '':
+                if not re.match("^[\w\s\"\'=]*$",group.filter_statement.value) or group.filter_statement.value == '':
                     raise cps.ValidationError("CellProfiler Analyst will not recognize this filter statement because it has invalid characters.",group.filter_statement)
 
     def make_full_filename(self, file_name, 

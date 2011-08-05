@@ -81,6 +81,10 @@ OBJ_VALUE = np.array([1.5, 3.67, 2.8])
 ALTOBJ_VALUE = np.random.uniform(size=100)
 PLATE = "P-12345"
 WELL = "A01"
+DB_NAME = "MyDatabaseName"
+DB_HOST = "MyHost"
+DB_USER = "MyUser"
+DB_PASSWORD = "MyPassword"
 
 class TestExportToDatabase(unittest.TestCase):
     def setUp(self):
@@ -718,6 +722,148 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         self.assertEqual(module.max_column_size, 62)
         self.assertEqual(module.separate_object_tables, E.OT_PER_OBJECT)
         
+    def test_01_22_load_v22(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:2
+SVNRevision:11412
+
+ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Database type:MySQL
+    Database name:Gamma
+    Add a prefix to table names?:Yes
+    Table prefix:Delta_
+    SQL file prefix:Iota_
+    Output file location:Default Output Folder\x7CNone
+    Create a CellProfiler Analyst properties file?:Yes
+    Database host:Alpha
+    Username:Beta
+    Password:Gamma
+    Name the SQLite database file:DefaultDB.db
+    Calculate the per-image mean values of object measurements?:Yes
+    Calculate the per-image median values of object measurements?:No
+    Calculate the per-image standard deviation values of object measurements?:No
+    Calculate the per-well mean values of object measurements?:No
+    Calculate the per-well median values of object measurements?:No
+    Calculate the per-well standard deviation values of object measurements?:No
+    Export measurements for all objects to the database?:All
+    Select the objects:
+    Maximum # of characters in a column name:64
+    Create one table per object or a single object table?:Single object table
+    Enter an image url prepend if you plan to access your files via http:http\x3A//server.university.edu
+    Write image thumbnails directly to the database?:Yes
+    Select the images you want to save thumbnails of:Actin,DNA
+    Auto-scale thumbnail pixel intensities?:Yes
+    Select the plate type:384
+    Select the plate metadata:Plate
+    Select the well metadata:Well
+    Include information for all images, using default values?:No
+    Properties image group count:2
+    Properties group field count:1
+    Properties filter field count:1
+    Workspace measurement count:2
+    Experiment name:Sigma
+    Which objects should be used for locations?:Cells
+    Select an image to include:DNA
+    Use the image name for the display?:No
+    Image name:NucleicAcid
+    Channel color:green
+    Select an image to include:Actin
+    Use the image name for the display?:No
+    Image name:Protein
+    Channel color:blue
+    Do you want to add group fields?:Yes
+    Enter the name of the group:WellGroup
+    Enter the per-image columns which define the group, separated by commas:Image_Metadata_Plate, Image_Metadata_Well
+    Do you want to add filter fields?:Yes
+    Automatically create a filter for each plate?:Yes
+    Enter the name of the filter:Site1Filter
+    Enter the MySQL WHERE clause to define a filter:Image_Metadata_Plate = \'1\'
+    Create a CellProfiler Analyst workspace file?:Yes
+    Select the measurement display tool:ScatterPlot
+    Type of measurement to plot on the x-axis:Image
+    Enter the object name:Mitochondria
+    Select the x-axis measurement:Width_DNA
+    Select the x-axis index:ImageNumber
+    Type of measurement to plot on the y-axis:Image
+    Enter the object name:Nuclei
+    Select the y-axis measurement:Height_DNA
+    Select the x-axis index:ImageNumber
+    Select the measurement display tool:PlateViewer
+    Type of measurement to plot on the x-axis:Image
+    Enter the object name:Cells
+    Select the x-axis measurement:Height_Actin
+    Select the x-axis index:ImageNumber
+    Type of measurement to plot on the y-axis:Image
+    Enter the object name:Speckles
+    Select the y-axis measurement:Width_Actin
+    Select the x-axis index:ImageNumber
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertEqual(module.db_name, "Gamma")
+        self.assertTrue(module.want_table_prefix)
+        self.assertEqual(module.table_prefix, "Delta_")
+        self.assertEqual(module.sql_file_prefix, "Iota_")
+        self.assertEqual(module.experiment_name, "Sigma")
+        self.assertEqual(module.directory.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertTrue(module.save_cpa_properties)
+        self.assertEqual(module.location_object, "Cells")
+        self.assertEqual(module.properties_image_url_prepend, "http://server.university.edu")
+        self.assertEqual(module.properties_plate_type, "384")
+        self.assertEqual(module.properties_plate_metadata, "Plate")
+        self.assertEqual(module.properties_well_metadata, "Well")
+        self.assertFalse(module.properties_export_all_image_defaults)
+        self.assertTrue(module.properties_wants_groups)
+        self.assertTrue(module.properties_wants_filters)
+        self.assertTrue(module.create_filters_for_plates)
+        self.assertTrue(module.create_workspace_file)
+        self.assertEqual(len(module.image_groups), 2)
+        for image_group, input_image_name, output_image_name, color in (
+            (module.image_groups[0], "DNA", "NucleicAcid", "green"),
+            (module.image_groups[1], "Actin", "Protein", "blue")):
+            self.assertFalse(image_group.wants_automatic_image_name)
+            self.assertEqual(image_group.image_cols, input_image_name)
+            self.assertEqual(image_group.image_name, output_image_name)
+            self.assertEqual(image_group.image_channel_colors, color)
+            
+        self.assertEqual(len(module.group_field_groups), 1)
+        g = module.group_field_groups[0]
+        self.assertEqual(g.group_name, "WellGroup")
+        self.assertEqual(g.group_statement, "Image_Metadata_Plate, Image_Metadata_Well")
+
+        self.assertEqual(len(module.workspace_measurement_groups), 2)
+        for (g, measurement_display, x_measurement_type, x_object_name,
+             x_measurement_name, x_index_name, 
+             y_measurement_type, y_object_name,
+             y_measurement_name, y_index_name) in (
+                 (module.workspace_measurement_groups[0], "ScatterPlot",
+                  cpmeas.IMAGE, "Mitochondria", "Width_DNA", "ImageNumber", 
+                  cpmeas.IMAGE, "Nuclei", "Height_DNA", "ImageNumber"),
+                 (module.workspace_measurement_groups[1], "PlateViewer",
+                  cpmeas.IMAGE, "Cells", "Height_Actin", "ImageNumber",
+                  cpmeas.IMAGE, "Speckles", "Width_Actin", "ImageNumber")):
+            self.assertEqual(g.measurement_display, measurement_display)
+            self.assertEqual(g.x_measurement_type, x_measurement_type)
+            self.assertEqual(g.x_object_name, x_object_name)
+            self.assertEqual(g.x_measurement_name, x_measurement_name)
+            self.assertEqual(g.x_index_name, x_index_name)
+            self.assertEqual(g.y_measurement_type, y_measurement_type)
+            self.assertEqual(g.y_object_name, y_object_name)
+            self.assertEqual(g.y_measurement_name, y_measurement_name)
+            self.assertEqual(g.y_index_name, y_index_name)
+                  
+        self.assertEqual(len(module.filter_field_groups), 1)
+        g = module.filter_field_groups[0]
+        self.assertEqual(g.filter_name, "Site1Filter")
+        self.assertEqual(g.filter_statement, "Image_Metadata_Plate = '1'")
+        
     def make_workspace(self, wants_files, alt_object=False, 
                        long_measurement=False, wierd_measurement=False,
                        well_metadata = False, image_set_count = 1,
@@ -921,7 +1067,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL_CSV
+            module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -968,7 +1114,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL_CSV
+            module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1034,7 +1180,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL_CSV
+            module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1114,7 +1260,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module = self.make_workspace(False)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1165,7 +1311,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1230,7 +1376,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
                  self.make_workspace(True, long_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL_CSV
+            module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1305,7 +1451,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL_CSV
+            module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1383,7 +1529,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL_CSV
+            module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1462,7 +1608,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1512,7 +1658,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module = self.make_workspace(False, wierd_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1569,7 +1715,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1657,7 +1803,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module = self.make_workspace(False, image_set_count = 2)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1710,7 +1856,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         connection = None
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_SQLITE
+            module.db_type.value = E.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1772,7 +1918,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         connection = None
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_SQLITE
+            module.db_type.value = E.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1825,7 +1971,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         connection = None
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_SQLITE
+            module.db_type.value = E.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1884,7 +2030,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         connection = None
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_SQLITE
+            module.db_type.value = E.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -1977,7 +2123,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL_CSV
+            module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2023,7 +2169,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL_CSV
+            module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2085,7 +2231,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module = self.make_workspace(False)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2131,7 +2277,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2195,7 +2341,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL_CSV
+            module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2272,7 +2418,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2331,7 +2477,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, om, True, 1)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = True
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2380,7 +2526,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module = self.make_workspace(False, wierd_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2435,7 +2581,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         workspace, module = self.make_workspace(False, long_measurement=True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2493,7 +2639,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             False, alt_object = True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2541,7 +2687,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             True, image_set_count = 2)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL_CSV
+            module.db_type.value = E.DB_MYSQL_CSV
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2592,7 +2738,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         connection = None
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_SQLITE
+            module.db_type.value = E.DB_SQLITE
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2668,7 +2814,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             False, well_metadata = True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -2719,7 +2865,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             False, well_metadata = True, alt_object = True)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type = E.DB_MYSQL
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
@@ -3197,4 +3343,159 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
             self.drop_tables(module, ("Per_Image","Per_Object"))
+
+    def test_10_01_properties_file(self):
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, alt_object = True)
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        file_name = "%s_%s.properties" % (DB_NAME, module.get_table_prefix())
+        path = os.path.join(output_dir, file_name)
+        try:
+            m = workspace.measurements
+            for image_number in m.get_image_numbers():
+                m.add_measurement(cpmeas.IMAGE,
+                                  E.C_FILE_NAME + "_" + IMAGE_NAME,
+                                  os.path.join(path, "img%d.tif" % image_number),
+                                  image_set_number = image_number)
+                m.add_measurement(cpmeas.IMAGE,
+                                  E.C_PATH_NAME + "_" + IMAGE_NAME,
+                                  os.path.join(path, "img%d.tif" % image_number),
+                                  image_set_number = image_number)
+            module.db_type.value = E.DB_MYSQL_CSV
+            module.db_name.value = DB_NAME
+            module.db_host.value = DB_HOST
+            module.db_user.value = DB_USER
+            module.db_passwd.value = DB_PASSWORD
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.save_cpa_properties.value = True
+            module.location_object.value = OBJECT_NAME
+            module.post_run(workspace)
+            fd = open(path, "rt")
+            text = fd.read()
+            fd.close()
+            #
+            # Parse the file
+            #
+            dictionary = {}
+            for line in text.split("\n"):
+                line = line.strip()
+                if (not line.startswith("#")) and line.find("=") != -1:
+                    k, v = line.split("=", 1)
+                    k = k.strip()
+                    v = v.strip()
+                    dictionary[k] = v
+            for k, v in (
+                ("db_type", "mysql"),
+                ("db_port", ""), # The CSV file has nulls in lots of places
+                ("db_host", ""),
+                ("db_name", DB_NAME),
+                ("db_user", ""),
+                ("db_passwd", ""),
+                ("image_table", "%sPer_Image" % module.get_table_prefix()),
+                ("object_table", "%sPer_Object" % module.get_table_prefix()),
+                ("image_id", "ImageNumber"),
+                ("object_id", "ObjectNumber"),
+                ("cell_x_loc", "%s_Location_Center_X" % OBJECT_NAME),
+                ("cell_y_loc", "%s_Location_Center_Y" % OBJECT_NAME),
+                ("image_path_cols", "%s_%s_%s" % (cpmeas.IMAGE, E.C_PATH_NAME, IMAGE_NAME)),
+                ("image_file_cols", "%s_%s_%s" % (cpmeas.IMAGE, E.C_FILE_NAME, IMAGE_NAME))):
+                self.assertTrue(dictionary.has_key(k))
+                self.assertEqual(dictionary[k], v)
+        finally:
+            os.chdir(output_dir)
+            if os.path.exists(path):
+                os.unlink(path)
+            finally_fn()
             
+    def test_11_01_experiment_table_combine(self):
+        workspace, module = self.make_workspace(False, True)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.location_object.value = OBJECT_NAME
+            if not self.__at_broad:
+                self.skipTest("Skipping actual DB work, not at the Broad.")
+            module.prepare_run(workspace)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                 {}, [1])
+            module.run(workspace)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Find the experiment ID by looking for the image table in
+            # the properties.
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = """
+            select max(experiment_id) from Experiment_Properties
+            where field = 'image_table' and value = '%s'""" % image_table
+            self.cursor.execute(statement)
+            experiment_id = int(self.cursor.fetchone()[0])
+            self.assertRaises(StopIteration, self.cursor.next)
+            properties = module.get_property_file_text(workspace)
+            self.assertEqual(len(properties), 1)
+            for k,v in properties[0].properties.iteritems():
+                statement = """
+                select max(value) from Experiment_Properties where
+                field = '%s' and experiment_id = %d and object_name = '%s'
+                """ % ( k, experiment_id, properties[0].object_name)
+                self.cursor.execute(statement)
+                dbvalue = self.cursor.fetchone()[0]
+                self.assertRaises(StopIteration, self.cursor.next)
+                self.assertEqual(dbvalue, v)
+        finally:
+            self.drop_tables(module, ("Per_Image","Per_Object"))
+                
+    def test_11_02_experiment_table_separate(self):
+        workspace, module = self.make_workspace(False, True)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_PER_OBJECT
+            if not self.__at_broad:
+                self.skipTest("Skipping actual DB work, not at the Broad.")
+            module.prepare_run(workspace)
+            module.prepare_group(workspace.pipeline, workspace.image_set_list,
+                                 {}, [1])
+            module.run(workspace)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Find the experiment ID by looking for the image table in
+            # the properties.
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = """
+            select max(experiment_id) from Experiment_Properties
+            where field = 'image_table' and value = '%s'""" % image_table
+            self.cursor.execute(statement)
+            experiment_id = int(self.cursor.fetchone()[0])
+            self.assertRaises(StopIteration, self.cursor.next)
+            properties = module.get_property_file_text(workspace)
+            self.assertEqual(len(properties), 2)
+            for k,v in properties[0].properties.iteritems():
+                statement = """
+                select max(value) from Experiment_Properties where
+                field = '%s' and experiment_id = %d and object_name = '%s'
+                """ % ( k, experiment_id, properties[0].object_name)
+                self.cursor.execute(statement)
+                dbvalue = self.cursor.fetchone()[0]
+                self.assertRaises(StopIteration, self.cursor.next)
+                self.assertEqual(dbvalue, v)
+        finally:
+            self.drop_tables(module, (
+                "Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME))
+                    

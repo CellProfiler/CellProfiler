@@ -171,6 +171,12 @@ SETTING_FILTER_FIELD_GROUP_COUNT = 31
 """Offset of the workspace specification group count in the settings"""
 SETTING_WORKSPACE_GROUP_COUNT = 32
 
+SETTING_FIXED_SETTING_COUNT_V21 = 33
+
+SETTING_FIXED_SETTING_COUNT_V22 = 35
+
+SETTING_FIXED_SETTING_COUNT = 35
+
 ##############################################
 #
 # Choices for the output directory
@@ -196,6 +202,9 @@ OT_DICTIONARY = {
     "One table per object type": OT_PER_OBJECT,
     "Single object table": OT_COMBINE
     }
+
+T_EXPERIMENT = "Experiment"
+T_EXPERIMENT_PROPERTIES = "Experiment_Properties"
 
 def execute(cursor, query, bindings = None, return_result=True):
     if bindings == None:
@@ -249,7 +258,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 21
+    variable_revision_number = 22
     category = ["File Processing","Data Tools"]
 
     def create_settings(self):
@@ -281,6 +290,14 @@ class ExportToDatabase(cpm.CPModule):
         self.db_name = cps.Text(
             "Database name", "DefaultDB",doc = """
             Select a name for the database you want to use""")
+        
+        self.experiment_name = cps.Text(
+            "Experiment name", "Expt",
+            doc = """Select a name for the experiment. This name will be
+            registered in the database and linked to the tables that
+            ExportToDatabase creates. You will be able to select the experiment
+            by name in CellProfiler Analyst and will be able to find the
+            experiment's tables through database queries.""")
         
         self.want_table_prefix = cps.Binary(
             "Add a prefix to table names?", False, doc = """
@@ -326,6 +343,19 @@ class ExportToDatabase(cpm.CPModule):
             The module will attempt to fill in as many as the entries as possible 
             based on the pipeline's settings, including the 
             server name, username and password if MySQL or Oracle is used.""")
+        
+        self.location_object = cps.ObjectNameSubscriber(
+            "Which objects should be used for locations?", None,
+            doc = """
+            CellProfiler Analyst displays cells during classification. This
+            setting determines which object centers will be used as the center
+            of the cells to be displayed. Choose one of the listed objects
+            and CellProfiler will save that object's location columns in
+            the properties file so that CellProfiler Analyst centers cells
+            using that object's center.<p>
+            You can manually change this choice in the properties file by
+            edting the <i>cell_x_loc</i> and <i>cell_y_loc</i> properties.
+            """)
         
         #
         # Hack: if user is on Broad IP, then plug in the imageweb url prepend
@@ -812,7 +842,7 @@ class ExportToDatabase(cpm.CPModule):
         
         group.append(
             "y_index_name", cps.Choice(
-            "Select the x-axis index", W_INDEX_ALL,
+            "Select the y-axis index", W_INDEX_ALL,
             doc = index_name_help()))
         
         if can_remove:
@@ -856,7 +886,7 @@ class ExportToDatabase(cpm.CPModule):
             (self.db_type != DB_MYSQL or
              self.save_cpa_properties.value or
              self.create_workspace_file.value)
-        result = [self.db_type]
+        result = [self.db_type, self.experiment_name]
         if not HAS_MYSQL_DB:
             result += [self.mysql_not_available]
         if self.db_type == DB_MYSQL:
@@ -878,6 +908,9 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.divider_props] # Put divider here to make things easier to read
         result += [self.save_cpa_properties]
         if self.save_cpa_properties.value:
+            if (self.objects_choice != O_NONE and 
+                self.separate_object_tables == OT_COMBINE):
+                result += [self.location_object]
             result += [self.properties_image_url_prepend, self.properties_plate_type, 
                        self.properties_plate_metadata, self.properties_well_metadata,
                        self.properties_export_all_image_defaults]
@@ -985,7 +1018,8 @@ class ExportToDatabase(cpm.CPModule):
                 self.properties_plate_metadata, self.properties_well_metadata, 
                 self.properties_export_all_image_defaults,
                 self.image_group_count, self.group_field_count, self.filter_field_count,
-                self.workspace_measurement_count]
+                self.workspace_measurement_count, self.experiment_name, 
+                self.location_object]
         
         # Properties: Image groups
         for group in self.image_groups:
@@ -1012,9 +1046,12 @@ class ExportToDatabase(cpm.CPModule):
         return result
     
     def help_settings(self):
-        return [self.db_type, self.db_name, self.db_host, self.db_user, self.db_passwd, self.sql_file_prefix, self.sqlite_file, 
+        return [self.db_type, self.experiment_name, 
+                self.db_name, self.db_host, self.db_user, self.db_passwd, 
+                self.sql_file_prefix, self.sqlite_file, 
                 self.want_table_prefix, self.table_prefix,  
-                self.save_cpa_properties, self.properties_image_url_prepend, 
+                self.save_cpa_properties, self.location_object, 
+                self.properties_image_url_prepend, 
                 self.properties_plate_type, self.properties_plate_metadata, self.properties_well_metadata,
                 self.properties_export_all_image_defaults,
                 self.image_groups[0].image_cols, self.image_groups[0].wants_automatic_image_name, self.image_groups[0].image_name,
@@ -1193,7 +1230,7 @@ class ExportToDatabase(cpm.CPModule):
                     onames += self.objects_list.selections
                 column_defs = [column for column in column_defs
                                if column[0] in onames]
-            self.create_database_tables(self.cursor, pipeline, image_set_list)
+            self.create_database_tables(self.cursor, workspace)
         return True
     
     def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
@@ -1461,7 +1498,7 @@ class ExportToDatabase(cpm.CPModule):
     #
     # Create per_image and per_object tables in MySQL
     #
-    def create_database_tables(self, cursor, pipeline, image_set_list):
+    def create_database_tables(self, cursor, workspace):
         '''Creates empty image and object tables
         
         Creates the MySQL database (if MySQL), drops existing tables of the
@@ -1471,6 +1508,8 @@ class ExportToDatabase(cpm.CPModule):
         column_defs - column definitions as returned by get_measurement_columns
         mappings - mappings from measurement feature names to column names
         '''
+        pipeline = workspace.pipeline
+        image_set_list = workspace.image_set_list
         # Create the database
         if self.db_type==DB_MYSQL:
             #result = execute(cursor, "SHOW DATABASES LIKE '%s'" % 
@@ -1509,7 +1548,47 @@ class ExportToDatabase(cpm.CPModule):
         statement = self.get_create_image_table_statement(pipeline, 
                                                           image_set_list)
         execute(cursor, statement)
+        for statement in self.get_experiment_table_statements(workspace):
+            execute(cursor, statement)
         cursor.connection.commit()
+        
+    def get_experiment_table_statements(self, workspace):
+        statements = []
+        if self.db_type in (DB_MYSQL_CSV, DB_MYSQL):
+            autoincrement = "AUTO_INCREMENT"
+        else:
+            autoincrement = "AUTOINCREMENT"
+        create_experiment_table_statement = """
+        CREATE TABLE IF NOT EXISTS %s (
+            experiment_id integer primary key %s,
+            name varchar(255))
+            """ % (T_EXPERIMENT, autoincrement)
+        statements.append(create_experiment_table_statement)
+        create_experiment_properties = """
+        CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
+            experiment_id integer not null,
+            object_name varchar(255) not null,
+            field varchar(255) not null,
+            value longtext,
+            constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name, field))
+            """ % globals()
+        statements.append(create_experiment_properties)
+        insert_into_experiment_statement = """
+        INSERT INTO %s (name) values ('%s')
+        """ % ( T_EXPERIMENT, MySQLdb.escape_string(self.experiment_name.value))
+        statements.append(insert_into_experiment_statement)
+        
+        properties = self.get_property_file_text(workspace)
+        for p in properties:
+            for k, v in p.properties.iteritems():
+                statement = """
+                INSERT INTO %s (experiment_id, object_name, field, value)
+                SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s
+                """ % (T_EXPERIMENT_PROPERTIES, p.object_name, 
+                       MySQLdb.escape_string(k),
+                       MySQLdb.escape_string(v), T_EXPERIMENT)
+                statements.append(statement)
+        return statements
     
     def get_create_image_table_statement(self, pipeline, image_set_list):
         '''Return a SQL statement that generates the image table'''
@@ -1603,6 +1682,8 @@ class ExportToDatabase(cpm.CPModule):
                     gcot_name, pipeline, image_set_list) + ";\n")
         else:
             data = []
+        for statement in self.get_experiment_table_statements(workspace):
+            fid.write(statement + ";\n")
         fid.write("""
 LOAD DATA LOCAL INFILE '%s_%s.CSV' REPLACE INTO TABLE %s
 FIELDS TERMINATED BY ',' 
@@ -2055,6 +2136,44 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 
     def write_properties_file(self, workspace):
         """Write the CellProfiler Analyst properties file"""
+        all_properties = self.get_property_file_text(workspace)
+        for properties in all_properties:
+            fid = open(properties.file_name, "wt")
+            fid.write(properties.text)
+            fid.close()
+            
+    def get_property_file_text(self, workspace):
+        '''Get the text for all property files
+        
+        workspace - the workspace from prepare_run
+        
+        Returns a list of Property objects which describe each property file
+        
+        The Property object has the following attributes:
+        
+        * object_name - the name of the object: "Object" if combining all tables,
+                        otherwise the name of the relevant object.
+                        
+        * file_name - save text in this file
+        
+        * text - the text to save
+        
+        * properties - a key / value dictionary of the properties
+        '''
+        
+        class Properties(object):
+            def __init__(self, object_name, file_name, text):
+                self.object_name = object_name
+                self.file_name = file_name
+                self.text = text
+                self.properties = {}
+                for line in text.split("\n"):
+                    line = line.strip()
+                    if line.startswith("#") or line.find("=") == -1:
+                        continue
+                    k, v = [ x.strip() for x in line.split("=", 1)]
+                    self.properties[k] = v
+        result = []
         #
         # Get appropriate object names
         #
@@ -2062,11 +2181,14 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             object_names = (self.objects_list.value).split(',')
         elif self.objects_choice == O_NONE:
             object_names = ""
+        elif self.separate_object_tables == OT_COMBINE:
+            object_names = [ self.location_object.value ]
         else:
-            object_names = [object_name for object_name in workspace.measurements.get_object_names() 
-                           if (object_name is not cpmeas.IMAGE and not self.ignore_object(object_name))]
-            ## Defaults to the first object in the list, which is the last one defined in the pipeline
-##            object_names = [object_names[0]] if len(object_names) > 0 else ""
+            object_names = [
+                object_name 
+                for object_name in workspace.measurements.get_object_names() 
+                if (object_name != cpmeas.IMAGE) and 
+                (not self.ignore_object(object_name))]
                 
         image_names = []
         if self.properties_export_all_image_defaults:
@@ -2126,16 +2248,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 object_id = C_OBJECT_NUMBER
                 filename = '%s.properties'%(tblname)
                 ## Defaults to the first object in the list, which is the last one defined in the pipeline
-##                object_names = [object_names[0]] if len(object_names) > 0 else ""
-                if len(object_names) > 1 and object_name == object_names[1]:
-                    break  ## Stop on second iteration
+                ## object_names = [object_names[0]] if len(object_names) > 0 else ""
+                properties_object_name = "Object"
             else:
                 cell_tables = '%sPer_%s'%(self.get_table_prefix(),object_name) if object_name else ''
                 object_id = '%s_Number_Object_Number'%(object_name) if object_name else ''
                 filename = '%s_%s.properties'%(tblname,object_name)
+                properties_object_name = object_name
                 
-            file_name = self.make_full_filename(filename,workspace)
-            fid = open(file_name,'wt')            
+            file_name = self.make_full_filename(filename, workspace)
             unique_id = C_IMAGE_NUMBER
             object_count = 'Image_Count_%s'%(object_name) if object_name else ''
             cell_x_loc = '%s_Location_Center_X'%(object_name) if object_name else ''
@@ -2348,8 +2469,10 @@ class_table  =
 
 check_tables = yes
     """%(locals())
-            fid.write(contents)
-            fid.close()
+            result.append(Properties(properties_object_name,
+                                     file_name,
+                                     contents))
+        return result
         
     def write_workspace_file(self, workspace):
         from cellprofiler.utilities.get_revision import get_revision
@@ -2754,7 +2877,17 @@ svn revision: %d\n"""%get_revision()
             setting_values += [ W_SCATTERPLOT,                                  # measurement_display
                                 cpmeas.IMAGE, cpmeas.IMAGE, "", C_IMAGE_NUMBER, # x_measurement_type, x_object_name, x_measurement_name, x_index_name
                                 cpmeas.IMAGE, cpmeas.IMAGE, "", C_IMAGE_NUMBER] # y_measurement_type, y_object_name, y_measurement_name, y_index_name
-            variable_revision_number == 21
+            variable_revision_number = 21
+            
+        if (not from_matlab) and variable_revision_number == 21:
+            #
+            # Added experiment name and location object
+            #
+            setting_values = (
+                setting_values[:SETTING_FIXED_SETTING_COUNT_V21] +
+                [ "Expt", "None" ] + 
+                setting_values[SETTING_FIXED_SETTING_COUNT_V21:])
+            variable_revision_number = 22
             
         return setting_values, variable_revision_number, from_matlab
     

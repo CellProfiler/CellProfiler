@@ -560,13 +560,12 @@ class CPModule(object):
         '''
         return None
     
-    def prepare_group(self, pipeline, image_set_list, grouping,
-                      image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to start processing a new grouping
         
-        pipeline - the pipeline being run
-        image_set_list - the image_set_list for the experiment. Add image
-                         providers to the image set list here.
+        workspace - the workspace for the group. The pipeline, measurements
+                    and image_set_list are valid at this point and you can
+                    fill in image_sets at this point.
         grouping - a dictionary that describes the key for the grouping.
                    For instance, { 'Metadata_Row':'A','Metadata_Column':'01'}
         image_numbers - a sequence of the image numbers within the

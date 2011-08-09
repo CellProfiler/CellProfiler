@@ -448,13 +448,13 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 image_set_list.get_image_set(i)
             expects[0], expects[1] = ('PrepareGroup', 0)
             return True
-        def prepare_group(pipeline, image_set_list, grouping, image_numbers):
+        def prepare_group(workspace, grouping, image_numbers):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
             for image_number in image_numbers:
                 i = image_number-1
                 image = cpi.Image(np.ones((10,10)) / (i+1))
-                image_set = image_set_list.get_image_set(i)
+                image_set = workspace.image_set_list.get_image_set(i)
                 image_set.add('image', image)
             for key in keys:
                 self.assertTrue(grouping.has_key(key))
@@ -529,12 +529,12 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 workspace.image_set_list.get_image_set(i)
             expects[0], expects[1] = ('PrepareGroup', 1)
             return True
-        def prepare_group(pipeline, image_set_list, grouping,*args):
+        def prepare_group(workspace, grouping,*args):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
             for i in range(6):
                 image = cpi.Image(np.ones((10,10)) / (i+1))
-                image_set = image_set_list.get_image_set(i)
+                image_set = workspace.image_set_list.get_image_set(i)
                 image_set.add('image', image)
             for key in keys:
                 self.assertTrue(grouping.has_key(key))
@@ -836,8 +836,8 @@ class MyClassForTest1101(cpm.CPModule):
         workspace.measurements.add_measurement("Image", "Foo", 1)
         return True
         
-    def prepare_group(self, pipeline, image_set_list, *args):
-        image_set = image_set_list.get_image_set(0)
+    def prepare_group(self, workspace, *args):
+        image_set = workspace.image_set_list.get_image_set(0)
         image = cpi.Image(np.zeros((5,5)))
         image_set.add("dummy", image)
         return True

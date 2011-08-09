@@ -495,11 +495,11 @@ class OmeroLoadImages(cpm.CPModule):
 			d[image_set.number] = {}
 		return d[image_set.number]
 	
-	def prepare_group(self, pipeline, image_set_list, grouping,
-					image_numbers):
+	def prepare_group(self, workspace, grouping, image_numbers):
 		'''Load the images from the dictionary into the image sets here'''		
 		for image_number in image_numbers:
-			image_set = image_set_list.get_image_set(image_number-1)
+			image_set = workspace.image_set_list.get_image_set(
+			        image_number-1)
 			self.load_image_set_info(image_set)
 				
 	def is_interactive(self):

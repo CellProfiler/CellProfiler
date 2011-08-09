@@ -1404,14 +1404,14 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         if fn is not None:
             fn(module)
         pipeline.add_module(module)
-        self.assertTrue(module.prepare_run(cpw.Workspace(
-            pipeline, module, None, None, measurements, image_set_list)))
+        workspace = cpw.Workspace(
+            pipeline, module, None, None, measurements, image_set_list)
+        self.assertTrue(module.prepare_run(workspace))
         is_first = True
         frame_iterator = iter(frames)
         first_image_set = True
         for group in group_list:
-            self.assertTrue(module.prepare_group(pipeline, image_set_list,
-                                                 group[0], group[1]))
+            self.assertTrue(module.prepare_group(workspace, group[0], group[1]))
             for image_number in group[1]:
                 if not first_image_set:
                     measurements.next_image_set()

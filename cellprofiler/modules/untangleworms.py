@@ -537,9 +537,9 @@ class UntangleWorms(cpm.CPModule):
             return complexity_limits[self.complexity.value]
         return self.custom_complexity.value
      
-    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to process a group of worms'''
-        d = self.get_dictionary(image_set_list)
+        d = self.get_dictionary(workspace.image_set_list)
         d[TRAINING_DATA] = []
         
     def run(self, workspace):

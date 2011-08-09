@@ -231,6 +231,9 @@ class PipelineController:
             self.stop_debugging()
             if self.__running_pipeline:
                 self.stop_running()
+                del self.__pipeline_measurements
+                self.__pipeline_measurements = None
+
             self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()
@@ -332,6 +335,8 @@ class PipelineController:
             self.stop_debugging()
             if self.__running_pipeline:
                 self.stop_running()            
+                del self.__pipeline_measurements
+                self.__pipeline_measurements = None
             self.__pipeline.clear()
             self.__clear_errors()
             cpprefs.set_current_pipeline_path(None)
@@ -401,6 +406,8 @@ class PipelineController:
         self.close_debug_measurements()
         if self.__running_pipeline is not None:
             self.stop_running()
+            del self.__pipeline_measurements
+            self.__pipeline_measurements = None
     
     def __on_pipeline_event(self,caller,event):
         if isinstance(event,cellprofiler.pipeline.RunExceptionEvent):
@@ -763,6 +770,7 @@ class PipelineController:
                 if (self.__pipeline_measurements is not None and 
                     cpprefs.get_write_MAT_files() is True):
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
+                    del self.__pipeline_measurements
                     self.__pipeline_measurements = None
                     self.__output_path = None
                     message = "Finished processing pipeline"
@@ -820,6 +828,7 @@ class PipelineController:
                 if (self.__pipeline_measurements is not None and 
                     cpprefs.get_write_MAT_files() is True):
                     self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
+                    del self.__pipeline_measurements
                     self.__pipeline_measurements = None
                     self.__output_path = None
                     message = "Finished processing pipeline"
@@ -911,12 +920,12 @@ class PipelineController:
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
         self.__pipeline.test_mode = True
+        self.__debug_image_set_list = cpi.ImageSetList(True)
+        workspace = cpw.Workspace(self.__pipeline, None, None, None,
+                                  self.__debug_measurements,
+                                  self.__debug_image_set_list,
+                                  self.__frame)
         try:
-            self.__debug_image_set_list = cpi.ImageSetList(True)
-            workspace = cpw.Workspace(self.__pipeline, None, None, None,
-                                      self.__debug_measurements,
-                                      self.__debug_image_set_list,
-                                      self.__frame)
             if not self.__pipeline.prepare_run(workspace):
                 raise ValueError("Failed to get image sets")
             self.__keys, self.__groupings = self.__pipeline.get_groupings(
@@ -929,7 +938,7 @@ class PipelineController:
 
         self.__grouping_index = 0
         self.__within_group_index = 0
-        self.__pipeline.prepare_group(self.__debug_image_set_list,
+        self.__pipeline.prepare_group(workspace,
                                       self.__groupings[0][0],
                                       self.__groupings[0][1])
         self.__debug_outlines = {}
@@ -1106,7 +1115,12 @@ class PipelineController:
     def debug_choose_group(self, index):
         self.__grouping_index = index
         self.__within_group_index = 0
-        self.__pipeline.prepare_group(self.__debug_image_set_list,
+        workspace = cpw.Workspace(self.__pipeline, None, None, None,
+                                  self.__debug_measurements,
+                                  self.__debug_image_set_list,
+                                  self.__frame)
+        
+        self.__pipeline.prepare_group(workspace,
                                       self.__groupings[self.__grouping_index][0],
                                       self.__groupings[self.__grouping_index][1])
         key, image_numbers = self.__groupings[self.__grouping_index]
@@ -1273,6 +1287,7 @@ class PipelineController:
                                 self.__frame.preferences_view.set_message_text("")
                                 break
                     self.__output_path = None
+                self.__running_pipeline = None
                 del self.__pipeline_measurements
                 self.__pipeline_measurements = None
                 if len(self.pipeline_list) > 0:

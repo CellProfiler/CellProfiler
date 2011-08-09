@@ -109,11 +109,12 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                     module.automatic_object_width.value = ow
                                     measurements = cpm.Measurements()
                                     image_set_list = cpi.ImageSetList()
-                                    pipeline.prepare_run(
-                                        cpw.Workspace(pipeline, None, None, None,
-                                                      measurements, image_set_list))
-                                    inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-                                    module.prepare_group(pipeline, image_set_list, {}, [1])
+                                    workspace = cpw.Workspace(
+                                        pipeline, None, None, None,
+                                        measurements, image_set_list)
+                                    pipeline.prepare_run(workspace)
+                                    inj_module.prepare_group(workspace, {}, [1])
+                                    module.prepare_group(workspace, {}, [1])
                                     image_set = image_set_list.get_image_set(0)
                                     object_set = cpo.ObjectSet()
                                     workspace = cpw.Workspace(pipeline,
@@ -168,11 +169,12 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                                 module.automatic_object_width.value = ow
                                 measurements = cpm.Measurements()
                                 image_set_list = cpi.ImageSetList()
-                                pipeline.prepare_run(
-                                    cpw.Workspace(pipeline, None, None, None,
-                                                  measurements, image_set_list))
-                                inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-                                module.prepare_group(pipeline, image_set_list, {}, [1])
+                                workspace = cpw.Workspace(
+                                    pipeline, None, None, None,
+                                    measurements, image_set_list)
+                                pipeline.prepare_run(workspace)
+                                inj_module.prepare_group(workspace, {}, [1])
+                                module.prepare_group(workspace, {}, [1])
                                 image_set = image_set_list.get_image_set(0)
                                 object_set = cpo.ObjectSet()
                                 workspace = cpw.Workspace(pipeline,
@@ -228,11 +230,12 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                             module.automatic_object_width.value = ow
                             measurements = cpm.Measurements()
                             image_set_list = cpi.ImageSetList()
-                            pipeline.prepare_run(
-                                cpw.Workspace(pipeline, None, None, None,
-                                              measurements, image_set_list))
-                            inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-                            module.prepare_group(pipeline, image_set_list, {}, [1])
+                            workspace = cpw.Workspace(
+                                pipeline, None, None, None,
+                                measurements, image_set_list)
+                            pipeline.prepare_run(workspace)
+                            inj_module.prepare_group(workspace, {}, [1])
+                            module.prepare_group(workspace, {}, [1])
                             image_set = image_set_list.get_image_set(0)
                             object_set = cpo.ObjectSet()
                             workspace = cpw.Workspace(pipeline,
@@ -278,11 +281,11 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.smoothing_method.value = calc.SM_NONE
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
-        pipeline.prepare_run(
-            cpw.Workspace(pipeline, None, None, None,
-                          measurements, image_set_list))
-        inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-        module.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, None, None, None,
+                                  measurements, image_set_list)
+        pipeline.prepare_run(workspace)
+        inj_module.prepare_group(workspace, {}, [1])
+        module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(pipeline,
@@ -320,11 +323,11 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
-        pipeline.prepare_run(
-            cpw.Workspace(pipeline, None, None, None,
-                          measurements, image_set_list))
-        inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-        module.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, None, None, None,
+                                  measurements, image_set_list)
+        pipeline.prepare_run(workspace)
+        inj_module.prepare_group(workspace, {}, [1])
+        module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(pipeline,
@@ -370,11 +373,11 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             module.dilate_objects.value = False
             measurements = cpm.Measurements()
             image_set_list = cpi.ImageSetList()
-            pipeline.prepare_run(
-                cpw.Workspace(pipeline, None, None, None,
-                              measurements, image_set_list))
-            inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-            module.prepare_group(pipeline, image_set_list, {}, [1])
+            workspace = cpw.Workspace(pipeline, None, None, None,
+                                      measurements, image_set_list)
+            pipeline.prepare_run(workspace)
+            inj_module.prepare_group(workspace, {}, [1])
+            module.prepare_group(workspace, {}, [1])
             image_set = image_set_list.get_image_set(0)
             object_set = cpo.ObjectSet()
             workspace = cpw.Workspace(pipeline,
@@ -415,11 +418,11 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
-        pipeline.prepare_run(
-            cpw.Workspace(pipeline, None, None, None,
-                          measurements, image_set_list))
-        inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-        module.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, None, None, None,
+                                  measurements, image_set_list)
+        pipeline.prepare_run(workspace)
+        inj_module.prepare_group(workspace, {}, [1])
+        module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(pipeline,
@@ -465,11 +468,11 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
-        pipeline.prepare_run(
-            cpw.Workspace(pipeline, None, None, None,
-                          measurements, image_set_list))
-        inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-        module.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, None, None, None,
+                                  measurements, image_set_list)
+        pipeline.prepare_run(workspace)
+        inj_module.prepare_group(workspace, {}, [1])
+        module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(pipeline,
@@ -508,11 +511,11 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
-        pipeline.prepare_run(
-            cpw.Workspace(pipeline, None, None, None,
-                          measurements, image_set_list))
-        inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-        module.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, None, None, None,
+                          measurements, image_set_list)
+        pipeline.prepare_run(workspace)
+        inj_module.prepare_group(workspace, {}, [1])
+        module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(pipeline,
@@ -581,8 +584,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             module.spline_threshold.value = threshold
             module.spline_points.value = spline_points
             module.spline_rescale.value = 1
-            module.prepare_group(workspaces[0].pipeline, 
-                                 workspaces[0].image_set_list, {}, [1])
+            module.prepare_group(workspaces[0], {}, [1])
             module.run(workspaces[0])
             img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
             pixel_data = img.pixel_data
@@ -619,8 +621,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.smoothing_method.value = calc.SM_SPLINES
         module.automatic_splines.value = False
         module.spline_rescale.value = 2
-        module.prepare_group(workspaces[0].pipeline, 
-                             workspaces[0].image_set_list, {}, [1])
+        module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
         img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = img.pixel_data
@@ -656,8 +657,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.rescale_option.value = cps.NO
         module.smoothing_method.value = calc.SM_SPLINES
         module.automatic_splines.value = True
-        module.prepare_group(workspaces[0].pipeline, 
-                             workspaces[0].image_set_list, {}, [1])
+        module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
         img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = img.pixel_data
@@ -673,8 +673,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.rescale_option.value = cps.NO
         module.smoothing_method.value = calc.SM_SPLINES
         module.automatic_splines.value = True
-        module.prepare_group(workspaces[0].pipeline, 
-                             workspaces[0].image_set_list, {}, [1])
+        module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
         img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = img.pixel_data
@@ -711,8 +710,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.rescale_option.value = cps.NO
         module.smoothing_method.value = calc.SM_SPLINES
         module.automatic_splines.value = True
-        module.prepare_group(workspaces[0].pipeline, 
-                             workspaces[0].image_set_list, {}, [1])
+        module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
         img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = img.pixel_data
@@ -728,8 +726,7 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.rescale_option.value = cps.NO
         module.smoothing_method.value = calc.SM_SPLINES
         module.automatic_splines.value = True
-        module.prepare_group(workspaces[0].pipeline, 
-                             workspaces[0].image_set_list, {}, [1])
+        module.prepare_group(workspaces[0], {}, [1])
         module.run(workspaces[0])
         img = workspaces[0].image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = img.pixel_data
@@ -758,11 +755,11 @@ class TestCorrectImage_Calculate(unittest.TestCase):
             module.dilated_image_name.value = "DilatedImage"
             measurements = cpm.Measurements()
             image_set_list = cpi.ImageSetList()
-            pipeline.prepare_run(
-                cpw.Workspace(pipeline, None, None, None,
-                              measurements, image_set_list))
-            inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-            module.prepare_group(pipeline, image_set_list, {}, [1])
+            workspace = cpw.Workspace(pipeline, None, None, None,
+                              measurements, image_set_list)
+            pipeline.prepare_run(workspace)
+            inj_module.prepare_group(workspace, {}, [1])
+            module.prepare_group(workspace, {}, [1])
             image_set = image_set_list.get_image_set(0)
             object_set = cpo.ObjectSet()
             workspace = cpw.Workspace(pipeline,
@@ -810,11 +807,11 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
-        pipeline.prepare_run(
-            cpw.Workspace(pipeline, None, None, None,
-                          measurements, image_set_list))
-        inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-        module.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, None, None, None,
+                                  measurements, image_set_list)
+        pipeline.prepare_run(workspace)
+        inj_module.prepare_group(workspace, {}, [1])
+        module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(pipeline,
@@ -855,11 +852,11 @@ class TestCorrectImage_Calculate(unittest.TestCase):
         module.dilate_objects.value = False
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
-        pipeline.prepare_run(
-            cpw.Workspace(pipeline, None, None, None,
-                          measurements, image_set_list))
-        inj_module.prepare_group(pipeline, image_set_list, {}, [1])
-        module.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, None, None, None,
+                          measurements, image_set_list)
+        pipeline.prepare_run(workspace)
+        inj_module.prepare_group(workspace, {}, [1])
+        module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(pipeline,

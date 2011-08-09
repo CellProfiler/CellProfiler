@@ -30,9 +30,12 @@ import scipy.ndimage as scind
 import scipy.linalg
 
 import cellprofiler.cpimage  as cpi
+import cellprofiler.objects as cpo
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
-import cellprofiler.preferences as cpp
+import cellprofiler.pipeline as cpp
+import cellprofiler.workspace as cpw
 import cellprofiler.cpmath.cpmorphology as cpmm
 from cellprofiler.cpmath.smooth import smooth_with_function_and_mask
 from cellprofiler.cpmath.smooth import circular_gaussian_kernel
@@ -65,6 +68,8 @@ FI_OBJECT_SIZE     = "Object size"
 FI_MANUALLY        = "Manually"
 
 ROBUST_FACTOR      = .02 # For rescaling, take 2nd percentile value
+
+OUTPUT_IMAGE = "OutputImage"
 
 class CorrectIlluminationCalculate(cpm.CPModule):
     
@@ -427,60 +432,33 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 self.average_image_name, self.save_dilated_image,
                 self.dilated_image_name]
     
-    def prepare_group(self, pipeline, image_set_list, grouping, 
-                      image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
+        image_set_list = workspace.image_set_list
+        pipeline = workspace.pipeline
+        assert isinstance(pipeline, cpp.Pipeline)
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
         if self.each_or_all != EA_EACH and len(image_numbers) > 0:
-            output_image_provider =\
-                CorrectIlluminationImageProvider(self.illumination_image_name.value,
-                                                 self)
-            image_providers = [output_image_provider]
-            if self.save_average_image.value:
-                ap = CorrectIlluminationAvgImageProvider(self.average_image_name.value,
-                                                         output_image_provider)
-                image_providers.append(ap)
-            if self.save_dilated_image.value:
-                dp = CorrectIlluminationDilatedImageProvider(self.dilated_image_name.value,
-                                                             output_image_provider)
-                image_providers.append(dp)
-            for image_number in image_numbers:
-                image_set = image_set_list.get_image_set(image_number-1)
-                image_set.providers.extend(image_providers)
-                
+            title = "#%d: CorrectIlluminationCalculate for %s"%(
+                self.module_num, self.image_name)
+            message = ("CorrectIlluminationCalculate is averaging %d images while "
+                       "preparing for run"%(len(image_numbers)))
+            output_image_provider = CorrectIlluminationImageProvider(
+                self.illumination_image_name.value, self)
+            self.get_dictionary(image_set_list)[OUTPUT_IMAGE] = \
+                output_image_provider
             if self.each_or_all == EA_ALL_FIRST:
+                for w in pipeline.run_group_with_yield(
+                    workspace, grouping, image_numbers, self, title, message):
+                    image = w.image_set.get_image(self.image_name.value,
+                                                  cache = False)
+                    output_image_provider.add_image(image)
             
-                if not pipeline.in_batch_mode() and not cpp.get_headless():
-                    import wx
-                    progress_dialog = wx.ProgressDialog("#%d: CorrectIlluminationCalculate for %s"%(self.module_num, self.image_name),
-                                                        "CorrectIlluminationCalculate is averaging %d images while preparing for run"%(len(image_numbers)),
-                                                        len(image_numbers),
-                                                        None,
-                                                        wx.PD_APP_MODAL |
-                                                        wx.PD_AUTO_HIDE |
-                                                        wx.PD_CAN_ABORT)
-                else:
-                    progress_dialog = None
-    
-                
-                try:
-                    for i,image_number in enumerate(image_numbers):
-                        image_set = image_set_list.get_image_set(image_number-1)
-                        image     = image_set.get_image(self.image_name.value,
-                                                        cache = False)
-                        output_image_provider.add_image(image)
-                        if progress_dialog is not None:
-                            should_continue, skip = progress_dialog.Update(i+1)
-                            if not should_continue:
-                                progress_dialog.EndModal(0)
-                                return False
-                finally:
-                    if progress_dialog is not None:
-                        progress_dialog.Destroy()
         return True
         
     def run(self, workspace):
         if self.each_or_all != EA_EACH:
-            output_image_provider = \
-                workspace.image_set.get_image_provider(self.illumination_image_name.value)
+            output_image_provider = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
             if self.each_or_all == EA_ALL_ACROSS:
                 #
                 # We are accumulating a pipeline image. Add this image set's
@@ -492,6 +470,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             # fetch images for display
             avg_image = output_image_provider.provide_avg_image()
             dilated_image = output_image_provider.provide_dilated_image()
+            workspace.image_set.providers.append(output_image_provider)
             output_image = output_image_provider.provide_image(workspace.image_set)
         else:
             orig_image = workspace.image_set.get_image(self.image_name.value)
@@ -502,15 +481,15 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             output_image    = self.apply_scaling(smoothed_image, orig_image)
             # for illumination correction, we want the smoothed function to extend beyond the mask.
             output_image.mask = np.ones(output_image.pixel_data.shape[:2], bool)
-
-            if self.save_average_image.value:
-                workspace.image_set.add(self.average_image_name.value,
-                                         avg_image)
-            if self.save_dilated_image.value:
-                workspace.image_set.add(self.dilated_image_name.value, 
-                                        dilated_image)
             workspace.image_set.add(self.illumination_image_name.value,
                                     output_image)
+
+        if self.save_average_image.value:
+            workspace.image_set.add(self.average_image_name.value,
+                                     avg_image)
+        if self.save_dilated_image.value:
+            workspace.image_set.add(self.dilated_image_name.value, 
+                                    dilated_image)
         # store images for potential display
         workspace.display_data.avg_image = avg_image
         workspace.display_data.dilated_image = dilated_image

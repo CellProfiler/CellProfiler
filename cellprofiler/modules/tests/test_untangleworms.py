@@ -648,7 +648,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         data = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(np.zeros((10,10), bool), data)
         self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
+        module.prepare_group(workspace, None, None)
         params = module.read_params()
         self.assertAlmostEqual(params.min_worm_area, 601.2, 0)
         self.assertAlmostEqual(params.max_area, 1188.5, 0)
@@ -2110,7 +2110,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
 """
         workspace, module = self.make_workspace(np.zeros((10,10), bool), data)
         self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
+        module.prepare_group(workspace, None, None)
         params = module.read_params()
         self.assertEqual(params.version, 10680)
         self.assertAlmostEqual(params.min_worm_area, 596.898)
@@ -2634,7 +2634,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         params = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(A02_image, params)
         self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
+        module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False
         module.override_leftover_weight.value = 6
         module.override_overlap_weight.value = 3
@@ -2660,7 +2660,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         params = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(A02_image, params)
         self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
+        module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False
         module.override_leftover_weight.value = 6
         module.override_overlap_weight.value = 3
@@ -2678,7 +2678,7 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         params = zlib.decompress(base64.b64decode(PARAMS))
         workspace, module = self.make_workspace(A02_image, params)
         self.assertTrue(isinstance(module, U.UntangleWorms))
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, None, None)
+        module.prepare_group(workspace, None, None)
         module.wants_training_set_weights.value = False
         module.override_leftover_weight.value = 6
         module.override_overlap_weight.value = 3
@@ -2705,8 +2705,6 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         workspace, module = self.make_workspace(image)
         self.assertTrue(isinstance(module, U.UntangleWorms))
         module.mode.value = U.MODE_TRAIN
-        module.prepare_group(workspace.pipeline,
-                             workspace.image_set_list,
-                             None, None)
+        module.prepare_group(workspace, None, None)
         module.run(workspace)
         

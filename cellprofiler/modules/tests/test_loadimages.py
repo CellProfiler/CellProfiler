@@ -93,11 +93,12 @@ class testLoadImages(unittest.TestCase):
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(l)
         m = measurements.Measurements()
-        l.prepare_run(W.Workspace(pipeline, l, None, None, m, image_set_list))
+        workspace = W.Workspace(pipeline, l, None, None, m, image_set_list)
+        l.prepare_run(workspace)
         image_numbers = m.get_image_numbers()
         self.assertEqual(len(image_numbers), 1, 
                          "Expected one image set in the list")
-        l.prepare_group(pipeline, image_set_list, (), [1])
+        l.prepare_group(workspace, (), [1])
         image_set = image_set_list.get_image_set(0)
         l.run(W.Workspace(pipeline, l, image_set, cpo.ObjectSet(),
                           m, image_set_list))
@@ -123,12 +124,13 @@ class testLoadImages(unittest.TestCase):
         pipeline.add_module(l)
         pipeline.add_listener(self.error_callback)
         m = measurements.Measurements()
-        l.prepare_run(W.Workspace(pipeline, l, None, None, m, image_set_list))
+        workspace = W.Workspace(pipeline, l, None, None, m, image_set_list)
+        l.prepare_run(workspace)
         image_numbers = m.get_image_numbers()
         self.assertEqual(len(image_numbers), 1, 
                          "Expected one image set, there were %d"
                          % (image_set_list.count()))
-        l.prepare_group(pipeline, image_set_list, (), image_numbers)
+        l.prepare_group(workspace, (), image_numbers)
         image_set = image_set_list.get_image_set(0)
         l.run(W.Workspace(pipeline, l, image_set, cpo.ObjectSet(), 
                           m, image_set_list))
@@ -150,10 +152,11 @@ class testLoadImages(unittest.TestCase):
         pipeline = P.Pipeline()
         m = measurements.Measurements()
         pipeline.add_module(l)
-        l.prepare_run(W.Workspace(pipeline, l, None, None, m, image_set_list))
+        workspace = W.Workspace(pipeline, l, None, None, m, image_set_list)
+        l.prepare_run(workspace)
         image_numbers = m.get_image_numbers()
         self.assertEqual(image_numbers, 1, "Expected one image set in the list")
-        l.prepare_group(pipeline, image_set_list, (), image_numbers)
+        l.prepare_group(workspace, (), image_numbers)
         image_set = image_set_list.get_image_set(0)
         l.run(W.Workspace(pipeline, l, image_set, cpo.ObjectSet(), m,
                           image_set_list))
@@ -229,13 +232,13 @@ class testLoadImages(unittest.TestCase):
                     pipeline = P.Pipeline()
                     pipeline.add_module(l)
                     m = measurements.Measurements()
-                    l.prepare_run(W.Workspace(pipeline, l, None, None, m,
-                                              image_set_list))
+                    workspace = W.Workspace(pipeline, l, None, None, m,
+                                            image_set_list)
+                    l.prepare_run(workspace)
                     image_numbers = m.get_image_numbers()
                     nsets = 12 / group_size
                     self.assertEqual(len(image_numbers), nsets)
-                    l.prepare_group(pipeline, image_set_list, (), 
-                                    list(range(1, nsets+1)))
+                    l.prepare_group(workspace, (), list(range(1, nsets+1)))
                     for i in range(0, nsets):
                         if i > 0:
                             m.next_image_set(i + 1)
@@ -1348,7 +1351,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertEqual(len(group_list), 1)
         grouping, image_numbers = group_list[0]
         self.assertEqual(len(image_numbers), 1)
-        module.prepare_group(pipeline, image_set_list, grouping, image_numbers)
+        module.prepare_group(workspace, grouping, image_numbers)
         
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
@@ -1409,7 +1412,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                 image_set_list)
         load_images.prepare_run(workspace)
         self.assertEqual(image_set_list.count(),2)
-        load_images.prepare_group(pipeline, image_set_list, (), [1,2])
+        load_images.prepare_group(workspace, (), [1,2])
         image_set = image_set_list.get_image_set(0)
         w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
                         image_set_list)
@@ -1685,8 +1688,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                              if all([d[key_name] == x[0][key_name]
                                      for key_name in key_names])]
                 self.assertEqual(len(my_groups), 1)
-                load_images.prepare_group(pipeline, image_set_list,
-                                          d,  my_groups[0][1])
+                load_images.prepare_group(workspace, d,  my_groups[0][1])
                 image_set = image_set_list.get_image_set(d)
                 load_images.run(W.Workspace(pipeline, load_images, image_set,
                                             cpo.ObjectSet(), m, image_set_list))
@@ -1741,12 +1743,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             pipeline.add_listener(self.error_callback)
             image_set_list = I.ImageSetList()
             m = measurements.Measurements()
-            self.assertTrue(load_images.prepare_run(W.Workspace(
-                pipeline, load_images, None, None, m, image_set_list)))
+            workspace = W.Workspace(pipeline, load_images, None, None, m, 
+                                    image_set_list)
+            self.assertTrue(load_images.prepare_run(workspace))
             image_numbers = m.get_image_numbers()
             self.assertEqual(len(image_numbers), len(filenames))
-            load_images.prepare_group(pipeline, image_set_list, {}, 
-                                      image_numbers)
+            load_images.prepare_group(workspace, {}, image_numbers)
             for i, (path, file_name) in enumerate(filenames):
                 if i > 0:
                     m.next_image_set()
@@ -1814,12 +1816,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             pipeline.add_listener(self.error_callback)
             image_set_list = I.ImageSetList()
             m = measurements.Measurements()
-            self.assertTrue(load_images.prepare_run(W.Workspace(
-                pipeline, load_images, None, None, m, image_set_list)))
+            workspace = W.Workspace(pipeline, load_images, None, None, 
+                                    m, image_set_list)
+            self.assertTrue(load_images.prepare_run(workspace))
             image_numbers = m.get_image_numbers()
             self.assertEqual(len(image_numbers), len(expected_filenames))
-            load_images.prepare_group(pipeline, image_set_list, {}, 
-                                      image_numbers)
+            load_images.prepare_group(workspace, {}, image_numbers)
             for i, (path, file_name) in enumerate(expected_filenames):
                 if i > 0:
                     m.next_image_set()
@@ -2149,8 +2151,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertTrue(all([g[0]["ROW"] == row for g, row in zip(groupings, 'ABCDEFGH')]))
         for grouping in groupings:
             row = grouping[0]["ROW"]
-            module.prepare_group(pipeline, image_set_list, grouping[0],
-                                 grouping[1])
+            module.prepare_group(workspace, grouping[0], grouping[1])
             for image_number in grouping[1]:
                 image_set = image_set_list.get_image_set(image_number-1)
                 m.next_image_set(image_number)
@@ -2180,10 +2181,11 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
         m = measurements.Measurements()
-        module.prepare_run(W.Workspace(pipeline, module, None, None,
-                                       m, image_set_list))
+        workspace = W.Workspace(pipeline, module, None, None,
+                                m, image_set_list)
+        module.prepare_run(workspace)
         self.assertEqual(image_set_list.count(), 65)
-        module.prepare_group(pipeline, image_set_list, (), [1,2,3])
+        module.prepare_group(workspace, (), [1,2,3])
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
@@ -2230,9 +2232,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
         m = measurements.Measurements()
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
-                                       image_set_list))
-        module.prepare_group(pipeline, image_set_list, (), [1,2,3])
+        workspace = W.Workspace(pipeline, module, None, None, m,
+                                image_set_list)
+        module.prepare_run(workspace)
+        module.prepare_group(workspace, (), [1,2,3])
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
@@ -2280,7 +2283,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertTrue("Series" in keys)
         self.assertEqual(len(groupings), 4)
         for grouping, image_numbers in groupings:
-            module.prepare_group(pipeline, image_set_list, grouping, image_numbers)
+            module.prepare_group(workspace, grouping, image_numbers)
             for image_number in image_numbers:
                 image_set = image_set_list.get_image_set(image_number-1)
                 workspace = W.Workspace(pipeline, module, image_set,
@@ -2328,10 +2331,11 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
         m = measurements.Measurements()
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
-                                       image_set_list))
+        workspace = W.Workspace(pipeline, module, None, None, m,
+                                image_set_list)
+        module.prepare_run(workspace)
         self.assertEqual(image_set_list.count(), 13)
-        module.prepare_group(pipeline, image_set_list, (), np.arange(1,16))
+        module.prepare_group(workspace, (), np.arange(1,16))
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
@@ -2395,10 +2399,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
         m = measurements.Measurements()
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
-                                       image_set_list))
+        workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
+        module.prepare_run(workspace)
         self.assertEqual(image_set_list.count(), 13)
-        module.prepare_group(pipeline, image_set_list, (), np.arange(1,16))
+        module.prepare_group(workspace, (), np.arange(1,16))
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
@@ -2462,7 +2466,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertTrue("Series" in keys)
         self.assertEqual(len(groupings), 4)
         for group_number, (grouping, image_numbers) in enumerate(groupings):
-            module.prepare_group(pipeline, image_set_list, grouping, image_numbers)
+            module.prepare_group(workspace, grouping, image_numbers)
             for group_index, image_number in enumerate(image_numbers):
                 image_set = image_set_list.get_image_set(image_number-1)
                 m.add_image_measurement(cpp.GROUP_INDEX, group_index)
@@ -2516,7 +2520,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertTrue("Series" in keys)
         self.assertEqual(len(groupings), 4)
         for group_number, (grouping, image_numbers) in enumerate(groupings):
-            module.prepare_group(pipeline, image_set_list, grouping, image_numbers)
+            module.prepare_group(workspace, grouping, image_numbers)
             
             for group_index, image_number in enumerate(image_numbers):
                 image_set = image_set_list.get_image_set(image_number-1)
@@ -2558,9 +2562,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
         m = measurements.Measurements()
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m, 
-                                       image_set_list))
-        module.prepare_group(pipeline, image_set_list, (), [1])
+        workspace = W.Workspace(pipeline, module, None, None, m, 
+                                image_set_list)
+        module.prepare_run(workspace)
+        module.prepare_group(workspace, (), [1])
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
@@ -2575,9 +2580,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pixel_data = image.pixel_data
         module.images[0].channels[0].rescale.value = True
         image_set_list = I.ImageSetList()
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
-                                       image_set_list))
-        module.prepare_group(pipeline, image_set_list, (), [1])
+        workspace = W.Workspace(pipeline, module, None, None, m,
+                                image_set_list)
+        module.prepare_run(workspace)
+        module.prepare_group(workspace, (), [1])
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
                                 cpo.ObjectSet(), m,
@@ -2603,9 +2609,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             pipeline.add_listener(self.error_callback)
             image_set_list = I.ImageSetList()
             m = measurements.Measurements(True)
-            module.prepare_run(W.Workspace(pipeline, module, None, None, m,
-                                           image_set_list))
-            module.prepare_group(pipeline, image_set_list, (), np.arange(96))
+            workspace = W.Workspace(pipeline, module, None, None, m,
+                                    image_set_list)
+            module.prepare_run(workspace)
+            module.prepare_group(workspace, (), np.arange(96))
             for j in range(96):
                 image_set = image_set_list.get_image_set(j)
                 workspace = W.Workspace(pipeline, module, image_set,
@@ -2639,9 +2646,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         image_set_list = I.ImageSetList()
         m = measurements.Measurements()
-        module.prepare_run(W.Workspace(pipeline, module, None, None, m,
-                                       image_set_list))
-        module.prepare_group(pipeline, image_set_list, (), [0])
+        workspace = W.Workspace(pipeline, module, None, None, m,
+                                image_set_list)
+        module.prepare_run(workspace)
+        module.prepare_group(workspace, (), [0])
         workspace = W.Workspace(pipeline, module, image_set_list.get_image_set(0), 
                                 cpo.ObjectSet(), m,
                                 image_set_list)
@@ -2762,7 +2770,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertEqual(len(group_list), 1)
         group_keys, image_numbers = group_list[0]
         self.assertEqual(len(image_numbers), 96)
-        module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
+        module.prepare_group(workspace, group_keys, image_numbers)
         for image_number in image_numbers:
             path = m.get_measurement(measurements.IMAGE,
                                      LI.C_PATH_NAME + "_" + IMAGE_NAME,
@@ -2824,7 +2832,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertEqual(len(group_list), 1)
         group_keys, image_numbers = group_list[0]
         self.assertEqual(len(image_numbers), 65)
-        module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
+        module.prepare_group(workspace, group_keys, image_numbers)
         for image_number in image_numbers:
             self.assertEqual(m.get_measurement(
                 measurements.IMAGE, "PathName_" + IMAGE_NAME, 
@@ -2878,8 +2886,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertEqual(len(group_list), 4)
         for i, (group_keys, image_numbers) in enumerate(group_list):
             self.assertEqual(len(image_numbers), 1)
-            module.prepare_group(pipeline, image_set_list, group_keys, 
-                                 image_numbers)
+            module.prepare_group(workspace, group_keys, image_numbers)
             for image_number in image_numbers:
                 self.assertEqual(m.get_measurement(
                     measurements.IMAGE,
@@ -2920,7 +2927,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertEqual(len(group_list), 1)
         group_keys, image_numbers = group_list[0]
         self.assertEqual(len(image_numbers), 1)
-        module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
+        module.prepare_group(workspace, group_keys, image_numbers)
         image_set = image_set_list.get_image_set(image_numbers[0]-1)
         workspace = W.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                 m, image_set_list)

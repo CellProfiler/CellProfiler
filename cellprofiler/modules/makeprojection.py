@@ -140,8 +140,9 @@ class MakeProjection(cpm.CPModule):
             result += [self.frequency]
         return result
 
-    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
         '''Reset the aggregate image at the start of group processing'''
+        image_set_list = workspace.image_set_list
         if len(image_numbers) > 0:
             d = self.get_dictionary(image_set_list)
             if d.has_key(K_PROVIDER):
@@ -265,7 +266,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         if image.has_mask:
             self.__image_count = image.mask.astype(int)
         else:
-            self.__image_count = np.ones(image.pixel_data.shape, int)
+            self.__image_count = np.ones(image.pixel_data.shape[:2], int)
         
         if self.__how_to_accumulate == P_VARIANCE:
             self.__vsum = image.pixel_data.copy()
@@ -351,23 +352,35 @@ class ImageProvider(cpi.AbstractImageProvider):
                                       self.__how_to_accumulate)
     
     def provide_image(self, image_set):
-        mask = self.__image_count > 0
+        image_count = self.__image_count
+        mask_2d = image_count > 0
+        if self.__how_to_accumulate == P_VARIANCE:
+            ndim_image = self.__vsquared
+        elif self.__how_to_accumulate == P_POWER:
+            ndim_image = self.__power_image
+        elif self.__how_to_accumulate == P_BRIGHTFIELD:
+            ndim_image = self.__bright_max
+        else:
+            ndim_image = self.__image
+        if ndim_image.ndim == 3:
+            image_count = np.dstack([image_count] * ndim_image.shape[2])
+        mask = image_count > 0
         if self.__cached_image is not None:
             return self.__cached_image
         if self.__how_to_accumulate == P_AVERAGE:
-            cached_image = self.__image / self.__image_count
+            cached_image = self.__image / image_count
         elif self.__how_to_accumulate == P_VARIANCE:
             cached_image = np.zeros(self.__vsquared.shape, np.float32)
-            cached_image[mask] = self.__vsquared[mask] / self.__image_count[mask]
-            cached_image[mask] -= self.__vsum[mask]**2 / (self.__image_count[mask] ** 2)
+            cached_image[mask] = self.__vsquared[mask] / image_count[mask]
+            cached_image[mask] -= self.__vsum[mask]**2 / (image_count[mask] ** 2)
         elif self.__how_to_accumulate == P_POWER:
-            cached_image = np.zeros(self.__image_count.shape, np.complex128)
+            cached_image = np.zeros(image_count.shape, np.complex128)
             cached_image[mask] = self.__power_image[mask]
             cached_image[mask] -= (self.__vsum[mask] * self.__power_mask[mask] /
-                                   self.__image_count[mask])
+                                   image_count[mask])
             cached_image = (cached_image * np.conj(cached_image)).astype(np.float32)
         elif self.__how_to_accumulate == P_BRIGHTFIELD:
-            cached_image = np.zeros(self.__image_count.shape, np.float32)
+            cached_image = np.zeros(image_count.shape, np.float32)
             cached_image[mask] = self.__bright_max[mask] - self.__bright_min[mask]
         elif self.__how_to_accumulate == P_MINIMUM and np.any(~mask):
             cached_image = self.__image.copy()
@@ -378,7 +391,7 @@ class ImageProvider(cpi.AbstractImageProvider):
         if np.all(mask) or self.__how_to_accumulate == P_MASK:
             self.__cached_image = cpi.Image(cached_image)
         else:
-            self.__cached_image = cpi.Image(cached_image, mask=mask)
+            self.__cached_image = cpi.Image(cached_image, mask=mask_2d)
         return self.__cached_image
 
     def get_name(self):

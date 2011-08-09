@@ -224,12 +224,12 @@ class SendEmail(cpm.CPModule):
         d[K_RESULT] = "No email sent"
         return True
     
-    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to run the first image in the group'''
         email_me = [group.message.value for group in self.when
                     if group.choice == S_GROUP_START ]
         if email_me:
-            self.get_dictionary(image_set_list)[K_EMAIL] += email_me
+            self.get_dictionary(workspace.image_set_list)[K_EMAIL] += email_me
             
     def run(self, workspace):
         '''Run every image set'''

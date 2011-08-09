@@ -196,24 +196,23 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         module.frequency.value = frequency
         pipeline.add_module(module)
         m = cpmeas.Measurements()
-        module.prepare_run(cpw.Workspace(
-            pipeline, module, None, None, m, image_set_list))
-        module.prepare_group(pipeline, image_set_list, {},
-                             range(1,len(images_and_masks)+1))
+        workspace = cpw.Workspace(pipeline, module, None, None, m, image_set_list)
+        module.prepare_run(workspace)
+        module.prepare_group(workspace, {}, range(1,len(images_and_masks)+1))
         for i in range(image_count):
             if i > 0:
                 image_set_list.purge_image_set(i-1)
-            workspace = cpw.Workspace(pipeline, module, 
-                                      image_set_list.get_image_set(i),
-                                      cpo.ObjectSet(),
-                                      m,
-                                      image_set_list)
-            module.run(workspace)
-            image = workspace.image_set.get_image(PROJECTED_IMAGE_NAME)
+            w = cpw.Workspace(pipeline, module, 
+                              image_set_list.get_image_set(i),
+                              cpo.ObjectSet(),
+                              m,
+                              image_set_list)
+            module.run(w)
+            image = w.image_set.get_image(PROJECTED_IMAGE_NAME)
         #
         # Make sure that the image provider is reset after prepare_group
         #
-        module.prepare_group(pipeline, image_set_list, {}, [image_count+1])
+        module.prepare_group(workspace, {}, [image_count+1])
         image_set = image_set_list.get_image_set(image_count)
         image_provider = image_set.get_image_provider(PROJECTED_IMAGE_NAME)
         self.assertFalse(image_provider.has_image)
@@ -263,6 +262,25 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         self.assertFalse(image.has_mask)
         self.assertTrue(np.all(np.abs(image.pixel_data - expected) < 
                                np.finfo(float).eps))
+        
+    def test_02_04_average_masked_color(self):
+        np.random.seed(0)
+        images_and_masks = [(np.random.uniform(size=(10,10,3)).astype(np.float32), 
+                             np.random.uniform(size=(10,10)) > .3)
+                             for i in range(3)]
+        expected = np.zeros((10, 10, 3))
+        expected_count = np.zeros((10, 10), np.float32)
+        expected_mask = np.zeros((10, 10), bool)
+        for image, mask in images_and_masks:
+            expected[mask, :] += image[mask, :]
+            expected_count[mask] += 1
+            expected_mask = mask | expected_mask
+        expected = expected / expected_count[:, :, np.newaxis]
+        image = self.run_image_set(M.P_AVERAGE, images_and_masks)
+        self.assertTrue(image.has_mask)
+        np.testing.assert_equal(image.mask, expected_mask)
+        np.testing.assert_almost_equal(image.pixel_data[expected_mask],
+                                       expected[expected_mask])
     
     def test_03_01_maximum(self):
         np.random.seed(0)

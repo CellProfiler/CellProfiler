@@ -557,11 +557,11 @@ class ParameterSampleFrame(wx.Frame):
         """
         self.__measurements = cpm.Measurements(can_overwrite=True)
         self.__object_set = cpo.ObjectSet(can_overwrite=True)
+        self.__image_set_list = cpi.ImageSetList()
+        workspace = cpw.Workspace(self.__pipeline, None, None, None,
+                                  self.__measurements, image_set_list,
+                                  self.__frame)
         try:
-            self.__image_set_list = cpi.ImageSetList()
-            workspace = cpw.Workspace(self.__pipeline, None, None, None,
-                                      self.__measurements, image_set_list,
-                                      self.__frame)
             if not self.__pipeline.prepare_run(workspace):
                 print 'Error: failed to get image sets'
             self.__keys, self.__groupings = self.__pipeline.get_groupings(self.__image_set_list)
@@ -571,7 +571,7 @@ class ParameterSampleFrame(wx.Frame):
         self.__grouping_index = 0
         self.__within_group_index = 0
         self.__pipeline.prepare_group(
-            self.__image_set_list,
+            workspace,
             self.__groupings[0][0],
             self.__groupings[0][1])
         self.__outlines = {}

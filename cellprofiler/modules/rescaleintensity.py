@@ -255,7 +255,7 @@ class RescaleIntensity(cpm.CPModule):
         d = self.get_dictionary(image_set_list)
         return d[HIGH_ALL_IMAGES]
         
-    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
         '''Handle initialization per-group
         
         pipeline - the pipeline being run
@@ -273,55 +273,37 @@ class RescaleIntensity(cpm.CPModule):
         if (self.wants_automatic_high != HIGH_ALL_IMAGES and
             self.wants_automatic_low != LOW_ALL_IMAGES):
             return True
-        
-        if not pipeline.in_batch_mode() and not cpprefs.get_headless():
-            import wx
-            progress_dialog = wx.ProgressDialog(
-                "#%d: RescaleIntensity for %s"%(self.module_num, self.image_name.value),
-                "RescaleIntensity will process %d images while preparing for run" % 
-                (len(image_numbers)),
-                len(image_numbers),
-                None,
-                wx.PD_APP_MODAL |
-                wx.PD_AUTO_HIDE |
-                wx.PD_CAN_ABORT)
-        else:
-            progress_dialog = None
-        
+
+        title = "#%d: RescaleIntensity for %s"%(
+            self.module_num, self.image_name.value)
+        message = ("RescaleIntensity will process %d images while "
+                   "preparing for run" % (len(image_numbers)))
         min_value = None
         max_value = None
-        try:
-            for i,image_number in enumerate(image_numbers):
-                image_set = image_set_list.get_image_set(image_number-1)
-                image     = image_set.get_image(self.image_name.value,
-                                                must_be_grayscale=True,
-                                                cache = False)
-                if self.wants_automatic_high == HIGH_ALL_IMAGES:
-                    if image.has_mask:
-                        vmax = np.max(image.pixel_data[image.mask])
-                    else:
-                        vmax = np.max(image.pixel_data)
+        for w in workspace.pipeline.run_group_with_yield(
+            workspace, grouping, image_numbers, self, title, message):
+            image_set = w.image_set
+            image     = image_set.get_image(self.image_name.value,
+                                            must_be_grayscale=True,
+                                            cache = False)
+            if self.wants_automatic_high == HIGH_ALL_IMAGES:
+                if image.has_mask:
+                    vmax = np.max(image.pixel_data[image.mask])
+                else:
+                    vmax = np.max(image.pixel_data)
                     max_value = vmax if max_value is None else max(max_value, vmax)
 
-                if self.wants_automatic_low == LOW_ALL_IMAGES:
-                    if image.has_mask:
-                        vmin = np.min(image.pixel_data[image.mask])
-                    else:
-                        vmin = np.min(image.pixel_data)
+            if self.wants_automatic_low == LOW_ALL_IMAGES:
+                if image.has_mask:
+                    vmin = np.min(image.pixel_data[image.mask])
+                else:
+                    vmin = np.min(image.pixel_data)
                     min_value = vmin if min_value is None else min(min_value, vmin)
 
-                if progress_dialog is not None:
-                    should_continue, skip = progress_dialog.Update(i+1)
-                    if not should_continue:
-                        progress_dialog.EndModal(0)
-                        return False
-        finally:
-            if progress_dialog is not None:
-                progress_dialog.Destroy()
         if self.wants_automatic_high == HIGH_ALL_IMAGES:
-            self.set_automatic_maximum(image_set_list, max_value)
+            self.set_automatic_maximum(workspace.image_set_list, max_value)
         if self.wants_automatic_low == LOW_ALL_IMAGES:
-            self.set_automatic_minimum(image_set_list, min_value)
+            self.set_automatic_minimum(workspace.image_set_list, min_value)
 
     def run(self, workspace):
         input_image = workspace.image_set.get_image(self.image_name.value)

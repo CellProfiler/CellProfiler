@@ -229,9 +229,9 @@ class Tile(cpm.CPModule):
             result += [self.add_button]
         return result
 
-    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to handle a group of images when tiling'''
-        d = self.get_dictionary(image_set_list)
+        d = self.get_dictionary(workspace.image_set_list)
         d[IMAGE_COUNT] = len(image_numbers)
         d[IMAGE_NUMBER] = 0
         d[TILED_IMAGE] = None

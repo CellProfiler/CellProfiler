@@ -43,10 +43,10 @@ import re
 logger = logging.getLogger(__name__)
 pipeline_stats_logger = logging.getLogger("PipelineStatistics")
 import cellprofiler.cpmodule
-import cellprofiler.preferences
+import cellprofiler.preferences as cpprefs
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
-import cellprofiler.objects
+import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
@@ -485,7 +485,7 @@ class Pipeline(object):
         setting[MODULE_NAMES] =             new_string_cell_array((1,module_count))
         setting[NUMBERS_OF_VARIABLES] =     np.ndarray((1,module_count),
                                                        dtype=np.dtype('uint8'))
-        setting[PIXEL_SIZE] =               cellprofiler.preferences.get_pixel_size() 
+        setting[PIXEL_SIZE] =               cpprefs.get_pixel_size() 
         setting[VARIABLE_REVISION_NUMBERS] =np.ndarray((1,module_count),
                                                        dtype=np.dtype('uint8'))
         setting[MODULE_REVISION_NUMBERS] =  np.ndarray((1,module_count),
@@ -635,7 +635,7 @@ class Pipeline(object):
                 revision = int(value)
                 CURRENT_SVN_REVISION = get_revision()
                 if revision > CURRENT_SVN_REVISION:
-                    if cellprofiler.preferences.get_headless():
+                    if cpprefs.get_headless():
                         logging.warning(
                             ('Your pipeline SVN revision is %d but you are '
                              'running CellProfiler SVN revsion %d. '
@@ -660,7 +660,7 @@ class Pipeline(object):
                         except:
                             logger.error('Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results.\n' %(revision, CURRENT_SVN_REVISION))
                 else:
-                    if ((not cellprofiler.preferences.get_headless()) and
+                    if ((not cpprefs.get_headless()) and
                         revision < CURRENT_SVN_REVISION):
                         from cellprofiler.gui.errordialog import show_warning
                         show_warning(
@@ -674,8 +674,8 @@ class Pipeline(object):
         "You can ignore this warning if you do not plan to save\n"
         "this pipeline or if you will only use it with this or\n"
         "later versions of CellProfiler." % revision,
-        cellprofiler.preferences.get_warn_about_old_pipeline,
-        cellprofiler.preferences.set_warn_about_old_pipeline)
+        cpprefs.get_warn_about_old_pipeline,
+        cpprefs.set_warn_about_old_pipeline)
                         
                     pipeline_stats_logger.info("Pipeline saved with CellProfiler SVN revision %s" , value)
             elif kwd == H_FROM_MATLAB:
@@ -908,7 +908,7 @@ class Pipeline(object):
 
     def build_matlab_handles(self, image_set = None, object_set = None, measurements=None):
         handles = self.save_to_handles()
-        image_tools_dir = os.path.join(cellprofiler.preferences.cell_profiler_root_directory(),'ImageTools')
+        image_tools_dir = os.path.join(cpprefs.cell_profiler_root_directory(),'ImageTools')
         if os.access(image_tools_dir, os.R_OK):
             image_tools = [str(os.path.split(os.path.splitext(filename)[0])[1])
                            for filename in os.listdir(image_tools_dir)
@@ -928,18 +928,18 @@ class Pipeline(object):
         current[SAVE_OUTPUT_HOW_OFTEN][0,0]    = [1]
         current[TIME_STARTED][0,0]             = str(datetime.datetime.now())
         current[STARTING_IMAGE_SET][0,0]       = [1]
-        current[STARTUP_DIRECTORY][0,0]        = cellprofiler.preferences.cell_profiler_root_directory()
-        current[DEFAULT_OUTPUT_DIRECTORY][0,0] = cellprofiler.preferences.get_default_output_directory()
-        current[DEFAULT_IMAGE_DIRECTORY][0,0]  = cellprofiler.preferences.get_default_image_directory()
+        current[STARTUP_DIRECTORY][0,0]        = cpprefs.cell_profiler_root_directory()
+        current[DEFAULT_OUTPUT_DIRECTORY][0,0] = cpprefs.get_default_output_directory()
+        current[DEFAULT_IMAGE_DIRECTORY][0,0]  = cpprefs.get_default_image_directory()
         current[IMAGE_TOOLS_FILENAMES][0,0]    = npy_image_tools
         current[IMAGE_TOOL_HELP][0,0]          = []
 
         preferences = np.ndarray(shape=(1,1),dtype=PREFERENCES_DTYPE)
         handles[PREFERENCES] = preferences
-        preferences[PIXEL_SIZE][0,0]               = cellprofiler.preferences.get_pixel_size()
-        preferences[DEFAULT_MODULE_DIRECTORY][0,0] = cellprofiler.preferences.module_directory()
-        preferences[DEFAULT_OUTPUT_DIRECTORY][0,0] = cellprofiler.preferences.get_default_output_directory()
-        preferences[DEFAULT_IMAGE_DIRECTORY][0,0]  = cellprofiler.preferences.get_default_image_directory()
+        preferences[PIXEL_SIZE][0,0]               = cpprefs.get_pixel_size()
+        preferences[DEFAULT_MODULE_DIRECTORY][0,0] = cpprefs.module_directory()
+        preferences[DEFAULT_OUTPUT_DIRECTORY][0,0] = cpprefs.get_default_output_directory()
+        preferences[DEFAULT_IMAGE_DIRECTORY][0,0]  = cpprefs.get_default_image_directory()
         preferences[INTENSITY_COLOR_MAP][0,0]      = 'gray'
         preferences[LABEL_COLOR_MAP][0,0]          = 'jet'
         preferences[STRIP_PIPELINE][0,0]           = 'Yes'                  # TODO - get from preferences
@@ -1155,12 +1155,14 @@ class Pipeline(object):
                         continue
                     if need_to_run_prepare_group:
                         yield group_number+1, group_index+1, image_number,\
-                              lambda: self.prepare_group(image_set_list, grouping_keys, image_numbers)
+                              lambda: self.prepare_group(
+                                  workspace, grouping_keys, image_numbers)
                     else:
                         yield group_number+1, group_index+1, image_number, lambda: True
                     need_to_run_prepare_group = False
                 if not need_to_run_prepare_group:
-                    yield None, None, None, lambda workspace: self.post_group(workspace, grouping_keys)
+                    yield None, None, None, lambda workspace: self.post_group(
+                        workspace, grouping_keys)
 
         columns = self.get_measurement_columns()
         
@@ -1235,7 +1237,7 @@ class Pipeline(object):
                 measurements.group_index = group_index
                 numberof_windows = 0;
                 slot_number = 0
-                object_set = cellprofiler.objects.ObjectSet()
+                object_set = cpo.ObjectSet()
                 image_set = image_set_list.get_image_set(image_number-1)
                 outlines = {}
                 should_write_measurements = True
@@ -1359,6 +1361,67 @@ class Pipeline(object):
     def end_run(self):
         '''Tell everyone that a run is ending'''
         self.notify_listeners(EndRunEvent())
+        
+    def run_group_with_yield(self, workspace, grouping, image_numbers, 
+                             stop_module, title, message):
+        '''Run the modules for the image_numbers in a group up to an agg module
+        
+        This method runs a pipeline up to an aggregation step on behalf of
+        an aggregation module. At present, you can call this within
+        prepare_group to collect the images needed for aggregation.
+        
+        workspace - workspace containing the pipeline, image_set_list and
+        measurements.
+        
+        grouping - the grouping dictionary passed into prepare_group.
+        
+        image_numbers - the image numbers that comprise the group
+        
+        stop_module - the aggregation module to stop at.
+        
+        The function yields the current workspace at the end of processing
+        each image set. The workspace has a valid image_set and the 
+        measurements' image_number is the current image number.
+        '''
+        m = workspace.measurements
+        pipeline = workspace.pipeline
+        image_set_list = workspace.image_set_list
+        orig_image_number = m.image_set_number
+        if not pipeline.in_batch_mode() and not cpprefs.get_headless():
+            import wx
+            progress_dialog = wx.ProgressDialog(
+                title, message,
+                style = wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT)
+        else:
+            progress_dialog = None
+        
+        try:
+            for i, image_number in enumerate(image_numbers):
+                m.image_set_number = image_number
+                image_set = image_set_list.get_image_set(image_number-1)
+                assert isinstance(image_set, cpi.ImageSet)
+                object_set = cpo.ObjectSet()
+                old_providers = list(image_set.providers)
+                for module in pipeline.modules():
+                    w = cpw.Workspace(self, module, image_set, object_set, m, 
+                                      image_set_list)
+                    if module == stop_module:
+                        yield w
+                        # Reset state of image set
+                        del image_set.providers[:]
+                        image_set.providers.extend(old_providers)
+                        break
+                    else:
+                        module.run(w)
+                    if progress_dialog is not None:
+                        should_continue, skip = progress_dialog.Update(i+1)
+                        if not should_continue:
+                            progress_dialog.EndModal(0)
+                            return
+        finally:
+            if progress_dialog is not None:
+                progress_dialog.Destroy()
+            m.image_set_number = orig_image_number
         
     def prepare_run(self, workspace):
         """Do "prepare_run" on each module to initialize the image_set_list
@@ -1521,10 +1584,10 @@ class Pipeline(object):
         else:
             return []
                 
-    def prepare_group(self, image_set_list, grouping, image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to start processing a new group
         
-        image_set_list - the image set list for the run
+        workspace - the workspace containing the measurements and image set list
         grouping - a dictionary giving the keys and values for the group
         
         returns true if the group should be run
@@ -1533,14 +1596,14 @@ class Pipeline(object):
         # Clean the image set providers (can be filled in if run in
         # an unconventional manner, e.g. debug mode)
         #
+        image_set_list = workspace.image_set_list
         for image_number in image_numbers:
             image_set = image_set_list.get_image_set(image_number -1)
             del image_set.providers[:]
             
         for module in self.modules():
             try:
-                module.prepare_group(self, image_set_list, grouping, 
-                                     image_numbers)
+                module.prepare_group(workspace, grouping, image_numbers)
             except Exception, instance:
                 logger.error("Failed to prepare group in module %s",
                              module.module_name, exc_info=True)
@@ -2021,7 +2084,7 @@ def add_handles_objects(handles,object_set):
         object_name = field.replace('Segmented','')
         if object_name in object_set.get_object_names():
             continue
-        objects = cellprofiler.objects.Objects()
+        objects = cpo.Objects()
         objects.segmented = hpipeline[field]
         unedited_field ='Unedited'+field
         small_removed_segmented_field = 'SmallRemoved'+field 
@@ -2094,7 +2157,7 @@ def matlab_run(handles):
     image_set_list = cellprofiler.image.ImageSetList()
     image_set = image_set_list.get_image_set(0)
     measurements = cpmeas.Measurements()
-    object_set = cellprofiler.objects.ObjectSet()
+    object_set = cpo.ObjectSet()
     #
     # Get the values for the current image_set, making believe this is the first image set
     #

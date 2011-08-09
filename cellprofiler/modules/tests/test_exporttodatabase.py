@@ -1269,8 +1269,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             if not self.__at_broad:
                 self.skipTest("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             self.cursor.execute("use CPUnitTest")
             #
@@ -1318,8 +1317,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             mappings = module.get_column_name_mappings(workspace.pipeline,
                                                        workspace.image_set_list)
@@ -1385,8 +1383,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.post_run(workspace)
             self.load_database(output_dir, module)
             mappings = module.get_column_name_mappings(workspace.pipeline,
@@ -1615,8 +1612,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             self.cursor.execute("use CPUnitTest")
             #
@@ -1665,8 +1661,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             mappings = module.get_column_name_mappings(workspace.pipeline,
                                                        workspace.image_set_list)
@@ -1723,8 +1718,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.max_column_size.value = 50
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             mappings = module.get_column_name_mappings(workspace.pipeline,
                                                        workspace.image_set_list)
@@ -1784,8 +1778,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         m.add_image_measurement(STRING_IMG_MEASUREMENT, backslash_string)
         try:
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                     {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             self.cursor.execute("use CPUnitTest")
             statement = "select Image_%s from %sPer_Image" % (
@@ -1810,8 +1803,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run_as_data_tool(workspace)
             self.cursor.execute("use CPUnitTest")
             #
@@ -1865,8 +1857,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             cursor, connection = self.get_sqlite_cursor(module)
             #
@@ -1926,8 +1917,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
             module.directory.custom_path = output_dir
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             cursor, connection = self.get_sqlite_cursor(module)
             #
@@ -1980,8 +1970,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             cursor, connection = self.get_sqlite_cursor(module)
             #
@@ -2039,8 +2028,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run_as_data_tool(workspace)
             cursor, connection = self.get_sqlite_cursor(module)
             #
@@ -2238,8 +2226,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             self.cursor.execute("use CPUnitTest")
             #
@@ -2284,8 +2271,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             mappings = module.get_column_name_mappings(workspace.pipeline,
                                                        workspace.image_set_list)
@@ -2425,8 +2411,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             self.cursor.execute("use CPUnitTest")
             #
@@ -2484,8 +2469,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             self.cursor.execute("use CPUnitTest")
             #
@@ -2533,8 +2517,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             mappings = module.get_column_name_mappings(workspace.pipeline,
                                                        workspace.image_set_list)
@@ -2589,8 +2572,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.max_column_size.value = 50
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             mappings = module.get_column_name_mappings(workspace.pipeline,
                                                        workspace.image_set_list)
@@ -2647,8 +2629,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.max_column_size.value = 50
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             #
             # Read from one object table
@@ -2747,8 +2728,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             cursor, connection = self.get_sqlite_cursor(module)
             #
@@ -2825,8 +2805,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.wants_agg_median_well.value = True
             module.wants_agg_std_dev_well.value = True
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             module.post_run(workspace)
             self.execute_well_sql(output_dir, module)
@@ -2876,8 +2855,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.wants_agg_median_well.value = True
             module.wants_agg_std_dev_well.value = True
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             module.post_run(workspace)
             self.execute_well_sql(output_dir, module)
@@ -2934,7 +2912,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             expected_thumbnail_column = "Thumbnail_" + IMAGE_NAME
             self.assertEqual(columns[0][1], expected_thumbnail_column)
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list, {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             module.post_run(workspace)
             self.cursor.execute("use CPUnitTest")
@@ -2971,7 +2949,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             expected_thumbnail_column = "Thumbnail_" + IMAGE_NAME
             self.assertEqual(columns[0][1], expected_thumbnail_column)
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list, {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             module.post_run(workspace)
             image_table = module.table_prefix.value + "Per_Image"
@@ -3007,8 +2985,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         try:
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list, 
-                                 {}, np.arange(count)+1)
+            module.prepare_group(workspace, {}, np.arange(count)+1)
             for i in range(count):
                 workspace.set_image_set_for_testing_only(i+1)
                 measurements.next_image_set(i + 1)
@@ -3094,8 +3071,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         try:
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list, 
-                                 {}, np.arange(count)+1)
+            module.prepare_group(workspace, {}, np.arange(count)+1)
             for i in range(count):
                 workspace.set_image_set_for_testing_only(i+1)
                 measurements.next_image_set(i+1)
@@ -3189,8 +3165,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         try:
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list, 
-                                 {}, np.arange(count)+1)
+            module.prepare_group(workspace, {}, np.arange(count)+1)
             for i in range(count):
                 workspace.set_image_set_for_testing_only(i+1)
                 measurements.next_image_set(i+1)
@@ -3270,8 +3245,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         try:
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list, 
-                                 {}, np.arange(count)+1)
+            module.prepare_group(workspace, {}, np.arange(count)+1)
             for i in range(count):
                 workspace.set_image_set_for_testing_only(i+1)
                 measurements.next_image_set(i+1)
@@ -3427,8 +3401,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             if not self.__at_broad:
                 self.skipTest("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             self.cursor.execute("use CPUnitTest")
             #
@@ -3469,8 +3442,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             if not self.__at_broad:
                 self.skipTest("Skipping actual DB work, not at the Broad.")
             module.prepare_run(workspace)
-            module.prepare_group(workspace.pipeline, workspace.image_set_list,
-                                 {}, [1])
+            module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             self.cursor.execute("use CPUnitTest")
             #

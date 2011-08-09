@@ -172,11 +172,12 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         image.rescale_option = cpmcia.RE_NONE
         image_set_list = cpi.ImageSetList()
         measurements = cpm.Measurements()
-        pipeline.prepare_run(cpw.Workspace(pipeline, None, None, None,
-                                           measurements, image_set_list))
-        input_module.prepare_group(pipeline, image_set_list, {}, [1])
-        illum_module.prepare_group(pipeline, image_set_list, {}, [1])
-        module.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, None, None, None,
+                                  measurements, image_set_list)
+        pipeline.prepare_run(workspace)
+        input_module.prepare_group(workspace, {}, [1])
+        illum_module.prepare_group(workspace, {}, [1])
+        module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(pipeline,
@@ -218,11 +219,12 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
         measurements = cpm.Measurements()
-        pipeline.prepare_run(cpw.Workspace(pipeline, None, None, None,
-                                           measurements, image_set_list))
-        input_module.prepare_group(pipeline, image_set_list, {}, [1])
-        illum_module.prepare_group(pipeline, image_set_list, {}, [1])
-        module.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, None, None, None,
+                                  measurements, image_set_list)
+        pipeline.prepare_run(workspace)
+        input_module.prepare_group(workspace, {}, [1])
+        illum_module.prepare_group(workspace, {}, [1])
+        module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(pipeline,
@@ -264,11 +266,12 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
         measurements = cpm.Measurements()
-        pipeline.prepare_run(cpw.Workspace(pipeline, None, None, None,
-                                           measurements, image_set_list))
-        input_module.prepare_group(pipeline, image_set_list, {}, [1])
-        illum_module.prepare_group(pipeline, image_set_list, {}, [1])
-        module.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, None, None, None,
+                                  measurements, image_set_list)
+        pipeline.prepare_run(workspace)
+        input_module.prepare_group(workspace, {}, [1])
+        illum_module.prepare_group(workspace, {}, [1])
+        module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(pipeline,
@@ -310,11 +313,12 @@ class TestCorrectIlluminationApply(unittest.TestCase):
         measurements = cpm.Measurements()
         image_set_list = cpi.ImageSetList()
         measurements = cpm.Measurements()
-        pipeline.prepare_run(cpw.Workspace(pipeline, None, None, None,
-                                           measurements, image_set_list))
-        input_module.prepare_group(pipeline, image_set_list, {}, [1])
-        illum_module.prepare_group(pipeline, image_set_list, {}, [1])
-        module.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, None, None, None,
+                                  measurements, image_set_list)
+        pipeline.prepare_run(workspace)
+        input_module.prepare_group(workspace, {}, [1])
+        illum_module.prepare_group(workspace, {}, [1])
+        module.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         object_set = cpo.ObjectSet()
         workspace = cpw.Workspace(pipeline,

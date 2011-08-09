@@ -121,11 +121,11 @@ class FlipAndRotate(cpm.CPModule):
                                       self.rotate_choice.value)
         return result
     
-    def prepare_group(self, pipeline, image_set_list, grouping,
+    def prepare_group(self, workspace, grouping,
                       image_numbers):
         '''Initialize the angle if appropriate'''
         if self.rotate_choice == ROTATE_MOUSE and self.how_often == IO_ONCE:
-            self.get_dictionary(image_set_list)[D_ANGLE] = None
+            self.get_dictionary(workspace.image_set_list)[D_ANGLE] = None
         
     def run(self, workspace):
         image_set = workspace.image_set

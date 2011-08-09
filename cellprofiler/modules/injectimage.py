@@ -70,9 +70,10 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
             image_set_number = 1)
         return True
     
-    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
         """Set up all of the image providers inside the image_set_list
         """
+        image_set_list = workspace.image_set_list
         image = cellprofiler.cpimage.Image(self.__image, self.__mask)
         provider = cellprofiler.cpimage.VanillaImageProvider(self.__image_name,
                                                              image)

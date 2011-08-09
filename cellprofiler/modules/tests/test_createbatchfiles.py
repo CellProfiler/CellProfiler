@@ -456,7 +456,7 @@ class TestCreateBatchFiles(unittest.TestCase):
                 workspace = cpw.Workspace(pipeline, None, None, None,
                                           measurements, image_set_list)
                 pipeline.prepare_run(workspace)
-                pipeline.prepare_group(image_set_list, {}, range(1,97))
+                pipeline.prepare_group(workspace, {}, range(1,97))
                 for i in range(96):
                     image_set = image_set_list.get_image_set(i)
                     for image_name in ('DNA', 'Cytoplasm'):

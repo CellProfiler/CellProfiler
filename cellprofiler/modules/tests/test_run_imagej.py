@@ -431,7 +431,7 @@ RunImageJ:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_
         workspace = cpw.Workspace(pipeline, module, image_set, 
                                   cpo.ObjectSet(), cpm.Measurements(),
                                   image_set_list)
-        module.prepare_group(pipeline, image_set_list, {}, [1]);
+        module.prepare_group(workspace, {}, [1]);
         return workspace, module
     
     def make_workspaces(self, input_images):
@@ -454,7 +454,7 @@ RunImageJ:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_
                                       cpo.ObjectSet(), cpm.Measurements(),
                                       image_set_list)
             workspaces.append(workspace)
-        module.prepare_group(pipeline, image_set_list, {}, 
+        module.prepare_group(workspaces[0], {}, 
                              list(range(1,len(input_images)+1)));
         return workspaces, module
     

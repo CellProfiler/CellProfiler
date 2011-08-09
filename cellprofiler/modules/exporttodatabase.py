@@ -1233,9 +1233,9 @@ class ExportToDatabase(cpm.CPModule):
             self.create_database_tables(self.cursor, workspace)
         return True
     
-    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
         '''Initialize for writing post-group measurements'''
-        d = self.get_dictionary(image_set_list)
+        d = self.get_dictionary(workspace.image_set_list)
         d[D_IMAGE_SET_INDEX] = []
         d[C_IMAGE_NUMBER] = []
 
@@ -1260,8 +1260,7 @@ class ExportToDatabase(cpm.CPModule):
         '''
         if not self.prepare_run(workspace):
             return
-        self.prepare_group(workspace.pipeline,
-                           workspace.image_set_list, None, None)
+        self.prepare_group(workspace, None, None)
         if self.db_type != DB_MYSQL_CSV:
             workspace.measurements.is_first_image = True
             #

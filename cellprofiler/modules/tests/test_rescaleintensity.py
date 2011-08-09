@@ -562,9 +562,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.wants_automatic_low.value = R.LOW_ALL_IMAGES
         module.wants_automatic_high.value = R.CUSTOM_VALUE
         module.source_high.value = 1
-        module.prepare_group(workspace.pipeline,
-                             workspace.image_set_list,
-                             {}, [1, 2])
+        module.prepare_group(workspace, {}, [1, 2])
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
@@ -595,9 +593,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.wants_automatic_low.value = R.CUSTOM_VALUE
         module.wants_automatic_high.value = R.HIGH_ALL_IMAGES
         module.source_low.value = 0
-        module.prepare_group(workspace.pipeline,
-                             workspace.image_set_list,
-                             {}, [1, 2])
+        module.prepare_group(workspace, {}, [1, 2])
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)

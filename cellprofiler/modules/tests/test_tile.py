@@ -185,8 +185,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.columns.value = 16
         module.tile_style.value = T.S_ROW
         
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, (), 
-                             np.arange(1,97))
+        module.prepare_group(workspace, (), np.arange(1,97))
         
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -215,8 +214,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.columns.value = 16
         module.tile_style.value = T.S_ROW
         
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, (), 
-                             np.arange(1,97))
+        module.prepare_group(workspace, (), np.arange(1,97))
         
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -245,8 +243,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.columns.value = 365
         module.tile_style.value = T.S_ROW
         
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, (), 
-                             np.arange(1,97))
+        module.prepare_group(workspace, (), np.arange(1,97))
         
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -275,8 +272,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.columns.value = 24
         module.tile_style.value = T.S_ROW
         
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, (), 
-                             np.arange(1,97))
+        module.prepare_group(workspace, (), np.arange(1,97))
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
@@ -304,8 +300,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.columns.value = 16
         module.tile_style.value = T.S_ROW
         
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, (), 
-                             np.arange(1,97))
+        module.prepare_group(workspace, (), np.arange(1,97))
         
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -334,8 +329,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.columns.value = 16
         module.tile_style.value = T.S_COL
         
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, (), 
-                             np.arange(1,97))
+        module.prepare_group(workspace, (), np.arange(1,97))
         
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -365,8 +359,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.tile_style.value = T.S_ROW
         module.place_first.value = T.P_TOP_RIGHT
         
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, (), 
-                             np.arange(1,97))
+        module.prepare_group(workspace, (), np.arange(1,97))
         
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -396,8 +389,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.tile_style.value = T.S_ROW
         module.place_first.value = T.P_BOTTOM_LEFT
         
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, (), 
-                             np.arange(1,97))
+        module.prepare_group(workspace, (), np.arange(1,97))
         
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -427,8 +419,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.tile_style.value = T.S_ROW
         module.place_first.value = T.P_BOTTOM_RIGHT
         
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, (), 
-                             np.arange(1,97))
+        module.prepare_group(workspace, (), np.arange(1,97))
         
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
@@ -459,8 +450,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         module.rows.value = 1
         module.columns.value = 4
         module.tile_style.value = T.S_ROW
-        module.prepare_group(workspace.pipeline, workspace.image_set_list, (), 
-                             np.arange(1,4))
+        module.prepare_group(workspace, (), np.arange(1,4))
         
         for i in range(4):
             workspace.set_image_set_for_testing_only(i)

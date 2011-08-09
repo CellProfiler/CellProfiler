@@ -35,9 +35,10 @@ class testInjectImage(unittest.TestCase):
         image_set_list = cellprofiler.cpimage.ImageSetList()
         ii = InjectImage("my_image", image)
         pipeline = cellprofiler.pipeline.Pipeline()
-        ii.prepare_run(cpw.Workspace(pipeline, ii, None, None,
-                                     cpmeas.Measurements(), image_set_list))
-        ii.prepare_group(pipeline, image_set_list, {}, [1])
+        workspace = cpw.Workspace(pipeline, ii, None, None,
+                                  cpmeas.Measurements(), image_set_list)
+        ii.prepare_run(workspace)
+        ii.prepare_group(workspace, {}, [1])
         image_set = image_set_list.get_image_set(0)
         self.assertTrue(image_set,"No image set returned from ImageSetList.GetImageSet")
         my_image = image_set.get_image("my_image")

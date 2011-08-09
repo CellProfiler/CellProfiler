@@ -382,14 +382,13 @@ class RunImageJ(cpm.CPModule):
         # On Mac, run in main thread for stability
         return sys.platform == 'darwin'
     
-    def prepare_group(self, pipeline, image_set_list, grouping,
-                      image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to run a group
         
         RunImageJ remembers the image number of the first and last image
         for later processing.
         '''
-        d = self.get_dictionary(image_set_list)
+        d = self.get_dictionary(workspace.image_set_list)
         d[D_FIRST_IMAGE_SET] = image_numbers[0]
         d[D_LAST_IMAGE_SET] = image_numbers[-1]
         

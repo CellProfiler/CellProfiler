@@ -563,9 +563,9 @@ class TrackObjects(cpm.CPModule):
     def set_kalman_states(self, workspace, value):
         self.__set("kalman_states", workspace, value)
 
-    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
+    def prepare_group(self, workspace, grouping, image_numbers):
         '''Erase any tracking information at the start of a run'''
-        d = self.get_dictionary(image_set_list)
+        d = self.get_dictionary(workspace.image_set_list)
         d.clear()
         
         return True

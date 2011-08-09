@@ -620,7 +620,9 @@ Channel1-01-A-01.tif,/imaging/analysis/trunk/ExampleImages/ExampleSBSImages
         self.assertEqual(''.join(my_rows), 'ABCDEFGH')
         for grouping in groupings:
             row = grouping[0]["Metadata_ROW"]
-            module.prepare_group(pipeline, image_set_list, grouping[0], grouping[1])
+            module.prepare_group(cpw.Workspace(
+                pipeline, module, None, None, measurements, image_set_list), 
+                                 grouping[0], grouping[1])
             for image_number in grouping[1]:
                 image_set = image_set_list.get_image_set(image_number-1)
                 measurements.next_image_set(image_number)
@@ -734,7 +736,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             pipeline.prepare_run(workspace)
             key_names, g = pipeline.get_groupings(workspace)
             self.assertEqual(len(g), 1)
-            module.prepare_group(pipeline, image_set_list, g[0][0], g[0][1])
+            module.prepare_group(workspace, g[0][0], g[0][1])
             image_set = image_set_list.get_image_set(g[0][1][0]-1)
             object_set = cpo.ObjectSet()
             workspace = cpw.Workspace(pipeline, module, image_set,
@@ -785,7 +787,7 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             self.assertEqual(len(group_list), 1)
             group_keys, image_numbers = group_list[0]
             self.assertEqual(len(image_numbers), 1)
-            module.prepare_group(pipeline, image_set_list, group_keys, image_numbers)
+            module.prepare_group(workspace, group_keys, image_numbers)
             image_set = image_set_list.get_image_set(image_numbers[0]-1)
             workspace = cpw.Workspace(pipeline, module, image_set,
                                       cpo.ObjectSet(), m, image_set_list)

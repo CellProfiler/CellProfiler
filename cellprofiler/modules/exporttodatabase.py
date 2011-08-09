@@ -973,7 +973,7 @@ class ExportToDatabase(cpm.CPModule):
         if self.objects_choice != O_NONE:
             result += [self.separate_object_tables]
         result += [self.max_column_size]
-        if self.db_type in (DB_MYSQL, DB_SQLITE):
+        if self.db_type in (DB_MYSQL, DB_MYSQL_CSV, DB_SQLITE):
             result += [self.want_image_thumbnails]
             if self.want_image_thumbnails:
                 result += [self.thumbnail_image_names, 
@@ -1284,7 +1284,7 @@ class ExportToDatabase(cpm.CPModule):
         self.post_run(workspace)
     
     def run(self, workspace):
-        if self.db_type in (DB_MYSQL, DB_SQLITE) and self.want_image_thumbnails:
+        if self.want_image_thumbnails:
             import Image
             from StringIO import StringIO
             measurements = workspace.measurements

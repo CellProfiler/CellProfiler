@@ -301,8 +301,8 @@ See <a href="http://homepages.inf.ed.ac.uk/rbf/HIPR2/skeleton.htm">here</a> for 
 </tr>
 <tr>
 <td><i>Spur</i></td>
-<td>Removes spur pixels. These are pixels that are connected only diagonally
-to other pixels and connected in only one direction:<br>
+<td>Removes spur pixels, i.e., pixels that have exactly one 8-connected neighbor. This
+operation essentially removes the endpoints of lines.<br>
 <table>
 <tr>
 <td><table border=1>

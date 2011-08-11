@@ -258,7 +258,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 22
+    variable_revision_number = 23
     category = ["File Processing","Data Tools"]
 
     def create_settings(self):
@@ -456,6 +456,18 @@ class ExportToDatabase(cpm.CPModule):
         self.filter_field_count = cps.HiddenCount(self.filter_field_groups,"Properties filter field count")
         self.add_filter_field_button = cps.DoSomething("", "Add another filter",
                                            self.add_filter_field_group)
+        
+        self.properties_class_table_name = cps.Text(
+            "Enter a phenotype class table name if using the classifier tool",
+            '', 
+            doc = """<i>(Used only if creating a properties file)</i><br>
+            If you are using the machine-learning tool in CellProfiler Analyst,
+            you can create an additional table in your database  which contains
+            the per-object phenotype labels. This table is produced after scoring
+            all the objects in your data set and will be named with the label given here.<p>
+            You can manually change this choice in the properties file by
+            edting the <i>class_table</i> field. Leave this field blank if you are 
+            not using the classifier or do not need the table written to the database.""")
         
         self.create_workspace_file = cps.Binary(
             "Create a CellProfiler Analyst workspace file?", False, doc = """
@@ -943,6 +955,8 @@ class ExportToDatabase(cpm.CPModule):
                         result += [group.remover]
                     result += [group.divider]
                 result += [ self.add_filter_field_button ]
+                
+            result += [self.properties_class_table_name]
         
         if self.save_cpa_properties.value or self.create_workspace_file.value : # Put divider here to make things easier to read
             result += [self.divider_props_wkspace] 
@@ -1019,7 +1033,7 @@ class ExportToDatabase(cpm.CPModule):
                 self.properties_export_all_image_defaults,
                 self.image_group_count, self.group_field_count, self.filter_field_count,
                 self.workspace_measurement_count, self.experiment_name, 
-                self.location_object]
+                self.location_object, self.properties_class_table_name]
         
         # Properties: Image groups
         for group in self.image_groups:
@@ -1059,6 +1073,7 @@ class ExportToDatabase(cpm.CPModule):
                 self.properties_wants_groups, 
                 self.group_field_groups[0].group_name, self.group_field_groups[0].group_statement,
                 self.properties_wants_filters, self.create_filters_for_plates,
+                self.properties_class_table_name,
                 self.directory,
                 self.create_workspace_file, 
                 self.workspace_measurement_groups[0].measurement_display, 
@@ -1119,18 +1134,24 @@ class ExportToDatabase(cpm.CPModule):
                  "to only one object's data at a time in CPA. Choose %s to write a single\n"
                  "object table.") % OT_COMBINE, self.separate_object_tables)
                 
-        '''Warn user re: bad characters in filter/group names'''
-        if self.save_cpa_properties and self.properties_wants_groups:
-            for group in self.group_field_groups:
-                if not re.match("^[A-Za-z0-9_]*$",group.group_name.value) or group.group_name.value == '':
-                    raise cps.ValidationError("CellProfiler Analyst will not recognize this group name because it has invalid characters.",group.group_name)
-        if self.save_cpa_properties and self.properties_wants_filters:
-            for group in self.filter_field_groups:
-                if not re.match("^[A-Za-z0-9_]*$",group.filter_name.value) or group.filter_name.value == '':
-                    raise cps.ValidationError("CellProfiler Analyst will not recognize this filter name because it has invalid characters.",group.filter_name)
-                if not re.match("^[\w\s\"\'=]*$",group.filter_statement.value) or group.filter_statement.value == '':
-                    raise cps.ValidationError("CellProfiler Analyst will not recognize this filter statement because it has invalid characters.",group.filter_statement)
+        '''Warn user re: bad characters in filter/group names and class_table name'''
+        if self.save_cpa_properties:
+            if self.properties_wants_groups:
+                for group in self.group_field_groups:
+                    if not re.match("^[\w]*$",group.group_name.value) or group.group_name.value == '':
+                        raise cps.ValidationError("CellProfiler Analyst will not recognize this group name because it has invalid characters.",group.group_name)
+            
+            if self.properties_wants_filters:
+                for group in self.filter_field_groups:
+                    if not re.match("^[\w]*$",group.filter_name.value) or group.filter_name.value == '':
+                        raise cps.ValidationError("CellProfiler Analyst will not recognize this filter name because it has invalid characters.",group.filter_name)
+                    if not re.match("^[\w\s\"\'=]*$",group.filter_statement.value) or group.filter_statement.value == '':
+                        raise cps.ValidationError("CellProfiler Analyst will not recognize this filter statement because it has invalid characters.",group.filter_statement)
 
+            if self.properties_class_table_name:
+                if not re.match("^[\w]*$",self.properties_class_table_name.value):
+                    raise cps.ValidationError("CellProfiler Analyst will not recognize this class table name because it has invalid characters.",self.properties_class_table_name)
+            
     def make_full_filename(self, file_name, 
                            workspace = None, image_set_index = None):
         """Convert a file name into an absolute path
@@ -2315,6 +2336,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             plate_type = "" if self.properties_plate_type.value == NONE_CHOICE else self.properties_plate_type.value
             plate_id = "" if self.properties_plate_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_plate_metadata.value)
             well_id = "" if self.properties_well_metadata.value == NONE_CHOICE else "%s_%s_%s"%(cpmeas.IMAGE, cpmeas.C_METADATA, self.properties_well_metadata.value)
+            class_table = self.properties_class_table_name.value
+            
             contents = """#%(date)s
 # ==============================================
 #
@@ -2457,7 +2480,7 @@ area_scoring_column =
 # Classifier to write out class information for each object in the
 # object_table
 
-class_table  =
+class_table  = %(class_table)s
 
 # ======== Check Tables ========
 # OPTIONAL
@@ -2887,6 +2910,16 @@ svn revision: %d\n"""%get_revision()
                 [ "Expt", "None" ] + 
                 setting_values[SETTING_FIXED_SETTING_COUNT_V21:])
             variable_revision_number = 22
+            
+        if (not from_matlab) and variable_revision_number == 22:
+            #
+            # Added class table properties field
+            #
+            setting_values = (
+                setting_values[:SETTING_FIXED_SETTING_COUNT_V22] +
+                [ "" ] + 
+                setting_values[SETTING_FIXED_SETTING_COUNT_V22:])
+            variable_revision_number = 23
             
         return setting_values, variable_revision_number, from_matlab
     

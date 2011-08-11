@@ -190,9 +190,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             maximizes the sum of entropies of the foreground and background
             pixel values, when treated as separate distributions.</li>
             <li><i>Maximum correlation:</i>This is an implementation of the
-            method described in <i>Padmanabhan</i>, <b>A novel algorithm for
-            optimal image thresholding of biological data</b>, Journal of 
-            Neuroscience Methods 193 (2010) 380-384. It computes the maximum
+            method described in Padmanabhan et al, 2010. It computes the maximum
             correlation between the binary mask created by thresholding and
             the thresholded image and is somewhat similar mathematically to
             Otsu. The authors claim superior results when thresholding images
@@ -237,7 +235,16 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <p>Selecting thresholding via <i>measurement</i> will use an image measurement previously calculated
             in order to threshold the image. Like manual thresholding, this setting can be useful when you are 
             certain what the cutoff should be. The difference in this case is that the desired threshold does 
-            vary from image to image in the experiment but can be measured using a Measurement module. 
+            vary from image to image in the experiment but can be measured using a Measurement module.</p>
+            
+            <p>References
+            <ul>
+            <li>Sezgin M, Sankur B (2004) "Survey over image thresholding techniques and quantitative 
+            performance evaluation." <i>Journal of Electronic Imaging</i>, 13(1), 146-165</li>
+            <li>Padmanabhan K, Eddy WF, Crowley JC (2010) "A novel algorithm for
+            optimal image thresholding of biological data" <i>Journal of 
+            Neuroscience Methods</i> 193, 380-384.</li>
+            </ul></p>
             """)
 
         self.threshold_correction_factor = cps.Float('Threshold correction factor', 1,

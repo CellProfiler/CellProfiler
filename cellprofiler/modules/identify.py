@@ -138,7 +138,10 @@ class Identify(cellprofiler.cpmodule.CPModule):
             especially if the percentage of the image covered by regions 
             of interest varies substantially from image to image. Our implementation 
             takes into account the maximum and minimum values in the image and log-transforming the
-            image prior to calculating the threshold. If you know that the percentage of 
+            image prior to calculating the threshold. For this reason, please note
+            that negative-valued pixels are ignored in this computation, so caution should be
+            used in using image offsets (such as by using <b>ImageMath</b>).
+            <p>If you know that the percentage of 
             each image that is foreground does not vary much from image
             to image, the MoG method can be better, especially if the foreground percentage is
             not near 50%.</li>

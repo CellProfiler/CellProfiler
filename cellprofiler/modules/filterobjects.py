@@ -347,11 +347,14 @@ class FilterObjects(cpm.CPModule):
                         group.wants_minimum)
         if self.rules_or_measurement == ROM_RULES:
             try:
-                self.get_rules()
+                rules = self.get_rules()
             except Exception, instance:
                 logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
                 raise cps.ValidationError(str(instance),
                                           self.rules_file_name)
+            if not np.all([r.object_name == self.object_name.value for r in rules.rules]):
+                raise cps.ValidationError("%s do not match the objects listed in the rules"%self.object_name.value,
+                                            self.rules_file_name)
 
     def run(self, workspace):
         '''Filter objects for this image set, display results'''

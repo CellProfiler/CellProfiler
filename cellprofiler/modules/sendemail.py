@@ -33,6 +33,11 @@ S_EVERY_N = "Every # of cycles"
 S_CYCLE_N = "After cycle #"
 S_ALL = [S_FIRST, S_LAST, S_GROUP_START, S_GROUP_END, S_EVERY_N, S_CYCLE_N]
 
+C_NONE = cps.NONE
+C_SSL = "SSL/TLS"
+C_STARTTLS = "STARTTLS"
+C_ALL = [C_NONE, C_SSL, C_STARTTLS]
+
 '''If you make changes to the wording above, please enter the translation below
 
 Every old and new text string should appear as a key in this dictionary
@@ -58,7 +63,7 @@ class SendEmail(cpm.CPModule):
     
     module_name = "SendEmail"
     category = "Other"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         '''Create the UI settings for this module'''
@@ -90,7 +95,7 @@ class SendEmail(cpm.CPModule):
             for the plate at the end. %(USING_METADATA_HELP_REF)s."""%globals())
         
         self.smtp_server = cps.Text(
-            "SMTP server", "mail",
+            "Server name", "mail",
             doc="""Enter the address of your SMTP server. You can ask your
             network administrator for your outgoing mail server which is often
             made up of part of your email address, e.g., 
@@ -99,10 +104,31 @@ class SendEmail(cpm.CPModule):
             you use.""")
         
         self.port = cps.Integer(
-            "SMTP port", smtplib.SMTP_PORT, 0, 65535,
+            "Port", smtplib.SMTP_PORT, 0, 65535,
             doc="""Enter your server's SMTP port. The default (25) is the
             port used by most SMTP servers. Your network administrator may
-            have set up SMTP to use a different port.""")
+            have set up SMTP to use a different port; also, the connection
+            security settings may require a different port.""")
+        
+        self.connection_security = cps.Choice(
+            "Select connection security", C_ALL,
+            doc="""Select the connection security. Your network administrator 
+            can tell you which setting is appropriate, or you can check the
+            settings on your favorite email program.""")
+        
+        self.use_authentication = cps.Binary(
+            "Username and password required to login?", False,
+            doc="""Check this box if you need to enter a username and password 
+            to authenticate.""")
+        
+        self.username = cps.Text(
+            "Username", user,
+            doc="""Enter your server's SMTP username.""")
+        
+        self.password = cps.Text(
+            "Password", "",
+            doc="""Enter your server's SMTP password.""")
+        
         self.when = []
         self.when_count = cps.HiddenCount(self.when)
         self.add_when(False)
@@ -185,7 +211,8 @@ class SendEmail(cpm.CPModule):
         '''The settings as saved in the pipeline'''
         result = [ self.recipient_count, self.when_count, 
                    self.from_address, self.subject, self.smtp_server,
-                   self.port]
+                   self.port, 
+                   self.connection_security, self.use_authentication, self.username, self.password]
         for group in self.recipients + self.when:
             result += group.pipeline_settings()
         return result
@@ -196,7 +223,10 @@ class SendEmail(cpm.CPModule):
         for group in self.recipients:
             result += group.visible_settings()
         result += [self.add_recipient_button, self.from_address, 
-                   self.subject, self.smtp_server, self.port]
+                   self.subject, self.smtp_server, self.port,
+                   self.connection_security, self.use_authentication]
+        if self.use_authentication.value:
+            result += [ self.username, self.password ]
         for group in self.when:
             result += [ group.choice ]
             if group.choice == S_CYCLE_N:
@@ -304,7 +334,21 @@ class SendEmail(cpm.CPModule):
             payload.append(msg)
         message.set_payload("\n".join(payload))
         
-        server = smtplib.SMTP(self.smtp_server.value, self.port.value)
+        server_timeout = 30
+        if self.connection_security.value == C_NONE or self.connection_security.value == C_STARTTLS:
+            server = smtplib.SMTP(host=self.smtp_server.value, port=self.port.value, timeout=server_timeout)
+            if self.connection_security.value == C_STARTTLS:
+                server.starttls()
+        elif self.connection_security.value == C_SSL:
+            server = smtplib.SMTP_SSL(host=self.smtp_server.value, port=self.port.value, timeout=server_timeout)
+            
+        try:
+            if self.use_authentication.value:
+                server.login(self.username.value, self.password.value)
+        except Exception, instance:
+            logger.error("Failed to send mail: %s", str(instance), exc_info=True)
+            return "Failed to send mail: Authentication failed"
+        
         try:
             server.sendmail(who_from, who_to, message.as_string())
             return message.as_string()
@@ -375,6 +419,12 @@ class SendEmail(cpm.CPModule):
         for i in range(event_idx,len(setting_values), EVENT_SETTING_COUNT):
             if S_DICTIONARY.has_key(setting_values[i]):
                 setting_values[i] = S_DICTIONARY[setting_values[i]]
+        
+        if not from_matlab and variable_revision_number == 1:
+            """Add password setting"""
+            setting_values = setting_values[:6] + [cps.NONE,cps.NO,"",""] + setting_values[6:]
+            self.connection_security, self.use_authentication, 
+            variable_revision_number = 2
             
         return setting_values, variable_revision_number, from_matlab
                                

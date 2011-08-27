@@ -44,7 +44,7 @@ E_IMAGE = "Image"
 class DisplayDataOnImage(cpm.CPModule):
     module_name = 'DisplayDataOnImage'
     category = 'Data Tools'
-    variable_revision_number = 2
+    variable_revision_number = 3
     
     def create_settings(self):
         """Create your settings by subclassing this function
@@ -129,6 +129,13 @@ class DisplayDataOnImage(cpm.CPModule):
             <li><i>Figure</i>: Adds a title and other
             decorations.</li></ul>""")
         
+        self.offset = cps.Integer(
+            "Annotation offset (in pixels)",0,
+            doc="""Add a pixel offset to the measurement. Normally, the text is
+            placed at the object (or image) center, which can obscure relevant features of
+            the object. This setting adds a specified offset to the text, in a random
+            direction.""")
+        
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
         
@@ -139,7 +146,8 @@ class DisplayDataOnImage(cpm.CPModule):
         """
         return [self.objects_or_image, self.objects_name, self.measurement,
                 self.image_name, self.text_color, self.display_image,
-                self.font_size, self.decimals, self.saved_image_contents]
+                self.font_size, self.decimals, self.saved_image_contents,
+                self.offset]
     
     def visible_settings(self):
         """The settings that are visible in the UI
@@ -149,7 +157,7 @@ class DisplayDataOnImage(cpm.CPModule):
             result += [self.objects_name]
         result += [self.measurement, self.image_name, self.text_color,
                    self.display_image, self.font_size, self.decimals,
-                   self.saved_image_contents]
+                   self.saved_image_contents, self.offset]
         return result
         
     def is_interactive(self):
@@ -175,15 +183,23 @@ class DisplayDataOnImage(cpm.CPModule):
                 self.measurement.value)
             values = [value]
             x = [image.pixel_data.shape[1] / 2]
+            x_offset = np.random.uniform(high=1.0,low=-1.0,size=x.shape)
+            x += x_offset
             y = [image.pixel_data.shape[0] / 2]
+            y_offset = np.sqrt(1 - x_offset**2)
+            y += y_offset
         else:
             values = measurements.get_current_measurement(
                 self.objects_name.value,
                 self.measurement.value)
             x = measurements.get_current_measurement(
                 self.objects_name.value, M_LOCATION_CENTER_X)
+            x_offset = np.random.uniform(high=1.0,low=-1.0,size=x.shape)
+            y_offset = np.sqrt(1 - x_offset**2)
+            x += self.offset.value*x_offset
             y = measurements.get_current_measurement(
                 self.objects_name.value, M_LOCATION_CENTER_Y)
+            y += self.offset.value*y_offset
             mask = ~(np.isnan(values) | np.isnan(x) | np.isnan(y))
             values = values[mask]
             x = x[mask]
@@ -308,6 +324,12 @@ class DisplayDataOnImage(cpm.CPModule):
                               image_name, text_color, display_image,
                               10, 2, saved_image_contents]
             variable_revision_number = 2
+
+        if variable_revision_number == 2:
+            '''Added annotation offset'''
+            setting_values = setting_values + ["0"]
+            variable_revision_number = 3
+        
         return setting_values, variable_revision_number, from_matlab
         
 

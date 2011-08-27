@@ -254,7 +254,7 @@ def get_default_image_directory():
     # I'm not sure what it means for the preference not to exist.  No read-write preferences file?
     if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
-    # fetch the default.  Note that it might be None
+    # Fetch the default.  Note that it might be None
     default_image_directory = config_read(DEFAULT_IMAGE_DIRECTORY) or ''
     try:
         if os.path.isdir(default_image_directory):
@@ -307,9 +307,21 @@ def get_default_output_directory():
         return __default_output_directory
     if not get_config().Exists(DEFAULT_OUTPUT_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
-    __default_output_directory = config_read(DEFAULT_OUTPUT_DIRECTORY)
-    __default_output_directory = get_proper_case_filename(__default_output_directory)
-    return __default_output_directory
+
+    # Fetch the default.  Note that it might be None
+    default_output_directory = config_read(DEFAULT_OUTPUT_DIRECTORY) or ''
+    try:
+        if os.path.isdir(default_output_directory):
+            __default_output_directory = get_proper_case_filename(default_output_directory)
+            return __default_output_directory
+    except:
+        logger.error("Unknown failure when retrieving the default output directory", exc_info=True)
+    logger.warning("Warning: current path of %s is not a valid directory. Switching to home directory."%(default_output_directory.encode('ascii', 'replace')))
+    # If the user's home directory is not ascii, we're not going to go hunting for one that is.
+    # Fail ungracefully.
+    default_output_directory = os.path.abspath(os.path.expanduser('~'))
+    set_default_output_directory(default_output_directory)
+    return str(get_proper_case_filename(default_output_directory))
 
 def set_default_output_directory(path):
     global __default_output_directory

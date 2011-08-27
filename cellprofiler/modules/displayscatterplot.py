@@ -32,17 +32,18 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 
-SOURCE_CHOICE = [cpmeas.IMAGE, "Object"]
+SOURCE_OBJ = "Object"
+SOURCE_CHOICE = [cpmeas.IMAGE, SOURCE_OBJ]
 SCALE_CHOICE = ['linear', 'log']
 
 class DisplayScatterPlot(cpm.CPModule):
     
     module_name = "DisplayScatterPlot"
     category = "Data Tools"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
-        self.source = cps.Choice("Type of measurement to plot", SOURCE_CHOICE,doc = '''
+        self.x_source = cps.Choice("Type of measurement to plot on X-axis", SOURCE_CHOICE,doc = '''
                             You can plot two types of measurements:
                             <ul>
                             <li><i>Image:</i> For a per-image measurement, one numerical value is 
@@ -70,6 +71,22 @@ class DisplayScatterPlot(cpm.CPModule):
                             self.get_x_object, 'None',doc = '''
                             Choose the measurement (made by a previous 
                             module) to plot on the X-axis.''')
+        
+        self.y_source = cps.Choice("Type of measurement to plot on Y-axis", SOURCE_CHOICE,doc = '''
+                            You can plot two types of measurements:
+                            <ul>
+                            <li><i>Image:</i> For a per-image measurement, one numerical value is 
+                            recorded for each image analyzed.
+                            Per-image measurements are produced by
+                            many modules. Many have <b>MeasureImage</b> in the name but others do not
+                            (e.g., the number of objects in each image is a per-image 
+                            measurement made by <b>IdentifyObject</b> 
+                            modules).</li>
+                            <li><i>Object:</i> For a per-object measurement, each identified 
+                            object is measured, so there may be none or many 
+                            numerical values recorded for each image analyzed. These are usually produced by
+                            modules with <b>MeasureObject</b> in the name.</li>
+                            </ul>''')
         
         self.y_object = cps.ObjectNameSubscriber(
                             'Select the object to plot on the Y-axis',
@@ -112,42 +129,65 @@ class DisplayScatterPlot(cpm.CPModule):
                             cycle being executed.''')
 
     def get_x_object(self):
-        if self.source.value == cpmeas.IMAGE:
+        if self.x_source.value == cpmeas.IMAGE:
             return cpmeas.IMAGE
         return self.x_object.value
         
     def get_y_object(self):
-        if self.source.value == cpmeas.IMAGE:
+        if self.y_source.value == cpmeas.IMAGE:
             return cpmeas.IMAGE
         return self.x_object.value
         
     def settings(self):
-        retval = [self.source]
-        if self.source.value != cpmeas.IMAGE:
-            retval += [self.x_object, self.x_axis, self.y_object]
-        else:
-            retval += [self.x_axis]
-        retval += [self.y_axis, self.xscale, self.yscale, self.title]
-        return retval
+        result = [self.x_source, self.x_object, self.x_axis]
+        result += [self.y_source, self.y_object, self.y_axis ]
+        result += [self.xscale, self.yscale, self.title]
+        return result
 
     def visible_settings(self):
-        return self.settings()
+        result = [self.x_source]
+        if self.x_source.value != cpmeas.IMAGE:
+            result += [self.x_object, self.x_axis]
+        else:
+            result += [self.x_axis]
+        result += [self.y_source]
+        if self.y_source.value != cpmeas.IMAGE:
+            result += [self.y_object, self.y_axis ]
+        else:
+            result += [self.y_axis]
+        result += [self.xscale, self.yscale, self.title]
+        return result
 
     def run(self, workspace):
         m = workspace.get_measurements()
-        if self.source.value == cpmeas.IMAGE:
-            xvals = m.get_all_measurements(cpmeas.IMAGE, self.x_axis.value)
-            yvals = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
+        if self.x_source.value == self.y_source.value:
+            if self.x_source.value == cpmeas.IMAGE:
+                xvals = m.get_all_measurements(cpmeas.IMAGE, self.x_axis.value)
+                yvals = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
+                xvals, yvals = np.array([
+                    (x if np.isscalar(x) else x[0], y if np.isscalar(y) else y[0]) 
+                    for x,y in zip(xvals, yvals)
+                    if (x is not None) and (y is not None)]).transpose()
+                title = '%s'%(self.title.value)
+            else:
+                xvals = m.get_current_measurement(self.get_x_object(), self.x_axis.value)
+                yvals = m.get_current_measurement(self.get_y_object(), self.y_axis.value)
+                title = '%s (cycle %d)'%(self.title.value, workspace.measurements.image_set_number)
+        else:
+            if self.x_source.value == cpmeas.IMAGE:
+                xvals = m.get_all_measurements(cpmeas.IMAGE, self.x_axis.value)
+                yvals = m.get_current_measurement(self.get_y_object(), self.y_axis.value)
+                xvals = np.array([xvals[0]]*len(yvals))
+            else:
+                xvals = m.get_current_measurement(self.get_x_object(), self.x_axis.value)
+                yvals = m.get_all_measurements(cpmeas.IMAGE, self.y_axis.value)
+                yvals = np.array([yvals[0]]*len(xvals))
             xvals, yvals = np.array([
                 (x if np.isscalar(x) else x[0], y if np.isscalar(y) else y[0]) 
                 for x,y in zip(xvals, yvals)
                 if (x is not None) and (y is not None)]).transpose()
             title = '%s'%(self.title.value)
-        else:
-            xvals = m.get_current_measurement(self.get_x_object(), self.x_axis.value)
-            yvals = m.get_current_measurement(self.get_y_object(), self.y_axis.value)
-            title = '%s (cycle %d)'%(self.title.value, workspace.measurements.image_set_number)
-        
+            
         if workspace.frame:
             figure = workspace.create_or_find_figure(title="DisplayScatterplot', image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(1,1))
@@ -161,6 +201,18 @@ class DisplayScatterPlot(cpm.CPModule):
     def run_as_data_tool(self, workspace):
         self.run(workspace)
     
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+    def upgrade_settings(self, setting_values, variable_revision_number, 
                                 module_name, from_matlab):
+        """Adjust the setting_values to upgrade from a previous version"""
+        if not from_matlab and variable_revision_number == 1:
+            if setting_values[0] == cpmeas.IMAGE:
+                # self.source, self.x_axis, "Image", self.y_axis, self.xscale, self.yscale, self.title
+                new_setting_values = [setting_values[0], cps.NONE, setting_values[1], cpmeas.IMAGE, cps.NONE] + setting_values[2:] 
+            else:
+                # self.source, self.x_object, self.x_axis, self.y_object, self.y_axis, self.xscale, self.yscale, self.title
+                new_setting_values = setting_values[:3] + [SOURCE_OBJ] + setting_values[3:]
+            setting_values = new_setting_values
+    
+            variable_revision_number = 2
+            
         return setting_values, variable_revision_number, from_matlab

@@ -1,5 +1,13 @@
 '''bg_compensate - spline-base background compensation
 
+CellProfiler is distributed under the GNU General Public License,
+but this file is licensed under the more permissive BSD license.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2011 Broad Institute
+All rights reserved.
+
 Implemented by Emily Schoff from a method described in
 J. Lindblad and E. Bengtsson, "A comparison of methods for estimation of 
 intensity nonuniformities in 2D and 3D microscope images of fluorescence 

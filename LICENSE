@@ -1,9 +1,9 @@
 CellProfiler is licensed under the GNU General Public License version
 2.  See the file COPYING for the terms of the GNU GPL license.
 
-The files in the "CellProfiler/cpmath" and "CellProfiler/utilities"
-subdirectories are licensed under the more permissive BSD
-license.  The BSD license is as follows:
+Certain files are licensed under the more permissive BSD license.
+This is indicated near the top of the relevant files.  The BSD license
+is as follows:
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
 Copyright (c) 2009-2011 Broad Institute

@@ -884,7 +884,7 @@ class LoadImages(cpmodule.CPModule):
                 any([x.lower() == cpmeas.FTR_WELL.lower() for x in choices])):
                 choices.add(cpmeas.FTR_WELL)
             if self.file_types == FF_OTHER_MOVIES:
-                choices.update([M_Z, M_T, M_SERIES])
+                choices.update([M_Z, M_T, C_SERIES])
             elif self.file_types in (FF_AVI_MOVIES, FF_STK_MOVIES):
                 choices.add(M_T)
             choices = list(choices)

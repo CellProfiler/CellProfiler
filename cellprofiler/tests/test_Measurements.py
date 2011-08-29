@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 import base64
+import gc
 import unittest
 import numpy as np
 import os
@@ -579,6 +580,7 @@ class TestMeasurements(unittest.TestCase):
             self.assertEqual(len(values), 1)
             self.assertAlmostEqual(values[0], 34.580433355219959)
         finally:
+            gc.collect()
             if m is not None:
                 del m
             os.unlink(name)

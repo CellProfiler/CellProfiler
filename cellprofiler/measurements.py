@@ -163,6 +163,10 @@ class Measurements(object):
         self.__relationships = set()
         self.__relationship_names = set()
         
+    def __del__(self):
+        if hasattr(self, "hdf5_dict"):
+            del self.hdf5_dict
+        
     def initialize(self, measurement_columns):
         '''Initialize the measurements with a list of objects and features
 
@@ -794,7 +798,13 @@ def load_measurements(filename, dest_file = None, can_overwrite = False,
     
     returns a Measurements object
     '''
-    try:
+    HDF5_HEADER = (chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) +
+                   chr (26) + chr(10))
+    fd = open(filename, "rb")
+    header = fd.read(len(HDF5_HEADER))
+    fd.close()
+    
+    if header == HDF5_HEADER:
         f, top_level = get_top_level_group(filename)
         try:
             if VERSION in f.keys():
@@ -808,8 +818,7 @@ def load_measurements(filename, dest_file = None, can_overwrite = False,
             return m
         finally:
             f.close()
-    except:
-        # Fall back to matlab
+    else:
         m = Measurements(filename = dest_file)
         m.load(filename)
         return m

@@ -183,11 +183,11 @@ class DisplayDataOnImage(cpm.CPModule):
                 self.measurement.value)
             values = [value]
             x = [image.pixel_data.shape[1] / 2]
-            x_offset = np.random.uniform(high=1.0,low=-1.0,size=x.shape)
-            x += x_offset
+            x_offset = np.random.uniform(high=1.0,low=-1.0)
+            x[0] += x_offset
             y = [image.pixel_data.shape[0] / 2]
             y_offset = np.sqrt(1 - x_offset**2)
-            y += y_offset
+            y[0] += y_offset
         else:
             values = measurements.get_current_measurement(
                 self.objects_name.value,

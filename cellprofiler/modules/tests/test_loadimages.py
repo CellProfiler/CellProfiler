@@ -3008,15 +3008,13 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         module = LI.LoadImages()
         module.module_num = 1
         module.location.dir_choice = LI.URL_FOLDER_NAME
-        url_base = (
-            "https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/"
-            "ExampleSBSImages")
+        url_base = "http://www.cellprofiler.org/ExampleFlyImages"
         module.location.custom_path = url_base
         module.match_method.value = LI.MS_EXACT_MATCH
         module.add_imagecb()
-        module.images[0].common_text.value = "Channel2-"
+        module.images[0].common_text.value = "_D.TIF"
         module.images[0].channels[0].image_name.value = IMAGE_NAME
-        module.images[1].common_text.value = "Channel1-"
+        module.images[1].common_text.value = "_F.TIF"
         module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
         
         pipeline = cpp.Pipeline()
@@ -3031,29 +3029,26 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
         self.assertTrue(module.prepare_run(workspace))
         image_numbers = m.get_image_numbers()
-        self.assertEqual(len(image_numbers), 96)
-        for image_number in image_numbers:
+        self.assertEqual(len(image_numbers), 3)
+        names = (("01_POS002_D.TIF", "01_POS002_F.TIF"),
+                 ("01_POS076_D.TIF", "01_POS076_F.TIF"),
+                 ("01_POS218_D.TIF", "01_POS218_F.TIF"))
+        for image_number, (filename, alt_filename) in zip(image_numbers, names):
             url = m.get_measurement(measurements.IMAGE, 
                                     LI.C_URL + "_" + IMAGE_NAME,
                                     image_set_number = image_number)
-            expected = "%s/Channel2-%02d-%s-%02d.tif" % (
-                url_base, image_number, 
-                "ABCDEFGH"[int(image_number-1) / 12], 
-                ((image_number-1) % 12) + 1)
+            expected = url_base + "/" + filename
             self.assertEqual(expected, url)
             url = m.get_measurement(measurements.IMAGE, 
                                     LI.C_URL + "_" + ALT_IMAGE_NAME,
                                     image_set_number = image_number)
-            expected = "%s/Channel1-%02d-%s-%02d.tif" % (
-                url_base, image_number, 
-                "ABCDEFGH"[int(image_number-1) / 12], 
-                ((image_number-1) % 12) + 1)
+            expected = url_base + "/" + alt_filename
             self.assertEqual(expected, url)
         image_set = image_set_list.get_image_set(0)
         module.run(W.Workspace(pipeline, module, image_set,
                                cpo.ObjectSet(), m, image_set_list))
         image = image_set.get_image(IMAGE_NAME)
-        self.assertEqual(tuple(image.pixel_data.shape), (640, 640))
+        self.assertEqual(tuple(image.pixel_data.shape), (1006, 1000))
 
     def test_16_02_load_url_with_groups(self):
         module = LI.LoadImages()

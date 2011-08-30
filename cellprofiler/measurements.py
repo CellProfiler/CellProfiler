@@ -801,7 +801,7 @@ def load_measurements(filename, dest_file = None, can_overwrite = False,
     '''
     HDF5_HEADER = (chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) +
                    chr (26) + chr(10))
-    if getattr(filename, "seek"):
+    if hasattr(filename, "seek"):
         filename.seek(0)
         header = filename.read(len(HDF5_HEADER))
         filename.seek(0)

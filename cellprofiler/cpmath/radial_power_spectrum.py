@@ -13,7 +13,6 @@ Website: http://www.cellprofiler.org
 """
 import numpy as np
 from scipy.fftpack import fft2
-from scipy.sparse import lil_matrix
 from scipy.ndimage.measurements import sum as nd_sum
 
 def rps(img):
@@ -25,7 +24,7 @@ def rps(img):
     if img.ptp() > 0:
         img = img / np.median(abs(img - img.mean())) # intensity invariant
     mag = abs(fft2(img - np.mean(img)))
-    power = abs(fft2(img - np.mean(img)))**2
+    power = mag**2
     radii = np.floor(np.sqrt(radii2)).astype(np.int) + 1
     labels = np.arange(2, np.floor(maxwidth)).astype(np.int).tolist() # skip DC component
     if len(labels) > 0:

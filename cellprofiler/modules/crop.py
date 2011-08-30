@@ -280,7 +280,7 @@ class Crop(cpm.CPModule):
    
     def run(self,workspace):
         first_image_set = workspace.measurements.get_current_image_measurement(
-            cpmeas.GROUP_INDEX) == 0
+            cpmeas.GROUP_INDEX) == 1
         image_set_list = workspace.image_set_list
         d = self.get_dictionary(image_set_list)
         orig_image = workspace.image_set.get_image(self.image_name.value)

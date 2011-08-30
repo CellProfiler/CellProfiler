@@ -785,7 +785,8 @@ def load_measurements(filename, dest_file = None, can_overwrite = False,
                       run_name = None):
     '''Load measurements from an HDF5 file
     
-    filename - path to file containing the measurements
+    filename - path to file containing the measurements or file-like object
+               if .mat
     
     dest_file - path to file to be created. This file is used as the backing
                 store for the measurements.
@@ -800,9 +801,14 @@ def load_measurements(filename, dest_file = None, can_overwrite = False,
     '''
     HDF5_HEADER = (chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) +
                    chr (26) + chr(10))
-    fd = open(filename, "rb")
-    header = fd.read(len(HDF5_HEADER))
-    fd.close()
+    if getattr(filename, "seek"):
+        filename.seek(0)
+        header = filename.read(len(HDF5_HEADER))
+        filename.seek(0)
+    else:
+        fd = open(filename, "rb")
+        header = fd.read(len(HDF5_HEADER))
+        fd.close()
     
     if header == HDF5_HEADER:
         f, top_level = get_top_level_group(filename)

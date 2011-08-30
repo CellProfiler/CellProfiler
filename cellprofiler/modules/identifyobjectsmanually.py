@@ -310,6 +310,8 @@ class IdentifyObjectsManually(I.Identify):
             figure.canvas.widgetlock.release(lasso)
             mask = np.zeros(pixel_data.shape[:2], int)
             new_label = np.max(labels) + 1
+            vertices = [x for x in vertices 
+                        if x[0] is not None and x[1] is not None]
             for i in range(len(vertices)):
                 v0 = (int(vertices[i][1]), int(vertices[i][0]))
                 i_next = (i+1) % len(vertices)

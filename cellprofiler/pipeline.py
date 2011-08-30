@@ -857,8 +857,13 @@ class Pipeline(object):
             fd.write('%s:%s\n' % (self.encode_txt(module.module_name),
                                 attribute_string))
             for setting in module.settings():
+                setting_text = setting.text
+                if isinstance(setting_text, unicode):
+                    setting_text = setting_text.encode('utf-8')
+                else:
+                    setting_text = str(setting_text)
                 fd.write('    %s:%s\n' % (
-                    self.encode_txt(setting.text),
+                    self.encode_txt(setting_text),
                     self.encode_txt(utf16encode(setting.unicode_value))))
         if needs_close:
             fd.close()

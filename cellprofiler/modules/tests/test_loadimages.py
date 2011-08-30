@@ -3054,24 +3054,22 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         module = LI.LoadImages()
         module.module_num = 1
         module.location.dir_choice = LI.URL_FOLDER_NAME
-        url_base = (
-            "https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/"
-            "ExampleSBSImages")
+        url_base = "http://www.cellprofiler.org/ExampleFlyImages"
         module.location.custom_path = url_base
         module.group_by_metadata.value = True
         module.metadata_fields.set_value("Column")
         module.match_method.value = LI.MS_EXACT_MATCH
         module.add_imagecb()
-        module.images[0].common_text.value = "Channel2-"
+        module.images[0].common_text.value = "_D.TIF"
         module.images[0].channels[0].image_name.value = IMAGE_NAME
         module.images[0].metadata_choice.value = LI.M_FILE_NAME
         module.images[0].file_metadata.value = \
-              "^Channel2-[0-9]{2}-(?P<Row>[A-H])-(?P<Column>[0-9]{2}).tif$"
-        module.images[1].common_text.value = "Channel1-"
+              "^01_POS(?P<Column>[0-9])(?P<Row>[0-9]{2})_[DF].TIF$"
+        module.images[1].common_text.value = "_F.TIF"
         module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
         module.images[1].metadata_choice.value = LI.M_FILE_NAME
         module.images[1].file_metadata.value = \
-              "^Channel1-[0-9]{2}-(?P<Row>[A-H])-(?P<Column>[0-9]{2}).tif$"
+              "^01_POS(?P<Column>[0-9])(?P<Row>[0-9]{2})_[DF].TIF$"
         
         pipeline = cpp.Pipeline()
         def callback(caller, event):
@@ -3085,36 +3083,18 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
         self.assertTrue(module.prepare_run(workspace))
         image_numbers = m.get_image_numbers()
-        self.assertEqual(len(image_numbers), 96)
-        for image_number in image_numbers:
-            url = m.get_measurement(measurements.IMAGE, 
-                                    LI.C_URL + "_" + IMAGE_NAME,
-                                    image_set_number = image_number)
-            row_index = int(image_number-1) % 8
-            column_index = int((image_number-1) / 8)
-            expected = "%s/Channel2-%02d-%s-%02d.tif" % (
-                url_base, row_index * 12 + column_index + 1, 
-                "ABCDEFGH"[row_index], 
-                column_index + 1)
-            self.assertEqual(expected, url)
-            url = m.get_measurement(measurements.IMAGE, 
-                                    LI.C_URL + "_" + ALT_IMAGE_NAME,
-                                    image_set_number = image_number)
-            expected = "%s/Channel1-%02d-%s-%02d.tif" % (
-                url_base, row_index * 12 + column_index + 1, 
-                "ABCDEFGH"[row_index], 
-                column_index + 1)
-            self.assertEqual(expected, url)
+        self.assertEqual(len(image_numbers), 3)
         
         key_names, group_list = module.get_groupings(workspace)
         self.assertEqual(len(key_names), 1)
         self.assertEqual(key_names[0], "Column")
-        self.assertEqual(len(group_list), 12)
-        image_set = image_set_list.get_image_set(0)
-        module.run(W.Workspace(pipeline, module, image_set,
-                               cpo.ObjectSet(), m, image_set_list))
-        image = image_set.get_image(IMAGE_NAME)
-        self.assertEqual(tuple(image.pixel_data.shape), (640, 640))
+        self.assertEqual(len(group_list), 2)
+        self.assertEqual(group_list[0][0]["Column"], "0")
+        self.assertEqual(len(group_list[0][1]), 2)
+        self.assertEqual(tuple(group_list[0][1]), tuple(image_numbers[:2]))
+        self.assertEqual(group_list[1][0]["Column"], "2")
+        self.assertEqual(len(group_list[1][1]), 1)
+        self.assertEqual(group_list[1][1][0], image_numbers[-1])
         
 if __name__=="main":
     unittest.main()

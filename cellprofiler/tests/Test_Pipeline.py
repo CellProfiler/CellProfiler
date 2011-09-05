@@ -672,6 +672,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertEqual(module.my_variable.value, result_module.my_variable.value)
 
     @unittest.skip("skipping profiling AllModules - too slow")
+    @np.testing.decorators.slow
     def test_15_01_profile_example_all(self):
         """
         Profile ExampleAllModulesPipeline

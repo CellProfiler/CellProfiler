@@ -24,6 +24,7 @@ import tempfile
 import cProfile
 import pstats
 import os
+import sys
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.objects as cpo

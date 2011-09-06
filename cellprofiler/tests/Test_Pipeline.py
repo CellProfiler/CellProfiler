@@ -23,6 +23,7 @@ import zlib
 import tempfile
 import cProfile
 import pstats
+import os
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.objects as cpo

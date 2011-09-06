@@ -674,31 +674,33 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertEqual(module.notes, result_module.notes)
         self.assertEqual(module.my_variable.value, result_module.my_variable.value)
 
-    @unittest.skip("skipping profiling AllModules - too slow")
-    @np.testing.decorators.slow
-    def test_15_01_profile_example_all(self):
-        """
-        Profile ExampleAllModulesPipeline
-
-        Dependencies:
-        User must have ExampleImages on their machine,
-        in a location which can be found by example_images_directory().
-        This directory should contain the pipeline ExampleAllModulesPipeline
-        """
-        example_dir = example_images_directory()
-        if(not example_dir):
-            import warnings
-            warnings.warn('example_images_directory not found, skipping profiling of ExampleAllModulesPipeline')
-            return
-        pipeline_dir = os.path.join(example_dir, 'ExampleAllModulesPipeline')
-        pipeline_filename = os.path.join(pipeline_dir, 'ExampleAllModulesPipeline.cp')
-        image_dir = os.path.join(pipeline_dir, 'Images')
-
-        #Might be better to write these paths into the pipeline
-        old_image_dir = cpprefs.get_default_image_directory()
-        cpprefs.set_default_image_directory(image_dir)
-        profile_pipeline(pipeline_filename)
-        cpprefs.set_default_image_directory(old_image_dir)
+    # Sorry Ray, Python 2.6 and below doesn't have @skip
+    if False:
+        @unittest.skip("skipping profiling AllModules - too slow")
+        @np.testing.decorators.slow
+        def test_15_01_profile_example_all(self):
+            """
+            Profile ExampleAllModulesPipeline
+    
+            Dependencies:
+            User must have ExampleImages on their machine,
+            in a location which can be found by example_images_directory().
+            This directory should contain the pipeline ExampleAllModulesPipeline
+            """
+            example_dir = example_images_directory()
+            if(not example_dir):
+                import warnings
+                warnings.warn('example_images_directory not found, skipping profiling of ExampleAllModulesPipeline')
+                return
+            pipeline_dir = os.path.join(example_dir, 'ExampleAllModulesPipeline')
+            pipeline_filename = os.path.join(pipeline_dir, 'ExampleAllModulesPipeline.cp')
+            image_dir = os.path.join(pipeline_dir, 'Images')
+    
+            #Might be better to write these paths into the pipeline
+            old_image_dir = cpprefs.get_default_image_directory()
+            cpprefs.set_default_image_directory(image_dir)
+            profile_pipeline(pipeline_filename)
+            cpprefs.set_default_image_directory(old_image_dir)
 
     def test_15_02_profile_example_fly(self):
         """

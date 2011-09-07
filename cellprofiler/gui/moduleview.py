@@ -1683,7 +1683,7 @@ class ModuleSizer(wx.PySizer):
         self.__items = []
     
     def get_item(self, i, j):
-        if len(self.__items) < j or len(self.__items[j]) < i:
+        if len(self.__items) <= j or len(self.__items[j]) <= i:
             return None
         return self.__items[j][i]
     

@@ -334,6 +334,8 @@ def make_kill_vm():
     dead_event = __dead_event
     kill = __kill
     thread_local_env = __thread_local_env
+    if not hasattr(thread_local_env, "attach_count"):
+        thread_local_env.attach_count = 0
     def kill_vm():
         global __vm
         if __vm is None:

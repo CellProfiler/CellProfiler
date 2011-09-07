@@ -353,6 +353,7 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
                                      '(Ljava/lang/String;)V', path)
         filename = os.path.split(path)[1]
         IFormatReader = make_iformat_reader_class()
+        rdr = None
         for klass in env.get_object_array_elements(class_list.get_classes()):
             wclass = jutil.get_class_wrapper(klass, True)
             maybe_rdr = IFormatReader()

@@ -297,7 +297,7 @@ def run_in_main_thread(closure, synchronous):
         def synchronous_closure():
             try:
                 result[0] = closure()
-            except Exception as e:
+            except Exception, e:
                 logger.exception("Caught exception when executing closure")
                 exception[0] = e
             done_event.set()

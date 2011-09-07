@@ -122,6 +122,13 @@ class TestJavabridge(unittest.TestCase):
             v = self.env.get_string_utf(elem)
             self.assertEqual(str(i), v)
             
+    def test_01_19_0_make_boolean_array(self):
+        np.random.seed(1190)
+        array = np.random.uniform(size=105) > .5
+        jarray = self.env.make_boolean_array(array)
+        result = self.env.get_boolean_array_elements(jarray)
+        self.assertTrue(np.all(array == result))
+            
     def test_01_19_make_short_array(self):
         np.random.seed(119)
         array = (np.random.uniform(size=10) * 65535 - 32768).astype(np.int16)

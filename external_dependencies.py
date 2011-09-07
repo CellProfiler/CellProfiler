@@ -15,7 +15,10 @@ files = [
     [['imagej', 'imglib.jar'], '7e0e68aa371706012e224df0b31925317a3dc284', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/imglib.jar'],
     [['imagej', 'javacl-1.0-beta-4-shaded.jar'], '62b3b41c4759652595070534d79d1294eeba8139', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/javacl-1.0-beta-4-shaded.jar'],
     [['imagej', 'junit-4.5.jar'], '41eb8ac5586d163d61518be18a13626983f9ece6', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/junit-4.5.jar'],
-    [['imagej', 'precompiled_headless.jar'], '39ef36e6cfbd7f48e8c0e3033b30b0e3f5b5d24e', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/precompiled_headless.jar']]
+    [['imagej', 'precompiled_headless.jar'], '39ef36e6cfbd7f48e8c0e3033b30b0e3f5b5d24e', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/precompiled_headless.jar'],
+    [['imagej', 'imagej-2.0-SNAPSHOT-all.jar'], 'a9dbd4909fb5fa9261a8b3dcd75a25a6e14ef03a', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11485/trunk/CellProfiler/imagej/imagej-2.0-SNAPSHOT-all.jar']
+]
+
 
 def filehash(filename):
     sha1 = hashlib.sha1()

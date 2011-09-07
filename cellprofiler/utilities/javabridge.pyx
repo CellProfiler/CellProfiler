@@ -475,6 +475,18 @@ cdef class JB_VM:
         jenv.env = env
         return jenv
         
+    def attach_as_daemon(self):
+        '''Attach this thread as a daemon thread'''
+        cdef:
+            JNIEnv *env
+            JB_Env jenv
+        result = self.vm[0].AttachCurrentThreadAsDaemon(self.vm, <void *>&env, NULL)
+        if result != 0:
+            raise RuntimeError("Failed to attach to current thread. Return code = %d"%result)
+        jenv = JB_Env()
+        jenv.env = env
+        return jenv
+        
     def detach(self):
         '''Detach this thread from the VM'''
         self.vm[0].DetachCurrentThread(self.vm)
@@ -1152,6 +1164,18 @@ cdef class JB_Env:
         '''Return the length of an array'''
         return self.env[0].GetArrayLength(self.env, array.o)
         
+    def get_boolean_array_elements(self, JB_Object array):
+        '''Return the contents of a Java boolean array as a numpy array'''
+        cdef:
+            np.ndarray[dtype=np.uint8_t, ndim=1, negative_indices=False, mode='c'] result
+            char *data
+            jsize alen = self.env[0].GetArrayLength(self.env, array.o)
+
+        result = np.zeros(shape=(alen,),dtype=np.uint8)
+        data = result.data
+        self.env[0].GetBooleanArrayRegion(self.env, array.o, 0, alen, <jboolean *>data)
+        return result.astype(np.bool8)
+        
     def get_byte_array_elements(self, JB_Object array):
         '''Return the contents of a Java byte array as a numpy array
 
@@ -1264,6 +1288,23 @@ cdef class JB_Env:
                 if e is not None:
                     raise e
                 result.append(sub)
+        return result
+        
+    def make_boolean_array(self, array):
+        '''Create a java boolean [] array from the contents of a numpy array'''
+        cdef:
+            np.ndarray[dtype=np.uint8_t, ndim=1, negative_indices=False, mode='c'] barray = array.astype(np.bool8).astype(np.uint8)
+            jobject o
+            jsize alen = barray.shape[0]
+            jboolean *data = <jboolean *>(barray.data)
+        
+        o = self.env[0].NewBooleanArray(self.env, alen)
+        if o == NULL:
+            raise MemoryError("Failed to allocate byte array of size %d"%alen)
+        self.env[0].SetBooleanArrayRegion(self.env, o, 0, alen, data)
+        result, e = make_jb_object(self, o)
+        if e is not None:
+            raise e
         return result
         
     def make_byte_array(self, np.ndarray[dtype=np.uint8_t, ndim=1, negative_indices=False, mode='c'] array):

@@ -327,8 +327,9 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
     
     Returns either a 2-d (grayscale) or 3-d (2-d + 3 RGB planes) image
     '''
-    jutil.attach()
-    try:
+    def fn(path=path, c=c, z=z, t=t, series=series, index=index,
+           rescale=rescale, wants_max_intensity=wants_max_intensity,
+           channel_names=channel_names):
         FormatTools = make_format_tools_class()
         ImageReader = make_image_reader_class()
         ChannelSeparator = make_reader_wrapper_class(
@@ -464,6 +465,4 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
         if wants_max_intensity:
             return image, scale
         return image
-    finally:
-        jutil.detach()
-        
+    return jutil.run_in_main_thread(fn, True)

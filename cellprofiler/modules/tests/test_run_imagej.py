@@ -20,6 +20,7 @@ import unittest
 import cellprofiler.preferences as cpprefs
 cpprefs.set_headless()
 cpprefs.set_ij_plugin_directory(os.path.split(__file__)[0])
+cpprefs.set_ij_version(cpprefs.IJ_1)
 
 import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
@@ -29,8 +30,9 @@ import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.run_imagej as R
+from bioformats import USE_IJ2
 
-run_tests = (sys.platform.startswith("win"))
+run_tests = (sys.platform.startswith("win") and not USE_IJ2)
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"

@@ -38,6 +38,13 @@ class PreferencesDlg(wx.Dialog):
         wx.Dialog.__init__(self, parent, ID, title, pos, size, style,name)
         p = self.get_preferences()
         top_sizer = wx.BoxSizer(wx.VERTICAL)
+        scrollpanel_sizer = wx.BoxSizer(wx.VERTICAL)
+        scrollpanel = wx.lib.scrolledpanel.ScrolledPanel(self)
+        scrollpanel.SetMinSize((800, 600))
+        scrollpanel_sizer.Add(scrollpanel, 1, wx.EXPAND)
+        scrollpanel.SetSizer(top_sizer)
+        self.SetSizer(scrollpanel_sizer)
+
         sizer = wx.GridBagSizer(len(p),4)
         sizer.SetFlexibleDirection(wx.HORIZONTAL)
         sizer.AddGrowableCol(1, 10)
@@ -49,20 +56,20 @@ class PreferencesDlg(wx.Dialog):
                                                wx.ART_CMN_DIALOG,
                                                (16,16))
         for text, getter, setter, ui_info, help_text in p:
-            text_ctl = wx.StaticText(self, label=text)
+            text_ctl = wx.StaticText(scrollpanel, label=text)
             sizer.Add(text_ctl,(index,0))
             if getattr(ui_info,"__getitem__",False) and not isinstance(ui_info,str):
-                ctl = wx.ComboBox(self, -1, 
+                ctl = wx.ComboBox(scrollpanel, -1, 
                                   choices=ui_info, style=wx.CB_READONLY)
                 ctl.SetStringSelection(getter())
             elif ui_info == COLOR:
-                ctl = wx.Panel(self, -1, style=wx.BORDER_SUNKEN)
+                ctl = wx.Panel(scrollpanel, -1, style=wx.BORDER_SUNKEN)
                 ctl.BackgroundColour = getter()
             elif ui_info == CHOICE:
-                ctl = wx.CheckBox(self, -1)
+                ctl = wx.CheckBox(scrollpanel, -1)
                 ctl.Value = getter()
             else:
-                ctl = wx.TextCtrl(self, -1, getter())
+                ctl = wx.TextCtrl(scrollpanel, -1, getter())
                 min_height = ctl.GetMinHeight()
                 min_width  = ctl.GetTextExtent("Make sure the window can display this")[0]
                 ctl.SetMinSize((min_width, min_height))
@@ -98,17 +105,17 @@ class PreferencesDlg(wx.Dialog):
                 on_press = None
             if not on_press is None:
                 id = wx.NewId()
-                button = wx.Button(self,id,ui_info)
+                button = wx.Button(scrollpanel, id, ui_info)
                 self.Bind(wx.EVT_BUTTON, on_press, button,id)
                 sizer.Add(button, (index, 2))
-            button = wx.Button(self, -1, '?', (0, 0), (30, -1))
+            button = wx.Button(scrollpanel, -1, '?', (0, 0), (30, -1))
             def on_help(event, help_text = help_text):
                 dlg = HTMLDialog(self, "Preferences help", help_text)
                 dlg.Show()
             sizer.Add(button, (index, 3))
             self.Bind(wx.EVT_BUTTON, on_help, button)
             index += 1
-        top_sizer.Add(wx.StaticLine(self), 0, wx.EXPAND | wx.ALL, 2)
+        top_sizer.Add(wx.StaticLine(scrollpanel), 0, wx.EXPAND | wx.ALL, 2)
         btnsizer = wx.StdDialogButtonSizer()
         
         btn = wx.Button(self, wx.ID_OK)
@@ -119,10 +126,10 @@ class PreferencesDlg(wx.Dialog):
         btnsizer.AddButton(btn)
         btnsizer.Realize()
 
-        top_sizer.Add(btnsizer, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
-
-        self.SetSizer(top_sizer)
-        top_sizer.Fit(self)
+        self.Sizer.Add(btnsizer, 0, wx.ALIGN_CENTER_HORIZONTAL|wx.ALL, 5)
+        
+        scrollpanel.SetupScrolling(scrollToTop=False)        
+        self.Fit()
         self.controls = controls
     
     
@@ -185,6 +192,11 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_ij_plugin_directory,
                  cpprefs.set_ij_plugin_directory,
                  DIRBROWSE, cphelp.IJ_PLUGINS_DIRECTORY_HELP],
+                ["ImageJ version",
+                 cpprefs.get_ij_version,
+                 cpprefs.set_ij_version,
+                 (cpprefs.IJ_1, cpprefs.IJ_2),
+                 cphelp.IJ_VERSION_HELP],
                 ["Check for updates", 
                  cpprefs.get_check_new_versions, 
                  cpprefs.set_check_new_versions, 

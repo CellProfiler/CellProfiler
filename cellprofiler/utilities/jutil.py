@@ -41,11 +41,14 @@ __version__ = "$Revision$"
 import atexit
 import codecs
 import gc
+import logging
 import numpy as np
 import os
 import threading
 import subprocess
 import sys
+
+logger = logging.getLogger(__name__)
 
 jvm_dir = None
 if sys.platform.startswith('win'):
@@ -196,6 +199,7 @@ __dead_event = threading.Event()
 __thread_local_env = threading.local()
 __kill = [False]
 __dead_objects = []
+__main_thread_closures = []
 
 def start_vm(args):
     '''Start the Java VM'''
@@ -211,9 +215,12 @@ def start_vm(args):
         global __wake_event
         global __dead_event
         global __thread_local_env
+        global __i_am_the_main_thread
         global __kill
         global __dead_objects
+        global __main_thread_closures
 
+        __thread_local_env.is_main_thread = True
         __vm = javabridge.JB_VM()
         #
         # We get local copies here and bind them in a closure to guarantee
@@ -224,6 +231,7 @@ def start_vm(args):
         dead_event = __dead_event
         kill = __kill
         dead_objects = __dead_objects
+        main_thread_closures = __main_thread_closures
         thread_local_env = __thread_local_env
         ptt = pt # needed to bind to pt inside exit_fn
         def exit_fn():
@@ -249,6 +257,8 @@ def start_vm(args):
                 if isinstance(dead_object, javabridge.JB_Object):
                     # Object may have been totally GC'ed
                     env.dealloc_jobject(dead_object)
+            while(len(main_thread_closures)):
+                main_thread_closures.pop()()
             if kill[0]:
                 break
         def null_defer_fn(jbo):
@@ -265,6 +275,42 @@ def start_vm(args):
     start_event.wait()
     attach()
 
+def run_in_main_thread(closure, synchronous):
+    '''Run a closure in the main Java thread
+    
+    closure - a callable object (eg lambda : print "hello, world")
+    
+    synchronous - True to wait for completion of execution
+    '''
+    global __main_thread_closures
+    global __wake_event
+    global __thread_local_env
+    if (hasattr(__thread_local_env, "is_main_thread") and
+        __thread_local_env.is_main_thread):
+        return closure()
+    
+    if synchronous:
+        done_event = threading.Event()
+        done_event.clear()
+        result = [None]
+        exception = [None]
+        def synchronous_closure():
+            try:
+                result[0] = closure()
+            except Exception as e:
+                logger.exception("Caught exception when executing closure")
+                exception[0] = e
+            done_event.set()
+        __main_thread_closures.append(synchronous_closure)
+        __wake_event.set()
+        done_event.wait()
+        if exception[0] is not None:
+            raise exception[0]
+        return result[0]
+    else:
+        __main_thread_closures.append(closure)
+        __wake_event.set()
+    
 def print_all_stack_traces():
     thread_map = static_call("java/lang/Thread","getAllStackTraces",
                              "()Ljava/util/Map;")
@@ -292,24 +338,26 @@ def make_kill_vm():
         global __vm
         if __vm is None:
             return
-        while thread_local_env.attach_count > 1:
+        while thread_local_env.attach_count > 0:
             detach()
-        #
-        # -------------------------------------------------------------------
-        # WE MUST / WE MUST NOT CALL EXIT
-        #
-        # MUST: Java never terminates and never closes its threads
-        # MUST NOT: Java never returns from exit
-        #
-        # Don't know why. Don't want to find out.
-        #
-        #--------------------------------------------------------------------
-        #
-        if sys.platform != "linux2":
-            runtime = static_call("java/lang/Runtime","getRuntime",
-                                  "()Ljava/lang/Runtime;")
-            call(runtime, "exit", "(I)V", 0)
-        detach()
+        if sys.platform != "linux2" and False:
+            def call_exit():
+                runtime = static_call("java/lang/Runtime","getRuntime",
+                                      "()Ljava/lang/Runtime;")
+                call(runtime, "exit", "(I)V", 0)
+            run_in_main_thread(call_exit, True)
+        def close_all_windows():
+            is_headless = static_call(
+                "java/lang/System", "getProperty",
+                "(Ljava/lang/String;)Ljava/lang/String;", 
+                "java.awt.headless")
+            if is_headless != "true":
+                frames = static_call("java/awt/Frame", "getFrames",
+                                     "()[Ljava/awt/Frame;")
+                frames = get_env().get_object_array_elements(frames)
+                for frame in frames:
+                    call(frame, "dispose", "()V")
+        run_in_main_thread(close_all_windows, True)
         kill[0] = True
         wake_event.set()
         dead_event.wait()
@@ -325,7 +373,7 @@ def attach():
     attach_count = getattr(__thread_local_env, "attach_count", 0)
     __thread_local_env.attach_count = attach_count + 1
     if attach_count == 0:
-        __thread_local_env.env = __vm.attach()
+        __thread_local_env.env = __vm.attach_as_daemon()
     return __thread_local_env.env
     
 def get_env():
@@ -575,7 +623,9 @@ def get_nice_arg(arg, sig):
     if sig == 'Ljava/lang/Boolean;' and type(arg) in [int, long, bool]:
         return make_instance('java/lang/Boolean', '(Z)V', bool(arg))
     if isinstance(arg, np.ndarray):
-        if sig == '[B':
+        if sig == '[Z':
+            return env.make_boolean_array(np.ascontiguousarray(arg.flatten(), np.bool8))
+        elif sig == '[B':
             return env.make_byte_array(np.ascontiguousarray(arg.flatten(), np.uint8))
         elif sig == '[S':
             return env.make_short_array(np.ascontiguousarray(arg.flatten(), np.int16))
@@ -718,6 +768,10 @@ def iterate_java(iterator):
     while(call(iterator, 'hasNext', '()Z')):
         yield call(iterator, 'next', '()Ljava/lang/Object;')
         
+def iterate_collection(c):
+    '''Make a Python iterator over the elements of a Java collection'''
+    return iterate_java(call(c, "iterator", "()Ljava/util/Iterator;"))
+        
 def jenumeration_to_string_list(enumeration):
     '''Convert a Java enumeration to a Python list of strings
     
@@ -748,7 +802,7 @@ def make_new(class_name, sig):
 def make_instance(class_name, sig, *args):
     '''Create an instance of a class
     
-    class_name - name of class
+    class_name - name of class in foo/bar/Baz form (not foo.bar.Baz)
     sig - signature of constructor
     args - arguments to constructor
     '''

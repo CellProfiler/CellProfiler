@@ -13,10 +13,13 @@ import struct
 import cellprofiler.utilities.jutil as J
 import cellprofiler.preferences as cpprefs
 from cellprofiler.utilities.singleton import Singleton
+from bioformats import USE_IJ2
 import imagej.macros as ijmacros
 import imagej.windowmanager as ijwm
 import imagej.imageprocessor as ijiproc
 import imagej.imageplus as ijip
+if USE_IJ2:
+   import imagej.imagej2 as IJ2
 
 logger = logging.getLogger(__name__)
 if hasattr(sys, 'frozen'):
@@ -51,6 +54,8 @@ os.environ['CLASSPATH'] = __class_path
 def get_ij_bridge():
    '''Returns an an ijbridge that will work given the platform and preferences
    '''
+   if USE_IJ2:
+      return ij2_bridge.getInstance()
    if sys.platform != 'darwin':
       return in_proc_ij_bridge.getInstance()
    else: # sys.platform == 'darwin':
@@ -136,6 +141,56 @@ class in_proc_ij_bridge(ij_bridge, Singleton):
    def show_imagej(self):
       '''show the ImageJ user interface'''
       ijmacros.show_imagej()
+   
+class ij2_bridge(ij_bridge, Singleton):
+   def __init__(self):
+      services = [
+         "imagej.event.EventService",
+         "imagej.object.ObjectService",
+         "imagej.display.OverlayService",
+         "imagej.display.DisplayService",
+         "imagej.platform.PlatformService",
+         "imagej.ext.plugin.PluginService",
+         "imagej.ext.module.ModuleService", 
+         "imagej.ui.UIService",
+         "imagej.tool.ToolService"
+         ]
+      
+      self.context = IJ2.create_context(services)
+      
+   def inject_image(self, pixels, name=None):
+      '''inject an image into ImageJ for processing'''
+      dataset = IJ2.create_dataset(pixels, name)
+      display_service = IJ2.get_display_service(self.context)
+      display = display_service.createDisplay(dataset)
+      display_service.setActiveDisplay(display.o)
+
+   def get_current_image(self):
+      '''returns the WindowManager's current image as a numpy float array'''
+      display_service = IJ2.get_display_service(self.context)
+      current_display = display_service.getActiveImageDisplay()
+      dataset = display_service.getActiveDataset(current_display)
+      return dataset.get_pixel_data()
+
+   def execute_command(self, command, options=None):
+      '''execute the named command within ImageJ'''
+      module_service = IJ2.get_module_service(self.context)
+      matches = [x for x in module_service.getModules()
+                 if x.getName() == command]
+      if len(matches) != 1:
+         raise ValueError("Could not find %s module" % command)
+      module_service.run(matches[0].createModule())
+
+   def execute_macro(self, macro_text):
+      '''execute a macro in ImageJ
+    
+      macro_text - the macro program to be run
+      '''
+      raise NotImplementedError
+   
+   def show_imagej(self):
+      '''show the ImageJ user interface'''
+      pass
    
 
 def read_nbytes(socket, nbytes):

@@ -1194,6 +1194,18 @@ You can download or write your own ImageJ plugin and place it in this directory
 and CellProfiler will make it available for your pipeline. You must restart
 CellProfiler after modifying this setting."""
 
+IJ_VERSION_HELP = """The <i>ImageJ version</i> preference chooses which version
+of ImageJ to use in the <b>RunImageJ</b> module. You must restart CellProfiler
+after changing this preference for the preference to take effect.<p>
+<ul><li><b>ImageJ 1.x</b> - This is a version of ImageJ 1.44 with added support
+for @parameter plugin decorations. You should use this if you only have
+ImageJ 1.0 plugins.</li>
+<li><b>ImageJ 2.0</b> - This is an alpha release of ImageJ 2.0. ImageJ 2.0
+has better interoperability with CellProfiler. CellProfiler will display
+ImageJ 2.0 plugin settings as part of the RunImageJ module interface and
+will let you use regular and masked images in ImageJ 2.0 plugins. ImageJ 2.0
+can run ImageJ 1.0 plugins, but there may be incompatibilities.</li></ul>"""
+
 CHECK_FOR_UPDATES_HELP = """The <i>Check for Updates</i> preference controls how
 CellProfiler looks for updates on startup."""
 
@@ -1257,6 +1269,7 @@ EACH_PREFERENCE_HELP = (
     ( "Window background", WINDOW_BACKGROUND_HELP ),
     ( "Plugins directory", PLUGINS_DIRECTORY_HELP ),
     ( "ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
+    ( "ImageJ version", IJ_VERSION_HELP),
     ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
     ( "Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
     ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),

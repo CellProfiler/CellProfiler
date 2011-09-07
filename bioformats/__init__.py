@@ -19,6 +19,7 @@ import os
 import re
 import cellprofiler.utilities.jutil as jutil
 from cellprofiler.preferences import get_headless, get_ij_plugin_directory
+from cellprofiler.preferences import get_ij_version, IJ_1, IJ_2
 import sys
 
 logger = logging.getLogger("bioformats")
@@ -46,18 +47,25 @@ else:
 __path = os.path.join(__root_path, 'bioformats')
 __imagej_path = os.path.join(__root_path, 'imagej')
 __loci_jar = os.path.join(__path, "loci_tools.jar")
+__ij2_jar = os.path.join(__imagej_path, "imagej-2.0-SNAPSHOT-all.jar")
 __ij_jar = os.path.join(__imagej_path, "ij.jar")
 __imglib_jar = os.path.join(__imagej_path, "imglib.jar")
 __javacl_jar = os.path.join(__imagej_path, "javacl-1.0-beta-4-shaded.jar")
 __precompiled_headless_jar = os.path.join(__imagej_path, "precompiled_headless.jar")
-__class_path = os.pathsep.join((__loci_jar, __ij_jar, __imglib_jar, 
-                                __javacl_jar))
-if sys.platform == "darwin":
-    # Start ImageJ headless
-    # precompiled_headless.jar contains substitute classes for running
-    # headless.
-    #
-    __class_path = os.pathsep.join((__precompiled_headless_jar, __class_path))
+USE_IJ2 = get_ij_version() == IJ_2
+if os.path.exists(__ij2_jar) and USE_IJ2:
+    __class_path = os.pathsep.join((__loci_jar, __ij2_jar))
+    USE_IJ2 = True
+else:
+    USE_IJ2 = False
+    __class_path = os.pathsep.join((__loci_jar, __ij_jar, __imglib_jar, 
+                                    __javacl_jar))
+    if sys.platform == "darwin":
+        # Start ImageJ headless
+        # precompiled_headless.jar contains substitute classes for running
+        # headless.
+        #
+        __class_path = os.pathsep.join((__precompiled_headless_jar, __class_path))
 if os.environ.has_key("CLASSPATH"):
     __class_path += os.pathsep + os.environ["CLASSPATH"]
     

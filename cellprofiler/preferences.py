@@ -219,6 +219,13 @@ WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
 USE_MORE_FIGURE_SPACE = "UseMoreFigureSpace"
 WRITE_HDF5 = "WriteHDF5"
 
+'''The preference key for selecting the correct version of ImageJ'''
+IJ_VERSION = "ImageJVersion"
+'''Use the enhanced version of ImageJ 1.44 with some support for @parameter'''
+IJ_1 = "ImageJ 1.x"
+'''Use ImageJ 2.0 with Imglib and new framework'''
+IJ_2 = "ImageJ 2.0"
+
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
 
@@ -879,3 +886,31 @@ def set_use_more_figure_space(value):
     __use_more_figure_space = value
     config_write(USE_MORE_FIGURE_SPACE,
                        "True" if value else "False")
+
+__ij_version = None
+def get_ij_version():
+    '''Return an indicator of which version of ImageJ to use
+    
+    returns one of IJ_1 or IJ_2.
+    
+    This determines whether to use the ImageJ 1.44 version, enhanced
+    with the @parameter decoration or to use the new and experimental
+    ImageJ 2.0 codebase.
+    '''
+    global __ij_version
+    if __ij_version is not None:
+        return __ij_version
+    if not get_config().Exists(IJ_VERSION):
+        return IJ_1
+    result = config_read(IJ_VERSION)
+    return IJ_1 if result not in (IJ_1, IJ_2) else result
+
+def set_ij_version(value):
+    '''Set the ImageJ version to use
+    
+    value: one of IJ_1 or IJ_2
+    '''
+    global __ij_version
+    assert value in (IJ_1, IJ_2)
+    __ij_version = value
+    config_write(IJ_VERSION, value)

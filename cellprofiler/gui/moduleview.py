@@ -1673,13 +1673,19 @@ class ModuleSizer(wx.PySizer):
         self.__cols = cols
         self.__min_text_width = 150
         self.__printed_exception = False
+        self.__items = []
+    
+    def get_item(self, i, j):
+        if len(self.__items) <= j or len(self.__items[j]) <= i:
+            return None
+        return self.__items[j][i]
     
     def Reset(self, rows, cols=3, destroy_windows=True):
         if destroy_windows:
             windows = []
             for j in range(self.__rows):
                 for i in range(self.__cols):
-                    item = self.GetItem(self.idx(i,j))
+                    item = self.get_item(i,j)
                     if item is None:
                         print "Missing item"
                     if item.IsWindow():
@@ -1692,6 +1698,14 @@ class ModuleSizer(wx.PySizer):
         self.Clear(False)    
         self.__rows = rows
         self.__cols = cols
+        self.__items = []
+        
+    def Add(self, control, *args, **kwargs):
+        if len(self.__items) == 0 or len(self.__items[-1]) == self.__cols:
+            self.__items.append([])
+        item = super(ModuleSizer, self).Add(control, *args, **kwargs)
+        self.__items[-1].append(item)
+        return item
     
     def CalcMin(self):
         """Calculate the minimum from the edit controls.  Returns a
@@ -1700,12 +1714,15 @@ class ModuleSizer(wx.PySizer):
         controls and help controls.
         """
         try:
-            if self.__rows * self.__cols == 0:
+            if (self.__rows * self.__cols == 0 or 
+                self.Children is None or
+                len(self.Children) == 0):
                 return wx.Size(0,0)
             height = 0
             for j in range(0,self.__rows):
-                height_border = max([self.GetItem(col,j).GetBorder() 
-                                     for col in range(2)])
+                height_border = max([self.get_item(col,j).GetBorder() 
+                                     for col in range(2)
+                                     if self.get_item(col,j) is not None])
                 height += self.get_row_height(j) + 2*height_border
             self.__printed_exception = False
             return wx.Size(self.calc_edit_size()[0] + self.__min_text_width + 
@@ -1721,8 +1738,8 @@ class ModuleSizer(wx.PySizer):
     def get_row_height(self, j):
         height = 0
         for i in range(self.__cols):
-            item = self.GetItem(self.idx(i,j))
-            control = item.GetWindow()
+            item = self.get_item(i, j)
+            control = item.GetWindow() if item.IsWindow() else None
             if (isinstance(control, wx.StaticLine)):
                 height = max(height, item.CalcMin()[1] * 1.25)
             else:
@@ -1736,9 +1753,9 @@ class ModuleSizer(wx.PySizer):
         height = 0
         width = 0
         for i in range(self.__rows):
-            if len(self.Children) <= self.idx(j, i):
-                break
-            item = self.GetItem(self.idx(j, i))
+            item = self.get_item(j, i)
+            if item is None:
+                continue
             size = item.CalcMin()
             height += size[1]
             width = max(width, size[0])
@@ -1753,9 +1770,9 @@ class ModuleSizer(wx.PySizer):
     def calc_max_text_width(self):
         width = self.__min_text_width
         for i in range(self.__rows):
-            if len(self.Children) <= self.idx(0, i):
-                break
-            item = self.GetItem(self.idx(0, i))
+            item = self.get_item(0, i)
+            if item is None:
+                continue
             control = item.GetWindow()
             assert isinstance(control, wx.StaticText), 'Control at column 0, '\
                 '%d of grid is not StaticText: %s'%(i, str(control))
@@ -1791,8 +1808,8 @@ class ModuleSizer(wx.PySizer):
             height = 0
             panel = self.GetContainingWindow()
             for i in range(self.__rows):
-                text_item = self.GetItem(self.idx(0, i))
-                edit_item = self.GetItem(self.idx(1, i))
+                text_item = self.get_item(0, i)
+                edit_item = self.get_item(1, i)
                 inner_text_width = text_width - 2 * text_item.GetBorder() 
                 control = text_item.GetWindow()
                 assert isinstance(control, wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))
@@ -1824,7 +1841,7 @@ class ModuleSizer(wx.PySizer):
                         control.SetLabel(text)
                         control.Wrap(inner_text_width)
                     for j in range(self.__cols):
-                        item = self.GetItem(self.idx(j, i))
+                        item = self.get_item(j, i)
                         if (item.Flag & wx.EXPAND) == 0:
                             item_size = item.CalcMin()
                         else:
@@ -1840,15 +1857,3 @@ class ModuleSizer(wx.PySizer):
                 traceback.print_exc()
                 self.__printed_exception = True
 
-    def coords(self,idx):
-        """Return the column/row coordinates of an indexed item
-        
-        """
-        (col,row) = divmod(idx,self.__cols)
-        return (col,row)
-
-    def idx(self,col,row):
-        """Return the index of the given grid cell
-        
-        """
-        return row*self.__cols + col

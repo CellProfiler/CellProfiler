@@ -41,6 +41,7 @@ ABSOLUTE = "Absolute"
 FROM_EDGE = "From edge"
 
 CHECK_TIMEOUT_SEC = 2
+EDIT_TIMEOUT_SEC = 5
 
 class SettingEditedEvent:
     """Represents an attempt by the user to edit a setting
@@ -218,6 +219,7 @@ class ModuleView:
     """
     
     def __init__(self, module_panel, pipeline, as_datatool=False):
+        self.refresh_pending = False
         #############################################
         #
         # Build the top-level GUI windows
@@ -286,7 +288,7 @@ class ModuleView:
         for child in self.__module_panel.Children:
             child.Hide()
         
-    def set_selection(self,module_num):
+    def set_selection(self, module_num):
         """Initialize the controls in the view to the settings of the module"""
         self.top_panel.Freeze()
         if self.__startup_blurb:
@@ -426,6 +428,9 @@ class ModuleView:
                                                                control)
                 elif isinstance(v, cps.Color):
                     control = self.make_color_control(v, control_name, control)
+                elif isinstance(v, cps.TreeChoice):
+                    control = self.make_tree_choice_control(v, control_name, control)
+                    flag = wx.ALIGN_LEFT
                 else:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control, 0, flag, border)
@@ -818,6 +823,37 @@ class ModuleView:
         control.SetBackgroundColour(v.value)
         return control
         
+    def make_tree_choice_control(self, v, control_name, control):
+        if control is None:
+            control = wx.Button(self.module_panel)
+            def on_press(event, v=v, control=control):
+                id_dict = {}
+                def make_menu(tree, id_dict = id_dict, path = []):
+                    menu = wx.Menu()
+                    for node in tree:
+                        text, subtree = node[:2]
+                        subpath = path + [text]
+                        if subtree is None:
+                            item = menu.Append(-1, text)
+                            id_dict[item.GetId()] = subpath
+                        else:
+                            submenu = make_menu(subtree, path = subpath)
+                            menu.AppendMenu(-1, text, submenu)
+                    return menu
+                
+                menu = make_menu(v.get_tree())
+                assert isinstance(control, wx.Window)
+                def on_event(event, v = v, control = control, id_dict = id_dict):
+                    new_path = id_dict[event.GetId()]
+                    self.on_value_change(v, control, new_path, event)
+                    
+                menu.Bind(wx.EVT_MENU, on_event)
+                control.PopupMenuXY(menu, 0, control.GetSize()[1])
+                menu.Destroy()
+            control.Bind(wx.EVT_BUTTON, on_press)
+        control.SetLabel(">".join(v.get_value()))
+        return control
+                
     def make_callback_control(self,v,control_name,control):
         """Make a control that calls back using the callback buried in the setting"""
         if not control:
@@ -995,7 +1031,7 @@ class ModuleView:
                 setting_edited_event = SettingEditedEvent(
                     v, self.__module, proposed_value, event)
                 self.notify(setting_edited_event)
-                self.reset_view()
+                self.reset_view(1000)
                 
             def on_browse_pressed(event, v=v, dir_ctrl = dir_ctrl, 
                                   custom_ctrl=custom_ctrl):
@@ -1462,43 +1498,40 @@ class ModuleView:
     def __on_checkbox_change(self,event,setting,control):
         if not self.__handle_change:
             return
-        self.__on_cell_change(event, setting, control)
-        self.reset_view()
+        proposed_value = (control.GetValue() and 'Yes') or 'No'
+        self.on_value_change(setting, control, proposed_value, event)
     
     def __on_combobox_change(self,event,setting,control):
         if not self.__handle_change:
             return
-        self.__on_cell_change(event, setting, control)
-        self.reset_view()
+        self.on_value_change(setting, control, control.GetValue(), event)
     
     def __on_multichoice_change(self, event, setting, control):
         if not self.__handle_change:
             return
         
-        old_value = str(setting)
-        proposed_value = str(','.join([control.Items[i]
-                                       for i in control.Selections]))
-        setting_edited_event = SettingEditedEvent(setting, self.__module, 
-                                                  proposed_value, 
-                                                  event)
-        self.notify(setting_edited_event)
-        self.reset_view()
+        proposed_value = u','.join([control.Items[i]
+                                    for i in control.Selections])
+        self.on_value_change(setting, control, proposed_value, event)
         
     def __on_cell_change(self,event,setting,control):
         if not self.__handle_change:
             return
-        old_value = str(setting)
-        if isinstance(control,wx.CheckBox):
-            proposed_value = (control.GetValue() and 'Yes') or 'No'
-        else:
-            proposed_value = str(control.GetValue())
+        proposed_value = unicode(control.GetValue())
+        self.on_value_change(setting, control, proposed_value, event,
+                             EDIT_TIMEOUT_SEC * 1000)
+        
+    def on_value_change(self, setting, control, proposed_value, event, 
+                        timeout = None):
         setting_edited_event = SettingEditedEvent(setting,
                                                   self.__module, 
                                                   proposed_value,
                                                   event)
         self.notify(setting_edited_event)
-        if setting.reset_view:
-            self.reset_view()
+        if timeout is None:
+            self.reset_view() # use the default timeout
+        else:
+            self.reset_view(timeout)
     
     def fit_ctrl(self, ctrl):
         '''Fit the control to its text size'''
@@ -1638,13 +1671,20 @@ class ModuleView:
         except:
             pass
 
-    def reset_view(self):
+    def reset_view(self, refresh_delay = 250):
         """Redo all of the controls after something has changed
         
-        TO_DO: optimize this so that only things that have changed IRL change in the GUI
+        refresh_delay - wait this many ms before refreshing the display
         """
         if self.__module is None:
             return
+        if self.refresh_pending:
+            return
+        refresh_pending = True
+        wx.CallLater(refresh_delay, self.do_reset)
+        
+    def do_reset(self):
+        self.refresh_pending = False
         focus_control = wx.Window.FindFocus()
         if not focus_control is None:
             focus_name = focus_control.GetName()

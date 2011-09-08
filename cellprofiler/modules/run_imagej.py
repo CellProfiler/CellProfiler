@@ -39,6 +39,7 @@ D_FIRST_IMAGE_SET = "FirstImageSet"
 D_LAST_IMAGE_SET = "LastImageSet"
 
 cached_commands = None
+cached_choice_tree = None
 ij2_module_service = None
 
 '''The index of the imageJ command in the settings'''
@@ -68,12 +69,11 @@ class RunImageJ(cpm.CPModule):
         # Load the commands in visible_settings so that we don't call
         # ImageJ unless someone tries the module
         #
-            
-        self.command = cps.Choice(
-            "Command", [], value="None", choices_fn = self.get_command_choices,
+        self.command = self.make_command_choice(
+            "Command",
             doc = """<i>(Used only if running a command)</i><br>
             The command to execute when the module runs.""")
-        
+                                                
         self.command_settings_dictionary = {}
         self.command_settings = []
         self.command_settings_count = cps.HiddenCount(
@@ -158,8 +158,8 @@ class RunImageJ(cpm.CPModule):
             to choose a command to run or <i>%(CM_MACRO)s</i> to run a macro.
             """ % globals())
         
-        self.prepare_group_command = cps.Choice(
-            "Command", [], value="None", choices_fn = self.get_command_choices,
+        self.prepare_group_command = self.make_command_choice(
+            "Command", 
             doc = """<i>(Used only if running a command before an image group)</i><br>
             The command to execute before processing a group of images.""")
 
@@ -186,8 +186,8 @@ class RunImageJ(cpm.CPModule):
             <i>%(CM_MACRO)s</i> to run a macro.
             """ % globals())
         
-        self.post_group_command = cps.Choice(
-            "Command", [], value="None", choices_fn = self.get_command_choices,
+        self.post_group_command = self.make_command_choice(
+            "Command", 
             doc = """
             <i>(Used only if running a command after an image group)</i><br>
             The command to execute after processing a group of images.""")
@@ -231,6 +231,19 @@ class RunImageJ(cpm.CPModule):
             You can use the user interface to run ImageJ commands or
             set up ImageJ before a CellProfiler run.""")
         
+    def make_command_choice(self, label, doc):
+        '''Make a version-appropriate command chooser setting
+        
+        label - the label text for the setting
+        doc - its documentation
+        '''
+        if bioformats.USE_IJ2:
+            return cps.TreeChoice(label, "None", self.get_choice_tree, doc = doc)
+        else:
+            return cps.Choice(label, [], value="None", 
+                              choices_fn = self.get_command_choices,
+                              doc = doc)
+        
     def get_command_choices(self, pipeline):
         return sorted(self.get_cached_commands().keys())
     
@@ -247,35 +260,72 @@ class RunImageJ(cpm.CPModule):
         if cached_commands is None:
             import imagej.ijbridge as ijbridge
             ijb = ijbridge.get_ij_bridge()
-            if bioformats.USE_IJ2:
-                context = RunImageJ.get_context()
-                ij2_module_service = IJ2.get_module_service(context)
-                cached_commands = {}
-                for module_info in ij2_module_service.getModules():
-                    cached_commands[module_info.getTitle()] = module_info
+            import cellprofiler.utilities.jutil as J
+            commands = ijb.get_commands()
+            if hasattr(commands, 'values'):
+                values = commands.values
             else:
-                import cellprofiler.utilities.jutil as J
-                commands = ijb.get_commands()
-                if hasattr(commands, 'values'):
-                    values = commands.values
-                else:
-                    values = [None] * len(commands)
-                cached_commands = {}
-                for key, value in zip(commands, values):
-                    cached_commands[key] = value
+                values = [None] * len(commands)
+            cached_commands = {}
+            for key, value in zip(commands, values):
+                cached_commands[key] = value
         return cached_commands
+
+    def get_choice_tree(self):
+        '''Get the ImageJ command choices for the TreeChoice control
+        
+        The menu items are augmented with a third tuple entry which is
+        the ModuleInfo for the command.
+        '''
+        global cached_choice_tree
+        if cached_choice_tree is not None:
+            return cached_choice_tree
+        context = RunImageJ.get_context()
+        ij2_module_service = IJ2.get_module_service(context)
+        tree = []
+        
+        for module_info in ij2_module_service.getModules():
+            menu_path = module_info.getMenuPath()
+            items = [IJ2.wrap_menu_entry(x)
+                     for x in J.iterate_collection(menu_path)]
+            if len(items) == 0:
+                continue
+            current_tree = tree
+            for item in items:
+                name = item.getName()
+                weight = item.getWeight()
+                matches = [node for node in current_tree
+                           if node[0] == name]
+                if len(matches) > 0:
+                    current_node = matches[0]
+                else:
+                    current_node = [name, [], module_info, weight]
+                    current_tree.append(current_node)
+                current_tree = current_node[1]
+            # mark the leaf.
+            current_node[1] = None
+        def sort_tree(tree):
+            '''Recursively sort a tree in-place'''
+            for node in tree:
+                if node[1] is not None:
+                    sort_tree(node[1])
+            tree.sort(lambda node1, node2: cmp(node1[-1], node2[-1]))
+        sort_tree(tree)
+        cached_choice_tree = tree
+        return cached_choice_tree
         
     def get_command_settings(self, command, d):
         '''Get the settings associated with the current command
         
         d - the dictionary that persists the setting. None = regular
         '''
-        cc = self.get_cached_commands()
-        if (not cc.has_key(command)) or (cc[command] is None):
-            return []
-        if not d.has_key(command):
+        key = command.get_unicode_value()
+        if not d.has_key(key):
             if bioformats.USE_IJ2:
-                module_info = cc[command]
+                try:
+                    module_info = command.get_selected_leaf()[2]
+                except cps.ValidationError:
+                    return []
                 result = []
                 inputs = module_info.getInputs()
                 module = module_info.createModule()
@@ -359,14 +409,17 @@ class RunImageJ(cpm.CPModule):
                             label, "ImageJImage",
                             doc = description), output))
                 result += implied_outputs
-                d[command] = result
+                d[key] = result
                 return [setting for setting, module_info in result]
             else:
-                classname = cc[command]
+                cc = self.get_cached_commands()
+                if (not cc.has_key(key)) or (cc[key] is None):
+                    return []
+                classname = cc[key]
                 try:
                     plugin = M.get_plugin(classname)
                 except:
-                    d[command] = []
+                    d[key] = []
                     return []
                 fp_in = P.get_input_fields_and_parameters(plugin)
                 result = []
@@ -391,15 +444,17 @@ class RunImageJ(cpm.CPModule):
                     if field_type == P.FT_IMAGE:
                         result += [cps.ImageNameProvider(parameter.label() or "",
                                                          "Output")]
-            d[command] = result
+            d[key] = result
         elif bioformats.USE_IJ2:
-            result = [setting for setting, module_info in d[command]]
+            result = [setting for setting, module_info in d[key]]
         else:
-            result = d[command]
+            result = d[key]
         return result
         
     def is_advanced(self, command, d):
         '''A command is an advanced command if there are settings for it'''
+        if bioformats.USE_IJ2:
+            return True
         return len(self.get_command_settings(command, d)) > 0
     
     def settings(self):
@@ -425,11 +480,11 @@ class RunImageJ(cpm.CPModule):
         del self.command_settings[:]
         if self.command_or_macro == CM_COMMAND:
             result += [self.command]
-            if not self.is_advanced(self.command.value,
+            if not self.is_advanced(self.command,
                                     self.command_settings_dictionary):
                 result += [self.options]
             else:
-                cs = self.get_command_settings(self.command.value,
+                cs = self.get_command_settings(self.command,
                                                self.command_settings_dictionary)
                 result += cs
                 self.command_settings += cs
@@ -447,11 +502,11 @@ class RunImageJ(cpm.CPModule):
             result += [self.prepare_group_macro]
         elif self.prepare_group_choice == CM_COMMAND:
             result += [self.prepare_group_command]
-            if not self.is_advanced(self.prepare_group_command.value,
+            if not self.is_advanced(self.prepare_group_command,
                                     self.pre_command_settings_dictionary):
                 result += [self.prepare_group_options]
             else:
-                cs = self.get_command_settings(self.prepare_group_command.value,
+                cs = self.get_command_settings(self.prepare_group_command,
                                                self.pre_command_settings_dictionary)
                 result += cs
                 self.pre_command_settings += cs
@@ -461,11 +516,11 @@ class RunImageJ(cpm.CPModule):
             result += [self.post_group_macro]
         elif self.post_group_choice == CM_COMMAND:
             result += [self.post_group_command]
-            if not self.is_advanced(self.post_group_command.value,
+            if not self.is_advanced(self.post_group_command,
                                     self.post_command_settings_dictionary):
                 result += [self.post_group_options]
             else:
-                cs = self.get_command_settings(self.post_group_command.value,
+                cs = self.get_command_settings(self.post_group_command,
                                                self.post_command_settings_dictionary)
                 result += cs
                 self.post_command_settings += cs
@@ -570,19 +625,19 @@ class RunImageJ(cpm.CPModule):
     def do_imagej(self, ijb, workspace, when=None):
         if when == D_FIRST_IMAGE_SET:
             choice = self.prepare_group_choice.value
-            command = self.prepare_group_command.value
+            command = self.prepare_group_command
             macro = self.prepare_group_macro.value
             options = self.prepare_group_options.value
             d = self.pre_command_settings_dictionary
         elif when == D_LAST_IMAGE_SET:
             choice = self.post_group_choice.value
-            command = self.post_group_command.value
+            command = self.post_group_command
             macro = self.post_group_macro.value
             options = self.post_group_options.value
             d = self.pre_command_settings_dictionary
         else:
             choice = self.command_or_macro.value
-            command = self.command.value
+            command = self.command
             macro  = self.macro.value
             options = self.options.value
             d = self.command_settings_dictionary
@@ -591,7 +646,7 @@ class RunImageJ(cpm.CPModule):
             if self.is_advanced(command, d):
                 self.execute_advanced_command(workspace, command, d)
             else:
-                ijb.execute_command(command, options)
+                ijb.execute_command(command.value, options)
         elif choice == CM_MACRO:
             macro = workspace.measurements.apply_metadata(macro)
             ijb.execute_macro(macro)
@@ -612,15 +667,16 @@ class RunImageJ(cpm.CPModule):
         if wants_display:
             workspace.display_data.input_images = input_images = []
             workspace.display_data.output_images = output_images = []
+        key = command.get_unicode_value()
         if bioformats.USE_IJ2:
-            cc = self.get_cached_commands()
-            module_info = cc[command]
+            node = command.get_selected_leaf()
+            module_info = node[2]
             module = IJ2.wrap_module(module_info.createModule())
             context = self.get_context()
             display_service = IJ2.get_display_service(context)
                 
             display_dictionary = {}
-            for setting, module_item in d[command]:
+            for setting, module_item in d[key]:
                 field_type = module_item.getType()
                 if isinstance(setting, cps.ImageNameProvider):
                     continue
@@ -653,7 +709,7 @@ class RunImageJ(cpm.CPModule):
                 module.setInput(module_item.getName(), value)
             module_service = IJ2.get_module_service(context)
             module_service.run(module)
-            for setting, module_item in d[command]:
+            for setting, module_item in d[key]:
                 if isinstance(setting, cps.ImageNameProvider):
                     name = module_item.getName()
                     output_name = setting.value
@@ -676,6 +732,7 @@ class RunImageJ(cpm.CPModule):
             from imagej.imageprocessor import make_image_processor
             from imagej.imageprocessor import get_image
             
+            command = command.value
             settings = d[command]
             classname = self.get_cached_commands()[command]
             plugin = M.get_plugin(classname)
@@ -733,7 +790,7 @@ class RunImageJ(cpm.CPModule):
                 
     def display(self, workspace):
         if (self.command_or_macro == CM_COMMAND and 
-              self.is_advanced(self.command.value,
+              self.is_advanced(self.command,
                                self.command_settings_dictionary)):
             input_images = workspace.display_data.input_images
             output_images = workspace.display_data.output_images
@@ -831,8 +888,10 @@ class RunImageJ(cpm.CPModule):
              IDX_POST_COMMAND, self.post_command_settings_dictionary)):
             del command_settings[:]
             if setting_values[idx_choice] == CM_COMMAND:
+                command = self.make_command_choice("", "")
+                command.set_value_text(setting_values[idx_cmd])
                 command_settings += self.get_command_settings(
-                    setting_values[idx_cmd], d)
+                    command, d)
         
             
     def upgrade_settings(self, setting_values, variable_revision_number,

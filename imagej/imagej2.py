@@ -241,6 +241,8 @@ def get_module_service(context):
         createModule = J.make_method(
             "createModule",
             "()Limagej/ext/module/Module;")
+        getMenuPath = J.make_method(
+            "getMenuPath", "()Limagej/ext/MenuPath;")
         
     class ModuleService(object):
         def __init__(self):
@@ -303,6 +305,25 @@ def wrap_module(module):
         isResolved = J.make_method("isResolved", "(Ljava/lang/String;)Z")
         setResolved = J.make_method("setResolved", "(Ljava/lang/String;Z)V")
     return Module()
+
+def wrap_menu_entry(menu_entry):
+    '''Wrap an instance of imagej.ext.MenuEntry'''
+    class MenuEntry(object):
+        def __init__(self, o = menu_entry):
+            self.o = o
+        setName = J.make_method("setName", "(Ljava/lang/String;)V")
+        getName = J.make_method("getName", "()Ljava/lang/String;")
+        setWeight = J.make_method("setWeight", "(I)V")
+        getWeight = J.make_method("getWeight", "()D")
+        setMnemonic = J.make_method("setMnemonic", "(C)V")
+        getMnemonic = J.make_method("getMnemonic", "()C")
+        setAccelerator = J.make_method("setAccelerator", "(Ljava/lang/String;)V")
+        getAccelerator = J.make_method("getAccelerator","()Ljava/lang/String;")
+        setIconPath = J.make_method("setIconPath", "(Ljava/lang/String;)V")
+        getIconPath = J.make_method("getIconPath", "()Ljava/lang/String;")
+        assignProperties = J.make_method("assignProperties", 
+                                         "(Limagej/ext/MenuEntry;)V")
+    return MenuEntry(menu_entry)
 
 def get_display_service(context):
     '''Get the display service for a given context

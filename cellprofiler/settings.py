@@ -25,6 +25,7 @@ from cellprofiler.preferences import \
      ABSOLUTE_FOLDER_NAME, URL_FOLDER_NAME, NO_FOLDER_NAME,\
      get_default_image_directory, get_default_output_directory, \
      standardize_default_folder_names
+import cellprofiler.measurements
 
 from cellprofiler.utilities.utf16encode import utf16encode
 
@@ -954,6 +955,11 @@ class ObjectNameProvider(NameProvider):
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         super(ObjectNameProvider,self).__init__(text, OBJECT_GROUP, value,
                                                 *args, **kwargs)
+
+    def test_valid(self, pipeline):
+        if self.value_text in cellprofiler.measurements.disallowed_object_names:
+            raise ValidationError("Object names may not be any of %s" % (", ".join(cellprofiler.measurements.disallowed_object_names)), self)
+
 
 class OutlineNameProvider(ImageNameProvider):
     '''A setting that provides an object outline name

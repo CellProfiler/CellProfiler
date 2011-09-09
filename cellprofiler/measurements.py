@@ -50,6 +50,8 @@ NEIGHBORS = "Neighbors"
 """The per-object "category" (if anyone needs the word, "Object")"""
 OBJECT = "Object"
 
+disallowed_object_names = [IMAGE, EXPERIMENT, RELATIONSHIP]
+
 COLTYPE_INTEGER = "integer"
 COLTYPE_FLOAT = "float"
 '''16bit Binary Large Object. This object can fit 64K of raw data.

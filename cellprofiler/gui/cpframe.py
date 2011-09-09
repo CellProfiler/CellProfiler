@@ -154,7 +154,6 @@ class CPFrame(wx.Frame):
         if event.CanVeto() and not self.pipeline_controller.check_close():
             event.Veto()
             return
-        self.tbicon.Destroy()
         self.__directory_view.close()
         self.__preferences_view.close()
         self.pipeline_controller.on_close()

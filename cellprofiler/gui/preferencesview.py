@@ -74,6 +74,7 @@ class PreferencesView:
         self.__sizer.Hide(self.__progress_panel)
         self.__errors = set()
         self.__pipeline_list_view = None
+        self.__progress_watcher = None
         
     def close(self):
         cpprefs.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
@@ -328,7 +329,8 @@ class PreferencesView:
         self.__progress_panel.Layout()
     
     def on_stop_analysis(self):
-        self.__progress_watcher.stop()
+        if self.__progress_watcher is not None:
+            self.__progress_watcher.stop()
         self.__progress_watcher = None
         self.__odds_and_ends_panel.Sizer.Show(self.__analyze_images_button)
         self.__odds_and_ends_panel.Sizer.Hide(self.__stop_analysis_button)

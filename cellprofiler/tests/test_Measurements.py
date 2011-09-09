@@ -584,6 +584,47 @@ class TestMeasurements(unittest.TestCase):
             if m is not None:
                 del m
             os.unlink(name)
+    
+    def test_15_01_get_object_names(self):
+        '''Test the get_object_names() function'''
+        m = cpmeas.Measurements()
+        try:
+            m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
+            object_names = m.get_object_names()
+            self.assertEqual(len(object_names), 2)
+            self.assertTrue(OBJECT_NAME in object_names)
+            self.assertTrue(cpmeas.IMAGE in object_names)
+        finally:
+            del m
+            
+    def test_15_02_get_object_names_relationships(self):
+        '''Regression test - don't return Relationships'''
+        m = cpmeas.Measurements()
+        try:
+            m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)
+            m.add_image_measurement(cpmeas.GROUP_INDEX, 0)
+            m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
+            m.add_relate_measurement(1, "Foo", OBJECT_NAME, OBJECT_NAME,
+                                     np.zeros(3), np.zeros(3),
+                                     np.zeros(3), np.zeros(3))
+            object_names = m.get_object_names()
+            self.assertEqual(len(object_names), 2)
+            self.assertTrue(OBJECT_NAME in object_names)
+            self.assertTrue(cpmeas.IMAGE in object_names)
+        finally:
+            del m
+        
+    def test_16_01_get_feature_names(self):
+        m = cpmeas.Measurements()
+        try:
+            m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
+            feature_names = m.get_feature_names(OBJECT_NAME)
+            self.assertEqual(len(feature_names), 1)
+            self.assertTrue("Foo" in feature_names)
+        finally:
+            del m
+        
+        
         
 if __name__ == "__main__":
     unittest.main()

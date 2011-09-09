@@ -471,7 +471,8 @@ class Measurements(object):
     def get_object_names(self):
         """The list of object names (including Image) that have measurements
         """
-        return self.hdf5_dict.top_level_names()
+        return [x for x in self.hdf5_dict.top_level_names()
+                if x != RELATIONSHIP]
 
     object_names = property(get_object_names)
 

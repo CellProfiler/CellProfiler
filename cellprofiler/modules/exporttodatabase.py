@@ -651,7 +651,13 @@ class ExportToDatabase(cpm.CPModule):
         group.append(
             "image_cols", cps.Choice("Select an image to include",["None"],choices_fn = self.get_property_file_image_choices, doc="""
             <i>(Used only if creating a properties file and specifiying the image information)</i><br>
-            Choose image name to include it in the properties file of images."""))
+            Choose image name to include it in the properties file of images.
+            <p>The images in the drop-down correspond to images that have been:
+            <ul>
+            <li>Loaded using one of the <b>Load</b> modules.</li>
+            <li>Saved with the <b>SaveImages</b> module, with the corresponding file and path information stored.</li>
+            </ul>
+            If you do not see your desired image listed, check the settings on these modules.</p>"""))
         
         group.append(
             "wants_automatic_image_name", cps.Binary(

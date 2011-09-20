@@ -397,7 +397,7 @@ class LoadImages(cpmodule.CPModule):
             and check or uncheck the checkboxes to enable or disable analysis
             of the associated folders.""")
         
-        self.check_images = cps.Binary('Check image sets for missing or duplicate files?',True,doc="""
+        self.check_images = cps.Binary('Check image sets for unmatched or duplicate files?',True,doc="""
                 <i>(Used only if metadata is extracted from the image file and not loading by order)</i><br>
                 Selecting this option will examine the filenames for 
                 unmatched or duplicate files based on extracted metadata. This is useful for images

@@ -30,7 +30,7 @@ WELCOME_MESSAGE = 'Welcome to CellProfiler'
 ANALYZE_IMAGES = 'Analyze Images'
 START_WORK_SERVER = 'Start Distributed Computation'
 
-WRITE_MAT_FILE = "Matlab"
+WRITE_MAT_FILE = "MATLAB"
 WRITE_HDF_FILE = "HDF5"
 DO_NOT_WRITE_MEASUREMENTS = "Do not write measurements"
 

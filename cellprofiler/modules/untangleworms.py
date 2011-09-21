@@ -548,9 +548,9 @@ class UntangleWorms(cpm.CPModule):
             return complexity_limits[self.complexity.value]
         return self.custom_complexity.value
      
-    def prepare_group(self, workspace, grouping, image_numbers):
+    def prepare_group(self, pipeline, image_set_list, grouping, image_numbers):
         '''Prepare to process a group of worms'''
-        d = self.get_dictionary(workspace.image_set_list)
+        d = self.get_dictionary(image_set_list)
         d[TRAINING_DATA] = []
         
     def run(self, workspace):
@@ -860,7 +860,7 @@ class UntangleWorms(cpm.CPModule):
             
             if self.wants_overlapping_labels or self.wants_nonoverlapping_labels:
                 path = cpprefs.get_default_output_directory()
-                name = "%d.mat" % measurements.image_set_number
+                name = "%d.mat" % measurements.get_image_set_number()
                 from scipy.io import savemat
                 d = dict(i = ijv[:,0], j=ijv[:,1], label=ijv[:,2])
                 savemat(os.path.join(path, name), d)
@@ -2196,11 +2196,6 @@ class UntangleWorms(cpm.CPModule):
         index = index - np.arange(len(index))
         count -= 1
         #
-        # Get rid of all segments that are 1 long. Those will be joined
-        # by the segments around them.
-        #
-        index, count = index[count !=0], count[count != 0]
-        #
         # Find the control point and within-control-point index of each point
         #
         label = np.zeros(len(i), int)
@@ -2362,7 +2357,7 @@ class UntangleWorms(cpm.CPModule):
                 scales += [str(n) for n in range(1, self.ncontrol_points()+1)]
         return scales
          
-    def prepare_to_create_batch(self, workspace, fn_alter_path):
+    def prepare_to_create_batch(self, pipeline, image_set_list, fn_alter_path):
         '''Prepare to create a batch file
         
         This function is called when CellProfiler is about to create a

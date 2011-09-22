@@ -3988,13 +3988,6 @@ def feret_diameter(chulls, counts, indexes):
     pt1 = chulls[antipodes[:,0],1:]
     pt2 = chulls[antipodes[:,1],1:]
     distances = np.sum((pt1 - pt2) **2, 1)
-    if logger.getEffectiveLevel() <= logging.DEBUG:
-        best = np.array(scind.maximum_position(distances, l, indexes)).ravel().astype(int)
-        dt = np.dtype([("label",int,1),("distance",float,1),("pt1",int,2),("pt2",int,2)])
-        choices = np.array(
-            zip(indexes, np.sqrt(distances[best]), pt1[best,:], pt2[best,:]),
-            dtype = dt)
-        logger.debug("Feret diameter results:\n" + repr(choices))
                            
     max_distance = np.sqrt(fixup_scipy_ndimage_result(scind.maximum(distances, l, indexes)))
     #

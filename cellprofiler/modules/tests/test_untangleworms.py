@@ -2056,7 +2056,13 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         
     def test_05_00_get_all_paths_recur_none(self):
         module = U.UntangleWorms()
-        paths_list = module.get_all_paths_recur([[]], [], [0], [])
+        class Result(object):
+            def __init__(self):
+                self.branch_areas = []
+                self.segments = []
+                self.incidence_matrix = np.zeros((0,0), bool)
+                self.segment_lengths = []
+        paths_list = list(module.get_all_paths_recur(Result(), [], [], 0, 0, 1000))
         self.assertEqual(len(paths_list), 0)
         
     def test_05_01_get_all_paths_recur_one(self):
@@ -2064,7 +2070,15 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         #
         # Branch # 0 connects segment 0 and segment 1
         #
-        paths_list = module.get_all_paths_recur([[0],[0]],[[0,1]],[0],[[0]])
+        class Result(object):
+            def __init__(self):
+                self.incident_branch_areas = [[0],[0]]
+                self.incident_segments = [[0,1]]
+                self.segments = [np.zeros((2,1)),np.zeros((2,1))]
+                self.segment_lengths = [1,1]
+                self.incidence_directions = np.array([[False,True]])
+        paths_list = list(module.get_all_paths_recur(
+            Result(), [0], [[0]], 1, 0, 1000))
         self.assertEqual(len(paths_list), 1)
         path = paths_list[0]
         self.assertTrue(isinstance(path, module.Path))
@@ -2077,8 +2091,16 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         # Branch # 0 connects segment 0 and segment 1
         # Branch # 1 connects segment 1 and 2
         #
-        paths_list = module.get_all_paths_recur([[0],[0,1],[1]],
-                                                [[0,1],[1,2]],[0],[[0]])
+        class Result(object):
+            def __init__(self):
+                self.incident_branch_areas = [[0],[0,1],[1]]
+                self.incident_segments = [[0,1],[1,2]]
+                self.segments = [np.zeros((2,1)),np.zeros((2,1))] * 3
+                self.segment_lengths = [1,1,1]
+                self.incidence_directions = np.array([[False,True,False],
+                                                      [False,True,False]])
+        paths_list = list(module.get_all_paths_recur(Result(),[0],[[0]],
+                                                     1, 0, 1000))
         self.assertEqual(len(paths_list), 2)
         expected = (((0,1),(0,)),((0,1,2),(0,1)))
         sorted_list = tuple(sorted([(tuple(path.segments), tuple(path.branch_areas))
@@ -2090,9 +2112,16 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         #
         # A hopeless tangle where all branches connect to all segments
         #
-        paths_list = module.get_all_paths_recur([list(range(3))]*4,
-                                                [list(range(4))]*3,
-                                                [0],[[i] for i in range(3)])
+        class Result(object):
+            def __init__(self):
+                self.incident_branch_areas = [list(range(3))]*4
+                self.incident_segments = [list(range(4))]*3
+                self.segments = [(np.zeros((2,1)), np.zeros((2,1)))] * 4
+                self.segment_lengths = [1] * 4
+                self.incidence_directions = np.ones((3,4), bool)
+        paths_list = module.get_all_paths_recur(Result(),
+                                                [0],[[i] for i in range(3)],
+                                                1, 0, 1000)
         sorted_list = tuple(sorted([(tuple(path.segments), tuple(path.branch_areas))
                                     for path in paths_list]))
         #
@@ -2131,7 +2160,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
                 self.branch_areas = []
                 self.segments = []
                 self.incidence_matrix = np.zeros((0,0), bool)
-        path_list = module.get_all_paths(Result())
+        path_list = list(module.get_all_paths(Result(), 0, 1000))
         self.assertEqual(len(path_list), 0)
         
     def test_06_01_get_all_paths_one(self):
@@ -2139,9 +2168,10 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         class Result(object):
             def __init__(self):
                 self.branch_areas = []
-                self.segments = [0]
+                self.segments = [[np.zeros((1,2)),np.zeros((1,2))]]
                 self.incidence_matrix = np.zeros((0,1), bool)
-        path_list = module.get_all_paths(Result())
+                self.incidence_directions = [[True, False]]
+        path_list = list(module.get_all_paths(Result(), 0, 1000))
         self.assertEqual(len(path_list), 1)
         path = path_list[0]
         self.assertTrue(isinstance(path, module.Path))
@@ -2153,9 +2183,10 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         class Result(object):
             def __init__(self):
                 self.branch_areas = [1]
-                self.segments = [0,1]
+                self.segments = [[np.zeros((1,2)),np.zeros((1,2))]] * 2
                 self.incidence_matrix = np.ones((1,2), bool)
-        path_list = module.get_all_paths(Result())
+                self.incidence_directions = np.array([[True, False]])
+        path_list = list(module.get_all_paths(Result(), 0, 1000))
         self.assertEqual(len(path_list), 3)
         sorted_list = tuple(sorted([(tuple(path.segments), tuple(path.branch_areas))
                                     for path in path_list]))
@@ -2170,10 +2201,13 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
         class Result(object):
             def __init__(self):
                 self.branch_areas = [0,1,2]
-                self.segments = [0,1,2,3]
-                self.incidence_matrix = np.random.uniform(size=(3,4)) > .5
+                self.segments = [[np.zeros((1,2)),np.zeros((1,2))]] * 4
+                self.incidence_directions = np.random.uniform(size=(3,4)) > .25
+                self.incidence_matrix = (
+                    self.incidence_directions |
+                    (np.random.uniform(size=(3,4)) > .25))
         graph = Result()
-        path_list = module.get_all_paths(graph)
+        path_list = module.get_all_paths(graph, 0, 1000)
         for path in path_list:
             self.assertEqual(len(path.segments), len(path.branch_areas)+1)
             if len(path.segments) > 1:

@@ -3,7 +3,7 @@
 #
 # WARNING: this Makefile is unlikely to work correctly for
 # CellProfiler revisions much beyond the most recent update to the
-# Makefile itself: ($Revision: $)
+# Makefile itself.  See the changelog below.
 
 #
 # CHANGELOG:

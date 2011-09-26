@@ -87,7 +87,7 @@ class TestExportToDatabase(unittest.TestCase):
         if self.__connection is None:
             import MySQLdb
             from MySQLdb.cursors import SSCursor
-            self.__connection = MySQLdb.connect(host='imgdb01',
+            self.__connection = MySQLdb.connect(host='imgdb02',
                                                 user='cpuser',
                                                 passwd='cPus3r')
         return self.__connection

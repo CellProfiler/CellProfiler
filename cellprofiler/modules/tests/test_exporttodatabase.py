@@ -838,7 +838,7 @@ ExportToDatabase:[module_num:1|svn_version:\'9461\'|variable_revision_number:15|
         table_prefix = "T_%s"%str(uuid.uuid4()).replace('-','')
         module.table_prefix.value = table_prefix
         module.want_table_prefix.value = True
-        module.db_host.value = 'imgdb01'
+        module.db_host.value = 'imgdb02'
         module.db_user.value = 'cpuser'
         module.db_passwd.value = 'cPus3r'
         module.db_name.value ='CPUnitTest'

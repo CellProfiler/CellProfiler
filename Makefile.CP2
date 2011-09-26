@@ -1,6 +1,11 @@
 #
 # Makefile for CellProfiler 2 prerequisites
 #
+# WARNING: this Makefile is unlikely to work correctly for
+# CellProfiler revisions much beyond the most recent update to the
+# Makefile itself: ($Revision: $)
+
+#
 # CHANGELOG:
 # 0.2.1.leek - 2011.02.14: Lee Kamentsky
 #         - added gettext package (needed on my system because gettext was version 1.4 and needed 1.7)

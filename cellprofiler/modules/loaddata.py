@@ -1070,35 +1070,43 @@ class LoadData(cpm.CPModule):
             if (header[i].startswith(cpmeas.C_METADATA+"_") and
                 cpmeas.is_well_column_token(header[i].split("_")[1])):
                 coltypes[i] = cpmeas.COLTYPE_VARCHAR
+            if any([header[i].startswith(x) 
+                    for x in (C_PATH_NAME, C_FILE_NAME, C_OBJECTS_FILE_NAME,
+                              C_OBJECTS_PATH_NAME, C_URL, C_OBJECTS_URL)]):
+                coltypes[i] = cpmeas.COLTYPE_VARCHAR
                 
         collen = [0]*len(header)
         for row in reader:
             for index, field in enumerate(row):
+                key = header[index]
                 if already_output[index]:
                     continue
                 if ((not self.wants_images) and
-                    (field.startswith(C_PATH_NAME) or
-                     field.startswith(C_FILE_NAME) or
-                     field.startswith(C_OBJECTS_FILE_NAME) or
-                     field.startswith(C_OBJECTS_PATH_NAME))):
+                    (key.startswith(C_PATH_NAME) or
+                     key.startswith(C_FILE_NAME) or
+                     key.startswith(C_OBJECTS_FILE_NAME) or
+                     key.startswith(C_OBJECTS_PATH_NAME))):
                     continue
                 try:
                     len_field = len(field)
                 except TypeError:
                     field = str(field)
                     len_field = len(field)
-                if (field.startswith(C_PATH_NAME) or 
-                    field.startswith(C_OBJECTS_PATH_NAME)):
+                if (key.startswith(C_PATH_NAME) or 
+                    key.startswith(C_OBJECTS_PATH_NAME) or
+                    key.startswith(C_URL) or
+                    key.startswith(C_OBJECTS_URL)):
                     # Account for possible rewrite of the pathname
                     # in batch data
                     len_field = max(cpmeas.PATH_NAME_LENGTH, 
                                     len_field + PATH_PADDING)
-                ldtype = get_loaddata_type(field)
-                if coltypes[index] == cpmeas.COLTYPE_INTEGER:
-                    coltypes[index] = ldtype
-                elif (coltypes[index] == cpmeas.COLTYPE_FLOAT and
-                      ldtype != cpmeas.COLTYPE_INTEGER):
-                    coltypes[index] = ldtype
+                if coltypes[index] != cpmeas.COLTYPE_VARCHAR:
+                    ldtype = get_loaddata_type(field)
+                    if coltypes[index] == cpmeas.COLTYPE_INTEGER:
+                        coltypes[index] = ldtype
+                    elif (coltypes[index] == cpmeas.COLTYPE_FLOAT and
+                          ldtype != cpmeas.COLTYPE_INTEGER):
+                        coltypes[index] = ldtype
 
                 if collen[index] < len(field):
                     collen[index] = len(field)

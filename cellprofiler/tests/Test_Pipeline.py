@@ -704,12 +704,12 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 
     def test_15_02_profile_example_fly(self):
         """
-        Profile ExampleAllModulesPipeline
+        Profile ExampleFlyImages pipeline
 
         Dependencies:
         User must have ExampleImages on their machine,
         in a location which can be found by example_images_directory().
-        This directory should contain the pipeline ExampleAllModulesPipeline
+        This directory should contain the ExampleFlyImages direcory.
         """
         example_dir = example_images_directory()
         if(not example_dir):

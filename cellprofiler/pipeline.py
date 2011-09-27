@@ -1346,6 +1346,8 @@ class Pipeline(object):
                                                      np.array([delta_sec]))
                     while (workspace.disposition == cpw.DISPOSITION_PAUSE and
                            frame is not None):
+                        # try to leave measurements temporary file in a readable state
+                        measurements.flush()
                         yield measurements
                     if workspace.disposition == cpw.DISPOSITION_SKIP:
                         break
@@ -1353,16 +1355,22 @@ class Pipeline(object):
                         measurements.add_experiment_measurement(EXIT_STATUS,
                                                                 "Failure")
                         return
-            
+
             if measurements is not None:
                 exit_status = self.post_run(measurements, image_set_list, frame)
                 #
                 # Record the status after post_run
                 #
-                measurements.add_experiment_measurement(EXIT_STATUS,exit_status)
+                measurements.add_experiment_measurement(EXIT_STATUS, exit_status)
         finally:
+            if measurements is not None:
+                 # XXX - We want to force the measurements to update the
+                 # underlying file, or else we get partially written HDF5
+                 # files.  There must be a better way to do this.
+                measurements.flush()
+                del measurements
             self.end_run()
-    
+
     def end_run(self):
         '''Tell everyone that a run is ending'''
         self.notify_listeners(EndRunEvent())

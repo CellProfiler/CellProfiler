@@ -767,17 +767,18 @@ class PipelineController:
                 # like CreateBatchFiles)
                 #
                 self.stop_running()
-                if (self.__pipeline_measurements is not None and 
+                if (self.__pipeline_measurements is not None and
                     cpprefs.get_write_MAT_files() is True):
-                    self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
-                    del self.__pipeline_measurements
-                    self.__pipeline_measurements = None
+                    self.__pipeline.save_measurements(self.__output_path, self.__pipeline_measurements)
                     self.__output_path = None
                     message = "Finished processing pipeline"
                     title = "Analysis complete"
                 else:
                     message = "Pipeline processing finished, no measurements taken"
                     title = "Analysis complete"
+                # allow cleanup of measurements
+                del self.__pipeline_measurements
+                self.__pipeline_measurements = None
                 if len(self.pipeline_list) > 0:
                     self.run_next_pipeline(event)
                     return
@@ -789,6 +790,9 @@ class PipelineController:
                                      self.__pipeline,
                                      "Failed to initialize pipeline",
                                      sys.exc_info()[2])
+                if self.__pipeline_measurements is not None:
+                    # try to leave measurements in a readable state
+                    self.__pipeline_measurements.flush()
                 self.stop_running()
     
     def on_restart(self, event):

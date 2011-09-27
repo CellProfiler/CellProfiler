@@ -164,11 +164,14 @@ class Measurements(object):
         self.__initialized_explicitly = False
         self.__relationships = set()
         self.__relationship_names = set()
-        
+
     def __del__(self):
         if hasattr(self, "hdf5_dict"):
             del self.hdf5_dict
-        
+
+    def flush(self):
+        self.hdf5_dict.flush()
+
     def initialize(self, measurement_columns):
         '''Initialize the measurements with a list of objects and features
 
@@ -812,7 +815,7 @@ def load_measurements(filename, dest_file = None, can_overwrite = False,
         fd = open(filename, "rb")
         header = fd.read(len(HDF5_HEADER))
         fd.close()
-    
+
     if header == HDF5_HEADER:
         f, top_level = get_top_level_group(filename)
         try:
@@ -825,6 +828,8 @@ def load_measurements(filename, dest_file = None, can_overwrite = False,
                     top_level = top_level[last_key]
             m = Measurements(filename=dest_file, copy = top_level)
             return m
+        except:
+            logger.error("Error loading HDF5 %s", filename, exc_info=True)
         finally:
             f.close()
     else:

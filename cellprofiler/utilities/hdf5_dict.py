@@ -25,6 +25,8 @@ import threading
 import numpy as np
 import h5py
 import time
+import logging
+logger = logging.getLogger(__name__)
 
 version_number = 1
 VERSION = "Version"
@@ -111,6 +113,7 @@ class HDF5Dict(object):
                  copy = None):
         self.is_temporary = is_temporary
         self.filename = hdf5_filename
+        logger.debug("HDF5Dict.__init__(): %s, temporary=%s, copy=%s", self.filename, self.is_temporary, copy)
         # assert not os.path.exists(self.filename)  # currently, don't allow overwrite
         self.hdf5_file = h5py.File(self.filename, 'w')
         vdataset = self.hdf5_file.create_dataset(
@@ -141,17 +144,22 @@ class HDF5Dict(object):
                 object_group = copy[object_name]
                 self.top_group.copy(object_group, self.top_group)
                 for feature_name in object_group.keys():
-                    d = self.indices[object_name, feature_name] = {}
-                    hdf5_index = object_group[feature_name]['index']
-                    for num_idx, start, stop in hdf5_index:
-                        d[num_idx] = slice(start, stop)
+                    # some measurement objects are written at a higher level, and don't
+                    # have an index (e.g. Relationship).
+                    if 'index' in object_group[feature_name].keys():
+                        d = self.indices[object_name, feature_name] = {}
+                        hdf5_index = object_group[feature_name]['index']
+                        for num_idx, start, stop in hdf5_index:
+                            d[num_idx] = slice(start, stop)
 
     def __del__(self):
+        logger.debug("HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary)
         if not hasattr(self, "hdf5_file"):
             # This happens if the constructor could not open the hdf5 file
             return
         if self.is_temporary:
             try:
+                self.hdf5_file.flush()  # just in case unlink fails
                 self.hdf5_file.close()
                 os.unlink(self.filename)
             except Exception, e:
@@ -159,6 +167,10 @@ class HDF5Dict(object):
         else:
             self.hdf5_file.flush()
             self.hdf5_file.close()
+
+    def flush(self):
+        logger.debug("HDF5Dict.flush(): %s, temporary=%s", self.filename, self.is_temporary)
+        self.hdf5_file.flush()
 
     def __getitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name[, integer])"

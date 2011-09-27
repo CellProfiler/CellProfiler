@@ -389,6 +389,7 @@ try:
                     options.pipeline_filename, "Error loading pipeline",
                     style = wx.OK | wx.ICON_ERROR)
         App.MainLoop()
+        del App  # to allow GC to clean up Measurements, etc.
     elif options.run_pipeline: # this includes distributed workers
         if (options.pipeline_filename is not None) and (not options.pipeline_filename.lower().startswith('http')):
             options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
@@ -474,10 +475,15 @@ try:
                 fd = open(options.done_file, "wt")
                 fd.write("%s\n"%done_text)
                 fd.close()
+            if measurements is not None:
+                del measurements  # clean up
 except Exception, e:
     logging.root.fatal("Uncaught exception in CellProfiler.py", exc_info=True)
     raise
 finally:
+    import gc
+    gc.collect()  # This will clean up any remaining objects, calling their __del__ methods.
+
     # Smokey, my friend, you are entering a world of pain.
     # No $#!+ sherlock.
     try:

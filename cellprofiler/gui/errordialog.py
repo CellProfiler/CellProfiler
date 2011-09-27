@@ -26,16 +26,26 @@ ED_SKIP = "Skip"
 
 ERROR_URL = 'http://www.cellprofiler.org/cgi-bin/reporterror.cgi'
 
-def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
+# keep track of errors that have already been reported this session,
+# and just log them to the console, rather than putting up the dialog.
+previously_seen_error_locations = set()
+def clear_old_errors():
+    global previously_seen_error_locations
+    previously_seen_error_locations = set()
+
+def display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_only=False):
     '''Display an error dialog, returning an indication of whether to continue
     
     frame - parent frame for application
     exc - exception that caused the error
     pipeline - currently executing pipeline
     message - message to display
+    tb - traceback
+    continue_only - show "continue" option, only
     
     Returns either ED_STOP or ED_CONTINUE indicating how to handle.
     '''
+
     import wx
     if message is None:
         message = str(exc)
@@ -45,6 +55,19 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
         tb = sys.exc_info()[2]
     else:
         traceback_text = "".join(traceback.format_exception(type(exc), exc.message, tb))
+
+    # find the place where this error occurred, and if we've already
+    # reported it, don't do so again (instead, just log it to the
+    # console), to prevent the UI from becoming unusable.
+    filename, line_number, _, _ = traceback.extract_tb(tb, 1)[0]
+    if (filename, line_number) in previously_seen_error_locations:
+        import logging
+        logging.root.error("Previously displayed uncaught exception:",
+                           exc_info=(type(exc), exc, tb))
+        return ED_CONTINUE
+    previously_seen_error_locations.add((filename, line_number))
+
+
     dialog = wx.Dialog(frame, title="Pipeline error")
     sizer = wx.BoxSizer(wx.VERTICAL)
     dialog.SetSizer(sizer)
@@ -64,13 +87,10 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
     sizer.Add(error_box, 1, wx.EXPAND | wx.ALL, 5)
     aux_button_box = wx.BoxSizer(wx.VERTICAL)
     error_box.Add(aux_button_box, 0, wx.EXPAND)
-    
-    #####################################################
+
     #
     # Handle show details button
     #
-    #####################################################
-    
     details_button = wx.Button(dialog, -1, "Details...")
     details_button.SetToolTipString("Show error details")
     aux_button_box.Add(details_button,0,
@@ -81,7 +101,7 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
         if not details_on[0]:
             message_control.Label = "%s\n%s" % (message, traceback_text)
             message_control.Refresh()
-            details_button.Label = "Hide..."
+            details_button.Label = "Hide details..."
             details_button.Refresh()
             dialog.Fit()
             details_on[0] = True
@@ -94,12 +114,9 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
             details_on[0] = False
     dialog.Bind(wx.EVT_BUTTON, on_details, details_button)
 
-    #######################################################
     #
     # Handle copy button
     #
-    #######################################################
-    
     copy_button = wx.Button(dialog, -1, "Copy to clipboard")
     copy_button.SetToolTipString("Copy error to clipboard")
     aux_button_box.Add(copy_button, 0,
@@ -114,63 +131,50 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
                 wx.TheClipboard.Close()
     dialog.Bind(wx.EVT_BUTTON, on_copy, copy_button)
 
-    ############################################################
-    #
-    # Handle report button
-    #
-    ############################################################
-    
-    def handle_report(event):
-        on_report(event, dialog, traceback_text, pipeline)
-
-    report_button = wx.Button(dialog, wx.ID_APPLY, "Send report...")
-    report_button.SetToolTipString("Upload error report to the CellProfiler Project")
-    dialog.Bind(wx.EVT_BUTTON, handle_report, report_button)
-
-    ############################################################
     #
     # Handle pdb button
     #
-    ############################################################
-    
     if (tb is not None) and (not hasattr(sys, 'frozen')):
         pdb_button = wx.Button(dialog, -1, "Debug in pdb...")
         pdb_button.SetToolTipString("Debug in python's pdb on the console")
         aux_button_box.Add(pdb_button, 0, wx.EXPAND | wx.BOTTOM, 5)
         def handle_pdb(event):
             import pdb
+            # This level of interest seems to indicate the user might
+            # want to debug this error if it occurs again.
+            previously_seen_error_locations.remove((filename, line_number))
             pdb.post_mortem(tb)
         dialog.Bind(wx.EVT_BUTTON, handle_pdb, pdb_button)
 
-    button_sizer = wx.StdDialogButtonSizer()
-    yes_button = wx.Button(dialog, wx.ID_YES, "Stop processing...")
-    no_button = wx.Button(dialog, wx.ID_NO, "Continue processing...")
-    skip_button = wx.Button(dialog,wx.ID_HELP,'Skip Image, Continue Pipeline')
-    button_sizer.AddButton(yes_button)
-    button_sizer.AddButton(no_button)
-    button_sizer.AddButton(report_button)
-    button_sizer.AddButton(skip_button)
-    button_sizer.Realize()
-    sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 4)
+    #
+    # Handle the "stop" button being pressed
+    #
     result = [None]
-    #
-    # Handle the "No" button being pressed
-    #
-    no_button = button_sizer.GetNegativeButton()
-    def on_no(event):
-        result[0] = ED_CONTINUE
-        dialog.SetReturnCode(wx.NO)
-        dialog.Close()
-        event.Skip()
-    dialog.Bind(wx.EVT_BUTTON, on_no, no_button)
-    
-    def on_yes(event):
+    def on_stop(event):
         dialog.SetReturnCode(wx.YES)
         result[0] = ED_STOP
         dialog.Close()
         event.Skip()
-    dialog.Bind(wx.EVT_BUTTON, on_yes, yes_button)
-    
+    stop_button = wx.Button(dialog, label="Stop processing...")
+    dialog.Bind(wx.EVT_BUTTON, on_stop, stop_button)
+    #
+    # Handle the "continue" button being pressed
+    #
+    def on_continue(event):
+        result[0] = ED_CONTINUE
+        dialog.SetReturnCode(wx.NO)
+        dialog.Close()
+        event.Skip()
+    continue_button = wx.Button(dialog, label="Continue processing...")
+    dialog.Bind(wx.EVT_BUTTON, on_continue, continue_button)
+    #
+    # Handle report button
+    #
+    def handle_report(event):
+        on_report(event, dialog, traceback_text, pipeline)
+    report_button = wx.Button(dialog, label="Send report...")
+    report_button.SetToolTipString("Upload error report to the CellProfiler Project")
+    dialog.Bind(wx.EVT_BUTTON, handle_report, report_button)
     #
     # Handle "Skip Image" button being pressed
     #
@@ -178,8 +182,25 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb = None):
         result[0] = ED_SKIP
         dialog.Close()
         event.Skip()
-    dialog.Bind(wx.EVT_BUTTON,on_skip,skip_button)
-    
+    skip_button = wx.Button(dialog, label='Skip Image, Continue Pipeline')
+    dialog.Bind(wx.EVT_BUTTON, on_skip, skip_button)
+
+    button_sizer = wx.BoxSizer(wx.HORIZONTAL)
+    button_sizer.Add((2, 2))
+    button_sizer.Add(stop_button)
+    button_sizer.Add((5, 5), proportion=1)
+    button_sizer.Add(continue_button)
+    button_sizer.Add((5, 5), proportion=1)
+    button_sizer.Add(report_button)
+    button_sizer.Add((5, 5), proportion=1)
+    button_sizer.Add(skip_button)
+    button_sizer.Add((2, 2))
+    if continue_only:
+        button_sizer.Hide(stop_button)
+        button_sizer.Hide(skip_button)
+
+    sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 4)
+
     dialog.Fit()
     dialog.ShowModal()
     return result[0]
@@ -204,6 +225,7 @@ def on_report(event, dialog, traceback_text, pipeline):
     headers = {"Accept": "text/plain"}
     data =  urllib.urlencode(params)
     req = urllib2.Request(ERROR_URL, data, headers)
+    import wx
     try:
         conn = urllib2.urlopen(req)
         response = conn.read()

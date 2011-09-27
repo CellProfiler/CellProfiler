@@ -455,11 +455,13 @@ class Pipeline(object):
         return cellprofiler.modules.instantiate_module(module_name)
 
     def reload_modules(self):
+        # clear previously seen errors on reload
+        import cellprofiler.gui.errordialog
+        cellprofiler.gui.errordialog.clear_old_errors()
         import cellprofiler.modules
         reload(cellprofiler.modules)
         cellprofiler.modules.reload_modules()
-        
-        
+
     def save_to_handles(self):
         """Create a numpy array representing this pipeline
         

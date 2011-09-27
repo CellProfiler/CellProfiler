@@ -5,6 +5,8 @@ import wx
 from cellprofiler.icons import get_builtin_image
 import cStringIO
 import cellprofiler.preferences as cpp
+from cellprofiler.gui.errordialog import display_error_dialog
+import sys
 
 CellProfilerSplash = get_builtin_image('CellProfilerSplash')
 
@@ -41,9 +43,22 @@ class CellProfilerApp(wx.App):
         from cellprofiler.gui.cpframe import CPFrame
         self.frame = CPFrame(None, -1, "Cell Profiler")
 
+        # set up error dialog for uncaught exceptions
+        def show_errordialog(type, exc, tb):
+            display_error_dialog(self.frame, exc, None, tb=tb, continue_only=True,
+                                 message="Exception in CellProfiler core processing")
+            # continue is really the only choice
+        # replace default hook with error dialog
+        self.orig_excepthook = sys.excepthook
+        sys.excepthook = show_errordialog
+
         self.SetTopWindow(self.frame)
         self.frame.Show()
         return 1
+
+    def OnExit(self):
+        # restore previous exception hook
+        sys.excepthook = self.orig_excepthook
 
     def new_version_check(self, force=False):
         if cpp.get_check_new_versions() or force:

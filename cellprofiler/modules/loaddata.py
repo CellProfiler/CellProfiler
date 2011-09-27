@@ -1076,26 +1076,29 @@ class LoadData(cpm.CPModule):
                 coltypes[i] = cpmeas.COLTYPE_VARCHAR
                 
         collen = [0]*len(header)
+        key_is_path_or_file_name = [
+            (key.startswith(C_PATH_NAME) or
+             key.startswith(C_FILE_NAME) or
+             key.startswith(C_OBJECTS_FILE_NAME) or
+             key.startswith(C_OBJECTS_PATH_NAME)) for key in header]
+        key_is_path_or_url = [
+            (key.startswith(C_PATH_NAME) or 
+             key.startswith(C_OBJECTS_PATH_NAME) or
+             key.startswith(C_URL) or
+             key.startswith(C_OBJECTS_URL)) for key in header]
+
         for row in reader:
             for index, field in enumerate(row):
-                key = header[index]
                 if already_output[index]:
                     continue
-                if ((not self.wants_images) and
-                    (key.startswith(C_PATH_NAME) or
-                     key.startswith(C_FILE_NAME) or
-                     key.startswith(C_OBJECTS_FILE_NAME) or
-                     key.startswith(C_OBJECTS_PATH_NAME))):
+                if ((not self.wants_images) and key_is_path_or_file_name[index]):
                     continue
                 try:
                     len_field = len(field)
                 except TypeError:
                     field = str(field)
                     len_field = len(field)
-                if (key.startswith(C_PATH_NAME) or 
-                    key.startswith(C_OBJECTS_PATH_NAME) or
-                    key.startswith(C_URL) or
-                    key.startswith(C_OBJECTS_URL)):
+                if key_is_path_or_url[index]:
                     # Account for possible rewrite of the pathname
                     # in batch data
                     len_field = max(cpmeas.PATH_NAME_LENGTH, 
@@ -1331,7 +1334,8 @@ def best_cast(sequence, coltype=None):
     else:
         return np.array(sequence, np.int32)
 
-
+int32_max = np.iinfo(np.int32).max
+int32_min = np.iinfo(np.int32).min
 def get_loaddata_type(x):
     '''Return the type to use to represent x
 
@@ -1340,12 +1344,13 @@ def get_loaddata_type(x):
     return cpmeas.COLTYPE_VARCHAR
     If x can be represented as a float, return COLTYPE_FLOAT
     '''
+    global int32_max, int32_min
 
     try:
         iv = int(x)
-        if iv > np.iinfo(np.int32).max:
+        if iv > int32_max:
             return cpmeas.COLTYPE_VARCHAR
-        if iv < np.iinfo(np.int32).min:
+        if iv < int32_min:
             return cpmeas.COLTYPE_VARCHAR
         return cpmeas.COLTYPE_INTEGER
     except:

@@ -15,7 +15,7 @@ worm's pieces together.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
+#__version__="$Revision$"
 
 import logging
 import numpy as np
@@ -2195,6 +2195,9 @@ class UntangleWorms(cpm.CPModule):
         j = np.delete(j,index[1:])
         index = index - np.arange(len(index))
         count -= 1
+        # Get rid of all segments that are 1 long. Those will be joined
+        # by the segments around them.
+        index, count = index[count !=0], count[count != 0]
         #
         # Find the control point and within-control-point index of each point
         #

@@ -153,7 +153,7 @@ class PreferencesView:
     def __make_odds_and_ends_panel(self):
         panel = self.__odds_and_ends_panel
         self.__output_filename_text = wx.StaticText(panel,-1,'Output Filename:')
-        self.__output_filename_edit_box = wx.TextCtrl(panel,-1,'DefaultOUT.mat')
+        self.__output_filename_edit_box = wx.TextCtrl(panel, -1, cpprefs.get_output_file_name())
         self.__allow_output_filename_overwrite_check_box = \
             wx.CheckBox(panel, label = "Allow overwrite?")
         self.__allow_output_filename_overwrite_check_box.Value = \
@@ -167,38 +167,31 @@ class PreferencesView:
             wx.Choice(panel, choices = 
                       [WRITE_HDF_FILE, WRITE_MAT_FILE, 
                        DO_NOT_WRITE_MEASUREMENTS])
-        measurements_mode = cpprefs.get_write_MAT_files()
-        if measurements_mode == cpprefs.WRITE_HDF5:
-            self.__write_measurements_combo_box.SetSelection(0)
-            self.__output_filename_edit_box.Value = "DefaultOut.h5"
-        elif measurements_mode is True:
-            self.__write_measurements_combo_box.SetSelection(1)
-        else:
-            self.__write_measurements_combo_box.SetSelection(2)
-            
-        self.__show_output_filename(cpprefs.get_write_MAT_files() is not False)
         def on_write_MAT_files_combo_box(event):
-            sel = self.__write_measurements_combo_box.GetSelection()
+            sel = self.__write_measurements_combo_box.GetStringSelection()
             output_filename = self.__output_filename_edit_box.Value
-            if sel == 0:
+            if sel == WRITE_HDF_FILE:
                 cpprefs.set_write_MAT_files(cpprefs.WRITE_HDF5)
-                wants_write = True
                 if output_filename.lower().endswith('.mat'):
                     output_filename = output_filename[:-4] + u".h5"
-            elif sel == 1:
+            elif sel == WRITE_MAT_FILE:
                 cpprefs.set_write_MAT_files(True)
-                wants_write = True
                 if output_filename.lower().endswith('.h5'):
                     output_filename = output_filename[:-3] + u".mat"
             else:
                 cpprefs.set_write_MAT_files(False)
-                wants_write = False
-                
             if output_filename != self.__output_filename_edit_box.Value:
                 self.__output_filename_edit_box.Value = output_filename
-            self.__show_output_filename(wants_write)
+                cpprefs.set_output_file_name(self.__output_filename_edit_box.Value)
+            self.__show_output_filename(sel != DO_NOT_WRITE_MEASUREMENTS)
             panel.Layout()
-            
+            panel.Refresh()
+        # set measurements mode, then fake an event to update output
+        # filename and which controls are shown.
+        measurements_mode_idx = [cpprefs.WRITE_HDF5, True, False].index(cpprefs.get_write_MAT_files())
+        self.__write_measurements_combo_box.SetSelection(measurements_mode_idx)
+        on_write_MAT_files_combo_box(None)
+
         self.__write_measurements_combo_box.Bind(
             wx.EVT_CHOICE, on_write_MAT_files_combo_box)
         output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
@@ -210,8 +203,9 @@ class PreferencesView:
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([(output_filename_help_button,0,wx.ALIGN_CENTER|wx.ALL,1),
                        (self.__output_filename_text,0,wx.ALIGN_CENTER,1),
-                       (self.__output_filename_edit_box,3,wx.ALL,1),
+                       (self.__output_filename_edit_box,5,wx.ALL,1),
                        (self.__allow_output_filename_overwrite_check_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
+                       ((1, 1), 1),
                        (wx.StaticText(panel, label = "Measurements file format:"), 0, wx.ALIGN_CENTER | wx.ALL, 1),
                        (self.__write_measurements_combo_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
                        (self.__analyze_images_button,0,wx.ALL,1),

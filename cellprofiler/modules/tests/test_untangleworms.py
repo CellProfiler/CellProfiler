@@ -2708,3 +2708,34 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         module.prepare_group(workspace, None, None)
         module.run(workspace)
         
+    def test_12_01_trace_segments(self):
+        #
+        # Regression test of img-1541, branch_areas_binary is not zero
+        # but segments_binary is
+        #
+        module = U.UntangleWorms()
+        i, j, labels, segment_order, distances, num_segments = \
+            module.trace_segments(np.zeros((10,13), bool))
+        self.assertEqual(len(i), 0)
+        self.assertEqual(len(j), 0)
+        np.testing.assert_equal(labels, 0)
+        self.assertEqual(len(segment_order), 0)
+        self.assertEqual(len(distances), 0)
+        self.assertEqual(num_segments, 0)
+        
+    def test_12_02_get_graph_from_branching_areas_and_segments(self):
+        #
+        # Regression test of img-1541, branch_areas_binary is not zero
+        # but segments_binary is
+        #
+        module = U.UntangleWorms()
+        branch_areas = np.zeros((31, 15), bool)
+        branch_areas[7:25, 7:10] = True
+        result = module.get_graph_from_branching_areas_and_segments(
+            branch_areas, np.zeros(branch_areas.shape, bool))
+        self.assertEqual(tuple(branch_areas.shape), result.image_size)
+        self.assertEqual(len(result.segment_coords), 0)
+        self.assertEqual(len(result.segment_counts), 0)
+        self.assertEqual(len(result.segment_order), 0)
+        self.assertEqual(len(result.segments), 0)
+        

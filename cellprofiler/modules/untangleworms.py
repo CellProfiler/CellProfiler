@@ -1047,7 +1047,7 @@ class UntangleWorms(cpm.CPModule):
         branch_areas_binary = scind.binary_dilation(
             branch_areas_binary, structure = morph.eight_connect)
         segments_binary = skeleton & ~ branch_areas_binary
-        if max_skel_length is not None:
+        if max_skel_length is not None and np.sum(segments_binary) > 0:
             max_skel_length = max(int(max_skel_length),2) # paranoia
             i, j, labels, order, distance, num_segments = \
              self.trace_segments(segments_binary)
@@ -1195,7 +1195,8 @@ class UntangleWorms(cpm.CPModule):
         labels = labels[ooo]
         order = order[ooo]
         distance = distance[ooo]
-        counts = np.bincount(labels.flatten())[1:]
+        counts = (np.zeros(0, int) if len(labels) == 0
+                  else np.bincount(labels.flatten())[1:])
         
         branch_ij = np.argwhere(branch_areas_binary)
         if len(branch_ij) > 0:

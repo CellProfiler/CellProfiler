@@ -779,11 +779,14 @@ class UntangleWorms(cpm.CPModule):
         # The path skeletons
         #
         all_path_coords = []
-        if count != 0:
+        if count != 0 and np.sum(skeleton) != 0:
             areas = np.bincount(labels.flatten())
+            skeleton_areas = np.bincount(labels[skeleton])
             current_index = 1
             for i in range(1,count+1):
-                if areas[i] < params.min_worm_area:
+                if (areas[i] < params.min_worm_area or
+                    i >= skeleton_areas.shape[0] or
+                    skeleton_areas[i] == 0):
                     # Completely exclude the worm
                     continue
                 elif areas[i] <= params.max_area:

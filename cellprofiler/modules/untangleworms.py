@@ -591,6 +591,8 @@ class UntangleWorms(cpm.CPModule):
                 image.pixel_data & mask, skeleton & mask)
             path_coords, path = self.get_longest_path_coords(
                 graph, np.iinfo(int).max)
+            if len(path_coords) == 0:
+                continue
             cumul_lengths = self.calculate_cumulative_lengths(path_coords)
             if cumul_lengths[-1] == 0:
                 continue
@@ -792,7 +794,7 @@ class UntangleWorms(cpm.CPModule):
                 elif areas[i] <= params.max_area:
                     path_coords, path_struct = self.single_worm_find_path(
                         workspace, labels, i, skeleton, params)
-                    if self.single_worm_filter(
+                    if len(path_coords) > 0 and self.single_worm_filter(
                         workspace, path_coords, params):
                         all_path_coords.append(path_coords)
                 else:
@@ -1352,6 +1354,7 @@ class UntangleWorms(cpm.CPModule):
         path_list = self.get_all_paths(graph_struct, 0, max_length)
         current_longest_path_coords = []
         current_max_length = 0
+        current_path = None
         for path in path_list:
             path_coords = self.path_to_pixel_coords(graph_struct, path)
             path_length = self.calculate_path_length(path_coords)

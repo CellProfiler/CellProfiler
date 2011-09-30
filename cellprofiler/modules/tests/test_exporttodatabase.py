@@ -86,12 +86,14 @@ DB_HOST = "MyHost"
 DB_USER = "MyUser"
 DB_PASSWORD = "MyPassword"
 
+BROAD_HOST = 'imgdb02.broadinstitute.org'
+
 class TestExportToDatabase(unittest.TestCase):
     def setUp(self):
         self.__cursor = None
         self.__connection = None
         try:
-            x = socket.gethostbyaddr('imgdb05.broadinstitute.org')
+            x = socket.gethostbyaddr(BROAD_HOST)
             self.__at_broad = True
         except:
             self.__at_broad = False
@@ -103,7 +105,7 @@ class TestExportToDatabase(unittest.TestCase):
         if self.__connection is None:
             import MySQLdb
             from MySQLdb.cursors import SSCursor
-            self.__connection = MySQLdb.connect(host='imgdb02.broadinstitute.org',
+            self.__connection = MySQLdb.connect(host=BROAD_HOST,
                                                 user='cpuser',
                                                 passwd='cPus3r',
                                                 local_infile=1)

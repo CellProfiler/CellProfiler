@@ -240,8 +240,8 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         module.module_num = 1
         module.object_name.value = INPUT_OBJECTS
         module.remaining_objects.value = OUTPUT_OBJECTS
-        module.mask_choice = (M.MC_OBJECTS if masking_objects is not None
-                              else M.MC_IMAGE)
+        module.mask_choice.value = (M.MC_OBJECTS if masking_objects is not None
+                                    else M.MC_IMAGE)
         module.masking_image.value = MASKING_IMAGE
         module.masking_objects.value = MASKING_OBJECTS
         module.retain_or_renumber.value = (M.R_RENUMBER if renumber 
@@ -530,7 +530,7 @@ MaskObjects:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|sho
         workspace, module = self.make_workspace(labels, M.P_MASK,
                                                 masking_image = mask)
         self.assertTrue(isinstance(module, M.MaskObjects))
-        module.wants_inverted_mask = True
+        module.wants_inverted_mask.value = True
         module.run(workspace)
         objects = workspace.object_set.get_objects(OUTPUT_OBJECTS)
         self.assertTrue(np.all(objects.segmented == expected))

@@ -242,7 +242,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10591\'|variable_revision_
         workspace, module = self.make_workspace(image,
                                                 np.ones(image.shape, bool))
         module.method.value = E.ENHANCE
-        module.enhance_method = E.E_SPECKLES
+        module.enhance_method.value = E.E_SPECKLES
         module.object_size.value = 8
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)

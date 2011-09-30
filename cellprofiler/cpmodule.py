@@ -88,6 +88,13 @@ class CPModule(object):
         if 'module_name' not in self.__dict__:
             self.module_name = self.__class__.__name__
         self.create_settings()
+
+    def __setattr__(self, slot, value):
+        if hasattr(self, slot) and isinstance(getattr(self, slot), cps.Setting):
+            assert isinstance(value, cps.Setting), \
+                ("Overwriting %s's %s existing Setting with value of type %s.\nUse __dict__['%s'] = ... to override." %
+                 (self.module_name, slot, type(value), slot))
+        object.__setattr__(self, slot, value)
         
     def create_settings(self):
         """Create your settings by subclassing this function

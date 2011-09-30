@@ -318,7 +318,7 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
         expected =  i+j
         workspace, module = self.make_workspace(image, R.R_TO_SIZE,
                                                 R.I_BILINEAR)
-        module.use_manual_or_image = R.C_IMAGE
+        module.use_manual_or_image.value = R.C_IMAGE
         module.specific_image.value = 'AnotherImage'
         workspace.image_set.add(module.specific_image.value, cpi.Image(expected))
         module.run(workspace)

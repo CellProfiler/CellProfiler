@@ -752,7 +752,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.tracking_method.value = T.TM_LAP
         module.model.value = T.M_BOTH
         for wants in (True, False):
-            module.wants_second_phase = wants
+            module.wants_second_phase.value = wants
             columns = module.get_measurement_columns(None)
             # 1 for area
             # 2, 2, 4 for the static model

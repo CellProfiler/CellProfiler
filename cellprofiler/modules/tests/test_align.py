@@ -684,7 +684,7 @@ Name the second output image:AlignedImage2
         image2 = image1[2:-2,2:-2]
         workspace, module = self.make_workspace((image1, image2), (None, None))
         self.assertTrue(isinstance(module, A.Align))
-        module.crop_mode = A.C_PAD
+        module.crop_mode.value = A.C_PAD
         module.run(workspace)
         i1 = workspace.image_set.get_image("Aligned0")
         self.assertTrue(isinstance(i1, cpi.Image))

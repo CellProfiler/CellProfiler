@@ -288,6 +288,22 @@ class ModuleView:
         for child in self.__module_panel.Children:
             child.Hide()
         
+    def check_settings(self, module_name, settings):
+        try:
+            assert len(settings) > 0
+        except:
+            wx.MessageBox("Module %s.visible_settings() did not return a list!\n  value: %s"%(module_name, settings),
+                          "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
+            settings = []
+        try:
+            assert all([isinstance(s, cps.Setting) for s in settings])
+        except:
+            wx.MessageBox("Module %s.visible_settings() returned something other than a list of Settings!\n  value: %s"%(module_name, settings),
+                          "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
+            settings = []
+        return settings
+
+
     def set_selection(self, module_num):
         """Initialize the controls in the view to the settings of the module"""
         self.top_panel.Freeze()
@@ -310,14 +326,7 @@ class ModuleView:
             self.__controls     = []
             self.__static_texts = []
             data                = []
-            settings            = self.__module.visible_settings()
-            try:
-                assert len(settings) > 0
-            except:
-                wx.MessageBox("Module %s.visible_settings() did not return a list!\n  value: %s"%(self.__module.module_name, settings),
-                              "Pipeline Error", wx.ICON_ERROR, self.__module_panel)
-                settings = []
-            
+            settings            = self.check_settings(self.__module.module_name, self.__module.visible_settings())
             self.__sizer.Reset(len(settings), 3, False)
             sizer    = self.__sizer
             if reselecting:
@@ -1616,7 +1625,7 @@ class ModuleView:
         except cps.ValidationError, instance:
             validation_error = instance
         try:
-            for idx, setting in enumerate(self.__module.visible_settings()):
+            for idx, setting in enumerate(self.check_settings(self.__module.module_name, self.__module.visible_settings())):
                 static_text_name = text_control_name(setting)
                 error_message = None
                 if (validation_error is not None and 

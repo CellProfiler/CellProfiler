@@ -298,7 +298,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
     def test_02_01_zeros_propagation(self):
         workspace, module = self.make_workspace(np.zeros((10,10)),
                                                 np.zeros((10,10), int))
-        module.method = cpmi2.M_PROPAGATION
+        module.method.value = cpmi2.M_PROPAGATION
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -321,7 +321,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         labels = np.zeros((10,10),int)
         labels[3:6,3:6] = 1
         workspace, module = self.make_workspace(img, labels)
-        module.method = cpmi2.M_PROPAGATION
+        module.method.value = cpmi2.M_PROPAGATION
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -420,7 +420,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         labels = np.zeros((20,10),int)
         labels[3:6,3:6] = 1
         workspace, module = self.make_workspace(img, labels)
-        module.method = cpmi2.M_PROPAGATION
+        module.method.value = cpmi2.M_PROPAGATION
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -458,7 +458,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.primary_objects.value=INPUT_OBJECTS_NAME
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
-        module.method = cpmi2.M_WATERSHED_G
+        module.method.value = cpmi2.M_WATERSHED_G
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -489,7 +489,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.primary_objects.value=INPUT_OBJECTS_NAME
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
-        module.method = cpmi2.M_WATERSHED_G
+        module.method.value = cpmi2.M_WATERSHED_G
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -561,7 +561,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         labels = np.zeros((10,20),int)
         labels[3:6,3:6] = 1
         workspace, module = self.make_workspace(img, labels)
-        module.method = cpmi2.M_WATERSHED_G
+        module.method.value = cpmi2.M_WATERSHED_G
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -600,7 +600,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.primary_objects.value=INPUT_OBJECTS_NAME
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
-        module.method = cpmi2.M_WATERSHED_I
+        module.method.value = cpmi2.M_WATERSHED_I
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -631,7 +631,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.primary_objects.value=INPUT_OBJECTS_NAME
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
-        module.method = cpmi2.M_WATERSHED_I
+        module.method.value = cpmi2.M_WATERSHED_I
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -696,7 +696,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         labels = np.zeros((10,20),int)
         labels[3:6,3:6] = 1
         workspace, module = self.make_workspace(img, labels)
-        module.method = cpmi2.M_WATERSHED_I
+        module.method.value = cpmi2.M_WATERSHED_I
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -727,7 +727,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.primary_objects.value=INPUT_OBJECTS_NAME
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
-        module.method = cpmi2.M_DISTANCE_N
+        module.method.value = cpmi2.M_DISTANCE_N
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -757,7 +757,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.primary_objects.value=INPUT_OBJECTS_NAME
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
-        module.method = cpmi2.M_DISTANCE_N
+        module.method.value = cpmi2.M_DISTANCE_N
         module.distance_to_dilate.value = 1
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
@@ -817,7 +817,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         labels = np.zeros((10,20),int)
         labels[3:6,3:6] = 1
         workspace, module = self.make_workspace(img, labels)
-        module.method = cpmi2.M_DISTANCE_N
+        module.method.value = cpmi2.M_DISTANCE_N
         module.distance_to_dilate.value = 1
         module.run(workspace)
         m = workspace.measurements
@@ -859,7 +859,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.image_name.value = IMAGE_NAME
         module.use_outlines.value = True
         module.outlines_name.value = "my_outlines"
-        module.method = cpmi2.M_WATERSHED_I
+        module.method.value = cpmi2.M_WATERSHED_I
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -907,7 +907,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.wants_primary_outlines.value = True
         module.new_primary_objects_name.value = NEW_OBJECTS_NAME
         module.new_primary_outlines_name.value = "newprimaryoutlines"
-        module.method = cpmi2.M_WATERSHED_I
+        module.method.value = cpmi2.M_WATERSHED_I
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())

@@ -193,7 +193,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         #
         self.assertEqual(len(pipeline.modules()), 6)
         module = pipeline.modules()[4]
-        module.output_feature_name = "ImageMeasurement"
+        module.output_feature_name.value = "ImageMeasurement"
         self.assertEqual(module.operands[0].operand_choice,C.MC_IMAGE)
         self.assertEqual(module.operands[1].operand_choice,C.MC_IMAGE)
         self.assertEqual(module.operands[0].operand_measurement, "Intensity_MaxIntensity_DNA")

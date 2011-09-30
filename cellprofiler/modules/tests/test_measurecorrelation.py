@@ -285,15 +285,15 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
-        module.images_or_objects = M.M_IMAGES
+        module.images_or_objects.value = M.M_IMAGES
         def cat(name):
             return module.get_categories(None, name) == ["Correlation"]
         self.assertTrue(cat("Image"))
         self.assertFalse(cat(OBJECTS_NAME))
-        module.images_or_objects = M.M_OBJECTS
+        module.images_or_objects.value = M.M_OBJECTS
         self.assertFalse(cat("Image"))
         self.assertTrue(cat(OBJECTS_NAME))
-        module.images_or_objects = M.M_IMAGES_AND_OBJECTS
+        module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
         self.assertTrue(cat("Image"))
         self.assertTrue(cat(OBJECTS_NAME))
     
@@ -303,7 +303,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
-        module.images_or_objects = M.M_IMAGES
+        module.images_or_objects.value = M.M_IMAGES
         def meas(name):
             if name == "Image":
                 ans = list(module.get_measurements(None,name,"Correlation"))
@@ -312,10 +312,10 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
             return module.get_measurements(None, name, "Correlation") == ["Correlation"]
         self.assertTrue(meas("Image"))
         self.assertFalse(meas(OBJECTS_NAME))
-        module.images_or_objects = M.M_OBJECTS
+        module.images_or_objects.value = M.M_OBJECTS
         self.assertFalse(meas("Image"))
         self.assertTrue(meas(OBJECTS_NAME))
-        module.images_or_objects = M.M_IMAGES_AND_OBJECTS
+        module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
         self.assertTrue(meas("Image"))
         self.assertTrue(meas(OBJECTS_NAME))
     
@@ -325,7 +325,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
-        module.images_or_objects = M.M_IMAGES
+        module.images_or_objects.value = M.M_IMAGES
         def meas(name):
             ans = module.get_measurement_images(None, name, "Correlation",
                                                 "Correlation")
@@ -336,10 +336,10 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
             return True
         self.assertTrue(meas("Image"))
         self.assertFalse(meas(OBJECTS_NAME))
-        module.images_or_objects = M.M_OBJECTS
+        module.images_or_objects.value = M.M_OBJECTS
         self.assertFalse(meas("Image"))
         self.assertTrue(meas(OBJECTS_NAME))
-        module.images_or_objects = M.M_IMAGES_AND_OBJECTS
+        module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
         self.assertTrue(meas("Image"))
         self.assertTrue(meas(OBJECTS_NAME))
     
@@ -348,7 +348,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
-        module.images_or_objects = M.M_IMAGES
+        module.images_or_objects.value = M.M_IMAGES
         columns = module.get_measurement_columns(None)
         expected = ((cpmeas.IMAGE, 
                      M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
@@ -366,7 +366,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
-        module.images_or_objects = M.M_OBJECTS
+        module.images_or_objects.value = M.M_OBJECTS
         columns = module.get_measurement_columns(None)
         expected = ((OBJECTS_NAME, 
                      M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),
@@ -381,7 +381,7 @@ MeasureCorrelation:[module_num:4|svn_version:\'Unknown\'|variable_revision_numbe
         module.image_groups[0].image_name.value = IMAGE1_NAME
         module.image_groups[1].image_name.value = IMAGE2_NAME
         module.object_groups[0].object_name.value = OBJECTS_NAME
-        module.images_or_objects = M.M_IMAGES_AND_OBJECTS
+        module.images_or_objects.value = M.M_IMAGES_AND_OBJECTS
         columns = module.get_measurement_columns(None)
         expected = ((cpmeas.IMAGE, 
                      M.F_CORRELATION_FORMAT% (IMAGE1_NAME, IMAGE2_NAME),

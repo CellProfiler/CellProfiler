@@ -532,7 +532,7 @@ class TestClassifyObjects(unittest.TestCase):
                     module.first_threshold.value = 8
                     module.second_threshold_method.value = tm2
                     module.second_threshold.value = 70
-                    module.wants_image = True
+                    module.wants_image.value = True
                     def cutoff(method, custom_cutoff):
                         if method == C.TM_MEAN:
                             return np.mean(exps)

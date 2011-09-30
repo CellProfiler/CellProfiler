@@ -2026,7 +2026,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
             x.threshold_method.value = T.TM_MANUAL
             x.manual_threshold.value = .25
             x.threshold_correction_factor.value = 1
-            x.limit_choice = ID.LIMIT_TRUNCATE
+            x.limit_choice.value = ID.LIMIT_TRUNCATE
             x.maximum_object_count.value = maximum_object_count
             x.module_num = 1
             pipeline = cellprofiler.pipeline.Pipeline()
@@ -2064,7 +2064,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         x.threshold_method.value = T.TM_MANUAL
         x.manual_threshold.value = .25
         x.threshold_correction_factor.value = 1
-        x.limit_choice = ID.LIMIT_ERASE
+        x.limit_choice.value = ID.LIMIT_ERASE
         x.maximum_object_count.value = maximum_object_count
         x.module_num = 1
         pipeline = cellprofiler.pipeline.Pipeline()
@@ -2102,7 +2102,7 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         x.threshold_method.value = T.TM_MANUAL
         x.manual_threshold.value = .25
         x.threshold_correction_factor.value = 1
-        x.limit_choice = ID.LIMIT_ERASE
+        x.limit_choice.value = ID.LIMIT_ERASE
         x.maximum_object_count.value = maximum_object_count
         x.module_num = 1
         pipeline = cellprofiler.pipeline.Pipeline()

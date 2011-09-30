@@ -102,7 +102,7 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         '''
         module = C.CalculateImageOverlap()
         module.module_num = 1
-        module.obj_or_img = O_IMG
+        module.obj_or_img.value = O_IMG
         module.ground_truth.value = GROUND_TRUTH_IMAGE_NAME
         module.test_img.value = TEST_IMAGE_NAME
         

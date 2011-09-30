@@ -205,7 +205,7 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         
         workspace, module = self.make_workspace(file_name)
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
-        module.action = R.A_DELETE
+        module.action.value = R.A_DELETE
         module.number_characters_prefix.value = 2
         module.number_characters_suffix.value = 4
         module.wants_text.value = False
@@ -221,7 +221,7 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         
         workspace, module = self.make_workspace(file_name)
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
-        module.action = R.A_DELETE
+        module.action.value = R.A_DELETE
         module.number_characters_prefix.value = 2
         module.number_characters_suffix.value = 4
         module.wants_text.value = True
@@ -238,7 +238,7 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         
         workspace, module = self.make_workspace(file_name)
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
-        module.action = R.A_RENUMBER
+        module.action.value = R.A_RENUMBER
         module.number_characters_prefix.value = 6
         module.number_characters_suffix.value = 4
         module.wants_text.value = False
@@ -255,7 +255,7 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         
         workspace, module = self.make_workspace(file_name)
         self.assertTrue(isinstance(module, R.RenameOrRenumberFiles))
-        module.action = R.A_RENUMBER
+        module.action.value = R.A_RENUMBER
         module.number_characters_prefix.value = 6
         module.number_characters_suffix.value = 4
         module.wants_text.value = True
@@ -276,7 +276,7 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         #
         # Delete nothing here.
         #
-        module.action = R.A_DELETE
+        module.action.value = R.A_DELETE
         module.number_characters_prefix.value = 7
         module.number_characters_suffix.value = 4
         module.wants_to_replace_spaces.value = True
@@ -284,4 +284,4 @@ RenameOrRenumberFiles:[module_num:1|svn_version:\'1\'|variable_revision_number:1
         module.run(workspace)
         self.assertFalse(os.path.exists(os.path.join(self.path, file_name)))
         self.assertTrue(os.path.exists(os.path.join(self.path, expected_name)))
-        
+

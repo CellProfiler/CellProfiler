@@ -194,7 +194,7 @@ class TestDefineGrid(unittest.TestCase):
         module.grid_rows.value = rows
         module.grid_columns.value = columns
         module.ordering.value = D.NUM_BY_COLUMNS
-        module.auto_or_manual = D.AM_AUTOMATIC
+        module.auto_or_manual.value = D.AM_AUTOMATIC
         module.wants_image.value = True
         module.run(workspace)
         gridding = workspace.get_grid(GRID_NAME)
@@ -234,7 +234,7 @@ class TestDefineGrid(unittest.TestCase):
         self.assertTrue(isinstance(module, D.DefineGrid))
         self.assertTrue(isinstance(workspace, cpw.Workspace))
         module.ordering.value = D.NUM_BY_COLUMNS
-        module.auto_or_manual = D.AM_AUTOMATIC
+        module.auto_or_manual.value = D.AM_AUTOMATIC
         module.wants_image.value = True
         self.assertRaises(RuntimeError, module.run, workspace)
 
@@ -253,8 +253,8 @@ class TestDefineGrid(unittest.TestCase):
         module.grid_rows.value = rows
         module.grid_columns.value = columns
         module.ordering.value = D.NUM_BY_COLUMNS
-        module.auto_or_manual = D.AM_MANUAL
-        module.manual_choice = D.MAN_COORDINATES
+        module.auto_or_manual.value = D.AM_MANUAL
+        module.manual_choice.value = D.MAN_COORDINATES
         module.first_spot_coordinates.value = "%d,%d"%(first_x, first_y)
         module.second_spot_coordinates.value = "%d,%d"%(second_x, second_y)
         module.first_spot_col.value = 1

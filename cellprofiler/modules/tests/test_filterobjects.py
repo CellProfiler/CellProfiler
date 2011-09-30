@@ -59,7 +59,7 @@ class TestFilterObjects(unittest.TestCase):
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_MAXIMAL
+        module.filter_choice.value = F.FI_MAXIMAL
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
         module.run(workspace)
@@ -75,7 +75,7 @@ class TestFilterObjects(unittest.TestCase):
         module.target_name.value = "my_result"
         module.enclosing_object_name.value = "my_enclosing_objects"
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_MAXIMAL_PER_OBJECT
+        module.filter_choice.value = F.FI_MAXIMAL_PER_OBJECT
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
         module.run(workspace)
@@ -88,7 +88,7 @@ class TestFilterObjects(unittest.TestCase):
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_LIMITS
+        module.filter_choice.value = F.FI_LIMITS
         module.measurements[0].min_limit.value = 0
         module.measurements[0].max_limit.value = 1000
         m = workspace.measurements
@@ -109,7 +109,7 @@ class TestFilterObjects(unittest.TestCase):
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_MINIMAL
+        module.filter_choice.value = F.FI_MINIMAL
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.array([2,1]))
         module.run(workspace)
@@ -137,7 +137,7 @@ class TestFilterObjects(unittest.TestCase):
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_MAXIMAL
+        module.filter_choice.value = F.FI_MAXIMAL
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.array([1,2]))
         module.run(workspace)
@@ -160,7 +160,7 @@ class TestFilterObjects(unittest.TestCase):
         module.target_name.value = "my_result"
         module.enclosing_object_name.value = 'my_enclosing_objects'
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_MINIMAL_PER_OBJECT
+        module.filter_choice.value = F.FI_MINIMAL_PER_OBJECT
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.array([2,1,3,4]))
         module.run(workspace)
@@ -183,7 +183,7 @@ class TestFilterObjects(unittest.TestCase):
         module.target_name.value = "my_result"
         module.enclosing_object_name.value = 'my_enclosing_objects'
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_MAXIMAL_PER_OBJECT
+        module.filter_choice.value = F.FI_MAXIMAL_PER_OBJECT
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.array([1,2,4,3]))
         module.run(workspace)
@@ -210,7 +210,7 @@ class TestFilterObjects(unittest.TestCase):
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_LIMITS
+        module.filter_choice.value = F.FI_LIMITS
         module.measurements[0].wants_minimum.value = True
         module.measurements[0].min_limit.value = my_min
         module.measurements[0].wants_maximum.value = True
@@ -240,7 +240,7 @@ class TestFilterObjects(unittest.TestCase):
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_LIMITS
+        module.filter_choice.value = F.FI_LIMITS
         module.measurements[0].min_limit.value = my_min
         module.measurements[0].max_limit.value = .7
         module.measurements[0].wants_maximum.value = False
@@ -269,7 +269,7 @@ class TestFilterObjects(unittest.TestCase):
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_LIMITS
+        module.filter_choice.value = F.FI_LIMITS
         module.measurements[0].min_limit.value = .3
         module.measurements[0].wants_minimum.value = False
         module.measurements[0].max_limit.value = my_max
@@ -303,7 +303,7 @@ class TestFilterObjects(unittest.TestCase):
         for i in range(2):
             measurement_name = "measurement%d" % (i+1)
             module.measurements[i].measurement.value = measurement_name
-            module.filter_choice = F.FI_LIMITS
+            module.filter_choice.value = F.FI_LIMITS
             module.measurements[i].min_limit.value = .3
             module.measurements[i].wants_minimum.value = False
             module.measurements[i].max_limit.value = my_max[i]
@@ -337,7 +337,7 @@ class TestFilterObjects(unittest.TestCase):
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_LIMITS
+        module.filter_choice.value = F.FI_LIMITS
         module.measurements[0].min_limit.value = my_min
         module.measurements[0].max_limit.value = my_max
         module.add_additional_object()
@@ -1230,7 +1230,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         module.object_name.value = "my_objects"
         module.target_name.value = "my_result"
         module.measurements[0].measurement.value = "my_measurement"
-        module.filter_choice = F.FI_MAXIMAL
+        module.filter_choice.value = F.FI_MAXIMAL
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.zeros((0,)))
         module.run(workspace)

@@ -91,7 +91,7 @@ class TestExportToDatabase(unittest.TestCase):
         self.__cursor = None
         self.__connection = None
         try:
-            x = socket.gethostbyaddr('imgdb02.broadinstitute.org')
+            x = socket.gethostbyaddr('imgdb05.broadinstitute.org')
             self.__at_broad = True
         except:
             self.__at_broad = False

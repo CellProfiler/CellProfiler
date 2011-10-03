@@ -456,6 +456,7 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
             image.shape = (height,width)
             
         rdr.close()
+        jutil.call(stream, 'close', '()V')
         del rdr
         #
         # Run the Java garbage collector here.

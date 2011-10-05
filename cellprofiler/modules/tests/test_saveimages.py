@@ -1176,6 +1176,61 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         module.create_subdirectories.value = True
         module.run(workspace)
         self.assertTrue(os.path.exists(img_filename))
+
+    def test_01_15_create_subdirectories_inherit_path(self):
+        img_path1 = os.path.join(self.new_image_directory, "test1")
+        img_path2 = os.path.join(self.new_image_directory, "test2")
+        img1_filename = os.path.join(img_path1, 'img1.tif')
+        img2_filename = os.path.join(img_path2, 'img2.tif')
+        img1_out_filename = os.path.join(self.new_output_directory, "test1", 'TEST1.tiff')
+        img2_out_filename = os.path.join(self.new_output_directory, "test2", 'TEST2.tiff')
+        os.mkdir(img_path1)
+        os.mkdir(img_path2)
+        make_file(img1_filename, cpmt.tif_8_1)
+        make_file(img2_filename, cpmt.tif_8_2)
+        pipeline = cpp.Pipeline()
+        pipeline.add_listener(self.on_event)
+        load_images = cpm_li.LoadImages()
+        load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
+        load_images.match_method.value = cpm_li.MS_EXACT_MATCH
+        load_images.descend_subdirectories.value = cpm_li.SUB_ALL
+        load_images.images[0].common_text.value = '.tif'
+        load_images.images[0].channels[0].image_name.value = 'Orig'
+        load_images.module_num = 1
+
+        apply_threshold = cpm_a.ApplyThreshold()
+        apply_threshold.image_name.value = 'Orig'
+        apply_threshold.thresholded_image_name.value = 'Derived'
+        apply_threshold.low_or_high.value = cpm_a.TH_ABOVE_THRESHOLD
+        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.manual_threshold.value = 1.0
+        apply_threshold.binary.value = cpm_a.GRAYSCALE
+        apply_threshold.module_num = 2
+
+        save_images = cpm_si.SaveImages()
+        save_images.save_image_or_figure.value = cpm_si.IF_IMAGE
+        save_images.image_name.value = 'Derived'
+        save_images.file_image_name.value = 'Orig'
+        save_images.file_name_method.value = cpm_si.FN_SEQUENTIAL
+        save_images.single_file_name.value = 'TEST'
+        save_images.file_format.value = cpm_si.FF_TIF
+        save_images.pathname.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
+        save_images.create_subdirectories.value = True
+        save_images.update_file_names.value = True
+        save_images.module_num = 3
+
+        pipeline.add_module(load_images)
+        pipeline.add_module(apply_threshold)
+        pipeline.add_module(save_images)
+        pipeline.test_valid()
+        measurements = pipeline.run()
+        pn, fn = os.path.split(img1_out_filename)
+        filenames = measurements.get_all_measurements('Image', 'FileName_Derived')
+        pathnames = measurements.get_all_measurements('Image', 'PathName_Derived')
+        self.assertEqual(filenames[0], fn)
+        self.assertEqual(pathnames[0], pn)
+        self.assertTrue(os.path.isfile(img1_out_filename), img1_out_filename + " does not exist")
+        self.assertTrue(os.path.isfile(img2_out_filename), img2_out_filename + " does not exist")
         
     def test_02_01_prepare_to_create_batch(self):
         '''Test the "prepare_to_create_batch" method'''

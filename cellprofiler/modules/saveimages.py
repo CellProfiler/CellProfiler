@@ -383,6 +383,7 @@ class SaveImages(cpm.CPModule):
                 result.append(self.file_name_suffix)
         elif self.file_name_method == FN_SEQUENTIAL:
             self.single_file_name.text = SEQUENTIAL_NUMBER_TEXT
+            # XXX - Change doc, as well!
             result.append(self.single_file_name)
         elif self.file_name_method == FN_SINGLE_NAME:
             self.single_file_name.text = SINGLE_NAME_TEXT
@@ -534,8 +535,6 @@ class SaveImages(cpm.CPModule):
             writer.setId(out_file)
 
             is_last_image = (d['CURRENT_FRAME'] == d['N_FRAMES']-1)
-            if is_last_image:
-                print "Writing last image of %s" %out_file
             image = workspace.image_set.get_image(self.image_name.value)
             pixels = image.pixel_data
             pixels = (pixels*255).astype(np.uint8)
@@ -900,15 +899,15 @@ class SaveImages(cpm.CPModule):
             
         elif self.save_image_or_figure == IF_CROPPING:
             pixels = image.crop_mask.astype(np.uint8) * 255
-            
+
         if pixels.ndim == 3 and pixels.shape[2] == 4:
             mode = 'RGBA'
         elif pixels.ndim == 3:
             mode = 'RGB'
         else:
             mode = 'L'
-        filename = self.get_filename(workspace)
 
+        filename = self.get_filename(workspace)
         if self.get_file_format() == FF_MAT:
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
         else:
@@ -968,10 +967,20 @@ class SaveImages(cpm.CPModule):
         '''The file name measurement for the exemplar disk image'''
         return '_'.join((C_FILE_NAME, self.file_image_name.value))
     
-    @property
-    def source_path_name_feature(self):
-        '''The path name measurement for the exemplar disk image'''
-        return '_'.join((C_PATH_NAME, self.file_image_name.value))
+    def source_path(self, workspace):
+        '''The path for the image data, or its first parent with a path'''
+        if self.file_name_method.value == FN_FROM_IMAGE:
+            path_feature = '%s_%s' % (C_PATH_NAME, self.file_image_name.value)
+            assert workspace.measurements.has_feature(cpmeas.IMAGE, path_feature),\
+                "Image %s does not have a path!" % (self.file_image_name.value)
+            return workspace.measurements.get_current_image_measurement(path_feature)
+
+        # ... otherwise, chase the cpimage hierarchy looking for an image with a path
+        cur_image = workspace.image_set.get_image(self.image_name.value)
+        while cur_image.path_name is None:
+            cur_image = cur_image.parent_image
+            assert cur_image is not None, "Could not determine source path for image %s' % (self.image_name.value)"
+        return cur_image.path_name
     
     def get_measurement_columns(self, pipeline):
         if self.update_file_names.value:
@@ -1009,8 +1018,7 @@ class SaveImages(cpm.CPModule):
         filename = "%s.%s"%(filename,self.get_file_format())
         pathname = self.pathname.get_absolute_path(measurements)
         if self.create_subdirectories:
-            image_path = workspace.measurements.get_current_image_measurement(
-                self.source_path_name_feature)
+            image_path = self.source_path(workspace)
             subdir = relpath(image_path, cpp.get_default_image_directory())
             pathname = os.path.join(pathname, subdir)
         if len(pathname) and not os.path.isdir(pathname) and make_dirs:
@@ -1241,7 +1249,11 @@ class SaveImages(cpm.CPModule):
                     raise cps.ValidationError("%s is only available after processing all images in an image group" %
                                               self.image_name.value,
                                               self.when_to_save)
-                
+
+        # XXX - should check that if file_name_method is
+        # FN_FROM_IMAGE, that the named image actually has the
+        # required path measurement
+
         # Make sure metadata tags exist
         if self.file_name_method == FN_SINGLE_NAME or \
                 (self.file_name_method == FN_FROM_IMAGE and self.wants_file_name_suffix.value):

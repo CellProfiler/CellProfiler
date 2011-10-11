@@ -186,7 +186,7 @@ if has_bioformats:
 else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
-USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01",'.zvi','.mov']
+USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01",'.zvi','.mov','.png']
 
 # The metadata choices:
 # M_NONE - don't extract metadata

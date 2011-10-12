@@ -101,6 +101,12 @@ def config_read(key):
     
     Decode escaped config sequences too.
     '''
+    if not __is_headless:
+        #
+        # Keeps popup box from appearing during testing I hope
+        #
+        import wx
+        shutup = wx.LogNull()
     value = get_config().Read(key)
     if value is None:
         return None
@@ -111,6 +117,12 @@ def config_write(key, value):
     
     Encode escaped config sequences.
     '''
+    if not __is_headless:
+        #
+        # Keeps popup box from appearing during testing I hope
+        #
+        import wx
+        shutup = wx.LogNull()
     if value is not None:
         value = utf16encode(value)
     get_config().Write(key, value)

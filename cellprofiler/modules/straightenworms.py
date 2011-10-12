@@ -624,7 +624,7 @@ class StraightenWorms(cpm.CPModule):
             straightened_image = image_set.get_image(image_name).pixel_data
             indices = np.arange(nbins, nbins * (nworms + 1))
             bin_means = nd_mean(straightened_image, mbin, indices)
-            bin_stds = nd_standard_deviation(straightened_image, mbin, indices)
+            bin_stds = nd_standard_deviation(straightened_image.flatten(), mbin.flatten(), indices)
             bin_means.shape = (nworms, nbins)
             bin_stds.shape = (nworms, nbins)
             for b in range(nbins):

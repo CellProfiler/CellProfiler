@@ -113,7 +113,7 @@ class ConvertObjectsToImage(cpm.CPModule):
                                          sharex=figure.subplot(0,0),
                                          sharey=figure.subplot(0,0))
         elif self.image_mode == IM_GRAYSCALE:
-            pixel_data = labels.astype(float) / np.max(labels)
+            pixel_data = labels.astype(float) / (1.0 if np.max(labels) == 0 else np.max(labels))
             if not workspace.frame is None:
                 figure.subplot_imshow_grayscale(1,0,pixel_data,self.image_name.value,
                                                 sharex=figure.subplot(0,0),

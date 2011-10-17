@@ -188,7 +188,7 @@ class EditObjectsManually(I.Identify):
         unique_labels = unique_labels[unique_labels != 0]
         object_count = len(unique_labels)
         if self.renumber_choice == R_RENUMBER:
-            mapping = np.zeros(np.max(unique_labels)+1, int)
+            mapping = np.zeros(1 if len(unique_labels) == 0 else np.max(unique_labels)+1, int)
             mapping[unique_labels] = np.arange(1,object_count + 1)
             filtered_labels = mapping[filtered_labels]
         #

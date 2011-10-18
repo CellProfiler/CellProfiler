@@ -623,7 +623,49 @@ class TestMeasurements(unittest.TestCase):
             self.assertTrue("Foo" in feature_names)
         finally:
             del m
-        
+            
+    def test_17_01_aggregate_measurements(self):
+        m = cpmeas.Measurements()
+        try:
+            values = np.arange(5).astype(float)
+            m.add_measurement(OBJECT_NAME, "Foo", values)
+            d = m.compute_aggregate_measurements(1)
+            for agg_name, expected in (
+                (cpmeas.AGG_MEAN, np.mean(values)),
+                (cpmeas.AGG_MEDIAN, np.median(values)),
+                (cpmeas.AGG_STD_DEV, np.std(values))):
+                feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
+                self.assertTrue(d.has_key(feature))
+                self.assertAlmostEqual(d[feature], expected)
+        finally:
+            del m
+    
+    def test_17_02_aggregate_measurements_with_relate(self):
+        '''regression test of img-1554'''
+        m = cpmeas.Measurements()
+        try:
+            values = np.arange(5).astype(float)
+            m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1, image_set_number = 1)
+            m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1, image_set_number = 2)
+            m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1, image_set_number = 1)
+            m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 2, image_set_number = 1)
+            m.add_measurement(OBJECT_NAME, "Foo", values, image_set_number = 1)
+            m.add_measurement(OBJECT_NAME, "Foo", values, image_set_number = 2)
+            m.add_relate_measurement(1, "R", "A1", "A2",
+                                     np.array([1,1,1,1,1], int),
+                                     np.array([1,2,3,4,5], int),
+                                     np.array([2,2,2,2,2], int),
+                                     np.array([5,4,3,2,1], int))
+            d = m.compute_aggregate_measurements(1)
+            for agg_name, expected in (
+                (cpmeas.AGG_MEAN, np.mean(values)),
+                (cpmeas.AGG_MEDIAN, np.median(values)),
+                (cpmeas.AGG_STD_DEV, np.std(values))):
+                feature = "%s_%s_Foo" % (agg_name, OBJECT_NAME)
+                self.assertTrue(d.has_key(feature))
+                self.assertAlmostEqual(d[feature], expected)
+        finally:
+            del m
         
         
 if __name__ == "__main__":

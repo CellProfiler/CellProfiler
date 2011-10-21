@@ -50,8 +50,6 @@ def lapjv(i, j, costs, wants_dual_variables = False, augmenting_row_reductions =
     or (x, y, u, v) if the dual variables are requested.
     '''
     import os
-    if os.environ.has_key("USERNAME") and os.environ["USERNAME"] == "leek":
-        np.save("c:/temp/lapjv",np.column_stack((i,j,costs)))
     i = np.atleast_1d(i).astype(int)
     j = np.atleast_1d(j).astype(int)
     costs = np.atleast_1d(costs)
@@ -377,3 +375,9 @@ def slow_augment(n, ii, jj, idx, count, x, y, u, v, c):
         j = x[i]
         u[i] = c[i,j] - v[j]
         
+if __name__=="__main__":
+    i = np.load("c:/temp/bad/img-1557/i.npy")
+    j = np.load("c:/temp/bad/img-1557/j.npy")
+    costs = np.load("c:/temp/bad/img-1557/c.npy")
+    lapjv(i, j, costs)
+    

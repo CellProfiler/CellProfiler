@@ -255,14 +255,17 @@ def augment(
     d = np.ascontiguousarray(np.zeros(n, np.float64), np.float64)
     pred = np.ascontiguousarray(np.ones(n, np.uint32))
     #
-    # The algorithm uses an array to store the j values to be processed and
-    # uses the following indexes into the array:
+    # The J that all have the currently considered minimum
     #
-    # 0 to last: "ready" in the pseudocode - the j that have been scanned
-    # low to up: the list of j to be scanned (all at the current minimum)
-    # up to n: the list of j above the current minimum
+    scan = np.ascontiguousarray(np.zeros(n, np.uint32), np.uint32)
     #
-    col = np.ascontiguousarray(np.zeros(n, np.uint32), np.uint32)
+    # The J that have been reached by done J
+    #
+    to_do = np.ascontiguousarray(np.zeros(n, np.uint32), np.uint32)
+    #
+    # The J that have been processed
+    #
+    ready = np.ascontiguousarray(np.zeros(n, np.uint32), np.uint32)
     #
     # We need to scan all J for each I to find the ones in the to-do list
     # so we need to maintain an array that keeps track of whether a J is
@@ -271,6 +274,8 @@ def augment(
     # done[j] == i to see if it is to-do or not
     #
     done = np.ascontiguousarray(-np.ones(n, np.uint32), np.uint32)
+    on_to_do = np.ascontiguousarray(-np.ones(n, np.uint32), np.uint32)
+    eps = np.finfo(np.float32).eps
     cdef:
         int last, low, up
         int i, iii, i1, k
@@ -278,6 +283,8 @@ def augment(
         int n_j, n_j2
         int j, jjj, j1, jidx
         int found
+        int n_to_do
+        int n_ready
         int *p_i_base     = <int *>(ii.data)
         int *p_j_base     = <int *>(jj.data)
         int *p_j, *p_j2
@@ -291,8 +298,11 @@ def augment(
         double *p_c
         double *p_d_base  = <double *>(PyArray_DATA(d))
         int *p_pred_base  = <int *>(PyArray_DATA(pred))
-        int *p_col        = <int *>(PyArray_DATA(col))
+        int *p_to_do      = <int *>(PyArray_DATA(to_do))
+        int *p_scan       = <int *>(PyArray_DATA(scan))
+        int *p_ready      = <int *>(PyArray_DATA(ready))
         int *p_done       = <int *>(PyArray_DATA(done))
+        int *p_on_to_do   = <int *>(PyArray_DATA(on_to_do))
         double inf = np.sum(c) + 1 # This is larger than any path through.
         double umin, temp, h, u1
     
@@ -351,14 +361,18 @@ def augment(
             for jjj in range(n_j):
                 j = p_j[jjj]
                 p_d_base[j] = p_c[jjj] - p_v_base[j]
-                p_col[jjj] = j
+                p_to_do[jjj] = j
+                p_on_to_do[j] = i
                 p_pred_base[j] = i
             
+            n_to_do = n_j
             low = 0
             up = 0
+            n_ready = 0
             while True:
                 if up == low:
-                    last = low
+                    low = 0
+                    up = 0
                     umin = inf
                     #
                     # Find the minimum d[j] among those to do
@@ -366,21 +380,20 @@ def augment(
                     # minimum to the range, low to up, and the remaining
                     # starting at up.
                     #
-                    for jjj in range(up, n_j):
-                        j = p_col[jjj]
+                    for jjj in range(n_to_do):
+                        j = p_to_do[jjj]
                         if p_done[j] == i:
                             continue
                         temp = p_d_base[j]
                         if temp <= umin:
                             if temp < umin:
-                                up = low
+                                up = 0
                                 umin = temp
-                            p_col[jjj] = p_col[up]
-                            p_col[up] = j
+                            p_scan[up] = j
                             up += 1
                     j1 = n
                     for jjj in range(low, up):
-                        j = p_col[jjj]
+                        j = p_scan[jjj]
                         if p_y_base[j] == n:
                             # Augment if not assigned
                             j1 = j
@@ -394,8 +407,10 @@ def augment(
                 # p_j2 points to the j at the i to be replaced
                 # n_j2 is the number of j in the sparse array for this i
                 #
-                j1 = p_col[low]
+                j1 = p_scan[low]
                 low += 1
+                p_ready[n_ready] = j1
+                n_ready += 1
                 i1 = p_y_base[j1]
                 p_j2 = p_j_base + p_idx_base[i1]
                 p_c  = p_c_base + p_idx_base[i1]
@@ -409,35 +424,33 @@ def augment(
                         h = p_c[jjj] - p_v_base[j] - u1
                         if h < p_d_base[j]:
                             p_pred_base[j] = i1
-                            if h == umin:
+                            p_d_base[j] = h
+                            if h <= umin:
                                 if p_y_base[j] == n:
                                     j1 = j
                                     break
                                 #
-                                # add j to the list to scan
+                                # This one is at the minimum so it can be
+                                # added to the j currently being scanned
                                 #
-                                p_col[up] = j
+                                p_scan[up] = j
                                 p_done[j] = i
                                 up += 1
-                            #
-                            # We found a better score for this j. Put on
-                            # to_do list if not there.
-                            #
-                            p_d_base[j] = h
-                            found = 0
-                            for jidx from 0 <= jidx < n_j:
-                                if p_col[jidx] == j:
-                                    found = 1
-                                    break
-                            if found == 0:
-                                p_col[n_j] = j
-                                n_j += 1
+                            elif p_on_to_do[j] != i:
+                                #
+                                # This one is reachable, so it can be added
+                                # to the list of j to consider.
+                                #
+                                p_to_do[n_to_do] = j
+                                p_on_to_do[j] = i
+                                n_to_do += 1
+                            
                 if j1 != n:
                     break
                             
             # Augment
-            for jjj from 0 <= jjj < last:
-                j = p_col[jjj]
+            for jjj from 0 <= jjj < n_ready:
+                j = p_ready[jjj]
                 temp = p_v_base[j]
                 p_v_base[j] += p_d_base[j] - umin
             while True:

@@ -451,7 +451,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         self.assertEqual(m(T.F_LABEL), 1)
         self.assertEqual(m(T.F_PARENT_OBJECT_NUMBER), 1)
         self.assertEqual(m(T.F_PARENT_IMAGE_NUMBER), 1)
-        self.assertEqual(m(T.F_LIFETIME), 1)
+        self.assertEqual(m(T.F_LIFETIME), 2)
         def m(feature):
             name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "1"))
             return measurements.get_current_image_measurement(name)
@@ -491,7 +491,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         m(T.F_DISTANCE_TRAVELED, [0,2,1,2])
         m(T.F_INTEGRATED_DISTANCE, [0,2,3,5])
         m(T.F_LABEL, [1,1,1,1])
-        m(T.F_LIFETIME, [0,1,2,3])
+        m(T.F_LIFETIME, [1,2,3,4])
         m(T.F_LINEARITY, [1,1,np.sqrt(5)/3,1.0/5.0])
         def m(feature):
             name = "_".join((T.F_PREFIX, feature, OBJECT_NAME, "3"))
@@ -860,6 +860,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.object_name.value = OBJECT_NAME
         module.tracking_method.value = T.TM_LAP
         module.wants_second_phase.value = True
+        module.wants_lifetime_filtering.value = False
         module.pixel_radius.value = 50
         
         pipeline = cpp.Pipeline()
@@ -896,13 +897,14 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
                                nobjects[i], i+1)
             for feature in (T.F_DISTANCE_TRAVELED, 
                             T.F_INTEGRATED_DISTANCE, T.F_TRAJECTORY_X,
-                            T.F_TRAJECTORY_Y, T.F_LINEARITY, T.F_LIFETIME):
+                            T.F_TRAJECTORY_Y, T.F_LINEARITY, T.F_LIFETIME, T.F_FINAL_AGE):
                 dtype = int if feature in (
                     T.F_PARENT_OBJECT_NUMBER, T.F_PARENT_IMAGE_NUMBER, 
                     T.F_LIFETIME) else float
                 m.add_measurement(OBJECT_NAME,
-                                   module.measurement_name(feature),
-                                   np.zeros(nobjects[i], dtype), i+1)
+                                  module.measurement_name(feature),
+                                  np.NaN*np.ones(nobjects[i], dtype) if feature == T.F_FINAL_AGE else np.zeros(nobjects[i], dtype), 
+                                  i+1)
             for feature in (T.F_SPLIT_COUNT, T.F_MERGE_COUNT):
                 m.add_measurement(cpmeas.IMAGE,
                                   module.image_measurement_name(feature),
@@ -1037,7 +1039,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             T.F_TRAJECTORY_X: [ np.zeros(1), np.zeros(0), np.array([100]) ],
             T.F_TRAJECTORY_Y: [ np.zeros(1), np.zeros(0), np.array([100]) ],
             T.F_LINEARITY: [ np.array([np.nan]), np.zeros(0), np.array([1])],
-            T.F_LIFETIME: [ np.zeros(1), np.zeros(0), np.ones(1) ],
+            T.F_LIFETIME: [ np.ones(1), np.zeros(0), np.array([2]) ],
+            T.F_FINAL_AGE: [ np.array([np.nan]), np.zeros(0), np.array([2])],
             T.F_NEW_OBJECT_COUNT: [ 1, 0, 0 ],
             T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
             T.F_MERGE_COUNT: [ 0, 0, 0 ],
@@ -1115,7 +1118,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             T.F_TRAJECTORY_X: [ np.zeros(1), np.array([10,-10]), np.array([3,-4]) ],
             T.F_TRAJECTORY_Y: [ np.zeros(1), np.array([10,-10]), np.array([4, -3]) ],
             T.F_LINEARITY: [ np.array([np.nan]), np.array([1,1]), np.array([lin, lin])],
-            T.F_LIFETIME: [ np.zeros(1), np.array([1,1]), np.array([2,2]) ],
+            T.F_LIFETIME: [ np.ones(1), np.array([2,2]), np.array([3,3]) ],
+            T.F_FINAL_AGE: [ np.array([np.nan]), np.array([np.nan, np.nan]), np.array([3,3]) ],
             T.F_NEW_OBJECT_COUNT: [ 1, 0, 0 ],
             T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
             T.F_MERGE_COUNT: [ 0, 0, 0 ],
@@ -1138,7 +1142,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             T.F_LABEL: [ np.array([1]), np.array([1,2]), np.array([1,2]) ],
             T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.array([1,0]), np.array([2,2]) ],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,0]), np.array([1,2]) ],
-            T.F_LIFETIME: [ np.zeros(1), np.array([1,0]), np.array([2,1]) ],
+            T.F_LIFETIME: [ np.ones(1), np.array([2,1]), np.array([3,2]) ],
+            T.F_FINAL_AGE: [ np.array([np.nan]), np.array([np.nan, np.nan]), np.array([3,2]) ],
             T.F_NEW_OBJECT_COUNT: [ 1, 1, 0 ],
             T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
             T.F_MERGE_COUNT: [ 0, 0, 0 ],
@@ -1161,7 +1166,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             T.F_LABEL: [ np.array([1]), np.array([1,2]), np.array([1,2]) ],
             T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.array([1,0]), np.array([2,2]) ],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,0]), np.array([1,2]) ],
-            T.F_LIFETIME: [ np.zeros(1), np.array([1,0]), np.array([2,1]) ],
+            T.F_LIFETIME: [ np.array([1]), np.array([2,1]), np.array([3,2]) ],
+            T.F_FINAL_AGE: [ np.array([np.nan]), np.array([np.nan, np.nan]), np.array([3,2]) ],
             T.F_NEW_OBJECT_COUNT: [ 1, 1, 0 ],
             T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
             T.F_MERGE_COUNT: [ 0, 0, 0 ],
@@ -1184,7 +1190,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             T.F_LABEL: [ np.array([1,1]), np.array([1,1]), np.array([1]) ],
             T.F_PARENT_IMAGE_NUMBER: [ np.array([0,0]), np.array([1,1]), np.array([2]) ],
             T.F_PARENT_OBJECT_NUMBER: [ np.array([0,0]), np.array([1,2]), np.array([1]) ],
-            T.F_LIFETIME: [ np.zeros(2), np.array([1,1]), np.array([2]) ],
+            T.F_LIFETIME: [ np.array([1,1]), np.array([2,2]), np.array([3]) ],
+            T.F_FINAL_AGE: [ np.array([np.nan, np.nan]), np.array([np.nan, np.nan]), np.array([3]) ],
             T.F_NEW_OBJECT_COUNT: [ 2, 0, 0 ],
             T.F_LOST_OBJECT_COUNT: [ 0, 0, 0 ],
             T.F_MERGE_COUNT: [ 0, 0, 1 ],
@@ -1359,9 +1366,12 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             T.F_LINEARITY: [ np.array([np.nan]), np.zeros(0), np.array([1]),
                              np.array([np.nan]), np.array([1,1]), np.array([lin, lin]),
                              np.array([np.nan, np.nan]), np.array([np.nan, np.nan]), np.ones(1)],
-            T.F_LIFETIME: [ np.zeros(1), np.zeros(0), np.ones(1),
-                            np.zeros(1), np.array([1,1]), np.array([2,2]),
-                            np.zeros(2), np.array([1,1]), np.array([2])],
+            T.F_LIFETIME: [ np.ones(1), np.zeros(0), np.array([2]),
+                            np.ones(1), np.array([2,2]), np.array([3,3]),
+                            np.ones(2), np.array([2,2]), np.array([3])],
+            T.F_FINAL_AGE: [ np.array([np.nan]), np.zeros(0), np.array([2]),
+                            np.array([np.nan]), np.array([np.nan, np.nan]), np.array([3,3]),
+                            np.array([np.nan, np.nan]), np.array([np.nan, np.nan]), np.array([3])],
             T.F_NEW_OBJECT_COUNT: [ 1, 0, 0,
                                     1, 0, 0,
                                     2, 0, 0],
@@ -1375,6 +1385,41 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
                                0, 1, 0,
                                0, 0, 0 ]
         })
+        
+    
+    def test_07_13_filter_by_final_age(self):
+        '''Filter an object by the final age'''
+        workspace, module = self.make_lap2_workspace(
+            np.array([[0, 1, 0, 0, 100, 100, 50],
+                      [1, 1, 1, 1, 110, 110, 50],
+                      [1, 2, 0, 0, 90,   90, 25],
+                      [2, 1, 2, 1, 100, 100, 50]]), 3)
+        self.assertTrue(isinstance(module, T.TrackObjects))
+        #
+        # The split score should be between 28 and 30.  Set the split
+        # alternative cost to 28 so that the split is inhibited.
+        #
+        module.split_cost.value = 28
+        module.max_split_score.value = 30
+        #
+        # The cost of the merge is 2x 10x sqrt(2) which is between 28 and 29
+        #
+        module.merge_cost.value = 28
+        module.max_merge_score.value = 30
+        module.wants_lifetime_filtering.value = True
+        module.min_lifetime.value = 1
+        module.run_as_data_tool(workspace)
+        self.check_measurements(workspace, {
+            T.F_LABEL: [ np.array([1]), np.array([1,np.NaN]), np.array([1]) ],
+            T.F_PARENT_IMAGE_NUMBER: [ np.array([0]), np.array([1,0]), np.array([2]) ],
+            T.F_PARENT_OBJECT_NUMBER: [ np.array([0]), np.array([1,0]), np.array([1]) ],
+            T.F_LIFETIME: [ np.array([1]), np.array([2,1]), np.array([3]) ],
+            T.F_FINAL_AGE: [ np.array([np.nan]), np.array([np.nan, 1]), np.array([3]) ],
+            T.F_NEW_OBJECT_COUNT: [ 1, 1, 0 ],
+            T.F_LOST_OBJECT_COUNT: [ 0, 0, 1 ],
+            T.F_MERGE_COUNT: [ 0, 0, 0 ],
+            T.F_SPLIT_COUNT: [ 0, 0, 0 ]
+            })
         
     def test_08_01_save_image(self):
         module = T.TrackObjects()
@@ -1407,4 +1452,3 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         self.assertEqual(shape[0], 640)
         self.assertEqual(shape[1], 480)
         
-    

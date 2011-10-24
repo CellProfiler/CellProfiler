@@ -14,7 +14,9 @@ sequentially by frame (whether loaded as a series of images or a movie file).
 To process a collection of images/movies, you will need to 
 group the input using grouping options in <b>LoadImages</b> to make sure 
 that each image sequence is
-handled individually. See the help in that module, and CellProfiler Help > General Help > Using MetaData in CellProfiler for more information. If you are only processing a single movie in each analysis 
+handled individually. See the help in that module, and CellProfiler Help > 
+General Help > Using MetaData in CellProfiler for more information. If you are 
+only processing a single movie in each analysis 
 run, you do not need to set up image grouping.
 
 
@@ -27,7 +29,8 @@ For an example pipeline using TrackObjects, see the CellProfiler <a href="http:/
 <li><i>Label:</i> Each tracked object is assigned a unique identifier (label). 
 Results of splits or merges are seen as new objects and assigned a new
 label.</li>
-<li><i>Parent:</i> The label of the object in the last frame. For a split, each
+<li><i>ParentImageNumber, ParentObjectNumber:</i> The <i>ImageNumber</i> and 
+<i>ObjectNumber</i> of the parent object in the prior frame. For a split, each
 child object will have the label of the object it split from. For a merge,
 the child will have the label of the closest parent.</li>
 <li><i>TrajectoryX, TrajectoryY:</i> The direction of motion (in x and y coordinates) of the 
@@ -40,10 +43,15 @@ the lifetime of the object.</li>
 <li><i>Linearity:</i> A measure of how linear the object trajectity is during the
 object lifetime. Calculated as (distance from initial to final 
 location)/(integrated object distance). Value is in range of [0,1].</li>
-<li><i>Lifetime:</i> The duration (in frames) of the object. The lifetime begins 
-at the frame when an object appears and is output as a measurement when
-the object disappears. At the final frame of the image set/movie, the 
+<li><i>Lifetime:</i> The number of frames an objects has existed. The lifetime starts
+at 1 at the frame when an object appears, and is incremented with each frame that the
+object persists. At the final frame of the image set/movie, the 
 lifetimes of all remaining objects are output.</li>
+<li><i>FinalAge:</i> Similar to <i>LifeTime</i> but is only output at the final
+frame of the object's life (or the movie ends, whichever comes first). At this point, 
+the final age of the object is output; no values are stored for earlier frames. This
+is useful if you want to plot a histogram of the object lifetimes; all but the final age
+can be ignored or filtered out.</li>
 </ul>
 </li>
 <li><i>Image features</i>
@@ -119,6 +127,7 @@ F_DISTANCE_TRAVELED = "DistanceTraveled"
 F_INTEGRATED_DISTANCE = "IntegratedDistance"
 F_LINEARITY = "Linearity"
 F_LIFETIME = "Lifetime"
+F_FINAL_AGE = "FinalAge"
 F_KALMAN = "Kalman"
 F_STATE = "State"
 F_COV = "COV"
@@ -129,6 +138,9 @@ F_X = "X"
 F_Y = "Y"
 F_VX = "VX"
 F_VY = "VY"
+F_EXPT_ORIG_NUMTRACKS = "%s_OriginalNumberOfTracks"%F_PREFIX
+F_EXPT_FILT_NUMTRACKS = "%s_FilteredNumberOfTracks"%F_PREFIX
+                                     
 def kalman_feature(model, matrix_or_vector, i, j=None):
     '''Return the feature name for a Kalman feature
     
@@ -164,7 +176,8 @@ F_ALL_COLTYPE_ALL = [(F_LABEL, cpmeas.COLTYPE_INTEGER),
                      (F_DISTANCE_TRAVELED, cpmeas.COLTYPE_FLOAT),
                      (F_INTEGRATED_DISTANCE, cpmeas.COLTYPE_FLOAT),
                      (F_LINEARITY, cpmeas.COLTYPE_FLOAT),
-                     (F_LIFETIME, cpmeas.COLTYPE_INTEGER)]
+                     (F_LIFETIME, cpmeas.COLTYPE_INTEGER),
+                     (F_FINAL_AGE, cpmeas.COLTYPE_INTEGER)]
 
 F_IMAGE_COLTYPE_ALL = [(F_NEW_OBJECT_COUNT, cpmeas.COLTYPE_INTEGER),
                        (F_LOST_OBJECT_COUNT, cpmeas.COLTYPE_INTEGER),
@@ -186,7 +199,7 @@ class TrackObjects(cpm.CPModule):
 
     module_name = 'TrackObjects'
     category = "Object Processing"
-    variable_revision_number = 4
+    variable_revision_number = 5
 
     def create_settings(self):
         self.tracking_method = cps.Choice('Choose a tracking method',
@@ -424,7 +437,29 @@ class TrackObjects(cpm.CPModule):
             be skipped when merging a gap caused by an unsegmented object.
             These gaps occur when an image is mis-segmented and identification
             fails to find an object in one or more frames.''')
-
+        
+        self.wants_lifetime_filtering = cps.Binary(
+            'Do you want to filter objects by lifetime?', False, doc = '''
+            Check this setting if you want objects to be filtered by their
+            lifetime, i.e., total duration in frames. This is useful for
+            marking objects which transiently appear and disappear, such
+            as the results of a mis-segmentation. <br>
+            Two points to keep in mind when using this feature:
+            <ul>
+            <li>This operation does not actually delete the filtered object, 
+            but merely removes its label from the tracked object list; 
+            the filtered object's per-object measurements are retained.</li>
+            <li>An object can be filtered only if it is tracked as an unique object.
+            Splits continue the lifetime count from their parents, so the minimum
+            lifetime value does not apply to them.</li>
+            </ul>''')
+        
+        self.min_lifetime = cps.Integer(
+            'Minimum lifetime to filter', 1, minval=1, doc = '''
+            <i>(Used only if objects are filtered by lifetime)</i><br>
+            Enter the minimum number of frames an object is permitted to persist. Objects
+            which last this number of frames or lower are filtered out.''')
+        
         self.display_type = cps.Choice(
             'Select display option', DT_ALL, doc="""
             How do you want to display the tracked objects?
@@ -451,7 +486,8 @@ class TrackObjects(cpm.CPModule):
                 self.wants_second_phase,
                 self.gap_cost, self.split_cost, self.merge_cost,
                 self.max_gap_score, self.max_split_score,
-                self.max_merge_score, self.max_frame_distance]
+                self.max_merge_score, self.max_frame_distance,
+                self.wants_lifetime_filtering, self.min_lifetime]
 
     def visible_settings(self):
         result = [self.tracking_method, self.object_name]
@@ -467,6 +503,10 @@ class TrackObjects(cpm.CPModule):
                     self.max_merge_score, self.max_frame_distance]
         else:
             result += [self.pixel_radius]
+        
+        result += [ self.wants_lifetime_filtering]
+        if self.wants_lifetime_filtering:
+            result += [ self.min_lifetime ]
             
         result +=[ self.display_type, self.wants_image]
         if self.wants_image.value:
@@ -1077,6 +1117,15 @@ class TrackObjects(cpm.CPModule):
         return z
 
     def post_group(self, workspace, grouping):
+        # If any tracking method other than LAP, recalculate measurements
+        # (Really, only the final age needs to be re-done)
+        if self.tracking_method != TM_LAP:
+            m = workspace.measurements
+            assert(isinstance(m, cpmeas.Measurements))
+            image_numbers = self.get_group_image_numbers(workspace)
+            self.recalculate_group(workspace, image_numbers)
+            return
+        
         if (self.tracking_method != TM_LAP or
             not self.wants_second_phase):
             return
@@ -1291,7 +1340,7 @@ class TrackObjects(cpm.CPModule):
             i = i+1
 
         # calculates actual cost according to the formula given in the 
-        # supplmenetary notes    
+        # supplementary notes    
         AreaLast = L[z[:, 0], AIDX]
         AreaBeforeMerge = P[P1[z[:, 1], PIDX].astype(int) - 1, AIDX]
         AreaAtMerge = P1[z[:, 1], AIDX]
@@ -1665,7 +1714,13 @@ class TrackObjects(cpm.CPModule):
         dists = wrapped(self.measurement_name(F_DISTANCE_TRAVELED))
         linearity = wrapped(self.measurement_name(F_LINEARITY))
         lifetimes = wrapped(self.measurement_name(F_LIFETIME))
-
+        label = wrapped(self.measurement_name(F_LABEL))
+        final_age = wrapped(self.measurement_name(F_FINAL_AGE))
+        
+        age = {} # Dictionary of per-label ages  
+        if self.wants_lifetime_filtering.value:
+            minimum_lifetime = self.min_lifetime.value
+            
         for image_number in image_numbers:
             #
             # Distances traveled from step to step
@@ -1700,9 +1755,41 @@ class TrackObjects(cpm.CPModule):
             #
             linearity[index] = tot_distance / integrated[index]
             #
-            # Add 1 to lifetimes / zero for new
+            # Add 1 to lifetimes / one for new
             #
-            lifetimes[index] = lifetimes.get_parent(index, no_parent=-1) + 1
+            lifetimes[index] = lifetimes.get_parent(index, no_parent=0) + 1
+            
+            #
+            # Age = overall lifetime of each label
+            #
+            for this_label, this_lifetime in zip(label[index],lifetimes[index]):
+                age[this_label] = this_lifetime
+            
+        all_labels = age.keys()
+        all_ages = age.values()
+        if self.wants_lifetime_filtering.value:
+            labels_to_filter = [k for k, v in age.iteritems() if v <= minimum_lifetime]
+        for image_number in image_numbers:
+            index = image_index[image_number]
+            
+            # Fill in final object ages
+            this_label = label[index]
+            this_lifetime = lifetimes[index]
+            this_age = final_age[index]
+            ind = np.array(all_labels).searchsorted(this_label)
+            i = np.array(all_ages)[ind] == this_lifetime
+            this_age[i] = this_lifetime[i]
+            final_age[index] = this_age
+            
+            # Filter object ages below the minimum
+            if self.wants_lifetime_filtering.value:
+                if len(labels_to_filter) > 0:
+                    this_label = label[index].astype(float)
+                    this_label[np.in1d(this_label,np.array(labels_to_filter))] = np.NaN
+                    label[index] = this_label
+        m.add_experiment_measurement(F_EXPT_ORIG_NUMTRACKS, nlabels)
+        if self.wants_lifetime_filtering.value:
+            m.add_experiment_measurement(F_EXPT_FILT_NUMTRACKS, nlabels-len(labels_to_filter))
 
     def map_objects(self, workspace, new_of_old, old_of_new, i,j):
         '''Record the mapping of old to new objects and vice-versa
@@ -1792,11 +1879,13 @@ class TrackObjects(cpm.CPModule):
         #
         # Update the ages
         #
-        age = np.zeros(new_count, int)
+        age = np.ones(new_count, int)
         if np.any(has_old):
             old_age = self.get_saved_ages(workspace)
             age[has_old] = old_age[old_of_new[has_old]-1]+1
         self.add_measurement(workspace, F_LIFETIME, age)
+        final_age = np.NaN*np.ones(new_count, float) # Initialize to NaN; will re-calc later
+        self.add_measurement(workspace, F_FINAL_AGE, final_age)
         self.set_saved_ages(workspace, age)
         self.set_saved_object_numbers(workspace, mapping)
         #
@@ -1861,6 +1950,8 @@ class TrackObjects(cpm.CPModule):
     def get_categories(self, pipeline, object_name):
         if object_name in (self.object_name.value, cpmeas.IMAGE):
             return [F_PREFIX]
+        elif object_name == cpmeas.EXPERIMENT:
+            return [F_PREFIX]
         else:
             return []
 
@@ -1874,6 +1965,8 @@ class TrackObjects(cpm.CPModule):
         if object_name == cpmeas.IMAGE:
             result = F_IMAGE_ALL
             return result
+        if object_name == cpmeas.EXPERIMENT and category == F_PREFIX:
+            return [F_EXPT_ORIG_NUMTRACKS, F_EXPT_FILT_NUMTRACKS]
         return []
 
     def get_measurement_objects(self, pipeline, object_name, category, 
@@ -1921,6 +2014,12 @@ class TrackObjects(cpm.CPModule):
             setting_values = (setting_values[:7] + 
                               [ M_BOTH, "3", "2,10"] +
                               setting_values[9:])
+            variable_revision_number = 4
+        if (not from_matlab) and variable_revision_number == 4:
+            # Added lifetime filtering: Wants filtering + maximum allowed lifetime
+            setting_values = setting_values + [cps.NO, "1"]
+            variable_revision_number = 5
+            
         return setting_values, variable_revision_number, from_matlab
 
 

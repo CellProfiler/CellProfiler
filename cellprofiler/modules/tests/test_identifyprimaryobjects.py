@@ -1509,9 +1509,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         threshold,global_threshold = x.get_threshold(image, 
                                                      np.ones((120,110),bool),
                                                      None,None)
-        for i0,i1 in ((0,60),(60,120)):
-            for j0,j1 in ((0,55),(55,110)):
-                self.assertTrue(np.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
         self.assertTrue(threshold[0,0] != threshold[0,109])
         self.assertTrue(threshold[0,0] != threshold[119,0])
         self.assertTrue(threshold[0,0] != threshold[119,109])
@@ -1547,8 +1544,6 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         threshold,global_threshold = x.get_threshold(image, 
                                                      np.ones((525,525),bool),
                                                      None,None)
-        for ((i0,i1),(j0,j1)) in blocks:
-                self.assertTrue(np.all(threshold[i0:i1,j0:j1] == threshold[i0,j0]))
     
     def test_08_01_per_object_otsu(self):
         """Test get_threshold using Otsu per-object"""

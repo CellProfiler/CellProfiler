@@ -22,6 +22,7 @@ import math
 import numpy as np
 import scipy.ndimage
 import scipy.sparse
+import scipy.interpolate
 
 from cellprofiler.cpmath.otsu import otsu, entropy, otsu3, entropy3
 from cellprofiler.cpmath.smooth import smooth_with_noise
@@ -251,6 +252,7 @@ def get_adaptive_threshold(threshold_method, image, threshold,
     # Loop once per block, computing the "global" threshold within the
     # block.
     #
+    block_threshold = np.zeros([nblocks[0],nblocks[1]])
     for i in range(nblocks[0]):
         i0 = int(i*increment[0])
         i1 = int((i+1)*increment[0])
@@ -259,13 +261,36 @@ def get_adaptive_threshold(threshold_method, image, threshold,
             j1 = int((j+1)*increment[1])
             block = image[i0:i1,j0:j1]
             block_mask = None if mask is None else mask[i0:i1,j0:j1]
-            block_threshold = get_global_threshold(threshold_method, 
-                                                   block, mask = block_mask,
-                                                   object_fraction = object_fraction,
-                                                   two_class_otsu = two_class_otsu,
-                                                   use_weighted_variance = use_weighted_variance,
-                                                   assign_middle_to_foreground = assign_middle_to_foreground)
-            thresh_out[i0:i1,j0:j1] = block_threshold
+            block_threshold[i,j] = get_global_threshold(
+                threshold_method, 
+                block, mask = block_mask,
+                object_fraction = object_fraction,
+                two_class_otsu = two_class_otsu,
+                use_weighted_variance = use_weighted_variance,
+                assign_middle_to_foreground = assign_middle_to_foreground)
+    #
+    # Use a cubic spline to blend the thresholds across the image to avoid image artifacts
+    #
+    spline_order = min(3, np.min(nblocks) - 1)
+    xStart = int(increment[0] / 2)
+    xEnd = int((nblocks[0] - 0.5) * increment[0])
+    yStart = int(increment[1] / 2)
+    yEnd = int((nblocks[1] - 0.5) * increment[1])
+    xtStart = .5
+    xtEnd = image.shape[0] - .5
+    ytStart = .5
+    ytEnd = image.shape[1] - .5
+    block_x_coords = np.linspace(xStart,xEnd, nblocks[0])
+    block_y_coords = np.linspace(yStart,yEnd, nblocks[1])
+    adaptive_interpolation = scipy.interpolate.RectBivariateSpline(
+        block_x_coords, block_y_coords, block_threshold,
+        bbox = (xtStart, xtEnd, ytStart, ytEnd),
+        kx = spline_order, ky = spline_order)
+    thresh_out_x_coords = np.linspace(.5, int(nblocks[0] * increment[0]) - .5, thresh_out.shape[0])
+    thresh_out_y_coords = np.linspace(.5, int(nblocks[1] * increment[1]) - .5 , thresh_out.shape[1])
+
+    thresh_out = adaptive_interpolation(thresh_out_x_coords, thresh_out_y_coords)
+    
     return thresh_out
 
 def get_per_object_threshold(method, image, threshold, mask=None, labels=None,

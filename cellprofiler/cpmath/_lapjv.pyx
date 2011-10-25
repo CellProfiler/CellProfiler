@@ -30,6 +30,8 @@ cdef extern from "numpy/arrayobject.h":
 
 import_array()
 
+__eps = np.sqrt(np.finfo(np.float64).eps)
+
 def reduction_transfer(
     np.ndarray[dtype=np.uint32_t,  ndim=1, negative_indices=False, mode='c'] ii,
     np.ndarray[dtype=np.uint32_t,  ndim=1, negative_indices=False, mode='c'] j,
@@ -160,6 +162,7 @@ def augmenting_row_reduction(
         double u1
         double u2
         double temp
+        double eps = __eps
         int i1
         int j1
         int j2
@@ -209,13 +212,13 @@ def augmenting_row_reduction(
                     j2 = j
             # perform the reduction
             i1 = p_y_base[j1]
-            if u1 < u2:
+            if u1 + eps < u2:
                p_v_base[j1] = p_v_base[j1] - u2 + u1
             elif i1 != n:
                 j1 = j2
                 i1 = p_y_base[j1]
             if i1 != n:
-                if u1 < u2:
+                if u1 + eps < u2:
                     k -= 1
                     p_i[k] = i1
                 else:

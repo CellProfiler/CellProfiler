@@ -452,7 +452,7 @@ class FilterObjects(cpm.CPModule):
             if src_objects.has_parent_image:
                 image = src_objects.parent_image
         else:
-            image = workspace.image_set.get_image(image_names[0])
+            image = workspace.image_set.get_image(image_names[0].split('_')[0])
         if image is None:
             # Oh so sad - no image, just display the old and new labels
             figure = workspace.create_or_find_figure(title="FilterObjects, image cycle #%d"%(

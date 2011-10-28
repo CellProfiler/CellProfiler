@@ -32,7 +32,7 @@ if not sys.platform.startswith('linux'):
         def set_pipeline(self, module):
             app = wx.GetApp()
             if app is None:
-                app = wx.PySimpleApp()
+                app = wx.PySimpleApp(True)
             from cellprofiler.gui.cpframe import CPFrame
             app.frame = CPFrame(None)
             pipeline = app.frame.pipeline 

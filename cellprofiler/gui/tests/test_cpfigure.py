@@ -29,7 +29,7 @@ class TestCPFigure(unittest.TestCase):
     def setUp(self):
         self.app = wx.GetApp()
         if self.app is None:
-            self.app = wx.PySimpleApp()
+            self.app = wx.PySimpleApp(True)
         self.frame = wx.Frame(None, title="Hello, world")
         self.frame.Show()
 

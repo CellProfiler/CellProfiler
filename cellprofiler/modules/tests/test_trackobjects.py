@@ -861,6 +861,11 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.tracking_method.value = T.TM_LAP
         module.wants_second_phase.value = True
         module.wants_lifetime_filtering.value = False
+        module.wants_minimum_lifetime.value = False
+        module.min_lifetime.value = 1
+        module.wants_maximum_lifetime.value = False
+        module.max_lifetime.value = 100
+        
         module.pixel_radius.value = 50
         
         pipeline = cpp.Pipeline()
@@ -1407,7 +1412,10 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         module.merge_cost.value = 28
         module.max_merge_score.value = 30
         module.wants_lifetime_filtering.value = True
+        module.wants_minimum_lifetime.value = True
         module.min_lifetime.value = 1
+        module.wants_maximum_lifetime.value = False
+        module.max_lifetime.value = 100
         module.run_as_data_tool(workspace)
         self.check_measurements(workspace, {
             T.F_LABEL: [ np.array([1]), np.array([1,np.NaN]), np.array([1]) ],

@@ -454,11 +454,23 @@ class TrackObjects(cpm.CPModule):
             lifetime value does not apply to them.</li>
             </ul>''')
         
-        self.min_lifetime = cps.Integer(
-            'Minimum lifetime to filter', 1, minval=1, doc = '''
+        self.wants_minimum_lifetime = cps.Binary(
+            'Filter using a minimum lifetime?', True, doc = '''
             <i>(Used only if objects are filtered by lifetime)</i><br>
             Enter the minimum number of frames an object is permitted to persist. Objects
             which last this number of frames or lower are filtered out.''')
+        
+        self.min_lifetime = cps.Integer(
+            'Minimum lifetime', 1, minval=1)
+        
+        self.wants_maximum_lifetime = cps.Binary(
+            'Filter using a maximum lifetime?', False, doc = '''
+            <i>(Used only if objects are filtered by lifetime)</i><br>
+            Enter the maximum number of frames an object is permitted to persist. Objects
+            which last this number of frames or more are filtered out.''')
+        
+        self.max_lifetime = cps.Integer(
+            'Maximum lifetime', 100)
         
         self.display_type = cps.Choice(
             'Select display option', DT_ALL, doc="""
@@ -487,8 +499,18 @@ class TrackObjects(cpm.CPModule):
                 self.gap_cost, self.split_cost, self.merge_cost,
                 self.max_gap_score, self.max_split_score,
                 self.max_merge_score, self.max_frame_distance,
-                self.wants_lifetime_filtering, self.min_lifetime]
+                self.wants_lifetime_filtering, self.wants_minimum_lifetime,
+                self.min_lifetime, self.wants_maximum_lifetime, self.max_lifetime]
 
+    def validate_module(self, pipeline):
+        '''Make sure that the user has selected some limits when filtering'''
+        if (self.tracking_method == TM_LAP and
+            self.wants_lifetime_filtering.value and 
+            (self.wants_minimum_lifetime.value == False and self.wants_minimum_lifetime.value == False) ):
+                raise cps.ValidationError(
+                        'Please enter a minimum and/or maximum lifetime limit',
+                        self.wants_lifetime_filtering)
+                
     def visible_settings(self):
         result = [self.tracking_method, self.object_name]
         if self.tracking_method == TM_MEASUREMENTS:
@@ -506,7 +528,12 @@ class TrackObjects(cpm.CPModule):
         
         result += [ self.wants_lifetime_filtering]
         if self.wants_lifetime_filtering:
-            result += [ self.min_lifetime ]
+            result += [ self.wants_minimum_lifetime ]
+            if self.wants_minimum_lifetime:
+                result += [ self.min_lifetime ]
+            result += [ self.wants_maximum_lifetime ]
+            if self.wants_maximum_lifetime:
+                result += [ self.max_lifetime ]
             
         result +=[ self.display_type, self.wants_image]
         if self.wants_image.value:
@@ -1719,7 +1746,8 @@ class TrackObjects(cpm.CPModule):
         
         age = {} # Dictionary of per-label ages  
         if self.wants_lifetime_filtering.value:
-            minimum_lifetime = self.min_lifetime.value
+            minimum_lifetime = self.min_lifetime.value if self.wants_minimum_lifetime.value else -np.Inf
+            maximum_lifetime = self.max_lifetime.value if self.wants_maximum_lifetime.value else np.Inf
             
         for image_number in image_numbers:
             #
@@ -1768,7 +1796,7 @@ class TrackObjects(cpm.CPModule):
         all_labels = age.keys()
         all_ages = age.values()
         if self.wants_lifetime_filtering.value:
-            labels_to_filter = [k for k, v in age.iteritems() if v <= minimum_lifetime]
+            labels_to_filter = [k for k, v in age.iteritems() if v <= minimum_lifetime or v >= maximum_lifetime]
         for image_number in image_numbers:
             index = image_index[image_number]
             
@@ -2015,9 +2043,10 @@ class TrackObjects(cpm.CPModule):
                               [ M_BOTH, "3", "2,10"] +
                               setting_values[9:])
             variable_revision_number = 4
+            
         if (not from_matlab) and variable_revision_number == 4:
-            # Added lifetime filtering: Wants filtering + maximum allowed lifetime
-            setting_values = setting_values + [cps.NO, "1"]
+            # Added lifetime filtering: Wants filtering + min/max allowed lifetime
+            setting_values = setting_values + [cps.NO, cps.YES, "1", cps.NO, "100"]
             variable_revision_number = 5
             
         return setting_values, variable_revision_number, from_matlab

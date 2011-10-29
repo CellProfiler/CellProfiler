@@ -2,8 +2,6 @@ startup_main = '''<html>
 <body>
 <center><h2>Welcome to CellProfiler!</h2></center>
 
-<img src="memory:mark.png"/>
-
 <p>CellProfiler is automated image analysis software designed to measure biological phenotypes in images.</p>
 <br>
 <br>

@@ -16,11 +16,6 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
         self.HTMLBackgroundColour = cpprefs.get_background_color()
 
     def load_startup_blurb(self):
-        from cellprofiler.icons import get_builtin_image
-        mfs = wx.MemoryFSHandler()
-        wx.FileSystem_AddHandler(mfs)
-        mfs.AddFile("mark.png", get_builtin_image('mark'), wx.BITMAP_TYPE_PNG)
-        
         self.OnLinkClicked(wx.html.HtmlLinkInfo('startup_main', ''))
 
     def OnLinkClicked(self, linkinfo):

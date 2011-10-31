@@ -57,11 +57,14 @@ class TestRelateObjects(unittest.TestCase):
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
+        m = cpmeas.Measurements()
+        m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)
+        m.add_image_measurement(cpmeas.GROUP_INDEX, 1)
         workspace = cpw.Workspace(pipeline,
                                   module,
                                   image_set,
                                   object_set,
-                                  cpmeas.Measurements(),
+                                  m,
                                   image_set_list)
         o = cpo.Objects()
         if parents.shape[1] == 3:

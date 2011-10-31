@@ -238,8 +238,6 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
                 measurements.add_measurement(OBJECT[i], measurement, data)
             operand.operand_measurement.value = measurement
         module.output_feature_name.value = OUTPUT_MEASUREMENTS
-        if setup_fn is not None:
-            setup_fn(module)
         pipeline = cpp.Pipeline()
         image_set_list = cpi.ImageSetList()
         workspace = cpw.Workspace(pipeline,
@@ -248,6 +246,8 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
                                   cpo.ObjectSet(),
                                   measurements,
                                   image_set_list)
+        if setup_fn is not None:
+            setup_fn(module, workspace)
         module.run(workspace)
         return measurements
     
@@ -276,7 +276,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertTrue(np.all(data == np.array([3,6,11])))
     
     def test_02_04_add_premultiply(self):
-        def fn(module):
+        def fn(module, workspace):
             module.operands[0].multiplicand.value = 2
             module.operands[1].multiplicand.value = 3
         
@@ -286,7 +286,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertAlmostEqual(data, expected)
 
     def test_02_05_add_pre_exponentiate(self):
-        def fn(module):
+        def fn(module, workspace):
             module.operands[0].exponent.value = 2
             module.operands[1].exponent.value = 3
         
@@ -296,7 +296,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertAlmostEqual(data, expected)
     
     def test_02_06_add_postmultiply(self):
-        def fn(module):
+        def fn(module, workspace):
             module.final_multiplicand.value = 3
         measurements = self.run_workspace(C.O_ADD, True, 5, True, 7, fn)
         expected = (5 + 7) * 3
@@ -304,7 +304,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertAlmostEqual(data, expected)
         
     def test_02_07_add_postexponentiate(self):
-        def fn(module):
+        def fn(module, workspace):
             module.final_exponent.value = 3
         measurements = self.run_workspace(C.O_ADD, True, 5, True, 7, fn)
         expected = (5 + 7) ** 3
@@ -312,7 +312,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertAlmostEqual(data, expected)
     
     def test_02_08_add_log(self):
-        def fn(module):
+        def fn(module, workspace):
             module.wants_log.value = True
         measurements = self.run_workspace(C.O_ADD, True, 5, True, 7, fn)
         expected = np.log10(5 + 7)
@@ -414,7 +414,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         
         The bug was that the measurement gets added twice
         '''
-        def fn(module):
+        def fn(module, workspace):
             module.operands[1].operand_objects.value = OBJECT[0]
             module.operands[1].operand_measurement.value = "measurement0"
         
@@ -444,7 +444,7 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         
     def test_08_01_none_operation(self):
         # In this case, just multiply the array by a constant
-        def fn(module):
+        def fn(module, workspace):
             module.operands[0].multiplicand.value = 2
 
         measurements = self.run_workspace(C.O_NONE, False, np.array([1,2,3]),
@@ -478,3 +478,49 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         columns = module.get_measurement_columns(None)
         self.assertEqual(columns[0][0],OBJECT[0])
         self.assertEqual(len(columns),1)
+        
+    def test_10_1_img_1566(self):
+        '''Regression test: different numbers of objects'''
+        r = np.random.RandomState(1566)
+        o0 = [ np.array([1,2,3,4,5]), np.array([1,1,2,2,3]), 
+               np.array([1,2,4,5]), np.array([1,1,1,1])]
+        o1 = [ np.array([1,1,2,2,3]), np.array([1,2,3,4,5]),
+               np.array([1,1,1,1]), np.array([1,2,4,5])]
+        in0 = [ np.array([0,1,2,3,4], float), np.array([2,4,8], float),
+                np.array([0,1,2,3,4], float), np.array([5], float)]
+        in1 = [ np.array([2,4,8], float), np.array([0,1,2,3,4], float),
+                np.array([5], float), np.array([0,1,2,3,4], float)]
+
+        expected0 = [ np.array([2, 3, 6, 7, 12]),
+                      np.array([2.5, 6.5, 12]),
+                      np.array([5, 6, np.nan, 8, 9]),
+                      np.array([7])]
+        expected1 = [ np.array([2.5, 6.5, 12]),
+                      np.array([2, 3, 6, 7, 12]),
+                      np.array([7]),
+                      np.array([5, 6, np.nan, 8, 9])]
+        for oo0, oo1, ii0, ii1, e0, e1 in zip(o0, o1, in0, in1, expected0, expected1):
+            for flip in (False, True):
+                def setup_fn(module, workspace, oo0=oo0, oo1=oo1, flip=flip):
+                    m = workspace.measurements
+                    m.add_image_measurement(cpmeas.GROUP_INDEX, 1)
+                    m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)
+                    self.assertTrue(isinstance(m, cpmeas.Measurements))
+                    if not flip:
+                        m.add_relate_measurement(
+                            1, C.R_PARENT, OBJECT[0], OBJECT[1],
+                            np.ones(len(oo0), int), oo0,
+                            np.ones(len(oo1), int), oo1)
+                    else:
+                        m.add_relate_measurement(
+                            1, C.R_PARENT, OBJECT[1], OBJECT[0],
+                            np.ones(len(oo0), int), oo1,
+                            np.ones(len(oo1), int), oo0)
+                measurements = self.run_workspace(C.O_ADD, False, ii0,
+                                                  False, ii1, setup_fn)
+                data = measurements.get_current_measurement(
+                    OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
+                np.testing.assert_almost_equal(e0, data)
+                data = measurements.get_current_measurement(
+                    OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
+                np.testing.assert_almost_equal(e1, data)

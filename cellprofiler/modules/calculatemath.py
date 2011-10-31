@@ -48,6 +48,7 @@ import numpy as np
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.modules.identify import R_PARENT, R_CHILD
 
 O_MULTIPLY = "Multiply"
 O_DIVIDE = "Divide"
@@ -260,6 +261,8 @@ class CalculateMath(cpm.CPModule):
         if self.operation.value in (O_NONE):
             # Only operate on the first image/object
             all_operands  = all_operands[:1]
+            if operand.object != cpmeas.IMAGE:
+                all_object_names = all_object_names[:1]
             
         for operand in all_operands:
             value = m.get_current_measurement(operand.object,operand.operand_measurement.value)
@@ -277,31 +280,96 @@ class CalculateMath(cpm.CPModule):
             value **= operand.exponent.value
             values.append(value)
         
-        if (not has_image_measurement) and (self.operation.value not in (O_NONE)) and len(values[0]) != len(values[1]):
-            raise ValueError("Incompatable objects: %s has %d objects and %s has %d objects"%
-                             (self.operands[0].operand_objects.value, len(values[0]),
-                              self.operands[1].operand_objects.value, len(values[1])))
+        if ((not has_image_measurement) and 
+            (self.operation.value not in (O_NONE)) and 
+            len(values[0]) != len(values[1])):
+            #
+            # Try harder, broadcast using the results from relate objects
+            #
+            operand_object1 = self.operands[0].operand_objects.value
+            operand_object2 = self.operands[1].operand_objects.value
+            g = m.get_relationship_groups()
+            rk = None
+            
+            for gg in g:
+                if gg.relationship == R_PARENT:
+                    rk = gg
+                    r = m.get_relationships(rk.module_number,
+                                            rk.relationship,
+                                            rk.object_name1,
+                                            rk.object_name2,
+                                            rk.group_number)
+                    #
+                    # first is parent of second
+                    #
+                    if (gg.object_name1 == operand_object1 and
+                        gg.object_name2 == operand_object2):
+                        i0 = r['object_number1'] - 1
+                        i1 = r['object_number2'] - 1
+                        break
+                    elif (gg.object_name1 == operand_object2 and
+                          gg.object_name2 == operand_object1):
+                        i0 = r['object_number2'] - 1
+                        i1 = r['object_number1'] - 1
+                        break
+            if rk is None:
+                raise ValueError("Incompatable objects: %s has %d objects and %s has %d objects"%
+                                 (operand_object1, len(values[0]),
+                                  operand_object2, len(values[1])))
+            #
+            # Use np.bincount to broadcast or sum. Then divide the counts
+            # by the sum to get count=0 -> Nan, count=1 -> value
+            # count > 1 -> mean
+            #
+            c0 = np.bincount(i0, minlength=len(values[0]))
+            c1 = np.bincount(i1, minlength=len(values[1]))
+            v1 = np.bincount(i0, values[1][i1], minlength=len(values[0])) / c0
+            v0 = np.bincount(i1, values[0][i0], minlength=len(values[1])) / c1
+            result = [
+                self.compute_operation(values[0], v1),
+                self.compute_operation(v0, values[1])]
+        else:
+            result = self.compute_operation(values[0], 
+                                            values[1] if len(values) > 1
+                                            else None)
+            if not all_image_measurements:
+                result = [result] * len(all_object_names)
         
+        feature = self.measurement_name()
+        if all_image_measurements:
+            m.add_image_measurement(feature, result)
+        else:
+            for object_name, r in zip(all_object_names, result):
+                m.add_measurement(object_name, feature, r)
+            result = result[0]
+                
+        if workspace.frame is not None:
+            workspace.display_data.statistics = [("Measurement name","Measurement type","Result")]
+            workspace.display_data.statistics += [(self.output_feature_name.value, 
+                                                   "Image" if all_image_measurements else "Object", 
+                                                   "%.2f"%np.mean(result))]
+
+    def compute_operation(self, numerator, denominator):
         if self.operation == O_NONE:
-            result = values[0]
+            result = numerator
         elif self.operation == O_ADD:
-            result = values[0]+values[1]
+            result = numerator+denominator
         elif self.operation == O_SUBTRACT:
-            result = values[0]-values[1]
+            result = numerator-denominator
         elif self.operation == O_MULTIPLY:
-            result = values[0] * values[1]
+            result = numerator * denominator
         elif self.operation == O_DIVIDE:
-            if np.isscalar(values[1]):
-                if values[1] == 0:
-                    if np.isscalar(values[0]):
+            if np.isscalar(denominator):
+                if denominator == 0:
+                    if np.isscalar(numerator):
                         result = np.NaN
                     else:
-                        result = np.array([np.NaN] * len(values[0]))
+                        result = np.array([np.NaN] * len(numerator))
                 else:
-                    result = values[0] / values[1]
+                    result = numerator / denominator
             else:
-                result = values[0] / values[1]
-                result[values[1] == 0] = np.NaN
+                result = numerator / denominator
+                result[denominator == 0] = np.NaN
         else:
             raise NotImplementedError("Unsupported operation: %s"%self.operation.value)
         #
@@ -313,19 +381,8 @@ class CalculateMath(cpm.CPModule):
             result *= self.final_multiplicand.value
             # Handle NaNs with np.power instead of **
             result = np.power(result, self.final_exponent.value)
-        feature = self.measurement_name()
-        if all_image_measurements:
-            m.add_image_measurement(feature, result)
-        else:
-            for object_name in all_object_names:
-                m.add_measurement(object_name, feature, result)
-                
-        if workspace.frame is not None:
-            workspace.display_data.statistics = [("Measurement name","Measurement type","Result")]
-            workspace.display_data.statistics += [(self.output_feature_name.value, 
-                                                   "Image" if all_image_measurements else "Object", 
-                                                   "%.2f"%np.mean(result))]
-            
+        return result
+        
     def run_as_data_tool(self, workspace):
         workspace.measurements.is_first_image = True
         image_set_count = workspace.measurements.image_set_count

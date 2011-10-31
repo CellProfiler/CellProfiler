@@ -59,8 +59,14 @@ C_THRESHOLD = "Threshold"
 '''The parent category (e.g. Parent_Nuclei)'''
 C_PARENT = "Parent"
 
+'''The parent relationship'''
+R_PARENT = "Parent"
+
 '''The children category (e.g. Children_Cells_Count)'''
 C_CHILDREN = "Children"
+
+'''The child relationship'''
+R_CHILD = "Child"
 
 FTR_CENTER_X = "Center_X"
 '''The centroid X coordinate measurement feature name'''

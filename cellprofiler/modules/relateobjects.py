@@ -52,7 +52,7 @@ import scipy.ndimage as scind
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
-from cellprofiler.modules.identify import C_PARENT, C_CHILDREN
+from cellprofiler.modules.identify import C_PARENT, C_CHILDREN, R_PARENT, R_CHILD
 from cellprofiler.modules.identify import FF_PARENT,FF_CHILDREN_COUNT
 from cellprofiler.modules.identify import \
      M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
@@ -224,6 +224,7 @@ class RelateObjects(cpm.CPModule):
         children = workspace.object_set.get_objects(self.sub_object_name.value)
         child_count, parents_of = parents.relate_children(children)
         m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
         if self.wants_per_parent_means.value:
             parent_indexes = np.arange(np.max(parents.segmented))+1
             for feature_name in m.get_feature_names(self.sub_object_name.value):
@@ -247,6 +248,27 @@ class RelateObjects(cpm.CPModule):
         m.add_measurement(self.parent_name.value,
                           FF_CHILDREN_COUNT%(self.sub_object_name.value),
                           child_count)
+        group_index = m.get_current_image_measurement(cpmeas.GROUP_INDEX)
+        group_indexes = np.ones(len(parents_of), int) * group_index
+        good_parents = parents_of[parents_of != 0]
+        good_children = np.argwhere(parents_of != 0).flatten() + 1
+        if np.any(good_parents):
+            m.add_relate_measurement(self.module_num,
+                                     R_PARENT, 
+                                     self.parent_name.value,
+                                     self.sub_object_name.value,
+                                     group_indexes,
+                                     good_parents,
+                                     group_indexes,
+                                     good_children)
+            m.add_relate_measurement(self.module_num,
+                                     R_CHILD, 
+                                     self.sub_object_name.value,
+                                     self.parent_name.value,
+                                     group_indexes,
+                                     good_children,
+                                     group_indexes,
+                                     good_parents)
         parent_names = self.get_parent_names()
         
         for parent_name in parent_names:

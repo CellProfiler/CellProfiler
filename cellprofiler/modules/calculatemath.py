@@ -321,10 +321,19 @@ class CalculateMath(cpm.CPModule):
             # by the sum to get count=0 -> Nan, count=1 -> value
             # count > 1 -> mean
             #
-            c0 = np.bincount(i0, minlength=len(values[0]))
-            c1 = np.bincount(i1, minlength=len(values[1]))
-            v1 = np.bincount(i0, values[1][i1], minlength=len(values[0])) / c0
-            v0 = np.bincount(i1, values[0][i0], minlength=len(values[1])) / c1
+            def bincount(indexes, weights=None, minlength=None):
+                '''Minlength was added to numpy at some point....'''
+                result = np.bincount(indexes, weights)
+                if minlength is not None and len(result) < minlength:
+                    result = np.hstack(
+                        [result, 
+                         (0 if weights is None else np.nan) * 
+                         np.zeros(minlength - len(result))])
+                return result
+            c0 = bincount(i0, minlength=len(values[0]))
+            c1 = bincount(i1, minlength=len(values[1]))
+            v1 = bincount(i0, values[1][i1], minlength=len(values[0])) / c0
+            v0 = bincount(i1, values[0][i0], minlength=len(values[1])) / c1
             result = [
                 self.compute_operation(values[0], v1),
                 self.compute_operation(v0, values[1])]

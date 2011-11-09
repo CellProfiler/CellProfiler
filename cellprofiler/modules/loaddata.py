@@ -865,12 +865,8 @@ class LoadData(cpm.CPModule):
             image_numbers = m.match_metadata(
                 metadata_columns.keys(), 
                 [columns[k] for k in metadata_columns.keys()])
-        for i, image_sets in enumerate(image_numbers):
-            for feature, values in columns.iteritems():
-                if column_type.has_key(feature):
-                    for image_number in image_sets:
-                        m.add_measurement(cpmeas.IMAGE, feature, values[i], 
-                                          image_set_number = image_number)
+        for feature, values in columns.iteritems():
+            m.add_all_measurements(cpmeas.IMAGE, feature, values)
                 
         return True
     

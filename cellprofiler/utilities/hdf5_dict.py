@@ -377,6 +377,61 @@ class HDF5Dict(object):
     def second_level_names(self, object_name):
         with self.lock:
             return self.top_group[object_name].keys()
+        
+    def add_all(self, object_name, feature_name, values):
+        '''Add all imageset values for a given feature
+        
+        object_name - name of object supporting the feature
+        feature_name - name of the feature
+        values - either a list of scalar values or a list of arrays
+                 where each array has the values for each of the
+                 objects in the corresponding image set.
+                 
+        Image set numbers are assumed to go from 1 to N
+        '''
+        with self.lock:
+            self.add_object(object_name)
+            if self.has_feature(object_name, feature_name):
+                del self.top_group[object_name][feature_name]
+                del self.indices[object_name, feature_name]
+            self.add_feature(object_name, feature_name)
+            idxs = [i+1 for i, value in enumerate(values)
+                    if value is not None]
+            values = [value for value in values if value is not None]
+            if len(values) > 0:
+                if np.isscalar(values[0]):
+                    idx = np.column_stack((idxs,
+                                           np.arange(len(idxs)),
+                                           np.arange(len(idxs))+1))
+                    assert not isinstance(values[0], unicode), "Unicode must be string encoded prior to call"
+                    if isinstance(values[0], str):
+                        dataset = np.array(
+                            [value for value in values if value is not None],
+                            object)
+                        dtype = h5py.special_dtype(vlen=str)
+                    else:
+                        dataset = np.array(values)
+                        dtype = dataset.dtype
+                else:
+                    counts = np.array([len(x) for x in values])
+                    offsets = np.hstack([[0], np.cumsum(counts)])
+                    idx = np.column_stack((idxs, offsets[:-1], offsets[1:]))
+                    dataset = np.hstack(values)
+                    dtype = dataset.dtype
+                
+                self.indices[object_name, feature_name] = dict([
+                    (i, slice(start, end)) 
+                    for i, start, end in idx])
+                feature_group = self.top_group[object_name][feature_name]
+                feature_group.create_dataset(
+                    'data', data = dataset, 
+                    dtype = dtype, compression = 'gzip', shuffle=True,
+                    chunks = (self.chunksize, ), 
+                    maxshape = (None, ))
+                feature_group.create_dataset(
+                    'index', data = idx, dtype=int,
+                    compression = None, chunks = (self.chunksize, 3),
+                    maxshape = (None,3))
 
 def get_top_level_group(filename, group_name = 'Measurements', open_mode='r'):
     '''Open and return the Measurements HDF5 group

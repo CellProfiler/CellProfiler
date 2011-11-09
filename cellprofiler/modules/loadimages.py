@@ -1596,7 +1596,8 @@ class LoadImages(cpmodule.CPModule):
                 raise ValueError(message)
                 
         root = self.image_directory()
-        for image_set in image_sets:
+        features = {}
+        for idx, image_set in enumerate(image_sets):
             keys = {}
             for tag,value in zip(tags,image_set[0]):
                 keys[tag] = value
@@ -1610,11 +1611,17 @@ class LoadImages(cpmodule.CPModule):
                 else:
                     path = os.path.join(image_set[1][i][0],image_set[1][i][1])
                     full_path = os.path.join(root, path)
-                self.write_measurements(
-                    workspace.measurements,
+                d = self.write_measurements(
+                    None,
                     cpimageset.number + 1,
                     self.images[i], full_path)
-
+                for k, v in d.iteritems():
+                    if not features.has_key(k):
+                        features[k] = [None] * len(image_sets)
+                    features[k][idx] = v
+        for k, v in features.iteritems():
+            workspace.measurements.add_all_measurements(cpmeas.IMAGE, k, v)
+                                           
         return True
     
     def get_image_sets(self, d):
@@ -2279,7 +2286,8 @@ class LoadImages(cpmodule.CPModule):
                            series = None, frame = None, channel_name = None):
         '''Write the image filename, path, url and metadata meas. for a file
         
-        measurements - write measurements into this measurements structure
+        measurements - write measurements into this measurements structure.
+                       if None, return the measurements as a dictionary
         
         image_number - image number for this image
         
@@ -2295,7 +2303,16 @@ class LoadImages(cpmodule.CPModule):
         channel - write measurements for all channels if None, else write only
                   for this channel.
         '''
-        assert isinstance(measurements, cpmeas.Measurements)
+        if measurements is not None:
+            assert isinstance(measurements, cpmeas.Measurements)
+            def add_fn(feature, value):
+                measurements.add_measurement(
+                    cpmeas.IMAGE, feature, value,
+                    image_set_number = image_number)
+        else:
+            d = {}
+            def add_fn(feature, value):
+                d[feature] = value
         path, filename = os.path.split(full_path)
         url = pathname2url(full_path)
         metadata = self.get_filename_metadata(image_settings, filename, path)
@@ -2319,17 +2336,11 @@ class LoadImages(cpmodule.CPModule):
             if frame is not None:
                 image_data.append((C_FRAME, frame))
             for category, value in image_data:
-                measurements.add_measurement(
-                    cpmeas.IMAGE,
-                    "_".join((category, channel.get_image_name())), 
-                    value,
-                    image_set_number = image_number)
+                add_fn("_".join((category, channel.get_image_name())), value)
         for key in metadata.keys():
-            measurements.add_measurement(
-                cpmeas.IMAGE,
-                "_".join((cpmeas.C_METADATA, key)),
-                metadata[key], can_overwrite = True, 
-                image_set_number = image_number)
+            add_fn("_".join((cpmeas.C_METADATA, key)), metadata[key])
+        if measurements is None:
+            return d
         
     def get_frame_count(self, pathname):
         """Return the # of frames in a movie"""

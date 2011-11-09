@@ -567,13 +567,15 @@ class Measurements(object):
         feature_name - feature to add
         values - list of either values or arrays of values
         '''
-        for idx, val in zip(xrange(len(values)), values):
-            if val is None:
-                if self.hdf5_dict.has_feature(object_name, feature_name):
-                    del self.hdf5_dict[object_name, feature_name, idx + 1]
-            else:
-                self.add_measurement(object_name, feature_name, val, 
-                                     image_set_number=idx + 1)
+        values = [unicode(value).encode('unicode_escape') 
+                  if isinstance(value, (str, unicode)) else value
+                  for value in values]
+        if ((not self.hdf5_dict.has_feature(IMAGE, IMAGE_NUMBER)) or
+            (np.max(self.get_image_numbers()) < len(values))):
+            self.hdf5_dict.add_all(
+                IMAGE, IMAGE_NUMBER, 
+                [i+1 for i, value in enumerate(values) if value is not None])
+        self.hdf5_dict.add_all(object_name, feature_name, values)
 
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement

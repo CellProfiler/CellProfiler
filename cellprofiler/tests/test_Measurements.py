@@ -25,6 +25,7 @@ import cellprofiler.measurements as cpmeas
 from cStringIO import StringIO
 
 OBJECT_NAME = "myobjects"
+FEATURE_NAME = "feature"
 
 class TestMeasurements(unittest.TestCase):
     def test_00_00_init(self):
@@ -666,7 +667,77 @@ class TestMeasurements(unittest.TestCase):
                 self.assertAlmostEqual(d[feature], expected)
         finally:
             del m
+            
+    def test_18_01_test_add_all_measurements_string(self):
+        m = cpmeas.Measurements()
+        try:
+            values = ["Foo", "Bar", "Baz"]
+            m.add_all_measurements(cpmeas.IMAGE, FEATURE_NAME, values)
+            for i, expected in enumerate(values):
+                value = m.get_measurement(cpmeas.IMAGE, FEATURE_NAME,
+                                          image_set_number = i+1)
+                self.assertEqual(expected, value)
+        finally:
+            del m
+            
+    def test_18_02_test_add_all_measurements_unicode(self):
+        m = cpmeas.Measurements()
+        try:
+            values = [u"Foo", u"Bar", u"Baz", u"-\u221E < \u221E"]
+            m.add_all_measurements(cpmeas.IMAGE, FEATURE_NAME, values)
+            for i, expected in enumerate(values):
+                value = m.get_measurement(cpmeas.IMAGE, FEATURE_NAME,
+                                          image_set_number = i+1)
+                self.assertEqual(expected, value)
+        finally:
+            del m
         
+    def test_18_03_test_add_all_measurements_number(self):
+        m = cpmeas.Measurements()
+        try:
+            r = np.random.RandomState()
+            r.seed(1803)
+            values = r.randint(0, 10, size = 5)
+            m.add_all_measurements(cpmeas.IMAGE, FEATURE_NAME, values)
+            for i, expected in enumerate(values):
+                value = m.get_measurement(cpmeas.IMAGE, FEATURE_NAME,
+                                          image_set_number = i+1)
+                self.assertEqual(expected, value)
+        finally:
+            del m
+            
+    def test_18_04_test_add_all_measurements_nulls(self):
+        m = cpmeas.Measurements()
+        try:
+            values = [u"Foo", u"Bar", None, u"Baz", None, u"-\u221E < \u221E"]
+            m.add_all_measurements(cpmeas.IMAGE, FEATURE_NAME, values)
+            for i, expected in enumerate(values):
+                value = m.get_measurement(cpmeas.IMAGE, FEATURE_NAME,
+                                          image_set_number = i+1)
+                if expected is None:
+                    self.assertTrue(value is None)
+                else:
+                    self.assertEqual(expected, value)
+        finally:
+            del m
+    
+    def test_18_05_test_add_all_per_object_measurements(self):
+        m = cpmeas.Measurements()
+        try:
+            r = np.random.RandomState()
+            r.seed(1803)
+            values = [ r.uniform(size=5), np.zeros(0), r.uniform(size=7),
+                       np.zeros(0), r.uniform(size=9), None, r.uniform(size=10)]
+            m.add_all_measurements(OBJECT_NAME, FEATURE_NAME, values)
+            for i, expected in enumerate(values):
+                value = m.get_measurement(OBJECT_NAME, FEATURE_NAME,
+                                          image_set_number = i+1)
+                if expected is None:
+                    self.assertTrue(value is None)
+                else:
+                    np.testing.assert_almost_equal(expected, value)
+        finally:
+            del m
         
 if __name__ == "__main__":
     unittest.main()

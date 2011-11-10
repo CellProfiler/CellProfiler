@@ -1908,6 +1908,13 @@ class Pipeline(object):
         self.__measurement_columns[terminating_module_num] = columns
         return columns
     
+    def get_dependency_graph(self):
+        '''Create a graph that describes the producers and consumers of objects
+        
+        returns a list of Dependency that can be used to create a directed
+        graph that describes object and image dependencies.
+        '''
+    
     def synthesize_measurement_name(self, module, object, category, 
                                     feature, image, scale):
         '''Turn a measurement requested by a Matlab module into a measurement name
@@ -2041,6 +2048,59 @@ class EndRunEvent(AbstractPipelineEvent):
     """A run ended"""
     def event_type(self):
         return "Run ended"
+    
+class Dependency(object):
+    '''This class documents the dependency of one module on another
+    
+    A module is dependent on another if the dependent module requires
+    data from the producer module. That data can be objects (label matrices),
+    a derived image or measurements.
+    '''
+    def __init__(self, source_module, destination_module, 
+                 source_setting = None, destination_setting = None):
+        '''Constructor
+        
+        source_module - the module that produces the data
+        destination_module - the module that uses the data
+        source_setting - the module setting that names the item (can be None)
+        destination_setting - the module setting in the destination that
+        picks the setting
+        '''
+        self.__source_module = source_module
+        self.__destination_module = destination_module
+        self.__source_setting = source_setting
+        self.__destination_setting = destination_setting
+        
+    @property
+    def source(self):
+        '''The source of the data item'''
+        return self.__source_module
+    
+    @property
+    def source_setting(self):
+        '''The setting that names the data item
+        
+        This can be None if it's ambiguous.
+        '''
+        return self.__source_setting
+
+    @property
+    def destination(self):
+        '''The user of the data item'''
+        return self.__source_module
+    
+    @property
+    def destination_setting(self):
+        '''The setting that picks the data item
+        
+        This can be None if it's ambiguous.
+        '''
+        return self.__destination_setting
+    
+class ObjectDependency(Dependency):
+    def __init__(self, source_module, destination_module, object_name,
+                 source_setting = None, destination_setting = None):
+        pass
 
 def AddHandlesImages(handles,image_set):
     """Add any images from the handles to the image set

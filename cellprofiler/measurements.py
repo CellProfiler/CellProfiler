@@ -538,9 +538,11 @@ class Measurements(object):
             return None
         if object_name == IMAGE:
             if np.isscalar(image_set_number):
-                return None if len(vals) == 0 else unwrap_string(vals[0])
+                return np.NAN if len(vals) == 0 else unwrap_string(vals[0])
             else:
-                return np.array([unwrap_string(v[0]) for v in vals])
+                return np.array(
+                    [unwrap_string(v[0]) if v is not None else np.NaN
+                     for v in vals])
         if np.isscalar(image_set_number):
             return np.array([]) if vals is None else vals.flatten()
         return [np.array([]) if v is None else v.flatten() for v in vals]
@@ -574,7 +576,8 @@ class Measurements(object):
             (np.max(self.get_image_numbers()) < len(values))):
             self.hdf5_dict.add_all(
                 IMAGE, IMAGE_NUMBER, 
-                [i+1 for i, value in enumerate(values) if value is not None])
+                [i+1 if value is not None else None 
+                 for i, value in enumerate(values)])
         self.hdf5_dict.add_all(object_name, feature_name, values)
 
     def get_experiment_measurement(self, feature_name):

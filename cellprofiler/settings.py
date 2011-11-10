@@ -1005,7 +1005,7 @@ class NameSubscriber(Setting):
     def get_choices(self,pipeline):
         choices = []
         if self.__can_be_blank:
-            choices.append(self.__blank_text)
+            choices.append((self.__blank_text, "", 0))
         return choices + get_name_provider_choices(pipeline, self, self.group)
     
     def get_is_blank(self):
@@ -1020,9 +1020,10 @@ class NameSubscriber(Setting):
                     for key in self.__required_attributes.keys()])
     
     def test_valid(self,pipeline):
-        if len(self.get_choices(pipeline)) == 0:
+        choices = self.get_choices(pipeline)
+        if len(choices) == 0:
             raise ValidationError("No prior instances of %s were defined"%(self.group),self)
-        if self.value not in self.get_choices(pipeline):
+        if self.value not in [c[0] for c in choices]:
             raise ValidationError("%s not in %s"%(self.value,reduce(lambda x,y: "%s,%s"%(x,y),self.get_choices(pipeline))),self)
 
 def get_name_provider_choices(pipeline, last_setting, group):
@@ -1031,20 +1032,18 @@ def get_name_provider_choices(pipeline, last_setting, group):
     pipeline - pipeline to scan
     last_setting - scan the modules in order until you arrive at this setting
     group - the name of the group of providers to scan
-    returns a list of provider values
+    returns a list of tuples, each with (provider value, module name, module number)
     '''
     choices = []
     for module in pipeline.modules():
-        module_choices = module.other_providers(group)
+        module_choices = [(op, module.module_name, module.module_num) for op in module.other_providers(group)]
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
-                choices = np.unique(choices).tolist()
-                choices.sort()
                 return choices
             if (isinstance(setting, NameProvider) and 
                 setting != DO_NOT_USE and
                 last_setting.matches(setting)):
-                module_choices.append(setting.value)
+                module_choices.append((setting.value, module.module_name, module.module_num))
         choices += module_choices
     assert False, "Setting not among visible settings in pipeline"
 

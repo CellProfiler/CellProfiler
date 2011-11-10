@@ -33,6 +33,7 @@ from regexp_editor import edit_regexp
 from htmldialog import HTMLDialog
 from treecheckboxdialog import TreeCheckboxDialog
 from metadatactrl import MetadataControl
+from namesubscriber import NameSubcriberComboBox
 
 ERROR_COLOR = wx.RED
 WARNING_COLOR = wx.Colour(224,224,0,255)
@@ -392,10 +393,9 @@ class ModuleView:
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v,cps.NameSubscriber):
                     choices = v.get_choices(self.__pipeline)
-                    control = self.make_choice_control(v, choices,
-                                                       control_name, 
-                                                       wx.CB_READONLY,
-                                                       control)
+                    control = self.make_name_subscriber_control(v, choices,
+                                                                control_name,
+                                                                control)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v,cps.FigureSubscriber):
                     choices = v.get_choices(self.__pipeline)
@@ -500,7 +500,35 @@ class ModuleView:
                                      control)
         control.SetValue(v.is_yes)
         return control
-    
+
+    def make_name_subscriber_control(self, v, choices, control_name, control):
+        """Make a read-only combobox with extra feedback about source modules,
+        and a context menu with choices navigable by module name.
+
+        v            - the setting
+        choices      - a list of (name, module_name, module_number)
+        control_name - assign this name to the control
+        """
+        if v.value not in [c[0] for c in choices]:
+            choices = choices + [(v.value, "<Unknown>", 0)]
+        if not control:
+            control = NameSubcriberComboBox(self.__module_panel,
+                                            value=v.value,
+                                            choices=choices,
+                                            name=control_name)
+            def callback(event, setting=v, control=control):
+                # the NameSubcriberComboBox behaves like a combobox
+                self.__on_combobox_change(event, setting, control)
+            control.add_callback(callback)
+        else:
+            if list(choices) != list(control.Items):
+                control.Items = choices
+        if (getattr(v, 'has_tooltips', False) and
+            v.has_tooltips and (control.Value in v.tooltips)):
+            control.SetToolTip(wx.ToolTip(v.tooltips[control.Value]))
+        return control
+
+
     def make_choice_control(self,v,choices,control_name,style,control):
         """Make a combo-box that shows choices
         
@@ -1789,7 +1817,7 @@ class ModuleSizer(wx.PySizer):
             if not self.__printed_exception:
                 logger.error("WX internal error detected", exc_info=True)
                 self.__printed_exception = True
-                return wx.Size(0,0)
+            return wx.Size(0,0)
 
     def get_row_height(self, j):
         height = 0

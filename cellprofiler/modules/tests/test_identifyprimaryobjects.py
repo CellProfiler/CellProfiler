@@ -17,7 +17,7 @@ import os
 import base64
 import unittest
 import numpy as np
-import Image as PILImage
+import PIL.Image as PILImage
 import scipy.ndimage
 import tempfile
 import StringIO

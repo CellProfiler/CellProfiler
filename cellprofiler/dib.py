@@ -3,8 +3,8 @@
 #
 
 import struct
-import Image
-import ImageFile
+import PIL.Image as Image
+import PIL.ImageFile as ImageFile
 
 def uint_le(bytes):
     if len(bytes) == struct.calcsize("I"):

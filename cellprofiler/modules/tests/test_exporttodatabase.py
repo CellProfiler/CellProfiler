@@ -17,7 +17,7 @@ import base64
 import numpy as np
 np.random.seed(9804)
 import os
-import Image as PILImage
+import PIL.Image as PILImage
 import scipy.ndimage
 from StringIO import StringIO
 import tempfile

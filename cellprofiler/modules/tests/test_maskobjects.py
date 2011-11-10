@@ -15,7 +15,7 @@ import base64
 from matplotlib.image import pil_to_array
 import numpy as np
 import os
-import Image as PILImage
+import PIL.Image as PILImage
 import scipy.ndimage
 from StringIO import StringIO
 import unittest

@@ -79,13 +79,13 @@ cached_file_lists = {}
 # Load all the PIL image plugins to initialize PIL in the
 # compiled version of CP
 #
-import BmpImagePlugin
-import DcxImagePlugin
-import EpsImagePlugin
-import GifImagePlugin
-import JpegImagePlugin
-import PngImagePlugin
-import TiffImagePlugin as TIFF
+import PIL.BmpImagePlugin
+import PIL.DcxImagePlugin
+import PIL.EpsImagePlugin
+import PIL.GifImagePlugin
+import PIL.JpegImagePlugin
+import PIL.PngImagePlugin
+import PIL.TiffImagePlugin as TIFF
 import cellprofiler.dib
 import matplotlib.image
 import scipy.io.matlab.mio

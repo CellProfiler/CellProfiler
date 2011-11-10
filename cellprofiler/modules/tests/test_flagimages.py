@@ -17,7 +17,7 @@ __version__="$Revision$"
 import base64
 import numpy as np
 import os
-import Image as PILImage
+import PIL.Image as PILImage
 import scipy.ndimage
 from StringIO import StringIO
 import unittest

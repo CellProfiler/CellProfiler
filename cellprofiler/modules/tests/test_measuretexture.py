@@ -17,7 +17,7 @@ import base64
 from matplotlib.image import pil_to_array
 import numpy as np
 import os
-import Image as PILImage
+import PIL.Image as PILImage
 from scipy.io.matlab import loadmat
 import scipy.ndimage as scind
 from StringIO import StringIO

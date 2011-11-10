@@ -35,7 +35,7 @@ import numpy as np
 import re
 import os
 import sys
-import Image as PILImage
+import PIL.Image as PILImage
 import scipy.io.matlab.mio
 import traceback
 

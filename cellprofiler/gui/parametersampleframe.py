@@ -8,7 +8,7 @@ This is an extention for CellProfiler. CellProfiler is distributed under the
 GNU General Public License. Website: <www.cellprofiler.org>.
 """
 
-import Image as PILImage
+import PIL.Image as PILImage
 import numpy as np
 import os
 import sys

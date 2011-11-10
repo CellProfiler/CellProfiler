@@ -40,8 +40,8 @@ try:
     has_bioformats = True
 except:
     has_bioformats = False
-import Image as PILImage
-import TiffImagePlugin as TIFF
+import PIL.Image as PILImage
+import PIL.TiffImagePlugin as TIFF
 import cellprofiler.dib
 import matplotlib.image
 import scipy.io.matlab.mio

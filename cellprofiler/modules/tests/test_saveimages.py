@@ -18,7 +18,7 @@ import matplotlib.image
 import numpy as np
 import os
 import sys
-import Image as PILImage
+import PIL.Image as PILImage
 from StringIO import StringIO
 import unittest
 import tempfile

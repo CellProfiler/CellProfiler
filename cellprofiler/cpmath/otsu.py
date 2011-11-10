@@ -290,7 +290,7 @@ def running_variance(x):
     
     
 if __name__=='__main__':
-    import Image as PILImage
+    import PIL.Image as PILImage
     import wx
     import os
     from matplotlib.image import pil_to_array

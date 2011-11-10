@@ -1311,7 +1311,7 @@ class ExportToDatabase(cpm.CPModule):
     
     def run(self, workspace):
         if self.want_image_thumbnails:
-            import Image
+            import PIL.Image as Image
             from StringIO import StringIO
             measurements = workspace.measurements
             image_set = workspace.image_set

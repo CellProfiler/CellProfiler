@@ -17,7 +17,7 @@ import base64
 from matplotlib.image import pil_to_array
 import numpy as np
 import os
-import Image as PILImage
+import PIL.Image as PILImage
 import scipy.ndimage
 from StringIO import StringIO
 import unittest
@@ -1459,4 +1459,3 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         shape = image.pixel_data.shape
         self.assertEqual(shape[0], 640)
         self.assertEqual(shape[1], 480)
-        

@@ -510,7 +510,7 @@ class ModuleView:
         control_name - assign this name to the control
         """
         if v.value not in [c[0] for c in choices]:
-            choices = choices + [(v.value, "<Unknown>", 0)]
+            choices = choices + [(v.value, "", 0)]
         if not control:
             control = NameSubcriberComboBox(self.__module_panel,
                                             value=v.value,

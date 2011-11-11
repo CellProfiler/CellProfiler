@@ -48,9 +48,9 @@ class NameSubcriberComboBox(wx.Panel):
                                       value=value,
                                       style=wx.CB_READONLY)
         self.annotation_dlg = wx.StaticText(self, label='', style=wx.ST_NO_AUTORESIZE)
-        self.annotation_dlg.Size = (max([self.annotation_dlg.GetTextExtent(annotation)[0]
+        self.annotation_dlg.MinSize = (max([self.annotation_dlg.GetTextExtent(annotation + " (from #00)")[0]
                                          for _, annotation, _ in self.orig_choices]),
-                                    -1)
+                                       -1)
         self.update_annotation()
 
         sizer.AddStretchSpacer()
@@ -98,7 +98,7 @@ class NameSubcriberComboBox(wx.Panel):
         align_twosided_items(self.combo_dlg,
                              all_menu.MenuItems,
                              left_texts=[name for name, _, _, _ in choices_sorted_by_num],
-                             right_texts=["(%s #%02d)" % (annotation, num) for
+                             right_texts=["(%s %02d)" % (annotation, num) if annotation else "" for
                                           _, annotation, num, _ in choices_sorted_by_num])
 
         submenus = {}
@@ -128,7 +128,10 @@ class NameSubcriberComboBox(wx.Panel):
 
     def SetItems(self, choices):
         self.orig_choices = choices
+        current = self.Value
         self.combo_dlg.Items = [name for name, _, _ in choices]
+        # on Mac, changing the items clears the current selection
+        self.SetValue(current)
         self.update_annotation()
         self.Refresh()
 
@@ -142,3 +145,4 @@ class NameSubcriberComboBox(wx.Panel):
         self.update_annotation()
         self.Refresh()
 
+    Value = property(GetValue, SetValue)

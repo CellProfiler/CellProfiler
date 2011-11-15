@@ -1006,7 +1006,7 @@ class NameSubscriber(Setting):
         choices = []
         if self.__can_be_blank:
             choices.append((self.__blank_text, "", 0))
-        return choices + get_name_provider_choices(pipeline, self, self.group)
+        return choices + sorted(get_name_provider_choices(pipeline, self, self.group))
     
     def get_is_blank(self):
         """True if the selected choice is the blank one"""
@@ -1032,15 +1032,16 @@ def get_name_provider_choices(pipeline, last_setting, group):
     pipeline - pipeline to scan
     last_setting - scan the modules in order until you arrive at this setting
     group - the name of the group of providers to scan
-    returns a list of tuples, each with (provider value, module name, module number)
+    returns a list of tuples, each with (provider name, module name, module number)
     '''
     choices = []
     for module in pipeline.modules():
-        module_choices = [(op, module.module_name, module.module_num) for op in module.other_providers(group)]
+        module_choices = [(other_name, module.module_name, module.module_num)
+                          for other_name in module.other_providers(group)]
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
                 return choices
-            if (isinstance(setting, NameProvider) and 
+            if (isinstance(setting, NameProvider) and
                 setting != DO_NOT_USE and
                 last_setting.matches(setting)):
                 module_choices.append((setting.value, module.module_name, module.module_num))

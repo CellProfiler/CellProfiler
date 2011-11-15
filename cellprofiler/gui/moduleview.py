@@ -1639,13 +1639,7 @@ class ModuleView:
                 
                 if error_message is not None:    
                     # always update the tooltip, in case the value changes to something that's still bad.
-                    control_name = edit_control_name(setting)
-                    control = self.__module_panel.FindWindowByName(
-                        control_name)
-                    if control is not None:
-                        control.SetToolTipString(error_message)
-                        for child in control.GetChildren():
-                            child.SetToolTipString(error_message)
+                    self.set_tool_tip(setting, error_message)
                     static_text = self.__module_panel.FindWindowByName(static_text_name)
                     if static_text is not None:
                         static_text.SetToolTipString(error_message)
@@ -1666,20 +1660,38 @@ class ModuleView:
                 if (static_text is not None and
                     ((static_text.GetForegroundColour() == ERROR_COLOR) or
                      (static_text.GetBackgroundColour() == WARNING_COLOR))):
-                    control_name = edit_control_name(setting)
-                    control = self.__module_panel.FindWindowByName(
-                        control_name)
-                    if control is not None:
-                        control.SetToolTipString('OK')
-                        for child in control.GetChildren():
-                            child.SetToolTipString('OK')
+                    self.set_tool_tip(setting, None)
                     static_text.SetForegroundColour(default_fg_color)
                     static_text.SetBackgroundColour(default_bg_color)
-                    static_text.SetToolTip(None)
                     static_text.Refresh()
         except:
             pass
 
+    def set_tool_tip(self, setting, message):
+        '''Set the tool tip for a setting to display a message
+        
+        setting - set the tooltip for this setting
+        
+        message - message to display or None for no tool tip
+        '''
+        control_name = edit_control_name(setting)
+        control = self.__module_panel.FindWindowByName(
+            control_name)
+        if message is None:
+            def set_tool_tip(ctrl):
+                ctrl.SetToolTip(None)
+        else:
+            def set_tool_tip(ctrl, message = message):
+                ctrl.SetToolTipString(message)
+        if control is not None:
+            set_tool_tip(control)
+            for child in control.GetChildren():
+                set_tool_tip(child)
+        static_text_name = text_control_name(setting)
+        static_text = self.__module_panel.FindWindowByName(static_text_name)
+        if static_text is not None:
+            set_tool_tip(static_text)
+        
     def reset_view(self, refresh_delay = 250):
         """Redo all of the controls after something has changed
         

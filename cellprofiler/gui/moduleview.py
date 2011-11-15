@@ -13,11 +13,13 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 import codecs
+import cStringIO
 import logging
 import matplotlib.cm
 import numpy as np
 import os
 import stat
+import threading
 import time
 import traceback
 import wx
@@ -206,7 +208,6 @@ def encode_label(text):
     and wx.Button in order to keep it from signifying an accelerator.
     """
     return text.replace('&','&&')
-
 
 class ModuleView:
 
@@ -462,7 +463,6 @@ class ModuleView:
             self.top_panel.FitInside()
         finally:
             self.top_panel.Thaw()
-            self.validate_module()
             self.top_panel.Refresh()
             self.__handle_change = True
 
@@ -1605,67 +1605,52 @@ class ModuleView:
         else:
             return
         if self.__module:
-            try:
-                self.validate_module()
-            finally:
-                self.running_time = time.time() - self.last_idle_time
+            request_module_validation(self.__pipeline, self.__module,
+                                      self.on_validation)
             
-    def validate_module(self):
-        validation_error = None
-        signal_error = True
-        signal_warning = False
+    def on_validation(self, setting_idx, message, level, pipeline_data):
+        self.running_time = time.time() - self.last_idle_time
         default_fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
         default_bg_color = cpprefs.get_background_color()
-        try:
-            self.__module.test_valid(self.__pipeline)
-            signal_error = False
-            signal_warning = True
-            self.__module.validate_module_warnings(self.__pipeline)
-            signal_warning = False
-        except cps.ValidationError, instance:
-            validation_error = instance
-        try:
-            for idx, setting in enumerate(self.check_settings(self.__module.module_name, self.__module.visible_settings())):
-                static_text_name = text_control_name(setting)
-                error_message = None
-                if (validation_error is not None and 
-                    validation_error.setting.key() == setting.key()):
-                    error_message = validation_error.message
-                else:
-                    try:
-                        setting.test_valid(self.__pipeline)
-                    except cps.ValidationError, instance:
-                        error_message = instance.message
-                
-                if error_message is not None:    
-                    # always update the tooltip, in case the value changes to something that's still bad.
-                    self.set_tool_tip(setting, error_message)
-                    static_text = self.__module_panel.FindWindowByName(static_text_name)
-                    if static_text is not None:
-                        static_text.SetToolTipString(error_message)
-                        if signal_error:
-                            if static_text.GetForegroundColour() != ERROR_COLOR:
-                                static_text.SetForegroundColour(ERROR_COLOR)
-                                static_text.SetBackgroundColour(default_bg_color)
-                                static_text.Refresh()
-                        elif signal_warning:
-                            if static_text.GetBackgroundColour() != WARNING_COLOR:
-                                static_text.SetForegroundColour(default_fg_color)
-                                static_text.SetBackgroundColour(WARNING_COLOR)
-                                static_text.Refresh()
-                    continue
-                static_text_name = text_control_name(setting)
-                static_text = self.__module_panel.FindWindowByName(
-                    static_text_name)
-                if (static_text is not None and
-                    ((static_text.GetForegroundColour() == ERROR_COLOR) or
-                     (static_text.GetBackgroundColour() == WARNING_COLOR))):
-                    self.set_tool_tip(setting, None)
-                    static_text.SetForegroundColour(default_fg_color)
-                    static_text.SetBackgroundColour(default_bg_color)
-                    static_text.Refresh()
-        except:
-            pass
+        fd = cStringIO.StringIO()
+        self.__pipeline.save(fd)
+        if fd.getvalue() != pipeline_data:
+            return
+        visible_settings = self.__module.visible_settings()
+        if setting_idx is None or setting_idx >= len(visible_settings):
+            setting = None
+        else:
+            setting = visible_settings[setting_idx]
+        if level != logging.INFO and setting is not None:
+            self.set_tool_tip(setting, message)
+            static_text_name = text_control_name(setting)
+            static_text = self.__module_panel.FindWindowByName(static_text_name)
+            if static_text is not None:
+                if level == logging.ERROR:
+                    if static_text.GetForegroundColour() != ERROR_COLOR:
+                        static_text.SetForegroundColour(ERROR_COLOR)
+                        static_text.SetBackgroundColour(default_bg_color)
+                        static_text.Refresh()
+                elif level == logging.WARNING:
+                    if static_text.GetBackgroundColour() != WARNING_COLOR:
+                        static_text.SetForegroundColour(default_fg_color)
+                        static_text.SetBackgroundColour(WARNING_COLOR)
+                        static_text.Refresh()
+        else:
+            try:
+                for setting in self.__module.visible_settings():
+                    static_text_name = text_control_name(setting)
+                    static_text = self.__module_panel.FindWindowByName(
+                        static_text_name)
+                    if (static_text is not None and
+                        ((static_text.GetForegroundColour() == ERROR_COLOR) or
+                         (static_text.GetBackgroundColour() == WARNING_COLOR))):
+                        self.set_tool_tip(setting, None)
+                        static_text.SetForegroundColour(default_fg_color)
+                        static_text.SetBackgroundColour(default_bg_color)
+                        static_text.Refresh()
+            except:
+                pass
 
     def set_tool_tip(self, setting, message):
         '''Set the tool tip for a setting to display a message
@@ -1711,7 +1696,6 @@ class ModuleView:
             focus_name = focus_control.GetName()
         else:
             focus_name = None
-        self.validate_module()
         self.set_selection(self.__module.module_num)
         if focus_name:
             focus_control = self.module_panel.FindWindowByName(focus_name)
@@ -1925,3 +1909,107 @@ class ModuleSizer(wx.PySizer):
                 logger.warning("Detected WX error", exc_info=True)
                 self.__printed_exception = True
 
+pipeline_queue_lock = threading.RLock()
+pipeline_queue_semaphore = threading.Semaphore(0)
+pipeline_queue = []
+pipeline_queue_thread = None
+pipeline_cache = threading.local()
+
+def validate_module(pipeline_data, module_num, callback):
+    '''Validate a module and execute the callback on error on the main thread
+    
+    pipeline_data - a serialized pipeline
+    module_num - the module number of the module to be validated
+    callback - a callback with the signature, "fn(setting, message, pipeline_data)"
+    where setting is the setting that is in error and message is the message to
+    display.
+    '''
+    global pipeline_cache
+    import hashlib
+    h = hashlib.md5()
+    h.update(pipeline_data)
+    pipeline_data_hash = h.digest()
+    if pipeline_data_hash == getattr(pipeline_cache, "pipeline_data_hash", None):
+        pipeline = pipeline_cache.pipeline
+    else:
+        pipeline = cpp.Pipeline()
+        load_error = []
+        def error_callback(pipeline, event):
+            if isinstance(event, cpp.LoadExceptionEvent):
+                load_error.append(event)
+                logger.warning("Failed to load pipeline data: %s", event.error)
+        pipeline.add_listener(error_callback)
+        pipeline.load(cStringIO.StringIO(pipeline_data))
+        if len(load_error):
+            return
+        pipeline_cache.pipeline = pipeline
+        pipeline_cache.pipeline_data_hash = pipeline_data_hash
+    modules = [m for m in pipeline.modules() if m.module_num == module_num]
+    if len(modules) != 1:
+        return
+    module = modules[0]
+    level = logging.INFO
+    setting_idx = None
+    message = None
+    try:
+        level = logging.ERROR
+        module.test_valid(pipeline)
+        level = logging.WARNING
+        module.validate_module_warnings(pipeline)
+        level = logging.ERROR
+        for setting in module.visible_settings():
+            setting.test_valid(pipeline)
+        level = logging.INFO
+    except cps.ValidationError, instance:
+        message = instance.message
+        for i, setting in enumerate(module.visible_settings()):
+            if setting == instance.get_setting():
+                setting_idx = i
+                break
+    wx.CallAfter(callback, setting_idx, message, level, pipeline_data)
+            
+def pipeline_queue_handler():
+    global pipeline_queue_lock, pipeline_queue_semaphore, pipeline_queue
+    
+    from cellprofiler.utilities.jutil import attach, detach
+    attach()
+    try:
+        while True:
+            pipeline_queue_semaphore.acquire()
+            with pipeline_queue_lock:
+                pipeline_data, module_num, callback = pipeline_queue.pop()
+                if len(pipeline_queue) > 20:
+                    continue
+            try:
+                validate_module(pipeline_data, module_num, callback)
+            except:
+                pass
+    finally:
+        detach()
+        
+def request_module_validation(pipeline, module, callback):
+    '''Request that a module be validated
+    
+    pipeline - pipeline in question
+    module - module in question
+    callback - call this callback if there is an error. Do it on the GUI thread
+    '''
+    global pipeline_queue_lock, pipeline_queue_semaphore, pipeline_queue
+    global pipeline_queue_thread, pipeline_cache
+    if pipeline_queue_thread is None:
+        pipeline_queue_thread = threading.Thread(target=pipeline_queue_handler)
+        pipeline_queue_thread.setDaemon(True)
+        pipeline_queue_thread.start()
+    pipeline_hash = pipeline.settings_hash()
+    if pipeline_hash == getattr(pipeline_cache, "pipeline_hash", None):
+        pipeline_data = pipeline_cache.pipeline_data
+    else:
+        fd = cStringIO.StringIO()
+        assert isinstance(pipeline, cpp.Pipeline)
+        pipeline.save(fd)
+        fd.flush()
+        pipeline_data = pipeline_cache.pipeline_data = fd.getvalue()
+        pipeline_cache.pipeline_hash = pipeline_hash
+    with pipeline_queue_lock:
+        pipeline_queue.append((pipeline_data, module.module_num, callback))
+    pipeline_queue_semaphore.release()

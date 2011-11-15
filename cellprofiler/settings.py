@@ -87,7 +87,7 @@ class Setting(object):
         self.__text = text
         self.__value = value
         self.doc = doc
-        self.__key = uuid.uuid1() 
+        self.__key = uuid.uuid4() 
         self.reset_view = reset_view
     
     def set_value(self,value):

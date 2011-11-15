@@ -13,7 +13,11 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
-from StringIO import StringIO
+try:
+    from cStringIO import StringIO
+except:
+    from StringIO import StringIO
+import logging
 import time
 import base64
 import math
@@ -25,6 +29,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.gui.movieslider as cpgmov
 from cellprofiler.gui.cpfigure import window_name, find_fig
 from cellprofiler.icons import get_builtin_image
+from cellprofiler.gui.moduleview import request_module_validation
 
 IMG_OK = get_builtin_image('IMG_OK')
 IMG_ERROR = get_builtin_image('IMG_ERROR')
@@ -68,6 +73,7 @@ def get_image_index(name):
     return image_index_dictionary[name] 
 
 CHECK_TIMEOUT_SEC = 2
+CHECK_FAIL_SEC = 20
 
 class PipelineListView(object):
     """View on a set of modules
@@ -100,6 +106,8 @@ class PipelineListView(object):
         wx.EVT_IDLE(panel,self.on_idle)
         self.__adjust_rows()
         self.__first_dirty_module = 0
+        self.__module_being_validated = 0
+        self.__submission_time = 0
         self.drag_underway = False
         self.drag_start = None
         self.drag_time = None
@@ -609,6 +617,7 @@ class PipelineListView(object):
         else:
             return
 
+        request_more = True
         modules = self.__pipeline.modules()
         for idx, module in enumerate(modules):
             if module.show_window:
@@ -632,25 +641,41 @@ class PipelineListView(object):
                 self.list_ctrl.SetItemImage(idx, pause_value)
 
             # skip to first dirty module for validation
-            if idx >= self.__first_dirty_module:
-                try:
-                    module.test_valid(self.__pipeline)
-                    target_name = module.module_name
-                    try:
-                        module.validate_module_warnings(self.__pipeline)
-                        ec_value = OK
-                    except:
-                        ec_value = WARNING
-                except:
-                    ec_value = ERROR
-                ec_value = get_image_index(ec_value)
-                target_item = self.list_ctrl.GetItem(idx, ERROR_COLUMN)
-                if ec_value != target_item.Image:
-                    self.set_subitem_image(idx, ERROR_COLUMN, ec_value)
+            if (idx >= self.__first_dirty_module and
+                 self.__submission_time + CHECK_FAIL_SEC < time.time()):
+                pipeline_hash = self.__pipeline.settings_hash()
+                def fn(setting_idx, message, level, pipeline_data, 
+                       idx=idx, settings_hash = pipeline_hash):
+                    self.on_validate_module(setting_idx, message, level, 
+                                            pipeline_data, idx, settings_hash)
+                self.__module_being_validated = idx
+                self.__submission_time = time.time()
+                request_module_validation(self.__pipeline, module, fn)
 
         event.RequestMore(False)
-        
-        self.__first_dirty_module = len(modules)
+    
+    def on_validate_module(self, setting_idx, message, level, pipeline_data, 
+                           idx, settings_hash):
+        if settings_hash != self.__pipeline.settings_hash():
+            self.__submission_time = 0
+            return
+            
+        target_item = self.list_ctrl.GetItem(idx, ERROR_COLUMN)
+        if level == logging.WARNING:
+            ec_value = WARNING
+        elif level == logging.ERROR:
+            ec_value = ERROR
+        else:
+            ec_value = OK
+        ec_value = get_image_index(ec_value)
+        if ec_value != target_item.Image:
+            self.set_subitem_image(idx, ERROR_COLUMN, ec_value)
+        if self.__first_dirty_module == idx:
+            self.__first_dirty_module = min(self.__first_dirty_module+1,
+                                            len(self.__pipeline.modules()))
+            self.last_idle_time = 0
+            self.__submission_time = 0
+            wx.PostEvent(self.__panel, wx.IdleEvent())
 
 PIPELINE_DATA_FORMAT = "CellProfiler.Pipeline"
 class PipelineDataObject(wx.CustomDataObject):

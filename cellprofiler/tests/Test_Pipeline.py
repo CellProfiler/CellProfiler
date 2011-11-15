@@ -41,6 +41,12 @@ from cellprofiler.modules.injectimage import InjectImage
 from cellprofiler.modules.tests import example_images_directory
 from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
 
+IMAGE_NAME = "myimage"
+ALT_IMAGE_NAME = "altimage"
+OBJECT_NAME = "myobject"
+CATEGORY = "category"
+FEATURE_NAME = "category_myfeature"
+
 def module_directory():
     d = cpp.__file__
     d = os.path.split(d)[0] # ./CellProfiler/pyCellProfiler/cellProfiler
@@ -701,7 +707,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             cpprefs.set_default_image_directory(image_dir)
             profile_pipeline(pipeline_filename)
             cpprefs.set_default_image_directory(old_image_dir)
-
+            
     def test_15_02_profile_example_fly(self):
         """
         Profile ExampleFlyImages pipeline
@@ -725,7 +731,240 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         profile_pipeline(pipeline_filename)
         cpprefs.set_default_image_directory(old_image_dir)
 
+    def test_16_00_get_provider_dictionary_nothing(self):
+        for module in (ATestModule(),
+                       ATestModule([cps.Choice("foo", ["Hello", "World"])])):
+            pipeline = cpp.Pipeline()
+            module.module_num = 1
+            pipeline.add_module(module)
+            for groupname in (cps.IMAGE_GROUP, cps.OBJECT_GROUP, cps.MEASUREMENTS_GROUP):
+                d = pipeline.get_provider_dictionary(groupname)
+                self.assertEqual(len(d), 0)
+    
+    def test_16_01_get_provider_dictionary_image(self):
+        pipeline = cpp.Pipeline()
+        my_setting = cps.ImageNameProvider("foo", IMAGE_NAME)
+        module = ATestModule([my_setting])
+        module.module_num = 1
+        pipeline.add_module(module)
+        d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
+        self.assertEqual(len(d), 1)
+        self.assertEqual(d.keys()[0], IMAGE_NAME)
+        providers = d[IMAGE_NAME]
+        self.assertEqual(len(providers), 1)
+        provider = providers[0]
+        self.assertEqual(provider[0], module)
+        self.assertEqual(provider[1], my_setting)
+        for group in (cps.OBJECT_GROUP, cps.MEASUREMENTS_GROUP):
+            self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
+        
+    def test_16_02_get_provider_dictionary_object(self):
+        pipeline = cpp.Pipeline()
+        my_setting = cps.ObjectNameProvider("foo", OBJECT_NAME)
+        module = ATestModule([my_setting])
+        module.module_num = 1
+        pipeline.add_module(module)
+        d = pipeline.get_provider_dictionary(cps.OBJECT_GROUP)
+        self.assertEqual(len(d), 1)
+        self.assertEqual(d.keys()[0], OBJECT_NAME)
+        providers = d[OBJECT_NAME]
+        self.assertEqual(len(providers), 1)
+        provider = providers[0]
+        self.assertEqual(provider[0], module)
+        self.assertEqual(provider[1], my_setting)
+        for group in (cps.IMAGE_GROUP, cps.MEASUREMENTS_GROUP):
+            self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
 
+    def test_16_03_get_provider_dictionary_measurement(self):
+        pipeline = cpp.Pipeline()
+        module = ATestModule(
+            measurement_columns = [(OBJECT_NAME, FEATURE_NAME, cpmeas.COLTYPE_FLOAT)])
+        module.module_num = 1
+        pipeline.add_module(module)
+        d = pipeline.get_provider_dictionary(cps.MEASUREMENTS_GROUP)
+        self.assertEqual(len(d), 1)
+        key = d.keys()[0]
+        self.assertEqual(len(key), 2)
+        self.assertEqual(key[0], OBJECT_NAME)
+        self.assertEqual(key[1], FEATURE_NAME)
+        providers = d[key]
+        self.assertEqual(len(providers), 1)
+        provider = providers[0]
+        self.assertEqual(provider[0], module)
+        for group in (cps.OBJECT_GROUP, cps.IMAGE_GROUP):
+            self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
+        
+    def test_16_04_get_provider_dictionary_other(self):
+        pipeline = cpp.Pipeline()
+        module = ATestModule(other_providers = {cps.IMAGE_GROUP: [ IMAGE_NAME]})
+        module.module_num = 1
+        pipeline.add_module(module)
+        d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
+        self.assertEqual(len(d), 1)
+        self.assertEqual(d.keys()[0], IMAGE_NAME)
+        providers = d[IMAGE_NAME]
+        self.assertEqual(len(providers), 1)
+        provider = providers[0]
+        self.assertEqual(provider[0], module)
+        for group in (cps.OBJECT_GROUP, cps.MEASUREMENTS_GROUP):
+            self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
+        
+    def test_16_05_get_provider_dictionary_combo(self):
+        pipeline = cpp.Pipeline()
+        image_setting = cps.ImageNameProvider("foo", IMAGE_NAME)
+        object_setting = cps.ObjectNameProvider("foo", OBJECT_NAME)
+        measurement_columns = [(OBJECT_NAME, FEATURE_NAME, cpmeas.COLTYPE_FLOAT)]
+        other_providers = {cps.IMAGE_GROUP: [ ALT_IMAGE_NAME]}        
+        module = ATestModule(settings = [ image_setting, object_setting],
+                             measurement_columns = measurement_columns,
+                             other_providers = other_providers)
+        module.module_num = 1
+        pipeline.add_module(module)
+        d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
+        self.assertEqual(len(d), 2)
+        self.assertTrue(d.has_key(IMAGE_NAME))
+        providers = d[IMAGE_NAME]
+        self.assertEqual(len(providers), 1)
+        provider = providers[0]
+        self.assertEqual(provider[0], module)
+        self.assertEqual(provider[1], image_setting)
+        self.assertTrue(d.has_key(ALT_IMAGE_NAME))
+        providers = d[ALT_IMAGE_NAME]
+        self.assertEqual(len(providers), 1)
+        provider = providers[0]
+        self.assertEqual(len(provider), 2)
+        self.assertEqual(provider[0], module)
+        
+        d = pipeline.get_provider_dictionary(cps.OBJECT_GROUP)
+        self.assertEqual(len(d), 1)
+        self.assertTrue(d.has_key(OBJECT_NAME))
+        providers = d[OBJECT_NAME]
+        self.assertEqual(len(providers), 1)
+        provider = providers[0]
+        self.assertEqual(len(provider), 2)
+        self.assertEqual(provider[0], module)
+        self.assertEqual(provider[1], object_setting)
+        
+        d = pipeline.get_provider_dictionary(cps.MEASUREMENTS_GROUP)
+        self.assertEqual(len(d), 1)
+        key = d.keys()[0]
+        self.assertEqual(len(key), 2)
+        self.assertEqual(key[0], OBJECT_NAME)
+        self.assertEqual(key[1], FEATURE_NAME)
+        self.assertEqual(len(providers), 1)
+        provider = providers[0]
+        self.assertEqual(provider[0], module)
+        
+    def test_16_06_get_provider_module(self):
+        #
+        # Module 1 provides IMAGE_NAME
+        # Module 2 provides OBJECT_NAME
+        # Module 3 provides IMAGE_NAME again
+        # Module 4 might be a consumer
+        #
+        # Test disambiguation of the sources
+        #
+        pipeline = cpp.Pipeline()
+        my_image_setting_1 = cps.ImageNameProvider("foo", IMAGE_NAME)
+        my_image_setting_2 = cps.ImageNameProvider("foo", IMAGE_NAME)
+        my_object_setting = cps.ObjectNameProvider("foo", OBJECT_NAME)
+        module1 = ATestModule(settings = [my_image_setting_1])
+        module2 = ATestModule(settings = [my_object_setting])
+        module3 = ATestModule(settings = [my_image_setting_2])
+        module4 = ATestModule()
+        
+        for i, module in enumerate((module1, module2, module3, module4)):
+            module.module_num = i+1
+            pipeline.add_module(module)
+        d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP)
+        self.assertEqual(len(d), 1)
+        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertEqual(len(d[IMAGE_NAME]), 2)
+        for module in (module1, module3):
+            self.assertTrue(any([x[0] == module for x in d[IMAGE_NAME]]))
+        
+        d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP, module1)
+        self.assertEqual(len(d), 0)
+        
+        d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP, module2)
+        self.assertEqual(len(d), 1)
+        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertEqual(d[IMAGE_NAME][0][0], module1)
+        
+        d = pipeline.get_provider_dictionary(cps.IMAGE_GROUP, module4)
+        self.assertEqual(len(d), 1)
+        self.assertTrue(d.has_key(IMAGE_NAME))
+        self.assertEqual(len(d[IMAGE_NAME]), 1)
+        self.assertEqual(d[IMAGE_NAME][0][0], module3)
+        
+    def test_17_00_get_dependency_graph_empty(self):
+        for module in (ATestModule(),
+                       ATestModule([cps.Choice("foo", ["Hello", "World"])]),
+                       ATestModule([cps.ImageNameProvider("foo", IMAGE_NAME)]),
+                       ATestModule([cps.ImageNameSubscriber("foo", IMAGE_NAME)])):
+            pipeline = cpp.Pipeline()
+            module.module_num = 1
+            pipeline.add_module(module)
+            result = pipeline.get_dependency_graph()
+            self.assertEqual(len(result), 0)
+            
+    def test_17_01_get_dependency_graph_image(self):
+        pipeline = cpp.Pipeline()
+        for i, module in enumerate((
+            ATestModule([cps.ImageNameProvider("foo", IMAGE_NAME)]),
+            ATestModule([cps.ImageNameProvider("foo", ALT_IMAGE_NAME)]),
+            ATestModule([cps.ImageNameSubscriber("foo", IMAGE_NAME)]))):
+            module.module_num = i+1
+            pipeline.add_module(module)
+        g = pipeline.get_dependency_graph()
+        self.assertEqual(len(g), 1)
+        edge = g[0]
+        self.assertTrue(isinstance(edge, cpp.ImageDependency))
+        self.assertEqual(edge.source, pipeline.modules()[0])
+        self.assertEqual(edge.source_setting, pipeline.modules()[0].settings()[0])
+        self.assertEqual(edge.image_name, IMAGE_NAME)
+        self.assertEqual(edge.destination, pipeline.modules()[2])
+        self.assertEqual(edge.destination_setting, pipeline.modules()[2].settings()[0])
+        
+    def test_17_02_get_dependency_graph_object(self):
+        pipeline = cpp.Pipeline()
+        for i, module in enumerate((
+            ATestModule([cps.ObjectNameProvider("foo", OBJECT_NAME)]),
+            ATestModule([cps.ImageNameProvider("foo", IMAGE_NAME)]),
+            ATestModule([cps.ObjectNameSubscriber("foo", OBJECT_NAME)]))):
+            module.module_num = i+1
+            pipeline.add_module(module)
+        g = pipeline.get_dependency_graph()
+        self.assertEqual(len(g), 1)
+        edge = g[0]
+        self.assertTrue(isinstance(edge, cpp.ObjectDependency))
+        self.assertEqual(edge.source, pipeline.modules()[0])
+        self.assertEqual(edge.source_setting, pipeline.modules()[0].settings()[0])
+        self.assertEqual(edge.object_name, OBJECT_NAME)
+        self.assertEqual(edge.destination, pipeline.modules()[2])
+        self.assertEqual(edge.destination_setting, pipeline.modules()[2].settings()[0])
+
+    def test_17_03_get_dependency_graph_measurement(self):
+        pipeline = cpp.Pipeline()
+        measurement_columns = [
+            (OBJECT_NAME, FEATURE_NAME, cpmeas.COLTYPE_FLOAT)]
+        measurement_setting = cps.Measurement("text", lambda : OBJECT_NAME, FEATURE_NAME)
+        for i, module in enumerate((
+            ATestModule(measurement_columns = measurement_columns),
+            ATestModule([cps.ImageNameProvider("foo", ALT_IMAGE_NAME)]),
+            ATestModule([measurement_setting]))):
+            module.module_num = i+1
+            pipeline.add_module(module)
+        g = pipeline.get_dependency_graph()
+        self.assertEqual(len(g), 1)
+        edge = g[0]
+        self.assertTrue(isinstance(edge, cpp.MeasurementDependency))
+        self.assertEqual(edge.source, pipeline.modules()[0])
+        self.assertEqual(edge.object_name, OBJECT_NAME)
+        self.assertEqual(edge.feature, FEATURE_NAME)
+        self.assertEqual(edge.destination, pipeline.modules()[2])
+        self.assertEqual(edge.destination_setting, pipeline.modules()[2].settings()[0])
+        
 def profile_pipeline(pipeline_filename,
                      output_filename=None,
                      always_run=True):
@@ -772,7 +1011,41 @@ def profile_pipeline(pipeline_filename,
     to_print = p.sort_stats('cumulative')
     to_print.print_stats(20)
 
-
+class ATestModule(cpm.CPModule):
+    module_name = "ATestModule"
+    variable_revision_number = 1
+    def __init__(self, settings=[], measurement_columns=[], other_providers={}):
+        super(type(self), self).__init__()
+        self.__settings = settings
+        self.__measurement_columns = measurement_columns
+        self.__other_providers = other_providers
+        
+    def settings(self):
+        return self.__settings
+    def get_measurement_columns(self, pipeline):
+        return self.__measurement_columns
+    def other_providers(self, group):
+        if group not in self.__other_providers.keys():
+            return []
+        return self.__other_providers[group]
+    def get_categories(self, pipeline, object_name):
+        categories = set()
+        for cobject_name, cfeature_name, ctype \
+            in self.get_measurement_columns(pipeline):
+            if cobject_name == object_name:
+                categories.add(cfeature_name.split("_")[0])
+        return list(categories)
+    
+    def get_measurements(self, pipeline, object_name, category):
+        measurements = set()
+        for cobject_name, cfeature_name, ctype \
+            in self.get_measurement_columns(pipeline):
+            ccategory, measurement = cfeature_name.split("_", 1)
+            if cobject_name == object_name and category == category:
+                measurements.add(measurement)
+        return list(measurements)
+            
+    
 class MyClassForTest0801(cpm.CPModule):
     def create_settings(self):
         self.my_variable = cps.Text('','')
@@ -857,6 +1130,7 @@ class GroupModule(cpm.CPModule):
         if self.get_measurement_columns_callback is not None:
             return self.get_measurement_columns_callback(*args)
         return []
+
 
 # Global declarations
 

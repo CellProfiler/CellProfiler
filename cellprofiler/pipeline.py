@@ -1908,12 +1908,115 @@ class Pipeline(object):
         self.__measurement_columns[terminating_module_num] = columns
         return columns
     
+    def get_provider_dictionary(self, groupname, module = None):
+        '''Get a dictionary of all providers for a given category
+        
+        groupname - the name of the category from cellprofiler.settings:
+            IMAGE_GROUP for image providers, OBJECT_GROUP for object providers
+            or MEASUREMENTS_GROUP for measurement providers.
+            
+        module - the module that will subscribe to the names. If None, all
+        providers are listed, if a module, only the providers for that module's
+        place in the pipeline are listed.
+            
+        returns a dictionary where the key is the name and the value is
+        a list of tuples of module and setting where the module provides
+        the name and the setting is the setting that controls the name (and
+        the setting can be None).
+        
+        '''
+        target_module = module
+        result = {}
+        #
+        # Walk through the modules to find subscriber and provider settings
+        #
+        for module in self.modules():
+            if (target_module is not None and 
+                target_module.module_num <= module.module_num):
+                break
+            #
+            # Find "other_providers" - providers that aren't specified
+            # by single settings.
+            #
+            p = module.other_providers(groupname)
+            for name in p:
+                if (not result.has_key(name)) or target_module is not None:
+                    result[name] = []
+                result[name].append((module, None))
+            if groupname == cps.MEASUREMENTS_GROUP:
+                for c in module.get_measurement_columns(self):
+                    object_name, feature_name = c[:2]
+                    k = (object_name, feature_name)
+                    if (not result.has_key(k)) or target_module is not None:
+                        result[k] = []
+                    result[k].append((module, None))
+            for setting in module.visible_settings():
+                if (isinstance(setting, cps.NameProvider) and
+                    setting.get_group() == groupname):
+                    name = setting.value
+                    if name == cps.DO_NOT_USE:
+                        continue
+                    if not result.has_key(name) or target_module is not None:
+                        result[name] = []
+                    result[name].append((module, setting))
+        return result
+    
     def get_dependency_graph(self):
         '''Create a graph that describes the producers and consumers of objects
         
-        returns a list of Dependency that can be used to create a directed
-        graph that describes object and image dependencies.
+        returns a list of Dependency objects. These can be used to create a
+        directed graph that describes object and image dependencies.
         '''
+        #
+        # These dictionaries have the following structure:
+        # * top level dictionary key indicates whether it is an object, image
+        #   or measurement dependency
+        # * second level dictionary key is the name of the object or image or
+        #   a tuple of (object_name, feature) for a measurement.
+        # * the value of the second-level dictionary is a list of tuples
+        #   where the first element of the tuple is the module and the
+        #   second is either None or the setting.
+        #
+        all_groups = (cps.OBJECT_GROUP, cps.IMAGE_GROUP, cps.MEASUREMENTS_GROUP)
+        providers = dict([(g, self.get_provider_dictionary(g))
+                          for g in all_groups])
+        #
+        # Now match subscribers against providers.
+        #
+        result = []
+        for module in self.modules():
+            for setting in module.visible_settings():
+                if isinstance(setting, cps.NameSubscriber):
+                    group = setting.get_group()
+                    name = setting.value
+                    if (providers.has_key(group) and 
+                        providers[group].has_key(name)):
+                        for pmodule, psetting in providers[group][name]:
+                            if pmodule.module_num < module.module_num:
+                                if group == cps.OBJECT_GROUP:
+                                    dependency = ObjectDependency(
+                                        pmodule, module, name,
+                                        psetting, setting)
+                                    result.append(dependency)
+                                elif group == cps.IMAGE_GROUP:
+                                    dependency = ImageDependency(
+                                        pmodule, module, name,
+                                        psetting, setting)
+                                    result.append(dependency)
+                                break
+                elif isinstance(setting, cps.Measurement):
+                    object_name = setting.get_measurement_object()
+                    feature_name = setting.value
+                    key = (object_name, feature_name)
+                    if providers[cps.MEASUREMENTS_GROUP].has_key(key):
+                        for pmodule, psetting in providers[cps.MEASUREMENTS_GROUP][key]:
+                            if pmodule.module_num < module.module_num:
+                                dependency = MeasurementDependency(
+                                    pmodule, module, object_name, feature_name,
+                                    psetting, setting)
+                                result.append(dependency)
+                                break
+        return result
     
     def synthesize_measurement_name(self, module, object, category, 
                                     feature, image, scale):
@@ -2048,7 +2151,7 @@ class EndRunEvent(AbstractPipelineEvent):
     """A run ended"""
     def event_type(self):
         return "Run ended"
-    
+
 class Dependency(object):
     '''This class documents the dependency of one module on another
     
@@ -2087,7 +2190,7 @@ class Dependency(object):
     @property
     def destination(self):
         '''The user of the data item'''
-        return self.__source_module
+        return self.__destination_module
     
     @property
     def destination_setting(self):
@@ -2098,9 +2201,75 @@ class Dependency(object):
         return self.__destination_setting
     
 class ObjectDependency(Dependency):
+    '''A dependency on an object labeling'''
     def __init__(self, source_module, destination_module, object_name,
                  source_setting = None, destination_setting = None):
-        pass
+        super(type(self), self).__init__(source_module, destination_module,
+                                         source_setting, destination_setting)
+        self.__object_name = object_name
+        
+    @property
+    def object_name(self):
+        '''The name of the objects produced by the source and used by the dest'''
+        return self.__object_name
+    
+    def __str__(self):
+        return "Object: %s" % self.object_name
+
+class ImageDependency(Dependency):
+    '''A dependency on an image'''
+    def __init__(self, source_module, destination_module, image_name,
+                 source_setting = None, destination_setting = None):
+        super(type(self), self).__init__(source_module, destination_module,
+                                         source_setting, destination_setting)
+        self.__image_name = image_name
+        
+    @property
+    def image_name(self):
+        '''The name of the image produced by the source and used by the dest'''
+        return self.__image_name
+
+    def __str__(self):
+        return "Image: %s" % self.image_name
+    
+class MeasurementDependency(Dependency):
+    '''A dependency on a measurement'''
+    def __init__(self, source_module, destination_module, object_name,
+                 feature, source_setting = None, destination_setting = None):
+        '''Initialize using source, destination and measurement
+        
+        source_module - module producing the measurement
+        
+        destination_module - module using the measurement
+        
+        object_name - the measurement is made on the objects with this name
+        (or Image for image measurements)
+        
+        feature - the feature name for the measurement, for instance AreaShape_Area
+        
+        source_setting - the module setting that controls production of this
+        measurement (very typically = None for no such thing)
+        
+        destination_setting - the module setting that chooses the measurement
+        for the user of the data, for instance a MeasurementSetting
+        '''
+        super(type(self), self).__init__(source_module, destination_module,
+                                         source_setting, destination_setting)
+        self.__object_name = object_name
+        self.__feature = feature
+        
+    @property
+    def object_name(self):
+        '''The objects / labels used when producing the measurement'''
+        return self.__object_name
+    
+    @property
+    def feature(self):
+        '''The name of the measurement'''
+        return self.__feature
+
+    def __str__(self):
+        return "Measurement: %s.%s" % (self.object_name, self.feature)
 
 def AddHandlesImages(handles,image_set):
     """Add any images from the handles to the image set

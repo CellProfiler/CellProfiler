@@ -47,6 +47,8 @@ IMAGE_GROUP = 'imagegroup'
 '''Names providers and subscribers of objects'''
 OBJECT_GROUP = 'objectgroup'
 
+MEASUREMENTS_GROUP = 'measurementsgroup'
+
 '''Names providers and subscribers of grid information'''
 GRID_GROUP = 'gridgroup'
 
@@ -1633,6 +1635,15 @@ class Measurement(Setting):
             value = '_'.join(parts)
         return str(value)
         
+    def get_measurement_object(self):
+        '''Return the primary object for the measurement
+        
+        This is either "Image" if an image measurement or the name
+        of the objects for per-object measurements. Please pardon the
+        confusion with get_object_name which is the secondary object
+        name, for instance for a measurement Relate.'''
+        return self.__object_fn()
+    
     def get_category_choices(self, pipeline, object_name=None):
         '''Find the categories of measurements available from the object '''
         if object_name is None:

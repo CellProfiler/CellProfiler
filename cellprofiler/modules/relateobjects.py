@@ -249,7 +249,7 @@ class RelateObjects(cpm.CPModule):
                           FF_CHILDREN_COUNT%(self.sub_object_name.value),
                           child_count)
         group_index = m.get_current_image_measurement(cpmeas.GROUP_INDEX)
-        group_indexes = np.ones(len(parents_of), int) * group_index
+        group_indexes = np.ones(np.sum(parents_of != 0), int) * group_index
         good_parents = parents_of[parents_of != 0]
         good_children = np.argwhere(parents_of != 0).flatten() + 1
         if np.any(good_parents):

@@ -1026,6 +1026,11 @@ class NameSubscriber(Setting):
         if self.value not in [c[0] for c in choices]:
             raise ValidationError("%s not in %s"%(self.value,reduce(lambda x,y: "%s,%s"%(x,y),self.get_choices(pipeline))),self)
 
+def filter_duplicate_names(name_list):
+    '''remove any repeated names from a list of (name, ...) keeping the last occurrence.'''
+    name_dict = dict(zip((n[0] for n in name_list), name_list))
+    return [name_dict[n[0]] for n in name_list]
+
 def get_name_provider_choices(pipeline, last_setting, group):
     '''Scan the pipeline to find name providers for the given group
     
@@ -1040,7 +1045,7 @@ def get_name_provider_choices(pipeline, last_setting, group):
                           for other_name in module.other_providers(group)]
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
-                return choices
+                return filter_duplicate_names(choices)
             if (isinstance(setting, NameProvider) and
                 setting != DO_NOT_USE and
                 last_setting.matches(setting)):
@@ -1349,7 +1354,7 @@ class SubscriberMultiChoice(MultiChoice):
     
     def load_choices(self, pipeline):
         '''Get the choice list from name providers'''
-        self.choices = get_name_provider_choices(pipeline, self, self.group)
+        self.choices = sorted([name for name, module, module_number in get_name_provider_choices(pipeline, self, self.group)])
     
     @property
     def group(self):

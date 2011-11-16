@@ -202,7 +202,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             by selecting them from any drop-down image list.""")
         
         self.wants_discard_edge = cps.Binary(
-            "Discard secondary objects that touch the edge of the image?",
+            "Discard secondary objects touching the border of the image?",
             False,
             doc = """This option will discard objects which have an edge
             that falls on the border of the image. The objects are discarded
@@ -217,7 +217,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         self.wants_discard_primary = cps.Binary(
             "Discard the associated primary objects?",
             False,
-            doc = """<i>(Used only if secondary objects touching the edge are discarded)</i> <br>
+            doc = """<i>(Used only if discarding secondary objects touching the image border)</i> <br>
             It might be appropriate to discard the primary object
             for any secondary object that touches the edge of the image.
             The module will create a new set of objects that mirrors your

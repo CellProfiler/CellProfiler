@@ -321,6 +321,11 @@ class ModuleView:
                                    self.__module.id == new_module.id)
             if not reselecting:
                 self.clear_selection()
+                try:
+                    # Need to initialize some controls.
+                    new_module.test_valid(self.__pipeline)
+                except:
+                    pass
             if not self.__as_datatool:
                 self.notes_panel.Show()
             self.__module       = new_module

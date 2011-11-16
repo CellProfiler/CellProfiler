@@ -807,25 +807,33 @@ class CPFigureFrame(wx.Frame):
             self.set_subplot_title(title, x, y)
         
         # Update colorbar
+        if orig_vmin is not None:
+            tick_vmin = orig_vmin
+        elif normalize == 'log':
+            tick_vmin = image[image > 0].min()
+        else:
+            tick_vmin = image.min()
+        if orig_vmax is not None:
+            tick_vmax = orig_vmax
+        else:
+            tick_vmax = image.max()
         if colorbar and not is_color_image(image):
             if not subplot in self.colorbar:
                 cax = matplotlib.colorbar.make_axes(subplot)[0]
                 self.colorbar[subplot] = (cax, matplotlib.colorbar.ColorbarBase(cax, cmap=colormap, ticks=[]))
-            cax, _ = self.colorbar[subplot]
-            cax.set_yticks(np.linspace(0, 1, 10))
-            if normalize == True:
-                cax.set_yticklabels(['%0.1f'%(v) for v in np.linspace(image.min(), image.max(), 10)])
-            elif normalize == 'log':
-                if image.max() > 0 and image.max() > image[image > 0].min():
-                    lo = image[image > 0].min()
-                    hi = image.max()
-                    cax.set_yticklabels(['%0.1f'%(v) for v in lo * np.logspace(image.min(), image.max(), 10, base=(hi / lo))])
+            cax, colorbar = self.colorbar[subplot]
+            colorbar.set_ticks(np.linspace(0, 1, 10))
+            if normalize == 'log':
+                if tick_vmin != tick_vmax and tick_vmin != 0:
+                    ticklabels = [
+                        '%0.1f' % v 
+                        for v in np.logspace(tick_vmin, tick_vmax, 10)]
                 else:
-                    cax.set_yticklabels([''] * 10)
-            elif (orig_vmin is not None) and (orig_vmax is not None):
-                cax.set_yticklabels(['%0.1f'%(v) for v in np.linspace(orig_vmin, orig_vmax, 10)])
+                    ticklabels = [''] * 10
             else:
-                cax.set_yticklabels(['%0.1f'%(v) for v in np.linspace(0, 1, 10)])
+                ticklabels = [
+                    '%0.1f'%(v) for v in np.linspace(tick_vmin, tick_vmax, 10)]
+            colorbar.set_ticklabels(ticklabels)
                                       
 
         # NOTE: We bind this event each time imshow is called to a new closure

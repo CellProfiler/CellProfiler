@@ -74,6 +74,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.cpmorphology import strel_disk, centers_of_labels
+from cellprofiler.cpmath.outline import outline
 
 D_ADJACENT = 'Adjacent'
 D_EXPAND   = 'Expand until adjacent'
@@ -278,6 +279,9 @@ class MeasureObjectNeighbors(cpm.CPModule):
             ncenters = centers_of_labels(
                 neighbor_objects.small_removed_segmented).transpose()
             areas = fix(scind.sum(np.ones(labels.shape),labels, object_indexes))
+            perimeters = fix(scind.sum(
+                np.ones(labels.shape), outline(labels), object_indexes))
+                                       
             i,j = np.mgrid[0:nobjects,0:nneighbors]
             distance_matrix = np.sqrt((ocenters[i,0] - ncenters[j,0])**2 +
                                       (ocenters[i,1] - ncenters[j,1])**2)
@@ -376,7 +380,10 @@ class MeasureObjectNeighbors(cpm.CPModule):
             else:
                 first_objects = np.zeros(0, int)
                 second_objects = np.zeros(0, int)
-            percent_touching = pixel_count * 100.0 / areas
+            if self.neighbors_are_objects:
+                percent_touching = pixel_count * 100 / perimeters
+            else:
+                percent_touching = pixel_count * 100.0 / areas
             object_indexes = object_numbers - 1
             neighbor_indexes = neighbor_numbers - 1
             #
@@ -522,7 +529,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                   self.object_name.value,
                                   colormap = neighbor_cm,
                                   colorbar=True, vmin=0,
-                                  vmax=neighbor_count_image.max(),
+                                  vmax=max(neighbor_count_image.max(), 1),
                                   normalize=False,
                                   sharex = figure.subplot(0,0),
                                   sharey = figure.subplot(0,0))
@@ -532,7 +539,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                       self.object_name.value,
                                       colormap = percent_touching_cm,
                                       colorbar=True, vmin=0, 
-                                      vmax=percent_touching_image.max(),
+                                      vmax=max(percent_touching_image.max(),1),
                                       normalize=False,
                                       sharex = figure.subplot(0,0),
                                       sharey = figure.subplot(0,0))
@@ -542,6 +549,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                   "%s colored by # of neighbors" %
                                   self.object_name.value,
                                   colormap = neighbor_cm,
+                                  vmin = 0,
+                                  vmax = max(neighbor_count_image.max(),1),
                                   sharex = figure.subplot(0,0),
                                   sharey = figure.subplot(0,0))
             if self.neighbors_are_objects:
@@ -549,6 +558,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                       "%s colored by pct touching"%
                                       self.object_name.value,
                                       colormap = percent_touching_cm,
+                                      vmin = 0,
+                                      vmax = max(neighbor_count_image.max(),1),
                                       sharex = figure.subplot(0,0),
                                       sharey = figure.subplot(0,0))
             

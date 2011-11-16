@@ -248,10 +248,10 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         # The structuring element should 4-connect with the border which
         # means that there should be 10 pixels that overlap. When you expand
         # the two objects, you end up with 1 being larger than 2 because
-        # it is closer to the middle: area(1) = 55, area(2) = 45.
+        # it is closer to the middle: perimeter(1) = 33, perimeter(2) = 30.
         #
         self.assertEqual(len(pct),2)
-        self.assertAlmostEqual(pct[0],100.0*10.0/55.0)
+        self.assertAlmostEqual(pct[0],100.0*10.0/33.0)
         fo = m.get_current_measurement(OBJECTS_NAME,
                                        "Neighbors_FirstClosestObjectNumber_Expanded")
         self.assertEqual(len(fo),2)

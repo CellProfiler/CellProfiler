@@ -3230,7 +3230,8 @@ def distance_color_labels(labels):
     # cumsum([0,0,1,0,1]) = [0,0,1,1,2]
     # and copy back into the color array, using the order.
     #
-    different = np.hstack([[False], rlabels[order[1:]] != rlabels[order[:-1]]])
+    different = np.hstack([[rlabels[order[0] > 0]], 
+                           rlabels[order[1:]] != rlabels[order[:-1]]])
     colors.ravel()[order] = np.cumsum(different)
     return colors.astype(labels.dtype)
 

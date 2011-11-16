@@ -24,6 +24,7 @@ import cellprofiler.cellprofilerapp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.gui.moduleview as cpmv
+from cellprofiler.modules import add_module_for_test
 import sys
 
 if not sys.platform.startswith('linux'):
@@ -45,21 +46,9 @@ if not sys.platform.startswith('linux'):
             return app
     
         def set_setting(self, v):
-            class TestModule(cpm.CPModule):
-                module_name = "TestModule"
-                category = "Test"
-                variable_revision_number = 1
-                def __init__(self):
-                    super(TestModule,self).__init__()
-                    self.vv = [v]
-                    self.module_num = 1
-    
-                def settings(self):
-                    return self.vv
-                def visible_settings(self):
-                    return self.vv
-            
-            test_module = TestModule()
+            ATestModule.vv[0] = v
+            add_module_for_test(ATestModule)
+            test_module = ATestModule()
             app = self.set_pipeline(test_module)
             module_panel = app.frame.module_view.module_panel
             return (app,
@@ -214,11 +203,30 @@ if not sys.platform.startswith('linux'):
         def test_02_01_bad_integer_value(self):
             v = cps.Integer("text",1)
             app,text_control,edit_control = self.set_setting(v)
+            assert isinstance(app, wx.App)
             edit_control.SetValue("bad")
             app.ProcessPendingEvents()
             app.frame.module_view.on_idle(None)
+            time.sleep(1)
+            app.ProcessPendingEvents()
+            app.ProcessIdle()
             text_control = self.get_text_control(app,v)
             self.assertEqual(text_control.ForegroundColour,wx.RED)
             app.frame.Destroy()
             app.ProcessPendingEvents()
             app.ProcessIdle()
+
+class ATestModule(cpm.CPModule):
+    module_name = "ATestModule"
+    category = "Test"
+    variable_revision_number = 1
+    vv = [None]
+    def __init__(self):
+        super(type(self),self).__init__()
+        self.module_num = 1
+
+    def settings(self):
+        return self.vv
+    def visible_settings(self):
+        return self.vv
+

@@ -347,11 +347,14 @@ class MaskObjects(I.Identify):
         #
         image[(final_labels == 0) & mask,:] = .25
         #
-        # Make the outlines of the original objects red
+        # Make the outlines of the kept objects the primary color
+        # and the outlines of removed objects red.
         #
-        image[outlines,0] = 1
-        image[outlines,1] = 0
-        image[outlines,2] = 0
+        final_outlines = outline(final_labels) > 0
+        original_color = np.array(cpprefs.get_secondary_outline_color(), float) / 255
+        final_color = np.array(cpprefs.get_primary_outline_color(), float) / 255
+        image[outlines, :] = original_color[np.newaxis, :]
+        image[final_outlines, :] = final_color[np.newaxis, :]
         
         figure = workspace.create_or_find_figure(title="MaskObjects, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(2,1))

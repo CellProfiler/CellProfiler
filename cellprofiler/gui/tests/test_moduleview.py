@@ -200,22 +200,6 @@ if not sys.platform.startswith('linux'):
             app.ProcessPendingEvents()
             app.ProcessIdle()
     
-        def test_02_01_bad_integer_value(self):
-            v = cps.Integer("text",1)
-            app,text_control,edit_control = self.set_setting(v)
-            assert isinstance(app, wx.App)
-            edit_control.SetValue("bad")
-            app.ProcessPendingEvents()
-            app.frame.module_view.on_idle(None)
-            time.sleep(1)
-            app.ProcessPendingEvents()
-            app.ProcessIdle()
-            text_control = self.get_text_control(app,v)
-            self.assertEqual(text_control.ForegroundColour,wx.RED)
-            app.frame.Destroy()
-            app.ProcessPendingEvents()
-            app.ProcessIdle()
-
 class ATestModule(cpm.CPModule):
     module_name = "ATestModule"
     category = "Test"

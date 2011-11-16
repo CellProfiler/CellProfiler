@@ -24,7 +24,7 @@ import cellprofiler.cellprofilerapp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.gui.moduleview as cpmv
-from cellprofiler.modules import add_module_for_test
+from cellprofiler.modules import add_module_for_tst
 import sys
 
 if not sys.platform.startswith('linux'):
@@ -47,7 +47,7 @@ if not sys.platform.startswith('linux'):
     
         def set_setting(self, v):
             ATestModule.vv[0] = v
-            add_module_for_test(ATestModule)
+            add_module_for_tst(ATestModule)
             test_module = ATestModule()
             app = self.set_pipeline(test_module)
             module_panel = app.frame.module_view.module_panel

@@ -354,13 +354,13 @@ def fill_modules():
     if len(badmodules) > 0:
         logger.warning("could not load these modules: %s", 
                        ",".join([x[0] for x in badmodules]))
-def add_module_for_test(module_class):
+def add_module_for_tst(module_class):
     all_modules[module_class.module_name] = module_class
 
 fill_modules()        
     
 __all__ = ['instantiate_module', 'get_module_names', 'reload_modules', 
-           'output_module_html', 'add_module_for_test']
+           'output_module_html', 'add_module_for_tst']
 
 replaced_modules = {
     'LoadImageDirectory':['LoadImages','LoadData'],

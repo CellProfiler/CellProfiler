@@ -279,8 +279,9 @@ class MeasureObjectNeighbors(cpm.CPModule):
             ncenters = centers_of_labels(
                 neighbor_objects.small_removed_segmented).transpose()
             areas = fix(scind.sum(np.ones(labels.shape),labels, object_indexes))
+            perimeter_outlines = outline(labels)
             perimeters = fix(scind.sum(
-                np.ones(labels.shape), outline(labels), object_indexes))
+                np.ones(labels.shape), perimeter_outlines, object_indexes))
                                        
             i,j = np.mgrid[0:nobjects,0:nneighbors]
             distance_matrix = np.sqrt((ocenters[i,0] - ncenters[j,0])**2 +
@@ -315,6 +316,11 @@ class MeasureObjectNeighbors(cpm.CPModule):
             
             # Make the structuring element for dilation
             strel = strel_disk(distance)
+            #
+            # A little bigger one to enter into the border with a structure
+            # that mimics the one used to create the outline
+            #
+            strel_touching = strel_disk(distance + .5)
             #
             # Get the extents for each object and calculate the patch
             # that excises the part of the image that is "distance"
@@ -356,11 +362,16 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 if self.neighbors_are_objects:
                     #
                     # Find the # of overlapping pixels. Dilate the neighbors
-                    # and see how many pixels overlap our image
+                    # and see how many pixels overlap our image. Use a 3x3
+                    # structuring element to expand the overlapping edge
+                    # into the perimeter.
                     #
-                    extended = scind.binary_dilation((~ patch_mask) & (patch != 0),
-                                                     strel)
-                    overlap = np.sum(patch_mask & extended)
+                    outline_patch = perimeter_outlines[
+                        min_i[index]:max_i[index],
+                        min_j[index]:max_j[index]] == object_number
+                    extended = scind.binary_dilation(
+                        (patch != 0) & (patch != object_number), strel_touching)
+                    overlap = np.sum(outline_patch & extended)
                     pixel_count[index] = overlap
             if sum([len(x) for x in first_objects]) > 0:
                 first_objects = np.hstack(first_objects)

@@ -245,13 +245,28 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         pct = m.get_current_measurement(OBJECTS_NAME,
                                         "Neighbors_PercentTouching_Expanded")
         #
-        # The structuring element should 4-connect with the border which
-        # means that there should be 10 pixels that overlap. When you expand
-        # the two objects, you end up with 1 being larger than 2 because
-        # it is closer to the middle: perimeter(1) = 33, perimeter(2) = 30.
+        # This is what the patch looks like:
+        #  P P P P P P P P P P
+        #  P I I I I I I I O O
+        #  P I I I I I O O O N
+        #  P I I I I O O N N N
+        #  P I I I O O N N N N
+        #  P I I O O N N N N N
+        #  P I O O N N N N N N
+        #  O O O N N N N N N N
+        #  O N N N N N N N N N
+        #  N N N N N N N N N N
+        #
+        # where P = perimeter, but not overlapping the second object
+        #       I = interior, not perimeter
+        #       O = dilated 2nd object overlaps perimeter
+        #       N = neigbor object, not overlapping
+        #
+        # There are 33 perimeter pixels (P + O) and 17 perimeter pixels
+        # that overlap the dilated neighbor (O).
         #
         self.assertEqual(len(pct),2)
-        self.assertAlmostEqual(pct[0],100.0*10.0/33.0)
+        self.assertAlmostEqual(pct[0],100.0*17.0/33.0)
         fo = m.get_current_measurement(OBJECTS_NAME,
                                        "Neighbors_FirstClosestObjectNumber_Expanded")
         self.assertEqual(len(fo),2)

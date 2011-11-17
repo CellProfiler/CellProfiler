@@ -170,7 +170,14 @@ IO_ALL = (IO_IMAGES, IO_OBJECTS)
 '''The format string for naming the image for some objects'''
 IMAGE_FOR_OBJECTS_F = "IMAGE_FOR_%s"
 
-SUPPORTED_IMAGE_EXTENSIONS = set(PILImage.EXTENSION.keys())
+# The following is a list of extensions supported by PIL 1.1.7
+SUPPORTED_IMAGE_EXTENSIONS = set([
+    '.ppm', '.grib', '.im', '.rgba', '.rgb', '.pcd', '.h5', '.jpe', '.jfif', 
+    '.jpg', '.fli', '.sgi', '.gbr', '.pcx', '.mpeg', '.jpeg', '.ps', '.flc', \
+    '.tif', '.hdf', '.icns', '.gif', '.palm', '.mpg', '.fits', '.pgm', '.mic', 
+    '.fit', '.xbm', '.eps', '.emf', '.dcx', '.bmp', '.bw', '.pbm', '.dib', 
+    '.ras', '.cur', '.fpx', '.png', '.msp', '.iim', '.wmf', '.tga', '.bufr', 
+    '.ico', '.psd', '.xpm', '.arg', '.pdf', '.tiff'])
 SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
 
 SUPPORTED_MOVIE_EXTENSIONS = set(['.avi', '.mpeg', '.stk','.flex', '.mov', '.tif', 

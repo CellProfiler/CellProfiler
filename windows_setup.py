@@ -24,7 +24,11 @@ import xml.dom.minidom
 import external_dependencies
 external_dependencies.fetch_external_dependencies('fail')
 
-from cellprofiler.utilities.get_revision import get_revision
+from cellprofiler.utilities.version import version_number, dotted_version, version_string
+f = open("cellprofiler/frozen_version.py", "w")
+f.write("# MACHINE_GENERATED\nversion_string = '%s'" % version_string)
+f.close()
+
 is_win64 = (os.environ["PROCESSOR_ARCHITECTURE"] == "AMD64")
 is_2_6 = sys.version_info[0] >= 2 and sys.version_info[1] >= 6
 vcredist = os.path.join("windows",
@@ -43,7 +47,7 @@ class CellProfilerMSI(distutils.core.Command):
         pass
     
     def run(self):
-        revision = str(get_revision())
+        revision = str(version_number)
         if is_2_6 and do_modify:
             self.modify_manifest("CellProfiler.exe")
             self.modify_manifest("python26.dll;#2")
@@ -60,16 +64,16 @@ class CellProfilerMSI(distutils.core.Command):
             self.modify_manifest("wx._core_.pyd;#2")
         fd = open("version.iss", "w")
         fd.write("""
-AppVerName=CellProfiler 2.0 r%s
-OutputBaseFilename=CellProfiler_2.0_win%d_r%s
-""" % (revision, (64 if is_win64 else 32), revision))
+AppVerName=CellProfiler %s r%s
+OutputBaseFilename=CellProfiler_%s_win%d_r%s
+""" % (dotted_version, revision, dotted_version, (64 if is_win64 else 32), revision))
         fd.close()
         if is_win64:
             cell_profiler_iss = "CellProfiler64.iss"
-            cell_profiler_setup = "CellProfiler_2.0_win64_r%s.exe" % revision
+            cell_profiler_setup = "CellProfiler_%s_win64_r%s.exe" % (dotted_version, revision)
         else:
             cell_profiler_iss = "CellProfiler.iss"
-            cell_profiler_setup = "CellProfiler_2.0_win32_r%s.exe" % revision
+            cell_profiler_setup = "CellProfiler_%s_win32_r%s.exe" % (dotted_version, revision)
         required_files = ["dist\\CellProfiler.exe",cell_profiler_iss]
         compile_command = self.__compile_command()
         compile_command = compile_command.replace("%1",cell_profiler_iss)

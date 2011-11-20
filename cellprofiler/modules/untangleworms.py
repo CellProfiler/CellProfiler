@@ -609,7 +609,7 @@ class UntangleWorms(cpm.CPModule):
     def post_group(self, workspace, grouping):
         '''Write the training data file as we finish grouping.'''
         if self.mode == MODE_TRAIN:
-            from cellprofiler.utilities.get_revision import get_revision
+            from cellprofiler.utilities.version import version_number
             worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
             #
             # Either get weights from our instance or instantiate
@@ -679,7 +679,7 @@ class UntangleWorms(cpm.CPModule):
             top = doc.documentElement
             top.setAttribute("xmlns", T_NAMESPACE)
             for tag, value in (
-                (T_VERSION,  get_revision()),
+                (T_VERSION,  cp_version_number),
                 (T_MIN_AREA, min_area),
                 (T_MAX_AREA, max_area),
                 (T_COST_THRESHOLD, max_cost),

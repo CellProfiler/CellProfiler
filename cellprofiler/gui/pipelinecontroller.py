@@ -11,7 +11,7 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
+
 import logging
 import math
 import numpy
@@ -32,7 +32,7 @@ from cellprofiler.gui.addmoduleframe import AddModuleFrame
 import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
-import cellprofiler.utilities.get_revision as get_revision
+import cellprofiler.utilities.version as version
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
@@ -320,13 +320,13 @@ class PipelineController:
         '''Set the title of the parent frame'''
         pathname = cpprefs.get_current_pipeline_path()
         if pathname is None:
-            self.__frame.Title = "CellProfiler (r%d)"%(get_revision.version)
+            self.__frame.Title = "CellProfiler %s" % (version.title_string)
             return
         path, file = os.path.split(pathname)
         if self.__dirty_pipeline:
-            self.__frame.Title = "CellProfiler (r%d): %s* (%s)"%(get_revision.version, file, path)
+            self.__frame.Title = "CellProfiler %s: %s* (%s)" % (version.title_string, file, path)
         else:
-            self.__frame.Title = "CellProfiler (r%d): %s (%s)"%(get_revision.version, file, path)
+            self.__frame.Title = "CellProfiler %s: %s (%s)" % (version.title_string, file, path)
             
     def __on_clear_pipeline(self,event):
         if wx.MessageBox("Do you really want to remove all modules from the pipeline?",

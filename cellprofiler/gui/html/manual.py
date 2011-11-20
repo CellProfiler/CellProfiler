@@ -6,17 +6,18 @@ from shutil import copy
 from cellprofiler.modules import get_module_names, instantiate_module
 from cellprofiler.gui.help import MAIN_HELP
 from cellprofiler.utilities.relpath import relpath
-import cellprofiler.utilities.get_revision as get_revision
+import cellprofiler.utilities.version as version
     
 LOCATION_COVERPAGE = '/'.join(['images','CPCoverPage.png'])
 LOCATION_WHITEHEADLOGO = '/'.join(['images','WhiteheadInstituteLogo.png'])
 LOCATION_CSAILLOGO = '/'.join(['images','CSAIL_Logo.png'])
 LOCATION_IMAGINGPLATFORMBANNER  = '/'.join(['images','BroadPlusImagingPlusBanner.png'])    
-SVN_REVISION = str(get_revision.version)
+VERSION = version.version_string
+VERSION_NUMBER = version.version_number
 
 def generate_html(webpage_path = None):
     if webpage_path is None:
-        webpage_path = os.path.join('.', 'CellProfiler_Manual_' + SVN_REVISION)
+        webpage_path = os.path.join('.', 'CellProfiler_Manual_' + str(VERSION_NUMBER))
         
     if not (os.path.exists(webpage_path) and os.path.isdir(webpage_path)):
         os.mkdir(webpage_path)
@@ -76,7 +77,7 @@ improve and support it.</p>
 </table>
 </div>
 
-<b>This manual accompanies version %(SVN_REVISION)s of CellProfiler. The most 
+<b>This manual accompanies version %(VERSION)s of CellProfiler. The most 
 recent manual is available <a href="http://www.cellprofiler.org/CPmanual/">here</a>.</b>
 
 <h1><a name="table_of_contents">Table of contents</a></h1>"""%globals()

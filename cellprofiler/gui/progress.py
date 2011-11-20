@@ -5,7 +5,7 @@ import wx
 import sys
 import cellprofiler
 from cellprofiler.icons import get_builtin_image
-import cellprofiler.utilities.get_revision as get_revision
+import cellprofiler.utilities.version as version
 from cellprofiler.gui import get_cp_icon, get_cp_bitmap
 
 def module_label(module):
@@ -59,7 +59,7 @@ class ProgressFrame(wx.Frame):
         self.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
-        self.SetTitle("CellProfiler (r%d)"%(get_revision.version))
+        self.SetTitle("CellProfiler %s"%(version.title_string))
         self.SetSize((640, 480))
         self.panel = wx.Panel(self, wx.ID_ANY)
         sizer = wx.BoxSizer(wx.VERTICAL)

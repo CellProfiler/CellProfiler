@@ -33,7 +33,7 @@ from cellprofiler.gui.datatoolframe import DataToolFrame
 from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
 import cellprofiler.gui.html
 import cellprofiler.gui.preferencesdlg
-import cellprofiler.utilities.get_revision as get_revision
+import cellprofiler.utilities.version as version
 import traceback
 import sys
 
@@ -160,7 +160,7 @@ class CPFrame(wx.Frame):
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
-        self.SetTitle("CellProfiler (r%d)"%(get_revision.version))
+        self.SetTitle("CellProfiler %s"%(version.title_string))
         self.SetSize((1024, 600))
 
     def __add_menu(self):

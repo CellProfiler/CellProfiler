@@ -337,8 +337,9 @@ try:
     if options.data_file is not None:
         cpprefs.set_data_file(os.path.abspath(options.data_file))
         
-    from cellprofiler.utilities.get_revision import version
-    logging.root.info("Subversion revision: %d"%version)
+    from cellprofiler.utilities.version import version_string, version_number
+    logging.root.info("Version: %s / %d" % (version_string, version_number))
+
     if options.output_html:
         sys.exit(0) 
     

@@ -19,11 +19,7 @@ class CellProfilerApp(wx.App):
 
     def OnInit(self):
         # The wx.StandardPaths aren't available until this is set.
-        # SVN version checking imports cellprofiler.modules, which
-        # needs preferences that depend on StandardPaths.
         self.SetAppName('CellProfiler2.0')
-        import cellprofiler.utilities.get_revision
-        self.version = cellprofiler.utilities.get_revision.version
 
         wx.InitAllImageHandlers()
 
@@ -66,10 +62,14 @@ class CellProfilerApp(wx.App):
         if cpp.get_check_new_versions() or force:
             import cellprofiler.utilities.check_for_updates as cfu
             import platform
+            import cellprofiler.utilities.version
+
+            version_string = cellprofiler.utilities.version.version_string
+            dotted_version = cellprofiler.utilities.version.dotted_version
             cfu.check_for_updates('http://cellprofiler.org/CPupdate.html',
-                                  0 if force else max(self.version, cpp.get_skip_version()), 
+                                  0 if force else max(version_number, cpp.get_skip_version()),
                                   self.new_version_cb,
-                                  user_agent='CellProfiler/2.0.%d %s'%(self.version, platform.platform()))
+                                  user_agent='CellProfiler/%s %s' % (dotted_version, version_string))
 
     def new_version_cb(self, new_version, new_version_info):
         # called from a child thread, so use CallAfter to bump it to the gui thread

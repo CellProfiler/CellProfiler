@@ -31,6 +31,12 @@ from libtiff.libtiff_ctypes import tiff_h_name
 import external_dependencies
 external_dependencies.fetch_external_dependencies('fail')
 
+if sys.platform == "darwin":
+    import cellprofiler.utilities.version
+    f = open("cellprofiler/frozen_version.py", "w")
+    f.write("# MACHINE_GENERATED\nversion_string = '%s'" % cellprofiler.utilities.version.version_string)
+    f.close()
+
 APPNAME = 'CellProfiler2.0'
 APP = ['CellProfiler.py']
 DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler', 'icons', '*.png')))]

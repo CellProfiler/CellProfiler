@@ -98,7 +98,7 @@ class NameSubcriberComboBox(wx.Panel):
         align_twosided_items(self.combo_dlg,
                              all_menu.MenuItems,
                              left_texts=[name for name, _, _, _ in choices_sorted_by_num],
-                             right_texts=["(%s %02d)" % (annotation, num) if annotation else "" for
+                             right_texts=["(%s #%02d)" % (annotation, num) if annotation else "" for
                                           _, annotation, num, _ in choices_sorted_by_num])
 
         submenus = {}

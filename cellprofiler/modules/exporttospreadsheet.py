@@ -975,7 +975,7 @@ class EEObjectNameSubscriber(cps.ObjectNameSubscriber):
     
     """
     def get_choices(self, pipeline):
-        choices = [ IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS ]
+        choices = [(s, '', 0) for s in [IMAGE, EXPERIMENT, OBJECT_RELATIONSHIPS]]
         choices += cps.ObjectNameSubscriber.get_choices(self, pipeline)
         return choices
 

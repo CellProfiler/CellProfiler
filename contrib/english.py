@@ -26,6 +26,9 @@ SYNOPSIS
 AUTHOR
 
     Ed Halley (ed@halley.cc) 22 August 2004
+    Distributed under the Artistic License.
+    Copying in whole or in part, with author attribution, is expressly allowed.
+    http://http://halley.cc/code/?python/english.py
 
 '''
 

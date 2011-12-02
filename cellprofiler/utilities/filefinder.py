@@ -6,6 +6,7 @@ import os
 import time
 import stat
 import traceback
+import errno
 
 class TimeOutException(Exception):
     pass
@@ -229,6 +230,7 @@ class Locator(object):
                     self.hipri_count += 1
                 else:
                     self.lopri_count += 1
+                unreadable = False
 
             # do the actual work
             try:
@@ -287,6 +289,10 @@ class Locator(object):
                     f_info.error = True
                     f_info.data = e
                     f_info.num_timeouts += 1
+            except (IOError, OSError), e:
+                if e.errno in (errno.EACCES, errno.ENOENT):
+                    # XXX - should we requeue these errors with a low priority?
+                    unreadable = True
             except Exception, e:
                 with self._info_lock:
                     f_info.error = True
@@ -301,8 +307,13 @@ class Locator(object):
                 else:
                     if f_info.error or (f_info.status == FINISHED):
                         self._make_callback(key)
-                    if f_info.error or (f_info.status != FINISHED):
+                    if (f_info.error or (f_info.status != FINISHED)) and not unreadable:
                         self._requeue(PRI_IMMEDIATE if f_info.high_priority else priority, depth, key)
+                    if unreadable:
+                        # give up on these files
+                        # XXX - should signal with an UNREADABLE state?
+                        f_info.status = FINISHED
+                        self._make_callback(key)
                     f_info.in_progress = False
             self._check_for_pause()
 

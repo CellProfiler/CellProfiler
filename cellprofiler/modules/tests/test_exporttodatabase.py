@@ -93,14 +93,15 @@ class TestExportToDatabase(unittest.TestCase):
         self.__cursor = None
         self.__connection = None
         try:
-            x = socket.gethostbyaddr(BROAD_HOST)
-            self.__at_broad = True
+            self.__at_broad = ('broadinstitute' in socket.getfqdn().lower()) or \
+                (socket.gethostbyaddr(socket.gethostname())[-1][0].startswith('69.173'))
         except:
             self.__at_broad = False
     
     @property
     def connection(self):
         if not self.__at_broad:
+            print "FOO"
             self.skipTest("Skipping actual DB work, not at the Broad.")
         if self.__connection is None:
             import MySQLdb

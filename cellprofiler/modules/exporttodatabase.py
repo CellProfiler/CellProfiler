@@ -362,11 +362,11 @@ class ExportToDatabase(cpm.CPModule):
         #
         import socket
         try:
-            ip = socket.gethostbyaddr(socket.gethostname())[-1][0]
+            fqdn = socket.getfqdn()
         except:
-            ip = '127.0.0.1'
+            fqdn = '127.0.0.1'
         default_prepend = ""
-        if ip.startswith('69.173'): # Broad
+        if 'broadinstitute' in fqdn.lower():  # Broad
             default_prepend = "http://imageweb/images/CPALinks"
         self.properties_image_url_prepend = cps.Text(
             "Enter an image url prepend if you plan to access your files via http",

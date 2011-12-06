@@ -21,15 +21,6 @@ import numpy as np
 #
 np.seterr(all='ignore')
 
-# Mark's machine
-if sys.platform.startswith('win'):
-    try:
-        import cellprofiler.cpmath.propagate
-    except:
-        print "Propagate module doesn't exist yet."
-        print "CellProfiler will compile it, but may crash soon after."
-        print "Restart CellProfiler and it will probably work."
-
 if not hasattr(sys, 'frozen'):
     root = os.path.split(__file__)[0]
 else:

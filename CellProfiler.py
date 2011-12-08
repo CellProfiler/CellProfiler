@@ -377,6 +377,8 @@ try:
 
     if options.show_gui:
         import cellprofiler.gui.cpframe as cpgframe
+        from subimager.client import start_subimager, stop_subimager
+        start_subimager()
         if options.pipeline_filename:
             try:
                 App.frame.pipeline.load(os.path.expanduser(options.pipeline_filename))
@@ -389,8 +391,11 @@ try:
                     options.pipeline_filename, "Error loading pipeline",
                     style = wx.OK | wx.ICON_ERROR)
         App.MainLoop()
+        stop_subimager()
         del App  # to allow GC to clean up Measurements, etc.
     elif options.run_pipeline: # this includes distributed workers
+        from subimager.client import start_subimager, stop_subimager
+        start_subimager()
         if (options.pipeline_filename is not None) and (not options.pipeline_filename.lower().startswith('http')):
             options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
         if options.worker_mode_URL is not None:
@@ -477,6 +482,8 @@ try:
                 fd.close()
             if measurements is not None:
                 del measurements  # clean up
+        stop_subimager()
+        
 except Exception, e:
     logging.root.fatal("Uncaught exception in CellProfiler.py", exc_info=True)
     raise

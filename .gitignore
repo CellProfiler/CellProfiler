@@ -4,6 +4,7 @@
 *.pyd
 *.so
 *.dll
+*.properties
 *\#
 cellprofiler/cpmath/_cpmorphology2.c
 cellprofiler/cpmath/_filter.c

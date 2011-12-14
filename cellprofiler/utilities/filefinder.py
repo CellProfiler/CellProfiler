@@ -146,8 +146,8 @@ class Locator(object):
     def queue(self, path):
         return self._enqueue(path, PRI_STAT, 0, None)
 
-    def _enqueue(self, path, priority, depth, parent):
-        key = uuid.uuid4()
+    def _enqueue(self, path, priority, depth, parent, key=None):
+        key = key or uuid.uuid4()
         f_info = Info(key, path, None, FOUND, depth, parent=parent)
         # self._info must be updated before this path is queued
         with self._info_lock:
@@ -157,6 +157,8 @@ class Locator(object):
                     return
                 self._info[parent].children.append(key)
             self._info[key] = f_info
+            # make a callback to ensure whatever code is using the Locator sees
+            # a parent before any of its children.
             self._make_callback(key)
             # move to STAT state
             f_info.status = STAT
@@ -194,6 +196,15 @@ class Locator(object):
                 f_info.status = REMOVED
             else:
                 del self._info[key]
+
+    def put_back(self, key, path, parent):
+        with self._info_lock:
+            if parent:
+                if parent not in self._info:
+                    return
+                self._enqueue(path, PRI_STAT, self._info[parent].depth + 1, parent, key)
+            else:
+                self._enqueue(path, PRI_STAT, 0, None, key)
 
     def prioritize(self, key):
         with self._info_lock:

@@ -17,6 +17,7 @@ __version__="$Revision$"
 import numpy as np
 import itertools
 import _filter
+from _filter import paeth_decoder
 from rankorder import rank_order
 import scipy.ndimage as scind
 from scipy.ndimage import map_coordinates, label

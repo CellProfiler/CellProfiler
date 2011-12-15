@@ -18,14 +18,30 @@ import httplib
 import threading
 import subprocess
 import urllib
+import socket
 import sys
 import numpy as np
 import logging
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.message import Message
+import email.encoders
+import re
+import zlib
 
+if hasattr(sys, 'frozen'):
+    __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+else:
+    __root_path = os.path.abspath(os.path.split(__file__)[0])
+    __root_path = os.path.split(__root_path)[0]
+    
 if __name__ == "__main__":
     logging.root.setLevel(logging.INFO)
     logging.root.addHandler(logging.StreamHandler())
     logging.getLogger(__name__).setLevel(logging.DEBUG)
+    sys.path.append(__root_path)
+from cellprofiler.cpmath.filter import paeth_decoder
     
 logger = logging.getLogger(__name__)
 port = 0
@@ -35,17 +51,14 @@ subprocess_thread = None
 logger_thread = None
 subimager_running = False
 subimager_process = None
-conn = None
-if hasattr(sys, 'frozen'):
-    __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-else:
-    __root_path = os.path.abspath(os.path.split(__file__)[0])
-    __root_path = os.path.split(__root_path)[0]
 __jar_path = os.path.join(__root_path, 'subimager', 'subimager.jar')
 
+def connect():
+    return httplib.HTTPConnection("localhost", port,
+                                  source_address=("127.0.0.1", 0))
 def start_subimager():
     '''Start the subimager subprocess if it is not yet running'''
-    global init_semaphore, stop_semaphore, subprocess_thread, port, conn
+    global init_semaphore, stop_semaphore, subprocess_thread
     global __jar_path
     if subimager_running:
         return
@@ -54,8 +67,6 @@ def start_subimager():
     subprocess_thread.setDaemon(True)
     subprocess_thread.start()
     init_semaphore.acquire()
-    conn = httplib.HTTPConnection("localhost", port,
-                              source_address=("127.0.0.1", 0))
 
 def run_subimager():
     '''Thread function for controlling the subimager process'''
@@ -108,31 +119,57 @@ def get_image(url, **kwargs):
     Accepts web query parameters via keyword arguments, for example,
     get_image(path, groupfiles=True, allowfileopen=True, series=3, index=1, channel=2)
     '''
-    global conn
     query_params = [("url", url)]
     query_params += list(kwargs.items())
     query = urllib.urlencode(query_params)
     url = "/readimage?%s" % query
     
+    conn = connect()
     conn.request("GET", url)
     response = conn.getresponse(buffering=True)
     if response.status != httplib.OK:
         logger.warn(response.reason)
         logger.warn(response.read())
         raise RuntimeError("Image server failed to read image. URL="+url)
-    cookie = unicode(response.read(8), "utf-8")
-    version = np.ndarray(shape=(1,), dtype=">u4", buffer=response.read(4))[0]
-    ndim, width, height = np.ndarray(shape=(3,), dtype=">u4", buffer=response.read(12))
-    if (ndim == 3):
-        channels = np.ndarray(shape=(1,), dtype=">u4", buffer=response.read(4))[0]
-        image = np.ndarray(shape = (channels, height, width), dtype=">u2", 
-                           buffer = response.read(width * height * channels * 2))
-        image = image.transpose(1,2,0)
-    else:
-        image = np.ndarray(shape = (height, width), dtype=">u2", 
-                           buffer = response.read(width * height * 2))
-    response.close()
-    return image
+    return decode_image(response.read())
+
+def post_image(url, image, omexml, **kwargs):
+    '''Post an image to the webserver via the writeimage web interface
+    
+    url - file or http url of the file to be created
+    image - an N-D image, scaled appropriately for the OME data type
+    omexml - the OME xml metadata for the image
+    
+    Accepts post parameters via keyword arguments, for example,
+    post_image(path, compression="LZW", series=3, index=1, channel=2)
+    '''
+    
+    message = MIMEMultipart()
+    message.set_type("multipart/form-data")
+    d = dict([(key, MIMEText(value.encode("utf-8"), plain, "utf-8"))
+              for key, value in kwargs.iteritems()])
+    d["omexml"] = MIMEText(omexml.encode("utf-8"), "xml", "utf-8")
+    d["image"] = MIMEApplication(encode_image(image))
+    d["url"] = MIMEText(url)
+    for key, value in d.iteritems():
+        value.add_header("Content-Disposition", "form-data", name=key)
+        message.attach(value)
+    
+    conn = connect()
+    body = message.as_string()
+    # oooo - translate line-feeds w/o carriage returns into cr/lf
+    #        The generator uses print to write the message, how bad.
+    #        This keeps us from being able to encode in binary too.
+    #
+    body = "\r\n".join(re.split("(?<!\\r)\\n", body))
+    
+    conn.request("POST", "/writeimage", body, dict(message.items()))
+    response = conn.getresponse()
+    if response.status != httplib.OK:
+        logger.warn(response.reason)
+        logger.warn(response.read())
+        raise RuntimeError("Image server failed to write image. URL="+url)
+          
 
 def get_metadata(url, **kwargs):
     '''Get metadata for an image file
@@ -141,19 +178,121 @@ def get_metadata(url, **kwargs):
     Accepts web query parameters via keyword arguments, for example,
     get_image(path, groupfiles=True, allowfileopen=True, series=3, index=1, channel=2)
     '''
-    global conn
     query_params = [("url", url)]
     query_params += list(kwargs.items())
     query = urllib.urlencode(query_params)
     url = "/readmetadata?%s" % query
     
+    conn = connect()
     conn.request("GET", url)
     response = conn.getresponse(buffering=True)
     return unicode(response.read(), 'utf-8')
 
+def encode_image(a):
+    '''Encode the array according to the subimager protocol
+    
+    a - array in question. Color images should be interleaved (color
+        dimension is last). Values should be floating point and should be
+        scaled appropriately for the pixel type being saved.
+       
+    The compression algorithm:
+  
+    * Use a Paeth filter as described in http://www.w3.org/TR/PNG-Filters.html
+      to encode pixels in each plane as differences to pixels previously transmitted.
+      The Paeth filter has as it's inputs the following bytes:
+     
+      C[8] B[8]
+      A[8] x[8]
+     
+      where the double is decomposed into it's 8-byte IEEE representation
+      in network (high-endian) byte order
+     
+      The algorithm is
+      * compute P = A[i] + B[i] - C[i]
+      * if abs(P-A[i]) < abs(P-B[i]) and abs(P-A[i]) < abs(P-C[i]) transmit X[i] - A[i]
+      * else if abs(P-B[i]) < abs(P-C[i]) transmit X[i] - B[i] 
+      * else transmit X[i] - C[i]
+      *
+      * A, B and C are taken to be zero for the corner case.
+    
+    * Compress the stream using DEFLATE
+ 
+    The header has the following format:
+    
+    0 - 7: Cookie = "CPNDIMAGE"
+    8 - 11: version number, unsigned integer, currently = 1 
+    12 - 15: NDIM = # of dimensions, unsigned integer
+    16 - 16 + 4*NDIM: the sizes of each of the dimensions
+    '''
+    ndim = a.ndim
+    shape = a.shape
+    x = np.asanyarray(a, dtype=">f8")
+    data = a.tostring()
+    x = np.frombuffer(data, "u1").copy()
+    #
+    # Organize the data as rasters of possibly interleaved 8-byte values
+    #
+    if ndim == 3 and shape[2] in (3,4):
+        x.shape = (shape[0], shape[1], shape[2] * 8)
+    else:
+        x.shape = (np.prod(shape[:-1]), shape[-1], 8)
+    del data
+    #
+    # Compute A+B-C
+    #
+    a = np.zeros(x.shape, "i2")
+    a[1:, :, :] = x[:-1, :, :]
+    b = np.zeros(x.shape, "i2")
+    b[:, 1:, :] = x[:, :-1, :]
+    c = np.zeros(x.shape, "i2")
+    c[1:, 1:, :] = x[:-1, :-1, :]
+    p = a+b-c
+    pick_a = (np.abs(a-p) <= np.abs(b-p)) & (np.abs(a-p) <= np.abs(c-p))
+    pick_b = (~ pick_a) & (np.abs(b-p) <= np.abs(c-p))
+    x[pick_a] -= a[pick_a]
+    x[pick_b] -= b[pick_b]
+    x[~(pick_a | pick_b)] -= c[~(pick_a | pick_b)]
+    header = (
+        np.array("CPNDIMG\0", "S8").tostring() +
+        np.array([1], ">u4").tostring() +
+        np.array([ndim], ">u4").tostring() +
+        np.array(shape, ">u4").tostring())
+        
+    return header + zlib.compress(x.tostring())
+
+def decode_image(data):
+    '''Decode an image as encoded in encodeImage
+    
+    data - a string that contains the downloaded data
+    
+    returns an n-dimensional array as indicated by the encoding.
+    '''
+    cookie = np.frombuffer(data[0:8], "S8")
+    if cookie != "CPNDIMG\0":
+        raise ValueError('Image header cookie was not "CPNDIMG\\0"')
+    version = np.frombuffer(data[8:12], ">u4")[0]
+    if version != 1:
+        raise ValueError("Unsupported version: %d" % version)
+    ndim = np.frombuffer(data[12:16], ">u4")[0]
+    shape = np.frombuffer(data[16:(16 + ndim*4)],">u4")
+    x = np.frombuffer(zlib.decompress(data[(16 + ndim*4):]), "u1")
+    x = np.ascontiguousarray(x.copy())
+    if ndim == 3 and shape[2] in (3,4):
+        bytes_per_pixel = shape[2] * 8
+        x.shape = (shape[0], shape[1], bytes_per_pixel)
+        raster_count = shape[0]
+    else:
+        x.shape = (np.prod(shape[:-1]), shape[-1], 8)
+        raster_count = shape[-2]
+    paeth_decoder(x, raster_count)
+    x = np.fromstring(x.tostring(), ">f8")
+    x.shape = shape
+    return x
+
 def stop_subimager():
     '''Stop the subimager process by web command'''
-    global conn
+    
+    conn = connect()
     conn.request("GET", "/stop")
     conn.getresponse()
     stop_semaphore.release()
@@ -167,14 +306,18 @@ if __name__ == "__main__":
     sys.path.append(__root_path)
     from external_dependencies import fetch_external_dependencies
     
-    fetch_external_dependencies()
-    start_subimager()
+    if len(sys.argv) > 1:
+        port = int(sys.argv[1])
+    else:
+        fetch_external_dependencies(overwrite=True)
+        start_subimager()
     app = wx.PySimpleApp()
     frame = wx.Frame(None,size=(1024,768))
     menu = wx.Menu()
     metadata_item_id = wx.NewId()
     menu.Append(wx.ID_OPEN, "Open")
     menu.Append(metadata_item_id, "Open metadata")
+    menu.Append(wx.ID_SAVEAS, "Save as")
     menu.Append(wx.ID_EXIT, "Exit")
     menubar = wx.MenuBar()
     menubar.Append(menu, "File")
@@ -190,8 +333,12 @@ if __name__ == "__main__":
         dialog.Title = "Choose an image"
         dialog.Wildcard = "JPeg file (*.jpg)|*.jpg|PNG file (*.png)|*.png|Tiff file (*.tif)|*.tif|Flex file (*.flex)|*.flex|Any file (*.*)|*.*"
         if dialog.ShowModal() == wx.ID_OK:
-            image = get_image("file:" + urllib.pathname2url(dialog.Path))
-            image = image.astype(float) / 65535
+            url = "file:" + urllib.pathname2url(dialog.Path)
+            image = get_image(url)
+            frame.image = image
+            image = image.astype(float)
+            image /= np.max(image)
+            frame.metadata = get_metadata(url)
             figure.clf()
             axes = figure.add_subplot(1,1,1)
             if image.ndim == 2:
@@ -218,12 +365,23 @@ if __name__ == "__main__":
         dialog.Destroy()
     frame.Bind(wx.EVT_MENU, on_open_metadata, id=metadata_item_id)
         
+    def on_save_as(event, frame=frame):
+        dialog = wx.FileDialog(frame, style = wx.FD_SAVE)
+        dialog.Title = "Save image as"
+        dialog.Wildcard = "JPEG (*.jpg)|*.jpg|TIFF (*.tif)|*.tif|PNG (*.png)|*.png"
+        if dialog.ShowModal() == wx.ID_OK:
+            url = "file:" + urllib.pathname2url(dialog.Path)
+            post_image(url, frame.image, frame.metadata)
+        dialog.Destroy()
+    frame.Bind(wx.EVT_MENU, on_save_as, id=wx.ID_SAVEAS)
+        
     def on_exit(event, frame=frame):
         frame.Close()
     frame.Bind(wx.EVT_MENU, on_exit, id=wx.ID_EXIT)
     frame.Layout()
     frame.Show()
     app.MainLoop()
-    stop_subimager()
-    subprocess_thread.join()
+    if subprocess_thread != None:
+        stop_subimager()
+        subprocess_thread.join()
 

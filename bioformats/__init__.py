@@ -39,7 +39,7 @@ READABLE_FORMATS = ('al3d', 'am', 'amiramesh', 'apl', 'arf', 'avi', 'bmp',
 WRITABLE_FORMATS = ('avi', 'eps', 'epsi', 'ics', 'ids', 'jp2', 'jpeg', 'jpg', 
                     'mov', 'ome', 'ome.tiff', 'png', 'ps', 'tif', 'tiff')
 
-if hasattr(sys, 'frozen'):
+if hasattr(sys, 'frozen') and sys.platform != 'darwin':
     __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
 else:
     __root_path = os.path.abspath(os.path.split(__file__)[0])

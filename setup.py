@@ -17,6 +17,7 @@ import sys
 import os
 import os.path
 import glob
+from subprocess import check_output
 
 # fix from
 #  http://mail.python.org/pipermail/pythonmac-sig/2008-June/020111.html
@@ -30,26 +31,23 @@ from libtiff.libtiff_ctypes import tiff_h_name
 import external_dependencies
 external_dependencies.fetch_external_dependencies('fail')
 
-if sys.platform == "darwin":
-    os.system("svn info | grep Revision | sed -e 's/Revision:/\"Version/' -e 's/^/VERSION = /' -e 's/$/\"/' > version.py")
-
 APPNAME = 'CellProfiler2.0'
 APP = ['CellProfiler.py']
-DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler', 'icons', '*.png'))),
-              ('bioformats', ['bioformats/loci_tools.jar']),
-              ('imagej', ['imagej/TCPClient.class', 'imagej/InterProcessIJBridge.class',
-                          'imagej/InterProcessIJBridge$1.class', 'imagej/ij.jar']),
-              ]
+DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler', 'icons', '*.png')))]
 OPTIONS = {'argv_emulation': True,
            'packages': ['cellprofiler', 'contrib', 'bioformats', 'imagej'],
            'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib',
                         'sqlite3', 'libtiff', 'wx.lib.intctrl', 'libtiff.'+tiff_h_name,
                         'xml.dom.minidom', 'h5py', 'h5py.defs', 'h5py.utils', 'h5py._proxy'],
            'excludes': ['pylab', 'nose', 'Tkinter', 'Cython', 'scipy.weave'],
-           'resources': ['CellProfilerIcon.png', 'cellprofiler/icons'],
+           'resources': ['CellProfilerIcon.png'],
            'iconfile' : 'CellProfilerIcon.icns',
            'frameworks' : ['libtiff.dylib'],
            }
+
+if sys.argv[-1] == 'py2app':
+    assert not os.path.exists("build"), "Remove the build and dist directories before building app!"
+    assert not os.path.exists("dist"), "Remove the build and dist directories before building app!"
 
 setup(
     app=APP,
@@ -58,3 +56,11 @@ setup(
     setup_requires=['py2app'],
     name="CellProfiler2.0"
 )
+
+if sys.argv[-1] == 'py2app':
+    # there should be some way to do this within setup's framework, but I don't
+    # want to figure it out right now, and our setup is going to be changing
+    # significantly soon, anyway.
+    check_output('find dist/CellProfiler2.0.app -name tests -type d | xargs rm -rf', shell=True)
+    check_output('lipo dist/CellProfiler2.0.app/Contents/MacOS/CellProfiler2.0 -thin i386 -output dist/CellProfiler2.0.app/Contents/MacOS/CellProfiler2.0', shell=True)
+    check_output('rm dist/CellProfiler2.0.app/Contents/Resources/lib/python2.7/cellprofiler/icons/*.png', shell=True)

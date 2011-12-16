@@ -329,7 +329,6 @@ def fill_modules():
                 pure_datatools[name] = all_modules[name]
                 del all_modules[name]
         except Exception, e:
-            global logger
             logger.warning("Failed to load %s", name, exc_info=True)
             badmodules.append((mod, e))
             if name in all_modules:

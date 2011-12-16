@@ -121,7 +121,7 @@ parser.add_option("--jvm-heap-size",
                         "Example formats: 512000k, 512m, 1g"))
 
 if not hasattr(sys, 'frozen'):
-    parser.add_option("-b", "--do-not_build",
+    parser.add_option("-b", "--do-not-build", "--do-not_build",
                       dest="build_extensions",
                       default=True,
                       action="store_false",

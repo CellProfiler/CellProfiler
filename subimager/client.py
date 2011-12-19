@@ -175,7 +175,7 @@ def post_image(url, image, omexml, **kwargs):
     
     message = MIMEMultipart()
     message.set_type("multipart/form-data")
-    d = dict([(key, MIMEText(value.encode("utf-8"), plain, "utf-8"))
+    d = dict([(key, MIMEText(value.encode("utf-8"), "plain", "utf-8"))
               for key, value in kwargs.iteritems()])
     d["omexml"] = MIMEText(omexml.encode("utf-8"), "xml", "utf-8")
     d["image"] = MIMEApplication(encode_image(image))
@@ -256,7 +256,7 @@ def encode_image(a):
     ndim = a.ndim
     shape = a.shape
     x = np.asanyarray(a, dtype=">f8")
-    data = a.tostring()
+    data = x.tostring()
     x = np.frombuffer(data, "u1").copy()
     #
     # Organize the data as rasters of possibly interleaved 8-byte values

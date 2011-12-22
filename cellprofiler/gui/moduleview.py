@@ -1824,8 +1824,9 @@ class ModuleSizer(wx.PySizer):
         height = 0
         for i in range(self.__cols):
             item = self.get_item(i, j)
-            control = item.GetWindow() if item.IsWindow() else None
-            if (isinstance(control, wx.StaticLine)):
+            if item is None:
+                continue
+            if item.IsWindow() and isinstance(item.GetWindow(), wx.StaticLine):
                 height = max(height, item.CalcMin()[1] * 1.25)
             else:
                 height = max(height, item.CalcMin()[1])

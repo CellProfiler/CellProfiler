@@ -617,6 +617,9 @@ class PipelineListView(object):
         else:
             return
 
+        if self.__pipeline is None:
+            event.RequestMore(False)
+            return
         request_more = True
         modules = self.__pipeline.modules()
         for idx, module in enumerate(modules):

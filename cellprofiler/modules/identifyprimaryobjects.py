@@ -742,7 +742,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         labeled_image, small_removed_labels = \
             self.filter_on_size(labeled_image,object_count)
         size_excluded_labeled_image[labeled_image > 0] = 0
-        
+
+        #
+        # Fill holes again after watershed
+        #
+        if self.fill_holes:
+            labeled_image = fill_labeled_holes(labeled_image)
+            
         # Relabel the image
         labeled_image,object_count = relabel(labeled_image)
         new_labeled_image, new_object_count = self.limit_object_count(
@@ -758,9 +764,6 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             object_count = new_object_count
             labeled_image = new_labeled_image
         
-        if self.fill_holes:
-            labeled_image = fill_labeled_holes(labeled_image)
-            
         # Make an outline image
         outline_image = cellprofiler.cpmath.outline.outline(labeled_image)
         outline_size_excluded_image = cellprofiler.cpmath.outline.outline(size_excluded_labeled_image)

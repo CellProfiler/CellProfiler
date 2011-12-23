@@ -1440,6 +1440,10 @@ class MeasurementMultiChoice(MultiChoice):
     
     def test_valid(self, pipeline):
         '''Get the choices here and call the superclass validator'''
+        self.populate_choices(pipeline)
+        super(MeasurementMultiChoice, self).test_valid(pipeline)
+        
+    def populate_choices(self, pipeline):
         #
         # Find our module
         #
@@ -1450,7 +1454,7 @@ class MeasurementMultiChoice(MultiChoice):
         columns = pipeline.get_measurement_columns(module)
         self.set_choices([self.make_measurement_choice(c[0], c[1])
                           for c in columns])
-        super(MeasurementMultiChoice, self).test_valid(pipeline)
+        
         
 class SubdirectoryFilter(MultiChoice):
     '''A setting that indicates which subdirectories should be excluded from an operation

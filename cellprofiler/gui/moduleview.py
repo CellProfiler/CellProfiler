@@ -589,6 +589,8 @@ class ModuleView:
             def on_press(event):
                 d = {}
                 assert isinstance(v, cps.MeasurementMultiChoice)
+                if len(v.choices) == 0:
+                    v.populate_choices(self.__pipeline)
                 #
                 # Populate the tree
                 #

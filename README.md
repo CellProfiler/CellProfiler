@@ -12,3 +12,5 @@ new issues with attachments.
 
 Please attach sufficient information to reproduce the bug. For many bugs,
 it is appropriate to attach a CellProfiler pipeline and an image.
+
+Yeah!

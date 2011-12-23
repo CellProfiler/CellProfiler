@@ -1,6 +1,7 @@
 ## Mailing list
 
 CellProfiler development is discussed on the cellprofiler-dev mailing list.
+This is a fairly low-volume mailing list.
 
 ## How to file new issues
 

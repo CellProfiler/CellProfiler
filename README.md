@@ -15,3 +15,5 @@ it is appropriate to attach a CellProfiler pipeline and an image.
 
 ## The new user interface
 
+It's awesome!
+

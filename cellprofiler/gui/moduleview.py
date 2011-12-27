@@ -1731,6 +1731,8 @@ class ModuleView:
             focus_name = focus_control.GetName()
         else:
             focus_name = None
+        if self.__module is None:
+            return
         self.set_selection(self.__module.module_num)
         if focus_name:
             focus_control = self.module_panel.FindWindowByName(focus_name)

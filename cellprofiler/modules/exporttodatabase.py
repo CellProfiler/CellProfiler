@@ -1582,22 +1582,35 @@ class ExportToDatabase(cpm.CPModule):
         statements = []
         if self.db_type in (DB_MYSQL_CSV, DB_MYSQL):
             autoincrement = "AUTO_INCREMENT"
+            need_text_size = True
         else:
             autoincrement = "AUTOINCREMENT"
+            need_text_size = False
         create_experiment_table_statement = """
         CREATE TABLE IF NOT EXISTS %s (
             experiment_id integer primary key %s,
-            name varchar(255))
+            name text)
             """ % (T_EXPERIMENT, autoincrement)
         statements.append(create_experiment_table_statement)
-        create_experiment_properties = """
-        CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
-            experiment_id integer not null,
-            object_name varchar(255) not null,
-            field varchar(255) not null,
-            value longtext,
-            constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name, field))
-            """ % globals()
+        if need_text_size:
+            create_experiment_properties = """
+            CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
+                experiment_id integer not null,
+                object_name text not null,
+                field text not null,
+                value longtext,
+                constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name(255), field(255)))
+                """ % globals()
+        else:
+            create_experiment_properties = """
+            CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
+                experiment_id integer not null,
+                object_name text not null,
+                field text not null,
+                value longtext,
+                constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name, field))
+                """ % globals()
+            
         statements.append(create_experiment_properties)
         insert_into_experiment_statement = """
         INSERT INTO %s (name) values ('%s')
@@ -1627,6 +1640,8 @@ class ExportToDatabase(cpm.CPModule):
         for column in columns:
             obname, feature, ftype = column[:3]
             if obname == cpmeas.IMAGE and not self.ignore_feature(obname, feature):
+                if ftype.startswith(cpmeas.COLTYPE_VARCHAR):
+                    ftype = "TEXT"
                 feature_name = '%s_%s' % (obname, feature)
                 statement += ',\n%s %s'%(mappings[feature_name], ftype)
         for column in self.get_aggregate_columns(pipeline, image_set_list):

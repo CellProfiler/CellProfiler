@@ -93,8 +93,14 @@ class TestExportToDatabase(unittest.TestCase):
         self.__cursor = None
         self.__connection = None
         try:
-            self.__at_broad = ('broadinstitute' in socket.getfqdn().lower()) or \
-                (socket.gethostbyaddr(socket.gethostname())[-1][0].startswith('69.173'))
+            fqdn = socket.getfqdn().lower()
+            if ('broadinstitute' in fqdn) or (fqdn.endswith("broad.mit.edu")):
+                self.__at_broad = True
+            elif (socket.gethostbyaddr(
+                socket.gethostname())[-1][0].startswith('69.173')):
+                self.__at_broad = True
+            else:
+                self.__at_broad = False
         except:
             self.__at_broad = False
     

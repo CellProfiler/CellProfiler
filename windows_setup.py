@@ -272,20 +272,22 @@ data_files += [("jre\\ext", [os.path.join(jdk_dir, "lib", "tools.jar")])]
 #
 # Call setup
 #
-setup(console=[{'script':'CellProfiler.py',
-                'icon_resources':[(1,'CellProfilerIcon.ico')]}],
-      name='Cell Profiler',
-      data_files = data_files,
-      cmdclass={'msi':CellProfilerMSI
-                },
-      options=opts)
 try:
-    import cellprofiler.utilities.jutil as jutil
-    jutil.kill_vm()
-    sys.stderr.flush()
-    sys.stdout.flush()
-    os._exit(0)
-except:
-    import traceback
-    traceback.print_exc()
-    print "Caught exception while killing VM"
+    setup(console=[{'script':'CellProfiler.py',
+                    'icon_resources':[(1,'CellProfilerIcon.ico')]}],
+          name='Cell Profiler',
+          data_files = data_files,
+          cmdclass={'msi':CellProfilerMSI
+                    },
+          options=opts)
+finally:
+    try:
+        import cellprofiler.utilities.jutil as jutil
+        jutil.kill_vm()
+        sys.stderr.flush()
+        sys.stdout.flush()
+        os._exit(0)
+    except:
+        import traceback
+        traceback.print_exc()
+        print "Caught exception while killing VM"

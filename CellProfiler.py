@@ -16,6 +16,7 @@ import logging
 import sys
 import os
 import numpy as np
+import tempfile
 #
 # CellProfiler expects NaN as a result during calculation
 #
@@ -392,11 +393,11 @@ try:
             import cellprofiler.measurements as cpmeas
             continue_looping = False # distributed workers reset this, below
             pipeline = Pipeline()
-            measurements = None
+            initial_measurements = None
             try:
                 import h5py
                 if h5py.is_hdf5(options.pipeline_filename):
-                    measurements = cpmeas.load_measurements(options.pipeline_filename)
+                    initial_measurements = cpmeas.load_measurements(options.pipeline_filename)
             except:
                 logging.root.info("Failed to load measurements from pipeline")
             if options.worker_mode_URL is None:
@@ -422,8 +423,14 @@ try:
                     time.sleep(20 + random.randint(1, 10)) # avoid hammering server
                     continue # loop until timeout
 
+                batch_fd, batch_path = None, None
                 try:
-                    pipeline.load(jobinfo.pipeline_stringio())
+                    batch_fd, batch_path = tempfile.mkstemp(".h5")
+                    batch_file = os.fdopen(batch_fd, "wb")
+                    batch_file.write(jobinfo.get_blob())
+                    batch_file.flush()
+                    pipeline.load(batch_path)
+                    initial_measurements = cpmeas.load_measurements(batch_path)
                     image_set_start = jobinfo.image_set_start
                     image_set_end = jobinfo.image_set_end
                 except:
@@ -431,6 +438,14 @@ try:
                     logging.root.info("Retrying...")
                     time.sleep(20 + random.randint(1, 10)) # avoid hammering server
                     continue
+                finally:
+                    if batch_fd is not None:
+                        os.close(batch_fd)
+                    if batch_path is not None:
+                        try:
+                            os.unlink(batch_path)
+                        except:
+                            logging.root.warn("Failed to delete temporary file %s" % batch_path)
             if options.groups is not None:
                 kvs = [x.split('=') for x in options.groups.split(',')]
                 groups = dict(kvs)
@@ -442,7 +457,7 @@ try:
                 image_set_end=image_set_end,
                 grouping=groups,
                 measurements_filename = None if not use_hdf5 else args[0],
-                initial_measurements = measurements)
+                initial_measurements = initial_measurements)
             if options.worker_mode_URL is not None:
                 try:
                     assert measurements is not None

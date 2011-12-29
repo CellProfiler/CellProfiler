@@ -86,13 +86,16 @@ class Distributor(object):
         module.distributed_mode.set_value(True)
 
         # save and compress the pipeline
-        pipeline_txt = StringIO.StringIO()
-        module.save_pipeline(workspace, outf=pipeline_txt)
-        pipeline_blob = zlib.compress(pipeline_txt.getvalue())
         pipeline_fd, pipeline_path = tempfile.mkstemp()
-        self.pipeline_path = pipeline_path
-        os.write(pipeline_fd, pipeline_blob)
         os.close(pipeline_fd)
+        module.save_pipeline(workspace, outf=pipeline_path)
+        pipeline_fd = open(pipeline_path, "rb")
+        pipeline_blob = zlib.compress(pipeline_fd.read())
+        pipeline_fd.close()
+        pipeline_fd = open(pipeline_path, "wb")
+        pipeline_fd.write(pipeline_blob)
+        pipeline_fd.close()
+        self.pipeline_path = pipeline_path
 
         # we use the hash to make sure old results don't pollute new
         # ones, and that workers are fetching what they expect.
@@ -233,8 +236,8 @@ class JobInfo(object):
     def work_done(self):
         return False
 
-    def pipeline_stringio(self):
-        return StringIO.StringIO(zlib.decompress(self.pipeline_blob))
+    def get_blob(self):
+        return zlib.decompress(self.pipeline_blob)
 
     def report_measurements(self, pipeline, measurements):
         out_measurements = StringIO.StringIO()

@@ -8,8 +8,8 @@ to the rest of the image, by applying image processing filters to the image. It 
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
 # 
-# Developed by the Broad Institute
-# Copyright 2003-2011
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2012 Broad Institute
 # 
 # Please see the AUTHORS file for credits.
 # 

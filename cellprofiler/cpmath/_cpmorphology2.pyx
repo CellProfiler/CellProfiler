@@ -5,7 +5,7 @@ but this file is licensed under the more permissive BSD license.
 See the accompanying file LICENSE for details.
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2011 Broad Institute
+Copyright (c) 2009-2012 Broad Institute
 All rights reserved.
 
 Please see the AUTHORS file for credits.
@@ -596,4 +596,4 @@ def fill_labeled_holes_loop(
                     p_adjacent_non_hole[jj] = p_adjacent_non_hole[ii]
                     p_to_do[to_do_count] = jj
                     to_do_count += 1
-    
+

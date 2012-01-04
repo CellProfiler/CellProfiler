@@ -359,7 +359,92 @@ def post_module_runner_done_event(window):
 
     wx.PostEvent(window, ModuleRunnerDoneEvent())
 
+class ImagePlaneDetails(object):
+    '''This class represents the location and metadata for a 2-d image plane
+    
+    You need four pieces of information to reference an image plane:
+    
+    * The URL
+    
+    * The series number
+    
+    * The index
+    
+    * The channel # (to reference a monochrome plane in an interleaved image)
+    
+    In addition, image planes have associated metadata which is represented
+    as a dictionary of keys and values.
+    '''
+    def __init__(self, url, series, index, channel):
+        self.url = url
+        self.series = series
+        self.index = index
+        self.channel = channel
+        self.metadata = {}
+        
+def read_image_plane_details(file_or_fd):
+    """Read image plane details from a file or file object
+    
+    file_or_fd - either a path string or a file-like object
+    
+    Returns a collection of ImagePlaneDetails
 
+    The unicode text for each field is utf-8 encoded, then string_escape encoded.
+    All fields are delimited by quotes and separated by commas. A "None" value is
+    represented by two consecutive commas.
+    
+    There are two header lines. The first header line has key/value pairs.
+    Required key/value pairs are "Version" and "PlaneCount". "Version" is
+    the format version. "PlaneCount" is the number of image planes to be
+    read or saved.
+    
+    The second header line defines the column names for the rows. The first
+    four column names are "URL", "Series", "Index", "Channel". They are only
+    there for documentation - you can call your metadata "Channel" too.
+    
+    A minimal example:
+    
+    "Version":"2","PlaneCount":"1"
+    "URL","Series","Index","Channel","Plate","Well"
+    "file:///imaging/analysis/singleplane.tif","0","0",0,"P-12345","A01"
+    """
+    
+    if isinstance(file_or_fd, basestring):
+        needs_close = True
+        fd = open(file_or_fd, "r")
+    else:
+        needs_close = False
+        fd = file_or_fd
+    def read_fields(line):
+        backslash_escape = False
+        separator = False
+        kv = False
+        result = []
+        field = ""
+        for c in line:
+            if backslash_escape:
+                field += c
+                backslash_escape = False
+            elif separator:
+                field = field.decode("string_escape").decode("utf-8")
+                if c == ":":
+                    key = field
+                    kv = True
+                elif c == ",":
+                    if kv:
+                        result.append((key, field))
+                    else:
+                        result.append(field)
+                    kv = False
+                field = ""
+            elif c == "\\":
+                field += c
+                backslash_escape = True
+            elif c == "\"":
+                separator = True
+            else:
+                field += c
+                
 class Pipeline(object):
     """A pipeline represents the modules that a user has put together
     to analyze their images.

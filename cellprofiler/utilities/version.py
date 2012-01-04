@@ -35,19 +35,21 @@ def get_version():
 
         # GIT
         try:
-            timestamp, hash = subprocess.check_output(['git', 'log', '--format=%ct %h', '-n', '1'],
-                                                      stderr=subprocess.STDOUT,
-                                                      cwd=cellprofiler_basedir).strip().split(' ')
+            timestamp, hash = subprocess.Popen(['git', 'log', '--format=%ct %h', '-n', '1'],
+                                               stdout=subprocess.PIPE,
+                                               stderr=subprocess.STDOUT,
+                                               cwd=cellprofiler_basedir).communicate()[0].strip().split(' ')
             return '%s %s' % (datetime.datetime.utcfromtimestamp(float(timestamp)).isoformat('T'), hash)
-        except (OSError, subprocess.CalledProcessError), e:
+        except (OSError, subprocess.CalledProcessError, ValueError), e:
             pass
 
         # SVN
         try:
             # use svn info because it doesn't require the network.
-            output = subprocess.check_output(['svn', 'info', '--xml'],
-                                             stderr=subprocess.STDOUT,
-                                             cwd=cellprofiler_basedir)
+            output = subprocess.Popen(['svn', 'info', '--xml'],
+                                      stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT,
+                                      cwd=cellprofiler_basedir).communicate()[0]
             date = re.search('<date>([^.]*)(\\.[0-9]*Z)</date>', output).group(1)
             version = re.search('revision="(.*)">', output).group(1)
             return '%s SVN:%s' % (datetime_from_isoformat(date).isoformat('T'), version)

@@ -134,6 +134,7 @@ NATIVE_VERSION = 2
 
 H_VERSION = 'Version'
 H_SVN_REVISION = 'SVNRevision'
+H_DATE_REVISION = 'DateRevision'
 '''A pipeline file header variable for faking a matlab pipeline file'''
 H_FROM_MATLAB = 'FromMatlab'
 
@@ -681,7 +682,7 @@ class Pipeline(object):
                          object.
         See savetxt for more comprehensive documentation.
         '''
-        from cellprofiler.utilities.get_revision import get_revision
+        from cellprofiler.utilities.version import version_number as cp_version_number
         self.__modules = []
         if hasattr(fd_or_filename,'seek') and hasattr(fd_or_filename,'read'):
             fd = fd_or_filename
@@ -718,53 +719,53 @@ class Pipeline(object):
                                      (version, NATIVE_VERSION))
                 elif version > 1:
                     do_utf16_decode = True
-            elif kwd == H_SVN_REVISION:
-                revision = int(value)
-                CURRENT_SVN_REVISION = get_revision()
-                if revision > CURRENT_SVN_REVISION:
+            elif kwd in (H_SVN_REVISION, H_DATE_REVISION):
+                pipeline_version = int(value)
+                CURRENT_VERSION = cp_version_number
+                if pipeline_version > CURRENT_VERSION:
                     if cpprefs.get_headless():
                         logging.warning(
-                            ('Your pipeline SVN revision is %d but you are '
-                             'running CellProfiler SVN revsion %d. '
-                            '\nLoading this pipeline may fail or have '
-                            'unpredictable results.\n') 
-                            % (revision, CURRENT_SVN_REVISION))
+                            ('Your pipeline version is %d but you are '
+                             'running CellProfiler version %d. '
+                            'Loading this pipeline may fail or have '
+                            'unpredictable results.')
+                            % (pipeline_version, CURRENT_VERSION))
                     else:
                         try:
                             import wx
                             if wx.GetApp():
                                 dlg = wx.MessageDialog(
-                                    parent = None, 
-                                    message = 'Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results. Continue?' %(revision, CURRENT_SVN_REVISION),
-                                    caption = 'Pipeline revsion mismatch', 
-                                    style = wx.OK|wx.CANCEL|wx.ICON_QUESTION)
+                                    parent = None,
+                                    message = 'Your pipeline version is %d but you are running CellProfiler version %d. \nLoading this pipeline may fail or have unpredictable results. Continue?' % (pipeline_version, CURRENT_VERSION),
+                                    caption = 'Pipeline version mismatch',
+                                    style = wx.OK | wx.CANCEL | wx.ICON_QUESTION)
                                 if dlg.ShowModal() != wx.ID_OK:
                                     dlg.Destroy()
                                     return None
                                 dlg.Destroy()
                             else:
-                                raise Exception # fall through to sys.stderr.write
+                                raise Exception  # fall through to sys.stderr.write
                         except:
-                            logger.error('Your pipeline SVN revision is %d but you are running CellProfiler SVN revsion %d. \nLoading this pipeline may fail or have unpredictable results.\n' %(revision, CURRENT_SVN_REVISION))
+                            logger.error('Your pipeline version is %d but you are running CellProfiler version %d. \nLoading this pipeline may fail or have unpredictable results.\n' %(pipeline_version, CURRENT_VERSION))
                 else:
                     if ((not cpprefs.get_headless()) and
-                        revision < CURRENT_SVN_REVISION):
+                        pipeline_version < CURRENT_VERSION):
                         from cellprofiler.gui.errordialog import show_warning
                         show_warning(
         "Pipeline saved with old version of CellProfiler",
         "Your pipeline was saved using an old version\n"
-        "of CellProfiler (version # %d). The current version\n"
+        "of CellProfiler (version %d). The current version\n"
         "of CellProfiler can load and run this pipeline, but\n"
         "if you make changes to it and save, the older version\n"
         "of CellProfiler (perhaps the version your collaborator\n"
         "has?) may not be able to load it.\n\n"
         "You can ignore this warning if you do not plan to save\n"
         "this pipeline or if you will only use it with this or\n"
-        "later versions of CellProfiler." % revision,
+        "later versions of CellProfiler." % pipeline_version,
         cpprefs.get_warn_about_old_pipeline,
         cpprefs.set_warn_about_old_pipeline)
-                        
-                    pipeline_stats_logger.info("Pipeline saved with CellProfiler SVN revision %s" , value)
+
+                    pipeline_stats_logger.info("Pipeline saved with CellProfiler version %d", pipeline_version)
             elif kwd == H_FROM_MATLAB:
                 from_matlab = bool(value)
             else:
@@ -903,8 +904,8 @@ class Pipeline(object):
         Line 1: The cookie, identifying this as a CellProfiler pipeline file.
         The header, i
         Line 2: "Version:#" the file format version #
-        Line 3: "SVNRevision:#" the SVN revision # of the CellProfiler
-                that wrote this file
+        Line 3: "DateRevision:#" the version # of the CellProfiler
+                that wrote this file (date encoded as int, see cp.utitlities.version)
         Line 4: blank
         
         The module list follows. Each module has a header composed of
@@ -916,7 +917,7 @@ class Pipeline(object):
         The settings follow. Each setting has text and a value. For instance,
         Enter object name:Nuclei
         '''
-        from cellprofiler.utilities.get_revision import get_revision
+        from cellprofiler.utilities.version import version_number
         if hasattr(fd_or_filename,"write"):
             fd = fd_or_filename
             needs_close = False
@@ -924,8 +925,8 @@ class Pipeline(object):
             fd = open(fd_or_filename,"wt")
             needs_close = True
         fd.write("%s\n"%COOKIE)
-        fd.write("%s:%d\n" % (H_VERSION,NATIVE_VERSION))
-        fd.write("%s:%d\n" % (H_SVN_REVISION,get_revision()))
+        fd.write("%s:%d\n" % (H_VERSION, NATIVE_VERSION))
+        fd.write("%s:%d\n" % (H_DATE_REVISION, version_number))
         attributes = ('module_num','svn_version','variable_revision_number',
                       'show_window','notes','batch_state')
         notes_idx = 4

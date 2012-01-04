@@ -102,7 +102,7 @@ class CreateBatchFiles(cpm.CPModule):
         self.distributed_mode = cps.Binary("Hidden: in distributed mode", False)
         self.default_image_directory = cps.Setting("Hidden: default input folder at time of save",
                                                    cpprefs.get_default_image_directory())
-        self.revision = cps.Integer("Hidden: SVN revision number", 0)
+        self.revision = cps.Integer("Hidden: revision number", 0)
         self.mappings = []
         self.add_mapping()
         self.add_mapping_button = cps.DoSomething("", "Add another path mapping",
@@ -236,7 +236,7 @@ class CreateBatchFiles(cpm.CPModule):
 
         if outf is not None, it is used as a file object destination.
         '''
-        from cellprofiler.utilities.get_revision import version
+        from cellprofiler.utilities.version import version_number
 
         if outf is None:
             if self.wants_default_output_directory.value:
@@ -261,7 +261,7 @@ class CreateBatchFiles(cpm.CPModule):
                                          workspace.frame)
         pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
         bizarro_self = pipeline.module(self.module_num)
-        bizarro_self.revision.value = version
+        bizarro_self.revision.value = version_number
         if self.wants_default_output_directory:
             bizarro_self.custom_output_directory.value = \
                         self.alter_path(cpprefs.get_default_output_directory())
@@ -385,10 +385,10 @@ class CreateBatchFiles(cpm.CPModule):
                               setting_values[5:])
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
-            from cellprofiler.utilities.get_revision import version
+            from cellprofiler.utilities.version import version_number
             
             setting_values = (setting_values[:6] + 
-                              [version] +
+                              [version_number] +
                               setting_values[6:])
             variable_revision_number = 3
         if (not from_matlab) and variable_revision_number == 3:

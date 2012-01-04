@@ -2518,7 +2518,7 @@ check_tables = yes
         return result
         
     def write_workspace_file(self, workspace):
-        from cellprofiler.utilities.get_revision import get_revision
+        from cellprofiler.utilities.version import version_number
         '''If requested, write a workspace file with selected measurements'''
         if self.db_type==DB_SQLITE:
             name = os.path.splitext(self.sqlite_file.value)[0]
@@ -2535,7 +2535,7 @@ check_tables = yes
         fd = open(file_name,"wb")
         header_text = """CellProfiler Analyst workflow
 version: 1
-svn revision: %d\n"""%get_revision()
+CP version : %d\n""" % version_number
         fd.write(header_text)
         display_tool_text = ""
         for workspace_group in self.workspace_measurement_groups:

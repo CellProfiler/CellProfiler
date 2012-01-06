@@ -4,6 +4,7 @@
 *.pyd
 *.so
 *.dll
+*.properties
 *\#
 build
 dist

@@ -847,3 +847,76 @@ def masked_convolution(np.ndarray[dtype=np.float64_t, ndim=2, negative_indices=F
                                         pimage[(i+ik)*istride+j+jk])
             poutput[i*istride+j] = accumulator
     return output
+
+@cython.boundscheck(False)
+@cython.cdivision(True)
+def paeth_decoder(
+    np.ndarray[dtype=np.uint8_t, ndim=3, negative_indices=False, mode='c'] x,
+    np.int32_t raster_count):
+    '''Paeth decoder - reverse Paeth filter
+    
+    x: matrix of bytes. The first dimension indexes rasters. The second
+       dimension indexes pixel positions (stride = 24 for interleaved color,
+       = 8 for monochrome). The third dimension indexes the bytes within
+       the pixel. If your image consists of multiple planes, you should
+       combine the planar dimensions on input by changing the image shape.
+       
+    raster_count: # of rasters in a plane
+    
+    Given a 2-dimensional array of unsigned bytes, the Paeth filter
+    looks at 4 elements
+    
+    C B
+    A x
+    
+    p = A+B-C
+    estimate = A if abs(p-A) <= abs(p-B) and similarly for C
+             = B if abs(p-B) <= abs(p-C)
+             = C otherwise
+    x += estimate if reverse
+    
+    Citation: http://www.w3.org/TR/PNG-Filters.html
+    '''
+    cdef:
+        np.int32_t raster_stride = x.strides[0]
+        np.int32_t pixel_stride = x.strides[1]
+        unsigned char *ptr = <unsigned char *>x.data
+        np.int32_t a,b,c,p,pa,pb,pc,estimate
+        np.int32_t i,j,k
+        np.int32_t imax = x.shape[0]
+        np.int32_t jmax = x.shape[1]
+        np.int32_t kmax = x.shape[2]
+        np.int32_t raster_number
+        np.int32_t plane_number
+        
+    print "Pixel stride = %d, raster stride = %d" % (pixel_stride, raster_stride)
+    with nogil:
+        for i from 0<=i<imax:
+            raster_number = i % raster_count
+            for j from 0<=j<jmax:
+                for k from 0<=k<kmax:
+                    if raster_number == 0:
+                        b = c = 0
+                        if j==0:
+                            a = 0
+                        else:
+                            a = ptr[-pixel_stride]
+                    else:
+                        b = ptr[-raster_stride]
+                        if j==0:
+                           a = c = 0
+                        else:
+                           a = ptr[-pixel_stride]
+                           c = ptr[-raster_stride-pixel_stride]
+                    p = a + b - c
+                    pa = (a-p) if (a>p) else (p-a)
+                    pb = (b-p) if (b>p) else (p-b)
+                    pc = (c-p) if (c>p) else (p-c)
+                    if (pa <= pb) and (pa <= pc):
+                        estimate = a
+                    elif (pb <= pc):
+                        estimate = b
+                    else:
+                        estimate = c
+                    ptr[0] += estimate
+                    ptr += 1

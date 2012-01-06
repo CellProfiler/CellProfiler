@@ -60,37 +60,12 @@ import urllib
 import urlparse
 
 logger = logging.getLogger(__name__)
-try:
-    import bioformats.formatreader as formatreader
-    import bioformats.metadatatools as metadatatools
-    import cellprofiler.utilities.jutil as jutil
-    from bioformats import load_using_bioformats
-    FormatTools = formatreader.make_format_tools_class()
-    ImageReader = formatreader.make_image_reader_class()
-    ChannelSeparator = formatreader.make_reader_wrapper_class(
-        "loci/formats/ChannelSeparator")
-    has_bioformats = True
-except:
-    logger.warning("Failed to load bioformats", exc_info=True)
-    has_bioformats = False
-import Image as PILImage
 cached_file_lists = {}
-#
-# Load all the PIL image plugins to initialize PIL in the
-# compiled version of CP
-#
-import PIL.BmpImagePlugin
-import PIL.DcxImagePlugin
-import PIL.EpsImagePlugin
-import PIL.GifImagePlugin
-import PIL.JpegImagePlugin
-import PIL.PngImagePlugin
-import PIL.TiffImagePlugin as TIFF
-import cellprofiler.dib
-import matplotlib.image
+
 import scipy.io.matlab.mio
 import uuid
 
+import subimager.client
 import cellprofiler.objects as cpo
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
@@ -109,8 +84,6 @@ from cellprofiler.preferences import \
      get_headless
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, METADATA_HELP_REF
 from cellprofiler.gui.errordialog import show_warning
-
-PILImage.init()
 
 '''STK TIFF Tag UIC1 - for MetaMorph internal use'''
 UIC1_TAG = 33628
@@ -183,17 +156,12 @@ SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
 SUPPORTED_MOVIE_EXTENSIONS = set(['.avi', '.mpeg', '.stk','.flex', '.mov', '.tif', 
                                   '.tiff','.zvi'])
 
-if has_bioformats:
-    FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
-    SUPPORTED_IMAGE_EXTENSIONS.update([
-        ".1sc",".2fl",".afm", ".aim", ".avi", ".co1",".flex", ".fli", ".gel", 
-        ".ics", ".ids", ".im", ".img", ".j2k", ".lif", ".lsm", ".mpeg", ".pic", 
-        ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi"])
-    SUPPORTED_MOVIE_EXTENSIONS.update(['mng'] )
-else:
-    FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
-
-USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01",'.zvi','.mov','.png']
+FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
+SUPPORTED_IMAGE_EXTENSIONS.update([
+    ".1sc",".2fl",".afm", ".aim", ".avi", ".co1",".flex", ".fli", ".gel", 
+    ".ics", ".ids", ".im", ".img", ".j2k", ".lif", ".lsm", ".mpeg", ".pic", 
+    ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi"])
+SUPPORTED_MOVIE_EXTENSIONS.update(['mng'] )
 
 # The metadata choices:
 # M_NONE - don't extract metadata
@@ -2946,36 +2914,13 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
                                                   struct_as_record=True)
             img = imgdata["Image"]
             self.scale = 255.0
-        elif (os.path.splitext(filename.lower())[-1] 
-              in USE_BIOFORMATS_FIRST and
-              has_bioformats):
-            try:
-                img, self.scale = load_using_bioformats(
-                    self.get_full_name(), 
-                    rescale = self.rescale,
-                    wants_max_intensity = True,
-                    channel_names = channel_names)
-            except:
-                logger.warning(
-                    "Failed to load %s with bioformats. Use PIL instead",
-                    self.get_full_name(), exc_info=True)
-                img, self.scale = load_using_PIL(self.get_full_name(),
-                                                 rescale = self.rescale,
-                                                 wants_max_intensity = True)
         else:
-            # try PIL first, for speed
-            try:
-                img, self.scale = load_using_PIL(self.get_full_name(),
-                                                 rescale = self.rescale,
-                                                 wants_max_intensity = True)
-            except:
-                if has_bioformats:
-                    img, self.scale = load_using_bioformats(self.get_full_name(),
-                                                            rescale = self.rescale,
-                                                            wants_max_intensity = True)
-                else:
-                    raise
+            url = "file:" + urllib.pathname2url(self.get_full_name())
+            img = subimager.client.get_image(url).astype(float)
+            self.scale = 65535.
             
+        if self.rescale:
+            image = img / self.scale
         image = cpimage.Image(img,
                               path_name = self.get_pathname(),
                               file_name = self.get_filename(),
@@ -2983,76 +2928,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         if img.ndim == 3 and len(channel_names) == img.shape[2]:
             image.channel_names = list(channel_names)
         return image
-    
-
-def load_using_PIL(path, index=0, seekfn=None, rescale = True, wants_max_intensity = False):
-    '''Get the pixel data for an image using PIL
-    
-    path - path to file
-    index - index of the image if stacked image format such as TIFF
-    seekfn - a function for seeking to a given image in a stack
-    rescale - True to rescale to MaxSampleValue, false to scale to the bit-depth
-              (for example, 16-bit integers are divided by 65535)
-    max_intensity - if true, the image and max intensity are returned as a tuple
-    '''
-    if path.lower().endswith(".tif"):
-        try:
-            img = PILImage.open(path)
-        except:
-            from contrib.tifffile import TIFFfile
-            tiffimg = TIFFfile(str(path))
-            img = tiffimg.asarray(squeeze=True)
-            if img.dtype == np.uint16:
-                img = (img.astype(np.float) - 2**15) / 2**12
-            if wants_max_intensity:
-                return img, 2**12
-            return img
-    else:
-        img = PILImage.open(path)
-    if seekfn is None:
-        img.seek(index)
-    else:
-        seekfn(img, index)
-    if img.mode=='I;16':
-        # 16-bit image
-        # deal with the endianness explicitly... I'm not sure
-        # why PIL doesn't get this right.
-        imgdata = np.fromstring(img.tostring(),np.uint8)
-        imgdata.shape=(int(imgdata.shape[0]/2),2)
-        imgdata = imgdata.astype(np.uint16)
-        hi,lo = (0,1) if img.tag.prefix == 'MM' else (1,0)
-        imgdata = imgdata[:,hi]*256 + imgdata[:,lo]
-        img_size = list(img.size)
-        img_size.reverse()
-        new_img = imgdata.reshape(img_size)
-        # The magic # for maximum sample value is 281
-        if img.tag.has_key(281):
-            scale = img.tag[281][0]
-        elif np.max(new_img) < 4096:
-            scale = 4095.
-        else:
-            scale = 65535.
-        if not rescale:
-            img = new_img.astype(np.float32)
-        else:
-            img = new_img.astype(np.float32) / scale
-    else:
-        # The magic # for maximum sample value is 281
-        if hasattr(img, "tag") and img.tag.has_key(281):
-            scale = img.tag[281][0]
-        else:
-            scale = 255.
-        # There's an apparent bug in the PIL library that causes
-        # images to be loaded upside-down. At best, load and save have opposite
-        # orientations; in other words, if you load an image and then save it
-        # the resulting saved image will be upside-down
-        img = img.transpose(PILImage.FLIP_TOP_BOTTOM)
-        img = matplotlib.image.pil_to_array(img)
-    if wants_max_intensity:
-        return img, scale
-    return img
-
-   
+ 
 class LoadImagesMovieFrameProvider(LoadImagesImageProviderBase):
     """Provide an image by filename:frame, loading the file as it is requested
     """

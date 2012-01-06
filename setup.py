@@ -17,7 +17,7 @@ import sys
 import os
 import os.path
 import glob
-from subprocess import check_output
+from subprocess import call
 
 # fix from
 #  http://mail.python.org/pipermail/pythonmac-sig/2008-June/020111.html
@@ -67,6 +67,6 @@ if sys.argv[-1] == 'py2app':
     # there should be some way to do this within setup's framework, but I don't
     # want to figure it out right now, and our setup is going to be changing
     # significantly soon, anyway.
-    check_output('find dist/CellProfiler2.0.app -name tests -type d | xargs rm -rf', shell=True)
-    check_output('lipo dist/CellProfiler2.0.app/Contents/MacOS/CellProfiler2.0 -thin i386 -output dist/CellProfiler2.0.app/Contents/MacOS/CellProfiler2.0', shell=True)
-    check_output('rm dist/CellProfiler2.0.app/Contents/Resources/lib/python2.7/cellprofiler/icons/*.png', shell=True)
+    call('find dist/CellProfiler2.0.app -name tests -type d | xargs rm -rf', shell=True)
+    call('lipo dist/CellProfiler2.0.app/Contents/MacOS/CellProfiler2.0 -thin i386 -output dist/CellProfiler2.0.app/Contents/MacOS/CellProfiler2.0', shell=True)
+    call('rm dist/CellProfiler2.0.app/Contents/Resources/lib/python2.7/cellprofiler/icons/*.png', shell=True)

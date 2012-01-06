@@ -2419,7 +2419,9 @@ def validation_queue_handler():
         while True:
             validation_queue_semaphore.acquire()  # wait for work
             with validation_queue_lock:
-                priority, pipeline, module_num, callback = heapq.heappop(validation_queue)
+                if len(validation_queue) == 0:
+                    continue
+                priority, module_num, pipeline, callback = heapq.heappop(validation_queue)
             try:
                 validate_module(pipeline, module_num, callback)
             except:
@@ -2434,7 +2436,7 @@ def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_
     module - module in question
     callback - call this callback if there is an error. Do it on the GUI thread
     '''
-    global pipeline_queue_thread
+    global pipeline_queue_thread, validation_queue
 
     # start validation queue handler thread if not already started
     with validation_queue_lock:
@@ -2453,5 +2455,12 @@ def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_
     assert pipeline_copy.settings_hash() == pipeline_hash
 
     with validation_queue_lock:
-        heapq.heappush(validation_queue, (priority, pipeline_copy, module.module_num, callback))
+        # walk heap (as a list) removing any same-or-lower priority occurrences
+        # of this module_num, to prevent the heap from growing indefinitely.
+        mnum = module.module_num
+        validation_queue = [req for req in validation_queue \
+                                if ((req[0] >= priority) and (req[1] == mnum))]
+        heapq.heapify(validation_queue)
+        # order heap by priority, then module_number.
+        heapq.heappush(validation_queue, (priority, module.module_num, pipeline_copy, callback))
     validation_queue_semaphore.release()  # notify handler of work

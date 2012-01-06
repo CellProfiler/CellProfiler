@@ -15,6 +15,7 @@ from __future__ import with_statement
 
 __version__ = "$Revision$"
 
+import bisect
 import hashlib
 import logging
 import gc
@@ -130,13 +131,37 @@ FMT_MATLAB = "Matlab"
 FMT_NATIVE = "Native"
 
 '''The current pipeline file format version'''
-NATIVE_VERSION = 2
+NATIVE_VERSION = 3
+
+'''The version of the image plane descriptor section'''
+IMAGE_PLANE_DESCRIPTOR_VERSION = 1
 
 H_VERSION = 'Version'
 H_SVN_REVISION = 'SVNRevision'
 H_DATE_REVISION = 'DateRevision'
 '''A pipeline file header variable for faking a matlab pipeline file'''
 H_FROM_MATLAB = 'FromMatlab'
+
+'''The number of image planes in the file'''
+H_PLANE_COUNT = "PlaneCount"
+
+'''URL column header'''
+H_URL = "URL"
+
+'''Series column header'''
+H_SERIES = "Series"
+
+'''Index column header'''
+H_INDEX = "Index"
+
+'''Channel column header'''
+H_CHANNEL = "Channel"
+
+'''The number of modules in the pipeline'''
+H_MODULE_COUNT = "ModuleCount"
+
+'''Indicates whether the pipeline has an image plane details section'''
+H_HAS_IMAGE_PLANE_DETAILS = "HasImagePlaneDetails"
 
 '''The cookie that identifies a file as a CellProfiler pipeline'''
 COOKIE = "CellProfiler Pipeline: http://www.cellprofiler.org"
@@ -376,12 +401,18 @@ class ImagePlaneDetails(object):
     In addition, image planes have associated metadata which is represented
     as a dictionary of keys and values.
     '''
-    def __init__(self, url, series, index, channel):
+    def __init__(self, url, series, index, channel, **metadata):
         self.url = url
         self.series = series
         self.index = index
         self.channel = channel
-        self.metadata = {}
+        self.metadata = dict(metadata)
+        
+    def __cmp__(self, other):
+        '''A stable comparison method for sorting'''
+        assert isinstance(other, ImagePlaneDetails)
+        return (cmp(self.url, other.url) or cmp(self.series, other.series) or
+                cmp(self.index, other.index) or cmp(self.channel, other.channel))
         
 def read_image_plane_details(file_or_fd):
     """Read image plane details from a file or file object
@@ -405,7 +436,7 @@ def read_image_plane_details(file_or_fd):
     
     A minimal example:
     
-    "Version":"2","PlaneCount":"1"
+    "Version":"1","PlaneCount":"1"
     "URL","Series","Index","Channel","Plate","Well"
     "file:///imaging/analysis/singleplane.tif","0","0",0,"P-12345","A01"
     """
@@ -416,35 +447,122 @@ def read_image_plane_details(file_or_fd):
     else:
         needs_close = False
         fd = file_or_fd
-    def read_fields(line):
-        backslash_escape = False
-        separator = False
-        kv = False
+    try:
+        line = fd.next()
+        properties = dict(read_fields(line))
+        if not properties.has_key(H_VERSION):
+            raise ValueError("Image plane details header is missing its version #")
+        version = int(properties[H_VERSION])
+        if version != IMAGE_PLANE_DESCRIPTOR_VERSION:
+            raise ValueError("Unable to read image plane details version # %d" % version)
+        plane_count = int(properties[H_PLANE_COUNT])
+        header = read_fields(fd.next())
         result = []
-        field = ""
-        for c in line:
-            if backslash_escape:
-                field += c
-                backslash_escape = False
-            elif separator:
-                field = field.decode("string_escape").decode("utf-8")
-                if c == ":":
-                    key = field
-                    kv = True
-                elif c == ",":
-                    if kv:
-                        result.append((key, field))
-                    else:
-                        result.append(field)
-                    kv = False
+        for i in range(plane_count):
+            fields = read_fields(fd.next())
+            # series, index and channel are either integer or null
+            for j in range(1,4):
+                if fields[j] is not None:
+                    fields[j] = int(fields[j])
+            result.append(ImagePlaneDetails(
+                fields[0], fields[1], fields[2], fields[3],
+                **dict([(k, v) for k,v in zip(header[4:], fields[4:])])))
+        return result
+    finally:
+        if needs_close:
+            fd.close()
+            
+def write_image_plane_details(file_or_fd, ipds):
+    '''Write the image plane details out to a file.
+    
+    See read_image_plane_details for the file format.
+    
+    file_or_fd - a path or a file like object
+    
+    ipds - a list of image plane descriptors.
+    
+    '''
+    metadata_columns = set()
+    for ipd in ipds:
+        metadata_columns.update(ipd.metadata.keys())
+    metadata_columns = list(sorted(metadata_columns))
+    if isinstance(file_or_fd, basestring):
+        fd = open(file_or_fd, "w")
+        needs_close = True
+    else:
+        fd = file_or_fd
+        needs_close = False
+    try:
+        fd.write('"%s":"%d","%s":"%d"\n' % (
+            H_VERSION, IMAGE_PLANE_DESCRIPTOR_VERSION, H_PLANE_COUNT, len(ipds)))
+        fd.write('"'+'","'.join([
+            H_URL, H_SERIES, H_INDEX, H_CHANNEL] + metadata_columns) + '"\n')
+        for ipd in ipds:
+            assert isinstance(ipd, ImagePlaneDetails)
+            fields = [ipd.url]
+            fields += [str(x) if x is not None else None 
+                       for x in (ipd.series, ipd.index, ipd.channel)]
+            fields += [ipd.metadata[k] if ipd.metadata.has_key(k) else None
+                       for k in metadata_columns]
+            line = ",".join(['"%s"' % 
+                             v.encode("utf-8")
+                              .encode("string_escape")
+                              .replace('"',r'\"')
+                             if v is not None else ""
+                             for v in fields]) + "\n"
+            fd.write(line)
+    finally:
+        if needs_close:
+            fd.close()
+        
+RF_STATE_PREQUOTE = 0
+RF_STATE_FIELD = 1
+RF_STATE_BACKSLASH_ESCAPE = 2
+RF_STATE_SEPARATOR = 3
+
+def read_fields(line):
+    state = RF_STATE_PREQUOTE
+    kv = False
+    result = []
+    field = ""
+    for c in line:
+        if state == RF_STATE_PREQUOTE:
+            if c == "\"":
+                state = RF_STATE_FIELD
                 field = ""
-            elif c == "\\":
-                field += c
-                backslash_escape = True
-            elif c == "\"":
-                separator = True
-            else:
-                field += c
+            elif c == ":":
+                key = None
+                kv = True
+            elif c in ",\n":
+                if kv:
+                    result.append((key, None))
+                else:
+                    result.append(None)
+                kv = False
+        elif state == RF_STATE_BACKSLASH_ESCAPE:
+            field += c
+            state = RF_STATE_FIELD
+        elif state == RF_STATE_SEPARATOR:
+            if c == ":":
+                key = field.decode("string_escape").decode("utf-8")
+                kv = True
+                state = RF_STATE_PREQUOTE
+            elif c in ",\n":
+                field = field.decode("string_escape").decode("utf-8")
+                if kv:
+                    result.append((key, field))
+                else:
+                    result.append(field)
+                kv = False
+                state = RF_STATE_PREQUOTE
+        elif c == "\\":
+            field += c
+            state = RF_STATE_BACKSLASH_ESCAPE
+        elif c == "\"":
+            state = RF_STATE_SEPARATOR
+        else:
+            field += c
+    return result
                 
 class Pipeline(object):
     """A pipeline represents the modules that a user has put together
@@ -461,6 +579,7 @@ class Pipeline(object):
         self.__settings = []
         self.__undo_stack = []
         self.__undo_start = None
+        self.__image_plane_details = []
     
     def copy(self):
         '''Create a copy of the pipeline modules and settings'''
@@ -684,6 +803,7 @@ class Pipeline(object):
         '''
         from cellprofiler.utilities.version import version_number as cp_version_number
         self.__modules = []
+        module_count = sys.maxint
         if hasattr(fd_or_filename,'seek') and hasattr(fd_or_filename,'read'):
             fd = fd_or_filename
         else:
@@ -705,6 +825,7 @@ class Pipeline(object):
         version = NATIVE_VERSION
         from_matlab = False
         do_utf16_decode = False
+        has_image_plane_details = False
         while True:
             line = rl()
             if line is None:
@@ -768,6 +889,10 @@ class Pipeline(object):
                     pipeline_stats_logger.info("Pipeline saved with CellProfiler version %d", pipeline_version)
             elif kwd == H_FROM_MATLAB:
                 from_matlab = bool(value)
+            elif kwd == H_MODULE_COUNT:
+                module_count = int(value)
+            elif kwd == H_HAS_IMAGE_PLANE_DETAILS:
+                has_image_plane_details = bool(value)
             else:
                 print line
         
@@ -776,7 +901,7 @@ class Pipeline(object):
         #
         module_number = 1
         skip_attributes = ['svn_version','module_num']
-        while True:
+        while module_number <= module_count:
             line = rl()
             if line is None:
                 break
@@ -854,6 +979,9 @@ class Pipeline(object):
             if module is not None:
                 self.__modules.append(module)
                 module_number += 1
+        if has_image_plane_details:
+            self.__image_plane_details = read_image_plane_details(fd)
+            
         for module in self.modules():
             module.post_pipeline_load(self)
         self.notify_listeners(PipelineLoadedEvent())
@@ -889,13 +1017,19 @@ class Pipeline(object):
         s = s.replace('[','\\x5B').replace(']','\\x5D')
         return s
         
-    def savetxt(self, fd_or_filename, modules_to_save = None):
+    def savetxt(self, fd_or_filename, 
+                modules_to_save = None, 
+                save_image_plane_details = True):
         '''Save the pipeline in a text format
         
         fd_or_filename - can be either a "file descriptor" with a "write"
                          attribute or the path to the file to write.
-        modules_to_save - if present, the module numbers of the modules to save
                          
+        modules_to_save - if present, the module numbers of the modules to save
+        
+        save_image_plane_details - True to save the image plane details (image
+                          URL, series, index, channel and metadata)
+        
         The format of the file is the following:
         Strings are encoded using a backslash escape sequence. The colon
         character is encoded as \\x3A if it should happen to appear in a string
@@ -906,7 +1040,9 @@ class Pipeline(object):
         Line 2: "Version:#" the file format version #
         Line 3: "DateRevision:#" the version # of the CellProfiler
                 that wrote this file (date encoded as int, see cp.utitlities.version)
-        Line 4: blank
+        Line 4: "ModuleCount:#" the number of modules saved in the file
+        Line 5: "HasImagePlaneDetails:True/False" has the list of image plane info after the settings
+        Line 5: blank
         
         The module list follows. Each module has a header composed of
         the module name, followed by attributes to be set on the module
@@ -916,6 +1052,10 @@ class Pipeline(object):
         
         The settings follow. Each setting has text and a value. For instance,
         Enter object name:Nuclei
+        
+        The image plane details can be saved along with the pipeline. These
+        are a collection of images and their metadata. 
+        See read_image_plane_details for the file format
         '''
         from cellprofiler.utilities.version import version_number
         if hasattr(fd_or_filename,"write"):
@@ -927,6 +1067,8 @@ class Pipeline(object):
         fd.write("%s\n"%COOKIE)
         fd.write("%s:%d\n" % (H_VERSION, NATIVE_VERSION))
         fd.write("%s:%d\n" % (H_DATE_REVISION, version_number))
+        fd.write("%s:%d\n" % (H_MODULE_COUNT, len(self.modules())))
+        fd.write("%s:%s\n" % (H_HAS_IMAGE_PLANE_DETAILS, str(save_image_plane_details)))
         attributes = ('module_num','svn_version','variable_revision_number',
                       'show_window','notes','batch_state')
         notes_idx = 4
@@ -953,6 +1095,9 @@ class Pipeline(object):
                 fd.write('    %s:%s\n' % (
                     self.encode_txt(setting_text),
                     self.encode_txt(utf16encode(setting.unicode_value))))
+        if save_image_plane_details:
+            fd.write("\n")
+            write_image_plane_details(fd, self.__image_plane_details)
         if needs_close:
             fd.close()
         
@@ -1811,6 +1956,38 @@ class Pipeline(object):
                              else DIRECTION_UP)
         message = "Move %s %s" % (module.module_name, direction)
         self.__undo_stack.append((undo, message))
+        
+    def add_image_plane_details(self, details_list):
+        real_list = []
+        details_list = sorted(details_list)
+        start = 0
+        for details in details_list:
+            pos = bisect.bisect_left(self.image_plane_details, details, start)
+            if (pos == len(self.image_plane_details) or 
+                cmp(self.image_plane_details[pos], details)):
+                real_list.append(details)
+                self.image_plane_details.insert(pos, details)
+            start = pos
+        self.notify_listeners(ImagePlaneDetailsAddedEvent(real_list))
+        def undo():
+            self.remove_image_plane_details(real_list)
+        self.__undo_stack.append((undo, "Add images"))
+        
+    def remove_image_plane_details(self, details_list):
+        real_list = []
+        details_list = sorted(details_list)
+        start = 0
+        for details in details_list:
+            pos = bisect.bisect_left(self.image_plane_details, details, start)
+            if (pos != len(self.image_plane_details) and
+                cmp(self.image_plane_details[pos], details) == 0):
+                real_list.append(details)
+                del self.image_plane_details[pos]
+            start = pos
+        self.notify_listeners(ImagePlaneDetailsRemovedEvent(real_list))
+        def undo():
+            self.add_image_plane_details(real_list)
+        self.__undo_stack.append((undo, "Remove images"))
     
     def has_undo(self):
         '''True if an undo action can be performed'''
@@ -1918,6 +2095,10 @@ class Pipeline(object):
             self.notify_listeners(ModuleEditedPipelineEvent(module_num))
             self.__settings[idx] = old_settings
         self.__undo_stack.append((undo, "Edited %s" % module_name))
+        
+    @property
+    def image_plane_details(self):
+        return self.__image_plane_details
     
     def test_valid(self):
         """Throw a ValidationError if the pipeline isn't valid
@@ -1933,7 +2114,7 @@ class Pipeline(object):
         for listener in self.__listeners:
             listener(self,event)
     
-    def add_listener(self,listener):
+    def add_listener(self, listener):
         self.__listeners.append(listener)
         
     def remove_listener(self,listener):
@@ -2200,6 +2381,20 @@ class ModuleEditedPipelineEvent(AbstractPipelineEvent):
     
     def event_type(self):
         return "Module edited"
+    
+class ImagePlaneDetailsAddedEvent(AbstractPipelineEvent):
+    def __init__(self, ipds):
+        self.image_plane_details = ipds
+        
+    def event_type(self):
+        return "Image plane details added"
+
+class ImagePlaneDetailsRemovedEvent(AbstractPipelineEvent):
+    def __init__(self, ipds):
+        self.image_plane_details = ipds
+        
+    def event_type(self):
+        return "Image plane details removed"
 
 class RunExceptionEvent(AbstractPipelineEvent):
     """An exception was caught during a pipeline run

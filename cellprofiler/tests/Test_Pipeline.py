@@ -628,10 +628,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         module.notes = u"\u03B1\\\u03B2"
         pipeline.add_module(module)
         fd = cStringIO.StringIO()
-        pipeline.savetxt(fd)
+        pipeline.savetxt(fd, save_image_plane_details=False)
         result = fd.getvalue()
         lines = result.split("\n")
-        self.assertEqual(len(lines), 7)
+        self.assertEqual(len(lines), 9)
         text, value = lines[-2].split(":")
         #
         # unicode encoding: 
@@ -644,7 +644,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         #
         # result = \\\\\\u2211
         self.assertEqual(value, r"\\\\\\u2211")
-        mline = lines[4]
+        mline = lines[6]
         idx0 = mline.find("notes:")
         mline = mline[(idx0+6):]
         idx1 = mline.find("|")
@@ -964,6 +964,74 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertEqual(edge.feature, FEATURE_NAME)
         self.assertEqual(edge.destination, pipeline.modules()[2])
         self.assertEqual(edge.destination_setting, pipeline.modules()[2].settings()[0])
+        
+    def test_18_01_read_image_plane_details(self):
+        test_data = (
+            ([],['"foo","1","2","3"','"bar","4","5","6"'],
+             (("foo", 1, 2, 3, {}), ("bar", 4, 5, 6, {}))),
+            (["Well","Plate"], 
+             ['"foo","1","2",,"A01","P-12345"',
+              '"bar","4",,"6",,"P-67890"',
+              '"baz","7","8",,"A03",'],
+             (("foo", 1, 2, None, {"Well":"A01", "Plate":"P-12345"}),
+              ("bar", 4, None, 6, {"Well":None, "Plate":"P-67890"}),
+              ("baz", 7, 8, None, {"Well":"A03", "Plate":None}))),
+            ([],
+             ['"\\xce\\xb1\\xce\\xb2","1","2","3"'],
+             [(u"\u03b1\u03b2", 1,2,3,{})]),
+            ([],
+             [r'"\\foo\"bar","4","5","6"'],
+             [(r'\foo"bar', 4, 5, 6)]))
+        for metadata_columns, body_lines, expected in test_data:
+            s = '"%s":"%d","%s":"%d"\n' % (
+                cpp.H_VERSION, cpp.IMAGE_PLANE_DESCRIPTOR_VERSION,
+                cpp.H_PLANE_COUNT, len(body_lines))
+            s += '"'+'","'.join([
+                cpp.H_URL, cpp.H_SERIES, cpp.H_INDEX, cpp.H_CHANNEL] +
+                                metadata_columns) + '"\n'
+            s += "\n".join(body_lines)+"\n"
+            fd = cStringIO.StringIO(s)
+            result = cpp.read_image_plane_details(fd)
+            self.assertEqual(len(result), len(expected))
+            for r, e in zip(result, expected):
+                for rr, ee in zip(
+                    (r.url, r.series, r.index, r.channel, r.metadata),e):
+                    self.assertEqual(rr, ee)
+                    
+    def test_18_02_write_image_plane_details(self):
+        test_data = (
+            (cpp.ImagePlaneDetails("foo", 1, 2, 3),),
+            (cpp.ImagePlaneDetails("foo", 1, 2, None),
+             cpp.ImagePlaneDetails("bar", 1, None, 3),
+             cpp.ImagePlaneDetails("baz", None, 2, 3)),
+            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Well="A01", Plate="P-12345"),),
+            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Well=None, Plate="P-12345"),),
+            (cpp.ImagePlaneDetails("\u03b1\u03b2", 1, 2, 3),),
+            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Treatment="TNF-\u03b1"),),
+            (cpp.ImagePlaneDetails('\\"', 1, 2, 3),),
+            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Well="A01"),
+             cpp.ImagePlaneDetails("bar", 1, 2, 3, Treatment="TNF-\u3b1")))
+        for t in test_data:
+            fd = cStringIO.StringIO()
+            cpp.write_image_plane_details(fd, t)
+            fd.seek(0)
+            result = cpp.read_image_plane_details(fd)
+            metadata_columns = set()
+            for tt in t:
+                metadata_columns.update(tt.metadata.keys())
+            for rr, tt in zip(result, t):
+                self.assertTrue(isinstance(rr, cpp.ImagePlaneDetails))
+                self.assertTrue(isinstance(tt, cpp.ImagePlaneDetails))
+                self.assertEqual(rr.url, tt.url)
+                self.assertEqual(rr.series, tt.series)
+                self.assertEqual(rr.index, tt.index)
+                self.assertEqual(rr.channel, tt.channel)
+                for k in metadata_columns:
+                    self.assertTrue(rr.metadata.has_key(k))
+                    if (not tt.metadata.has_key(k)) or tt.metadata[k] is None:
+                        self.assertIsNone(rr.metadata[k])
+                    else:
+                        self.assertEqual(rr.metadata[k], tt.metadata[k])
         
 def profile_pipeline(pipeline_filename,
                      output_filename=None,

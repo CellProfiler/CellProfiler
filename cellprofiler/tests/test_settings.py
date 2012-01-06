@@ -74,21 +74,29 @@ class TestFilterSetting(unittest.TestCase):
         f1 = cps.Filter.FilterPredicate("foo", "Foo", lambda a: a=="foo", [])
         f = cps.Filter("", [f1])
         f.build([f1])
-        self.assertEqual(f.text, "foo")
+        self.assertEqual(f.value, "foo")
         
     def test_02_02_build_literal(self):
         f1 = cps.Filter.FilterPredicate("foo", "Foo", lambda a,b: a==b, 
                                         [cps.Filter.LITERAL_PREDICATE])
         f = cps.Filter("", [f1])
         f.build([f1, "bar"])
-        self.assertEqual(f.text, 'foo "bar"')
+        self.assertEqual(f.value, 'foo "bar"')
         
     def test_02_03_build_nested(self):
         f1 = cps.Filter.FilterPredicate("foo", "Foo", lambda a,b: a==b, 
                                         [cps.Filter.LITERAL_PREDICATE])
         f = cps.Filter("", [f1])
         f.build([cps.Filter.OR_PREDICATE, [f1, "bar"], [f1, u"baz"]])
-        self.assertEqual(f.text, 'or (foo "bar") (foo "baz")')
+        self.assertEqual(f.value, 'or (foo "bar") (foo "baz")')
         
+    def test_02_04_build_escaped_literal(self):
+        f1 = cps.Filter.FilterPredicate("foo", "Foo", lambda a,b: a==b, 
+                                        [cps.Filter.LITERAL_PREDICATE])
+        f = cps.Filter("", [f1])
+        f.build([f1, '"12\\'])
+        self.assertEqual(f.value, 'foo "\\"12\\\\"')
+        tokens = f.parse()
+        self.assertEqual(tokens[1], '"12\\')
 
         

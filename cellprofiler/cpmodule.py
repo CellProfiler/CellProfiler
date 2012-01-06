@@ -694,3 +694,27 @@ class CPModule(object):
         '''
         pass
     
+    def on_activated(self, pipeline):
+        '''Called when the module is activated in the GUI
+        
+        pipeline - the pipeline that's currently running.
+        
+        on_activated is here to give modules the chance to modify other
+        elements of the pipeline, such as the image plane details or image
+        set list. You're allowed to modify these parts of the pipeline
+        in the UI thread until on_deactivated is called.
+        '''
+        pass
+    
+    def on_deactivated(self):
+        '''Called when the module is deactivated in the GUI
+        
+        This is the signal that the settings have been unhooked from the
+        GUI and can't be used to edit the pipeline
+        '''
+        pass
+    
+    def on_setting_changed(self, setting, pipeline):
+        '''Called when a setting has been changed in the GUI'''
+        pass
+    

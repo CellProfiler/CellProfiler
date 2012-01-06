@@ -13,12 +13,14 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import json
 import matplotlib.cm
 import numpy as np
 import os
 import sys
 import re
 import uuid
+
 from cellprofiler.preferences import \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME,\
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
@@ -2006,10 +2008,21 @@ class Filter(Setting):
     ENDSWITH_PREDICATE = FilterPredicate(
         "endwith", "End with",
         lambda x, y: x.endswith(y), [LITERAL_PREDICATE])
-    CONTAINS_REGEXP_PREDICATE = FilterPredicate(
-        "containregexp", "Contain regular expression", 
-        lambda x,y: re.match(y, x) is not None,
-        [LITERAL_PREDICATE])
+    
+    class RegexpFilterPredicate(FilterPredicate):
+        def __init__(self, display_name, subpredicates):
+            super(self.__class__, self).__init__(
+                "containregexp", display_name, self.regexp_fn, subpredicates)
+            
+        def regexp_fn(self, x, y):
+            try:
+                pattern = re.compile(y)
+            except:
+                raise ValueError("Badly formatted regular expression: %s" %y)
+            return pattern.search(x) is not None
+        
+    CONTAINS_REGEXP_PREDICATE = RegexpFilterPredicate(
+        "Contain regular expression", [LITERAL_PREDICATE])
     EQ_PREDICATE = FilterPredicate(
         "eq", "Exactly match", lambda x,y: x == y, [LITERAL_PREDICATE])
     
@@ -2033,8 +2046,11 @@ class Filter(Setting):
         
     def evaluate(self, x):
         '''Evaluate the value passed using the predicates'''
-        tokens = self.parse()
-        return tokens[0](x, *tokens[1:])
+        try:
+            tokens = self.parse()
+            return tokens[0](x, *tokens[1:])
+        except:
+            return False
     
     def parse(self):
         '''Parse the value into filter predicates, literals and lists
@@ -2132,6 +2148,11 @@ class Filter(Setting):
             predicates = match.subpredicates
         return match, rest, predicates
     
+    @classmethod
+    def encode_literal(cls, literal):
+        '''Encode a literal value with backslash escapes'''
+        return literal.replace("\\", "\\\\").replace('"','\\"')
+    
     def build(self, structure):
         '''Build the textual representation of a filter from its structure
         
@@ -2153,7 +2174,7 @@ class Filter(Setting):
         
         The function sets the filter's value using the generated string.
         '''
-        self.text = self.build_string(structure)
+        self.value = self.build_string(structure)
         
     @classmethod
     def build_string(cls, structure):
@@ -2167,7 +2188,7 @@ class Filter(Setting):
             if isinstance(element, Filter.FilterPredicate):
                 s.append(unicode(element.symbol))
             elif isinstance(element, basestring):
-                s.append(u'"'+element+u'"')
+                s.append(u'"'+cls.encode_literal(element)+u'"')
             else:
                 s.append(u"("+cls.build_string(element)+")")
         return u" ".join(s)
@@ -2177,6 +2198,174 @@ class Filter(Setting):
             tokens = self.parse()
         except ValueError:
             raise ValidationError("Invalid filter expression: %s" % self.value_text, self)
+        try:
+            tokens[0]("", *tokens[1:])
+        except Exception, e:
+            raise ValidationError(str(e), self)
+        
+class FileCollectionDisplay(Setting):
+    '''A setting to be used to display directories and their files
+    
+    The FileCollectionDisplay shows directory trees with mechanisms to
+    communicate directory additions and deletions to its parent module.
+    
+    The central data structure is the dictionary, "self.file_tree". The keys
+    for the top-level of the dictionary are the directories managed by the
+    setting. If a key represents a directory, its value is another directory.
+    If a key represents a file, its value is either True (the file is included
+    in the collection) or False (the file is filtered out of the collection).
+    
+    Directory dictionaries can be filtered: this is done by setting the
+    special key, "None" to either True or False.
+    
+    The FileCollectionDisplay manages the tree and it should be treated as
+    read-only by callers. Callers can request that nodes be added, removed,
+    filtered or not filtered by calling the appropriate notification function
+    with a nested collection of two-tuples and strings. Two-tuples represent
+    directories whose subdirectires or files are being operated on. Strings
+    represent directories or files that are being operated on. The first
+    element of the two-tuple is the directory name and the second is a
+    sub-collection of two-tuples. For instance, to operate on foo/bar, send:
+    
+    ("foo", ("bar", ))
+    '''
+    ADD = "ADD"
+    REMOVE = "REMOVE"
+    def __init__(self, text, value, fn_report_directory_change, 
+                 hide_text = "Hide files", **kwargs):
+        '''Constructor
+        
+        text - the label to the left of the setting
+        
+        value - the value for the control. This is a serialization of
+                the appearance (for instance, whether to show or hide
+                filtered files).
+                
+        hide_text - the text displayed next to the hide checkbox.
+                
+        fn_report_directory_change - a function that is called when directories
+                or files are added or removed. The signature is:
+
+                def fn_report_directory_change(op, filelist)
+                
+                where op is either ADD or REMOVE and the filelist has the
+                files to be added or removed
+        '''
+        super(self.__class__, self).__init__(text, value, **kwargs)
+        self.fn_report_directory_change = fn_report_directory_change
+        self.hide_text = hide_text
+        self.fn_update = None
+        self.file_tree = {}
+        self.properties = { self.SHOW_FILTERED: True}
+        try:
+            properties = json.loads(value)
+            if isinstance(properties, dict):
+                self.properties.update(properties)
+        except:
+            pass
+    
+    SHOW_FILTERED = "ShowFiltered"
+    
+    def update_value(self):
+        '''Update the setting value after changing a property'''
+        self.value_text = json.dumps(self.properties)
+    
+    def update_ui(self):
+        if self.fn_update is not None:
+            self.fn_update()
+        
+    def set_update_function(self, fn_update):
+        '''Set the function that will be called when the file_tree is updated'''
+        self.fn_update = fn_update
+        
+    def initialize_tree(self, mods):
+        '''Remove all nodes in the file tree'''
+        self.file_tree = {}
+        self.add_subtree(mods, self.file_tree)
+        
+    def add(self, mods):
+        '''Add nodes to the file tree
+        
+        mods - modification structure. See class documentation for its form.
+        '''
+        additions = self.add_subtree(mods, self.file_tree)
+        if self.fn_report_directory_change is not None:
+            self.fn_report_directory_change(self.ADD, additions)
+        self.update_ui()
+        
+    def add_subtree(self, mods, tree):
+        additions = []
+        for mod in mods:
+            if isinstance(mod, basestring):
+                if not tree.has_key(mod):
+                    tree[mod] = True
+                    additions.append(mod)
+            else:
+                if not tree.has_key(mod[0]):
+                    subtree = tree[mod[0]] = {}
+                    subtree[None] = True
+                else:
+                    subtree = tree[mod[0]]
+                true_mods = self.add_subtree(mod[1], subtree)
+                additions.append((mod[0], true_mods))
+        return additions
+                
+    def remove(self, mods):
+        '''Remove nodes from the file tree
+        
+        mods - modification structure. See class documentation for its form.
+        '''
+        removals = self.remove_subtree(mods, self.file_tree)
+        if self.fn_report_directory_change is not None:
+            self.fn_report_directory_change(self.REMOVE, removals)
+        self.update_ui()
+        
+    def remove_subtree(self, mods, tree):
+        removals = []
+        for mod in mods:
+            if isinstance(mod, basestring):
+                if tree.has_key(mod):
+                    del tree[mod]
+                    removals.append(mod)
+            else:
+                if tree.has_key(mod[0]):
+                    true_mods = self.remove_subtree(mod[1], tree[mod[0]])
+                    if len(true_mods) > 0:
+                        removals.append((mod[0], true_mods))
+        return removals
+    
+    def mark(self, mods, keep):
+        '''Mark tree nodes as filtered in or out
+        
+        mods - modification structure. See class documentation for its form.
+        
+        keep - true to mark a node as in the set, false to filter it out.
+        '''
+        self.mark_subtree(mods, keep, self.file_tree)
+        self.update_ui()
+        
+    def mark_subtree(self, mods, keep, tree):
+        for mod in mods:
+            if isinstance(mod, basestring):
+                if tree.has_key(mod):
+                    tree[mod] = keep
+            else:
+                if tree.has_key(mod[0]):
+                    self.mark_subtree(mod[1], keep, tree[mod[0]])
+            
+    def get_show_filtered(self):
+        return self.properties[self.SHOW_FILTERED]
+    
+    def set_show_filtered(self, show_state):
+        '''Mark that we should show filtered files in the user interface
+        
+        show_state - true to show files / false to hide them
+        '''
+        self.properties[self.SHOW_FILTERED] = show_state
+        self.update_value()
+        self.update_ui()
+    
+    show_filtered = property(get_show_filtered, set_show_filtered)
 
 class SettingsGroup(object):
     '''A group of settings that are managed together in the UI.

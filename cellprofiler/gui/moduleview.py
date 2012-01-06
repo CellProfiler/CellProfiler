@@ -22,6 +22,7 @@ import stat
 import threading
 import time
 import traceback
+import uuid
 import wx
 import wx.grid
 import sys
@@ -36,6 +37,7 @@ from htmldialog import HTMLDialog
 from treecheckboxdialog import TreeCheckboxDialog
 from metadatactrl import MetadataControl
 from namesubscriber import NameSubcriberComboBox
+from cellprofiler.utilities.walk_in_background import walk_in_background
 
 ERROR_COLOR = wx.RED
 WARNING_COLOR = wx.Colour(224,224,0,255)
@@ -321,6 +323,8 @@ class ModuleView:
             reselecting         = (self.__module and
                                    self.__module.id == new_module.id)
             if not reselecting:
+                if self.__module is not None:
+                    self.__module.on_deactivated()
                 self.clear_selection()
                 try:
                     # Need to initialize some controls.
@@ -333,11 +337,14 @@ class ModuleView:
             self.__controls     = []
             self.__static_texts = []
             data                = []
-            settings            = self.check_settings(self.__module.module_name, self.__module.visible_settings())
+            settings            = self.check_settings(self.__module.module_name, 
+                                                      self.__module.visible_settings())
             self.__sizer.Reset(len(settings), 3, False)
             sizer    = self.__sizer
             if reselecting:
                 self.hide_settings()
+            else:
+                self.__module.on_activated(self.__pipeline)
                 
             #################################
             #
@@ -453,6 +460,13 @@ class ModuleView:
                         fc = FilterPanelController(self, v, control)
                         control = fc.panel
                         control.filter_panel_controller = fc
+                elif isinstance(v, cps.FileCollectionDisplay):
+                    if control is not None:
+                        control.file_collection_display.update()
+                    else:
+                        fcd = FileCollectionDisplayController(self, v)
+                        control = fcd.panel
+                        fcd.panel.file_collection_display = fcd
                 else:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control, 0, flag, border)
@@ -1579,6 +1593,8 @@ class ModuleView:
                                                   proposed_value,
                                                   event)
         self.notify(setting_edited_event)
+        if self.__module is not None:
+            self.__module.on_setting_changed(setting, self.__pipeline)
         if timeout is None:
             self.reset_view() # use the default timeout
         else:
@@ -2163,7 +2179,280 @@ class FilterPanelController(object):
     def static_text_name(self, index, address):
         return "%s_static_text_%d_%s" % (self.key, index, self.saddress(address))
     
+class FileCollectionDisplayController(object):
+    '''This class provides the UI for the file collection display
+    
+    The UI has a browse button, a hide checkbox and a tree control.
+    '''
+    IMAGE_LIST = wx.ImageList(16, 16, 3)
+    FOLDER_IMAGE_INDEX = IMAGE_LIST.Add(
+        wx.ArtProvider.GetBitmap(wx.ART_FOLDER, 
+                                 wx.ART_OTHER, size = (16,16)))
+    FOLDER_OPEN_IMAGE_INDEX = IMAGE_LIST.Add(
+        wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN, 
+                                 wx.ART_OTHER, size = (16,16)))
+    FILE_IMAGE_INDEX = IMAGE_LIST.Add(
+        wx.ArtProvider.GetBitmap(wx.ART_NORMAL_FILE,
+                                 wx.ART_OTHER, size = (16,16)))
+    ACTIVE_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
+    FILTERED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
+    class FCDCFileDropTarget(wx.FileDropTarget):
+        def __init__(self, callback_fn):
+            super(self.__class__, self).__init__()
+            self.callback_fn = callback_fn
+            
+        def OnDropFiles(self, x, y, filenames):
+            self.callback_fn(x, y, filenames)
+            
+    def __init__(self, module_view, v):
+        assert isinstance(v, cps.FileCollectionDisplay)
+        self.module_view = module_view
+        self.v = v
+        self.walks_in_progress = {}
+        self.panel = wx.Panel(self.module_view.module_panel, -1,
+                              name = edit_control_name(v))
+        self.panel.controller = self
+        self.panel.Sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.panel.Sizer.Add(sizer, 0, wx.EXPAND)
+        sizer.AddStretchSpacer()
+        sizer.Add(wx.StaticText(self.panel, -1, 
+                                "Drag folders and/or files here or"), 
+                  0, wx.ALIGN_LEFT | wx.ALIGN_CENTER)
+        sizer.AddSpacer((3,0))
+        browse_button = wx.Button(self.panel, -1, "Browse...")
+        sizer.Add(browse_button, 0, wx.ALIGN_LEFT | wx.ALIGN_CENTER)
+        browse_button.Bind(wx.EVT_BUTTON, self.on_browse)
+        tree_style = wx.TR_HIDE_ROOT | wx.TR_HAS_BUTTONS | wx.TR_MULTIPLE
+        self.tree_ctrl = wx.TreeCtrl(self.panel, -1,
+                                     style = tree_style)
+        self.panel.Sizer.Add(self.tree_ctrl, 1, wx.EXPAND)
+        self.tree_ctrl.SetImageList(self.IMAGE_LIST)
+        self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_MENU, self.on_tree_item_menu)
+        self.tree_ctrl.Bind(wx.EVT_TREE_KEY_DOWN, self.on_tree_key_down)
+        self.panel.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
+        self.root_item = self.tree_ctrl.AddRoot("I am the invisible root")
+        self.tree_ctrl.SetPyData(self.root_item, None)
+        self.tree_ctrl.SetItemImage(self.root_item, self.FOLDER_IMAGE_INDEX)
+        self.tree_ctrl.SetItemImage(self.root_item, 
+                                    self.FOLDER_OPEN_IMAGE_INDEX,
+                                    wx.TreeItemIcon_Expanded)
+        self.tree_ctrl.SetMinSize((100, 300))
+        self.tree_ctrl.SetMaxSize((sys.maxint, 300))
+        self.file_drop_target = self.FCDCFileDropTarget(self.on_drop_files)
+        self.tree_ctrl.SetDropTarget(self.file_drop_target)
+        self.hide_show_ctrl = wx.CheckBox(self.panel, -1,
+                                          self.v.hide_text)
+        self.panel.Sizer.Add(self.hide_show_ctrl, 0, 
+                             wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+        self.hide_show_ctrl.Bind(wx.EVT_CHECKBOX, self.on_hide_show_checked)
+        self.hide_show_ctrl.Value = not self.v.show_filtered
+        v.fn_update = self.update
+        self.update()
         
+    def __del__(self):
+        self.on_destroy(None)
+        
+    def on_destroy(self, event):
+        for stop_fn in self.walks_in_progress.values():
+            stop_fn()
+        self.walks_in_progress.clear()
+
+    def on_browse(self, event):
+        logger.debug("Browsing for file collection directory")
+        dlg = wx.DirDialog(self.panel, "Select a directory to add")
+        try:
+            if dlg.ShowModal() == wx.ID_OK:
+                self.add_directory(dlg.Path)
+        finally:
+            del dlg
+            
+    def add_directory(self, path):
+        key = str(uuid.uuid4())
+        def completed_fn():
+            del self.walks_in_progress[key]
+        def walk_fn(dirpath, dirnames, filenames):
+            self.add_files(dirpath, filenames)
+        stop_fn = walk_in_background(path, walk_fn, completed_fn)
+        self.walks_in_progress[key] = stop_fn
+        
+    def add_files(self, dirpath, filenames):
+        tree = filenames
+        while True:
+            new_dirpath, directory = os.path.split(dirpath)
+            if len(new_dirpath) == 0 or len(directory) == 0:
+                self.v.add(((dirpath, tree),))
+                return
+            tree = ((directory, tree),)
+            dirpath = new_dirpath
+        
+    def on_drop_files(self, x, y, filenames):
+        d = {}
+        for filename in filenames:
+            if os.path.isdir(filename):
+                self.add_directory(filename)
+            else:
+                directory, f = os.path.split(filename)
+                if not d.has_key(directory):
+                    d[directory] = []
+                d[directory].append(f)
+        for dirpath, ff in d.iteritems():
+            self.add_files(dirpath, ff)
+        
+    def on_tree_item_menu(self, event):
+        logger.debug("On tree item menu")
+        
+    def on_tree_key_down(self, event):
+        logger.debug("On tree key down")
+        key = event.GetKeyCode()
+        if key == wx.WXK_DELETE:
+            self.on_delete_selected(event)
+            
+    def on_delete_selected(self, event):
+        mods = [self.get_item_address(item) 
+                for item in self.tree_ctrl.GetSelections()]
+        mods = filter(lambda x: x is not None, mods)
+        self.v.remove(mods)
+        
+    def get_item_address(self, item):
+        '''Get an item's address as a collection of names'''
+        result = None
+        while True:
+            name = self.tree_ctrl.GetItemPyData(item)
+            if name is None:
+                break;
+            else:
+                if result is None:
+                    result = name
+                else:
+                    result = (name, (result,))
+                item = self.tree_ctrl.GetItemParent(item)
+        return result
+        
+    def update(self, event = None):
+        self.update_subtree(self.v.file_tree, self.root_item, False)
+        
+    def update_subtree(self, file_tree, parent_item, is_filtered):
+        existing_items = {}
+        show_filtered = self.v.show_filtered
+        needs_sort = False
+        child_count = self.tree_ctrl.GetChildrenCount(parent_item, False)
+        if child_count > 0:
+            child_item_id, cookie = self.tree_ctrl.GetFirstChild(parent_item)
+            for i in range(child_count):
+                existing_items[self.tree_ctrl.GetItemPyData(child_item_id)] = \
+                    [child_item_id, False]
+                if i < child_count - 1:
+                    child_item_id = \
+                        self.tree_ctrl.GetNextSibling(child_item_id)
+            
+        for x in file_tree.keys():
+            if x is None:
+                continue
+            if isinstance(file_tree[x], bool):
+                node_is_filtered = (not file_tree[x]) or is_filtered
+                if node_is_filtered and not show_filtered:
+                    continue
+                if existing_items.has_key(x):
+                    existing_items[x][1] = True
+                    item_id = existing_items[x][0]
+                else:
+                    item_id = self.tree_ctrl.AppendItem(parent_item, x)
+                    self.tree_ctrl.SetItemImage(item_id, self.FILE_IMAGE_INDEX)
+                    self.tree_ctrl.SetItemPyData(item_id, x)
+                    existing_items[x] = (item_id, True)
+                    needs_sort = True
+            elif isinstance(file_tree[x], dict):
+                subtree = file_tree[x]
+                node_is_filtered = (not subtree[None]) or is_filtered
+                if node_is_filtered and not show_filtered:
+                    continue
+                unfiltered_subfolders, filtered_subfolders, \
+                    unfiltered_files, filtered_files = \
+                    self.get_file_and_folder_counts(subtree)
+                text = x
+                n_subfolders = unfiltered_subfolders + filtered_subfolders
+                n_files = unfiltered_files + filtered_files
+                if n_subfolders > 0 or n_files > 0:
+                    text += " ("
+                    if n_subfolders > 0:
+                        if node_is_filtered:
+                            text += "\t%d folders" % n_subfolders
+                        else:
+                            text += "\t%d of %d folders" % (
+                                unfiltered_subfolders, n_subfolders)
+                        if n_files > 0:
+                            text += ", "
+                    if n_files > 0:
+                        if node_is_filtered:
+                            text += "\t%d files" % n_files
+                        else:
+                            text += "\t%d of %d files" % (
+                                unfiltered_files, n_files)
+                    text += ")"
+                if existing_items.has_key(x):
+                    existing_items[x][1] = True
+                    item_id = existing_items[x][0]
+                    if self.tree_ctrl.GetItemText(item_id) != text:
+                        self.tree_ctrl.SetItemText(item_id, text)
+                else:
+                    item_id = self.tree_ctrl.AppendItem(parent_item, text)
+                    self.tree_ctrl.SetItemImage(item_id, self.FOLDER_IMAGE_INDEX)
+                    self.tree_ctrl.SetItemImage(
+                        item_id, self.FOLDER_OPEN_IMAGE_INDEX,
+                        wx.TreeItemIcon_Expanded)
+                    self.tree_ctrl.SetItemPyData(item_id, x)
+                    existing_items[x] = (item_id, True)
+                    needs_sort = True
+                has_children = n_subfolders + n_files > 0
+                self.tree_ctrl.SetItemHasChildren(item_id, has_children)
+                self.update_subtree(subtree, item_id, node_is_filtered)
+                    
+            color = self.FILTERED_COLOR if node_is_filtered else self.ACTIVE_COLOR
+            self.tree_ctrl.SetItemTextColour(item_id, color)
+        for item_id, keep in existing_items.values():
+            if not keep:
+                self.tree_ctrl.Delete(item_id)
+        if needs_sort:
+            self.tree_ctrl.SortChildren(parent_item)
+            
+    @classmethod
+    def get_file_and_folder_counts(cls, tree):
+        '''Count the number of files and folders in the tree
+        
+        returns the number of immediate unfiltered and filtered subfolders
+        and number of unfiltered and filtered files in the hierarchy
+        '''
+        unfiltered_subfolders = filtered_subfolders = 0
+        unfiltered_files = filtered_files = 0
+        for key in tree:
+            if key is None:
+                continue
+            if isinstance(tree[key], bool):
+                if tree[key]:
+                    unfiltered_files += 1
+                else:
+                    filtered_files += 1
+            else:
+                is_filtered = not tree[key][None]
+                if is_filtered:
+                    unfiltered_subfolders += 1
+                else:
+                    filtered_subfolders += 1
+                ufolders, ffolders, ufiles, ffiles = \
+                    cls.get_file_and_folder_counts(tree[key])
+                filtered_files += ffiles
+                if is_filtered:
+                    filtered_files += ufiles
+                else:
+                    unfiltered_files += ufiles
+        return unfiltered_subfolders, filtered_subfolders, unfiltered_files, \
+               filtered_files
+    
+    def on_hide_show_checked(self, event):
+        self.v.show_filtered = not self.hide_show_ctrl.Value
+        self.update(event)
+                
 class ModuleSizer(wx.PySizer):
     """The module sizer uses the maximum best width of the setting
     edit controls to compute the column widths, then it sets the text
@@ -2361,7 +2650,7 @@ class ModuleSizer(wx.PySizer):
             if not self.__printed_exception:
                 logger.warning("Detected WX error", exc_info=True)
                 self.__printed_exception = True
-
+                
 pipeline_queue_lock = threading.RLock()
 pipeline_queue_semaphore = threading.Semaphore(0)
 pipeline_queue = []

@@ -2415,10 +2415,7 @@ def validate_module(pipeline_data, module_num, callback):
         level = logging.INFO
     except cps.ValidationError, instance:
         message = instance.message
-        for i, setting in enumerate(module.visible_settings()):
-            if setting == instance.get_setting():
-                setting_idx = i
-                break
+        setting_idx = [m.key() for m in module.visible_settings()].index(instance.get_setting().key())
     wx.CallAfter(callback, setting_idx, message, level, pipeline_data)
             
 def pipeline_queue_handler():

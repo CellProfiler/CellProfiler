@@ -647,17 +647,16 @@ class PipelineListView(object):
             if (idx >= self.__first_dirty_module and
                  self.__submission_time + CHECK_FAIL_SEC < time.time()):
                 pipeline_hash = self.__pipeline.settings_hash()
-                def fn(setting_idx, message, level, pipeline_data, 
+                def fn(setting_idx, message, level,
                        idx=idx, settings_hash = pipeline_hash):
-                    self.on_validate_module(setting_idx, message, level, 
-                                            pipeline_data, idx, settings_hash)
+                    self.on_validate_module(setting_idx, message, level, idx, settings_hash)
                 self.__module_being_validated = idx
                 self.__submission_time = time.time()
                 request_module_validation(self.__pipeline, module, fn)
 
         event.RequestMore(False)
-    
-    def on_validate_module(self, setting_idx, message, level, pipeline_data, 
+
+    def on_validate_module(self, setting_idx, message, level,
                            idx, settings_hash):
         if settings_hash != self.__pipeline.settings_hash():
             self.__submission_time = 0

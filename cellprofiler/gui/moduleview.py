@@ -1674,9 +1674,9 @@ class ModuleView:
                 # fast-path: check the reported setting first
                 level = logging.ERROR
                 visible_settings[setting_idx].test_valid(self.__pipeline)
-                self.__module.test_valid(pipeline)
+                self.__module.test_valid(self.__pipeline)
                 level = logging.WARNING
-                self.__module.validate_module_warnings(pipeline)
+                self.__module.validate_module_warnings(self.__pipeline)
             except cps.ValidationError, instance:
                 message = instance.message
                 bad_setting = instance.get_setting()

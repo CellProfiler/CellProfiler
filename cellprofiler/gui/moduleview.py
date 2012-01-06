@@ -1659,6 +1659,9 @@ class ModuleView:
         default_fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
         default_bg_color = cpprefs.get_background_color()
 
+        if not self.__module:  # defensive coding, in case the module was deleted
+            return
+
         visible_settings = self.__module.visible_settings()
         bad_setting = None
         if setting_idx is not None:
@@ -1671,9 +1674,9 @@ class ModuleView:
                 # fast-path: check the reported setting first
                 level = logging.ERROR
                 visible_settings[setting_idx].test_valid(self.__pipeline)
-                module.test_valid(pipeline)
+                self.__module.test_valid(pipeline)
                 level = logging.WARNING
-                module.validate_module_warnings(pipeline)
+                self.__module.validate_module_warnings(pipeline)
             except cps.ValidationError, instance:
                 message = instance.message
                 bad_setting = instance.get_setting()

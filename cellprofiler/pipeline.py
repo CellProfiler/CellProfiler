@@ -400,9 +400,9 @@ class Pipeline(object):
         for module in self.modules():
             h.update(module.module_name)
             for setting in module.settings():
-                h.update(str(setting))
+                h.update(setting.unicode_value.encode('utf-8'))
         return h.digest()
-    
+
     def create_from_handles(self,handles):
         """Read a pipeline's modules out of the handles structure
         

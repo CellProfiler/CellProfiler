@@ -11,8 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-import codecs
-import cStringIO
 import logging
 import matplotlib.cm
 import numpy as np
@@ -21,10 +19,8 @@ import stat
 import threading
 import heapq
 import time
-import traceback
 import wx
 import wx.grid
-import sys
 
 logger = logging.getLogger(__name__)
 import cellprofiler.pipeline as cpp
@@ -1709,7 +1705,7 @@ class ModuleView:
                         static_text.SetForegroundColour(default_fg_color)
                         static_text.SetBackgroundColour(default_bg_color)
                         static_text.Refresh()
-            except Exception, e:
+            except Exception:
                 logger.debug("Caught bare exception in ModuleView.on_validate()", exc_info=True)
                 pass
 
@@ -1856,8 +1852,8 @@ class FilterPanelController(object):
     def get_tokens(self):
         try:
             tokens = self.v.parse()
-        except e:
-            logger.debug("Failed to parse filter (value=%s): %s", 
+        except Exception, e:
+            logger.debug("Failed to parse filter (value=%s): %s",
                          self.v.text, str(e))
             tokens = self.v.default()
         #
@@ -1878,7 +1874,7 @@ class FilterPanelController(object):
             self.populate_subpanel(structure, [])
             for key, value in self.hide_show_dict.iteritems():
                 self.panel.FindWindowByName(key).Show(value)
-        except e:
+        except Exception:
             logger.exception("Threw exception while updating filter")
         finally:
             self.inside_update = False
@@ -2455,7 +2451,24 @@ def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_
         request_pipeline_cache.pipeline = pipeline.copy()
 
     pipeline_copy = request_pipeline_cache.pipeline
-    assert pipeline_copy.settings_hash() == pipeline_hash
+    if pipeline_copy.settings_hash() != pipeline_hash:
+        logger.warning("Pipeline and pipeline.copy() have different values for settings_hash()")
+        # compare pipelines, try to find the changed setting
+        orig_modules = pipeline.modules()
+        copy_modules = pipeline_copy.modules()
+        # If module names are changed by the copy operation, that's too much to continue from.
+        assert [m.module_name for m in orig_modules] == [m.module_name for m in copy_modules], \
+            "Module names do not match from original and copy, giving up!\nOrig: %s\nCopy: %s" % \
+            ([m.module_name for m in orig_modules], [m.module_name for m in copy_modules])
+        for midx, (om, cm) in enumerate(zip(orig_modules, copy_modules)):
+            orig_settings = [s.unicode_value.encode('utf-8') for s in om.settings()]
+            copy_settings = [s.unicode_value.encode('utf-8') for s in cm.settings()]
+            differences = [oset != cset for oset, cset in zip(orig_settings, copy_settings)]
+            if True in differences:
+                logger.warning("  Differences in module #%d %s:" % (midx, om.module_name))
+                for sidx, (diff, oset, cset) in enumerate(zip(differences, orig_settings, copy_settings)):
+                    if diff:
+                        logger.warning("    Setting #%d: was %s now %s" % (sidx, repr(oset), repr(cset)))
 
     with validation_queue_lock:
         # walk heap (as a list) removing any same-or-lower priority occurrences

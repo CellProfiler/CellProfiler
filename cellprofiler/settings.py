@@ -2231,7 +2231,10 @@ class FileCollectionDisplay(Setting):
     '''
     ADD = "ADD"
     REMOVE = "REMOVE"
-    def __init__(self, text, value, fn_report_directory_change, 
+    METADATA = "METADATA"
+    def __init__(self, text, value, 
+                 fn_report_directory_change, 
+                 fn_get_image_plane_details,
                  hide_text = "Hide files", **kwargs):
         '''Constructor
         
@@ -2248,11 +2251,15 @@ class FileCollectionDisplay(Setting):
 
                 def fn_report_directory_change(op, filelist)
                 
-                where op is either ADD or REMOVE and the filelist has the
+                where op is ADD, REMOVE or METADATA and the filelist has the
                 files to be added or removed
+                
+        fn_get_image_plane_details - a function that returns the image plane
+                details for a path.
         '''
         super(self.__class__, self).__init__(text, value, **kwargs)
         self.fn_report_directory_change = fn_report_directory_change
+        self.fn_get_image_plane_details = fn_get_image_plane_details
         self.hide_text = hide_text
         self.fn_update = None
         self.file_tree = {}
@@ -2352,6 +2359,26 @@ class FileCollectionDisplay(Setting):
             else:
                 if tree.has_key(mod[0]):
                     self.mark_subtree(mod[1], keep, tree[mod[0]])
+                    
+    def add_metadata(self, path, metadata):
+        '''Add metadata to a image plane
+        
+        path - path to the image plane as a list of nodes to walk from the root
+        
+        metadata - a dictionary of keys and values to add to the image plane.
+        '''
+        self.fn_report_directory_change(self.METADATA,
+                                        path, metadata)
+        
+    def get_metadata(self, path):
+        '''Get the metadata associated with the image plane at a given path
+        
+        path - path to the image plane as a list of nodes
+        
+        returns either None if no image plane at the path or a dictionary
+        '''
+        ipd = self.fn_get_image_plane_details(path)
+        return None if ipd is None else ipd.metadata
             
     def get_show_filtered(self):
         return self.properties[self.SHOW_FILTERED]

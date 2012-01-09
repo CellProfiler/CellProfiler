@@ -139,6 +139,27 @@ def run_logger():
             logger.info(subimager_process.stdout.readline().strip())
         except:
             break
+
+class HTTPError(RuntimeError):
+    '''An encapsulation of an HTTP error code
+    
+    self.status - the HTTP status code (e.g. 401 = url not found)
+    self.context - context message about the call, for instance that the
+                   server failed to read the image
+    self.body - the body of the HTTP response
+    '''
+    def __init__(self, response, context):
+        assert isinstance(response, httplib.HTTPResponse)
+        self.status = response.status
+        self.context = context
+        logger.info("%d: %s. %s" % (self.status, response.reason,
+                                    self.context))
+        try:
+            self.body = response.read()
+            logger.debug(self.body)
+        except:
+            self.body = None
+            pass
         
 def get_image(url, **kwargs):
     '''Get an image via the readimage web interface
@@ -157,9 +178,7 @@ def get_image(url, **kwargs):
     conn.request("GET", url)
     response = conn.getresponse(buffering=True)
     if response.status != httplib.OK:
-        logger.warn(response.reason)
-        logger.warn(response.read())
-        raise RuntimeError("Image server failed to read image. URL="+url)
+        raise HTTPError(response, "Image server failed to read image. URL="+url)
     return decode_image(response.read())
 
 def post_image(url, image, omexml, **kwargs):
@@ -195,10 +214,7 @@ def post_image(url, image, omexml, **kwargs):
     conn.request("POST", "/writeimage", body, dict(message.items()))
     response = conn.getresponse()
     if response.status != httplib.OK:
-        logger.warn(response.reason)
-        logger.warn(response.read())
-        raise RuntimeError("Image server failed to write image. URL="+url)
-          
+        raise HTTPError(response, "Image server failed to write image. URL="+url)
 
 def get_metadata(url, **kwargs):
     '''Get metadata for an image file
@@ -215,6 +231,8 @@ def get_metadata(url, **kwargs):
     conn = connect()
     conn.request("GET", url)
     response = conn.getresponse(buffering=True)
+    if response.status != httplib.OK:
+        raise HTTPError(response, "Image server failed to get metadata. URL="+url)
     return unicode(response.read(), 'utf-8')
 
 def encode_image(a):
@@ -325,7 +343,10 @@ def stop_subimager():
     conn.request("GET", "/stop")
     conn.getresponse()
     stop_semaphore.release()
-    
+
+__all__ = (start_subimager, get_image, get_metadata, post_image, 
+           stop_subimager, HTTPError)
+
 if __name__ == "__main__":
     import wx
     import matplotlib

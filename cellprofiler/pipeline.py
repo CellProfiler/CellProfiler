@@ -401,6 +401,14 @@ class ImagePlaneDetails(object):
     In addition, image planes have associated metadata which is represented
     as a dictionary of keys and values.
     '''
+    MD_COLOR_FORMAT = "ColorFormat"
+    MD_MONOCHROME = "monochrome"
+    MD_RGB = "RGB"
+    MD_PLANAR = "Planar"
+    MD_SIZE_C = "SizeC"
+    MD_SIZE_Z = "SizeZ"
+    MD_SIZE_T = "SizeT"
+    
     def __init__(self, url, series, index, channel, **metadata):
         self.url = url
         self.series = series
@@ -1988,6 +1996,18 @@ class Pipeline(object):
         def undo():
             self.add_image_plane_details(real_list)
         self.__undo_stack.append((undo, "Remove images"))
+        
+    def find_image_plane_details(self, exemplar):
+        '''Return the image plane details record that matches the exemplar
+        
+        exemplar - an image plane details record with the desired URL,
+                   series, index and channel
+        '''
+        pos = bisect.bisect_left(self.image_plane_details, exemplar)
+        if (pos == len(self.image_plane_details) or 
+            cmp(self.image_plane_details[pos], exemplar)):
+            return None
+        return self.image_plane_details[pos]
     
     def has_undo(self):
         '''True if an undo action can be performed'''

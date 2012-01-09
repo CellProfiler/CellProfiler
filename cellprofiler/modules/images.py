@@ -17,7 +17,7 @@ class Images(cpm.CPModule):
 
     def create_settings(self):
         self.file_collection_display = cps.FileCollectionDisplay(
-            "", "", self.on_fcd_change)
+            "", "", self.on_fcd_change, self.get_image_plane_details)
         subpredicates = [cps.Filter.CONTAINS_PREDICATE,
                          cps.Filter.CONTAINS_REGEXP_PREDICATE,
                          cps.Filter.STARTS_WITH_PREDICATE,
@@ -101,18 +101,42 @@ class Images(cpm.CPModule):
                 ipds.append(cpp.ImagePlaneDetails(url, None, None, None))
         return ipds
         
-    def on_fcd_change(self, operation, mods):
+    def on_fcd_change(self, operation, *args):
         if self.pipeline:
             self.modifying_ipds = True
             try:
-                ipds = self.make_ipds_from_mods(mods)
+                if operation in (cps.FileCollectionDisplay.ADD,
+                                 cps.FileCollectionDisplay.REMOVE):
+                    mods = args[0]
+                    ipds = self.make_ipds_from_mods(mods)
                 if operation == cps.FileCollectionDisplay.ADD:
                     self.pipeline.add_image_plane_details(ipds)
                 elif operation == cps.FileCollectionDisplay.REMOVE:
                     self.pipeline.remove_image_plane_details(ipds)
+                elif operation == cps.FileCollectionDisplay.METADATA:
+                    path, metadata = args
+                    ipd = self.get_image_plane_details(path)
+                    ipd.metadata.update(metadata)
             finally:
                 self.modifying_ipds = False
-    
+                
+    def get_image_plane_details(self, modpath, series=None, index = None, 
+                                channel = None):
+        '''Find the image plane details, given a path list
+        
+        modpath - the list of file parts, starting at the root
+        
+        series - the series of the image plane within the file
+        
+        index - the index of the image plane within the file
+        
+        channel - the channel within the file
+        '''
+        path = os.path.join(*modpath)
+        exemplar = cpp.ImagePlaneDetails("file:" + urllib.pathname2url(path),
+                                         series, index, channel)
+        return self.pipeline.find_image_plane_details(exemplar)
+        
     def on_filter_change(self):
         keep = []
         dont_keep = []

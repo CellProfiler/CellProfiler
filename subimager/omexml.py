@@ -320,7 +320,7 @@ class OMEXML(object):
     
     def to_xml(self, indent="\t", newline="\n", encoding = "utf-8"):
         return self.dom.toprettyxml(indent = indent,
-                                    newline = newline,
+                                    newl = newline,
                                     encoding = encoding)
 
     @property

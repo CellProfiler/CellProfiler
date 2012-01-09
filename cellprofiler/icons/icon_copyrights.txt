@@ -1,0 +1,12 @@
+The following icons have copyrights that are not covered by the CellProfiler
+license:
+
+microscope-icon_16.png
+microscope-icon_32.png
+Creative Commons Attribution 3.0
+    http://creativecommons.org/licenses/by/3.0/legalcode
+    Generously donated by http://onlinepharmacycheck.com/
+
+movie_16.png
+Free for use with attribution to:
+    http://pixel-mixer.com

@@ -31,6 +31,7 @@ logger = logging.getLogger(__name__)
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
+from cellprofiler.icons import get_builtin_image
 from cellprofiler.gui.html import HtmlClickableWindow
 from regexp_editor import edit_regexp
 from htmldialog import HTMLDialog
@@ -38,6 +39,7 @@ from treecheckboxdialog import TreeCheckboxDialog
 from metadatactrl import MetadataControl
 from namesubscriber import NameSubcriberComboBox
 from cellprofiler.utilities.walk_in_background import walk_in_background
+from cellprofiler.utilities.walk_in_background import get_metadata_in_background
 
 ERROR_COLOR = wx.RED
 WARNING_COLOR = wx.Colour(224,224,0,255)
@@ -2194,6 +2196,15 @@ class FileCollectionDisplayController(object):
     FILE_IMAGE_INDEX = IMAGE_LIST.Add(
         wx.ArtProvider.GetBitmap(wx.ART_NORMAL_FILE,
                                  wx.ART_OTHER, size = (16,16)))
+    IMAGE_PLANE_IMAGE_INDEX = IMAGE_LIST.Add(
+        get_builtin_image("microscope-icon_16").ConvertToBitmap())
+    IMAGE_PLANES_IMAGE_INDEX = IMAGE_LIST.Add(
+        get_builtin_image("microscopes_16").ConvertToBitmap())
+    COLOR_IMAGE_INDEX = IMAGE_LIST.Add(
+        get_builtin_image("microscope-color_16").ConvertToBitmap())
+    MOVIE_IMAGE_INDEX = IMAGE_LIST.Add(
+        get_builtin_image("movie_16").ConvertToBitmap())
+    
     ACTIVE_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
     FILTERED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
     class FCDCFileDropTarget(wx.FileDropTarget):
@@ -2273,7 +2284,16 @@ class FileCollectionDisplayController(object):
             del self.walks_in_progress[key]
         def walk_fn(dirpath, dirnames, filenames):
             self.add_files(dirpath, filenames)
-        stop_fn = walk_in_background(path, walk_fn, completed_fn)
+        stop_fn = walk_in_background(path, walk_fn, completed_fn, 
+                                     self.add_image_metadata)
+        self.walks_in_progress[key] = stop_fn
+        
+    def add_file_metadata(self, paths):
+        key = str(uuid.uuid4())
+        def completed_fn():
+            del self.walks_in_progress[key]
+        stop_fn = get_metadata_in_background(paths, self.add_image_metadata, 
+                                             completed_fn)
         self.walks_in_progress[key] = stop_fn
         
     def add_files(self, dirpath, filenames):
@@ -2285,9 +2305,62 @@ class FileCollectionDisplayController(object):
                 return
             tree = ((directory, tree),)
             dirpath = new_dirpath
+            
+    @classmethod
+    def get_modpath(cls, path):
+        '''Break a path into its components'''
+        result = []
+        while True:
+            new_path, part = os.path.split(path)
+            if len(new_path) == 0 or len(part) == 0:
+                result.insert(0, path)
+                return result
+            result.insert(0, part)
+            path = new_path
+            
+    def add_image_metadata(self, path, metadata):
+        if (metadata.image_count > 1):
+            logger.warn("Unhandled case: Image %s had %d images" % (path, metadata.image_count))
+            return
+        m = {}
+        image_id = self.FILE_IMAGE_INDEX
+        pixels = metadata.image(0).Pixels
+        m[cpp.ImagePlaneDetails.MD_SIZE_C] = str(pixels.SizeC)
+        m[cpp.ImagePlaneDetails.MD_SIZE_Z] = str(pixels.SizeZ)
+        m[cpp.ImagePlaneDetails.MD_SIZE_T] = str(pixels.SizeT)
         
+        if pixels.SizeC == 1:
+            #
+            # Monochrome image
+            #
+            m[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                cpp.ImagePlaneDetails.MD_MONOCHROME
+            image_id = self.IMAGE_PLANE_IMAGE_INDEX
+        elif pixels.channel_count == 1:
+            #
+            # Oh contradictions! It's interleaved, really RGB or RGBA
+            # 
+            image_id = self.COLOR_IMAGE_INDEX
+        else:
+            m[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                cpp.ImagePlaneDetails.MD_PLANAR
+            image_id = self.COLOR_IMAGE_INDEX
+        modpath = self.get_modpath(path)
+        self.v.add_metadata(modpath, m)
+        item = self.get_item_from_modpath(modpath)
+        if item is not None:
+            if pixels.SizeT > 1:
+                image_id = self.MOVIE_IMAGE_INDEX
+                text = "%s: %d frames" % (
+                    self.tree_ctrl.GetItemPyData(item),
+                    pixels.SizeT)
+                self.tree_ctrl.SetItemText(item, text)
+            self.tree_ctrl.SetItemImage(item, image_id)
+                
+                    
     def on_drop_files(self, x, y, filenames):
         d = {}
+        pathnames = []
         for filename in filenames:
             if os.path.isdir(filename):
                 self.add_directory(filename)
@@ -2296,8 +2369,11 @@ class FileCollectionDisplayController(object):
                 if not d.has_key(directory):
                     d[directory] = []
                 d[directory].append(f)
+                pathnames.append(filename)
         for dirpath, ff in d.iteritems():
             self.add_files(dirpath, ff)
+        if len(pathnames) > 0:
+            self.add_file_metadata(pathnames)
         
     def on_tree_item_menu(self, event):
         logger.debug("On tree item menu")
@@ -2328,11 +2404,33 @@ class FileCollectionDisplayController(object):
                     result = (name, (result,))
                 item = self.tree_ctrl.GetItemParent(item)
         return result
+    
+    def get_item_from_modpath(self, modpath, parent_item = None):
+        '''Get an item from its modpath
+        
+        returns the tree item id or None if not found.
+        '''
+        if parent_item is None:
+            parent_item = self.root_item
+        if len(modpath) == 0:
+            return parent_item
+        looking_for = modpath[0]
+        sub_modpath = modpath[1:]
+        child_count = self.tree_ctrl.GetChildrenCount(parent_item, False)
+        if child_count > 0:
+            child_item_id, cookie = self.tree_ctrl.GetFirstChild(parent_item)
+            for i in range(child_count):
+                if self.tree_ctrl.GetItemPyData(child_item_id) == looking_for:
+                    return self.get_item_from_modpath(sub_modpath, child_item_id)
+                if i < child_count - 1:
+                    child_item_id = \
+                        self.tree_ctrl.GetNextSibling(child_item_id)
+        return None
         
     def update(self, event = None):
-        self.update_subtree(self.v.file_tree, self.root_item, False)
+        self.update_subtree(self.v.file_tree, self.root_item, False, [])
         
-    def update_subtree(self, file_tree, parent_item, is_filtered):
+    def update_subtree(self, file_tree, parent_item, is_filtered, modpath):
         existing_items = {}
         show_filtered = self.v.show_filtered
         needs_sort = False
@@ -2347,9 +2445,11 @@ class FileCollectionDisplayController(object):
                         self.tree_ctrl.GetNextSibling(child_item_id)
             
         for x in file_tree.keys():
+            sub_modpath = modpath + [x]
             if x is None:
                 continue
             if isinstance(file_tree[x], bool):
+                metadata = self.v.get_metadata(sub_modpath)
                 node_is_filtered = (not file_tree[x]) or is_filtered
                 if node_is_filtered and not show_filtered:
                     continue
@@ -2358,10 +2458,23 @@ class FileCollectionDisplayController(object):
                     item_id = existing_items[x][0]
                 else:
                     item_id = self.tree_ctrl.AppendItem(parent_item, x)
-                    self.tree_ctrl.SetItemImage(item_id, self.FILE_IMAGE_INDEX)
                     self.tree_ctrl.SetItemPyData(item_id, x)
                     existing_items[x] = (item_id, True)
                     needs_sort = True
+                    
+                image_id = self.FILE_IMAGE_INDEX
+                if metadata is not None:
+                    if (metadata.has_key(cpp.ImagePlaneDetails.MD_SIZE_T) and
+                        int(metadata[cpp.ImagePlaneDetails.MD_SIZE_T]) > 1):
+                        image_id = self.MOVIE_IMAGE_INDEX
+                    elif (metadata.has_key(cpp.ImagePlaneDetails.MD_COLOR_FORMAT) and
+                          metadata[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] != 
+                          cpp.ImagePlaneDetails.MD_MONOCHROME):
+                        image_id = self.COLOR_IMAGE_INDEX
+                    else:
+                        image_id = self.IMAGE_PLANE_IMAGE_INDEX
+                        
+                self.tree_ctrl.SetItemImage(item_id, image_id)
             elif isinstance(file_tree[x], dict):
                 subtree = file_tree[x]
                 node_is_filtered = (not subtree[None]) or is_filtered
@@ -2406,7 +2519,8 @@ class FileCollectionDisplayController(object):
                     needs_sort = True
                 has_children = n_subfolders + n_files > 0
                 self.tree_ctrl.SetItemHasChildren(item_id, has_children)
-                self.update_subtree(subtree, item_id, node_is_filtered)
+                self.update_subtree(subtree, item_id, node_is_filtered, 
+                                    sub_modpath)
                     
             color = self.FILTERED_COLOR if node_is_filtered else self.ACTIVE_COLOR
             self.tree_ctrl.SetItemTextColour(item_id, color)

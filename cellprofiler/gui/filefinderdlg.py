@@ -11,12 +11,10 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version__="$Revision$"
-
 import wx
-import wx.lib.agw.customtreectrl as CT
 import cellprofiler.utilities.filefinder as filefinder
 import os.path
+import Queue
 
 class FileFinderDialog(wx.Dialog):
     '''A dialog wrapping the cellprofiler file finder'''
@@ -31,27 +29,7 @@ class FileFinderDialog(wx.Dialog):
         self.bitmaps = []
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
-        self.tree_ctrl = CT.CustomTreeCtrl(self,
-                                           style = wx.TR_DEFAULT_STYLE | wx.TR_HIDE_ROOT,
-                                           agwStyle= CT.TR_HAS_VARIABLE_ROW_HEIGHT | CT.TR_HAS_BUTTONS | CT.TR_HIDE_ROOT)
-
-        # WTF!?  why gratuitously change these things?  It's wx's fault,
-        # random change from 2.8 to 2.9, but why does agw do it a release
-        # early?
-
-        # Rewrite arguments to CustomTreeCtrl.{AddRoot, AppendItem} to be
-        # compatible with wx.TreeCtrl
-        self.tree_ctrl.GetItemData = self.tree_ctrl.GetItemPyData
-        def fixed_args(orig_fun):
-            def fixargs(*args, **kwargs):
-                if 'selectedImage' in kwargs:
-                    kwargs['selImage'] = kwargs.pop('selectedImage')
-                if 'parent' in kwargs:
-                    kwargs['parentId'] = kwargs.pop('parent')
-                return orig_fun(*args, **kwargs)
-            return fixargs
-        self.tree_ctrl.AddRoot = fixed_args(self.tree_ctrl.AddRoot)
-        self.tree_ctrl.AppendItem = fixed_args(self.tree_ctrl.AppendItem)
+        self.tree_ctrl = wx.TreeCtrl(self, style = wx.TR_DEFAULT_STYLE | wx.TR_HIDE_ROOT)
 
         sizer.Add(self.tree_ctrl, 1, wx.EXPAND | wx.ALL, 3)
 
@@ -59,13 +37,18 @@ class FileFinderDialog(wx.Dialog):
         for i, state_flag in enumerate(
             (0, wx.CONTROL_CHECKED, wx.CONTROL_UNDETERMINED)):
             for j, selection_flag in enumerate((0, wx.CONTROL_CURRENT)):
-                idx = image_list.Add(
-                    self.get_checkbox_bitmap(state_flag | selection_flag,
-                                             16, 16))
+                image_list.Add(self.get_checkbox_bitmap(state_flag | selection_flag, 16, 16))
         self.tree_ctrl.SetImageList(image_list)
         self.image_list = image_list
         self.root_id = self.tree_ctrl.AddRoot("All")  # hidden
         self.tree_ctrl.SetItemHasChildren(self.root_id, True)
+
+        # for throbbers
+        self.queue = Queue.Queue()
+        self.progress = {}
+        self.Bind(wx.EVT_TIMER, self.on_timer)
+        self.timer = wx.Timer(self)
+        self.timer.Start(100)
 
         self.key_to_itemid = {None: self.root_id}
         self.file_finder = filefinder.Locator(self.finder_cb, self.metadata_cb)
@@ -91,34 +74,7 @@ class FileFinderDialog(wx.Dialog):
                   flag=wx.CENTER)
         self.Layout()
 
-    def finder_cb(self, path, isdir, key, parent, status, data):
-        if status != filefinder.FOUND:
-            return
 
-        # we need to call in the wx Thread (both for updates and to control
-        # access to shared state.
-        #
-        # Would probably be better to queue these and handle them in an idle
-        # event loop, for interactivity's sake.
-        def do_cb():
-            # already have this item - was it put back?
-            if key in self.key_to_itemid:
-                return
-
-            # transform from filefinder ids to treeids
-            tree_parent = self.key_to_itemid[parent]
-            if not self.tree_ctrl.ItemHasChildren(tree_parent):
-                self.tree_ctrl.SetItemHasChildren(tree_parent, True)
-
-            tree_child = self.tree_ctrl.AppendItem(tree_parent, os.path.basename(path),
-                                                   image=2, selectedImage=3)
-            self.key_to_itemid[key] = tree_child
-            self.tree_ctrl.RefreshSubtree(tree_parent)
-            self.tree_ctrl.SetItemPyData(tree_child, [True, key, path])
-        wx.CallAfter(do_cb)
-
-    def metadata_cb(self, path):
-        return
 
     def img_idx(self, checked):
         if not checked:
@@ -178,12 +134,66 @@ class FileFinderDialog(wx.Dialog):
         self.bitmaps.append(bitmap)
         return bitmap
 
+    def get_children(self, item):
+        child, cookie = self.tree_ctrl.GetFirstChild(item)
+        while child.IsOk():
+            yield child
+            child, cookie = self.tree_ctrl.GetNextchild(item, cookie)
+
+    def finder_cb(self, path, isdir, key, parent, status, data):
+        # for interactivity, we queue this message, and handle them in batches
+        # in on_timer(), below.
+        self.queue.put((path, isdir, key, parent, status, data))
+
+    def metadata_cb(self, path):
+        return
+
+    def update(self, path, isdir, key, parent, status, data):
+        self.progress[key] = status
+
+        if status != filefinder.FOUND:
+            return
+
+        # already have this item - was it put back?
+        if key in self.key_to_itemid:
+            return
+
+        # New item - add to tree.
+        # transform from filefinder ids to treeids
+        tree_parent = self.key_to_itemid[parent]
+        if not self.tree_ctrl.ItemHasChildren(tree_parent):
+            self.tree_ctrl.SetItemHasChildren(tree_parent, True)
+
+        tree_child = self.tree_ctrl.AppendItem(tree_parent, os.path.basename(path),
+                                               image=2, selectedImage=3)
+        self.key_to_itemid[key] = tree_child
+        self.tree_ctrl.SetItemPyData(tree_child, [True, key, path])
+
+    def on_timer(self, evt):
+        # first, process any callbacks in the queue
+        count = 0
+        while not self.queue.empty():
+            message = self.queue.get()
+            self.update(*message)
+            count += 1
+        print "Processed", count
+
+        # then update any items
+        item = self.tree_ctrl.GetFirstVisibleItem()
+        while item.IsOk():
+            try:
+                _, key, path = self.get_item_data(item)
+                print path, self.progress[key]
+            except:
+                pass
+            item = self.tree_ctrl.GetNextVisible(item)
+
 if __name__ == "__main__":
     class MyApp(wx.App):
         def OnInit(self):
             dlg = FileFinderDialog(None, ['/Users/tjones/CellProfilerMine.git',
                                           '/Volumes/plateformes/incell/Screening Externe_BFX Projects Calls/E-003_CILS_BENMERAH/Crible_E003'],
-                                   size=(640,480),
+                                   size=(640, 480),
                                    style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
             dlg.ShowModal()
     my_app = MyApp(False)

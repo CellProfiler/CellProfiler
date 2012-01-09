@@ -15,8 +15,6 @@
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from email.message import Message
-import email.encoders
 import os
 import httplib
 import logging
@@ -44,7 +42,7 @@ from cellprofiler.cpmath.filter import paeth_decoder
     
 logger = logging.getLogger(__name__)
 port = 0
-init_semaphore = threading.Semaphore(0)
+init_semaphore = threading.Semaphore(1)
 stop_semaphore = threading.Semaphore(0)
 subprocess_thread = None
 logger_thread = None
@@ -65,11 +63,14 @@ def connect():
 #
 #    The process is started in the subprocess thread. A pair of semaphores
 #    signal initiation and termination:
-#    init_semaphore - the subprocess thread signals the main thread that it
-#                     has started by releasing this semaphore. The client
-#                     knows the HTTP server at this point and has established
-#                     the deadman server socket which, when closed, will
-#                     cause the child process to terminate.
+
+#    init_semaphore - Acquired before starting subprocess to ensure the
+#                     subprocess thread is only started once.  Afterward, the
+#                     subprocess thread signals the main thread that it has
+#                     started by releasing this semaphore. The client knows the
+#                     HTTP server at this point and has established the deadman
+#                     server socket which, when closed, will cause the child
+#                     process to terminate.
 #
 #     stop_semaphore - any thread can shut down the subprocess thread by
 #                      releasing the stop_semaphore. The subprocess thread
@@ -82,15 +83,18 @@ def connect():
 ##############################
 def start_subimager():
     '''Start the subimager subprocess if it is not yet running'''
-    global init_semaphore, subprocess_thread
-    global __jar_path
+    global subprocess_thread
+
+    init_semaphore.acquire()  # make sure subprocess is only started once...
     if subimager_running:
+        init_semaphore.release()
         return
-    
+
     subprocess_thread = threading.Thread(target = run_subimager)
     subprocess_thread.setDaemon(True)
     subprocess_thread.start()
-    init_semaphore.acquire()
+    init_semaphore.acquire()  # wait for subprocess thread to release
+    init_semaphore.release()
 
 def run_subimager():
     '''Thread function for controlling the subimager process'''
@@ -128,12 +132,10 @@ def run_subimager():
     init_semaphore.release()
     stop_semaphore.acquire()
     subimager_deadman_connection.close()
-    stdoutdata, stderrdata = subimager_process.communicate()
-    print stdoutdata
+    subimager_process.wait()  # output is handled by the run_logger thread
     subimager_running = False
 
 def run_logger():
-    global subimager_process
     while(True):
         try:
             logger.info(subimager_process.stdout.readline().strip())

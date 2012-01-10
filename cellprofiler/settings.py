@@ -2228,6 +2228,11 @@ class FileCollectionDisplay(Setting):
     sub-collection of two-tuples. For instance, to operate on foo/bar, send:
     
     ("foo", ("bar", ))
+    
+    There are two kinds of leaves for two kinds of files. If a file has
+    only one image plane or hasn't had its metadata parsed, the leaf is
+    the file name. If a file has multiple planes, the leaf is a tuple of
+    series, index and channel.
     '''
     ADD = "ADD"
     REMOVE = "REMOVE"
@@ -2300,19 +2305,41 @@ class FileCollectionDisplay(Setting):
             self.fn_report_directory_change(self.ADD, additions)
         self.update_ui()
         
+    @classmethod
+    def mod_is_file(cls, mod):
+        '''True if mod is a file leaf
+        
+        Returns true if the mod represents a file and that file isn't composed
+        of multiple image planes.
+        '''
+        return isinstance(mod, basestring)
+    
+    @classmethod
+    def mod_is_compound_image_file(cls, mod):
+        '''True if mod is an image file with multiple image planes'''
+        return (len(mod) == 2 and
+                isinstance(mod[0], basestring) and
+                all([cls.mod_is_image_plane(mm) for mm in mod[1]]))
+    
+    @classmethod
+    def mod_is_image_plane(cls, mod):
+        '''True if the mod is an image plane within an image'''
+        return (isinstance(mod, tuple) and len(mod) == 3
+                and all([isinstance(mmm, (int, None.__class__)) for mmm in mod]))
+    
     def add_subtree(self, mods, tree):
         additions = []
         for mod in mods:
-            if isinstance(mod, basestring):
+            if self.mod_is_file(mod) or self.mod_is_image_plane(mod):
                 if not tree.has_key(mod):
                     tree[mod] = True
                     additions.append(mod)
             else:
-                if not tree.has_key(mod[0]):
+                if tree.has_key(mod[0]) and isinstance(tree[mod[0]], dict):
+                    subtree = tree[mod[0]]
+                else:
                     subtree = tree[mod[0]] = {}
                     subtree[None] = True
-                else:
-                    subtree = tree[mod[0]]
                 true_mods = self.add_subtree(mod[1], subtree)
                 additions.append((mod[0], true_mods))
         return additions
@@ -2367,6 +2394,7 @@ class FileCollectionDisplay(Setting):
         
         metadata - a dictionary of keys and values to add to the image plane.
         '''
+        metadata = dict([(k, str(v)) for k,v in metadata.iteritems()])
         self.fn_report_directory_change(self.METADATA,
                                         path, metadata)
         

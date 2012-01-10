@@ -408,6 +408,9 @@ class ImagePlaneDetails(object):
     MD_SIZE_C = "SizeC"
     MD_SIZE_Z = "SizeZ"
     MD_SIZE_T = "SizeT"
+    MD_Z = "Z"
+    MD_T = "T"
+    MD_CHANNEL_NAME = "ChannelName"
     
     def __init__(self, url, series, index, channel, **metadata):
         self.url = url

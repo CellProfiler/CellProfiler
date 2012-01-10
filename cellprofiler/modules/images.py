@@ -54,6 +54,7 @@ class Images(cpm.CPModule):
     def initialize_file_collection_display(self, pipeline):
         d = {}
         for detail in pipeline.image_plane_details:
+            assert isinstance(detail, cpp.ImagePlaneDetails)
             if detail.url.lower().startswith("file:"):
                 path = urllib.url2pathname(detail.url[5:])
                 parts = []
@@ -64,6 +65,10 @@ class Images(cpm.CPModule):
                         break
                     parts.append(part)
                     path = new_path
+                if (detail.series is not None or
+                    detail.index is not None or
+                    detail.channel is not None):
+                    parts.insert(0, (detail.series, detail.index, detail.channel))
                 dd = d
                 for part in reversed(parts[1:]):
                     if not dd.has_key(part):
@@ -86,7 +91,8 @@ class Images(cpm.CPModule):
         A mod has the form (root, [...]). Convert this recursively
         to get lists starting with "root" for each member of the list.
         '''
-        if isinstance(mod, basestring):
+        if (cps.FileCollectionDisplay.mod_is_file(mod) or
+            cps.FileCollectionDisplay.mod_is_image_plane(mod)):
             return [[mod]]
         root, modlist = mod
         return sum([[[root]+ x for x in self.make_parts_list_from_mod(submod)]
@@ -96,9 +102,14 @@ class Images(cpm.CPModule):
         ipds = []
         for mod in mods:
             for parts_list in self.make_parts_list_from_mod(mod):
-                path = os.path.join(*parts_list)
+                if cps.FileCollectionDisplay.mod_is_image_plane(parts_list[-1]):
+                    path = os.path.join(*parts_list[:-1])
+                    series, index, channel = parts_list[-1]
+                else:
+                    path = os.path.join(*parts_list)
+                    series = index = channel = None
                 url = "file:" + urllib.pathname2url(path)
-                ipds.append(cpp.ImagePlaneDetails(url, None, None, None))
+                ipds.append(cpp.ImagePlaneDetails(url, series, index, channel))
         return ipds
         
     def on_fcd_change(self, operation, *args):
@@ -116,12 +127,12 @@ class Images(cpm.CPModule):
                 elif operation == cps.FileCollectionDisplay.METADATA:
                     path, metadata = args
                     ipd = self.get_image_plane_details(path)
-                    ipd.metadata.update(metadata)
+                    if ipd is not None:
+                        ipd.metadata.update(metadata)
             finally:
                 self.modifying_ipds = False
                 
-    def get_image_plane_details(self, modpath, series=None, index = None, 
-                                channel = None):
+    def get_image_plane_details(self, modpath):
         '''Find the image plane details, given a path list
         
         modpath - the list of file parts, starting at the root
@@ -132,6 +143,11 @@ class Images(cpm.CPModule):
         
         channel - the channel within the file
         '''
+        if cps.FileCollectionDisplay.mod_is_image_plane(modpath[-1]):
+            series, index, channel = modpath[-1]
+            modpath = modpath[:-1]
+        else:
+            series = index = channel = None
         path = os.path.join(*modpath)
         exemplar = cpp.ImagePlaneDetails("file:" + urllib.pathname2url(path),
                                          series, index, channel)

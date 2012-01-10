@@ -451,6 +451,100 @@ class OMEXML(object):
         def set_SamplesPerPixel(self, value):
             self.node.setAttribute("SamplesPerPixel", str(value))
         SamplesPerPixel = property(get_SamplesPerPixel, set_SamplesPerPixel)
+
+    class Plane(object):
+        '''The OME/Image/Pixels/Plane element
+        
+        The Plane element represents one 2-dimensional image plane. It
+        has the Z, C and T indices of the plane and optionally has the
+        X, Y, Z, exposure time and a relative time delta.
+        '''
+        def __init__(self, node):
+            self.node = node
+            
+        def get_TheZ(self):
+            '''The Z index of the plane'''
+            if self.node.hasAttribute("TheZ"):
+                return int(self.node.getAttribute("TheZ"))
+            return None
+        
+        def set_TheZ(self, value):
+            self.node.setAttribute("TheZ", str(value))
+            
+        TheZ = property(get_TheZ, set_TheZ)
+        
+        def get_TheC(self):
+            '''The channel index of the plane'''
+            if self.node.hasAttribute("TheC"):
+                return int(self.node.getAttribute("TheC"))
+            return None
+        
+        def set_TheC(self, value):
+            self.node.setAttribute("TheC", str(value))
+            
+        TheC = property(get_TheC, set_TheC)
+        
+        def get_TheT(self):
+            '''The T index of the plane'''
+            if self.node.hasAttribute("TheT"):
+                return int(self.node.getAttribute("TheT"))
+            return None
+        
+        def set_TheT(self, value):
+            self.node.setAttribute("TheT", str(value))
+            
+        TheT = property(get_TheT, set_TheT)
+        
+        def get_DeltaT(self):
+            '''# of seconds since the beginning of the experiment'''
+            if self.node.hasAttribute("DeltaT"):
+                return float(self.node.getAttribute("DeltaT"))
+            return None
+        
+        def set_DeltaT(self, value):
+            self.node.setAttribute("DeltaT", str(value))
+            
+        DeltaT = property(get_DeltaT, set_DeltaT)
+        
+        @property
+        def ExposureTime(self):
+            '''Units are seconds. Duration of acquisition????'''
+            if self.node.hasAttribute("ExposureTime"):
+                return float(self.node.getAttribute("ExposureTime"))
+            return None
+        
+        def get_PositionX(self):
+            '''X position of stage'''
+            if self.node.hasAttribute("PositionX"):
+                return float(self.node.getAttribute("PositionX"))
+            return None
+        
+        def set_PositionX(self, value):
+            self.node.setAttribute("PositionX", str(value))
+            
+        PositionX = property(get_PositionX, set_PositionX)
+        
+        def get_PositionY(self):
+            '''Y position of stage'''
+            if self.node.hasAttribute("PositionY"):
+                return float(self.node.getAttribute("PositionY"))
+            return None
+        
+        def set_PositionY(self, value):
+            self.node.setAttribute("PositionY", str(value))
+            
+        PositionY = property(get_PositionY, set_PositionY)
+        
+        def get_PositionZ(self):
+            '''Z position of stage'''
+            if self.node.hasAttribute("PositionZ"):
+                return float(self.node.getAttribute("PositionZ"))
+            return None
+        
+        def set_PositionZ(self, value):
+            self.node.setAttribute("PositionZ", str(value))
+            
+        PositionZ = property(get_PositionZ, set_PositionZ)
         
     class Pixels(object):
         '''The OME/Image/Pixels element
@@ -563,6 +657,44 @@ class OMEXML(object):
             channel = self.node.getElementsByTagNameNS(NS_OME, "Channel")[index]
             return OMEXML.Channel(channel)
     
+        def get_plane_count(self):
+            '''The number of planes in the image
+            
+            An image with only one plane or an interleaved color plane will
+            often not have any planes.
+            
+            You can change the number of planes in the image by
+            setting the plane_count:
+            
+            pixels.plane_count = 3
+            pixels.Plane(0).TheZ=pixels.Plane(0).TheC=pixels.Plane(0).TheT=0
+            ...
+            '''
+            return len(self.node.getElementsByTagNameNS(NS_OME, "Plane"))
+        
+        def set_plane_count(self, value):
+            assert value >= 0
+            dom = get_dom(self.node)
+            while(self.plane_count > value):
+                last = self.node.getElementsByTagNameNS(NS_OME, "Plane")[-1]
+                self.node.removeChild(last)
+                last.unlink()
+            
+            while(self.plane_count < value):
+                new_plane = OMEXML.Plane(dom.createElementNS(NS_OME, "Plane"))
+                if self.plane_count > 0:
+                    last = self.node.getElementsByTagNameNS(NS_OME, "Plane")[-1]
+                    insert_after(last, new_plane.node)
+                else:
+                    self.node.appendChild(new_plane.node)
+                
+        plane_count = property(get_plane_count, set_plane_count)
+        
+        def Plane(self, index=0):
+            '''Get the indexed plane from the Pixels element'''
+            plane = self.node.getElementsByTagNameNS(NS_OME, "Plane")[index]
+            return OMEXML.Plane(plane)
+        
     class StructuredAnnotations(dict):
         '''The OME/StructuredAnnotations element
         

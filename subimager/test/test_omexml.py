@@ -610,6 +610,134 @@ class TestOMEXML(unittest.TestCase):
         ws.ImageRef = "Foo"
         self.assertEqual(ws.node.getElementsByTagNameNS(O.NS_SPW, "ImageRef")[0].getAttribute("ID"), "Foo")
         
+    def test_14_01_get_plane_count(self):
+        o = O.OMEXML(TIFF_XML)
+        self.assertEqual(o.image(0).Pixels.plane_count, 1)
+        
+    def test_14_02_set_plane_count(self):
+        o = O.OMEXML()
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        pixels.plane_count = 2
+        self.assertEqual(len(pixels.node.getElementsByTagNameNS(O.NS_OME, "Plane")), 2)
+        
+    def test_14_03_get_the_c(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        self.assertTrue(isinstance(plane, O.OMEXML.Plane))
+        plane.node.setAttribute("TheC", "15")
+        self.assertEqual(plane.TheC, 15)
+        
+    def test_14_04_get_the_z(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        self.assertTrue(isinstance(plane, O.OMEXML.Plane))
+        plane.node.setAttribute("TheZ", "10")
+        self.assertEqual(plane.TheZ, 10)
+        
+    def test_14_05_get_the_t(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        self.assertTrue(isinstance(plane, O.OMEXML.Plane))
+        plane.node.setAttribute("TheT", "9")
+        self.assertEqual(plane.TheT, 9)
+        
+    def test_14_06_set_the_c(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        plane.TheC = 5
+        self.assertEqual(int(plane.node.getAttribute("TheC")), 5)
+        
+    def test_14_07_set_the_z(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        plane.TheZ = 6
+        self.assertEqual(int(plane.node.getAttribute("TheZ")), 6)
+        
+    def test_14_08_set_the_t(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        plane.TheC = 7
+        self.assertEqual(int(plane.node.getAttribute("TheC")), 7)
+        
+    def test_14_09_get_delta_t(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        self.assertEqual(plane.DeltaT, 1.25)
+        
+    def test_14_10_get_exposure_time(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        self.assertEqual(plane.ExposureTime, 0.25)
+        
+    def test_14_11_get_position_x(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        self.assertEqual(plane.PositionX, 3.5)
+        
+    def test_14_12_get_position_y(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        self.assertEqual(plane.PositionY, 4.75)
+        
+    def test_14_13_get_position_z(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        self.assertEqual(plane.PositionZ, 2.25)
+        
+    def test_14_14_set_delta_t(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        plane.DeltaT = 1.25
+        self.assertEqual(float(plane.node.getAttribute("DeltaT")), 1.25)
+        
+    def test_14_15_set_position_x(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        plane.PositionX = 5.5
+        self.assertEqual(float(plane.node.getAttribute("PositionX")), 5.5)
+        
+    def test_14_16_set_position_y(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        plane.PositionY = 6.5
+        self.assertEqual(float(plane.node.getAttribute("PositionY")), 6.5)
+        
+    def test_14_17_set_position_z(self):
+        o = O.OMEXML(TIFF_XML)
+        pixels = o.image(0).Pixels
+        self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
+        plane = pixels.Plane(0)
+        plane.PositionZ = 7.5
+        self.assertEqual(float(plane.node.getAttribute("PositionZ")), 7.5)
         
 TIFF_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <OME xmlns="http://www.openmicroscopy.org/Schemas/OME/2011-06"
@@ -625,6 +753,7 @@ TIFF_XML = """<?xml version="1.0" encoding="UTF-8"?>
 			</Channel>
 			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2011-06"
 				BigEndian="true" Length="0" />
+                        <Plane TheC="0" TheT="0" TheZ="0" DeltaT="1.25" ExposureTime="0.25" PositionX="3.5" PositionY="4.75" PositionZ="2.25"/>
 		</Pixels>
 	</Image>
 	<StructuredAnnotations

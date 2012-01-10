@@ -1614,6 +1614,9 @@ class ModuleView:
         if (isinstance(event,cpp.PipelineClearedEvent)):
             self.clear_selection()
         elif (isinstance(event, cpp.PipelineLoadedEvent)):
+            # clear validation cache, since settings might not have changed,
+            # but pipeline itself may have (due to a module source reload)
+            clear_validation_cache()
             if len(self.__pipeline.modules()) == 0:
                 self.clear_selection()
         elif isinstance(event, cpp.ModuleEditedPipelineEvent):
@@ -2480,3 +2483,8 @@ def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_
         # order heap by priority, then module_number.
         heapq.heappush(validation_queue, (priority, module.module_num, pipeline_copy, callback))
     validation_queue_semaphore.release()  # notify handler of work
+
+def clear_validation_cache():
+    '''clear the cache when a new pipeline is loaded.'''
+    global request_pipeline_cache
+    setattr(request_pipeline_cache, "pipeline_hash", None)

@@ -408,9 +408,7 @@ def get_data_tool_names():
 def reload_modules():
     for m in pymodules:
         try:
-            reload(m)
+            del sys.modules[m.__name__]
         except:
             pass
     fill_modules()
-    
-    

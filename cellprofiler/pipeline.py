@@ -456,12 +456,27 @@ class Pipeline(object):
         return cellprofiler.modules.instantiate_module(module_name)
 
     def reload_modules(self):
+        """Reload modules from source, and attempt to update pipeline to new versions.
+        Returns True if pipeline was successfully updated.
+
+        """
         # clear previously seen errors on reload
         import cellprofiler.gui.errordialog
         cellprofiler.gui.errordialog.clear_old_errors()
         import cellprofiler.modules
         reload(cellprofiler.modules)
         cellprofiler.modules.reload_modules()
+        # attempt to reinstantiate pipeline with new modules
+        try:
+            self.copy()  # if this fails, we probably can't reload
+            fd = StringIO.StringIO()
+            self.save(fd)
+            fd.seek(0)
+            self.loadtxt(fd, raise_on_error=True)
+            return True
+        except Exception, e:
+            logging.warning("Modules reloaded, but could not reinstantiate pipeline with new versions.", exc_info=True)
+            return False
 
     def save_to_handles(self):
         """Create a numpy array representing this pipeline
@@ -590,11 +605,14 @@ class Pipeline(object):
                            for module in self.modules()]
         self.__undo_stack = []
     
-    def loadtxt(self, fd_or_filename):
+    def loadtxt(self, fd_or_filename, raise_on_error=False):
         '''Load a pipeline from a text file
         
         fd_or_filename - either a path to a file or a file-descriptor-like
                          object.
+        raise_on_error - if there is an error loading the pipeline, raise an
+                         exception rather than generating a LoadException event.
+
         See savetxt for more comprehensive documentation.
         '''
         from cellprofiler.utilities.version import version_number as cp_version_number
@@ -760,6 +778,8 @@ class Pipeline(object):
                                                 variable_revision_number,
                                                 module_name, from_matlab)
             except Exception, instance:
+                if raise_on_error:
+                    raise
                 logging.error("Failed to load pipeline", exc_info=True)
                 event = LoadExceptionEvent(instance, module,  module_name,
                                            settings)

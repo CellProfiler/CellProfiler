@@ -381,6 +381,7 @@ try:
                     'CellProfiler was unable to load the pipeline file, "%s"' %
                     options.pipeline_filename, "Error loading pipeline",
                     style = wx.OK | wx.ICON_ERROR)
+                logging.root.error("Unable to load pipeline", exc_info=True)
         App.MainLoop()
         del App  # to allow GC to clean up Measurements, etc.
     elif options.run_pipeline: # this includes distributed workers

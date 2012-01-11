@@ -1855,9 +1855,9 @@ class FilterPanelController(object):
     def get_tokens(self):
         try:
             tokens = self.v.parse()
-        except e:
+        except Exception,e:
             logger.debug("Failed to parse filter (value=%s): %s", 
-                         self.v.text, str(e))
+                         self.v.value_text, str(e))
             tokens = self.v.default()
         #
         # Always require an "and" or "or" clause
@@ -1877,7 +1877,7 @@ class FilterPanelController(object):
             self.populate_subpanel(structure, [])
             for key, value in self.hide_show_dict.iteritems():
                 self.panel.FindWindowByName(key).Show(value)
-        except e:
+        except:
             logger.exception("Threw exception while updating filter")
         finally:
             self.inside_update = False
@@ -2000,7 +2000,8 @@ class FilterPanelController(object):
         return choice_ctrl
         
     def on_predicate_changed(self, event, index,  address):
-        logger.debug("Predicate choice at %d / %s changed" % (index, self.saddress(address)))
+        logger.debug("Predicate choice at %d / %s changed" % 
+                     (index, self.saddress(address)))
         structure = self.v.parse()
         sequence = self.find_address(structure, address)
         if index == 0:
@@ -2009,6 +2010,26 @@ class FilterPanelController(object):
             predicates = sequence[index-1].subpredicates
         new_predicate = predicates[event.GetSelection()]
         sequence[index] = new_predicate
+        predicates = new_predicate.subpredicates
+        #
+        # Make sure following predicates are legal
+        #
+        for index in range(index+1, len(sequence)):
+            if isinstance(sequence[index], basestring):
+                is_good = cps.Filter.LITERAL_PREDICATE in predicates
+            else:
+                matches = [p for p in predicates
+                           if sequence[index].symbol == p.symbol]
+                is_good = len(matches) == 1
+                if is_good:
+                    sequence[index] = matches[0]
+            if not is_good:
+                del sequence[index:]
+                sequence += self.v.default(predicates)
+                break
+            if not isinstance(sequence[index], cps.Filter.FilterPredicate):
+                break
+            predicates = sequence[index].subpredicates
         new_text = self.v.build_string(structure)
         self.on_value_change(event, new_text)
 
@@ -2123,6 +2144,7 @@ class FilterPanelController(object):
             
         if anyall.GetStringSelection() != structure[0].display_name:
             anyall.SetStringSelection(structure[0].display_name)
+            anyall.SetToolTipString(structure[0].doc)
         #
         # Now each subelement should be a list.
         #
@@ -2144,6 +2166,7 @@ class FilterPanelController(object):
                             predicates, i, subaddress, sizer)
                         if choice_ctrl.GetStringSelection() != token.display_name:
                             choice_ctrl.SetStringSelection(token.display_name)
+                        choice_ctrl.SetToolTipString(token.doc)
                         predicates = token.subpredicates
         #
         # Don't allow delete of only rule
@@ -2430,6 +2453,8 @@ class FileCollectionDisplayController(object):
                 #
                 # Oh contradictions! It's interleaved, really RGB or RGBA
                 # 
+                m[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                    cpp.ImagePlaneDetails.MD_RGB
                 image_id = self.COLOR_IMAGE_INDEX
             else:
                 m[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] = \

@@ -10,22 +10,203 @@ import cellprofiler.settings as cps
 import os
 import urllib
 
+NODE_DIRECTORY = "DirectoryNode"
+NODE_FILE = "FileNode"
+NODE_IMAGE_PLANE = "ImagePlaneNode"
+
 class Images(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Images"
     category = "File Processing"
+    
+    class DirectoryPredicate(cps.Filter.FilterPredicate):
+        '''A predicate that only filters directories'''
+        def __init__(self):
+            subpredicates = (
+                cps.Filter.CONTAINS_PREDICATE,
+                cps.Filter.CONTAINS_REGEXP_PREDICATE,
+                cps.Filter.STARTS_WITH_PREDICATE,
+                cps.Filter.ENDSWITH_PREDICATE,
+                cps.Filter.EQ_PREDICATE)
+            predicates = [cps.Filter.DoesPredicate(subpredicates),
+                          cps.Filter.DoesNotPredicate(subpredicates)]
+            cps.Filter.FilterPredicate.__init__(self,
+                'directory', "Directory", self.fn_filter,
+                predicates, doc = "Apply the rule to directories")
+            
+        def fn_filter(self, (node_type, modpath, module), *args):
+            '''The DirectoryPredicate filter function
+            
+            The arg slot expects a tuple of node_type and modpath.
+            The predicate returns None (= agnostic about filtering) if
+            the node is not a directory, otherwise it composites the
+            modpath into a file path and applies it to the rest of
+            the args.
+            '''
+            if node_type == NODE_DIRECTORY:
+                path = os.path.join(*modpath)
+            elif node_type == NODE_FILE:
+                path = os.path.join(*modpath[:-1])
+            elif node_type == NODE_IMAGE_PLANE:
+                path = os.path.join(*modpath[:-2])
+            return args[0](path, *args[1:])
+        
+        def test_valid(self, pipeline, *args):
+            self((NODE_FILE, ["/imaging","image.tif"], None), *args)
+
+    class FilePredicate(cps.Filter.FilterPredicate):
+        '''A predicate that only filters files'''
+        def __init__(self):
+            subpredicates = (
+                cps.Filter.CONTAINS_PREDICATE,
+                cps.Filter.CONTAINS_REGEXP_PREDICATE,
+                cps.Filter.STARTS_WITH_PREDICATE,
+                cps.Filter.ENDSWITH_PREDICATE,
+                cps.Filter.EQ_PREDICATE)     
+            predicates = [cps.Filter.DoesPredicate(subpredicates),
+                          cps.Filter.DoesNotPredicate(subpredicates)]
+            cps.Filter.FilterPredicate.__init__(self,
+                'file', "File", self.fn_filter, predicates,
+                doc = "Apply the rule to files")
+            
+        def fn_filter(self, (node_type, modpath, module), *args):
+            '''The FilePredicate filter function
+            
+            The arg slot expects a tuple of node_type and modpath.
+            The predicate returns None (= agnostic about filtering) if
+            the node is not a directory, otherwise it composites the
+            modpath into a file path and applies it to the rest of
+            the args
+            '''
+            if node_type == NODE_FILE:
+                filename = modpath[-1]
+            elif node_type == NODE_IMAGE_PLANE:
+                filename = modpath[-2]
+            else:
+                return None
+            return args[0](filename, *args[1:])
+        
+        def test_valid(self, pipeline, *args):
+            self((NODE_FILE, ["/imaging", "test.tif"], None), *args)
+
+    class ExtensionPredicate(cps.Filter.FilterPredicate):
+        '''A predicate that operates on file extensions'''
+        IS_TIF_PREDICATE = cps.Filter.FilterPredicate(
+            "istif", '"tif", "tiff", "ome.tif" or "ome.tiff"',
+            lambda x: x.lower() in ("tif", "tiff", "ome.tif", "ome.tiff"), [],
+            doc="The extension is associated with TIFF image files")
+        IS_JPEG_PREDICATE = cps.Filter.FilterPredicate(
+            "isjpeg", '"jpg" or "jpeg"',
+            lambda x: x.lower() in ("jpg", "jpeg"), [],
+            doc = "The extension is associated with JPEG image files")
+        IS_PNG_PREDICATE = cps.Filter.FilterPredicate(
+            "ispng", '"png"',
+            lambda x: x.lower() == "png", [],
+            doc = "The extension is associated with PNG image files")
+        IS_IMAGE_PREDICATE = cps.Filter.FilterPredicate(
+            'isimage', 'the extension of an image file',
+            lambda x: any([Images.ExtensionPredicate.IS_TIF_PREDICATE(x), 
+                           Images.ExtensionPredicate.IS_JPEG_PREDICATE(x),
+                           Images.ExtensionPredicate.IS_PNG_PREDICATE(x)]), [],
+            'Is an extension commonly associated with image files')
+        IS_FLEX_PREDICATE = cps.Filter.FilterPredicate(
+            'isflex', '"flex"',
+            lambda x: x.lower() == "flex", [],
+            doc = "The extension is associated with .flex files")
+        IS_MOVIE_PREDICATE = cps.Filter.FilterPredicate(
+            "ismovie", '"mov" or "avi"',
+            lambda x: x.lower() in ("mov", "avi"), [],
+            doc = "The extension is associated with movie files")
+        def __init__(self):
+            subpredicates = (
+                self.IS_TIF_PREDICATE,
+                self.IS_JPEG_PREDICATE,
+                self.IS_PNG_PREDICATE,
+                self.IS_IMAGE_PREDICATE,
+                self.IS_FLEX_PREDICATE,
+                self.IS_MOVIE_PREDICATE)            
+            predicates = [ cps.Filter.DoesPredicate(subpredicates, "Is"),
+                           cps.Filter.DoesNotPredicate(subpredicates, "Is not")]
+            cps.Filter.FilterPredicate.__init__(self,
+                'extension', "Extension", self.fn_filter, predicates,
+                doc="The rule applies to the file extension")
+            
+        def fn_filter(self, (node_type, modpath, module), *args):
+            '''The ExtensionPredicate filter function
+            
+            If the element is a file, try the different predicates on 
+            all possible extension parsings.
+            '''
+            if node_type != NODE_FILE:
+                return None
+            exts = []
+            filename = modpath[-1]
+            while True:
+                filename, ext = os.path.splitext(filename)
+                if len(filename) == 0 or len(ext) == 0:
+                    return False
+                exts.insert(0, ext[1:])
+                ext = '.'.join(exts)
+                if args[0](ext, *args[1:]):
+                    return True
+                
+        def test_valid(self, pipeline, *args):
+            self((NODE_FILE, ["/imaging", "test.tif"], None), *args)
+                
+    class ImagePredicate(cps.Filter.FilterPredicate):
+        '''A predicate that applies subpredicates to image plane details'''
+        IS_COLOR_PREDICATE = cps.Filter.FilterPredicate(
+            "iscolor", "Color", 
+            lambda x: (
+                x.metadata.has_key(cpp.ImagePlaneDetails.MD_COLOR_FORMAT) and
+                x.metadata[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] == 
+                cpp.ImagePlaneDetails.MD_RGB), [],
+            doc = "The image is an interleaved color image (for example, a PNG image)")
+        
+        IS_MONOCHROME_PREDICATE = cps.Filter.FilterPredicate(
+            "ismonochrome", "Monochrome", 
+            lambda x: (
+                x.metadata.has_key(cpp.ImagePlaneDetails.MD_COLOR_FORMAT) and
+                x.metadata[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] ==
+                cpp.ImagePlaneDetails.MD_MONOCHROME), [],
+            doc = "The image is monochrome")
+        
+        def __init__(self):
+            subpredicates = ( self.IS_COLOR_PREDICATE, 
+                              self.IS_MONOCHROME_PREDICATE)
+            predicates = [ pred_class(subpredicates, text)
+                           for pred_class, text in (
+                               (cps.Filter.DoesPredicate, "Is"),
+                               (cps.Filter.DoesNotPredicate, "Is not"))]
+            cps.Filter.FilterPredicate.__init__(self,
+                'image', "Image", self.fn_filter,
+                predicates,
+                doc = "Filter based on image characteristics")
+            
+        def fn_filter(self, (node_type, modpath, module), *args):
+            if node_type not in (NODE_IMAGE_PLANE, NODE_FILE):
+                return None
+            ipd = module.get_image_plane_details(modpath)
+            if ipd is None:
+                return None
+            return args[0](ipd, *args[1:])
+
+        def test_valid(self, pipeline, *args):
+            image_module = [m for m in pipeline.modules()
+                            if isinstance(m, Images)][0]
+            self((NODE_FILE, ["/imaging", "test.tif"], image_module), *args)
 
     def create_settings(self):
         self.file_collection_display = cps.FileCollectionDisplay(
             "", "", self.on_fcd_change, self.get_image_plane_details)
-        subpredicates = [cps.Filter.CONTAINS_PREDICATE,
-                         cps.Filter.CONTAINS_REGEXP_PREDICATE,
-                         cps.Filter.STARTS_WITH_PREDICATE,
-                         cps.Filter.ENDSWITH_PREDICATE,
-                         cps.Filter.EQ_PREDICATE]
-        predicates = [cls(subpredicates) for cls in 
-                      (cps.Filter.DoesPredicate, cps.Filter.DoesNotPredicate)]
-        self.filter = cps.Filter("Filter", predicates, 'or (doesnot contain "foo") (and (does startwith "foo") (does endwith "bar"))')
+        predicates = [self.DirectoryPredicate(),
+                      self.FilePredicate(),
+                      self.ExtensionPredicate(),
+                      self.ImagePredicate()]
+        self.filter = cps.Filter("Filter", predicates, 
+                                 'or (file does contain "")')
+        self.do_filter = cps.DoSomething("","Apply filter", 
+                                         self.apply_filter)
         self.pipeline = None
         self.modifying_ipds = False
     
@@ -77,7 +258,7 @@ class Images(cpm.CPModule):
                 dd[parts[0]] = None
         mods = self.make_mods_from_tree(d)
         self.file_collection_display.initialize_tree(mods)
-        self.on_filter_change()
+        self.apply_filter()
         
     def make_mods_from_tree(self, tree):
         '''Create a list of FileCollectionDisplay mods from a tree'''
@@ -143,6 +324,8 @@ class Images(cpm.CPModule):
         
         channel - the channel within the file
         '''
+        if self.pipeline is None:
+            return None
         if cps.FileCollectionDisplay.mod_is_image_plane(modpath[-1]):
             series, index, channel = modpath[-1]
             modpath = modpath[:-1]
@@ -153,20 +336,25 @@ class Images(cpm.CPModule):
                                          series, index, channel)
         return self.pipeline.find_image_plane_details(exemplar)
         
-    def on_filter_change(self):
+    def apply_filter(self):
         keep = []
         dont_keep = []
         self.filter_tree(self.file_collection_display.file_tree, keep, dont_keep)
         self.file_collection_display.mark(keep, True)
         self.file_collection_display.mark(dont_keep, False)
-        
-    def filter_tree(self, tree, keep, dont_keep):
+    
+    def filter_tree(self, tree, keep, dont_keep, modpath = []):
         for key in tree.keys():
             if key is None:
                 continue
+            subpath = modpath + [key]
             if isinstance(tree[key], bool):
-                match = self.filter.evaluate(key)
-                if match:
+                if cps.FileCollectionDisplay.mod_is_image_plane(key):
+                    node_type = NODE_IMAGE_PLANE
+                else:
+                    node_type = NODE_FILE
+                match = self.filter.evaluate((node_type, subpath, self))
+                if match is None or match:
                     keep.append(key)
                 else:
                     dont_keep.append(key)
@@ -175,15 +363,15 @@ class Images(cpm.CPModule):
                 keep.append(keep_node)
                 dont_keep_node = (key, [])
                 dont_keep.append(dont_keep_node)
-                self.filter_tree(tree[key], keep_node[1], dont_keep_node[1])
+                self.filter_tree(tree[key], keep_node[1], dont_keep_node[1], 
+                                 subpath)
     
     def settings(self):
         return [self.file_collection_display, self.filter]
     
+    def visible_settings(self):
+        return [self.file_collection_display, self.filter, self.do_filter]
+    
     def run(self):
         pass
-    
-    def on_setting_changed(self, setting, pipeline):
-        if setting is self.filter:
-            self.on_filter_change()
     

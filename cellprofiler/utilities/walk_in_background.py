@@ -57,7 +57,7 @@ def get_metadata(path):
     import subimager.client as C
     import subimager.omexml as O
     
-    if os.path.splitext(path)[1] in exts_that_need_allow_open_files:
+    if path.lower().endswith(exts_that_need_allow_open_files):
         result = C.get_metadata(path, allowopenfiles="yes")
     else:
         result = C.get_metadata(path)

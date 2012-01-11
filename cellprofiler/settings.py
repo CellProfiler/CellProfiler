@@ -1980,39 +1980,63 @@ class Filter(Setting):
     "and", "or" and "literal".
     '''
     class FilterPredicate(object):
-        def __init__(self, symbol, display_name, function, subpredicates):
+        def __init__(self, symbol, display_name, function, subpredicates, 
+                     doc=None):
             self.symbol = symbol
             self.display_name = display_name
             self.function = function
             self.subpredicates = subpredicates
+            self.doc = doc
         
         def __call__(self, *args, **kwargs):
             return self.function(*args, **kwargs)
+        
+        def test_valid(self, pipeline, *args):
+            '''Try running the filter on a test string'''
+            self("", *args)
+            
+    class CompoundFilterPredicate(FilterPredicate):
+        def test_valid(self, pipeline, *args):
+            for subexp in args:
+                subexp[0].test_valid(pipeline, *subexp[1:])
     
     @classmethod
-    def eval_list(cls, x, *args):
-        return [arg[0](x, *arg[1:]) for arg in args]
-    AND_PREDICATE = FilterPredicate(
+    def eval_list(cls, fn, x, *args):
+        results = [v for v in [arg[0](x, *arg[1:]) for arg in args] 
+                   if v is not None]
+        if len(results) == 0:
+            return None
+        return fn(results)
+
+    AND_PREDICATE = CompoundFilterPredicate(
         "and", "All", 
-        lambda x, *l: all(Filter.eval_list(x, *l)), list)
-    OR_PREDICATE = FilterPredicate(
+        lambda x, *l: Filter.eval_list(all, x, *l), list,
+        doc="All subordinate rules must be satisfied")
+    OR_PREDICATE = CompoundFilterPredicate(
         "or", "Any", 
-        lambda x, *l: any(Filter.eval_list(x, *l)), list)
-    LITERAL_PREDICATE = FilterPredicate("literal", "Custom value", None, [])
+        lambda x, *l: Filter.eval_list(any, x, *l), list,
+        doc = "Any one of the subordinate rules must be satisfied")
+    LITERAL_PREDICATE = FilterPredicate(
+        "literal", "Custom value", None, [],
+        doc = "Enter the rule's text")
     CONTAINS_PREDICATE = FilterPredicate(
         "contain", "Contain",
-        lambda x, y: x.find(y) >= 0, [LITERAL_PREDICATE])
+        lambda x, y: x.find(y) >= 0, [LITERAL_PREDICATE],
+        doc = "The element must contain the text that you enter to the right")
     STARTS_WITH_PREDICATE = FilterPredicate(
         "startwith", "Start with",
-       lambda x, y: x.startswith(y), [LITERAL_PREDICATE])
+        lambda x, y: x.startswith(y), [LITERAL_PREDICATE],
+        doc = "The element must start with the text that you enter to the right")
     ENDSWITH_PREDICATE = FilterPredicate(
         "endwith", "End with",
-        lambda x, y: x.endswith(y), [LITERAL_PREDICATE])
+        lambda x, y: x.endswith(y), [LITERAL_PREDICATE],
+        doc = "The element must end with the text that you enter to the right")
     
     class RegexpFilterPredicate(FilterPredicate):
         def __init__(self, display_name, subpredicates):
             super(self.__class__, self).__init__(
-                "containregexp", display_name, self.regexp_fn, subpredicates)
+                "containregexp", display_name, self.regexp_fn, subpredicates,
+            doc = "The element must contain a match for the regular expression that you enter to the right")
             
         def regexp_fn(self, x, y):
             try:
@@ -2028,21 +2052,27 @@ class Filter(Setting):
     
     class DoesPredicate(FilterPredicate):
         '''Pass the arguments through (no-op)'''
-        def __init__(self, subpredicates):
+        def __init__(self, subpredicates, text = "Does", 
+                     doc = "The rule passes if the condition to the right holds"):
             super(self.__class__, self).__init__(
-                "does", "Does",
-                lambda x, f, *l: f(x, *l), subpredicates)
+                "does", text,
+                lambda x, f, *l: f(x, *l), subpredicates,
+            doc = doc)
             
     class DoesNotPredicate(FilterPredicate):
         '''Negate the result of the arguments'''
-        def __init__(self, subpredicates):
+        def __init__(self, subpredicates, text = "Does not",
+                     doc = "The rule fails if the condition to the right holds"):
             super(self.__class__, self).__init__(
-                "doesnot", "Does not",
-                lambda x, f, *l: not f(x, *l), subpredicates)
+                "doesnot", text,
+                lambda x, f, *l: not f(x, *l), subpredicates,
+            doc = doc)
         
     def __init__(self, text, predicates, value = "", **kwargs):
         super(self.__class__, self).__init__(text, value, **kwargs)
         self.predicates = predicates
+        self.cached_token_string = None
+        self.cached_tokens = None
         
     def evaluate(self, x):
         '''Evaluate the value passed using the predicates'''
@@ -2057,22 +2087,27 @@ class Filter(Setting):
         
         Returns the value of the text as a list.
         '''
-        tokens = []
         s = self.value_text
+        if s == self.cached_token_string:
+            return self.cached_tokens
+        tokens = []
         predicates = self.predicates
         while len(s) > 0:
             token, s, predicates = self.parse_token(s, predicates)
             tokens.append(token)
+        self.cached_tokens = list(tokens)
+        self.cached_token_string = self.value_text
         return tokens
     
-    def default(self):
+    def default(self, predicates = None):
         '''A default list of tokens to use if things go horribly wrong
         
         We need to be able to generate a default list of tokens if the
         pipeline has been corrupted and the text can't be parsed.
         '''
         tokens = []
-        predicates = self.predicates
+        if predicates is None:
+            predicates = self.predicates
         while len(predicates) > 0:
             token = predicates[0]
             if token is self.LITERAL_PREDICATE:
@@ -2126,11 +2161,12 @@ class Filter(Setting):
                 else:
                     result += s[i]
             raise ValueError("Unterminated literal")
-        parts = s.split(" ", 1)
-        if len(parts) == 1:
-            kwd, rest = s, ""
+        match = re.match("^([^ )]+) ?(.*)$", s)
+        if match is None:
+            kwd = s
+            rest = ""
         else:
-            kwd, rest = parts
+            kwd, rest = match.groups()
         if kwd == cls.AND_PREDICATE.symbol:
             match = cls.AND_PREDICATE
         elif kwd == cls.OR_PREDICATE.symbol:
@@ -2199,7 +2235,7 @@ class Filter(Setting):
         except ValueError:
             raise ValidationError("Invalid filter expression: %s" % self.value_text, self)
         try:
-            tokens[0]("", *tokens[1:])
+            tokens[0].test_valid(pipeline, *tokens[1:])
         except Exception, e:
             raise ValidationError(str(e), self)
         
@@ -2382,7 +2418,10 @@ class FileCollectionDisplay(Setting):
         for mod in mods:
             if isinstance(mod, basestring):
                 if tree.has_key(mod):
-                    tree[mod] = keep
+                    if isinstance(tree[mod], dict):
+                        tree[mod][None] = keep
+                    else:
+                        tree[mod] = keep
             else:
                 if tree.has_key(mod[0]):
                     self.mark_subtree(mod[1], keep, tree[mod[0]])

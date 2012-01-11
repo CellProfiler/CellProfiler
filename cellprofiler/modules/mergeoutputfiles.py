@@ -54,6 +54,7 @@ __version__="$Revision$"
 
 import numpy as np
 import os
+import sys
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -109,8 +110,12 @@ class MergeOutputFiles(cpm.CPModule):
         browse_button = wx.Button(dlg, -1, "Browse...")
         subsizer.Add(browse_button, 0, wx.EXPAND)
         list_control = AWListCtrl(dlg, style=wx.LC_REPORT)
-        list_control.InsertColumn(0, "Folder",wx.LC_ALIGN_LEFT, 200)
-        list_control.InsertColumn(1, "File",wx.LC_ALIGN_LEFT, -1)
+        if sys.platform == 'darwin':
+            list_control.InsertColumn(0, "Folder", width=200)
+            list_control.InsertColumn(1, "File", width=-1)
+        else:
+            list_control.InsertColumn(0, "Folder", format=wx.LC_ALIGN_LEFT, width=200)
+            list_control.InsertColumn(1, "File", format=wx.LC_ALIGN_LEFT, width=-1)
         sizer.Add(list_control, 1, wx.EXPAND | wx.ALL, 5)
         sizer.Add(wx.StaticLine(dlg), 0, wx.EXPAND)
         subsizer = wx.BoxSizer(wx.HORIZONTAL)

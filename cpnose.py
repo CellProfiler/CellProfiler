@@ -10,9 +10,7 @@ if '--noguitests' in sys.argv:
     sys.argv.remove('--noguitests')
     import cellprofiler.preferences as cpprefs
     cpprefs.set_headless()
-    import wx
-    for s in dir(wx):
-        del wx.__dict__[s]
+    sys.modules['wx'] = None
 
 if '--nojavatests' in sys.argv:
     sys.argv.remove('--nojavatests')

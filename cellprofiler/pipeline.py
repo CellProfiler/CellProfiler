@@ -615,9 +615,9 @@ class Pipeline(object):
         for module in self.modules():
             h.update(module.module_name)
             for setting in module.settings():
-                h.update(str(setting))
+                h.update(setting.unicode_value.encode('utf-8'))
         return h.digest()
-    
+
     def create_from_handles(self,handles):
         """Read a pipeline's modules out of the handles structure
         
@@ -671,12 +671,27 @@ class Pipeline(object):
         return cellprofiler.modules.instantiate_module(module_name)
 
     def reload_modules(self):
+        """Reload modules from source, and attempt to update pipeline to new versions.
+        Returns True if pipeline was successfully updated.
+
+        """
         # clear previously seen errors on reload
         import cellprofiler.gui.errordialog
         cellprofiler.gui.errordialog.clear_old_errors()
         import cellprofiler.modules
         reload(cellprofiler.modules)
         cellprofiler.modules.reload_modules()
+        # attempt to reinstantiate pipeline with new modules
+        try:
+            self.copy()  # if this fails, we probably can't reload
+            fd = StringIO.StringIO()
+            self.save(fd)
+            fd.seek(0)
+            self.loadtxt(fd, raise_on_error=True)
+            return True
+        except Exception, e:
+            logging.warning("Modules reloaded, but could not reinstantiate pipeline with new versions.", exc_info=True)
+            return False
 
     def save_to_handles(self):
         """Create a numpy array representing this pipeline
@@ -805,11 +820,14 @@ class Pipeline(object):
                            for module in self.modules()]
         self.__undo_stack = []
     
-    def loadtxt(self, fd_or_filename):
+    def loadtxt(self, fd_or_filename, raise_on_error=False):
         '''Load a pipeline from a text file
         
         fd_or_filename - either a path to a file or a file-descriptor-like
                          object.
+        raise_on_error - if there is an error loading the pipeline, raise an
+                         exception rather than generating a LoadException event.
+
         See savetxt for more comprehensive documentation.
         '''
         from cellprofiler.utilities.version import version_number as cp_version_number
@@ -910,6 +928,7 @@ class Pipeline(object):
         #
         # The module section
         #
+        new_modules = []
         module_number = 1
         skip_attributes = ['svn_version','module_num']
         while module_number <= module_count:
@@ -981,6 +1000,8 @@ class Pipeline(object):
                                                 variable_revision_number,
                                                 module_name, from_matlab)
             except Exception, instance:
+                if raise_on_error:
+                    raise
                 logging.error("Failed to load pipeline", exc_info=True)
                 event = LoadExceptionEvent(instance, module,  module_name,
                                            settings)
@@ -988,16 +1009,17 @@ class Pipeline(object):
                 if event.cancel_run:
                     break
             if module is not None:
-                self.__modules.append(module)
+                new_modules.append(module)
                 module_number += 1
         if has_image_plane_details:
             self.__image_plane_details = read_image_plane_details(fd)
             
+        self.__modules = new_modules
+        self.__settings = [[str(setting) for setting in module.settings()]
+                           for module in self.modules()]
         for module in self.modules():
             module.post_pipeline_load(self)
         self.notify_listeners(PipelineLoadedEvent())
-        self.__settings = [[str(setting) for setting in module.settings()]
-                           for module in self.modules()]
         self.__undo_stack = []
         
     def save(self, fd_or_filename, format=FMT_NATIVE):

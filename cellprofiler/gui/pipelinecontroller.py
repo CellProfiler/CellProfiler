@@ -1214,11 +1214,20 @@ class PipelineController:
                     self.__within_group_index = \
                         list(image_numbers).index(image_number)
                     break
-            
-    def on_debug_reload(self, event):
-        self.__pipeline.reload_modules()
 
-    # ~*~
+    def on_debug_reload(self, event):
+        '''Reload modules from source, warning the user if the pipeline could
+        not be reinstantiated with the new versions.
+
+        '''
+        success = self.__pipeline.reload_modules()
+        if not success:
+            wx.MessageBox(("CellProfiler has reloaded modules from source, but "
+                           "couldn't reinstantiate the pipeline with the new modules.\n"
+                           "See the log for details."),
+                          "Error reloading modules.",
+                          wx.ICON_ERROR | wx.OK)
+
     def on_sample_init(self, event):
         if self.__module_view != None:
             if self.__module_view.get_current_module() != None:

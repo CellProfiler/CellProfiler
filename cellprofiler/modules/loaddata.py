@@ -462,6 +462,12 @@ class LoadData(cpm.CPModule):
                     "set lists and this can result in image sets with\n"
                     "missing images or metadata.", self.csv_file_name)
 
+        # check that user has selected fields for grouping if grouping is turned on
+        if self.wants_image_groupings.value and (len(self.metadata_fields.selections) == 0):
+            raise cps.ValidationError("Group images by metadata is True, but no metadata "
+                                      "fields have been chosen for grouping.",
+                                      self.metadata_fields)
+
     def visible_settings(self):
         result = [self.csv_directory, self.csv_file_name, 
                   self.browse_csv_button]

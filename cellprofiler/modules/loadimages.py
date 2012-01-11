@@ -990,6 +990,12 @@ class LoadImages(cpmodule.CPModule):
                     "Consider loading all of your images using a single\n"
                     "LoadImages module. You can add additional images using\n"
                     "the Add button", self.add_image)
+
+        # check that user has selected fields for grouping if grouping is turned on
+        if self.group_by_metadata.value and (len(self.metadata_fields.selections) == 0):
+            raise cps.ValidationError("Group images by metadata is True, but no metadata "
+                                      "fields have been chosen for grouping.",
+                                      self.metadata_fields)
     
     #
     # Slots for storing settings in the array

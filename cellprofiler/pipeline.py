@@ -598,7 +598,6 @@ class Pipeline(object):
         See savetxt for more comprehensive documentation.
         '''
         from cellprofiler.utilities.version import version_number as cp_version_number
-        self.__modules = []
         if hasattr(fd_or_filename,'seek') and hasattr(fd_or_filename,'read'):
             fd = fd_or_filename
         else:
@@ -689,6 +688,7 @@ class Pipeline(object):
         #
         # The module section
         #
+        new_modules = []
         module_number = 1
         skip_attributes = ['svn_version','module_num']
         while True:
@@ -767,13 +767,15 @@ class Pipeline(object):
                 if event.cancel_run:
                     break
             if module is not None:
-                self.__modules.append(module)
+                new_modules.append(module)
                 module_number += 1
+
+        self.__modules = new_modules
+        self.__settings = [[str(setting) for setting in module.settings()]
+                           for module in self.modules()]
         for module in self.modules():
             module.post_pipeline_load(self)
         self.notify_listeners(PipelineLoadedEvent())
-        self.__settings = [[str(setting) for setting in module.settings()]
-                           for module in self.modules()]
         self.__undo_stack = []
         
     def save(self, fd_or_filename, format=FMT_NATIVE):

@@ -11,6 +11,8 @@ if '--noguitests' in sys.argv:
     import cellprofiler.preferences as cpprefs
     cpprefs.set_headless()
     sys.modules['wx'] = None
+    import matplotlib
+    matplotlib.use('agg')
 
 if '--nojavatests' in sys.argv:
     sys.argv.remove('--nojavatests')

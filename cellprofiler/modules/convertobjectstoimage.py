@@ -120,7 +120,7 @@ class ConvertObjectsToImage(cpm.CPModule):
                                                 sharey=figure.subplot(0,0))
         elif self.image_mode == IM_COLOR:
             import matplotlib.cm
-            from cellprofiler.gui.cpfigure import renumber_labels_for_display
+            from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
             if self.colormap.value == DEFAULT_COLORMAP:
                 cm_name = cpprefs.get_default_colormap()
             elif self.colormap.value == COLORCUBE:

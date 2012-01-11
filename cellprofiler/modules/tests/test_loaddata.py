@@ -293,7 +293,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
         pipeline, module, filename = self.make_pipeline(csv_text)
         m = pipeline.run()
         data = m.get_current_image_measurement("Test_Measurement")
-        self.assertTrue(isinstance(data, np.int32))
+        self.assertTrue(isinstance(data, np.int), "data is type %s, not np.int" % (type(data)))
         self.assertEqual(data, 1)
         os.remove(filename)
     

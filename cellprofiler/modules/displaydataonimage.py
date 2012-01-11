@@ -166,9 +166,9 @@ class DisplayDataOnImage(cpm.CPModule):
     def run(self, workspace):
         import matplotlib
         import matplotlib.cm
-        import matplotlib.backends.backend_wxagg
+        import matplotlib.backends.backend_agg
         import matplotlib.transforms
-        from cellprofiler.gui.cpfigure import figure_to_image, only_display_image
+        from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
         #
         # Get the image
         #
@@ -219,7 +219,7 @@ class DisplayDataOnImage(cpm.CPModule):
             axes.imshow(img, cmap = matplotlib.cm.Greys_r)
         self.display_on_figure(workspace, axes, imshow_fn)
 
-        canvas = matplotlib.backends.backend_wxagg.FigureCanvasAgg(fig)
+        canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(fig)
         if self.saved_image_contents == E_AXES:
             fig.set_frameon(False)
             fig.subplots_adjust(0.1,.1,.9,.9,0,0)

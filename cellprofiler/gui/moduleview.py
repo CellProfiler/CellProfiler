@@ -11,20 +11,16 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
-import codecs
-import cStringIO
 import logging
 import matplotlib.cm
 import numpy as np
 import os
 import stat
 import threading
+import heapq
 import time
-import traceback
 import wx
 import wx.grid
-import sys
 
 logger = logging.getLogger(__name__)
 import cellprofiler.pipeline as cpp
@@ -45,6 +41,10 @@ FROM_EDGE = "From edge"
 
 CHECK_TIMEOUT_SEC = 2
 EDIT_TIMEOUT_SEC = 5
+
+# validation queue priorities, to allow faster updates for the displayed module
+PRI_VALIDATE_DISPLAY = 0
+PRI_VALIDATE_BACKGROUND = 1
 
 class SettingEditedEvent:
     """Represents an attempt by the user to edit a setting
@@ -1614,6 +1614,9 @@ class ModuleView:
         if (isinstance(event,cpp.PipelineClearedEvent)):
             self.clear_selection()
         elif (isinstance(event, cpp.PipelineLoadedEvent)):
+            # clear validation cache, since settings might not have changed,
+            # but pipeline itself may have (due to a module source reload)
+            clear_validation_cache()
             if len(self.__pipeline.modules()) == 0:
                 self.clear_selection()
         elif isinstance(event, cpp.ModuleEditedPipelineEvent):
@@ -1648,24 +1651,38 @@ class ModuleView:
             return
         if self.__module:
             request_module_validation(self.__pipeline, self.__module,
-                                      self.on_validation)
-            
-    def on_validation(self, setting_idx, message, level, pipeline_data):
+                                      self.on_validation, PRI_VALIDATE_DISPLAY)
+
+    def on_validation(self, setting_idx, message, level):
         self.running_time = time.time() - self.last_idle_time
         default_fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
         default_bg_color = cpprefs.get_background_color()
-        fd = cStringIO.StringIO()
-        self.__pipeline.save(fd)
-        if fd.getvalue() != pipeline_data:
+
+        if not self.__module:  # defensive coding, in case the module was deleted
             return
+
         visible_settings = self.__module.visible_settings()
-        if setting_idx is None or setting_idx >= len(visible_settings):
-            setting = None
-        else:
-            setting = visible_settings[setting_idx]
-        if level != logging.INFO and setting is not None:
-            self.set_tool_tip(setting, message)
-            static_text_name = text_control_name(setting)
+        bad_setting = None
+        if setting_idx is not None:
+            # an error was detected by the validation thread.  The pipeline may
+            # have changed in the meantime, so we revalidate here to make sure
+            # what we display is up to date.
+            if setting_idx >= len(visible_settings):
+                return  # obviously changed, don't update display
+            try:
+                # fast-path: check the reported setting first
+                level = logging.ERROR
+                visible_settings[setting_idx].test_valid(self.__pipeline)
+                self.__module.test_valid(self.__pipeline)
+                level = logging.WARNING
+                self.__module.validate_module_warnings(self.__pipeline)
+            except cps.ValidationError, instance:
+                message = instance.message
+                bad_setting = instance.get_setting()
+
+        if bad_setting is not None:
+            self.set_tool_tip(bad_setting, message)
+            static_text_name = text_control_name(bad_setting)
             static_text = self.__module_panel.FindWindowByName(static_text_name)
             if static_text is not None:
                 if level == logging.ERROR:
@@ -1680,7 +1697,7 @@ class ModuleView:
                         static_text.Refresh()
         else:
             try:
-                for setting in self.__module.visible_settings():
+                for setting in visible_settings:
                     static_text_name = text_control_name(setting)
                     static_text = self.__module_panel.FindWindowByName(
                         static_text_name)
@@ -1691,7 +1708,8 @@ class ModuleView:
                         static_text.SetForegroundColour(default_fg_color)
                         static_text.SetBackgroundColour(default_bg_color)
                         static_text.Refresh()
-            except:
+            except Exception:
+                logger.debug("Caught bare exception in ModuleView.on_validate()", exc_info=True)
                 pass
 
     def set_tool_tip(self, setting, message):
@@ -1837,8 +1855,8 @@ class FilterPanelController(object):
     def get_tokens(self):
         try:
             tokens = self.v.parse()
-        except e:
-            logger.debug("Failed to parse filter (value=%s): %s", 
+        except Exception, e:
+            logger.debug("Failed to parse filter (value=%s): %s",
                          self.v.text, str(e))
             tokens = self.v.default()
         #
@@ -1859,7 +1877,7 @@ class FilterPanelController(object):
             self.populate_subpanel(structure, [])
             for key, value in self.hide_show_dict.iteritems():
                 self.panel.FindWindowByName(key).Show(value)
-        except e:
+        except Exception:
             logger.exception("Threw exception while updating filter")
         finally:
             self.inside_update = False
@@ -2362,41 +2380,21 @@ class ModuleSizer(wx.PySizer):
                 logger.warning("Detected WX error", exc_info=True)
                 self.__printed_exception = True
 
-pipeline_queue_lock = threading.RLock()
-pipeline_queue_semaphore = threading.Semaphore(0)
-pipeline_queue = []
-pipeline_queue_thread = None
-pipeline_cache = threading.local()
+validation_queue_lock = threading.RLock()
+validation_queue = []  # heapq, protected by above lock.  Can change to Queue.PriorityQueue() when we no longer support 2.5
+pipeline_queue_thread = None  # global, protected by above lock
+validation_queue_semaphore = threading.Semaphore(0)
+request_pipeline_cache = threading.local()  # used to cache the last requested pipeline
 
-def validate_module(pipeline_data, module_num, callback):
+def validate_module(pipeline, module_num, callback):
     '''Validate a module and execute the callback on error on the main thread
     
-    pipeline_data - a serialized pipeline
+    pipeline - a pipeline to be validated
     module_num - the module number of the module to be validated
     callback - a callback with the signature, "fn(setting, message, pipeline_data)"
     where setting is the setting that is in error and message is the message to
     display.
     '''
-    global pipeline_cache
-    import hashlib
-    h = hashlib.md5()
-    h.update(pipeline_data)
-    pipeline_data_hash = h.digest()
-    if pipeline_data_hash == getattr(pipeline_cache, "pipeline_data_hash", None):
-        pipeline = pipeline_cache.pipeline
-    else:
-        pipeline = cpp.Pipeline()
-        load_error = []
-        def error_callback(pipeline, event):
-            if isinstance(event, cpp.LoadExceptionEvent):
-                load_error.append(event)
-                logger.warning("Failed to load pipeline data: %s", event.error)
-        pipeline.add_listener(error_callback)
-        pipeline.load(cStringIO.StringIO(pipeline_data))
-        if len(load_error):
-            return
-        pipeline_cache.pipeline = pipeline
-        pipeline_cache.pipeline_data_hash = pipeline_data_hash
     modules = [m for m in pipeline.modules() if m.module_num == module_num]
     if len(modules) != 1:
         return
@@ -2406,63 +2404,87 @@ def validate_module(pipeline_data, module_num, callback):
     message = None
     try:
         level = logging.ERROR
-        module.test_valid(pipeline)
+        module.test_valid(pipeline)  # this method validates each visible
+                                     # setting first, then the module itself.
         level = logging.WARNING
         module.validate_module_warnings(pipeline)
-        level = logging.ERROR
-        for setting in module.visible_settings():
-            setting.test_valid(pipeline)
         level = logging.INFO
     except cps.ValidationError, instance:
         message = instance.message
-        for i, setting in enumerate(module.visible_settings()):
-            if setting == instance.get_setting():
-                setting_idx = i
-                break
-    wx.CallAfter(callback, setting_idx, message, level, pipeline_data)
-            
-def pipeline_queue_handler():
-    global pipeline_queue_lock, pipeline_queue_semaphore, pipeline_queue
-    
+        setting_idx = [m.key() for m in module.visible_settings()].index(instance.get_setting().key())
+    wx.CallAfter(callback, setting_idx, message, level)
+
+def validation_queue_handler():
     from cellprofiler.utilities.jutil import attach, detach
     attach()
     try:
         while True:
-            pipeline_queue_semaphore.acquire()
-            with pipeline_queue_lock:
-                pipeline_data, module_num, callback = pipeline_queue.pop()
-                if len(pipeline_queue) > 20:
+            validation_queue_semaphore.acquire()  # wait for work
+            with validation_queue_lock:
+                if len(validation_queue) == 0:
                     continue
+                priority, module_num, pipeline, callback = heapq.heappop(validation_queue)
             try:
-                validate_module(pipeline_data, module_num, callback)
+                validate_module(pipeline, module_num, callback)
             except:
                 pass
     finally:
         detach()
-        
-def request_module_validation(pipeline, module, callback):
+
+def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_BACKGROUND):
     '''Request that a module be validated
-    
+
     pipeline - pipeline in question
     module - module in question
     callback - call this callback if there is an error. Do it on the GUI thread
     '''
-    global pipeline_queue_lock, pipeline_queue_semaphore, pipeline_queue
-    global pipeline_queue_thread, pipeline_cache
-    if pipeline_queue_thread is None:
-        pipeline_queue_thread = threading.Thread(target=pipeline_queue_handler)
-        pipeline_queue_thread.setDaemon(True)
-        pipeline_queue_thread.start()
+    global pipeline_queue_thread, validation_queue
+
+    # start validation queue handler thread if not already started
+    with validation_queue_lock:
+        if pipeline_queue_thread is None:
+            pipeline_queue_thread = threading.Thread(target=validation_queue_handler)
+            pipeline_queue_thread.setDaemon(True)
+            pipeline_queue_thread.start()
+
+    # minimize copies of pipelines
     pipeline_hash = pipeline.settings_hash()
-    if pipeline_hash == getattr(pipeline_cache, "pipeline_hash", None):
-        pipeline_data = pipeline_cache.pipeline_data
-    else:
-        fd = cStringIO.StringIO()
-        assert isinstance(pipeline, cpp.Pipeline)
-        pipeline.save(fd)
-        fd.flush()
-        pipeline_data = pipeline_cache.pipeline_data = fd.getvalue()
-        pipeline_cache.pipeline_hash = pipeline_hash
-    with pipeline_queue_lock:
-        pipeline_queue.append((pipeline_data, module.module_num, callback))
-    pipeline_queue_semaphore.release()
+    if pipeline_hash != getattr(request_pipeline_cache, "pipeline_hash", None):
+        request_pipeline_cache.pipeline_hash = pipeline_hash
+        request_pipeline_cache.pipeline = pipeline.copy()
+
+    pipeline_copy = request_pipeline_cache.pipeline
+    if pipeline_copy.settings_hash() != pipeline_hash:
+        logger.warning("Pipeline and pipeline.copy() have different values for settings_hash()")
+        # compare pipelines, try to find the changed setting
+        orig_modules = pipeline.modules()
+        copy_modules = pipeline_copy.modules()
+        # If module names are changed by the copy operation, that's too much to continue from.
+        assert [m.module_name for m in orig_modules] == [m.module_name for m in copy_modules], \
+            "Module names do not match from original and copy, giving up!\nOrig: %s\nCopy: %s" % \
+            ([m.module_name for m in orig_modules], [m.module_name for m in copy_modules])
+        for midx, (om, cm) in enumerate(zip(orig_modules, copy_modules)):
+            orig_settings = [s.unicode_value.encode('utf-8') for s in om.settings()]
+            copy_settings = [s.unicode_value.encode('utf-8') for s in cm.settings()]
+            differences = [oset != cset for oset, cset in zip(orig_settings, copy_settings)]
+            if True in differences:
+                logger.warning("  Differences in module #%d %s:" % (midx, om.module_name))
+                for sidx, (diff, oset, cset) in enumerate(zip(differences, orig_settings, copy_settings)):
+                    if diff:
+                        logger.warning("    Setting #%d: was %s now %s" % (sidx, repr(oset), repr(cset)))
+
+    with validation_queue_lock:
+        # walk heap (as a list) removing any same-or-lower priority occurrences
+        # of this module_num, to prevent the heap from growing indefinitely.
+        mnum = module.module_num
+        validation_queue = [req for req in validation_queue \
+                                if ((req[0] >= priority) and (req[1] == mnum))]
+        heapq.heapify(validation_queue)
+        # order heap by priority, then module_number.
+        heapq.heappush(validation_queue, (priority, module.module_num, pipeline_copy, callback))
+    validation_queue_semaphore.release()  # notify handler of work
+
+def clear_validation_cache():
+    '''clear the cache when a new pipeline is loaded.'''
+    global request_pipeline_cache
+    setattr(request_pipeline_cache, "pipeline_hash", None)

@@ -684,7 +684,7 @@ class TrackObjects(cpm.CPModule):
                                       self.tracking_method.value)
         if self.wants_image.value:
             import matplotlib.transforms
-            from cellprofiler.gui.cpfigure import figure_to_image, only_display_image
+            from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
             
             figure = matplotlib.figure.Figure()
             canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)

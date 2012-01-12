@@ -1680,37 +1680,25 @@ class ModuleView:
                 message = instance.message
                 bad_setting = instance.get_setting()
 
-        if bad_setting is not None:
-            self.set_tool_tip(bad_setting, message)
-            static_text_name = text_control_name(bad_setting)
-            static_text = self.__module_panel.FindWindowByName(static_text_name)
-            if static_text is not None:
-                if level == logging.ERROR:
-                    if static_text.GetForegroundColour() != ERROR_COLOR:
-                        static_text.SetForegroundColour(ERROR_COLOR)
-                        static_text.SetBackgroundColour(default_bg_color)
-                        static_text.Refresh()
-                elif level == logging.WARNING:
-                    if static_text.GetBackgroundColour() != WARNING_COLOR:
-                        static_text.SetForegroundColour(default_fg_color)
-                        static_text.SetBackgroundColour(WARNING_COLOR)
-                        static_text.Refresh()
-        else:
-            try:
-                for setting in visible_settings:
-                    static_text_name = text_control_name(setting)
-                    static_text = self.__module_panel.FindWindowByName(
-                        static_text_name)
-                    if (static_text is not None and
-                        ((static_text.GetForegroundColour() == ERROR_COLOR) or
-                         (static_text.GetBackgroundColour() == WARNING_COLOR))):
-                        self.set_tool_tip(setting, None)
-                        static_text.SetForegroundColour(default_fg_color)
-                        static_text.SetBackgroundColour(default_bg_color)
-                        static_text.Refresh()
-            except Exception:
-                logger.debug("Caught bare exception in ModuleView.on_validate()", exc_info=True)
-                pass
+        # update settings' foreground/background
+        try:
+            for setting in visible_settings:
+                self.set_tool_tip(setting, message if (setting is bad_setting) else None)
+                static_text_name = text_control_name(setting)
+                static_text = self.__module_panel.FindWindowByName(static_text_name)
+                if static_text is not None:
+                    desired_fg, desired_bg = default_fg_color, default_bg_color
+                    if setting is bad_setting:
+                        if level == logging.ERROR:
+                            desired_fg = ERROR_COLOR
+                        elif level == logging.WARNING:
+                            desired_bg = WARNING_COLOR
+                if (static_text.SetForegroundColour(desired_fg) or
+                    static_text.SetBackgroundColour(desired_bg)):
+                    static_text.Refresh()
+        except Exception:
+            logger.debug("Caught bare exception in ModuleView.on_validate()", exc_info=True)
+            pass
 
     def set_tool_tip(self, setting, message):
         '''Set the tool tip for a setting to display a message

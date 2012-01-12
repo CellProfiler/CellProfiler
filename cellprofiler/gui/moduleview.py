@@ -2216,6 +2216,24 @@ class FileCollectionDisplayController(object):
     '''This class provides the UI for the file collection display
     
     The UI has a browse button, a hide checkbox and a tree control.
+    
+    Critical attributes:
+    
+    self.walks_in_progress - this is a dictionary of keys to directory walks
+                             and metadata fetches that are happening in the
+                             background. The value of the dictionary entry
+                             is the function to call to stop the search.
+                             
+                             There's a completion callback that's called to
+                             remove an entry from the dictionary. When the
+                             dictionary size reaches zero, the stop and pause
+                             buttons are disabled.
+    
+    self.modpath_to_item - a modpath is a collection of path parts to some file
+                             handled by the controller. There's a tree item
+                             for every modpath in this dictionary and the
+                             dictionary can be used for fast lookup of the
+                             item without traversing the entire tree.
     '''
     IMAGE_LIST = wx.ImageList(16, 16, 3)
     FOLDER_IMAGE_INDEX = IMAGE_LIST.Add(

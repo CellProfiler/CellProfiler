@@ -203,6 +203,10 @@ class Images(cpm.CPModule):
                       self.FilePredicate(),
                       self.ExtensionPredicate(),
                       self.ImagePredicate()]
+        self.wants_filter = cps.Binary(
+            "Filter based on rules", False,
+            doc = "Check this setting to display and use the rules filter")
+            
         self.filter = cps.Filter("Filter", predicates, 
                                  'or (file does contain "")')
         self.do_filter = cps.DoSomething("","Apply filter", 
@@ -337,11 +341,25 @@ class Images(cpm.CPModule):
         return self.pipeline.find_image_plane_details(exemplar)
         
     def apply_filter(self):
-        keep = []
-        dont_keep = []
-        self.filter_tree(self.file_collection_display.file_tree, keep, dont_keep)
-        self.file_collection_display.mark(keep, True)
-        self.file_collection_display.mark(dont_keep, False)
+        if not self.wants_filter:
+            def all_mods(tree):
+                result = []
+                for key in tree.keys():
+                    if key is None:
+                        continue
+                    if isinstance(tree[key], bool):
+                        result.append(key)
+                    else:
+                        result.append((key, all_mods(tree[key])))
+                return result
+            keep = all_mods(self.file_collection_display.file_tree)
+            self.file_collection_display.mark(keep, True)
+        else:
+            keep = []
+            dont_keep = []
+            self.filter_tree(self.file_collection_display.file_tree, keep, dont_keep)
+            self.file_collection_display.mark(keep, True)
+            self.file_collection_display.mark(dont_keep, False)
     
     def filter_tree(self, tree, keep, dont_keep, modpath = []):
         for key in tree.keys():
@@ -367,10 +385,17 @@ class Images(cpm.CPModule):
                                  subpath)
     
     def settings(self):
-        return [self.file_collection_display, self.filter]
+        return [self.file_collection_display, self.wants_filter, self.filter]
     
     def visible_settings(self):
-        return [self.file_collection_display, self.filter, self.do_filter]
+        result = [self.file_collection_display, self.wants_filter]
+        if self.wants_filter:
+            result += [self.filter, self.do_filter]
+        return result
+            
+    def on_setting_changed(self, setting, pipeline):
+        if setting is self.wants_filter and not self.wants_filter:
+            self.apply_filter()
     
     def run(self):
         pass

@@ -21,8 +21,10 @@ import heapq
 import time
 import traceback
 import uuid
+import cStringIO
 import wx
 import wx.grid
+import sys
 
 logger = logging.getLogger(__name__)
 import cellprofiler.pipeline as cpp
@@ -1676,10 +1678,6 @@ class ModuleView:
         self.running_time = time.time() - self.last_idle_time
         default_fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
         default_bg_color = cpprefs.get_background_color()
-        fd = cStringIO.StringIO()
-        self.__pipeline.savetxt(fd, save_image_plane_details = False)
-        if fd.getvalue() != pipeline_data:
-            return
         if not self.__module:  # defensive coding, in case the module was deleted
             return
 

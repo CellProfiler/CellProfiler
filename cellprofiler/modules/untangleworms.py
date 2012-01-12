@@ -679,7 +679,7 @@ class UntangleWorms(cpm.CPModule):
             top = doc.documentElement
             top.setAttribute("xmlns", T_NAMESPACE)
             for tag, value in (
-                (T_VERSION,  cp_version_number),
+                (T_VERSION,  version_number),
                 (T_MIN_AREA, min_area),
                 (T_MAX_AREA, max_area),
                 (T_COST_THRESHOLD, max_cost),
@@ -2325,7 +2325,7 @@ class UntangleWorms(cpm.CPModule):
         if ((wants_overlapping and object_name == self.overlap_objects) or
             (wants_nonoverlapping and object_name == self.nonoverlapping_objects)):
             if category == I.C_LOCATION:
-                result += [I.FTR_CENTER_X, FTR_CENTER_Y]
+                result += [I.FTR_CENTER_X, I.FTR_CENTER_Y]
             elif category == I.C_NUMBER:
                 result += [I.FTR_OBJECT_NUMBER]
             elif category == C_WORM:

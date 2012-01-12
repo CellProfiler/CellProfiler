@@ -9,6 +9,7 @@ output: contains the .msi if you did the msi commmand
 """
 from distutils.core import setup
 import distutils.core
+import distutils.errors
 import py2exe
 import sys
 import glob
@@ -151,7 +152,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
         except WindowsError:
             if key:
                 key.Close()
-            raise DistutilsFileError, "Inno Setup does not seem to be installed properly. Specifically, there is no entry in the HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\Compile\\command"
+            raise distutils.errors.DistutilsFileError, "Inno Setup does not seem to be installed properly. Specifically, there is no entry in the HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\Compile\\command"
 
 opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",

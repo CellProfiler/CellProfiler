@@ -204,16 +204,16 @@ to be part of the same cubic curve.'''
         V=V.reshape((V.shape[0],V.shape[1]))
         
     return V
-    
-def splinefit2d(x,y,z,px,py,mask=None):
+
+
+def splinefit2d(x, y, z, px, py, mask=None):
     '''Make a least squares fit of the spline (px,py,pz) to the surface (x,y,z).
 If mask is given, only masked points are used for the regression.'''
     
     if mask is None:
-        V = np.array(spline_matrix2d(x,y,px,py))
-        pz = np.array(pz.flatten())
-        pz = pz.transpose() / V
-        
+        V = np.array(spline_matrix2d(x, y, px, py))
+        a = np.array(z.T.flatten())
+        pz = np.linalg.lstsq(V.T, a.T)[0].T
     else:
         V = np.array(spline_matrix2d(x,y,px,py,mask))
         indices = np.nonzero(np.array(mask).T.flatten())

@@ -867,27 +867,12 @@ class TrackObjects(cpm.CPModule):
             x = np.column_stack((i, j, x))
             t = np.vstack((t, x))
 
-            if False:
-                kk = np.ndarray.astype(t[0:(t.size/3),1], 'int32')
-                cc = t[0:(t.size/3),2]
-    
-                a = np.arange(len(old_i)+len(new_i)+2)
-                first = np.bincount(np.ndarray.astype(t[0:(t.size/3),0], 'int32')+1)
-                first = np.cumsum(first)+1
-    
-                first[0] = 0
-                kk = np.hstack((np.array((0)), kk))
-                cc = np.hstack((np.array((0.0)), cc))
-    
-                x, y =  LAP.LAP(np.ascontiguousarray(kk, np.int32),
-                                np.ascontiguousarray(first, np.int32),
-                                np.ascontiguousarray(cc, np.float), n)
-            else:
-                # Tack 0 <-> 0 at the start because object #s start at 1
-                i = np.hstack([0,t[:,0].astype(int)])
-                j = np.hstack([0,t[:,1].astype(int)])
-                c = np.hstack([0,t[:,2]])
-                x, y = lapjv(i, j, c)
+            # Tack 0 <-> 0 at the start because object #s start at 1
+            i = np.hstack([0,t[:,0].astype(int)])
+            j = np.hstack([0,t[:,1].astype(int)])
+            c = np.hstack([0,t[:,2]])
+            x, y = lapjv(i, j, c)
+
             a = np.argwhere(x > len(new_i))
             b = np.argwhere(y >len(old_i))
             x[a[0:len(a)]] = 0

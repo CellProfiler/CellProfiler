@@ -263,8 +263,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                 SETTING_OBJECT_GROUP_CT == 0)  
         group_count = int((setting_count - SETTING_OG_OFFSET) / 
                           SETTING_OBJECT_GROUP_CT)
-        while len(self.object_groups) > group_count:
-            self.remove_object_group(self.object_groups[-1][OG_KEY])
+        del self.object_groups[group_count:]
         
         while len(self.object_groups) < group_count:
             self.add_object_group()

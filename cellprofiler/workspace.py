@@ -203,7 +203,7 @@ class Workspace(object):
             window_name = cpf.window_name(self.__module)
             
         if self.__create_new_window:
-            figure = CPFigureFrame(self, 
+            figure = cpf.CPFigureFrame(self, 
                                    title=title,
                                    name = window_name,
                                    subplots = subplots)

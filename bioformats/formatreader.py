@@ -408,7 +408,7 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
             try:
                 scale = jutil.call(max_sample_value, 'intValue', '()I')
             except:
-                logger.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
+                bioformats.logger.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
         if series is not None:
             rdr.setSeries(series)
         if index is not None:

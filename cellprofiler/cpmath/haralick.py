@@ -260,7 +260,7 @@ if False: # __name__ == '__main__':
     image.shape = im.size[1], im.size[0]
     mask = image > 30
     labels = scipy.ndimage.label(mask)[0]
-    h = haralick(image, labels, 3)
+    h = Haralick(image, labels, 3)
     print h
 
 if __name__ == '__main__':

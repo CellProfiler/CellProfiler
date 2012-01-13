@@ -290,6 +290,7 @@ def show_warning(title, message, get_preference, set_preference):
     
     
 if __name__ == "__main__":
+    import wx
     import cellprofiler.pipeline
     import cellprofiler.modules.loadimages
     try:

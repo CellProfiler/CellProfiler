@@ -52,7 +52,7 @@ class Distributor(object):
         # make sure createbatchfiles is not in the pipeline
         if 'CreateBatchFiles' in [module.module_name for module in pipeline.modules()]:
             # XXX - should offer to ignore?
-            raise RuntimeException('CreateBatchFiles should not be used with distributed processing.')
+            raise RuntimeError('CreateBatchFiles should not be used with distributed processing.')
 
         # duplicate pipeline
         pipeline = pipeline.copy()

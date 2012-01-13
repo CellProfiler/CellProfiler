@@ -228,7 +228,7 @@ def get_next_result(cursor):
     try:
         return cursor.next()
     except MySQLdb.Error, e:
-        raise DBException, 'Error retrieving next result from database: %s'%(e)
+        raise Exception('Error retrieving next result from database: %s' % (e))
     except StopIteration, e:
         return None
     

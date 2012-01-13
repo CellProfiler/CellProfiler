@@ -2048,7 +2048,8 @@ class Filter(Setting):
     CONTAINS_REGEXP_PREDICATE = RegexpFilterPredicate(
         "Contain regular expression", [LITERAL_PREDICATE])
     EQ_PREDICATE = FilterPredicate(
-        "eq", "Exactly match", lambda x,y: x == y, [LITERAL_PREDICATE])
+        "eq", "Exactly match", lambda x,y: x == y, [LITERAL_PREDICATE],
+        doc = "Must exactly match the text that you enter to the right")
     
     class DoesPredicate(FilterPredicate):
         '''Pass the arguments through (no-op)'''
@@ -2322,7 +2323,7 @@ class FileCollectionDisplay(Setting):
         if self.fn_update is not None:
             self.fn_update()
         
-    def set_update_function(self, fn_update):
+    def set_update_function(self, fn_update=None):
         '''Set the function that will be called when the file_tree is updated'''
         self.fn_update = fn_update
         
@@ -2385,23 +2386,43 @@ class FileCollectionDisplay(Setting):
         
         mods - modification structure. See class documentation for its form.
         '''
-        removals = self.remove_subtree(mods, self.file_tree)
+        removals = []
+        for modpath in mods:
+            removals += self.remove_subtree(modpath, self.file_tree)
         if self.fn_report_directory_change is not None:
             self.fn_report_directory_change(self.REMOVE, removals)
         self.update_ui()
         
-    def remove_subtree(self, mods, tree):
+    def remove_subtree(self, mod, tree):
         removals = []
-        for mod in mods:
-            if isinstance(mod, basestring):
-                if tree.has_key(mod):
-                    del tree[mod]
-                    removals.append(mod)
+        if mod is None or len(mod) == 0:
+            #
+            # Remove whole tree
+            #
+            for key in tree.keys():
+                if key is None:
+                    continue
+                if isinstance(tree[key], dict):
+                    removals.append((key, self.remove_subtree(None, tree[key])))
+                else:
+                    removals.append(key)
+                del tree[key]
+        elif tree.has_key(mod[0]):
+            root_mod = mod[0]
+            if isinstance(tree[root_mod], dict):
+                removals.append((root_mod, self.remove_subtree(
+                    mod[1:], tree[root_mod])))
+                #
+                # Delete the subtree if the subtree is emptied
+                #
+                if len(tree[root_mod]) == 0 or (
+                    len(tree[root_mod]) == 1 and tree[root_mod].has_key(None)):
+                    del tree[root_mod]
+                    if self.mod_is_compound_image_file(mod):
+                        removals.append(root_mod)
             else:
-                if tree.has_key(mod[0]):
-                    true_mods = self.remove_subtree(mod[1], tree[mod[0]])
-                    if len(true_mods) > 0:
-                        removals.append((mod[0], true_mods))
+                removals.append(root_mod)
+                del tree[root_mod]
         return removals
     
     def mark(self, mods, keep):
@@ -2460,6 +2481,73 @@ class FileCollectionDisplay(Setting):
         self.update_ui()
     
     show_filtered = property(get_show_filtered, set_show_filtered)
+    
+class Table(Setting):
+    '''The Table setting displays a table of values'''
+    def __init__(self, text, **kwargs):
+        super(self.__class__, self).__init__(text, "", **kwargs)
+        self.column_names = []
+        self.data = []
+        
+    def insert_column(self, index, column_name):
+        '''Insert a column at the given index
+        
+        index - the zero-based index of the column's position
+        
+        column_name - the name of the column
+        
+        Adds the column to the table and sets the value for any existing
+        rows to None.
+        '''
+        self.column_names.insert(index, column_name)
+        for row in self.data:
+            row.insert(index, None)
+        
+    def add_rows(self, columns, data):
+        '''Add rows to the table
+        
+        columns - define the columns for each row of data
+        
+        data - rows of data to add. Each field in a row is placed
+               at the column indicated by "columns"
+        '''
+        indices = [columns.index(c) if c in columns else None
+                   for c in self.column_names]
+        for row in data:
+            self.data.append([None if index is None else row[index]
+                              for index in indices])
+    
+    def sort_rows(self, columns):
+        '''Sort rows based on values in columns'''
+        indices = [self.column_names.index(c) for c in columns]
+        def compare_fn(row1, row2):
+            for index in indices:
+                x = cmp(row1[index], row2[index])
+                if x != 0:
+                    return x
+            return 0
+        self.data.sort(compare_fn)
+
+    def clear_rows(self):
+        self.data = []
+        
+    def clear_columns(self):
+        self.column_names = []
+        
+    def get_data(self, row_index, columns):
+        '''Get the column values for a given row or rows
+        
+        row_index - can either be the index of one row or can be a slice or list
+                    of rows
+        
+        columns - the names of the columns to fetch, in the order they will
+                  appear in the row
+        '''
+        column_indices = [self.column_names.index(c) for c in columns]
+        if isinstance(row_index, int):
+            row_index = slice(row_index, row_index+1)
+        return [[row[column_index] for i in column_indices]
+                for row in self.data[row_index]]
 
 class SettingsGroup(object):
     '''A group of settings that are managed together in the UI.

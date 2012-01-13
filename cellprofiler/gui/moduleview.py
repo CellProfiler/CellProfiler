@@ -472,6 +472,8 @@ class ModuleView:
                         fcd = FileCollectionDisplayController(self, v)
                         control = fcd.panel
                         fcd.panel.file_collection_display = fcd
+                elif isinstance(v, cps.Table):
+                    control = self.make_table_control(v, control)
                 else:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control, 0, flag, border)
@@ -1548,6 +1550,37 @@ class ModuleView:
         control.Bind(wx.EVT_BUTTON, callback, control)
         return control
     
+    def make_table_control(self, v, control):
+        if control is None:
+            class TableController(wx.grid.PyGridTableBase):
+                def __init__(self, v):
+                    super(self.__class__, self).__init__()
+                    assert isinstance(v, cps.Table)
+                    self.v = v
+                    
+                def GetNumberRows(self):
+                    return len(self.v.data)
+                
+                def GetNumberCols(self):
+                    return len(self.v.column_names)
+                
+                def IsEmptyCell(self, row, col):
+                    return self.v.data[row][col] is None
+                
+                def GetValue(self, row, col):
+                    return self.v.data[row][col]
+                
+                def GetColLabelValue(self, col):
+                    return self.v.column_names[col]
+            control = wx.grid.Grid(self.module_panel, -1,
+                                   name = edit_control_name(v))
+            control.SetTable(TableController(v))
+            control.SetMinSize((400, 300))
+            control.AutoSize()
+            control.SetDefaultCellOverflow(False)
+        control.ForceRefresh()
+        return control
+    
     def add_listener(self,listener):
         self.__listeners.append(listener)
     
@@ -2174,7 +2207,8 @@ class FilterPanelController(object):
                             predicates, i, subaddress, sizer)
                         if choice_ctrl.GetStringSelection() != token.display_name:
                             choice_ctrl.SetStringSelection(token.display_name)
-                        choice_ctrl.SetToolTipString(token.doc)
+                        if token.doc is not None:
+                            choice_ctrl.SetToolTipString(token.doc)
                         predicates = token.subpredicates
         #
         # Don't allow delete of only rule
@@ -2333,6 +2367,7 @@ class FileCollectionDisplayController(object):
         for stop_fn in self.walks_in_progress.values():
             stop_fn(W.THREAD_STOP)
         self.walks_in_progress.clear()
+        self.v.set_update_function()
 
     def on_browse(self, event):
         logger.debug("Browsing for file collection directory")
@@ -2622,16 +2657,13 @@ class FileCollectionDisplayController(object):
         
     def get_item_address(self, item):
         '''Get an item's address as a collection of names'''
-        result = None
+        result = []
         while True:
             name = self.tree_ctrl.GetItemPyData(item)
             if name is None:
                 break;
             else:
-                if result is None:
-                    result = name
-                else:
-                    result = (name, (result,))
+                result.insert(0, name)
                 item = self.tree_ctrl.GetItemParent(item)
         return result
     

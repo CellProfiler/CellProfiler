@@ -38,6 +38,7 @@ import datetime
 import traceback
 import threading
 import urlparse
+import urllib
 import urllib2
 import re
 
@@ -424,6 +425,13 @@ class ImagePlaneDetails(object):
         assert isinstance(other, ImagePlaneDetails)
         return (cmp(self.url, other.url) or cmp(self.series, other.series) or
                 cmp(self.index, other.index) or cmp(self.channel, other.channel))
+    
+    @property
+    def path(self):
+        '''The file path if a file: URL, otherwise the URL'''
+        if self.url.startswith("file:"):
+            return urllib.url2pathname(self.url[5:])
+        return self.url
         
 def read_image_plane_details(file_or_fd):
     """Read image plane details from a file or file object
@@ -477,7 +485,8 @@ def read_image_plane_details(file_or_fd):
                     fields[j] = int(fields[j])
             result.append(ImagePlaneDetails(
                 fields[0], fields[1], fields[2], fields[3],
-                **dict([(k, v) for k,v in zip(header[4:], fields[4:])])))
+                **dict([(k, v) for k,v in zip(header[4:], fields[4:])
+                        if v is not None])))
         return result
     finally:
         if needs_close:
@@ -2017,10 +2026,11 @@ class Pipeline(object):
                 real_list.append(details)
                 del self.image_plane_details[pos]
             start = pos
-        self.notify_listeners(ImagePlaneDetailsRemovedEvent(real_list))
-        def undo():
-            self.add_image_plane_details(real_list)
-        self.__undo_stack.append((undo, "Remove images"))
+        if len(real_list):
+            self.notify_listeners(ImagePlaneDetailsRemovedEvent(real_list))
+            def undo():
+                self.add_image_plane_details(real_list)
+            self.__undo_stack.append((undo, "Remove images"))
         
     def find_image_plane_details(self, exemplar):
         '''Return the image plane details record that matches the exemplar

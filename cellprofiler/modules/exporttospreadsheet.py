@@ -758,7 +758,7 @@ Do you want to save it anyway?""" %
                 object_count =\
                      np.max([m.get_measurement(IMAGE, "Count_%s"%name, img_number)
                              for name in object_names])
-                object_count = int(object_count)
+                object_count = int(object_count) #if object_count else 0
                 columns = [np.repeat(img_number, object_count)
                            if feature_name == IMAGE_NUMBER
                            else np.arange(1,object_count+1) 

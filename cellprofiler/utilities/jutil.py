@@ -237,7 +237,6 @@ def start_vm(args):
         def exit_fn():
             if vm is not None:
                 if getattr(thread_local_env,"env",None) is not None:
-                    print "Must detach at exit"
                     detach()
                 kill[0] = True
                 wake_event.set()
@@ -270,6 +269,7 @@ def start_vm(args):
         dead_event.set()
         
     t = threading.Thread(target=start_thread)
+    t.daemon = True
     pt.append(t)
     t.start()
     start_event.wait()

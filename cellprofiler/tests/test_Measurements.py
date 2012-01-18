@@ -46,6 +46,13 @@ class TestMeasurements(unittest.TestCase):
         self.assertEqual(x.get_current_measurement("Image", "Feature"),"Value")
         self.assertTrue("Image" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Image"))
+
+    def test_02_01b_add_image_measurement_arrayinterface(self):
+        x = cpmeas.Measurements()
+        x["Image", "Feature"] = "Value"
+        self.assertEqual(x["Image", "Feature"], "Value")
+        self.assertTrue("Image" in x.get_object_names())
+        self.assertTrue("Feature" in x.get_feature_names("Image"))
     
     def test_02_02_add_object_measurement(self):
         x = cpmeas.Measurements()
@@ -53,6 +60,15 @@ class TestMeasurements(unittest.TestCase):
         m = np.random.rand(10)
         x.add_measurement("Nuclei", "Feature",m)
         self.assertTrue((x.get_current_measurement("Nuclei", "Feature")==m).all)
+        self.assertTrue("Nuclei" in x.get_object_names())
+        self.assertTrue("Feature" in x.get_feature_names("Nuclei"))
+
+    def test_02_02b_add_object_measurement_arrayinterface(self):
+        x = cpmeas.Measurements()
+        np.random.seed(0)
+        m = np.random.rand(10)
+        x["Nuclei", "Feature"] = m
+        self.assertTrue((x["Nuclei", "Feature"] == m).all)
         self.assertTrue("Nuclei" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Nuclei"))
     
@@ -67,6 +83,18 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue("Image" in x.get_object_names())
         self.assertTrue("Nuclei" in x.get_object_names())
         self.assertTrue("Feature" in x.get_feature_names("Image"))
+
+    def test_02_03b_add_two_measurements_arrayinterface(self):
+        x = cpmeas.Measurements()
+        x["Image", "Feature"] = "Value"
+        np.random.seed(0)
+        m = np.random.rand(10)
+        x["Nuclei", "Feature"] = m
+        self.assertEqual(x["Image", "Feature"], "Value")
+        self.assertTrue((x["Nuclei", "Feature"] == m).all())
+        self.assertTrue("Image" in x.get_object_names())
+        self.assertTrue("Nuclei" in x.get_object_names())
+        self.assertTrue("Feature" in x.get_feature_names("Image"))
     
     def test_02_04_add_two_measurements_to_object(self):
         x = cpmeas.Measurements()
@@ -74,6 +102,16 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "Feature2","Value2" )
         self.assertEqual(x.get_current_measurement("Image", "Feature1"),"Value1")
         self.assertEqual(x.get_current_measurement("Image", "Feature2"),"Value2")
+        self.assertTrue("Image" in x.get_object_names())
+        self.assertTrue("Feature1" in x.get_feature_names("Image"))
+        self.assertTrue("Feature2" in x.get_feature_names("Image"))
+
+    def test_02_04b_add_two_measurements_to_object_arrayinterface(self):
+        x = cpmeas.Measurements()
+        x["Image", "Feature1"] = "Value1"
+        x["Image", "Feature2"] = "Value2"
+        self.assertEqual(x["Image", "Feature1"], "Value1")
+        self.assertEqual(x["Image", "Feature2"], "Value2")
         self.assertTrue("Image" in x.get_object_names())
         self.assertTrue("Feature1" in x.get_feature_names("Image"))
         self.assertTrue("Feature2" in x.get_feature_names("Image"))
@@ -94,6 +132,23 @@ class TestMeasurements(unittest.TestCase):
             self.assertEqual(a,b)
         for a,b in zip(x.get_all_measurements("Nuclei","Feature"),[m1,m2]):
             self.assertTrue((a==b).all())
+
+    def test_03_03b_MultipleImageSets_arrayinterface(self):
+        np.random.seed(0)
+        x = cpmeas.Measurements()
+        x["Image", "Feature"] = "Value1"
+        m1 = np.random.rand(10)
+        x["Nuclei", "Feature"] = m1
+        x.next_image_set()
+        x["Image", "Feature"] = "Value2"
+        m2 = np.random.rand(10)
+        x["Nuclei", "Feature"] = m2
+        self.assertEqual(x["Image", "Feature"], "Value2")
+        self.assertTrue((x["Nuclei", "Feature"] == m2).all())
+        for a, b in zip(x["Image", "Feature", :], ["Value1", "Value2"]):
+            self.assertEqual(a, b)
+        for a, b in zip(x["Nuclei", "Feature", :], [m1, m2]):
+            self.assertTrue((a == b).all())
             
     def test_04_01_get_all_image_measurements_float(self):
         r = np.random.RandomState()
@@ -106,6 +161,20 @@ class TestMeasurements(unittest.TestCase):
                               image_set_number = image_number)
         result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
         np.testing.assert_equal(result, vals)
+
+    def test_04_01b_get_all_image_measurements_float_arrayinterface(self):
+        r = np.random.RandomState()
+        m = cpmeas.Measurements()
+        r.seed(41)
+        vals = r.uniform(size=100)
+        bad_order = r.permutation(np.arange(1, 101))
+        for image_number in bad_order:
+            m[cpmeas.IMAGE, "Feature", image_number] = vals[image_number - 1]
+        result = m[cpmeas.IMAGE, "Feature", :]
+        np.testing.assert_equal(result, vals)
+        for image_number in bad_order:
+            result = m[cpmeas.IMAGE, "Feature", image_number]
+            np.testing.assert_equal(result, vals[image_number - 1])
         
     def test_04_02_get_all_image_measurements_string(self):
         r = np.random.RandomState()
@@ -118,6 +187,17 @@ class TestMeasurements(unittest.TestCase):
                               unicode(vals[image_number-1]), 
                               image_set_number = image_number)
         result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
+        self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
+
+    def test_04_02b_get_all_image_measurements_string_arrayinterface(self):
+        r = np.random.RandomState()
+        m = cpmeas.Measurements()
+        r.seed(42)
+        vals = r.uniform(size=100)
+        bad_order = r.permutation(np.arange(1, 101))
+        for image_number in bad_order:
+            m[cpmeas.IMAGE, "Feature", image_number] = unicode(vals[image_number - 1])
+        result = m[cpmeas.IMAGE, "Feature", :]
         self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
         
     def test_04_03_get_all_image_measurements_unicode(self):
@@ -132,7 +212,18 @@ class TestMeasurements(unittest.TestCase):
                               image_set_number = image_number)
         result = m.get_all_measurements(cpmeas.IMAGE, "Feature")
         self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
-        
+
+    def test_04_03b_get_all_image_measurements_unicode_arrayinterface(self):
+        r = np.random.RandomState()
+        m = cpmeas.Measurements()
+        r.seed(42)
+        vals = [u"\u2211" + str(r.uniform()) for _ in range(100)]
+        bad_order = r.permutation(np.arange(1, 101))
+        for image_number in bad_order:
+            m[cpmeas.IMAGE, "Feature", image_number] = vals[image_number - 1]
+        result = m[cpmeas.IMAGE, "Feature", :]
+        self.assertTrue(all([r == unicode(v) for r, v in zip(result, vals)]))
+
     def test_04_04_get_all_object_measurements(self):
         r = np.random.RandomState()
         m = cpmeas.Measurements()
@@ -146,6 +237,18 @@ class TestMeasurements(unittest.TestCase):
         result = m.get_all_measurements(OBJECT_NAME, "Feature")
         self.assertTrue(all([np.all(r == v) and len(r) == len(v)
                              for r,v in zip(result, vals)]))
+
+    def test_04_04b_get_all_object_measurements_arrayinterface(self):
+        r = np.random.RandomState()
+        m = cpmeas.Measurements()
+        r.seed(42)
+        vals = [r.uniform(size=r.randint(10, 100)) for _ in range(100)]
+        bad_order = r.permutation(np.arange(1, 101))
+        for image_number in bad_order:
+            m[OBJECT_NAME, "Feature", image_number] = vals[image_number - 1]
+        result = m[OBJECT_NAME, "Feature", :]
+        self.assertTrue(all([np.all(r == v) and len(r) == len(v)
+                             for r, v in zip(result, vals)]))
     
     def test_05_01_test_has_current_measurements(self):
         x = cpmeas.Measurements()
@@ -156,9 +259,19 @@ class TestMeasurements(unittest.TestCase):
         x.add_measurement("Image", "OtherFeature","Value" )
         self.assertFalse(x.has_current_measurements('Image', 'Feature'))
 
+    def test_05_02b_test_has_current_measurements_arrayinterface(self):
+        x = cpmeas.Measurements()
+        x["Image", "OtherFeature"] = "Value"
+        self.assertFalse(x.has_current_measurements('Image', 'Feature'))
+
     def test_05_03_test_has_current_measurements(self):
         x = cpmeas.Measurements()
         x.add_measurement("Image", "Feature","Value" )
+        self.assertTrue(x.has_current_measurements('Image', 'Feature'))
+    
+    def test_05_03b_test_has_current_measurements_arrayinterface(self):
+        x = cpmeas.Measurements()
+        x["Image", "Feature"] = "Value"
         self.assertTrue(x.has_current_measurements('Image', 'Feature'))
     
     def test_06_00_00_dont_apply_metadata(self):
@@ -166,6 +279,14 @@ class TestMeasurements(unittest.TestCase):
         value = "P12345"
         expected = "pre_post"
         x.add_measurement("Image", "Metadata_Plate", value)
+        pattern = "pre_post"
+        self.assertEqual(x.apply_metadata(pattern), expected)
+        
+    def test_06_00_00b_dont_apply_metadata_arrayinterface(self):
+        x = cpmeas.Measurements()
+        value = "P12345"
+        expected = "pre_post"
+        x["Image", "Metadata_Plate"] =  value
         pattern = "pre_post"
         self.assertEqual(x.apply_metadata(pattern), expected)
         
@@ -619,6 +740,16 @@ class TestMeasurements(unittest.TestCase):
         m = cpmeas.Measurements()
         try:
             m.add_measurement(OBJECT_NAME, "Foo", np.zeros(3))
+            feature_names = m.get_feature_names(OBJECT_NAME)
+            self.assertEqual(len(feature_names), 1)
+            self.assertTrue("Foo" in feature_names)
+        finally:
+            del m
+
+    def test_16_01b_get_feature_names_arrayinterface(self):
+        m = cpmeas.Measurements()
+        try:
+            m[OBJECT_NAME, "Foo"] = np.zeros(3)
             feature_names = m.get_feature_names(OBJECT_NAME)
             self.assertEqual(len(feature_names), 1)
             self.assertTrue("Foo" in feature_names)

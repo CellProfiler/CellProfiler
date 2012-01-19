@@ -151,6 +151,7 @@ class HDF5Dict(object):
                         hdf5_index = object_group[feature_name]['index']
                         for num_idx, start, stop in hdf5_index:
                             d[num_idx] = slice(start, stop)
+            self.hdf5_file.flush()
 
     def __del__(self):
         logger.debug("HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary)

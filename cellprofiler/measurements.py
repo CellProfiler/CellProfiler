@@ -152,6 +152,8 @@ class Measurements(object):
                 filename,
                 is_temporary = is_temporary,
                 copy = copy)
+        elif copy is not None:
+            raise ValueError('Copy source for measurments is neither a Measurements or HDF5 group.')
         else:
             self.hdf5_dict = HDF5Dict(filename, is_temporary = is_temporary)
         if is_temporary:

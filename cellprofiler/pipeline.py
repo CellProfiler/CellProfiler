@@ -30,7 +30,7 @@ except:
     has_mat_read_error = False
     
 import os
-import StringIO
+import StringIO  # XXX - replace with cStringIO?
 import sys
 import tempfile
 import traceback
@@ -1636,6 +1636,73 @@ class Pipeline(object):
                 measurements.flush()
                 del measurements
             self.end_run()
+
+    def run_image_set(self, measurements, image_set_number,
+                      post_module_callback, interaction_callback,
+                      exception_callback):
+        """Run the pipeline for a single image set storing the results in measurements.
+
+        Arguments:
+             image_set_number - what image to analyze.
+             post_module_callback - called after each module (status, display, debugging)
+             interaction_callback - called for interaction requests from modules and exceptions.
+             exception_callback - called for pipeline exceptions.
+             measurements - source of image information, destination for results.
+
+             self.prepare_run() and self.prepare_group() must have already been called.
+        """
+
+        measurements.next_image_set(image_set_number)
+        measurements.group_number = measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER]
+        measurements.group_index = measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX]
+        object_set = cpo.ObjectSet()
+        image_set = cpi.ImageSet()
+        outlines = {}
+        grids = None
+        should_write_measurements = True
+        for module in self.modules():
+            gc.collect()
+            if module.should_stop_writing_measurements():
+                should_write_measurements = False
+            workspace = cpw.Workspace(self,
+                                      module,
+                                      image_set,
+                                      object_set,
+                                      measurements,
+                                      None,
+                                      outlines=outlines)
+            grids = workspace.set_grids(grids)
+
+            start_time = datetime.datetime.now()
+            t0 = sum(os.times()[:-1])
+            try:
+                module.run(workspace)
+            except Exception, exception:
+                logger.error("Error detected during run of module %s#%d",
+                             module.module_name, module.module_number, exc_info=True)
+                if should_write_measurements:
+                    measurements[cpmeas.IMAGE,
+                                 'ModuleError_%02d%s' % (module.module_num, module.module_name)] = 1
+                exception_callback(self, module, exception, sys.exc_traceback)
+                return  # no recovery
+
+            t1 = sum(os.times()[:-1])
+            delta_secs = max(0, t1 - t0)
+            pipeline_stats_logger.info("%s: Image # %d, module %s # %d: %.2f secs" %
+                                       (start_time.ctime(), image_set_number,
+                                        module.module_name, module.module_num,
+                                        delta_secs))
+            # Paradox: ExportToDatabase must write these columns in order
+            #  to complete, but in order to do so, the module needs to
+            #  have already completed. So we don't report them for it.
+            if (should_write_measurements):
+                measurements[cpmeas.IMAGE,
+                             'ModuleError_%02d%s' % (module.module_num, module.module_name)] = 0
+                measurements[cpmeas.IMAGE,
+                             'ExecutionTime_%02d%s' % (module.module_num, module.module_name)] = delta_secs
+
+            measurements.flush()
+            post_module_callback(self, module)
 
     def end_run(self):
         '''Tell everyone that a run is ending'''

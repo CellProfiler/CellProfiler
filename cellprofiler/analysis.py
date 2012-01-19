@@ -41,7 +41,7 @@ class Analysis(object):
 
     +---------------------------------------------+
     |           CellProfiler GUI/WX thread        |
-    +---------------------------------------------+
+    +----------calls to Analysis methods()--------+
     |       AnalysisRunner.interface() thread     |
     +------------------  Queues  -----------------+
     |AnalysisRunner.jobserver()/announce() threads|
@@ -69,6 +69,7 @@ class Analysis(object):
 
         self.runner_lock = threading.Lock()  # defensive coding purposes
 
+    # XXX - should we replace callbacks with the add_listener()/notify_listeners() pattern?
     def start_analysis(self, display_callback, interaction_callback):
         with self.runner_lock:
             assert not self.analysis_in_progress
@@ -115,14 +116,16 @@ class AnalysisRunner(object):
     # measurement status
     STATUS = "ProcessingStatus"
     STATUS_UNPROCESSED = "Unprocessed"
-    STATUS_QUEUED = "Queued"
+    STATUS_IN_PROCESS = "InProcess"
     STATUS_DONE = "Done"
-
-
 
     def __init__(self, analysis_id, pipeline,
                  display_callback, interaction_callback,
                  initial_measurements, finished_cb):
+        # for sending to workers
+        self.initial_measurements = cpmeas.Measurements(image_set_start=None,
+                                                        copy=initial_measurements)
+        # for writing results
         self.measurements = cpmeas.Measurements(image_set_start=None,
                                                 copy=initial_measurements)
         self.analysis_id = analysis_id
@@ -195,28 +198,44 @@ class AnalysisRunner(object):
         for image_set_number in range(image_set_start, image_set_end):
             if (overwrite or
                 (not self.measurements.has_measurements(cpmeas.IMAGE, self.STATUS, image_set_number)) or
-                (get_status(image_set_number) == self.STATUS_QUEUED)):
+                (get_status(image_set_number) != self.STATUS_DONE)):
                 self.measurements.add_measurement(cpmeas.IMAGE, self.STATUS, self.STATUS_UNPROCESSED, image_set_number=image_set_number)
+
+        # Find image groups.  These are written into measurements prior to
+        # analysis.  If the pipeline aggregates data or requires images in
+        # order, we have to process individual groups as a single job.
+        if self.pipeline.aggregates_data() or self.pipeline.needs_images_in_order():
+            grouping_needed = True
+            job_groups = {}
+            for image_set_number in range(image_set_start, image_set_end):
+                group_number = self.measurements.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number)
+                group_index = self.measurements.get_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number)
+                job_groups[group_number] = job_groups.get(group_number, []) + [(group_index, image_set_number)]
+            job_groups[group_number] = [[isn for _, isn in sorted(job_groups[group_number])] for group_number in job_groups]
+        else:
+            grouping_needed = False
+            # no need for grouping
+            job_groups = [[image_set_number] for image_set_number in range(image_set_start, image_set_end)]
+            # XXX - we need to call prepare_group() here, based on its docstring in cpmodule.py, right?
+
+        # XXX - check that any constructed groups are complete, i.e.,
+        # image_set_start and image_set_end shouldn't carve them up.
+
+        # put the jobs in the queue
+        for job in job_groups:
+            self.work_queue.put((job, grouping_needed))
 
         # We loop until every image is completed, or an outside event breaks the loop.
         while True:
             # take the interface_work_cv lock to keep our interaction with the meaurements atomic.
             with self.interface_work_cv:
-                counts = dict((s, 0) for s in [self.STATUS_UNPROCESSED, self.STATUS_QUEUED, self.STATUS_DONE])
-                # try to find an image that can be queued for processing
+                counts = dict((s, 0) for s in [self.STATUS_UNPROCESSED, self.STATUS_IN_PROCESS, self.STATUS_DONE])
                 for image_set_number in range(image_set_start, image_set_end):
                     status = get_status(image_set_number)
                     counts[status] += 1
-                    if status in (self.STATUS_DONE, self.STATUS_QUEUED):
-                        continue
-                    if True or self.pipeline.image_set_ready(image_set_number, self.measurements):
-                        self.queue_job(image_set_number)
-                        self.measurements.add_measurement(cpmeas.IMAGE, self.STATUS, self.STATUS_QUEUED, image_set_number=image_set_number)
-                        counts[status] -= 1
-                        counts[self.STATUS_QUEUED] += 1
 
                 # report our progress
-                self.progress(counts[self.STATUS_UNPROCESSED], counts[self.STATUS_QUEUED], counts[self.STATUS_DONE])
+                self.progress(counts[self.STATUS_UNPROCESSED], counts[self.STATUS_IN_PROCESS], counts[self.STATUS_DONE])
 
                 # Are we finished?
                 if (counts[self.STATUS_QUEUED] + counts[self.STATUS_UNPROCESSED]) == 0:
@@ -265,7 +284,9 @@ class AnalysisRunner(object):
             reply_address, image_set_number, interaction_request = self.interaction_request_queue.get()
 
             def reply_cb(interaction_reply, reply_address=reply_address):
+                # this callback function will be called from another thread
                 self.interaction_reply_queue.put((reply_address, interaction_reply))
+                self.interface_work_cv.notify()  # notify interface() there's a reply to be handled.
 
             self.interaction_callback(image_set_number, interaction_request, reply_cb)
         # measurements
@@ -309,10 +330,15 @@ class AnalysisRunner(object):
             address, _, message_type = msg[:3]  # [address, '', message_type, optional job #, optional body]
             if message_type == 'PIPELINE':
                 work_queue_socket.send_multipart([address, '', self.pipeline_as_string()])
+            if message_type == 'INITIAL_MEASUREMENTS':
+                work_queue_socket.send_multipart([address, '', self.initial_measurements.hdf5_dict.filename])
             elif message_type == 'WORK REQUEST':
                 if not self.work_queue.empty():
-                    job = self.work_queue.get()
-                    work_queue_socket.send_multipart([address, '', str(job)])
+                    job, grouping_needed = self.work_queue.get()
+                    if grouping_needed:
+                        work_queue_socket.send_multipart([address, '', 'GROUP'] + [str(j) for j in job])
+                    else:
+                        work_queue_socket.send_multipart([address, '', 'IMAGE', str(job[0])])
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
@@ -326,8 +352,16 @@ class AnalysisRunner(object):
                 # GUI to run.  We'll find the result on
                 # self.interact_reply_queue sometime in the future.
             elif message_type == 'MEASUREMENTS':
-                self.queue_receive_measurements(msg[3], msg[4])
-                work_queue_socket.send_multipart([address, '', 'THANKS'])
+                # Measurements are available at location indicated
+                measurements_path = msg[3]
+                job = msg[4:]
+                try:
+                    reported_measurements = cpmeas.load_measurements(measurements_path)
+                    self.queue_receive_measurements(reported_measurements, msg[4])
+                    work_queue_socket.send_multipart([address, '', 'THANKS'])
+                except Exception, e:
+                    # XXX - report error, push back job
+                    pass
 
         # announce that this job is done/cancelled
         self.announce_queue.put(['DONE', analysis_id])
@@ -378,11 +412,11 @@ class AnalysisRunner(object):
         work_announce_port = work_announce_socket.bind_to_random_port("tcp://127.0.0.1")
         cls.announce_queue = Queue.Queue()
 
-        def announce():
+        def announcer():
             while True:
                 mesg = cls.announce_queue.get()
                 work_announce_socket.send_multipart(mesg)
-        start_daemon_thread(target=announce, name='RunAnalysis.announce')
+        start_daemon_thread(target=announcer, name='RunAnalysis.announcer')
 
         # start workers
         for idx in range(num):

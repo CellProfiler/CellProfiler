@@ -169,6 +169,19 @@ class Measurements(object):
         if hasattr(self, "hdf5_dict"):
             del self.hdf5_dict
 
+    def __getitem__(self, key):
+        # we support slicing the last dimension for the limited case of [..., :]
+        if len(key) == 3 and key[2] == slice(None, None, None):
+            return self.get_all_measurements(*key[:2])
+        return self.get_measurement(*key)
+
+    def __setitem__(self, key, value):
+        assert 2 <= len(key) <= 3
+        if len(key) == 2:
+            self.add_measurement(key[0], key[1], value)
+        else:
+            self.add_measurement(key[0], key[1], value, image_set_number=key[2])
+
     def flush(self):
         self.hdf5_dict.flush()
 

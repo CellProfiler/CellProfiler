@@ -2633,7 +2633,7 @@ class FileCollectionDisplayController(object):
     def update(self):
         if not self.needs_update:
             return
-        self.latency = time.time() - self.request_update_timestamp
+        self.latency = 1000 * (time.time() - self.request_update_timestamp)  # milliseconds
         try:
             self.update_subtree(self.v.file_tree, self.root_item, False, [])
         finally:

@@ -21,10 +21,12 @@ import random
 import zmq
 import cStringIO as StringIO
 import gc
+import logging
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
+import subimager.client
 
 # XXX - does every recv() below need to have a timeout?  Not in the
 # multiprocessing case, but yes in the distributed case.  This will require
@@ -32,21 +34,31 @@ import cellprofiler.measurements as cpmeas
 # otherwise, I think it's fairly clean.  We should expect pretty quick
 # responses to everything else.
 
+logger = logging.getLogger(__name__)
+
 
 def main():
+    # XXX - move all this to a class
     parser = optparse.OptionParser()
     parser.add_option("--work-announce",
                       dest="work_announce_address",
                       help="ZMQ port where work announcements are published",
                       default=None)
+    parser.add_option("--subimager-port",
+                      dest="subimager_port",
+                      help="TCP port for subimager server",
+                      default=None)
     options, args = parser.parse_args()
 
-    if not options.work_announce_address:
+    if not (options.work_announce_address and options.subimager_port):
         parser.print_help()
         sys.exit(1)
 
+    # set the subimager port
+    subimager.client.port = options.subimager_port
+
     # Start the deadman switch thread.
-    start_daemon_thread(target=exit_on_stdin_close)
+    start_daemon_thread(target=exit_on_stdin_close, name="exit_on_stdin_close")
 
     # known work servers (analysis_id -> socket_address)
     work_servers = {}
@@ -60,19 +72,21 @@ def main():
     start_daemon_thread(target=listen_for_announcements,
                         args=(options.work_announce_address,
                               work_servers, pipelines, initial_measurements,
-                              work_server_lock))
+                              work_server_lock),
+                        name="listen_for_announcements")
 
     zmq_context = zmq.Context()
 
     current_analysis_id = None
 
+    # pipeline listener object
+    pipeline_listener = PipelineEventListener()
+
     # Loop until exit
     while True:
-        gc.collect()
-
         # no servers = no work
         if len(work_servers) == 0:
-            time.sleep(.1)  # wait for work servers
+            time.sleep(.25)  # wait for work servers
             continue
 
         # find a server to connect to
@@ -80,11 +94,10 @@ def main():
             if len(work_servers) == 0:
                 continue
             # continue to work with the same work server, if possible
-            if current_analysis_id in work_servers:
-                continue
-            # choose a random server
-            current_analysis_id = random.choice(work_servers.keys())
-            current_server = work_servers[current_analysis_id]
+            if current_analysis_id not in work_servers:
+                # choose a random server
+                current_analysis_id = random.choice(work_servers.keys())
+                current_server = work_servers[current_analysis_id]
 
         work_socket = zmq_context.socket(zmq.REQ)
         try:
@@ -102,6 +115,7 @@ def main():
             work_socket.send("WORK REQUEST")
             job = work_socket.recv_multipart()
             if job[0] == 'NONE':
+                time.sleep(0.25)  # avoid hammering server
                 # no work, currently.
                 continue
 
@@ -111,16 +125,17 @@ def main():
                 work_socket.send("PIPELINE")
                 pipeline_blob = work_socket.recv()
                 pipeline = cpp.Pipeline()
-                pipeline.loadtxt(StringIO.StringIO(pipeline_blob))
+                pipeline.loadtxt(StringIO.StringIO(pipeline_blob), raise_on_error=True)
                 # make sure the server hasn't finished or quit since we fetched the pipeline
                 with work_server_lock:
                     if current_analysis_id in work_servers:
                         current_pipeline = pipelines[current_analysis_id] = pipeline
+                        pipeline.add_listener(pipeline_listener.handle_event)
                     else:
                         continue
 
-            # point the pipeline callbacks to the new work_socket
-            setup_callbacks(current_pipeline, work_socket)
+            # point the pipeline event listener to the new work_socket
+            pipeline_listener.work_socket = work_socket
 
             # Fetch the path to the intial measurements if needed.
             # XXX - when implementing distributed workers, this will need to be
@@ -138,7 +153,7 @@ def main():
                     else:
                         continue
             # Safest not to clobber measurements from one job to the next.
-            current_measurements = cpmeas.Measurements(self, copy=current_measurements)
+            current_measurements = cpmeas.Measurements(copy=current_measurements)
 
             print "Doing job: ", " ".join(job)
 
@@ -159,12 +174,13 @@ def main():
 
             if should_process:
                 for image_set_number in image_set_numbers:
+                    gc.collect()
                     try:
                         current_pipeline.run_image_set(current_measurements, image_set_number)
-                    except Exception, e:
+                    except Exception:
                         # XXX - should detect cancellation of the run vs. other exceptions
                         # also offer to remote PDB.
-                        pass
+                        logging.error("Error in pipeline", exc_info=True)
 
                 if need_prepare_group:
                     workspace = cpw.Workspace(current_pipeline, None, None, None,
@@ -174,26 +190,17 @@ def main():
                     # here.
                     current_pipeline.post_group(workspace, current_measurements.get_grouping_keys(), image_set_numbers)
 
-            # XXX - multiprocessing: send path of measurements.
+            # multiprocessing: send path of measurements.
             # XXX - distributed - package them up.
             current_measurements.flush()
-            work_socket.send_multipart(["MEASUREMENTS", self.current_measurements.hdf5_dict.filename] + job)
+            work_socket.send_multipart(["MEASUREMENTS", current_measurements.hdf5_dict.filename] + job)
             work_socket.recv()  # get ACK - indicates measurements have been
                                 # read and can be deleted, to remove the
                                 # temporary file.
-            delete current_measurements
-        except Exception, e:
+            del current_measurements
+        except Exception:
+            logging.error("Error in worker", exc_info=True)
             # XXX - offer to invoke remote PDB
-            pass
-
-def pipeline_event_handler(event):
-    if isinstance(event, pipeline.RunExceptionEvent):
-        # XXX
-        # report error back to main process
-        # offer to PDB it
-        # invoke PDB
-        # Also need option to skip this set, continue pipeline.
-        event.cancel_run = True
 
 
 def exit_on_stdin_close():
@@ -243,6 +250,28 @@ def start_daemon_thread(target=None, args=(), name=None):
     thread.start()
 
 
+class CancelledException(Exception):
+    pass
+
+
+class PipelineEventListener(object):
+    """listen for pipeline events, communicate them as necessary to the
+    analysis manager."""
+    def __init__(self):
+        self.pipeline = None
+        self.work_socket = None
+
+    def handle_event(self, event):
+        print "GOT EVENT", event
+        if isinstance(event, cpp.RunExceptionEvent):
+            # XXX
+            # report error back to main process
+            # offer to PDB it
+            # invoke PDB
+            # Also need option to skip this set, continue pipeline.
+            event.cancel_run = True
+
+
 def setup_callbacks(pipeline, work_socket):
     def post_module_callback(pipeline, module):
         # XXX - handle display
@@ -252,9 +281,14 @@ def setup_callbacks(pipeline, work_socket):
     def interaction_callback(interaction_blob):
         work_socket.send_multipart("INTERACT", interaction_blob)
         # wait for and return the result of the interaction to the caller.
-        return work_socket.recv()
+        result = work_socket.recv_multipart()
+        if len(result) == 1:
+            return result[0]
+        else:
+            assert result[1] == 'CANCELLED'
+            raise CancelledException()
 
-    def exception_callback(exception):
+    def exception_callback(event):
         if isinstance(event, pipeline.RunExceptionEvent):
             # XXX
             # report error back to main process
@@ -263,13 +297,17 @@ def setup_callbacks(pipeline, work_socket):
             # Also need option to skip this set, continue pipeline, or cancel run.
             event.cancel_run = True
 
-    current_pipeline.post_module_callback = post_module_callback
-    current_pipeline.interaction_callback = interaction_callback
-    current_pipeline.exception_callback = exception_callback
+    pipeline.post_module_callback = post_module_callback
+    pipeline.interaction_callback = interaction_callback
+    pipeline.exception_callback = exception_callback
     # XXX - set up listener on pipeline for Events of all kinds
 
 
 if __name__ == "__main__":
     import cellprofiler.preferences
+    import sys
+    sys.modules['cellprofiler.utilities.jutil'] = None
     cellprofiler.preferences.set_headless()
+    logging.root.setLevel(logging.INFO)
+    logging.root.addHandler(logging.StreamHandler())
     main()

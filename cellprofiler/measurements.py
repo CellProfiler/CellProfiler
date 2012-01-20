@@ -637,6 +637,10 @@ class Measurements(object):
             result_pieces.append(result)
         return single_backquote.join(result_pieces)
 
+    def has_groups(self):
+        # XXX - need to implement this.
+        return False
+
     def group_by_metadata(self, tags):
         """Return groupings of image sets with matching metadata tags
 

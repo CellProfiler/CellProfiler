@@ -1637,17 +1637,12 @@ class Pipeline(object):
                 del measurements
             self.end_run()
 
-    def run_image_set(self, measurements, image_set_number,
-                      post_module_callback, interaction_callback,
-                      exception_callback):
+    def run_image_set(self, measurements, image_set_number):
         """Run the pipeline for a single image set storing the results in measurements.
 
         Arguments:
-             image_set_number - what image to analyze.
-             post_module_callback - called after each module (status, display, debugging)
-             interaction_callback - called for interaction requests from modules and exceptions.
-             exception_callback - called for pipeline exceptions.
              measurements - source of image information, destination for results.
+             image_set_number - what image to analyze.
 
              self.prepare_run() and self.prepare_group() must have already been called.
         """
@@ -1656,11 +1651,12 @@ class Pipeline(object):
         measurements.group_number = measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER]
         measurements.group_index = measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX]
         object_set = cpo.ObjectSet()
-        image_set = cpi.ImageSet()
+        image_set = cpi.ImageSet(image_set_number, {'number' : image_set_number}, {})
         outlines = {}
         grids = None
         should_write_measurements = True
         for module in self.modules():
+            print "Running module", module.module_name, module.module_num
             gc.collect()
             if module.should_stop_writing_measurements():
                 should_write_measurements = False
@@ -1679,11 +1675,11 @@ class Pipeline(object):
                 module.run(workspace)
             except Exception, exception:
                 logger.error("Error detected during run of module %s#%d",
-                             module.module_name, module.module_number, exc_info=True)
+                             module.module_name, module.module_num, exc_info=True)
                 if should_write_measurements:
                     measurements[cpmeas.IMAGE,
                                  'ModuleError_%02d%s' % (module.module_num, module.module_name)] = 1
-                exception_callback(self, module, exception, sys.exc_traceback)
+                    self.notify_listeners(RunExceptionEvent(exception, module, sys.exc_traceback))
                 return  # no recovery
 
             t1 = sum(os.times()[:-1])
@@ -1702,7 +1698,6 @@ class Pipeline(object):
                              'ExecutionTime_%02d%s' % (module.module_num, module.module_name)] = delta_secs
 
             measurements.flush()
-            post_module_callback(self, module)
 
     def end_run(self):
         '''Tell everyone that a run is ending'''

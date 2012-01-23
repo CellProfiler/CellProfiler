@@ -98,5 +98,22 @@ class TestFilterSetting(unittest.TestCase):
         self.assertEqual(f.value, 'foo "\\"12\\\\"')
         tokens = f.parse()
         self.assertEqual(tokens[1], '"12\\')
+        
+    def test_02_05_build_escaped_symbol(self):
+        ugly = '(\\")'
+        expected = '\\(\\\\\\"\\)'
+        f1 = cps.Filter.FilterPredicate(ugly, "Foo", lambda a,b: a==b, [])
+        f = cps.Filter("", [f1])
+        f.build([f1])
+        self.assertEqual(f.value, '\\(\\\\\\"\\)')
+        
+    def test_02_06_parse_escaped_symbol(self):
+        ugly = '(\\")'
+        encoded_ugly = '\\(\\\\\\"\\)'
+        f1 = cps.Filter.FilterPredicate(ugly, "Foo", lambda a,b: a==b, [])
+        f = cps.Filter("", [f1], encoded_ugly)
+        result = f.parse()
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0].symbol, ugly)
 
         

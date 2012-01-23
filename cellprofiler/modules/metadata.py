@@ -46,6 +46,11 @@ class Metadata(cpm.CPModule):
     def create_settings(self):
         self.pipeline = None
         self.ipds = []
+        self.metadata_explanation = cps.HTMLText(
+            "","""Do your file or path names or file headers contain information
+            (<a href="http://en.wikipedia.org/wiki/Metadata">metadata</a>) you
+            would like to extract and store along with your measurements?""",
+            size=(0, 2.3))
         self.wants_metadata = cps.Binary(
             "Extract metadata?", False,
         doc = "Do your file or path names or file headers contain information\n"
@@ -204,7 +209,7 @@ class Metadata(cpm.CPModule):
         return result
     
     def visible_settings(self):
-        result = [self.wants_metadata]
+        result = [self.metadata_explanation, self.wants_metadata]
         if self.wants_metadata:
             for group in self.extraction_methods:
                 if group.can_remove:
@@ -283,21 +288,8 @@ class Metadata(cpm.CPModule):
     
     def on_activated(self, pipeline):
         self.pipeline = pipeline
+        self.ipds = pipeline.get_filtered_image_plane_details()
     
-        images_modules = [module for module in self.pipeline.modules()
-                          if isinstance(module, Images)]
-        if (len(images_modules) > 0 and 
-            images_modules[0].module_num < self.module_num):
-            images_module = images_modules[0]
-            ipds = [
-                ipd for ipd in pipeline.image_plane_details
-                if images_module.filter.evaluate((
-                    NODE_IMAGE_PLANE, 
-                    images_module.make_modpath_from_ipd(ipd),
-                    self)) is not False]
-        else:
-            ipds = pipeline.image_plane_details
-        self.ipds = ipds
         self.update_table()
         
     def update_table(self):

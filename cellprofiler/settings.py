@@ -1995,6 +1995,30 @@ class Filter(Setting):
             '''Try running the filter on a test string'''
             self("", *args)
             
+        @classmethod
+        def encode_symbol(cls, symbol):
+            '''Escape encode an abritrary symbol name
+            
+            The parser needs to have special characters escaped. These are
+            backslash, open and close parentheses, space and double quote.
+            '''
+            return re.escape(symbol)
+            
+        @classmethod
+        def decode_symbol(cls, symbol):
+            '''Decode an escape-encoded symbol'''
+            s = ''
+            in_escape = False
+            for c in symbol:
+                if in_escape:
+                    in_escape = False
+                    s += c
+                elif c == '\\':
+                    in_escape = True
+                else:
+                    s += c
+            return s
+            
     class CompoundFilterPredicate(FilterPredicate):
         def test_valid(self, pipeline, *args):
             for subexp in args:
@@ -2162,12 +2186,18 @@ class Filter(Setting):
                 else:
                     result += s[i]
             raise ValueError("Unterminated literal")
-        match = re.match("^([^ )]+) ?(.*)$", s)
+        #
+        # (?:\\.|[^ )]) matches either backslash-anything or anything but
+        # space and parentheses. So you can have variable names with spaces
+        # and that's needed for arbitrary metadata names
+        #
+        match = re.match(r"^((?:\\.|[^ )])+) ?(.*)$", s)
         if match is None:
             kwd = s
             rest = ""
         else:
             kwd, rest = match.groups()
+        kwd = Filter.FilterPredicate.decode_symbol(kwd)
         if kwd == cls.AND_PREDICATE.symbol:
             match = cls.AND_PREDICATE
         elif kwd == cls.OR_PREDICATE.symbol:
@@ -2223,7 +2253,8 @@ class Filter(Setting):
         s = []
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
-                s.append(unicode(element.symbol))
+                s.append(
+                    cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
             elif isinstance(element, basestring):
                 s.append(u'"'+cls.encode_literal(element)+u'"')
             else:
@@ -2548,7 +2579,83 @@ class Table(Setting):
             row_index = slice(row_index, row_index+1)
         return [[row[column_index] for i in column_indices]
                 for row in self.data[row_index]]
-
+    
+class HTMLText(Setting):
+    '''The HTMLText setting displays a HTML control with content
+    
+    '''
+    def __init__(self, text, content = "", size = None, **kwargs):
+        '''Initialize with the html content
+        
+        text - the text to the right of the setting
+        
+        content - the HTML to display
+        
+        size - a (x,y) tuple of the minimum window size in units of
+               wx.SYS_CAPTION_Y (the height of the window caption).
+        '''
+        super(self.__class__, self).__init__(text, "", **kwargs)
+        self.content = content
+        self.size = size
+        
+class Joiner(Setting):
+    '''The joiner setting defines a joining condition between conceptual tables
+    
+    You might want to join several tables by specifying the columns that match
+    each other or might want to join images in an image set by matching
+    their metadata. The joiner takes a dictionary of lists of column names
+    or metadata keys where the dictionary key holds the table or image name
+    and the list of values holds the names of table columns or metadata keys.
+    
+    The joiner's value is, conceptually, a list of dictionaries where each
+    dictionary in the list documents how to join one column or metadata key
+    in one of the tables or images to the others.
+    
+    The conceptual value is a list of dictionaries of unicode string keys
+    and values (or value = None). This can be encoded using str() and
+    can be decoded using eval.
+    '''
+    def __init__(self, text, value = "[]", **kwargs):
+        super(self.__class__, self).__init__(text, value, **kwargs)
+        self.entities = {}
+        
+    def parse(self):
+        '''Parse the value into a list of dictionaries
+        
+        return a list of dictionaries where the key is the table or image name
+        and the value is the column or metadata
+        '''
+        return eval(self.value_text, {"__builtins__":None}, {})
+    
+    def default(self):
+        '''Concoct a default join as a guess if setting is uninitialized'''
+        all_names = {}
+        best_name = None
+        best_count = 0
+        for value_list in self.entities.values():
+            for value in value_list:
+                if all_names.has_key(value):
+                    all_names[value] += 1
+                else:
+                    all_names[value] = 1
+                if best_count < all_names[value]:
+                    best_count = all_names[value]
+                    best_name = value
+        if best_count == 0:
+            return []
+        else:
+            return [ dict([(k, best_name if best_name in self.entities[k]
+                            else None) for k in self.entities.keys()])]
+            
+    
+    def build(self, dictionary_list):
+        '''Build a value from a list of dictionaries'''
+        self.value = self.build_string(dictionary_list)
+        
+    @classmethod
+    def build_string(cls, dictionary_list):
+        return str(dictionary_list)
+        
 class SettingsGroup(object):
     '''A group of settings that are managed together in the UI.
     Particulary useful when used with a RemoveSettingButton.

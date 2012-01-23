@@ -177,11 +177,14 @@ def get_image(url, **kwargs):
     url = "/readimage?%s" % query
     
     conn = connect()
-    conn.request("GET", url)
-    response = conn.getresponse(buffering=True)
-    if response.status != httplib.OK:
-        raise HTTPError(response, "Image server failed to read image. URL="+url)
-    return decode_image(response.read())
+    try:
+        conn.request("GET", url, headers={"Connection":"close"})
+        response = conn.getresponse(buffering=True)
+        if response.status != httplib.OK:
+            raise HTTPError(response, "Image server failed to read image. URL="+url)
+        return decode_image(response.read())
+    finally:
+        conn.close()
 
 def post_image(url, image, omexml, **kwargs):
     '''Post an image to the webserver via the writeimage web interface
@@ -196,6 +199,7 @@ def post_image(url, image, omexml, **kwargs):
     
     message = MIMEMultipart()
     message.set_type("multipart/form-data")
+    message.add_header("Connection","close")
     d = dict([(key, MIMEText(value.encode("utf-8"), "plain", "utf-8"))
               for key, value in kwargs.iteritems()])
     d["omexml"] = MIMEText(omexml.encode("utf-8"), "xml", "utf-8")
@@ -206,17 +210,20 @@ def post_image(url, image, omexml, **kwargs):
         message.attach(value)
     
     conn = connect()
-    body = message.as_string()
-    # oooo - translate line-feeds w/o carriage returns into cr/lf
-    #        The generator uses print to write the message, how bad.
-    #        This keeps us from being able to encode in binary too.
-    #
-    body = "\r\n".join(re.split("(?<!\\r)\\n", body))
-    
-    conn.request("POST", "/writeimage", body, dict(message.items()))
-    response = conn.getresponse()
-    if response.status != httplib.OK:
-        raise HTTPError(response, "Image server failed to write image. URL="+url)
+    try:
+        body = message.as_string()
+        # oooo - translate line-feeds w/o carriage returns into cr/lf
+        #        The generator uses print to write the message, how bad.
+        #        This keeps us from being able to encode in binary too.
+        #
+        body = "\r\n".join(re.split("(?<!\\r)\\n", body))
+        
+        conn.request("POST", "/writeimage", body, dict(message.items()))
+        response = conn.getresponse()
+        if response.status != httplib.OK:
+            raise HTTPError(response, "Image server failed to write image. URL="+url)
+    finally:
+        conn.close()
 
 def get_metadata(url, **kwargs):
     '''Get metadata for an image file
@@ -231,11 +238,14 @@ def get_metadata(url, **kwargs):
     url = "/readmetadata?%s" % query
     
     conn = connect()
-    conn.request("GET", url)
-    response = conn.getresponse(buffering=True)
-    if response.status != httplib.OK:
-        raise HTTPError(response, "Image server failed to get metadata. URL="+url)
-    return unicode(response.read(), 'utf-8')
+    try:
+        conn.request("GET", url, headers={"Connection":"close"})
+        response = conn.getresponse(buffering=True)
+        if response.status != httplib.OK:
+            raise HTTPError(response, "Image server failed to get metadata. URL="+url)
+        return unicode(response.read(), 'utf-8')
+    finally:
+        conn.close()
 
 def encode_image(a):
     '''Encode the array according to the subimager protocol

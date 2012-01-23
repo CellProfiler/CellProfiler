@@ -2044,6 +2044,36 @@ class Pipeline(object):
             return None
         return self.image_plane_details[pos]
     
+    def get_filtered_image_plane_details(self, with_metadata = False):
+        '''Return the image plane details that pass the Images filter
+        
+        with_metadata - if True, use the Metadata module to copy the
+                        ipds and add metadata to them.
+        '''
+        images_modules = [module for module in self.modules()
+                          if module.module_name == "Images"]
+        if (len(images_modules) > 0):
+            images_module = images_modules[0]
+            ipds = [
+                ipd for ipd in self.image_plane_details
+                if images_module.filter_ipd(ipd) is not False]
+        else:
+            ipds = self.image_plane_details
+        if with_metadata:
+            metadata_modules = [module for module in self.modules()
+                                if module.module_name == "Metadata"]
+            if len(metadata_modules) > 0:
+                metadata_module = metadata_modules[0]
+                ipds_with_metadata = []
+                for ipd in ipds:
+                    metadata = ipd.metadata.copy()
+                    metadata.update(metadata_module.get_ipd_metadata(ipd))
+                    ipds_with_metadata.append(
+                        ImagePlaneDetails(ipd.url, ipd.series, ipd.index, 
+                                          ipd.channel, **metadata))
+            ipds = ipds_with_metadata
+        return ipds
+    
     def has_undo(self):
         '''True if an undo action can be performed'''
         return len(self.__undo_stack)

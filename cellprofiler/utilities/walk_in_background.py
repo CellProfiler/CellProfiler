@@ -90,7 +90,7 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
         if checkpoint.state != THREAD_STOP:
             callback_fn(dirpath, dirnames, filenames)
 
-    def metadata_report(metadata):
+    def metadata_report(path, metadata):
         if checkpoint.state != THREAD_STOP:
             metadata_fn(path, metadata)
             
@@ -111,7 +111,7 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
                 checkpoint.wait()
                 try:
                     metadata = get_metadata("file:" + urllib.pathname2url(subpath))
-                    wx.CallAfter(metadata_fn, subpath, metadata)
+                    wx.CallAfter(metadata_report, subpath, metadata)
                 except:
                     logger.info("Failed to read image metadata for %s" % subpath)
         except InterruptException:

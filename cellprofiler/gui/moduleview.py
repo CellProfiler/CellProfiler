@@ -24,6 +24,7 @@ import uuid
 import cStringIO
 import wx
 import wx.grid
+import wx.lib.rcsizer
 import sys
 
 logger = logging.getLogger(__name__)
@@ -474,6 +475,12 @@ class ModuleView:
                         fcd.panel.file_collection_display = fcd
                 elif isinstance(v, cps.Table):
                     control = self.make_table_control(v, control)
+                elif isinstance(v, cps.HTMLText):
+                    control = self.make_html_control(v, control)
+                    flag = wx.EXPAND|wx.ALL
+                elif isinstance(v, cps.Joiner):
+                    control = JoinerController.update_control(self, v)
+                    flag = wx.ALIGN_LEFT
                 else:
                     control = self.make_text_control(v, control_name, control)
                 sizer.Add(control, 0, flag, border)
@@ -1539,6 +1546,20 @@ class ModuleView:
         set_up_combobox(scale_ctrl, scale_text_ctrl, scales, scale)
         return panel
     
+    def make_html_control(self, v, control):
+        from cellprofiler.gui.html import HtmlClickableWindow
+        if control is None:
+            control = HtmlClickableWindow(self.module_panel, -1,
+                                          name = edit_control_name(v))
+            if v.size is not None:
+                unit = float(wx.SystemSettings.GetMetric(wx.SYS_CAPTION_Y))
+                if unit == -1:
+                    unit = 32.0
+                control.SetMinSize((v.size[0] * unit, v.size[1] * unit))
+        control.SetPage(v.content)
+        control.BackgroundColour = cpprefs.get_background_color()
+        return control
+    
     def make_help_control(self, content, title="Help", 
                           name = wx.ButtonNameStr):
         control = wx.Button(self.__module_panel, -1, '?', (0, 0), (30, -1), 
@@ -1565,19 +1586,70 @@ class ModuleView:
                     return len(self.v.column_names)
                 
                 def IsEmptyCell(self, row, col):
-                    return self.v.data[row][col] is None
+                    return (len(self.v.data) <= row or 
+                            len(self.v.data[row]) <= col or
+                            self.v.data[row][col] is None)
                 
                 def GetValue(self, row, col):
                     return self.v.data[row][col]
                 
                 def GetColLabelValue(self, col):
                     return self.v.column_names[col]
+                
+                def AppendCols(self, numCols):
+                    return True
+                
+                def AppendRows(self, numRows):
+                    return True
+                
+                def InsertCols(self, index, numCols):
+                    return True
+                
+                def InsertRows(self, index, numRows):
+                    return True
+                
+                def DeleteCols(self, index, numCols):
+                    return True
+                
+                def DeleteRows(self, index, numRows):
+                    return True
+                
             control = wx.grid.Grid(self.module_panel, -1,
                                    name = edit_control_name(v))
             control.SetTable(TableController(v))
             control.SetMinSize((400, 300))
             control.AutoSize()
+            control.EnableEditing(False)
             control.SetDefaultCellOverflow(False)
+        else:
+            #
+            # Have #s of rows or columns changed?
+            #
+            if len(v.column_names) < control.GetNumberCols():
+                tm = wx.grid.GridTableMessage(
+                    control.Table,
+                    wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED,
+                    0, control.GetNumberCols() - len(v.column_names))
+                control.ProcessTableMessage(tm)
+            elif control.GetNumberCols() < len(v.column_names):
+                tm = wx.grid.GridTableMessage(
+                    control.Table,
+                    wx.grid.GRIDTABLE_NOTIFY_COLS_INSERTED,
+                    0, len(v.column_names) - control.GetNumberCols())
+                control.ProcessTableMessage(tm)
+            if len(v.data) < control.GetNumberRows():
+                tm = wx.grid.GridTableMessage(
+                    control.Table,
+                    wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED,
+                    0, control.GetNumberRows() - len(v.data))
+                control.ProcessTableMessage(tm)
+            elif control.GetNumberRows() < len(v.data):
+                tm = wx.grid.GridTableMessage(
+                    control.Table,
+                    wx.grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,
+                    0, len(v.data) - control.GetNumberRows())
+                control.ProcessTableMessage(tm)
+                
         control.ForceRefresh()
         return control
     
@@ -2847,7 +2919,218 @@ class FileCollectionDisplayController(object):
     def on_hide_show_checked(self, event):
         self.v.show_filtered = not self.hide_show_ctrl.Value
         self.request_update(event)
+
+class JoinerController(object):
+    '''The JoinerController managers a joiner setting'''
+    
+    def __init__(self, module_view, v):
+        super(self.__class__, self).__init__()
+        assert isinstance(module_view, ModuleView)
+        self.module_view = module_view
+        self.v = v
+        self.panel = wx.Panel(module_view.module_panel, -1,
+                              name = edit_control_name(v))
+        self.panel.BackgroundColour = wx.WHITE
+        self.panel.Sizer = wx.lib.rcsizer.RowColSizer()
+        self.panel.joiner_controller = self
+        self.update()
+    
+    def get_header_control_name(self, colidx):
+        return "header_%d_%s" % (colidx, str(self.v.key()))
+    
+    def get_add_button_control_name(self, rowidx):
+        return "add_button_%d_%s" % (rowidx, str(self.v.key()))
+    
+    def get_delete_button_control_name(self, rowidx):
+        return "delete_button_%d_%s" % (rowidx, str(self.v.key()))
+    
+    def get_up_button_control_name(self, rowidx):
+        return "up_button_%d_%s" % (rowidx, str(self.v.key()))
+    
+    def get_down_button_control_name(self, rowidx):
+        return "down_button_%d_%s" % (rowidx, str(self.v.key()))
+    
+    def get_choice_control_name(self, rowidx, colidx):
+        return "choice_%d_%d_%s" % (rowidx, colidx, str(self.v.key()))
+    
+    @classmethod
+    def update_control(cls, module_view, v):
+        '''Update the Joiner setting's control
+        
+        returns the control
+        '''
+        assert isinstance(module_view, ModuleView)
+        control = module_view.module_panel.FindWindowByName(edit_control_name(v))
+        if control is None:
+            jc = JoinerController(module_view, v)
+            return jc.panel
+        else:
+            control.joiner_controller.update()
+            return control
+    
+    
+    @property
+    def column_names(self):
+        '''Names of the entities in alphabetical order'''
+        return sorted(self.v.entities.keys())
+
+    @property
+    def joins(self):
+        '''The join rows of the controlled setting
+        
+        Each row is a dictionary of key / value where key is the entity name
+        and value is the column or metadata value for the join row.
+        '''
+        joins = self.v.parse()
+        if len(joins) == 0:
+            joins = self.v.default()
+        return joins
+        
+    def update(self):
+        '''Update the control to match the setting'''
+        column_names = self.column_names
+        joins = self.joins
+        
+        all_subcontrols = {}
+        for ctrl in self.panel.GetChildren():
+            assert isinstance(ctrl, wx.Window)
+            all_subcontrols[ctrl.GetName()] = False
+        
+        for i, column_name in enumerate(column_names):
+            header_control_name = self.get_header_control_name(i)
+            ctrl = self.panel.FindWindowByName(header_control_name)
+            if ctrl is None:
+                ctrl = wx.StaticText(self.panel, -1, column_name,
+                                     name = header_control_name)
+                self.panel.Sizer.Add(
+                    ctrl, row=0, col=i, 
+                    flag=wx.ALIGN_CENTER_HORIZONTAL|wx.ALIGN_BOTTOM)
+            else:
+                ctrl.Label = column_name
+            all_subcontrols[header_control_name] = True
                 
+        for i, join in enumerate(joins):
+            for j, column_name in enumerate(column_names):
+                choice_ctrl_name = self.get_choice_control_name(i, j)
+                ctrl = self.panel.FindWindowByName(choice_ctrl_name)
+                choices = sorted(self.v.entities.get(column_name, [])) + ["None"]
+                selection = join.get(column_name, "None")
+                if selection is None:
+                    selection = "None"
+                if ctrl is None:
+                    ctrl = wx.Choice(self.panel, -1, 
+                                     choices = choices,
+                                     name = choice_ctrl_name)
+                    self.panel.Sizer.Add(ctrl, row=i+1, col = j,
+                                         flag = wx.ALIGN_BOTTOM)
+                    ctrl.Bind(wx.EVT_CHOICE,
+                              lambda event, row=i, col=j:
+                              self.on_choice_changed(event, row, col))
+                else:
+                    ctrl.SetItems(choices)
+                ctrl.SetStringSelection(selection)
+                all_subcontrols[choice_ctrl_name] = True
+
+            add_button_name = self.get_add_button_control_name(i)
+            ctrl = self.panel.FindWindowByName(add_button_name)
+            if ctrl is None:
+                ctrl = wx.Button(self.panel, -1, "+",
+                                 name = add_button_name,
+                                 style = wx.BU_EXACTFIT)
+                ctrl.Bind(wx.EVT_BUTTON, 
+                          lambda event, position=i+1: 
+                          self.on_insert_row(event, position))
+            self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names),
+                                 flag = wx.ALIGN_BOTTOM)
+            all_subcontrols[add_button_name] = True
+                  
+            if len(joins) > 1:                   
+                delete_button_name = self.get_delete_button_control_name(i)
+                ctrl = self.panel.FindWindowByName(delete_button_name)
+                if ctrl is None:
+                    ctrl = wx.Button(self.panel, -1, "-",
+                                     name = delete_button_name,
+                                     style = wx.BU_EXACTFIT)
+                    ctrl.Bind(wx.EVT_BUTTON, 
+                              lambda event, position=i: 
+                              self.on_delete_row(event, position))
+                self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+1,
+                                     flag = wx.ALIGN_BOTTOM)
+                all_subcontrols[delete_button_name] = True
+                                     
+            if i > 0:
+                move_up_button_name = self.get_up_button_control_name(i)
+                ctrl = self.panel.FindWindowByName(move_up_button_name)
+                if ctrl is None:
+                    img = wx.ArtProvider.GetBitmap(wx.ART_GO_UP,
+                                                   wx.ART_BUTTON,
+                                                   (16, 16))
+                    ctrl = wx.BitmapButton(self.panel, -1, img,
+                                           name = move_up_button_name)
+                    ctrl.Bind(wx.EVT_BUTTON,
+                              lambda event, position=i:
+                              self.on_move_row_up(event, position))
+                self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+2,
+                                     flag = wx.ALIGN_BOTTOM)
+                all_subcontrols[move_up_button_name] = True
+            
+            if i < len(joins) - 1:
+                move_down_button_name = self.get_down_button_control_name(i)
+                ctrl = self.panel.FindWindowByName(move_down_button_name)
+                if ctrl is None:
+                    img = wx.ArtProvider.GetBitmap(wx.ART_GO_DOWN,
+                                                   wx.ART_BUTTON,
+                                                   (16, 16))
+                    ctrl = wx.BitmapButton(self.panel, -1, img,
+                                           name = move_down_button_name)
+                    ctrl.Bind(wx.EVT_BUTTON,
+                              lambda event, position=i:
+                              self.on_move_row_down(event, position))
+                self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+3,
+                                     flag = wx.ALIGN_BOTTOM)
+                all_subcontrols[move_down_button_name] = True
+                
+        for key, value in all_subcontrols.iteritems():
+            ctrl = self.panel.FindWindowByName(key)
+            ctrl.Show(value)
+            
+    def on_choice_changed(self, event, row, column):
+        joins = list(self.joins)
+        join = joins[row].copy()
+        join[self.column_names[column]] = \
+            event.EventObject.GetItems()[event.GetSelection()]
+        joins[row] = join
+        self.module_view.on_value_change(self.v, self.panel,
+                                         self.v.build_string(joins), event)
+    
+    def on_insert_row(self, event, position):
+        joins = list(self.joins)
+        new_join = dict([(column_name, None) for column_name in self.column_names])
+        joins.insert(position, new_join)
+        self.module_view.on_value_change(self.v, self.panel,
+                                         self.v.build_string(joins), event)
+    
+    def on_delete_row(self, event, position):
+        joins = list(self.joins)
+        del joins[position]
+        self.module_view.on_value_change(self.v, self.panel,
+                                         self.v.build_string(joins), event)
+    
+    def on_move_row_up(self, event, position):
+        joins = list(self.joins)
+        joins = joins[0:(position-1)] + [joins[position], joins[position-1]] + \
+            joins[(position+1):]
+        self.module_view.on_value_change(self.v, self.panel,
+                                         self.v.build_string(joins), event)
+    
+    def on_move_row_down(self, event, position):
+        joins = list(self.joins)
+        joins = joins[0:position] + [joins[position+1], joins[position]] + \
+            joins[(position+2):]
+        self.module_view.on_value_change(self.v, self.panel,
+                                         self.v.build_string(joins), event)
+        
+
 class ModuleSizer(wx.PySizer):
     """The module sizer uses the maximum best width of the setting
     edit controls to compute the column widths, then it sets the text
@@ -2876,6 +3159,7 @@ class ModuleSizer(wx.PySizer):
                     item = self.get_item(i,j)
                     if item is None:
                         print "Missing item"
+                        continue
                     if item.IsWindow():
                         window = item.GetWindow()
                         if isinstance(window, wx.Window):

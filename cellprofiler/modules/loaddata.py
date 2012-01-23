@@ -821,8 +821,8 @@ class LoadData(cpm.CPModule):
                         if file_name_column is None:
                             raise ValueError(
                                 ("LoadData needs a %s_%s column to match the "
-                                 "%s_%s column") % (file_name_category, image_name,
-                                                    path_name_category, image_name))
+                                 "%s_%s column") % (file_name_category, name,
+                                                    path_name_category, name))
                         #
                         # Add URL column
                         #

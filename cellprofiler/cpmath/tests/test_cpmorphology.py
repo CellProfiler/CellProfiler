@@ -4896,7 +4896,7 @@ class TestFeretDiameter(unittest.TestCase):
                 self.assertAlmostEqual(
                     max_result[0], expected,
                     msg = "Expected %f, got %f, antipodes are %d,%d and %d,%d" %
-                (expected, result, ii[a0], jj[a0], ii[a1], jj[a1]))
+                (expected, max_result, ii[a0], jj[a0], ii[a1], jj[a1]))
             #
             # Do a 180 degree sweep, measuring
             # the Feret diameter at each angle. Stupid but an independent test.

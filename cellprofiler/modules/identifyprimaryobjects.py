@@ -1007,7 +1007,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                            maxima_mask,
                                            image_resize_factor)
         else:
-            raise ValueError("Unsupported local maxima method: "%s(self.unclump_method.value))
+            raise ValueError("Unsupported local maxima method: %s" % (self.unclump_method.value))
         
         # Create the image for watershed
         if self.watershed_method == WA_INTENSITY:

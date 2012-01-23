@@ -159,7 +159,7 @@ class SliderCtl(wx.Panel):
     def set_max_value(self,max_value):
         self.__max_value = max_value
         if self.start_value > max_value:
-            self.start_value = min_value
+            self.start_value = max_value
         if self.stop_value > max_value:
             self.stop_value = max_value
         if self.value > max_value:

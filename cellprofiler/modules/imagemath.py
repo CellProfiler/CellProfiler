@@ -302,7 +302,7 @@ class ImageMath(cpm.CPModule):
         elif opval == O_NONE:
             pass
         else:
-            raise NotImplementedException("The operation %s has not been implemented"%opval)
+            raise NotImplementedError("The operation %s has not been implemented"%opval)
 
         # Check to see if there was a measurement & image w/o mask. If so
         # set mask to none

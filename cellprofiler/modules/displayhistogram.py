@@ -161,6 +161,6 @@ class DisplayHistogram(cpm.CPModule):
             variable_revision_number = 2
         if variable_revision_number == 2:
             # add wants_xbounds=False and xbounds=(0,1)
-            settings_values = settings_values + [False, (0,1)]
+            setting_values = setting_values + [False, (0,1)]
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab

@@ -1995,6 +1995,30 @@ class Filter(Setting):
             '''Try running the filter on a test string'''
             self("", *args)
             
+        @classmethod
+        def encode_symbol(cls, symbol):
+            '''Escape encode an abritrary symbol name
+            
+            The parser needs to have special characters escaped. These are
+            backslash, open and close parentheses, space and double quote.
+            '''
+            return re.escape(symbol)
+            
+        @classmethod
+        def decode_symbol(cls, symbol):
+            '''Decode an escape-encoded symbol'''
+            s = ''
+            in_escape = False
+            for c in symbol:
+                if in_escape:
+                    in_escape = False
+                    s += c
+                elif c == '\\':
+                    in_escape = True
+                else:
+                    s += c
+            return s
+            
     class CompoundFilterPredicate(FilterPredicate):
         def test_valid(self, pipeline, *args):
             for subexp in args:
@@ -2048,7 +2072,8 @@ class Filter(Setting):
     CONTAINS_REGEXP_PREDICATE = RegexpFilterPredicate(
         "Contain regular expression", [LITERAL_PREDICATE])
     EQ_PREDICATE = FilterPredicate(
-        "eq", "Exactly match", lambda x,y: x == y, [LITERAL_PREDICATE])
+        "eq", "Exactly match", lambda x,y: x == y, [LITERAL_PREDICATE],
+        doc = "Must exactly match the text that you enter to the right")
     
     class DoesPredicate(FilterPredicate):
         '''Pass the arguments through (no-op)'''
@@ -2161,12 +2186,18 @@ class Filter(Setting):
                 else:
                     result += s[i]
             raise ValueError("Unterminated literal")
-        match = re.match("^([^ )]+) ?(.*)$", s)
+        #
+        # (?:\\.|[^ )]) matches either backslash-anything or anything but
+        # space and parentheses. So you can have variable names with spaces
+        # and that's needed for arbitrary metadata names
+        #
+        match = re.match(r"^((?:\\.|[^ )])+) ?(.*)$", s)
         if match is None:
             kwd = s
             rest = ""
         else:
             kwd, rest = match.groups()
+        kwd = Filter.FilterPredicate.decode_symbol(kwd)
         if kwd == cls.AND_PREDICATE.symbol:
             match = cls.AND_PREDICATE
         elif kwd == cls.OR_PREDICATE.symbol:
@@ -2222,7 +2253,8 @@ class Filter(Setting):
         s = []
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
-                s.append(unicode(element.symbol))
+                s.append(
+                    cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
             elif isinstance(element, basestring):
                 s.append(u'"'+cls.encode_literal(element)+u'"')
             else:
@@ -2322,7 +2354,7 @@ class FileCollectionDisplay(Setting):
         if self.fn_update is not None:
             self.fn_update()
         
-    def set_update_function(self, fn_update):
+    def set_update_function(self, fn_update=None):
         '''Set the function that will be called when the file_tree is updated'''
         self.fn_update = fn_update
         
@@ -2385,23 +2417,43 @@ class FileCollectionDisplay(Setting):
         
         mods - modification structure. See class documentation for its form.
         '''
-        removals = self.remove_subtree(mods, self.file_tree)
+        removals = []
+        for modpath in mods:
+            removals += self.remove_subtree(modpath, self.file_tree)
         if self.fn_report_directory_change is not None:
             self.fn_report_directory_change(self.REMOVE, removals)
         self.update_ui()
         
-    def remove_subtree(self, mods, tree):
+    def remove_subtree(self, mod, tree):
         removals = []
-        for mod in mods:
-            if isinstance(mod, basestring):
-                if tree.has_key(mod):
-                    del tree[mod]
-                    removals.append(mod)
+        if mod is None or len(mod) == 0:
+            #
+            # Remove whole tree
+            #
+            for key in tree.keys():
+                if key is None:
+                    continue
+                if isinstance(tree[key], dict):
+                    removals.append((key, self.remove_subtree(None, tree[key])))
+                else:
+                    removals.append(key)
+                del tree[key]
+        elif tree.has_key(mod[0]):
+            root_mod = mod[0]
+            if isinstance(tree[root_mod], dict):
+                removals.append((root_mod, self.remove_subtree(
+                    mod[1:], tree[root_mod])))
+                #
+                # Delete the subtree if the subtree is emptied
+                #
+                if len(tree[root_mod]) == 0 or (
+                    len(tree[root_mod]) == 1 and tree[root_mod].has_key(None)):
+                    del tree[root_mod]
+                    if self.mod_is_compound_image_file(mod):
+                        removals.append(root_mod)
             else:
-                if tree.has_key(mod[0]):
-                    true_mods = self.remove_subtree(mod[1], tree[mod[0]])
-                    if len(true_mods) > 0:
-                        removals.append((mod[0], true_mods))
+                removals.append(root_mod)
+                del tree[root_mod]
         return removals
     
     def mark(self, mods, keep):
@@ -2460,7 +2512,150 @@ class FileCollectionDisplay(Setting):
         self.update_ui()
     
     show_filtered = property(get_show_filtered, set_show_filtered)
+    
+class Table(Setting):
+    '''The Table setting displays a table of values'''
+    def __init__(self, text, **kwargs):
+        super(self.__class__, self).__init__(text, "", **kwargs)
+        self.column_names = []
+        self.data = []
+        
+    def insert_column(self, index, column_name):
+        '''Insert a column at the given index
+        
+        index - the zero-based index of the column's position
+        
+        column_name - the name of the column
+        
+        Adds the column to the table and sets the value for any existing
+        rows to None.
+        '''
+        self.column_names.insert(index, column_name)
+        for row in self.data:
+            row.insert(index, None)
+        
+    def add_rows(self, columns, data):
+        '''Add rows to the table
+        
+        columns - define the columns for each row of data
+        
+        data - rows of data to add. Each field in a row is placed
+               at the column indicated by "columns"
+        '''
+        indices = [columns.index(c) if c in columns else None
+                   for c in self.column_names]
+        for row in data:
+            self.data.append([None if index is None else row[index]
+                              for index in indices])
+    
+    def sort_rows(self, columns):
+        '''Sort rows based on values in columns'''
+        indices = [self.column_names.index(c) for c in columns]
+        def compare_fn(row1, row2):
+            for index in indices:
+                x = cmp(row1[index], row2[index])
+                if x != 0:
+                    return x
+            return 0
+        self.data.sort(compare_fn)
 
+    def clear_rows(self):
+        self.data = []
+        
+    def clear_columns(self):
+        self.column_names = []
+        
+    def get_data(self, row_index, columns):
+        '''Get the column values for a given row or rows
+        
+        row_index - can either be the index of one row or can be a slice or list
+                    of rows
+        
+        columns - the names of the columns to fetch, in the order they will
+                  appear in the row
+        '''
+        column_indices = [self.column_names.index(c) for c in columns]
+        if isinstance(row_index, int):
+            row_index = slice(row_index, row_index+1)
+        return [[row[column_index] for i in column_indices]
+                for row in self.data[row_index]]
+    
+class HTMLText(Setting):
+    '''The HTMLText setting displays a HTML control with content
+    
+    '''
+    def __init__(self, text, content = "", size = None, **kwargs):
+        '''Initialize with the html content
+        
+        text - the text to the right of the setting
+        
+        content - the HTML to display
+        
+        size - a (x,y) tuple of the minimum window size in units of
+               wx.SYS_CAPTION_Y (the height of the window caption).
+        '''
+        super(self.__class__, self).__init__(text, "", **kwargs)
+        self.content = content
+        self.size = size
+        
+class Joiner(Setting):
+    '''The joiner setting defines a joining condition between conceptual tables
+    
+    You might want to join several tables by specifying the columns that match
+    each other or might want to join images in an image set by matching
+    their metadata. The joiner takes a dictionary of lists of column names
+    or metadata keys where the dictionary key holds the table or image name
+    and the list of values holds the names of table columns or metadata keys.
+    
+    The joiner's value is, conceptually, a list of dictionaries where each
+    dictionary in the list documents how to join one column or metadata key
+    in one of the tables or images to the others.
+    
+    The conceptual value is a list of dictionaries of unicode string keys
+    and values (or value = None). This can be encoded using str() and
+    can be decoded using eval.
+    '''
+    def __init__(self, text, value = "[]", **kwargs):
+        super(self.__class__, self).__init__(text, value, **kwargs)
+        self.entities = {}
+        
+    def parse(self):
+        '''Parse the value into a list of dictionaries
+        
+        return a list of dictionaries where the key is the table or image name
+        and the value is the column or metadata
+        '''
+        return eval(self.value_text, {"__builtins__":None}, {})
+    
+    def default(self):
+        '''Concoct a default join as a guess if setting is uninitialized'''
+        all_names = {}
+        best_name = None
+        best_count = 0
+        for value_list in self.entities.values():
+            for value in value_list:
+                if all_names.has_key(value):
+                    all_names[value] += 1
+                else:
+                    all_names[value] = 1
+                if best_count < all_names[value]:
+                    best_count = all_names[value]
+                    best_name = value
+        if best_count == 0:
+            return []
+        else:
+            return [ dict([(k, best_name if best_name in self.entities[k]
+                            else None) for k in self.entities.keys()])]
+            
+    
+    def build(self, dictionary_list):
+        '''Build a value from a list of dictionaries'''
+        self.value = self.build_string(dictionary_list)
+        
+    @classmethod
+    def build_string(cls, dictionary_list):
+        return str(dictionary_list)
+        
 class SettingsGroup(object):
     '''A group of settings that are managed together in the UI.
     Particulary useful when used with a RemoveSettingButton.

@@ -522,7 +522,7 @@ def get_static_field(klass, name, sig):
     field_id = env.get_static_field_id(klass, name, sig)
     if field_id is None:
         raise JavaError('Could not find field name = %s '
-                        'with signature = %s' %(field_name, sig))
+                        'with signature = %s' %(name, sig))
     if sig == 'Z':
         return env.get_static_boolean_field(klass, field_id)
     elif sig == 'B':

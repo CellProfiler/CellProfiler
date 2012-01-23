@@ -38,6 +38,7 @@ import datetime
 import traceback
 import threading
 import urlparse
+import urllib
 import urllib2
 import re
 
@@ -424,6 +425,13 @@ class ImagePlaneDetails(object):
         assert isinstance(other, ImagePlaneDetails)
         return (cmp(self.url, other.url) or cmp(self.series, other.series) or
                 cmp(self.index, other.index) or cmp(self.channel, other.channel))
+    
+    @property
+    def path(self):
+        '''The file path if a file: URL, otherwise the URL'''
+        if self.url.startswith("file:"):
+            return urllib.url2pathname(self.url[5:])
+        return self.url
         
 def read_image_plane_details(file_or_fd):
     """Read image plane details from a file or file object
@@ -477,7 +485,8 @@ def read_image_plane_details(file_or_fd):
                     fields[j] = int(fields[j])
             result.append(ImagePlaneDetails(
                 fields[0], fields[1], fields[2], fields[3],
-                **dict([(k, v) for k,v in zip(header[4:], fields[4:])])))
+                **dict([(k, v) for k,v in zip(header[4:], fields[4:])
+                        if v is not None])))
         return result
     finally:
         if needs_close:
@@ -2079,10 +2088,11 @@ class Pipeline(object):
                 real_list.append(details)
                 del self.image_plane_details[pos]
             start = pos
-        self.notify_listeners(ImagePlaneDetailsRemovedEvent(real_list))
-        def undo():
-            self.add_image_plane_details(real_list)
-        self.__undo_stack.append((undo, "Remove images"))
+        if len(real_list):
+            self.notify_listeners(ImagePlaneDetailsRemovedEvent(real_list))
+            def undo():
+                self.add_image_plane_details(real_list)
+            self.__undo_stack.append((undo, "Remove images"))
         
     def find_image_plane_details(self, exemplar):
         '''Return the image plane details record that matches the exemplar
@@ -2095,6 +2105,36 @@ class Pipeline(object):
             cmp(self.image_plane_details[pos], exemplar)):
             return None
         return self.image_plane_details[pos]
+    
+    def get_filtered_image_plane_details(self, with_metadata = False):
+        '''Return the image plane details that pass the Images filter
+        
+        with_metadata - if True, use the Metadata module to copy the
+                        ipds and add metadata to them.
+        '''
+        images_modules = [module for module in self.modules()
+                          if module.module_name == "Images"]
+        if (len(images_modules) > 0):
+            images_module = images_modules[0]
+            ipds = [
+                ipd for ipd in self.image_plane_details
+                if images_module.filter_ipd(ipd) is not False]
+        else:
+            ipds = self.image_plane_details
+        if with_metadata:
+            metadata_modules = [module for module in self.modules()
+                                if module.module_name == "Metadata"]
+            if len(metadata_modules) > 0:
+                metadata_module = metadata_modules[0]
+                ipds_with_metadata = []
+                for ipd in ipds:
+                    metadata = ipd.metadata.copy()
+                    metadata.update(metadata_module.get_ipd_metadata(ipd))
+                    ipds_with_metadata.append(
+                        ImagePlaneDetails(ipd.url, ipd.series, ipd.index, 
+                                          ipd.channel, **metadata))
+            ipds = ipds_with_metadata
+        return ipds
     
     def has_undo(self):
         '''True if an undo action can be performed'''
@@ -2659,166 +2699,3 @@ class MeasurementDependency(Dependency):
     def __str__(self):
         return "Measurement: %s.%s" % (self.object_name, self.feature)
 
-def AddHandlesImages(handles,image_set):
-    """Add any images from the handles to the image set
-    Generally, the handles have images added as they get returned from a Matlab module.
-    You can use this to update the image set and capture them.
-    """
-    hpipeline = handles['Pipeline'][0,0]
-    pipeline_fields = hpipeline.dtype.fields.keys()
-    provider_set = set([x.name for x in image_set.providers])
-    image_fields = set()
-    crop_fields = set()
-    for field in pipeline_fields:
-        if field.startswith('CropMask'):
-            crop_fields.add(field)
-        elif field.startswith('Segmented') or field.startswith('UneditedSegmented') or field.startswith('SmallRemovedSegmented'):
-            continue
-        elif field.startswith('Pathname') or field.startswith('FileList') or field.startswith('Filename'):
-            if not image_set.LegacyFields.has_key(field):
-                value = hpipeline[field]
-                if value.dtype.kind in ['U','S']:
-                    image_set.legacy_fields[field] = value[0]
-                else:
-                    image_set.legacy_fields[field] = value
-        elif not field in provider_set:
-            image_fields.add(field)
-    for field in image_fields:
-        image = cellprofiler.image.Image()
-        image.Image = hpipeline[field]
-        crop_field = 'CropMask'+field
-        if crop_field in crop_fields:
-            image.Mask = hpipeline[crop_field]
-        image_set.providers.append(cellprofiler.image.VanillaImageProvider(field,image))
-    number_of_image_sets = int(handles[CURRENT][0,0][NUMBER_OF_IMAGE_SETS][0,0])
-    if (not image_set.legacy_fields.has_key(NUMBER_OF_IMAGE_SETS)) or \
-           number_of_image_sets < image_set.legacy_fields[NUMBER_OF_IMAGE_SETS]:
-        image_set.legacy_fields[NUMBER_OF_IMAGE_SETS] = number_of_image_sets
-
-def add_handles_objects(handles,object_set):
-    """Add any objects from the handles to the object set
-    You can use this to update the object set after calling a matlab module
-    """
-    hpipeline = handles['Pipeline'][0,0]
-    pipeline_fields = hpipeline.dtype.fields.keys()
-    objects_names = set(object_set.get_object_names())
-    segmented_fields = set()
-    unedited_segmented_fields = set()
-    small_removed_segmented_fields = set()
-    for field in pipeline_fields:
-        if field.startswith('Segmented'):
-            segmented_fields.add(field)
-        elif field.startswith('UneditedSegmented'):
-            unedited_segmented_fields.add(field)
-        elif field.startswith('SmallRemovedSegmented'):
-            small_removed_segmented_fields.add(field)
-    for field in segmented_fields:
-        object_name = field.replace('Segmented','')
-        if object_name in object_set.get_object_names():
-            continue
-        objects = cpo.Objects()
-        objects.segmented = hpipeline[field]
-        unedited_field ='Unedited'+field
-        small_removed_segmented_field = 'SmallRemoved'+field 
-        if unedited_field in unedited_segmented_fields:
-            objects.unedited_segmented = hpipeline[unedited_field]
-        if small_removed_segmented_field in small_removed_segmented_fields:
-            objects.small_removed_segmented = hpipeline[small_removed_segmented_field]
-        object_set.add_objects(objects,object_name)
-
-def add_handles_measurements(handles, measurements):
-    """Get measurements made by Matlab and put them into our Python measurements object
-    """
-    measurement_fields = handles[MEASUREMENTS].dtype.fields.keys()
-    set_being_analyzed = handles[CURRENT][0,0][SET_BEING_ANALYZED][0,0]
-    for field in measurement_fields:
-        object_measurements = handles[MEASUREMENTS][0,0][field][0,0]
-        object_fields = object_measurements.dtype.fields.keys()
-        for feature in object_fields:
-            if not measurements.has_current_measurements(field,feature):
-                value = object_measurements[feature][0,set_being_analyzed-1]
-                if not isinstance(value,np.ndarray) or np.product(value.shape) > 0:
-                    # It's either not a numpy array (it's a string) or it's not the empty numpy array
-                    # so add it to the measurements
-                    measurements.add_measurement(field,feature,value)
-
-debug_matlab_run = None
-
-def debug_matlab_run(value):
-    global debug_matlab_run
-    debug_matlab_run = value
-     
-def matlab_run(handles):
-    """Run a Python module, given a Matlab handles structure
-    """
-    if debug_matlab_run:
-        import wx.py
-        import wx
-        class MyPyCrustApp(wx.App):
-            locals = {}
-            def OnInit(self):
-                wx.InitAllImageHandlers()
-                frame = wx.Frame(None,-1,"MatlabRun explorer")
-                sizer = wx.BoxSizer()
-                frame.SetSizer(sizer)
-                crust = wx.py.crust.Crust(frame,-1,locals=self.locals);
-                sizer.Add(crust,1,wx.EXPAND)
-                frame.Fit()
-                self.SetTopWindow(frame)
-                frame.Show()
-                return 1
-
-    if debug_matlab_run == u"init":
-        app = MyPyCrustApp(0)
-        app.locals["handles"] = handles
-        app.MainLoop()
-        
-    encapsulate_strings_in_arrays(handles)
-    if debug_matlab_run == u"enc":
-        app = MyPyCrustApp(0)
-        app.locals["handles"] = handles
-        app.MainLoop()
-    orig_handles = handles
-    handles = handles[0,0]
-    #
-    # Get all the pieces you need to run a module:
-    # pipeline, image set and set list, measurements and object_set
-    #
-    pipeline = Pipeline()
-    pipeline.create_from_handles(handles)
-    image_set_list = cellprofiler.image.ImageSetList()
-    image_set = image_set_list.get_image_set(0)
-    measurements = cpmeas.Measurements()
-    object_set = cpo.ObjectSet()
-    #
-    # Get the values for the current image_set, making believe this is the first image set
-    #
-    add_handles_images(handles, image_set)
-    add_handles_objects(handles,object_set)
-    add_handles_measurements(handles, measurements)
-    current_module = int(handles[CURRENT][0,0][CURRENT_MODULE_NUMBER][0])
-    #
-    # Get and run the module
-    #
-    module = pipeline.module(current_module)
-    if debug_matlab_run == u"ready":
-        app = MyPyCrustApp(0)
-        app.locals["handles"] = handles
-        app.MainLoop()
-    module.run(pipeline, image_set, object_set, measurements)
-    #
-    # Add everything to the handles
-    #
-    add_all_images(handles, image_set, object_set)
-    add_all_measurements(handles, measurements)
-    if debug_matlab_run == u"run":
-        app = MyPyCrustApp(0)
-        app.locals["handles"] = handles
-        app.MainLoop()
-
-    return orig_handles
-    
-if __name__ == "__main__":
-    handles = scipy.io.matlab.loadmat('c:\\temp\\mh.mat',struct_as_record=True)['handles']
-    handles[0,0][CURRENT][0,0][CURRENT_MODULE_NUMBER][0] = str(int(handles[0,0][CURRENT][0,0][CURRENT_MODULE_NUMBER][0])+1)
-    matlab_run(handles)

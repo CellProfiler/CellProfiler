@@ -559,7 +559,7 @@ class ParameterSampleFrame(wx.Frame):
         self.__object_set = cpo.ObjectSet(can_overwrite=True)
         self.__image_set_list = cpi.ImageSetList()
         workspace = cpw.Workspace(self.__pipeline, None, None, None,
-                                  self.__measurements, image_set_list,
+                                  self.__measurements, self.__image_set_list,
                                   self.__frame)
         try:
             if not self.__pipeline.prepare_run(workspace):

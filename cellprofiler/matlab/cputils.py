@@ -43,28 +43,6 @@ def make_cell_struct_dtype(fields):
     """
     return numpy.dtype([(str(x),'|O4') for x in fields])
 
-def get_int_from_matlab(proxy):
-    """Given a proxy to an integer in Matlab, return the integer
-    """
-    return int(get_matlab_instance().num2str(proxy))
-
-def load_into_matlab(handles):
-    """Return a proxy object which is the data structure passed, loaded into Matlab
-    """
-    (matfd,matpath) = tempfile.mkstemp('.mat')
-    matfh = os.fdopen(matfd,'wb')
-    closed = False
-    try:
-        scipy.io.matlab.mio.savemat(matfh,handles,format='5',long_field_names=True)
-        matfh.close()
-        closed = True
-        matlab = get_matlab_instance()
-        return matlab.load(matpath)
-    finally:
-        if not closed:
-            matfh.close()
-        os.unlink(matpath)
-
 def encapsulate_strings_in_arrays(handles):
     """Recursively descend through the handles structure, replacing strings as arrays packed with strings
     
@@ -96,8 +74,3 @@ def encapsulate_string(s):
     result[0]=s
     return result;
 
-def g_cell_fun():
-    return get_matlab_instance().eval('@(cell,x) cell{x+1}')
-
-def s_cell_fun():
-    return get_matlab_instance().eval('@(cell,x,value) {cell{1:x},value,cell{x+2:end}}')

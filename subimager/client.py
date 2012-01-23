@@ -110,6 +110,7 @@ def run_subimager():
     logging.debug("Starting subimager subprocess")
     args = [
         "java",
+        "-Djava.awt.headless=true",
         "-cp",
         __jar_path,
         "org.cellprofiler.subimager.Main",

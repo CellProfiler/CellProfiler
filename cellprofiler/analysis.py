@@ -332,8 +332,9 @@ class AnalysisRunner(object):
         # measurements
         while not self.receive_measurements_queue.empty():
             # XXX - GROUPS
-            image_set_number, measure_blob = self.receive_measurements_queue.get()
-            self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
+            returned_measurements, job = self.receive_measurements_queue.get()
+            for image_set_number in job[1:]:
+                self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
 
     def jobserver(self, analysis_id):
         # this server subthread should be very lightweight, as it has to handle
@@ -411,10 +412,10 @@ class AnalysisRunner(object):
                 work_queue_socket.send_multipart([address, '', 'THANKS'])
                 try:
                     reported_measurements = cpmeas.load_measurements(measurements_path)
-                    self.queue_receive_measurements(reported_measurements, msg[4])
+                    self.queue_receive_measurements(reported_measurements, job)
                 except Exception, e:
+                    raise
                     # XXX - report error, push back job
-                    pass
             else:
                 raise ValueError("Unknown message from worker: %s", message_type)
 
@@ -615,11 +616,15 @@ if __name__ == '__main__':
     measurements = cellprofiler.measurements.load_measurements(batch_data)
     analysis = Analysis(pipeline, 'test_out.h5', initial_measurements=measurements)
 
+    keep_going = True
+
     def callback(event):
         print "Pipeline Event", event
+        if isinstance(event, AnalysisEndedEvent):
+            keep_going = False
 
     analysis.start_analysis(callback)
-    while analysis.analysis_in_progress:
+    while keep_going:
         time.sleep(0.25)
     del analysis
     gc.collect()

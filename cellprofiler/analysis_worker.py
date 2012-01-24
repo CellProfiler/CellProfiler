@@ -22,11 +22,13 @@ import zmq
 import cStringIO as StringIO
 import gc
 import logging
+import traceback
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 import subimager.client
+from cellprofiler.utilities.rpdb import Rpdb
 
 # XXX - does every recv() below need to have a timeout?  Not in the
 # multiprocessing case, but yes in the distributed case.  This will require
@@ -36,6 +38,9 @@ import subimager.client
 
 logger = logging.getLogger(__name__)
 
+
+ABORT = True
+SKIP = False
 
 def main():
     # XXX - move all this to a class
@@ -172,15 +177,26 @@ def main():
                     # exception handled elsewhere, possibly cancelling this run.
                     should_process = False
 
+            successful_image_set_numbers = []
             if should_process:
+                abort = False
                 for image_set_number in image_set_numbers:
                     gc.collect()
                     try:
                         current_pipeline.run_image_set(current_measurements, image_set_number)
+                        successful_image_set_numbers.append(image_set_number)
                     except Exception:
                         # XXX - should detect cancellation of the run vs. other exceptions
                         # also offer to remote PDB.
                         logging.error("Error in pipeline", exc_info=True)
+                        if handle_exception(work_socket, True) == ABORT:
+                            abort = True
+                            break
+
+                if abort:
+                    del current_measurements
+                    current_measurements = None
+                    continue
 
                 if need_prepare_group:
                     workspace = cpw.Workspace(current_pipeline, None, None, None,
@@ -193,14 +209,43 @@ def main():
             # multiprocessing: send path of measurements.
             # XXX - distributed - package them up.
             current_measurements.flush()
-            work_socket.send_multipart(["MEASUREMENTS", current_measurements.hdf5_dict.filename] + job)
+            work_socket.send_multipart(["MEASUREMENTS",
+                                        current_measurements.hdf5_dict.filename] +
+                                       [str(isn) for isn in successful_image_set_numbers])
             work_socket.recv()  # get ACK - indicates measurements have been
                                 # read and can be deleted, to remove the
                                 # temporary file.
             del current_measurements
         except Exception:
             logging.error("Error in worker", exc_info=True)
-            # XXX - offer to invoke remote PDB
+            if handle_exception(work_socket, False) == ABORT:
+                break
+
+
+def handle_exception(work_socket, in_pipeline):
+    '''report and handle an exception, possibly by remote debugging, returning
+    how to proceed (skip or abort).
+    '''
+    t, exc, tb = sys.exc_info()
+    if in_pipeline:
+        message = ["EXCEPTION", "PIPELINE", t.__name__, str(exc), traceback.format_exception(t, exc, tb)]
+    else:
+        message = ["EXCEPTION", "WORKER", t.__name__, str(exc), traceback.format_exception(t, exc, tb)]
+    work_socket.send_multipart(message)
+    reply = work_socket.recv_multipart()
+    while True:
+        if reply[0] == 'DEBUG':
+            rpdb = Rpdb(verification_hash=reply[1])
+            work_socket.send_multipart(["DEBUG WAITING", str(rpdb.port)])
+            work_socket.recv()  # ACK
+            rpdb.verify()
+            rpdb.post_mortem(tb)
+            work_socket.send_multipart(["DEBUG COMPLETE"] + message[1:])
+            reply = work_socket.recv()  # next step (could be "DEBUG" again)
+        elif reply[0] == 'SKIP':
+            return SKIP
+        else:
+            return ABORT
 
 
 def exit_on_stdin_close():

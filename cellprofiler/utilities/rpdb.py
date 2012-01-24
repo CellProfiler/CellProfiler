@@ -49,6 +49,8 @@ class Rpdb(pdb.Pdb):
         (clientsocket, address) = self.socket.accept()
         handle = clientsocket.makefile('rw')
         if self.verification_hash is not None:
+            handle.write('Verification: ')
+            handle.flush()
             if hashlib.sha1(handle.readline().rstrip()).hexdigest() != self.verification_hash:
                 sys.stderr.write('Verification hash from %s does not match in Rpdb.verify()!  Closing.\n' % str(address))
                 clientsocket.close()

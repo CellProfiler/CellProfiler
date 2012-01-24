@@ -22,6 +22,7 @@ import uuid
 import zmq
 import cStringIO as StringIO
 import sys
+import hashlib
 import gc
 
 import cellprofiler
@@ -35,6 +36,9 @@ logger = logging.getLogger(__name__)
 
 use_analysis = False
 
+
+SKIP = 'SKIP'
+ABORT = 'ABORT'
 
 class Analysis(object):
     '''An Analysis is the application of a particular pipeline of modules to a
@@ -79,7 +83,7 @@ class Analysis(object):
 
         self.runner_lock = threading.Lock()  # defensive coding purposes
 
-    def start_analysis(self, analysis_event_callback):
+    def start_analysis(self, analysis_event_callback, exception_callback):
         with self.runner_lock:
             assert not self.analysis_in_progress
             self.analysis_in_progress = uuid.uuid1().hex
@@ -87,7 +91,8 @@ class Analysis(object):
             self.runner = AnalysisRunner(self.analysis_in_progress,
                                          self.pipeline,
                                          self.measurements,
-                                         analysis_event_callback)
+                                         analysis_event_callback,
+                                         exception_callback)
             self.runner.start()
             return self.analysis_in_progress
 
@@ -144,8 +149,10 @@ class AnalysisRunner(object):
     STATUS_IN_PROCESS = "InProcess"
     STATUS_DONE = "Done"
 
+
     def __init__(self, analysis_id, pipeline,
-                 initial_measurements, event_listener):
+                 initial_measurements, event_listener,
+                 exception_callback):
         # for sending to workers
         self.initial_measurements = cpmeas.Measurements(image_set_start=None,
                                                         copy=initial_measurements)
@@ -155,6 +162,8 @@ class AnalysisRunner(object):
         self.analysis_id = analysis_id
         self.pipeline = pipeline.copy()
         self.event_listener = event_listener
+        self.exception_callback = exception_callback
+        self.debug_port_callbacks = {}
 
         self.interface_work_cv = threading.Condition()
         self.pause_cancel_cv = threading.Condition()
@@ -402,9 +411,6 @@ class AnalysisRunner(object):
                 # workers waiting for interactions and send them a special
                 # result if we're cancelled before they get their answer.
                 workers_waiting_on_interaction.append(address)
-            elif message_type == 'EXCEPTION':
-                # XXX - similar to interaction, we need to offer to remote PDB the worker
-                pass
             elif message_type == 'MEASUREMENTS':
                 # Measurements are available at location indicated
                 measurements_path = msg[3]
@@ -416,6 +422,22 @@ class AnalysisRunner(object):
                 except Exception, e:
                     raise
                     # XXX - report error, push back job
+            elif message_type in ('EXCEPTION', 'DEBUG COMPLETE'):
+                # Exception loop is to choose from debug/skip/abort until such
+                # a time as skip or abort is chosen.
+                where, exc_type, exc_message, traceback = msg[3:]
+                disposition = self.exception_callback(where, exc_type, exc_message, traceback,
+                                                      new_exception=(message_type == 'EXCEPTION'))
+                if disposition in (SKIP, ABORT):
+                    work_queue_socket.send_multipart([address, '', 'SKIP' if disposition == SKIP else 'ABORT'])
+                    break
+                dispo, verification_string, port_callback = disposition
+                assert dispo == 'DEBUG'
+                work_queue_socket.send_multipart([address, '', 'DEBUG', hashlib.sha1(verification_string).hexdigest()])
+                self.debug_port_callbacks[address] = port_callback
+            elif message_type == 'DEBUG WAITING':
+                work_queue_socket.send_multipart([address, '', 'ACK'])  # ACK
+                self.debug_port_callbacks[address](int(msg[3]))
             else:
                 raise ValueError("Unknown message from worker: %s", message_type)
 
@@ -623,7 +645,7 @@ if __name__ == '__main__':
         if isinstance(event, AnalysisEndedEvent):
             keep_going = False
 
-    analysis.start_analysis(callback)
+    analysis.start_analysis(callback, None)  # no exception handling, yet.
     while keep_going:
         time.sleep(0.25)
     del analysis

@@ -21,46 +21,43 @@ import sys
 import hashlib
 
 
-class Rdb(pdb.Pdb):
+class Rpdb(pdb.Pdb):
     '''A remote python debugger.
 
-    Create with Rdb(port, verification_hash, port_callback).  
+    Create with Rpdb(port, verification_hash), then call verify() to complete
+    creation, and post_mortem(traceback=None) to debug a particular traceback.
 
-    port - the port number to bind to, or 0 to choose a random port.  The bound
-           port is available as the .port attribute afterward.  Default = 4444.
+    port - the port number to bind to, or 0 (the default) to choose a random
+           port.  The bound port is available after initialization in the .port
+           attribute.
 
     verification_hash - the SHA1 hash hexdigest of a string to be sent as the
-           first message to the port, or None for no verification.  Default = None.
-
-    port_callback - this function (if not None) will be called with the port
-           number once the socket is bound.  Default = None.
+           first message to the port, or None for no verification.  Default =
+           None.
     '''
-    # XXXX - The verification_hash and port_callback mechanisms are pretty
-    # ugly.  It would be better to have the remote debugger connect to a known
-    # port on the machine where debugging is happening.  We already require
-    # that it be able to communicate with that machine to receive work, anyway.
-    # (Just make it use ZMQ on a known port).
-    def __init__(self, port=4444, verification_hash=None, port_callback=None):
+    def __init__(self, port=0, verification_hash=None, port_callback=None):
         self.old_stds = (sys.stdin, sys.stdout)
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind(('', port))
-        if port_callback is not None:
-            port_callback(self.socket.getsockname()[1])
         self.socket.listen(1)
+        self.port = self.socket.getsockname()[1]
+        self.verification_hash = verification_hash
+        self.verified = False
+
+    def verify(self):
         (clientsocket, address) = self.socket.accept()
         handle = clientsocket.makefile('rw')
-        self.verified = True
-        if verification_hash is not None:
-            verification_string = handle.readline()
-            if hashlib.sha1(verification_string.rstrip()).hexdigest() != verification_hash:
-                sys.stderr.write("RDB verification failed!  Closing.\n")
-                handle.close()
+        if self.verification_hash is not None:
+            if hashlib.sha1(handle.readline().rstrip()).hexdigest() != self.verification_hash:
+                sys.stderr.write('Verification hash from %s does not match in Rpdb.verify()!  Closing.\n' % str(address))
                 clientsocket.close()
-                self.verified = False
+                self.socket.close()
+                handle.close()
+                return
+        self.verified = True
         pdb.Pdb.__init__(self, completekey='tab', stdin=handle, stdout=handle)
-        if self.verified:
-            sys.stdout = sys.stdin = handle
+        sys.stdout = sys.stdin = handle
 
     def do_continue(self, arg):
         sys.stdin, sys.stdout = self.old_stds
@@ -70,18 +67,26 @@ class Rdb(pdb.Pdb):
 
     do_c = do_cont = do_continue
 
+    def post_mortem(self, t=None):
+        if not self.verified:
+            return
+        # handling the default
+        if t is None:
+            # sys.exc_info() returns (type, value, traceback) if an exception is
+            # being handled, otherwise it returns None
+            t = sys.exc_info()[2]
+        if t is None:
+            raise ValueError("A valid traceback must be passed if no "
+                             "exception is being handled.")
+        self.reset()
+        self.interaction(None, t)
 
-def post_mortem(t=None, port=0, verification_hash=None, port_callback=None):
-    # handling the default
-    if t is None:
-        # sys.exc_info() returns (type, value, traceback) if an exception is
-        # being handled, otherwise it returns None
-        t = sys.exc_info()[2]
-    if t is None:
-        raise ValueError("A valid traceback must be passed if no "
-                         "exception is being handled.")
-    p = Rdb(port=port, verification_hash=verification_hash, port_callback=port_callback)
-    if not p.verified:
-        return
-    p.reset()
-    p.interaction(None, t)
+
+if __name__ == '__main__':
+    try:
+        a[0] = 1
+    except:
+        rpdb = Rpdb(verification_hash=hashlib.sha1("testing").hexdigest())
+        print "debugger listing on port", rpdb.port
+        rpdb.verify()
+        rpdb.post_mortem()

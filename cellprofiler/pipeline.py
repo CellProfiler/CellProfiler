@@ -1559,7 +1559,7 @@ class Pipeline(object):
                                 "Error detected during run of module %s",
                                 module.module_name, exc_info=True)
                             exception = instance
-                            tb = sys.exc_traceback
+                            tb = sys.exc_info()[2]
                         yield measurements
                     elif module.is_interactive():
                         worker = ModuleRunner(module, workspace, frame)
@@ -1595,6 +1595,7 @@ class Pipeline(object):
                             logger.error("Failed to display results for module %s",
                                          module.module_name, exc_info=True)
                             exception = instance
+                            tb = sys.exc_info()[2]
                     workspace.refresh()
                     failure = 0
                     if exception is not None:
@@ -1688,7 +1689,7 @@ class Pipeline(object):
                 if should_write_measurements:
                     measurements[cpmeas.IMAGE,
                                  'ModuleError_%02d%s' % (module.module_num, module.module_name)] = 1
-                    self.notify_listeners(RunExceptionEvent(exception, module, sys.exc_traceback))
+                    self.notify_listeners(RunExceptionEvent(exception, module, sys.exc_info()[2]))
                 return  # no recovery
 
             t1 = sum(os.times()[:-1])

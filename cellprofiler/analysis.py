@@ -39,6 +39,7 @@ use_analysis = False
 
 SKIP = 'SKIP'
 ABORT = 'ABORT'
+DEBUG = 'DEBUG'
 
 class Analysis(object):
     '''An Analysis is the application of a particular pipeline of modules to a
@@ -83,7 +84,7 @@ class Analysis(object):
 
         self.runner_lock = threading.Lock()  # defensive coding purposes
 
-    def start_analysis(self, analysis_event_callback, exception_callback):
+    def start_analysis(self, analysis_event_callback):
         with self.runner_lock:
             assert not self.analysis_in_progress
             self.analysis_in_progress = uuid.uuid1().hex
@@ -91,8 +92,7 @@ class Analysis(object):
             self.runner = AnalysisRunner(self.analysis_in_progress,
                                          self.pipeline,
                                          self.measurements,
-                                         analysis_event_callback,
-                                         exception_callback)
+                                         analysis_event_callback)
             self.runner.start()
             return self.analysis_in_progress
 
@@ -151,8 +151,7 @@ class AnalysisRunner(object):
 
 
     def __init__(self, analysis_id, pipeline,
-                 initial_measurements, event_listener,
-                 exception_callback):
+                 initial_measurements, event_listener):
         # for sending to workers
         self.initial_measurements = cpmeas.Measurements(image_set_start=None,
                                                         copy=initial_measurements)
@@ -162,8 +161,8 @@ class AnalysisRunner(object):
         self.analysis_id = analysis_id
         self.pipeline = pipeline.copy()
         self.event_listener = event_listener
-        self.exception_callback = exception_callback
         self.debug_port_callbacks = {}
+        self.original_exception_events = {}
 
         self.interface_work_cv = threading.Condition()
         self.pause_cancel_cv = threading.Condition()
@@ -422,22 +421,37 @@ class AnalysisRunner(object):
                 except Exception, e:
                     raise
                     # XXX - report error, push back job
-            elif message_type in ('EXCEPTION', 'DEBUG COMPLETE'):
+            elif message_type == 'EXCEPTION':
                 # Exception loop is to choose from debug/skip/abort until such
                 # a time as skip or abort is chosen.
-                where, exc_type, exc_message, traceback = msg[3:]
-                disposition = self.exception_callback(where, exc_type, exc_message, traceback,
-                                                      new_exception=(message_type == 'EXCEPTION'))
-                if disposition in (SKIP, ABORT):
-                    work_queue_socket.send_multipart([address, '', 'SKIP' if disposition == SKIP else 'ABORT'])
-                    break
-                dispo, verification_string, port_callback = disposition
-                assert dispo == 'DEBUG'
-                work_queue_socket.send_multipart([address, '', 'DEBUG', hashlib.sha1(verification_string).hexdigest()])
-                self.debug_port_callbacks[address] = port_callback
+                def disposition_callback(disposition, verification_string=None, port_callback=None):
+                    if disposition in (SKIP, ABORT):
+                        work_queue_socket.send_multipart([address, '',
+                                                          'SKIP' if disposition == SKIP else 'ABORT'])
+                        return
+                    assert disposition == DEBUG
+                    work_queue_socket.send_multipart([address, '', 'DEBUG',
+                                                      hashlib.sha1(verification_string).hexdigest()])
+                    self.debug_port_callbacks[address] = port_callback
+                where = msg[3]
+                if where == 'PIPELINE':
+                    image_set_number, exc_type, exc_message, exc_traceback = msg[4:]
+                    event = AnalysisPipelineExceptionEvent(int(image_set_number),
+                                                           exc_type, exc_message, exc_traceback,
+                                                           disposition_callback)
+                else:
+                    exc_type, exc_message, exc_traceback = msg[4:]
+                    event = AnalysisWorkerExceptionEvent(exc_type, exc_message, exc_traceback,
+                                                         disposition_callback)
+                # disposition_callback will send the reply
+                self.original_exception_events[address] = event
+                self.post_event(event)
             elif message_type == 'DEBUG WAITING':
                 work_queue_socket.send_multipart([address, '', 'ACK'])  # ACK
                 self.debug_port_callbacks[address](int(msg[3]))
+            elif message_type == 'DEBUG COMPLETE':
+                # original callback will reply to message.
+                self.post_event(AnalysisDebugCompleteEvent(self.original_exception_events[address]))
             else:
                 raise ValueError("Unknown message from worker: %s", message_type)
 
@@ -602,7 +616,7 @@ class AnalysisDisplayEvent(AbstractAnalysisEvent):
 
 
 class AnalysisInteractionRequest(AbstractAnalysisEvent):
-    """Interactino request from an analysis.
+    """Interaction request from an analysis.
     AnalysisInteractionRequest.image_set_number - image set number requesting display.
     AnalysisInteractionRequest.interaction_request - the interaction request data.
     AnalysisInteractionRequest.reply_cb - callback function for the reply.
@@ -623,6 +637,55 @@ class AnalysisResumedEvent(AbstractAnalysisEvent):
     pass
 
 
+class AnalysisPipelineExceptionEvent(AbstractAnalysisEvent):
+    """An exception occurred in the pipeline during an analysis.
+    AnalysisPipelineExceptionEvent.image_set_number - image set number that caused the exception.
+    AnalysisPipelineExceptionEvent.exc_type - exception type (a string).
+    AnalysisPipelineExceptionEvent.exc_message - the exception message.
+    AnalysisPipelineExceptionEvent.exc_traceback - the traceback (a string).
+    AnalysisPipelineExceptionEvent.disposition_cb - callback function for how to handle this exception.
+             Callback arguments are: (disposition=SKIP/ABORT/DEBUG, verification_string=None, port_callback=None)
+             verification_string and port_callback must be set if first argument is DEBUG.
+             port_callback will be called when the remote debugger is available with the port as an argument.
+    """
+    def __init__(self, image_set_number, exc_type, exc_message, exc_traceback, disposition_callback):
+        self.image_set_number = image_set_number
+        self.exc_type = exc_type
+        self.exc_message = exc_message
+        self.exc_traceback = exc_traceback
+        self.disposition_callback = disposition_callback
+
+
+class AnalysisWorkerExceptionEvent(AbstractAnalysisEvent):
+    """An exception occurred in the worker during an analysis, outside of the pipeline.
+    AnalysisWorkerExceptionEvent.exc_type - exception type (a string).
+    AnalysisWorkerExceptionEvent.exc_message - the exception message.
+    AnalysisWorkerExceptionEvent.exc_traceback - the traceback (a string).
+    AnalysisWorkerExceptionEvent.disposition_cb - callback function for how to handle this exception.
+             Callback arguments are: (disposition=SKIP/ABORT/DEBUG, verification_string=None, port_callback=None)
+             verification_string and port_callback must be set if first argument is DEBUG.
+             ABORT = terminate the worker, SKIP = continue processing.
+             port_callback will be called when the remote debugger is available with the port as an argument.
+    """
+    def __init__(self, exc_type, exc_message, exc_traceback, disposition_callback):
+        self.exc_type = exc_type
+        self.exc_message = exc_message
+        self.exc_traceback = exc_traceback
+        self.disposition_callback = disposition_callback
+
+
+class AnalysisDebugCompleteEvent(AbstractAnalysisEvent):
+    """Remote debugging of a pipeline or worker has completed.
+    AnalysisDebugCompleteEvent.original_event - the original AnalysisPipelineExceptionEvent or AnalysisWorkerExceptionEvent.
+
+    The handler of this event should treat it (programmatically) in the same
+    way as the original event, calling original_event.disposition_callback()
+    (possibly debugging again, even).
+    """
+    def __init__(self, original_event):
+        self.original_event = original_event
+
+
 if __name__ == '__main__':
     import time
     import cellprofiler.pipeline
@@ -641,6 +704,7 @@ if __name__ == '__main__':
     keep_going = True
 
     def callback(event):
+        global keep_going
         print "Pipeline Event", event
         if isinstance(event, AnalysisEndedEvent):
             keep_going = False

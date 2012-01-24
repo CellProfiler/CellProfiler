@@ -169,8 +169,10 @@ def main():
                 need_prepare_group = False
                 image_set_numbers = [int(job[1])]
 
+            pipeline_listener.image_set_number = image_set_numbers[0]
             should_process = True
             if need_prepare_group:
+
                 workspace = cpw.Workspace(current_pipeline, None, None, None,
                                           current_measurements, None, None)
                 if not current_pipeline.prepare_group(workspace, current_measurements.get_grouping_keys(), image_set_numbers):
@@ -183,17 +185,23 @@ def main():
                 for image_set_number in image_set_numbers:
                     gc.collect()
                     try:
+                        pipeline_listener.image_set_number = image_set_number
                         current_pipeline.run_image_set(current_measurements, image_set_number)
                         successful_image_set_numbers.append(image_set_number)
                     except Exception:
-                        # XXX - should detect cancellation of the run vs. other exceptions
-                        # also offer to remote PDB.
-                        logging.error("Error in pipeline", exc_info=True)
-                        if handle_exception(work_socket, True) == ABORT:
+                        try:
+                            logging.error("Error in pipeline", exc_info=True)
+                            if handle_exception(work_socket, image_set_number) == ABORT:
+                                abort = True
+                                break
+                        except:
+                            logging.error("Error in handling of pipeline exception", exc_info=True)
+                            # this is bad.  We can't handle nested exceptions
+                            # remotely so we just fail on this run.
                             abort = True
-                            break
 
                 if abort:
+                    work_socket.close()
                     del current_measurements
                     current_measurements = None
                     continue
@@ -215,20 +223,24 @@ def main():
             work_socket.recv()  # get ACK - indicates measurements have been
                                 # read and can be deleted, to remove the
                                 # temporary file.
+            work_socket.close()
             del current_measurements
         except Exception:
             logging.error("Error in worker", exc_info=True)
-            if handle_exception(work_socket, False) == ABORT:
+            if handle_exception(work_socket) == ABORT:
                 break
 
 
-def handle_exception(work_socket, in_pipeline):
+def handle_exception(work_socket, image_set_number=None, exc_info=None):
     '''report and handle an exception, possibly by remote debugging, returning
     how to proceed (skip or abort).
     '''
-    t, exc, tb = sys.exc_info()
-    if in_pipeline:
-        message = ["EXCEPTION", "PIPELINE", t.__name__, str(exc), traceback.format_exception(t, exc, tb)]
+    if exc_info is None:
+        t, exc, tb = sys.exc_info()
+    else:
+        t, exc, tb = exc_info
+    if image_set_number is not None:
+        message = ["EXCEPTION", "PIPELINE", str(image_set_number), t.__name__, str(exc), traceback.format_exception(t, exc, tb)]
     else:
         message = ["EXCEPTION", "WORKER", t.__name__, str(exc), traceback.format_exception(t, exc, tb)]
     work_socket.send_multipart(message)
@@ -240,12 +252,27 @@ def handle_exception(work_socket, in_pipeline):
             work_socket.recv()  # ACK
             rpdb.verify()
             rpdb.post_mortem(tb)
-            work_socket.send_multipart(["DEBUG COMPLETE"] + message[1:])
+            work_socket.send_multipart(["DEBUG COMPLETE"])
             reply = work_socket.recv()  # next step (could be "DEBUG" again)
         elif reply[0] == 'SKIP':
             return SKIP
         else:
             return ABORT
+
+
+class PipelineEventListener(object):
+    """listen for pipeline events, communicate them as necessary to the
+    analysis manager."""
+    def __init__(self):
+        self.work_socket = None
+        self.image_set_number = 0
+
+    def handle_event(self, event):
+        if isinstance(event, cpp.RunExceptionEvent):
+            disposition = handle_exception(self.work_socket, self.image_set_number,
+                                           (type(event), event, event.tb))
+            if disposition == ABORT:
+                event.cancel_run = True
 
 
 def exit_on_stdin_close():
@@ -298,25 +325,6 @@ def start_daemon_thread(target=None, args=(), name=None):
 
 class CancelledException(Exception):
     pass
-
-
-class PipelineEventListener(object):
-    """listen for pipeline events, communicate them as necessary to the
-    analysis manager."""
-    def __init__(self):
-        self.pipeline = None
-        self.work_socket = None
-
-    def handle_event(self, event):
-        print "GOT EVENT", event
-        if isinstance(event, cpp.RunExceptionEvent):
-            # XXX
-            # report error back to main process
-            # offer to PDB it
-            # invoke PDB
-            # Also need option to skip this set, continue pipeline.
-            event.cancel_run = True
-
 
 def setup_callbacks(pipeline, work_socket):
     def post_module_callback(pipeline, module):

@@ -17,6 +17,7 @@ TO-DO: document module
 import logging
 logger = logging.getLogger(__name__)
 
+import os
 import re
 
 import cellprofiler.cpmodule as cpm
@@ -95,6 +96,8 @@ class NamesAndTypes(cpm.CPModule):
             "Add another assignment rule", "Add",
             self.add_assignment)
         self.join = cps.Joiner("")
+        self.update_table_button = cps.DoSomething(
+            "","Update the table below", self.make_image_sets_and_update_table)
         self.table = cps.Table("")
         
     def add_assignment(self, can_remove = True):
@@ -161,7 +164,7 @@ class NamesAndTypes(cpm.CPModule):
             result += [self.add_assignment_button]
             if len(self.assignments) > 1:
                 result += [self.join]
-        result += [self.table]
+        result += [self.update_table_button, self.table]
         return result
     
     def prepare_settings(self, setting_values):
@@ -221,6 +224,8 @@ class NamesAndTypes(cpm.CPModule):
             self.metadata_keys.update(ipd.metadata.keys())
         self.update_all_metadata_predicates()
         self.update_all_columns()
+        self.make_image_sets()
+        self.update_table()
         
     def on_deactivated(self):
         self.pipeline = None
@@ -229,9 +234,6 @@ class NamesAndTypes(cpm.CPModule):
         '''Handle updates to all settings'''
         if setting.key() == self.assignment_method.key():
             self.update_all_columns()
-        elif setting.key() == self.join.key():
-            self.make_image_sets()
-            self.update_table()
         elif self.assignment_method == ASSIGN_RULES:
             self.update_all_metadata_predicates()
             if len(self.ipd_columns) != len(self.assignments):
@@ -244,8 +246,6 @@ class NamesAndTypes(cpm.CPModule):
                             self.ipd_columns[i] = self.filter_column(group)
                             self.update_column_metadata(i)
                             self.update_joiner()
-                            self.make_image_sets()
-                            self.update_table()
                         else:
                             if setting == group.image_name:
                                 name = group.image_name.value
@@ -298,9 +298,11 @@ class NamesAndTypes(cpm.CPModule):
             for i in range(len(self.ipd_columns)):
                 self.update_column_metadata(i)
         self.update_all_metadata_predicates()
+        self.update_joiner()
+        
+    def make_image_sets_and_update_table(self):
         self.make_image_sets()
         self.update_table()
-        self.update_joiner()
         
     def make_image_sets(self):
         '''Create image sets from the ipd columns and joining rules
@@ -482,12 +484,13 @@ class NamesAndTypes(cpm.CPModule):
                                 del join[key]
                             elif join[key] is not None and best_value is None:
                                 best_value = join[key]
-                        for i, column_name in enumerate(column_names):
+                        for i, column_name in enumerate(self.column_names):
                             if not join.has_key(column_name):
                                 if best_value in self.column_metadata_choices[i]:
                                     join[column_name] = best_value
                                 else:
                                     join[column_name] = None
+                self.join.build(repr(joins))
             except:
                 pass # bad field value
     
@@ -504,20 +507,25 @@ class NamesAndTypes(cpm.CPModule):
                 for join in joins]
         else:
             metadata_columns = ["Image number"]
-        for i, name in enumerate(metadata_columns + self.column_names):
+        for i, name in enumerate(metadata_columns):
             self.table.insert_column(i, name)
+        for i, column_name in enumerate(self.column_names):
+            idx = len(metadata_columns) + i*2
+            self.table.insert_column(idx, "Pathname: %s" % column_name)
+            self.table.insert_column(idx+1, "Filename: %s" % column_name)
         data = []
         for keys, image_set in self.image_sets:
             row = list(keys)
             for column_name in self.column_names:
                 ipds = image_set.get(column_name, [])
                 if len(ipds) == 0:
-                    row.append("-- No image! --")
+                    row += ["-- No image! --"] * 2
                 elif len(ipds) > 1:
                     row.append("-- Multiple images! --\n" + 
                                "\n".join([ipd.path for ipd in ipds]))
+                    row.append("-- Multiple images! --")
                 else:
-                    row.append(ipds[0].path)
+                    row += os.path.split(ipds[0].path)
             data.append(row)
         self.table.data = data
 

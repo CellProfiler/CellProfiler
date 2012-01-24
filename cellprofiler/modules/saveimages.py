@@ -416,10 +416,6 @@ class SaveImages(cpm.CPModule):
     def module_key(self):
         return "%s_%d"%(self.module_name, self.module_num)
     
-    def get_dictionary(self, image_set_list):
-        '''Return the runtime dictionary associated with this module'''
-        return image_set_list.legacy_fields[self.module_key]
-    
     def prepare_run(self, workspace, *args):
         workspace.image_set_list.legacy_fields[self.module_key] = {}
         return True
@@ -500,7 +496,7 @@ class SaveImages(cpm.CPModule):
         out_file = self.get_filename(workspace,
                                      check_overwrite = False)
         if d["CURRENT_FRAME"] == 0 and os.path.exists(out_file):
-            if not self.check_overwrite(out_file):
+            if not self.check_overwrite(out_file, workspace):
                 d["CURRENT_FRAME"] = "Ignore"
                 return
             else:
@@ -917,23 +913,29 @@ class SaveImages(cpm.CPModule):
         if self.when_to_save != WS_LAST_CYCLE:
             self.save_filename_measurements(workspace)
         
-    def check_overwrite(self, filename):
+    def check_overwrite(self, filename, workspace):
         '''Check to see if it's legal to overwrite a file
-        
-        Throws an exception if can't overwrite and no GUI.
-        Returns False if can't overwrite otherwise
+
+        Throws an exception if can't overwrite and no interaction available.
+        Returns False if can't overwrite, otherwise True.
         '''
         if not self.overwrite.value and os.path.isfile(filename):
-            if cpp.get_headless():
-                raise ValueError('SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"'%(filename))
-            else:
-                import wx
-                over = wx.MessageBox("Do you want to overwrite %s?"%(filename),
-                                     "Warning: overwriting file", wx.YES_NO)
-                if over == wx.NO:
-                    return False
+            try:
+                return (workspace.interaction_request(self, filename.encode('utf-8')) == "Yes")
+            except workspace.NoInteractionException:
+                raise ValueError('SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"' % (filename))
         return True
-        
+
+    def handle_interaction(self, image_set_number, filename):
+        '''handle an interaction request from check_overwrite()'''
+        import wx
+        dlg = wx.MessageDialog(wx.GetApp().TopWindow,
+                               "%s #%d, set #%d - Do you want to overwrite %s?" % \
+                                   (self.module_name, self.module_num, image_set_number, filename.decode('utf-8')),
+                               "Warning: overwriting file", wx.YES_NO | wx.ICON_QUESTION)
+        result = dlg.ShowModal() == wx.ID_YES
+        return "Yes" if result else "No"
+
     def save_filename_measurements(self, workspace):
         if self.update_file_names.value:
             filename = self.get_filename(workspace, make_dirs = False,
@@ -1024,7 +1026,7 @@ class SaveImages(cpm.CPModule):
         if len(pathname) and not os.path.isdir(pathname) and make_dirs:
             os.makedirs(pathname)
         result = os.path.join(pathname, filename)
-        if check_overwrite and not self.check_overwrite(result):
+        if check_overwrite and not self.check_overwrite(result, workspace):
             return
         
         return result

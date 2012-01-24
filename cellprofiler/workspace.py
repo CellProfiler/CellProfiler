@@ -78,6 +78,8 @@ class Workspace(object):
         self.__disposition_listeners = []
         self.__in_background = False # controls checks for calls to create_or_find_figure()
 
+        self.interaction_handler = None
+
         class DisplayData(object):
             pass
         self.display_data = DisplayData()
@@ -237,6 +239,17 @@ class Workspace(object):
         """Set the module currently being run"""
         self.__module = module
     
+    def interaction_request(self, module, interaction_request_blob):
+        '''make a request for GUI interaction via a pipeline event'''
+        import cellprofiler.preferences as cpprefs
+        if self.interaction_handler is None:
+            if cpprefs.get_headless():
+                raise self.NoInteractionException()
+            else:
+                return module.handle_interaction(self.measurements.image_set_number, interaction_request_blob)
+        else:
+            return self.interaction_handler(module, self.measurements.image_set_number, interaction_request_blob)
+
     @property
     def is_last_image_set(self):
         return (self.measurements.image_set_number ==
@@ -265,7 +278,10 @@ class Workspace(object):
     def add_disposition_listener(self, listener):
         self.__disposition_listeners.append(listener)
 
+    class NoInteractionException(Exception):
+        pass
+
+
 class DispositionChangedEvent(object):
     def __init__(self, disposition):
         self.disposition = disposition
-

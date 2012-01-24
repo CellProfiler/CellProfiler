@@ -16,6 +16,9 @@ TO-DO: document module
 
 import logging
 logger = logging.getLogger(__name__)
+
+import re
+
 import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
@@ -51,6 +54,7 @@ class NamesAndTypes(cpm.CPModule):
         self.pipeline = None
         self.ipds = []
         self.image_sets = []
+        self.metadata_keys = []
         
         self.assignment_method = cps.Choice(
             "Assignment method", [ASSIGN_ALL, ASSIGN_GUESS, ASSIGN_RULES],
@@ -101,14 +105,16 @@ class NamesAndTypes(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider())
         
+        mp = MetadataPredicate("Metadata", "Have %s matching", 
+                               doc="Has metadata matching the value you enter")
+        mp.set_metadata_keys(self.metadata_keys)
         group.append("rule_filter", cps.Filter(
             "Match this rule",
             [FilePredicate(),
              DirectoryPredicate(),
              ExtensionPredicate(),
              ImagePredicate(),
-             MetadataPredicate("Metadata", "Have %s matching", 
-                               doc="Has metadata matching the value you enter")],
+             mp],
             'or (file does contain "")'))
         
         group.append("image_name", cps.ImageNameProvider(
@@ -125,6 +131,8 @@ class NamesAndTypes(cpm.CPModule):
             group.append("remover", cps.RemoveSettingButton(
                 'Remove above rule', "Remove", 
                 self.assignments, group))
+        if self.pipeline is not None:
+            self.update_all_columns()
             
     def settings(self):
         result = [self.assignment_method, self.single_load_as_choice,
@@ -163,6 +171,45 @@ class NamesAndTypes(cpm.CPModule):
         while len(self.assignments) < n_assignments:
             self.add_assignment()
             
+    def post_pipeline_load(self, pipeline):
+        '''Fix up metadata predicates after the pipeline loads'''
+        if self.assignment_method == ASSIGN_RULES:
+            filters = []
+            for group in self.assignments:
+                rules_filter = group.rule_filter
+                filters.append(rules_filter)
+                assert isinstance(rules_filter, cps.Filter)
+                #
+                # The problem here is that the metadata predicates don't
+                # know what possible metadata keys are allowable and
+                # that computation could be (insanely) expensive. The
+                # hack is to scan for the string we expect in the
+                # raw text.
+                #
+                # The following looks for "(metadata does <kwd>" or
+                # "(metadata doesnot <kwd>"
+                #
+                # This isn't perfect, of course, but it is enough to get
+                # the filter's text to parse if the text is valid.
+                #
+                pattern = r"\(%s (?:%s|%s) ((?:\\.|[^ )])+)" % \
+                (MetadataPredicate.SYMBOL, 
+                 cps.Filter.DoesNotPredicate.SYMBOL,
+                 cps.Filter.DoesPredicate.SYMBOL)
+                text = rules_filter.value_text
+                self.metadata_keys = []
+                while True:
+                    match = re.search(pattern, text)
+                    if match is None:
+                        break
+                    self.metadata_keys.append(match.groups()[0])
+                    text = text[match.end():]
+            self.metadata_keys = list(set(self.metadata_keys))
+            for rules_filter in filters:
+                for predicate in rules_filter.predicates:
+                    if isinstance(predicate, MetadataPredicate):
+                        predicate.set_metadata_keys(self.metadata_keys)
+                        
     def run(self, workspace):
         pass
                      
@@ -179,9 +226,12 @@ class NamesAndTypes(cpm.CPModule):
         self.pipeline = None
         
     def on_setting_changed(self, setting, pipeline):
-        '''Handle updates to the join control'''
-        if setting == self.assignment_method:
+        '''Handle updates to all settings'''
+        if setting.key() == self.assignment_method.key():
             self.update_all_columns()
+        elif setting.key() == self.join.key():
+            self.make_image_sets()
+            self.update_table()
         elif self.assignment_method == ASSIGN_RULES:
             self.update_all_metadata_predicates()
             if len(self.ipd_columns) != len(self.assignments):
@@ -222,6 +272,7 @@ class NamesAndTypes(cpm.CPModule):
                                 for join in joins:
                                     join[name] = join[old_name]
                                     del join[old_name]
+                            self.join.build(str(joins))
                         return
         
     def update_all_metadata_predicates(self):
@@ -246,6 +297,7 @@ class NamesAndTypes(cpm.CPModule):
                 else group.image_name.value for group in self.assignments]
             for i in range(len(self.ipd_columns)):
                 self.update_column_metadata(i)
+        self.update_all_metadata_predicates()
         self.make_image_sets()
         self.update_table()
         self.update_joiner()
@@ -458,7 +510,7 @@ class NamesAndTypes(cpm.CPModule):
         for keys, image_set in self.image_sets:
             row = list(keys)
             for column_name in self.column_names:
-                ipds = image_set[column_name]
+                ipds = image_set.get(column_name, [])
                 if len(ipds) == 0:
                     row.append("-- No image! --")
                 elif len(ipds) > 1:
@@ -472,9 +524,14 @@ class NamesAndTypes(cpm.CPModule):
 class MetadataPredicate(cps.Filter.FilterPredicate):
     '''A predicate that compares an ifd against a metadata key and value'''
     
+    SYMBOL = "metadata"
     def __init__(self, display_name, display_fmt = "%s", **kwargs):
+        subpredicates = [cps.Filter.DoesPredicate([]),
+                         cps.Filter.DoesNotPredicate([])]
+        
         super(self.__class__, self).__init__(
-            "metadata", display_name, MetadataPredicate.do_filter, [], **kwargs)
+            self.SYMBOL, display_name, MetadataPredicate.do_filter, 
+            subpredicates, **kwargs)
         self.display_fmt = display_fmt
         
     def set_metadata_keys(self, keys):
@@ -482,17 +539,23 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
         
         keys - a list of keys
         '''
-        self.subpredicates = [
+        sub_subpredicates = [
             cps.Filter.FilterPredicate(
                 key, self.display_fmt % key, 
-                lambda ipd, match: 
-                ipd.metadata.has_key(self.symbol) and
-                ipd.metadata[self.symbol] == match,
+                lambda ipd, match, key=key: 
+                ipd.metadata.has_key(key) and
+                ipd.metadata[key] == match,
                 [cps.Filter.LITERAL_PREDICATE])
             for key in keys]
+        #
+        # The subpredicates are "Does" and "Does not", so we add one level
+        # below that.
+        #
+        for subpredicate in self.subpredicates:
+            subpredicate.subpredicates = sub_subpredicates
         
     @classmethod
-    def do_filter(cls, arg, matcher, literal):
+    def do_filter(cls, arg, *vargs):
         '''Perform the metadata predicate's filter function
         
         The metadata predicate has subpredicates that look up their
@@ -500,7 +563,7 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
         '''
         node_type, modpath, resolver = arg
         ipd = resolver.get_image_plane_details(modpath)
-        return matcher(ipd, literal)
+        return vargs[0](ipd, *vargs[1:])
     
     def test_valid(self, pipeline, *args):
         modpath = ["imaging","image.png"]

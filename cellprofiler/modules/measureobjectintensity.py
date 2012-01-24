@@ -336,7 +336,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                     masked_labels = labels
                     masked_outlines = outlines
                 
-                lmask = masked_labels > 0
+                lmask = masked_labels > 0 & np.isfinite(img) # Ignore NaNs, Infs
                 has_objects = np.any(lmask)
                 if has_objects:
                     lindexes = np.arange(nobjects, dtype=np.int32)+1

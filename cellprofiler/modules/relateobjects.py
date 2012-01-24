@@ -439,7 +439,8 @@ class RelateObjects(cpm.CPModule):
             mask = primary_parents_of != 0
             parents_of = np.zeros(primary_parents_of.shape[0], 
                                   grandparents_of.dtype)
-            parents_of[mask] = grandparents_of[primary_parents_of[mask]-1]
+            if primary_parents_of.shape[0] > 0:
+                parents_of[mask] = grandparents_of[primary_parents_of[mask]-1]
         elif primary_parent_feature in meas.get_feature_names(parent_name):
             primary_parents_of = meas.get_current_measurement(
                 sub_object_name, primary_parent_feature)
@@ -452,9 +453,11 @@ class RelateObjects(cpm.CPModule):
             reverse_lookup_len = max(np.max(primary_parents_of)+1,
                                      len(primary_parents_of_parent))
             reverse_lookup = np.zeros(reverse_lookup_len, int)
-            reverse_lookup[primary_parents_of_parent] =\
-                          np.arange(1,len(primary_parents_of_parent)+1)
-            parents_of = reverse_lookup[primary_parents_of]
+            if primary_parents_of_parent.shape[0] > 0:
+                reverse_lookup[primary_parents_of_parent] =\
+                              np.arange(1,len(primary_parents_of_parent)+1)
+            if primary_parents_of.shape[0] > 0:
+                parents_of = reverse_lookup[primary_parents_of]
         else:
             raise ValueError("Don't know how to relate %s to %s" %
                              (primary_parent, parent_name))

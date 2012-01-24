@@ -209,8 +209,9 @@ def exit_on_stdin_close():
     # should exit), or our parent has died.  Attempt to exit cleanly via main
     # thread, but if that takes too long (hung filesystem or socket, perhaps),
     # use a hard os._exit() instead.
+    stdin = sys.stdin
     try:
-        while sys.stdin.read():
+        while stdin.read():
             pass
     except:
         pass

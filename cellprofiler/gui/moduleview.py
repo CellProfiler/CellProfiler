@@ -1591,6 +1591,8 @@ class ModuleView:
                             self.v.data[row][col] is None)
                 
                 def GetValue(self, row, col):
+                    if self.IsEmptyCell(row, col):
+                        return None
                     return self.v.data[row][col]
                 
                 def GetColLabelValue(self, col):
@@ -3400,8 +3402,8 @@ def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_
     # minimize copies of pipelines
     pipeline_hash = pipeline.settings_hash()
     if pipeline_hash != getattr(request_pipeline_cache, "pipeline_hash", None):
+        request_pipeline_cache.pipeline = pipeline.copy(False)
         request_pipeline_cache.pipeline_hash = pipeline_hash
-        request_pipeline_cache.pipeline = pipeline.copy()
 
     pipeline_copy = request_pipeline_cache.pipeline
     if pipeline_copy.settings_hash() != pipeline_hash:

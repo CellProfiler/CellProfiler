@@ -148,7 +148,7 @@ class HDF5Dict(object):
                     # have an index (e.g. Relationship).
                     if 'index' in object_group[feature_name].keys():
                         d = self.indices[object_name, feature_name] = {}
-                        hdf5_index = object_group[feature_name]['index']
+                        hdf5_index = object_group[feature_name]['index'][:]
                         for num_idx, start, stop in hdf5_index:
                             d[num_idx] = slice(start, stop)
             self.hdf5_file.flush()

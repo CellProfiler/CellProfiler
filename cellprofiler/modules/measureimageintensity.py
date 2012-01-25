@@ -219,6 +219,10 @@ class MeasureImageIntensity(cpm.CPModule):
             pixel_max = 0
             pixel_pct_max = 0
         else:
+            pixels = pixels.flatten()
+            pixels = pixels[np.nonzero(np.isfinite(pixels))[0]] # Ignore NaNs, Infs
+            pixel_count = np.product(pixels.shape)
+            
             pixel_sum = np.sum(pixels)
             pixel_mean = pixel_sum/float(pixel_count)
             pixel_std = np.std(pixels)

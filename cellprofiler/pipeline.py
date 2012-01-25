@@ -601,10 +601,10 @@ class Pipeline(object):
         self.__undo_start = None
         self.__image_plane_details = []
     
-    def copy(self):
+    def copy(self, save_image_plane_details = True):
         '''Create a copy of the pipeline modules and settings'''
         fd = StringIO.StringIO()
-        self.save(fd)
+        self.save(fd, save_image_plane_details=save_image_plane_details)
         pipeline = Pipeline()
         fd.seek(0)
         pipeline.load(fd)
@@ -926,11 +926,11 @@ class Pipeline(object):
 
                     pipeline_stats_logger.info("Pipeline saved with CellProfiler version %d", pipeline_version)
             elif kwd == H_FROM_MATLAB:
-                from_matlab = bool(value)
+                from_matlab = (value == "True")
             elif kwd == H_MODULE_COUNT:
                 module_count = int(value)
             elif kwd == H_HAS_IMAGE_PLANE_DETAILS:
-                has_image_plane_details = bool(value)
+                has_image_plane_details = (value == "True")
             else:
                 print line
         
@@ -1031,7 +1031,9 @@ class Pipeline(object):
         self.notify_listeners(PipelineLoadedEvent())
         self.__undo_stack = []
         
-    def save(self, fd_or_filename, format=FMT_NATIVE):
+    def save(self, fd_or_filename, 
+             format=FMT_NATIVE, 
+             save_image_plane_details = True):
         """Save the pipeline to a file
         
         fd_or_filename - either a file descriptor or the name of the file
@@ -1040,7 +1042,8 @@ class Pipeline(object):
             handles = self.save_to_handles()
             self.savemat(fd_or_filename,handles)
         elif format == FMT_NATIVE:
-            self.savetxt(fd_or_filename)
+            self.savetxt(fd_or_filename, 
+                         save_image_plane_details=save_image_plane_details)
         else:
             raise NotImplementedError("Unknown pipeline file format: %s" %
                                       format)

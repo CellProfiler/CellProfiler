@@ -148,7 +148,7 @@ def main():
             current_measurements = initial_measurements.get(current_analysis_id, None)
             if current_measurements is None:
                 work_socket.send("INITIAL_MEASUREMENTS")
-                measurements_path = work_socket.recv()
+                measurements_path = work_socket.recv().decode('utf-8')
                 # make sure the server hasn't finished or quit since we fetched the pipeline
                 with work_server_lock:
                     if current_analysis_id in work_servers:
@@ -172,12 +172,21 @@ def main():
             pipeline_listener.image_set_number = image_set_numbers[0]
             should_process = True
             if need_prepare_group:
-
                 workspace = cpw.Workspace(current_pipeline, None, None, None,
                                           current_measurements, None, None)
                 if not current_pipeline.prepare_group(workspace, current_measurements.get_grouping_keys(), image_set_numbers):
                     # exception handled elsewhere, possibly cancelling this run.
                     should_process = False
+
+            def interaction_handler(module, image_set_number, interaction_request_blob):
+                '''handle interaction requests by passing them to the jobserver and wait for the reply.'''
+                work_socket.send_multipart(["INTERACT", str(module.module_num), str(image_set_number), interaction_request_blob])
+                result = work_socket.recv_multipart()
+                if len(result) == 1:
+                    return result[0]
+                else:
+                    assert result[1] == 'CANCELLED'
+                    raise CancelledException()
 
             successful_image_set_numbers = []
             if should_process:
@@ -186,7 +195,7 @@ def main():
                     gc.collect()
                     try:
                         pipeline_listener.image_set_number = image_set_number
-                        current_pipeline.run_image_set(current_measurements, image_set_number)
+                        current_pipeline.run_image_set(current_measurements, image_set_number, interaction_handler)
                         successful_image_set_numbers.append(image_set_number)
                     except Exception:
                         try:
@@ -218,7 +227,7 @@ def main():
             # XXX - distributed - package them up.
             current_measurements.flush()
             work_socket.send_multipart(["MEASUREMENTS",
-                                        current_measurements.hdf5_dict.filename] +
+                                        current_measurements.hdf5_dict.filename.encode('utf-8')] +
                                        [str(isn) for isn in successful_image_set_numbers])
             work_socket.recv()  # get ACK - indicates measurements have been
                                 # read and can be deleted, to remove the
@@ -240,9 +249,9 @@ def handle_exception(work_socket, image_set_number=None, exc_info=None):
     else:
         t, exc, tb = exc_info
     if image_set_number is not None:
-        message = ["EXCEPTION", "PIPELINE", str(image_set_number), t.__name__, str(exc), traceback.format_exception(t, exc, tb)]
+        message = ["EXCEPTION", "PIPELINE", str(image_set_number), t.__name__, str(exc), "".join(traceback.format_exception(t, exc, tb))]
     else:
-        message = ["EXCEPTION", "WORKER", t.__name__, str(exc), traceback.format_exception(t, exc, tb)]
+        message = ["EXCEPTION", "WORKER", t.__name__, str(exc), "".join(traceback.format_exception(t, exc, tb))]
     work_socket.send_multipart(message)
     reply = work_socket.recv_multipart()
     while True:
@@ -267,7 +276,7 @@ class PipelineEventListener(object):
         self.work_socket = None
         self.image_set_number = 0
 
-    def handle_event(self, event):
+    def handle_event(self, pipeline, event):
         if isinstance(event, cpp.RunExceptionEvent):
             disposition = handle_exception(self.work_socket, self.image_set_number,
                                            (type(event), event, event.tb))
@@ -331,16 +340,6 @@ def setup_callbacks(pipeline, work_socket):
         # XXX - handle display
         work_socket.send_multipart(["POST_MODULE", module.module_name, str(module.module_number)])
         work_socket.recv_multipart()  # empty acknowledgement
-
-    def interaction_callback(interaction_blob):
-        work_socket.send_multipart("INTERACT", interaction_blob)
-        # wait for and return the result of the interaction to the caller.
-        result = work_socket.recv_multipart()
-        if len(result) == 1:
-            return result[0]
-        else:
-            assert result[1] == 'CANCELLED'
-            raise CancelledException()
 
     def exception_callback(event):
         if isinstance(event, pipeline.RunExceptionEvent):

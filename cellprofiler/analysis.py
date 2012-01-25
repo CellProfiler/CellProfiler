@@ -22,6 +22,8 @@ import uuid
 import zmq
 import cStringIO as StringIO
 import sys
+import os
+import os.path
 import hashlib
 import gc
 
@@ -35,7 +37,6 @@ import subimager.client
 logger = logging.getLogger(__name__)
 
 use_analysis = False
-
 
 SKIP = 'SKIP'
 ABORT = 'ABORT'
@@ -84,7 +85,7 @@ class Analysis(object):
 
         self.runner_lock = threading.Lock()  # defensive coding purposes
 
-    def start_analysis(self, analysis_event_callback):
+    def start(self, analysis_event_callback):
         with self.runner_lock:
             assert not self.analysis_in_progress
             self.analysis_in_progress = uuid.uuid1().hex
@@ -155,9 +156,9 @@ class AnalysisRunner(object):
         # for sending to workers
         self.initial_measurements = cpmeas.Measurements(image_set_start=None,
                                                         copy=initial_measurements)
-        # for storing results locally
-        self.measurements = cpmeas.Measurements(image_set_start=None,
-                                                copy=initial_measurements)
+        # for storing results locally - created in start()
+        self.measurements = None
+
         self.analysis_id = analysis_id
         self.pipeline = pipeline.copy()
         self.event_listener = event_listener
@@ -170,6 +171,7 @@ class AnalysisRunner(object):
         self.cancelled = False
 
         self.work_queue = Queue.Queue()
+        self.in_process_queue = Queue.Queue()
         self.display_request_queue = Queue.Queue()
         self.interaction_request_queue = Queue.Queue()
         self.interaction_reply_queue = Queue.Queue()
@@ -180,6 +182,13 @@ class AnalysisRunner(object):
     # External control interfaces
     def start(self):
         '''start the analysis run'''
+        workspace = cpw.Workspace(self.pipeline, None, None, None,
+                                  self.initial_measurements, cpimage.ImageSetList())
+        self.pipeline.prepare_run(workspace)
+        self.initial_measurements.flush()  # Make sure file is valid before we start threads.
+        self.measurements = cpmeas.Measurements(image_set_start=None,
+                                                copy=self.initial_measurements)
+
         start_daemon_thread(target=self.interface, name='AnalysisRunner.interface')
         start_daemon_thread(target=self.jobserver, args=(self.analysis_id,), name='AnalysisRunner.jobserver')
 
@@ -208,6 +217,7 @@ class AnalysisRunner(object):
     def post_event(self, evt):
         self.event_listener(evt)
 
+    # XXX - catch and deal with exceptions in interface() and jobserver() threads
     def interface(self, image_set_start=1, image_set_end=None,
                      overwrite=True):
         '''Top-half thread for running an analysis.  Interacts with GUI and
@@ -217,6 +227,12 @@ class AnalysisRunner(object):
         image_set_end - final image set number
         overwrite - whether to recompute imagesets that already have data in initial_measurements.
         '''
+        # listen for pipeline events, and pass them upstream
+        self.pipeline.add_listener(lambda pipe, evt: self.post_event(evt))
+
+        workspace = cpw.Workspace(self.pipeline, None, None, None,
+                                  self.measurements, cpimage.ImageSetList())
+
         if image_set_end is None:
             image_set_end = len(self.measurements.get_image_numbers())
 
@@ -228,13 +244,6 @@ class AnalysisRunner(object):
                 (not self.measurements.has_measurements(cpmeas.IMAGE, self.STATUS, image_set_number)) or
                 (self.measurements[cpmeas.IMAGE, self.STATUS, image_set_number] != self.STATUS_DONE)):
                 self.measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = self.STATUS_UNPROCESSED
-
-        # listen for pipeline events, and pass them upstream
-        self.pipeline.add_listener(lambda pipe, evt: self.post_event(evt))
-
-        workspace = cpw.Workspace(self.pipeline, None, None, None,
-                                  self.measurements, cpimage.ImageSetList())
-        self.pipeline.prepare_run(workspace)
 
         # Find image groups.  These are written into measurements prior to
         # analysis.  Groups are processed as a single job.
@@ -329,19 +338,28 @@ class AnalysisRunner(object):
             self.post_event(AnalysisDisplayEvent(image_set_number, display_request))
         # interaction requests
         while not self.interaction_request_queue.empty():
-            reply_address, image_set_number, interaction_request = self.interaction_request_queue.get()
+            reply_address, module_number, image_set_number, interaction_request = self.interaction_request_queue.get()
 
             def reply_cb(interaction_result, reply_address=reply_address):
                 # this callback function will be called from another thread
-                self.interaction_reply_queue.put((reply_address, interaction_result))
-                self.interface_work_cv.notify()  # notify interface() there's a reply to be handled.
+                with self.pause_cancel_cv:
+                    # cancellation during interaction is handled in jobserver().
+                    if not self.cancelled:
+                        self.interaction_reply_queue.put((reply_address, interaction_result))
+                        with self.interface_work_cv:
+                            self.interface_work_cv.notify()  # notify interface() there's a reply to be handled.
 
-            self.post_event(AnalysisInteractionRequest(image_set_number, interaction_request, reply_cb))
+            self.post_event(AnalysisInteractionRequest(module_number, image_set_number, interaction_request, reply_cb))
+        # notification that images are in process
+        while not self.in_process_queue.empty():
+            image_set_numbers = self.in_process_queue.get()
+            for image_set_number in image_set_numbers:
+                self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_IN_PROCESS
         # measurements
         while not self.receive_measurements_queue.empty():
             # XXX - GROUPS
             returned_measurements, job = self.receive_measurements_queue.get()
-            for image_set_number in job[1:]:
+            for image_set_number in job:
                 self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
 
     def jobserver(self, analysis_id):
@@ -370,6 +388,7 @@ class AnalysisRunner(object):
             while not self.interaction_reply_queue.empty():
                 address, reply = self.interaction_reply_queue.get()
                 work_queue_socket.send_multipart([address, '', reply])
+                workers_waiting_on_interaction.remove(address)
             # Check for activity from workers
             if not (poller.poll(timeout=250)):  # 1/4 second
                 # timeout.  re-announce work queue, and try again.  (this
@@ -382,7 +401,7 @@ class AnalysisRunner(object):
             if message_type == 'PIPELINE':
                 work_queue_socket.send_multipart([address, '', self.pipeline_as_string()])
             elif message_type == 'INITIAL_MEASUREMENTS':
-                work_queue_socket.send_multipart([address, '', self.initial_measurements.hdf5_dict.filename])
+                work_queue_socket.send_multipart([address, '', self.initial_measurements.hdf5_dict.filename.encode('utf-8')])
             elif message_type == 'WORK REQUEST':
                 if not self.work_queue.empty():
                     job, grouping_needed = self.work_queue.get()
@@ -390,6 +409,7 @@ class AnalysisRunner(object):
                         work_queue_socket.send_multipart([address, '', 'GROUP'] + [str(j) for j in job])
                     else:
                         work_queue_socket.send_multipart([address, '', 'IMAGE', str(job[0])])
+                    self.in_process_queue.put(job)
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
@@ -398,7 +418,10 @@ class AnalysisRunner(object):
                 self.queue_display_request(msg[3], msg[4])
                 work_queue_socket.send_multipart([address, '', 'OK'])
             elif message_type == 'INTERACT':
-                self.queue_interaction_request(address, msg[3], msg[4])
+                module_number, image_set_number, interaction_request_blob = msg[3:]
+                self.queue_interaction_request(address,
+                                               int(module_number), int(image_set_number),
+                                               interaction_request_blob)
                 # we don't reply immediately, as we have to wait for the
                 # GUI to run.  We'll find the result on
                 # self.interact_reply_queue sometime in the future.
@@ -412,7 +435,7 @@ class AnalysisRunner(object):
                 workers_waiting_on_interaction.append(address)
             elif message_type == 'MEASUREMENTS':
                 # Measurements are available at location indicated
-                measurements_path = msg[3]
+                measurements_path = msg[3].decode('utf-8')
                 job = msg[4:]
                 work_queue_socket.send_multipart([address, '', 'THANKS'])
                 try:
@@ -459,7 +482,7 @@ class AnalysisRunner(object):
         self.announce_queue.put(['DONE', analysis_id])
 
         # make sure any workers waiting on interaction get notified
-        for addres in workers_waiting_on_interaction:
+        for address in workers_waiting_on_interaction:
             # special: 2 parts to body instead of just 1
             work_queue_socket.send_multipart([address, '', '', 'CANCELLED'])
 
@@ -472,10 +495,10 @@ class AnalysisRunner(object):
         with self.interface_work_cv:
             self.interface_work_cv.notify()
 
-    def queue_interaction_request(self, address, jobnum, interact_blob):
+    def queue_interaction_request(self, address, module_number, image_set_number, interaction_request_blob):
         '''queue an interaction request, to be handled by the GUI.  Results are
         returned from the GUI via the interaction_reply_queue.'''
-        self.interaction_request_queue.put((address, jobnum, interact_blob))
+        self.interaction_request_queue.put((address, module_number, image_set_number, interaction_request_blob))
         # notify interface thread
         with self.interface_work_cv:
             self.interface_work_cv.notify()
@@ -517,6 +540,11 @@ class AnalysisRunner(object):
 
         # ensure subimager is started
         subimager.client.start_subimager()
+
+        if 'PYTHONPATH' in os.environ:
+            os.environ['PYTHONPATH'] = os.path.join(os.path.dirname(cellprofiler.__file__), '..') + ':' + os.environ['PYTHONPATH']
+        else:
+            os.environ['PYTHONPATH'] = os.path.join(os.path.dirname(cellprofiler.__file__), '..')
 
         # start workers
         for idx in range(num):
@@ -617,13 +645,15 @@ class AnalysisDisplayEvent(AbstractAnalysisEvent):
 
 class AnalysisInteractionRequest(AbstractAnalysisEvent):
     """Interaction request from an analysis.
-    AnalysisInteractionRequest.image_set_number - image set number requesting display.
-    AnalysisInteractionRequest.interaction_request - the interaction request data.
+    AnalysisInteractionRequest.module_number - one-based module number requesting the interactions.
+    AnalysisInteractionRequest.image_set_number - image set number requesting interaction.
+    AnalysisInteractionRequest.interaction_request_blob - the interaction request data.
     AnalysisInteractionRequest.reply_cb - callback function for the reply.
     """
-    def __init__(self, image_set_number, interaction_request, reply_cb):
+    def __init__(self, module_number, image_set_number, interaction_request_blob, reply_cb):
+        self.module_number = module_number
         self.image_set_number = image_set_number
-        self.interaction_request = interaction_request
+        self.interaction_request_blob = interaction_request_blob
         self.reply_cb = reply_cb
 
 

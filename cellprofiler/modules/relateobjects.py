@@ -463,8 +463,7 @@ class RelateObjects(cpm.CPModule):
                              (primary_parent, parent_name))
         return parents_of
 
-    ignore_features = set((M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y,
-                           M_NUMBER_OBJECT_NUMBER))
+    ignore_features = set(M_NUMBER_OBJECT_NUMBER)
     def should_aggregate_feature(self, feature_name):
         '''Return True if aggregate measurements should be made on a feature
         

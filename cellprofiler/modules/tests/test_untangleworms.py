@@ -2326,7 +2326,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
                                         [False, True]])
         segment_lengths = np.array([5,5])
         best_paths, best_cost = module.fast_selection(
-            costs, path_segment_matrix, segment_lengths, 1, 1)
+            costs, path_segment_matrix, segment_lengths, 1, 1, 10000)
         self.assertEqual(tuple(best_paths), (0,1))
         self.assertEqual(best_cost, 2)
         
@@ -2338,7 +2338,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
                                         [False, True, True]])
         segment_lengths = np.array([5,3,5])
         best_paths, best_cost = module.fast_selection(
-            costs, path_segment_matrix, segment_lengths, 2, 5)
+            costs, path_segment_matrix, segment_lengths, 2, 5, 10000)
         self.assertEqual(tuple(best_paths), (0,1))
         self.assertEqual(best_cost, 2+3*2)
         
@@ -2350,7 +2350,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
                                         [False, True, True]])
         segment_lengths = np.array([5,3,5])
         best_paths, best_cost = module.fast_selection(
-            costs, path_segment_matrix, segment_lengths, 5, 2)
+            costs, path_segment_matrix, segment_lengths, 5, 2, 10000)
         self.assertEqual(tuple(best_paths), (0,1))
         self.assertEqual(best_cost, 2+3*2)
 
@@ -2362,7 +2362,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
                                         [False, True, True]])
         segment_lengths = np.array([5,3,5])
         best_paths, best_cost = module.fast_selection(
-            costs, path_segment_matrix, segment_lengths, 2, 5)
+            costs, path_segment_matrix, segment_lengths, 2, 5, 10000)
         self.assertEqual(tuple(best_paths), (2,))
         self.assertEqual(best_cost, 7)
         
@@ -2374,7 +2374,7 @@ UntangleWorms:[module_num:3|svn_version:\'10598\'|variable_revision_number:1|sho
                                         [False, True, True]])
         segment_lengths = np.array([5,3,5])
         best_paths, best_cost = module.fast_selection(
-            costs, path_segment_matrix, segment_lengths, 5, 2)
+            costs, path_segment_matrix, segment_lengths, 5, 2, 10000)
         self.assertEqual(tuple(best_paths), (2,))
         self.assertEqual(best_cost, 7)
         

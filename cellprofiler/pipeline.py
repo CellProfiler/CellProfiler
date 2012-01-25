@@ -2077,6 +2077,85 @@ class Pipeline(object):
             ipds = ipds_with_metadata
         return ipds
     
+    class ImageSetChannelDescriptor(object):
+        '''This class represents the metadata for one image set channel
+        
+        An image set has a collection of channels which are either planar
+        images or objects. The ImageSetChannelDescriptor describes one
+        of these:
+        
+        The channel's name
+        
+        The channel's type - grayscale image / color image / objects / mask
+        or illumination function
+        '''
+        # Channel types
+        CT_GRAYSCALE = "Grayscale"
+        CT_COLOR = "Color"
+        CT_MASK = "Mask"
+        CT_OBJECTS = "Objects"
+        CT_FUNCTION = "Function"
+        def __init__(self, name, channel_type):
+            self.name = name
+            self.channel_type = channel_type
+
+    def get_image_sets(self):
+        '''Return the pipeline's image sets
+        
+        Return a two-tuple.
+        
+        The first element of the two-tuple is a list of
+        ImageSetChannelDescriptors - the ordering in the list defines the
+        order of ipds in the rows of each image set
+        
+        The second element is a dictionary of lists where the dictionary keys 
+        are the metadata values for the image set (or image numbers if 
+        organized by number) and the values are lists of the IPDs for that
+        image set.
+        
+        This function leaves out any image set that is ill-defined.
+        '''
+        import cellprofiler.modules.namesandtypes as N
+        #
+        # For now, we hunt through the modules and do this in spaghetti-code
+        # but we will clean up so that it is done with clean programmatic
+        # interfaces.
+        #
+        namesandtypes = [ m for m in self.modules()
+                          if m.module_name == N.NamesAndTypes.module_name]
+        if len(namesandtypes) == 0:
+            return ([], {})
+        
+        namesandtypes = namesandtypes[0]
+        #
+        # Rely on a side effect of activation to set up all settings and
+        # cached data.
+        #
+        namesandtypes.on_activated(self)
+        column_names = namesandtypes.column_names
+        if namesandtypes.assignment_method == N.ASSIGN_ALL:
+            load_choices = [namesandtypes.single_load_as_choice.value]
+        elif namesandtypes.assignment_method == N.ASSIGN_RULES:
+            load_choices = [ group.load_as_choice.value
+                             for group in namesandtypes.assignments]
+        d = { 
+            N.LOAD_AS_COLOR_IMAGE: self.ImageSetChannelDescriptor.CT_COLOR,
+            N.LOAD_AS_GRAYSCALE_IMAGE: self.ImageSetChannelDescriptor.CT_GRAYSCALE,
+            N.LOAD_AS_ILLUMINATION_FUNCTION: self.ImageSetChannelDescriptor.CT_FUNCTION,
+            N.LOAD_AS_MASK: self.ImageSetChannelDescriptor.CT_MASK,
+            N.LOAD_AS_OBJECTS: self.ImageSetChannelDescriptor.CT_OBJECTS }
+        iscds = [self.ImageSetChannelDescriptor(column_name, d[load_choice])
+                 for column_name, load_choice in zip(column_names, load_choices)]
+        
+        d = {}
+        for keys, ipds in namesandtypes.image_sets:
+            if any([len(ipds.get(column_name, tuple())) != 1
+                    for column_name in column_names]):
+                logger.info("Skipping image set %s - no or multiple matches for some image" % repr(keys))
+                continue
+            d[keys] = [ipds[column_name][0] for column_name in column_names]
+        return (iscds, d)
+    
     def has_undo(self):
         '''True if an undo action can be performed'''
         return len(self.__undo_stack)

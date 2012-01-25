@@ -37,7 +37,7 @@ from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
 import cellprofiler.gui.parametersampleframe as psf
-import cellprofiler.distributed as cpdistributed
+import cellprofiler.analysis as cpanalysis
 
 logger = logging.getLogger(__name__)
 RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -70,7 +70,8 @@ class PipelineController:
         self.__groupings = None
         self.__grouping_index = None
         self.__within_group_index = None
-        self.__distributor = None
+        self.interaction_request_pending = False
+        self.interaction_request_queue = []
         self.pipeline_list = []
         self.populate_recent_files()
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
@@ -717,23 +718,19 @@ class PipelineController:
         #
         ##################################
 
-        if cpdistributed.run_distributed():
+        if cpanalysis.use_analysis:
             try:
                 self.__module_view.disable()
                 self.__frame.preferences_view.on_analyze_images()
-                self.__distributor = cpdistributed.Distributor(self.__frame)
-                self.__distributor.start_serving(self.__pipeline, 8567, self.get_output_file_path(), self.status_callback)
-                print "serving at ", self.__distributor.server_URL
-                if self.__running_pipeline:
-                    self.__running_pipeline.close()
-                self.__running_pipeline = self.__distributor.run_with_yield()
-                self.__pipeline_measurements = self.__running_pipeline.next()
+                self.__analysis = cpanalysis.Analysis(self.__pipeline, self.get_output_file_path(),
+                                                      initial_measurements=cpm.Measurements())
+                self.__analysis.start(self.analysis_event_handler)
             except Exception, e:
                 # Catastrophic failure
                 display_error_dialog(self.__frame,
                                      e,
                                      self.__pipeline,
-                                     "Failure in distributed work startup",
+                                     "Failure in analysis startup.",
                                      sys.exc_info()[2])
                 self.stop_running()
             return
@@ -795,6 +792,86 @@ class PipelineController:
                     self.__pipeline_measurements.flush()
                 self.stop_running()
     
+    def analysis_event_handler(self, evt):
+        if isinstance(evt, cpanalysis.AnalysisStartedEvent):
+            print "Analysis started"
+        elif isinstance(evt, cpanalysis.AnalysisProgressEvent):
+            print "Progress", evt.counts
+        elif isinstance(evt, cpanalysis.AnalysisFinishedEvent):
+            print "Finished!"  # different than ended
+        elif isinstance(evt, cpanalysis.AnalysisEndedEvent):
+            print "Ended"
+            wx.CallAfter(self.stop_running)
+        elif isinstance(evt, cpanalysis.AnalysisDisplayEvent):
+            print "Display"
+            wx.Callafter(self.module_display_request, evt.display_request)
+        elif isinstance(evt, cpanalysis.AnalysisInteractionRequest):
+            print "Interaction"
+            wx.CallAfter(self.module_interaction_request,
+                         evt.module_number,
+                         evt.image_set_number,
+                         evt.interaction_request_blob,
+                         evt.reply_cb)
+        elif isinstance(evt, cpanalysis.AnalysisPausedEvent):
+            print "Paused"
+        elif isinstance(evt, cpanalysis.AnalysisResumedEvent):
+            print "Resumed"
+        elif isinstance(evt, cpanalysis.AnalysisPipelineExceptionEvent):
+            print "Exception in pipeline!", evt.exc_type, evt.exc_message, evt.exc_traceback
+            evt.disposition_callback(cpanalysis.ABORT)
+        elif isinstance(evt, cpanalysis.AnalysisWorkerExceptionEvent):
+            print "Exception in worker!", evt.exc_type, evt.exc_message, evt.exc_traceback
+            evt.disposition_callback(cpanalysis.ABORT)
+        elif isinstance(evt, cpanalysis.AnalysisDebugCompleteEvent):
+            print "Debugging complete"
+            evt.original_event.disposition_callback(cpanalysis.ABORT)
+        elif isinstance(evt, cellprofiler.pipeline.RunExceptionEvent):
+            # exception in (prepare/post)_(run/group)
+            import pdb
+            pdb.post_mortem(evt.tb)
+        else:
+            raise ValueError("Unknown event type %s %s" % (type(evt), evt))
+
+    def module_interaction_request(self, module_number, image_set_number,
+                                   interaction_request_blob, reply_cb):
+        '''forward a module interaction request from the running pipeline to
+        our own pipeline's instance of the module, and reply with the result.
+        '''
+        # We only allow one interaction request to be running at the same time,
+        # to prevent things like flooding the user with requests, opening
+        # multiple modal dialogs at once (which can hang the Mac), etc.  This
+        # code is always in the WX/main thread, so we don't need to do any
+        # fancing locking.
+
+        # just in case.
+        assert wx.Thread_IsMain(), "PipelineController.module_interaction_request() must be called from main thread!"
+
+        def run_current_request():
+            self.interaction_request_pending = True
+            result = ""
+            try:
+                module = self.__pipeline.modules()[module_number - 1]
+                result = module.handle_interaction(image_set_number, interaction_request_blob)
+            except:
+                # we need to ensure that the reply_cb gets a reply (even if it
+                # being empty causes futher exceptions).
+                _, exc, tb = sys.exc_info()
+                display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
+                                     message="Exception in CellProfiler interaction request")
+            finally:
+                self.interaction_request_pending = False
+                wx.CallAfter(run_requests)  # Use CallAfter to avoid causing nested exceptions
+                reply_cb(result)  # an exception here can be handled by the usual means
+
+        def run_requests():
+            if self.interaction_request_pending or (len(self.interaction_request_queue) == 0):
+                return
+            req = self.interaction_request_queue.pop(0)
+            req()
+
+        self.interaction_request_queue.append(run_current_request)
+        run_requests()
+
     def on_restart(self, event):
         '''Restart a pipeline from a measurements file'''
         dlg = wx.FileDialog(self.__frame, "Select measurements file",
@@ -890,9 +967,7 @@ class PipelineController:
                                               self.__pipeline_measurements)
         
     def stop_running(self):
-        if self.__distributor:
-            self.__distributor.stop_serving()
-            self.__distributor = None
+        self.__analysis = None
         self.__running_pipeline = False
         self.__pause_pipeline = False
         self.__frame.preferences_view.on_stop_analysis()

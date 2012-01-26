@@ -114,6 +114,17 @@ class Analysis(object):
             self.runner.cancel()
             self.runner = None
 
+    def check(self):
+        '''Verify that an analysis is running, allowing the GUI to recover even
+        if the AnalysisRunner fails in some way.
+
+        Returns True if analysis is still running (threads are still alive).
+        '''
+        with self.runner_lock:
+            if self.analysis_in_progress:
+                return self.runner.check()
+            return False
+
 
 class AnalysisRunner(object):
     '''The AnalysisRunner manages two threads (per instance) and all of the
@@ -177,6 +188,9 @@ class AnalysisRunner(object):
         self.interaction_reply_queue = Queue.Queue()
         self.receive_measurements_queue = Queue.Queue()
 
+        self.interface_thread = None
+        self.jobserver_thread = None
+
         self.start_workers(2)  # start worker pool via class method
 
     # External control interfaces
@@ -189,8 +203,14 @@ class AnalysisRunner(object):
         self.measurements = cpmeas.Measurements(image_set_start=None,
                                                 copy=self.initial_measurements)
 
-        start_daemon_thread(target=self.interface, name='AnalysisRunner.interface')
-        start_daemon_thread(target=self.jobserver, args=(self.analysis_id,), name='AnalysisRunner.jobserver')
+        self.interface_thread = start_daemon_thread(target=self.interface, name='AnalysisRunner.interface')
+        self.jobserver_thread = start_daemon_thread(target=self.jobserver, args=(self.analysis_id,), name='AnalysisRunner.jobserver')
+
+    def check(self):
+        return ((self.interface_thread is not None) and
+                (self.jobserver_thread is not None) and
+                self.interface_thread.is_alive() and
+                self.jobserver_thread.is_alive())
 
     def cancel(self):
         '''cancel the analysis run'''
@@ -595,6 +615,7 @@ def start_daemon_thread(target=None, args=(), name=None):
     thread = threading.Thread(target=target, args=args, name=name)
     thread.daemon = True
     thread.start()
+    return thread
 
 
 class AbstractAnalysisEvent(object):

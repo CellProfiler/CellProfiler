@@ -8,6 +8,10 @@ import cellprofiler.preferences as cpp
 from cellprofiler.gui.errordialog import display_error_dialog
 import sys
 
+# Make sure sys.excepthook is called for any uncaught exceptions, even in threads.
+import cellprofiler.utilities.thread_excepthook
+cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
+
 CellProfilerSplash = get_builtin_image('CellProfilerSplash')
 
 class CellProfilerApp(wx.App):

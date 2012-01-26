@@ -2291,9 +2291,9 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                         cpo.ObjectSet(), m,
                                         image_set_list)
                 module.run(workspace)
-                for feature, expected in (("Series_Green", grouping[LI.C_SERIES]),
-                                          ("Metadata_Z", "0"),
-                                          ("Metadata_T", "0")):
+                for feature, expected in (("Series_Green", int(grouping[LI.C_SERIES])),
+                                          ("Metadata_Z", 0),
+                                          ("Metadata_T", 0)):
                     value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
                 red_image = image_set.get_image("Red")
@@ -2476,12 +2476,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                         cpo.ObjectSet(), m,
                                         image_set_list)
                 module.run(workspace)
-                for feature, expected in (("Series_Green", grouping[LI.C_SERIES]),
-                                          ("Series_Red", grouping[LI.C_SERIES]),
+                for feature, expected in (("Series_Green", int(grouping[LI.C_SERIES])),
+                                          ("Series_Red", int(grouping[LI.C_SERIES])),
                                           ("Frame_Red", group_index * 2),
                                           ("Frame_Green", group_index * 2 + 1),
-                                          ("Metadata_Z", "0"),
-                                          ("Metadata_T", "0")):
+                                          ("Metadata_Z", 0),
+                                          ("Metadata_T", 0)):
                     value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
                 
@@ -2531,12 +2531,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 m.add_image_measurement(cpp.GROUP_INDEX, group_index)
                 m.add_image_measurement(cpp.GROUP_NUMBER, group_number)
                 module.run(workspace)
-                for feature, expected in (("Series_Red", grouping[LI.C_SERIES]),
-                                          ("Series_Green", grouping[LI.C_SERIES]),
-                                          ("Frame_Red", "0"),
-                                          ("Frame_Green", "1"),
-                                          ("Metadata_Z", "0"),
-                                          ("Metadata_T", "0")):
+                for feature, expected in (("Series_Red", int(grouping[LI.C_SERIES])),
+                                          ("Series_Green", int(grouping[LI.C_SERIES])),
+                                          ("Frame_Red", 0),
+                                          ("Frame_Green", 1),
+                                          ("Metadata_Z", 0),
+                                          ("Metadata_T", 0)):
                     value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
                 

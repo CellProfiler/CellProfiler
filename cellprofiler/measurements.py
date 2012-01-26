@@ -325,7 +325,7 @@ class Measurements(object):
         '''
         d = {}
         image_numbers = self.get_image_numbers()
-        values = [self.get_measurement(IMAGE, feature, image_numbers)
+        values = [[str(x) for x in self.get_measurement(IMAGE, feature, image_numbers)]
                   for feature in features]
         for i, image_number in enumerate(image_numbers):
             key = tuple([(k, v[i]) for k, v in zip(features, values)])

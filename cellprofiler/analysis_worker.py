@@ -256,8 +256,9 @@ def handle_exception(work_socket, image_set_number=None, exc_info=None):
     reply = work_socket.recv_multipart()
     while True:
         if reply[0] == 'DEBUG':
-            rpdb = Rpdb(verification_hash=reply[1])
-            work_socket.send_multipart(["DEBUG WAITING", str(rpdb.port)])
+            def pc(port):
+                work_socket.send_multipart(["DEBUG WAITING", str(port)])
+            rpdb = Rpdb(verification_hash=reply[1], port_callback=pc)
             work_socket.recv()  # ACK
             rpdb.verify()
             rpdb.post_mortem(tb)

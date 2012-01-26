@@ -19,6 +19,7 @@ import pdb
 import socket
 import sys
 import hashlib
+import readline  # otherwise, pdb.Pdb.__init__ hangs
 
 
 class Rpdb(pdb.Pdb):
@@ -43,23 +44,28 @@ class Rpdb(pdb.Pdb):
         self.socket.listen(1)
         self.port = self.socket.getsockname()[1]
         self.verification_hash = verification_hash
+        if port_callback is not None:
+            port_callback(self.port)
         self.verified = False
+        (self.clientsocket, self.address) = self.socket.accept()
+        self.handle = self.clientsocket.makefile('rw')
+        pdb.Pdb.__init__(self, completekey='tab', stdin=self.handle, stdout=self.handle)
+        sys.stdout = sys.stdin = self.handle
 
     def verify(self):
-        (clientsocket, address) = self.socket.accept()
-        handle = clientsocket.makefile('rw')
         if self.verification_hash is not None:
-            handle.write('Verification: ')
-            handle.flush()
-            if hashlib.sha1(handle.readline().rstrip()).hexdigest() != self.verification_hash:
-                sys.stderr.write('Verification hash from %s does not match in Rpdb.verify()!  Closing.\n' % str(address))
-                clientsocket.close()
+            self.handle.write('Verification: ')
+            self.handle.flush()
+            verification = self.handle.readline().rstrip()
+            if hashlib.sha1(verification).hexdigest() != self.verification_hash:
+                sys.stderr.write('Verification hash from %s does not match in Rpdb.verify()!  Closing.\n' % str(self.address))
+                sys.stderr.write('Got: %s, expected: %s\n' % (hashlib.sha1(verification).hexdigest(), verification))
+                sys.stdin, sys.stdout = self.old_stds
+                self.clientsocket.close()
                 self.socket.close()
-                handle.close()
+                self.handle.close()
                 return
         self.verified = True
-        pdb.Pdb.__init__(self, completekey='tab', stdin=handle, stdout=handle)
-        sys.stdout = sys.stdin = handle
 
     def do_continue(self, arg):
         sys.stdin, sys.stdout = self.old_stds
@@ -86,9 +92,12 @@ class Rpdb(pdb.Pdb):
 
 if __name__ == '__main__':
     try:
+        a = []
         a[0] = 1
     except:
-        rpdb = Rpdb(verification_hash=hashlib.sha1("testing").hexdigest())
+        def pc(x):
+            print x
+        rpdb = Rpdb(verification_hash=hashlib.sha1("testing").hexdigest(), port_callback=pc)
         print "debugger listing on port", rpdb.port
         rpdb.verify()
         rpdb.post_mortem()

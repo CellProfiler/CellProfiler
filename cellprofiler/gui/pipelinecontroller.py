@@ -817,11 +817,9 @@ class PipelineController:
         elif isinstance(evt, cpanalysis.AnalysisResumedEvent):
             print "Resumed"
         elif isinstance(evt, cpanalysis.AnalysisPipelineExceptionEvent):
-            print "Exception in pipeline!", evt.exc_type, evt.exc_message, evt.exc_traceback
-            evt.disposition_callback(cpanalysis.ABORT)
+            wx.CallAfter(self.analysis_exception, evt)
         elif isinstance(evt, cpanalysis.AnalysisWorkerExceptionEvent):
-            print "Exception in worker!", evt.exc_type, evt.exc_message, evt.exc_traceback
-            evt.disposition_callback(cpanalysis.ABORT)
+            wx.CallAfter(self.analysis_exception, evt)
         elif isinstance(evt, cpanalysis.AnalysisDebugCompleteEvent):
             print "Debugging complete"
             evt.original_event.disposition_callback(cpanalysis.ABORT)
@@ -871,6 +869,41 @@ class PipelineController:
 
         self.interaction_request_queue.append(run_current_request)
         run_requests()
+
+    def analysis_exception(self, evt):
+        '''Report an error in analysis to the user, giving options for
+        skipping, aborting, and debugging.'''
+
+        assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
+
+        def remote_debug():
+            # choose a random string for verification
+            import string
+            import random
+            verification = ''.join(random.choice(string.ascii_letters) for x in range(8))
+
+            def port_callback(port):
+                # called from another thread
+                def display_port_info():
+                    wx.MessageBox("Remote PDB waiting on port %d\nUse '%s' for verification" % (port, verification),
+                                  "Remote debugging started.",
+                                  wx.OK | wx.ICON_INFORMATION)
+                wx.CallAfter(display_port_info)
+            evt.disposition_callback(cpanalysis.DEBUG, verification, port_callback)
+
+        if isinstance(evt, cpanalysis.AnalysisPipelineExceptionEvent):
+            message = (("Error while processing %s:\n"
+                        "%s\n\nDo you want to stop processing?") %
+                       (evt.module_name, evt.exc_message))
+        else:
+            message = (("Error while processing (remote worker):\n"
+                        "%s\n\nDo you want to stop processing?") %
+                       (evt.exc_message))
+
+        disposition = display_error_dialog(None, evt.exc_type, self.__pipeline, message,
+                                           remote_exc_info=(evt.exc_type, evt.exc_message, evt.exc_traceback,
+                                                            evt.filename, evt.line_number, remote_debug))
+        evt.disposition_callback(cpanalysis.SKIP if disposition == ED_SKIP else cpanalysis.ABORT)
 
     def on_restart(self, event):
         '''Restart a pipeline from a measurements file'''

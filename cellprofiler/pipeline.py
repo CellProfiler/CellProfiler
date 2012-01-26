@@ -1693,7 +1693,7 @@ class Pipeline(object):
                 if should_write_measurements:
                     measurements[cpmeas.IMAGE,
                                  'ModuleError_%02d%s' % (module.module_num, module.module_name)] = 1
-                    self.notify_listeners(RunExceptionEvent(exception, module, sys.exc_info()[2]))
+                self.notify_listeners(RunExceptionEvent(exception, module, sys.exc_info()[2]))
                 return  # no recovery
 
             t1 = sum(os.times()[:-1])

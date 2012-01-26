@@ -19,10 +19,13 @@ import urllib2
 import traceback
 import sys
 import platform
+import logging
+
 
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
 ED_SKIP = "Skip"
+ED_REMOTE_DEBUG = "Debug Remotely"
 
 ERROR_URL = 'http://www.cellprofiler.org/cgi-bin/reporterror.cgi'
 
@@ -33,37 +36,77 @@ def clear_old_errors():
     global previously_seen_error_locations
     previously_seen_error_locations = set()
 
-def display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_only=False):
+def display_error_dialog(*args, **kwargs):
     '''Display an error dialog, returning an indication of whether to continue
-    
+
     frame - parent frame for application
     exc - exception that caused the error
     pipeline - currently executing pipeline
     message - message to display
     tb - traceback
     continue_only - show "continue" option, only
-    
+    remote_exc_info - None (the default) for exceptions in the current process.
+        For remote processes:
+            (exc_name, exc_message, traceback_text, filename, line_number, remote_debug_callback)
+
+    Returns either ED_STOP or ED_CONTINUE indicating how to handle.
+    '''
+    try:
+        return _display_error_dialog(*args, **kwargs)
+    except Exception:
+        # raising exceptions in our exception handler is bad.
+        try:
+            logging.root.error("Exception in display_error_dialog()!", exc_info=True)
+        except Exception:
+            sys.stderr.write("Exception logging exception in display_error_dialog().  Everything probably broken.\n");
+            pass
+
+
+def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_only=False,
+                          remote_exc_info=None):
+    '''Display an error dialog, returning an indication of whether to continue
+
+    frame - parent frame for application
+    exc - exception that caused the error
+    pipeline - currently executing pipeline
+    message - message to display
+    tb - traceback
+    continue_only - show "continue" option, only
+    remote_exc_info - None (the default) for exceptions in the current process.
+        For remote processes:
+            (exc_name, exc_message, traceback_text, filename, line_number, remote_debug_callback)
+
     Returns either ED_STOP or ED_CONTINUE indicating how to handle.
     '''
 
     import wx
-    if message is None:
-        message = str(exc)
-    
-    if tb is None:
-        traceback_text = traceback.format_exc()
-        tb = sys.exc_info()[2]
+    if remote_exc_info:
+        from_subprocess = True
+        exc_name, exc_message, traceback_text, filename, line_number, remote_debug_callback = remote_exc_info
+        if message is None:
+            message = exc_message
     else:
-        traceback_text = "".join(traceback.format_exception(type(exc), exc.message, tb))
+        from_subprocess = False
+        if message is None:
+            message = str(exc)
+        if tb is None:
+            traceback_text = traceback.format_exc()
+            tb = sys.exc_info()[2]
+        else:
+            traceback_text = "".join(traceback.format_exception(type(exc), exc.message, tb))
 
-    # find the place where this error occurred, and if we've already
-    # reported it, don't do so again (instead, just log it to the
-    # console), to prevent the UI from becoming unusable.
-    filename, line_number, _, _ = traceback.extract_tb(tb, 1)[0]
+        # find the place where this error occurred, and if we've already
+        # reported it, don't do so again (instead, just log it to the
+        # console), to prevent the UI from becoming unusable.
+        filename, line_number, _, _ = traceback.extract_tb(tb, 1)[0]
+
     if (filename, line_number) in previously_seen_error_locations:
-        import logging
-        logging.root.error("Previously displayed uncaught exception:",
-                           exc_info=(type(exc), exc, tb))
+        if from_subprocess:
+            logging.root.error("Previously displayed remote exception:\n%s\n%s",
+                               exc_name, traceback_text)
+        else:
+            logging.root.error("Previously displayed uncaught exception:",
+                               exc_info=(type(exc), exc, tb))
         return ED_CONTINUE
     previously_seen_error_locations.add((filename, line_number))
 
@@ -134,16 +177,24 @@ def display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_o
     #
     # Handle pdb button
     #
-    if (tb is not None) and (not hasattr(sys, 'frozen')):
-        pdb_button = wx.Button(dialog, -1, "Debug in pdb...")
-        pdb_button.SetToolTipString("Debug in python's pdb on the console")
-        aux_button_box.Add(pdb_button, 0, wx.EXPAND | wx.BOTTOM, 5)
-        def handle_pdb(event):
-            import pdb
-            # This level of interest seems to indicate the user might
-            # want to debug this error if it occurs again.
+    if ((tb or remote_exc_info) is not None) and (not hasattr(sys, 'frozen')):
+        if not from_subprocess:
+            pdb_button = wx.Button(dialog, -1, "Debug in pdb...")
+            pdb_button.SetToolTipString("Debug in python's pdb on the console")
+            aux_button_box.Add(pdb_button, 0, wx.EXPAND | wx.BOTTOM, 5)
+            def handle_pdb(event):
+                import pdb
+                pdb.post_mortem(tb)
+        else:
+            pdb_button = wx.Button(dialog, -1, "Debug remotely...")
+            pdb_button.SetToolTipString("Debug remotely in pdb via telnet")
+            aux_button_box.Add(pdb_button, 0, wx.EXPAND | wx.BOTTOM, 5)
+            def handle_pdb(event):
+                remote_debug_callback()
+        # This level of interest seems to indicate the user might
+        # want to debug this error if it occurs again.
+        if (filename, line_number) in previously_seen_error_locations:
             previously_seen_error_locations.remove((filename, line_number))
-            pdb.post_mortem(tb)
         dialog.Bind(wx.EVT_BUTTON, handle_pdb, pdb_button)
 
     #

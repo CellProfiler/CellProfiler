@@ -200,7 +200,7 @@ def main():
                     except Exception:
                         try:
                             logging.error("Error in pipeline", exc_info=True)
-                            if handle_exception(work_socket, image_set_number) == ABORT:
+                            if handle_exception(work_socket, image_set_number=image_set_number) == ABORT:
                                 abort = True
                                 break
                         except:
@@ -240,7 +240,7 @@ def main():
                 break
 
 
-def handle_exception(work_socket, image_set_number=None, exc_info=None):
+def handle_exception(work_socket, image_set_number=None, module_name=None, exc_info=None):
     '''report and handle an exception, possibly by remote debugging, returning
     how to proceed (skip or abort).
     '''
@@ -248,10 +248,14 @@ def handle_exception(work_socket, image_set_number=None, exc_info=None):
         t, exc, tb = sys.exc_info()
     else:
         t, exc, tb = exc_info
+    filename, line_number, _, _ = traceback.extract_tb(tb, 1)[0]
     if image_set_number is not None:
-        message = ["EXCEPTION", "PIPELINE", str(image_set_number), t.__name__, str(exc), "".join(traceback.format_exception(t, exc, tb))]
+        message = ["EXCEPTION", "PIPELINE", str(image_set_number), module_name,
+                   t.__name__, str(exc), "".join(traceback.format_exception(t, exc, tb)),
+                   filename, str(line_number)]
     else:
-        message = ["EXCEPTION", "WORKER", t.__name__, str(exc), "".join(traceback.format_exception(t, exc, tb))]
+        message = ["EXCEPTION", "WORKER", t.__name__, str(exc),
+                   "".join(traceback.format_exception(t, exc, tb)), filename, str(line_number)]
     work_socket.send_multipart(message)
     reply = work_socket.recv_multipart()
     while True:
@@ -279,8 +283,10 @@ class PipelineEventListener(object):
 
     def handle_event(self, pipeline, event):
         if isinstance(event, cpp.RunExceptionEvent):
-            disposition = handle_exception(self.work_socket, self.image_set_number,
-                                           (type(event), event, event.tb))
+            disposition = handle_exception(self.work_socket,
+                                           image_set_number=self.image_set_number,
+                                           module_name=event.module.module_name,
+                                           exc_info=(type(event), event, event.tb))
             if disposition == ABORT:
                 event.cancel_run = True
 

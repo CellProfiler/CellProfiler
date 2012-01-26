@@ -173,7 +173,6 @@ class AnalysisRunner(object):
         self.analysis_id = analysis_id
         self.pipeline = pipeline.copy()
         self.event_listener = event_listener
-        self.debug_port_callbacks = {}
         self.original_exception_events = {}
 
         self.interface_work_cv = threading.Condition()
@@ -187,6 +186,9 @@ class AnalysisRunner(object):
         self.interaction_request_queue = Queue.Queue()
         self.interaction_reply_queue = Queue.Queue()
         self.receive_measurements_queue = Queue.Queue()
+
+        self.debug_reply_queue = Queue.Queue()
+        self.debug_port_callbacks = {}
 
         self.interface_thread = None
         self.jobserver_thread = None
@@ -403,12 +405,30 @@ class AnalysisRunner(object):
             # check for pause
             if not self.check_pause_and_cancel():
                 break  # exit
+
             # Check interactive_reply_queue for messages to be sent to
             # workers.
             while not self.interaction_reply_queue.empty():
                 address, reply = self.interaction_reply_queue.get()
                 work_queue_socket.send_multipart([address, '', reply])
                 workers_waiting_on_interaction.remove(address)
+
+            # Check for any debug replies that need to be forwarded.
+            while not self.debug_reply_queue.empty():
+                reply = self.debug_reply_queue.get()
+                address, disposition = reply[:2]
+                if disposition in (SKIP, ABORT):
+                    if disposition == ABORT:
+                        self.cancel()  # cancel the whole run
+                    work_queue_socket.send_multipart([address, '',
+                                                      'SKIP' if disposition == SKIP else 'ABORT'])
+                else:
+                    assert disposition == DEBUG
+                    verification_string, port_callback = reply[2:]
+                    work_queue_socket.send_multipart([address, '', 'DEBUG',
+                                                      hashlib.sha1(verification_string).hexdigest()])
+                    self.debug_port_callbacks[address] = port_callback
+
             # Check for activity from workers
             if not (poller.poll(timeout=250)):  # 1/4 second
                 # timeout.  re-announce work queue, and try again.  (this
@@ -465,28 +485,21 @@ class AnalysisRunner(object):
                     raise
                     # XXX - report error, push back job
             elif message_type == 'EXCEPTION':
-                # Exception loop is to choose from debug/skip/abort until such
-                # a time as skip or abort is chosen.
-                def disposition_callback(disposition, verification_string=None, port_callback=None):
-                    if disposition in (SKIP, ABORT):
-                        work_queue_socket.send_multipart([address, '',
-                                                          'SKIP' if disposition == SKIP else 'ABORT'])
-                        return
-                    assert disposition == DEBUG
-                    work_queue_socket.send_multipart([address, '', 'DEBUG',
-                                                      hashlib.sha1(verification_string).hexdigest()])
-                    self.debug_port_callbacks[address] = port_callback
+                def disposition_callback(disposition, *args):
+                    assert disposition in (SKIP, ABORT, DEBUG)
+                    self.debug_reply_queue.put((address, disposition) + args)
                 where = msg[3]
                 if where == 'PIPELINE':
-                    image_set_number, exc_type, exc_message, exc_traceback = msg[4:]
-                    event = AnalysisPipelineExceptionEvent(int(image_set_number),
+                    image_set_number, module_name, exc_type, exc_message, exc_traceback, filename, line_number = msg[4:]
+                    event = AnalysisPipelineExceptionEvent(int(image_set_number), module_name,
                                                            exc_type, exc_message, exc_traceback,
+                                                           filename, int(line_number),
                                                            disposition_callback)
                 else:
-                    exc_type, exc_message, exc_traceback = msg[4:]
+                    exc_type, exc_message, exc_traceback, filename, line_number = msg[4:]
                     event = AnalysisWorkerExceptionEvent(exc_type, exc_message, exc_traceback,
+                                                         filename, int(line_number),
                                                          disposition_callback)
-                # disposition_callback will send the reply
                 self.original_exception_events[address] = event
                 self.post_event(event)
             elif message_type == 'DEBUG WAITING':
@@ -691,19 +704,25 @@ class AnalysisResumedEvent(AbstractAnalysisEvent):
 class AnalysisPipelineExceptionEvent(AbstractAnalysisEvent):
     """An exception occurred in the pipeline during an analysis.
     AnalysisPipelineExceptionEvent.image_set_number - image set number that caused the exception.
+    AnalysisPipelineExceptionEvent.module_name - module's name where exception happened.
     AnalysisPipelineExceptionEvent.exc_type - exception type (a string).
     AnalysisPipelineExceptionEvent.exc_message - the exception message.
     AnalysisPipelineExceptionEvent.exc_traceback - the traceback (a string).
+    AnalysisPipelineExceptionEvent.filename - filename of the exception
+    AnalysisPipelineExceptionEvent.line_number - line_number of the exception
     AnalysisPipelineExceptionEvent.disposition_cb - callback function for how to handle this exception.
              Callback arguments are: (disposition=SKIP/ABORT/DEBUG, verification_string=None, port_callback=None)
              verification_string and port_callback must be set if first argument is DEBUG.
              port_callback will be called when the remote debugger is available with the port as an argument.
     """
-    def __init__(self, image_set_number, exc_type, exc_message, exc_traceback, disposition_callback):
+    def __init__(self, image_set_number, module_name, exc_type, exc_message, exc_traceback, filename, line_number, disposition_callback):
         self.image_set_number = image_set_number
+        self.module_name = module_name
         self.exc_type = exc_type
         self.exc_message = exc_message
         self.exc_traceback = exc_traceback
+        self.filename = filename
+        self.line_number = line_number
         self.disposition_callback = disposition_callback
 
 
@@ -712,16 +731,20 @@ class AnalysisWorkerExceptionEvent(AbstractAnalysisEvent):
     AnalysisWorkerExceptionEvent.exc_type - exception type (a string).
     AnalysisWorkerExceptionEvent.exc_message - the exception message.
     AnalysisWorkerExceptionEvent.exc_traceback - the traceback (a string).
+    AnalysisWorkerExceptionEvent.filename - filename of the exception
+    AnalysisWorkerExceptionEvent.line_number - line_number of the exception
     AnalysisWorkerExceptionEvent.disposition_cb - callback function for how to handle this exception.
              Callback arguments are: (disposition=SKIP/ABORT/DEBUG, verification_string=None, port_callback=None)
              verification_string and port_callback must be set if first argument is DEBUG.
              ABORT = terminate the worker, SKIP = continue processing.
              port_callback will be called when the remote debugger is available with the port as an argument.
     """
-    def __init__(self, exc_type, exc_message, exc_traceback, disposition_callback):
+    def __init__(self, exc_type, exc_message, exc_traceback, filename, line_number, disposition_callback):
         self.exc_type = exc_type
         self.exc_message = exc_message
         self.exc_traceback = exc_traceback
+        self.filename = filename
+        self.line_number = line_number
         self.disposition_callback = disposition_callback
 
 

@@ -2292,8 +2292,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                         image_set_list)
                 module.run(workspace)
                 for feature, expected in (("Series_Green", grouping[LI.C_SERIES]),
-                                          ("Metadata_Z", 0),
-                                          ("Metadata_T", 0)):
+                                          ("Metadata_Z", "0"),
+                                          ("Metadata_T", "0")):
                     value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
                 red_image = image_set.get_image("Red")
@@ -2480,8 +2480,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                           ("Series_Red", grouping[LI.C_SERIES]),
                                           ("Frame_Red", group_index * 2),
                                           ("Frame_Green", group_index * 2 + 1),
-                                          ("Metadata_Z", 0),
-                                          ("Metadata_T", 0)):
+                                          ("Metadata_Z", "0"),
+                                          ("Metadata_T", "0")):
                     value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
                 
@@ -2533,10 +2533,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                 module.run(workspace)
                 for feature, expected in (("Series_Red", grouping[LI.C_SERIES]),
                                           ("Series_Green", grouping[LI.C_SERIES]),
-                                          ("Frame_Red", 0),
-                                          ("Frame_Green", 1),
-                                          ("Metadata_Z", 0),
-                                          ("Metadata_T", 0)):
+                                          ("Frame_Red", "0"),
+                                          ("Frame_Green", "1"),
+                                          ("Metadata_Z", "0"),
+                                          ("Metadata_T", "0")):
                     value = m.get_current_image_measurement(feature)
                     self.assertEqual(value, expected)
                 

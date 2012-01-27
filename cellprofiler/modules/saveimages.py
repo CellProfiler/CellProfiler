@@ -497,8 +497,10 @@ class SaveImages(cpm.CPModule):
     def run_movie(self, workspace):
         assert has_bioformats
         d = self.get_dictionary(workspace.image_set_list)
-        out_file = self.get_filename(workspace,
-                                     check_overwrite = False)
+        out_file = self.get_filename(workspace)
+        if out_file is None:  # failed overwrite check
+            return
+
         if d["CURRENT_FRAME"] == 0 and os.path.exists(out_file):
             if not self.check_overwrite(out_file):
                 d["CURRENT_FRAME"] = "Ignore"
@@ -556,6 +558,9 @@ class SaveImages(cpm.CPModule):
         objects_name = self.objects_name.value
         objects = workspace.object_set.get_objects(objects_name)
         filename = self.get_filename(workspace)
+        if filename is None:  # failed overwrite check
+            return
+
         pixels = objects.segmented
         if ((self.gray_or_color == GC_GRAYSCALE) and 
             (self.file_format in (FF_TIF, FF_TIFF))):
@@ -664,6 +669,9 @@ class SaveImages(cpm.CPModule):
 
         # get the filename and check overwrite before attaching to java bridge
         filename = self.get_filename(workspace)
+        if filename is None:  # failed overwrite check
+            return
+
         path, fname = os.path.split(filename)
         if os.path.isfile(filename):
             # Important: bioformats will append to files by default, so we must
@@ -793,6 +801,9 @@ class SaveImages(cpm.CPModule):
 
         # get the filename and check overwrite
         filename = self.get_filename(workspace)
+        if filename is None:  # failed overwrite check
+            return
+
         if os.path.isfile(filename):
             # Important: bioformats will append to files by default, so we must
             # delete it explicitly if it exists.
@@ -908,6 +919,9 @@ class SaveImages(cpm.CPModule):
             mode = 'L'
 
         filename = self.get_filename(workspace)
+        if filename is None:  # failed overwrite check
+            return
+
         if self.get_file_format() == FF_MAT:
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
         else:

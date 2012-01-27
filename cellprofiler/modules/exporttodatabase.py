@@ -2221,7 +2221,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         if self.objects_choice == O_SELECT:
             object_names = (self.objects_list.value).split(',')
         elif self.objects_choice == O_NONE:
-            object_names = ""
+            object_names = [""]
         elif self.separate_object_tables == OT_COMBINE:
             object_names = [ self.location_object.value ]
         else:
@@ -2294,7 +2294,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             else:
                 cell_tables = '%sPer_%s'%(self.get_table_prefix(),object_name) if object_name else ''
                 object_id = '%s_Number_Object_Number'%(object_name) if object_name else ''
-                filename = '%s_%s.properties'%(tblname,object_name)
+                filename = '%s_%s.properties'%(tblname,object_name) if object_name else '%s.properties'%(tblname)
                 properties_object_name = object_name
                 
             file_name = self.make_full_filename(filename, workspace)

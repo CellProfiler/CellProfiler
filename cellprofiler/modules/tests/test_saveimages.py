@@ -1454,7 +1454,6 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         module.pathname.custom_path = self.custom_directory
         module.file_name_method.value = cpm_si.FN_SINGLE_NAME
         module.single_file_name.value = FILE_NAME
-        module.overwrite.value = True
         module.rescale.value = False
         
         if fn is not None:

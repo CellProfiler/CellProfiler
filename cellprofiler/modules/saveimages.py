@@ -496,11 +496,9 @@ class SaveImages(cpm.CPModule):
     
     def run_movie(self, workspace):
         assert has_bioformats
+        out_file = self.get_filename(workspace, check_overwrite=False)
+        # overwrite checks are made only for first frame.
         d = self.get_dictionary(workspace.image_set_list)
-        out_file = self.get_filename(workspace)
-        if out_file is None:  # failed overwrite check
-            return
-
         if d["CURRENT_FRAME"] == 0 and os.path.exists(out_file):
             if not self.check_overwrite(out_file):
                 d["CURRENT_FRAME"] = "Ignore"

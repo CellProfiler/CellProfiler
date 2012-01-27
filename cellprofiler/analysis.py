@@ -32,14 +32,13 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpimage
 import cellprofiler.analysis_worker  # used to get the path to the code
+from cellprofiler.gui.errordialog import ED_CONTINUE, ED_STOP, ED_SKIP
 import subimager.client
 
 logger = logging.getLogger(__name__)
 
 use_analysis = False
 
-SKIP = 'SKIP'
-ABORT = 'ABORT'
 DEBUG = 'DEBUG'
 
 class Analysis(object):
@@ -160,7 +159,6 @@ class AnalysisRunner(object):
     STATUS_UNPROCESSED = "Unprocessed"
     STATUS_IN_PROCESS = "InProcess"
     STATUS_DONE = "Done"
-
 
     def __init__(self, analysis_id, pipeline,
                  initial_measurements, event_listener):
@@ -398,7 +396,7 @@ class AnalysisRunner(object):
         poller = zmq.Poller()
         poller.register(work_queue_socket, zmq.POLLIN)
 
-        workers_waiting_on_interaction = []
+        workers_waiting_on_reply = []
 
         # start serving work until the analysis is done (or changed)
         while self.analysis_id == analysis_id:
@@ -411,23 +409,26 @@ class AnalysisRunner(object):
             while not self.interaction_reply_queue.empty():
                 address, reply = self.interaction_reply_queue.get()
                 work_queue_socket.send_multipart([address, '', reply])
-                workers_waiting_on_interaction.remove(address)
+                workers_waiting_on_reply.remove(address)
 
             # Check for any debug replies that need to be forwarded.
             while not self.debug_reply_queue.empty():
                 reply = self.debug_reply_queue.get()
                 address, disposition = reply[:2]
-                if disposition in (SKIP, ABORT):
-                    if disposition == ABORT:
-                        self.cancel()  # cancel the whole run
-                    work_queue_socket.send_multipart([address, '',
-                                                      'SKIP' if disposition == SKIP else 'ABORT'])
+                if disposition in (ED_SKIP, ED_STOP, ED_CONTINUE):
+                    work_queue_socket.send_multipart([address, '', disposition])
+                    # XXX - need to cause worker to exit if exception outside pipeline.
                 else:
                     assert disposition == DEBUG
                     verification_string, port_callback = reply[2:]
                     work_queue_socket.send_multipart([address, '', 'DEBUG',
                                                       hashlib.sha1(verification_string).hexdigest()])
                     self.debug_port_callbacks[address] = port_callback
+                workers_waiting_on_reply.remove(address)
+
+            # check for pause
+            if not self.check_pause_and_cancel():
+                break  # exit
 
             # Check for activity from workers
             if not (poller.poll(timeout=250)):  # 1/4 second
@@ -472,7 +473,7 @@ class AnalysisRunner(object):
                 # indefinitely.  We put the worker's address into a list of
                 # workers waiting for interactions and send them a special
                 # result if we're cancelled before they get their answer.
-                workers_waiting_on_interaction.append(address)
+                workers_waiting_on_reply.append(address)
             elif message_type == 'MEASUREMENTS':
                 # Measurements are available at location indicated
                 measurements_path = msg[3].decode('utf-8')
@@ -486,7 +487,9 @@ class AnalysisRunner(object):
                     # XXX - report error, push back job
             elif message_type == 'EXCEPTION':
                 def disposition_callback(disposition, *args):
-                    assert disposition in (SKIP, ABORT, DEBUG)
+                    assert disposition in (ED_SKIP, ED_STOP, ED_CONTINUE, DEBUG)
+                    if disposition == ED_STOP:
+                        self.cancel()  # cancel the whole run
                     self.debug_reply_queue.put((address, disposition) + args)
                 where = msg[3]
                 if where == 'PIPELINE':
@@ -500,12 +503,14 @@ class AnalysisRunner(object):
                     event = AnalysisWorkerExceptionEvent(exc_type, exc_message, exc_traceback,
                                                          filename, int(line_number),
                                                          disposition_callback)
+                workers_waiting_on_reply.append(address)
                 self.original_exception_events[address] = event
                 self.post_event(event)
             elif message_type == 'DEBUG WAITING':
                 work_queue_socket.send_multipart([address, '', 'ACK'])  # ACK
                 self.debug_port_callbacks[address](int(msg[3]))
             elif message_type == 'DEBUG COMPLETE':
+                workers_waiting_on_reply.append(address)
                 # original callback will reply to message.
                 self.post_event(AnalysisDebugCompleteEvent(self.original_exception_events[address]))
             else:
@@ -514,10 +519,10 @@ class AnalysisRunner(object):
         # announce that this job is done/cancelled
         self.announce_queue.put(['DONE', analysis_id])
 
-        # make sure any workers waiting on interaction get notified
-        for address in workers_waiting_on_interaction:
+        # make sure any workers waiting for replies (interaction or debug) get notified
+        for address in workers_waiting_on_reply:
             # special: 2 parts to body instead of just 1
-            work_queue_socket.send_multipart([address, '', '', 'CANCELLED'])
+            work_queue_socket.send_multipart([address, '', ED_STOP, ED_STOP])
 
     def queue_job(self, image_set_number):
         self.work_queue.put(image_set_number)
@@ -711,7 +716,7 @@ class AnalysisPipelineExceptionEvent(AbstractAnalysisEvent):
     AnalysisPipelineExceptionEvent.filename - filename of the exception
     AnalysisPipelineExceptionEvent.line_number - line_number of the exception
     AnalysisPipelineExceptionEvent.disposition_cb - callback function for how to handle this exception.
-             Callback arguments are: (disposition=SKIP/ABORT/DEBUG, verification_string=None, port_callback=None)
+             Callback arguments are: (disposition=ED_SKIP/ED_STOP/ED_CONTINUE/DEBUG, verification_string=None, port_callback=None)
              verification_string and port_callback must be set if first argument is DEBUG.
              port_callback will be called when the remote debugger is available with the port as an argument.
     """
@@ -734,9 +739,9 @@ class AnalysisWorkerExceptionEvent(AbstractAnalysisEvent):
     AnalysisWorkerExceptionEvent.filename - filename of the exception
     AnalysisWorkerExceptionEvent.line_number - line_number of the exception
     AnalysisWorkerExceptionEvent.disposition_cb - callback function for how to handle this exception.
-             Callback arguments are: (disposition=SKIP/ABORT/DEBUG, verification_string=None, port_callback=None)
+             Callback arguments are: (disposition=ED_STOP/ED_CONTINUE/DEBUG, verification_string=None, port_callback=None)
              verification_string and port_callback must be set if first argument is DEBUG.
-             ABORT = terminate the worker, SKIP = continue processing.
+             ED_STOP = terminate the worker, ED_CONTINUE= continue processing.
              port_callback will be called when the remote debugger is available with the port as an argument.
     """
     def __init__(self, exc_type, exc_message, exc_traceback, filename, line_number, disposition_callback):

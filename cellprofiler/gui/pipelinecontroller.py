@@ -19,8 +19,7 @@ import wx
 import os
 import re
 import sys
-import traceback
-import scipy.io.matlab.mio
+import Queue
 import cpframe
 import cellprofiler.pipeline
 import cellprofiler.preferences as cpprefs
@@ -70,9 +69,13 @@ class PipelineController:
         self.__groupings = None
         self.__grouping_index = None
         self.__within_group_index = None
-        self.interaction_request_pending = False
-        self.interaction_request_queue = []
         self.pipeline_list = []
+
+        # interaction requests and exceptions from an Analysis
+        self.interaction_request_queue = Queue.Queue()
+        self.exception_queue = Queue.Queue()
+        self.feedback_pending = False
+
         self.populate_recent_files()
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
         wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
@@ -800,29 +803,38 @@ class PipelineController:
         elif isinstance(evt, cpanalysis.AnalysisFinishedEvent):
             print "Finished!"  # different than ended
         elif isinstance(evt, cpanalysis.AnalysisEndedEvent):
+            # drop any interaction requests or exceptions)
+            for q in (self.exception_queue, self.interaction_request_queue):
+                while True:
+                    try:
+                        func_args = q.get_nowait()  # in case the queue's been emptied
+                    except Queue.Empty:
+                        break
             print "Ended"
             wx.CallAfter(self.stop_running)
         elif isinstance(evt, cpanalysis.AnalysisDisplayEvent):
             print "Display"
-            wx.Callafter(self.module_display_request, evt.display_request)
+            wx.CallAfter(self.module_display_request, evt.display_request)
         elif isinstance(evt, cpanalysis.AnalysisInteractionRequest):
             print "Interaction"
-            wx.CallAfter(self.module_interaction_request,
-                         evt.module_number,
-                         evt.image_set_number,
-                         evt.interaction_request_blob,
-                         evt.reply_cb)
+            self.interaction_request_queue.put((self.module_interaction_request,
+                                                evt.module_number,
+                                                evt.image_set_number,
+                                                evt.interaction_request_blob,
+                                                evt.reply_cb))
+            wx.CallAfter(self.handle_analysis_feedback)
         elif isinstance(evt, cpanalysis.AnalysisPausedEvent):
             print "Paused"
         elif isinstance(evt, cpanalysis.AnalysisResumedEvent):
             print "Resumed"
         elif isinstance(evt, cpanalysis.AnalysisPipelineExceptionEvent):
-            wx.CallAfter(self.analysis_exception, evt)
+            self.exception_queue.put((self.analysis_exception, evt))
+            wx.CallAfter(self.handle_analysis_feedback)
         elif isinstance(evt, cpanalysis.AnalysisWorkerExceptionEvent):
-            wx.CallAfter(self.analysis_exception, evt)
+            self.exception_queue.put((self.worker_exception, evt))
+            wx.CallAfter(self.handle_analysis_feedback)
         elif isinstance(evt, cpanalysis.AnalysisDebugCompleteEvent):
             print "Debugging complete"
-            evt.original_event.disposition_callback(cpanalysis.ABORT)
         elif isinstance(evt, cellprofiler.pipeline.RunExceptionEvent):
             # exception in (prepare/post)_(run/group)
             import pdb
@@ -830,45 +842,50 @@ class PipelineController:
         else:
             raise ValueError("Unknown event type %s %s" % (type(evt), evt))
 
+    def handle_analysis_feedback(self):
+        '''Process any pending exception or interaction requests from the
+        pipeline.  This function guards against multiple modal dialogs being
+        opened, which can overwhelm the user and cause UI hangs.
+        '''
+        # just in case.
+        assert wx.Thread_IsMain(), "PipelineController.module_interaction_request() must be called from main thread!"
+
+        # only one window at a time
+        if self.feedback_pending:
+            return
+
+        # XXX - when we move to 2.7, make these a single Queue.PriorityQueue()
+        # exceptions are higher priority
+        for q in (self.exception_queue, self.interaction_request_queue):
+            try:
+                func_args = q.get_nowait()  # in case the queue's been emptied
+            except Queue.Empty:
+                continue
+
+            self.feedback_pending = True
+            try:
+                func_args[0](*func_args[1:])
+                wx.CallAfter(self.handle_analysis_feedback)
+            finally:
+                self.feedback_pending = False
+
     def module_interaction_request(self, module_number, image_set_number,
                                    interaction_request_blob, reply_cb):
         '''forward a module interaction request from the running pipeline to
         our own pipeline's instance of the module, and reply with the result.
         '''
-        # We only allow one interaction request to be running at the same time,
-        # to prevent things like flooding the user with requests, opening
-        # multiple modal dialogs at once (which can hang the Mac), etc.  This
-        # code is always in the WX/main thread, so we don't need to do any
-        # fancing locking.
-
-        # just in case.
-        assert wx.Thread_IsMain(), "PipelineController.module_interaction_request() must be called from main thread!"
-
-        def run_current_request():
-            self.interaction_request_pending = True
-            result = ""
-            try:
-                module = self.__pipeline.modules()[module_number - 1]
-                result = module.handle_interaction(image_set_number, interaction_request_blob)
-            except:
-                # we need to ensure that the reply_cb gets a reply (even if it
-                # being empty causes futher exceptions).
-                _, exc, tb = sys.exc_info()
-                display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                     message="Exception in CellProfiler interaction request")
-            finally:
-                self.interaction_request_pending = False
-                wx.CallAfter(run_requests)  # Use CallAfter to avoid causing nested exceptions
-                reply_cb(result)  # an exception here can be handled by the usual means
-
-        def run_requests():
-            if self.interaction_request_pending or (len(self.interaction_request_queue) == 0):
-                return
-            req = self.interaction_request_queue.pop(0)
-            req()
-
-        self.interaction_request_queue.append(run_current_request)
-        run_requests()
+        result = ""
+        try:
+            module = self.__pipeline.modules()[module_number - 1]
+            result = module.handle_interaction(image_set_number, interaction_request_blob)
+        except:
+            _, exc, tb = sys.exc_info()
+            display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
+                                 message="Exception in CellProfiler interaction request")
+        finally:
+            # we need to ensure that the reply_cb gets a reply (even if it
+            # being empty causes futher exceptions).
+            reply_cb(result)  # an exception here can be handled by the usual means
 
     def analysis_exception(self, evt):
         '''Report an error in analysis to the user, giving options for
@@ -880,10 +897,10 @@ class PipelineController:
             # choose a random string for verification
             import string
             import random
-            verification = ''.join(random.choice(string.ascii_letters) for x in range(8))
+            verification = ''.join(random.choice(string.ascii_letters) for x in range(5))
 
             def port_callback(port):
-                # called from another thread
+                # called from another thread, use wx.CallAfter
                 def display_port_info():
                     wx.MessageBox("Remote PDB waiting on port %d\nUse '%s' for verification" % (port, verification),
                                   "Remote debugging started.",
@@ -903,7 +920,8 @@ class PipelineController:
         disposition = display_error_dialog(None, evt.exc_type, self.__pipeline, message,
                                            remote_exc_info=(evt.exc_type, evt.exc_message, evt.exc_traceback,
                                                             evt.filename, evt.line_number, remote_debug))
-        evt.disposition_callback(cpanalysis.SKIP if disposition == ED_SKIP else cpanalysis.ABORT)
+        evt.disposition_callback(disposition)
+        wx.Yield()  # This allows cancel events to remove other exceptions from the queue.
 
     def on_restart(self, event):
         '''Restart a pipeline from a measurements file'''

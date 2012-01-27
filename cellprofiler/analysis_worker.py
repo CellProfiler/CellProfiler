@@ -27,6 +27,7 @@ import traceback
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
+from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 import subimager.client
 from cellprofiler.utilities.rpdb import Rpdb
 
@@ -38,9 +39,6 @@ from cellprofiler.utilities.rpdb import Rpdb
 
 logger = logging.getLogger(__name__)
 
-
-ABORT = True
-SKIP = False
 
 def main():
     # XXX - move all this to a class
@@ -141,6 +139,7 @@ def main():
 
             # point the pipeline event listener to the new work_socket
             pipeline_listener.work_socket = work_socket
+            pipeline_listener.reset()
 
             # Fetch the path to the intial measurements if needed.
             # XXX - when implementing distributed workers, this will need to be
@@ -185,7 +184,8 @@ def main():
                 if len(result) == 1:
                     return result[0]
                 else:
-                    assert result[1] == 'CANCELLED'
+                    # the run was cancelled before we got a reply.
+                    assert result[1] == 'CANCELLED', str(result)
                     raise CancelledException()
 
             successful_image_set_numbers = []
@@ -196,11 +196,18 @@ def main():
                     try:
                         pipeline_listener.image_set_number = image_set_number
                         current_pipeline.run_image_set(current_measurements, image_set_number, interaction_handler)
+                        if pipeline_listener.should_abort:
+                            abort = True
+                            break
+                        elif pipeline_listener.should_skip:
+                            # XXX - should we report skipped sets as "successful" in the sense of "done"?
+                            # XXX - and should we report their measurements?
+                            continue
                         successful_image_set_numbers.append(image_set_number)
                     except Exception:
                         try:
                             logging.error("Error in pipeline", exc_info=True)
-                            if handle_exception(work_socket, image_set_number=image_set_number) == ABORT:
+                            if handle_exception(work_socket, image_set_number=image_set_number) == ED_STOP:
                                 abort = True
                                 break
                         except:
@@ -236,7 +243,9 @@ def main():
             del current_measurements
         except Exception:
             logging.error("Error in worker", exc_info=True)
-            if handle_exception(work_socket) == ABORT:
+            # XXX - should we jsut assume complete failure and exit?
+            if handle_exception(work_socket) == ED_STOP:
+                # XXX - This should be an exit, yes?
                 break
 
 
@@ -268,10 +277,8 @@ def handle_exception(work_socket, image_set_number=None, module_name=None, exc_i
             rpdb.post_mortem(tb)
             work_socket.send_multipart(["DEBUG COMPLETE"])
             reply = work_socket.recv()  # next step (could be "DEBUG" again)
-        elif reply[0] == 'SKIP':
-            return SKIP
         else:
-            return ABORT
+            return reply[0]
 
 
 class PipelineEventListener(object):
@@ -280,6 +287,12 @@ class PipelineEventListener(object):
     def __init__(self):
         self.work_socket = None
         self.image_set_number = 0
+        self.should_abort = False
+        self.should_skip = False
+
+    def reset(self):
+        self.should_abort = False
+        self.should_skip = False
 
     def handle_event(self, pipeline, event):
         if isinstance(event, cpp.RunExceptionEvent):
@@ -287,8 +300,12 @@ class PipelineEventListener(object):
                                            image_set_number=self.image_set_number,
                                            module_name=event.module.module_name,
                                            exc_info=(type(event), event, event.tb))
-            if disposition == ABORT:
+            if disposition == ED_STOP:
+                self.should_abort = True
                 event.cancel_run = True
+            elif disposition == ED_SKIP:
+                self.should_skip = True
+                event.skip_thisset = True
 
 
 def exit_on_stdin_close():

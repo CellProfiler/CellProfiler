@@ -1693,8 +1693,11 @@ class Pipeline(object):
                 if should_write_measurements:
                     measurements[cpmeas.IMAGE,
                                  'ModuleError_%02d%s' % (module.module_num, module.module_name)] = 1
-                self.notify_listeners(RunExceptionEvent(exception, module, sys.exc_info()[2]))
-                return  # no recovery
+                evt = RunExceptionEvent(exception, module, sys.exc_info()[2])
+                self.notify_listeners(evt)
+                if evt.cancel_run or evt.skip_thisset:
+                    # actual cancellation or skipping handled upstream.
+                    return
 
             t1 = sum(os.times()[:-1])
             delta_secs = max(0, t1 - t0)

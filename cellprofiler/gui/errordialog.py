@@ -25,7 +25,6 @@ import logging
 ED_STOP = "Stop"
 ED_CONTINUE = "Continue"
 ED_SKIP = "Skip"
-ED_REMOTE_DEBUG = "Debug Remotely"
 
 ERROR_URL = 'http://www.cellprofiler.org/cgi-bin/reporterror.cgi'
 

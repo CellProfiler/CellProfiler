@@ -42,6 +42,7 @@ import identify as I
 from cellprofiler.cpmath.propagate import propagate
 from cellprofiler.cpmath.outline import outline
 
+CAROLINAS_HACK = False
 
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
@@ -204,11 +205,6 @@ class UntangleWorms(cpm.CPModule):
             overlapped worms. You can use this image to display the untangling
             results, for instance, by composting the outlines image with
             the <b>OverlayOutlines</b> module""")
-
-        self.wants_overlapping_labels = cps.Binary(
-            "Save segmented objects to disk?" , False,
-            doc = """<i> Used only if untangling and overlap style is "Both" or "With overlap")</i> <br>
-            This feature allows you to save a .mat file containing the indices and labels of each worm.""")
         
         self.nonoverlapping_objects = cps.ObjectNameProvider(
             "Name the output non-overlapping worm objects", "NonOverlappingWorms",
@@ -235,11 +231,6 @@ class UntangleWorms(cpm.CPModule):
             This is the name of the of the outlines of the worms
             with the overlapping sections removed.""")
         
-        self.wants_nonoverlapping_labels = cps.Binary(
-            "Save segmented objects to disk?" , False,
-            doc = """<i> (Used only if untangling and overlap style is "Both" or "Without overlap")</i> <br>
-            This feature allows you to save a .mat file containing the indices and labels of each worm.""")
-
         self.training_set_directory = cps.DirectoryPath(
             "Training set file location", support_urls = True,
             allow_metadata = False,
@@ -448,10 +439,8 @@ class UntangleWorms(cpm.CPModule):
                 self.wants_overlapping_outlines, 
                 self.overlapping_outlines_colormap, 
                 self.overlapping_outlines_name, 
-                self.wants_overlapping_labels,
                 self.wants_nonoverlapping_outlines,
                 self.nonoverlapping_outlines_name,
-                self.wants_nonoverlapping_labels,
                 self.mode, self.min_area_percentile, self.min_area_factor,
                 self.max_area_percentile, self.max_area_factor,
                 self.min_length_percentile, self.min_length_factor,
@@ -486,13 +475,13 @@ class UntangleWorms(cpm.CPModule):
         if self.mode == MODE_UNTANGLE:
             result += [self.overlap]
             if self.overlap in (OO_WITH_OVERLAP, OO_BOTH):
-                result += [self.overlap_objects, self.wants_overlapping_outlines, self.wants_overlapping_labels]
+                result += [self.overlap_objects, self.wants_overlapping_outlines]
                 if self.wants_overlapping_outlines:
                     result += [self.overlapping_outlines_colormap,
                                self.overlapping_outlines_name]
             if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
                 result += [self.nonoverlapping_objects, 
-                           self.wants_nonoverlapping_outlines, self.wants_nonoverlapping_labels]
+                           self.wants_nonoverlapping_outlines]
                 if self.wants_nonoverlapping_outlines:
                     result += [self.nonoverlapping_outlines_name]
                 result += [self.complexity]
@@ -860,10 +849,10 @@ class UntangleWorms(cpm.CPModule):
                 outline_image = cpi.Image(outline_pixels, parent_image = image)
                 image_set.add(self.overlapping_outlines_name.value, 
                               outline_image)
-            
-            
-            
-            if self.wants_overlapping_labels or self.wants_nonoverlapping_labels:
+            #
+            # Hack for Carolina: write the ijv outlines to disk
+            #
+            if CAROLINAS_HACK:
                 path = cpprefs.get_default_output_directory()
                 name = "%d.mat" % measurements.get_image_set_number()
                 from scipy.io import savemat
@@ -2348,7 +2337,7 @@ class UntangleWorms(cpm.CPModule):
         if ((wants_overlapping and object_name == self.overlap_objects) or
             (wants_nonoverlapping and object_name == self.nonoverlapping_objects)):
             if category == I.C_LOCATION:
-                result += [I.FTR_CENTER_X, FTR_CENTER_Y]
+                result += [I.FTR_CENTER_X, I.FTR_CENTER_Y]
             elif category == I.C_NUMBER:
                 result += [I.FTR_OBJECT_NUMBER]
             elif category == C_WORM:

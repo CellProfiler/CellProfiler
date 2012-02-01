@@ -444,8 +444,8 @@ class TestMeasurements(unittest.TestCase):
         result = m.get_groupings(["Metadata_A", "Metadata_B"])
         for d, image_numbers in result:
             for image_number in image_numbers:
-                self.assertEqual(d["Metadata_A"], aa[image_number - 1])
-                self.assertEqual(d["Metadata_B"], bb[image_number - 1])
+                self.assertEqual(d["Metadata_A"], unicode(aa[image_number - 1]))
+                self.assertEqual(d["Metadata_B"], unicode(bb[image_number - 1]))
                 
     def test_10_01_remove_image_measurement(self):
         m = cpmeas.Measurements()

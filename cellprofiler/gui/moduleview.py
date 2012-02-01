@@ -454,6 +454,8 @@ class ModuleView:
                 elif isinstance(v, cps.DirectoryPath):
                     control = self.make_directory_path_control(v, control_name,
                                                                control)
+                elif isinstance(v, cps.Pathname):
+                    control = self.make_pathname_control(v, control)
                 elif isinstance(v, cps.Color):
                     control = self.make_color_control(v, control_name, control)
                 elif isinstance(v, cps.TreeChoice):
@@ -475,6 +477,7 @@ class ModuleView:
                         fcd.panel.file_collection_display = fcd
                 elif isinstance(v, cps.Table):
                     control = self.make_table_control(v, control)
+                    flag = wx.ALIGN_LEFT
                 elif isinstance(v, cps.HTMLText):
                     control = self.make_html_control(v, control)
                     flag = wx.EXPAND|wx.ALL
@@ -1166,6 +1169,40 @@ class ModuleView:
             browse_ctrl.Hide()
         return control
     
+    def make_pathname_control(self, v, control):
+        if control is None:
+            control = wx.Panel(self.module_panel, -1,
+                               name = edit_control_name(v))
+            control.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+            text_control = wx.TextCtrl(control, -1,
+                                       name = subedit_control_name(v))
+            text_control.Bind(
+                wx.EVT_TEXT, 
+                lambda event: self.__on_cell_change(event, v, text_control))
+            browse_bitmap = wx.ArtProvider.GetBitmap(wx.ART_FOLDER,
+                                                     wx.ART_CMN_DIALOG,
+                                                     (16,16))
+            browse_ctrl = wx.BitmapButton(control, bitmap=browse_bitmap,
+                                          name = button_control_name(v))
+            control.Sizer.Add(text_control, 1, wx.EXPAND)
+            control.Sizer.AddSpacer((3,0))
+            control.Sizer.Add(browse_ctrl, 0, wx.EXPAND)
+            def on_browse(event):
+                dlg = wx.FileDialog(self.module_panel)
+                try:
+                    dlg.Title = "Browse for metadata file"
+                    dlg.Wildcard = v.wildcard
+                    if dlg.ShowModal() == wx.ID_OK:
+                        self.on_value_change(v, control, dlg.Path, event)
+                finally:
+                    dlg.Destroy()
+            browse_ctrl.Bind(wx.EVT_BUTTON, on_browse)
+        else:
+            text_control = control.FindWindowByName(subedit_control_name(v))
+        if text_control.Value != v.value:
+            text_control.Value = v.value
+        return control
+        
     def make_text_control(self, v, control_name, control):
         """Make a textbox control"""
         if not control:
@@ -1619,7 +1656,7 @@ class ModuleView:
             control = wx.grid.Grid(self.module_panel, -1,
                                    name = edit_control_name(v))
             control.SetTable(TableController(v))
-            control.SetMinSize((400, 300))
+            #control.SetMinSize(v.min_size)
             control.AutoSize()
             control.EnableEditing(False)
             control.SetDefaultCellOverflow(False)
@@ -3015,10 +3052,14 @@ class JoinerController(object):
             for j, column_name in enumerate(column_names):
                 choice_ctrl_name = self.get_choice_control_name(i, j)
                 ctrl = self.panel.FindWindowByName(choice_ctrl_name)
-                choices = sorted(self.v.entities.get(column_name, [])) + ["None"]
                 selection = join.get(column_name, "None")
                 if selection is None:
                     selection = "None"
+                choices = sorted(self.v.entities.get(column_name, []))
+                if self.v.allow_none:
+                    choices += [ "None" ]
+                if selection not in choices:
+                    choices += [ selection ]
                 if ctrl is None:
                     ctrl = wx.Choice(self.panel, -1, 
                                      choices = choices,

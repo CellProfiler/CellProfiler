@@ -396,7 +396,7 @@ if __name__ == "__main__":
         dialog.Wildcard = "JPeg file (*.jpg)|*.jpg|PNG file (*.png)|*.png|Tiff file (*.tif)|*.tif|Flex file (*.flex)|*.flex|Any file (*.*)|*.*"
         if dialog.ShowModal() == wx.ID_OK:
             url = "file:" + urllib.pathname2url(dialog.Path)
-            image = get_image(url, allowopenfiles="yes")
+            image = get_image(url, allowopenfiles="no")
             frame.image = image
             image = image.astype(float)
             image /= np.max(image)

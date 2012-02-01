@@ -3,10 +3,12 @@
 TO-DO: document module
 '''
 
+import csv
 import re
 import os
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 from cellprofiler.modules.images import FilePredicate
@@ -42,10 +44,14 @@ class Metadata(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Metadata"
     category = "File Processing"
+    
+    CSV_JOIN_NAME = "CSV Metadata"
+    IPD_JOIN_NAME = "Image Metadata"
 
     def create_settings(self):
         self.pipeline = None
         self.ipds = []
+        self.imported_metadata = []
         self.metadata_explanation = cps.HTMLText(
             "","""Do your file or path names or file headers contain information
             (<a href="http://en.wikipedia.org/wiki/Metadata">metadata</a>) you
@@ -68,7 +74,7 @@ class Metadata(cpm.CPModule):
         self.update_table_button = cps.DoSomething(
             "Update table", "Update", self.update_table)
         
-    def add_extraction_method(self, can_remove = False):
+    def add_extraction_method(self, can_remove = True):
         group = cps.SettingsGroup()
         self.extraction_methods.append(group)
         if can_remove:
@@ -193,6 +199,21 @@ class Metadata(cpm.CPModule):
                  ImagePredicate()],
             'or (file does contain "")',
             doc = """Pick the files for metadata extraction."""))
+        
+        group.append("csv_location", cps.Pathname(
+            "Metadata file location:",
+            wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*"))
+        
+        group.append("csv_joiner", cps.Joiner(
+            "Match file and image metadata", allow_none = False,
+            doc="""Match columns in your .csv file to image metadata items
+            <hr>
+            This setting controls how rows in your .csv file are matched to
+            different images. The setting displays the columns in your
+            .csv file in one of its columns and the metadata in your images
+            in the other, including the metadata extracted by previous
+            metadata extractors in this module.
+            """))
                  
         group.can_remove = can_remove
         if can_remove:
@@ -205,7 +226,8 @@ class Metadata(cpm.CPModule):
         for group in self.extraction_methods:
             result += [
                 group.extraction_method, group.source, group.file_regexp,
-                group.folder_regexp, group.filter_choice, group.filter]
+                group.folder_regexp, group.filter_choice, group.filter,
+                group.csv_location, group.csv_joiner]
         return result
     
     def visible_settings(self):
@@ -224,10 +246,15 @@ class Metadata(cpm.CPModule):
                     result += [group.filter_choice]
                     if group.filter_choice == F_FILTERED_IMAGES:
                         result += [group.filter]
+                elif group.extraction_method == X_IMPORTED_EXTRACTION:
+                    result += [group.csv_location, group.filter_choice]
+                    if group.filter_choice == F_FILTERED_IMAGES:
+                        result += [group.filter]
+                    result += [group.csv_joiner]
                 if group.can_remove:
                     result += [group.remover]
-            result += [self.add_extraction_method_button, self.table,
-                       self.update_table_button]
+            result += [self.add_extraction_method_button,
+                       self.update_table_button, self.table]
         return result
     
     def example_file_fn(self):
@@ -263,7 +290,7 @@ class Metadata(cpm.CPModule):
             elif group.extraction_method == X_AUTOMATIC_EXTRACTION:
                 m.update(self.automatically_extract_metadata(group, ipd))
             elif group.extraction_method == X_IMPORTED_EXTRACTION:
-                m.update(self.import_metadata(group, ipd))
+                m.update(self.import_metadata(group, ipd, m))
         return m
                 
     def manually_extract_metadata(self, group, ipd):
@@ -283,14 +310,82 @@ class Metadata(cpm.CPModule):
     def automatically_extract_metadata(self, group, ipd):
         return {}
     
-    def import_metadata(self, group, ipd):
+    def import_metadata(self, group, ipd, m):
+        for imported_metadata in self.imported_metadata:
+            assert isinstance(imported_metadata, self.ImportedMetadata)
+            if imported_metadata.is_match(
+                group.csv_location.value,
+                group.csv_joiner,
+                self.CSV_JOIN_NAME,
+                self.IPD_JOIN_NAME):
+                return imported_metadata.get_ipd_metadata(m)
+                
         return {}
     
     def on_activated(self, pipeline):
         self.pipeline = pipeline
         self.ipds = pipeline.get_filtered_image_plane_details()
-    
+        self.ipd_metadata_keys = set()
+        for ipd in self.ipds:
+            self.ipd_metadata_keys.update(ipd.metadata.keys())
+        self.ipd_metadata_keys = sorted(self.ipd_metadata_keys)
+        self.update_imported_metadata()
         self.update_table()
+        
+    def on_setting_changed(self, setting, pipeline):
+        self.update_imported_metadata()
+        
+    def update_imported_metadata(self):
+        new_imported_metadata = []
+        ipd_metadata_keys = set(self.ipd_metadata_keys)
+        for group in self.extraction_methods:
+            if group.extraction_method == X_MANUAL_EXTRACTION:
+                if group.source == XM_FILE_NAME:
+                    regexp = group.file_regexp
+                else:
+                    regexp = group.folder_regexp
+                ipd_metadata_keys.update(cpmeas.find_metadata_tokens(regexp.value))
+            elif group.extraction_method == X_IMPORTED_EXTRACTION:
+                joiner = group.csv_joiner
+                csv_path = group.csv_location.value
+                if not os.path.isfile(csv_path):
+                    continue
+                found = False
+                best_match = None
+                for i, imported_metadata in enumerate(self.imported_metadata):
+                    assert isinstance(imported_metadata, self.ImportedMetadata)
+                    if imported_metadata.is_match(csv_path, joiner,
+                                                  self.CSV_JOIN_NAME,
+                                                  self.IPD_JOIN_NAME):
+                        new_imported_metadata.append(imported_metadata)
+                        found = True
+                        break
+                    elif (best_match is None and 
+                          imported_metadata.path == csv_path):
+                        best_match = i
+                if found:
+                    del self.imported_metadata[i]
+                else:
+                    if best_match is not None:
+                        imported_metadata = self.imported_metadata[i]
+                        del self.imported_metadata[i]
+                    else:
+                        try:
+                            imported_metadata = self.ImportedMetadata(csv_path)
+                        except:
+                            logger.debug("Failed to load csv file: " % csv_path)
+                            continue
+                    joiner.entities[self.CSV_JOIN_NAME] = \
+                        imported_metadata.get_csv_metadata_keys()
+                    joiner.entities[self.IPD_JOIN_NAME] = \
+                        list(ipd_metadata_keys)
+                    imported_metadata.set_joiner(joiner,
+                                                 self.CSV_JOIN_NAME,
+                                                 self.IPD_JOIN_NAME)
+                    new_imported_metadata.append(imported_metadata)
+                ipd_metadata_keys.update(imported_metadata.get_csv_metadata_keys())
+                    
+        self.imported_metadata = new_imported_metadata            
         
     def update_table(self):
         columns = set()
@@ -328,5 +423,99 @@ class Metadata(cpm.CPModule):
         while len(self.extraction_methods) < n_extraction_methods:
             self.add_extraction_method()
         
+    class ImportedMetadata(object):
+        '''A holder for the metadata from a csv file'''
+        def __init__(self, path):
+            self.joiner_initialized = False
+            self.path = path
+            self.path_timestamp = os.stat(path).st_mtime
+            fd = open(path, "r")
+            rdr = csv.reader(fd)
+            header = rdr.next()
+            columns = [[] for  c in header]
+            self.columns = dict([(c, l) for c,l in zip(header, columns)])
+            for row in rdr:
+                for i, field in enumerate(row):
+                    columns[i].append(None if len(field) == 0 else field)
+                if len(row) < len(columns):
+                    for i in range(len(row), len(columns)):
+                        columns[i].append(None)
+                        
+        def get_csv_metadata_keys(self):
+            '''Get the metadata keys in the CSV header'''
+            return sorted(self.columns.keys())
         
-                     
+        def set_joiner(self, joiner, csv_name, ipd_name):
+            '''Initialize to assign csv metadata to an image plane descriptor
+            
+            joiner - a joiner setting that describes the join between the
+                     CSV metadata and the IPD metadata
+            csv_name - the name assigned to the CSV file in the joiner
+            ipd_name - the name assigned to the IPD in the joiner
+            
+            Creates a dictionary of keys from the CSV joining keys and
+            records the keys that will be used to join in the IPD
+            '''
+            joins = joiner.parse()
+            if len(joins) == 0:
+                return
+            if any([join.get(csv_name) not in self.columns.keys()
+                    for join in joins]):
+                return
+            self.csv_keys = [join[csv_name] for join in joins]
+            self.ipd_keys = [join[ipd_name] for join in joins]
+            self.metadata_keys = set(self.columns.keys()).difference(self.csv_keys)
+            self.d = {}
+            columns = [self.columns[key] for key in self.csv_keys]
+            for i in range(len(columns[0])):
+                key = tuple([column[i] for column in columns])
+                self.d[key] = i
+            self.joiner_initialized = True
+            
+        def get_ipd_metadata(self, ipd_metadata):
+            '''Get the matching metadata from the .csv for a given ipd
+            
+            ipd_metadata - the metadata dictionary for an IPD, possibly
+            augmented by prior extraction
+            '''
+            if not self.joiner_initialized:
+                return {}
+            key = tuple([ipd_metadata.get(k) for k in self.ipd_keys])
+            if not self.d.has_key(key):
+                return {}
+            return dict([(k, self.columns[k][self.d[key]]) 
+                         for k in self.metadata_keys])
+        
+        def is_match(self, csv_path, joiner, csv_join_name, ipd_join_name):
+            '''Check to see if this instance can handle the given csv and joiner
+            
+            csv_path - path to the CSV file to use
+            
+            joiner - the joiner to join to the ipd metadata
+            
+            csv_join_name - the join name in the joiner of the csv_file
+            
+            ipd_join_name - the join name in the joiner of the ipd metadata
+            '''
+            if csv_path != self.path:
+                return False
+            
+            if os.stat(self.path).st_mtime != self.path_timestamp:
+                return False
+            
+            if not self.joiner_initialized:
+                self.set_joiner(joiner, csv_join_name, ipd_join_name)
+                return True
+            
+            joins = joiner.parse()
+            csv_keys = [join[csv_join_name] for join in joins]
+            ipd_keys = [join[ipd_join_name] for join in joins]
+            metadata_keys = set(self.columns.keys()).difference(self.csv_keys)
+            for mine, yours in ((self.csv_keys, csv_keys),
+                                (self.ipd_keys, ipd_keys),
+                                (self.metadata_keys, metadata_keys)):
+                if tuple(mine) != tuple(yours):
+                    return False
+            return True
+            
+            

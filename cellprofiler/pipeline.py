@@ -16,6 +16,7 @@ from __future__ import with_statement
 __version__ = "$Revision$"
 
 import bisect
+import csv
 import hashlib
 import logging
 import gc
@@ -2102,13 +2103,16 @@ class Pipeline(object):
     def get_image_sets(self):
         '''Return the pipeline's image sets
         
-        Return a two-tuple.
+        Return a three-tuple.
         
         The first element of the two-tuple is a list of
         ImageSetChannelDescriptors - the ordering in the list defines the
         order of ipds in the rows of each image set
         
-        The second element is a dictionary of lists where the dictionary keys 
+        The second element of the two-tuple is a collection of metadata
+        key names appropriate for display.
+        
+        The last element is a dictionary of lists where the dictionary keys 
         are the metadata values for the image set (or image numbers if 
         organized by number) and the values are lists of the IPDs for that
         image set.
@@ -2132,29 +2136,74 @@ class Pipeline(object):
         # cached data.
         #
         namesandtypes.on_activated(self)
-        column_names = namesandtypes.column_names
-        if namesandtypes.assignment_method == N.ASSIGN_ALL:
-            load_choices = [namesandtypes.single_load_as_choice.value]
-        elif namesandtypes.assignment_method == N.ASSIGN_RULES:
-            load_choices = [ group.load_as_choice.value
-                             for group in namesandtypes.assignments]
-        d = { 
-            N.LOAD_AS_COLOR_IMAGE: self.ImageSetChannelDescriptor.CT_COLOR,
-            N.LOAD_AS_GRAYSCALE_IMAGE: self.ImageSetChannelDescriptor.CT_GRAYSCALE,
-            N.LOAD_AS_ILLUMINATION_FUNCTION: self.ImageSetChannelDescriptor.CT_FUNCTION,
-            N.LOAD_AS_MASK: self.ImageSetChannelDescriptor.CT_MASK,
-            N.LOAD_AS_OBJECTS: self.ImageSetChannelDescriptor.CT_OBJECTS }
-        iscds = [self.ImageSetChannelDescriptor(column_name, d[load_choice])
-                 for column_name, load_choice in zip(column_names, load_choices)]
+        try:
+            column_names = namesandtypes.column_names
+            metadata_key_names = namesandtypes.get_metadata_column_names()
+            if namesandtypes.assignment_method == N.ASSIGN_ALL:
+                load_choices = [namesandtypes.single_load_as_choice.value]
+            elif namesandtypes.assignment_method == N.ASSIGN_RULES:
+                load_choices = [ group.load_as_choice.value
+                                 for group in namesandtypes.assignments]
+            d = { 
+                N.LOAD_AS_COLOR_IMAGE: self.ImageSetChannelDescriptor.CT_COLOR,
+                N.LOAD_AS_GRAYSCALE_IMAGE: self.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                N.LOAD_AS_ILLUMINATION_FUNCTION: self.ImageSetChannelDescriptor.CT_FUNCTION,
+                N.LOAD_AS_MASK: self.ImageSetChannelDescriptor.CT_MASK,
+                N.LOAD_AS_OBJECTS: self.ImageSetChannelDescriptor.CT_OBJECTS }
+            iscds = [self.ImageSetChannelDescriptor(column_name, d[load_choice])
+                     for column_name, load_choice in zip(column_names, load_choices)]
+            
+            d = {}
+            for keys, ipds in namesandtypes.image_sets:
+                if any([len(ipds.get(column_name, tuple())) != 1
+                        for column_name in column_names]):
+                    logger.info("Skipping image set %s - no or multiple matches for some image" % repr(keys))
+                    continue
+                d[keys] = [ipds[column_name][0] for column_name in column_names]
+            return (iscds, metadata_key_names, d)
+        finally:
+            namesandtypes.on_deactivated()
+            
+    def get_grouped_image_sets(self):
+        '''Organize the image sets into groupings
         
-        d = {}
-        for keys, ipds in namesandtypes.image_sets:
-            if any([len(ipds.get(column_name, tuple())) != 1
-                    for column_name in column_names]):
-                logger.info("Skipping image set %s - no or multiple matches for some image" % repr(keys))
-                continue
-            d[keys] = [ipds[column_name][0] for column_name in column_names]
-        return (iscds, d)
+        Returns the following things in this order:
+        
+        key_list - a list of two tuples. The first is the metadata key
+                   used to extract the grouping metadata and the second
+                   is the index of the column (see iscds) that holds
+                   the image plane descriptors whose metadata is extracted.
+                   
+        iscds - the ImageSetColumnDescriptor records that give the names of
+                the columns in the image set and that tell how to load them
+                (grayscale / color / mask / objects / function)
+                
+        metadata_key_names - the names of the keys that are used to join
+                the image sets. These are largely for display or informal use
+                
+        image_sets - this is a dictionary whose key is the metadata (or
+                image number if metadata was not used to perform the matching)
+                and whose value is an array (possibly of zero length = missing
+                image, possibly of > 1 length = ambiguous choice of images)
+                of ImagePlaneDescriptors.
+                
+        groupings - this is a dictionary whose key is the grouping metadata
+                values and whose value is a list of keys to the image set
+                dictionary for the image sets in that group.
+        
+        '''
+        iscds, metadata_key_names, image_sets = self.get_image_sets()
+        key_list = None
+        for module in self.modules():
+            if module.module_name == "Groups":
+                key_list, groupings = module.compute_groups(
+                    iscds, metadata_key_names, image_sets)
+                break
+        if key_list is None:
+            key_list = []
+            groupings = { ():sorted(image_sets.keys()) }
+        
+        return key_list, iscds, metadata_key_names, image_sets, groupings
     
     def has_undo(self):
         '''True if an undo action can be performed'''
@@ -2485,7 +2534,77 @@ class Pipeline(object):
                          (", Feature = %s" % feature) +
                          (", Image (optional) = %s" % image) +
                          (", Scale (optional) = %s" % scale))
+
+    def write_image_set(self, fd):
+        '''Write an image set to a file
         
+        fd - file descriptor to write to
+        
+        '''
+        key_list, iscds, metadata_key_names, image_sets, groupings = \
+            self.get_grouped_image_sets()
+        
+        writer = csv.writer(fd)
+        header = []
+        metadata_keys = None
+        #
+        # Take a pass through the ipds to find the keys that every image
+        # set has
+        #
+        for image_set in image_sets.values():
+            image_set_metadata = {}
+            not_good = set()
+            for ipd in image_set:
+                for key, value in ipd.metadata.iteritems():
+                    if image_set_metadata.has_key(key):
+                        if image_set_metadata[key] != value:
+                            not_good.add(key)
+                    else:
+                        image_set_metadata[key] = value
+            image_set_metadata = set(image_set_metadata.keys()).difference(not_good)
+            if metadata_keys is None:
+                metadata_keys = image_set_metadata
+            else:
+                metadata_keys.intersection_update(image_set_metadata)
+        metadata_keys = sorted(metadata_keys)
+        
+        header = ["_".join([cpmeas.C_METADATA, k]) for k in metadata_keys]
+        header += [cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX]
+        for iscd in iscds:
+            if iscd.channel_type == self.ImageSetChannelDescriptor.CT_OBJECTS:
+                cats = [cpmeas.C_OBJECTS_URL, cpmeas.C_OBJECTS_PATH_NAME,
+                        cpmeas.C_OBJECTS_FILE_NAME]
+            else:
+                cats = [cpmeas.C_URL, cpmeas.C_PATH_NAME, cpmeas.C_FILE_NAME]
+            header += [ '_'.join( [cat, iscd.name] ) for cat in cats]
+        writer.writerow(header)
+        
+        for group_number_idx, grouping_key in enumerate(
+            sorted(groupings.keys())):
+            group_number = group_number_idx + 1
+            image_set_keys = sorted(groupings[grouping_key])
+            for group_index, image_set_key in enumerate(image_set_keys):
+                image_set = image_sets[image_set_key]
+                image_set_metadata = {}
+                for ipd in image_set:
+                    for metadata_key in metadata_keys:
+                        if ipd.metadata.has_key(metadata_key):
+                            image_set_metadata[metadata_key] = \
+                                ipd.metadata[metadata_key]
+                            
+                row = [image_set_metadata[k] for k in metadata_keys]
+                row += [str(group_number), str(group_index)]
+                for ipd in image_set:
+                    path = ipd.path
+                    if any([path.startswith(x)
+                            for x in ("http:", "https:", "ftp:")]):
+                        url = path
+                    else:
+                        url = "file:" + urllib.pathname2url(os.path.abspath(path))
+                    row += [ url ]
+                    row += list(os.path.split(path))
+                writer.writerow(row)
+    
 class AbstractPipelineEvent:
     """Something that happened to the pipeline and was indicated to the listeners
     """

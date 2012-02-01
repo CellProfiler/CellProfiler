@@ -451,6 +451,29 @@ class FilenameText(Text):
  
     def set_browsable(self, val):
         self.browsable = val
+        
+class Pathname(Text):
+    """A setting that displays a path name
+    
+    text - text to display to right
+    value - initial value
+    wildcard - wildcard to filter files in browse dialog
+    """
+    def __init__(self, text, value="", *args, **kwargs):
+        kwargs = kwargs.copy()
+        if kwargs.has_key("wildcard"):
+            self.wildcard = kwargs["wildcard"]
+            del kwargs["wildcard"]
+        else:
+            self.wildcard = "All files (*.*)|*.*"
+        super(self.__class__, self).__init__(text, value, *args, **kwargs)
+        
+    def test_valid(self, pipeline):
+        if not os.path.isfile(self.value):
+            raise ValidationError("Can't find file, %s" % self.value, self)
+        
+    def alter_for_create_batch(self, fn_alter):
+        self.value = fn_alter(self.value)
 
 class ImageFileSpecifier(Text):
     """A setting for choosing an image file, including switching between substring, file globbing, and regular expressions,
@@ -1248,7 +1271,9 @@ class Choice(Setting):
         if self.__choices_fn is not None:
             self.__choices = self.__choices_fn(pipeline)
         if self.value not in self.choices:
-            raise ValidationError("%s is not one of %s"%(self.value, reduce(lambda x,y: "%s,%s"%(x,y),self.choices)),self)
+            raise ValidationError(
+                "%s is not one of %s" %
+                (self.value, ",".join(self.choices)),self)
 
 class CustomChoice(Choice):
     def __init__(self, text, choices, value=None, *args, **kwargs):
@@ -2517,10 +2542,11 @@ class FileCollectionDisplay(Setting):
     
 class Table(Setting):
     '''The Table setting displays a table of values'''
-    def __init__(self, text, **kwargs):
+    def __init__(self, text, min_size = (400, 300), **kwargs):
         super(self.__class__, self).__init__(text, "", **kwargs)
         self.column_names = []
         self.data = []
+        self.min_size = min_size
         
     def insert_column(self, index, column_name):
         '''Insert a column at the given index
@@ -2617,9 +2643,21 @@ class Joiner(Setting):
     and values (or value = None). This can be encoded using str() and
     can be decoded using eval.
     '''
-    def __init__(self, text, value = "[]", **kwargs):
+    def __init__(self, text, value = "[]", allow_none = True, **kwargs):
+        '''Initialize the joiner
+        
+        text - label to the left of the joiner
+        
+        value - "repr" done on the joiner's underlying structure which is
+                a list of dictionaries
+                
+        allow_none - True (by default) to allow one of the entities to have
+                     None for a join, indicating that it matches against
+                     everything
+        '''
         super(self.__class__, self).__init__(text, value, **kwargs)
         self.entities = {}
+        self.allow_none = allow_none
         
     def parse(self):
         '''Parse the value into a list of dictionaries

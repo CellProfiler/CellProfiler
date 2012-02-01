@@ -21,6 +21,7 @@ import os
 import re
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 from cellprofiler.modules.images import FilePredicate
@@ -317,7 +318,7 @@ class NamesAndTypes(cpm.CPModule):
             # the single column name
             #
             column_name = self.column_names[0]
-            self.image_sets = [((str(i+1), ), { column_name: (ipd,) })
+            self.image_sets = [((i+1, ), { column_name: (ipd,) })
                                for i, ipd in enumerate(self.ipd_columns[0])]
         elif self.assignment_method == ASSIGN_RULES:
             #
@@ -327,7 +328,7 @@ class NamesAndTypes(cpm.CPModule):
             #
             if len(self.column_names) == 1:
                 column_name = self.column_names[0]
-                self.image_sets = [((str(i+1), ), { column_name: (ipd,) })
+                self.image_sets = [((i+1, ), { column_name: (ipd,) })
                                    for i, ipd in enumerate(self.ipd_columns[0])]
                 return
             try:
@@ -494,19 +495,24 @@ class NamesAndTypes(cpm.CPModule):
             except:
                 pass # bad field value
     
+    def get_metadata_column_names(self):
+        if (self.assignment_method == ASSIGN_RULES and 
+            len(self.column_names) > 1):
+            joins = self.join.parse()
+            metadata_columns = [
+                " / ".join(set([k for k in join.values() if k is not None]))
+                for join in joins]
+        else:
+            metadata_columns = [cpmeas.IMAGE_NUMBER]
+        return metadata_columns
+        
     def update_table(self):
         '''Update the table to show the current image sets'''
         joins = self.join.parse()
         self.table.clear_columns()
         self.table.clear_rows()
         
-        if (self.assignment_method == ASSIGN_RULES and 
-            len(self.column_names) > 1):
-            metadata_columns = [
-                " / ".join(set([k for k in join.values() if k is not None]))
-                for join in joins]
-        else:
-            metadata_columns = ["Image number"]
+        metadata_columns = self.get_metadata_column_names()
         for i, name in enumerate(metadata_columns):
             self.table.insert_column(i, name)
         for i, column_name in enumerate(self.column_names):
@@ -515,7 +521,7 @@ class NamesAndTypes(cpm.CPModule):
             self.table.insert_column(idx+1, "Filename: %s" % column_name)
         data = []
         for keys, image_set in self.image_sets:
-            row = list(keys)
+            row = [unicode(key) for key in keys]
             for column_name in self.column_names:
                 ipds = image_set.get(column_name, [])
                 if len(ipds) == 0:

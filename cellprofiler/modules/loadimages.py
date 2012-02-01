@@ -85,6 +85,12 @@ from cellprofiler.preferences import \
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, METADATA_HELP_REF
 from cellprofiler.gui.errordialog import show_warning
 
+from cellprofiler.measurements import \
+     C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,\
+     C_OBJECTS_URL
+
+
+
 '''STK TIFF Tag UIC1 - for MetaMorph internal use'''
 UIC1_TAG = 33628
 '''STK TIFF Tag UIC2 - stack z distance, creation time...'''
@@ -93,24 +99,6 @@ UIC2_TAG = 33629
 UIC3_TAG = 33630
 '''STK TIFF TAG UIC4 - internal'''
 UIC4_TAG = 33631
-
-'''The FileName measurement category'''
-C_FILE_NAME = "FileName"
-
-'''The PathName measurement category'''
-C_PATH_NAME = "PathName"
-
-'''The URL measurement category'''
-C_URL = "URL"
-
-'''The FileName measurement category when loading objects'''
-C_OBJECTS_FILE_NAME = "ObjectsFileName"
-
-'''The PathName measurement category when loading objects'''
-C_OBJECTS_PATH_NAME = "ObjectsPathName"
-
-'''The URL category when loading objects'''
-C_OBJECTS_URL = "ObjectsURL"
 
 '''The MD5 digest measurement category'''
 C_MD5_DIGEST = "MD5Digest"

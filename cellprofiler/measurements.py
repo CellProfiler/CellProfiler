@@ -108,6 +108,25 @@ OBJECT_NUMBER = "ObjectNumber"
 GROUP_NUMBER = "Group_Number"
 GROUP_INDEX = "Group_Index"
 
+'''The FileName measurement category'''
+C_FILE_NAME = "FileName"
+
+'''The PathName measurement category'''
+C_PATH_NAME = "PathName"
+
+'''The URL measurement category'''
+C_URL = "URL"
+
+'''The FileName measurement category when loading objects'''
+C_OBJECTS_FILE_NAME = "ObjectsFileName"
+
+'''The PathName measurement category when loading objects'''
+C_OBJECTS_PATH_NAME = "ObjectsPathName"
+
+'''The URL category when loading objects'''
+C_OBJECTS_URL = "ObjectsURL"
+
+
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''
     m = re.match(r'^varchar\(([0-9]+)\)$', x)

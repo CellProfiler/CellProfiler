@@ -28,6 +28,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
+from cellprofiler.analysis_requests import PipelineRequest, InitialMeasurementsRequest, WorkRequest, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, ServerExited
 import subimager.client
 from cellprofiler.utilities.rpdb import Rpdb
 
@@ -115,9 +116,11 @@ def main():
 
         try:
             # fetch a job
-            work_socket.send("WORK REQUEST")
-            job = work_socket.recv_multipart()
-            if job[0] == 'NONE':
+            job = WorkRequest().send(work_socket)
+            if isinstance(job, ServerExited):
+                continue  # server went away
+
+            if job.jobtype == 'NONE':
                 time.sleep(0.25)  # avoid hammering server
                 # no work, currently.
                 continue
@@ -125,8 +128,10 @@ def main():
             # Fetch the pipeline for this analysis if we don't have it
             current_pipeline = pipelines.get(current_analysis_id, None)
             if not current_pipeline:
-                work_socket.send("PIPELINE")
-                pipeline_blob = work_socket.recv()
+                rep = PipelineRequest().send(work_socket)
+                if isinstance(rep, ServerExited):
+                    continue  # server went away
+                pipeline_blob = rep.pipeline_blob
                 pipeline = cpp.Pipeline()
                 pipeline.loadtxt(StringIO.StringIO(pipeline_blob), raise_on_error=True)
                 # make sure the server hasn't finished or quit since we fetched the pipeline
@@ -146,8 +151,10 @@ def main():
             # changed to actually fetch the measurements.
             current_measurements = initial_measurements.get(current_analysis_id, None)
             if current_measurements is None:
-                work_socket.send("INITIAL_MEASUREMENTS")
-                measurements_path = work_socket.recv().decode('utf-8')
+                rep = InitialMeasurementsRequest().send(work_socket)
+                if isinstance(rep, ServerExited):
+                    continue  # server went away
+                measurements_path = rep.path.decode('utf-8')
                 # make sure the server hasn't finished or quit since we fetched the pipeline
                 with work_server_lock:
                     if current_analysis_id in work_servers:
@@ -159,14 +166,14 @@ def main():
             # Safest not to clobber measurements from one job to the next.
             current_measurements = cpmeas.Measurements(copy=current_measurements)
 
-            print "Doing job: ", " ".join(job)
-
-            if job[0] == 'GROUP':
+            if job.jobtype == 'GROUP':
                 need_prepare_group = True
-                image_set_numbers = [int(s) for s in job[1:]]
-            else:  # job[0] == 'IMAGE'
+                image_set_numbers = [int(s) for s in job.images.split(',')]
+            else:  # job.jobtype == 'IMAGE'
                 need_prepare_group = False
-                image_set_numbers = [int(job[1])]
+                image_set_numbers = [int(job.images)]
+
+            print "Doing job: ", " ".join(job.images)
 
             pipeline_listener.image_set_number = image_set_numbers[0]
             should_process = True
@@ -179,13 +186,13 @@ def main():
 
             def interaction_handler(module, image_set_number, interaction_request_blob):
                 '''handle interaction requests by passing them to the jobserver and wait for the reply.'''
-                work_socket.send_multipart(["INTERACT", str(module.module_num), str(image_set_number), interaction_request_blob])
-                result = work_socket.recv_multipart()
-                if len(result) == 1:
-                    return result[0]
-                else:
+                rep = InteractionRequest(module_num=str(module.module_num),
+                                         image_set_number=str(image_set_number),
+                                         interaction_request_blob=interaction_request_blob).send(work_socket)
+                if isinstance(rep, InteractionReply):
+                    return rep.interaction_reply_blob
+                elif isinstance(rep, ServerExited):
                     # the run was cancelled before we got a reply.
-                    assert result[1] == 'CANCELLED', str(result)
                     raise CancelledException()
 
             successful_image_set_numbers = []
@@ -233,12 +240,12 @@ def main():
             # multiprocessing: send path of measurements.
             # XXX - distributed - package them up.
             current_measurements.flush()
-            work_socket.send_multipart(["MEASUREMENTS",
-                                        current_measurements.hdf5_dict.filename.encode('utf-8')] +
-                                       [str(isn) for isn in successful_image_set_numbers])
-            work_socket.recv()  # get ACK - indicates measurements have been
-                                # read and can be deleted, to remove the
-                                # temporary file.
+            req = MeasurementsReport(path=current_measurements.hdf5_dict.filename.encode('utf-8'),
+                                     image_set_numbers=",".join(str(isn) for isn in successful_image_set_numbers))
+            rep = req.send(work_socket)
+            if isinstance(rep, ServerExited):
+                continue  # server went away
+            # rep is just an ACK
             work_socket.close()
             del current_measurements
         except Exception:

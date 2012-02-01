@@ -19,21 +19,21 @@ import logging
 import threading
 import Queue
 import uuid
-import zmq
 import cStringIO as StringIO
 import sys
 import os
 import os.path
-import hashlib
+import zmq
 import gc
 
 import cellprofiler
 import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpimage
-import cellprofiler.analysis_worker  # used to get the path to the code
-from cellprofiler.gui.errordialog import ED_CONTINUE, ED_STOP, ED_SKIP
+from cellprofiler.utilities.zmqrequest import Reply, Boundary
+from cellprofiler.analysis_requests import PipelineRequest, InitialMeasurementsRequest, WorkRequest, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, DebugWaiting, DebugComplete, WorkReply
 import subimager.client
+
 
 logger = logging.getLogger(__name__)
 
@@ -41,18 +41,20 @@ use_analysis = False
 
 DEBUG = 'DEBUG'
 
+
 class Analysis(object):
     '''An Analysis is the application of a particular pipeline of modules to a
     set of images to produce measurements.
 
     Multiprocessing for analyses is handled by multiple layers of threads and
     processes, to keep the GUI responsive and simplify the code.  Threads and
-    processes are organized as below.
+    processes are organized as below.  Display/Interaction requests and
+    Exceptions are sent directly to the pipeline listener.
 
     +------------------------------------------------+
     |           CellProfiler GUI/WX thread           |
     |                                                |
-    +--Analysis methods() down, AnalysisEvent()s up--+
+    +- Analysis() methods down,  Events/Requests up -+
     |                                                |
     |       AnalysisRunner.interface() thread        |
     |                                                |
@@ -61,7 +63,7 @@ class Analysis(object):
     |  AnalysisRunner.jobserver()/announce() threads |
     |                                                |
     +----------------------------------------------- +
-              ZMQ sockets (other processes)
+    |              zmqrequest.Boundary()             |
     +---------------+----------------+---------------+
     |     Worker    |     Worker     |   Worker      |
     +---------------+----------------+---------------+
@@ -131,21 +133,19 @@ class AnalysisRunner(object):
 
     The two threads run interface() and jobserver(), below.
 
-    interface() is responsible for communication upstream (e.g., between
-    workers and the GUI), tracking job progress, integrating measurements
-    returned from workers.  Upstream messages from interface() are
-    AnalysisEvent()s.
+    interface() is responsible grouping jobs for dispatch, tracking job
+    progress, integrating measurements returned from workers.
 
-    jobserver() is a lightweight thread that primarily acts as a switchboard
-    between workers and interface().  It serves jobs and places messages into
-    the proper queue for upstream work.
+    jobserver() is a lightweight thread that serves jobs and receives their
+    requests, acting as a switchboard between workers, interface(), and
+    whatever event_listener is present (via post_event()).
 
     workers are stored in AnalysisRunner.workers[], and are separate processes.
-    They are expected to exit if their stdin() closes, such as if the parent
+    They are expected to exit if their stdin() closes, e.g., if the parent
     process goes away.
 
     interface() and jobserver() communicate via Queues and using condition
-    variables to get each other's attention.  Zeromq is used to communicate
+    variables to get each other's attention.  zmqrequest is used to communicate
     between jobserver() and workers[].
     '''
 
@@ -171,27 +171,20 @@ class AnalysisRunner(object):
         self.analysis_id = analysis_id
         self.pipeline = pipeline.copy()
         self.event_listener = event_listener
-        self.original_exception_events = {}
 
         self.interface_work_cv = threading.Condition()
-        self.pause_cancel_cv = threading.Condition()
+        self.jobserver_work_cv = threading.Condition()
         self.paused = False
         self.cancelled = False
 
         self.work_queue = Queue.Queue()
         self.in_process_queue = Queue.Queue()
-        self.display_request_queue = Queue.Queue()
-        self.interaction_request_queue = Queue.Queue()
-        self.interaction_reply_queue = Queue.Queue()
-        self.receive_measurements_queue = Queue.Queue()
-
-        self.debug_reply_queue = Queue.Queue()
-        self.debug_port_callbacks = {}
+        self.returned_measurements_queue = Queue.Queue()
 
         self.interface_thread = None
         self.jobserver_thread = None
 
-        self.start_workers(2)  # start worker pool via class method
+        self.start_workers(2)  # start worker pool via class method (below)
 
     # External control interfaces
     def start(self):
@@ -200,9 +193,6 @@ class AnalysisRunner(object):
                                   self.initial_measurements, cpimage.ImageSetList())
         self.pipeline.prepare_run(workspace)
         self.initial_measurements.flush()  # Make sure file is valid before we start threads.
-        self.measurements = cpmeas.Measurements(image_set_start=None,
-                                                copy=self.initial_measurements)
-
         self.interface_thread = start_daemon_thread(target=self.interface, name='AnalysisRunner.interface')
         self.jobserver_thread = start_daemon_thread(target=self.jobserver, args=(self.analysis_id,), name='AnalysisRunner.jobserver')
 
@@ -212,26 +202,26 @@ class AnalysisRunner(object):
                 self.interface_thread.is_alive() and
                 self.jobserver_thread.is_alive())
 
+    def notify_threads(self):
+        with self.interface_work_cv:
+            self.interface_work_cv.notify()
+        with self.jobserver_work_cv:
+            self.jobserver_work_cv.notify()
+
     def cancel(self):
         '''cancel the analysis run'''
-        with self.pause_cancel_cv:
-            self.cancelled = True
-            self.paused = False
-            self.pause_cancel_cv.notifyAll()  # interface() and jobserver() threads
-        with self.interface_work_cv:
-            self.interface_work_cv.notify()  # in case interface is waiting
+        self.cancelled = True
+        self.notify_threads()
 
     def pause(self):
         '''pause the analysis run'''
-        with self.pause_cancel_cv:
-            self.paused = True
-            self.pause_cancel_cv.notifyAll()  # interface() and jobserver() threads
+        self.paused = True
+        self.notify_threads()
 
     def resume(self):
         '''resume a paused analysis run'''
-        with self.pause_cancel_cv:
-            self.paused = False
-            self.pause_cancel_cv.notifyAll()  # interface() and jobserver() threads
+        self.paused = False
+        self.notify_threads()
 
     # event posting
     def post_event(self, evt):
@@ -240,13 +230,18 @@ class AnalysisRunner(object):
     # XXX - catch and deal with exceptions in interface() and jobserver() threads
     def interface(self, image_set_start=1, image_set_end=None,
                      overwrite=True):
-        '''Top-half thread for running an analysis.  Interacts with GUI and
-        actual job server thread.
+        '''Top-half thread for running an analysis.  Sets up grouping for jobs,
+        deals with returned measurements, reports status periodically.
 
         image_set_start - beginning image set number
         image_set_end - final image set number
         overwrite - whether to recompute imagesets that already have data in initial_measurements.
         '''
+        # create copy of measurements for gathering results
+        # (we put it in self.measurements, but it's only ever referenced in this function)
+        self.measurements = cpmeas.Measurements(image_set_start=None,
+                                                copy=self.initial_measurements)
+
         # listen for pipeline events, and pass them upstream
         self.pipeline.add_listener(lambda pipe, evt: self.post_event(evt))
 
@@ -256,7 +251,7 @@ class AnalysisRunner(object):
         if image_set_end is None:
             image_set_end = len(self.measurements.get_image_numbers())
 
-        self.post_event(AnalysisStartedEvent())
+        self.post_event(AnalysisStarted())
 
         # reset the status of every image set that needs to be processed
         for image_set_number in range(image_set_start, image_set_end):
@@ -300,249 +295,133 @@ class AnalysisRunner(object):
 
         # We loop until every image is completed, or an outside event breaks the loop.
         while True:
-            # take the interface_work_cv lock to keep our interaction with the measurements atomic.
-            with self.interface_work_cv:
-                counts = dict((s, 0) for s in [self.STATUS_UNPROCESSED, self.STATUS_IN_PROCESS, self.STATUS_DONE])
-                for image_set_number in range(image_set_start, image_set_end):
-                    counts[self.measurements[cpmeas.IMAGE, self.STATUS, image_set_number]] += 1
-
-                # report our progress
-                self.post_event(AnalysisProgressEvent(counts))
-
-                # Are we finished?
-                if (counts[self.STATUS_IN_PROCESS] + counts[self.STATUS_UNPROCESSED]) == 0:
-                    if not grouping_needed:
-                        self.pipeline.post_group(workspace, {})
-                    # XXX - revise pipeline.post_run to use the workspace
-                    self.pipeline.post_run(self.measurements, None, None)
-                    self.measurements.flush()
-                    self.post_event(AnalysisFinishedEvent(self.analysis_id, self.measurements))
-                    break
-
-                # wait for an image set to finish or some sort of display or
-                # interaction work that needs handling.
-                self.interface_work_cv.wait()
-
-            # check pause/cancel
-            if not self.check_pause_and_cancel():
+            if self.cancelled:
                 break
-            # display/interaction/measurements
-            self.handle_queues()
 
+            # gather measurements
+            while not self.returned_measurements_queue.empty():
+                returned_measurements, job = self.returned_measurements_queue.get()
+                for image_set_number in job:
+                    self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
+
+            # check for jobs in progress
+            while not self.in_process_queue.empty():
+                image_set_numbers = self.in_process_queue.get()
+                for image_set_number in image_set_numbers:
+                    self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_IN_PROCESS
+
+            # check progress and report
+            counts = dict((s, 0) for s in [self.STATUS_UNPROCESSED, self.STATUS_IN_PROCESS, self.STATUS_DONE])
+            for image_set_number in range(image_set_start, image_set_end):
+                counts[self.measurements[cpmeas.IMAGE, self.STATUS, image_set_number]] += 1
+            self.post_event(AnalysisProgress(counts))
+
+            # Are we finished?
+            if (counts[self.STATUS_IN_PROCESS] + counts[self.STATUS_UNPROCESSED]) == 0:
+                if not grouping_needed:
+                    self.pipeline.post_group(workspace, {})
+                # XXX - revise pipeline.post_run to use the workspace
+                self.pipeline.post_run(self.measurements, None, None)
+                break
+
+            # not done, wait for more work
+            with self.interface_work_cv:
+                if (self.paused or \
+                        (self.in_process_queue.empty() and
+                         self.returned_measurements_queue.empty())):
+                    self.interface_work_cv.wait()  # wait for a change of status or work to arrive
+
+        # make sure measurements are valid before returning
+        self.measurements.flush()
+        self.post_event(AnalysisFinished(self.measurements, self.cancelled))
         del self.measurements
         self.analysis_id = False  # this will cause the jobserver thread to exit
-        self.post_event(AnalysisEndedEvent(self.cancelled))
-
-    def check_pause_and_cancel(self):
-        '''if paused, wait for unpause or cancel.  return True if work should
-        continue, False if cancelled.
-        '''
-        # paused - wait for us to be unpaused
-        with self.pause_cancel_cv:
-            while self.paused:
-                self.post_event(AnalysisPausedEvent())
-                self.pause_cancel_cv.wait()
-                if not self.paused:
-                    self.post_event(AnalysisResumedEvent())
-        if self.cancelled:
-            return False
-        return True
-
-    def handle_queues(self):
-        '''handle any UI-based work, including checking for display/interaction
-        requests, and measurements that have been returned.
-        '''
-        # display requests
-        while not self.display_request_queue.empty():
-            image_set_number, display_request = self.display_request_queue.get()
-            self.post_event(AnalysisDisplayEvent(image_set_number, display_request))
-        # interaction requests
-        while not self.interaction_request_queue.empty():
-            reply_address, module_number, image_set_number, interaction_request = self.interaction_request_queue.get()
-
-            def reply_cb(interaction_result, reply_address=reply_address):
-                # this callback function will be called from another thread
-                with self.pause_cancel_cv:
-                    # cancellation during interaction is handled in jobserver().
-                    if not self.cancelled:
-                        self.interaction_reply_queue.put((reply_address, interaction_result))
-                        with self.interface_work_cv:
-                            self.interface_work_cv.notify()  # notify interface() there's a reply to be handled.
-
-            self.post_event(AnalysisInteractionRequest(module_number, image_set_number, interaction_request, reply_cb))
-        # notification that images are in process
-        while not self.in_process_queue.empty():
-            image_set_numbers = self.in_process_queue.get()
-            for image_set_number in image_set_numbers:
-                self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_IN_PROCESS
-        # measurements
-        while not self.receive_measurements_queue.empty():
-            # XXX - GROUPS
-            returned_measurements, job = self.receive_measurements_queue.get()
-            for image_set_number in job:
-                self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
 
     def jobserver(self, analysis_id):
         # this server subthread should be very lightweight, as it has to handle
         # all the requests from workers, of which there might be several.
 
-        # set up the zmq.XREP socket we'll serve jobs from
-        work_queue_socket = self.zmq_context.socket(zmq.XREP)
-        work_queue_socket.setsockopt(zmq.LINGER, 0)  # Allow close without waiting for messages to be delivered.
-        work_queue_port = work_queue_socket.bind_to_random_port('tcp://127.0.0.1')
+        # start the zmqrequest Boundary
+        request_queue = Queue.Queue()
+        boundary = Boundary('tcp://127.0.0.1', request_queue, self.jobserver_work_cv, random_port=True)
 
-        self.announce_queue.put(['tcp://127.0.0.1:%d' % work_queue_port, analysis_id])
-
-        poller = zmq.Poller()
-        poller.register(work_queue_socket, zmq.POLLIN)
-
-        workers_waiting_on_reply = []
+        i_was_paused_before = False
 
         # start serving work until the analysis is done (or changed)
         while self.analysis_id == analysis_id:
-            # check for pause
-            if not self.check_pause_and_cancel():
-                break  # exit
+            # announce ourselves
+            self.announce_queue.put([boundary.request_address, analysis_id])
 
-            # Check interactive_reply_queue for messages to be sent to
-            # workers.
-            while not self.interaction_reply_queue.empty():
-                address, reply = self.interaction_reply_queue.get()
-                work_queue_socket.send_multipart([address, '', reply])
-                workers_waiting_on_reply.remove(address)
+            if self.cancelled:
+                self.post_event(AnalysisCancelled())
+                break
 
-            # Check for any debug replies that need to be forwarded.
-            while not self.debug_reply_queue.empty():
-                reply = self.debug_reply_queue.get()
-                address, disposition = reply[:2]
-                if disposition in (ED_SKIP, ED_STOP, ED_CONTINUE):
-                    work_queue_socket.send_multipart([address, '', disposition])
-                    # XXX - need to cause worker to exit if exception outside pipeline.
-                else:
-                    assert disposition == DEBUG
-                    verification_string, port_callback = reply[2:]
-                    work_queue_socket.send_multipart([address, '', 'DEBUG',
-                                                      hashlib.sha1(verification_string).hexdigest()])
-                    self.debug_port_callbacks[address] = port_callback
-                workers_waiting_on_reply.remove(address)
+            with self.jobserver_work_cv:
+                if self.paused and not i_was_paused_before:
+                    self.post_event(AnalysisPaused())
+                    i_was_paused_before = True
+                if self.paused or request_queue.empty():
+                    self.jobserver_work_cv.wait(1)  # we timeout in order to keep announcing ourselves.
+                    continue  # back to while... check that we're still running
 
-            # check for pause
-            if not self.check_pause_and_cancel():
-                break  # exit
+            if i_was_paused_before:
+                self.post_event(AnalysisResumed())
+                i_was_paused_before = False
 
-            # Check for activity from workers
-            if not (poller.poll(timeout=250)):  # 1/4 second
-                # timeout.  re-announce work queue, and try again.  (this
-                # also handles the case where the workers start up slowly,
-                # and miss the first announcement.)
-                self.announce_queue.put(['tcp://127.0.0.1:%d' % work_queue_port, analysis_id])
-                continue
-            msg = work_queue_socket.recv_multipart()
-            address, _, message_type = msg[:3]  # [address, '', message_type, optional job #, optional body]
-            if message_type == 'PIPELINE':
-                work_queue_socket.send_multipart([address, '', self.pipeline_as_string()])
-            elif message_type == 'INITIAL_MEASUREMENTS':
-                work_queue_socket.send_multipart([address, '', self.initial_measurements.hdf5_dict.filename.encode('utf-8')])
-            elif message_type == 'WORK REQUEST':
+            req = request_queue.get()
+            if isinstance(req, PipelineRequest):
+                req.reply(Reply(pipeline_blob=self.pipeline_as_string()))
+            elif isinstance(req, InitialMeasurementsRequest):
+                req.reply(Reply(path=self.initial_measurements.hdf5_dict.filename.encode('utf-8')))
+            elif isinstance(req, WorkRequest):
                 if not self.work_queue.empty():
                     job, grouping_needed = self.work_queue.get()
                     if grouping_needed:
-                        work_queue_socket.send_multipart([address, '', 'GROUP'] + [str(j) for j in job])
+                        rep = WorkReply(jobtype='GROUP',
+                                        images=",".join(str(j) for j in job))
                     else:
-                        work_queue_socket.send_multipart([address, '', 'IMAGE', str(job[0])])
-                    self.in_process_queue.put(job)
+                        rep = WorkReply(jobtype='IMAGE',
+                                        images=str(job[0]))
+                    req.reply(rep)
+                    self.queue_dispatched_job(job)
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
-                    work_queue_socket.send_multipart([address, '', 'NONE'])
-            elif message_type == 'DISPLAY':
-                self.queue_display_request(msg[3], msg[4])
-                work_queue_socket.send_multipart([address, '', 'OK'])
-            elif message_type == 'INTERACT':
-                module_number, image_set_number, interaction_request_blob = msg[3:]
-                self.queue_interaction_request(address,
-                                               int(module_number), int(image_set_number),
-                                               interaction_request_blob)
-                # we don't reply immediately, as we have to wait for the
-                # GUI to run.  We'll find the result on
-                # self.interact_reply_queue sometime in the future.
-                #
-                # Note that there is some danger here, in that a worker will
-                # hang in socket.recv() until it gets a reply, and if the
-                # analysis is cancelled at this point, it will hang
-                # indefinitely.  We put the worker's address into a list of
-                # workers waiting for interactions and send them a special
-                # result if we're cancelled before they get their answer.
-                workers_waiting_on_reply.append(address)
-            elif message_type == 'MEASUREMENTS':
+                    req.reply(WorkReply(jobtype='NONE'))
+            elif isinstance(req, MeasurementsReport):
+                req.reply(Reply(message='THANKS'))
                 # Measurements are available at location indicated
-                measurements_path = msg[3].decode('utf-8')
-                job = msg[4:]
-                work_queue_socket.send_multipart([address, '', 'THANKS'])
+                measurements_path = req.path.decode('utf-8')
+                successes = [int(s) for s in req.image_set_numbers.split(",")]
                 try:
                     reported_measurements = cpmeas.load_measurements(measurements_path)
-                    self.queue_receive_measurements(reported_measurements, job)
-                except Exception, e:
+                    self.queue_received_measurements(reported_measurements, successes)
+                except Exception:
                     raise
                     # XXX - report error, push back job
-            elif message_type == 'EXCEPTION':
-                def disposition_callback(disposition, *args):
-                    assert disposition in (ED_SKIP, ED_STOP, ED_CONTINUE, DEBUG)
-                    if disposition == ED_STOP:
-                        self.cancel()  # cancel the whole run
-                    self.debug_reply_queue.put((address, disposition) + args)
-                where = msg[3]
-                if where == 'PIPELINE':
-                    image_set_number, module_name, exc_type, exc_message, exc_traceback, filename, line_number = msg[4:]
-                    event = AnalysisPipelineExceptionEvent(int(image_set_number), module_name,
-                                                           exc_type, exc_message, exc_traceback,
-                                                           filename, int(line_number),
-                                                           disposition_callback)
-                else:
-                    exc_type, exc_message, exc_traceback, filename, line_number = msg[4:]
-                    event = AnalysisWorkerExceptionEvent(exc_type, exc_message, exc_traceback,
-                                                         filename, int(line_number),
-                                                         disposition_callback)
-                workers_waiting_on_reply.append(address)
-                self.original_exception_events[address] = event
-                self.post_event(event)
-            elif message_type == 'DEBUG WAITING':
-                work_queue_socket.send_multipart([address, '', 'ACK'])  # ACK
-                self.debug_port_callbacks[address](int(msg[3]))
-            elif message_type == 'DEBUG COMPLETE':
-                workers_waiting_on_reply.append(address)
-                # original callback will reply to message.
-                self.post_event(AnalysisDebugCompleteEvent(self.original_exception_events[address]))
+            elif isinstance(req, (InteractionRequest, DisplayRequest, ExceptionReport, DebugWaiting, DebugComplete)):
+                # bump upward
+                self.post_event(req)
             else:
-                raise ValueError("Unknown message from worker: %s", message_type)
+                raise ValueError("Unknown request from worker: %s of type %s" % (req, type(req)))
 
         # announce that this job is done/cancelled
         self.announce_queue.put(['DONE', analysis_id])
 
-        # make sure any workers waiting for replies (interaction or debug) get notified
-        for address in workers_waiting_on_reply:
-            # special: 2 parts to body instead of just 1
-            work_queue_socket.send_multipart([address, '', ED_STOP, ED_STOP])
+        # stop the ZMQ-boundary thread - will also deal with any requests waiting on replies
+        boundary.stop()
 
     def queue_job(self, image_set_number):
         self.work_queue.put(image_set_number)
 
-    def queue_display_request(self, jobnum, display_blob):
-        self.display_request_queue.put((jobnum, display_blob))
+    def queue_dispatched_job(self, job):
+        self.in_process_queue.put(job)
         # notify interface thread
         with self.interface_work_cv:
             self.interface_work_cv.notify()
 
-    def queue_interaction_request(self, address, module_number, image_set_number, interaction_request_blob):
-        '''queue an interaction request, to be handled by the GUI.  Results are
-        returned from the GUI via the interaction_reply_queue.'''
-        self.interaction_request_queue.put((address, module_number, image_set_number, interaction_request_blob))
-        # notify interface thread
-        with self.interface_work_cv:
-            self.interface_work_cv.notify()
-
-    def queue_receive_measurements(self, image_set_number, measure_blob):
-        self.receive_measurements_queue.put((image_set_number, measure_blob))
+    def queue_received_measurements(self, image_set_number, measure_blob):
+        self.returned_measurements_queue.put((image_set_number, measure_blob))
         # notify interface thread
         with self.interface_work_cv:
             self.interface_work_cv.notify()
@@ -626,6 +505,8 @@ def find_python():
 
 
 def find_analysis_worker_source():
+    # import here to break circular dependency.
+    import cellprofiler.analysis_worker  # used to get the path to the code
     return cellprofiler.analysis_worker.__file__
 
 
@@ -636,139 +517,40 @@ def start_daemon_thread(target=None, args=(), name=None):
     return thread
 
 
-class AbstractAnalysisEvent(object):
-    "Something happened in an Analysis."
+class AnalysisStarted(object):
     pass
 
 
-class AnalysisStartedEvent(AbstractAnalysisEvent):
-    "Event indicating the analysis has started running."
-    pass
-
-
-class AnalysisProgressEvent(AbstractAnalysisEvent):
-    """Progress was made in the Analysis.
-    AnalysisProgressEvent.counts - dictionary with count of #images at each step of analysis.
-    """
+class AnalysisProgress(object):
     def __init__(self, counts):
         self.counts = counts
 
 
-class AnalysisFinishedEvent(AbstractAnalysisEvent):
-    """Analysis finished successfully.
-    AnalysisFinishedEvent.analysis_id - the ID of the finished analysis.
-    AnalysisFinishedEvent.measurements - the resulting measurements.
-    """
-    def __init__(self, analysis_id, measurements):
-        self.analysis_id = analysis_id
+class AnalysisPaused(object):
+    pass
+
+
+class AnalysisResumed(object):
+    pass
+
+
+class AnalysisCancelled(object):
+    pass
+
+
+class AnalysisFinished(object):
+    def __init__(self, measurements, cancelled):
         self.measurements = measurements
-
-
-class AnalysisEndedEvent(AbstractAnalysisEvent):
-    """Analysis has terminated (finished or cancelled).
-    AnalysisEndedEvent.cancelled - whether the analysis was cancelled.
-    """
-    def __init__(self, cancelled):
         self.cancelled = cancelled
-
-
-class AnalysisDisplayEvent(AbstractAnalysisEvent):
-    """Display request from an analysis.
-    AnalysisDisplayEvent.image_set_number - image set number requesting display.
-    AnalysisDisplayEvent.display_request - the display request data.
-    """
-    def __init__(self, image_set_number, display_request):
-        self.image_set_number = image_set_number
-        self.display_request = self.display_request
-
-
-class AnalysisInteractionRequest(AbstractAnalysisEvent):
-    """Interaction request from an analysis.
-    AnalysisInteractionRequest.module_number - one-based module number requesting the interactions.
-    AnalysisInteractionRequest.image_set_number - image set number requesting interaction.
-    AnalysisInteractionRequest.interaction_request_blob - the interaction request data.
-    AnalysisInteractionRequest.reply_cb - callback function for the reply.
-    """
-    def __init__(self, module_number, image_set_number, interaction_request_blob, reply_cb):
-        self.module_number = module_number
-        self.image_set_number = image_set_number
-        self.interaction_request_blob = interaction_request_blob
-        self.reply_cb = reply_cb
-
-
-class AnalysisPausedEvent(AbstractAnalysisEvent):
-    """Analysis has been paused."""
-    pass
-
-
-class AnalysisResumedEvent(AbstractAnalysisEvent):
-    """Analysis has been resumed."""
-    pass
-
-
-class AnalysisPipelineExceptionEvent(AbstractAnalysisEvent):
-    """An exception occurred in the pipeline during an analysis.
-    AnalysisPipelineExceptionEvent.image_set_number - image set number that caused the exception.
-    AnalysisPipelineExceptionEvent.module_name - module's name where exception happened.
-    AnalysisPipelineExceptionEvent.exc_type - exception type (a string).
-    AnalysisPipelineExceptionEvent.exc_message - the exception message.
-    AnalysisPipelineExceptionEvent.exc_traceback - the traceback (a string).
-    AnalysisPipelineExceptionEvent.filename - filename of the exception
-    AnalysisPipelineExceptionEvent.line_number - line_number of the exception
-    AnalysisPipelineExceptionEvent.disposition_cb - callback function for how to handle this exception.
-             Callback arguments are: (disposition=ED_SKIP/ED_STOP/ED_CONTINUE/DEBUG, verification_string=None, port_callback=None)
-             verification_string and port_callback must be set if first argument is DEBUG.
-             port_callback will be called when the remote debugger is available with the port as an argument.
-    """
-    def __init__(self, image_set_number, module_name, exc_type, exc_message, exc_traceback, filename, line_number, disposition_callback):
-        self.image_set_number = image_set_number
-        self.module_name = module_name
-        self.exc_type = exc_type
-        self.exc_message = exc_message
-        self.exc_traceback = exc_traceback
-        self.filename = filename
-        self.line_number = line_number
-        self.disposition_callback = disposition_callback
-
-
-class AnalysisWorkerExceptionEvent(AbstractAnalysisEvent):
-    """An exception occurred in the worker during an analysis, outside of the pipeline.
-    AnalysisWorkerExceptionEvent.exc_type - exception type (a string).
-    AnalysisWorkerExceptionEvent.exc_message - the exception message.
-    AnalysisWorkerExceptionEvent.exc_traceback - the traceback (a string).
-    AnalysisWorkerExceptionEvent.filename - filename of the exception
-    AnalysisWorkerExceptionEvent.line_number - line_number of the exception
-    AnalysisWorkerExceptionEvent.disposition_cb - callback function for how to handle this exception.
-             Callback arguments are: (disposition=ED_STOP/ED_CONTINUE/DEBUG, verification_string=None, port_callback=None)
-             verification_string and port_callback must be set if first argument is DEBUG.
-             ED_STOP = terminate the worker, ED_CONTINUE= continue processing.
-             port_callback will be called when the remote debugger is available with the port as an argument.
-    """
-    def __init__(self, exc_type, exc_message, exc_traceback, filename, line_number, disposition_callback):
-        self.exc_type = exc_type
-        self.exc_message = exc_message
-        self.exc_traceback = exc_traceback
-        self.filename = filename
-        self.line_number = line_number
-        self.disposition_callback = disposition_callback
-
-
-class AnalysisDebugCompleteEvent(AbstractAnalysisEvent):
-    """Remote debugging of a pipeline or worker has completed.
-    AnalysisDebugCompleteEvent.original_event - the original AnalysisPipelineExceptionEvent or AnalysisWorkerExceptionEvent.
-
-    The handler of this event should treat it (programmatically) in the same
-    way as the original event, calling original_event.disposition_callback()
-    (possibly debugging again, even).
-    """
-    def __init__(self, original_event):
-        self.original_event = original_event
 
 
 if __name__ == '__main__':
     import time
     import cellprofiler.pipeline
     import cellprofiler.preferences
+    import cellprofiler.utilities.thread_excepthook
+
+    cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
 
     cellprofiler.preferences.set_headless()
     logging.root.setLevel(logging.INFO)
@@ -785,10 +567,10 @@ if __name__ == '__main__':
     def callback(event):
         global keep_going
         print "Pipeline Event", event
-        if isinstance(event, AnalysisEndedEvent):
+        if isinstance(event, AnalysisFinished):
             keep_going = False
 
-    analysis.start_analysis(callback, None)  # no exception handling, yet.
+    analysis.start(callback)
     while keep_going:
         time.sleep(0.25)
     del analysis

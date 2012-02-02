@@ -1,61 +1,52 @@
 '''<b>Measure Image Quality</b> measures features that indicate image quality, 
-including measurements of blur (poor focus) and the percentage
-of pixels in the image that are minimal and maximal (i.e., saturated)
+including measurements of blur (poor focus), intensity, saturation (i.e., the percentage
+of pixels in the image that are minimal and maximal)
 <hr>
-
 Please note that for best results, this module should be applied to the original raw images, 
 as opposed to images that already been corrected for illumination.
  
 <h4>Available measurements</h4>  
 <ul>
-<li><i>PercentMaximal:</i> Percent of pixels at the maximum intensity value of the image</li>
-<li><i>PercentMinimal:</i> Percent of pixels at the minimum intensity value of the image</li>
-<li><i>FocusScore:</i> A measure of the intensity variance across image</li>
-<li><i>LocalFocusScore:</i> A measure of the intensity variance between image parts</li>
-<li><i>Threshold:</i> The automatically calculated threshold for each image for the 
-thresholding method of choice.</li>
-<li><i>MagnitudeLogLogSlope, PowerLogLogSlope:</i> The slope of the log-log magnitude and power spectra.</li>
+<li><b>Blur metrics</b>
+<ul>
+<li><i>FocusScore:</i> A measure of the intensity variance across the image.</li>
+<li><i>LocalFocusScore:</i> A measure of the intensity variance between image sub-regions.</li>
+<li><i>Correlation:</i> A measure of the correlation of the image for a given spatial scale.</li>
+<li><i>PowerLogLogSlope:</i> The slope of the image log-log power spectrum.</li>
 </ul>
+</li>
 
-Example Output:
-<table border="1">
-<tr>
-<td>Percent of pixels that are at the Maximal Intensity:</td>
-<td>RescaledOrig: </td>
-<td>0.0002763</td>
-</tr>
-<tr>
-<td>Percent of pixels that are at the Minimal Intensity:</td>
-<td>RescaledOrig: </td>
-<td>0.0000352</td>
-</tr>
-<tr>
-<td>Focus Score:</td>
-<td>RescaledOrig:</td>
-<td> 0.016144</td>
-</tr>
-<tr>
-<td>Suggested Threshold:</td>
-<td>Orig: </td>
-<td>0.0022854</td>
-</tr>
-<tr>
-<td>Magnitude Spectrum Slope:</td>
-<td>RescaledOrig: </td>
-<td>-2.2</td>
-</tr>
-<tr>
-<td>Power Spectrum Slope:</td>
-<td>RescaledOrig: </td>
-<td>-2.9</td>
-</tr>
-</table>'''
+<li><b>Saturation metrics</b>
+<ul>
+<li><i>PercentMaximal:</i> Percent of pixels at the maximum intensity value of the image.</li>
+<li><i>PercentMinimal:</i> Percent of pixels at the minimum intensity value of the image.</li>
+</ul>
+</li>
+
+<li><b>Intensity metrics</b>
+<ul>
+<li><i>TotalIntensity:</i> Sum of all pixel intensity values.</li>
+<li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
+<li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation (MAD) of pixel intensity values.</li>
+<li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
+<li><i>TotalArea:</i> Number of pixels measured.</li>
+</ul>
+</li>
+
+<li><b>Threshold metrics:</b>
+<ul>
+<li><i>Threshold:</i>: The automatically calculated threshold for each image for the
+thresholding method of choice.</li>
+</ul>
+</li>
+</ul>
+'''
 
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
 # 
-# Developed by the Broad Institute
-# Copyright 2003-2010
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2012 Broad Institute
 # 
 # Please see the AUTHORS file for credits.
 # 
@@ -72,105 +63,290 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.cpmath.threshold as cpthresh
+from cellprofiler.cpmath.haralick import Haralick
+from cellprofiler.utilities import product
 import cellprofiler.cpmath.radial_power_spectrum as rps
 from identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
 from identify import O_FOREGROUND, O_BACKGROUND
+from cellprofiler.cpmath.threshold import TM_MOG_GLOBAL
+from loadimages import C_FILE_NAME, C_SCALING
+from cellprofiler.preferences import \
+     DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
+     DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 
-IMAGE_QUALITY = 'ImageQuality'
-FOCUS_SCORE = 'FocusScore'
-LOCAL_FOCUS_SCORE = 'LocalFocusScore'
-PERCENT_MAXIMAL = 'PercentMaximal'
-PERCENT_MINIMAL = 'PercentMinimal'
-THRESHOLD = 'Threshold'
+##############################################
+#
+# Choices for which images to include
+#
+##############################################
+
+# Setting variables
+'''Image selection'''
+O_ALL_LOADED = "All loaded images" #Use all loaded images
+O_SELECT = "Select..." #Select the images you want from a list, all treated the same
+
+# Measurement names
+'''Root module measurement name'''
+C_IMAGE_QUALITY = 'ImageQuality'
+F_FOCUS_SCORE = 'FocusScore'
+F_LOCAL_FOCUS_SCORE = 'LocalFocusScore'
+F_CORRELATION = 'Correlation'
+F_POWER_SPECTRUM_SLOPE = 'PowerLogLogSlope'
+F_TOTAL_AREA = 'TotalArea'
+F_TOTAL_INTENSITY = 'TotalIntensity'
+F_MEAN_INTENSITY = 'MeanIntensity'
+F_MEDIAN_INTENSITY = 'MedianIntensity'
+F_STD_INTENSITY = 'StdIntensity'
+F_MAD_INTENSITY = 'MADIntensity'
+F_MAX_INTENSITY = 'MaxIntensity'
+F_MIN_INTENSITY = 'MinIntensity'
+INTENSITY_FEATURES = [F_TOTAL_AREA, F_TOTAL_INTENSITY, F_MEAN_INTENSITY, F_MEDIAN_INTENSITY, F_STD_INTENSITY, F_MAD_INTENSITY, F_MAX_INTENSITY, F_MIN_INTENSITY]
+F_PERCENT_MAXIMAL = 'PercentMaximal'
+F_PERCENT_MINIMAL = 'PercentMinimal'
+SATURATION_FEATURES = [F_PERCENT_MAXIMAL, F_PERCENT_MINIMAL]
+F_THRESHOLD = 'Threshold'
 MEAN_THRESH_ALL_IMAGES = 'MeanThresh_AllImages'
 MEDIAN_THRESH_ALL_IMAGES = 'MedianThresh_AllImages'
 STD_THRESH_ALL_IMAGES = 'StdThresh_AllImages'
-POWER_SPECTRUM_FEATURES = ['MagnitudeLogLogSlope', 'PowerLogLogSlope']
-SETTINGS_PER_GROUP = 11
+
+SETTINGS_PER_GROUP_V3 = 11
+IMAGE_GROUP_SETTING_OFFSET = 2
 
 class MeasureImageQuality(cpm.CPModule):
     module_name = "MeasureImageQuality"
     category = "Measurement"
-    variable_revision_number = 3
+    variable_revision_number = 4
 
     def create_settings(self):
+        self.images_choice = cps.Choice(
+            "Calculate metrics for which images?",
+            [O_ALL_LOADED, O_SELECT], doc = """
+            This option lets you choose which images will have quality metrics calculated.
+            <ul>
+            <li><i>%(O_ALL_LOADED)s:</i> Use all images loaded with <b>LoadImages</b> or <b>LoadData</b> modules
+            (images loaded with <b>LoadSingleImage</b> are excluded). The quality metrics selected below will be
+            applied to all these images.</li>
+            <li><i>%(O_SELECT)s:</i> Select the desired images from a list. The quality metric settings selected
+            will be applied to all these images. Additional lists can be added with separate settings.</li>
+            </ul>"""%globals())
+
+        self.divider = cps.Divider(line=True)
+
         self.image_groups = []
+        self.image_count = cps.HiddenCount(self.image_groups, "Image count")
         self.add_image_group(can_remove = False)
-        self.bottom_spacer = cps.Divider(line=False)
-        self.add_button = cps.DoSomething("", "Add another image", self.add_image_group)
-    
+        self.add_image_button = cps.DoSomething("", "Add another image list", self.add_image_group)
+
     def add_image_group(self, can_remove = True):
-        group = MeasureImageQualitySettingsGroup() # helper class defined below
+        group = cps.SettingsGroup()
+
+        group.can_remove = can_remove
         if can_remove:
             group.append("divider", cps.Divider(line=True))
-        group.append("image_name", cps.ImageNameSubscriber("Select an image to measure","None", 
-                                                           doc = '''What did you call the grayscale images whose quality you want to measure?'''))
-        group.append("check_blur", cps.Binary("Check for blur?",
-                                              True, 
-                                              doc = '''Would you like to check for blur? If so, the module will calculate a focus score for each image, indicating how blurry an image is
-                                            (higher Focus Score = better focus = less blurry). This calculation is slow, so it is optional. The score 
-                                            is calculated using the normalized variance. We used this algorithm because it
-                                            was ranked best in this paper:
-                                            Sun, Y., Duthaler, S., Nelson, B. "Autofocusing in Computer Microscopy:
-                                               Selecting the optimal focus algorithm," <i>Microscopy Research and
-                                               Technique</i> 65:139-149 (2004).<br>
-                                            <br>
-                                            The calculation of the focus score is as follows:<br>
-                                            [m,n] = size(Image);<br>
-                                            MeanImageValue = mean(Image(:));<br>
-                                            SquaredNormalizedImage = (Image-MeanImageValue).^2;<br>
-                                            FocusScore{ImageNumber} = ...<br>
-                                               sum(SquaredNormalizedImage(:))/(m*n*MeanImageValue);<br>
-                                            <br>
-                                            The above score is designed to determine which image of a particular field of view shows the 
-                                            best focus (assuming the overall intensity and the number of objects in the image is 
-                                            constant); it is not necessarily intended to compare images of different 
-                                            fields of view, although it may be useful for this to some degree. 
-                                            The Local Focus Score is a local version of the Focus Score, which is 
-                                            potentially more useful for comparing focus between images of different fields of view. However, 
-                                            like the Focus Score, the measurement should be used with caution 
-                                            because it may fail to correspond well to the blurriness of images of 
-                                            different fields of view, depending on the conditions.
-                                            '''))
-        group.append("window_size", cps.Integer("Window size for blur measurements",
-                                                20, minval =1,
-                                                doc = '''<i>(Used only if blur measurements are to be calculated)</i> <br> 
-                                                  The Local Focus Score is measured within an NxN pixel window 
-                                                  applied to the image. What value of N would you like to use? We suggest twice the typical object diameter. You
-                                                  can measure the local focus score over multiple window sizes by adding an image
-                                                  to the list more than once and by setting different window sizes for
-                                                  each image. '''))
-        group.append("check_saturation", cps.Binary("Check for saturation?",
-                                                    True, 
-                                                    doc = '''Would you like to check for saturation 
-                                                    (maximal and minimal percentages)? The percentage of pixels at
-                                                    the upper or lower limit of each individual image is 
-                                                    calculated.  The hard limits of 0 and 1 are not used because images often
-                                                    have undergone some kind of transformation such that no pixels
-                                                    ever reach the absolute maximum or minimum of the image format.  Given
-                                                    noise in images, this should typically be a low percentage but if the
-                                                    images were saturated during imaging, a higher than usual
-                                                    PercentMaximal will be observed, and if there are no objects, the
-                                                    PercentMinimal will increase.'''))
-        group.append("calculate_threshold", cps.Binary("Calculate threshold?",
-                                                       True, doc = '''Would you like to automatically calculate a suggested 
-                                                       threshold for each image? One indicator of image quality is that the 
-                                                       automatically calculated suggested threshold is within a typical range. 
-                                                       Outlier images with high or low thresholds often contain artifacts.'''))
+
+        group.append("image_names", cps.ImageNameSubscriberMultiChoice(
+            "Select the images to measure", doc = """
+            <i>(Used only if %(O_SELECT)s is chosen for selecting images)</i><br>
+            Choose one or more images from this list. You can select multiple images by clicking
+            using the shift or command keys. In addition to loaded images, the list includes
+            the images that were created by prior modules."""%globals()))
+
+        group.append("include_image_scalings",cps.Binary(
+            "Include the image rescaling value?",
+            True, doc = """Checking this setting adds the image's rescaling
+            value as a quality control metric. This value is set only for images
+            that loaded using <b>LoadImages</b> or <b>LoadData</b>. This is useful in confirming
+            thqat all images are rescaled by the same value, since some acquisition
+            device vendors may output this value differently.
+            See <b>LoadImages</b> for more information."""))
+
+        group.append("check_blur", cps.Binary(
+            "Calculate blur metrics?",
+            True, doc = """
+            Check this setting to compute a series of blur metrics. The blur metrics are the
+            following, along with recomendations on their use:
+            <ul>
+            <li><i>Power Spectrum Slope:</i> The power spectrum contains the frequency information
+            of the image, and the slope gives a measure of image blur. A higher slope indicates
+            more lower frequency components, and hence more blur (Field, 1997). This metric is
+            recommended for blur detection in most cases.</li>
+            <li><i>Correlation:</i> This is a measure of the image spatial intensity distribution
+            computed across sub-regions of an image for a given spatial scale (Haralick, 1973).
+            If an image is blurred, the correlation between neighboring pixels becomes high,
+            producing a high correlation value. A similar approach was found to give optimal
+            performance for fluorescence microscopy applications (Vollath, 1987). <br>
+            Some care is required in selecting an appropriate spatial scale because differences
+            in the spatial scale capture various features: moderate scales capture the
+            blurring of intracellular features better than small scales and larger scales
+            are more likely to reflect intercellular confluence than focal blur. A spatial scale
+            no bigger than the feature of interest is recommended, although you can select as
+            many scales as desired.</li>
+            <li><i>Focus Score:</i> This score is calculated using a normalized variance,
+            which was the best-ranking algorithm for brightfield, phase contrast, and DIC images (Sun, 2004).
+            Higher focus scores correspond to lower bluriness. <br>
+            More specifically, the focus score computes the intensity variance of the entire
+            image divided by mean image intensity. Since it is tailored for autofocusing
+            applications (difference focus for the same field of view), it assumes that the
+            overall intensity and the number of objects in the image is constant, making it less
+            useful for comparision images of different fields of view. For distinguishing
+            extremely blurry images, however, it performs well.</li>
+            <li><i>Local Focus Score:</i> A local version of the Focus Score, it subdivides the
+            image into non-overlapping tiles, computes the normalized variance for each, and
+            takes the mean of these values as the final metric. It is potentially more useful
+            for comparing focus between images of different fields of view, but is subject
+            to the same caveats as the Focus Score. It can be useful in differentiating good versus
+            badly segmented images in the cases when badly segmented images usually contain no cell
+            objects with high background noise.</li>
+            </ul>
+            <p><b>References</b><br>
+            <ul>
+            <li>Field DJ (1997) "Relations between the statistics of natural
+            images and the response properties of cortical cells," <i>Journal of the Optical
+            Society of America. A, Optics, image science, and vision</i>
+            4(12):2379-94.</li>
+            <li>Haralick RM (1979) "Statistical and structural approaches to texture,"
+            Proc. IEEE, 67(5):786-804.</li>
+            <li>Vollath D (1987) "Automatic focusing by correlative methods," <i>Journal of Microscopy</i>
+            147(3):279-288 </li>
+            <li>Sun Y, Duthaler S, Nelson B (2004) "Autofocusing in Computer Microscopy:
+            Selecting the optimal focus algorithm," <i>Microscopy Research and
+            Technique</i> 65:139-149 </li>
+            </ul>"""))
+
+        group.append("include_local_blur", cps.Binary(
+            "Include local blur metrics?",
+            True, doc = """
+            """))
+
+        group.scale_groups = []
+
+        group.scale_count = cps.HiddenCount(group.scale_groups, "Scale count")
+
+        def add_scale_group(can_remove = True):
+            self.add_scale_group(group, can_remove)
+
+        add_scale_group(False)
+
+        group.append("add_scale_button", cps.DoSomething("",
+            "Add another scale",
+            add_scale_group, doc = """
+            Press this button to add another scale setting."""))
+
+        group.append("check_saturation", cps.Binary(
+            "Calculate saturation metrics?",
+            True, doc = """
+            Checking this option calculates maximal and minimal percentages
+            as saturation metrics. The percentage of pixels at
+            the upper or lower limit of each individual image is
+            calculated.  The hard limits of 0 and 1 are not used because images often
+            have undergone some kind of transformation such that no pixels
+            ever reach the absolute maximum or minimum of the image format.  Given
+            the noise typical in images, this should be a low percentage but if the
+            images were saturated during imaging, a higher than usual
+            PercentMaximal will be observed, and if there are no objects, the
+            PercentMinimal value will increase."""))
+
+        group.append("check_intensity", cps.Binary(
+            "Calculate intensity metrics?",
+            True, doc = """
+            Checking this option will calculate image-based
+            intensity measures, namely the mean, maximum, minimum, standard deviation
+            and median absolute deviation of pixel intensities. These measures
+            are identical to those calculated by <b>MeasureImageIntensity</b>."""))
+
+        group.append("calculate_threshold", cps.Binary(
+            "Calculate thresholds?",
+            True, doc = """
+            Automatically calculate a suggested
+            threshold for each image. One indicator of image quality is that these threshold
+            values lie within a typical range.
+            Outlier images with high or low thresholds often contain artifacts."""))
+
+        group.append("use_all_threshold_methods", cps.Binary(
+            "Use all thresholding methods?",
+            False, doc = """
+            <i>(Used only if image thresholds are calculcated)</i><br>
+            Calculate thresholds using all the available methods. Only the global methods
+            are used. <br>
+            While most methods are straightfoward, some methods have additional
+            parameters that require special handling:
+            <ul>
+            <li><i>Otsu:</i> Thresholds for all combinations of class number, minimzation
+            parameter and middle class assignment are computed.</li>
+            <li><i>Mixture of Gaussians (MoG):</i> Thresholds for image coverage fractions
+            of 0.05, 0.25, 0.75 and 0.95 are computed.</li>
+            </ul>"""))
+
+        group.threshold_groups = []
+
+        group.threshold_count = cps.HiddenCount(group.threshold_groups, "Threshold count")
+
+        def add_threshold_group(can_remove = True):
+            self.add_threshold_group(group, can_remove)
+
+        add_threshold_group(False)
+
+        group.append("add_threshold_button", cps.DoSomething("",
+            "Add another threshold method",
+            add_threshold_group, doc = """
+            Press this button to add another set of threshold settings."""))
+
+        if can_remove:
+            group.append("remove_button", cps.RemoveSettingButton("", "Remove this image list", self.image_groups, group))
+        self.image_groups.append(group)
+        return group
+
+    def add_scale_group(self, image_group, can_remove = True):
+        group = cps.SettingsGroup()
+        image_group.scale_groups.append(group)
+
+        group.image_names = image_group.image_names
+
+        group.append("divider", cps.Divider(line=False))
+
+        group.append('scale', cps.Integer(
+            "Spatial scale for blur measurements",
+            len(image_group.scale_groups)*10+10, doc="""
+            <i>(Used only if blur measurements are to be calculated)</i> <br>
+            The <i>Local Focus Score</i> is measured within an NxN pixel window applied to the image,
+            whereas the <i>Correlation</i> of a pixel is measured with repsect to its neighbors
+            N pixels away.
+            A higher number for the window size measures larger patterns of
+            image blur whereas smaller numbers measure more localized patterns of
+            blur. We suggest selecting a window size that is on the order of the feature of interest
+            (e.g., the object diameter). You can measure these metrics for multiple window sizes
+            by selecting adiditonal scales for each image. """))
+
+        group.can_remove = can_remove
+        if can_remove:
+            group.append("remove_button", cps.RemoveSettingButton("", "Remove this scale", image_group.scale_groups, group))
+
+    def add_threshold_group(self, image_group = None, can_remove = True):
+        group = ImageQualitySettingsGroup()
+
+        if image_group is not None:
+            image_group.threshold_groups.append(group)
+            group.image_names = image_group.image_names
+
+        group.append("divider", cps.Divider(line=False))
+
         group.append("threshold_method", cps.Choice("Select a thresholding method",
-                                                    cpthresh.TM_GLOBAL_METHODS,
-                                                    cpthresh.TM_OTSU_GLOBAL, 
-                                                    doc = '''<i>(Used only if thresholds are to be calculated)</i> <br> This setting allows you to access automatic thresholding 
-                                                       methods used in the <b>Identify</b> modules.
-                                                       For more help on thresholding, see the <b>Identify</b> modules.'''))
-        group.append("object_fraction", cps.Float("Typical fraction of the image covered by objects", 0.1,0,1, doc = 
-                                                  """<i>(Used only if threshold are calculated and MoG thresholding is chosen)</i> <br> 
-                                                      Enter the approximate fraction of the typical image in the set
-                                                      that is covered by objects."""))
+            cpthresh.TM_GLOBAL_METHODS,
+            cpthresh.TM_OTSU_GLOBAL, doc = """
+            <i>(Used only if particular thresholds are to be calculated)</i> <br>
+            This setting allows you to apply automatic thresholding
+            methods used in the <b>Identify</b> modules.
+            For more help on thresholding, see the <b>Identify</b> modules."""))
+
+        group.append("object_fraction", cps.Float("Typical fraction of the image covered by objects", 0.1,0,1, doc = """
+            <i>(Used only if threshold are calculated and MoG thresholding is chosen)</i> <br>
+            Enter the approximate fraction of the typical image in the set
+            that is covered by objects."""))
+
         group.append("two_class_otsu", cps.Choice(
             'Two-class or three-class thresholding?',
             [O_TWO_CLASS, O_THREE_CLASS],doc="""
-            <i>(Used only for the Otsu thresholding method)</i> <br>
+            <i>(Used only if thresholds are calculcated and the Otsu thresholding method is used)</i> <br>
             Select <i>Two</i> if the grayscale levels are readily distinguishable into foregound 
             (i.e., objects) and background. Select <i>Three</i> if there is a  
             middle set of grayscale levels that belongs to neither the
@@ -191,136 +367,237 @@ class MeasureImageQuality(cpm.CPModule):
         group.append("assign_middle_to_foreground", cps.Choice(
             'Assign pixels in the middle intensity class to the foreground '
             'or the background?', [O_FOREGROUND, O_BACKGROUND],doc="""
-            <i>(Used only for the Otsu thresholding method with three-class thresholding)</i><br>
+            <i>(Used only if thresholds are calculcated and the Otsu thresholding method with three-class thresholding is used)</i><br>
             Choose whether you want the middle grayscale intensities to be assigned 
             to the foreground pixels or the background pixels."""))
-        group.append("compute_power_spectrum", cps.Binary("Calculate quartiles and sum of radial power spectrum?", True,
-                                                      doc = "Would you like to calculate the quartiles and sum of the radial power spectrum? The Power Spectrum is computed via FFT and the radii of the first three quartiles and the total power are measured."))
-        if can_remove:
-            group.append("remove_button", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
-        self.image_groups.append(group)
+
+        group.can_remove = can_remove
+        if can_remove and image_group is not None:
+            group.append("remove_button", cps.RemoveSettingButton(
+                "", "Remove this threshold method", image_group.threshold_groups, group))
+
+        if image_group is None:
+            return group
 
     def prepare_settings(self, setting_values):
-        '''Adjust self.image_groups to account for the expected # of images'''
-        assert len(setting_values) % SETTINGS_PER_GROUP == 0
-        group_count = len(setting_values) / SETTINGS_PER_GROUP
-        del self.image_groups[group_count:]
-        while len(self.image_groups) < group_count:
-            self.add_image_group()
+        '''Adjust image_groups and threshold_groups to account for the expected # of
+            images, scales, and threshold methods'''
+        image_group_count = int(setting_values[1])
+        del self.image_groups[:]
+        for i in range(image_group_count):
+            can_remove = len(self.image_groups) > 0
+            self.add_image_group(can_remove)
+        for index, image_group in enumerate(self.image_groups):
+            for count, group, fn in\
+                ((int(setting_values[IMAGE_GROUP_SETTING_OFFSET + index]), image_group.scale_groups, self.add_scale_group),
+                 (int(setting_values[IMAGE_GROUP_SETTING_OFFSET + index + image_group_count]), image_group.threshold_groups, self.add_threshold_group)):
+                del group[:]
+                for i in range(count):
+                    can_remove = len(group) > 0
+                    fn(image_group, can_remove)
 
     def settings(self):
         '''The settings in the save / load order'''
-        result = []
+        result = [ self.images_choice ]
+        result += [ self.image_count ]
         for image_group in self.image_groups:
-            result += [image_group.image_name, image_group.check_blur, image_group.window_size,
-                       image_group.check_saturation, image_group.calculate_threshold,
-                       image_group.threshold_method, image_group.object_fraction,
-                       image_group.compute_power_spectrum,
-                       image_group.two_class_otsu, 
-                       image_group.use_weighted_variance, 
-                       image_group.assign_middle_to_foreground]
-        return result
-    def help_settings(self):
-        '''The settings in the help order'''
-        result = []
+            result += [ image_group.scale_count, image_group.threshold_count ]
         for image_group in self.image_groups:
-            result += [image_group.image_name, image_group.check_blur, image_group.window_size,
-                       image_group.check_saturation, image_group.calculate_threshold,
-                       image_group.threshold_method, image_group.two_class_otsu, 
-                       image_group.use_weighted_variance, 
-                       image_group.assign_middle_to_foreground, image_group.object_fraction,
-                       image_group.compute_power_spectrum]
+            result += [ image_group.image_names ]
+            result += [ image_group.include_image_scalings,
+                        image_group.check_blur]
+            for scale_group in image_group.scale_groups:
+                result += [scale_group.scale]
+            result += [ image_group.check_saturation, image_group.check_intensity]
+            result += [ image_group.calculate_threshold,
+                        image_group.use_all_threshold_methods]
+            for threshold_group in image_group.threshold_groups:
+                result += [ threshold_group.threshold_method, threshold_group.object_fraction,
+                            threshold_group.two_class_otsu,
+                            threshold_group.use_weighted_variance,
+                            threshold_group.assign_middle_to_foreground ]
         return result
     
     def visible_settings(self):
         '''The settings as displayed to the user'''
-        result = []
-        for i, image_group in enumerate(self.image_groups):
-            if i != 0:
+        result = [self.images_choice]
+        if self.images_choice.value == O_ALL_LOADED:
+            del self.image_groups[1:]
+        for image_group in self.image_groups:
+            if image_group.can_remove:
                 result += [ image_group.divider ]
-            result += [image_group.image_name,image_group.check_blur,]
-            if image_group.check_blur:
-                result += [image_group.window_size]
-            result += [image_group.check_saturation, image_group.calculate_threshold]
-            if image_group.calculate_threshold:
-                result += [image_group.threshold_method]
-                if image_group.threshold_method == cpthresh.TM_MOG_GLOBAL:
-                    result += [image_group.object_fraction]
-                elif image_group.threshold_method == cpthresh.TM_OTSU_GLOBAL:
-                    result += [image_group.use_weighted_variance, 
-                               image_group.two_class_otsu]
-                    if image_group.two_class_otsu == O_THREE_CLASS:
-                        result += [image_group.assign_middle_to_foreground]
-            result += [image_group.compute_power_spectrum]
-            if i != 0:
+            if self.images_choice.value == O_SELECT:
+                result += [image_group.image_names]
+            result += self.image_visible_settings(image_group)
+            if image_group.can_remove:
                 result += [image_group.remove_button]
-        result += [self.add_button]
+        if self.images_choice.value == O_SELECT:
+            result += [self.add_image_button]
+        return result
+
+    def image_visible_settings(self, image_group):
+        result = [image_group.include_image_scalings, image_group.check_blur]
+        if image_group.check_blur:
+            result += self.scale_visible_settings(image_group)
+        result += [image_group.check_intensity]
+        result += [image_group.check_saturation, image_group.calculate_threshold]
+        if image_group.calculate_threshold:
+            result += [image_group.use_all_threshold_methods]
+            if not image_group.use_all_threshold_methods.value:
+                if image_group.threshold_count.value == 0:
+                    self.add_threshold_group(image_group, False)
+                result += self.threshold_visible_settings(image_group)
+        return result
+
+    def scale_visible_settings(self, image_group):
+        result = []
+        for scale_group in image_group.scale_groups:
+            if scale_group.can_remove:
+                result += [scale_group.divider]
+            result += [scale_group.scale]
+            if scale_group.can_remove:
+                result += [scale_group.remove_button]
+        result += [ image_group.add_scale_button ]
+        return result
+
+    def threshold_visible_settings(self, image_group):
+        result = []
+        for threshold_group in image_group.threshold_groups:
+            if threshold_group.can_remove:
+                result += [threshold_group.divider]
+            result += [threshold_group.threshold_method]
+            if threshold_group.threshold_method.value == cpthresh.TM_MOG_GLOBAL:
+                result += [threshold_group.object_fraction]
+            elif threshold_group.threshold_method.value == cpthresh.TM_OTSU_GLOBAL:
+                result += [threshold_group.use_weighted_variance,
+                           threshold_group.two_class_otsu]
+                if threshold_group.two_class_otsu.value == O_THREE_CLASS:
+                    result += [threshold_group.assign_middle_to_foreground]
+            if threshold_group.can_remove:
+                result += [threshold_group.remove_button]
+        result += [ image_group.add_threshold_button ]
         return result
 
     def validate_module(self, pipeline):
-        '''Make sure settings are compatible
+        '''Make sure a mesurement is selected in image_names'''
+        if self.images_choice.value == O_SELECT:
+            for image_group in self.image_groups:
+                if not image_group.image_names.get_selections():
+                    raise cps.ValidationError("Please choose at least one image", image_group.image_names)
         
-        In particular, we make sure that no measurements are duplicated
-        '''
-        # check for duplicated measurements
+        '''Make sure settings are compatible. In particular, we make sure that no measurements are duplicated'''
         measurements, sources = self.get_measurement_columns(pipeline, return_sources=True)
         d = {}
         for m, s in zip(measurements, sources):
             if m in d:
-                raise cps.ValidationError("%s measurement made twice."%(m[1]), s)
+                raise cps.ValidationError("Measurement %s for image %s made twice."%(m[1], s[1]), s[0])
             d[m] = True
+
+    def any_scaling(self):
+        '''True if some image has its rescaling value calculated'''
+        return any([image_group.include_image_scalings.value
+                    for image_group in self.image_groups])
 
     def any_threshold(self):
         '''True if some image has its threshold calculated'''
-        return any([ig.calculate_threshold.value 
-                    for ig in self.image_groups])
+        return any([image_group.calculate_threshold.value
+                    for image_group in self.image_groups])
     
     def any_saturation(self):
         '''True if some image has its saturation calculated'''
-        return any([ig.check_saturation.value
-                     for ig in self.image_groups])
+        return any([image_group.check_saturation.value
+                     for image_group in self.image_groups])
     
     def any_blur(self):
         '''True if some image has its blur calculated'''
-        return any([ig.check_blur.value
-                    for ig in self.image_groups])
-    
-    def any_power_spectrum(self):
-        '''True if some image has its radial power spectrum calculated'''
-        return any([ig.compute_power_spectrum.value
-                    for ig in self.image_groups])
+        return any([image_group.check_blur.value
+                    for image_group in self.image_groups])
+
+    def any_intensity(self):
+        '''True if some image has its intesnity calculated'''
+        return any([image_group.check_intensity.value
+                    for image_group in self.image_groups])
 
     def get_measurement_columns(self, pipeline, return_sources=False):
         '''Return column definitions for all measurements'''
         columns = []
         sources = []
-        for ig in self.image_groups:
-            if ig.check_blur.value:
-                for feature in (FOCUS_SCORE,LOCAL_FOCUS_SCORE):
+        for image_group in self.image_groups:
+            selected_images = self.images_to_process(image_group, None, pipeline)
+            # Image scalings
+            if image_group.include_image_scalings.value:
+                for image_name in selected_images:
                     columns.append((cpmeas.IMAGE,
-                                    '%s_%s_%s_%d'%(IMAGE_QUALITY, feature,
-                                                   ig.image_name.value,
-                                                   ig.window_size.value),
-                                    cpmeas.COLTYPE_FLOAT))
-                    sources.append(ig.image_name)
-            if ig.check_saturation.value:
-                for feature in (PERCENT_MAXIMAL, PERCENT_MINIMAL):
+                                        '%s_%s_%s'%(C_IMAGE_QUALITY, C_SCALING,
+                                                       image_name),
+                                        cpmeas.COLTYPE_FLOAT))
+                    sources.append([image_group.include_image_scalings, image_name])
+
+            # Blur measurements
+            if image_group.check_blur.value:
+                for image_name in selected_images:
                     columns.append((cpmeas.IMAGE,
-                                    '%s_%s_%s'%(IMAGE_QUALITY, feature,
-                                                ig.image_name.value),
-                                    cpmeas.COLTYPE_FLOAT))
-                    sources.append(ig.image_name)
-            if ig.calculate_threshold.value:
-                feature = ig.threshold_feature_name
-                columns.append((cpmeas.IMAGE, feature, cpmeas.COLTYPE_FLOAT))
-                sources.append(ig.image_name)
-            if ig.compute_power_spectrum.value:
-                for feature in POWER_SPECTRUM_FEATURES:
+                                        '%s_%s_%s'%(C_IMAGE_QUALITY, F_FOCUS_SCORE,
+                                                       image_name),
+                                        cpmeas.COLTYPE_FLOAT))
+                    sources.append([image_group.check_blur, image_name])
+
                     columns.append((cpmeas.IMAGE,
-                                    '%s_%s_%s'%(IMAGE_QUALITY, feature,
-                                                ig.image_name.value),
-                                    cpmeas.COLTYPE_FLOAT))
-                    sources.append(ig.image_name)
+                                        '%s_%s_%s'%(C_IMAGE_QUALITY, F_POWER_SPECTRUM_SLOPE,
+                                                    image_name),
+                                        cpmeas.COLTYPE_FLOAT))
+                    sources.append([image_group.check_blur, image_name])
+
+                    for scale_group in image_group.scale_groups:
+                        columns.append((cpmeas.IMAGE,
+                                            '%s_%s_%s_%d'%(C_IMAGE_QUALITY, F_LOCAL_FOCUS_SCORE,
+                                                           image_name,
+                                                           scale_group.scale.value),
+                                            cpmeas.COLTYPE_FLOAT))
+                        sources.append([scale_group.scale, image_name])
+
+                        columns.append((cpmeas.IMAGE,
+                                            '%s_%s_%s_%d'%(C_IMAGE_QUALITY, F_CORRELATION,
+                                                           image_name,
+                                                           scale_group.scale.value),
+                                            cpmeas.COLTYPE_FLOAT))
+                        sources.append([scale_group.scale, image_name])
+
+            # Intensity measurements
+            if image_group.check_intensity.value:
+                for image_name in selected_images:
+                    for feature in INTENSITY_FEATURES:
+                        measurement_name = image_name
+                        columns.append((cpmeas.IMAGE,
+                                        '%s_%s_%s'%(C_IMAGE_QUALITY, feature,
+                                                    measurement_name),
+                                        cpmeas.COLTYPE_FLOAT))
+                        sources.append([image_group.check_intensity, image_name])
+
+            # Saturation measurements
+            if image_group.check_saturation.value:
+                for image_name in selected_images:
+                    for feature in SATURATION_FEATURES:
+                        columns.append((cpmeas.IMAGE,
+                                        '%s_%s_%s'%(C_IMAGE_QUALITY, feature,
+                                                    image_name),
+                                        cpmeas.COLTYPE_FLOAT))
+                        sources.append([image_group.check_saturation, image_name])
+
+            # Threshold measurements
+            if image_group.calculate_threshold.value:
+                all_threshold_groups = self.build_threshold_parameter_list() \
+                                            if image_group.use_all_threshold_methods.value \
+                                            else image_group.threshold_groups
+                for image_name in selected_images:
+                    for threshold_group in all_threshold_groups:
+                        feature = threshold_group.threshold_feature_name(image_name)
+                        columns.append((cpmeas.IMAGE, feature, cpmeas.COLTYPE_FLOAT))
+                        if image_group.use_all_threshold_methods:
+                            sources.append([image_group.use_all_threshold_methods, image_name])
+                        else:
+                            sources.append([threshold_group.threshold_method, image_name])
+
         if return_sources:
             return columns, sources
         else:
@@ -328,65 +605,98 @@ class MeasureImageQuality(cpm.CPModule):
             
     def get_categories(self, pipeline, object_name):
         if object_name == cpmeas.IMAGE:
-            return [IMAGE_QUALITY]
+            return [C_IMAGE_QUALITY]
         elif (object_name == cpmeas.EXPERIMENT and self.any_threshold()):
-            return [IMAGE_QUALITY]
+            return [C_IMAGE_QUALITY]
         return [] 
 
     def get_measurements(self, pipeline, object_name, category):
-        if object_name == cpmeas.IMAGE and category == IMAGE_QUALITY:
+        if object_name == cpmeas.IMAGE and category == C_IMAGE_QUALITY:
             result = []
+            if self.any_scaling():
+                result += [C_SCALING]
             if self.any_blur():
-                result += [FOCUS_SCORE, LOCAL_FOCUS_SCORE]
+                result += [F_FOCUS_SCORE, F_LOCAL_FOCUS_SCORE, F_POWER_SPECTRUM_SLOPE, F_CORRELATION]
+            if self.any_intensity():
+                result += INTENSITY_FEATURES
             if self.any_saturation():
-                result += [PERCENT_MAXIMAL, PERCENT_MINIMAL]
-            if self.any_power_spectrum():
-                result += POWER_SPECTRUM_FEATURES
-            thresholds = set([THRESHOLD+ig.threshold_algorithm 
-                              for ig in self.image_groups
-                              if ig.calculate_threshold.value])
-            thresholds = list(thresholds)
-            thresholds.sort()
-            result += thresholds
+                result += SATURATION_FEATURES
+            if self.any_threshold():
+                thresholds = []
+                for image_group in self.image_groups:
+                    all_threshold_groups = self.build_threshold_parameter_list() \
+                                                if image_group.use_all_threshold_methods.value \
+                                                else image_group.threshold_groups
+                    thresholds += [F_THRESHOLD+threshold_group.threshold_algorithm
+                                  for threshold_group in all_threshold_groups
+                                  if image_group.calculate_threshold.value]
+                result += sorted(list(set(thresholds)))
+
             return result
-        elif object_name == cpmeas.EXPERIMENT and category == IMAGE_QUALITY:
+        elif object_name == cpmeas.EXPERIMENT and category == C_IMAGE_QUALITY:
             return [MEAN_THRESH_ALL_IMAGES, MEDIAN_THRESH_ALL_IMAGES,
                     STD_THRESH_ALL_IMAGES]
         return []
 
     def get_measurement_images(self, pipeline, object_name, category, 
                                measurement):
-        if object_name != cpmeas.IMAGE or category != IMAGE_QUALITY:
+
+        if object_name != cpmeas.IMAGE or category != C_IMAGE_QUALITY:
             return []
-        if measurement in (FOCUS_SCORE, LOCAL_FOCUS_SCORE):
-            return [ig.image_name.value for ig in self.image_groups
-                    if ig.check_blur.value]
-        if measurement in (PERCENT_MAXIMAL, PERCENT_MINIMAL):
-            return [ig.image_name.value for ig in self.image_groups
-                    if ig.check_saturation.value]
-        if measurement.startswith(THRESHOLD):
-            return [ig.image_name.value for ig in self.image_groups
-                    if (ig.calculate_threshold.value and
-                        measurement == THRESHOLD+ig.threshold_algorithm)]
-        if measurement in POWER_SPECTRUM_FEATURES:
-                return [ig.image_name.value for ig in self.image_groups
-                        if ig.compute_power_spectrum.value]
+        if measurement in (F_FOCUS_SCORE, F_LOCAL_FOCUS_SCORE, F_POWER_SPECTRUM_SLOPE, F_CORRELATION):
+            result = []
+            for image_group in self.image_groups:
+                if image_group.check_blur.value:
+                    result += self.images_to_process(image_group, None, pipeline)
+            return result
+
+        if measurement in SATURATION_FEATURES:
+            result = []
+            for image_group in self.image_groups:
+                if image_group.check_saturation.value:
+                    result += self.images_to_process(image_group, None, pipeline)
+            return result
+
+        if measurement in INTENSITY_FEATURES:
+            result = []
+            for image_group in self.image_groups:
+                if image_group.check_intensity.value:
+                    result += self.images_to_process(image_group, None, pipeline)
+            return result
+
+        if measurement.startswith(F_THRESHOLD):
+            result = []
+            for image_group in self.image_groups:
+                all_threshold_groups = self.build_threshold_parameter_list() \
+                             if image_group.use_all_threshold_methods.value \
+                             else image_group.threshold_groups
+                for threshold_group in all_threshold_groups:
+                    if (image_group.calculate_threshold.value and
+                                measurement == F_THRESHOLD+threshold_group.threshold_algorithm):
+                        result += self.images_to_process(image_group, None, pipeline)
+            return result
     
     def get_measurement_scales(self, pipeline, object_name, category, 
-                               measurement, image_name):
+                               measurement, image_names):
         '''Get the scales (window_sizes) for the given measurement'''
-        if (object_name == cpmeas.IMAGE and
-            category == IMAGE_QUALITY):
-            if measurement in (FOCUS_SCORE, LOCAL_FOCUS_SCORE):
-                return [ig.window_size for ig in self.image_groups
-                        if ig.image_name == image_name]
-            result = []
-            for group in self.image_groups:
-                if measurement == THRESHOLD+group.threshold_algorithm:
-                    scale = group.threshold_scale
-                    if scale is not None:
-                        result += [scale]
-            return result
+        if (object_name == cpmeas.IMAGE and category == C_IMAGE_QUALITY):
+            if measurement in (F_LOCAL_FOCUS_SCORE, F_CORRELATION) :
+                result = []
+                for image_group in self.image_groups:
+                    for scale_group in image_group.scale_groups:
+                        if image_names in self.images_to_process(image_group, None, pipeline):
+                            result += [scale_group.scale]
+                return result
+            if measurement.startswith(F_THRESHOLD):
+                result = []
+                for image_group in self.image_groups:
+                    all_threshold_groups = self.build_threshold_parameter_list() \
+                                                if image_group.use_all_threshold_methods.value \
+                                                else image_group.threshold_groups
+                    result += [ threshold_group.threshold_scale for threshold_group in all_threshold_groups
+                                if ((measurement == F_THRESHOLD+threshold_group.threshold_algorithm) and
+                                    threshold_group.threshold_scale is not None)]
+                return result
         return []
 
     def run(self, workspace):
@@ -402,254 +712,426 @@ class MeasureImageQuality(cpm.CPModule):
     def display(self, workspace):
         if workspace.frame is not None:
             statistics = workspace.display_data.statistics
-            figure = workspace.create_or_find_figure(title="MeasureImageQuality, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
+            figure = workspace.create_or_find_figure(title="%s, image cycle #%d"%(
+                workspace.module.module_name, workspace.measurements.image_set_number),subplots=(1,1))
             figure.subplot_table(0,0,statistics)
     
     def post_run(self, workspace):
         '''Calculate the experiment statistics at the end of a run'''
         statistics = []
         for image_group in self.image_groups:
-            statistics += self.calculate_experiment_threshold(image_group, 
-                                                              workspace)
+            statistics += self.calculate_experiment_threshold(image_group, workspace)
+
     def run_on_image_group(self, image_group, workspace):
         '''Calculate statistics for a particular image'''
         statistics = []
+        if image_group.include_image_scalings.value:
+            statistics += self.retrieve_image_scalings(image_group, workspace)
         if image_group.check_blur.value:
-            statistics += self.calculate_image_blur(image_group, workspace)
+            statistics += self.calculate_focus_scores(image_group, workspace)
+            statistics += self.calculate_correlation(image_group, workspace)
+            statistics += self.calculate_power_spectrum(image_group, workspace)
         if image_group.check_saturation.value:
             statistics += self.calculate_saturation(image_group, workspace)
+        if image_group.check_intensity.value:
+            statistics += self.calculate_image_intensity(image_group, workspace)
         if image_group.calculate_threshold.value:
-            statistics += self.calculate_threshold(image_group, workspace)
-        if image_group.compute_power_spectrum.value:
-            statistics += self.calculate_power_spectrum(image_group, workspace)
+            statistics += self.calculate_thresholds(image_group, workspace)
         
         return statistics
     
-    def calculate_image_blur(self, image_group, workspace):
-        '''Calculate a local blur measurement and a image-wide one
+    def retrieve_image_scalings(self, image_group, workspace):
+        '''Grab the scalings from the image '''
+
+        result = []
+        for image_name in self.images_to_process(image_group, workspace):
+            feature = "%s_%s_%s"%(C_IMAGE_QUALITY, C_SCALING, image_name)
+            value = workspace.image_set.get_image(image_name).scale
+            if not value:  # Set to NaN if not defined, such as for derived images
+                value = np.NaN
+            workspace.add_measurement(cpmeas.IMAGE, feature, value)
+            result += [["%s scaling"%image_name, value]]
+        return result
+
+    def calculate_focus_scores(self, image_group, workspace):
+        '''Calculate a local blur measurement and a image-wide one'''
         
-        '''
-        image_name = image_group.image_name.value
-        window_size = image_group.window_size.value
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale = True)
-        pixel_data = image.pixel_data
-        shape = image.pixel_data.shape
-        if image.has_mask:
-            pixel_data = pixel_data[image.mask]
-        focus_score = 0
-        if len(pixel_data):
-            mean_image_value = np.mean(pixel_data)
-            squared_normalized_image = (pixel_data - mean_image_value)**2
-            if mean_image_value > 0:
-                focus_score = (np.sum(squared_normalized_image) /
-                               (np.product(pixel_data.shape) * mean_image_value))
-        #
-        # Create a labels matrix that grids the image to the dimensions
-        # of the window size
-        #
-        i,j = np.mgrid[0:shape[0],0:shape[1]].astype(float)
-        m,n = (np.array(shape) + window_size - 1)/window_size
-        i = (i * float(m) / float(shape[0])).astype(int)
-        j = (j * float(n) / float(shape[1])).astype(int)
-        grid = i * n + j + 1
-        if image.has_mask:
-            grid[np.logical_not(image.mask)] = 0
-        grid_range = np.arange(0, m*n+1,dtype=int)
-        #
-        # Do the math per label
-        #
-        local_means = fix(scind.mean(image.pixel_data, grid, grid_range))
-        local_squared_normalized_image = (image.pixel_data -
-                                          local_means[grid])**2
-        #
-        # Compute the sum of local_squared_normalized_image values for each
-        # grid for means > 0. Exclude grid label = 0 because that's masked
-        #
-        grid_mask = (local_means != 0) & ~ np.isnan(local_means)
-        nz_grid_range = grid_range[grid_mask]
-        if len(nz_grid_range) and nz_grid_range[0] == 0:
-            nz_grid_range = nz_grid_range[1:]
-            local_means = local_means[1:]
-            grid_mask = grid_mask[1:]
-        local_focus_score = 0 # assume the worst - that we can't calculate it
-        if len(nz_grid_range):
-            sums = fix(scind.sum(local_squared_normalized_image, grid, 
-                                 nz_grid_range)) 
-            pixel_counts = fix(scind.sum(np.ones(shape), grid, nz_grid_range))
-            local_norm_var = (sums / 
-                              (pixel_counts * local_means[grid_mask]))
-            local_norm_median = np.median(local_norm_var)
-            if np.isfinite(local_norm_median) and local_norm_median > 0:
-                local_focus_score = np.var(local_norm_var) / local_norm_median
-        #
-        # Add the measurements
-        #
-        focus_score_name = "%s_%s_%s_%d"%(IMAGE_QUALITY,FOCUS_SCORE,
-                                          image_name,
-                                          window_size)
-        workspace.add_measurement(cpmeas.IMAGE, focus_score_name,
-                                  focus_score)
-        
-        local_focus_score_name = "%s_%s_%s_%d"%(IMAGE_QUALITY,
-                                                LOCAL_FOCUS_SCORE,
-                                                image_name,
-                                                window_size)
-        workspace.add_measurement(cpmeas.IMAGE, local_focus_score_name,
-                                  local_focus_score)
-        return [["%s focus score @%d"%(image_name,
-                                       window_size), focus_score],
-                ["%s local focus score @%d"%(image_name,
-                                             window_size), local_focus_score]]
+        result = []
+        for image_name in self.images_to_process(image_group, workspace):
+
+            image = workspace.image_set.get_image(image_name,
+                                                  must_be_grayscale = True)
+            pixel_data = image.pixel_data
+            shape = image.pixel_data.shape
+            if image.has_mask:
+                pixel_data = pixel_data[image.mask]
+
+            local_focus_score = []
+            for scale_group in image_group.scale_groups:
+                scale = scale_group.scale.value
+
+                focus_score = 0
+                if len(pixel_data):
+                    mean_image_value = np.mean(pixel_data)
+                    squared_normalized_image = (pixel_data - mean_image_value)**2
+                    if mean_image_value > 0:
+                        focus_score = (np.sum(squared_normalized_image) /
+                                       (np.product(pixel_data.shape) * mean_image_value))
+                #
+                # Create a labels matrix that grids the image to the dimensions
+                # of the window size
+                #
+                i,j = np.mgrid[0:shape[0],0:shape[1]].astype(float)
+                m,n = (np.array(shape) + scale - 1)/scale
+                i = (i * float(m) / float(shape[0])).astype(int)
+                j = (j * float(n) / float(shape[1])).astype(int)
+                grid = i * n + j + 1
+                if image.has_mask:
+                    grid[np.logical_not(image.mask)] = 0
+                grid_range = np.arange(0, m*n+1)
+                #
+                # Do the math per label
+                #
+                local_means = fix(scind.mean(image.pixel_data, grid, grid_range))
+                local_squared_normalized_image = (image.pixel_data -
+                                                  local_means[grid])**2
+                #
+                # Compute the sum of local_squared_normalized_image values for each
+                # grid for means > 0. Exclude grid label = 0 because that's masked
+                #
+                grid_mask = (local_means != 0) & ~ np.isnan(local_means)
+                nz_grid_range = grid_range[grid_mask]
+                if len(nz_grid_range) and nz_grid_range[0] == 0:
+                    nz_grid_range = nz_grid_range[1:]
+                    local_means = local_means[1:]
+                    grid_mask = grid_mask[1:]
+                local_focus_score += [0] # assume the worst - that we can't calculate it
+                if len(nz_grid_range):
+                    sums = fix(scind.sum(local_squared_normalized_image, grid,
+                                         nz_grid_range))
+                    pixel_counts = fix(scind.sum(np.ones(shape), grid, nz_grid_range))
+                    local_norm_var = (sums /
+                                      (pixel_counts * local_means[grid_mask]))
+                    local_norm_median = np.median(local_norm_var)
+                    if np.isfinite(local_norm_median) and local_norm_median > 0:
+                        local_focus_score[-1] = np.var(local_norm_var) / local_norm_median
+
+            #
+            # Add the measurements
+            #
+            focus_score_name = "%s_%s_%s"%(C_IMAGE_QUALITY,F_FOCUS_SCORE,
+                                              image_name)
+            workspace.add_measurement(cpmeas.IMAGE, focus_score_name,
+                                      focus_score)
+            result += [["%s focus score @%d"%(image_name,
+                                           scale), focus_score]]
+
+            for idx, scale_group in enumerate(image_group.scale_groups):
+                scale = scale_group.scale.value
+                local_focus_score_name = "%s_%s_%s_%d"%(C_IMAGE_QUALITY,
+                                                        F_LOCAL_FOCUS_SCORE,
+                                                        image_name,
+                                                        scale)
+                workspace.add_measurement(cpmeas.IMAGE, local_focus_score_name,
+                                          local_focus_score[idx])
+                result += [["%s local focus score @%d"%(image_name,
+                                                 scale), local_focus_score[idx]]]
+
+        return result
+
+    def calculate_correlation(self, image_group, workspace):
+        '''Calculate a correlation measure from the Harlick feature set'''
+        result = []
+        for image_name in self.images_to_process(image_group, workspace):
+            image = workspace.image_set.get_image(image_name,
+                                                  must_be_grayscale = True)
+            pixel_data = image.pixel_data
+
+            # Compute Haralick's correlation texture for the given scales
+            image_labels = np.ones(pixel_data.shape, int)
+            if image.has_mask:
+                image_labels[~image.mask] = 0
+            for scale_group in image_group.scale_groups:
+                scale = scale_group.scale.value
+
+                value = Haralick(pixel_data, image_labels, 0, scale).H3()
+                if not np.isfinite(value):
+                    value = 0.0
+                workspace.add_measurement(cpmeas.IMAGE, "%s_%s_%s_%d"%
+                                                             (C_IMAGE_QUALITY, F_CORRELATION,
+                                                              image_name, scale),
+                                                              float(value))
+                result += [["%s %s @%d"%(image_name, F_CORRELATION, scale), "%.2f"%(float(value))]]
+        return result
     
     def calculate_saturation(self, image_group, workspace):
         '''Count the # of pixels at saturation'''
-        image_name = image_group.image_name.value
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale = True)
-        pixel_data = image.pixel_data
-        if image.has_mask:
-            pixel_data = pixel_data[image.mask]
-        pixel_count = np.product(pixel_data.shape)
-        if pixel_count == 0:
-            percent_saturation = 0
-            percent_maximal = 0
-            percent_minimal = 0
-        else:
-            number_pixels_maximal = np.sum(pixel_data == np.max(pixel_data))
-            number_pixels_minimal = np.sum(pixel_data == np.min(pixel_data))
-            percent_maximal = (100.0 * float(number_pixels_maximal) /
-                               float(pixel_count))
-            percent_minimal = (100.0 * float(number_pixels_minimal) /
-                               float(pixel_count))
-        percent_maximal_name = "%s_%s_%s"%(IMAGE_QUALITY, PERCENT_MAXIMAL,
-                                           image_name)
-        percent_minimal_name = "%s_%s_%s"%(IMAGE_QUALITY, PERCENT_MINIMAL,
-                                           image_name)
-        workspace.add_measurement(cpmeas.IMAGE, percent_maximal_name,
-                                  percent_maximal)
-        workspace.add_measurement(cpmeas.IMAGE, percent_minimal_name,
-                                  percent_minimal)
-        return [["%s maximal"%image_name,"%.1f %%"%percent_maximal],
-                ["%s minimal"%image_name, "%.1f %%"%percent_minimal]]
-
-    
-
-    def calculate_power_spectrum(self, image_group, workspace):
-        image_name = image_group.image_name.value
-        image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale = True)
-
-        pixel_data = image.pixel_data
-
-        if image.has_mask:
-            pixel_data = np.array(pixel_data) # make a copy
-            masked_pixels = pixel_data[image.mask]
-            pixel_count = np.product(masked_pixels.shape)
-            if pixel_count > 0:
-                pixel_data[~ image.mask] = np.mean(masked_pixels)
-            else:
-                pixel_data[~ image.mask] = 0
-        
-        radii, magnitude, power = rps.rps(pixel_data)
-        if sum(magnitude) > 0:
-            valid = (magnitude > 0)
-            radii = radii[valid].reshape((-1, 1))
-            magnitude = magnitude[valid].reshape((-1, 1))
-            power = power[valid].reshape((-1, 1))
-            if radii.shape[0] > 1:
-                magslope = lstsq(np.hstack((np.log(radii), np.ones(radii.shape))), np.log(magnitude))[0][0]
-                powerslope = lstsq(np.hstack((np.log(radii), np.ones(radii.shape))), np.log(power))[0][0]
-            else:
-                magslope = powerslope = 0
-        else:
-            magslope = powerslope = 0
 
         result = []
-        for fname, val in zip(POWER_SPECTRUM_FEATURES, [magslope, powerslope]):
-            workspace.add_measurement(cpmeas.IMAGE, 
-                                      "%s_%s_%s"%(IMAGE_QUALITY, fname, image_name),
-                                      val)
-            result += [["%s %s"%(image_name, fname), "%.1f"%(val)]]
+        for image_name in self.images_to_process(image_group, workspace):
+            image = workspace.image_set.get_image(image_name,
+                                                  must_be_grayscale = True)
+            pixel_data = image.pixel_data
+            if image.has_mask:
+                pixel_data = pixel_data[image.mask]
+            pixel_count = np.product(pixel_data.shape)
+            if pixel_count == 0:
+                percent_saturation = 0
+                percent_maximal = 0
+                percent_minimal = 0
+            else:
+                number_pixels_maximal = np.sum(pixel_data == np.max(pixel_data))
+                number_pixels_minimal = np.sum(pixel_data == np.min(pixel_data))
+                percent_maximal = (100.0 * float(number_pixels_maximal) /
+                                   float(pixel_count))
+                percent_minimal = (100.0 * float(number_pixels_minimal) /
+                                   float(pixel_count))
+            percent_maximal_name = "%s_%s_%s"%(C_IMAGE_QUALITY, F_PERCENT_MAXIMAL,
+                                               image_name)
+            percent_minimal_name = "%s_%s_%s"%(C_IMAGE_QUALITY, F_PERCENT_MINIMAL,
+                                               image_name)
+            workspace.add_measurement(cpmeas.IMAGE, percent_maximal_name,
+                                      percent_maximal)
+            workspace.add_measurement(cpmeas.IMAGE, percent_minimal_name,
+                                      percent_minimal)
+            result += [["%s maximal"%image_name,"%.1f %%"%percent_maximal],
+                    ["%s minimal"%image_name, "%.1f %%"%percent_minimal]]
         return result
 
-    def calculate_threshold(self, image_group, workspace):
-        '''Calculate a threshold for this image'''
-        image_name = image_group.image_name.value
+    def calculate_image_intensity(self, image_group, workspace):
+        '''Calculate intensity-based metrics, mostly from MeasureImageIntensity'''
+
+        result = []
+        for image_name in self.images_to_process(image_group, workspace):
+            result += self.run_intensity_measurement(image_name, workspace)
+        return result
+
+    def run_intensity_measurement(self, image_name, workspace):
         image = workspace.image_set.get_image(image_name,
-                                              must_be_grayscale = True)
-        threshold_method = image_group.threshold_algorithm
-        object_fraction = image_group.object_fraction.value
-        two_class_otsu = (image_group.two_class_otsu == O_TWO_CLASS)
-        use_weighted_variance = (image_group.use_weighted_variance == O_WEIGHTED_VARIANCE)
-        assign_middle_to_foreground = (image_group.assign_middle_to_foreground == O_FOREGROUND)
-        (local_threshold, global_threshold) = \
-            (cpthresh.get_threshold(threshold_method,
-                                    cpthresh.TM_GLOBAL,
-                                    image.pixel_data,
-                                    mask = image.mask,
-                                    object_fraction = object_fraction,
-                                    two_class_otsu = two_class_otsu,
-                                    use_weighted_variance = use_weighted_variance,
-                                    assign_middle_to_foreground = assign_middle_to_foreground)
-             if image.has_mask
-             else
-             cpthresh.get_threshold(threshold_method,
-                                    cpthresh.TM_GLOBAL,
-                                    image.pixel_data,
-                                    object_fraction = object_fraction,
-                                    two_class_otsu = two_class_otsu,
-                                    use_weighted_variance = use_weighted_variance,
-                                    assign_middle_to_foreground = assign_middle_to_foreground))
-        threshold_name = image_group.threshold_feature_name
-        scale = image_group.threshold_scale
-        if scale is None:
-            threshold_description = threshold_method
+                                                  must_be_grayscale=True)
+        pixels = image.pixel_data
+        if image.has_mask:
+            pixels = pixels[image.mask]
+
+        result = []
+        pixel_count = np.product(pixels.shape)
+        if pixel_count == 0:
+            pixel_sum = 0
+            pixel_mean = 0
+            pixel_std = 0
+            pixel_mad = 0
+            pixel_median = 0
+            pixel_min = 0
+            pixel_max = 0
         else:
-            threshold_description = threshold_method + " " + scale
-        workspace.add_measurement(cpmeas.IMAGE, threshold_name,
-                                  global_threshold)
-        return [["%s %s threshold"%(image_name, threshold_description), 
-                 str(global_threshold)]]
+            pixel_sum = np.sum(pixels)
+            pixel_mean = pixel_sum/float(pixel_count)
+            pixel_std = np.std(pixels)
+            pixel_median = np.median(pixels)
+            pixel_mad = np.median(np.abs(pixels - pixel_median))
+            pixel_min = np.min(pixels)
+            pixel_max = np.max(pixels)
+
+        m = workspace.measurements
+        m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_TOTAL_AREA, image_name)), pixel_count)
+        m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_TOTAL_INTENSITY, image_name)), pixel_sum)
+        m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_MEAN_INTENSITY, image_name)), pixel_mean)
+        m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_MEDIAN_INTENSITY, image_name)), pixel_median)
+        m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_STD_INTENSITY, image_name)), pixel_std)
+        m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_MAD_INTENSITY, image_name)), pixel_mad)
+        m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_MAX_INTENSITY, image_name)), pixel_max)
+        m.add_image_measurement("_".join((C_IMAGE_QUALITY, F_MIN_INTENSITY, image_name)), pixel_min)
+    
+        result = [["%s %s"%(image_name,
+                            feature_name),
+                            "%.2f"%value]
+                            for feature_name, value in (('Total intensity', pixel_sum),
+                                                        ('Mean intensity', pixel_mean),
+                                                        ('Median intensity', pixel_median),
+                                                        ('Std intensity', pixel_std),
+                                                        ('MAD intensity', pixel_mad),
+                                                        ('Min intensity', pixel_min),
+                                                        ('Max intensity', pixel_max),
+                                                        ('Total area', pixel_count))]
+        return result
+
+    def calculate_power_spectrum(self, image_group, workspace):
+        result = []
+        for image_name in self.images_to_process(image_group, workspace):
+            image = workspace.image_set.get_image(image_name,
+                                              must_be_grayscale = True)
+
+            pixel_data = image.pixel_data
+
+            if image.has_mask:
+                pixel_data = np.array(pixel_data) # make a copy
+                masked_pixels = pixel_data[image.mask]
+                pixel_count = np.product(masked_pixels.shape)
+                if pixel_count > 0:
+                    pixel_data[~ image.mask] = np.mean(masked_pixels)
+                else:
+                    pixel_data[~ image.mask] = 0
+
+            radii, magnitude, power = rps.rps(pixel_data)
+            if sum(magnitude) > 0:
+                valid = (magnitude > 0)
+                radii = radii[valid].reshape((-1, 1))
+                magnitude = magnitude[valid].reshape((-1, 1))
+                power = power[valid].reshape((-1, 1))
+                if radii.shape[0] > 1:
+                    powerslope = lstsq(np.hstack((np.log(radii), np.ones(radii.shape))), np.log(power))[0][0]
+                else:
+                    powerslope = 0
+            else:
+                powerslope = 0
+
+            workspace.add_measurement(cpmeas.IMAGE, 
+                                          "%s_%s_%s"%(C_IMAGE_QUALITY, F_POWER_SPECTRUM_SLOPE, image_name),
+                                          powerslope)
+            result += [["%s %s"%(image_name, F_POWER_SPECTRUM_SLOPE), "%.1f"%(powerslope)]]
+        return result
+
+    def calculate_thresholds(self, image_group, workspace):
+        '''Calculate a threshold for this image'''
+        result = []
+        all_threshold_groups = self.build_threshold_parameter_list() \
+                             if image_group.use_all_threshold_methods.value \
+                             else image_group.threshold_groups
+
+        for image_name in self.images_to_process(image_group, workspace):
+            image = workspace.image_set.get_image(image_name,
+                                                  must_be_grayscale = True)
+
+            for threshold_group in all_threshold_groups:
+                threshold_method = threshold_group.threshold_algorithm
+                object_fraction = threshold_group.object_fraction.value
+                two_class_otsu = (threshold_group.two_class_otsu.value == O_TWO_CLASS)
+                use_weighted_variance = (threshold_group.use_weighted_variance.value == O_WEIGHTED_VARIANCE)
+                assign_middle_to_foreground = (threshold_group.assign_middle_to_foreground.value == O_FOREGROUND)
+                (local_threshold, global_threshold) = \
+                        (cpthresh.get_threshold(threshold_method,
+                                                cpthresh.TM_GLOBAL,
+                                                image.pixel_data,
+                                                mask = image.mask,
+                                                object_fraction = object_fraction,
+                                                two_class_otsu = two_class_otsu,
+                                                use_weighted_variance = use_weighted_variance,
+                                                assign_middle_to_foreground = assign_middle_to_foreground)
+                         if image.has_mask
+                         else
+                         cpthresh.get_threshold(threshold_method,
+                                                cpthresh.TM_GLOBAL,
+                                                image.pixel_data,
+                                                object_fraction = object_fraction,
+                                                two_class_otsu = two_class_otsu,
+                                                use_weighted_variance = use_weighted_variance,
+                                                assign_middle_to_foreground = assign_middle_to_foreground))
+
+                scale = threshold_group.threshold_scale
+                if scale is None:
+                    threshold_description = threshold_method
+                else:
+                    threshold_description = threshold_method + " " + scale
+                workspace.add_measurement(cpmeas.IMAGE, threshold_group.threshold_feature_name(image_name),
+                                          global_threshold)
+                result += [["%s %s threshold"%(image_name, threshold_description), str(global_threshold)]]
+
+        return result
 
     def calculate_experiment_threshold(self, image_group, workspace):
         '''Calculate experiment-wide threshold mean, median and standard-deviation'''
         m = workspace.measurements
         statistics = []
+        all_threshold_groups = self.build_threshold_parameter_list() \
+                             if image_group.use_all_threshold_methods.value \
+                             else image_group.threshold_groups
         if image_group.calculate_threshold.value:
-            image_name = image_group.image_name.value
-            values = m.get_all_measurements(cpmeas.IMAGE, 
-                                            image_group.threshold_feature_name)
-            # Ignore missing values
-            values = [v for v in values if v is not None]
-            feature_name = "%s_Mean%s%s_%s"%(IMAGE_QUALITY,THRESHOLD,
-                                             image_group.threshold_algorithm,
-                                             image_name)
-            mean_threshold = np.mean(values)
-            m.add_experiment_measurement(feature_name, mean_threshold)
-            statistics.append(["Mean %s %s threshold"%(image_name,
-                                                       image_group.threshold_algorithm),
-                               str(mean_threshold)])
-            feature_name = "%s_Median%s%s_%s"%(IMAGE_QUALITY,THRESHOLD,
-                                               image_group.threshold_algorithm,
-                                               image_name)
-            median_threshold = np.median(values)
-            m.add_experiment_measurement(feature_name, median_threshold)
-            statistics.append(["Median %s %s threshold"%(image_name,
-                                                         image_group.threshold_algorithm),
-                               str(median_threshold)])
-            feature_name = "%s_Std%s%s_%s"%(IMAGE_QUALITY,THRESHOLD,
-                                            image_group.threshold_algorithm,
-                                            image_name)
-            std_threshold = np.std(values)
-            m.add_experiment_measurement(feature_name, std_threshold)
-            statistics.append(["Std. dev. %s %s threshold"%(image_name,
-                                                            image_group.threshold_algorithm),
-                               str(std_threshold)])
+            for image_name in self.images_to_process(image_group, workspace):
+                for threshold_group in all_threshold_groups:
+                    values = m.get_all_measurements(cpmeas.IMAGE,
+                                                    threshold_group.threshold_feature_name(image_name))
+                    values = np.array(values, np.float64)
+                    values = values[np.isfinite(values)]
+
+                    for feature in (F_THRESHOLD,):
+                        feature_name = "%s_Mean%s%s_%s"%(C_IMAGE_QUALITY,feature,
+                                                     threshold_group.threshold_algorithm,
+                                                     image_name)
+                        mean_val = np.mean(values)
+                        m.add_experiment_measurement(feature_name, mean_val)
+                        statistics.append(["Mean %s %s %s"%(image_name,
+                                                                   threshold_group.threshold_algorithm,
+                                                                   feature.lower()),
+                                           str(mean_val)])
+                        feature_name = "%s_Median%s%s_%s"%(C_IMAGE_QUALITY,feature,
+                                                           threshold_group.threshold_algorithm,
+                                                           image_name)
+                        median_val = np.median(values)
+                        m.add_experiment_measurement(feature_name, median_val)
+                        statistics.append(["Median %s %s %s"%(image_name,
+                                                                     threshold_group.threshold_algorithm,
+                                                                     feature.lower()),
+                                           str(median_val)])
+                        feature_name = "%s_Std%s%s_%s"%(C_IMAGE_QUALITY,feature,
+                                                        threshold_group.threshold_algorithm,
+                                                        image_name)
+                        std_val = np.std(values)
+                        m.add_experiment_measurement(feature_name, std_val)
+                        statistics.append(["Std. dev. %s %s %s"%(image_name,
+                                                                        threshold_group.threshold_algorithm,
+                                                                        feature.lower()),
+                                           str(std_val)])
         return statistics
 
-    
+    def build_threshold_parameter_list(self):
+        '''Build a set of temporary threshold groups containing all the threshold methods to be tested'''
+
+        # Produce a list of meaningful combinations of threshold settings.'''
+        threshold_args = []
+        object_fraction = [0.05, 0.25, 0.75, 0.95]
+        # Produce list of combinations of the special thresholding method parameters: Otsu, MoG
+        z = product([cpthresh.TM_OTSU_GLOBAL],[0], [O_WEIGHTED_VARIANCE, O_ENTROPY],[O_THREE_CLASS],[O_FOREGROUND, O_BACKGROUND])
+        threshold_args += [i for i in z]
+        z = product([cpthresh.TM_OTSU_GLOBAL],[0], [O_WEIGHTED_VARIANCE, O_ENTROPY],[O_TWO_CLASS],[O_FOREGROUND])
+        threshold_args += [i for i in z]
+        z = product([cpthresh.TM_MOG_GLOBAL],object_fraction, [O_WEIGHTED_VARIANCE],[O_TWO_CLASS],[O_FOREGROUND])
+        threshold_args += [i for i in z]
+        # Tack on the remaining simpler methods
+        leftover_methods = [i for i in cpthresh.TM_GLOBAL_METHODS if i not in [cpthresh.TM_OTSU_GLOBAL,cpthresh.TM_MOG_GLOBAL]]
+        z = product(leftover_methods,[0],[O_WEIGHTED_VARIANCE],[O_TWO_CLASS],[O_FOREGROUND])
+        threshold_args += [i for i in z]
+
+        # Assign the threshold values to a temporary threshold group
+        threshold_groups = []
+        for threshold_method, object_fraction, use_weighted_variance, two_class_otsu, assign_middle_to_foreground in threshold_args:
+            threshold_groups.append(self.add_threshold_group(None,False))
+            threshold_groups[-1].threshold_method.value = threshold_method
+            threshold_groups[-1].object_fraction.value = object_fraction
+            threshold_groups[-1].two_class_otsu.value = two_class_otsu
+            threshold_groups[-1].use_weighted_variance.value = use_weighted_variance
+            threshold_groups[-1].assign_middle_to_foreground.value = assign_middle_to_foreground
+
+        return threshold_groups
+
+    def images_to_process(self, image_group, workspace, pipeline=None):
+        '''Return a list of input image names appropriate to the setting choice '''
+        if self.images_choice.value == O_SELECT:
+            return image_group.image_names.get_selections()
+        elif self.images_choice.value == O_ALL_LOADED:
+            # Grab all loaded images
+            accepted_image_list = []
+            if pipeline is None:
+                pipeline = workspace.pipeline
+            for module in pipeline.modules():
+                if module.is_load_module(): # LoadSingleImage is not a load module
+                    columns = module.get_measurement_columns(pipeline)
+                    for column in columns:
+                        object_name, feature, coltype = column
+                        image_name = feature[(len(C_FILE_NAME)+1):]
+                        if object_name == cpmeas.IMAGE and feature.startswith(C_FILE_NAME):
+                            accepted_image_list.append(image_name)
+            return accepted_image_list
+
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
         '''Upgrade from previous versions of setting formats'''
@@ -749,28 +1231,92 @@ class MeasureImageQuality(cpm.CPModule):
                                  O_FOREGROUND]
             setting_values = new_settings
             variable_revision_number = 3
+
+        if (not from_matlab) and variable_revision_number == 3:
+            # Rearrangement/consolidation of settings
+            assert len(setting_values) % SETTINGS_PER_GROUP_V3 == 0
+            num_images = len(setting_values) / SETTINGS_PER_GROUP_V3
+
+            '''Since some settings are new/consolidated and can be repeated, handle
+            the old settings by using a dict'''
+            # Initialize the dictionary by image name
+            d = {}
+            unique_image_names = []
+            for idx in range(num_images):
+                # Get the settings belonging to each image
+                im_settings = setting_values[(idx * SETTINGS_PER_GROUP_V3):(idx * SETTINGS_PER_GROUP_V3 + SETTINGS_PER_GROUP_V3)]
+                unique_image_names += [im_settings[0]]
+            unique_image_names = sorted(set(unique_image_names), key=unique_image_names.index)
+            # Assume that the user doesn't want blur and thresholds
+            for image_name in unique_image_names:
+                d[image_name] = {}
+                d[image_name]["wants_scaling"] = True
+                d[image_name]["wants_saturation"] = False
+                d[image_name]["wants_blur"] = False
+                d[image_name]["blur_scales"] = []
+                d[image_name]["wants_intensity"] = True
+                d[image_name]["wants_threshold"] = False
+                d[image_name]["threshold_methods"] = []
+
+            for idx in range(num_images):
+                im_settings = setting_values[(idx * SETTINGS_PER_GROUP_V3):(idx * SETTINGS_PER_GROUP_V3 + SETTINGS_PER_GROUP_V3)]
+                image_name = im_settings[0]
+                # Set blur and thresholds if the user sets any of the setting groups.
+                d[image_name]["wants_saturation"] = d[image_name]["wants_saturation"] or (im_settings[3] == cps.YES)
+                d[image_name]["wants_blur"] = d[image_name]["wants_blur"] or (im_settings[1] == cps.YES or im_settings[7] == cps.YES)
+                d[image_name]["wants_threshold"] =  d[image_name] ["wants_threshold"]or (im_settings[4] == cps.YES)
+                #  Collect blur scales and threshold methods
+                d[image_name]["blur_scales"] += [im_settings[2]]
+                d[image_name]["threshold_methods"] += [im_settings[5:7] + im_settings[8:]]
+
+            # Uniquify the scales and threshold methods
+            import itertools
+            for image_name in d.keys():
+                d[image_name]["blur_scales"] = list(set(d[image_name]["blur_scales"]))
+                d[image_name]["threshold_methods"] = [k for k,v in itertools.groupby(sorted(d[image_name]["threshold_methods"]))]
+
+            # Create the new settings
+            new_settings = [O_SELECT, str(len(unique_image_names))]                                              # images_choice, image_count
+            new_settings += [str(len(d[image_name]["blur_scales"])) for image_name in unique_image_names]        # scale_count
+            new_settings += [str(len(d[image_name]["threshold_methods"])) for image_name in unique_image_names]  # threshold_count
+            for image_name in unique_image_names:
+                new_settings += [image_name,                                               # image_name
+                                 cps.YES if d[image_name]["wants_scaling"] else cps.NO,    # include_image_scalings
+                                 cps.YES if d[image_name]["wants_blur"]    else cps.NO]    # check_blur
+                new_settings += [k for k in d[image_name]["blur_scales"]]                  # scale
+                new_settings += [cps.YES if d[image_name]["wants_saturation"] else cps.NO, # check_saturation
+                                 cps.YES if d[image_name]["wants_intensity"]  else cps.NO, # check_intensity
+                                 cps.YES if d[image_name]["wants_threshold"]  else cps.NO, # calculate_threshold,
+                                 cps.NO]                                                   # use_all_threshold_methods
+                for k in d[image_name]["threshold_methods"]:
+                    new_settings += k            # threshold_method, object_fraction, two_class_otsu, use_weighted_variance, assign_middle_to_foreground
+
+            setting_values = new_settings
+            variable_revision_number = 4
+
         return setting_values, variable_revision_number, from_matlab
 
 
-class MeasureImageQualitySettingsGroup(cps.SettingsGroup):
+class ImageQualitySettingsGroup(cps.SettingsGroup):
+
     @property
     def threshold_algorithm(self):
         '''The thresholding algorithm to run'''
         return self.threshold_method.value.split(' ')[0]
 
-    @property
-    def  threshold_feature_name(self):
+    def threshold_feature_name(self, image_name):
         '''The feature name of the threshold measurement generated'''
         scale = self.threshold_scale
         if scale is None:
-            return "%s_%s%s_%s"%(IMAGE_QUALITY, THRESHOLD, 
+            return "%s_%s%s_%s"%(C_IMAGE_QUALITY, F_THRESHOLD,
                                  self.threshold_algorithm,
-                                 self.image_name.value)
+                                 image_name)
         else:
-            return "%s_%s%s_%s_%s" % (IMAGE_QUALITY, THRESHOLD,
+            return "%s_%s%s_%s_%s" % (C_IMAGE_QUALITY, F_THRESHOLD,
                                       self.threshold_algorithm,
-                                      self.image_name.value,
+                                      image_name,
                                       scale)
+
     @property
     def threshold_scale(self):
         '''The "scale" for the threshold = minor parameterizations'''
@@ -795,4 +1341,3 @@ class MeasureImageQualitySettingsGroup(cps.SettingsGroup):
         elif threshold_algorithm == cpthresh.TM_MOG:
             return str(int(self.object_fraction.value * 100))
         
-                    

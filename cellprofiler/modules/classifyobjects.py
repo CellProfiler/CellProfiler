@@ -571,7 +571,8 @@ class ClassifyObjects(cpm.CPModule):
         # Draw a 4-bar histogram
         #
         axes = figure.subplot(1,1)
-        axes.hist(object_codes[1:],bins=4, range=(.5,4.5))
+        values = object_codes[1:]
+        axes.hist(values[~np.isnan(values)],bins=4, range=(.5,4.5))
         axes.set_xticks((1,2,3,4))
         if self.wants_custom_names:
             axes.set_xticklabels((self.low_low_custom_name.value,
@@ -661,7 +662,7 @@ class ClassifyObjects(cpm.CPModule):
             # A histogram of the values
             #
             axes = figure.subplot(0,i)
-            axes.hist(values)
+            axes.hist(values[~np.isnan(values)])
             axes.set_xlabel(group.measurement.value)
             axes.set_ylabel("# of %s"%group.object_name.value)
             #

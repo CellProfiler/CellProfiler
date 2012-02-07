@@ -28,7 +28,7 @@ from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
-from cellprofiler.modules.images import Images, NODE_IMAGE_PLANE
+from cellprofiler.modules.images import Images
 
 ASSIGN_ALL = "Assign all images"
 ASSIGN_GUESS = "Try to guess image assignment"
@@ -438,7 +438,8 @@ class NamesAndTypes(cpm.CPModule):
         modpath = Images.make_modpath_from_ipd(ipd)
         try:
             match = group.rule_filter.evaluate(
-                (NODE_IMAGE_PLANE, modpath, self.FakeModpathResolver(modpath, ipd)))
+                (cps.FileCollectionDisplay.NODE_IMAGE_PLANE, 
+                 modpath, self.FakeModpathResolver(modpath, ipd)))
             return match
         except:
             return False
@@ -582,5 +583,5 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
     def test_valid(self, pipeline, *args):
         modpath = ["imaging","image.png"]
         ipd = cpp.ImagePlaneDetails("/imaging/image.png", None, None, None)
-        self((NODE_IMAGE_PLANE, modpath,
+        self((cps.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath,
               NamesAndTypes.FakeModpathResolver(modpath, ipd)), *args)

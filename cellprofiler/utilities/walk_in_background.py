@@ -9,12 +9,14 @@ logger = logging.getLogger(__name__)
 import os
 import threading
 import urllib
+import uuid
 import wx
 
 pause_lock = threading.Lock()
 pause_condition = threading.Condition(pause_lock)
 THREAD_RUNNING = "Running"
 THREAD_STOP = "Stop"
+THREAD_STOPPING = "Stopping"
 THREAD_PAUSE = "Pause"
 THREAD_RESUME = "Resume"
 
@@ -103,6 +105,8 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
             path_list = []
             for dirpath, dirnames, filenames in os.walk(path):
                 checkpoint.wait()
+                if len(filenames) == 0:
+                    continue
                 wx.CallAfter(report, dirpath, dirnames, filenames)
                 if metadata_fn is not None:
                     path_list += [os.path.join(dirpath, filename)
@@ -167,3 +171,71 @@ def get_metadata_in_background(pathnames, fn_callback, fn_completed = None):
     thread = threading.Thread(target = fn)
     thread.start()
     return checkpoint.set_state
+
+class WalkCollection(object):
+    '''A collection of all walks in progress
+    
+    This class manages a group of walks that are in progress so that they
+    can be paused, resumed and stopped in unison.
+    '''
+    def __init__(self, fn_on_completed):
+        self.fn_on_completed = fn_on_completed
+        self.stop_functions = {}
+        self.paused_tasks = []
+        self.state = THREAD_STOP
+        
+    def on_complete(self, uid):
+        if self.stop_functions.has_key(uid):
+            del self.stop_functions[uid]
+            if len(self.stop_functions) == 0:
+                self.state = THREAD_STOP
+                self.fn_on_completed()
+            
+    def walk_in_background(self, path, callback_fn, metadata_fn = None):
+        if self.state == THREAD_PAUSE:
+            self.paused_tasks.append(
+                lambda path, callback_fn, metadata_fn:
+                self.walk_in_background(path, callback_fn, metadata_fn))
+        else:
+            key = uuid.uuid4()
+            fn_on_complete = lambda key=key: self.on_complete(key)
+            self.stop_functions[key] = walk_in_background(
+                path, callback_fn, fn_on_complete, metadata_fn)
+            if self.state == THREAD_STOP:
+                self.state = THREAD_RUNNING
+        
+    def get_metadata_in_background(self, pathnames, fn_callback):
+        if self.state == THREAD_PAUSE:
+            self.paused_tasks.append(
+                lambda pathnames, fn_callback: 
+                self.get_metadata_in_background(pathnames, fn_callback))
+        else:
+            key = uuid.uuid4()
+            fn_on_complete = lambda key=key: self.on_complete(key)
+            self.stop_functions[key] = get_metadata_in_background(
+                pathnames, fn_callback, fn_on_complete)
+        
+    def get_state(self):
+        return self.state
+    
+    def pause(self):
+        if self.state == THREAD_RUNNING:
+            for stop_fn in self.stop_functions.values():
+                stop_fn(THREAD_PAUSE)
+            self.state = THREAD_PAUSE
+            
+    def resume(self):
+        if self.state == THREAD_PAUSE:
+            for stop_fn in self.stop_functions.values():
+                stop_fn(THREAD_RESUME)
+            for fn_task in self.paused_tasks:
+                fn_task()
+            self.paused_tasks = []
+            self.state = THREAD_RUNNING
+    
+    def stop(self):
+        if self.state in (THREAD_RUNNING, THREAD_PAUSE):
+            for stop_fn in self.stop_functions.values():
+                stop_fn(THREAD_STOP)
+            self.paused_tasks = []
+            self.state = THREAD_STOPPING

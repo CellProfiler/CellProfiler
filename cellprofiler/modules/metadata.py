@@ -15,7 +15,7 @@ from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
-from cellprofiler.modules.images import Images, NODE_IMAGE_PLANE
+from cellprofiler.modules.images import Images
 
 X_AUTOMATIC_EXTRACTION = "Automatic"
 X_MANUAL_EXTRACTION = "Manual"
@@ -281,7 +281,7 @@ class Metadata(cpm.CPModule):
         for group in self.extraction_methods:
             if group.filter_choice == F_FILTERED_IMAGES:
                 match = group.filter.evaluate(
-                    (NODE_IMAGE_PLANE, 
+                    (cps.FileCollectionDisplay.NODE_IMAGE_PLANE, 
                      Images.make_modpath_from_ipd(ipd), self))
                 if (not match) and match is not None:
                     continue

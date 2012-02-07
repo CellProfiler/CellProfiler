@@ -2316,25 +2316,41 @@ class FileCollectionDisplay(Setting):
     The FileCollectionDisplay manages the tree and it should be treated as
     read-only by callers. Callers can request that nodes be added, removed,
     filtered or not filtered by calling the appropriate notification function
-    with a nested collection of two-tuples and strings. Two-tuples represent
-    directories whose subdirectires or files are being operated on. Strings
-    represent directories or files that are being operated on. The first
+    with a nested collection of two-tuples and strings (modpaths). Two-tuples
+    represent directories whose subdirectories or files are being operated on. 
+    Strings represent directories or files that are being operated on. The first
     element of the two-tuple is the directory name and the second is a
     sub-collection of two-tuples. For instance, to operate on foo/bar, send:
     
     ("foo", ("bar", ))
-    
-    There are two kinds of leaves for two kinds of files. If a file has
-    only one image plane or hasn't had its metadata parsed, the leaf is
-    the file name. If a file has multiple planes, the leaf is a tuple of
-    series, index and channel.
+
+    The FileCollectionDisplay communicates events on individual files or
+    directories by specifying a path as a collection of path parts. These
+    can be any sort of object and it is the caller's job to maintain the
+    display names of each of them and their node categories (used for
+    icon display).
     '''
     ADD = "ADD"
     REMOVE = "REMOVE"
     METADATA = "METADATA"
+    NODE_DIRECTORY = "directory"
+    NODE_COMPOSITE_IMAGE = "compositeimage"
+    NODE_COLOR_IMAGE = "colorimage"
+    NODE_MONOCHROME_IMAGE = "monochromeimage"
+    NODE_IMAGE_PLANE = "imageplane"
+    NODE_MOVIE = "movie"
+    NODE_FILE = "file"
+    NODE_CSV = "csv"
+    BKGND_PAUSE = "pause"
+    BKGND_RESUME = "resume"
+    BKGND_STOP = "stop"
+    BKGND_GET_STATE = "getstate"
     def __init__(self, text, value, 
-                 fn_report_directory_change, 
-                 fn_get_image_plane_details,
+                 fn_on_drop, 
+                 fn_on_remove,
+                 fn_get_path_info,
+                 fn_on_menu_command,
+                 fn_on_bkgnd_control,
                  hide_text = "Hide files", **kwargs):
         '''Constructor
         
@@ -2344,22 +2360,39 @@ class FileCollectionDisplay(Setting):
                 the appearance (for instance, whether to show or hide
                 filtered files).
                 
+        fn_on_drop - called when files are dropped. Has one argument
+                     which is a list of pathnames of the dropped files.
+                     
+        fn_on_remove - called when the UI requests that files be removed. Has
+                       one argument which is a collection of
+                     
+        fn_get_path_info - called when the UI needs to know the display name,
+                     icon type, context menu and tool tip for an item. These
+                     are returned in a four-tuple by the callee, e.g:
+                     [ "image.tif", NODE_MONOCHROME_IMAGE,
+                       "image of well A01 on plate P-12345", 
+                       ( "Show image", "Show metadata", "Delete image")]
+                       
+        fn_on_menu_command - called when the user selects a context menu
+                     command. The argument is the text from the context menu.
+                     
+        fn_on_bkgnd_control - called when the UI wants to stop, pause or resume
+                     all background processing. BKGND_PAUSE asks for the
+                     caller to pause processing, BKGND_RESUME asks for the
+                     caller to resume, BKGND_STOP asks for processing to be
+                     aborted, BKGND_GET_STATE asks for the caller to
+                     return its current state = BKGND_PAUSE if it is paused,
+                     BKGND_RESUME if it is running or BKGND_STOP if it is
+                     idle.
+                
         hide_text - the text displayed next to the hide checkbox.
-                
-        fn_report_directory_change - a function that is called when directories
-                or files are added or removed. The signature is:
-
-                def fn_report_directory_change(op, filelist)
-                
-                where op is ADD, REMOVE or METADATA and the filelist has the
-                files to be added or removed
-                
-        fn_get_image_plane_details - a function that returns the image plane
-                details for a path.
         '''
         super(self.__class__, self).__init__(text, value, **kwargs)
-        self.fn_report_directory_change = fn_report_directory_change
-        self.fn_get_image_plane_details = fn_get_image_plane_details
+        self.fn_on_drop = fn_on_drop
+        self.fn_on_remove = fn_on_remove
+        self.fn_get_path_info = fn_get_path_info
+        self.fn_on_menu_command = fn_on_menu_command
+        self.fn_on_bkgnd_control = fn_on_bkgnd_control
         self.hide_text = hide_text
         self.fn_update = None
         self.file_tree = {}
@@ -2377,9 +2410,9 @@ class FileCollectionDisplay(Setting):
         '''Update the setting value after changing a property'''
         self.value_text = json.dumps(self.properties)
     
-    def update_ui(self):
+    def update_ui(self, mods = None):
         if self.fn_update is not None:
-            self.fn_update()
+            self.fn_update(mods)
         
     def set_update_function(self, fn_update=None):
         '''Set the function that will be called when the file_tree is updated'''
@@ -2395,93 +2428,117 @@ class FileCollectionDisplay(Setting):
         
         mods - modification structure. See class documentation for its form.
         '''
-        additions = self.add_subtree(mods, self.file_tree)
-        if self.fn_report_directory_change is not None:
-            self.fn_report_directory_change(self.ADD, additions)
-        self.update_ui()
+        self.add_subtree(mods, self.file_tree)
+        self.update_ui(mods)
         
-    @classmethod
-    def mod_is_file(cls, mod):
-        '''True if mod is a file leaf
+    def modify(self, mods):
+        '''Indicate a minor modification such as metadtaa change
         
-        Returns true if the mod represents a file and that file isn't composed
-        of multiple image planes.
+        mods - modification structure. See class documentation for its form.
         '''
-        return isinstance(mod, basestring)
-    
+        self.update_ui(mods)
+
     @classmethod
-    def mod_is_compound_image_file(cls, mod):
-        '''True if mod is an image file with multiple image planes'''
-        return (len(mod) == 2 and
-                isinstance(mod[0], basestring) and
-                all([cls.mod_is_image_plane(mm) for mm in mod[1]]))
+    def is_leaf(cls, mod):
+        '''True if the modification structure is the leaf of a tree
+        
+        The leaves are either strings representing the last part of a path
+        or 3-tuples representing image planes within an image file. Branches
+        are two-tuples composed of a path part and more branches / leaves
+        '''
+        return len(mod) != 2 or not isinstance(mod[0], basestring)
     
-    @classmethod
-    def mod_is_image_plane(cls, mod):
-        '''True if the mod is an image plane within an image'''
-        return (isinstance(mod, tuple) and len(mod) == 3
-                and all([isinstance(mmm, (int, None.__class__)) for mmm in mod]))
-    
+    def get_tree_modpaths(self, path):
+        '''Create a modpath containing the selected node and all children
+        
+        root - list of paths to the selected node
+        
+        returns a modpath (two-tuples where the first is the key and the second
+        is a list of sub-modpaths)
+        '''
+        tree = self.file_tree
+        root_modlist = sub_modlist = []
+        while len(path) > 1:
+            next_sub_modlist = []
+            sub_modlist.append((path[0], next_sub_modlist))
+            tree = tree[path[0]]
+            path = path[1:]
+            sub_modlist = next_sub_modlist
+        if isinstance(tree[path[0]], dict):
+            sub_modlist.append((path[0], self.get_all_modpaths(tree[path[0]])))
+        else:
+            sub_modlist.append(path[0])
+        return root_modlist[0]
+        
+    def get_all_modpaths(self, tree):
+        '''Get all sub-modpaths from the branches of the given tree'''
+        result = []
+        for key in tree.keys():
+            if key is None:
+                continue
+            elif not isinstance(tree[key], dict):
+                result.append(key)
+            else:
+                result.append((key, self.get_all_modpaths(tree[key])))
+        return result
+                           
     def add_subtree(self, mods, tree):
-        additions = []
         for mod in mods:
-            if self.mod_is_file(mod) or self.mod_is_image_plane(mod):
+            if self.is_leaf(mod):
                 if not tree.has_key(mod):
                     tree[mod] = True
-                    additions.append(mod)
             else:
                 if tree.has_key(mod[0]) and isinstance(tree[mod[0]], dict):
                     subtree = tree[mod[0]]
                 else:
                     subtree = tree[mod[0]] = {}
                     subtree[None] = True
-                true_mods = self.add_subtree(mod[1], subtree)
-                additions.append((mod[0], true_mods))
-        return additions
+                self.add_subtree(mod[1], subtree)
                 
+    def on_remove(self, mods):
+        '''Called when the UI wants to remove nodes
+        
+        mods - a modlist of nodes to remove
+        '''
+        self.fn_on_remove(mods)
+        
     def remove(self, mods):
         '''Remove nodes from the file tree
         
         mods - modification structure. See class documentation for its form.
         '''
-        removals = []
-        for modpath in mods:
-            removals += self.remove_subtree(modpath, self.file_tree)
-        if self.fn_report_directory_change is not None:
-            self.fn_report_directory_change(self.REMOVE, removals)
-        self.update_ui()
+        for mod in mods:
+            self.remove_subtree(mod, self.file_tree)
+        self.update_ui(mods)
         
     def remove_subtree(self, mod, tree):
-        removals = []
-        if mod is None or len(mod) == 0:
-            #
-            # Remove whole tree
-            #
-            for key in tree.keys():
-                if key is None:
-                    continue
-                if isinstance(tree[key], dict):
-                    removals.append((key, self.remove_subtree(None, tree[key])))
-                else:
-                    removals.append(key)
-                del tree[key]
+        if not (isinstance(mod, tuple) and len(mod) == 2):
+            if tree.has_key(mod):
+                subtree = tree[mod]
+                if isinstance(subtree, dict):
+                    #
+                    # Remove whole tree
+                    #
+                    for key in subtree.keys():
+                        if key is None:
+                            continue
+                        if isinstance(subtree[key], dict):
+                            self.remove_subtree(key, subtree)
+                del tree[mod]
         elif tree.has_key(mod[0]):
             root_mod = mod[0]
-            if isinstance(tree[root_mod], dict):
-                removals.append((root_mod, self.remove_subtree(
-                    mod[1:], tree[root_mod])))
+            subtree = tree[root_mod]
+            if isinstance(subtree, dict):
+                for submod in mod[1]:
+                    self.remove_subtree(submod, subtree)
                 #
                 # Delete the subtree if the subtree is emptied
                 #
-                if len(tree[root_mod]) == 0 or (
-                    len(tree[root_mod]) == 1 and tree[root_mod].has_key(None)):
+                if len(subtree) == 0 or (
+                    len(subtree) == 1 and subtree.has_key(None)):
                     del tree[root_mod]
-                    if self.mod_is_compound_image_file(mod):
-                        removals.append(root_mod)
             else:
-                removals.append(root_mod)
                 del tree[root_mod]
-        return removals
     
     def mark(self, mods, keep):
         '''Mark tree nodes as filtered in or out
@@ -2495,7 +2552,7 @@ class FileCollectionDisplay(Setting):
         
     def mark_subtree(self, mods, keep, tree):
         for mod in mods:
-            if isinstance(mod, basestring):
+            if self.is_leaf(mod):
                 if tree.has_key(mod):
                     if isinstance(tree[mod], dict):
                         tree[mod][None] = keep
@@ -2504,27 +2561,30 @@ class FileCollectionDisplay(Setting):
             else:
                 if tree.has_key(mod[0]):
                     self.mark_subtree(mod[1], keep, tree[mod[0]])
+        kept = [tree[k][None] if isinstance(tree[k], dict)
+                else tree[k]
+                for k in tree.keys() if k is not None]
+        tree[None] = any(kept)
                     
-    def add_metadata(self, path, metadata):
-        '''Add metadata to a image plane
-        
-        path - path to the image plane as a list of nodes to walk from the root
-        
-        metadata - a dictionary of keys and values to add to the image plane.
-        '''
-        metadata = dict([(k, str(v)) for k,v in metadata.iteritems()])
-        self.fn_report_directory_change(self.METADATA,
-                                        path, metadata)
-        
-    def get_metadata(self, path):
-        '''Get the metadata associated with the image plane at a given path
+    def get_node_info(self, path):
+        '''Get the display name, node type and tool tip for a node
         
         path - path to the image plane as a list of nodes
         
-        returns either None if no image plane at the path or a dictionary
+        returns a tuple of display name, node type and tool tip
         '''
-        ipd = self.fn_get_image_plane_details(path)
-        return None if ipd is None else ipd.metadata
+        display_name, node_type, tool_tip, menu = self.fn_get_path_info(path)
+        return display_name, node_type, tool_tip
+    
+    def get_context_menu(self, path):
+        '''Get the context menu associated with a path
+        
+        path - path to the image plane
+        
+        returns a list of context menu items.
+        '''
+        display_name, node_type, tool_tip, menu = self.fn_get_path_info(path)
+        return menu
             
     def get_show_filtered(self):
         return self.properties[self.SHOW_FILTERED]

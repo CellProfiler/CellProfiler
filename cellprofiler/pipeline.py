@@ -54,6 +54,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
+from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
 
 '''The measurement name of the image number'''
 IMAGE_NUMBER = cpmeas.IMAGE_NUMBER
@@ -521,9 +522,9 @@ def write_image_plane_details(file_or_fd, ipds):
         for ipd in ipds:
             assert isinstance(ipd, ImagePlaneDetails)
             fields = [ipd.url]
-            fields += [str(x) if x is not None else None 
+            fields += [unicode(x) if x is not None else None 
                        for x in (ipd.series, ipd.index, ipd.channel)]
-            fields += [ipd.metadata[k] if ipd.metadata.has_key(k) else None
+            fields += [unicode(ipd.metadata[k]) if ipd.metadata.has_key(k) else None
                        for k in metadata_columns]
             line = ",".join(['"%s"' % 
                              v.encode("utf-8")
@@ -601,6 +602,7 @@ class Pipeline(object):
         self.__undo_stack = []
         self.__undo_start = None
         self.__image_plane_details = []
+        self.file_walker = WalkCollection(self.on_walk_completed)
     
     def copy(self, save_image_plane_details = True):
         '''Create a copy of the pipeline modules and settings'''
@@ -2003,7 +2005,7 @@ class Pipeline(object):
         message = "Move %s %s" % (module.module_name, direction)
         self.__undo_stack.append((undo, message))
         
-    def add_image_plane_details(self, details_list):
+    def add_image_plane_details(self, details_list, add_undo = True):
         real_list = []
         details_list = sorted(details_list)
         start = 0
@@ -2015,9 +2017,10 @@ class Pipeline(object):
                 self.image_plane_details.insert(pos, details)
             start = pos
         self.notify_listeners(ImagePlaneDetailsAddedEvent(real_list))
-        def undo():
-            self.remove_image_plane_details(real_list)
-        self.__undo_stack.append((undo, "Add images"))
+        if add_undo:
+            def undo():
+                self.remove_image_plane_details(real_list)
+            self.__undo_stack.append((undo, "Add images"))
         
     def remove_image_plane_details(self, details_list):
         real_list = []
@@ -2316,6 +2319,163 @@ class Pipeline(object):
     def image_plane_details(self):
         return self.__image_plane_details
     
+    def walk_paths(self, pathnames):
+        if self.file_walker.get_state() == THREAD_STOP:
+            self.notify_listeners(FileWalkStartedEvent())
+        files = []
+        for pathname in pathnames:
+            if os.path.isdir(pathname):
+                self.file_walker.walk_in_background(
+                    pathname, self.wp_add_files, self.wp_add_image_metadata)
+            else:
+                files.append(pathname)
+        if len(files) > 0:
+            ipds = []
+            for pathname in files:
+                url = "file:" + urllib.pathname2url(pathname)
+                ipd = ImagePlaneDetails(url, None, None, None)
+                ipds.append(ipd)
+            self.add_image_plane_details(ipds)
+                
+            self.file_walker.get_metadata_in_background(
+                files, self.wp_add_image_metadata)
+        
+    def on_walk_completed(self):
+        self.notify_listeners(FileWalkEndedEvent())
+        
+    def wp_add_files(self, dirpath, directories, filenames):
+        ipds = []
+        for filename in filenames:
+            path = os.path.join(dirpath, filename)
+            url = "file:" + urllib.pathname2url(path)
+            ipd = ImagePlaneDetails(url, None, None, None)
+            ipds.append(ipd)
+        self.add_image_plane_details(ipds)
+    
+    def wp_add_image_metadata(self, path, metadata):
+        if (metadata.image_count == 1):
+            m = {}
+            pixels = metadata.image(0).Pixels
+            m[ImagePlaneDetails.MD_SIZE_C] = str(pixels.SizeC)
+            m[ImagePlaneDetails.MD_SIZE_Z] = str(pixels.SizeZ)
+            m[ImagePlaneDetails.MD_SIZE_T] = str(pixels.SizeT)
+            
+            if pixels.SizeC == 1:
+                #
+                # Monochrome image
+                #
+                m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                    ImagePlaneDetails.MD_MONOCHROME
+            elif pixels.channel_count == 1:
+                #
+                # Oh contradictions! It's interleaved, really RGB or RGBA
+                # 
+                m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                    ImagePlaneDetails.MD_RGB
+            else:
+                m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                    ImagePlaneDetails.MD_PLANAR
+            url = "file:" + urllib.pathname2url(path)
+            exemplar = ImagePlaneDetails(url, None, None, None)
+            ipd = self.find_image_plane_details(exemplar)
+            if ipd is not None:
+                ipd.metadata.update(m)
+                self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
+            
+        #
+        # If there are planes, we create image plane descriptors for them
+        #
+        n_series = metadata.image_count
+        to_add = []
+        for series in range(n_series):
+            pixels = metadata.image(series).Pixels
+            if pixels.plane_count > 0:
+                for index in range(pixels.plane_count):
+                    addr = (series, index, None)
+                    m = {}
+                    plane = pixels.Plane(index)
+                    c = plane.TheC
+                    m[ImagePlaneDetails.MD_T] = plane.TheT
+                    m[ImagePlaneDetails.MD_Z] = plane.TheZ
+                    if pixels.channel_count > c:
+                        channel = pixels.Channel(c)
+                        channel_name = channel.Name
+                        if channel_name is not None:
+                            m[ImagePlaneDetails.MD_CHANNEL_NAME] = channel_name
+                        if channel.SamplesPerPixel == 1:
+                            m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                                ImagePlaneDetails.MD_MONOCHROME
+                        else:
+                            m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                                ImagePlaneDetails.MD_RGB
+                    url = "file:" + urllib.pathname2url(path)
+                    exemplar = ImagePlaneDetails(url, series, index, None)
+                    ipd = self.find_image_plane_details(exemplar)
+                    if ipd is None:
+                        exemplar.metadata.update(m)
+                        to_add.append(exemplar)
+                    else:
+                        ipd.metadata.update(m)
+                        self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
+                        
+            elif pixels.SizeZ > 1 or pixels.SizeT > 1:
+                #
+                # Movie metadata might not have planes
+                #
+                if pixels.SizeC == 1:
+                    color_format = ImagePlaneDetails.MD_MONOCHROME
+                    n_channels = 1
+                elif pixels.channel_count == 1:
+                    color_format = ImagePlaneDetails.MD_RGB
+                    n_channels = 1
+                else:
+                    color_format = ImagePlaneDetails.MD_MONOCHROME
+                    n_channels = pixels.SizeC
+                n = 1
+                dims = []
+                for d in pixels.DimensionOrder[2:]:
+                    if d == 'C':
+                        dim = n_channels
+                        c_idx = len(dims)
+                    elif d == 'Z':
+                        dim = pixels.SizeZ
+                        z_idx = len(dims)
+                    elif d == 'T':
+                        dim = pixels.SizeT
+                        t_idx = len(dims)
+                    else:
+                        raise ValueError(
+                            "Unsupported dimension order for file %s: %s" %
+                            (path, pixels.DimensionOrder))
+                    dims.append(dim)
+                index_order = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
+                c_indexes = index_order[c_idx].flatten()
+                z_indexes = index_order[z_idx].flatten()
+                t_indexes = index_order[t_idx].flatten()
+                for index, (c_idx, z_idx, t_idx) in \
+                    enumerate(zip(c_indexes, z_indexes, t_indexes)):
+                    channel = pixels.Channel(c_idx)
+                    url = "file:" + urllib.pathname2url(path)
+                    exemplar = ImagePlaneDetails(url, series, index, None)
+                    metadata = { 
+                        ImagePlaneDetails.MD_SIZE_C: channel.SamplesPerPixel,
+                        ImagePlaneDetails.MD_SIZE_Z: 1,
+                        ImagePlaneDetails.MD_SIZE_T: 1,
+                        ImagePlaneDetails.MD_COLOR_FORMAT: color_format }
+                    channel_name = channel.Name
+                    if channel_name is not None and len(channel_name) > 0:
+                        metadata[ImagePlaneDetails.MD_CHANNEL_NAME] = \
+                            channel_name
+                    ipd = self.find_image_plane_details(exemplar)
+                    if ipd is None:
+                        exemplar.metadata.update(metadata)
+                        to_add.append(exemplar)
+                    else:
+                        ipd.metadata.update(metadata)
+                        self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
+        if len(to_add) > 0:
+            self.add_image_plane_details(to_add, False)
+
     def test_valid(self):
         """Throw a ValidationError if the pipeline isn't valid
         
@@ -2681,6 +2841,21 @@ class ImagePlaneDetailsRemovedEvent(AbstractPipelineEvent):
         
     def event_type(self):
         return "Image plane details removed"
+    
+class ImagePlaneDetailsMetadataEvent(AbstractPipelineEvent):
+    def __init__(self, ipd):
+        self.image_plane_details = ipd
+        
+    def event_type(self):
+        return "Image plane details metadata changed"
+    
+class FileWalkStartedEvent(AbstractPipelineEvent):
+    def event_type(self):
+        return "File walk started"
+    
+class FileWalkEndedEvent(AbstractPipelineEvent):
+    def event_type(self):
+        return "File walk ended"
 
 class RunExceptionEvent(AbstractPipelineEvent):
     """An exception was caught during a pipeline run

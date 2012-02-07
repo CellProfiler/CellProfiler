@@ -2413,7 +2413,6 @@ class FileCollectionDisplayController(object):
         assert isinstance(v, cps.FileCollectionDisplay)
         self.module_view = module_view
         self.v = v
-        self.walks_in_progress = {}
         self.panel = wx.Panel(self.module_view.module_panel, -1,
                               name = edit_control_name(v))
         self.panel.controller = self
@@ -2475,9 +2474,6 @@ class FileCollectionDisplayController(object):
         self.on_destroy(None)
         
     def on_destroy(self, event):
-        for stop_fn in self.walks_in_progress.values():
-            stop_fn(W.THREAD_STOP)
-        self.walks_in_progress.clear()
         self.v.set_update_function()
 
     def on_browse(self, event):
@@ -2485,15 +2481,22 @@ class FileCollectionDisplayController(object):
         dlg = wx.DirDialog(self.panel, "Select a directory to add")
         try:
             if dlg.ShowModal() == wx.ID_OK:
-                self.add_directory(dlg.Path)
+                self.v.fn_on_drop([dlg.Path])
         finally:
-            del dlg
+            dlg.Destroy()
+            
+    def on_start_received(self):
+        self.pause_button.Label = "Pause"
+        self.pause_button.Enable(True)
+        self.stop_button.Enable(True)
+        
+    def on_stop_received(self):
+        self.pause_button.Enable(False)
+        self.stop_button.Enable(False)
             
     def on_stop(self, event):
         '''Stop button pressed'''
-        for fn in self.walks_in_progress.values():
-            fn(W.THREAD_STOP)
-        self.walks_in_progress.clear()
+        self.v.fn_on_bkgnd_control(self.v.BKGND_STOP)
         self.pause_button.Label = "Pause"
         self.pause_button.Enable(False)
         self.stop_button.Enable(False)
@@ -2501,51 +2504,12 @@ class FileCollectionDisplayController(object):
     def on_pause_resume(self, event):
         '''Pause / resume pressed'''
         if self.pause_button.Label == "Pause":
-            action = W.THREAD_PAUSE
+            action = self.v.BKGND_PAUSE
             self.pause_button.Label = "Resume"
         else:
-            action = W.THREAD_RESUME
+            action = self.v.BKGND_RESUME
             self.pause_button.Label = "Pause"
-        for fn in self.walks_in_progress.values():
-            fn(action)
-            
-    def add_directory(self, path):
-        key = str(uuid.uuid4())
-        def completed_fn():
-            del self.walks_in_progress[key]
-            if len(self.walks_in_progress) == 0:
-                self.stop_button.Enable(False)
-                self.pause_button.Enable(False)
-                
-        def walk_fn(dirpath, dirnames, filenames):
-            self.add_files(dirpath, filenames)
-        stop_fn = W.walk_in_background(path, walk_fn, completed_fn, 
-                                       self.add_image_metadata)
-        self.walks_in_progress[key] = stop_fn
-        self.stop_button.Enable(True)
-        self.pause_button.Enable(True)
-        
-    def add_file_metadata(self, paths):
-        key = str(uuid.uuid4())
-        def completed_fn():
-            del self.walks_in_progress[key]
-        stop_fn = W.get_metadata_in_background(paths, self.add_image_metadata, 
-                                               completed_fn)
-        self.walks_in_progress[key] = stop_fn
-        self.stop_button.Enable(True)
-        self.pause_button.Enable(True)
-        
-    def add_files(self, dirpath, filenames):
-        self.status_text.Label = "Processing directory: %s (%d files)" % \
-            (os.path.split(dirpath)[1], len(filenames))
-        tree = filenames
-        while True:
-            new_dirpath, directory = os.path.split(dirpath)
-            if len(new_dirpath) == 0 or len(directory) == 0:
-                self.v.add(((dirpath, tree),))
-                return
-            tree = ((directory, tree),)
-            dirpath = new_dirpath
+        self.v.fn_on_bkgnd_control(action)
             
     def add_item(self, modpath, text=None):
         '''Add an item to the tree
@@ -2603,153 +2567,9 @@ class FileCollectionDisplayController(object):
             result.insert(0, part)
             path = new_path
             
-    def add_image_metadata(self, path, metadata):
-        modpath = self.get_modpath(path)
-        self.status_text.Label = "Processing file: %s" % modpath[-1]
-        if (metadata.image_count == 1):
-            m = {}
-            image_id = self.FILE_IMAGE_INDEX
-            pixels = metadata.image(0).Pixels
-            m[cpp.ImagePlaneDetails.MD_SIZE_C] = str(pixels.SizeC)
-            m[cpp.ImagePlaneDetails.MD_SIZE_Z] = str(pixels.SizeZ)
-            m[cpp.ImagePlaneDetails.MD_SIZE_T] = str(pixels.SizeT)
-            
-            if pixels.SizeC == 1:
-                #
-                # Monochrome image
-                #
-                m[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] = \
-                    cpp.ImagePlaneDetails.MD_MONOCHROME
-                image_id = self.IMAGE_PLANE_IMAGE_INDEX
-            elif pixels.channel_count == 1:
-                #
-                # Oh contradictions! It's interleaved, really RGB or RGBA
-                # 
-                m[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] = \
-                    cpp.ImagePlaneDetails.MD_RGB
-                image_id = self.COLOR_IMAGE_INDEX
-            else:
-                m[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] = \
-                    cpp.ImagePlaneDetails.MD_PLANAR
-                image_id = self.COLOR_IMAGE_INDEX
-            self.v.add_metadata(modpath, m)
-            if not self.needs_update:
-                #
-                # Only do if no update pending - will happen if there is
-                # an update.
-                #
-                item = self.get_item_from_modpath(modpath)
-                if item is not None:
-                    if pixels.SizeT > 1:
-                        image_id = self.MOVIE_IMAGE_INDEX
-                        text = "%s: %d frames" % (
-                            self.tree_ctrl.GetItemPyData(item),
-                            pixels.SizeT)
-                        self.tree_ctrl.SetItemText(item, text)
-                    self.tree_ctrl.SetItemImage(item, image_id)
-                
-        #
-        # If there are planes, we create image plane descriptors for them
-        #
-        n_series = metadata.image_count
-        subimage_metadata = {}
-        for series in range(n_series):
-            pixels = metadata.image(series).Pixels
-            if pixels.plane_count > 0:
-                for index in range(pixels.plane_count):
-                    addr = (series, index, None)
-                    m = {}
-                    subimage_metadata[addr] = m
-                    plane = pixels.Plane(index)
-                    c = plane.TheC
-                    m[cpp.ImagePlaneDetails.MD_T] = plane.TheT
-                    m[cpp.ImagePlaneDetails.MD_Z] = plane.TheZ
-                    if pixels.channel_count > c:
-                        channel = pixels.Channel(c)
-                        channel_name = channel.Name
-                        if channel_name is not None:
-                            m[cpp.ImagePlaneDetails.MD_CHANNEL_NAME] = channel_name
-                        if channel.SamplesPerPixel == 1:
-                            m[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] = \
-                                cpp.ImagePlaneDetails.MD_MONOCHROME
-                        else:
-                            m[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] = \
-                                cpp.ImagePlaneDetails.MD_RGB
-            elif pixels.SizeZ > 1 or pixels.SizeT > 1:
-                #
-                # Movie metadata might not have planes
-                #
-                if pixels.SizeC == 1:
-                    color_format = cpp.ImagePlaneDetails.MD_MONOCHROME
-                    n_channels = 1
-                elif pixels.channel_count == 1:
-                    color_format = cpp.ImagePlaneDetails.MD_RGB
-                    n_channels = 1
-                else:
-                    color_format = cpp.ImagePlaneDetails.MD_MONOCHROME
-                    n_channels = pixels.SizeC
-                n = 1
-                dims = []
-                for d in pixels.DimensionOrder[2:]:
-                    if d == 'C':
-                        dim = n_channels
-                        c_idx = len(dims)
-                    elif d == 'Z':
-                        dim = pixels.SizeZ
-                        z_idx = len(dims)
-                    elif d == 'T':
-                        dim = pixels.SizeT
-                        t_idx = len(dims)
-                    else:
-                        raise ValueError(
-                            "Unsupported dimension order for file %s: %s" %
-                            (path, pixels.DimensionOrder))
-                    dims.append(dim)
-                index_order = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
-                c_indexes = index_order[c_idx].flatten()
-                z_indexes = index_order[z_idx].flatten()
-                t_indexes = index_order[t_idx].flatten()
-                for index, (c_idx, z_idx, t_idx) in \
-                    enumerate(zip(c_indexes, z_indexes, t_indexes)):
-                    channel = pixels.Channel(c_idx)
-                    addr = (series, index, None)
-                    metadata = { 
-                        cpp.ImagePlaneDetails.MD_SIZE_C: channel.SamplesPerPixel,
-                        cpp.ImagePlaneDetails.MD_SIZE_Z: 1,
-                        cpp.ImagePlaneDetails.MD_SIZE_T: 1,
-                        cpp.ImagePlaneDetails.MD_COLOR_FORMAT: color_format }
-                    channel_name = channel.Name
-                    if channel_name is not None and len(channel_name) > 0:
-                        metadata[cpp.ImagePlaneDetails.MD_CHANNEL_NAME] = \
-                            channel_name
-                    subimage_metadata[addr] = metadata
-        if len(subimage_metadata) > 0:
-            mods = [(modpath[-1], list(subimage_metadata.keys()))]
-            for node in reversed(modpath[:-1]):
-                mods = [(node, mods)]
-            self.v.add(mods)
-            for subimage in subimage_metadata.keys():
-                self.v.add_metadata(modpath + [subimage], 
-                                    subimage_metadata[subimage])
                     
     def on_drop_files(self, x, y, filenames):
-        d = {}
-        pathnames = []
-        for filename in filenames:
-            self.status_text.Label = "Starting work on %s" % \
-                os.path.split(filename)[1]
-            if os.path.isdir(filename):
-                self.add_directory(filename)
-            else:
-                directory, f = os.path.split(filename)
-                if not d.has_key(directory):
-                    d[directory] = []
-                d[directory].append(f)
-                pathnames.append(filename)
-        for dirpath, ff in d.iteritems():
-            self.add_files(dirpath, ff)
-        if len(pathnames) > 0:
-            self.add_file_metadata(pathnames)
+        self.v.fn_on_drop(filenames)
         
     def on_tree_item_menu(self, event):
         logger.debug("On tree item menu")
@@ -2764,7 +2584,7 @@ class FileCollectionDisplayController(object):
         mods = [self.get_item_address(item) 
                 for item in self.tree_ctrl.GetSelections()]
         mods = filter(lambda x: x is not None, mods)
-        self.v.remove(mods)
+        self.v.on_remove([self.v.get_tree_modpaths(mod) for mod in mods])
         
     def get_item_address(self, item):
         '''Get an item's address as a collection of names'''
@@ -2785,7 +2605,49 @@ class FileCollectionDisplayController(object):
         '''
         return self.modpath_to_item.get(tuple(modpath))
         
-    def request_update(self, event=None):
+    def request_update(self, modpath_hint=None):
+        if modpath_hint == cps.FileCollectionDisplay.BKGND_RESUME:
+            self.on_start_received()
+            return
+        if modpath_hint == cps.FileCollectionDisplay.BKGND_STOP:
+            self.on_stop_received()
+            self.status_text.Label = "Idle..."
+            return
+        if modpath_hint is not None:
+            #
+            # Descend down the leftmost side of all of the tuples
+            # to get something we can display
+            #
+            path = []
+            mp = modpath_hint[0]
+            any_others = len(modpath_hint) > 1
+            while True:
+                if isinstance(mp, basestring) or isinstance(mp, tuple) and len(mp) == 3:
+                    path.append(mp)
+                    break
+                part, mp_list = mp
+                path.append(part)
+                if len(mp_list) == 0:
+                    break
+                any_others = any_others or len(modpath_hint) > 1
+                mp = mp_list[0]
+            self.status_text.Label = \
+                ("Processing " + path[-1] if isinstance(path[-1], basestring) 
+                 else path[-2])
+            self.status_text.Update()
+            if not any_others:
+                #
+                # It's just a modification to a single node. Try and handle
+                # here.
+                #
+                item_id  = self.get_item_from_modpath(path)
+                if item_id is not None:
+                    text, node_type, tooltip = self.v.get_node_info(path)
+                    image_id = self.get_image_id_from_nodetype(node_type)
+                    self.tree_ctrl.SetItemText(item_id, text)
+                    self.tree_ctrl.SetItemImage(item_id, image_id)
+                    return
+                
         if not self.needs_update:
             self.needs_update = True
             wx.CallLater(self.latency * 4 / 3, self.update)
@@ -2818,41 +2680,21 @@ class FileCollectionDisplayController(object):
             sub_modpath = modpath + [x]
             if x is None:
                 continue
+            text, node_type, tooltip = self.v.get_node_info(sub_modpath)
+            image_id = self.get_image_id_from_nodetype(node_type)
             if isinstance(file_tree[x], bool) or isinstance(x, tuple):
-                metadata = self.v.get_metadata(sub_modpath)
                 node_is_filtered = (not file_tree[x]) or is_filtered
                 if node_is_filtered and not show_filtered:
                     continue
-                if isinstance(x, tuple):
-                    if (metadata is not None and
-                        metadata.has_key(cpp.ImagePlaneDetails.MD_CHANNEL_NAME)):
-                        name = "series =%2d, index =%3d, channel=%s" % (
-                            x[0], x[1], metadata[cpp.ImagePlaneDetails.MD_CHANNEL_NAME])
-                    else:
-                        name = "series =%2d, index=%3d" % (x[0], x[1])
-                else:
-                    name = x
                 if existing_items.has_key(x):
                     existing_items[x][1] = True
                     item_id = existing_items[x][0]
-                    self.tree_ctrl.SetItemText(item_id, name)
+                    self.tree_ctrl.SetItemText(item_id, text)
                 else:
-                    item_id = self.add_item(sub_modpath, name)
+                    item_id = self.add_item(sub_modpath, text)
                     existing_items[x] = (item_id, True)
                     needs_sort = True
                     
-                image_id = self.FILE_IMAGE_INDEX
-                if metadata is not None and len(metadata) > 0:
-                    if (metadata.has_key(cpp.ImagePlaneDetails.MD_SIZE_T) and
-                        int(metadata[cpp.ImagePlaneDetails.MD_SIZE_T]) > 1):
-                        image_id = self.MOVIE_IMAGE_INDEX
-                    elif (metadata.has_key(cpp.ImagePlaneDetails.MD_COLOR_FORMAT) and
-                          metadata[cpp.ImagePlaneDetails.MD_COLOR_FORMAT] != 
-                          cpp.ImagePlaneDetails.MD_MONOCHROME):
-                        image_id = self.COLOR_IMAGE_INDEX
-                    else:
-                        image_id = self.IMAGE_PLANE_IMAGE_INDEX
-                        
                 self.tree_ctrl.SetItemImage(item_id, image_id)
             elif isinstance(file_tree[x], dict):
                 subtree = file_tree[x]
@@ -2864,18 +2706,8 @@ class FileCollectionDisplayController(object):
                 n_files = unfiltered_files + filtered_files
                 if node_is_filtered and not show_filtered:
                     continue
-                if (len(subtree) > 1 and 
-                    all([self.v.mod_is_image_plane(k) or k is None
-                         for k in subtree.keys()])):
-                    metadata = self.v.get_metadata(sub_modpath)
-                    if (metadata is not None and 
-                        metadata.has_key(cpp.ImagePlaneDetails.MD_SIZE_T)
-                        and int(metadata[cpp.ImagePlaneDetails.MD_SIZE_T]) > 1):
-                        image_id = self.MOVIE_IMAGE_INDEX
-                        text = "%s\t(%d frames)" % (x, len(subtree))
-                    else:
-                        image_id = self.IMAGE_PLANES_IMAGE_INDEX
-                        text = "%s\t(%d image planes)" % (x, len(subtree))
+                if node_type in (cps.FileCollectionDisplay.NODE_COMPOSITE_IMAGE,
+                                 cps.FileCollectionDisplay.NODE_MOVIE):
                     expanded_image_id = image_id
                 else:
                     image_id = self.FOLDER_IMAGE_INDEX
@@ -2922,6 +2754,20 @@ class FileCollectionDisplayController(object):
         if needs_sort:
             self.tree_ctrl.SortChildren(parent_item)
             
+    def get_image_id_from_nodetype(self, node_type):
+        if node_type == cps.FileCollectionDisplay.NODE_COLOR_IMAGE:
+            image_id = self.COLOR_IMAGE_INDEX
+        elif node_type == cps.FileCollectionDisplay.NODE_COMPOSITE_IMAGE:
+            image_id = self.IMAGE_PLANES_IMAGE_INDEX
+        elif node_type in (cps.FileCollectionDisplay.NODE_MONOCHROME_IMAGE,
+                           cps.FileCollectionDisplay.NODE_IMAGE_PLANE):
+            image_id = self.IMAGE_PLANE_IMAGE_INDEX
+        elif node_type == cps.FileCollectionDisplay.NODE_MOVIE:
+            image_id = self.MOVIE_IMAGE_INDEX
+        else:
+            image_id = self.FILE_IMAGE_INDEX
+        return image_id
+    
     @classmethod
     def get_file_and_folder_counts(cls, tree):
         '''Count the number of files and folders in the tree

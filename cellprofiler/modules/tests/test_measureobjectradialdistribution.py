@@ -467,12 +467,12 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
             bin_intensity = np.sum(image[(labels==1) & 
                                          (bin_labels == bin-1)])
             expected = bin_intensity / total_intensity
-            self.assertAlmostEqual(expected, data[0], delta = .00001)
+            self.assertAlmostEqual(expected, data[0], 4)
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_mean_frac(bin, 4))
             expected = expected * np.sum(labels==1) / np.sum((labels == 1) &
                                                              (bin_labels == bin-1))
-            self.assertAlmostEqual(data[0], expected, delta = .00001)
+            self.assertAlmostEqual(data[0], expected, 4)
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)

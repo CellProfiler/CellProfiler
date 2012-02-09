@@ -72,6 +72,7 @@ F_RADIAL_CV = 'RadialCV'
 F_ALL = [F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV]
 
 FF_SCALE = '%dof%d'
+FF_OVERFLOW = 'Overflow'
 FF_GENERIC = '_%s_' + FF_SCALE
 FF_FRAC_AT_D = F_FRAC_AT_D + FF_GENERIC
 FF_MEAN_FRAC = F_MEAN_FRAC + FF_GENERIC
@@ -80,12 +81,27 @@ FF_RADIAL_CV = F_RADIAL_CV + FF_GENERIC
 MF_FRAC_AT_D = '_'.join((M_CATEGORY,FF_FRAC_AT_D))
 MF_MEAN_FRAC = '_'.join((M_CATEGORY,FF_MEAN_FRAC))
 MF_RADIAL_CV = '_'.join((M_CATEGORY,FF_RADIAL_CV))
+OF_FRAC_AT_D = '_'.join((M_CATEGORY, F_FRAC_AT_D, "%s", FF_OVERFLOW))
+OF_MEAN_FRAC = '_'.join((M_CATEGORY, F_MEAN_FRAC, "%s", FF_OVERFLOW))
+OF_RADIAL_CV = '_'.join((M_CATEGORY, F_RADIAL_CV, "%s", FF_OVERFLOW))
+
+'''# of settings aside from groups'''
+SETTINGS_STATIC_COUNT = 3
+'''# of settings in image group'''
+SETTINGS_IMAGE_GROUP_COUNT = 1
+'''# of settings in object group'''
+SETTINGS_OBJECT_GROUP_COUNT = 3
+'''# of settings in bin group, v1'''
+SETTINGS_BIN_GROUP_COUNT_V1 = 1
+'''# of settings in bin group, v2'''
+SETTINGS_BIN_GROUP_COUNT_V2 = 3
+SETTINGS_BIN_GROUP_COUNT = 3
 
 class MeasureObjectRadialDistribution(cpm.CPModule):
  
     module_name = "MeasureObjectRadialDistribution"
     category = "Measurement"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         self.images = []
@@ -152,6 +168,18 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
+        group.append("wants_scaled", cps.Binary(
+            "Scale bins?", True,
+            doc ="""Do you want to scale the bins to the size of the cell?
+            <p>If you check this setting, <b>MeasureObjectRadialDistribution</b>
+            will divide the object radially into the number of bins you specify.
+            If you leave the setting unchecked, <b>MeasureObjectRadialDistribution</b>
+            will ask for a maximum radial distance and will divide that distance
+            into the number of bins you specify. It's necessary to specify
+            a maximum distance so that each object will have the same measurements
+            (which might be zero for small objects) and so that the measurements
+            can be taken without knowing the maximum object radius before the
+            run starts"""))
         group.append("bin_count", cps.Integer(
                     "Number of bins",4, 2, doc="""How many bins do you want to use to measure 
                         the distribution?
@@ -162,6 +190,14 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                         specifies the number of rings into which the distribution is to
                         be divided. Additional ring counts can be specified
                         by clicking the <i>Add another set of bins</i> button."""))
+        group.append("maximum_radius", cps.Integer(
+            "Maximum radius", 100, minval = 1,
+            doc = """What is the maximum radius for the unscaled bins?
+            <p>The unscaled binning method creates the number of bins that you
+            specify and creates equally spaced bin boundaries up to the maximum
+            radius. Parts of the object that are beyond this radius will be
+            counted in an overflow bin. The radius is measured in pixels"""))
+        
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this set of bins", self.bin_counts, group))
         self.bin_counts.append(group)
@@ -215,7 +251,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         result += [self.add_object_button, self.spacer_2]
         
         for settings in self.bin_counts:
-            result += settings.visible_settings()
+            result += [settings.wants_scaled, settings.bin_count]
+            if not settings.wants_scaled:
+                result += [settings.maximum_radius]
         result += [self.add_bin_count_button]
         
         return result
@@ -232,13 +270,14 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 del sequence[-1]
             while len(sequence) < count:
                 add_fn()
+        
     
     def run(self, workspace):
         stats = [("Image","Objects","Bin # (innermost=1)","Bin count","Fraction","Intensity","COV")]
         d = {}
         for image in self.images:
             for o in self.objects:
-                for bin_count in self.bin_counts:
+                for bin_count_settings in self.bin_counts:
                     stats += \
                     self.do_measurements(workspace,
                                          image.image_name.value,
@@ -246,7 +285,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                                          o.center_object_name.value
                                          if o.center_choice == C_OTHER
                                          else None,
-                                         bin_count.bin_count.value,
+                                         bin_count_settings,
                                          d)
         if workspace.frame is not None:
             images = [d[key][0] for key in d.keys()]
@@ -277,7 +316,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             table.set_fontsize(cpprefs.get_table_font_size())
             
     def do_measurements(self, workspace, image_name, object_name, 
-                        center_object_name, bin_count,
+                        center_object_name, bin_count_settings,
                         dd):
         '''Perform the radial measurements on the image set
         
@@ -287,13 +326,17 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         center_object_name - use the centers of these related objects as
                       the centers for radial measurements. None to use the
                       objects themselves.
-        bin_count - bin the object into this many concentric rings
+        bin_count_settings - the bin count settings group
         d - a dictionary for saving reusable partial results
         
         returns one statistics tuple per ring.
         '''
         assert isinstance(workspace, cpw.Workspace)
         assert isinstance(workspace.object_set, cpo.ObjectSet)
+        bin_count = bin_count_settings.bin_count.value
+        wants_scaled = bin_count_settings.wants_scaled.value
+        maximum_radius = bin_count_settings.maximum_radius.value
+        
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale=True)
         objects = workspace.object_set.get_objects(object_name)
@@ -304,11 +347,16 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         assert isinstance(measurements, cpmeas.Measurements)
         if nobjects == 0:
             for bin in range(1, bin_count+1):
-                for feature in (FF_FRAC_AT_D, FF_MEAN_FRAC, FF_RADIAL_CV):
-                    measurements.add_measurement(object_name,
-                                                 M_CATEGORY + "_" + feature % 
-                                                 (image_name, bin, bin_count),
-                                                 np.zeros(0))
+                for feature in (F_FRAC_AT_D, F_MEAN_FRAC, F_RADIAL_CV):
+                    feature_name = (
+                        (feature + FF_GENERIC) % (image_name, bin, bin_count))
+                    measurements.add_measurement(
+                        object_name, "_".join([M_CATEGORY, feature_name]),
+                        np.zeros(0))
+                    measurement_name = "_".join([M_CATEGORY, feature,
+                                                 image_name, FF_OVERFLOW])
+                    measurements.add_measurement(
+                        object_name, measurement_name, np.zeros(0))
             return [(image_name, object_name, "no objects","-","-","-","-")]
         name = (object_name if center_object_name is None 
                 else "%s_%s"%(object_name, center_object_name))
@@ -400,24 +448,29 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             j_center[good_mask] = j[cl[good_mask]-1]
             
             normalized_distance = np.zeros(labels.shape)
-            total_distance = d_from_center + d_to_edge
-            normalized_distance[good_mask] = (d_from_center[good_mask] /
-                                              (total_distance[good_mask] + .001))
+            if wants_scaled:
+                total_distance = d_from_center + d_to_edge
+                normalized_distance[good_mask] = (d_from_center[good_mask] /
+                                                  (total_distance[good_mask] + .001))
+            else:
+                normalized_distance[good_mask] = \
+                    d_from_center[good_mask] / maximum_radius
             dd[name] = [normalized_distance, i_center, j_center, good_mask]
         ngood_pixels = np.sum(good_mask)
         good_labels = objects.segmented[good_mask]
         bin_indexes = (normalized_distance * bin_count).astype(int)
+        bin_indexes[bin_indexes > bin_count] = bin_count
         labels_and_bins = (good_labels-1,bin_indexes[good_mask])
         histogram = coo_matrix((image.pixel_data[good_mask], labels_and_bins),
-                               (nobjects, bin_count)).toarray()
+                               (nobjects, bin_count+1)).toarray()
         sum_by_object = np.sum(histogram, 1)
-        sum_by_object_per_bin = np.dstack([sum_by_object]*bin_count)[0]
+        sum_by_object_per_bin = np.dstack([sum_by_object]*(bin_count + 1))[0]
         fraction_at_distance = histogram / sum_by_object_per_bin
         number_at_distance = coo_matrix((np.ones(ngood_pixels),labels_and_bins),
-                                        (nobjects, bin_count)).toarray()
+                                        (nobjects, bin_count+1)).toarray()
         object_mask = number_at_distance > 0
         sum_by_object = np.sum(number_at_distance, 1)
-        sum_by_object_per_bin = np.dstack([sum_by_object]*bin_count)[0]
+        sum_by_object_per_bin = np.dstack([sum_by_object]*(bin_count+1))[0]
         fraction_at_bin = number_at_distance / sum_by_object_per_bin
         mean_pixel_fraction = fraction_at_distance / (fraction_at_bin +
                                                       np.finfo(float).eps)
@@ -438,7 +491,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         radial_index = (imask.astype(int) + jmask.astype(int)*2 + 
                         absmask.astype(int)*4)
         statistics = []
-        for bin in range(bin_count):
+        for bin in range(bin_count + (0 if wants_scaled else 1)):
             bin_mask = (good_mask & (bin_indexes == bin))
             bin_pixels = np.sum(bin_mask)
             bin_labels = labels[bin_mask]
@@ -453,16 +506,21 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             radial_means = masked_array(radial_values / pixel_count, mask)
             radial_cv = np.std(radial_means,1) / np.mean(radial_means, 1)
             radial_cv[np.sum(~mask,1)==0] = 0
-            for measurement, feature in ((fraction_at_distance[:,bin], MF_FRAC_AT_D),
-                                         (mean_pixel_fraction[:,bin], MF_MEAN_FRAC),
-                                         (np.array(radial_cv), MF_RADIAL_CV)):
-                                         
+            for measurement, feature, overflow_feature in (
+                (fraction_at_distance[:,bin], MF_FRAC_AT_D, OF_FRAC_AT_D),
+                (mean_pixel_fraction[:,bin], MF_MEAN_FRAC, OF_MEAN_FRAC),
+                (np.array(radial_cv), MF_RADIAL_CV, OF_RADIAL_CV)):
+                
+                if bin == bin_count:
+                    measurement_name = overflow_feature % image_name
+                else:
+                    measurement_name = feature % (image_name, bin+1, bin_count)
                 measurements.add_measurement(object_name,
-                                             feature % 
-                                             (image_name, bin+1, bin_count),
+                                             measurement_name,
                                              measurement)
             radial_cv.mask = np.sum(~mask,1)==0
-            statistics += [(image_name, object_name, str(bin+1), str(bin_count),
+            bin_name = str(bin+1) if bin < bin_count else "Overflow"
+            statistics += [(image_name, object_name, bin_name, str(bin_count),
                             round(np.mean(masked_fraction_at_distance[:,bin]),4),
                             round(np.mean(masked_mean_pixel_fraction[:, bin]),4),
                             round(np.mean(radial_cv),4))]
@@ -474,12 +532,21 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             for o in self.objects:
                 for bin_count_obj in self.bin_counts:
                     bin_count = bin_count_obj.bin_count.value
-                    for feature in (MF_FRAC_AT_D, MF_MEAN_FRAC, MF_RADIAL_CV):
+                    wants_scaling = bin_count_obj.wants_scaled.value
+                    for feature, ofeature in (
+                        (MF_FRAC_AT_D, OF_FRAC_AT_D),
+                        (MF_MEAN_FRAC, OF_MEAN_FRAC),
+                        (MF_RADIAL_CV, OF_RADIAL_CV)):
                         for bin in range(1,bin_count+1):
                             columns.append((o.object_name.value,
                                             feature % (image.image_name.value,
                                                        bin, bin_count),
                                             cpmeas.COLTYPE_FLOAT))
+                        if not wants_scaling:
+                            columns.append(
+                                (o.object_name.value,
+                                 ofeature % image.image_name.value,
+                                 cpmeas.COLTYPE_FLOAT))
         return columns
 
     def get_categories(self, pipeline, object_name):
@@ -501,9 +568,13 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                                image_name):
         if image_name in self.get_measurement_images(pipeline, object_name,
                                                      category, feature):
-            return [FF_SCALE % (bin,bin_count.bin_count.value)
-                    for bin_count in self.bin_counts
-                    for bin in range(1, bin_count.bin_count.value+1)]
+            result = [FF_SCALE % (bin,bin_count.bin_count.value)
+                      for bin_count in self.bin_counts
+                      for bin in range(1, bin_count.bin_count.value+1)]
+            if any([not bin_count.wants_scaled.value
+                    for bin_count in self.bin_counts]):
+                result += [FF_OVERFLOW]
+            return result
         return []
             
     def upgrade_settings(self,setting_values,variable_revision_number,
@@ -519,5 +590,16 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                               bin_count]
             variable_revision_number = 1
             from_matlab = False
+        if variable_revision_number == 1:
+            n_images, n_objects, n_bins = [
+                int(setting) for setting in setting_values[:3]]
+            off_bins = (SETTINGS_STATIC_COUNT + 
+                        n_images * SETTINGS_IMAGE_GROUP_COUNT +
+                        n_objects * SETTINGS_OBJECT_GROUP_COUNT)
+            new_setting_values = setting_values[:off_bins]
+            for bin_count in setting_values[off_bins:]:
+                new_setting_values += [ cps.YES, bin_count, "100"]
+            setting_values = new_setting_values
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
     

@@ -16,6 +16,9 @@ class Images(cpm.CPModule):
     module_name = "Images"
     category = "File Processing"
     
+    MI_SHOW_IMAGE = "Show image"
+    MI_REMOVE = "Remove"
+    MI_SHOW_METADATA = "Show metadata"
     
     def create_settings(self):
         self.walk_collection = W.WalkCollection(self.on_walk_completed)
@@ -112,11 +115,67 @@ class Images(cpm.CPModule):
                     ipd.metadata[cpp.ImagePlaneDetails.MD_CHANNEL_NAME])
             else:
                 name = "%s (series =%2d, index=%3d)" % (name, series, index)
-            
-        return name, image_type, None, []
+        
+        if image_type in (
+            self.file_collection_display.NODE_COLOR_IMAGE,
+            self.file_collection_display.NODE_MONOCHROME_IMAGE,
+            self.file_collection_display.NODE_IMAGE_PLANE,
+            self.file_collection_display.NODE_COMPOSITE_IMAGE):
+            menu = [self.MI_SHOW_IMAGE, self.MI_REMOVE, self.MI_SHOW_METADATA]
+        else:
+            menu = []
+        return name, image_type, None, menu
     
-    def on_menu_command(self, command):
-        pass
+    def on_menu_command(self, path, command):
+        '''Context menu callback
+        
+        This is called when the user picks a command from a context menu.
+        
+        path - a list of path parts to the picked item
+        
+        command - the command from the list supplied by get_path_info
+        '''
+        if isinstance(path[-1], tuple) and len(path[-1]) == 3:
+            series, index, channel = path[-1]
+            filename = path[-2]
+            pathname = os.path.join(*path[:-1])
+        else:
+            series = index = channel = None
+            filename = path[-1]
+            pathname = os.path.join(*path)
+        if command == self.MI_SHOW_IMAGE:
+            from cellprofiler.gui.cpfigure import CPFigureFrame
+            from subimager.client import get_image
+            url = "file:" + urllib.pathname2url(pathname)
+            kwds = {}
+            if series is not None:
+                kwds["series"] = int(series)
+            if channel is not None:
+                kwds["channel"] = int(channel)
+            if index is not None:
+                kwds["index"] = int(index)
+            try:
+                image = get_image(url, **kwds)
+            except Exception, e:
+                from cellprofiler.gui.errordialog import display_error_dialog
+                display_error_dialog(None, e, None, 
+                                     "Failed to load %s" % pathname)
+            frame = CPFigureFrame(subplots = (1,1))
+            if image.ndim == 2:
+                frame.subplot_imshow_grayscale(0, 0, image, title = filename)
+            else:
+                frame.subplot_imshow_color(0, 0, image, title = filename)
+            frame.Refresh()
+        elif command == self.MI_REMOVE:
+            self.on_remove(self.add_modpath_to_modlist(path))
+            self.file_collection_display.update_ui()
+        elif command == self.MI_SHOW_METADATA:
+            import wx
+            ipd = self.get_image_plane_details(path)
+            text = "Metadata for %s\n" % filename
+            text += "\n".join(["%s = %s" % (k, ipd.metadata[k]) 
+                               for k in sorted(ipd.metadata.iteritems())])
+            wx.MessageBox(text, "Metadata for %s" % filename)
     
     def handle_walk_pause_resume_stop(self, command):
         if self.pipeline is not None:
@@ -284,7 +343,7 @@ class Images(cpm.CPModule):
         '''
         if self.pipeline is None:
             return None
-        if cps.FileCollectionDisplay.mod_is_image_plane(modpath[-1]):
+        if isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
             series, index, channel = modpath[-1]
             modpath = modpath[:-1]
         else:

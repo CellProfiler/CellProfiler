@@ -2573,6 +2573,31 @@ class FileCollectionDisplayController(object):
         
     def on_tree_item_menu(self, event):
         logger.debug("On tree item menu")
+        item = event.GetItem()
+        path = []
+        while True:
+            item_data = self.tree_ctrl.GetItemPyData(item)
+            if item_data is None:
+                break
+            path.insert(0, item_data)
+            item = self.tree_ctrl.GetItemParent(item)
+        context_menu = self.v.get_context_menu(path)
+        if len(context_menu) > 0:
+            menu = wx.Menu()
+            for context_item in context_menu:
+                menu.Append(-1, context_item)
+            def on_menu(event):
+                logger.debug("On menu")
+                for menu_item in menu.GetMenuItems():
+                    if menu_item.Id == event.Id:
+                        logger.debug("    Command = %s" % menu_item.Text)
+                        self.v.fn_on_menu_command(path, menu_item.Text)
+                        break
+                    
+            self.tree_ctrl.Bind(wx.EVT_MENU, on_menu)
+            self.tree_ctrl.PopupMenu(menu, event.GetPoint())
+            self.tree_ctrl.Unbind(wx.EVT_MENU, handler = on_menu)
+            menu.Destroy()
         
     def on_tree_key_down(self, event):
         logger.debug("On tree key down")

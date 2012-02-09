@@ -10,7 +10,7 @@ The distribution is measured from the center of the object, where
 the center is defined as the point farthest from any edge.  The numbering
 is from 1 (innermost) to N (outermost), where N is set by 'Number of bins'.
 Alternatively, if primary objects exist within the object of interest
-(e.g. nuclei within cells), you can choose the center of the the primary
+(e.g. nuclei within cells), you can choose the center of the primary
 objects as the center from which to measure the radial distribution.
 This might be useful in cytoplasm-to-nucleus translocation experiments, 
 for example.  Note that the ring widths are normalized per-object, 

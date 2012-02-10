@@ -2828,7 +2828,7 @@ class FileCollectionDisplayController(object):
     
     def on_hide_show_checked(self, event):
         self.v.show_filtered = not self.hide_show_ctrl.Value
-        self.request_update(event)
+        self.request_update()
 
 class JoinerController(object):
     '''The JoinerController managers a joiner setting'''

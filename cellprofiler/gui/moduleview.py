@@ -2639,22 +2639,22 @@ class FileCollectionDisplayController(object):
         '''
         return self.modpath_to_item.get(tuple(modpath))
         
-    def request_update(self, modpath_hint=None):
-        if modpath_hint == cps.FileCollectionDisplay.BKGND_RESUME:
+    def request_update(self, hint=None, modpath=None):
+        if hint == cps.FileCollectionDisplay.BKGND_RESUME:
             self.on_start_received()
             return
-        if modpath_hint == cps.FileCollectionDisplay.BKGND_STOP:
+        if hint == cps.FileCollectionDisplay.BKGND_STOP:
             self.on_stop_received()
             self.status_text.Label = "Idle..."
             return
-        if modpath_hint is not None:
+        if modpath is not None:
             #
             # Descend down the leftmost side of all of the tuples
             # to get something we can display
             #
             path = []
-            mp = modpath_hint[0]
-            any_others = len(modpath_hint) > 1
+            mp = modpath[0]
+            any_others = len(modpath) > 1
             while True:
                 if isinstance(mp, basestring) or isinstance(mp, tuple) and len(mp) == 3:
                     path.append(mp)
@@ -2663,7 +2663,7 @@ class FileCollectionDisplayController(object):
                 path.append(part)
                 if len(mp_list) == 0:
                     break
-                any_others = any_others or len(modpath_hint) > 1
+                any_others = any_others or len(mp_list) > 1
                 mp = mp_list[0]
             self.status_text.Label = \
                 ("Processing " + path[-1] if isinstance(path[-1], basestring) 
@@ -2674,12 +2674,23 @@ class FileCollectionDisplayController(object):
                 # It's just a modification to a single node. Try and handle
                 # here.
                 #
-                item_id  = self.get_item_from_modpath(path)
-                if item_id is not None:
-                    text, node_type, tooltip = self.v.get_node_info(path)
-                    image_id = self.get_image_id_from_nodetype(node_type)
-                    self.tree_ctrl.SetItemText(item_id, text)
-                    self.tree_ctrl.SetItemImage(item_id, image_id)
+                if hint == cps.FileCollectionDisplay.METADATA:
+                    item_id  = self.get_item_from_modpath(path)
+                    if item_id is not None:
+                        text, node_type, tooltip = self.v.get_node_info(path)
+                        image_id = self.get_image_id_from_nodetype(node_type)
+                        self.tree_ctrl.SetItemText(item_id, text)
+                        self.tree_ctrl.SetItemImage(item_id, image_id)
+                        return
+                elif hint == cps.FileCollectionDisplay.ADD:
+                    if self.get_item_from_modpath(path) is None:
+                        text, node_type, tooltip = self.v.get_node_info(path)
+                        item_id = self.add_item(path, text)
+                        image_id = self.get_image_id_from_nodetype(node_type)
+                        self.tree_ctrl.SetItemImage(item_id, image_id)
+                        return
+                elif hint == cps.FileCollectionDisplay.REMOVE:
+                    self.remove_item(path)
                     return
                 
         if not self.needs_update:

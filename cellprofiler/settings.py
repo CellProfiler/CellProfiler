@@ -2410,9 +2410,9 @@ class FileCollectionDisplay(Setting):
         '''Update the setting value after changing a property'''
         self.value_text = json.dumps(self.properties)
     
-    def update_ui(self, mods = None):
+    def update_ui(self, cmd=None, mods = None):
         if self.fn_update is not None:
-            self.fn_update(mods)
+            self.fn_update(cmd, mods)
         
     def set_update_function(self, fn_update=None):
         '''Set the function that will be called when the file_tree is updated'''
@@ -2429,14 +2429,14 @@ class FileCollectionDisplay(Setting):
         mods - modification structure. See class documentation for its form.
         '''
         self.add_subtree(mods, self.file_tree)
-        self.update_ui(mods)
+        self.update_ui(self.ADD, mods)
         
     def modify(self, mods):
         '''Indicate a minor modification such as metadtaa change
         
         mods - modification structure. See class documentation for its form.
         '''
-        self.update_ui(mods)
+        self.update_ui(self.METADATA, mods)
 
     @classmethod
     def is_leaf(cls, mod):
@@ -2509,7 +2509,7 @@ class FileCollectionDisplay(Setting):
         '''
         for mod in mods:
             self.remove_subtree(mod, self.file_tree)
-        self.update_ui(mods)
+        self.update_ui(self.REMOVE, mods)
         
     def remove_subtree(self, mod, tree):
         if not (isinstance(mod, tuple) and len(mod) == 2):

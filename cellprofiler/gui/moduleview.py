@@ -2436,6 +2436,15 @@ class FileCollectionDisplayController(object):
         self.tree_ctrl.SetImageList(self.IMAGE_LIST)
         self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_MENU, self.on_tree_item_menu)
         self.tree_ctrl.Bind(wx.EVT_TREE_KEY_DOWN, self.on_tree_key_down)
+        #
+        # Don't auto-expand after the user collapses a node.
+        #
+        self.user_collapsed_a_node = False
+        def on_item_collapsed(event):
+            logger.debug("On item collapsed")
+            self.user_collapsed_a_node = True
+            
+        self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_COLLAPSED, on_item_collapsed)
         self.panel.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
         self.root_item = self.tree_ctrl.AddRoot("I am the invisible root")
         self.tree_ctrl.SetPyData(self.root_item, None)
@@ -2684,6 +2693,18 @@ class FileCollectionDisplayController(object):
         self.latency = time.time() - self.request_update_timestamp
         try:
             self.update_subtree(self.v.file_tree, self.root_item, False, [])
+            if not self.user_collapsed_a_node:
+                #
+                # Expand all until we reach a node that has more than
+                # one child = ambiguous choice of which to expand
+                #
+                item = self.root_item
+                while self.tree_ctrl.GetChildrenCount(item, False) == 1:
+                    self.tree_ctrl.Expand(item)
+                    item, cookie = self.tree_ctrl.GetFirstChild(item)
+                if self.tree_ctrl.GetChildrenCount(item, False) > 0:
+                    self.tree_ctrl.Expand(item)
+                    
         finally:
             self.needs_update = False
         

@@ -320,122 +320,124 @@ class MeasureObjectIntensity(cpm.CPModule):
                 else:
                     masked_image = img
                 objects = workspace.object_set.get_objects(object_name.value)
-                labels   = objects.segmented
-                labels, img = cpo.crop_labels_and_image(labels, img)
-                _, masked_image = cpo.crop_labels_and_image(labels, masked_image)
-                nobjects = np.int32(np.max(labels))
-                outlines = cpmo.outline(labels)
-                
-                if image.has_mask:
-                    _, mask = cpo.crop_labels_and_image(labels, image.mask)
-                    masked_labels = labels.copy()
-                    masked_labels[~mask] = 0
-                    masked_outlines = outlines.copy()
-                    masked_outlines[~mask] = 0
-                else:
-                    masked_labels = labels
-                    masked_outlines = outlines
-                
-                lmask = masked_labels > 0 & np.isfinite(img) # Ignore NaNs, Infs
-                has_objects = np.any(lmask)
-                if has_objects:
-                    lindexes = np.arange(nobjects, dtype=np.int32)+1
-                    emask = masked_outlines > 0
-                    limg = img[lmask]
-                    eimg = img[emask]
-                    llabels = labels[lmask]
-                    elabels = labels[emask]
-                    mesh_y, mesh_x = np.mgrid[0:masked_image.shape[0],
-                                              0:masked_image.shape[1]]
-                    mesh_x = mesh_x[lmask]
-                    mesh_y = mesh_y[lmask]
-                    lcount = fix(nd.sum(np.ones(len(limg)), llabels, lindexes))
-                    ecount = fix(nd.sum(np.ones(len(eimg)), elabels, lindexes))
-                    integrated_intensity = fix(nd.sum(limg, llabels, lindexes))
-                    integrated_intensity_edge = fix(nd.sum(eimg, elabels,
-                                                           lindexes))
-                    mean_intensity = integrated_intensity / lcount
-                    mean_intensity_edge = integrated_intensity_edge / ecount
-                    std_intensity = fix(nd.mean(
-                        (limg - mean_intensity[llabels-1])**2, llabels, lindexes))
-                    std_intensity = np.sqrt(std_intensity)
-                    std_intensity_edge = fix(nd.mean(
-                        (eimg - mean_intensity_edge[elabels-1])**2, elabels, lindexes))
-                    std_intensity_edge = np.sqrt(std_intensity_edge)
-                    min_intensity = fix(nd.minimum(limg, llabels, lindexes))
-                    min_intensity_edge = fix(nd.minimum(eimg, elabels,
-                                                        lindexes))
-                    max_intensity = fix(nd.maximum(limg, llabels, lindexes))
-                    max_intensity_edge = fix(nd.maximum(eimg, elabels, lindexes))
-                     # Compute the position of the intensity maximum
-                    max_position = np.array( fix(nd.maximum_position(limg, llabels, lindexes)), dtype=int )
-                    max_position = np.reshape( max_position, ( max_position.shape[0], ) )
-                    max_x = mesh_x[ max_position ]
-                    max_y = mesh_y[ max_position ]
-                   # The mass displacement is the distance between the center
-                    # of mass of the binary image and of the intensity image. The
-                    # center of mass is the average X or Y for the binary image
-                    # and the sum of X or Y * intensity / integrated intensity
-                    cm_x = fix(nd.mean(mesh_x, llabels, lindexes))
-                    cm_y = fix(nd.mean(mesh_y, llabels, lindexes))
+                nobjects = objects.count
+                integrated_intensity = np.zeros((nobjects,))
+                integrated_intensity_edge = np.zeros((nobjects,))
+                mean_intensity = np.zeros((nobjects,))
+                mean_intensity_edge = np.zeros((nobjects,))
+                std_intensity = np.zeros((nobjects,))
+                std_intensity_edge = np.zeros((nobjects,))
+                min_intensity = np.zeros((nobjects,))
+                min_intensity_edge = np.zeros((nobjects,))
+                max_intensity = np.zeros((nobjects,))
+                max_intensity_edge = np.zeros((nobjects,))
+                mass_displacement = np.zeros((nobjects,))
+                lower_quartile_intensity = np.zeros((nobjects,))
+                median_intensity = np.zeros((nobjects,))
+                upper_quartile_intensity = np.zeros((nobjects,))
+                cmi_x = np.zeros((nobjects,))
+                cmi_y = np.zeros((nobjects,))
+                max_x = np.zeros((nobjects,))
+                max_y = np.zeros((nobjects,))
+                for labels, lindexes in objects.get_labels():
+                    lindexes = lindexes[lindexes != 0]
+                    labels, img = cpo.crop_labels_and_image(labels, img)
+                    _, masked_image = cpo.crop_labels_and_image(labels, masked_image)
+                    outlines = cpmo.outline(labels)
                     
-                    i_x = fix(nd.sum(mesh_x * limg, llabels, lindexes))
-                    i_y = fix(nd.sum(mesh_y * limg, llabels, lindexes))
-                    cmi_x = i_x / integrated_intensity
-                    cmi_y = i_y / integrated_intensity
-                    diff_x = cm_x - cmi_x
-                    diff_y = cm_y - cmi_y
-                    mass_displacement = np.sqrt(diff_x * diff_x+diff_y*diff_y)
-                    #
-                    # Sort the intensities by label, then intensity.
-                    # For each label, find the index above and below
-                    # the 25%, 50% and 75% mark and take the weighted
-                    # average.
-                    #
-                    order = np.lexsort((limg, llabels))
-                    areas = lcount.astype(int)
-                    indices = np.cumsum(areas) - areas
-                    lower_quartile_intensity = np.zeros(nobjects)
-                    median_intensity = np.zeros(nobjects)
-                    upper_quartile_intensity = np.zeros(nobjects)
-                    for dest, fraction in (
-                        (lower_quartile_intensity, 1.0/4.0),
-                        (median_intensity, 1.0/2.0),
-                        (upper_quartile_intensity, 3.0/4.0)):
-                        qindex = indices.astype(float) + areas * fraction
-                        qfraction = qindex - np.floor(qindex)
-                        qindex = qindex.astype(int)
-                        qmask = qindex < indices + areas-1
-                        qi = qindex[qmask]
-                        qf = qfraction[qmask]
-                        dest[qmask] = (limg[order[qi]] * (1 - qf) +
-                                       limg[order[qi + 1]] * qf)
+                    if image.has_mask:
+                        _, mask = cpo.crop_labels_and_image(labels, image.mask)
+                        masked_labels = labels.copy()
+                        masked_labels[~mask] = 0
+                        masked_outlines = outlines.copy()
+                        masked_outlines[~mask] = 0
+                    else:
+                        masked_labels = labels
+                        masked_outlines = outlines
+                    
+                    lmask = masked_labels > 0 & np.isfinite(img) # Ignore NaNs, Infs
+                    has_objects = np.any(lmask)
+                    if has_objects:
+                        emask = masked_outlines > 0
+                        limg = img[lmask]
+                        eimg = img[emask]
+                        llabels = labels[lmask]
+                        elabels = labels[emask]
+                        mesh_y, mesh_x = np.mgrid[0:masked_image.shape[0],
+                                                  0:masked_image.shape[1]]
+                        mesh_x = mesh_x[lmask]
+                        mesh_y = mesh_y[lmask]
+                        lcount = fix(nd.sum(np.ones(len(limg)), llabels, lindexes))
+                        ecount = fix(nd.sum(np.ones(len(eimg)), elabels, lindexes))
+                        integrated_intensity[lindexes-1] = \
+                            fix(nd.sum(limg, llabels, lindexes))
+                        integrated_intensity_edge[lindexes-1] = \
+                            fix(nd.sum(eimg, elabels, lindexes))
+                        mean_intensity[lindexes-1] = \
+                            integrated_intensity[lindexes-1] / lcount
+                        mean_intensity_edge[lindexes-1] = \
+                            integrated_intensity_edge[lindexes-1] / ecount
+                        std_intensity[lindexes-1] = np.sqrt(
+                            fix(nd.mean((limg - mean_intensity[llabels-1])**2, 
+                                        llabels, lindexes)))
+                        std_intensity_edge[lindexes-1] = np.sqrt(
+                            fix(nd.mean((eimg - mean_intensity_edge[elabels-1])**2, 
+                                        elabels, lindexes)))
+                        min_intensity[lindexes-1] = fix(nd.minimum(limg, llabels, lindexes))
+                        min_intensity_edge[lindexes-1] = fix(
+                            nd.minimum(eimg, elabels, lindexes))
+                        max_intensity[lindexes-1] = fix(
+                            nd.maximum(limg, llabels, lindexes))
+                        max_intensity_edge[lindexes-1] = fix(
+                            nd.maximum(eimg, elabels, lindexes))
+                         # Compute the position of the intensity maximum
+                        max_position = np.array( fix(nd.maximum_position(limg, llabels, lindexes)), dtype=int )
+                        max_position = np.reshape( max_position, ( max_position.shape[0], ) )
+                        max_x[lindexes-1] = mesh_x[ max_position ]
+                        max_y[lindexes-1] = mesh_y[ max_position ]
+                       # The mass displacement is the distance between the center
+                        # of mass of the binary image and of the intensity image. The
+                        # center of mass is the average X or Y for the binary image
+                        # and the sum of X or Y * intensity / integrated intensity
+                        cm_x = fix(nd.mean(mesh_x, llabels, lindexes))
+                        cm_y = fix(nd.mean(mesh_y, llabels, lindexes))
+                        
+                        i_x = fix(nd.sum(mesh_x * limg, llabels, lindexes))
+                        i_y = fix(nd.sum(mesh_y * limg, llabels, lindexes))
+                        cmi_x[lindexes-1] = i_x / integrated_intensity[lindexes-1]
+                        cmi_y[lindexes-1] = i_y / integrated_intensity[lindexes-1]
+                        diff_x = cm_x - cmi_x[lindexes-1]
+                        diff_y = cm_y - cmi_y[lindexes-1]
+                        mass_displacement[lindexes-1] = \
+                            np.sqrt(diff_x * diff_x+diff_y*diff_y)
                         #
-                        # In some situations (e.g. only 3 points), there may
-                        # not be an upper bound.
+                        # Sort the intensities by label, then intensity.
+                        # For each label, find the index above and below
+                        # the 25%, 50% and 75% mark and take the weighted
+                        # average.
                         #
-                        qmask = (~qmask) & (areas > 0)
-                        dest[qmask] = limg[order[qindex[qmask]]]
-                else:
-                    integrated_intensity = np.zeros((nobjects,))
-                    integrated_intensity_edge = np.zeros((nobjects,))
-                    mean_intensity = np.zeros((nobjects,))
-                    mean_intensity_edge = np.zeros((nobjects,))
-                    std_intensity = np.zeros((nobjects,))
-                    std_intensity_edge = np.zeros((nobjects,))
-                    min_intensity = np.zeros((nobjects,))
-                    min_intensity_edge = np.zeros((nobjects,))
-                    max_intensity = np.zeros((nobjects,))
-                    max_intensity_edge = np.zeros((nobjects,))
-                    mass_displacement = np.zeros((nobjects,))
-                    lower_quartile_intensity = np.zeros((nobjects,))
-                    median_intensity = np.zeros((nobjects,))
-                    upper_quartile_intensity = np.zeros((nobjects,))
-                    cmi_x = np.zeros((nobjects,))
-                    cmi_y = np.zeros((nobjects,))
-                    max_x = np.zeros((nobjects,))
-                    max_y = np.zeros((nobjects,))
-                
+                        order = np.lexsort((limg, llabels))
+                        areas = lcount.astype(int)
+                        indices = np.cumsum(areas) - areas
+                        for dest, fraction in (
+                            (lower_quartile_intensity, 1.0/4.0),
+                            (median_intensity, 1.0/2.0),
+                            (upper_quartile_intensity, 3.0/4.0)):
+                            qindex = indices.astype(float) + areas * fraction
+                            qfraction = qindex - np.floor(qindex)
+                            qindex = qindex.astype(int)
+                            qmask = qindex < indices + areas-1
+                            qi = qindex[qmask]
+                            qf = qfraction[qmask]
+                            dest[lindexes[qmask]-1] = (
+                                limg[order[qi]] * (1 - qf) +
+                                limg[order[qi + 1]] * qf)
+                            #
+                            # In some situations (e.g. only 3 points), there may
+                            # not be an upper bound.
+                            #
+                            qmask = (~qmask) & (areas > 0)
+                            dest[lindexes[qmask]-1] = limg[order[qindex[qmask]]]
                 m = workspace.measurements
                 for category, feature_name, measurement in \
                     ((INTENSITY, INTEGRATED_INTENSITY, integrated_intensity),

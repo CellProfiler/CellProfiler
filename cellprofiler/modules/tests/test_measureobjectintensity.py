@@ -161,7 +161,10 @@ class TestMeasureObjects(unittest.TestCase):
         image_set.add(IMAGE_NAME, cpi.Image(pixel_data, mask))
         object_set = cpo.ObjectSet()
         o = cpo.Objects()
-        o.segmented = labels
+        if labels.shape[1] == 3:
+            o.ijv = labels
+        else:
+            o.segmented = labels
         object_set.add_objects(o, OBJECT_NAME)
         pipeline = P.Pipeline()
         module = MOI.MeasureObjectIntensity()
@@ -597,6 +600,42 @@ class TestMeasureObjects(unittest.TestCase):
         self.assertEqual(len(values), 4)
         for i in range(1,5):
             self.assertAlmostEqual(values[i-1], np.std(image[elabels==i]))
+            
+    def test_03_10_ijv(self):
+        #
+        # Test the module on overlapping objects
+        #
+        np.random.seed(310)
+        i, j = np.mgrid[0:30, 0:35]
+        o1 = np.argwhere((i-10) ** 2 + (j-10) ** 2 < 49) # circle radius 7 at 10,10
+        o2 = np.argwhere((i-12) ** 2 + (j-15) ** 2 < 25) # circle radius 5 at 12,15
+        o3 = np.argwhere((i-15) ** 2 + (j-25) ** 2 < 49) # circle radius 7 at 15, 25
+        labels = np.vstack([np.column_stack([x, n * np.ones(x.shape[0], int)])
+                            for n, x in ((1, o1), (2, o2), (3, o3))])
+        image = np.random.uniform(size = i.shape)
+        workspace0, module0 = self.make_workspace(labels, image)
+        module0.run(workspace0)
+        measurements0 = workspace0.measurements
+        assert isinstance(measurements0, cpmeas.Measurements)
+        for i, (workspace, module) in enumerate((
+            self.make_workspace(np.column_stack([o1, np.ones(o1.shape[0], int)]), image),
+            self.make_workspace(np.column_stack([o2, np.ones(o2.shape[0], int)]), image),
+            self.make_workspace(np.column_stack([o3, np.ones(o3.shape[0], int)]), image))):
+            module.run(workspace)
+            measurements1 = workspace.measurements
+            assert isinstance(measurements1, cpmeas.Measurements)
+            for cname, fnames in ((MOI.INTENSITY, MOI.ALL_MEASUREMENTS),
+                                  (MOI.C_LOCATION, MOI.ALL_LOCATION_MEASUREMENTS)):
+                for fname in fnames:
+                    mname = "_".join([cname, fname, IMAGE_NAME])
+                    m0 = measurements0.get_measurement(OBJECT_NAME, mname)
+                    m1 = measurements1.get_measurement(OBJECT_NAME, mname)
+                    self.assertEqual(len(m0), 3)
+                    self.assertEqual(len(m1), 1)
+                    self.assertEqual(m0[i], m1[0])
+
+            
+        
         
 
     def test_04_01_wrong_image_size(self):

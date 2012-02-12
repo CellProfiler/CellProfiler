@@ -2231,17 +2231,18 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if (object_name != cpmeas.IMAGE) and 
                 (not self.ignore_object(object_name))]
                 
-        image_names = []
-        if self.properties_export_all_image_defaults:
-            # Find all images that have FileName and PathName
-            for feature in workspace.measurements.get_feature_names(cpmeas.IMAGE):
-                match = re.match('^%s_(.+)$'%C_FILE_NAME,feature)
-                if match:
-                    image_names.append(match.groups()[0])
-        else:
+        default_image_names = []
+        # Find all images that have FileName and PathName
+        for feature in workspace.measurements.get_feature_names(cpmeas.IMAGE):
+            match = re.match('^%s_(.+)$'%C_FILE_NAME,feature)
+            if match:
+                default_image_names.append(match.groups()[0])
+                
+        if not self.properties_export_all_image_defaults:
             # Extract the user-specified images
+            user_image_names = []
             for group in self.image_groups:
-                image_names.append(group.image_cols.value)
+                user_image_names.append(group.image_cols.value)
         
         if self.db_type==DB_SQLITE:
             name = os.path.splitext(self.sqlite_file.value)[0]
@@ -2302,33 +2303,40 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             object_count = 'Image_Count_%s'%(object_name) if object_name else ''
             cell_x_loc = '%s_Location_Center_X'%(object_name) if object_name else ''
             cell_y_loc = '%s_Location_Center_Y'%(object_name) if object_name else ''
-            image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in image_names])
-            image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in image_names])
-            image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in self.thumbnail_image_names.get_selections()])
+            image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in default_image_names])
+            image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in default_image_names])
+            image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in self.thumbnail_image_names.get_selections()]) if self.want_image_thumbnails else ''
             
             if self.properties_export_all_image_defaults:
                 # Provide default colors
-                if len(image_names) == 1:
+                if len(default_image_names) == 1:
                     image_channel_colors = 'gray,'
                 else:
                     image_channel_colors = 'red, green, blue, cyan, magenta, yellow, gray, '+('none, ' * 10)
-                    image_channel_colors = ','.join(image_channel_colors.split(',')[:len(image_names)])
+                    image_channel_colors = ','.join(image_channel_colors.split(',')[:len(default_image_names)])
+                image_names_csl = ','.join(default_image_names) # Convert to comma-separated list
             else:
-                # Extract user-specified image names
-                image_names = [];
+                # Extract user-specified image names and colors
+                user_image_names = [];
+                image_channel_colors = []               
+                corresponding_default_image_names = []
                 for group in self.image_groups:
+                    corresponding_default_image_names += [group.image_cols.value]
                     if group.wants_automatic_image_name:
-                        image_names += [group.image_cols.value]
+                        user_image_names += [group.image_cols.value]
                     else:
-                        image_names += [group.image_name.value]
-                        
-                # Extract user-specified colors
-                image_channel_colors = []
-                for group in self.image_groups:
+                        user_image_names += [group.image_name.value]
                     image_channel_colors += [group.image_channel_colors.value]
+                        
+                # Sort user-specified names and colors according to default image order                
+                idx = [default_image_names.index(x) for x in corresponding_default_image_names]
+                idx = [idx.index(x) for x in sorted(idx)]
+                user_image_names = [user_image_names[x] for x in idx]
+                image_channel_colors = [image_channel_colors[x] for x in idx]
+                
+                # Convert to comma-separated list
                 image_channel_colors = ','.join(image_channel_colors)
-            
-            image_names_csl = ','.join(image_names) # Convert to comma-separated list
+                image_names_csl = ','.join(user_image_names)
                 
             group_statements = ''
             if self.properties_wants_groups:
@@ -2409,7 +2417,6 @@ image_path_cols = %(image_path_cols)s
 image_file_cols = %(image_file_cols)s
 
 # CPA will now read image thumbnails directly from the database, if chosen in ExportToDatabase.
-
 image_thumbnail_cols = %(image_thumbnail_cols)s
 
 # Give short names for each of the channels (respectively)...
@@ -2417,7 +2424,6 @@ image_names = %(image_names_csl)s
 
 # Specify a default color for each of the channels (respectively)
 # Valid colors are: [red, green, blue, magenta, cyan, yellow, gray, none]
-
 image_channel_colors = %(image_channel_colors)s
 
 # ==== Image Accesss Info ====

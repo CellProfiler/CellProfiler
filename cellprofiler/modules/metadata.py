@@ -2,7 +2,8 @@
 <hr>
 TO-DO: document module
 '''
-
+import logging
+logger = logging.getLogger(__name__)
 import csv
 import re
 import os
@@ -373,7 +374,7 @@ class Metadata(cpm.CPModule):
                         try:
                             imported_metadata = self.ImportedMetadata(csv_path)
                         except:
-                            logger.debug("Failed to load csv file: " % csv_path)
+                            logger.debug("Failed to load csv file: %s" % csv_path)
                             continue
                     joiner.entities[self.CSV_JOIN_NAME] = \
                         imported_metadata.get_csv_metadata_keys()

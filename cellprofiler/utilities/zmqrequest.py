@@ -2,7 +2,7 @@ import sys
 import threading
 import zmq
 import Queue
-
+import numpy as np
 
 class Communicable(object):
     '''Base class for Requests and Replies.
@@ -10,17 +10,30 @@ class Communicable(object):
     All subclasses must accept keyword arguments to __init__() corresponding to
     their attributes.
     '''
-    # XXX - include type information
     def send(self, socket, routing=[]):
         if hasattr(self, '_remote'):
             assert not self._remote, "send() called on a non-local Communicable object."
-        sendable_keys = [k for k in self.__dict__
-                         if (not k.startswith('_'))
-                         and (not callable(self.__dict__[k]))]
-        interleaved = [x for key in sendable_keys for x in (key, self.__dict__[key])]
+        sendable_dict = dict((k, v) for k,v in self.__dict__.items()
+                             if (not k.startswith('_'))
+                             and (not callable(self.__dict__[k])))
+
+        # replace each numpy array with its metadata, and send it separately
+        numpy_arrays = []
+        def numpy_encoder(data):
+            if isinstance(data, np.ndarray):
+                idx = len(numpy_arrays)
+                numpy_arrays.append(data)
+                return {'__ndarray__' : True,
+                        'dtype' : str(data.dtype),
+                        'shape' : data.shape,
+                        'idx' : idx}
+            return zmq.utils.jsonapi.jsonmod.JSONEncoder.default(self, data)
+
+        json_str = zmq.utils.jsonapi.dumps(sendable_dict, default=numpy_encoder)
         socket.send_multipart(routing +
                               [self.__class__.__module__, self.__class__.__name__] +
-                              interleaved)
+                              [json_str] +
+                              numpy_arrays, copy=False)
 
     class MultipleReply(RuntimeError):
         pass
@@ -35,7 +48,14 @@ class Communicable(object):
         else:
             routing = []
         module, classname = message[:2]
-        attribute_dict = dict(zip(message[2::2], message[3::2]))
+        numpy_arrays = message[3:]
+        def numpy_decoder(dct):
+            if '__ndarray__' in dct:
+                buf = buffer(numpy_arrays[dct['idx']])
+                return np.frombuffer(buf, dtype=dct['dtype']).reshape(dct['shape'])
+            return dct
+        attribute_dict = zmq.utils.jsonapi.loads(message[2], object_hook=numpy_decoder)
+
         instance = sys.modules[module].__dict__[classname](**attribute_dict)
         instance._remote = True
         instance._routing = routing
@@ -192,7 +212,7 @@ if __name__ == '__main__':
         address = sys.argv[sys.argv.index('subproc') + 1]
         mysock = context.socket(zmq.REQ)
         mysock.connect(address)
-        req = Request(this='is', a='test')
+        req = Request(this='is', a='test', b=5, c=1.3, d=np.arange(10), e=[{'q' : np.arange(5)}])
         rep = req.send(mysock)
         print "subproc received", rep, rep.__dict__
 

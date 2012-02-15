@@ -869,15 +869,19 @@ class PipelineController:
             finally:
                 self.feedback_pending = False
 
-    def module_interaction_request(self, module_number, image_set_number,
-                                   interaction_request_blob, reply_cb):
+    def module_interaction_request(self, evt):
         '''forward a module interaction request from the running pipeline to
         our own pipeline's instance of the module, and reply with the result.
         '''
+        module_num = evt.module_num
+        # extract args and kwargs from the request.
+        # see main().interaction_handler() in analysis_worker.py
+        args = [evt.__dict__['arg_%d' % idx] for idx in range(evt.num_args)]
+        kwargs = dict((name, evt.__dict__['kwarg_%s' % name]) for name in evt.kwargs_names)
         result = ""
         try:
-            module = self.__pipeline.modules()[module_number - 1]
-            result = module.handle_interaction(image_set_number, interaction_request_blob)
+            module = self.__pipeline.modules()[module_num - 1]
+            result = module.handle_interaction(*args, **kwargs)
         except:
             _, exc, tb = sys.exc_info()
             display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
@@ -885,7 +889,7 @@ class PipelineController:
         finally:
             # we need to ensure that the reply_cb gets a reply (even if it
             # being empty causes futher exceptions).
-            reply_cb(result)  # an exception here can be handled by the usual means
+            evt.reply(cpanalysis.InteractionReply(result=result))
 
     def analysis_exception(self, evt):
         '''Report an error in analysis to the user, giving options for

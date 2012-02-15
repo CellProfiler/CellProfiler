@@ -239,16 +239,19 @@ class Workspace(object):
         """Set the module currently being run"""
         self.__module = module
     
-    def interaction_request(self, module, interaction_request_blob):
+    def interaction_request(self, module, *args, **kwargs):
         '''make a request for GUI interaction via a pipeline event'''
+        # See also:
+        # main().interaction_handler() in analysis_worker.py
+        # PipelineController.module_interaction_request() in pipelinecontroller.py
         import cellprofiler.preferences as cpprefs
         if self.interaction_handler is None:
             if cpprefs.get_headless():
                 raise self.NoInteractionException()
             else:
-                return module.handle_interaction(self.measurements.image_set_number, interaction_request_blob)
+                return module.handle_interaction(*args, **kwargs)
         else:
-            return self.interaction_handler(module, self.measurements.image_set_number, interaction_request_blob)
+            return self.interaction_handler(module, *args, **kwargs)
 
     @property
     def is_last_image_set(self):

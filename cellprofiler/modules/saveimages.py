@@ -453,10 +453,6 @@ class SaveImages(cpm.CPModule):
         workspace.display_data.filename = self.get_filename(
             workspace, make_dirs = False, check_overwrite = False)
         
-    def is_interactive(self):
-        # if we overwrite files, it's safe to run in the background
-        return not self.overwrite.value
-
     def display(self, workspace):
         if workspace.frame != None:
             if self.save_image_or_figure == IF_MOVIE:
@@ -921,7 +917,7 @@ class SaveImages(cpm.CPModule):
         '''
         if not self.overwrite.value and os.path.isfile(filename):
             try:
-                return (workspace.interaction_request(self, filename.encode('utf-8')) == "Yes")
+                return (workspace.interaction_request(self, workspace.measurements.image_set_number, filename) == "Yes")
             except workspace.NoInteractionException:
                 raise ValueError('SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"' % (filename))
         return True
@@ -931,7 +927,7 @@ class SaveImages(cpm.CPModule):
         import wx
         dlg = wx.MessageDialog(wx.GetApp().TopWindow,
                                "%s #%d, set #%d - Do you want to overwrite %s?" % \
-                                   (self.module_name, self.module_num, image_set_number, filename.decode('utf-8')),
+                                   (self.module_name, self.module_num, image_set_number, filename),
                                "Warning: overwriting file", wx.YES_NO | wx.ICON_QUESTION)
         result = dlg.ShowModal() == wx.ID_YES
         return "Yes" if result else "No"

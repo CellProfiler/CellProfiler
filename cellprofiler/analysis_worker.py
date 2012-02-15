@@ -184,16 +184,22 @@ def main():
                     # exception handled elsewhere, possibly cancelling this run.
                     should_process = False
 
-            def interaction_handler(module, image_set_number, interaction_request_blob):
+            def interaction_handler(module, *args, **kwargs):
                 '''handle interaction requests by passing them to the jobserver and wait for the reply.'''
-                rep = InteractionRequest(module_num=str(module.module_num),
-                                         image_set_number=str(image_set_number),
-                                         interaction_request_blob=interaction_request_blob).send(work_socket)
+                # we write args and kwargs into the InteractionRequest to allow
+                # more complex data to be sent by the underlying zmq machinery.
+                arg_kwarg_dict = dict([('arg_%d' % idx, v) for idx, v in enumerate(args)] +
+                                      [('kwarg_%s' % name, v) for (name, v) in kwargs.items()])
+                req = InteractionRequest(module_num=module.module_num,
+                                         num_args=len(args),
+                                         kwargs_names=kwargs.keys(),
+                                         **arg_kwarg_dict)
+                rep = req.send(work_socket)
                 if isinstance(rep, InteractionReply):
-                    return rep.interaction_reply_blob
+                    return rep.result
                 elif isinstance(rep, ServerExited):
                     # the run was cancelled before we got a reply.
-                    raise CancelledException()
+                    raise CancelledException()  # XXX - TODO - test this code path
 
             successful_image_set_numbers = []
             if should_process:

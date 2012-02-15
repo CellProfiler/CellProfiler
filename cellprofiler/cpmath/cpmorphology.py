@@ -3223,17 +3223,20 @@ def distance_color_labels(labels):
     #
     # Order pixels by color, then label #
     #
-    rlabels =  labels.ravel()
+    rlabels = labels.ravel()
     order = np.lexsort((rlabels, colors.ravel()))
     #
     # Construct color indices with the cumsum trick:
     # cumsum([0,0,1,0,1]) = [0,0,1,1,2]
     # and copy back into the color array, using the order.
     #
-    different = np.hstack([[rlabels[order[0] > 0]], 
+    different = np.hstack([[rlabels[order[0] > 0]],
                            rlabels[order[1:]] != rlabels[order[:-1]]])
-    colors.ravel()[order] = np.cumsum(different)
-    return colors.astype(labels.dtype)
+    # We need to careful about ravel() returning a new object, but in the usual
+    # case of colors having order='C', this won't create any copies.
+    rcolor = colors.ravel()
+    rcolor[order] = np.cumsum(different).astype(colors.dtype)
+    return rcolor.reshape(colors.shape).astype(labels.dtype)
 
 def color_labels(labels, distance_transform = False):
     '''Color a labels matrix so that no adjacent labels have the same color

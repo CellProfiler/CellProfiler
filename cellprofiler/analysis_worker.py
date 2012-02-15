@@ -28,7 +28,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
-from cellprofiler.analysis_requests import PipelineRequest, InitialMeasurementsRequest, WorkRequest, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, ServerExited
+from cellprofiler.analysis import PipelineRequest, InitialMeasurementsRequest, WorkRequest, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, InteractionReply, ServerExited
 import subimager.client
 from cellprofiler.utilities.rpdb import Rpdb
 

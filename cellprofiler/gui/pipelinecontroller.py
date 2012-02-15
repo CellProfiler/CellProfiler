@@ -71,10 +71,9 @@ class PipelineController:
         self.__within_group_index = None
         self.pipeline_list = []
 
-        # interaction requests and exceptions from an Analysis
-        self.interaction_request_queue = Queue.Queue()
-        self.exception_queue = Queue.Queue()
-        self.feedback_pending = False
+        # interaction/display requests and exceptions from an Analysis
+        self.interaction_request_queue = Queue.PriorityQueue()
+        self.interaction_pending = False
 
         self.populate_recent_files()
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
@@ -794,47 +793,39 @@ class PipelineController:
                     # try to leave measurements in a readable state
                     self.__pipeline_measurements.flush()
                 self.stop_running()
-    
+
     def analysis_event_handler(self, evt):
-        if isinstance(evt, cpanalysis.AnalysisStartedEvent):
+        PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = range(3)
+
+        if isinstance(evt, cpanalysis.AnalysisStarted):
             print "Analysis started"
-        elif isinstance(evt, cpanalysis.AnalysisProgressEvent):
+        elif isinstance(evt, cpanalysis.AnalysisProgress):
             print "Progress", evt.counts
-        elif isinstance(evt, cpanalysis.AnalysisFinishedEvent):
-            print "Finished!"  # different than ended
-        elif isinstance(evt, cpanalysis.AnalysisEndedEvent):
-            # drop any interaction requests or exceptions)
-            for q in (self.exception_queue, self.interaction_request_queue):
-                while True:
-                    try:
-                        func_args = q.get_nowait()  # in case the queue's been emptied
-                    except Queue.Empty:
-                        break
-            print "Ended"
+        elif isinstance(evt, cpanalysis.AnalysisFinished):
+            print "Finished!"
+            # drop any interaction/display requests or exceptions
+            while True:
+                try:
+                    self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
+                except Queue.Empty:
+                    break
             wx.CallAfter(self.stop_running)
-        elif isinstance(evt, cpanalysis.AnalysisDisplayEvent):
-            print "Display"
-            wx.CallAfter(self.module_display_request, evt.display_request)
-        elif isinstance(evt, cpanalysis.AnalysisInteractionRequest):
-            print "Interaction"
-            self.interaction_request_queue.put((self.module_interaction_request,
-                                                evt.module_number,
-                                                evt.image_set_number,
-                                                evt.interaction_request_blob,
-                                                evt.reply_cb))
+        elif isinstance(evt, cpanalysis.DisplayRequest):
+            self.interaction_request_queue.put((PRI_DISPLAY, self.analysis_display, evt))
+            wx.CallAfter(self.module_display_request, evt)
+        elif isinstance(evt, cpanalysis.InteractionRequest):
+            self.interaction_request_queue.put((PRI_INTERACTION, self.module_interaction_request, evt))
             wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cpanalysis.AnalysisPausedEvent):
+        elif isinstance(evt, cpanalysis.ExceptionReport):
+            self.interaction_request_queue.put((PRI_EXCEPTION, self.analysis_exception, evt))
+            wx.CallAfter(self.handle_analysis_feedback)
+        elif isinstance(evt, cpanalysis.WorkerExceptionReport):
+            self.interaction_request_queue.put((PRI_EXCEPTION, self.worker_exception, evt))
+            wx.CallAfter(self.handle_analysis_feedback)
+        elif isinstance(evt, cpanalysis.AnalysisPaused):
             print "Paused"
-        elif isinstance(evt, cpanalysis.AnalysisResumedEvent):
+        elif isinstance(evt, cpanalysis.AnalysisResumed):
             print "Resumed"
-        elif isinstance(evt, cpanalysis.AnalysisPipelineExceptionEvent):
-            self.exception_queue.put((self.analysis_exception, evt))
-            wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cpanalysis.AnalysisWorkerExceptionEvent):
-            self.exception_queue.put((self.worker_exception, evt))
-            wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cpanalysis.AnalysisDebugCompleteEvent):
-            print "Debugging complete"
         elif isinstance(evt, cellprofiler.pipeline.RunExceptionEvent):
             # exception in (prepare/post)_(run/group)
             import pdb
@@ -848,26 +839,24 @@ class PipelineController:
         opened, which can overwhelm the user and cause UI hangs.
         '''
         # just in case.
-        assert wx.Thread_IsMain(), "PipelineController.module_interaction_request() must be called from main thread!"
+        assert wx.Thread_IsMain(), "PipelineController.handle_analysis_feedback() must be called from main thread!"
 
         # only one window at a time
-        if self.feedback_pending:
+        if self.interaction_pending:
             return
 
-        # XXX - when we move to 2.7, make these a single Queue.PriorityQueue()
-        # exceptions are higher priority
-        for q in (self.exception_queue, self.interaction_request_queue):
-            try:
-                func_args = q.get_nowait()  # in case the queue's been emptied
-            except Queue.Empty:
-                continue
+        try:
+            pri_func_args = self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
+        except Queue.Empty:
+            return
 
-            self.feedback_pending = True
-            try:
-                func_args[0](*func_args[1:])
+        self.interaction_pending = True
+        try:
+            pri_func_args[1](*pri_func_args[2:])
+            if not self.interaction_request_queue.empty():
                 wx.CallAfter(self.handle_analysis_feedback)
-            finally:
-                self.feedback_pending = False
+        finally:
+            self.interaction_pending = False
 
     def module_interaction_request(self, evt):
         '''forward a module interaction request from the running pipeline to

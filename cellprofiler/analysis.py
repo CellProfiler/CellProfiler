@@ -30,8 +30,7 @@ import cellprofiler
 import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpimage
-from cellprofiler.utilities.zmqrequest import Reply, Boundary
-from cellprofiler.analysis_requests import PipelineRequest, InitialMeasurementsRequest, WorkRequest, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, DebugWaiting, DebugComplete, WorkReply
+from cellprofiler.utilities.zmqrequest import Request, Reply, Boundary, BoundaryExited
 import subimager.client
 
 
@@ -399,7 +398,7 @@ class AnalysisRunner(object):
                 except Exception:
                     raise
                     # XXX - report error, push back job
-            elif isinstance(req, (InteractionRequest, DisplayRequest, ExceptionReport, DebugWaiting, DebugComplete)):
+            elif isinstance(req, (InteractionRequest, DisplayRequest, ExceptionReport)):
                 # bump upward
                 self.post_event(req)
             else:
@@ -516,7 +515,9 @@ def start_daemon_thread(target=None, args=(), name=None):
     thread.start()
     return thread
 
-
+###############################
+# Request, Replies, Events
+###############################
 class AnalysisStarted(object):
     pass
 
@@ -544,11 +545,61 @@ class AnalysisFinished(object):
         self.cancelled = cancelled
 
 
+class PipelineRequest(Request):
+    pass
+
+
+class InitialMeasurementsRequest(Request):
+    pass
+
+
+class WorkRequest(Request):
+    pass
+
+
+class MeasurementsReport(Request):
+    def __init__(self, path="", image_set_numbers=""):
+        Request.__init__(self, path=path, image_set_numbers=image_set_numbers)
+
+
+class InteractionRequest(Request):
+    pass
+
+
+class DisplayRequest(Request):
+    pass
+
+
+class ExceptionReport(Request):
+    pass
+
+
+class InteractionReply(Reply):
+    pass
+
+
+class WorkReply(Reply):
+    pass
+
+
+class ServerExited(BoundaryExited):
+    pass
+
+
 if __name__ == '__main__':
     import time
     import cellprofiler.pipeline
     import cellprofiler.preferences
     import cellprofiler.utilities.thread_excepthook
+
+    # This is an ugly hack, but it's necesary to unify the Request/Reply
+    # classes above, so that regardless of whether this is the current module,
+    # or a separately imported one, they see the same classes.
+    import cellprofiler.analysis
+    globals().update(cellprofiler.analysis.__dict__)
+
+    print "TESTING", WorkRequest is cellprofiler.analysis.WorkRequest
+    print id(WorkRequest), id(cellprofiler.analysis.WorkRequest)
 
     cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
 

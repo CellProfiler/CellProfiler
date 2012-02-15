@@ -130,9 +130,6 @@ class Smooth(cpm.CPModule):
                 result.append(self.sigma_range)
         return result
 
-    def is_interactive(self):
-        return False
-
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale=True)

@@ -1012,9 +1012,6 @@ class LoadData(cpm.CPModule):
         if not workspace.frame is None:
             workspace.display_data.statistics = statistics
             
-    def is_interactive(self):
-        return False
-    
     def display(self, workspace):
         if hasattr(workspace.display_data, "warning"):
             from cellprofiler.gui.errordialog import show_warning

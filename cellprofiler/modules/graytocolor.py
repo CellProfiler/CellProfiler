@@ -286,9 +286,6 @@ class GrayToColor(cpm.CPModule):
         rgb_image.channel_names = channel_names
         imgset.add(self.rgb_image_name.value, rgb_image)
         
-    def is_interactive(self):
-        return False
-    
     def display(self, workspace):
         input_image_names = workspace.display_data.input_image_names
         title = "Gray to color #%d"%(self.module_num)

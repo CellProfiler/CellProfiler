@@ -277,9 +277,6 @@ class StraightenWorms(cpm.CPModule):
         for i in range(1,nimages):
             self.add_image()
             
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         '''Process one image set'''
         object_set = workspace.object_set

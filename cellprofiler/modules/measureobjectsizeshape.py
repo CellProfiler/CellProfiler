@@ -277,9 +277,6 @@ class MeasureObjectSizeShape(cpm.CPModule):
             return self.get_feature_names()
         return []
     
-    def is_interactive(self):
-        return False
-
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""
         

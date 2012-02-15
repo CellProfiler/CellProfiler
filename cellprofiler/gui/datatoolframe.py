@@ -204,4 +204,5 @@ class DataToolFrame(wx.Frame):
                                   image_set_list,
                                   frame=self)
         self.module.run_as_data_tool(workspace)
+        self.module.display()
         workspace.refresh()

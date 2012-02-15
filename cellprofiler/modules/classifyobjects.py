@@ -456,10 +456,6 @@ class ClassifyObjects(cpm.CPModule):
             result += [self.add_measurement_button]
         return result
     
-    def is_interactive(self):
-        '''Indicate that this module's display does not interact with the user'''
-        return False
-    
     def run(self, workspace):
         """Classify the objects in the image cycle"""
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:

@@ -184,10 +184,6 @@ class RenameOrRenumberFiles(cpm.CPModule):
             result += [self.space_replacement]
         return result
     
-    def is_interactive(self):
-        '''Tell everyone that the GUI is not an interactive one'''
-        return False
-    
     def run(self, workspace):
         '''Run on an image set'''
         image_name = self.image_name.value

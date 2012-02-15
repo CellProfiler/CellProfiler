@@ -186,10 +186,6 @@ class MeasureNeurons(cpm.CPModule):
                        self.vertex_file_name, self.edge_file_name]
         return result
     
-    def is_interactive(self):
-        '''Indicates that this module has separate "run" and "display" functions'''
-        return False
-    
     def run(self, workspace):
         '''Run the module on the image set'''
         seed_objects_name = self.seed_objects_name.value

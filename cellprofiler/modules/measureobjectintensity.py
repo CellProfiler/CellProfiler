@@ -301,9 +301,6 @@ class MeasureObjectIntensity(cpm.CPModule):
                 return [image.name.value for image in self.images]
         return []
     
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         if workspace.frame is not None:
             statistics = [("Image","Object","Feature","Mean","Median","STD")]

@@ -244,9 +244,6 @@ class ReassignObjectNumbers(cpm.CPModule):
             result += [self.outlines_name]
         return result
     
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.objects_name.value)
         assert isinstance(objects, cpo.Objects)

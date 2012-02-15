@@ -212,9 +212,6 @@ class CreateBatchFiles(cpm.CPModule):
                 workspace.measurements.image_set_number), subplots=(1,1))
             figure.subplot_table(0, 0, [[message]])
 
-    def is_interactive(self):
-        return False
-
     def validate_module(self, pipeline):
         '''Make sure this is the last module in the pipeline'''
         if self.module_num != len(pipeline.modules()):

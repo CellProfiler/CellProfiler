@@ -259,9 +259,6 @@ class Tile(cpm.CPModule):
         else:
             figure.subplot_imshow_grayscale(0, 0, pixels, title = name)
 
-    def is_interactive(self):
-        return False
-        
     def tile(self, workspace):
         '''Tile images across image cycles
         '''

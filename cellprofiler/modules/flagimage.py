@@ -242,9 +242,6 @@ class FlagImage(cpm.CPModule):
         result += [self.add_flag_button]
         return result
     
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         statistics = [ ("Flag", "Source", "Measurement", "Value","Pass/Fail")]
         for flag in self.flags:

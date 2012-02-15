@@ -272,9 +272,6 @@ class Align(cpm.CPModule):
                                       sharex=figure.subplot(0,0), 
                                       sharey=figure.subplot(0,0))
 
-    def is_interactive(self):
-        return False
-        
     def align(self, workspace, input1_name, input2_name):
         '''Align the second image with the first
         

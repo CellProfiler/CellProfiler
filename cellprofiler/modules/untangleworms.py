@@ -896,9 +896,6 @@ class UntangleWorms(cpm.CPModule):
                     measurements.add_measurement(name, feature, values[:, i])
             
     
-    def is_interactive(self):
-        return False
-    
     def display(self, workspace):
         if self.mode == MODE_UNTANGLE:
             figure = workspace.create_or_find_figure(subplots = (2,1))

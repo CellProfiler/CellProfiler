@@ -75,9 +75,6 @@ class LabelImages(cpm.CPModule):
         return [self.site_count, self.column_count, self.row_count,
                 self.order]
     
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         '''Run one image set'''
         m = workspace.measurements

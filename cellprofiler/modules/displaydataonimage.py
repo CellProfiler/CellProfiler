@@ -160,9 +160,6 @@ class DisplayDataOnImage(cpm.CPModule):
                    self.saved_image_contents, self.offset]
         return result
         
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         import matplotlib
         import matplotlib.cm

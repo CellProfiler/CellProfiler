@@ -502,11 +502,6 @@ class OmeroLoadImages(cpm.CPModule):
 			        image_number-1)
 			self.load_image_set_info(image_set)
 				
-	def is_interactive(self):
-		'''Tell CellProfiler that this module's run method 
-		can be executed in the worker thread'''
-		return False
-	
 	def run(self, workspace):
 		'''Run the module. Add the measurements. '''
 		

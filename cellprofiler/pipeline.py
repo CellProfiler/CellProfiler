@@ -1564,13 +1564,6 @@ class Pipeline(object):
                             exception = instance
                             tb = sys.exc_info()[2]
                         yield measurements
-                    elif module.is_interactive():
-                        worker = ModuleRunner(module, workspace, frame)
-                        worker.run()
-                        if worker.exception is not None:
-                            exception = worker.exception
-                            tb = worker.tb
-                        yield measurements
                     else:
                         # Turn on checks for calls to create_or_find_figure() in workspace.
                         workspace.in_background = True
@@ -1585,11 +1578,10 @@ class Pipeline(object):
                     t1 = sum(os.times()[:-1])
                     delta_sec = max(0,t1-t0)
                     pipeline_stats_logger.info(
-                        "%s: Image # %d, module %s # %d: %.2f sec%s" %
+                        "%s: Image # %d, module %s # %d: %.2f sec" %
                         (start_time.ctime(), image_number, 
                          module.module_name, module.module_num, 
-                         delta_sec,
-                         "" if module.is_interactive() else " (bg)"))
+                         delta_sec))
                     if ((workspace.frame is not None) and
                         (exception is None)):
                         try:

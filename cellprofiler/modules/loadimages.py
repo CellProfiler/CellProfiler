@@ -2106,9 +2106,6 @@ class LoadImages(cpmodule.CPModule):
         self.location.alter_for_create_batch_files(fn_alter_path)
         return True
     
-    def is_interactive(self):
-        return False
-
     def run(self,workspace):
         """Run the module - add the measurements
         

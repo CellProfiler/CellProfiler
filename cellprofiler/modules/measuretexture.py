@@ -449,9 +449,6 @@ class MeasureTexture(cpm.CPModule):
                                 
         return cols
 
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""
         

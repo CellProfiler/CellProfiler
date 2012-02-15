@@ -433,9 +433,6 @@ class FilterObjects(cpm.CPModule):
                                           parent_image = target_objects.parent_image)
                 workspace.image_set.add(outlines_name, outline_image)
 
-    def is_interactive(self):
-        return False
-
     def display(self, workspace):
         '''Display what was filtered'''
         src_name = self.object_name.value

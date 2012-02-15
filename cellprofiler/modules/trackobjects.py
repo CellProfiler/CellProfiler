@@ -666,9 +666,6 @@ class TrackObjects(cpm.CPModule):
         measurement_name = self.image_measurement_name(feature)
         workspace.measurements.add_image_measurement(measurement_name, value)
         
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
         if self.tracking_method == TM_DISTANCE:

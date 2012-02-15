@@ -233,9 +233,6 @@ class CreateWebPage(cpm.CPModule):
                                  undefined_tags[0], 
                                  cntrl)
                 
-    def is_interactive(self):
-        return False
-
     def get_filenames(self, image_set_list):
         '''Return the set of file names'''
         return self.get_dictionary(image_set_list)["Filenames"]

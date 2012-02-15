@@ -533,9 +533,6 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                            round(self.smoothing_filter_size(output_image.pixel_data.size),2)])
         figure.subplot_table(1, 1, statistics, ratio=[.6,.4])
 
-    def is_interactive(self):
-        return False
-
     def apply_dilation(self, image, orig_image=None):
         """Return an image that is dilated according to the settings
         

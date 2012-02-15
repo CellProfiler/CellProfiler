@@ -102,10 +102,6 @@ class CalculateImageOverlap(cpm.CPModule):
             result += [self.object_name_GT, self.img_obj_found_in_GT,self.object_name_ID, self.img_obj_found_in_ID]
         return result
 
-    def is_interactive(self):
-        return False
-    
-
     def run(self,workspace):
         if self.obj_or_img == O_IMG:
             self.measure_image(workspace)

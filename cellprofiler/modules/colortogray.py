@@ -351,9 +351,6 @@ class ColorToGray(cpm.CPModule):
                                   sharex=figure.subplot(0,0),
                                   sharey=figure.subplot(0,0))
         
-    def is_interactive(self):
-        return False
-    
     def prepare_settings(self, setting_values):
         '''Prepare the module to receive the settings
         

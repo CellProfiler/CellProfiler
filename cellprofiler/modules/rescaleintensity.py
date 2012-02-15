@@ -337,9 +337,6 @@ class RescaleIntensity(cpm.CPModule):
                                        convert = False)
         workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
 
-    def is_interactive(self):
-        return False
-    
     def display(self, workspace):
         '''Display the input image and rescaled image'''
         figure = workspace.create_or_find_figure(title="RescaleIntensity, image cycle #%d"%(

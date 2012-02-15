@@ -296,9 +296,6 @@ class UnmixColors(cpm.CPModule):
         result += [self.add_image_button]
         return result
     
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         '''Unmix the colors on an image in the image set'''
         input_image_name = self.input_image_name.value

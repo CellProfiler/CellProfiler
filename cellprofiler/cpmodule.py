@@ -469,12 +469,6 @@ class CPModule(object):
         """
         return True
     
-    def is_interactive(self):
-        """If true, the module will be run in the background.
-        Background threads cannot safely manipulate the GUI.  See
-        display()."""
-        return True
-    
     def is_load_module(self):
         """If true, the module will load files and make image sets"""
         return False
@@ -489,10 +483,12 @@ class CPModule(object):
             measurements - the measurements for this run
             frame        - the parent frame to whatever frame is created. 
                            None means don't draw.
+            display_data - the run() module should store anything to be
+                           displayed in this attribute, which will be used in
+                           display()
 
-        If is_interactive() returns false, then run() will be run in a
-        background thread.  Background threads cannot safely
-        manipulate the GUI.  See display().
+        run() should not attempt to display any data, but should communicate it
+        to display() via the workspace.
         """
         pass
     
@@ -506,13 +502,8 @@ class CPModule(object):
     def display(self, workspace):
         """Display the results, and possibly intermediate results, as
         appropriate for this module.  This method will be called after
-        run() is finished if workspace.frame is not false.
+        run() is finished if self.show_window is True.
 
-        This method exists because the run() method will run in the
-        background if is_interactive() returns false, and background
-        threads cannot safely manipulate the GUI.  The default
-        implementation does nothing.
-        
         The run() method should store whatever data display() needs in
         workspace.display_data.
         """

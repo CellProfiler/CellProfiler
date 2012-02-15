@@ -159,9 +159,6 @@ class MakeProjection(cpm.CPModule):
                 image_set.providers.append(provider)
         return True
         
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value)
         pixels = image.pixel_data

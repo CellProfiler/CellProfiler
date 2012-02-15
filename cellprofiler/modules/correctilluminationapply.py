@@ -250,9 +250,6 @@ class CorrectIlluminationApply(cpm.CPModule):
                    sharex=figure.subplot(0,0),
                    sharey=figure.subplot(0,0))
 
-    def is_interactive(self):
-        return False
-
     def validate_module_warnings(self, pipeline):
         """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""
         for j, image in enumerate(self.images):

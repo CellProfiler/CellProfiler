@@ -679,9 +679,6 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             vv += [self.maximum_object_count]
         return vv
     
-    def is_interactive(self):
-        return False
-
     def run(self,workspace):
         """Run the module
         

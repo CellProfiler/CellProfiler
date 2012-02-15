@@ -270,14 +270,6 @@ class ImageTemplate(cpm.CPModule):
             workspace.display_data.output_pixels = output_pixels
 
     #
-    # is_interactive tells CellProfiler whether "run" uses any interactive
-    # GUI elements. If you return False here, CellProfiler will run your
-    # module on a separate thread which will make the user interface more
-    # responsive.
-    #
-    def is_interactive(self):
-        return False
-    #
     # display lets you use matplotlib to display your results. 
     #
     def display(self, workspace):

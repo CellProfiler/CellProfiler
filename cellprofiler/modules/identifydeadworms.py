@@ -252,9 +252,6 @@ class IdentifyDeadWorms(cpm.CPModule):
             workspace.display_data.labels = labels
             workspace.display_data.count = nlabels
         
-    def is_interactive(self):
-        return False
-    
     def display(self, workspace):
         '''Show an informative display'''
         import matplotlib

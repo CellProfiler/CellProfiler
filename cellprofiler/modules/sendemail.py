@@ -240,9 +240,6 @@ class SendEmail(cpm.CPModule):
         result += [self.add_when_button]
         return result
     
-    def is_interactive(self):
-        return False
-    
     def prepare_run(self, workspace):
         '''Prepare to run the first image in the image set'''
         email_me = [ group.message.value for group in self.when

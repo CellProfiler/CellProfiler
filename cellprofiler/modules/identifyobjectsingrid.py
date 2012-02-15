@@ -427,9 +427,6 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return guide_labels
         
 
-    def is_interactive(self):
-        return False
-
     def display(self, workspace):
         '''Display the resulting objects'''
         import matplotlib

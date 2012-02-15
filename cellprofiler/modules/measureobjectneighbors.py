@@ -514,9 +514,6 @@ class MeasureObjectNeighbors(cpm.CPModule):
         workspace.display_data.labels = labels
         workspace.display_data.object_mask = object_mask
             
-    def is_interactive(self):
-        return False
-    
     def display(self, workspace):
         figure = workspace.create_or_find_figure(title="MeasureObjectNeighbors, image cycle #%d"%(
             workspace.measurements.image_set_number),subplots=(2,2))

@@ -209,10 +209,6 @@ class MaskObjects(I.Identify):
             result += [self.outlines_name]
         return result
     
-    def is_interactive(self):
-        '''Tell CP that this module does not have an interactive UI'''
-        return False
-    
     def run(self, workspace):
         '''Run the module on an image set'''
         

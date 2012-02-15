@@ -166,9 +166,6 @@ class MeasureImageIntensity(cpm.CPModule):
             dict[key] = im
         return dict.values()
         
-    def is_interactive(self):
-        return False
-
     def run(self, workspace):
         '''Perform the measurements on the imageset'''
         #

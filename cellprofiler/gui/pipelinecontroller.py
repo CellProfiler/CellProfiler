@@ -1128,7 +1128,7 @@ class PipelineController:
                                       outlines = self.__debug_outlines)
             self.__debug_grids = workspace.set_grids(self.__debug_grids)
             module.run(workspace)
-            if (not module.is_interactive()) and module.show_window:
+            if module.show_window:
                 module.display(workspace)
             workspace.refresh()
             if workspace.disposition == cpw.DISPOSITION_SKIP:

@@ -185,11 +185,6 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         return result
 
    
-    def is_interactive(self):
-        return False
-
-
-            
     def run(self, workspace):
         m = workspace.measurements
         statistics = [["Objects or Image", "Area Occupied", "Total Area"]]

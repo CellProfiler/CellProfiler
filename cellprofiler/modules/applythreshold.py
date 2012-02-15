@@ -134,9 +134,6 @@ class ApplyThreshold(Identify):
                 self.threshold_range, self.threshold_correction_factor,
                 self.enclosing_objects_name]
     
-    def is_interactive(self):
-        return False
-    
     def run(self,workspace):
         """Run the module
         

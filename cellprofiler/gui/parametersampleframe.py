@@ -617,9 +617,6 @@ class ParameterSampleFrame(wx.Frame):
             #module.run(workspace)
             module.run(self.__workspace)
             # ~^~
-            # Next two lines cause errors to be raised on some modules
-            #if (not module.is_interactive()) and module.show_window:
-            #    module.display(workspace)
             # ~*~
             #workspace.refresh()
             self.__workspace.refresh()

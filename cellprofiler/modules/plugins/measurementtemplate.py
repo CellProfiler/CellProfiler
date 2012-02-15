@@ -239,13 +239,6 @@ class MeasurementTemplate(cpm.CPModule):
     # 
     # DISPLAY
     #
-    # We define is_interactive to be False to tell CellProfiler
-    # that it should execute "run" in a background thread and then
-    # execute "display" in a foreground thread.
-    #
-    def is_interactive(self):
-        return False
-    
     def display(self, workspace):
         statistics = workspace.display_data.statistics
         figure = workspace.create_or_find_figure(subplots=(1,1,))

@@ -706,9 +706,6 @@ class MeasureImageQuality(cpm.CPModule):
             statistics += self.run_on_image_group(image_group, workspace)
         workspace.display_data.statistics = statistics
 
-    def is_interactive(self):
-        return False
-    
     def display(self, workspace):
         if workspace.frame is not None:
             statistics = workspace.display_data.statistics

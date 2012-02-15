@@ -233,9 +233,6 @@ class Resize(cpm.CPModule):
         output_image = cpi.Image(output_pixels)
         workspace.image_set.add(output_image_name, output_image) 
         
-    def is_interactive(self):
-        return False
-    
     def display(self, workspace):
         '''Display the resized images
         

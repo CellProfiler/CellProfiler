@@ -352,6 +352,7 @@ class PipelineListView(object):
             self.__frame.PopupMenu(menu)
         else:
             self.__frame.PopupMenu(self.__frame.menu_edit_add_module)
+        menu.Destroy()
 
     def start_drag_operation(self, event):
         '''Start dragging whatever is selected'''

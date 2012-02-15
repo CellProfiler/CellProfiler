@@ -73,6 +73,8 @@ class PipelineController:
         self.__distributor = None
         self.pipeline_list = []
         self.populate_recent_files()
+        self.menu_id_to_module_name = {}
+        self.module_name_to_menu_id = {}
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
         wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_URL_LOAD_PIPELINE, self.__on_url_load_pipeline)
@@ -514,7 +516,7 @@ class PipelineController:
     
     def populate_edit_menu(self, menu):
         '''Display a menu of modules to add'''
-        from cellprofiler.modules import get_module_names, instantiate_module
+        from cellprofiler.modules import get_module_names
         #
         # Get a two-level dictionary of categories and names
         #
@@ -538,23 +540,34 @@ class PipelineController:
         for category in sorted(d.keys()):
             sub_menu = wx.Menu()
             for module_name in sorted(d[category]):
-                menu_id = wx.NewId()
+                if self.module_name_to_menu_id.has_key(module_name):
+                    menu_id = self.module_name_to_menu_id[module_name]
+                else:
+                    menu_id = wx.NewId()
+                    self.module_name_to_menu_id[module_name] = menu_id
+                    self.menu_id_to_module_name[menu_id] = module_name
+                    self.__frame.Bind(wx.EVT_MENU, 
+                                      self.on_menu_add_module, 
+                                      id = menu_id)
                 sub_menu.Append(menu_id, module_name)
-                ########################
-                #
-                # on_menu - add a module to the pipeline
-                #
-                ########################
-                def on_menu(event, module_name = module_name):
-                    module = instantiate_module(module_name)
-                    selected_modules = self.__get_selected_modules()
-                    if len(selected_modules) == 0:
-                        module.module_num = len(self.__pipeline.modules())+1
-                    else:
-                        module.module_num = selected_modules[0].module_num + 1
-                    self.__pipeline.add_module(module)
-                self.__frame.Bind(wx.EVT_MENU, on_menu, id = menu_id)
             menu.AppendSubMenu(sub_menu, category)
+            
+    def on_menu_add_module(self, event):
+        from cellprofiler.modules import instantiate_module
+        assert isinstance(event, wx.CommandEvent)
+        if self.menu_id_to_module_name.has_key(event.Id):
+            module_name = self.menu_id_to_module_name[event.Id]
+            module = instantiate_module(module_name)
+            selected_modules = self.__get_selected_modules()
+            if len(selected_modules) == 0:
+                module.module_num = len(self.__pipeline.modules())+1
+            else:
+                module.module_num = selected_modules[0].module_num + 1
+            self.__pipeline.add_module(module)
+        else:
+            logger.warn("Could not find module associated with ID = %d, module = %s" % (
+                event.Id, event.GetString()))
+            
         
     def __get_selected_modules(self):
         return self.__pipeline_list_view.get_selected_modules()

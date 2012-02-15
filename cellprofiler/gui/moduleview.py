@@ -2156,11 +2156,20 @@ class FilterPanelController(object):
                      (index, self.saddress(address)))
         structure = self.v.parse()
         sequence = self.find_address(structure, address)
+        
+        while len(sequence) <= index:
+            # The sequence is bad (e.g. bad pipeline or metadata collection)
+            # Fill in enough to deal
+            #
+            sequence.append(self.v.predicates[0] 
+                            if len(sequence) == 0
+                            else sequence[-1].subpredicates[0])
         if index == 0:
             predicates = self.v.predicates
         else:
             predicates = sequence[index-1].subpredicates
         new_predicate = predicates[event.GetSelection()]
+            
         sequence[index] = new_predicate
         predicates = new_predicate.subpredicates
         #
@@ -2224,6 +2233,13 @@ class FilterPanelController(object):
         logger.debug("Literal at %d / %s changed" % (index, self.saddress(address)))
         structure = self.v.parse()
         sequence = self.find_address(structure, address)
+        while len(sequence) <= index:
+            # The sequence is bad (e.g. bad pipeline or metadata collection)
+            # Fill in enough to deal
+            #
+            sequence.append(self.v.predicates[0] 
+                            if len(sequence) == 0
+                            else sequence[-1].subpredicates[0])
         sequence[index] = event.GetString()
         new_text = self.v.build_string(structure)
         self.on_value_change(event, new_text)
@@ -2313,6 +2329,7 @@ class FilterPanelController(object):
                     if isinstance(token, basestring):
                         literal_ctrl = self.make_literal(
                             token, i, subaddress, sizer)
+                        predicates = []
                     else:
                         choice_ctrl = self.make_predicate_choice(
                             predicates, i, subaddress, sizer)
@@ -2321,6 +2338,22 @@ class FilterPanelController(object):
                         if token.doc is not None:
                             choice_ctrl.SetToolTipString(token.doc)
                         predicates = token.subpredicates
+                i = len(substructure)
+                while len(predicates) > 0:
+                    #
+                    # We can get here if there's a badly constructed token
+                    # list - for instance if an invalid subpredicate was
+                    # chosen or none existed because of some error, but now
+                    # they do.
+                    #
+                    if (len(predicates) == 1 and 
+                        predicates[0] is cps.Filter.LITERAL_PREDICATE):
+                        self.make_literal("", i, subaddress, sizer)
+                    else:
+                        self.make_predicate_choice(predicates, i, subaddress,
+                                                   sizer)
+                    i += 1
+                    predicates = predicates[0].subpredicates
         #
         # Don't allow delete of only rule
         #

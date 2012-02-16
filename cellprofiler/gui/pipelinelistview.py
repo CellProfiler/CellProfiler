@@ -350,9 +350,9 @@ class PipelineListView(object):
             menu.Append(ID_EDIT_DUPLICATE, "Duplicate")
             menu.Append(ID_HELP_MODULE, "&Help")
             self.__frame.PopupMenu(menu)
+            menu.Destroy()
         else:
             self.__frame.PopupMenu(self.__frame.menu_edit_add_module)
-        menu.Destroy()
 
     def start_drag_operation(self, event):
         '''Start dragging whatever is selected'''

@@ -516,25 +516,35 @@ class NamesAndTypes(cpm.CPModule):
         metadata_columns = self.get_metadata_column_names()
         for i, name in enumerate(metadata_columns):
             self.table.insert_column(i, name)
+        f_pathname = "Pathname: %s"
+        f_filename = "Filename: %s"
         for i, column_name in enumerate(self.column_names):
             idx = len(metadata_columns) + i*2
-            self.table.insert_column(idx, "Pathname: %s" % column_name)
-            self.table.insert_column(idx+1, "Filename: %s" % column_name)
+            self.table.insert_column(idx, f_pathname % column_name)
+            self.table.insert_column(idx+1, f_filename % column_name)
         data = []
-        for keys, image_set in self.image_sets:
+        errors = []
+        for i, (keys, image_set) in enumerate(self.image_sets):
             row = [unicode(key) for key in keys]
             for column_name in self.column_names:
                 ipds = image_set.get(column_name, [])
                 if len(ipds) == 0:
                     row += ["-- No image! --"] * 2
+                    errors.append((i, column_name))
                 elif len(ipds) > 1:
                     row.append("-- Multiple images! --\n" + 
                                "\n".join([ipd.path for ipd in ipds]))
                     row.append("-- Multiple images! --")
+                    errors.append((i, column_name))
                 else:
                     row += os.path.split(ipds[0].path)
             data.append(row)
         self.table.data = data
+        for error_row, column_name in errors:
+            for f in (f_pathname, f_filename):
+                self.table.set_cell_attribute(error_row, f % column_name, 
+                                              self.table.ATTR_ERROR)
+                self.table.set_row_attribute(error_row, self.table.ATTR_ERROR)
 
 class MetadataPredicate(cps.Filter.FilterPredicate):
     '''A predicate that compares an ifd against a metadata key and value'''

@@ -1611,11 +1611,26 @@ class ModuleView:
     def make_table_control(self, v, control):
         if control is None:
             class TableController(wx.grid.PyGridTableBase):
+                DEFAULT_ATTR = wx.grid.GridCellAttr()
+                ERROR_ATTR = wx.grid.GridCellAttr()
+                ERROR_ATTR.TextColour = ERROR_COLOR
                 def __init__(self, v):
                     super(self.__class__, self).__init__()
                     assert isinstance(v, cps.Table)
                     self.v = v
                     
+                def GetAttr(self, row, col, kind):
+                    attrs = self.v.get_cell_attributes(
+                        row, self.v.column_names[col])
+                    attr = self.DEFAULT_ATTR
+                    if attrs is not None and self.v.ATTR_ERROR in attrs:
+                        attr = self.ERROR_ATTR
+                    attr.IncRef() # OH so bogus, don't refcount = bus error
+                    return attr
+                
+                def CanHaveAttributes(self):
+                    return True
+                
                 def GetNumberRows(self):
                     return len(self.v.data)
                 
@@ -1632,6 +1647,12 @@ class ModuleView:
                         return None
                     return self.v.data[row][col]
                 
+                def GetRowLabelValue(self, row):
+                    attrs = self.v.get_row_attributes(row)
+                    if attrs is not None and self.v.ATTR_ERROR in attrs:
+                        return "%d: Error" % (row+1)
+                    return str(row+1)
+                    
                 def GetColLabelValue(self, col):
                     return self.v.column_names[col]
                 

@@ -2602,10 +2602,15 @@ class FileCollectionDisplay(Setting):
     
 class Table(Setting):
     '''The Table setting displays a table of values'''
+    
+    ATTR_ERROR = "Error"
+    
     def __init__(self, text, min_size = (400, 300), **kwargs):
         super(self.__class__, self).__init__(text, "", **kwargs)
         self.column_names = []
         self.data = []
+        self.row_attributes = {}
+        self.cell_attributes = {}
         self.min_size = min_size
         
     def insert_column(self, index, column_name):
@@ -2649,6 +2654,8 @@ class Table(Setting):
 
     def clear_rows(self):
         self.data = []
+        self.row_attributes = {}
+        self.cell_attributes = {}
         
     def clear_columns(self):
         self.column_names = []
@@ -2667,6 +2674,71 @@ class Table(Setting):
             row_index = slice(row_index, row_index+1)
         return [[row[column_index] for i in column_indices]
                 for row in self.data[row_index]]
+    
+    def set_row_attribute(self, row_index, attribute, set_attribute = True):
+        '''Set an attribute on a row
+        
+        row_index - index of row in question
+        
+        attribute - one of the ATTR_ values, for instance ATTR_ERROR
+        
+        set_attribute - True to set, False to clear
+        '''
+        if set_attribute:
+            if self.row_attributes.has_key(row_index):
+                self.row_attributes[row_index].add(attribute)
+            else:
+                self.row_attributes[row_index] = set([attribute])
+        else:
+            if self.row_attributes.has_key(row_index):
+                s = self.row_attributes[row_index]
+                s.remove(attribute)
+                if len(s) == 0:
+                    del self.row_attributes[row_index]
+    
+    def get_row_attributes(self, row_index):
+        '''Get the set of attributes on a row
+        
+        row_index - index of the row being queried
+        
+        returns None if no attributes or a set of attributes set on the row
+        '''
+        return self.row_attributes.get(row_index, None)
+    
+    def set_cell_attribute(self, row_index, column_name, 
+                           attribute, set_attribute = True):
+        '''Set an attribute on a cell
+        
+        row_index - index of row in question
+        
+        column_name - name of the cell's column
+        
+        attribute - one of the ATTR_ values, for instance ATTR_ERROR
+        
+        set_attribute - True to set, False to clear
+        '''
+        key = (row_index, self.column_names.index(column_name))
+        if set_attribute:
+            if self.cell_attributes.has_key(key):
+                self.cell_attributes[key].add(attribute)
+            else:
+                self.cell_attributes[key] = set([attribute])
+        else:
+            if self.cell_attributes.has_key(key):
+                s = self.cell_attributes[key]
+                s.remove(attribute)
+                if len(s) == 0:
+                    del self.cell_attributes[key]
+    
+    def get_cell_attributes(self, row_index, column_name):
+        '''Get the set of attributes on a row
+        
+        row_index - index of the row being queried
+        
+        returns None if no attributes or a set of attributes set on the row
+        '''
+        key = (row_index, self.column_names.index(column_name))
+        return self.cell_attributes.get(key, None)
     
 class HTMLText(Setting):
     '''The HTMLText setting displays a HTML control with content

@@ -41,11 +41,13 @@ if not hasattr(sys, 'frozen'):
 
     def configuration():
         extensions = []
+        extra_link_args = None
         if is_win:
+            extra_link_args = ['/MANIFEST']
             extensions += [Extension(name="_get_proper_case_filename",
                                      sources=["get_proper_case_filename.c"],
                                      libraries=["shlwapi", "shell32", "ole32"],
-                                     extra_compile_args=['-O3'])]
+                                     extra_link_args=extra_link_args)]
         try:
             #
             # Find JAVA_HOME, possibly from Windows registry
@@ -54,7 +56,6 @@ if not hasattr(sys, 'frozen'):
             jdk_home = find_jdk()
             logger.debug("Using jdk_home = %s"%jdk_home)
             include_dirs = [get_include()]
-            extra_link_args = None
             libraries = None
             library_dirs = None
             javabridge_sources = [ "javabridge.pyx" ]

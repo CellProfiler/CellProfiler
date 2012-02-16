@@ -228,6 +228,8 @@ class Groups(cpm.CPModule):
             if not image_set_groupings.has_key(grouping_keys):
                 image_set_groupings[grouping_keys] = []
             image_set_groupings[grouping_keys].append(keys)
+        for v in image_set_groupings.values():
+            v.sort()
         return key_list, image_set_groupings
 
     def run(self, workspace):

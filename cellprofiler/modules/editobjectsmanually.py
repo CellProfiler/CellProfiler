@@ -141,9 +141,6 @@ class EditObjectsManually(I.Identify):
                 self.outlines_name, self.renumber_choice, 
                 self.wants_image_display, self.image_name]
     
-    def is_interactive(self):
-        return True
-    
     def visible_settings(self):
         """The settings that are visible in the UI
         """
@@ -176,11 +173,17 @@ class EditObjectsManually(I.Identify):
         orig_labels = orig_objects.segmented
         mask = orig_labels != 0
 
-        if workspace.frame is None:
+        try:
+            if self.wants_image_display.value:
+                guide_image = workspace.image_set.get_image(self.image_name.value).pixel_data
+            else:
+                guide_image = None
+
+            filtered_labels = workspace.interaction_request(self, orig_labels, guide_image=guide_image)
+        except workspace.NoInteractionException:
             # Accept the labels as-is
             filtered_labels = orig_labels
-        else:
-            filtered_labels = self.filter_objects(workspace, orig_labels)
+
         #
         # Renumber objects consecutively if asked to do so
         #
@@ -240,15 +243,14 @@ class EditObjectsManually(I.Identify):
                                          filtered_objects_name,
                                          sharex = figure.subplot(0,0),
                                          sharey = figure.subplot(0,0))
-            
-    def filter_objects(self, workspace, orig_labels):
+
+    def handle_interaction(self, orig_labels, guide_image):
         import wx
         import matplotlib
         from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
         from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         
-        assert isinstance(workspace,cpw.Workspace)
         orig_objects_name = self.object_name.value
         #
         # Get the labels matrix and make a mask of objects to keep from it
@@ -257,9 +259,9 @@ class EditObjectsManually(I.Identify):
         # Display a UI for choosing objects
         #
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-        dialog_box = wx.Dialog(workspace.frame, -1,
+        dialog_box = wx.Dialog(wx.GetApp().TopWindow, -1,
                                "Choose objects to keep",
-                               style = style)
+                               style=style)
         sizer = wx.BoxSizer(wx.VERTICAL)
         dialog_box.SetSizer(sizer)
         figure = matplotlib.figure.Figure()
@@ -374,8 +376,7 @@ class EditObjectsManually(I.Identify):
                     is_blank = False
                 if wants_image_display[0]:
                     outlines = outline(labels)
-                    image = workspace.image_set.get_image(self.image_name.value)
-                    image = image.pixel_data.astype(np.float)
+                    image = guide_image.astype(np.float)
                     image, _ = cpo.size_similarly(labels, image)
                     if image.ndim == 2:
                         image = np.dstack((image, image, image))

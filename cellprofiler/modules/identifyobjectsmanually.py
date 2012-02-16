@@ -76,9 +76,6 @@ class IdentifyObjectsManually(I.Identify):
         '''This module cannot be used in a batch context'''
         raise ValueError("The IdentifyObjectsManually module cannot be run in batch mode")
     
-    def is_interactive(self):
-        return True
-    
     def run(self, workspace):
         image_name    = self.image_name.value
         objects_name  = self.objects_name.value
@@ -86,8 +83,7 @@ class IdentifyObjectsManually(I.Identify):
         image         = workspace.image_set.get_image(image_name)
         pixel_data    = image.pixel_data
         
-        labels = np.zeros(pixel_data.shape[:2], int)
-        self.do_ui(workspace, pixel_data, labels)
+        labels = workspace.interaction_request(self, pixel_data)
         objects = cpo.Objects()
         objects.segmented = labels
         workspace.object_set.add_objects(objects, objects_name)
@@ -162,15 +158,16 @@ class IdentifyObjectsManually(I.Identify):
         image[outlines > 0,:] = outlines_image[outlines > 0,:]
         return image
         
-    def do_ui(self, workspace, pixel_data, labels):
+    def handle_interaction(self, pixel_data):
         '''Display a UI for editing'''
         import matplotlib
         from matplotlib.widgets import Lasso, RectangleSelector
         from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
         import wx
-        
+
+        labels = np.zeros(pixel_data.shape[:2], int)
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-        dialog_box = wx.Dialog(workspace.frame, -1,
+        dialog_box = wx.Dialog(wx.GetApp().TopWindow, -1,
                                "Identify objects manually",
                                style = style)
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -376,6 +373,7 @@ class IdentifyObjectsManually(I.Identify):
         dialog_box.Fit()
         dialog_box.ShowModal()
         dialog_box.Destroy()
+        return labels
         
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

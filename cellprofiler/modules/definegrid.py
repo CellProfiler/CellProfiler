@@ -347,6 +347,8 @@ class DefineGrid(cpm.CPModule):
             measurements - the measurements for this run
             frame        - the parent frame to whatever frame is created. None means don't draw.
         """
+        background_image = self.get_background_image(workspace, None)
+
         if (self.each_or_once == EO_ONCE and 
             self.get_good_gridding(workspace) is not None):
             gridding = self.get_good_gridding(workspace)
@@ -355,7 +357,8 @@ class DefineGrid(cpm.CPModule):
         elif self.manual_choice == MAN_COORDINATES:
             gridding = self.run_coordinates(workspace)
         elif self.manual_choice == MAN_MOUSE:
-            gridding = self.run_mouse(workspace)
+            serialized_gridding = workspace.interaction_request(self, background_image, workspace.measurements.image_set_number)
+            gridding = cpg.deserialize(serialized_gridding)
         self.set_good_gridding(workspace, gridding)
         workspace.set_grid(self.grid_image.value, gridding)
         #
@@ -369,13 +372,22 @@ class DefineGrid(cpm.CPModule):
         self.add_measurement(workspace, F_COLUMNS, gridding.columns)
         self.add_measurement(workspace, F_X_SPACING, gridding.x_spacing)
         self.add_measurement(workspace, F_Y_SPACING, gridding.y_spacing)
+
+        # update background image
+        background_image = self.get_background_image(workspace, gridding)
+
+        workspace.display_data.gridding = gridding
+        background_image = workspace.background_image = background_image
+        workspace.display_data.image_set_number = workspace.measurements.image_set_number
+
         if self.wants_image:
             import matplotlib.transforms
             from cellprofiler.gui.cpfigure_tools import figure_to_image
             figure = matplotlib.figure.Figure()
             canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(figure)
-            ax = figure.add_subplot(1,1,1)
-            self.display_grid(workspace, gridding, ax)
+            ax = figure.add_subplot(1, 1, 1)
+            self.display_grid(background_image, gridding,
+                              workspace.measurements.image_set_number, ax)
             #
             # This is the recipe for just showing the axis
             #
@@ -398,15 +410,24 @@ class DefineGrid(cpm.CPModule):
             figure.bbox = matplotlib.transforms.TransformedBbox(bbox, transform)
             image_pixels = figure_to_image(figure, dpi=dpi)
             image = cpi.Image(image_pixels)
-            
+
             workspace.image_set.add(self.save_image_name.value, image)
 
-        workspace.display_data.gridding = gridding
-
-    def is_interactive(self):
-        # if the user wants an image, we have to have access to the
-        # display to create it.
-        return self.wants_image
+    def get_background_image(self, workspace, gridding):
+        if self.display_image_name.value == cps.LEAVE_BLANK:
+            if gridding is None:
+                return None
+            image = np.zeros((gridding.total_height +
+                              (gridding.y_location_of_lowest_y_spot -
+                              gridding.y_spacing / 2) * 2 + 2,
+                              gridding.total_width +
+                              (gridding.x_location_of_lowest_x_spot -
+                              gridding.x_spacing / 2) * 2 + 2, 3))
+        else:
+            image = workspace.image_set.get_image(self.display_image_name.value).pixel_data
+            if image.ndim == 2:
+                image = np.dstack((image, image, image))
+        return image
 
     def run_automatic(self, workspace):
         '''Automatically define a grid based on objects
@@ -468,7 +489,10 @@ class DefineGrid(cpm.CPModule):
                                     self.second_spot_col.value,
                                     shape)
     
-    def run_mouse(self, workspace):
+    def handle_interaction(self, background_image, image_set_number):
+        return cpg.serialize(self.run_mouse(background_image, image_set_number))
+
+    def run_mouse(self, background_image, image_set_number):
         '''Define a grid by running the UI
         
         Returns a CPGridInfo object
@@ -500,7 +524,7 @@ class DefineGrid(cpm.CPModule):
         #
         figure = matplotlib.figure.Figure()
         axes = figure.add_subplot(1,1,1)
-        frame = wx.Dialog(workspace.frame,title="Select grid cells")
+        frame = wx.Dialog(wx.GetApp().TopWindow, title="Select grid cells")
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         frame.SetSizer(top_sizer)
         canvas = backend.FigureCanvasWxAgg(frame,-1,figure)
@@ -579,13 +603,14 @@ class DefineGrid(cpm.CPModule):
         if self.display_image_name == cps.LEAVE_BLANK:
             image_shape = None
         else:
-            image_shape = workspace.image_set.get_image(
-                self.display_image_name.value).pixel_data.shape[:2]
+            image_shape = background_image.shape[:2]
+
         def redisplay(event):
             if (event is not None) or (gridding[0] is None):
                 do_gridding(first_x.Value, first_y.Value,
                             second_x.Value, second_y.Value)
-            self.display_grid(workspace, gridding[0], axes)
+            self.display_grid(background_image, gridding[0],
+                              image_set_number, axes)
             canvas.draw()
         def cancel(event):
             status[0] = wx.CANCEL
@@ -786,55 +811,31 @@ class DefineGrid(cpm.CPModule):
         else:
             column -= 1
         return (row, column)
-        
 
     def display(self, workspace):
-        # if the user requested an image, the display has already been
-        # updated in run()
-        if not self.wants_image:
-            self.display_grid(workspace, workspace.display_data.gridding)
+        if workspace.frame:
+            figure = workspace.create_or_find_figure(title="DefineGrid, image cycle #%d" % (
+                    workspace.measurements.image_set_number), subplots=(1, 1))
+            figure.clf()
+            ax = figure.subplot(0, 0)
+            self.display_grid(workspace.display_data.background_image,
+                              workspace.display_data.gridding,
+                              workspace.display_data.image_set_number,
+                              ax)
 
-    def display_grid(self, workspace, gridding, axes=None):
+    def display_grid(self, background_image, gridding, image_set_number, axes):
         '''Display the grid in a figure'''
         import matplotlib
         
-        if axes is None:
-            has_figure = True
-            figure = workspace.create_or_find_figure(title="DefineGrid, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-            figure.clf()
-            axes = figure.subplot(0,0)
-        else:
-            has_figure = False
-            axes.cla()
+        axes.cla()
         assert isinstance(axes, matplotlib.axes.Axes)
         assert isinstance(gridding, cpg.CPGridInfo)
         #
-        # Get an image to draw on or get a blank image
-        #
-        if self.display_image_name == cps.LEAVE_BLANK:
-            image = np.zeros((gridding.total_height + 
-                              (gridding.y_location_of_lowest_y_spot -
-                              gridding.y_spacing / 2)*2+2,
-                              gridding.total_width +
-                              (gridding.x_location_of_lowest_x_spot -
-                              gridding.x_spacing / 2)*2+2,3))
-        else:
-            image = workspace.image_set.get_image(self.display_image_name.value)
-            image = image.pixel_data
-            if image.ndim == 2:
-                image = np.tile(image,(3,1,1))
-                image = np.transpose(image, (1,2,0))
-        #
         # draw the image on the figure
         #
-        if has_figure:
-            figure.subplot_imshow(0,0, image, use_imshow=True)
-        else:
-            display_image = image *255
-            display_image[display_image < 0] = 0
-            display_image[display_image > 255] = 255
-            axes.imshow(display_image.astype(np.uint8))
+        if background_image is None:
+            background_image = self.get_background_image(None, gridding)
+        axes.imshow(background_image)
         #
         # Draw lines
         #
@@ -861,6 +862,7 @@ class DefineGrid(cpm.CPModule):
                                                        alpha = .5,
                                                        edgecolor = "black"))
                 axes.add_artist(text)
+        axes.axis('image')
     
     def get_good_gridding(self, workspace):
         '''Get either the first gridding or the most recent successful gridding'''

@@ -105,8 +105,8 @@ M_SITE, M_WELL, M_ROW, M_COLUMN, M_PLATE = \
 MEASUREMENTS_GROUP_NAME = "Measurements"
 IMAGE_NUMBER = "ImageNumber"
 OBJECT_NUMBER = "ObjectNumber"
-GROUP_NUMBER = "Group_Number"
-GROUP_INDEX = "Group_Index"
+GROUP_NUMBER = "Group_Number"  # 1-based group index
+GROUP_INDEX = "Group_Index"  # 1-based index within group
 
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''

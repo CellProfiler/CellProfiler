@@ -28,7 +28,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
-from cellprofiler.analysis import PipelineRequest, InitialMeasurementsRequest, WorkRequest, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, InteractionReply, ServerExited
+from cellprofiler.analysis import PipelineRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, InteractionReply, ServerExited, ImageSetSuccess, SharedDictionaryRequest, DictionaryReqRep, DictionaryReqRepRep, Ack
 import subimager.client
 from cellprofiler.utilities.rpdb import Rpdb
 
@@ -120,7 +120,7 @@ def main():
             if isinstance(job, ServerExited):
                 continue  # server went away
 
-            if job.jobtype == 'NONE':
+            if isinstance(job, NoWorkReply):
                 time.sleep(0.25)  # avoid hammering server
                 # no work, currently.
                 continue
@@ -163,26 +163,6 @@ def main():
                             cpmeas.load_measurements(measurements_path)
                     else:
                         continue
-            # Safest not to clobber measurements from one job to the next.
-            current_measurements = cpmeas.Measurements(copy=current_measurements)
-
-            if job.jobtype == 'GROUP':
-                need_prepare_group = True
-                image_set_numbers = [int(s) for s in job.images.split(',')]
-            else:  # job.jobtype == 'IMAGE'
-                need_prepare_group = False
-                image_set_numbers = [int(job.images)]
-
-            print "Doing job: ", " ".join(job.images)
-
-            pipeline_listener.image_set_number = image_set_numbers[0]
-            should_process = True
-            if need_prepare_group:
-                workspace = cpw.Workspace(current_pipeline, None, None, None,
-                                          current_measurements, None, None)
-                if not current_pipeline.prepare_group(workspace, current_measurements.get_grouping_keys(), image_set_numbers):
-                    # exception handled elsewhere, possibly cancelling this run.
-                    should_process = False
 
             def interaction_handler(module, *args, **kwargs):
                 '''handle interaction requests by passing them to the jobserver and wait for the reply.'''
@@ -201,7 +181,36 @@ def main():
                     # the run was cancelled before we got a reply.
                     raise CancelledException()  # XXX - TODO - test this code path
 
+            # Safest not to clobber measurements from one job to the next.
+            current_measurements = cpmeas.Measurements(copy=current_measurements)
             successful_image_set_numbers = []
+            image_set_numbers = job.image_set_numbers
+            worker_runs_post_group = job.worker_runs_post_group
+            print "Doing job: ", image_set_numbers
+
+            pipeline_listener.image_set_number = image_set_numbers[0]
+
+            # Get the shared state from the first imageset in this run.
+            shared_dicts = SharedDictionaryRequest().send(work_socket).dictionaries
+            assert len(shared_dicts) == len(current_pipeline.modules())
+            for module, new_dict in zip(current_pipeline.modules(), shared_dicts):
+                module.get_dictionary().clear()
+                module.get_dictionary().update(new_dict)
+
+            # Run prepare group if this is the first image in the group.  We do
+            # this here (even if there's no grouping in the pipeline) to ensure
+            # that any changes to the modules' shared state dictionaries get
+            # propagated correctly.
+            should_process = True
+            if current_measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_numbers[0]] == 1:
+                workspace = cpw.Workspace(current_pipeline, None, None, None,
+                                          current_measurements, None, None)
+                # XXX - {} should be the grouping keys!
+                if not current_pipeline.prepare_group(workspace, {}, image_set_numbers):
+                    # exception handled elsewhere, possibly cancelling this run.
+                    should_process = False
+
+            # process the images
             if should_process:
                 abort = False
                 for image_set_number in image_set_numbers:
@@ -217,6 +226,16 @@ def main():
                             # XXX - and should we report their measurements?
                             continue
                         successful_image_set_numbers.append(image_set_number)
+                        # Send an indication that the image set finished successfully.
+                        rep = ImageSetSuccess(image_set_number=image_set_number).send(work_socket)
+                        if isinstance(rep, DictionaryReqRep):
+                            # The jobserver would like a copy of our modules' run_state dictionaries.
+                            # We use a nonstandard Req/rep/rep/rep pattern.
+                            ws = cpw.Workspace(current_pipeline, None, None, None,
+                                               current_measurements, None, None)
+                            dicts = [m.get_dictionary(ws) for m in current_pipeline.modules()]
+                            rep = rep.reply(DictionaryReqRepRep(shared_dicts=dicts), please_reply=True)
+                        assert isinstance(rep, Ack)
                     except Exception:
                         try:
                             logging.error("Error in pipeline", exc_info=True)
@@ -235,7 +254,7 @@ def main():
                     current_measurements = None
                     continue
 
-                if need_prepare_group:
+                if worker_runs_post_group:
                     workspace = cpw.Workspace(current_pipeline, None, None, None,
                                               current_measurements, None, None)
                     # There might be an exception in this call, but it will be

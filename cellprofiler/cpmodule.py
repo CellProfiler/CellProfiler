@@ -79,7 +79,7 @@ class CPModule(object):
         self.__show_window = True
         self.__wants_pause = False
         self.__svn_version = "Unknown"
-        self.run_state = {}  # used for maintaining state between modules
+        self.shared_state = {}  # used for maintaining state between modules, see get_dictionary()
         self.id = uuid.uuid4()
         self.batch_state = np.zeros((0,),np.uint8)
         # Set the name of the module based on the class name.  A
@@ -601,11 +601,11 @@ class CPModule(object):
         '''
         return []
 
-    def get_dictionary(self, image_set_list):
+    def get_dictionary(self, ignore=None):
         '''Get the dictionary for this module
         '''
-        return self.run_state
-    
+        return self.shared_state
+
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
         

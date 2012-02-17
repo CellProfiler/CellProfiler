@@ -25,6 +25,7 @@ import os
 import os.path
 import zmq
 import gc
+import collections
 
 import cellprofiler
 import cellprofiler.measurements as cpmeas
@@ -157,7 +158,9 @@ class AnalysisRunner(object):
     STATUS = "ProcessingStatus"
     STATUS_UNPROCESSED = "Unprocessed"
     STATUS_IN_PROCESS = "InProcess"
+    STATUS_FINISHED_WAITING = "FinishedWaitingMeasurements"
     STATUS_DONE = "Done"
+    STATUSES = [STATUS_UNPROCESSED, STATUS_IN_PROCESS, STATUS_FINISHED_WAITING, STATUS_DONE]
 
     def __init__(self, analysis_id, pipeline,
                  initial_measurements, event_listener):
@@ -178,7 +181,10 @@ class AnalysisRunner(object):
 
         self.work_queue = Queue.Queue()
         self.in_process_queue = Queue.Queue()
+        self.finished_queue = Queue.Queue()
         self.returned_measurements_queue = Queue.Queue()
+
+        self.shared_dicts = None
 
         self.interface_thread = None
         self.jobserver_thread = None
@@ -191,6 +197,7 @@ class AnalysisRunner(object):
         workspace = cpw.Workspace(self.pipeline, None, None, None,
                                   self.initial_measurements, cpimage.ImageSetList())
         self.pipeline.prepare_run(workspace)
+        self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
         self.initial_measurements.flush()  # Make sure file is valid before we start threads.
         self.interface_thread = start_daemon_thread(target=self.interface, name='AnalysisRunner.interface')
         self.jobserver_thread = start_daemon_thread(target=self.jobserver, args=(self.analysis_id,), name='AnalysisRunner.jobserver')
@@ -262,35 +269,34 @@ class AnalysisRunner(object):
         # Find image groups.  These are written into measurements prior to
         # analysis.  Groups are processed as a single job.
         if self.measurements.has_groups():
-            grouping_needed = True
+            worker_runs_post_group = True
             job_groups = {}
             for image_set_number in range(image_set_start, image_set_end):
                 group_number = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number]
                 group_index = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number]
                 job_groups[group_number] = job_groups.get(group_number, []) + [(group_index, image_set_number)]
             job_groups[group_number] = [[isn for _, isn in sorted(job_groups[group_number])] for group_number in job_groups]
+            first_image_job_group = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_start]
         else:
-            grouping_needed = False
+            worker_runs_post_group = False  # prepare_group will be run in worker, but post_group is below.
             job_groups = [[image_set_number] for image_set_number in range(image_set_start, image_set_end)]
+            first_image_job_group = 0
             for idx, image_set_number in enumerate(range(image_set_start, image_set_end)):
-                self.initial_measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number] = 0
-                self.initial_measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number] = idx
+                self.initial_measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number] = 1
+                self.initial_measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number] = idx + 1
             self.initial_measurements.flush()
-            # As there's no grouping, we call prepare_group() once on the
-            # pipeline (see pipeline.prepare_group()'s docstring)
-            if not self.pipeline.prepare_group(workspace, {}, range(image_set_start, image_set_end)):
-                # Exception in prepare group, and run was cancelled.
-                self.cancel()
-                del self.measurements
-                self.analysis_id = False  # this will cause the jobserver thread to exit
-                return
 
         # XXX - check that any constructed groups are complete, i.e.,
         # image_set_start and image_set_end shouldn't carve them up.
 
-        # put the jobs in the queue
-        for job in job_groups:
-            self.work_queue.put((job, grouping_needed))
+        # put the first job in the queue, then wait for the first image to
+        # finish (see the check of self.finish_queue below) to post the rest.
+        # This ensures that any shared data from the first imageset is
+        # available to later imagesets.
+        self.work_queue.put((job_groups[first_image_job_group], worker_runs_post_group))
+        del job_groups[first_image_job_group]
+
+        waiting_for_first_imageset = True
 
         # We loop until every image is completed, or an outside event breaks the loop.
         while True:
@@ -302,6 +308,7 @@ class AnalysisRunner(object):
                 returned_measurements, job = self.returned_measurements_queue.get()
                 for image_set_number in job:
                     self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
+                    # XXX - integrate measurements into our own
 
             # check for jobs in progress
             while not self.in_process_queue.empty():
@@ -309,15 +316,33 @@ class AnalysisRunner(object):
                 for image_set_number in image_set_numbers:
                     self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_IN_PROCESS
 
+            # check for finished jobs that haven't returned measurements, yet
+            while not self.finished_queue.empty():
+                finished_req = self.finished_queue.get()
+                self.measurements[cpmeas.IMAGE, self.STATUS, int(finished_req.image_set_number)] = self.STATUS_FINISHED_WAITING
+                if waiting_for_first_imageset:
+                    waiting_for_first_imageset = False
+                    # request shared state dictionary.
+                    # we use the nonstandard Request/Reply/Reply/Reply pattern.
+                    dict_reply = finished_req.reply(DictionaryReqRep(), please_reply=True)
+                    self.shared_dicts = dict_reply.shared_dicts
+                    assert len(self.shared_dicts) == len(self.pipeline.modules())
+                    dict_reply.reply(Ack())
+                    # if we had jobs waiting for the first image set to finish,
+                    # queue them now that the shared state is available.
+                    for job in job_groups:
+                        self.work_queue.put((job, worker_runs_post_group))
+                else:
+                    finished_req.reply(Ack())
+
             # check progress and report
-            counts = dict((s, 0) for s in [self.STATUS_UNPROCESSED, self.STATUS_IN_PROCESS, self.STATUS_DONE])
-            for image_set_number in range(image_set_start, image_set_end):
-                counts[self.measurements[cpmeas.IMAGE, self.STATUS, image_set_number]] += 1
+            counts = collections.Counter(self.measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
+                                         for image_set_number in range(image_set_start, image_set_end))
             self.post_event(AnalysisProgress(counts))
 
             # Are we finished?
-            if (counts[self.STATUS_IN_PROCESS] + counts[self.STATUS_UNPROCESSED]) == 0:
-                if not grouping_needed:
+            if (counts[self.STATUS_DONE] == image_set_end - image_set_start):
+                if worker_runs_post_group:
                     self.pipeline.post_group(workspace, {})
                 # XXX - revise pipeline.post_run to use the workspace
                 self.pipeline.post_run(self.measurements, None, None)
@@ -327,6 +352,7 @@ class AnalysisRunner(object):
             with self.interface_work_cv:
                 if (self.paused or \
                         (self.in_process_queue.empty() and
+                         self.finished_queue.empty() and
                          self.returned_measurements_queue.empty())):
                     self.interface_work_cv.wait()  # wait for a change of status or work to arrive
 
@@ -374,21 +400,20 @@ class AnalysisRunner(object):
                 req.reply(Reply(path=self.initial_measurements.hdf5_dict.filename.encode('utf-8')))
             elif isinstance(req, WorkRequest):
                 if not self.work_queue.empty():
-                    job, grouping_needed = self.work_queue.get()
-                    if grouping_needed:
-                        rep = WorkReply(jobtype='GROUP',
-                                        images=",".join(str(j) for j in job))
-                    else:
-                        rep = WorkReply(jobtype='IMAGE',
-                                        images=str(job[0]))
-                    req.reply(rep)
+                    job, worker_runs_post_group = self.work_queue.get()
+                    req.reply(WorkReply(image_set_numbers=job, worker_runs_post_group=worker_runs_post_group))
                     self.queue_dispatched_job(job)
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
-                    req.reply(WorkReply(jobtype='NONE'))
+                    req.reply(NoWorkReply())
+            elif isinstance(req, ImageSetSuccess):
+                # interface() is responsible for replying, to allow it to
+                # request the shared_state dictionary if needed.
+                self.queue_imageset_finished(req)
+            elif isinstance(req, SharedDictionaryRequest):
+                req.reply(SharedDictionaryReply(dictionaries=self.shared_dicts))
             elif isinstance(req, MeasurementsReport):
-                req.reply(Reply(message='THANKS'))
                 # Measurements are available at location indicated
                 measurements_path = req.path.decode('utf-8')
                 successes = [int(s) for s in req.image_set_numbers.split(",")]
@@ -398,6 +423,7 @@ class AnalysisRunner(object):
                 except Exception:
                     raise
                     # XXX - report error, push back job
+                req.reply(Ack())
             elif isinstance(req, (InteractionRequest, DisplayRequest, ExceptionReport)):
                 # bump upward
                 self.post_event(req)
@@ -415,6 +441,12 @@ class AnalysisRunner(object):
 
     def queue_dispatched_job(self, job):
         self.in_process_queue.put(job)
+        # notify interface thread
+        with self.interface_work_cv:
+            self.interface_work_cv.notify()
+
+    def queue_imageset_finished(self, finished_req):
+        self.finished_queue.put(finished_req)
         # notify interface thread
         with self.interface_work_cv:
             self.interface_work_cv.notify()
@@ -557,6 +589,20 @@ class WorkRequest(Request):
     pass
 
 
+class ImageSetSuccess(Request):
+    def __init__(self, image_set_number=None):
+        Request.__init__(self, image_set_number=image_set_number)
+
+
+class DictionaryReqRep(Reply):
+    pass
+
+
+class DictionaryReqRepRep(Reply):
+    def __init__(self, shared_dicts=None):
+        Reply.__init__(self, shared_dicts=shared_dicts)
+
+
 class MeasurementsReport(Request):
     def __init__(self, path="", image_set_numbers=""):
         Request.__init__(self, path=path, image_set_numbers=image_set_numbers)
@@ -564,6 +610,16 @@ class MeasurementsReport(Request):
 
 class InteractionRequest(Request):
     pass
+
+
+class SharedDictionaryRequest(Request):
+    def __init__(self, module_num=-1):
+        Request.__init__(self, module_num=module_num)
+
+
+class SharedDictionaryReply(Reply):
+    def __init__(self, dictionaries=[{}]):
+        Reply.__init__(self, dictionaries=dictionaries)
 
 
 class DisplayRequest(Request):
@@ -582,8 +638,17 @@ class WorkReply(Reply):
     pass
 
 
+class NoWorkReply(Reply):
+    pass
+
+
 class ServerExited(BoundaryExited):
     pass
+
+
+class Ack(Reply):
+    def __init__(self, message="THANKS"):
+        Reply.__init__(self, message=message)
 
 
 if __name__ == '__main__':

@@ -1673,6 +1673,7 @@ class Pipeline(object):
                                       None,
                                       outlines=outlines)
             workspace.interaction_handler = interaction_handler
+
             grids = workspace.set_grids(grids)
 
             start_time = datetime.datetime.now()
@@ -1942,15 +1943,6 @@ class Pipeline(object):
         
         returns true if the group should be run
         '''
-        #
-        # Clean the image set providers (can be filled in if run in
-        # an unconventional manner, e.g. debug mode)
-        #
-        image_set_list = workspace.image_set_list
-        for image_number in image_numbers:
-            image_set = image_set_list.get_image_set(image_number -1)
-            del image_set.providers[:]
-            
         for module in self.modules():
             try:
                 module.prepare_group(workspace, grouping, image_numbers)

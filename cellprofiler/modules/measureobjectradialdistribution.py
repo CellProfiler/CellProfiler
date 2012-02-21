@@ -198,6 +198,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             radius. Parts of the object that are beyond this radius will be
             counted in an overflow bin. The radius is measured in pixels"""))
         
+        group.can_remove = can_remove
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this set of bins", self.bin_counts, group))
         self.bin_counts.append(group)
@@ -254,6 +255,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             result += [settings.wants_scaled, settings.bin_count]
             if not settings.wants_scaled:
                 result += [settings.maximum_radius]
+            if settings.can_remove:
+                result += [settings.remover]
         result += [self.add_bin_count_button]
         
         return result

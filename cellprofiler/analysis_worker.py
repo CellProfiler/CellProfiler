@@ -32,11 +32,11 @@ from cellprofiler.analysis import PipelineRequest, InitialMeasurementsRequest, W
 import subimager.client
 from cellprofiler.utilities.rpdb import Rpdb
 
-# XXX - does every recv() below need to have a timeout?  Not in the
-# multiprocessing case, but yes in the distributed case.  This will require
-# implementing an "INTERACTION PENDING" keepalive/heartbeat in the server, but
-# otherwise, I think it's fairly clean.  We should expect pretty quick
-# responses to everything else.
+#
+# CellProfiler expects NaN as a result during calculation
+#
+import numpy as np
+np.seterr(all='ignore')
 
 logger = logging.getLogger(__name__)
 

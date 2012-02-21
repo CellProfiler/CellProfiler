@@ -31,7 +31,7 @@ class TestOMEXML(unittest.TestCase):
         
     def test_00_00_init(self):
         o = O.OMEXML()
-        self.assertEquals(o.root_node.tagName, "OME")
+        self.assertEquals(o.root_node.tag, O.qnome("OME"))
         self.assertEquals(o.image_count, 1)
         
     def test_01_01_read(self):
@@ -41,27 +41,21 @@ class TestOMEXML(unittest.TestCase):
     def test_02_01_iter_children(self):
         o = O.OMEXML(TIFF_XML)
         for node, expected_tag in zip(
-            O.iter_children(o.root_node, xml.dom.Node.ELEMENT_NODE),
-            ("Image", "StructuredAnnotations")):
-            self.assertEqual(node.tagName, expected_tag)
+            o.root_node, 
+            (O.qnome("Image"), O.qn(O.NS_SA, "StructuredAnnotations"))):
+            self.assertEqual(node.tag, expected_tag)
             
     def test_02_02_get_text(self):
         o = O.OMEXML(TIFF_XML)
-        im = o.root_node.getElementsByTagNameNS(O.NS_OME, "Image")[0]
-        ad = im.getElementsByTagNameNS(O.NS_OME, "AcquiredDate")[0]
+        ad = o.root_node.find(
+            "/".join([O.qnome(x) for x in ("Image", "AcquiredDate")]))
         self.assertEqual(O.get_text(ad), "2008-02-05T17:24:46")
-        
-    def test_02_03_get_dom(self):
-        o = O.OMEXML(TIFF_XML)
-        im = o.root_node.getElementsByTagNameNS(O.NS_OME, "Image")[0]
-        ad = im.getElementsByTagNameNS(O.NS_OME, "AcquiredDate")[0]
-        dom = O.get_dom(ad)
-        self.assertEqual(dom.nodeType, xml.dom.Node.DOCUMENT_NODE)
         
     def test_02_04_set_text(self):
         o = O.OMEXML(TIFF_XML)
-        im = o.root_node.getElementsByTagNameNS(O.NS_OME, "Image")[0]
-        ad = im.getElementsByTagNameNS(O.NS_OME, "AcquiredDate")[0]
+        ad = o.root_node.find("/".join(
+            [O.qnome(x) for x in ("Image", "AcquiredDate")]))
+        im = o.root_node.find(O.qnome("Image"))
         O.set_text(im, "Foo")
         self.assertEqual(O.get_text(im), "Foo")
         O.set_text(ad, "Bar")
@@ -75,18 +69,19 @@ class TestOMEXML(unittest.TestCase):
     def test_03_02_set_image_count(self):
         o = O.OMEXML(TIFF_XML)
         o.image_count = 2
-        self.assertEqual(len(o.root_node.getElementsByTagNameNS(O.NS_OME, "Image")), 2)
+        self.assertEqual(len(o.root_node.findall(O.qnome("Image"))), 2)
         
     def test_03_03_image(self):
         o = O.OMEXML(self.GROUPFILES_XML)
         self.assertEquals(o.image_count, 576)
         for i in range(576):
             im = o.image(i)
-            self.assertEqual(im.node.getAttribute("ID"), "Image:%d" % i)
+            self.assertEqual(im.node.get("ID"), "Image:%d" % i)
             
     def test_03_04_structured_annotations(self):
         o = O.OMEXML(TIFF_XML)
-        self.assertEqual(o.structured_annotations.node.tagName, "StructuredAnnotations")
+        self.assertEqual(o.structured_annotations.node.tag, 
+                         O.qn(O.NS_SA, "StructuredAnnotations"))
         
     def test_04_01_image_get_id(self):
         o =  O.OMEXML(TIFF_XML)
@@ -95,7 +90,7 @@ class TestOMEXML(unittest.TestCase):
     def test_04_02_image_set_id(self):
         o = O.OMEXML(TIFF_XML)
         o.image(0).ID = "Foo"
-        self.assertEquals(o.image(0).node.getAttribute("ID"), "Foo")
+        self.assertEquals(o.image(0).node.get("ID"), "Foo")
         
     def test_04_03_image_get_name(self):
         o = O.OMEXML(TIFF_XML)
@@ -104,7 +99,7 @@ class TestOMEXML(unittest.TestCase):
     def test_04_04_image_set_name(self):
         o = O.OMEXML(TIFF_XML)
         o.image(0).Name = "Foo"
-        self.assertEquals(o.image(0).node.getAttribute("Name"), "Foo")
+        self.assertEquals(o.image(0).node.get("Name"), "Foo")
         
     def test_04_05_image_get_acquired_date(self):
         o = O.OMEXML(TIFF_XML)
@@ -194,8 +189,8 @@ class TestOMEXML(unittest.TestCase):
     def test_05_18_pixels_set_channel_count(self):
         o = O.OMEXML(TIFF_XML)
         o.image(0).Pixels.channel_count = 2
-        self.assertEqual(len(o.image(0).Pixels.node.getElementsByTagNameNS(
-            O.NS_OME, "Channel")), 2)
+        self.assertEqual(
+            len(o.image(0).Pixels.node.findall(O.qnome("Channel"))), 2)
         
     def test_06_01_channel_get_id(self):
         o = O.OMEXML(TIFF_XML)
@@ -227,15 +222,15 @@ class TestOMEXML(unittest.TestCase):
     def test_07_01_sa_get_item(self):
         o = O.OMEXML(TIFF_XML)
         a = o.structured_annotations["Annotation:4"]
-        self.assertEqual(a.tagName, "XMLAnnotation")
-        values = a.getElementsByTagNameNS(O.NS_SA, "Value")
+        self.assertEqual(a.tag, O.qn(O.NS_SA, "XMLAnnotation"))
+        values = a.findall(O.qn(O.NS_SA, "Value"))
         self.assertEqual(len(values), 1)
-        oms = values[0].getElementsByTagNameNS(O.NS_ORIGINAL_METADATA, "OriginalMetadata")
+        oms = values[0].findall(O.qn(O.NS_ORIGINAL_METADATA, "OriginalMetadata"))
         self.assertEqual(len(oms), 1)
-        keys = oms[0].getElementsByTagNameNS(O.NS_ORIGINAL_METADATA, "Key")
+        keys = oms[0].findall(O.qn(O.NS_ORIGINAL_METADATA, "Key"))
         self.assertEqual(len(keys), 1)
         self.assertEqual(O.get_text(keys[0]), "XResolution")
-        values = oms[0].getElementsByTagNameNS(O.NS_ORIGINAL_METADATA, "Value")
+        values = oms[0].findall(O.qn(O.NS_ORIGINAL_METADATA, "Value"))
         self.assertEqual(len(values), 1)
         self.assertEqual(O.get_text(values[0]), "72")
         
@@ -272,17 +267,16 @@ class TestOMEXML(unittest.TestCase):
         o = O.OMEXML()
         o.structured_annotations.OriginalMetadata["Foo"] = "Bar"
         sa = o.structured_annotations.node
-        a = sa.getElementsByTagNameNS(O.NS_SA, "XMLAnnotation")
+        a = sa.findall(O.qn(O.NS_SA, "XMLAnnotation"))
         self.assertEqual(len(a), 1)
-        vs = a[0].getElementsByTagNameNS(O.NS_SA, "Value")
+        vs = a[0].findall(O.qn(O.NS_SA, "Value"))
         self.assertEqual(len(vs), 1)
-        om = vs[0].getElementsByTagNameNS(O.NS_ORIGINAL_METADATA,
-                                          "OriginalMetadata")
+        om = vs[0].findall(O.qn(O.NS_ORIGINAL_METADATA, "OriginalMetadata"))
         self.assertEqual(len(om), 1)
-        k = om[0].getElementsByTagNameNS(O.NS_ORIGINAL_METADATA, "Key")
+        k = om[0].findall(O.qn(O.NS_ORIGINAL_METADATA, "Key"))
         self.assertEqual(len(k), 1)
         self.assertEqual(O.get_text(k[0]), "Foo")
-        v = om[0].getElementsByTagNameNS(O.NS_ORIGINAL_METADATA, "Value")
+        v = om[0].findall(O.qn(O.NS_ORIGINAL_METADATA, "Value"))
         self.assertEqual(len(v), 1)
         self.assertEqual(O.get_text(v[0]), "Bar")
         
@@ -331,30 +325,30 @@ class TestOMEXML(unittest.TestCase):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
         plate.Status = "Gronked"
-        self.assertEqual(plate.node.getAttribute("Status"),"Gronked")
+        self.assertEqual(plate.node.get("Status"),"Gronked")
         
     def test_09_03_plate_get_status(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
-        plate.node.setAttribute("Status", "Gronked")
+        plate.node.set("Status", "Gronked")
         self.assertEqual(plate.Status,"Gronked")
         
     def test_09_04_plate_get_external_identifier(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
-        plate.node.setAttribute("ExternalIdentifier", "xyz")
+        plate.node.set("ExternalIdentifier", "xyz")
         self.assertEqual(plate.ExternalIdentifier, "xyz")
         
     def test_09_05_plate_set_external_identifier(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
         plate.ExternalIdentifier = "xyz"
-        self.assertEqual(plate.node.getAttribute("ExternalIdentifier"), "xyz")
+        self.assertEqual(plate.node.get("ExternalIdentifier"), "xyz")
         
     def test_09_06_plate_get_column_naming_convention(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
-        plate.node.setAttribute("ColumnNamingConvention", O.NC_LETTER)
+        plate.node.set("ColumnNamingConvention", O.NC_LETTER)
         self.assertEqual(plate.ColumnNamingConvention, O.NC_LETTER)
         
     def test_09_07_plate_set_column_naming_convention(self):
@@ -366,7 +360,7 @@ class TestOMEXML(unittest.TestCase):
     def test_09_08_plate_get_row_naming_convention(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
-        plate.node.setAttribute("RowNamingConvention", O.NC_LETTER)
+        plate.node.set("RowNamingConvention", O.NC_LETTER)
         self.assertEqual(plate.RowNamingConvention, O.NC_LETTER)
         
     def test_09_09_plate_set_row_naming_convention(self):
@@ -378,50 +372,50 @@ class TestOMEXML(unittest.TestCase):
     def test_09_10_plate_get_well_origin_x(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
-        plate.node.setAttribute("WellOriginX", "4.8")
+        plate.node.set("WellOriginX", "4.8")
         self.assertEqual(plate.WellOriginX, 4.8)
         
     def test_09_11_plate_set_well_origin_x(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
         plate.WellOriginX = 3.5
-        self.assertEqual(plate.node.getAttribute("WellOriginX"), "3.5")
+        self.assertEqual(plate.node.get("WellOriginX"), "3.5")
 
     def test_09_12_plate_get_well_origin_y(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
-        plate.node.setAttribute("WellOriginY", "5.8")
+        plate.node.set("WellOriginY", "5.8")
         self.assertEqual(plate.WellOriginY, 5.8)
         
     def test_09_13_plate_set_well_origin_y(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
         plate.WellOriginY = 3.5
-        self.assertEqual(plate.node.getAttribute("WellOriginY"), "3.5")
+        self.assertEqual(plate.node.get("WellOriginY"), "3.5")
         
     def test_09_14_plate_get_rows(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
-        plate.node.setAttribute("Rows", "8")
+        plate.node.set("Rows", "8")
         self.assertEqual(plate.Rows, 8)
         
     def test_09_15_plate_set_rows(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
         plate.Rows = 16
-        self.assertEqual(plate.node.getAttribute("Rows"), "16")
+        self.assertEqual(plate.node.get("Rows"), "16")
         
     def test_09_16_plate_get_columns(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
-        plate.node.setAttribute("Columns", "12")
+        plate.node.set("Columns", "12")
         self.assertEqual(plate.Columns, 12)
         
     def test_09_15_plate_set_columns(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("Foo", "Bar")
         plate.Columns = 24
-        self.assertEqual(plate.node.getAttribute("Columns"), "24")
+        self.assertEqual(plate.node.get("Columns"), "24")
         
     def test_10_01_wells_len(self):
         o = O.OMEXML(self.GROUPFILES_XML)
@@ -468,9 +462,9 @@ class TestOMEXML(unittest.TestCase):
         plate = o.plates.newPlate("Foo","Bar")
         plate.Well.new(4,5, "xyz")
         w = plate.Well[0]
-        self.assertEqual(w.node.getAttribute("Row"), "4")
-        self.assertEqual(w.node.getAttribute("Column"), "5")
-        self.assertEqual(w.node.getAttribute("ID"), "xyz")
+        self.assertEqual(w.node.get("Row"), "4")
+        self.assertEqual(w.node.get("Column"), "5")
+        self.assertEqual(w.node.get("ID"), "xyz")
         
     def test_11_01_get_Column(self):
         o = O.OMEXML(self.GROUPFILES_XML)
@@ -484,7 +478,7 @@ class TestOMEXML(unittest.TestCase):
         o = O.OMEXML()
         plate = o.plates.newPlate("foo","bar")
         w = plate.Well.new(4,5, "xyz")
-        w.node.setAttribute("ExternalDescription", "ijk")
+        w.node.set("ExternalDescription", "ijk")
         self.assertEqual(w.ExternalDescription, "ijk")
         
     def test_11_04_set_external_description(self):
@@ -492,13 +486,13 @@ class TestOMEXML(unittest.TestCase):
         plate = o.plates.newPlate("foo","bar")
         w = plate.Well.new(4,5, "xyz")
         w.ExternalDescription = "LMO"
-        self.assertEqual(w.node.getAttribute("ExternalDescription"), "LMO")
+        self.assertEqual(w.node.get("ExternalDescription"), "LMO")
 
     def test_11_05_get_external_identifier(self):
         o = O.OMEXML()
         plate = o.plates.newPlate("foo","bar")
         w = plate.Well.new(4,5, "xyz")
-        w.node.setAttribute("ExternalIdentifier", "ijk")
+        w.node.set("ExternalIdentifier", "ijk")
         self.assertEqual(w.ExternalIdentifier, "ijk")
         
     def test_11_06_set_external_identifier(self):
@@ -506,7 +500,7 @@ class TestOMEXML(unittest.TestCase):
         plate = o.plates.newPlate("foo","bar")
         w = plate.Well.new(4,5, "xyz")
         w.ExternalIdentifier = "LMO"
-        self.assertEqual(w.node.getAttribute("ExternalIdentifier"), "LMO")
+        self.assertEqual(w.node.get("ExternalIdentifier"), "LMO")
         
     def test_12_01_get_sample_len(self):
         o = O.OMEXML(self.GROUPFILES_XML)
@@ -515,17 +509,17 @@ class TestOMEXML(unittest.TestCase):
     def test_12_02_get_sample_item(self):
         o = O.OMEXML(self.GROUPFILES_XML)
         s = o.plates[0].Well[0].Sample[2]
-        self.assertEqual(s.node.getAttribute("ID"), "WellSample:0:0:2")
+        self.assertEqual(s.node.get("ID"), "WellSample:0:0:2")
         
     def test_12_03_get_sample_item_slice(self):
         o = O.OMEXML(self.GROUPFILES_XML)
         for i, s in enumerate(o.plates[0].Well[0].Sample[1::2]):
-            self.assertEqual(s.node.getAttribute("ID"), "WellSample:0:0:%d" % (i * 2 + 1))
+            self.assertEqual(s.node.get("ID"), "WellSample:0:0:%d" % (i * 2 + 1))
             
     def test_12_04_iter_sample_item(self):
         o = O.OMEXML(self.GROUPFILES_XML)
         for i, s in enumerate(o.plates[0].Well[0].Sample):
-            self.assertEqual(s.node.getAttribute("ID"), "WellSample:0:0:%d" % i)
+            self.assertEqual(s.node.get("ID"), "WellSample:0:0:%d" % i)
             
     def test_12_05_new_sample_item(self):
         o = O.OMEXML()
@@ -533,12 +527,12 @@ class TestOMEXML(unittest.TestCase):
         w = plate.Well.new(4,5, "xyz")
         w.Sample.new("ooo")
         w.Sample.new("ppp")
-        sample_nodes = w.node.getElementsByTagNameNS(O.NS_SPW, "WellSample")
+        sample_nodes = w.node.findall(O.qn(O.NS_SPW, "WellSample"))
         self.assertEqual(len(sample_nodes), 2)
-        self.assertEqual(sample_nodes[0].getAttribute("ID"), "ooo")
-        self.assertEqual(sample_nodes[1].getAttribute("ID"), "ppp")
-        self.assertEqual(sample_nodes[0].getAttribute("Index"), "0")
-        self.assertEqual(sample_nodes[1].getAttribute("Index"), "1")
+        self.assertEqual(sample_nodes[0].get("ID"), "ooo")
+        self.assertEqual(sample_nodes[1].get("ID"), "ppp")
+        self.assertEqual(sample_nodes[0].get("Index"), "0")
+        self.assertEqual(sample_nodes[1].get("Index"), "1")
         
     def test_13_01_get_sample_id(self):
         o = O.OMEXML(self.GROUPFILES_XML)
@@ -548,7 +542,7 @@ class TestOMEXML(unittest.TestCase):
         o = O.OMEXML(self.GROUPFILES_XML)
         ws = o.plates[0].Well['A02'].Sample[3]
         ws.ID = "Foo"
-        self.assertEqual(ws.node.getAttribute("ID"), "Foo")
+        self.assertEqual(ws.node.get("ID"), "Foo")
         
     def test_13_03_get_position_x(self):
         o = O.OMEXML(self.GROUPFILES_XML)
@@ -558,7 +552,7 @@ class TestOMEXML(unittest.TestCase):
         o = O.OMEXML(self.GROUPFILES_XML)
         ws = o.plates[0].Well['A02'].Sample[3]
         ws.PositionX = 201.75
-        self.assertEqual(ws.node.getAttribute("PositionX"), "201.75")
+        self.assertEqual(ws.node.get("PositionX"), "201.75")
         
     def test_13_05_get_position_y(self):
         o = O.OMEXML(self.GROUPFILES_XML)
@@ -568,7 +562,7 @@ class TestOMEXML(unittest.TestCase):
         o = O.OMEXML(self.GROUPFILES_XML)
         ws = o.plates[0].Well['A02'].Sample[3]
         ws.PositionY = 14.5
-        self.assertEqual(ws.node.getAttribute("PositionY"), "14.5")
+        self.assertEqual(ws.node.get("PositionY"), "14.5")
         
     def test_13_07_get_timepoint(self):
         o = O.OMEXML(self.GROUPFILES_XML)
@@ -580,10 +574,10 @@ class TestOMEXML(unittest.TestCase):
         now = datetime.datetime.now()
         now_string = now.isoformat()
         ws.Timepoint = now
-        self.assertEqual(ws.node.getAttribute("Timepoint"), now_string)
+        self.assertEqual(ws.node.get("Timepoint"), now_string)
         ws = o.plates[0].Well['A03'].Sample[4]
         ws.Timepoint = now_string
-        self.assertEqual(ws.node.getAttribute("Timepoint"), now_string)
+        self.assertEqual(ws.node.get("Timepoint"), now_string)
         
     def test_13_09_get_index(self):
         o = O.OMEXML(self.GROUPFILES_XML)
@@ -600,15 +594,15 @@ class TestOMEXML(unittest.TestCase):
         o = O.OMEXML(self.GROUPFILES_XML)
         ws = o.plates[0].Well['A02'].Sample[3]
         self.assertEqual(ws.ImageRef, "Image:9")
-        refs = ws.node.getElementsByTagNameNS(O.NS_SPW, "ImageRef")
-        ws.node.removeChild(refs[0])
+        ref = ws.node.find(O.qn(O.NS_SPW, "ImageRef"))
+        ws.node.remove(ref)
         self.assertTrue(ws.ImageRef is None)
         
     def test_13_12_set_image_ref(self):
         o = O.OMEXML(self.GROUPFILES_XML)
         ws = o.plates[0].Well['A02'].Sample[3]
         ws.ImageRef = "Foo"
-        self.assertEqual(ws.node.getElementsByTagNameNS(O.NS_SPW, "ImageRef")[0].getAttribute("ID"), "Foo")
+        self.assertEqual(ws.node.find(O.qn(O.NS_SPW, "ImageRef")).get("ID"), "Foo")
         
     def test_14_01_get_plane_count(self):
         o = O.OMEXML(TIFF_XML)
@@ -619,7 +613,7 @@ class TestOMEXML(unittest.TestCase):
         pixels = o.image(0).Pixels
         self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
         pixels.plane_count = 2
-        self.assertEqual(len(pixels.node.getElementsByTagNameNS(O.NS_OME, "Plane")), 2)
+        self.assertEqual(len(pixels.node.findall(O.qnome( "Plane"))), 2)
         
     def test_14_03_get_the_c(self):
         o = O.OMEXML(TIFF_XML)
@@ -627,7 +621,7 @@ class TestOMEXML(unittest.TestCase):
         self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
         plane = pixels.Plane(0)
         self.assertTrue(isinstance(plane, O.OMEXML.Plane))
-        plane.node.setAttribute("TheC", "15")
+        plane.node.set("TheC", "15")
         self.assertEqual(plane.TheC, 15)
         
     def test_14_04_get_the_z(self):
@@ -636,7 +630,7 @@ class TestOMEXML(unittest.TestCase):
         self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
         plane = pixels.Plane(0)
         self.assertTrue(isinstance(plane, O.OMEXML.Plane))
-        plane.node.setAttribute("TheZ", "10")
+        plane.node.set("TheZ", "10")
         self.assertEqual(plane.TheZ, 10)
         
     def test_14_05_get_the_t(self):
@@ -645,7 +639,7 @@ class TestOMEXML(unittest.TestCase):
         self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
         plane = pixels.Plane(0)
         self.assertTrue(isinstance(plane, O.OMEXML.Plane))
-        plane.node.setAttribute("TheT", "9")
+        plane.node.set("TheT", "9")
         self.assertEqual(plane.TheT, 9)
         
     def test_14_06_set_the_c(self):
@@ -654,7 +648,7 @@ class TestOMEXML(unittest.TestCase):
         self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
         plane = pixels.Plane(0)
         plane.TheC = 5
-        self.assertEqual(int(plane.node.getAttribute("TheC")), 5)
+        self.assertEqual(int(plane.node.get("TheC")), 5)
         
     def test_14_07_set_the_z(self):
         o = O.OMEXML(TIFF_XML)
@@ -662,7 +656,7 @@ class TestOMEXML(unittest.TestCase):
         self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
         plane = pixels.Plane(0)
         plane.TheZ = 6
-        self.assertEqual(int(plane.node.getAttribute("TheZ")), 6)
+        self.assertEqual(int(plane.node.get("TheZ")), 6)
         
     def test_14_08_set_the_t(self):
         o = O.OMEXML(TIFF_XML)
@@ -670,7 +664,7 @@ class TestOMEXML(unittest.TestCase):
         self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
         plane = pixels.Plane(0)
         plane.TheC = 7
-        self.assertEqual(int(plane.node.getAttribute("TheC")), 7)
+        self.assertEqual(int(plane.node.get("TheC")), 7)
         
     def test_14_09_get_delta_t(self):
         o = O.OMEXML(TIFF_XML)
@@ -713,7 +707,7 @@ class TestOMEXML(unittest.TestCase):
         self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
         plane = pixels.Plane(0)
         plane.DeltaT = 1.25
-        self.assertEqual(float(plane.node.getAttribute("DeltaT")), 1.25)
+        self.assertEqual(float(plane.node.get("DeltaT")), 1.25)
         
     def test_14_15_set_position_x(self):
         o = O.OMEXML(TIFF_XML)
@@ -721,7 +715,7 @@ class TestOMEXML(unittest.TestCase):
         self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
         plane = pixels.Plane(0)
         plane.PositionX = 5.5
-        self.assertEqual(float(plane.node.getAttribute("PositionX")), 5.5)
+        self.assertEqual(float(plane.node.get("PositionX")), 5.5)
         
     def test_14_16_set_position_y(self):
         o = O.OMEXML(TIFF_XML)
@@ -729,7 +723,7 @@ class TestOMEXML(unittest.TestCase):
         self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
         plane = pixels.Plane(0)
         plane.PositionY = 6.5
-        self.assertEqual(float(plane.node.getAttribute("PositionY")), 6.5)
+        self.assertEqual(float(plane.node.get("PositionY")), 6.5)
         
     def test_14_17_set_position_z(self):
         o = O.OMEXML(TIFF_XML)
@@ -737,7 +731,7 @@ class TestOMEXML(unittest.TestCase):
         self.assertTrue(isinstance(pixels, O.OMEXML.Pixels))
         plane = pixels.Plane(0)
         plane.PositionZ = 7.5
-        self.assertEqual(float(plane.node.getAttribute("PositionZ")), 7.5)
+        self.assertEqual(float(plane.node.get("PositionZ")), 7.5)
         
 TIFF_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <OME xmlns="http://www.openmicroscopy.org/Schemas/OME/2011-06"

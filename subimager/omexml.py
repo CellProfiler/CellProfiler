@@ -11,8 +11,8 @@
 # 
 # Website: http://www.cellprofiler.org
 #
-import xml.dom
-from xml.dom.minidom import parseString
+from xml.etree import cElementTree as ElementTree
+from cStringIO import StringIO
 import datetime
 import logging
 logger = logging.getLogger(__file__)
@@ -207,21 +207,33 @@ def page_name_original_metadata(index):
 
 def get_text(node):
     '''Get the contents of text nodes in a parent node'''
-    node.normalize()
-    for child in iter_children(node, xml.dom.Node.TEXT_NODE):
-        return child.data
-    return None
+    return node.text
 
 def set_text(node, text):
     '''Set the text of a parent'''
-    node.normalize()
-    child = node.firstChild
-    for child in iter_children(node, xml.dom.Node.TEXT_NODE):
-        child.data = text
-        return
-    dom = get_dom(node)
-    node.appendChild(dom.createTextNode(text))
+    node.text = text
+
+def qn(namespace, tag_name):
+    '''Return the qualified name for a given namespace and tag name
     
+    This is the ElementTree representation of a qualified name
+    '''
+    return "{%s}%s" % (namespace, tag_name)
+
+def qnome(tag_name):
+    '''Return the qualified tag name in the OME namespace'''
+    return qn(NS_OME, tag_name)
+
+def get_float_attr(node, attribute):
+    '''Cast an element attribute to a float or return None if not present'''
+    attr = node.get(attribute)
+    return None if attr is None else float(attr)
+
+def get_int_attr(node, attribute):
+    '''Cast an element attribute to an int or return None if not present'''
+    attr = node.get(attribute)
+    return None if attr is None else int(attr)
+
 def make_text_node(parent, namespace, tag_name, text):
     '''Either make a new node and add the given text or replace the text
     
@@ -230,39 +242,11 @@ def make_text_node(parent, namespace, tag_name, text):
     tag_name - the tag name of  the node's qualified name
     text - the text to be inserted
     '''
-    nodes = parent.getElementsByTagNameNS(namespace, tag_name)
-    if len(nodes) == 0:
-        node = get_dom(parent).createElementNS(namespace, tag_name)
-        parent.appendChild(node)
-    else:
-        node = nodes[0]
+    qname = qn(namespace, tag_name)
+    node = parent.find(qname)
+    if node is None:
+        node = ElementTree.SubElement(parent, qname)
     set_text(node, text)
-
-def get_dom(node):
-    '''Get the document node given a rooted node'''
-    while node.nodeType != xml.dom.Node.DOCUMENT_NODE:
-        node = node.parentNode
-    return node
-
-def insert_after(prior, subsequent):
-    '''Insert an unrooted node after a prior, rooted node'''
-    if prior.nextSibling is None:
-        prior.parentNode.appendChild(subsequent)
-    else:
-        prior.parentNode.insertBefore(subsequent, prior.nextSibling)
-
-def iter_children(parent, node_type = None):
-    '''Iterate among the children of a node
-
-    parent - parent node
-    node_type - if present, only return children of that type.
-    '''
-    child = parent.firstChild
-    while child is not None:
-        if (node_type is None) or (child.nodeType == node_type):
-            yield child
-        child = child.nextSibling
-    return
 
 class OMEXML(object):
     '''The OMEXML class reads and writes OME-XML with methods to get and set it
@@ -313,41 +297,37 @@ class OMEXML(object):
     http://git.openmicroscopy.org/src/develop/components/specification/Documentation/Generated/OME-2011-06/ome.html
     '''
     def __init__(self, xml=default_xml):
-        self.dom = parseString(xml)
+        self.dom = ElementTree.ElementTree(ElementTree.fromstring(xml))
         
     def __str__(self):
-        return self.dom.toprettyxml(encoding="utf-8")
+        return ElementTree.tostring(self.root_node, "utf-8")
     
     def to_xml(self, indent="\t", newline="\n", encoding = "utf-8"):
-        return self.dom.toprettyxml(indent = indent,
-                                    newl = newline,
-                                    encoding = encoding)
+        return str(self)
 
     @property
     def root_node(self):
-        return self.dom.getElementsByTagName("OME")[0]
+        return self.dom.getroot()
     
     def get_image_count(self):
         '''The number of images (= series) specified by the XML'''
-        return len(self.root_node.getElementsByTagName("Image"))
+        return len(self.root_node.findall(qnome("Image")))
     
     def set_image_count(self, value):
         '''Add or remove image nodes as needed'''
         assert value > 0
         root = self.root_node
-        while(self.image_count > value):
-            last = self.root_node.getElementsByTagNameNS(NS_OME, "Image")[-1]
-            root.removeChild(last)
-            last.unlink()
+        if self.image_count > value:
+            image_nodes = root.find(qnome("Image"))
+            for image_node in image_nodes[value:]:
+                root.remove(image_node)
         while(self.image_count < value):
-            last_image = self.root_node.getElementsByTagNameNS(NS_OME,"Image")[-1]
-            new_image = self.Image(self.dom.createElementNS(NS_OME, "Image"))
-            insert_after(last_image, new_image.node)
+            new_image = self.Image(ElementTree.SubElement(root, qnome("Image")))
             new_image.ID = str(uuid.uuid4())
             new_image.Name = "default.png"
             new_image.AcquiredDate = xsd_now()
-            new_pixels = self.Pixels(self.dom.createElementNS(NS_OME, "Pixels"))
-            new_image.node.appendChild(new_pixels.node)
+            new_pixels = self.Pixels(
+                ElementTree.SubElement(new_image.node, qnome("Pixels")))
             new_pixels.ID = str(uuid.uuid4())
             new_pixels.DimensionOrder = DO_XYCTZ
             new_pixels.PixelType = PT_UINT8
@@ -356,8 +336,8 @@ class OMEXML(object):
             new_pixels.SizeX = 512
             new_pixels.SizeY = 512
             new_pixels.SizeZ = 1
-            new_channel = self.Channel(self.dom.createElementNS(NS_OME, "Channel"))
-            new_pixels.node.appendChild(new_channel.node)
+            new_channel = self.Channel(
+                ElementTree.SubElement(new_pixels.node, qnome("Channel")))
             new_channel.ID = "Channel%d:0" % self.image_count
             new_channel.Name = new_channel.ID
             new_channel.SamplesPerPixel = 1
@@ -375,13 +355,10 @@ class OMEXML(object):
         returns a wrapping of OME/StructuredAnnotations. It creates
         the element if it doesn't exist.
         '''
-        nodes = self.root_node.getElementsByTagNameNS(
-            NS_SA, "StructuredAnnotations")
-        if len(nodes) == 0:
-            node = self.dom.createElementNS(NS_SA, "StructuredAnnotations")
-            self.root_node.addChild(node)
-        else:
-            node = nodes[0]
+        node = self.root_node.find(qn(NS_SA, "StructuredAnnotations"))
+        if node is None:
+            node = ElementTree.SubElement(
+                self.root_node, qn(NS_SA, "StructuredAnnotations"))
         return self.StructuredAnnotations(node)
     
     class Image(object):
@@ -391,43 +368,42 @@ class OMEXML(object):
             self.node = node
             
         def get_ID(self):
-            return self.node.getAttribute("ID")
+            return self.node.get("ID")
+        
         def set_ID(self, value):
-            self.node.setAttribute("ID", value)
+            self.node.set("ID", value)
+            
         ID = property(get_ID, set_ID)
 
         def get_Name(self):
-            return self.node.getAttribute("Name")
+            return self.node.get("Name")
         def set_Name(self, value):
-            self.node.setAttribute("Name", value)
+            self.node.set("Name", value)
         Name = property(get_Name, set_Name)
         
         def get_AcquiredDate(self):
             '''The date in ISO-8601 format'''
-            acquired_dates = self.node.getElementsByTagNameNS(NS_OME, "AcquiredDate")
-            if len(acquired_dates) == 0:
+            acquired_date = self.node.find(qnome("AcquiredDate"))
+            if acquired_date is None:
                 return None
-            return get_text(acquired_dates[0])
+            return get_text(acquired_date)
         
         def set_AcquiredDate(self, date):
-            acquired_dates = self.node.getElementsByTagNameNS(NS_OME, "AcquiredDate")
-            if len(acquired_dates) == 0:
-                dom = get_dom(self.node)
-                acquired_date = dom.createElementNS(NS_OME, "AcquiredDate")
-                self.node.appendChild(acquired_date)
-            else:
-                acquired_date = acquired_dates[0]
+            acquired_date = self.node.find(qnome("AcquiredDate"))
+            if acquired_date is None:
+                acquired_date = ElementTree.SubElement(
+                    self.node, qnome("AcquiredDate"))
             set_text(acquired_date, date)
         AcquiredDate = property(get_AcquiredDate, set_AcquiredDate)
             
         @property
         def Pixels(self):
             '''The OME/Image/Pixels element'''
-            return OMEXML.Pixels(self.node.getElementsByTagNameNS(NS_OME, "Pixels")[0])
+            return OMEXML.Pixels(self.node.find(qnome("Pixels")))
         
     def image(self, index=0):
         '''Return an image node by index'''
-        return self.Image(self.root_node.getElementsByTagNameNS(NS_OME, "Image")[index])
+        return self.Image(self.root_node.findall(qnome("Image"))[index])
     
     class Channel(object):
         '''The OME/Image/Pixels/Channel element'''
@@ -435,21 +411,22 @@ class OMEXML(object):
             self.node = node
             
         def get_ID(self):
-            return self.node.getAttribute("ID")
+            return self.node.get("ID")
         def set_ID(self, value):
-            self.node.setAttribute("ID", value)
+            self.node.set("ID", value)
         ID = property(get_ID, set_ID)
         
         def get_Name(self):
-            return self.node.getAttribute("Name")
+            return self.node.get("Name")
         def set_Name(self, value):
-            self.node.setAttribute("Name", value)
+            self.node.set("Name", value)
         Name = property(get_Name, set_Name)
         
         def get_SamplesPerPixel(self):
-            return int(self.node.getAttribute("SamplesPerPixel"))
+            return get_int_attr(self.node, "SamplesPerPixel")
+        
         def set_SamplesPerPixel(self, value):
-            self.node.setAttribute("SamplesPerPixel", str(value))
+            self.node.set("SamplesPerPixel", str(value))
         SamplesPerPixel = property(get_SamplesPerPixel, set_SamplesPerPixel)
 
     class Plane(object):
@@ -464,85 +441,75 @@ class OMEXML(object):
             
         def get_TheZ(self):
             '''The Z index of the plane'''
-            if self.node.hasAttribute("TheZ"):
-                return int(self.node.getAttribute("TheZ"))
-            return None
+            return get_int_attr(self.node, "TheZ")
         
         def set_TheZ(self, value):
-            self.node.setAttribute("TheZ", str(value))
+            self.node.set("TheZ", str(value))
             
         TheZ = property(get_TheZ, set_TheZ)
         
         def get_TheC(self):
             '''The channel index of the plane'''
-            if self.node.hasAttribute("TheC"):
-                return int(self.node.getAttribute("TheC"))
-            return None
+            return get_int_attr(self.node, "TheC")
         
         def set_TheC(self, value):
-            self.node.setAttribute("TheC", str(value))
+            self.node.set("TheC", str(value))
             
         TheC = property(get_TheC, set_TheC)
         
         def get_TheT(self):
             '''The T index of the plane'''
-            if self.node.hasAttribute("TheT"):
-                return int(self.node.getAttribute("TheT"))
-            return None
+            return get_int_attr(self.node, "TheT")
         
         def set_TheT(self, value):
-            self.node.setAttribute("TheT", str(value))
+            self.node.set("TheT", str(value))
             
         TheT = property(get_TheT, set_TheT)
         
         def get_DeltaT(self):
             '''# of seconds since the beginning of the experiment'''
-            if self.node.hasAttribute("DeltaT"):
-                return float(self.node.getAttribute("DeltaT"))
-            return None
+            return get_float_attr(self.node, "DeltaT")
         
         def set_DeltaT(self, value):
-            self.node.setAttribute("DeltaT", str(value))
+            self.node.set("DeltaT", str(value))
             
         DeltaT = property(get_DeltaT, set_DeltaT)
         
         @property
         def ExposureTime(self):
             '''Units are seconds. Duration of acquisition????'''
-            if self.node.hasAttribute("ExposureTime"):
-                return float(self.node.getAttribute("ExposureTime"))
+            exposure_time = self.node.get("ExposureTime")
+            if exposure_time is not None:
+                return float(exposure_time)
             return None
         
         def get_PositionX(self):
             '''X position of stage'''
-            if self.node.hasAttribute("PositionX"):
-                return float(self.node.getAttribute("PositionX"))
+            position_x = self.node.get("PositionX")
+            if position_x is not None:
+                return float(position_x)
             return None
         
         def set_PositionX(self, value):
-            self.node.setAttribute("PositionX", str(value))
+            self.node.set("PositionX", str(value))
             
         PositionX = property(get_PositionX, set_PositionX)
         
         def get_PositionY(self):
             '''Y position of stage'''
-            if self.node.hasAttribute("PositionY"):
-                return float(self.node.getAttribute("PositionY"))
-            return None
+            return get_float_attr(self.node, "PositionY")
         
         def set_PositionY(self, value):
-            self.node.setAttribute("PositionY", str(value))
+            self.node.set("PositionY", str(value))
             
         PositionY = property(get_PositionY, set_PositionY)
         
         def get_PositionZ(self):
             '''Z position of stage'''
-            if self.node.hasAttribute("PositionZ"):
-                return float(self.node.getAttribute("PositionZ"))
-            return None
+            return get_float_attr(self.node, "PositionZ")
         
         def set_PositionZ(self, value):
-            self.node.setAttribute("PositionZ", str(value))
+            self.node.set("PositionZ", str(value))
             
         PositionZ = property(get_PositionZ, set_PositionZ)
         
@@ -558,9 +525,9 @@ class OMEXML(object):
             self.node = node
             
         def get_ID(self):
-            return self.node.getAttribute("ID")
+            return self.node.get("ID")
         def set_ID(self, value):
-            self.node.setAttribute("ID", value)
+            self.node.set("ID", value)
         ID = property(get_ID, set_ID)
         
         def get_DimensionOrder(self):
@@ -570,9 +537,9 @@ class OMEXML(object):
             rapidly varying to least. Use the DO_* constants (for instance
             DO_XYZCT) to compare and set this.
             '''
-            return self.node.getAttribute("DimensionOrder")
+            return self.node.get("DimensionOrder")
         def set_DimensionOrder(self, value):
-            self.node.setAttribute("DimensionOrder", value)
+            self.node.set("DimensionOrder", value)
         DimensionOrder = property(get_DimensionOrder, set_DimensionOrder)
         
         def get_PixelType(self):
@@ -582,44 +549,46 @@ class OMEXML(object):
             in the image data. You can use the PT_* constants to compare
             and set the pixel type.
             '''
-            return self.node.getAttribute("Type")
+            return self.node.get("Type")
         def set_PixelType(self, value):
-            self.node.setAttribute("Type", value)
+            self.node.set("Type", value)
         PixelType = property(get_PixelType, set_PixelType)
         
         def get_SizeX(self):
             '''The dimensions of the image in the X direction in pixels'''
-            return int(self.node.getAttribute("SizeX"))
+            return get_int_attr(self.node, "SizeX")
         def set_SizeX(self, value):
-            self.node.setAttribute("SizeX", str(value))
+            self.node.set("SizeX", str(value))
         SizeX = property(get_SizeX, set_SizeX)
         
         def get_SizeY(self):
             '''The dimensions of the image in the Y direction in pixels'''
-            return int(self.node.getAttribute("SizeY"))
+            return get_int_attr(self.node, "SizeY")
         def set_SizeY(self, value):
-            self.node.setAttribute("SizeY", str(value))
+            self.node.set("SizeY", str(value))
         SizeY = property(get_SizeY, set_SizeY)
         
         def get_SizeZ(self):
             '''The dimensions of the image in the Z direction in pixels'''
-            return int(self.node.getAttribute("SizeZ"))
+            return get_int_attr(self.node, "SizeZ")
+        
         def set_SizeZ(self, value):
-            self.node.setAttribute("SizeZ", str(value))
+            self.node.set("SizeZ", str(value))
         SizeZ = property(get_SizeZ, set_SizeZ)
         
         def get_SizeT(self):
             '''The dimensions of the image in the T direction in pixels'''
-            return int(self.node.getAttribute("SizeT"))
+            return get_int_attr(self.node, "SizeT")
+        
         def set_SizeT(self, value):
-            self.node.setAttribute("SizeT", str(value))
+            self.node.set("SizeT", str(value))
         SizeT = property(get_SizeT, set_SizeT)
         
         def get_SizeC(self):
             '''The dimensions of the image in the C direction in pixels'''
-            return int(self.node.getAttribute("SizeC"))
+            return get_int_attr(self.node, "SizeC")
         def set_SizeC(self, value):
-            self.node.setAttribute("SizeC", str(value))
+            self.node.set("SizeC", str(value))
         SizeC = property(get_SizeC, set_SizeC)
         
         def get_channel_count(self):
@@ -632,29 +601,28 @@ class OMEXML(object):
             pixels.Channel(0).Name = "Red"
             ...
             '''
-            return len(self.node.getElementsByTagNameNS(NS_OME, "Channel"))
+            return len(self.node.findall(qnome("Channel")))
         
         def set_channel_count(self, value):
             assert value > 0
-            dom = get_dom(self.node)
-            while(self.channel_count > value):
-                last = self.node.getElementsByTagNameNS(NS_OME, "Channel")[-1]
-                self.node.removeChild(last)
-                last.unlink()
-            
-            while(self.channel_count < value):
-                last = self.node.getElementsByTagNameNS(NS_OME, "Channel")[-1]
-                new_channel = OMEXML.Channel(dom.createElementNS(NS_OME, "Channel"))
-                insert_after(last, new_channel.node)
-                new_channel.ID = str(uuid.uuid4())
-                new_channel.Name = new_channel.ID
-                new_channel.SamplesPerPixel = 1
+            channel_count = self.channel_count
+            if channel_count > value:
+                channels = self.node.findall(qnome(NS_OME, "Channel"))
+                for channel in channels[value:]:
+                    self.node.remove(channel)
+            else:
+                for _ in range(channel_count, value):
+                    new_channel = OMEXML.Channel(
+                        ElementTree.SubElement(self.node, qnome("Channel")))
+                    new_channel.ID = str(uuid.uuid4())
+                    new_channel.Name = new_channel.ID
+                    new_channel.SamplesPerPixel = 1
                 
         channel_count = property(get_channel_count, set_channel_count)
         
         def Channel(self, index=0):
             '''Get the indexed channel from the Pixels element'''
-            channel = self.node.getElementsByTagNameNS(NS_OME, "Channel")[index]
+            channel = self.node.findall(qnome("Channel"))[index]
             return OMEXML.Channel(channel)
     
         def get_plane_count(self):
@@ -670,29 +638,25 @@ class OMEXML(object):
             pixels.Plane(0).TheZ=pixels.Plane(0).TheC=pixels.Plane(0).TheT=0
             ...
             '''
-            return len(self.node.getElementsByTagNameNS(NS_OME, "Plane"))
+            return len(self.node.findall(qnome("Plane")))
         
         def set_plane_count(self, value):
             assert value >= 0
-            dom = get_dom(self.node)
-            while(self.plane_count > value):
-                last = self.node.getElementsByTagNameNS(NS_OME, "Plane")[-1]
-                self.node.removeChild(last)
-                last.unlink()
-            
-            while(self.plane_count < value):
-                new_plane = OMEXML.Plane(dom.createElementNS(NS_OME, "Plane"))
-                if self.plane_count > 0:
-                    last = self.node.getElementsByTagNameNS(NS_OME, "Plane")[-1]
-                    insert_after(last, new_plane.node)
-                else:
-                    self.node.appendChild(new_plane.node)
+            plane_count = self.plane_count
+            if plane_count > value:
+                planes = self.node.findall(qnome("Plane"))
+                for plane in planes[value:]:
+                    self.node.remove(plane)
+            else:
+                for _ in range(plane_count, value):
+                    new_plane = OMEXML.Plane(
+                        ElementTree.SubElement(self.node, qnome("Plane")))
                 
         plane_count = property(get_plane_count, set_plane_count)
         
         def Plane(self, index=0):
             '''Get the indexed plane from the Pixels element'''
-            plane = self.node.getElementsByTagNameNS(NS_OME, "Plane")[index]
+            plane = self.node.findall(qnome("Plane"))[index]
             return OMEXML.Plane(plane)
         
     class StructuredAnnotations(dict):
@@ -719,20 +683,18 @@ class OMEXML(object):
             self.node = node
             
         def __getitem__(self, key):
-            for child in iter_children(self.node, xml.dom.Node.ELEMENT_NODE):
-                if child.getAttribute("ID") == key:
+            for child in self.node:
+                if child.get("ID") == key:
                     return child
             raise IndexError('ID "%s" not found' % key)
         
         def keys(self):
-            return [child.getAttribute("ID")
-                    for child in iter_children(self.node, xml.dom.Node.ELEMENT_NODE)
-                    if child.hasAttribute("ID")]
+            return filter(lambda x: x is not None,
+                          [child.get("ID") for child in self.node])
         
         def has_key(self, key):
-            for child in iter_children(self.node, xml.dom.Node.ELEMENT_NODE):
-                if (child.hasAttribute("ID") and 
-                    child.getAttribute("ID") == key):
+            for child in self.node:
+                if child.get("ID") == key:
                     return True
             return False
         
@@ -745,20 +707,17 @@ class OMEXML(object):
             
             returns the ID for the structured annotation.
             '''
-            dom = get_dom(self.node)
-            xml_annotation = dom.createElementNS(NS_SA, "XMLAnnotation")
-            self.node.appendChild(xml_annotation)
+            xml_annotation = ElementTree.SubElement(
+                self.node, qn(NS_SA, "XMLAnnotation"))
             node_id = str(uuid.uuid4())
-            xml_annotation.setAttribute("ID", node_id)
-            xa_value = dom.createElementNS(NS_SA, "Value")
-            xml_annotation.appendChild(xa_value)
-            ov = dom.createElementNS(NS_ORIGINAL_METADATA, "OriginalMetadata")
-            xa_value.appendChild(ov)
-            ov_key = dom.createElementNS(NS_ORIGINAL_METADATA, "Key")
-            ov.appendChild(ov_key)
+            xml_annotation.set("ID", node_id)
+            xa_value = ElementTree.SubElement(xml_annotation, qn(NS_SA, "Value"))
+            ov = ElementTree.SubElement(
+                xa_value, qn(NS_ORIGINAL_METADATA, "OriginalMetadata"))
+            ov_key = ElementTree.SubElement(ov, qn(NS_ORIGINAL_METADATA, "Key"))
             set_text(ov_key, key)
-            ov_value = dom.createElementNS(NS_ORIGINAL_METADATA, "Value")
-            ov.appendChild(ov_value)
+            ov_value = ElementTree.SubElement(
+                ov, qn(NS_ORIGINAL_METADATA, "Value"))
             set_text(ov_value, value)
             return node_id
 
@@ -788,20 +747,19 @@ class OMEXML(object):
             #    </XMLAnnotation>
             # </StructuredAnnotations>
             #
-            for annotation_node in self.node.getElementsByTagNameNS(
-                NS_SA, "XMLAnnotation"): # <XMLAnnotation/>
-                annotation_id = annotation_node.getAttribute("ID")
-                for xa_value_node in annotation_node.getElementsByTagNameNS(
-                    NS_SA, "Value"):     # <Value/>
-                    for om_node in xa_value_node.getElementsByTagNameNS(
-                        NS_ORIGINAL_METADATA, "OriginalMetadata"): # <OriginalMetadata>
-                        key_nodes = om_node.getElementsByTagNameNS(
-                            NS_ORIGINAL_METADATA, "Key")
-                        value_nodes = om_node.getElementsByTagNameNS(
-                            NS_ORIGINAL_METADATA, "Value")
-                        if len(key_nodes) > 0 and len(value_nodes) > 0:
-                            key_text = get_text(key_nodes[0])
-                            value_text = get_text(value_nodes[0])
+            for annotation_node in self.node.findall(qn(NS_SA, "XMLAnnotation")):
+                # <XMLAnnotation/>
+                annotation_id = annotation_node.get("ID")
+                for xa_value_node in annotation_node.findall(qn(NS_SA, "Value")):
+                    # <Value/>
+                    for om_node in xa_value_node.findall(
+                        qn(NS_ORIGINAL_METADATA, "OriginalMetadata")):
+                        # <OriginalMetadata>
+                        key_node = om_node.find(qn(NS_ORIGINAL_METADATA, "Key"))
+                        value_node = om_node.find(qn(NS_ORIGINAL_METADATA, "Value"))
+                        if key_node is not None and value_node is not None:
+                            key_text = get_text(key_node)
+                            value_text = get_text(value_node)
                             if key_text is not None and value_text is not None:
                                 yield annotation_id, (key_text, value_text)
                             else:
@@ -886,21 +844,21 @@ class OMEXML(object):
             self.root = root
             
         def __getitem__(self, key):
-            plates = self.root.getElementsByTagNameNS(NS_SPW, "Plate")
+            plates = self.root.findall(qn(NS_SPW, "Plate"))
             if isinstance(key, slice):
                 return [OMEXML.Plate(plate) for plate in plates[key]]
             return OMEXML.Plate(plates[key])
         
         def __len__(self):
-            return len(self.root.getElementsByTagNameNS(NS_SPW, "Plate"))
+            return len(self.root.findall(qn(NS_SPW, "Plate")))
         
         def __iter__(self):
-            for plate in self.root.getElementsByTagNameNS(NS_SPW, "Plate"):
+            for plate in self.root.iterfind(qn(NS_SPW, "Plate")):
                 yield OMEXML.Plate(plate)
                 
         def newPlate(self, name, plate_id = str(uuid.uuid4())):
-            new_plate_node = get_dom(self.root).createElementNS(NS_SPW, "Plate")
-            self.root.appendChild(new_plate_node)
+            new_plate_node = ElementTree.SubElement(
+                self.root, qn(NS_SPW, "Plate"))
             new_plate = OMEXML.Plate(new_plate_node)
             new_plate.ID = plate_id
             new_plate.Name = name
@@ -916,93 +874,92 @@ class OMEXML(object):
             self.node = node
             
         def get_ID(self):
-            return self.node.getAttribute("ID")
+            return self.node.get("ID")
         
         def set_ID(self, value):
-            self.node.setAttribute("ID", value)
+            self.node.set("ID", value)
             
         ID = property(get_ID, set_ID)
         
         def get_Name(self):
-            return self.node.getAttribute("Name")
+            return self.node.get("Name")
         
         def set_Name(self, value):
-            self.node.setAttribute("Name", value)
+            self.node.set("Name", value)
             
         Name = property(get_Name, set_Name)
         
         def get_Status(self):
-            return self.node.getAttribute("Status")
+            return self.node.get("Status")
         
         def set_Status(self, value):
-            self.node.setAttribute("Status", value)
+            self.node.set("Status", value)
             
         Status = property(get_Status, set_Status)
         
         def get_ExternalIdentifier(self):
-            return self.node.getAttribute("ExternalIdentifier")
+            return self.node.get("ExternalIdentifier")
         
         def set_ExternalIdentifier(self, value):
-            return self.node.setAttribute("ExternalIdentifier", value)
+            return self.node.set("ExternalIdentifier", value)
         
         ExternalIdentifier = property(get_ExternalIdentifier, set_ExternalIdentifier)
         
         def get_ColumnNamingConvention(self):
             # Consider a default if not defined of NC_NUMBER
-            return self.node.getAttribute("ColumnNamingConvention")
+            return self.node.get("ColumnNamingConvention")
         
         def set_ColumnNamingConvention(self, value):
             assert value in (NC_LETTER, NC_NUMBER)
-            self.node.setAttribute("ColumnNamingConvention", value)
+            self.node.set("ColumnNamingConvention", value)
         ColumnNamingConvention = property(get_ColumnNamingConvention, 
                                           set_ColumnNamingConvention)
             
         def get_RowNamingConvention(self):
             # Consider a default if not defined of NC_LETTER
-            return self.node.getAttribute("RowNamingConvention")
+            return self.node.get("RowNamingConvention")
         
         def set_RowNamingConvention(self, value):
             assert value in (NC_LETTER, NC_NUMBER)
-            self.node.setAttribute("RowNamingConvention", value)
+            self.node.set("RowNamingConvention", value)
         RowNamingConvention = property(get_RowNamingConvention,
                                        set_RowNamingConvention)
         
         def get_WellOriginX(self):
-            return (float(self.node.getAttribute("WellOriginX")) 
-                    if self.node.hasAttribute("WellOriginX") else None)
+            return get_float_attr(self.node, "WellOriginX")
         
         def set_WellOriginX(self, value):
-            self.node.setAttribute("WellOriginX", str(value))
+            self.node.set("WellOriginX", str(value))
         WellOriginX = property(get_WellOriginX, set_WellOriginX)
         
         def get_WellOriginY(self):
-            return (float(self.node.getAttribute("WellOriginY")) 
-                    if self.node.hasAttribute("WellOriginY") else None)
+            return get_float_attr(self.node, "WellOriginY")
         
         def set_WellOriginY(self, value):
-            self.node.setAttribute("WellOriginY", str(value))
+            self.node.set("WellOriginY", str(value))
         WellOriginY = property(get_WellOriginY, set_WellOriginY)
         
         def get_Rows(self):
-            return (int(self.node.getAttribute("Rows"))
-                    if self.node.hasAttribute("Rows") else None)
+            return get_int_attr(self.node, "Rows")
         
         def set_Rows(self, value):
-            self.node.setAttribute("Rows", str(value))
+            self.node.set("Rows", str(value))
+            
         Rows = property(get_Rows, set_Rows)
         
         def get_Columns(self):
-            return (int(self.node.getAttribute("Columns"))
-                    if self.node.hasAttribute("Columns") else None)
+            return get_int_attr(self.node, "Columns")
+        
         def set_Columns(self, value):
-            self.node.setAttribute("Columns", str(value))
+            self.node.set("Columns", str(value))
+            
         Columns = property(get_Columns, set_Columns)
         
         def get_Description(self):
-            descriptions = self.node.getElementByTagNameNS(NS_SPW, "Description")
-            if len(descriptions) == 0:
+            description = self.node.find(qn(NS_SPW, "Description"))
+            if description is None:
                 return None
-            return get_text(descriptions[0])
+            return get_text(description)
         
         def set_Description(self, text):
             make_text_node(self.node, NS_SPW, "Description", test)
@@ -1043,10 +1000,10 @@ class OMEXML(object):
             self.plate = plate
             
         def __len__(self):
-            return len(self.plate_node.getElementsByTagNameNS(NS_SPW, "Well"))
+            return len(self.plate_node.findall(qn(NS_SPW, "Well")))
         
         def __getitem__(self, key):
-            all_wells = self.plate_node.getElementsByTagNameNS(NS_SPW, "Well")
+            all_wells = self.plate_node.findall(qn(NS_SPW, "Well"))
             if isinstance(key, slice):
                 return [OMEXML.Well(w) for w in all_wells[key]]
             if hasattr(key, "__len__") and len(key) == 2:
@@ -1072,7 +1029,7 @@ class OMEXML(object):
             for instance, 'B03' for a well with Row=1, Column=2 for a plate
             with the standard row and column naming convention
             '''
-            all_wells = self.plate_node.getElementsByTagNameNS(NS_SPW, "Well")
+            all_wells = self.plate_node.findall(qn(NS_SPW, "Well"))
             well = OMEXML.Well(None)
             for w in all_wells:
                 well.node = w
@@ -1085,9 +1042,8 @@ class OMEXML(object):
             column - index of well's column
             well_id - the ID attribute for the well
             '''
-            dom = get_dom(self.plate_node)
-            well_node = dom.createElementNS(NS_SPW, "Well")
-            self.plate_node.appendChild(well_node)
+            well_node = ElementTree.SubElement(
+                self.plate_node, qn(NS_SPW, "Well"))
             well = OMEXML.Well(well_node)
             well.Row = row
             well.Column = column
@@ -1099,21 +1055,21 @@ class OMEXML(object):
             self.node = node
             
         def get_Column(self):
-            return int(self.node.getAttribute("Column"))
+            return get_int_attr(self.node, "Column")
         def set_Column(self, value):
-            self.node.setAttribute("Column", str(value))
+            self.node.set("Column", str(value))
         Column = property(get_Column, set_Column)
         
         def get_Row(self):
-            return int(self.node.getAttribute("Row"))
+            return get_int_attr(self.node, "Row")
         def set_Row(self, value):
-            self.node.setAttribute("Row", str(value))
+            self.node.set("Row", str(value))
         Row = property(get_Row, set_Row)
         
         def get_ID(self):
-            return self.node.getAttribute("ID")
+            return self.node.get("ID")
         def set_ID(self, value):
-            self.node.setAttribute("ID", value)
+            self.node.set("ID", value)
         ID = property(get_ID, set_ID)
         
         def get_Sample(self):
@@ -1121,26 +1077,26 @@ class OMEXML(object):
         Sample = property(get_Sample)
         
         def get_ExternalDescription(self):
-            return self.node.getAttribute("ExternalDescription")
+            return self.node.get("ExternalDescription")
         
         def set_ExternalDescription(self, value):
-            return self.node.setAttribute("ExternalDescription", value)
+            return self.node.set("ExternalDescription", value)
         
         ExternalDescription = property(get_ExternalDescription, set_ExternalDescription)
         
         def get_ExternalIdentifier(self):
-            return self.node.getAttribute("ExternalIdentifier")
+            return self.node.get("ExternalIdentifier")
         
         def set_ExternalIdentifier(self, value):
-            return self.node.setAttribute("ExternalIdentifier", value)
+            return self.node.set("ExternalIdentifier", value)
         
         ExternalIdentifier = property(get_ExternalIdentifier, set_ExternalIdentifier)
         
         def get_Color(self):
-            return int(self.node.getAttribute("Color"))
+            return int(self.node.get("Color"))
         
         def set_Color(self, value):
-            self.node.setAttribute("Color", str(value))
+            self.node.set("Color", str(value))
         
     class WellSampleDucktype(list):
         '''The WellSample elements in a well
@@ -1153,10 +1109,10 @@ class OMEXML(object):
             self.well_node = well_node
             
         def __len__(self):
-            return len(self.well_node.getElementsByTagNameNS(NS_SPW, "WellSample"))
+            return len(self.well_node.findall(qn(NS_SPW, "WellSample")))
         
         def __getitem__(self, key):
-            all_samples = self.well_node.getElementsByTagNameNS(NS_SPW, "WellSample")
+            all_samples = self.well_node.findall(qn(NS_SPW, "WellSample"))
             if isinstance(key, slice):
                 return [OMEXML.WellSample(s) 
                         for s in all_samples[key]]
@@ -1164,7 +1120,7 @@ class OMEXML(object):
         
         def __iter__(self):
             '''Iterate through the well samples.'''
-            all_samples = self.well_node.getElementsByTagNameNS(NS_SPW, "WellSample")
+            all_samples = self.well_node.findall(qn(NS_SPW, "WellSample"))
             for s in all_samples:
                 yield OMEXML.WellSample(s)
                 
@@ -1173,8 +1129,8 @@ class OMEXML(object):
             '''
             if index is None:
                 index = reduce(max, [s.Index for s in self], -1) + 1
-            new_node = get_dom(self.well_node).createElementNS(NS_SPW, "WellSample")
-            self.well_node.appendChild(new_node)
+            new_node = ElementTree.SubElement(
+                self.well_node, qn(NS_SPW, "WellSample"))
             s = OMEXML.WellSample(new_node)
             s.ID = wellsample_id
             s.Index = index
@@ -1185,65 +1141,53 @@ class OMEXML(object):
             self.node = node
             
         def get_ID(self):
-            return self.node.getAttribute("ID")
+            return self.node.get("ID")
         def set_ID(self, value):
-            self.node.setAttribute("ID", value)
+            self.node.set("ID", value)
         ID = property(get_ID, set_ID)
 
         def get_PositionX(self):
-            try:
-                return float(self.node.getAttribute("PositionX"))
-            except:
-                return None
-            
+            return get_float_attr(self.node, "PositionX")
         def set_PositionX(self, value):
-            self.node.setAttribute("PositionX", str(value))
+            self.node.set("PositionX", str(value))
         PositionX = property(get_PositionX, set_PositionX)
         
         def get_PositionY(self):
-            try:
-                return float(self.node.getAttribute("PositionY"))
-            except:
-                return None
-            
+            return get_float_attr(self.node, "PositionY")
+
         def set_PositionY(self, value):
-            self.node.setAttribute("PositionY", str(value))
+            self.node.set("PositionY", str(value))
         PositionY = property(get_PositionY, set_PositionY)
         
         def get_Timepoint(self):
-            return self.node.getAttribute("Timepoint")
+            return self.node.get("Timepoint")
         
         def set_Timepoint(self, value):
             if isinstance(value, datetime.datetime):
                 value = value.isoformat()
-            self.node.setAttribute("Timepoint", value)
+            self.node.set("Timepoint", value)
         Timepoint = property(get_Timepoint, set_Timepoint)
         
         def get_Index(self):
-            try:
-                return int(self.node.getAttribute("Index"))
-            except:
-                return None
+            return get_int_attr(self.node, "Index")
+
         def set_Index(self, value):
-            self.node.setAttribute("Index", str(value))
+            self.node.set("Index", str(value))
             
         Index = property(get_Index, set_Index)
         
         def get_ImageRef(self):
             '''Get the ID of the image of this site'''
-            refs = self.node.getElementsByTagNameNS(NS_SPW, "ImageRef")
-            if len(refs) == 0:
+            ref = self.node.find(qn(NS_SPW, "ImageRef"))
+            if ref is None:
                 return None
-            return refs[0].getAttribute("ID")
+            return ref.get("ID")
         
         def set_ImageRef(self, value):
             '''Add a reference to the image of this site'''
-            refs = self.node.getElementsByTagNameNS(NS_SPW, "ImageRef")
-            if len(refs) == 0:
-                ref = get_dom(self.node).createElementNS(NS_SPW, "ImageRef")
-                self.node.appendChild(ref)
-            else:
-                ref = refs[0]
-            ref.setAttribute("ID", value)
+            ref = self.node.find(qn(NS_SPW, "ImageRef"))
+            if ref is None:
+                ref = ElementTree.SubElement(self.node, qn(NS_SPW, "ImageRef"))
+            ref.set("ID", value)
         ImageRef = property(get_ImageRef, set_ImageRef)
         

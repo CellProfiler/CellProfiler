@@ -2492,7 +2492,7 @@ class FileCollectionDisplay(Setting):
                     subtree = tree[mod[0]]
                 else:
                     subtree = tree[mod[0]] = {}
-                    subtree[None] = True
+                subtree[None] = True
                 self.add_subtree(mod[1], subtree)
                 
     def on_remove(self, mods):

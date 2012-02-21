@@ -2595,7 +2595,7 @@ class FileCollectionDisplayController(object):
         elif self.modpath_to_item.has_key(parent_key):
             parent_item = self.modpath_to_item[parent_key]
         else:
-            parent_item = self.add_item(self, parent_key)
+            parent_item = self.add_item(parent_key)
         item = self.tree_ctrl.AppendItem(parent_item, text)
         self.tree_ctrl.SetPyData(item, modpath[-1])
         self.modpath_to_item[modpath] = item
@@ -2701,7 +2701,7 @@ class FileCollectionDisplayController(object):
             self.on_stop_received()
             self.status_text.Label = "Idle..."
             return
-        if modpath is not None:
+        if modpath is not None and len(modpath) > 0:
             #
             # Descend down the leftmost side of all of the tuples
             # to get something we can display
@@ -2709,13 +2709,18 @@ class FileCollectionDisplayController(object):
             path = []
             mp = modpath[0]
             any_others = len(modpath) > 1
+            file_tree = self.v.file_tree
+            is_filtered = False
             while True:
                 if isinstance(mp, basestring) or isinstance(mp, tuple) and len(mp) == 3:
                     path.append(mp)
+                    is_filtered = not file_tree[mp]
                     break
                 part, mp_list = mp
                 path.append(part)
+                file_tree = file_tree[part]
                 if len(mp_list) == 0:
+                    is_filtered = not file_tree[None]
                     break
                 any_others = any_others or len(mp_list) > 1
                 mp = mp_list[0]
@@ -2729,6 +2734,8 @@ class FileCollectionDisplayController(object):
                 # here.
                 #
                 if hint == cps.FileCollectionDisplay.METADATA:
+                    if (not self.v.show_filtered) and is_filtered:
+                        return
                     item_id  = self.get_item_from_modpath(path)
                     if item_id is not None:
                         text, node_type, tooltip = self.v.get_node_info(path)
@@ -2744,6 +2751,8 @@ class FileCollectionDisplayController(object):
                         self.tree_ctrl.SetItemImage(item_id, image_id)
                         return
                 elif hint == cps.FileCollectionDisplay.REMOVE:
+                    if not is_visible:
+                        return
                     self.remove_item(path)
                     return
                 

@@ -623,7 +623,7 @@ class ClassifyObjects(cpm.CPModule):
         for bin_idx, feature_name in enumerate(group.bin_feature_names()):
             measurement_name = '_'.join((M_CATEGORY, feature_name))
             measurements.add_measurement(object_name, measurement_name,
-                                         bin_hits[:,bin_idx])
+                                         bin_hits[:,bin_idx].astype(int))
             measurement_name = '_'.join((M_CATEGORY, feature_name,F_NUM_PER_BIN))
             num_hits = bin_hits[:,bin_idx].sum()
             measurements.add_measurement(cpmeas.IMAGE, measurement_name,

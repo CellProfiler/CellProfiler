@@ -216,7 +216,7 @@ class RelateObjects(cpm.CPModule):
             if self.wants_step_parent_distances:
                 for group in self.step_parent_names:
                     result += group.visible_settings()
-            result += [self.add_step_parent_button]
+                result += [self.add_step_parent_button]
         return result
 
     def run(self, workspace):

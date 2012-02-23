@@ -250,7 +250,7 @@ def connect_mysql(host, user, pw, db):
 def connect_sqlite(db_file):
     '''Creates and returns a db connection and cursor.'''
     import sqlite3 
-    connection = sqlite3.connect(db_file)
+    connection = sqlite3.connect(db_file, timeout=30)
     cursor = connection.cursor()
     return connection, cursor
 

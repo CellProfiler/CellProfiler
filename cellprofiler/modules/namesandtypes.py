@@ -132,9 +132,12 @@ class NamesAndTypes(cpm.CPModule):
         
         group.can_remove = can_remove
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
-                'Remove above rule', "Remove", 
-                self.assignments, group))
+            def do_remove():
+                self.assignments.remove(group)
+                self.update_all_columns()
+                
+            group.append("remover", cps.DoSomething(
+                'Remove above rule', "Remove", do_remove))
         if self.pipeline is not None:
             self.update_all_columns()
             

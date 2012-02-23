@@ -2102,6 +2102,8 @@ class Pipeline(object):
         def __init__(self, name, channel_type):
             self.name = name
             self.channel_type = channel_type
+            
+    LEGACY_LOAD_MODULES = ["LoadImages", "LoadData", "LoadSingleImage"]
 
     def get_image_sets(self):
         '''Return the pipeline's image sets

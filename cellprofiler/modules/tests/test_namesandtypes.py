@@ -69,6 +69,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
     Load as:Color image
     Image name:PI
     :\x5B{u\'Illum\'\x3A u\'Plate\', u\'DNA\'\x3A u\'Plate\', \'Cells\'\x3A u\'Plate\', u\'Actin\'\x3A u\'Plate\', u\'GFP\'\x3A u\'Plate\'}, {u\'Illum\'\x3A u\'Well\', u\'DNA\'\x3A u\'Well\', \'Cells\'\x3A u\'Well\', u\'Actin\'\x3A u\'Well\', u\'GFP\'\x3A u\'Well\'}, {u\'Illum\'\x3A u\'Site\', u\'DNA\'\x3A u\'Site\', \'Cells\'\x3A u\'Site\', u\'Actin\'\x3A u\'Site\', u\'GFP\'\x3A u\'Site\'}\x5D
+    Match channels by:Order
     Assignments count:5
     Match this rule:or (metadata does ChannelNumber "0")
     Image name:DNA
@@ -110,6 +111,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
         self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
         self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
         self.assertEqual(module.single_image_provider.value, "PI")
+        self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
         self.assertEqual(module.assignments_count.value, 5)
         aa = module.assignments
         for assignment, rule, image_name, objects_name, load_as in (
@@ -153,6 +155,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
     def test_01_01_one(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
+        n.matching_choice.value = N.MATCH_BY_METADATA
         n.ipd_columns = \
             [[cpp.ImagePlaneDetails("1", None, None, None, **{M0:"k1"})]]
         n.column_names = [C0]
@@ -163,7 +166,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
         self.assertEqual(len(image_set), 2)
         image_set_key, image_set_dictionary = image_set
         self.assertEqual(len(image_set_key), 1)
-        self.assertEqual(image_set_key[0], 1)
+        self.assertEqual(image_set_key[0], "1")
         self.assertEqual(len(image_set_dictionary), 1)
         self.assertTrue(image_set_dictionary.has_key(C0))
         self.assertEqual(len(image_set_dictionary[C0]), 1)
@@ -172,6 +175,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
     def test_01_02_match_one_same_key(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
+        n.matching_choice.value = N.MATCH_BY_METADATA
         n.ipd_columns = \
             [[cpp.ImagePlaneDetails("1", None, None, None, **{M0:"k1"})],
              [cpp.ImagePlaneDetails("2", None, None, None, **{M0:"k1"})]]
@@ -195,6 +199,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
     def test_01_03_match_one_different_key(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
+        n.matching_choice.value = N.MATCH_BY_METADATA
         n.ipd_columns = \
             [[cpp.ImagePlaneDetails("1", None, None, None, **{M0:"k1"})],
              [cpp.ImagePlaneDetails("2", None, None, None, **{M1:"k1"})]]
@@ -218,6 +223,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
     def test_01_04_match_two_one_key(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
+        n.matching_choice.value = N.MATCH_BY_METADATA
         n.ipd_columns = \
             [[cpp.ImagePlaneDetails("%s%d" % (C0, i), None, None, None, **m)
               for i, m in enumerate(md([(M0, 2)]))],
@@ -239,6 +245,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
     def test_01_05_match_two_and_two(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
+        n.matching_choice.value = N.MATCH_BY_METADATA
         n.ipd_columns = \
             [[cpp.ImagePlaneDetails("%s%s%s" % (C0, m[M0], m[M1]), None, None, None, **m)
               for i, m in enumerate(md([(M0, 2), (M1, 3)]))],
@@ -262,6 +269,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
     def test_01_06_two_with_same_metadata(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
+        n.matching_choice.value = N.MATCH_BY_METADATA
         n.ipd_columns = \
             [[cpp.ImagePlaneDetails("%s%s%s" % (C0, m[M0], m[M1]), None, None, None, **m)
               for i, m in enumerate(md([(M0, 2), (M1, 3)]))],
@@ -290,6 +298,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
     def test_01_07_one_against_all(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
+        n.matching_choice.value = N.MATCH_BY_METADATA
         n.ipd_columns = \
             [[cpp.ImagePlaneDetails("One", None, None, None)],
              [cpp.ImagePlaneDetails("%s%d" % (C1, i), None, None, None, **m)
@@ -308,7 +317,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
             self.assertTrue(len(image_set[C1]), 1)
             self.assertEqual(image_set[C1][0].url, "%s%d" % (C1, i))
             
-    def test_02_08_some_against_all(self):
+    def test_01_08_some_against_all(self):
         #
         # Permute both the order of the columns and the order of joins
         #
@@ -321,6 +330,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
             for j0, j1 in ((0,1),(1,0)):
                 n = N.NamesAndTypes()
                 n.assignment_method.value = N.ASSIGN_RULES
+                n.matching_choice.value = N.MATCH_BY_METADATA
                 n.ipd_columns = [columns[cA], columns[cB]]
                 n.column_names = [cA, cB]
                 n.join.build(repr([joins[j0], joins[j1]]))
@@ -341,4 +351,25 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
                     self.assertEqual(len(image_set[C1]), 1)
                     self.assertEqual(image_set[C1][0].url, "%s%s%s" % (C0, k0, k1))
                     
-                    
+    def test_01_10_by_order(self):
+        n = N.NamesAndTypes()
+        n.assignment_method.value = N.ASSIGN_RULES
+        n.matching_choice.value = N.MATCH_BY_ORDER
+        n.ipd_columns = \
+            [[cpp.ImagePlaneDetails("%s%d" % (C0, (2-i)), None, None, None, **m)
+              for i, m in enumerate(md([(M0, 2)]))],
+             [cpp.ImagePlaneDetails("%s%d" % (C1, i+1), None, None, None, **m)
+                           for i, m in enumerate(md([(M1, 2)]))]]
+        n.column_names = [C0, C1]
+        n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M1))
+        n.make_image_sets()
+        self.assertEqual(len(n.image_sets), 2)
+        for i, (image_set_keys, image_set) in enumerate(n.image_sets):
+            self.assertEqual(len(image_set_keys), 1)
+            self.assertEqual(str(i+1), image_set_keys[0])
+            for column_name in (C0, C1):
+                self.assertTrue(image_set.has_key(column_name))
+                self.assertEqual(len(image_set[column_name]), 1)
+                ipd = image_set[column_name][0]
+                self.assertEqual(ipd.url, "%s%d" % (column_name, i+1))
+        

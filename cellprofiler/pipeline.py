@@ -2735,9 +2735,11 @@ class Pipeline(object):
         for iscd in iscds:
             if iscd.channel_type == self.ImageSetChannelDescriptor.CT_OBJECTS:
                 cats = [cpmeas.C_OBJECTS_URL, cpmeas.C_OBJECTS_PATH_NAME,
-                        cpmeas.C_OBJECTS_FILE_NAME]
+                        cpmeas.C_OBJECTS_FILE_NAME, cpmeas.C_OBJECTS_SERIES,
+                        cpmeas.C_OBJECTS_FRAME, cpmeas.C_OBJECTS_CHANNEL]
             else:
-                cats = [cpmeas.C_URL, cpmeas.C_PATH_NAME, cpmeas.C_FILE_NAME]
+                cats = [cpmeas.C_URL, cpmeas.C_PATH_NAME, cpmeas.C_FILE_NAME,
+                        cpmeas.C_SERIES, cpmeas.C_FRAME, cpmeas.C_CHANNEL]
             header += [ '_'.join( [cat, iscd.name] ) for cat in cats]
         writer.writerow(header)
         
@@ -2757,14 +2759,12 @@ class Pipeline(object):
                 row = [image_set_metadata[k] for k in metadata_keys]
                 row += [str(group_number), str(group_index)]
                 for ipd in image_set:
+                    assert isinstance(ipd, ImagePlaneDetails)
                     path = ipd.path
-                    if any([path.startswith(x)
-                            for x in ("http:", "https:", "ftp:")]):
-                        url = path
-                    else:
-                        url = "file:" + urllib.pathname2url(os.path.abspath(path))
+                    url = ipd.url
                     row += [ url ]
                     row += list(os.path.split(path))
+                    row += [str(ipd.series), str(ipd.index), str(ipd.channel)]
                 writer.writerow(row)
     
 class AbstractPipelineEvent:

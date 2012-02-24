@@ -423,7 +423,35 @@ class Metadata(cpm.CPModule):
             
         while len(self.extraction_methods) < n_extraction_methods:
             self.add_extraction_method()
-        
+            
+    def get_metadata_keys(self):
+        '''Return a collection of metadata keys to be associated with files'''
+        keys = set()
+        for group in self.extraction_methods:
+            if group.extraction_method == X_MANUAL_EXTRACTION:
+                if group.source == XM_FILE_NAME:
+                    regexp = group.file_regexp
+                else:
+                    regexp = group.folder_regexp
+                keys.update(cpmeas.find_metadata_tokens(regexp.value))
+            elif group.extraction_method == X_IMPORTED_EXTRACTION:
+                # TO-DO: come up with yet another bogus cacheing strategy
+                try:
+                    with open(group.csv_location.value, "r") as fd:
+                        rdr = csv.reader(fd)
+                        header = rdr.next()
+                        keys.update(header)
+                except:
+                    logger.debug("Failed to read %s" % group.csv_location.value)
+        return list(keys)
+    
+    def get_measurement_columns(self, pipeline):
+        '''Get the metadata measurements collected by this module'''
+        return [ (cpmeas.IMAGE, 
+                  '_'.join((cpmeas.C_METADATA, key)),
+                  cpmeas.COLTYPE_VARCHAR_FILE_NAME)
+                 for key in self.get_metadata_keys()]
+    
     class ImportedMetadata(object):
         '''A holder for the metadata from a csv file'''
         def __init__(self, path):

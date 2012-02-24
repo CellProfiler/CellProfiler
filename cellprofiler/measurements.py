@@ -117,6 +117,15 @@ C_PATH_NAME = "PathName"
 '''The URL measurement category'''
 C_URL = "URL"
 
+'''The series of an image file'''
+C_SERIES = "Series"
+
+'''The frame of a movie file'''
+C_FRAME = "Frame"
+
+'''The channel # of a color image plane'''
+C_CHANNEL = "Channel"
+
 '''The FileName measurement category when loading objects'''
 C_OBJECTS_FILE_NAME = "ObjectsFileName"
 
@@ -126,6 +135,14 @@ C_OBJECTS_PATH_NAME = "ObjectsPathName"
 '''The URL category when loading objects'''
 C_OBJECTS_URL = "ObjectsURL"
 
+'''The series of an image file'''
+C_OBJECTS_SERIES = "ObjectsSeries"
+
+'''The index of an image file'''
+C_OBJECTS_FRAME = "ObjectsFrame"
+
+'''The channel # of a color image plane'''
+C_OBJECTS_CHANNEL = "ObjectsChannel"
 
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''

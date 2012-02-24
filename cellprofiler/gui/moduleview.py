@@ -2709,16 +2709,21 @@ class FileCollectionDisplayController(object):
             path = []
             mp = modpath[0]
             any_others = len(modpath) > 1
-            file_tree = self.v.file_tree
+            if hint != cps.FileCollectionDisplay.REMOVE:
+                # It's likely that the leaf was removed and it doesn't
+                # make sense to descend
+                file_tree = self.v.file_tree
             is_filtered = False
             while True:
                 if isinstance(mp, basestring) or isinstance(mp, tuple) and len(mp) == 3:
                     path.append(mp)
-                    is_filtered = not file_tree[mp]
+                    if hint != cps.FileCollectionDisplay.REMOVE:
+                        is_filtered = not file_tree[mp]
                     break
                 part, mp_list = mp
                 path.append(part)
-                file_tree = file_tree[part]
+                if hint != cps.FileCollectionDisplay.REMOVE:
+                    file_tree = file_tree[part]
                 if len(mp_list) == 0:
                     is_filtered = not file_tree[None]
                     break

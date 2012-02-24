@@ -32,8 +32,8 @@ def __get_revision_of_module(module):
 
 
 def get_revision():
-    '''The release version is 10997 - it just is'''
-    return 10997
+    '''The release version is 11710 - it just is'''
+    return 111710
 
 '''SVN revision'''
 version = get_revision()

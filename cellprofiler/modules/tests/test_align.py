@@ -34,9 +34,18 @@ import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.align as A
 
-from cellprofiler.modules.loadimages import load_using_PIL
+from subimager.client import start_subimager, stop_subimager, get_image
+from cellprofiler.modules.loadimages import pathname2url
 
 class TestAlign(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        start_subimager()
+        
+    @classmethod
+    def tearDownClass(cls):
+        stop_subimager()
+        
     def make_workspace(self, images, masks):
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
@@ -628,7 +637,7 @@ Name the second output image:AlignedImage2
         fly_file = '01_POS002_D.TIF'
         fly_dir = "ExampleFlyImages"
         path = os.path.join(example_images_directory(), fly_dir, fly_file)
-        image = load_using_PIL(path)
+        image = get_image(pathname2url(path)) / 255.0
         image = image[0:300,0:300] # make smaller so as to be faster
         workspace, module = self.make_workspace((image, image),(None,None))
         module.alignment_method.value = A.M_MUTUAL_INFORMATION

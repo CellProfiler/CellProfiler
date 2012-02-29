@@ -42,6 +42,7 @@ import cellprofiler.measurements as measurements
 import cellprofiler.pipeline as P
 import cellprofiler.workspace as W
 from cellprofiler.modules.tests import example_images_directory
+from subimager.client import start_subimager, stop_subimager
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"
@@ -49,6 +50,14 @@ OBJECTS_NAME = "objects"
 OUTLINES_NAME = "outlines"
 
 class testLoadImages(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        start_subimager()
+    
+    @classmethod
+    def tearDownClass(cls):
+        stop_subimager()
+        
     def setUp(self):
         self.directory = None
         
@@ -1186,7 +1195,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             def settings(self):
                 return []
             def run(self,workspace):
-                image = workspace.image_set.get_image('Orig')
+                image = workspace.image_set.get_image(
+                    'Orig', must_be_grayscale=True)
                 matfh.close()
                 pixel_data = image.pixel_data
                 pixel_data = (pixel_data * 255+.5).astype(np.uint8)
@@ -1300,13 +1310,17 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             "http://www.cellprofiler.org/linked_files",
             "broad-logo.gif", True)
         logo = lip.provide_image(None)
-        self.assertEqual(logo.pixel_data.shape, (38, 150, 4))
+        self.assertEqual(logo.pixel_data.shape, (38, 150, 3))
         lip.release_memory()
         
     def test_05_06_load_Nikon_tif(self):
         '''This is the Nikon format TIF file from IMG-838'''
-        nikon_path = os.path.join(T.testimages_directory(), "NikonTIF.tif")
-        image = LI.load_using_bioformats(nikon_path)
+        lip = LI.LoadImagesImageProvider(
+            "nikon", 
+            T.testimages_directory(),
+            "NikonTIF.tif",
+            True)
+        image = lip.provide_image(None).pixel_data
         self.assertEqual(tuple(image.shape), (731, 805, 3))
         self.assertAlmostEqual(np.sum(image.astype(np.float64)), 560730.83, 0)
         
@@ -1315,13 +1329,18 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         
         This file generated a null-pointer exception in the MetamorphReader
         '''
-        metamorph_path = os.path.join(
-            T.testimages_directory(), 
-            "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif")
-        image = LI.load_using_bioformats(metamorph_path)
+        lip = LI.LoadImagesImageProvider(
+            "nikon", 
+            T.testimages_directory(),
+            "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif",
+            True)
+        image = lip.provide_image(None).pixel_data
         self.assertEqual(tuple(image.shape), (520, 696))
         self.assertAlmostEqual(np.sum(image.astype(np.float64)), 2071.93, 0)
-        
+    
+    # With Subimager and the new file_ui framework, you'd load individual
+    # planes.
+    @unittest.skip
     def test_05_08_load_5channel_tif(self):
         '''Load a 5-channel image'''
         
@@ -1364,8 +1383,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
 
     def test_05_09_load_C01(self):
         """IMG-457: Test loading of a .c01 file"""
-        c01_path = os.path.join(T.testimages_directory(), "icd002235_090127090001_a01f00d1.c01")
-        image = LI.load_using_bioformats(c01_path)
+        lip = LI.LoadImagesImageProvider(
+            "nikon", 
+            T.testimages_directory(),
+            "icd002235_090127090001_a01f00d1.c01",
+            True)
+        image = lip.provide_image(None).pixel_data
         self.assertEqual(tuple(image.shape), (512,512))
         m = hashlib.md5()
         m.update((image * 65535).astype(np.uint16))
@@ -3048,7 +3071,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         image_set = image_set_list.get_image_set(0)
         module.run(W.Workspace(pipeline, module, image_set,
                                cpo.ObjectSet(), m, image_set_list))
-        image = image_set.get_image(IMAGE_NAME)
+        image = image_set.get_image(IMAGE_NAME, must_be_grayscale=True)
         self.assertEqual(tuple(image.pixel_data.shape), (1006, 1000))
 
     def test_16_02_load_url_with_groups(self):

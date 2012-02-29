@@ -297,6 +297,8 @@ class OMEXML(object):
     http://git.openmicroscopy.org/src/develop/components/specification/Documentation/Generated/OME-2011-06/ome.html
     '''
     def __init__(self, xml=default_xml):
+        if isinstance(xml, unicode):
+            xml = xml.encode("utf-8")
         self.dom = ElementTree.ElementTree(ElementTree.fromstring(xml))
         
     def __str__(self):

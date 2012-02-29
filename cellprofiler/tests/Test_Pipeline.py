@@ -974,8 +974,8 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
               '"bar","4",,"6",,"P-67890"',
               '"baz","7","8",,"A03",'],
              (("foo", 1, 2, None, {"Well":"A01", "Plate":"P-12345"}),
-              ("bar", 4, None, 6, {"Well":None, "Plate":"P-67890"}),
-              ("baz", 7, 8, None, {"Well":"A03", "Plate":None}))),
+              ("bar", 4, None, 6, {"Plate":"P-67890"}),
+              ("baz", 7, 8, None, {"Well":"A03"}))),
             ([],
              ['"\\xce\\xb1\\xce\\xb2","1","2","3"'],
              [(u"\u03b1\u03b2", 1,2,3,{})]),
@@ -1005,7 +1005,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
              cpp.ImagePlaneDetails("bar", 1, None, 3),
              cpp.ImagePlaneDetails("baz", None, 2, 3)),
             (cpp.ImagePlaneDetails("foo", 1, 2, 3, Well="A01", Plate="P-12345"),),
-            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Well=None, Plate="P-12345"),),
+            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Plate="P-12345"),),
             (cpp.ImagePlaneDetails("\u03b1\u03b2", 1, 2, 3),),
             (cpp.ImagePlaneDetails("foo", 1, 2, 3, Treatment="TNF-\u03b1"),),
             (cpp.ImagePlaneDetails('\\"', 1, 2, 3),),
@@ -1027,9 +1027,12 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 self.assertEqual(rr.index, tt.index)
                 self.assertEqual(rr.channel, tt.channel)
                 for k in metadata_columns:
-                    self.assertTrue(rr.metadata.has_key(k))
+                    self.assertTrue(rr.metadata.has_key(k) or 
+                                    (not tt.metadata.has_key(k)) or
+                                    tt.metadata[k] is None)
                     if (not tt.metadata.has_key(k)) or tt.metadata[k] is None:
-                        self.assertIsNone(rr.metadata[k])
+                        self.assertTrue((not rr.metadata.has_key(k)) or
+                                        rr.metadata[k] is None)
                     else:
                         self.assertEqual(rr.metadata[k], tt.metadata[k])
         

@@ -42,6 +42,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.modules.createbatchfiles as cpm_c
 from cellprofiler.cpmath.filter import stretch
 from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
+from subimager.client import start_subimager, stop_subimager, get_image
 
 import cellprofiler.modules.tests as cpmt
 IMAGE_NAME = 'inputimage'
@@ -59,6 +60,14 @@ BIOFORMATS_CANT_WRITE = (bioformats_revision == '6181' and sys.platform=='darwin
 
 
 class TestSaveImages(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        start_subimager()
+        
+    @classmethod
+    def tearDownClass(cls):
+        stop_subimager()
+        
     def setUp(self):
         # Change the default image directory to a temporary file
         cpprefs.set_headless()
@@ -1324,7 +1333,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "%sC08.%s" %(FILE_NAME, cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = get_image(cpm_li.pathname2url(filename))
         pixel_data = pixel_data.astype(float) / 255.0
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(image - pixel_data) < .02))
@@ -1346,7 +1355,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "metadatatestC08.%s" %(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = get_image(cpm_li.pathname2url(filename))
         pixel_data = pixel_data.astype(float) / 255.0
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(image - pixel_data) < .02))
@@ -1369,7 +1378,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "foo.%s"%(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = get_image(cpm_li.pathname2url(filename))
         pixel_data = pixel_data.astype(float) / 255.0
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
@@ -1394,7 +1403,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "foo.%s"%(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = get_image(cpm_li.pathname2url(filename))
         pixel_data = pixel_data.astype(float) / 255.0
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
@@ -1416,7 +1425,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "foo.%s"%(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = get_image(cpm_li.pathname2url(filename))
         pixel_data = pixel_data.astype(float) / 255.0
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
@@ -1492,7 +1501,8 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         frames = self.run_movie()
         for i, frame in enumerate(frames):
             path = os.path.join(self.custom_directory, FILE_NAME + ".avi")
-            frame_out = cpm_li.load_using_bioformats(path, t=i)
+            frame_out = get_image(cpm_li.pathname2url(path), index=i, channel=0)
+            frame_out /= 255.0
             self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
             
     def test_05_02_save_two_movies(self):
@@ -1513,7 +1523,8 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
             self.assertTrue(os.path.exists(path))
             for t,image_number in enumerate(group[1]):
                 frame = frames[image_number-1]
-                frame_out = cpm_li.load_using_bioformats(path, t=t)
+                frame_out = get_image(cpm_li.pathname2url(path), index=t, channel=0)
+                frame_out /= 255.0
                 self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
                 
     def test_05_03_save_color_movie(self):
@@ -1525,13 +1536,10 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         frames = self.run_movie(color=True)
         for i, frame in enumerate(frames):
             path = os.path.join(self.custom_directory, FILE_NAME + ".avi")
-            frame_out = cpm_li.load_using_bioformats(path, t=i)
+            frame_out = get_image(cpm_li.pathname2url(path), index=i) / 255.0
             self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
                 
     def test_06_01_save_image_with_bioformats(self):
-        if BIOFORMATS_CANT_WRITE:
-            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
-            return
         np.random.seed(61)
         image8 = (np.random.uniform(size=(100,100))*255).astype(np.uint8)
         image16 = (np.random.uniform(size=(100,100))*65535).astype(np.uint16)
@@ -1612,8 +1620,12 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
             filename = module.get_filename(workspace,
                                            make_dirs = False,
                                            check_overwrite = False)
-            im = cpm_li.load_using_bioformats(filename)
-            self.assertTrue(np.all(np.abs(im*65535 - expected) <= 1))
+            if expected.ndim == 2:
+                expected = expected.reshape(expected.shape[0], 
+                                            expected.shape[1], 1)
+            for index in range(expected.shape[2]):
+                im = get_image(cpm_li.pathname2url(filename), index=index)
+                self.assertTrue(np.all(np.abs(im - expected[:,:,index]) <= 1))
             if os.path.isfile(filename):
                 try:
                     os.remove(filename)
@@ -1621,6 +1633,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
                     sys.stderr.write("Not ideal, Bioformats still holding onto file handle.\n")
                     traceback.print_exc()
 
+    @unittest.skip
     def test_06_02_save_image_with_libtiff(self):
         try:
             import libtiff
@@ -1689,18 +1702,22 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
 
             if setting['rescale']:
                 expected = stretch(expected)                
-            im = cpm_li.load_using_bioformats(filename)
-            
-            self.assertTrue (np.allclose(im, expected, atol=.001), 
-                    'Saved image did not match original when reloaded.\n'
-                    'Settings were: \n'
-                    '%s\n'
-                    'Original: \n'
-                    '%s\n'
-                    'Expected: \n'
-                    '%s\n'
-                    %(setting, im[:,0], expected[:,0]))
-            
+            if expected.ndim == 2:
+                expected = expected.reshape(expected.shape[0], 
+                                            expected.shape[1], 1)
+            for index in range(expected.shape[2]):
+                im = get_image(cpm_li.pathname2url(filename), index=index)
+        
+                self.assertTrue (np.allclose(im, expected[:, :, index], atol=.001), 
+                        'Saved image did not match original when reloaded.\n'
+                        'Settings were: \n'
+                        '%s\n'
+                        'Original: \n'
+                        '%s\n'
+                        'Expected: \n'
+                        '%s\n'
+                        %(setting, im[:,0], expected[:,0, index]))
+                
     def test_07_01_save_objects_grayscale8_tiff(self):
         if BIOFORMATS_CANT_WRITE:
             print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
@@ -1734,8 +1751,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        image = PILImage.open(filename)
-        im = cpm_li.load_using_bioformats(filename, rescale=False)
+        im = get_image(cpm_li.pathname2url(filename))
         self.assertTrue(np.all(labels == im))
         
     def test_07_02_save_objects_grayscale_16_tiff(self):
@@ -1771,8 +1787,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        image = PILImage.open(filename)
-        im = cpm_li.load_using_bioformats(filename, rescale=False)
+        im = get_image(cpm_li.pathname2url(filename))
         self.assertTrue(np.all(labels == im))
         
     def test_07_03_save_objects_grayscale_png(self):
@@ -1800,8 +1815,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        image = PILImage.open(filename)
-        im = cpm_li.load_using_bioformats(filename, rescale=False)
+        im = get_image(cpm_li.pathname2url(filename))
         self.assertTrue(np.all(labels == im))
         
     def test_07_04_save_objects_color_png(self):
@@ -1829,7 +1843,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        im = cpm_li.load_using_bioformats(filename)
+        im = get_image(cpm_li.pathname2url(filename))
         im.shape = (im.shape[0] * im.shape[1], im.shape[2])
         order = np.lexsort(im.transpose())
         different = np.hstack(([False], np.any(im[order[:-1],:] != im[order[1:],:], 1)))

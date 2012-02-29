@@ -35,6 +35,8 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 
+from subimager.client import start_subimager, stop_subimager
+
 import cellprofiler.modules.loadsingleimage as L
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.tests import example_images_directory
@@ -43,6 +45,14 @@ OBJECTS_NAME = "myobjects"
 OUTLINES_NAME = "myoutlines"
 
 class TestLoadSingleImage(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        start_subimager()
+        
+    @classmethod
+    def tearDownClass(cls):
+        stop_subimager()
+        
     def test_01_00_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUggpTVXwTSxSMDRTMDSxMjW3MrJQMDIwNFAgGTAwevryMzAwrGZk'

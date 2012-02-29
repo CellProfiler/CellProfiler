@@ -66,6 +66,7 @@ import scipy.io.matlab.mio
 import uuid
 
 import subimager.client
+import subimager.omexml
 import cellprofiler.objects as cpo
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
@@ -73,6 +74,7 @@ import cellprofiler.measurements as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
+import cellprofiler.cpmath.outline
 import identify as I
 from cellprofiler.utilities.relpath import relpath
 from cellprofiler.preferences import \
@@ -1765,20 +1767,20 @@ class LoadImages(cpmodule.CPModule):
                 metadata = self.get_filename_metadata(image_settings, filename, 
                                                       file_pathname)
                 image_set_count = starting_image_index
-                rdr = ImageReader()
-                rdr.setGroupFiles(False)
-                rdr.setId(pathname)
+                xml = subimager.client.get_metadata(url)
+                omemetadata = subimager.omexml.OMEXML(xml)
+                image_count = omemetadata.image_count
                 if len(d) == 0:
-                    d = [ {} for _ in range(rdr.getSeriesCount())]
-                elif len(d) != rdr.getSeriesCount():
+                    d = [ {} for _ in range(image_count)]
+                elif len(d) != image_count:
                     raise RuntimeError(("File %s has %d series, "
                                         "but file %s has %d series.") %
                                        (image_set_files[0], len(d),
-                                        file_pathname, rdr.getSeriesCount()))
-                for i in range(rdr.getSeriesCount()):
-                    rdr.setSeries(i)
-                    channel_count = rdr.getSizeC()
-                    stack_count = rdr.getSizeZ()
+                                        file_pathname, image_count))
+                for i in range(image_count):
+                    pixels = omemetadata.image(i).Pixels
+                    channel_count = pixels.SizeC
+                    stack_count = pixels.SizeZ
                     if not d[i].has_key("Z"):
                         d[i]["Z"] = stack_count
                     elif stack_count != d[i]["Z"]:
@@ -1787,7 +1789,7 @@ class LoadImages(cpmodule.CPModule):
                                            (image_set_files[0], i,
                                             d[i]["Z"], file_pathname,
                                             stack_count))
-                    timepoint_count = rdr.getSizeT()
+                    timepoint_count = pixels.SizeT
                     if not d[i].has_key("T"):
                         d[i]["T"] = timepoint_count
                     elif timepoint_count != d[i]["T"]:
@@ -1874,8 +1876,19 @@ class LoadImages(cpmodule.CPModule):
                                     image_set_number = image_number)
                             image_set_count += 1
                     else:
-                        for z in range(rdr.getSizeZ()):
-                            for t in range(rdr.getSizeT()):
+                        distance = 1
+                        for dimension in pixels.DimensionOrder[2:]:
+                            if dimension == "C":
+                                strideC = distance
+                                distance *= pixels.SizeC
+                            elif dimension == "Z":
+                                strideZ = distance
+                                distance *= pixels.SizeZ
+                            elif dimension == "T":
+                                strideT = distance
+                                distance *= pixels.SizeT
+                        for z in range(pixels.SizeZ):
+                            for t in range(pixels.SizeT):
                                 frame_metadata = metadata.copy()
                                 frame_metadata[M_Z] = z
                                 frame_metadata[M_T] = t
@@ -1901,6 +1914,7 @@ class LoadImages(cpmodule.CPModule):
                                               image_name, c+1)
                                         self.report_no_matching_files(frame, message)
                                         return False
+                                    index = c * strideC + t * strideT + z * strideZ
                                     m.add_measurement(
                                         cpmeas.IMAGE,
                                         "_".join((C_FILE_NAME, image_name)), 
@@ -1923,7 +1937,7 @@ class LoadImages(cpmodule.CPModule):
                                     m.add_measurement(
                                         cpmeas.IMAGE,
                                         "_".join((C_FRAME, image_name)), 
-                                        rdr.getIndex(z, c, t),
+                                        index,
                                         image_set_number = image_number)
                                 for k in frame_metadata.keys():
                                     m.add_measurement(
@@ -1933,8 +1947,6 @@ class LoadImages(cpmodule.CPModule):
                                         image_set_number = image_number)
                                 image_set_count += 1
                                 
-                rdr.close()
-                del rdr
         return True
 
     def report_no_matching_files(self, frame, message = None):
@@ -2314,23 +2326,17 @@ class LoadImages(cpmodule.CPModule):
     def get_frame_count(self, pathname):
         """Return the # of frames in a movie"""
         if self.file_types in (FF_AVI_MOVIES,FF_OTHER_MOVIES,FF_STK_MOVIES):
-            formatreader.jutil.attach()
-            try:
-                rdr = ImageReader()
-                rdr.setGroupFiles(False)
-                rdr.setId(pathname)
-                if self.file_types == FF_STK_MOVIES:
-                    #
-                    # We've seen the frame count in both of these...
-                    #
-                    frame_count = rdr.getSizeT()
-                    if frame_count == 1:
-                        frame_count = rdr.getSizeZ()
-                    return frame_count
-                else:
-                    return rdr.getSizeT()
-            finally:
-                formatreader.jutil.detach()
+            url = pathname2url(pathname)
+            if needs_allowopenfiles(pathname):
+                xml = subimager.client.get_metadata(
+                    url, allowopenfiles="yes")
+            else:
+                xml = subimager.client.get_metadata(url)
+            omexml = subimager.omexml.OMEXML(xml)
+            frame_count = omexml.image(0).Pixels.SizeT
+            if frame_count == 1:
+                frame_count = omexml.image(0).Pixels.SizeZ
+            return frame_count
             
         raise NotImplementedError("get_frame_count not implemented for %s"%(self.file_types))
 
@@ -2802,6 +2808,19 @@ def is_movie(filename):
     ext = os.path.splitext(filename)[1].lower()
     return ext in SUPPORTED_MOVIE_EXTENSIONS
 
+def needs_allowopenfiles(pathname):
+    '''Some extensions need to allow bioformats to open files
+    
+    Sometimes Bio-formats needs to open a file to figure out which reader
+    should be used to read that file. We try to limit the cases because this
+    can take a long time since each reader will look at the file data.
+    
+    pathname - path to file
+    
+    returns true if we need to allow Bio-formats to open files.
+    '''
+    return any([pathname.lower().endswith(x)
+                for x in (".stk",)])
 
 class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
     '''Base for image providers: handle pathname and filename & URLs'''
@@ -2893,9 +2912,13 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
     """Provide an image by filename, loading the file as it is requested
     """
-    def __init__(self, name, pathname, filename, rescale=True):
+    def __init__(self, name, pathname, filename, rescale=True, 
+                 series = None, index = None, channel = None):
         super(LoadImagesImageProvider, self).__init__(name, pathname, filename)
         self.rescale = rescale
+        self.series = series
+        self.index = index
+        self.channel = channel
     
     def provide_image(self, image_set):
         """Load an image from a pathname
@@ -2908,13 +2931,59 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
                                                   struct_as_record=True)
             img = imgdata["Image"]
             self.scale = 255.0
+            pixel_type_scale = 255.0
         else:
-            url = "file:" + urllib.pathname2url(self.get_full_name())
-            img = subimager.client.get_image(url).astype(float)
-            self.scale = 65535.
-            
+            url = pathname2url(self.get_full_name())
+            properties = {}
+            mproperties = {}
+            if self.series is not None:
+                properties["series"] = str(self.series)
+            if self.index is not None:
+                properties["index"] = str(self.index)
+            if self.channel is not None:
+                properties["channel"] = str(self.channel)
+            if needs_allowopenfiles(url):
+                properties["allowopenfiles"] = "yes"
+                mproperties["allowopenfiles"] = "yes"
+            img = subimager.client.get_image(url, **properties).astype(float)
+            metadata = subimager.client.get_metadata(url, **mproperties)
+            ometadata = subimager.omexml.OMEXML(metadata)
+            sa = ometadata.structured_annotations
+            max_sample_value = sa.get_original_metadata_value(
+                subimager.omexml.OM_MAX_SAMPLE_VALUE)
+            pixel_metadata = ometadata.image(0 if self.series is None
+                                             else self.series).Pixels
+            pixel_type = pixel_metadata.PixelType
+            if pixel_type in (subimager.omexml.PT_BIT,
+                              subimager.omexml.PT_FLOAT,
+                              subimager.omexml.PT_DOUBLE):
+                # Values between 0 and 1 for these types
+                pixel_type_scale = 1.0
+            elif pixel_type == subimager.omexml.PT_INT8:
+                pixel_type_scale = 127.0
+            elif pixel_type == subimager.omexml.PT_UINT8:
+                pixel_type_scale = 255.0
+            elif pixel_type == subimager.omexml.PT_INT16:
+                pixel_type_scale = 32767.0
+            elif pixel_type == subimager.omexml.PT_UINT16:
+                pixel_type_scale = 65535.
+            elif pixel_type == subimager.omexml.PT_INT32:
+                pixel_type_scale = 2147483648.0
+            elif pixel_type == subimager.omexml.PT_UINT32:
+                pixel_type_scale = 4294967296.0
+            else:
+                logger.warn("Unknown pixel type for %s: %s" % (
+                    self.get_full_name(), pixel_type))
+                pixel_type_scale = 1.0
+            if (isinstance(max_sample_value, basestring) and
+                max_sample_value.isdigit()):
+                self.scale = float(max_sample_value)
+            else:
+                self.scale = pixel_type_scale
         if self.rescale:
-            image = img / self.scale
+            img = img / self.scale
+        else:
+            img = img / pixel_type_scale
         image = cpimage.Image(img,
                               path_name = self.get_pathname(),
                               file_name = self.get_filename(),
@@ -2923,51 +2992,25 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             image.channel_names = list(channel_names)
         return image
  
-class LoadImagesMovieFrameProvider(LoadImagesImageProviderBase):
+class LoadImagesMovieFrameProvider(LoadImagesImageProvider):
     """Provide an image by filename:frame, loading the file as it is requested
     """
     def __init__(self, name, pathname, filename, frame, rescale):
-        super(LoadImagesMovieFrameProvider, self).__init__(name, pathname, filename)
-        self.__frame = frame
-        self.__rescale = rescale
-    
-    def provide_image(self, image_set):
-        """Load an image from a movie frame
-        """
-        pixel_data, self.scale = load_using_bioformats(
-            self.get_full_name(),
-            index=self.__frame,
-            rescale = self.__rescale,
-            wants_max_intensity = True)
-        image = cpimage.Image(pixel_data, path_name = self.get_pathname(),
-                              file_name = self.get_filename(),
-                              scale = self.scale)
-        return image
+        super(LoadImagesMovieFrameProvider, self).__init__(
+            name, pathname, filename, rescale, index=frame)
         
-class LoadImagesFlexFrameProvider(LoadImagesImageProviderBase):
+class LoadImagesFlexFrameProvider(LoadImagesImageProvider):
     """Provide an image by filename:frame, loading the file as it is requested
     """
     def __init__(self,name, pathname, filename, series, index, rescale):
-        super(LoadImagesFlexFrameProvider, self).__init__(name, pathname, filename)
-        self.__series  = series
-        self.__index   = index
-        self.__rescale = rescale
-    
-    def provide_image(self, image_set):
-        """Load an image from a movie frame
-        """
-        pixel_data, self.scale = load_using_bioformats(self.get_full_name(), 
-                                                       series=self.__series,
-                                                       index = self.__index,
-                                                       rescale = self.__rescale,
-                                                       wants_max_intensity = True)
-        image = cpimage.Image(pixel_data, path_name = self.get_pathname(),
-                              file_name = self.get_filename(),
-                              scale = self.scale)
-        return image
+        super(LoadImagesFlexFrameProvider, self).__init__(
+            name, pathname, filename, 
+            rescale = rescale,
+            series = series,
+            index = index)
     
     
-class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
+class LoadImagesSTKFrameProvider(LoadImagesImageProvider):
     """Provide an image by filename:frame from an STK file"""
     def __init__(self, name, pathname, filename, frame, rescale):
         '''Initialize the provider
@@ -2977,52 +3020,8 @@ class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
         filename - name of the file
         frame - # of the frame to provide
         '''
-        super(LoadImagesSTKFrameProvider, self).__init__(name, pathname, filename)
-        self.__frame    = frame
-        self.rescale = rescale
-        
-    def provide_image(self, image_set):
-        try:
-            def seekfn(img, index):
-                '''Seek in an STK file to a given stack frame
-                
-                The stack frames are of constant size and follow each other.
-                The tiles contain offsets which need to be incremented by
-                the size of a stack frame. The following is from 
-                Molecular Devices' STK file format document:
-                StripOffsets
-                The strips for all the planes of the stack are stored 
-                contiguously at this location. The following pseudocode fragment 
-                shows how to find the offset of a specified plane planeNum.
-                LONG	planeOffset = planeNum *
-                    (stripOffsets[stripsPerImage - 1] +
-                    stripByteCounts[stripsPerImage - 1] - stripOffsets[0]);
-                Note that the planeOffset must be added to the stripOffset[0]
-                to find the image data for the specific plane in the file.
-                '''
-                plane_offset = long(index) * (img.ifd[TIFF.STRIPOFFSETS][-1] +
-                                              img.ifd[TIFF.STRIPBYTECOUNTS][-1] -
-                                              img.ifd[TIFF.STRIPOFFSETS][0])
-                img.tile = [(coding, location, offset+plane_offset, format)
-                            for coding, location, offset, format in img.tile]
-                
-            img, self.scale = load_using_PIL(self.get_full_name(), 
-                                             self.__frame, seekfn,
-                                             rescale = self.rescale, 
-                                             wants_max_intensity = True)
-        except:
-            if has_bioformats:
-                img, self.scale = load_using_bioformats(
-                    self.get_full_name(),
-                    index = self.__frame,
-                    rescale = self.rescale,
-                    wants_max_intensity = True)
-            else:
-                raise
-        return cpimage.Image(img,
-                             path_name = self.get_pathname(),
-                             file_name = self.get_filename(),
-                             scale = self.scale)
+        super(LoadImagesSTKFrameProvider, self).__init__(
+            name, pathname, filename, rescale = rescale, index=frame)
     
 def convert_image_to_objects(image):
     '''Interpret an image as object indices

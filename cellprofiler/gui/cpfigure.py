@@ -15,7 +15,6 @@ __version__ = "$Revision$"
 
 import logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 import numpy as np
 import os
 import sys
@@ -935,17 +934,6 @@ class CPFigureFrame(wx.Frame):
                               norm=1, radius = self.filterrad)
                     bbox = self.axes.bbox.frozen()
                     im._url = self.frame.Title
-                    
-                    logger.debug("------------ imshow ------------------------")
-                    logger.debug("Image shape: %s" % repr(im.get_size()))
-                    logger.debug("Translation matrix: %s" % repr(im.get_matrix()))
-                    logger.debug("Display width = %d, height = %d" % (widthDisplay, heightDisplay))
-                    logger.debug("Bounding box: %s" % repr(bbox))
-                    logger.debug("Left = %d, bottom = %d" % (l, b))
-                    logger.debug("Ty = %f" % ty)
-                    logger.debug("view_y0 = %f, view_y1 = %f" % (view_y0, view_y1))
-                    logger.debug("viewLim .x0=%f, .x1=%f, .y0=%f, y1=%f, .width=%f, .height=%f" % (self.axes.viewLim.x0, self.axes.viewLim.x1, self.axes.viewLim.y0, self.axes.viewLim.y1, self.axes.viewLim.width, self.axes.viewLim.height))
-                    logger.debug("--------------------------------------------")
                     
                     # Two ways to do this, try by version
                     mplib_version = matplotlib.__version__.split(".")

@@ -204,10 +204,15 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
                                   (C.FTR_FALSE_NEG_RATE, 0),
                                   (C.FTR_RECALL, 1),
                                   (C.FTR_PRECISION, 1),
-                                  (C.FTR_F_FACTOR, 1)):
+                                  (C.FTR_F_FACTOR, 1),
+                                  (C.FTR_RAND_INDEX, 1)):
             mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertEqual(expected, value)
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_ADJUSTED_RAND_INDEX,
+                          TEST_IMAGE_NAME))
+        self.assertTrue(np.isnan(measurements.get_current_image_measurement(
+            mname)))
             
     def test_03_03_masked(self):
         '''Test ground-truth of a masked image'''
@@ -229,6 +234,10 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
             mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertEqual(expected, value)
+        for feature in (C.FTR_RAND_INDEX, C.FTR_ADJUSTED_RAND_INDEX):
+            mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
+            value = measurements.get_current_image_measurement(mname)
+            self.assertTrue(np.isnan(value))
             
     def test_03_04_all_right(self):
         np.random.seed(34)
@@ -242,7 +251,9 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
                                   (C.FTR_FALSE_NEG_RATE, 0),
                                   (C.FTR_RECALL, 1),
                                   (C.FTR_PRECISION, 1),
-                                  (C.FTR_F_FACTOR, 1)):
+                                  (C.FTR_F_FACTOR, 1),
+                                  (C.FTR_RAND_INDEX, 1),
+                                  (C.FTR_ADJUSTED_RAND_INDEX, 1)):
             mname = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
             value = measurements.get_current_image_measurement(mname)
             self.assertEqual(expected, value)
@@ -380,7 +391,86 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
             self.assertAlmostEqual(expected, value, 
                                    msg = "%s is wrong. Expected %f, got %f" % 
                                    (feature, expected, value))
+            
+    def test_03_10_rand_index(self):
+        np.random.seed(310)
+        i, j = np.mgrid[0:10, 0:20]
+        #
+        # Create a labeling with two objects 0:10, 0:5 and 0:10, 15:20.
+        # The background class is 0:10, 5:15
+        #
+        ground_truth = (j < 5) | (j >= 15)
+        #
+        # Add a 3x4 square in the middle
+        #
+        test = ground_truth.copy()
+        test[4:7,8:12] = True
+        #
+        # I used R to generate the rand index and adjusted rand index
+        # of the two segmentations: a 10 x 5 rectangle, a 10x10 background
+        # and a 10x5 rectangle with 12 pixels that disagree in the middle
+        #
+        # The rand index is from rand.index in the fossil package and
+        # the adjusted rand index is from cluster.stats in the fpc package.
+        # There's an adjusted rand index in the fossil package but it gives
+        # the wrong numbers (!!!!)
+        #
+        expected_rand_index = 0.9469347
+        expected_adj_rand_index = 0.8830027
+        workspace, module = self.make_workspace(
+            dict(image=ground_truth), 
+            dict(image=test))
+        module.run(workspace)
+        measurements = workspace.measurements
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX, TEST_IMAGE_NAME))
+        self.assertAlmostEqual(
+            measurements.get_current_image_measurement(mname),
+            expected_rand_index, 6)
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_ADJUSTED_RAND_INDEX,
+                      TEST_IMAGE_NAME))
+        self.assertAlmostEqual(
+            measurements.get_current_image_measurement(mname),
+            expected_adj_rand_index, 6)
         
+    def test_03_11_masked_rand_index(self):
+        np.random.seed(310)
+        i, j = np.mgrid[0:10, 0:20]
+        #
+        # Create a labeling with two objects 0:10, 0:5 and 0:10, 15:20.
+        # The background class is 0:10, 5:15
+        #
+        ground_truth = (j < 5) | (j >= 15)
+        #
+        # Add a 3x4 square in the middle
+        #
+        test = ground_truth.copy()
+        test[4:7,8:12] = True
+        #
+        # Remove both one correct and one incorect pixel
+        #
+        mask = np.ones(ground_truth.shape, bool)
+        mask[4,4] = False
+        mask[5,9] = False
+        #
+        # See notes from 03_10
+        #
+        expected_rand_index = 0.9503666
+        expected_adj_rand_index = 0.8907784
+        workspace, module = self.make_workspace(
+            dict(image=ground_truth, mask=mask), 
+            dict(image=test, mask = mask))
+        module.run(workspace)
+        measurements = workspace.measurements
+        
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX, TEST_IMAGE_NAME))
+        self.assertAlmostEqual(
+            measurements.get_current_image_measurement(mname),
+            expected_rand_index, 6)
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_ADJUSTED_RAND_INDEX,
+                      TEST_IMAGE_NAME))
+        self.assertAlmostEqual(
+            measurements.get_current_image_measurement(mname),
+            expected_adj_rand_index, 6)
         
     def test_04_01_get_measurement_columns(self):
         workspace, module = self.make_workspace(

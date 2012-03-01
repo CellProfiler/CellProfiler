@@ -350,11 +350,12 @@ def decode_image(data):
 
 def stop_subimager():
     '''Stop the subimager process by web command'''
-    
+    global subprocess_thread
     conn = connect()
     conn.request("GET", "/stop")
     conn.getresponse()
     stop_semaphore.release()
+    subprocess_thread.join()
 
 __all__ = (start_subimager, get_image, get_metadata, post_image, 
            stop_subimager, HTTPError)

@@ -91,6 +91,7 @@ def start_subimager():
         return
 
     subprocess_thread = threading.Thread(target = run_subimager)
+    subprocess_thread.setName("Subimager")
     subprocess_thread.setDaemon(True)
     subprocess_thread.start()
     init_semaphore.acquire()  # wait for subprocess thread to release
@@ -126,17 +127,21 @@ def run_subimager():
     (subimager_deadman_connection, client_addr) = subimager_deadman_socket.accept()
     logging.debug("Connected to deadman at %s" % str(client_addr))
     subimager_running = True
-    stdout_thread = threading.Thread(target=run_logger)
+    keep_logger_running = [True]
+    stdout_thread = threading.Thread(target=run_logger, 
+                                     args = (keep_logger_running,))
+    stdout_thread.setName("SubimagerLogger")
     stdout_thread.setDaemon(True)
     stdout_thread.start()
     init_semaphore.release()
     stop_semaphore.acquire()
     subimager_deadman_connection.close()
     subimager_process.wait()  # output is handled by the run_logger thread
+    keep_logger_running[0] = False
     subimager_running = False
 
-def run_logger():
-    while(True):
+def run_logger(keep_logger_running):
+    while(keep_logger_running[0]):
         try:
             logger.info(subimager_process.stdout.readline().strip())
         except:

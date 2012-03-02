@@ -1393,7 +1393,7 @@ class Pipeline(object):
                  # underlying file, or else we get partially written HDF5
                  # files.  There must be a better way to do this.
                 measurements.flush()
-                measurements.close()
+                del measurements
             self.end_run()
 
     def end_run(self):

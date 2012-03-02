@@ -183,11 +183,10 @@ MeasureObjectIntensity:[module_num:2|svn_version:\'10087\'|variable_revision_num
                              release_image = True)
         module.set_module_num(1)
         x.add_module(module)
-        for m in x.run_with_yield(run_in_background = False):
-            pass
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        self.assertEqual(m.image_set_count, 1)
-        del m
+        
+        for i, m in enumerate(x.run_with_yield(run_in_background = False)):
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertEqual(m.image_set_count, 1)
         for obj in get_objs():
             if isinstance(obj, np.ndarray) and obj.ndim > 1:
                 self.assertTrue(tuple(obj.shape[:2]) != tuple(size))

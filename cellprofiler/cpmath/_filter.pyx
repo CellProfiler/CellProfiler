@@ -889,7 +889,6 @@ def paeth_decoder(
         np.int32_t raster_number
         np.int32_t plane_number
         
-    print "Pixel stride = %d, raster stride = %d" % (pixel_stride, raster_stride)
     with nogil:
         for i from 0<=i<imax:
             raster_number = i % raster_count

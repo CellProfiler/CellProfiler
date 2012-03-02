@@ -46,7 +46,6 @@ else:
     __root_path = os.path.split(__root_path)[0]
 __path = os.path.join(__root_path, 'bioformats')
 __imagej_path = os.path.join(__root_path, 'imagej')
-__loci_jar = os.path.join(__path, "loci_tools.jar")
 __ij2_jar = os.path.join(__imagej_path, "imagej-2.0-SNAPSHOT-all.jar")
 __ij_jar = os.path.join(__imagej_path, "ij.jar")
 __imglib_jar = os.path.join(__imagej_path, "imglib.jar")
@@ -54,12 +53,11 @@ __javacl_jar = os.path.join(__imagej_path, "javacl-1.0-beta-4-shaded.jar")
 __precompiled_headless_jar = os.path.join(__imagej_path, "precompiled_headless.jar")
 USE_IJ2 = get_ij_version() == IJ_2
 if os.path.exists(__ij2_jar) and USE_IJ2:
-    __class_path = os.pathsep.join((__loci_jar, __ij2_jar))
+    __class_path = __ij2_jar
     USE_IJ2 = True
 else:
     USE_IJ2 = False
-    __class_path = os.pathsep.join((__loci_jar, __ij_jar, __imglib_jar, 
-                                    __javacl_jar))
+    __class_path = os.pathsep.join((__ij_jar, __imglib_jar, __javacl_jar))
     if sys.platform == "darwin":
         # Start ImageJ headless
         # precompiled_headless.jar contains substitute classes for running
@@ -115,41 +113,4 @@ if ((get_headless() and not os.environ.has_key("CELLPROFILER_USE_XVFB"))
 logger.debug("JVM arguments: " + " ".join(__args))
 jutil.start_vm(__args)
 logger.debug("Java virtual machine started.")
-jutil.attach()
-try:
-    jutil.static_call("loci/common/Location",
-                      "cacheDirectoryListings",
-                      "(Z)V", True)
-except:
-    logger.warning("Bioformats version does not support directory cacheing")
-finally:
-    jutil.detach()
     
-# if get_headless() or sys.platform=="darwin":
-#     jutil.attach()
-#     jutil.static_call("java/lang/System", "setProperty", '(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;', "java.awt.headless", "true")
-#     jutil.detach()
-
-#
-# Start the log4j logger to avoid error messages.
-#
-if __init_logger:
-    jutil.attach()
-    try:
-        jutil.static_call("org/apache/log4j/BasicConfigurator",
-                          "configure", "()V")
-        log4j_logger = jutil.static_call("org/apache/log4j/Logger",
-                                         "getRootLogger",
-                                         "()Lorg/apache/log4j/Logger;")
-        warn_level = jutil.get_static_field("org/apache/log4j/Level","WARN",
-                                            "Lorg/apache/log4j/Level;")
-        jutil.call(log4j_logger, "setLevel", "(Lorg/apache/log4j/Level;)V", 
-                   warn_level)
-        del logger
-        del warn_level
-    except:
-        logger.error("Failed to initialize log4j\n", exc_info=True)
-    finally:
-        jutil.detach()
-
-from formatreader import load_using_bioformats

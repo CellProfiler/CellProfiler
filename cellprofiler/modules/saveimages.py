@@ -35,31 +35,10 @@ import numpy as np
 import re
 import os
 import sys
-import PIL.Image as PILImage
 import scipy.io.matlab.mio
 import traceback
 
 logger = logging.getLogger(__name__)
-try:
-    from bioformats.formatreader import *
-    from bioformats.formatwriter import *
-    from bioformats.metadatatools import *
-    has_bioformats = True
-except:
-    logger.error(
-        "Failed to load bioformats. SaveImages will not be able to save movies.",
-        exc_info = True)
-    has_bioformats = False
-
-try:
-    import libtiff
-    has_tiff = True
-except:
-    if sys.platform == 'darwin':
-        logger.error("Failed to load pylibtiff.  SaveImages on Mac may not be "
-                     "able to write 16-bit TIFF format.")
-    has_tiff = False
-
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -74,7 +53,11 @@ from cellprofiler.preferences import \
 from cellprofiler.utilities.relpath import relpath
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME
+from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.cpmath.cpmorphology import distance_color_labels
+from subimager.client import post_image
+import subimager.omexml as ome
+from cellprofiler.utilities.version import get_version
 
 IF_IMAGE       = "Image"
 IF_MASK        = "Mask"
@@ -96,7 +79,6 @@ FN_IMAGE_FILENAME_WITH_METADATA = "Image filename with metadata"
 METADATA_NAME_TEXT = ("""Enter file name with metadata""")
 SEQUENTIAL_NUMBER_TEXT = "Enter file prefix"
 FF_BMP         = "bmp"
-FF_GIF         = "gif"
 FF_HDF         = "hdf"
 FF_JPG         = "jpg"
 FF_JPEG        = "jpeg"
@@ -243,7 +225,7 @@ class SaveImages(cpm.CPModule):
                 Enter the text that should be appended to the filename specified above.""")
         
         self.file_format = cps.Choice("Select file format to use",
-                                      [FF_BMP,FF_GIF,FF_HDF,FF_JPG,FF_JPEG,
+                                      [FF_TIF,FF_BMP,FF_HDF,FF_JPG,FF_JPEG,
                                        FF_PBM,FF_PCX,FF_PGM,FF_PNG,FF_PNM,
                                        FF_PPM,FF_RAS,FF_TIF,FF_TIFF,FF_XWD,
                                        FF_MAT],FF_BMP,doc="""
@@ -495,7 +477,6 @@ class SaveImages(cpm.CPModule):
     
     
     def run_movie(self, workspace):
-        assert has_bioformats
         out_file = self.get_filename(workspace, check_overwrite=False)
         # overwrite checks are made only for first frame.
         d = self.get_dictionary(workspace.image_set_list)
@@ -509,48 +490,14 @@ class SaveImages(cpm.CPModule):
         elif d["CURRENT_FRAME"] == "Ignore":
             return
             
-        env = jutil.attach()
-        try:
-            image = workspace.image_set.get_image(self.image_name.value)
-            pixels = image.pixel_data
-            width = pixels.shape[1]
-            height = pixels.shape[0]
-            if pixels.ndim == 2:
-                channels = 1
-                color_space = getGrayColorSpace()
-            elif pixels.ndim == 3 and pixels.shape[2] == 3:
-                channels = 3
-                color_space = getRGBColorSpace()
-            else:
-                raise 'Image shape is not supported for saving to movie'
-            stacks = 1
-            frames = d['N_FRAMES']
-            
-            nice_name = self.image_name.value+":" + os.path.split(out_file)[1]
-            meta = self.make_metadata(nice_name, width, height, channels, 
-                                      stacks, frames)
-            ImageWriter = make_image_writer_class()
-            writer = ImageWriter()    
-            writer.setMetadataRetrieve(meta)
-            writer.setId(out_file)
-
-            is_last_image = (d['CURRENT_FRAME'] == d['N_FRAMES']-1)
-            image = workspace.image_set.get_image(self.image_name.value)
-            pixels = image.pixel_data
-            pixels = (pixels*255).astype(np.uint8)
-            if len(pixels.shape)==3 and pixels.shape[2] == 3:  
-                save_im = np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]]).flatten()
-            else:
-                save_im = pixels.flatten()
-            byte_array = env.make_byte_array(save_im)
-            try:
-                writer.saveBytesIB(d['CURRENT_FRAME'], byte_array)
-            except jutil.JavaException:
-                writer.saveBytes(byte_array, is_last_image)
-            writer.close()
-            d['CURRENT_FRAME'] += 1
-        finally:
-            jutil.detach()
+        image = workspace.image_set.get_image(self.image_name.value)
+        pixels = image.pixel_data
+        pixels = pixels * 255
+        frames = d['N_FRAMES']
+        current_frame = d["CURRENT_FRAME"]
+        d["CURRENT_FRAME"] += 1
+        self.do_save_image(workspace, out_file, pixels, ome.PT_UINT8,
+                           t = current_frame, size_t = frames)
     
     def run_objects(self, workspace):
         objects_name = self.objects_name.value
@@ -560,300 +507,85 @@ class SaveImages(cpm.CPModule):
             return
 
         pixels = objects.segmented
-        if ((self.gray_or_color == GC_GRAYSCALE) and 
-            (self.file_format in (FF_TIF, FF_TIFF))):
-            if (objects.count > 255):
-                if has_bioformats:
-                    self.save_image_with_bioformats(workspace, pixels)
-                else:
-                    self.save_image_with_libtiff(workspace, pixels)
-                return
-        if self.file_format != FF_MAT:
-            if self.gray_or_color == GC_GRAYSCALE:
-                if objects.count > 255:
-                    sys.stderr.write(
-                        "Warning: %s has %d objects, but the file format can "
-                        "only support 255 objects. %s may not be correct\n" %
-                        (objects_name, objects.count, filename))
-                pixels = pixels.astype(np.uint8)
-                mode = "L"
-            else:
-                if self.colormap == cps.DEFAULT:
-                    colormap = cpp.get_default_colormap()
-                else:
-                    colormap = self.colormap.value
-                cm = matplotlib.cm.get_cmap(colormap)
-                
-                mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-                cpixels = mapper.to_rgba(distance_color_labels(pixels), bytes=True)
-                cpixels[pixels == 0,:3] = 0
-                pixels = cpixels
-                mode = 'RGBA'
         if self.get_file_format() == FF_MAT:
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
+        
+        elif self.gray_or_color == GC_GRAYSCALE:
+            if objects.count > 255:
+                pixel_type = ome.PT_UINT16
+            else:
+                pixel_type = ome.PT_UINT8
+            self.do_save_image(workspace, filename, pixels, pixel_type)
+        
         else:
-            pil = PILImage.fromarray(pixels,mode)
-            pil.save(filename, self.get_file_format())
+            if self.colormap == cps.DEFAULT:
+                colormap = cpp.get_default_colormap()
+            else:
+                colormap = self.colormap.value
+            cm = matplotlib.cm.get_cmap(colormap)
+                
+            mapper = matplotlib.cm.ScalarMappable(cmap=cm)
+            cpixels = mapper.to_rgba(distance_color_labels(pixels), bytes=True)
+            cpixels[pixels == 0,:3] = 0
+            self.do_save_image(workspace, filename, cpixels, ome.PT_UINT8)
         self.save_filename_measurements(workspace)
         workspace.display_data.wrote_image = True
-    
-    def make_metadata(self, nice_name, width, height, channels, stacks, frames, 
-                      bit_depth = BIT_DEPTH_8, channel_names = None):
-        '''Make a Bioformats IMetadata for an image'''
-        imeta = createOMEXMLMetadata()
-        meta = wrap_imetadata_object(imeta)
-        meta.createRoot()
-        if (self.save_image_or_figure == IF_MOVIE) and (channels == 3):
-            logical_channels = 3
-        else:
-            logical_channels = 1
-        is_big = (sys.byteorder != 'little')
-        meta.setPixelsBigEndian(is_big, 0, 0)
-        meta.setPixelsDimensionOrder('XYCZT', 0, 0)
-        try:
-            PixelType = make_pixel_type_class()
-            if bit_depth == BIT_DEPTH_8:
-                meta.setPixelsType(PixelType.UINT8, 0)
-            else:
-                meta.setPixelsType(PixelType.UINT16, 0)
-        except jutil.JavaException:
-            FormatTools = make_format_tools_class()
-            if bit_depth == BIT_DEPTH_8:
-                bit_depth_enum = FormatTools.UINT8
-            else:
-                bit_depth_enum = FormatTools.UINT16
-                
-            meta.setPixelsPixelType( 
-                FormatTools.getPixelTypeString(bit_depth_enum), 0, 0)
-        meta.setPixelsSizeX(width, 0, 0)
-        meta.setPixelsSizeY(height, 0, 0)
-        meta.setPixelsSizeC(channels, 0, 0)
-        meta.setPixelsSizeZ(stacks, 0, 0)
-        meta.setPixelsSizeT(frames, 0, 0)
-        try:
-            meta.setImageID(nice_name, 0)
-            meta.setPixelsID(nice_name, 0)
-            if channels == 1:
-                meta.setChannelID(self.image_name.value, 0, 0)
-                meta.setLogicalChannelSamplesPerPixel(logical_channels, 0, 0)
-            else:
-                if channel_names is None:
-                    channel_names = ["Channel 0:%d" % (i+1) for i in range(channels)]
-                for i, channel_name in enumerate(channel_names):
-                    meta.setLogicalChannelSamplesPerPixel(logical_channels, 0, i)
-                    meta.setChannelID(self.image_name.value + ":" + channel_name,
-                                      0, i)
-        except jutil.JavaException:
-            # Pre 4.2 will throw.
-            pass
-        return meta
     
     def post_group(self, workspace, *args):
         if (self.when_to_save == WS_LAST_CYCLE and 
             self.save_image_or_figure != IF_MOVIE):
             self.save_image(workspace)
         
-
-    def save_image_with_bioformats(self, workspace, pixels = None, channel_names = None):
-        ''' Saves using bioformats library. Currently used for saving 16-bit
-        tiffs. Some code is redundant from save_image, but it's easier to 
-        separate the logic completely.
+    def do_save_image(self, workspace, filename, pixels, pixel_type, 
+                   c = 0, z = 0, t = 0,
+                   size_c = 1, size_z = 1, size_t = 1,
+                   channel_names = None):
+        '''Save image using subimager
+        
+        workspace - the current workspace
+        
+        filename - save to this filename
+        
+        pixels - the image to save
+        
+        pixel_type - save using this pixel type
+        
+        c - the image's channel index
+        
+        z - the image's z index
+        
+        t - the image's t index
+        
+        sizeC - # of channels in the stack
+        
+        sizeZ - # of z stacks
+        
+        sizeT - # of timepoints in the stack
+        
+        channel_names - names of the channels (make up names if not present
         '''
-        assert self.file_format in (FF_TIF, FF_TIFF)
-        assert ((self.save_image_or_figure == IF_IMAGE) or (pixels is not None))
-        assert has_bioformats
+        omexml = ome.OMEXML()
+        omexml.image(0).Name = os.path.split(filename)[1]
+        p = omexml.image(0).Pixels
+        assert isinstance(p, ome.OMEXML.Pixels)
+        p.SizeX = pixels.shape[1]
+        p.SizeY = pixels.shape[0]
+        p.SizeC = size_c
+        p.SizeT = size_t
+        p.SizeZ = size_t
+        p.DimensionOrder = ome.DO_XYCZT
+        p.PixelType = pixel_type
+        index = c + size_c * z + size_c * size_z * t
+        if pixels.ndim == 3:
+            p.SizeC = pixels.shape[2]
+            p.Channel(0).SamplesPerPixel = pixels.shape[2]
+            omexml.structured_annotations.add_original_metadata(
+                ome.OM_SAMPLES_PER_PIXEL, str(pixels.shape[2]))
         
-        workspace.display_data.wrote_image = False
+        url = pathname2url(filename)
+        post_image(url, pixels, omexml.to_xml(), index = str(index))
 
-        # get the filename and check overwrite before attaching to java bridge
-        filename = self.get_filename(workspace)
-        if filename is None:  # failed overwrite check
-            return
-
-        path, fname = os.path.split(filename)
-        if os.path.isfile(filename):
-            # Important: bioformats will append to files by default, so we must
-            # delete it explicitly if it exists.
-            os.remove(filename)
-        
-        channel_names = None
-        if pixels is None:
-            # Get the image data to be written
-            image = workspace.image_set.get_image(self.image_name.value)
-            pixels = image.pixel_data
-            if image.has_channel_names:
-                channel_names = image.channel_names
-        
-        if (self.rescale.value and (self.save_image_or_figure != IF_OBJECTS)):
-            # Normalize intensities for each channel
-            pixels = pixels.astype(np.float32)
-            if pixels.ndim == 3:
-                # RGB
-                for i in range(3):
-                    img_min = np.min(pixels[:,:,i])
-                    img_max = np.max(pixels[:,:,i])
-                    if img_max > img_min:
-                        pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
-            else:
-                # Grayscale
-                img_min = np.min(pixels)
-                img_max = np.max(pixels)
-                if img_max > img_min:
-                    pixels = (pixels - img_min) / (img_max - img_min)
-        
-        env = jutil.attach()
-        try:
-            width = pixels.shape[1]
-            height = pixels.shape[0]
-            if pixels.ndim == 2:
-                channels = 1
-                interleaved = None
-            elif pixels.ndim == 3 and pixels.shape[2] == 3:
-                channels = 3
-                interleaved = True
-            elif (pixels.ndim == 3 and 
-                  (channel_names is None or pixels.shape[2] <= len(channel_names))):
-                channels = pixels.shape[2]
-                interleaved = False
-            else:
-                raise ValueError('Image shape is not supported')
-            stacks = 1
-            frames = 1
-            is_big_endian = (sys.byteorder.lower() == 'big')
-            FormatTools = make_format_tools_class()
-            
-            # Build bioformats metadata object
-            nice_name = self.image_name.value + ":" + fname
-            meta = self.make_metadata(nice_name, width, height, channels, 
-                                      stacks, frames, 
-                                      bit_depth = BIT_DEPTH_16,
-                                      channel_names = channel_names)
-            klass = "loci/formats/out/OMETiffWriter"
-            ImageWriter = make_ome_tiff_writer_class()
-            writer = ImageWriter()
-            writer.setMetadataRetrieve(meta)
-            if interleaved is not None:
-                writer.setInterleaved(interleaved)
-            writer.setId(filename)
-            if channels == 1:
-                # Baseline TIFF does not support a planar configuration.
-                # The spec says to ignore planar configuration = 2 if there
-                # is only one channel, but at least one reader barfs anyway.
-                # Setting interleaved on makes it work.
-                writer.setInterleaved(True)
-
-            if pixels.dtype in (np.int8, np.uint8, np.int16):
-                # Leave the values alone, but cast to unsigned int 16
-                pixels = pixels.astype(np.uint16)
-            elif pixels.dtype in (np.uint32, np.uint64, np.int32, np.int64):
-                logger.warning(
-                    "Warning: converting %s image to 16-bit could result in "
-                    "incorrect values.\n" % repr(pixels.dtype))
-                pixels = pixels.astype(np.uint16)
-            elif issubclass(pixels.dtype.type, np.floating):
-                # Scale pixel vals to 16 bit
-                pixels = (pixels * 65535).astype(np.uint16)
-
-            if pixels.ndim == 2:
-                channel_pixels = [ pixels.flatten() ]
-            elif pixels.shape[2] == 3:
-                channel_pixels = [
-                    np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]]).flatten()]
-            else:
-                channel_pixels = [pixels[:,:,i] for i in range(pixels.shape[2])]
-
-            for i, pixels in enumerate(channel_pixels):
-                # split the 16-bit image into byte-sized chunks for saveBytes
-                pixels = np.fromstring(pixels.tostring(), dtype=np.uint8)
-                
-                ifd = jutil.make_instance("loci/formats/tiff/IFD","()V")
-                #
-                # Need to explicitly set the maximum sample value or images
-                # get rescaled inside the TIFF writer.
-                #
-                min_sample_value = jutil.get_static_field(
-                    "loci/formats/tiff/IFD", "MIN_SAMPLE_VALUE", "I")
-                jutil.call(ifd, "putIFDValue", "(II)V", min_sample_value, 0)
-                max_sample_value = jutil.get_static_field(
-                    "loci/formats/tiff/IFD", "MAX_SAMPLE_VALUE","I")
-                jutil.call(ifd, "putIFDValue","(II)V",
-                           max_sample_value, 65535)
-                writer.saveBytesIFD(i, env.make_byte_array(pixels), ifd)
-                
-            writer.close()
-        
-            workspace.display_data.wrote_image = True
-            
-            if self.when_to_save != WS_LAST_CYCLE:
-                self.save_filename_measurements(workspace)
-        finally:
-            jutil.detach()
-                        
-    def save_image_with_libtiff(self, workspace, pixels = None):
-        ''' Saves using libtiff.
-        '''
-        assert self.file_format in (FF_TIF, FF_TIFF)
-        assert self.save_image_or_figure == IF_IMAGE
-
-        workspace.display_data.wrote_image = False
-
-        # get the filename and check overwrite
-        filename = self.get_filename(workspace)
-        if filename is None:  # failed overwrite check
-            return
-
-        if os.path.isfile(filename):
-            # Important: bioformats will append to files by default, so we must
-            # delete it explicitly if it exists.
-            os.remove(filename)
-        
-        if pixels is None:
-            # Get the image data to be written
-            image = workspace.image_set.get_image(self.image_name.value)
-            pixels = image.pixel_data
-        
-        if self.rescale.value and (self.save_image_or_figure != IF_OBJECTS):
-            # Normalize intensities for each channel
-            pixels = pixels.astype(np.float32)
-            if pixels.ndim == 3:
-                # RGB
-                for i in range(3):
-                    img_min = np.min(pixels[:,:,i])
-                    img_max = np.max(pixels[:,:,i])
-                    if img_max > img_min:
-                        pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
-            else:
-                # Grayscale
-                img_min = np.min(pixels)
-                img_max = np.max(pixels)
-                if img_max > img_min:
-                    pixels = (pixels - img_min) / (img_max - img_min)
-        
-        if pixels.dtype in (np.uint32, np.uint64, np.int32, np.int64):
-            sys.stderr.write("Warning: converting %s image to 16-bit could result in incorrect values.\n" % repr(pixels.dtype))
-        elif issubclass(pixels.dtype.type, np.floating):
-            # Scale pixel vals to 16 bit
-            pixels = (np.clip(pixels, 0, 1) * 65535)
-        # convert to uint16
-        pixels = pixels.astype(np.uint16)
-
-        if len(pixels.shape) == 3 and pixels.shape[2] == 3:  
-            pixels = np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]])
-
-        out = libtiff.TIFF.open(filename, 'w')
-        out.write_image(pixels, write_rgb=True)
-        out.close()
-        workspace.display_data.wrote_image = True
-        if self.when_to_save != WS_LAST_CYCLE:
-            self.save_filename_measurements(workspace)
-                        
     def save_image(self, workspace):
-        if self.get_bit_depth() == BIT_DEPTH_16:
-            if has_tiff:
-                return self.save_image_with_libtiff(workspace)
-            else:
-                return self.save_image_with_bioformats(workspace)
-        
         workspace.display_data.wrote_image = False
         image = workspace.image_set.get_image(self.image_name.value)
         if self.save_image_or_figure == IF_IMAGE:
@@ -896,25 +628,24 @@ class SaveImages(cpm.CPModule):
                     if self.get_bit_depth() == '8':
                         mapper = matplotlib.cm.ScalarMappable(cmap=cm)
                         pixels = mapper.to_rgba(pixels, bytes=True)
+                        pixel_type = ome.PT_UINT8
                     else:
-                        raise NotImplementedError("12 and 16-bit images not yet supported")
+                        pixel_type = ome.PT_UINT16
+                        pixels *= 255
                 elif self.get_bit_depth() == '8':
                     pixels = (pixels*255).astype(np.uint8)
+                    pixel_type = ome.PT_UINT8
                 else:
-                    raise NotImplementedError("12 and 16-bit images not yet supported")
+                    pixels = (pixels*65535)
+                    pixel_type = ome.PT_UINT16
                 
         elif self.save_image_or_figure == IF_MASK:
             pixels = image.mask.astype(np.uint8) * 255
+            pixel_type = ome.PT_BIT
             
         elif self.save_image_or_figure == IF_CROPPING:
             pixels = image.crop_mask.astype(np.uint8) * 255
-
-        if pixels.ndim == 3 and pixels.shape[2] == 4:
-            mode = 'RGBA'
-        elif pixels.ndim == 3:
-            mode = 'RGB'
-        else:
-            mode = 'L'
+            pixel_type = ome.PT_BIT
 
         filename = self.get_filename(workspace)
         if filename is None:  # failed overwrite check
@@ -923,8 +654,7 @@ class SaveImages(cpm.CPModule):
         if self.get_file_format() == FF_MAT:
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
         else:
-            pil = PILImage.fromarray(pixels,mode)
-            pil.save(filename, self.get_file_format())
+            self.do_save_image(workspace, filename, pixels, pixel_type)
         workspace.display_data.wrote_image = True
         if self.when_to_save != WS_LAST_CYCLE:
             self.save_filename_measurements(workspace)
@@ -1323,3 +1053,14 @@ class SaveImagesDirectoryPath(cps.DirectoryPath):
             return cps.DirectoryPath.upgrade_setting(value)
         return cps.DirectoryPath.static_join_string(dir_choice, custom_path)
                   
+if __name__=="__main__":
+    from subimager.client import start_subimager, stop_subimager
+    start_subimager()
+    i, j = np.mgrid[0:100, 0:100]
+    img = np.zeros((100,100,3))
+    img[np.sqrt((i - 50)**2 + (j-50)**2) < 25, 0] = 255
+    img[np.sqrt((i - 25)**2 + (j-25)**2) < 25, 1] = 255
+    img[np.sqrt((i - 25)**2 + (j-75)**2) < 25, 2] = 255
+    s = SaveImages()
+    s.do_save_image(None, "c:\\temp\\image.tif", img, "uint8")
+    stop_subimager()

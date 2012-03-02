@@ -302,7 +302,19 @@ class OMEXML(object):
         self.dom = ElementTree.ElementTree(ElementTree.fromstring(xml))
         
     def __str__(self):
-        return ElementTree.tostring(self.root_node, "utf-8")
+        #
+        # need to register the ome namespace because BioFormats expects
+        # that namespace to be the default or to be explicitly named "ome"
+        #
+        ElementTree.register_namespace("ome", NS_OME)
+        ElementTree.register_namespace("sa", NS_SA)
+        ElementTree.register_namespace("spw", NS_SPW)
+        ElementTree.register_namespace("om", NS_ORIGINAL_METADATA)
+        result = StringIO()
+        ElementTree.ElementTree(self.root_node).write(result, 
+                                          encoding = "utf-8", 
+                                          method = "xml")
+        return result.getvalue()
     
     def to_xml(self, indent="\t", newline="\n", encoding = "utf-8"):
         return str(self)

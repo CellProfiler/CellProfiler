@@ -942,7 +942,9 @@ class PipelineController:
         if self.__distributor:
             self.__distributor.stop_serving()
             self.__distributor = None
-        self.__running_pipeline = False
+        if self.__running_pipeline is not None:
+            self.__running_pipeline.close()
+            self.__running_pipeline = None
         self.__pause_pipeline = False
         self.__frame.preferences_view.on_stop_analysis()
         self.__module_view.enable()

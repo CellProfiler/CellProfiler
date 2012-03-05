@@ -203,8 +203,12 @@ class Measurements(object):
 
     def __del__(self):
         if hasattr(self, "hdf5_dict"):
-            del self.hdf5_dict
+            self.close()
 
+    def close(self):
+        self.hdf5_dict.close()
+        del self.hdf5_dict
+        
     def __getitem__(self, key):
         # we support slicing the last dimension for the limited case of [..., :]
         if len(key) == 3 and key[2] == slice(None, None, None):

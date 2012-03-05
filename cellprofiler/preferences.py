@@ -230,6 +230,7 @@ RUN_DISTRIBUTED = "RunDistributed"
 WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
 USE_MORE_FIGURE_SPACE = "UseMoreFigureSpace"
 WRITE_HDF5 = "WriteHDF5"
+IMAGE_SET_FILE = "ImageSetFile"
 
 '''The preference key for selecting the correct version of ImageJ'''
 IJ_VERSION = "ImageJVersion"
@@ -926,3 +927,18 @@ def set_ij_version(value):
     assert value in (IJ_1, IJ_2)
     __ij_version = value
     config_write(IJ_VERSION, value)
+
+__image_set_file = None
+def get_image_set_file():
+    '''Return the path to the image set file'''
+    global __image_set_file
+    if __image_set_file is not None:
+        return __image_set_file
+    __image_set_file = config_read(IMAGE_SET_FILE)
+    return __image_set_file
+
+def set_image_set_file(path):
+    '''Set the path to the image set file'''
+    global __image_set_file
+    __image_set_file = path
+    config_write(IMAGE_SET_FILE, path)

@@ -21,6 +21,7 @@ import cellprofiler.gui.help as cphelp
 from cellprofiler.gui.htmldialog import HTMLDialog
 
 DIRBROWSE = "Browse"
+FILEBROWSE = "FileBrowse"
 FONT = "Font"
 COLOR = "Color"
 CHOICE = "Choice"
@@ -81,6 +82,18 @@ class PreferencesDlg(wx.Dialog):
                     dlg.Path = ctl.Value
                     if dlg.ShowModal() == wx.ID_OK:
                         ctl.Value = dlg.Path
+                        dlg.Destroy()
+            elif (isinstance(ui_info, basestring) and 
+                  ui_info.startswith(FILEBROWSE)):
+                def on_press(event, ctl=ctl, parent=self, ui_info=ui_info):
+                    dlg = wx.FileDialog(parent)
+                    dlg.Path = ctl.Value
+                    if len(ui_info) > len(FILEBROWSE) + 1:
+                        dlg.Wildcard = ui_info[(len(FILEBROWSE) + 1):]
+                    if dlg.ShowModal() == wx.ID_OK:
+                        ctl.Value = dlg.Path
+                    dlg.Destroy()
+                ui_info = "Browse"
             elif ui_info == FONT:
                 def on_press(event, ctl=ctl, parent=self):
                     name, size = ctl.Value.split(",")
@@ -95,6 +108,7 @@ class PreferencesDlg(wx.Dialog):
                         name = font.GetFaceName()
                         size = font.GetPointSize()
                         ctl.Value = "%s, %f"%(name,size) 
+                    dlg.Destroy()
             elif ui_info == COLOR:
                 def on_press(event, ctl=ctl, parent=self):
                     color = wx.GetColourFromUser(self, ctl.BackgroundColour)
@@ -184,6 +198,11 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_tertiary_outline_color,
                  cpprefs.set_tertiary_outline_color,
                  COLOR, cphelp.TERTIARY_OUTLINE_COLOR_HELP],
+                ["CellProfiler image set file",
+                 cpprefs.get_image_set_file,
+                 cpprefs.set_image_set_file,
+                 FILEBROWSE+"|Image set files (*.csv)|*.csv|All files (*.*)|*.*",
+                 cphelp.IMAGE_SET_FILE_HELP],
                 ["CellProfiler plugins directory",
                  cpprefs.get_plugin_directory,
                  cpprefs.set_plugin_directory,

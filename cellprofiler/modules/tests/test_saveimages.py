@@ -50,14 +50,6 @@ OBJECTS_NAME = 'inputobjects'
 FILE_IMAGE_NAME = 'fileimage'
 FILE_NAME = 'filenm'
 
-from cellprofiler.utilities import jutil
-import bioformats
-jutil.attach()
-env = jutil.get_env()
-klass = env.find_class('loci/formats/FormatTools')
-bioformats_revision = jutil.get_static_field(klass, 'SVN_REVISION', 'Ljava/lang/String;')
-BIOFORMATS_CANT_WRITE = (bioformats_revision == '6181' and sys.platform=='darwin')
-
 
 class TestSaveImages(unittest.TestCase):
     @classmethod
@@ -1437,9 +1429,6 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         return frames
         
     def test_05_01_save_movie(self):
-        if BIOFORMATS_CANT_WRITE:
-            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
-            return
         frames = self.run_movie()
         for i, frame in enumerate(frames):
             path = os.path.join(self.custom_directory, FILE_NAME + ".avi")
@@ -1449,9 +1438,6 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
             
     def test_05_02_save_two_movies(self):
         '''Use metadata grouping to write two movies'''
-        if BIOFORMATS_CANT_WRITE:
-            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
-            return
         grouping = (('Metadata_test',),
                     (({'Metadata_test':"foo"}, [1,2,3,4,5]),
                      ({'Metadata_test':"bar"}, [6,7,8,9])))
@@ -1561,14 +1547,6 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
 
                 
     def test_07_01_save_objects_grayscale8_tiff(self):
-        if BIOFORMATS_CANT_WRITE:
-            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
-            try:
-                import libtiff
-            except:
-                sys.stderr.write("Failed to import libtiff.\n")
-                traceback.print_exc()
-                return
         r = np.random.RandomState()
         labels = r.randint(0, 10, size=(30,20))
         workspace, module = self.make_workspace(labels, save_objects = True)
@@ -1597,14 +1575,6 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         self.assertTrue(np.all(labels == im))
         
     def test_07_02_save_objects_grayscale_16_tiff(self):
-        if BIOFORMATS_CANT_WRITE:
-            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
-            try:
-                import libtiff
-            except:
-                sys.stderr.write("Failed to import libtiff.\n")
-                traceback.print_exc()
-                return
         r = np.random.RandomState()
         labels = r.randint(0, 300, size=(300,300))
         workspace, module = self.make_workspace(labels, save_objects = True)

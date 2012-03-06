@@ -165,6 +165,12 @@ parser.add_option("--data-file",
                   default = None,
                   help = "Specify a data file for LoadData modules that "
                   'use the "From command-line" option')
+parser.add_option("--image-set-file",
+                  dest = "image_set_file",
+                  default = None,
+                  help = "Specify the image set file that controls the input "
+                  "images for the pipeline")
+                  
 parser.add_option("-L", "--log-level",
                   dest = "log_level",
                   default = logging.INFO,
@@ -336,6 +342,8 @@ try:
         cpprefs.set_ij_plugin_directory(options.ij_plugins_directory)
     if options.data_file is not None:
         cpprefs.set_data_file(os.path.abspath(options.data_file))
+    if options.image_set_file is not None:
+        cpprefs.set_image_set_file(options.image_set_file, False)
         
     from cellprofiler.utilities.version import version_string, version_number
     logging.root.info("Version: %s / %d" % (version_string, version_number))

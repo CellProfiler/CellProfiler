@@ -937,8 +937,16 @@ def get_image_set_file():
     __image_set_file = config_read(IMAGE_SET_FILE)
     return __image_set_file
 
-def set_image_set_file(path):
-    '''Set the path to the image set file'''
+def set_image_set_file(path, permanently = True):
+    '''Set the path to the image set file
+
+    path - path to the file
+    
+    permanently - True to write it to the configuration, False if the file
+                  should only be set for the running instance (e.g. as a
+                  command-line parameter for a scripted run)
+    '''
     global __image_set_file
     __image_set_file = path
-    config_write(IMAGE_SET_FILE, path)
+    if permanently:
+        config_write(IMAGE_SET_FILE, path)

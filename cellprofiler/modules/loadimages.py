@@ -1404,7 +1404,6 @@ class LoadImages(cpmodule.CPModule):
     def prepare_run_of_images(self, workspace):
         """Set up image providers for image files"""
         pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
         frame = workspace.frame
         files = self.collect_files(pipeline.test_mode, frame)
         if len(files) == 0:
@@ -1426,7 +1425,6 @@ class LoadImages(cpmodule.CPModule):
         """Organize each kind of file by their lexical order
         
         """
-        image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
         frame = workspace.frame
         m = workspace.measurements
@@ -1469,7 +1467,6 @@ class LoadImages(cpmodule.CPModule):
         """Organize each kind of file by metadata
         
         """
-        image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
         frame = workspace.frame
         #
@@ -1568,11 +1565,31 @@ class LoadImages(cpmodule.CPModule):
                 
         root = self.image_directory()
         features = {}
+        #
+        # Two cases - the measurements already have image sets or the
+        #             measurements have no image sets.
+        # 1: measurements must have an image measurement corresponding to each
+        #    tag. Create a dictionary of tag values to a list of image numbers
+        #    with those tag values. Populate our images to that list.
+        # 2: write fresh image set records to measurements.
+        #
+        measurements = workspace.measurements
+        assert isinstance(measurements, cpmeas.Measurements)
+        if measurements.image_set_count > 0:
+            match_metadata = True
+            md_dict = self.get_image_numbers_by_tags(measurements, tags)
+            n_image_sets = measurements.image_set_count
+        else:
+            match_metadata = False
+            n_image_sets = len(image_sets)
         for idx, image_set in enumerate(image_sets):
             keys = {}
             for tag,value in zip(tags,image_set[0]):
                 keys[tag] = value
-            cpimageset = image_set_list.get_image_set(keys)
+            if match_metadata:
+                image_numbers = md_dict[keys]
+            else:
+                image_numbers = [idx + 1]
             for i in range(len(self.images)):
                 if self.location.dir_choice == cps.URL_FOLDER_NAME:
                     full_path = root
@@ -1582,14 +1599,15 @@ class LoadImages(cpmodule.CPModule):
                 else:
                     path = os.path.join(image_set[1][i][0],image_set[1][i][1])
                     full_path = os.path.join(root, path)
-                d = self.write_measurements(
-                    None,
-                    cpimageset.number + 1,
-                    self.images[i], full_path)
-                for k, v in d.iteritems():
-                    if not features.has_key(k):
-                        features[k] = [None] * len(image_sets)
-                    features[k][idx] = v
+                for image_number in image_numbers:
+                    d = self.write_measurements(
+                        None,
+                        image_number,
+                        self.images[i], full_path)
+                    for k, v in d.iteritems():
+                        if not features.has_key(k):
+                            features[k] = [None] * n_image_sets
+                        features[k][image_number-1] = v
         for k, v in features.iteritems():
             workspace.measurements.add_all_measurements(cpmeas.IMAGE, k, v)
                                            
@@ -1629,6 +1647,39 @@ class LoadImages(cpmodule.CPModule):
                 result.append(subset)
         return result
 
+    def get_image_numbers_by_tags(self, measurements, tags):
+        '''Make a dictionary of tag values to image numbers
+        
+        Look up the metadata values for each of the tags in "tags" and
+        create a dictionary of tag values to the list of image numbers
+        that have those tag values. This dictionary can then be used to
+        populate all image sets with a particular tag value.
+        
+        measurements - the measurements populated with metadata values for
+                       each tag
+                       
+        tags - the metadata tags to be used for matching
+        '''
+        metadata_features = [
+            x for x in measurements.get_feature_names(cpmeas.IMAGE)
+            if x.startswith(cpmeas.C_METADATA)]
+        for tag in tags:
+            if "_".join((cpmeas.C_METADATA, tag)) not in metadata_features:
+                raise ValueError(
+                    "LoadImages needs the prior Load modules to define "
+                    'the metadata tag, "%s", in order to match metadata' %
+                    tag)
+        md_dict = {}
+        for i in measurements.get_image_numbers():
+            keys = tuple([measurements.get_measurement(
+                cpmeas.IMAGE, "_".join((cpmeas.C_METADATA, tag)), i)
+                          for tag in tags])
+            if md_dict.has_key(keys):
+                md_dict.append(i)
+            else:
+                md_dict[keys] = [i]
+        return md_dict
+        
     def report_errors(self, conflicts, missing_images, frame):
         """Create an error report window
         
@@ -1729,9 +1780,15 @@ class LoadImages(cpmodule.CPModule):
     def prepare_run_of_flex(self, workspace):
         '''Set up image providers for flex files'''
         pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
         frame = workspace.frame
         m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        if m.image_set_count > 0 and self.do_group_by_metadata:
+            match_metadata = True
+            tags = list(self.get_metadata_tags()) + [M_Z, M_T, C_SERIES]
+            md_dict = self.get_image_numbers_by_tags(m, tags)
+        else:
+            match_metadata = False
         files = self.collect_files(pipeline.test_mode, frame)
         if len(files) == 0:
             self.report_no_matching_files(frame)
@@ -1827,94 +1884,26 @@ class LoadImages(cpmodule.CPModule):
                             frame_metadata[M_Z] = 0 # so sorry, real Z obliterated
                             frame_metadata[M_T] = idx
                             frame_metadata[C_SERIES] = i
-                            if self.do_group_by_metadata:
+                            image_numbers = [image_set_count + 1]
+                            if match_metadata:
                                 key = dict([(k, str(v)) 
                                             for k,v in frame_metadata.items()])
-                                image_set = image_set_list.get_image_set(key)
-                            else:
-                                image_set = image_set_list.get_image_set(
-                                    image_set_count)
-                            image_number = image_set.image_number
-                            for channel_settings in image_settings.channels:
-                                image_name = channel_settings.get_image_name()
-                                channel = int(channel_settings.channel_number.value) - 1
-                                if image_settings.interleaving == I_INTERLEAVED:
-                                    cidx = idx * nchannels + channel
-                                else:
-                                    cidx = channel * nsets + idx
-                                c = cidx % channel_count
-                                z = int(cidx / channel_count) % stack_count
-                                t = int(cidx / channel_count / stack_count) % timepoint_count
-                                m.add_measurement(
-                                    cpmeas.IMAGE,
-                                    "_".join((C_FILE_NAME, image_name)), 
-                                    filename,
-                                    image_set_number = image_number)
-                                m.add_measurement(
-                                    cpmeas.IMAGE,
-                                    "_".join((C_PATH_NAME, image_name)),
-                                    path,
-                                    image_set_number = image_number)
-                                m.add_measurement(
-                                    cpmeas.IMAGE,
-                                    "_".join((C_URL, image_name)), 
-                                    url,
-                                    image_set_number = image_number)
-                                m.add_measurement(
-                                    cpmeas.IMAGE,
-                                    "_".join((C_SERIES, image_name)), i,
-                                    image_set_number = image_number)
-                                m.add_measurement(
-                                    cpmeas.IMAGE,
-                                    "_".join((C_FRAME, image_name)), cidx,
-                                    image_set_number = image_number)
-                            for k in frame_metadata.keys():
-                                m.add_measurement(
-                                    cpmeas.IMAGE, 
-                                    "_".join((cpmeas.C_METADATA, k)),
-                                    frame_metadata[k], 
-                                    image_set_number = image_number)
-                            image_set_count += 1
-                    else:
-                        distance = 1
-                        for dimension in pixels.DimensionOrder[2:]:
-                            if dimension == "C":
-                                strideC = distance
-                                distance *= pixels.SizeC
-                            elif dimension == "Z":
-                                strideZ = distance
-                                distance *= pixels.SizeZ
-                            elif dimension == "T":
-                                strideT = distance
-                                distance *= pixels.SizeT
-                        for z in range(pixels.SizeZ):
-                            for t in range(pixels.SizeT):
-                                frame_metadata = metadata.copy()
-                                frame_metadata[M_Z] = z
-                                frame_metadata[M_T] = t
-                                frame_metadata[C_SERIES] = i
-                                if self.do_group_by_metadata:
-                                    key = dict(
-                                        [(k, str(v))
-                                          for k, v in frame_metadata.items()])
-                                        
-                                    image_set = image_set_list.get_image_set(
-                                        frame_metadata)
-                                else:
-                                    image_set = image_set_list.get_image_set(
-                                        image_set_count)
-                                image_number = image_set.image_number
+                                if not md_dict.has_key(key):
+                                    raise ValueError(
+                                        "Could not find a matching image set for " %
+                                        ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
+                                image_numbers = md_dict[key]
+                            for image_number in image_numbers:
                                 for channel_settings in image_settings.channels:
-                                    c = int(channel_settings.channel_number.value) - 1
                                     image_name = channel_settings.get_image_name()
-                                    if c >= channel_count:
-                                        message = \
-         ("The flex file, ""%s"", series # %d, has only %d channels. "
-          "%s is assigned to channel % d") % (file_pathname, i, channel_count, 
-                                              image_name, c+1)
-                                        self.report_no_matching_files(frame, message)
-                                        return False
-                                    index = c * strideC + t * strideT + z * strideZ
+                                    channel = int(channel_settings.channel_number.value) - 1
+                                    if image_settings.interleaving == I_INTERLEAVED:
+                                        cidx = idx * nchannels + channel
+                                    else:
+                                        cidx = channel * nsets + idx
+                                    c = cidx % channel_count
+                                    z = int(cidx / channel_count) % stack_count
+                                    t = int(cidx / channel_count / stack_count) % timepoint_count
                                     m.add_measurement(
                                         cpmeas.IMAGE,
                                         "_".join((C_FILE_NAME, image_name)), 
@@ -1936,8 +1925,7 @@ class LoadImages(cpmodule.CPModule):
                                         image_set_number = image_number)
                                     m.add_measurement(
                                         cpmeas.IMAGE,
-                                        "_".join((C_FRAME, image_name)), 
-                                        index,
+                                        "_".join((C_FRAME, image_name)), cidx,
                                         image_set_number = image_number)
                                 for k in frame_metadata.keys():
                                     m.add_measurement(
@@ -1946,6 +1934,76 @@ class LoadImages(cpmodule.CPModule):
                                         frame_metadata[k], 
                                         image_set_number = image_number)
                                 image_set_count += 1
+                    else:
+                        distance = 1
+                        for dimension in pixels.DimensionOrder[2:]:
+                            if dimension == "C":
+                                strideC = distance
+                                distance *= pixels.SizeC
+                            elif dimension == "Z":
+                                strideZ = distance
+                                distance *= pixels.SizeZ
+                            elif dimension == "T":
+                                strideT = distance
+                                distance *= pixels.SizeT
+                        for z in range(pixels.SizeZ):
+                            for t in range(pixels.SizeT):
+                                frame_metadata = metadata.copy()
+                                frame_metadata[M_Z] = z
+                                frame_metadata[M_T] = t
+                                frame_metadata[C_SERIES] = i
+                                image_numbers = [image_set_count + 1]
+                                if match_metadata:
+                                    key = dict([(k, str(v)) 
+                                                for k,v in frame_metadata.items()])
+                                    if not md_dict.has_key(key):
+                                        raise ValueError(
+                                            "Could not find a matching image set for " %
+                                            ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
+                                    image_numbers = md_dict[key]
+                                for image_number in image_numbers:
+                                    for channel_settings in image_settings.channels:
+                                        c = int(channel_settings.channel_number.value) - 1
+                                        image_name = channel_settings.get_image_name()
+                                        if c >= channel_count:
+                                            message = \
+             ("The flex file, ""%s"", series # %d, has only %d channels. "
+              "%s is assigned to channel % d") % (file_pathname, i, channel_count, 
+                                                  image_name, c+1)
+                                            self.report_no_matching_files(frame, message)
+                                            return False
+                                        index = c * strideC + t * strideT + z * strideZ
+                                        m.add_measurement(
+                                            cpmeas.IMAGE,
+                                            "_".join((C_FILE_NAME, image_name)), 
+                                            filename,
+                                            image_set_number = image_number)
+                                        m.add_measurement(
+                                            cpmeas.IMAGE,
+                                            "_".join((C_PATH_NAME, image_name)),
+                                            path,
+                                            image_set_number = image_number)
+                                        m.add_measurement(
+                                            cpmeas.IMAGE,
+                                            "_".join((C_URL, image_name)), 
+                                            url,
+                                            image_set_number = image_number)
+                                        m.add_measurement(
+                                            cpmeas.IMAGE,
+                                            "_".join((C_SERIES, image_name)), i,
+                                            image_set_number = image_number)
+                                        m.add_measurement(
+                                            cpmeas.IMAGE,
+                                            "_".join((C_FRAME, image_name)), 
+                                            index,
+                                            image_set_number = image_number)
+                                    for k in frame_metadata.keys():
+                                        m.add_measurement(
+                                            cpmeas.IMAGE, 
+                                            "_".join((cpmeas.C_METADATA, k)),
+                                            frame_metadata[k], 
+                                            image_set_number = image_number)
+                                    image_set_count += 1
                                 
         return True
 
@@ -1971,7 +2029,6 @@ class LoadImages(cpmodule.CPModule):
     def prepare_run_of_movies(self, workspace):
         """Set up image providers for movie files"""
         pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
         frame = workspace.frame
         m = workspace.measurements
         files = self.collect_files(pipeline.test_mode, frame)
@@ -2033,7 +2090,6 @@ class LoadImages(cpmodule.CPModule):
                 raise RuntimeError("Image %s has %d frames, but image %s has %d frames"%(image_names[0],image_set_count,name,len(x)))
         list_of_lists = np.array(list_of_lists,dtype=object)
         for i in range(0,image_set_count):
-            image_set = image_set_list.get_image_set(i)
             for name, (file, frame, t, image_group_index) \
                 in zip(image_names, list_of_lists[:,i]):
                 image_group = self.images[image_group_index]

@@ -1434,7 +1434,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         workspace = W.Workspace(pipeline, load_images, None, None, m, 
                                 image_set_list)
         load_images.prepare_run(workspace)
-        self.assertEqual(image_set_list.count(),2)
+        self.assertEqual(m.image_set_count, 2)
         load_images.prepare_group(workspace, (), [1,2])
         image_set = image_set_list.get_image_set(0)
         w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
@@ -2207,7 +2207,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         workspace = W.Workspace(pipeline, module, None, None,
                                 m, image_set_list)
         module.prepare_run(workspace)
-        self.assertEqual(image_set_list.count(), 65)
+        self.assertEqual(m.image_set_count, 65)
         module.prepare_group(workspace, (), [1,2,3])
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
@@ -2358,7 +2358,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         workspace = W.Workspace(pipeline, module, None, None, m,
                                 image_set_list)
         module.prepare_run(workspace)
-        self.assertEqual(image_set_list.count(), 13)
+        self.assertEqual(m.image_set_count, 13)
         module.prepare_group(workspace, (), np.arange(1,16))
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
@@ -2425,7 +2425,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         m = measurements.Measurements()
         workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
         module.prepare_run(workspace)
-        self.assertEqual(image_set_list.count(), 13)
+        self.assertEqual(m.image_set_count, 13)
         module.prepare_group(workspace, (), np.arange(1,16))
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,

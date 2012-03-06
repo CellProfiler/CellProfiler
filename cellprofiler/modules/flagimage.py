@@ -144,10 +144,16 @@ class FlagImage(cpm.CPModule):
                      cps.Choice(
                 "Flag is based on", S_ALL, doc = '''
                 <ul>
-                <li><i> Whole-image measurement:</i> A per-image measurement, such as intensity or granularity.</li>
-                <li><i> Average measurement for all objects in each image:</i> The average of all object measurements in the image.</li>
+                <li><i> Whole-image measurement:</i> A per-image measurement, such as intensity or 
+                granularity.</li>
+                <li><i> Average measurement for all objects in each image:</i> The average of all 
+                object measurements in the image.</li>
                 <li><i> Measurements for all objects in each image:</i> All the 
-                object measurements in an image, without averaging. In other words, if <i>any</i> of the objects meet the criteria, the image will be flagged.</li>
+                object measurements in an image, without averaging. In other words, if <i>any</i> 
+                of the objects meet the criteria, the image will be flagged.</li>
+                <li><i>Rules:</i>Use a text file of rules produced by CellProfiler Analyst. If you 
+                choose <i>Rules</i>, you will have to ensure that this pipeline makes every measurement 
+                in the rules file prior to this module.</li>
                 </ul>'''))
         group.append("object_name",
                      cps.ObjectNameSubscriber(

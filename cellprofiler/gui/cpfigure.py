@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 __version__ = "$Revision$"
 
 import logging
+logger = logging.getLogger(__name__)
 import numpy as np
 import os
 import sys
@@ -872,53 +873,32 @@ class CPFigureFrame(wx.Frame):
                     image = self.frame.normalize_image(self.image, 
                                                        **self.kwargs)
                     magnification = renderer.get_image_magnification()
+                    numrows, numcols = self.image.shape[:2]
+                    if numrows == 0 or numcols == 0:
+                        return
                     #
-                    # Code partially borrowed from matplotlib/image.py
-                    # AxesImage.make_image
+                    # Limit the viewports to the image extents
                     #
-                    dxintv = image.shape[1]
-                    dyintv = image.shape[0]
-            
-                    # the viewport scale factor
-                    sx = dxintv/self.axes.viewLim.width
-                    sy = dyintv/self.axes.viewLim.height
-                    flip_ud = sy < 0
+                    view_x0 = int(min(numcols-1, max(0, self.axes.viewLim.x0 - self.filterrad)))
+                    view_x1 = int(min(numcols,   max(0, self.axes.viewLim.x1 + self.filterrad)))
+                    view_y0 = int(min(numrows-1, 
+                                      max(0, min(self.axes.viewLim.y0, 
+                                                 self.axes.viewLim.y1) - self.filterrad)))
+                    view_y1 = int(min(numrows, 
+                                      max(0, max(self.axes.viewLim.y0,
+                                                 self.axes.viewLim.y1) + self.filterrad)))
+                    xslice = slice(view_x0, view_x1)
+                    yslice = slice(view_y0, view_y1)
+                    image = image[yslice, xslice, :]
+                    
+                    #
+                    # Flip image upside-down if height is negative
+                    #
+                    flip_ud = self.axes.viewLim.height < 0
                     if flip_ud:
                         image = np.flipud(image)
-                    sy = abs(sy)
-                    numrows, numcols = self.image.shape[:2]
-                    if sx > 2:
-                        x0 = self.axes.viewLim.x0/dxintv * numcols
-                        ix0 = max(0, int(x0 - self.filterrad))
-                        x1 = self.axes.viewLim.x1/dxintv * numcols
-                        ix1 = min(numcols, int(x1 + self.filterrad))
-                        xslice = slice(ix0, ix1)
-                        xmin = ix0*dxintv/numcols
-                        xmax = ix1*dxintv/numcols
-                        dxintv = xmax - xmin
-                        sx = dxintv/self.axes.viewLim.width
-                    else:
-                        xmin = 0
-                        xmax = numcols
-                        xslice = slice(0, numcols)
             
-                    if sy > 1:
-                        y0 = self.axes.viewLim.y1/dyintv * numrows
-                        iy0 = max(0, int(y0 - self.filterrad))
-                        y1 = self.axes.viewLim.y0/dyintv * numrows
-                        iy1 = min(numrows, int(y1 + self.filterrad))
-                        yslice = slice(numrows-iy1, numrows-iy0)
-                        ymin = iy0*dyintv/numrows
-                        ymax = iy1*dyintv/numrows
-                        dyintv = ymin - ymax
-                        sy = abs(dyintv/self.axes.viewLim.height)
-                    else:
-                        ymin = 0
-                        ymax = numrows
-                        yslice = slice(0, numrows)
-            
-                    im = matplotlib.image.fromarray(
-                        image[yslice, xslice, :], 0)
+                    im = matplotlib.image.fromarray(image, 0)
                     im.is_grayscale = False
                     im.set_interpolation(matplotlib.image.NEAREST)
                     fc = self.axes.patch.get_facecolor()
@@ -927,27 +907,31 @@ class CPFigureFrame(wx.Frame):
             
                     # image input dimensions
                     im.reset_matrix()
-                    numrows, numcols = im.get_size()
-                    if numrows < 1 or numcols < 1:  # out of range
-                        return
             
-                    # the viewport translation
-                    tx = (xmin-self.axes.viewLim.x0)/dxintv * numcols
-                    ty = (self.axes.viewLim.y1-ymin)/dyintv * numrows
+                    # the viewport translation in the X direction
+                    tx = view_x0 - self.axes.viewLim.x0
+                    #
+                    # the viewport translation in the Y direction
+                    # which is from the bottom of the screen
+                    #
+                    if self.axes.viewLim.height < 0:
+                        ty = (self.axes.viewLim.y0 - view_y1)
+                    else:
+                        ty = view_y0 - self.axes.viewLim.y0
+                    im.apply_translation(tx, ty)
             
                     l, b, r, t = self.axes.bbox.extents
                     widthDisplay = (round(r) + 0.5) - (round(l) - 0.5)
                     heightDisplay = (round(t) + 0.5) - (round(b) - 0.5)
-                    widthDisplay *= magnification
-                    heightDisplay *= magnification
-                    im.apply_translation(tx, ty)
+                    widthDisplay = int(widthDisplay * magnification)
+                    heightDisplay = int(heightDisplay * magnification)
             
                     # resize viewport to display
-                    rx = widthDisplay / numcols
-                    ry = heightDisplay  / numrows
-                    im.apply_scaling(rx*sx, ry*sy)
-                    im.resize(int(widthDisplay+0.5), int(heightDisplay+0.5),
-                              norm=1, radius=self.filterrad)
+                    sx = widthDisplay / self.axes.viewLim.width
+                    sy = abs(heightDisplay  / self.axes.viewLim.height)
+                    im.apply_scaling(sx, sy)
+                    im.resize(widthDisplay, heightDisplay,
+                              norm=1, radius = self.filterrad)
                     bbox = self.axes.bbox.frozen()
                     im._url = self.frame.Title
                     

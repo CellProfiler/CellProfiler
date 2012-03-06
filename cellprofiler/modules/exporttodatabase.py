@@ -250,7 +250,7 @@ def connect_mysql(host, user, pw, db):
 def connect_sqlite(db_file):
     '''Creates and returns a db connection and cursor.'''
     import sqlite3 
-    connection = sqlite3.connect(db_file)
+    connection = sqlite3.connect(db_file, timeout=30)
     cursor = connection.cursor()
     return connection, cursor
 
@@ -2319,18 +2319,19 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 # Extract user-specified image names and colors
                 user_image_names = [];
                 image_channel_colors = []               
-                corresponding_default_image_names = []
+                corresponding_image_names = []
                 for group in self.image_groups:
-                    corresponding_default_image_names += [group.image_cols.value]
+                    corresponding_image_names += [group.image_cols.value]
                     if group.wants_automatic_image_name:
                         user_image_names += [group.image_cols.value]
                     else:
                         user_image_names += [group.image_name.value]
                     image_channel_colors += [group.image_channel_colors.value]
                         
-                # Sort user-specified names and colors according to default image order                
-                idx = [default_image_names.index(x) for x in corresponding_default_image_names]
-                idx = [idx.index(x) for x in sorted(idx)]
+                # Sort user-specified names and colors according to alphabetical order.
+                #  If the user has thumbnails, they are listed in alphabetical order and unfortunately inherit the channel colors
+                #  so I try to get them to match. Not foolproof but oh well...
+                idx = [corresponding_image_names.index(x) for x in sorted(corresponding_image_names)]
                 user_image_names = [user_image_names[x] for x in idx]
                 image_channel_colors = [image_channel_colors[x] for x in idx]
                 

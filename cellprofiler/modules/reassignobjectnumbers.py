@@ -270,7 +270,7 @@ class ReassignObjectNumbers(cpm.CPModule):
                     output_labels = self.filter_using_image(workspace, mask)
             elif self.unify_option == UNIFY_PARENT:
                 parent_objects = workspace.object_set.get_objects(self.parent_object.value)
-                output_labels, count = scind.label(parent_objects.segmented, np.ones((3,3), bool))
+                output_labels = parent_objects.segmented.copy()
                 output_labels[labels == 0] = 0
             
         output_objects = cpo.Objects()

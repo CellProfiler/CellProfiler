@@ -49,6 +49,9 @@ __version__="$Revision: 9000 $"
 import numpy as np
 from contrib.english import ordinal
 
+from scipy.ndimage import label
+from scipy.sparse import coo_matrix
+
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -60,9 +63,12 @@ FTR_PRECISION = "Precision"
 FTR_RECALL = "Recall"
 FTR_FALSE_POS_RATE = "FalsePosRate"
 FTR_FALSE_NEG_RATE = "FalseNegRate"
+FTR_RAND_INDEX = "RandIndex"
+FTR_ADJUSTED_RAND_INDEX = "AdjustedRandIndex"
 
 FTR_ALL = [FTR_F_FACTOR, FTR_PRECISION, FTR_RECALL,
-           FTR_FALSE_POS_RATE, FTR_FALSE_NEG_RATE]
+           FTR_FALSE_POS_RATE, FTR_FALSE_NEG_RATE,
+           FTR_RAND_INDEX, FTR_ADJUSTED_RAND_INDEX]
 
 O_OBJ = "Segmented objects"
 O_IMG = "Foreground/background segmentation"
@@ -182,7 +188,102 @@ class CalculateImageOverlap(cpm.CPModule):
         else:
             false_negative_rate = (float(false_negative_count) / 
                                    float(true_count))
+        ###############################
+        #
+        # Caluclate the Rand Index
+        # http://en.wikipedia.org/wiki/Rand_index
+        #
+        # Given a set of N elements and two partitions of that set, X and Y
+        #
+        # A = the number of pairs of elements in S that are in the same set in
+        #     X and in the same set in Y
+        # B = the number of pairs of elements in S that are in different sets
+        #     in X and different sets in Y
+        # C = the number of pairs of elements in S that are in the same set in
+        #     X and different sets in Y
+        # D = the number of pairs of elements in S that are in different sets
+        #     in X and the same set in Y
+        #
+        # The rand index is:   A + B
+        #                      -----
+        #                      A+B+C+D
+        ##########################
         
+        ground_truth_labels, ground_truth_count = label(
+            ground_truth_pixels & mask, np.ones((3, 3), bool))
+        test_labels, test_count = label(
+            test_pixels & mask, np.ones((3, 3), bool))
+        ground_truth_labels = ground_truth_labels[mask].astype(np.uint64)
+        test_labels = test_labels[mask].astype(np.uint64)
+        if len(test_labels) > 0:
+            #
+            # Create a sparse matrix of the pixel labels in each of the sets
+            # 
+            # The matrix, N(i,j) gives the counts of all of the pixels that were
+            # labeled with label I in the ground truth and label J in the 
+            # test set.
+            #
+            N_ij = coo_matrix((np.ones(len(test_labels)), 
+                               (ground_truth_labels, test_labels))).toarray()
+            def choose2(x):
+                '''Compute # of pairs of x things = x * (x-1) / 2'''
+                return x * (x - 1) / 2
+            #
+            # Each cell in the matrix is a count of a grouping of pixels whose
+            # pixel pairs are in the same set in both groups. The number of 
+            # pixel pairs is n * (n - 1), so A = sum(matrix * (matrix - 1))
+            #
+            A = np.sum(choose2(N_ij))
+            #
+            # B is the sum of pixels that were classified differently by both
+            # sets. But the easier calculation is to find A, C and D and get
+            # B by subtracting A, C and D from the N * (N - 1), the total
+            # number of pairs.
+            #
+            # For C, we take the number of pixels classified as "i" and for each
+            # "j", subtract N(i,j) from N(i) to get the number of pixels in
+            # N(i,j) that are in some other set = (N(i) - N(i,j)) * N(i,j)
+            #
+            # We do the similar calculation for D
+            #
+            N_i = np.sum(N_ij, 1)
+            N_j = np.sum(N_ij, 0)
+            C = np.sum((N_i[:, np.newaxis] - N_ij) * N_ij) / 2
+            D = np.sum((N_j[np.newaxis, :] - N_ij) * N_ij) / 2
+            total = choose2(len(test_labels))
+            # an astute observer would say, why bother computing A and B
+            # when all we need is A+B and C, D and the total can be used to do
+            # that. The calculations aren't too expensive, though, so I do them.
+            B = total - A - C - D
+            rand_index = (A + B) / total
+            #
+            # The adjusted rand index is the rand index adjusted for chance
+            # so as not to penalize situations with many segmentations.
+            #
+            # Jorge M. Santos, Mark Embrechts, "On the Use of the Adjusted Rand 
+            # Index as a Metric for Evaluating Supervised Classification",
+            # Lecture Notes in Computer Science, 
+            # Springer, Vol. 5769, pp. 175-184, 2009. Eqn # 6
+            #
+            # ExpectedIndex = best possible score
+            #
+            # ExpectedIndex = sum(N_i choose 2) * sum(N_j choose 2) 
+            #
+            # MaxIndex = worst possible score = 1/2 (sum(N_i choose 2) + sum(N_j choose 2)) * total
+            #
+            #  A * total - ExpectedIndex
+            # -------------------------
+            #  MaxIndex - ExpectedIndex
+            #
+            # 
+            expected_index = np.sum(choose2(N_i)) * np.sum(choose2(N_j))
+            max_index = (np.sum(choose2(N_i)) + np.sum(choose2(N_j))) * total / 2
+            
+            adjusted_rand_index = \
+                (A * total - expected_index) / (max_index - expected_index)
+        else:
+            rand_index = adjusted_rand_index = np.nan
+            
         m = workspace.measurements
         m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), f_factor)
         m.add_image_measurement(self.measurement_name(FTR_PRECISION),
@@ -192,18 +293,28 @@ class CalculateImageOverlap(cpm.CPModule):
                                 false_positive_rate)
         m.add_image_measurement(self.measurement_name(FTR_FALSE_NEG_RATE),
                                 false_negative_rate)
+        m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX),
+                                rand_index)
+        m.add_image_measurement(self.measurement_name(FTR_ADJUSTED_RAND_INDEX),
+                                adjusted_rand_index)
+        
         if workspace.frame is not None:
             workspace.display_data.true_positives = true_positives
             workspace.display_data.true_negatives = true_negatives
             workspace.display_data.false_positives = false_positives
             workspace.display_data.false_negatives = false_negatives
+            workspace.display_data.rand_index = rand_index
+            workspace.display_data.adjusted_rand_index = adjusted_rand_index
             workspace.display_data.statistics = [
                 ("Measurement", "Value"),
                 (FTR_F_FACTOR, f_factor),
                 (FTR_PRECISION, precision),
                 (FTR_RECALL, recall),
                 (FTR_FALSE_POS_RATE, false_positive_rate),
-                (FTR_FALSE_NEG_RATE, false_negative_rate)]
+                (FTR_FALSE_NEG_RATE, false_negative_rate),
+                (FTR_RAND_INDEX, rand_index),
+                (FTR_ADJUSTED_RAND_INDEX, adjusted_rand_index)
+            ]
             
     def measure_objects(self, workspace):
         image_set = workspace.image_set

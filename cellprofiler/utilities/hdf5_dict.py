@@ -154,6 +154,9 @@ class HDF5Dict(object):
 
     def __del__(self):
         logger.debug("HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary)
+        self.close()
+        
+    def close(self):
         if not hasattr(self, "hdf5_file"):
             # This happens if the constructor could not open the hdf5 file
             return
@@ -163,10 +166,11 @@ class HDF5Dict(object):
                 self.hdf5_file.close()
                 os.unlink(self.filename)
             except Exception, e:
-                pass
+                logger.warn("So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
         else:
             self.hdf5_file.flush()
             self.hdf5_file.close()
+        del self.hdf5_file
 
     def flush(self):
         logger.debug("HDF5Dict.flush(): %s, temporary=%s", self.filename, self.is_temporary)

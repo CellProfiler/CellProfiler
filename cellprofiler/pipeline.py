@@ -2210,6 +2210,7 @@ class Pipeline(object):
         
         return key_list, iscds, metadata_key_names, image_sets, groupings
     
+            
     def has_undo(self):
         '''True if an undo action can be performed'''
         return len(self.__undo_stack)
@@ -2703,6 +2704,10 @@ class Pipeline(object):
         fd - file descriptor to write to
         
         '''
+        if any([m.module_name in self.LEGACY_LOAD_MODULES
+                for m in self.modules()]):
+            return self.write_legacy_image_set(fd)
+        
         key_list, iscds, metadata_key_names, image_sets, groupings = \
             self.get_grouped_image_sets()
         
@@ -2766,6 +2771,41 @@ class Pipeline(object):
                     row += list(os.path.split(path))
                     row += [str(ipd.series), str(ipd.index), str(ipd.channel)]
                 writer.writerow(row)
+                
+    def write_legacy_image_set(self, fd):
+        '''Get image sets from legacy pipelines'''
+        measurements = cpmeas.Measurements()
+        image_set_list = cpi.ImageSetList()
+        for module in self.modules():
+            if not module.module_name in self.LEGACY_LOAD_MODULES:
+                continue
+            workspace = cpw.Workspace(self, module, None, None,
+                                      measurements, image_set_list)
+            if not module.prepare_run(workspace):
+                raise ValueError("Failed to get compile image sets")
+            
+        key_names, group_list = self.get_groupings(workspace)
+
+        header = [cpmeas.IMAGE_NUMBER, cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX]
+        features = [ ftr for ftr in measurements.get_feature_names(cpmeas.IMAGE)
+                     if ftr not in (cpmeas.IMAGE_NUMBER, 
+                                    cpmeas.GROUP_NUMBER, 
+                                    cpmeas.GROUP_INDEX)] 
+        header += features
+        fd.write((u'"'+u'","'.join(header) + u'"\n').encode('utf-8'))
+    
+        current_image_number = 1
+        for group_number, (group_key, image_numbers) in enumerate(group_list):
+            for group_index, image_number in enumerate(image_numbers):
+                values = [unicode(current_image_number),
+                          unicode(group_number),
+                          unicode(group_index)]
+                for feature in features:
+                    values.append(measurements.get_measurement(
+                        cpmeas.IMAGE, feature, image_number))
+                fd.write((u'"'+u'","'.join(values) + u'"\n').encode('utf-8'))
+                current_image_number += 1
+        del measurements
     
 class AbstractPipelineEvent:
     """Something that happened to the pipeline and was indicated to the listeners

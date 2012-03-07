@@ -18,6 +18,7 @@ import base64
 import numpy as np
 import os
 import PIL.Image as PILImage
+import tempfile
 import scipy.ndimage
 from StringIO import StringIO
 import unittest
@@ -32,6 +33,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
+import cellprofiler.preferences as cpprefs
 
 import cellprofiler.modules.flagimage as F
 
@@ -623,3 +625,30 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
         self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
         self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 0)
         self.assertEqual(workspace.disposition, cpw.DISPOSITION_CONTINUE)
+        
+    def test_08_01_filter_by_rule(self):
+        module, workspace = self.make_workspace([1.0],[])
+        flag = module.flags[0]
+        self.assertTrue(isinstance(flag, cps.SettingsGroup))
+        flag.wants_skip.value = False
+        measurement = flag.measurement_settings[0]
+        self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+        rules_file_contents = "IF (%s > 2.0, [1.0,-1.0], [-1.0,1.0])\n"%('_'.join((cpmeas.IMAGE,image_measurement_name(0))))
+        rules_path = tempfile.mktemp()
+        rules_dir, rules_file = os.path.split(rules_path)
+        measurement.source_choice.value = F.S_RULES
+        measurement.rules_file_name.value = rules_file
+        measurement.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+        measurement.rules_directory.custom_path = rules_dir
+        
+        fd = open(rules_path, 'wt')
+        try:
+            fd.write(rules_file_contents)
+            fd.close()
+            module.run(workspace)
+            m = workspace.measurements
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
+            self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
+        finally:
+            os.remove(rules_path)

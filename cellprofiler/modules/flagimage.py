@@ -612,7 +612,7 @@ class FlagImage(cpm.CPModule):
                     new_setting_values += [measurement_source]
                     new_setting_values += setting_values[(idx+1):(idx+N_SETTINGS_PER_MEASUREMENT_V2)] + \
                         [cps.DirectoryPath.static_join_string(cps.DEFAULT_INPUT_FOLDER_NAME,"None"), "rules.txt"]
-                    idx += N_SETTINGS_PER_MEASUREMENT
+                    idx += N_SETTINGS_PER_MEASUREMENT_V2
             setting_values = new_setting_values
             
             variable_revision_number = 3

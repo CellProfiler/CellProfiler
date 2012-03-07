@@ -56,6 +56,7 @@ class Rules(object):
             '''
             values = measurements.get_current_measurement(self.object_name,
                                                           self.feature)
+            values = np.array([values]) if np.isscalar(values) else values
             score = np.zeros((len(values),self.weights.shape[1]),float)
             if len(values) == 0:
                 return score

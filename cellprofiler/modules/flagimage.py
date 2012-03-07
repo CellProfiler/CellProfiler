@@ -36,12 +36,15 @@ __version__="$Revision$"
 import logging
 import numpy as np
 import sys
+import os
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
+import cellprofiler.utilities.rules as cprules
+from cellprofiler.preferences import IO_FOLDER_CHOICE_HELP_TEXT
 
 logger = logging.getLogger(__name__)
 C_ANY = "Flag if any fail"
@@ -50,19 +53,21 @@ C_ALL = "Flag if all fail"
 S_IMAGE = "Whole-image measurement"
 S_AVERAGE_OBJECT = "Average measurement for all objects in each image"
 S_ALL_OBJECTS = "Measurements for all objects in each image"
-S_ALL = [S_IMAGE, S_AVERAGE_OBJECT, S_ALL_OBJECTS]
+S_RULES = "Rules"
+S_ALL = [S_IMAGE, S_AVERAGE_OBJECT, S_ALL_OBJECTS, S_RULES]
 
 '''Number of settings in the module, aside from those in the flags'''
 N_FIXED_SETTINGS = 1
 '''Number of settings in each flag, aside from those in the measurements'''
 N_FIXED_SETTINGS_PER_FLAG = 5
 '''Number of settings per measurement'''
-N_SETTINGS_PER_MEASUREMENT = 7
+N_SETTINGS_PER_MEASUREMENT_V2 = 7
+N_SETTINGS_PER_MEASUREMENT = 9
 
 class FlagImage(cpm.CPModule):
    
     category = "Data Tools"
-    variable_revision_number = 2
+    variable_revision_number = 3
     module_name = "FlagImage"
     
     def create_settings(self):
@@ -139,10 +144,16 @@ class FlagImage(cpm.CPModule):
                      cps.Choice(
                 "Flag is based on", S_ALL, doc = '''
                 <ul>
-                <li><i> Whole-image measurement:</i> A per-image measurement, such as intensity or granularity.</li>
-                <li><i> Average measurement for all objects in each image:</i> The average of all object measurements in the image.</li>
+                <li><i> Whole-image measurement:</i> A per-image measurement, such as intensity or 
+                granularity.</li>
+                <li><i> Average measurement for all objects in each image:</i> The average of all 
+                object measurements in the image.</li>
                 <li><i> Measurements for all objects in each image:</i> All the 
-                object measurements in an image, without averaging. In other words, if <i>any</i> of the objects meet the criteria, the image will be flagged.</li>
+                object measurements in an image, without averaging. In other words, if <i>any</i> 
+                of the objects meet the criteria, the image will be flagged.</li>
+                <li><i>Rules:</i>Use a text file of rules produced by CellProfiler Analyst. If you 
+                choose <i>Rules</i>, you will have to ensure that this pipeline makes every measurement 
+                in the rules file prior to this module.</li>
                 </ul>'''))
         group.append("object_name",
                      cps.ObjectNameSubscriber(
@@ -153,6 +164,39 @@ class FlagImage(cpm.CPModule):
             if group.source_choice == S_IMAGE:
                 return cpmeas.IMAGE
             return group.object_name.value
+
+        group.append("rules_directory",
+                     cps.DirectoryPath(
+                    "Rules file location",
+                    doc = """<i>(Used only when filtering by rules)</i>
+                    <br>
+                    Select the location of the rules file that will be used for filtering.
+                    %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals()))
+         
+        def get_directory_fn():
+            '''Get the directory for the rules file name'''
+            return self.rules_directory.get_absolute_path()
+                
+        def set_directory_fn(path):
+            dir_choice, custom_path = group.rules_directory.get_parts_from_path(path)
+            group.rules_directory.join_parts(dir_choice, custom_path)
+        
+        group.append("rules_file_name", cps.FilenameText(
+                    "Rules file name","rules.txt",
+                    get_directory_fn = get_directory_fn,
+                    set_directory_fn = set_directory_fn,
+                    doc="""<i>(Used only when filtering using rules)</i>
+                    <br>The name of the file holding the rules. Each line of
+                    this file should be a rule naming a measurement to be made
+                    on an image, for instance:
+                    <br><tt>
+                    IF (Image_ImageQuality_PowerLogLogSlope_DNA < -2.5, [0.79, -0.79], [-0.94, 0.94])
+                    </tt><br>
+                    The above rule will score +.79 for the positive category and -0.94
+                    for the negative category for images whose power log slope is less than -2.5
+                    pixels and will score the opposite for images whose slope is larger.
+                    The filter adds positive and negative and flags the images whose
+                    positive score is higher than the negative score."""))
 
         group.append("measurement", cps.Measurement("Which measurement?",
                                                     object_fn))
@@ -180,7 +224,8 @@ class FlagImage(cpm.CPModule):
             for mg in flag.measurement_settings:
                 result += [mg.source_choice, mg.object_name, mg.measurement,
                            mg.wants_minimum, mg.minimum_value,
-                           mg.wants_maximum, mg.maximum_value]
+                           mg.wants_maximum, mg.maximum_value, 
+                           mg.rules_directory, mg.rules_file_name]
         return result
     
     def prepare_settings(self, setting_values):
@@ -208,14 +253,17 @@ class FlagImage(cpm.CPModule):
                 result = []
             result += [m_g.source_choice]
             
-            if m_g.source_choice != S_IMAGE:
+            if m_g.source_choice == S_ALL_OBJECTS or m_g.source_choice == S_AVERAGE_OBJECT:
                 result += [m_g.object_name]
-            result += [m_g.measurement, m_g.wants_minimum]
-            if m_g.wants_minimum.value:
-                result += [m_g.minimum_value]
-            result += [m_g.wants_maximum]
-            if m_g.wants_maximum.value:
-                result += [m_g.maximum_value]
+            if m_g.source_choice == S_RULES:
+                result += [m_g.rules_directory, m_g.rules_file_name]
+            else:
+                result += [m_g.measurement, m_g.wants_minimum]
+                if m_g.wants_minimum.value:
+                    result += [m_g.minimum_value]
+                result += [m_g.wants_maximum]
+                if m_g.wants_maximum.value:
+                    result += [m_g.maximum_value]
             if hasattr(m_g, "remover"):
                 result += [m_g.remover, cps.Divider(line=True)]
             return result
@@ -242,6 +290,27 @@ class FlagImage(cpm.CPModule):
         result += [self.add_flag_button]
         return result
     
+    def validate_module(self, pipeline):
+        '''If using rules, validate them'''
+        for flag in self.flags:
+            for measurement_setting in flag.measurement_settings:
+                if measurement_setting.source_choice == S_RULES:
+                    try:
+                        rules = self.get_rules(measurement_setting)
+                    except Exception, instance:
+                        logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
+                        raise cps.ValidationError(str(instance),
+                                                  measurement_setting.rules_file_name)
+                    if not np.all([r.object_name == cpmeas.IMAGE for r in rules.rules]):
+                        raise cps.ValidationError("The rules listed in %s describe objects instead of images."%measurement_setting.rules_file_name.value,
+                                                    measurement_setting.rules_file_name)
+                    rule_features = [r.feature for r in rules.rules]
+                    measurement_cols = [c[1] for c in pipeline.get_measurement_columns()]
+                    undef_features = list(set(rule_features).difference(measurement_cols))
+                    if undef_features:
+                        raise cps.ValidationError("The rule described by %s has not been measured earlier in the pipeline."%undef_features[0],
+                                                    measurement_setting.rules_file_name)
+
     def is_interactive(self):
         return False
     
@@ -339,6 +408,18 @@ class FlagImage(cpm.CPModule):
     def measurement_name(self, flag):
         return "_".join((flag.category.value, flag.feature_name.value))
 
+    def get_rules(self, measurement_group):
+        '''Read the rules from a file'''
+        rules_file = measurement_group.rules_file_name.value
+        rules_directory = measurement_group.rules_directory.get_absolute_path()
+        path = os.path.join(rules_directory, rules_file)
+        if not os.path.isfile(path):
+            raise cps.ValidationError("No such rules file: %s"%path, rules_file)
+        else:
+            rules = cprules.Rules()
+            rules.parse(path)
+            return rules
+
     def run_flag(self, workspace, flag):
         ok, stats = self.eval_measurement(workspace, 
                                           flag.measurement_settings[0])
@@ -405,15 +486,29 @@ class FlagImage(cpm.CPModule):
                     display_value = str(min_value)
                 else:
                     display_value = "%.3f - %.3f"%(min_value,max_value)
+        elif ms.source_choice == S_RULES:
+            rules = self.get_rules(ms)
+            scores = rules.score(workspace.measurements)
+            #
+            # NaN positive scores get - infinity. NaN negative scores get
+            # infinity. This means all NaN images get rejected.
+            #
+            scores[np.isnan(scores[:,0]),0] = -np.Infinity
+            scores[np.isnan(scores[:,1]),1] = np.Infinity
+            fail = not (scores[:,0] > scores[:,1])
+            source = cpmeas.IMAGE
+            display_value = "--"
         else:
             raise NotImplementedError("Source choice of %s not implemented" %
                                       ms.source_choice)
-        fail = (fail or
+        fail = ((ms.source_choice != S_RULES and (fail or
                 (ms.wants_minimum.value and 
                  min_value < ms.minimum_value.value) or
                 (ms.wants_maximum.value and
-                 max_value > ms.maximum_value.value))
-        return ((not fail), (source, ms.measurement.value, display_value, 
+                 max_value > ms.maximum_value.value))) or
+                (ms.source_choice == S_RULES and fail))
+        
+        return ((not fail), (source, ms.measurement.value if ms.source_choice != S_RULES else "Rules", display_value, 
                              "Fail" if fail else "Pass"))
     
     def get_measurement_columns(self, pipeline):
@@ -503,5 +598,24 @@ class FlagImage(cpm.CPModule):
                     idx += 7
             setting_values = new_setting_values
             variable_revision_number = 2
+        
+        if (not from_matlab) and variable_revision_number == 2:
+            # Added rules
+            new_setting_values = [setting_values[0]]
+            idx = 1
+            for flag_idx in range(int(setting_values[0])):
+                new_setting_values += setting_values[idx:idx+N_FIXED_SETTINGS_PER_FLAG]
+                meas_count = int(setting_values[idx])
+                idx += N_FIXED_SETTINGS_PER_FLAG
+                for meas_idx in range(meas_count):
+                    measurement_source = setting_values[idx]
+                    new_setting_values += [measurement_source]
+                    new_setting_values += setting_values[(idx+1):(idx+N_SETTINGS_PER_MEASUREMENT_V2)] + \
+                        [cps.DirectoryPath.static_join_string(cps.DEFAULT_INPUT_FOLDER_NAME,"None"), "rules.txt"]
+                    idx += N_SETTINGS_PER_MEASUREMENT_V2
+            setting_values = new_setting_values
+            
+            variable_revision_number = 3
+            
         return setting_values, variable_revision_number, from_matlab
     

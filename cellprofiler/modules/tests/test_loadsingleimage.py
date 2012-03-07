@@ -349,9 +349,12 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         cpprefs.set_default_image_directory(path)
         file_name = "1-162hrh2ax2.tif"
         workspace, module = self.make_workspace([file_name])
+        assert isinstance(module, L.LoadSingleImage)
+        module.prepare_run(workspace)
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertEqual(m.image_set_count, 1)
         f = m.get_all_measurements(cpmeas.IMAGE, 
                                    "_".join((L.C_FILE_NAME, self.get_image_name(0))))
         self.assertEqual(len(f), 1)
@@ -381,6 +384,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         self.assertTrue(isinstance(module, L.LoadSingleImage))
         module.file_settings[0].rescale.value = False
         module.file_settings[1].rescale.value = True
+        module.prepare_run(workspace)
         module.run(workspace)
         unscaled, scaled = [workspace.image_set.get_image(self.get_image_name(i)).pixel_data
                             for i in range(2)]
@@ -509,6 +513,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(
                 pipeline, module, image_set, object_set, m, image_set_list)
+            module.prepare_run(workspace)
             module.run(workspace)
             
             o = object_set.get_objects(OBJECTS_NAME)
@@ -560,6 +565,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(
                 pipeline, module, image_set, object_set, m, image_set_list)
+            module.prepare_run(workspace)
             module.run(workspace)
             
             outlines = image_set.get_image(OUTLINES_NAME)

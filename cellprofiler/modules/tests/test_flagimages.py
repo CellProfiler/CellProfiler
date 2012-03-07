@@ -301,6 +301,99 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_
                     self.assertAlmostEqual(measurement.maximum_value.value,
                                            max_value)
 
+    def test_01_04_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:2
+DateRevision:20120306205005
+
+FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Hidden:2
+    Hidden:3
+    Name the flag\'s category:Metadata
+    Name the flag:QCFlag
+    Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
+    Skip image set if flagged?:No
+    Flag is based on:Whole-image measurement
+    Select the object whose measurements will be used to flag:None
+    Which measurement?:Intensity_MaxIntensity_DNA
+    Flag images based on low values?:No
+    Minimum value:0.0
+    Flag images based on high values?:Yes
+    Maximum value:0.95
+    Rules file location:Default Input Folder\x7CNone
+    Rules file name:foo.txt
+    Flag is based on:Whole-image measurement
+    Select the object whose measurements will be used to flag:None
+    Which measurement?:Intensity_MinIntensity_Cytoplasm
+    Flag images based on low values?:Yes
+    Minimum value:0.05
+    Flag images based on high values?:No
+    Maximum value:1.0
+    Rules file location:Default Input Folder\x7CNone
+    Rules file name:bar.txt
+    Flag is based on:Whole-image measurement
+    Select the object whose measurements will be used to flag:None
+    Which measurement?:Intensity_MeanIntensity_DNA
+    Flag images based on low values?:Yes
+    Minimum value:0.1
+    Flag images based on high values?:Yes
+    Maximum value:0.9
+    Rules file location:Default Input Folder\x7CNone
+    Rules file name:baz.txt
+    Hidden:1
+    Name the flag\'s category:Metadata
+    Name the flag:HighCytoplasmIntensity
+    Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
+    Skip image set if flagged?:Yes
+    Flag is based on:Whole-image measurement
+    Select the object whose measurements will be used to flag:None
+    Which measurement?:Intensity_MeanIntensity_Cytoplasm
+    Flag images based on low values?:No
+    Minimum value:0.0
+    Flag images based on high values?:Yes
+    Maximum value:.8
+    Rules file location:Default Input Folder\x7CNone
+    Rules file name:dunno.txt
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, F.FlagImage))
+        expected = (("QCFlag", F.C_ANY, False,
+                     (("Intensity_MaxIntensity_DNA", None, .95, "foo.txt"),
+                      ("Intensity_MinIntensity_Cytoplasm", .05, None, "bar.txt"),
+                      ("Intensity_MeanIntensity_DNA", .1, .9, "baz.txt"))),
+                    ("HighCytoplasmIntensity", None, True,
+                     (("Intensity_MeanIntensity_Cytoplasm", None, .8, "dunno.txt"),)))
+        self.assertEqual(len(expected),module.flag_count.value)
+        for flag, (feature_name, combine, skip, measurements) \
+            in zip(module.flags, expected):
+            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            self.assertEqual(flag.category, "Metadata")
+            self.assertEqual(flag.feature_name, feature_name)
+            self.assertEqual(flag.wants_skip, skip)
+            if combine is not None:
+                self.assertEqual(flag.combination_choice, combine)
+            self.assertEqual(len(measurements), flag.measurement_count.value)
+            for measurement, (measurement_name, min_value, max_value, rules_file) \
+                in zip(flag.measurement_settings, measurements):
+                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+                self.assertEqual(measurement.source_choice, F.S_IMAGE)
+                self.assertEqual(measurement.measurement, measurement_name)
+                self.assertEqual(measurement.wants_minimum.value, min_value is not None)
+                if measurement.wants_minimum.value:
+                    self.assertAlmostEqual(measurement.minimum_value.value,
+                                           min_value)
+                self.assertEqual(measurement.wants_maximum.value, max_value is not None)
+                if measurement.wants_maximum.value:
+                    self.assertAlmostEqual(measurement.maximum_value.value,
+                                           max_value)
+                self.assertEqual(measurement.rules_file_name, rules_file)
+
     def make_workspace(self, image_measurements, object_measurements):
         '''Make a workspace with a FlagImage module and the given measurements
         

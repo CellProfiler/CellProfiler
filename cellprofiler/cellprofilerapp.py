@@ -22,6 +22,21 @@ class CellProfilerApp(wx.App):
         self.SetAppName('CellProfiler2.0')
 
         wx.InitAllImageHandlers()
+        result = wx.MessageBox(
+            "You've somehow managed to get your hands on the FileUI branch\n"
+            "of CellProfiler which is at this point totally unuseable and\n"
+            "will cause you to do bad science. We now save tags in the \n"
+            "pipeline that let us figure out what version you're using and\n"
+            "if a pipeline from the FileUI branch shows up as supplementary\n"
+            "data in a publication of yours, we'll ask the editors to\n"
+            "retract your paper - it's that bad.\n"
+            "We will change the format of everything without asking you so\n"
+            "that whatever effort you make will be totally wasted.\n\n"
+            "Are you still sure you want to proceed?",
+            "You are foolish for using the FileUI branch",
+            style = wx.YES_NO)
+        if result != wx.YES:
+            raise ValueError("User wants to exit")
 
         if self.show_splashbox:
             # If the splash image has alpha, it shows up transparently on

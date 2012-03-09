@@ -23,20 +23,11 @@ class CellProfilerApp(wx.App):
 
         wx.InitAllImageHandlers()
         result = wx.MessageBox(
-            "You've somehow managed to get your hands on a build of the\n"
-            "FileUI branch of CellProfiler which is at this point totally\n"
-            "unuseable and will cause you to do bad science. We now save tags\n"
-            "in the pipeline that let us figure out what version you're using and\n"
-            "if a pipeline from the FileUI branch shows up as supplementary\n"
-            "data in a publication of yours, we'll ask the editors to\n"
-            "retract your paper - it's that bad.\n"
-            "We will change the format of everything without asking you so\n"
-            "that whatever effort you make will be totally wasted.\n\n"
-            "Please stop using this version and download a trunk build from\n"
-            "http://www.cellprofiler.org/cgi-bin/trunk_build.cgi\n"
-            "or better yet, get the released version at http://www.cellprofiler.org\n\n"
-            "Are you still sure you want to proceed?",
-            "You are a fool for using the FileUI branch",
+            "WARNING!\n\n"
+            "This is a TESTING build of the file_ui development branch of CellProfiler.  "
+            "It should not be used for actual scientific work.  "
+            "In addition, pipelines from this version will NOT work in the future.\n\n"
+            "Are you absolutely sure you want to proceed?",
             style = wx.YES_NO)
         if result != wx.YES:
             raise ValueError("User wants to exit")

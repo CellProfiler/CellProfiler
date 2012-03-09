@@ -175,7 +175,7 @@ class FlagImage(cpm.CPModule):
          
         def get_directory_fn():
             '''Get the directory for the rules file name'''
-            return self.rules_directory.get_absolute_path()
+            return group.rules_directory.get_absolute_path()
                 
         def set_directory_fn(path):
             dir_choice, custom_path = group.rules_directory.get_parts_from_path(path)

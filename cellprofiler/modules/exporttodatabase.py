@@ -2303,11 +2303,12 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             object_count = 'Image_Count_%s'%(object_name) if object_name else ''
             cell_x_loc = '%s_Location_Center_X'%(object_name) if object_name else ''
             cell_y_loc = '%s_Location_Center_Y'%(object_name) if object_name else ''
-            image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in default_image_names])
-            image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in default_image_names])
             image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in self.thumbnail_image_names.get_selections()]) if self.want_image_thumbnails else ''
             
             if self.properties_export_all_image_defaults:
+                image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in default_image_names])
+                image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in default_image_names])
+            
                 # Provide default colors
                 if len(default_image_names) == 1:
                     image_channel_colors = 'gray,'
@@ -2319,19 +2320,22 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 # Extract user-specified image names and colors
                 user_image_names = [];
                 image_channel_colors = []               
-                corresponding_image_names = []
+                selected_image_names = []
                 for group in self.image_groups:
-                    corresponding_image_names += [group.image_cols.value]
+                    selected_image_names += [group.image_cols.value]
                     if group.wants_automatic_image_name:
                         user_image_names += [group.image_cols.value]
                     else:
                         user_image_names += [group.image_name.value]
                     image_channel_colors += [group.image_channel_colors.value]
-                        
+                            
+                image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in selected_image_names])
+                image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in selected_image_names])
+                
                 # Sort user-specified names and colors according to alphabetical order.
                 #  If the user has thumbnails, they are listed in alphabetical order and unfortunately inherit the channel colors
                 #  so I try to get them to match. Not foolproof but oh well...
-                idx = [corresponding_image_names.index(x) for x in sorted(corresponding_image_names)]
+                idx = [selected_image_names.index(x) for x in sorted(selected_image_names)]
                 user_image_names = [user_image_names[x] for x in idx]
                 image_channel_colors = [image_channel_colors[x] for x in idx]
                 

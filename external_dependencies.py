@@ -10,14 +10,13 @@ import sys
 
 # The list of files (relative path) to fetch, their SHA1, and their source URL.
 files = [
-    [['bioformats', 'loci_tools.jar'], 'a1d08a9dfb648eb86290a036fe0b5a4e47f2c44a', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11312/trunk/CellProfiler/bioformats/loci_tools.jar'],
     [['imagej', 'ij.jar'], 'f675dc28e38a9a2612e55db049f4d4bb47d774b1', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/ij.jar'],
     [['imagej', 'imglib.jar'], '7e0e68aa371706012e224df0b31925317a3dc284', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/imglib.jar'],
     [['imagej', 'javacl-1.0-beta-4-shaded.jar'], '62b3b41c4759652595070534d79d1294eeba8139', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/javacl-1.0-beta-4-shaded.jar'],
     [['imagej', 'junit-4.5.jar'], '41eb8ac5586d163d61518be18a13626983f9ece6', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/junit-4.5.jar'],
     [['imagej', 'precompiled_headless.jar'], '39ef36e6cfbd7f48e8c0e3033b30b0e3f5b5d24e', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/precompiled_headless.jar'],
     [['imagej', 'imagej-2.0-SNAPSHOT-all.jar'], '78de1c8c2fc32a4ea17998cb7c2e56f0d1a7f241', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11495/trunk/CellProfiler/imagej/imagej-2.0-SNAPSHOT-all.jar'],
-    [['subimager', 'subimager.jar'], '8757277fdc6b35a9318c4c44e24ad2af04368ca5', 'https://github.com/downloads/CellProfiler/subimager/subimager-98a04940440543e408ea0c3d34199cdf98ae1fca.jar']
+    [['subimager', 'subimager.jar'], '350f0bd13631ccfe1ad574f5035db3730580ef5f', 'https://github.com/downloads/CellProfiler/subimager/subimager-8e4f923d64b5017de0faf7708141cde7971a03ff.jar']
 ]
 
 

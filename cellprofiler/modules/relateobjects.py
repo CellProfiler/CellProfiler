@@ -216,7 +216,7 @@ class RelateObjects(cpm.CPModule):
             if self.wants_step_parent_distances:
                 for group in self.step_parent_names:
                     result += group.visible_settings()
-            result += [self.add_step_parent_button]
+                result += [self.add_step_parent_button]
         return result
 
     def run(self, workspace):
@@ -463,8 +463,7 @@ class RelateObjects(cpm.CPModule):
                              (primary_parent, parent_name))
         return parents_of
 
-    ignore_features = set((M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y,
-                           M_NUMBER_OBJECT_NUMBER))
+    ignore_features = set(M_NUMBER_OBJECT_NUMBER)
     def should_aggregate_feature(self, feature_name):
         '''Return True if aggregate measurements should be made on a feature
         

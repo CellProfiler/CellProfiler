@@ -36,12 +36,18 @@ OBJECT_NAME = 'objectname'
 CENTER_NAME = 'centername'
 IMAGE_NAME = 'imagename'
 
-def feature_frac_at_d(bin, bin_count):
-    return M.M_CATEGORY + "_"+M.FF_FRAC_AT_D % (IMAGE_NAME, bin, bin_count)
-def feature_mean_frac(bin, bin_count):
-    return M.M_CATEGORY + "_"+M.FF_MEAN_FRAC % (IMAGE_NAME, bin, bin_count)
-def feature_radial_cv(bin, bin_count):
-    return M.M_CATEGORY + "_"+M.FF_RADIAL_CV % (IMAGE_NAME, bin, bin_count)
+def feature_frac_at_d(bin, bin_count, image_name = IMAGE_NAME):
+    if bin == bin_count + 1:
+        return "_".join([M.M_CATEGORY, M.F_FRAC_AT_D, image_name, M.FF_OVERFLOW])
+    return M.M_CATEGORY + "_"+M.FF_FRAC_AT_D % (image_name, bin, bin_count)
+def feature_mean_frac(bin, bin_count, image_name = IMAGE_NAME):
+    if bin == bin_count + 1:
+        return "_".join([M.M_CATEGORY, M.F_MEAN_FRAC, image_name, M.FF_OVERFLOW])
+    return M.M_CATEGORY + "_"+M.FF_MEAN_FRAC % (image_name, bin, bin_count)
+def feature_radial_cv(bin, bin_count, image_name = IMAGE_NAME):
+    if bin == bin_count + 1:
+        return "_".join([M.M_CATEGORY, M.F_RADIAL_CV, image_name, M.FF_OVERFLOW])
+    return M.M_CATEGORY + "_"+M.FF_RADIAL_CV % (image_name, bin, bin_count)
 
 class TestMeasureObjectRadialDistribution(unittest.TestCase):
     def test_01_01_load_matlab(self):
@@ -147,6 +153,50 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
                 self.assertEqual(o.center_choice, M.C_OTHER)
                 self.assertEqual(o.center_object_name, center_name)
         self.assertEqual(module.bin_counts[0].bin_count, 4)
+        
+    def test_01_03_load_v2(self):
+        data = """CellProfiler Pipeline: http://www.cellprofiler.org
+Version:2
+DateRevision:20120126174947
+
+MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Hidden:2
+    Hidden:1
+    Hidden:2
+    Select an image to measure:EnhancedGreen
+    Select an image to measure:OrigBlue
+    Select objects to measure:Nuclei
+    Object to use as center?:These objects
+    Select objects to use as centers:Cells
+    Scale bins?:No
+    Number of bins:4
+    Maximum radius:200
+    Scale bins?:Yes
+    Number of bins:5
+    Maximum radius:50
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, M.MeasureObjectRadialDistribution))
+        self.assertEqual(module.image_count.value, 2)
+        self.assertEqual(module.object_count.value, 1)
+        self.assertEqual(module.bin_counts_count.value, 2)
+        self.assertEqual(module.images[0].image_name, "EnhancedGreen")
+        self.assertEqual(module.images[1].image_name, "OrigBlue")
+        self.assertEqual(module.objects[0].object_name, "Nuclei")
+        self.assertEqual(module.objects[0].center_choice, M.C_SELF)
+        self.assertEqual(module.objects[0].center_object_name, "Cells")
+        self.assertEqual(module.bin_counts[0].bin_count, 4)
+        self.assertFalse(module.bin_counts[0].wants_scaled)
+        self.assertEqual(module.bin_counts[0].maximum_radius, 200)
+        self.assertEqual(module.bin_counts[1].bin_count, 5)
+        self.assertTrue(module.bin_counts[1].wants_scaled)
+        self.assertEqual(module.bin_counts[1].maximum_radius, 50)
     
     def test_02_01_get_measurement_columns(self):
         module = M.MeasureObjectRadialDistribution()
@@ -165,10 +215,11 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
             else:
                 module.objects[i].center_choice.value = M.C_OTHER
                 module.objects[i].center_object_name.value = center_name
-        for i,bin_count in ((0,4),(0,5),(0,6)):
+        for i,bin_count in enumerate((4, 5, 6)):
             if i:
                 module.add_bin_count()
             module.bin_counts[i].bin_count.value = bin_count
+        module.bin_counts[2].wants_scaled.value = False
         
         columns = module.get_measurement_columns(None)
         column_dictionary = {}
@@ -180,13 +231,14 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
         
         for object_name in [x.object_name.value for x in module.objects]:
             for image_name in [x.image_name.value for x in module.images]:
-                for bin_count in [x.bin_count.value for x in module.bin_counts]:
-                    for bin in range(1,bin_count+1):
-                        for feature in M.F_ALL:
-                            measurement = "_".join((M.M_CATEGORY,
-                                                    feature,
-                                                    image_name,
-                                                    "%dof%d"%(bin, bin_count)))
+                for bin_count, wants_scaled in [
+                    (x.bin_count.value, x.wants_scaled.value)
+                    for x in module.bin_counts]:
+                    for bin in range(1, bin_count + (1 if wants_scaled else 2)):
+                        for feature_fn in (feature_frac_at_d, 
+                                           feature_mean_frac, 
+                                           feature_radial_cv):
+                            measurement = feature_fn(bin, bin_count, image_name)
                             key = (object_name, measurement)
                             self.assertTrue(column_dictionary.has_key(key))
                             del column_dictionary[key]
@@ -236,7 +288,8 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
                                                 M.M_CATEGORY, feature,
                                                 image_name))
 
-    def run_module(self, image, labels, center_labels = None, bin_count = 4):
+    def run_module(self, image, labels, center_labels = None, bin_count = 4,
+                   maximum_radius = 100, wants_scaled = True):
         '''Run the module, returning the measurements
         
         image - matrix representing the image to be analyzed
@@ -261,6 +314,8 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
             center_objects.segmented = center_labels
             object_set.add_objects(center_objects, CENTER_NAME)
         module.bin_counts[0].bin_count.value = bin_count
+        module.bin_counts[0].wants_scaled.value = wants_scaled
+        module.bin_counts[0].maximum_radius.value = maximum_radius
         pipeline = cpp.Pipeline()
         measurements = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
@@ -383,6 +438,41 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
             expected = expected * np.sum(labels==1) / np.sum((labels == 1) &
                                                              (bin_labels == bin-1))
             self.assertTrue(np.abs(data[0]-expected) < .1 * expected)
+            data = m.get_current_measurement(OBJECT_NAME,
+                                             feature_radial_cv(bin, 4))
+            self.assertEqual(len(data), 1)
+            
+    def test_03_05_no_scaling(self):
+        i, j = np.mgrid[-40:40, -40:40]
+        #
+        # I'll try to calculate the distance the same way as propagate
+        # jaywalk min(i,j) times and go straight abs(i - j) times
+        #
+        jaywalks = np.minimum(np.abs(i), np.abs(j))
+        straights = np.abs(np.abs(i) - np.abs(j))
+        distance = jaywalks * np.sqrt(2) + straights
+        labels = (distance <= 35).astype(int)
+        r = np.random.RandomState()
+        r.seed(35)
+        image = r.uniform(size = i.shape)
+        total_intensity = np.sum(image[labels==1])
+        bin_labels = (distance / 5).astype(int)
+        bin_labels[bin_labels > 4] = 4
+        m = self.run_module(image, labels, bin_count = 4, 
+                            maximum_radius = 20, wants_scaled = False)
+        for bin in range(1,6):
+            data = m.get_current_measurement(OBJECT_NAME, 
+                                             feature_frac_at_d(bin, 4))
+            self.assertEqual(len(data), 1)
+            bin_intensity = np.sum(image[(labels==1) & 
+                                         (bin_labels == bin-1)])
+            expected = bin_intensity / total_intensity
+            self.assertAlmostEqual(expected, data[0], 4)
+            data = m.get_current_measurement(OBJECT_NAME,
+                                             feature_mean_frac(bin, 4))
+            expected = expected * np.sum(labels==1) / np.sum((labels == 1) &
+                                                             (bin_labels == bin-1))
+            self.assertAlmostEqual(data[0], expected, 4)
             data = m.get_current_measurement(OBJECT_NAME,
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)

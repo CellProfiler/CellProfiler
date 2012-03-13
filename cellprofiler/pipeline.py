@@ -16,6 +16,7 @@ from __future__ import with_statement
 __version__ = "$Revision$"
 
 import bisect
+import csv
 import hashlib
 import logging
 import gc
@@ -53,6 +54,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
+from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
 
 '''The measurement name of the image number'''
 IMAGE_NUMBER = cpmeas.IMAGE_NUMBER
@@ -520,9 +522,9 @@ def write_image_plane_details(file_or_fd, ipds):
         for ipd in ipds:
             assert isinstance(ipd, ImagePlaneDetails)
             fields = [ipd.url]
-            fields += [str(x) if x is not None else None 
+            fields += [unicode(x) if x is not None else None 
                        for x in (ipd.series, ipd.index, ipd.channel)]
-            fields += [ipd.metadata[k] if ipd.metadata.has_key(k) else None
+            fields += [unicode(ipd.metadata[k]) if ipd.metadata.has_key(k) else None
                        for k in metadata_columns]
             line = ",".join(['"%s"' % 
                              v.encode("utf-8")
@@ -600,6 +602,7 @@ class Pipeline(object):
         self.__undo_stack = []
         self.__undo_start = None
         self.__image_plane_details = []
+        self.file_walker = WalkCollection(self.on_walk_completed)
     
     def copy(self, save_image_plane_details = True):
         '''Create a copy of the pipeline modules and settings'''
@@ -2053,7 +2056,7 @@ class Pipeline(object):
         message = "Move %s %s" % (module.module_name, direction)
         self.__undo_stack.append((undo, message))
         
-    def add_image_plane_details(self, details_list):
+    def add_image_plane_details(self, details_list, add_undo = True):
         real_list = []
         details_list = sorted(details_list)
         start = 0
@@ -2065,9 +2068,10 @@ class Pipeline(object):
                 self.image_plane_details.insert(pos, details)
             start = pos
         self.notify_listeners(ImagePlaneDetailsAddedEvent(real_list))
-        def undo():
-            self.remove_image_plane_details(real_list)
-        self.__undo_stack.append((undo, "Add images"))
+        if add_undo:
+            def undo():
+                self.remove_image_plane_details(real_list)
+            self.__undo_stack.append((undo, "Add images"))
         
     def remove_image_plane_details(self, details_list):
         real_list = []
@@ -2128,6 +2132,136 @@ class Pipeline(object):
             ipds = ipds_with_metadata
         return ipds
     
+    class ImageSetChannelDescriptor(object):
+        '''This class represents the metadata for one image set channel
+        
+        An image set has a collection of channels which are either planar
+        images or objects. The ImageSetChannelDescriptor describes one
+        of these:
+        
+        The channel's name
+        
+        The channel's type - grayscale image / color image / objects / mask
+        or illumination function
+        '''
+        # Channel types
+        CT_GRAYSCALE = "Grayscale"
+        CT_COLOR = "Color"
+        CT_MASK = "Mask"
+        CT_OBJECTS = "Objects"
+        CT_FUNCTION = "Function"
+        def __init__(self, name, channel_type):
+            self.name = name
+            self.channel_type = channel_type
+            
+    LEGACY_LOAD_MODULES = ["LoadImages", "LoadData", "LoadSingleImage"]
+
+    def get_image_sets(self):
+        '''Return the pipeline's image sets
+        
+        Return a three-tuple.
+        
+        The first element of the two-tuple is a list of
+        ImageSetChannelDescriptors - the ordering in the list defines the
+        order of ipds in the rows of each image set
+        
+        The second element of the two-tuple is a collection of metadata
+        key names appropriate for display.
+        
+        The last element is a dictionary of lists where the dictionary keys 
+        are the metadata values for the image set (or image numbers if 
+        organized by number) and the values are lists of the IPDs for that
+        image set.
+        
+        This function leaves out any image set that is ill-defined.
+        '''
+        import cellprofiler.modules.namesandtypes as N
+        #
+        # For now, we hunt through the modules and do this in spaghetti-code
+        # but we will clean up so that it is done with clean programmatic
+        # interfaces.
+        #
+        namesandtypes = [ m for m in self.modules()
+                          if m.module_name == N.NamesAndTypes.module_name]
+        if len(namesandtypes) == 0:
+            return ([], {})
+        
+        namesandtypes = namesandtypes[0]
+        #
+        # Rely on a side effect of activation to set up all settings and
+        # cached data.
+        #
+        namesandtypes.on_activated(self)
+        try:
+            column_names = namesandtypes.column_names
+            metadata_key_names = namesandtypes.get_metadata_column_names()
+            if namesandtypes.assignment_method == N.ASSIGN_ALL:
+                load_choices = [namesandtypes.single_load_as_choice.value]
+            elif namesandtypes.assignment_method == N.ASSIGN_RULES:
+                load_choices = [ group.load_as_choice.value
+                                 for group in namesandtypes.assignments]
+            d = { 
+                N.LOAD_AS_COLOR_IMAGE: self.ImageSetChannelDescriptor.CT_COLOR,
+                N.LOAD_AS_GRAYSCALE_IMAGE: self.ImageSetChannelDescriptor.CT_GRAYSCALE,
+                N.LOAD_AS_ILLUMINATION_FUNCTION: self.ImageSetChannelDescriptor.CT_FUNCTION,
+                N.LOAD_AS_MASK: self.ImageSetChannelDescriptor.CT_MASK,
+                N.LOAD_AS_OBJECTS: self.ImageSetChannelDescriptor.CT_OBJECTS }
+            iscds = [self.ImageSetChannelDescriptor(column_name, d[load_choice])
+                     for column_name, load_choice in zip(column_names, load_choices)]
+            
+            d = {}
+            for keys, ipds in namesandtypes.image_sets:
+                if any([len(ipds.get(column_name, tuple())) != 1
+                        for column_name in column_names]):
+                    logger.info("Skipping image set %s - no or multiple matches for some image" % repr(keys))
+                    continue
+                d[keys] = [ipds[column_name][0] for column_name in column_names]
+            return (iscds, metadata_key_names, d)
+        finally:
+            namesandtypes.on_deactivated()
+            
+    def get_grouped_image_sets(self):
+        '''Organize the image sets into groupings
+        
+        Returns the following things in this order:
+        
+        key_list - a list of two tuples. The first is the metadata key
+                   used to extract the grouping metadata and the second
+                   is the index of the column (see iscds) that holds
+                   the image plane descriptors whose metadata is extracted.
+                   
+        iscds - the ImageSetColumnDescriptor records that give the names of
+                the columns in the image set and that tell how to load them
+                (grayscale / color / mask / objects / function)
+                
+        metadata_key_names - the names of the keys that are used to join
+                the image sets. These are largely for display or informal use
+                
+        image_sets - this is a dictionary whose key is the metadata (or
+                image number if metadata was not used to perform the matching)
+                and whose value is an array (possibly of zero length = missing
+                image, possibly of > 1 length = ambiguous choice of images)
+                of ImagePlaneDescriptors.
+                
+        groupings - this is a dictionary whose key is the grouping metadata
+                values and whose value is a list of keys to the image set
+                dictionary for the image sets in that group.
+        
+        '''
+        iscds, metadata_key_names, image_sets = self.get_image_sets()
+        key_list = None
+        for module in self.modules():
+            if module.module_name == "Groups":
+                key_list, groupings = module.compute_groups(
+                    iscds, metadata_key_names, image_sets)
+                break
+        if key_list is None:
+            key_list = []
+            groupings = { ():sorted(image_sets.keys()) }
+        
+        return key_list, iscds, metadata_key_names, image_sets, groupings
+    
+            
     def has_undo(self):
         '''True if an undo action can be performed'''
         return len(self.__undo_stack)
@@ -2239,6 +2373,163 @@ class Pipeline(object):
     def image_plane_details(self):
         return self.__image_plane_details
     
+    def walk_paths(self, pathnames):
+        if self.file_walker.get_state() == THREAD_STOP:
+            self.notify_listeners(FileWalkStartedEvent())
+        files = []
+        for pathname in pathnames:
+            if os.path.isdir(pathname):
+                self.file_walker.walk_in_background(
+                    pathname, self.wp_add_files, self.wp_add_image_metadata)
+            else:
+                files.append(pathname)
+        if len(files) > 0:
+            ipds = []
+            for pathname in files:
+                url = "file:" + urllib.pathname2url(pathname)
+                ipd = ImagePlaneDetails(url, None, None, None)
+                ipds.append(ipd)
+            self.add_image_plane_details(ipds)
+                
+            self.file_walker.get_metadata_in_background(
+                files, self.wp_add_image_metadata)
+        
+    def on_walk_completed(self):
+        self.notify_listeners(FileWalkEndedEvent())
+        
+    def wp_add_files(self, dirpath, directories, filenames):
+        ipds = []
+        for filename in filenames:
+            path = os.path.join(dirpath, filename)
+            url = "file:" + urllib.pathname2url(path)
+            ipd = ImagePlaneDetails(url, None, None, None)
+            ipds.append(ipd)
+        self.add_image_plane_details(ipds)
+    
+    def wp_add_image_metadata(self, path, metadata):
+        if (metadata.image_count == 1):
+            m = {}
+            pixels = metadata.image(0).Pixels
+            m[ImagePlaneDetails.MD_SIZE_C] = str(pixels.SizeC)
+            m[ImagePlaneDetails.MD_SIZE_Z] = str(pixels.SizeZ)
+            m[ImagePlaneDetails.MD_SIZE_T] = str(pixels.SizeT)
+            
+            if pixels.SizeC == 1:
+                #
+                # Monochrome image
+                #
+                m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                    ImagePlaneDetails.MD_MONOCHROME
+            elif pixels.channel_count == 1:
+                #
+                # Oh contradictions! It's interleaved, really RGB or RGBA
+                # 
+                m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                    ImagePlaneDetails.MD_RGB
+            else:
+                m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                    ImagePlaneDetails.MD_PLANAR
+            url = "file:" + urllib.pathname2url(path)
+            exemplar = ImagePlaneDetails(url, None, None, None)
+            ipd = self.find_image_plane_details(exemplar)
+            if ipd is not None:
+                ipd.metadata.update(m)
+                self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
+            
+        #
+        # If there are planes, we create image plane descriptors for them
+        #
+        n_series = metadata.image_count
+        to_add = []
+        for series in range(n_series):
+            pixels = metadata.image(series).Pixels
+            if pixels.plane_count > 0:
+                for index in range(pixels.plane_count):
+                    addr = (series, index, None)
+                    m = {}
+                    plane = pixels.Plane(index)
+                    c = plane.TheC
+                    m[ImagePlaneDetails.MD_T] = plane.TheT
+                    m[ImagePlaneDetails.MD_Z] = plane.TheZ
+                    if pixels.channel_count > c:
+                        channel = pixels.Channel(c)
+                        channel_name = channel.Name
+                        if channel_name is not None:
+                            m[ImagePlaneDetails.MD_CHANNEL_NAME] = channel_name
+                        if channel.SamplesPerPixel == 1:
+                            m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                                ImagePlaneDetails.MD_MONOCHROME
+                        else:
+                            m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
+                                ImagePlaneDetails.MD_RGB
+                    url = "file:" + urllib.pathname2url(path)
+                    exemplar = ImagePlaneDetails(url, series, index, None)
+                    ipd = self.find_image_plane_details(exemplar)
+                    if ipd is None:
+                        exemplar.metadata.update(m)
+                        to_add.append(exemplar)
+                    else:
+                        ipd.metadata.update(m)
+                        self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
+                        
+            elif pixels.SizeZ > 1 or pixels.SizeT > 1:
+                #
+                # Movie metadata might not have planes
+                #
+                if pixels.SizeC == 1:
+                    color_format = ImagePlaneDetails.MD_MONOCHROME
+                    n_channels = 1
+                elif pixels.channel_count == 1:
+                    color_format = ImagePlaneDetails.MD_RGB
+                    n_channels = 1
+                else:
+                    color_format = ImagePlaneDetails.MD_MONOCHROME
+                    n_channels = pixels.SizeC
+                n = 1
+                dims = []
+                for d in pixels.DimensionOrder[2:]:
+                    if d == 'C':
+                        dim = n_channels
+                        c_idx = len(dims)
+                    elif d == 'Z':
+                        dim = pixels.SizeZ
+                        z_idx = len(dims)
+                    elif d == 'T':
+                        dim = pixels.SizeT
+                        t_idx = len(dims)
+                    else:
+                        raise ValueError(
+                            "Unsupported dimension order for file %s: %s" %
+                            (path, pixels.DimensionOrder))
+                    dims.append(dim)
+                index_order = np.mgrid[0:dims[0], 0:dims[1], 0:dims[2]]
+                c_indexes = index_order[c_idx].flatten()
+                z_indexes = index_order[z_idx].flatten()
+                t_indexes = index_order[t_idx].flatten()
+                for index, (c_idx, z_idx, t_idx) in \
+                    enumerate(zip(c_indexes, z_indexes, t_indexes)):
+                    channel = pixels.Channel(c_idx)
+                    url = "file:" + urllib.pathname2url(path)
+                    exemplar = ImagePlaneDetails(url, series, index, None)
+                    metadata = { 
+                        ImagePlaneDetails.MD_SIZE_C: channel.SamplesPerPixel,
+                        ImagePlaneDetails.MD_SIZE_Z: 1,
+                        ImagePlaneDetails.MD_SIZE_T: 1,
+                        ImagePlaneDetails.MD_COLOR_FORMAT: color_format }
+                    channel_name = channel.Name
+                    if channel_name is not None and len(channel_name) > 0:
+                        metadata[ImagePlaneDetails.MD_CHANNEL_NAME] = \
+                            channel_name
+                    ipd = self.find_image_plane_details(exemplar)
+                    if ipd is None:
+                        exemplar.metadata.update(metadata)
+                        to_add.append(exemplar)
+                    else:
+                        ipd.metadata.update(metadata)
+                        self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))
+        if len(to_add) > 0:
+            self.add_image_plane_details(to_add, False)
+
     def test_valid(self):
         """Throw a ValidationError if the pipeline isn't valid
         
@@ -2457,7 +2748,116 @@ class Pipeline(object):
                          (", Feature = %s" % feature) +
                          (", Image (optional) = %s" % image) +
                          (", Scale (optional) = %s" % scale))
+
+    def write_image_set(self, fd):
+        '''Write an image set to a file
         
+        fd - file descriptor to write to
+        
+        '''
+        if any([m.module_name in self.LEGACY_LOAD_MODULES
+                for m in self.modules()]):
+            return self.write_legacy_image_set(fd)
+        
+        key_list, iscds, metadata_key_names, image_sets, groupings = \
+            self.get_grouped_image_sets()
+        
+        writer = csv.writer(fd)
+        header = []
+        metadata_keys = None
+        #
+        # Take a pass through the ipds to find the keys that every image
+        # set has
+        #
+        for image_set in image_sets.values():
+            image_set_metadata = {}
+            not_good = set()
+            for ipd in image_set:
+                for key, value in ipd.metadata.iteritems():
+                    if image_set_metadata.has_key(key):
+                        if image_set_metadata[key] != value:
+                            not_good.add(key)
+                    else:
+                        image_set_metadata[key] = value
+            image_set_metadata = set(image_set_metadata.keys()).difference(not_good)
+            if metadata_keys is None:
+                metadata_keys = image_set_metadata
+            else:
+                metadata_keys.intersection_update(image_set_metadata)
+        metadata_keys = sorted(metadata_keys)
+        
+        header = ["_".join([cpmeas.C_METADATA, k]) for k in metadata_keys]
+        header += [cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX]
+        for iscd in iscds:
+            if iscd.channel_type == self.ImageSetChannelDescriptor.CT_OBJECTS:
+                cats = [cpmeas.C_OBJECTS_URL, cpmeas.C_OBJECTS_PATH_NAME,
+                        cpmeas.C_OBJECTS_FILE_NAME, cpmeas.C_OBJECTS_SERIES,
+                        cpmeas.C_OBJECTS_FRAME, cpmeas.C_OBJECTS_CHANNEL]
+            else:
+                cats = [cpmeas.C_URL, cpmeas.C_PATH_NAME, cpmeas.C_FILE_NAME,
+                        cpmeas.C_SERIES, cpmeas.C_FRAME, cpmeas.C_CHANNEL]
+            header += [ '_'.join( [cat, iscd.name] ) for cat in cats]
+        writer.writerow(header)
+        
+        for group_number_idx, grouping_key in enumerate(
+            sorted(groupings.keys())):
+            group_number = group_number_idx + 1
+            image_set_keys = sorted(groupings[grouping_key])
+            for group_index, image_set_key in enumerate(image_set_keys):
+                image_set = image_sets[image_set_key]
+                image_set_metadata = {}
+                for ipd in image_set:
+                    for metadata_key in metadata_keys:
+                        if ipd.metadata.has_key(metadata_key):
+                            image_set_metadata[metadata_key] = \
+                                ipd.metadata[metadata_key]
+                            
+                row = [image_set_metadata[k] for k in metadata_keys]
+                row += [str(group_number), str(group_index)]
+                for ipd in image_set:
+                    assert isinstance(ipd, ImagePlaneDetails)
+                    path = ipd.path
+                    url = ipd.url
+                    row += [ url ]
+                    row += list(os.path.split(path))
+                    row += [str(ipd.series), str(ipd.index), str(ipd.channel)]
+                writer.writerow(row)
+                
+    def write_legacy_image_set(self, fd):
+        '''Get image sets from legacy pipelines'''
+        measurements = cpmeas.Measurements()
+        image_set_list = cpi.ImageSetList()
+        for module in self.modules():
+            if not module.module_name in self.LEGACY_LOAD_MODULES:
+                continue
+            workspace = cpw.Workspace(self, module, None, None,
+                                      measurements, image_set_list)
+            if not module.prepare_run(workspace):
+                raise ValueError("Failed to get compile image sets")
+            
+        key_names, group_list = self.get_groupings(workspace)
+
+        header = [cpmeas.IMAGE_NUMBER, cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX]
+        features = [ ftr for ftr in measurements.get_feature_names(cpmeas.IMAGE)
+                     if ftr not in (cpmeas.IMAGE_NUMBER, 
+                                    cpmeas.GROUP_NUMBER, 
+                                    cpmeas.GROUP_INDEX)] 
+        header += features
+        fd.write((u'"'+u'","'.join(header) + u'"\n').encode('utf-8'))
+    
+        current_image_number = 1
+        for group_number, (group_key, image_numbers) in enumerate(group_list):
+            for group_index, image_number in enumerate(image_numbers):
+                values = [unicode(current_image_number),
+                          unicode(group_number),
+                          unicode(group_index)]
+                for feature in features:
+                    values.append(measurements.get_measurement(
+                        cpmeas.IMAGE, feature, image_number))
+                fd.write((u'"'+u'","'.join(values) + u'"\n').encode('utf-8'))
+                current_image_number += 1
+        del measurements
+    
 class AbstractPipelineEvent:
     """Something that happened to the pipeline and was indicated to the listeners
     """
@@ -2534,6 +2934,21 @@ class ImagePlaneDetailsRemovedEvent(AbstractPipelineEvent):
         
     def event_type(self):
         return "Image plane details removed"
+    
+class ImagePlaneDetailsMetadataEvent(AbstractPipelineEvent):
+    def __init__(self, ipd):
+        self.image_plane_details = ipd
+        
+    def event_type(self):
+        return "Image plane details metadata changed"
+    
+class FileWalkStartedEvent(AbstractPipelineEvent):
+    def event_type(self):
+        return "File walk started"
+    
+class FileWalkEndedEvent(AbstractPipelineEvent):
+    def event_type(self):
+        return "File walk ended"
 
 class RunExceptionEvent(AbstractPipelineEvent):
     """An exception was caught during a pipeline run

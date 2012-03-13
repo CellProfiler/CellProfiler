@@ -42,6 +42,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.modules.createbatchfiles as cpm_c
 from cellprofiler.cpmath.filter import stretch
 from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
+from subimager.client import start_subimager, stop_subimager, get_image
 
 import cellprofiler.modules.tests as cpmt
 IMAGE_NAME = 'inputimage'
@@ -49,16 +50,16 @@ OBJECTS_NAME = 'inputobjects'
 FILE_IMAGE_NAME = 'fileimage'
 FILE_NAME = 'filenm'
 
-from cellprofiler.utilities import jutil
-import bioformats
-jutil.attach()
-env = jutil.get_env()
-klass = env.find_class('loci/formats/FormatTools')
-bioformats_revision = jutil.get_static_field(klass, 'SVN_REVISION', 'Ljava/lang/String;')
-BIOFORMATS_CANT_WRITE = (bioformats_revision == '6181' and sys.platform=='darwin')
-
 
 class TestSaveImages(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        start_subimager()
+        
+    @classmethod
+    def tearDownClass(cls):
+        stop_subimager()
+        
     def setUp(self):
         # Change the default image directory to a temporary file
         cpprefs.set_headless()
@@ -265,7 +266,7 @@ SaveImages:[module_num:2|svn_version:\'9507\'|variable_revision_number:5|show_wi
     Enter file prefix:Sfn2
     Do you want to add a suffix to the image file name?:Yes
     Text to append to the image name:A2
-    Select file format to use:gif
+    Select file format to use:png
     Select location to save file:Default Input Folder\x7Ccp2
     Image bit depth:8
     Overwrite existing files without warning?:Yes
@@ -364,7 +365,7 @@ SaveImages:[module_num:6|svn_version:\'9507\'|variable_revision_number:5|show_wi
                 cpm_si.FN_FROM_IMAGE,
                 cpm_si.FN_FROM_IMAGE]
         suf = [ False, True, False, False, True, False]
-        ff = [cpm_si.FF_BMP, cpm_si.FF_GIF, cpm_si.FF_JPG,
+        ff = [cpm_si.FF_BMP, cpm_si.FF_PNG, cpm_si.FF_JPG,
               cpm_si.FF_JPG, cpm_si.FF_PNG, cpm_si.FF_PNG]
         ov = [ False, True, False, False, False, False]
         wts = [ cpm_si.WS_EVERY_CYCLE, cpm_si.WS_FIRST_CYCLE,
@@ -932,64 +933,6 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         self.assertTrue(np.all(np.abs(data.astype(int)-
                                             expected_data.astype(int))<=4))
 
-    def test_01_08_save_all_to_custom_gif(self):
-        img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.gif')
-        img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.gif')
-        make_file(img1_filename, cpmt.tif_8_1)
-        make_file(img2_filename, cpmt.tif_8_2)
-        pipeline = cpp.Pipeline()
-        pipeline.add_listener(self.on_event)
-        load_images = cpm_li.LoadImages()
-        load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
-        load_images.match_method.value = cpm_li.MS_EXACT_MATCH
-        load_images.images[0].common_text.value = '.tif'
-        load_images.images[0].channels[0].image_name.value = 'Orig'
-        load_images.module_num = 1
-        
-        apply_threshold = cpm_a.ApplyThreshold()
-        apply_threshold.image_name.value = 'Orig'
-        apply_threshold.thresholded_image_name.value = 'Derived'
-        apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
-        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
-        apply_threshold.manual_threshold.value = 0
-        apply_threshold.binary.value = cpm_a.GRAYSCALE
-        apply_threshold.module_num = 2
-
-        save_images = cpm_si.SaveImages()
-        save_images.save_image_or_figure.value = cpm_si.IF_IMAGE
-        save_images.image_name.value = 'Derived'
-        save_images.file_image_name.value = 'Orig'
-        save_images.file_name_method.value = cpm_si.FN_FROM_IMAGE
-        save_images.wants_file_name_suffix.value = True
-        save_images.file_name_suffix.value ='OUT'
-        save_images.file_format.value = cpm_si.FF_GIF
-        save_images.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
-        save_images.pathname.custom_path = self.custom_directory
-        save_images.when_to_save.value = cpm_si.WS_EVERY_CYCLE
-        save_images.update_file_names.value = True
-        save_images.module_num = 3
-        
-        pipeline.add_module(load_images)
-        pipeline.add_module(apply_threshold)
-        pipeline.add_module(save_images)
-        pipeline.test_valid()
-        measurements = pipeline.run()
-        self.assertTrue(os.path.isfile(img1_out_filename))
-        self.assertTrue(os.path.isfile(img2_out_filename))
-        pn,fn = os.path.split(img1_out_filename)
-        filenames = measurements.get_all_measurements('Image','FileName_Derived')
-        pathnames = measurements.get_all_measurements('Image','PathName_Derived')
-        self.assertEqual(filenames[0],fn)
-        self.assertEqual(pathnames[0],pn)
-        data = matplotlib.image.imread(img1_out_filename)
-        expected_data = matplotlib.image.imread(img1_filename) 
-        self.assertTrue(np.all(data==expected_data))
-        data = matplotlib.image.imread(img2_out_filename)
-        expected_data = matplotlib.image.imread(img2_filename) 
-        self.assertTrue(np.all(data==expected_data))
-
     def test_01_09_save_single_to_custom_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
         img1_out_filename = os.path.join(self.custom_directory,'img1OUT.tiff')
@@ -1324,7 +1267,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "%sC08.%s" %(FILE_NAME, cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = get_image(cpm_li.pathname2url(filename))
         pixel_data = pixel_data.astype(float) / 255.0
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(image - pixel_data) < .02))
@@ -1346,7 +1289,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "metadatatestC08.%s" %(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = get_image(cpm_li.pathname2url(filename))
         pixel_data = pixel_data.astype(float) / 255.0
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(image - pixel_data) < .02))
@@ -1369,7 +1312,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "foo.%s"%(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = get_image(cpm_li.pathname2url(filename))
         pixel_data = pixel_data.astype(float) / 255.0
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
@@ -1394,7 +1337,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "foo.%s"%(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = get_image(cpm_li.pathname2url(filename))
         pixel_data = pixel_data.astype(float) / 255.0
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
@@ -1416,7 +1359,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "foo.%s"%(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = cpm_li.load_using_PIL(filename)
+        pixel_data = get_image(cpm_li.pathname2url(filename))
         pixel_data = pixel_data.astype(float) / 255.0
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
@@ -1486,20 +1429,15 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         return frames
         
     def test_05_01_save_movie(self):
-        if BIOFORMATS_CANT_WRITE:
-            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
-            return
         frames = self.run_movie()
         for i, frame in enumerate(frames):
             path = os.path.join(self.custom_directory, FILE_NAME + ".avi")
-            frame_out = cpm_li.load_using_bioformats(path, t=i)
+            frame_out = get_image(cpm_li.pathname2url(path), index=i, channel=0)
+            frame_out /= 255.0
             self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
             
     def test_05_02_save_two_movies(self):
         '''Use metadata grouping to write two movies'''
-        if BIOFORMATS_CANT_WRITE:
-            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
-            return
         grouping = (('Metadata_test',),
                     (({'Metadata_test':"foo"}, [1,2,3,4,5]),
                      ({'Metadata_test':"bar"}, [6,7,8,9])))
@@ -1513,7 +1451,8 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
             self.assertTrue(os.path.exists(path))
             for t,image_number in enumerate(group[1]):
                 frame = frames[image_number-1]
-                frame_out = cpm_li.load_using_bioformats(path, t=t)
+                frame_out = get_image(cpm_li.pathname2url(path), index=t, channel=0)
+                frame_out /= 255.0
                 self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
                 
     def test_05_03_save_color_movie(self):
@@ -1525,13 +1464,10 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         frames = self.run_movie(color=True)
         for i, frame in enumerate(frames):
             path = os.path.join(self.custom_directory, FILE_NAME + ".avi")
-            frame_out = cpm_li.load_using_bioformats(path, t=i)
+            frame_out = get_image(cpm_li.pathname2url(path), index=i) / 255.0
             self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
                 
-    def test_06_01_save_image_with_bioformats(self):
-        if BIOFORMATS_CANT_WRITE:
-            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
-            return
+    def test_06_01_save_image(self):
         np.random.seed(61)
         image8 = (np.random.uniform(size=(100,100))*255).astype(np.uint8)
         image16 = (np.random.uniform(size=(100,100))*65535).astype(np.uint16)
@@ -1551,41 +1487,25 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
             {'rescale'       : False, 
              'file_format'   : cpm_si.FF_TIF, 
              'bit_depth'     : '16',
-             'input_image'   : image8,
-             'expected'      : image8.astype(np.uint16) },
-            {'rescale'       : False, 
-             'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '16',
              'input_image'   : imagefloat,
              'expected'      : (imagefloat * 65535).astype(np.uint16) },
             {'rescale'       : False, 
              'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '16',
-             'input_image'   : image16,
-             'expected'      : image16 },
+             'bit_depth'     : '8',
+             'input_image'   : imagefloat,
+             'expected'      : (imagefloat * 255).astype(np.uint8) },
 
             # Rescaled 16-bit image
             {'rescale'       : True, 
              'file_format'   : cpm_si.FF_TIF, 
              'bit_depth'     : '16',
-             'input_image'   : image8s + 10,
-             'expected'      : image8s.astype(np.float32)*65535.0/245.0 },
+             'input_image'   : imagefloats / 2,
+             'expected'      : imagefloats*65535. },
             {'rescale'       : True, 
              'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '16',
-             'input_image'   : image16s + 1000,
-             'expected'      : image16s.astype(np.float32)*65535.0/64535.0 },
-            {'rescale'       : True, 
-             'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '16',
-             'input_image'   : imagefloats / 2 + .1,
-             'expected'      : (imagefloats * 65535.0).astype(np.uint16) },
-            # Two-channel image
-            {'rescale'       : False,
-             'file_format'   : cpm_si.FF_TIF,
-             'bit_depth'     : '16',
-             'input_image'   : np.dstack([image16] * 2),
-             'expected'      : np.dstack([image16] * 2) }
+             'bit_depth'     : '8',
+             'input_image'   : imagefloats / 2,
+             'expected'      : imagefloats * 255 }
         ]
 
         for i, setting in enumerate(test_settings):
@@ -1606,14 +1526,18 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
             module.bit_depth.value = setting['bit_depth']
             
         
-            module.save_image_with_bioformats(workspace)
+            module.save_image(workspace)
 
             expected = setting['expected']
             filename = module.get_filename(workspace,
                                            make_dirs = False,
                                            check_overwrite = False)
-            im = cpm_li.load_using_bioformats(filename)
-            self.assertTrue(np.all(np.abs(im*65535 - expected) <= 1))
+            if expected.ndim == 2:
+                expected = expected.reshape(expected.shape[0], 
+                                            expected.shape[1], 1)
+            for index in range(expected.shape[2]):
+                im = get_image(cpm_li.pathname2url(filename), index=index)
+                self.assertTrue(np.all(np.abs(im - expected[:,:,index]) <= 1))
             if os.path.isfile(filename):
                 try:
                     os.remove(filename)
@@ -1621,95 +1545,8 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
                     sys.stderr.write("Not ideal, Bioformats still holding onto file handle.\n")
                     traceback.print_exc()
 
-    def test_06_02_save_image_with_libtiff(self):
-        try:
-            import libtiff
-        except:
-            sys.stderr.write("Failed to import libtiff.\n")
-            traceback.print_exc()
-            return
-            
-        image = np.ones((255,255)).astype(np.uint8)
-        for i in range(image.shape[0]):
-            image[i,:] = i
-        image2 = np.ones((100,100)).astype(np.uint8)
-        for i in range(image2.shape[0]):
-            image2[i,:] = i
-            
-        test_settings = [
-            # 16-bit TIF from all image types
-            {'rescale'       : False, 
-             'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '16',
-             'input_image'   : image},
-            {'rescale'       : False, 
-             'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '16',
-             'input_image'   : image.astype(np.float) / 255.},
-            {'rescale'       : False, 
-             'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '16',
-             'input_image'   : image.astype(np.uint16) * 255},
-
-            # Rescaled 16-bit image
-            {'rescale'       : True, 
-             'file_format'   : cpm_si.FF_TIF, 
-             'bit_depth'     : '16',
-             'input_image'   : image2},
-        ]
-
-        for setting in test_settings:
-            # Adjust settings each round and retest
-            workspace, module = self.make_workspace(setting['input_image'])
-
-            module.save_image_or_figure.value = cpm_si.IF_IMAGE
-            module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
-            module.pathname.custom_path = self.custom_directory
-            module.file_name_method.value = cpm_si.FN_SINGLE_NAME
-            module.single_file_name.value = FILE_NAME
-            
-            module.rescale.value = setting['rescale']
-            module.file_format.value = setting['file_format']
-            module.bit_depth.value = setting['bit_depth']
-            
-            filename = module.get_filename(workspace, make_dirs = False,
-                                           check_overwrite = False)
-            if os.path.isfile(filename):
-                os.remove(filename)
-        
-            module.save_image_with_libtiff(workspace)
-
-            # Convert original image to float to compare it to the saved image
-            if setting['input_image'].dtype == np.uint8:
-                expected = setting['input_image'] / 255.
-            elif setting['input_image'].dtype == np.uint16:
-                expected = setting['input_image'] / 65535.
-            elif issubclass(setting['input_image'].dtype.type, np.floating):
-                expected = setting['input_image']
-
-            if setting['rescale']:
-                expected = stretch(expected)                
-            im = cpm_li.load_using_bioformats(filename)
-            
-            self.assertTrue (np.allclose(im, expected, atol=.001), 
-                    'Saved image did not match original when reloaded.\n'
-                    'Settings were: \n'
-                    '%s\n'
-                    'Original: \n'
-                    '%s\n'
-                    'Expected: \n'
-                    '%s\n'
-                    %(setting, im[:,0], expected[:,0]))
-            
+                
     def test_07_01_save_objects_grayscale8_tiff(self):
-        if BIOFORMATS_CANT_WRITE:
-            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
-            try:
-                import libtiff
-            except:
-                sys.stderr.write("Failed to import libtiff.\n")
-                traceback.print_exc()
-                return
         r = np.random.RandomState()
         labels = r.randint(0, 10, size=(30,20))
         workspace, module = self.make_workspace(labels, save_objects = True)
@@ -1734,19 +1571,10 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        image = PILImage.open(filename)
-        im = cpm_li.load_using_bioformats(filename, rescale=False)
+        im = get_image(cpm_li.pathname2url(filename))
         self.assertTrue(np.all(labels == im))
         
     def test_07_02_save_objects_grayscale_16_tiff(self):
-        if BIOFORMATS_CANT_WRITE:
-            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
-            try:
-                import libtiff
-            except:
-                sys.stderr.write("Failed to import libtiff.\n")
-                traceback.print_exc()
-                return
         r = np.random.RandomState()
         labels = r.randint(0, 300, size=(300,300))
         workspace, module = self.make_workspace(labels, save_objects = True)
@@ -1771,8 +1599,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        image = PILImage.open(filename)
-        im = cpm_li.load_using_bioformats(filename, rescale=False)
+        im = get_image(cpm_li.pathname2url(filename))
         self.assertTrue(np.all(labels == im))
         
     def test_07_03_save_objects_grayscale_png(self):
@@ -1800,8 +1627,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        image = PILImage.open(filename)
-        im = cpm_li.load_using_bioformats(filename, rescale=False)
+        im = get_image(cpm_li.pathname2url(filename))
         self.assertTrue(np.all(labels == im))
         
     def test_07_04_save_objects_color_png(self):
@@ -1829,7 +1655,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        im = cpm_li.load_using_bioformats(filename)
+        im = get_image(cpm_li.pathname2url(filename))
         im.shape = (im.shape[0] * im.shape[1], im.shape[2])
         order = np.lexsort(im.transpose())
         different = np.hstack(([False], np.any(im[order[:-1],:] != im[order[1:],:], 1)))

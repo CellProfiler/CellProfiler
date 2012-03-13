@@ -15,6 +15,8 @@ __version__ = "$Revision: 1$"
 
 
 import base64
+import csv
+import re
 import unittest
 import numpy as np
 import numpy.lib.index_tricks
@@ -36,6 +38,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.preferences as cpprefs
 import cellprofiler.modules
+import cellprofiler.modules.loadimages as LI
 from cellprofiler.modules.injectimage import InjectImage
 
 from cellprofiler.modules.tests import example_images_directory
@@ -183,11 +186,10 @@ MeasureObjectIntensity:[module_num:2|svn_version:\'10087\'|variable_revision_num
                              release_image = True)
         module.set_module_num(1)
         x.add_module(module)
-        for m in x.run_with_yield(run_in_background = False):
-            pass
-        self.assertTrue(isinstance(m, cpmeas.Measurements))
-        self.assertEqual(m.image_set_count, 1)
-        del m
+        
+        for i, m in enumerate(x.run_with_yield(run_in_background = False)):
+            self.assertTrue(isinstance(m, cpmeas.Measurements))
+            self.assertEqual(m.image_set_count, 1)
         for obj in get_objs():
             if isinstance(obj, np.ndarray) and obj.ndim > 1:
                 self.assertTrue(tuple(obj.shape[:2]) != tuple(size))
@@ -974,8 +976,8 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
               '"bar","4",,"6",,"P-67890"',
               '"baz","7","8",,"A03",'],
              (("foo", 1, 2, None, {"Well":"A01", "Plate":"P-12345"}),
-              ("bar", 4, None, 6, {"Well":None, "Plate":"P-67890"}),
-              ("baz", 7, 8, None, {"Well":"A03", "Plate":None}))),
+              ("bar", 4, None, 6, {"Plate":"P-67890"}),
+              ("baz", 7, 8, None, {"Well":"A03"}))),
             ([],
              ['"\\xce\\xb1\\xce\\xb2","1","2","3"'],
              [(u"\u03b1\u03b2", 1,2,3,{})]),
@@ -1005,7 +1007,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
              cpp.ImagePlaneDetails("bar", 1, None, 3),
              cpp.ImagePlaneDetails("baz", None, 2, 3)),
             (cpp.ImagePlaneDetails("foo", 1, 2, 3, Well="A01", Plate="P-12345"),),
-            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Well=None, Plate="P-12345"),),
+            (cpp.ImagePlaneDetails("foo", 1, 2, 3, Plate="P-12345"),),
             (cpp.ImagePlaneDetails("\u03b1\u03b2", 1, 2, 3),),
             (cpp.ImagePlaneDetails("foo", 1, 2, 3, Treatment="TNF-\u03b1"),),
             (cpp.ImagePlaneDetails('\\"', 1, 2, 3),),
@@ -1027,11 +1029,129 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 self.assertEqual(rr.index, tt.index)
                 self.assertEqual(rr.channel, tt.channel)
                 for k in metadata_columns:
-                    self.assertTrue(rr.metadata.has_key(k))
+                    self.assertTrue(rr.metadata.has_key(k) or 
+                                    (not tt.metadata.has_key(k)) or
+                                    tt.metadata[k] is None)
                     if (not tt.metadata.has_key(k)) or tt.metadata[k] is None:
-                        self.assertIsNone(rr.metadata[k])
+                        self.assertTrue((not rr.metadata.has_key(k)) or
+                                        rr.metadata[k] is None)
                     else:
                         self.assertEqual(rr.metadata[k], tt.metadata[k])
+                        
+    def test_19_01_write_legacy_image_set(self):
+        pipeline = cpp.Pipeline()
+        module = LI.LoadImages()
+        module.module_num = 1
+        path = os.path.join(example_images_directory(), "ExampleSBSImages")
+        module.location.join_parts(LI.ABSOLUTE_FOLDER_NAME, path)
+        module.group_by_metadata.value = False
+        module.add_imagecb()
+        module.images[0].common_text.value = "Channel1-"
+        module.images[0].metadata_choice.value = LI.M_FILE_NAME
+        module.images[0].file_metadata.value = \
+            "^Channel1-[0-9]{2}-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2})"
+        module.images[0].channels[0].image_name.value = IMAGE_NAME
+        module.images[1].common_text.value = "Channel2-"
+        module.images[1].metadata_choice.value = LI.M_FILE_NAME
+        module.images[1].file_metadata.value = \
+            "^Channel2-[0-9]{2}-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2})"
+        module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
+        pipeline.add_module(module)
+        fd = cStringIO.StringIO()
+        pipeline.write_image_set(fd)
+        fd.seek(0)
+        rdr = csv.reader(fd)
+        header = rdr.next()
+        self.assertTrue(cpmeas.IMAGE_NUMBER in header)
+        self.assertTrue(cpmeas.GROUP_NUMBER in header)
+        self.assertTrue(cpmeas.GROUP_INDEX in header)
+        ftr_well_row = "_".join((cpmeas.C_METADATA, "WellRow"))
+        ftr_well_column = "_".join((cpmeas.C_METADATA, "WellColumn"))
+        for ftr in (ftr_well_row, ftr_well_column):
+            self.assertTrue(ftr_well_row in header)
+        for ftr in (cpmeas.C_URL, cpmeas.C_FILE_NAME, cpmeas.C_PATH_NAME):
+            for image_name in (IMAGE_NAME, ALT_IMAGE_NAME):
+                self.assertTrue("_".join((ftr, image_name)) in header)
+        d = dict([(column_name, i) for i, column_name in enumerate(header)])
+        for i, fields in enumerate(rdr):
+            image_number = i+1
+            self.assertEqual(image_number, int(fields[d[cpmeas.IMAGE_NUMBER]]))
+            self.assertEqual(0, int(fields[d[cpmeas.GROUP_NUMBER]]))
+            self.assertEqual(i, int(fields[d[cpmeas.GROUP_INDEX]]))
+            well_row = fields[d[ftr_well_row]]
+            well_column = fields[d[ftr_well_column]]
+            for image_name in (IMAGE_NAME, ALT_IMAGE_NAME):
+                self.assertEqual(
+                    fields[d["_".join((cpmeas.C_PATH_NAME, image_name))]], path)
+            image_file_name = fields[d["_".join((cpmeas.C_FILE_NAME, IMAGE_NAME))]]
+            self.assertEqual(image_file_name,
+                             "Channel1-%02d-%s-%s.tif" % 
+                             (i+1, well_row, well_column))
+            alt_image_file_name = fields[d["_".join((cpmeas.C_FILE_NAME, ALT_IMAGE_NAME))]]
+            self.assertEqual(alt_image_file_name,
+                             "Channel2-%02d-%s-%s.tif" % 
+                             (i+1, well_row, well_column))
+        self.assertEqual(i, 95)
+       
+    def test_19_02_write_legacy_image_set_with_groups(self):
+        pipeline = cpp.Pipeline()
+        module = LI.LoadImages()
+        module.module_num = 1
+        path = os.path.join(example_images_directory(), "ExampleSBSImages")
+        module.location.join_parts(LI.ABSOLUTE_FOLDER_NAME, path)
+        module.group_by_metadata.value = True
+        module.metadata_fields.value = ["WellColumn"]
+        module.add_imagecb()
+        module.images[0].common_text.value = "Channel1-"
+        module.images[0].metadata_choice.value = LI.M_FILE_NAME
+        module.images[0].file_metadata.value = \
+            "^Channel1-[0-9]{2}-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2})"
+        module.images[0].channels[0].image_name.value = IMAGE_NAME
+        module.images[1].common_text.value = "Channel2-"
+        module.images[1].metadata_choice.value = LI.M_FILE_NAME
+        module.images[1].file_metadata.value = \
+            "^Channel2-[0-9]{2}-(?P<WellRow>[A-H])-(?P<WellColumn>[0-9]{2})"
+        module.images[1].channels[0].image_name.value = ALT_IMAGE_NAME
+        pipeline.add_module(module)
+        fd = cStringIO.StringIO()
+        pipeline.write_image_set(fd)
+        fd.seek(0)
+        rdr = csv.reader(fd)
+        header = rdr.next()
+        self.assertTrue(cpmeas.IMAGE_NUMBER in header)
+        self.assertTrue(cpmeas.GROUP_NUMBER in header)
+        self.assertTrue(cpmeas.GROUP_INDEX in header)
+        ftr_well_row = "_".join((cpmeas.C_METADATA, "WellRow"))
+        ftr_well_column = "_".join((cpmeas.C_METADATA, "WellColumn"))
+        for ftr in (ftr_well_row, ftr_well_column):
+            self.assertTrue(ftr_well_row in header)
+        for ftr in (cpmeas.C_URL, cpmeas.C_FILE_NAME, cpmeas.C_PATH_NAME):
+            for image_name in (IMAGE_NAME, ALT_IMAGE_NAME):
+                self.assertTrue("_".join((ftr, image_name)) in header)
+        d = dict([(column_name, i) for i, column_name in enumerate(header)])
+        for i, fields in enumerate(rdr):
+            well_column = "%02d" % (int(i / 8) + 1)
+            well_row = "ABCDEFGH"[i % 8]
+            image_number = i+1
+            self.assertEqual(image_number, int(fields[d[cpmeas.IMAGE_NUMBER]]))
+            self.assertEqual(int(i / 8), int(fields[d[cpmeas.GROUP_NUMBER]]))
+            self.assertEqual(i % 8, int(fields[d[cpmeas.GROUP_INDEX]]))
+            self.assertEqual(fields[d[ftr_well_row]], well_row)
+            self.assertEqual(fields[d[ftr_well_column]], well_column)
+            for image_name in (IMAGE_NAME, ALT_IMAGE_NAME):
+                self.assertEqual(
+                    fields[d["_".join((cpmeas.C_PATH_NAME, image_name))]], path)
+            image_file_name = fields[d["_".join((cpmeas.C_FILE_NAME, IMAGE_NAME))]]
+            n = int(i / 8) + (i % 8) * 12 + 1
+            self.assertEqual(image_file_name,
+                             "Channel1-%02d-%s-%s.tif" % 
+                             (n, well_row, well_column))
+            alt_image_file_name = fields[d["_".join((cpmeas.C_FILE_NAME, ALT_IMAGE_NAME))]]
+            self.assertEqual(alt_image_file_name,
+                             "Channel2-%02d-%s-%s.tif" % 
+                             (n, well_row, well_column))
+        self.assertEqual(i, 95)
+        
         
 def profile_pipeline(pipeline_filename,
                      output_filename=None,

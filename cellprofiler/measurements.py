@@ -108,6 +108,42 @@ OBJECT_NUMBER = "ObjectNumber"
 GROUP_NUMBER = "Group_Number"  # 1-based group index
 GROUP_INDEX = "Group_Index"  # 1-based index within group
 
+'''The FileName measurement category'''
+C_FILE_NAME = "FileName"
+
+'''The PathName measurement category'''
+C_PATH_NAME = "PathName"
+
+'''The URL measurement category'''
+C_URL = "URL"
+
+'''The series of an image file'''
+C_SERIES = "Series"
+
+'''The frame of a movie file'''
+C_FRAME = "Frame"
+
+'''The channel # of a color image plane'''
+C_CHANNEL = "Channel"
+
+'''The FileName measurement category when loading objects'''
+C_OBJECTS_FILE_NAME = "ObjectsFileName"
+
+'''The PathName measurement category when loading objects'''
+C_OBJECTS_PATH_NAME = "ObjectsPathName"
+
+'''The URL category when loading objects'''
+C_OBJECTS_URL = "ObjectsURL"
+
+'''The series of an image file'''
+C_OBJECTS_SERIES = "ObjectsSeries"
+
+'''The index of an image file'''
+C_OBJECTS_FRAME = "ObjectsFrame"
+
+'''The channel # of a color image plane'''
+C_OBJECTS_CHANNEL = "ObjectsChannel"
+
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''
     m = re.match(r'^varchar\(([0-9]+)\)$', x)
@@ -169,8 +205,12 @@ class Measurements(object):
 
     def __del__(self):
         if hasattr(self, "hdf5_dict"):
-            del self.hdf5_dict
+            self.close()
 
+    def close(self):
+        self.hdf5_dict.close()
+        del self.hdf5_dict
+        
     def __getitem__(self, key):
         # we support slicing the last dimension for the limited case of [..., :]
         if len(key) == 3 and key[2] == slice(None, None, None):
@@ -340,7 +380,7 @@ class Measurements(object):
         '''
         d = {}
         image_numbers = self.get_image_numbers()
-        values = [self.get_measurement(IMAGE, feature, image_numbers)
+        values = [[unicode(x) for x in self.get_measurement(IMAGE, feature, image_numbers)]
                   for feature in features]
         for i, image_number in enumerate(image_numbers):
             key = tuple([(k, v[i]) for k, v in zip(features, values)])
@@ -810,6 +850,45 @@ class Measurements(object):
                     stdev = values.std() if values is not None else np.NaN
                     d[stdev_feature_name] = stdev
         return d
+    
+    def load_image_sets(self, fd_or_file, start=None, stop=None):
+        '''Load image sets from a .csv file into a measurements file
+        
+        fd_or_file - either the path name of the .csv file or a file-like object
+        
+        start - the 1-based image set number to start the loading. For instance,
+                for start = 2, we skip the first line and write image
+                measurements starting at line 2 into image set # 2
+                
+        stop - stop loading when this line is reached.
+        '''
+        if isinstance(fd_or_file, basestring):
+            with open(fd_or_file, "r") as fd:
+                return self.load_image_sets(fd, start, stop)
+        import csv
+        reader = csv.reader(fd_or_file)
+        header = reader.next()
+        columns = [[] for _ in range(len(header))]
+        last_image_number = 0
+        for i, fields in enumerate(reader):
+            image_number = i + 1
+            if start is not None and start < image_number:
+                continue
+            if stop is not None and image_number == stop:
+                break
+            for field, column in zip(fields, columns):
+                column.append(field)
+            last_image_number = image_number
+        if last_image_number == 0:
+            logger.warn("No image sets were loaded")
+            return
+        if start is None:
+            image_numbers = list(range(1, last_image_number + 1))
+        else:
+            image_numbers = list(range(start, last_image_number + 1))
+        self.hdf5_dict.add_all(IMAGE, IMAGE_NUMBER, image_numbers, image_numbers)
+        for feature, column in zip(header, columns):
+            self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
     
 def load_measurements(filename, dest_file = None, can_overwrite = False,
                       run_name = None):

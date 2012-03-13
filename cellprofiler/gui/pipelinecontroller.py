@@ -12,6 +12,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
+import csv
 import logging
 import math
 import numpy
@@ -21,7 +22,7 @@ import re
 import sys
 import Queue
 import cpframe
-import cellprofiler.pipeline
+import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpm
@@ -76,12 +77,15 @@ class PipelineController:
         self.interaction_pending = False
 
         self.populate_recent_files()
+        self.menu_id_to_module_name = {}
+        self.module_name_to_menu_id = {}
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
         wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_URL_LOAD_PIPELINE, self.__on_url_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_AS_PIPELINE, self.__on_save_as_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_EXPORT_IMAGE_SETS, self.__on_export_image_sets)
         wx.EVT_MENU(frame, cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
         wx.EVT_MENU(frame, cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
         wx.EVT_MENU(frame, cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES, self.on_run_multiple_pipelines)
@@ -111,8 +115,7 @@ class PipelineController:
         
         wx.EVT_MENU_OPEN(frame, self.on_frame_menu_open)
         
-        cellprofiler.pipeline.evt_modulerunner_done(frame,
-                                                    self.on_module_runner_done)
+        cpp.evt_modulerunner_done(frame, self.on_module_runner_done)
     
     def attach_to_pipeline_list_view(self,pipeline_list_view, movie_viewer):
         """Glom onto events from the list box with all of the module names in it
@@ -207,6 +210,7 @@ class PipelineController:
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
             self.do_load_pipeline(pathname)
+        dlg.Destroy()
             
     def __on_url_load_pipeline(self, event):
         if self.__dirty_pipeline:
@@ -223,6 +227,7 @@ class PipelineController:
         if dlg.ShowModal() == wx.ID_OK:
             import urllib2
             self.do_load_pipeline(urllib2.urlopen(dlg.Value))
+        dlg.Destroy()
     
     def __on_dir_load_pipeline(self,caller,event):
         if wx.MessageBox('Do you want to load the pipeline, "%s"?'%(os.path.split(event.Path)[1]),
@@ -269,7 +274,7 @@ class PipelineController:
             self.do_save_pipeline()
         except Exception, e:
             wx.MessageBox('Exception:\n%s'%(e), 'Could not save pipeline...', wx.ICON_ERROR|wx.OK, self.__frame)
-    
+            
     def do_save_pipeline(self):
         '''Save the pipeline, asking the user for the name
 
@@ -285,19 +290,40 @@ class PipelineController:
             dlg.Path = path
         else:
             dlg.Directory = cpprefs.get_default_output_directory()
-        if dlg.ShowModal() == wx.ID_OK:
-            file_name = dlg.GetFilename()
-            if not sys.platform.startswith("win"):
-                if file_name.find('.') == -1:
-                    # on platforms other than Windows, add the default suffix
-                    file_name += ".cp"
-            pathname = os.path.join(dlg.GetDirectory(), file_name)
-            self.__pipeline.save(pathname)
-            self.set_current_pipeline_path(pathname)
-            self.__dirty_pipeline = False
-            self.set_title()
-            return True
-        return False
+        try:
+            if dlg.ShowModal() == wx.ID_OK:
+                file_name = dlg.GetFilename()
+                if not sys.platform.startswith("win"):
+                    if file_name.find('.') == -1:
+                        # on platforms other than Windows, add the default suffix
+                        file_name += ".cp"
+                pathname = os.path.join(dlg.GetDirectory(), file_name)
+                self.__pipeline.save(pathname)
+                self.set_current_pipeline_path(pathname)
+                self.__dirty_pipeline = False
+                self.set_title()
+                return True
+            return False
+        finally:
+            dlg.Destroy()
+    
+    def __on_export_image_sets(self, event):
+        '''Export the pipeline's image sets to a .csv file'''
+        dlg = wx.FileDialog(self.__frame, "Export image sets",
+                            wildcard = "Image set file (*.csv)|*.csv",
+                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        try:
+            if dlg.ShowModal() == wx.ID_OK:
+                try:
+                    fd = open(dlg.Path, "w")
+                    self.__pipeline.write_image_set(fd)
+                    fd.close()
+                except Exception, e:
+                    display_error_dialog(self.__frame, e, self.__pipeline,
+                                         "Failed to export image sets",
+                                         continue_only = True)
+        finally:
+            dlg.Destroy()
     
     def set_current_pipeline_path(self, pathname):
         cpprefs.set_current_pipeline_path(pathname)
@@ -396,13 +422,16 @@ class PipelineController:
                 dialog.Bind(wx.EVT_BUTTON, on_button, button,button_id)
             dialog.Fit()
             dialog.CentreOnParent()
-            dialog.ShowModal()
-            if answer[0] == SAVE_ID:
-                if not self.do_save_pipeline():
-                    '''Cancel the closing if the user fails to save'''
+            try:
+                dialog.ShowModal()
+                if answer[0] == SAVE_ID:
+                    if not self.do_save_pipeline():
+                        '''Cancel the closing if the user fails to save'''
+                        return False
+                elif answer[0] == RETURN_TO_CP_ID:
                     return False
-            elif answer[0] == RETURN_TO_CP_ID:
-                return False
+            finally:
+                dialog.Destroy()
         return True
     
     def on_close(self):
@@ -413,7 +442,7 @@ class PipelineController:
             self.__pipeline_measurements = None
     
     def __on_pipeline_event(self,caller,event):
-        if isinstance(event,cellprofiler.pipeline.RunExceptionEvent):
+        if isinstance(event,cpp.RunExceptionEvent):
             error_msg = None
             self.__pipeline_list_view.select_one_module(event.module.module_num)
             try:
@@ -439,13 +468,13 @@ class PipelineController:
             event.cancel_run = result == ED_STOP
             event.skip_thisset = result == ED_SKIP
                 
-        elif isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
+        elif isinstance(event, cpp.LoadExceptionEvent):
             self.on_load_exception_event(event)
         elif any([isinstance(event, x) for x in
-                  (cellprofiler.pipeline.ModuleAddedPipelineEvent,
-                   cellprofiler.pipeline.ModuleEditedPipelineEvent,
-                   cellprofiler.pipeline.ModuleMovedPipelineEvent,
-                   cellprofiler.pipeline.ModuleRemovedPipelineEvent)]):
+                  (cpp.ModuleAddedPipelineEvent,
+                   cpp.ModuleEditedPipelineEvent,
+                   cpp.ModuleMovedPipelineEvent,
+                   cpp.ModuleRemovedPipelineEvent)]):
             self.__dirty_pipeline = True
             self.set_title()
             
@@ -517,7 +546,7 @@ class PipelineController:
     
     def populate_edit_menu(self, menu):
         '''Display a menu of modules to add'''
-        from cellprofiler.modules import get_module_names, instantiate_module
+        from cellprofiler.modules import get_module_names
         #
         # Get a two-level dictionary of categories and names
         #
@@ -541,23 +570,34 @@ class PipelineController:
         for category in sorted(d.keys()):
             sub_menu = wx.Menu()
             for module_name in sorted(d[category]):
-                menu_id = wx.NewId()
+                if self.module_name_to_menu_id.has_key(module_name):
+                    menu_id = self.module_name_to_menu_id[module_name]
+                else:
+                    menu_id = wx.NewId()
+                    self.module_name_to_menu_id[module_name] = menu_id
+                    self.menu_id_to_module_name[menu_id] = module_name
+                    self.__frame.Bind(wx.EVT_MENU, 
+                                      self.on_menu_add_module, 
+                                      id = menu_id)
                 sub_menu.Append(menu_id, module_name)
-                ########################
-                #
-                # on_menu - add a module to the pipeline
-                #
-                ########################
-                def on_menu(event, module_name = module_name):
-                    module = instantiate_module(module_name)
-                    selected_modules = self.__get_selected_modules()
-                    if len(selected_modules) == 0:
-                        module.module_num = len(self.__pipeline.modules())+1
-                    else:
-                        module.module_num = selected_modules[0].module_num + 1
-                    self.__pipeline.add_module(module)
-                self.__frame.Bind(wx.EVT_MENU, on_menu, id = menu_id)
             menu.AppendSubMenu(sub_menu, category)
+            
+    def on_menu_add_module(self, event):
+        from cellprofiler.modules import instantiate_module
+        assert isinstance(event, wx.CommandEvent)
+        if self.menu_id_to_module_name.has_key(event.Id):
+            module_name = self.menu_id_to_module_name[event.Id]
+            module = instantiate_module(module_name)
+            selected_modules = self.__get_selected_modules()
+            if len(selected_modules) == 0:
+                module.module_num = len(self.__pipeline.modules())+1
+            else:
+                module.module_num = selected_modules[0].module_num + 1
+            self.__pipeline.add_module(module)
+        else:
+            logger.warn("Could not find module associated with ID = %d, module = %s" % (
+                event.Id, event.GetString()))
+            
         
     def __get_selected_modules(self):
         return self.__pipeline_list_view.get_selected_modules()
@@ -602,7 +642,7 @@ class PipelineController:
         """Move the currently selected modules up"""
         selected_modules = self.__get_selected_modules()
         for module in selected_modules:
-            self.__pipeline.move_module(module.module_num,cellprofiler.pipeline.DIRECTION_UP);
+            self.__pipeline.move_module(module.module_num,cpp.DIRECTION_UP);
         #
         # Major event - restart from scratch
         #
@@ -616,7 +656,7 @@ class PipelineController:
         selected_modules = self.__get_selected_modules()
         selected_modules.reverse()
         for module in selected_modules:
-            self.__pipeline.move_module(module.module_num,cellprofiler.pipeline.DIRECTION_DOWN);
+            self.__pipeline.move_module(module.module_num,cpp.DIRECTION_DOWN);
         #
         # Major event - restart from scratch
         #
@@ -678,9 +718,12 @@ class PipelineController:
                 title = "Run multiple pipelines",
                 style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER |wx.THICK_FRAME,
                 size = (640,480))
-        if dlg.ShowModal() == wx.ID_OK:
-            self.pipeline_list = dlg.get_pipelines()
-            self.run_next_pipeline(event)
+        try:
+            if dlg.ShowModal() == wx.ID_OK:
+                self.pipeline_list = dlg.get_pipelines()
+                self.run_next_pipeline(event)
+        except:
+            dlg.Destroy()
             
     def run_next_pipeline(self, event):
         if len(self.pipeline_list) == 0:
@@ -921,8 +964,11 @@ class PipelineController:
         dlg = wx.FileDialog(self.__frame, "Select measurements file",
                             wildcard = "Measurements file (*.mat)|*.mat",
                             style = wx.FD_OPEN)
-        if dlg.ShowModal() != wx.ID_OK:
-            return
+        try:
+            if dlg.ShowModal() != wx.ID_OK:
+                return
+        finally:
+            dlg.Destroy()
         
         ##################################
         #
@@ -981,7 +1027,7 @@ class PipelineController:
             self.__pause_pipeline = False
             if self.__need_unpause_event:
                 # see note above
-                cellprofiler.pipeline.post_module_runner_done_event(self.__frame)
+                cpp.post_module_runner_done_event(self.__frame)
         
     def on_frame_menu_open(self, event):
         pass
@@ -1005,14 +1051,19 @@ class PipelineController:
                             "Save measurements to a file",
                             wildcard="CellProfiler measurements (*.mat)|*.mat",
                             style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-        if dlg.ShowModal() == wx.ID_OK:
-            pathname = os.path.join(dlg.GetDirectory(), dlg.GetFilename())
-            self.__pipeline.save_measurements(pathname, 
-                                              self.__pipeline_measurements)
+        try:
+            if dlg.ShowModal() == wx.ID_OK:
+                pathname = os.path.join(dlg.GetDirectory(), dlg.GetFilename())
+                self.__pipeline.save_measurements(pathname, 
+                                                  self.__pipeline_measurements)
+        finally:
+            dlg.Destroy()
         
     def stop_running(self):
         self.__analysis = None
-        self.__running_pipeline = False
+        if self.__running_pipeline is not None:
+            self.__running_pipeline.close()
+            self.__running_pipeline = None
         self.__pause_pipeline = False
         self.__frame.preferences_view.on_stop_analysis()
         self.__module_view.enable()
@@ -1041,7 +1092,7 @@ class PipelineController:
         self.__debug_measurements = cpm.Measurements(can_overwrite=True)
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
-        assert isinstance(self.__pipeline, cellprofiler.pipeline.Pipeline)
+        assert isinstance(self.__pipeline, cpp.Pipeline)
         self.__pipeline.test_mode = True
         self.__debug_image_set_list = cpi.ImageSetList(True)
         workspace = cpw.Workspace(self.__pipeline, None, None, None,
@@ -1107,9 +1158,9 @@ class PipelineController:
         try:
             image_set_number = self.__debug_measurements.image_set_number
             self.__debug_measurements.add_image_measurement(
-                cellprofiler.pipeline.GROUP_NUMBER, self.__grouping_index)
+                cpp.GROUP_NUMBER, self.__grouping_index)
             self.__debug_measurements.add_image_measurement(
-                cellprofiler.pipeline.GROUP_INDEX, self.__within_group_index)
+                cpp.GROUP_INDEX, self.__within_group_index)
             image_set = self.__debug_image_set_list.get_image_set(image_set_number-1)
             workspace = cpw.Workspace(self.__pipeline,
                                       module,
@@ -1134,7 +1185,7 @@ class PipelineController:
         except Exception,instance:
             logger.error("Failed to run module %s", module.module_name,
                          exc_info=True)
-            event = cellprofiler.pipeline.RunExceptionEvent(instance,module)
+            event = cpp.RunExceptionEvent(instance,module)
             self.__pipeline.notify_listeners(event)
             if event.cancel_run:
                 self.on_debug_stop(event)
@@ -1280,8 +1331,11 @@ class PipelineController:
         super_sizer.Add((2,2))
         dialog.Fit()
         dialog.CenterOnParent()
-        if dialog.ShowModal() == wx.ID_OK:
-            self.debug_choose_group(lb.Selection)
+        try:
+            if dialog.ShowModal() == wx.ID_OK:
+                self.debug_choose_group(lb.Selection)
+        finally:
+            dialog.Destroy()
     
     def on_debug_choose_image_set(self, event):
         '''Choose one of the current image sets
@@ -1322,17 +1376,20 @@ class PipelineController:
         super_sizer.Add((2,2))
         dialog.Fit()
         dialog.CenterOnParent()
-        if dialog.ShowModal() == wx.ID_OK:
-            image_number = indexes[lb.Selection]
-            self.__debug_measurements.next_image_set(image_number)
-            self.__pipeline_list_view.select_one_module(1)
-            self.__movie_viewer.Value = 0
-            for i, (grouping, image_numbers) in enumerate(self.__groupings):
-                if image_number in image_numbers:
-                    self.__grouping_index = i
-                    self.__within_group_index = \
-                        list(image_numbers).index(image_number)
-                    break
+        try:
+            if dialog.ShowModal() == wx.ID_OK:
+                image_number = indexes[lb.Selection]
+                self.__debug_measurements.next_image_set(image_number)
+                self.__pipeline_list_view.select_one_module(1)
+                self.__movie_viewer.Value = 0
+                for i, (grouping, image_numbers) in enumerate(self.__groupings):
+                    if image_number in image_numbers:
+                        self.__grouping_index = i
+                        self.__within_group_index = \
+                            list(image_numbers).index(image_number)
+                        break
+        finally:
+            dialog.Destroy()
 
     def on_debug_reload(self, event):
         '''Reload modules from source, warning the user if the pipeline could
@@ -1376,7 +1433,7 @@ class PipelineController:
         '''Run one iteration of the pipeline
         
         Called in response to a
-        cellprofiler.pipeline.ModuleRunnerDoneEvent whenever a module
+        cpp.ModuleRunnerDoneEvent whenever a module
         is done running.
         '''
         if self.__pause_pipeline:
@@ -1468,9 +1525,12 @@ class PipelineController:
         button_sizer.Realize()
         dlg.Fit()
         dlg.CenterOnParent()
-        dlg.ShowModal()
-        if dont_show_again.Value:
-            cpprefs.set_show_analysis_complete_dlg(False)
+        try:
+            dlg.ShowModal()
+            if dont_show_again.Value:
+                cpprefs.set_show_analysis_complete_dlg(False)
+        finally:
+            dlg.Destroy()
             
     def show_exiting_test_mode(self):
         '''Show the "Analysis complete" dialog'''
@@ -1502,9 +1562,12 @@ class PipelineController:
         button_sizer.Realize()
         dlg.Fit()
         dlg.CenterOnParent()
-        dlg.ShowModal()
-        if dont_show_again.Value:
-            cpprefs.set_show_exiting_test_mode_dlg(False)
+        try:
+            dlg.ShowModal()
+            if dont_show_again.Value:
+                cpprefs.set_show_exiting_test_mode_dlg(False)
+        finally:
+            dlg.Destroy()
             
     def get_output_file_path(self):
         path = os.path.join(cpprefs.get_default_output_directory(),
@@ -1525,6 +1588,7 @@ class PipelineController:
                                 caption='Output file exists',
                                 style = wx.YES_NO+wx.ICON_QUESTION)
             user_choice = result.ShowModal()
+            result.Destroy()
             if user_choice & wx.YES:
                 path = alternate_name
                 cpprefs.set_output_file_name(os.path.split(alternate_name)[1])

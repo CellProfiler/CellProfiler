@@ -1900,7 +1900,7 @@ class UntangleWorms(cpm.CPModule):
         
         current_best_subset, current_best_cost = self.fast_selection(
             costs, path_segment_matrix, graph.segment_lengths, 
-            overlap_weight, leftover_weight)
+            overlap_weight, leftover_weight, max_num_worms)
         selected_paths =  [paths_and_costs[order[i]][0]
                            for i in current_best_subset]
         path_coords_selected = [ self.path_to_pixel_coords(graph, path)
@@ -1908,7 +1908,7 @@ class UntangleWorms(cpm.CPModule):
         return path_coords_selected
         
     def fast_selection(self, costs, path_segment_matrix, segment_lengths,
-                       overlap_weight, leftover_weight):
+                       overlap_weight, leftover_weight, max_num_worms):
         '''Select the best subset of paths using a breadth-first search
         
         costs - the shape costs of every path
@@ -1921,13 +1921,15 @@ class UntangleWorms(cpm.CPModule):
         overlap_weight - the penalty per pixel of an overlap
         
         leftover_weight - the penalty per pixel of an unincluded segment
+        
+        max_num_worms - maximum # of worms allowed in returned match.
         '''
         current_best_subset = []
         current_best_cost = np.sum(segment_lengths) * leftover_weight
         current_costs = costs
         current_path_segment_matrix = path_segment_matrix.astype(int)
         current_path_choices = np.eye(len(costs), dtype = bool)
-        for i in range(len(costs)):
+        for i in range(min(max_num_worms, len(costs))):
             current_best_subset, current_best_cost, \
                 current_path_segment_matrix, current_path_choices = \
                 self.select_one_level(

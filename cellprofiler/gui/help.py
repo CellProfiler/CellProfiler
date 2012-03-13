@@ -1262,12 +1262,17 @@ preference determines whether CellProfiler will display a warning on startup
 if CellProfiler can't locate the Java installation on your computer. Check
 this box if you want to be warned. Uncheck this box to hide warnings."""
 
+IMAGE_SET_FILE_HELP = """The <i>Image Set File</i> preference is the path
+and file name of the image set file. This file holds the files and metadata
+for each image set in a CellProfiler pipeline iteration."""
+
 EACH_PREFERENCE_HELP = (
     ( "Title font", TITLE_FONT_HELP ),
     ( "Table font", TABLE_FONT_HELP ),
     ( "Default colormap", DEFAULT_COLORMAP_HELP ),
     ( "Window background", WINDOW_BACKGROUND_HELP ),
     ( "Plugins directory", PLUGINS_DIRECTORY_HELP ),
+    ( "Image set file", IMAGE_SET_FILE_HELP ),
     ( "ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
     ( "ImageJ version", IJ_VERSION_HELP),
     ( "Check for updates", CHECK_FOR_UPDATES_HELP ),

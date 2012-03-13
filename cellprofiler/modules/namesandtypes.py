@@ -21,13 +21,14 @@ import os
 import re
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
-from cellprofiler.modules.images import Images, NODE_IMAGE_PLANE
+from cellprofiler.modules.images import Images
 
 ASSIGN_ALL = "Assign all images"
 ASSIGN_GUESS = "Try to guess image assignment"
@@ -44,7 +45,10 @@ LOAD_AS_ALL = [ LOAD_AS_GRAYSCALE_IMAGE,
                 LOAD_AS_ILLUMINATION_FUNCTION,
                 LOAD_AS_OBJECTS]
 
-IDX_ASSIGNMENTS_COUNT = 4
+IDX_ASSIGNMENTS_COUNT = 5
+
+MATCH_BY_ORDER = "Order"
+MATCH_BY_METADATA = "Metadata"
 
 class NamesAndTypes(cpm.CPModule):
     variable_revision_number = 1
@@ -95,6 +99,32 @@ class NamesAndTypes(cpm.CPModule):
         self.add_assignment_button = cps.DoSomething(
             "Add another assignment rule", "Add",
             self.add_assignment)
+        self.matching_choice = cps.Choice(
+            "Match channels by",
+            [MATCH_BY_ORDER, MATCH_BY_METADATA],
+            doc = """How do you want to match the image from one channel with
+            the images from other channels?
+            <p>This setting controls how CellProfiler picks which images
+            should be matched together when analyzing all of the images
+            from one site. You can either match by order or match using
+            metadata.<p>
+            <i>Match by order</i>: CellProfiler will order the images in
+            each channel alphabetically by their file path name and, for movies
+            or TIF stacks, will order the frames by their order in the file.
+            CellProfiler will then match the first from one channel to the
+            first from another channel. This is simple when it works, but
+            will match the wrong files if files are missing or misnamed.<p>
+            <i>Match by metadata</i>: CellProfiler will match files with
+            the same metadata values. For instance, if both files have
+            well and site metadata, CellProfiler will match the file
+            in one channel with well A01 and site 1 with the file in the
+            other channel with well A01 and site 1 and so on. CellProfiler
+            can match a single file for one channel against many files from
+            another channel, for instance an illumination correction file
+            for an entire plate against every image file for that plate.
+            <i>Match by metadata</i> is powerful, less prone to inadvertent
+            errors, but harder to use than <i>Match by order</i>.
+            """)
         self.join = cps.Joiner("")
         self.update_table_button = cps.DoSomething(
             "","Update the table below", self.make_image_sets_and_update_table)
@@ -131,15 +161,19 @@ class NamesAndTypes(cpm.CPModule):
         
         group.can_remove = can_remove
         if can_remove:
-            group.append("remover", cps.RemoveSettingButton(
-                'Remove above rule', "Remove", 
-                self.assignments, group))
+            def do_remove():
+                self.assignments.remove(group)
+                self.update_all_columns()
+                
+            group.append("remover", cps.DoSomething(
+                'Remove above rule', "Remove", do_remove))
         if self.pipeline is not None:
             self.update_all_columns()
             
     def settings(self):
         result = [self.assignment_method, self.single_load_as_choice,
-                  self.single_image_provider, self.join, self.assignments_count]
+                  self.single_image_provider, self.join, self.matching_choice,
+                  self.assignments_count]
         for assignment in self.assignments:
             result += [assignment.rule_filter, assignment.image_name,
                        assignment.object_name, assignment.load_as_choice]
@@ -163,7 +197,9 @@ class NamesAndTypes(cpm.CPModule):
                     result += [assignment.remover]
             result += [self.add_assignment_button]
             if len(self.assignments) > 1:
-                result += [self.join]
+                result += [self.matching_choice]
+                if self.matching_choice == MATCH_BY_METADATA:
+                    result += [self.join]
         result += [self.update_table_button, self.table]
         return result
     
@@ -317,7 +353,7 @@ class NamesAndTypes(cpm.CPModule):
             # the single column name
             #
             column_name = self.column_names[0]
-            self.image_sets = [((str(i+1), ), { column_name: (ipd,) })
+            self.image_sets = [((i+1, ), { column_name: (ipd,) })
                                for i, ipd in enumerate(self.ipd_columns[0])]
         elif self.assignment_method == ASSIGN_RULES:
             #
@@ -325,10 +361,25 @@ class NamesAndTypes(cpm.CPModule):
             # or the first metadata value. The value is either a subdictionary
             # or the leaf which is an image_set dictionary.
             #
-            if len(self.column_names) == 1:
-                column_name = self.column_names[0]
-                self.image_sets = [((str(i+1), ), { column_name: (ipd,) })
-                                   for i, ipd in enumerate(self.ipd_columns[0])]
+            def cmp_ipds(i1, i2):
+                '''Sort by path name lexical order, then by predefined order'''
+                r = cmp(i1.path, i2.path)
+                if r != 0:
+                    return r
+                return cmp(i1, i2)
+            for ipd_column in self.ipd_columns:
+                ipd_column.sort(cmp=cmp_ipds)
+              
+            if (len(self.column_names) == 1 or 
+                self.matching_choice == MATCH_BY_ORDER):
+                self.image_sets = []
+                n_image_sets = reduce(max, [len(x) for x in self.ipd_columns], 0)
+                for i in range(n_image_sets):
+                    self.image_sets.append(
+                        ((str(i+1), ),
+                         dict([(column_name, (self.ipd_columns[j][i],))
+                               for j, column_name 
+                               in enumerate(self.column_names)])))
                 return
             try:
                 joins = self.join.parse()
@@ -422,6 +473,122 @@ class NamesAndTypes(cpm.CPModule):
                         self.assignment_method.value)
             self.image_sets = []
             
+    def get_image_names(self):
+        '''Return the names of all images produced by this module'''
+        if self.assignment_method == ASSIGN_ALL:
+            return [self.single_image_provider.value]
+        elif self.assignment_method == ASSIGN_RULES:
+            return [group.image_name.value 
+                    for group in self.assignments
+                    if group.load_as_choice != LOAD_AS_OBJECTS]
+        return []
+    
+    def get_object_names(self):
+        '''Return the names of all objects produced by this module'''
+        if self.assignment_method == ASSIGN_RULES:
+            return [group.object_name.value
+                    for group in self.assignments
+                    if group.load_as_choice == LOAD_AS_OBJECTS]
+        return []
+        
+            
+    def get_measurement_columns(self, pipeline):
+        '''Create a list of measurements produced by this module
+        
+        For NamesAndTypes, we anticipate that the pipeline will create
+        the text measurements for the images.
+        '''
+        from cellprofiler.modules.load_images import \
+             C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
+             C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
+             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
+        from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
+             C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y, \
+             get_object_measurement_columns
+        
+        image_names = self.get_image_names()
+        object_names = self.get_object_names()
+        result = []
+        for image_name in image_names:
+            result += [ (IMAGE, 
+                         "_".join([category, image_name]),
+                         coltype)
+                        for category, coltype in (
+                            (C_FILE_NAME, cpmeas.COLTYPE_VARCHAR_FILE_NAME),
+                            (C_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                            (C_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                            #
+                            # TO-DO: these need to be collected for every image
+                            #        and properly populated.
+                            #
+                            #(C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR % 32),
+                            #(C_SCALING, cpmeas.COLTYPE_FLOAT),
+                            #(C_WIDTH, cpmeas.COLTYPE_INTEGER),
+                            #(C_HEIGHT, cpmeas.COLTYPE_INTEGER),
+                            #(C_SERIES, cpmeas.COLTYPE_INTEGER),
+                            #(C_FRAME, cpmeas.COLTYPE_INTEGER)
+                        )]
+        for object_name in object_names:
+            result += [ (IMAGE,
+                         "_".join([category, object_name]),
+                         coltype)
+                        for category, coltype in (
+                            (C_OBJECTS_FILE_NAME, cpmeas.COLTYPE_VARCHAR_FILE_NAME),
+                            (C_OBJECTS_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                            (C_OBJECTS_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                            (C_COUNT, cpmeas.COLTYPE_INTEGER),
+                            #
+                            # TO-DO: these need to be collected for every image
+                            #        and properly populated.
+                            #
+                            #(C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR % 32),
+                            #(C_WIDTH, cpmeas.COLTYPE_INTEGER),
+                            #(C_HEIGHT, cpmeas.COLTYPE_INTEGER),
+                            #(C_SERIES, cpmeas.COLTYPE_INTEGER),
+                            #(C_FRAME, cpmeas.COLTYPE_INTEGER)
+                            )]
+            result += get_object_measurement_columns(object_name)
+                            
+        return result
+        
+    def get_categories(self, pipeline, object_name):
+        from cellprofiler.modules.load_images import \
+             C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
+             C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
+             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
+        from cellprofiler.modules.identify import C_LOCATION, C_NUMBER
+        result = []
+        if object_name == cpmeas.IMAGE:
+            has_images = any(self.get_image_names())
+            has_objects = any(self.get_object_names())
+            if has_images:
+                result += [C_FILE_NAME, C_PATH_NAME, C_URL]
+            if has_objects:
+                result += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME]
+        elif object_name in self.get_object_names():
+            result += [C_LOCATION, C_NUMBER]
+        return result
+    
+    def get_measurements(self, pipeline, object_name, category):
+        from cellprofiler.modules.load_images import \
+             C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
+             C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
+             C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
+        from cellprofiler.modules.identify import C_NUMBER, C_COUNT, \
+             C_LOCATION, FTR_OBJECT_NUMBER, FTR_CENTER_X, FTR_CENTER_Y
+        
+        image_names = self.get_image_names()
+        object_names = self.get_object_names()
+        if object_name == cpmeas.IMAGE and category in (
+            C_FILE_NAME, C_PATH_NAME, C_URL):
+            return image_names
+        elif object_name in self.get_object_names():
+            if category == C_NUMBER:
+                return [FTR_OBJECT_NUMBER]
+            elif category == C_LOCATION:
+                return [FTR_CENTER_X, FTR_CENTER_Y]
+        return []
+            
     class FakeModpathResolver(object):
         '''Resolve one modpath to one ipd'''
         def __init__(self, modpath, ipd):
@@ -437,7 +604,8 @@ class NamesAndTypes(cpm.CPModule):
         modpath = Images.make_modpath_from_ipd(ipd)
         try:
             match = group.rule_filter.evaluate(
-                (NODE_IMAGE_PLANE, modpath, self.FakeModpathResolver(modpath, ipd)))
+                (cps.FileCollectionDisplay.NODE_IMAGE_PLANE, 
+                 modpath, self.FakeModpathResolver(modpath, ipd)))
             return match
         except:
             return False
@@ -494,40 +662,56 @@ class NamesAndTypes(cpm.CPModule):
             except:
                 pass # bad field value
     
+    def get_metadata_column_names(self):
+        if (self.assignment_method == ASSIGN_RULES and 
+            self.matching_choice == MATCH_BY_METADATA and
+            len(self.column_names) > 1):
+            joins = self.join.parse()
+            metadata_columns = [
+                " / ".join(set([k for k in join.values() if k is not None]))
+                for join in joins]
+        else:
+            metadata_columns = [cpmeas.IMAGE_NUMBER]
+        return metadata_columns
+        
     def update_table(self):
         '''Update the table to show the current image sets'''
         joins = self.join.parse()
         self.table.clear_columns()
         self.table.clear_rows()
         
-        if (self.assignment_method == ASSIGN_RULES and 
-            len(self.column_names) > 1):
-            metadata_columns = [
-                " / ".join(set([k for k in join.values() if k is not None]))
-                for join in joins]
-        else:
-            metadata_columns = ["Image number"]
+        metadata_columns = self.get_metadata_column_names()
         for i, name in enumerate(metadata_columns):
             self.table.insert_column(i, name)
+        f_pathname = "Pathname: %s"
+        f_filename = "Filename: %s"
         for i, column_name in enumerate(self.column_names):
             idx = len(metadata_columns) + i*2
-            self.table.insert_column(idx, "Pathname: %s" % column_name)
-            self.table.insert_column(idx+1, "Filename: %s" % column_name)
+            self.table.insert_column(idx, f_pathname % column_name)
+            self.table.insert_column(idx+1, f_filename % column_name)
         data = []
-        for keys, image_set in self.image_sets:
-            row = list(keys)
+        errors = []
+        for i, (keys, image_set) in enumerate(self.image_sets):
+            row = [unicode(key) for key in keys]
             for column_name in self.column_names:
                 ipds = image_set.get(column_name, [])
                 if len(ipds) == 0:
                     row += ["-- No image! --"] * 2
+                    errors.append((i, column_name))
                 elif len(ipds) > 1:
                     row.append("-- Multiple images! --\n" + 
                                "\n".join([ipd.path for ipd in ipds]))
                     row.append("-- Multiple images! --")
+                    errors.append((i, column_name))
                 else:
                     row += os.path.split(ipds[0].path)
             data.append(row)
         self.table.data = data
+        for error_row, column_name in errors:
+            for f in (f_pathname, f_filename):
+                self.table.set_cell_attribute(error_row, f % column_name, 
+                                              self.table.ATTR_ERROR)
+                self.table.set_row_attribute(error_row, self.table.ATTR_ERROR)
 
 class MetadataPredicate(cps.Filter.FilterPredicate):
     '''A predicate that compares an ifd against a metadata key and value'''
@@ -576,5 +760,5 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
     def test_valid(self, pipeline, *args):
         modpath = ["imaging","image.png"]
         ipd = cpp.ImagePlaneDetails("/imaging/image.png", None, None, None)
-        self((NODE_IMAGE_PLANE, modpath,
+        self((cps.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath,
               NamesAndTypes.FakeModpathResolver(modpath, ipd)), *args)

@@ -155,6 +155,9 @@ class HDF5Dict(object):
 
     def __del__(self):
         logger.debug("HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary)
+        self.close()
+        
+    def close(self):
         if not hasattr(self, "hdf5_file"):
             # This happens if the constructor could not open the hdf5 file
             return
@@ -164,10 +167,11 @@ class HDF5Dict(object):
                 self.hdf5_file.close()
                 os.unlink(self.filename)
             except Exception, e:
-                pass
+                logger.warn("So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
         else:
             self.hdf5_file.flush()
             self.hdf5_file.close()
+        del self.hdf5_file
 
     def flush(self):
         logger.debug("HDF5Dict.flush(): %s, temporary=%s", self.filename, self.is_temporary)
@@ -379,7 +383,7 @@ class HDF5Dict(object):
         with self.lock:
             return self.top_group[object_name].keys()
         
-    def add_all(self, object_name, feature_name, values):
+    def add_all(self, object_name, feature_name, values, idxs = None):
         '''Add all imageset values for a given feature
         
         object_name - name of object supporting the feature
@@ -387,8 +391,8 @@ class HDF5Dict(object):
         values - either a list of scalar values or a list of arrays
                  where each array has the values for each of the
                  objects in the corresponding image set.
-                 
-        Image set numbers are assumed to go from 1 to N
+        idxs - the image set numbers associated with the values. If idxs is
+               omitted or None, image set numbers are assumed to go from 1 to N
         '''
         with self.lock:
             self.add_object(object_name)
@@ -396,9 +400,10 @@ class HDF5Dict(object):
                 del self.top_group[object_name][feature_name]
                 del self.indices[object_name, feature_name]
             self.add_feature(object_name, feature_name)
-            idxs = [i+1 for i, value in enumerate(values)
-                    if value is not None]
-            values = [value for value in values if value is not None]
+            if idxs is None:
+                idxs = [i+1 for i, value in enumerate(values)
+                        if value is not None]
+                values = [value for value in values if value is not None]
             if len(values) > 0:
                 if np.isscalar(values[0]):
                     idx = np.column_stack((idxs,

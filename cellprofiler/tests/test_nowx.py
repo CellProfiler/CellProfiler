@@ -17,6 +17,7 @@ import tempfile
 import traceback
 import unittest
 from cellprofiler.modules.tests import example_images_directory
+from subimager.client import start_subimager, stop_subimager
 
 import __builtin__
 
@@ -30,6 +31,14 @@ def import_all_but_wx(name,
     return default_import(name, globals, locals, fromlist, level)
 
 class TestNoWX(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        start_subimager()
+        
+    @classmethod
+    def tearDownClass(cls):
+        stop_subimager()
+        
     def setUp(self):
         from cellprofiler.preferences import set_headless
         set_headless()

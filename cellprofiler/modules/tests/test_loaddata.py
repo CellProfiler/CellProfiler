@@ -35,10 +35,19 @@ import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.tests import example_images_directory
+from subimager.client import start_subimager, stop_subimager
 
 OBJECTS_NAME = "objects"
 
 class TestLoadData(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        start_subimager()
+        
+    @classmethod
+    def tearDownClass(cls):
+        stop_subimager()
+        
     def make_pipeline(self, csv_text, name = None):
         if name is None:
             handle, name = tempfile.mkstemp(".csv")
@@ -397,7 +406,7 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             # This appears to be bistable, depending on whether PIL or
             # Bioformats loads it (???)
             #
-            self.assertTrue(hexdigest == '1a37c43914c7ceb7d9cac503a5c1c767')
+            self.assertTrue(hexdigest == 'f7d75e4ba3ca1385dfe09c111261359e')
             self.assertTrue('PathName_DNA' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('PathName_DNA'),
                              dir)
@@ -668,10 +677,10 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             self.assertTrue(c0_ran[0])
             hexdigest = m.get_current_image_measurement('MD5Digest_DAPI')
             #
-            # This appears to be bistable, depending on whether PIL or
-            # Bioformats loads it (???)
+            # This appears to be tristable, depending on whether PIL or
+            # Bioformats or Subimager loads it (???)
             #
-            self.assertTrue(hexdigest == '1a37c43914c7ceb7d9cac503a5c1c767')
+            self.assertTrue(hexdigest == u'f7d75e4ba3ca1385dfe09c111261359e')
             self.assertTrue('PathName_DAPI' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('PathName_DAPI'),
                              dir)

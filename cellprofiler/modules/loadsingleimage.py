@@ -56,11 +56,12 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-from loadimages import LoadImagesImageProvider, C_SCALING, C_FILE_NAME, C_HEIGHT, C_WIDTH
-from loadimages import C_PATH_NAME, C_MD5_DIGEST, C_OBJECTS_FILE_NAME
+from loadimages import LoadImagesImageProvider, C_SCALING, C_FILE_NAME
+from loadimages import C_HEIGHT, C_WIDTH, C_PATH_NAME, C_MD5_DIGEST, C_URL
+from loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_URL
 from loadimages import C_OBJECTS_PATH_NAME, IO_IMAGES, IO_OBJECTS, IO_ALL
 from loadimages import IMAGE_FOR_OBJECTS_F
-from loadimages import convert_image_to_objects
+from loadimages import convert_image_to_objects, pathname2url
 from identify import add_object_count_measurements, add_object_location_measurements
 from identify import get_object_measurement_columns
 from identify import C_COUNT, C_LOCATION, C_NUMBER
@@ -284,7 +285,7 @@ class LoadSingleImage(cpm.CPModule):
     def get_base_directory(self, workspace):
         return self.directory.get_absolute_path(workspace.measurements)
     
-    def get_file_names(self, workspace):
+    def get_file_names(self, workspace, image_set_number = None):
         """Get the files for the current image set
         
         workspace - workspace for current image set
@@ -294,7 +295,8 @@ class LoadSingleImage(cpm.CPModule):
         result = {}
         for file_setting in self.file_settings:
             file_pattern = file_setting.file_name.value
-            file_name = workspace.measurements.apply_metadata(file_pattern)
+            file_name = workspace.measurements.apply_metadata(file_pattern,
+                                                              image_set_number)
             if file_setting.image_objects_choice == IO_IMAGES:
                 image_name = file_setting.image_name.value
             else:
@@ -317,38 +319,83 @@ class LoadSingleImage(cpm.CPModule):
     
     def file_wants_images(self, file_setting):
         '''True if the file_setting produces images, false if it produces objects'''
-        return file_setting.image_object_choice == IO_IMAGES
+        return file_setting.image_objects_choice == IO_IMAGES
     
-    def run(self, workspace):
-        dict = self.get_file_names(workspace)
+    def prepare_run(self, workspace):
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
         root = self.get_base_directory(workspace)
+        
+        if m.image_set_count == 0:
+            # Oh bad - using LoadSingleImage to load one image and process it
+            image_numbers = [1]
+        else:
+            image_numbers = m.get_image_numbers()
+            
+        for image_number in image_numbers:
+            dict = self.get_file_names(workspace)
+            for image_name in dict.keys():
+                file_settings = self.get_file_settings(image_name)
+                if file_settings.image_objects_choice == IO_IMAGES:
+                    #
+                    # Add measurements
+                    #
+                    path_name_category = C_PATH_NAME
+                    file_name_category = C_FILE_NAME
+                    url_category = C_URL
+                else:
+                    #
+                    # Add measurements
+                    #
+                    path_name_category = C_OBJECTS_PATH_NAME
+                    file_name_category = C_OBJECTS_FILE_NAME
+                    url_category = C_OBJECTS_URL
+                
+                url = pathname2url(os.path.join(root, dict[image_name]))
+                for category, value in (
+                    (path_name_category, root),
+                    (file_name_category, dict[image_name]),
+                    (url_category, url)):
+                    measurement_name = "_".join((category, image_name))
+                    m.add_measurement(cpmeas.IMAGE, measurement_name, value,
+                                      image_set_number = image_number)
+        return True
+ 
+    def run(self, workspace):
         statistics = [("Image name","File")]
         m = workspace.measurements
-        for image_name in dict.keys():
-            file_settings = self.get_file_settings(image_name)
-            rescale = (file_settings.image_objects_choice == IO_IMAGES and
-                       file_settings.rescale)
+        assert isinstance(m, cpmeas.Measurements)
+        image_set = workspace.image_set
+        assert isinstance(image_set, cpi.ImageSet)
+        for file_setting in self.file_settings:
+            wants_images = self.file_wants_images(file_setting)
+            image_name = file_setting.image_name.value if wants_images else \
+                file_setting.objects_name.value
+            m_path, m_file, m_md5_digest, m_scaling, m_height, m_width = [
+                "_".join((c, image_name)) for c in (
+                    C_PATH_NAME if wants_images else C_OBJECTS_PATH_NAME,
+                    C_FILE_NAME if wants_images else C_OBJECTS_FILE_NAME,
+                    C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH)]
+            pathname = m.get_current_image_measurement(m_path)
+            filename = m.get_current_image_measurement(m_file)
+            rescale = (wants_images and file_setting.rescale)
+            
             provider = LoadImagesImageProvider(
-                image_name, root, dict[image_name], rescale)
-            image = provider.provide_image(workspace.image_set)
+                image_name, pathname, filename, rescale)
+            image = provider.provide_image(image_set)
             pixel_data = image.pixel_data
-            if file_settings.image_objects_choice == IO_IMAGES:
-                workspace.image_set.providers.append(provider)
-                #
-                # Add measurements
-                #
-                path_name_category = C_PATH_NAME
-                file_name_category = C_FILE_NAME
-                digest = hashlib.md5()
+            digest = hashlib.md5()
+            if wants_images:
                 digest.update(np.ascontiguousarray(pixel_data).data)
                 m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)), 
                                         digest.hexdigest())
                 m.add_image_measurement("_".join((C_SCALING, image_name)),
-                                        image.scale)
+                                         image.scale)
                 m.add_image_measurement("_".join((C_HEIGHT, image_name)),
-                                            int(pixel_data.shape[0]))
+                                        int(pixel_data.shape[0]))
                 m.add_image_measurement("_".join((C_WIDTH, image_name)),
-                                            int(pixel_data.shape[1]))
+                                        int(pixel_data.shape[1]))
+                image_set.providers.append(provider)
             else:
                 #
                 # Turn image into objects
@@ -359,33 +406,29 @@ class LoadSingleImage(cpm.CPModule):
                 object_set = workspace.object_set
                 assert isinstance(object_set, cpo.ObjectSet)
                 object_set.add_objects(objects, image_name)
-                #
-                # Add measurements
-                #
                 add_object_count_measurements(m, image_name, objects.count)
                 add_object_location_measurements(m, image_name, labels)
-                path_name_category = C_OBJECTS_PATH_NAME
-                file_name_category = C_OBJECTS_FILE_NAME
                 #
                 # Add outlines if appropriate
                 #
-                if file_settings.wants_outlines:
+                if file_setting.wants_outlines:
                     outlines = cellprofiler.cpmath.outline.outline(labels)
                     outline_image = cpi.Image(outlines.astype(bool))
-                    workspace.image_set.add(file_settings.outlines_name.value,
+                    workspace.image_set.add(file_setting.outlines_name.value,
                                             outline_image)
-                
-            m.add_image_measurement(file_name_category + '_' + image_name, 
-                                    dict[image_name])
-            m.add_image_measurement(path_name_category + '_' + image_name, root)
-                
-            statistics += [(image_name, dict[image_name])]
-        if workspace.frame:
-            title = "Load single image: image cycle # %d"%(workspace.measurements.image_set_number+1)
-            figure = workspace.create_or_find_figure(title="LoadSingleImage, image cycle #%d"%(
-                workspace.measurements.image_set_number),
-                                                     subplots=(1,1))
-            figure.subplot_table(0,0, statistics)
+            statistics += [(image_name, filename)]
+        workspace.display_data.statistics = statistics
+        
+    def is_interactive(self):
+        return False
+    
+    def display(self, workspace):
+        statistics = workspace.display_data.statistics
+        title = "Load single image: image cycle # %d"%(
+            workspace.measurements.image_set_number+1)
+        figure = workspace.create_or_find_figure(title=title,
+                                                 subplots=(1,1))
+        figure.subplot_table(0,0, statistics)
     
     def get_measurement_columns(self, pipeline):
         columns = []

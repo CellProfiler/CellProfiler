@@ -36,10 +36,19 @@ import cellprofiler.workspace as cpw
 import cellprofiler.modules.measuretexture as M
 from cellprofiler.modules.tests import example_images_directory
 import cellprofiler.preferences as cpprefs
+from subimager.client import start_subimager, stop_subimager
 
 INPUT_IMAGE_NAME = 'Cytoplasm'
 INPUT_OBJECTS_NAME = 'inputobjects'
 class TestMeasureTexture(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        start_subimager()
+        
+    @classmethod
+    def tearDownClass(cls):
+        stop_subimager()
+        
     def make_workspace(self, image, labels, convert = True, mask = None):
         '''Make a workspace for testing MeasureTexture'''
         module = M.MeasureTexture()

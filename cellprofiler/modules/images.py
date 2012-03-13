@@ -7,21 +7,26 @@ TO DO: document this
 import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
+import cellprofiler.utilities.walk_in_background as W
 import os
 import urllib
-
-NODE_DIRECTORY = "DirectoryNode"
-NODE_FILE = "FileNode"
-NODE_IMAGE_PLANE = "ImagePlaneNode"
 
 class Images(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Images"
     category = "File Processing"
     
+    MI_SHOW_IMAGE = "Show image"
+    MI_REMOVE = "Remove"
+    MI_SHOW_METADATA = "Show metadata"
+    
     def create_settings(self):
+        self.walk_collection = W.WalkCollection(self.on_walk_completed)
+        self.pipeline = None
         self.file_collection_display = cps.FileCollectionDisplay(
-            "", "", self.on_fcd_change, self.get_image_plane_details)
+            "", "", self.on_drop, self.on_remove, 
+            self.get_path_info, self.on_menu_command,
+            self.handle_walk_pause_resume_stop)
         predicates = [FilePredicate(),
                       DirectoryPredicate(),
                       ExtensionPredicate(),
@@ -34,9 +39,11 @@ class Images(cpm.CPModule):
                                  'or (file does contain "")')
         self.do_filter = cps.DoSomething("","Apply filter", 
                                          self.apply_filter)
-        self.pipeline = None
-        self.modifying_ipds = False
     
+    def on_walk_completed(self):
+        if self.pipeline is not None:
+            self.file_collection_display.update_ui()
+            
     def on_activated(self, pipeline):
         '''The module is gui-activated
         
@@ -45,19 +52,205 @@ class Images(cpm.CPModule):
         assert isinstance(pipeline, cpp.Pipeline)
         self.initialize_file_collection_display(pipeline)
         self.pipeline = pipeline
-        self.modifying_ipds = False
         pipeline.add_listener(self.pipeline_listener)
         
     def on_deactivated(self):
         '''The module is no longer in the GUI'''
-        self.pipeline.remove_listener(self.pipeline_listener)
-        self.pipeline = None
+        if self.pipeline is not None:
+            self.pipeline.remove_listener(self.pipeline_listener)
+            self.pipeline = None
+        
+    def on_drop(self, pathnames):
+        '''Called when the UI is asking to add files or directories'''
+        if self.pipeline is not None:
+            self.pipeline.walk_paths(pathnames)
+            
+    def on_remove(self, mods):
+        '''Called when the UI is asking to remove files from the list
+        
+        mods - two-tuple modpaths (see docs for FileCollectionDisplay)
+        '''
+        if self.pipeline is not None:
+            self.pipeline.start_undoable_action()
+            try:
+                ipds = self.make_ipds_from_mods(mods)
+                self.pipeline.remove_image_plane_details(ipds)
+            finally:
+                self.pipeline.stop_undoable_action()
+            
+    def get_path_info(self, modpath):
+        '''Get a descriptive name, the image type, the tooltip and menu for a path'''
+        exemplar = self.make_ipd_from_modpath(modpath)
+        if self.pipeline is None:
+            ipd = None
+        else:
+            ipd = self.pipeline.find_image_plane_details(exemplar)
+        if ipd is None:
+            return exemplar.path, self.file_collection_display.NODE_FILE, None, []
+        size_t = int(ipd.metadata.get(cpp.ImagePlaneDetails.MD_SIZE_T, 1))
+        size_z = int(ipd.metadata.get(cpp.ImagePlaneDetails.MD_SIZE_Z, 1))
+        size_c = int(ipd.metadata.get(cpp.ImagePlaneDetails.MD_SIZE_C, 1))
+        color_format = ipd.metadata.get(cpp.ImagePlaneDetails.MD_COLOR_FORMAT,
+                                        None)
+        if color_format is None:
+            image_type = self.file_collection_display.NODE_FILE
+        elif size_t > 1 and size_z == 1:
+            image_type = self.file_collection_display.NODE_MOVIE
+        elif (size_z > 1 or 
+              (color_format == cpp.ImagePlaneDetails.MD_PLANAR and size_c > 1)):
+            image_type = self.file_collection_display.NODE_COMPOSITE_IMAGE
+        elif color_format == cpp.ImagePlaneDetails.MD_RGB:
+            image_type = self.file_collection_display.NODE_COLOR_IMAGE
+        else:
+            if isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
+                image_type = self.file_collection_display.NODE_IMAGE_PLANE
+            else:
+                image_type = self.file_collection_display.NODE_MONOCHROME_IMAGE
+        name = os.path.split(ipd.path)[1]
+        if isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
+            series, index, channel = modpath[-1]
+            if (ipd.metadata.has_key(cpp.ImagePlaneDetails.MD_CHANNEL_NAME)):
+                name = "%s (series =%2d, index =%3d, channel=%s)" % (
+                    name, series, index, 
+                    ipd.metadata[cpp.ImagePlaneDetails.MD_CHANNEL_NAME])
+            else:
+                name = "%s (series =%2d, index=%3d)" % (name, series, index)
+        
+        if image_type in (
+            self.file_collection_display.NODE_COLOR_IMAGE,
+            self.file_collection_display.NODE_MONOCHROME_IMAGE,
+            self.file_collection_display.NODE_IMAGE_PLANE,
+            self.file_collection_display.NODE_COMPOSITE_IMAGE):
+            menu = [self.MI_SHOW_IMAGE, self.MI_REMOVE, self.MI_SHOW_METADATA]
+        else:
+            menu = []
+        return name, image_type, None, menu
+    
+    def on_menu_command(self, path, command):
+        '''Context menu callback
+        
+        This is called when the user picks a command from a context menu.
+        
+        path - a list of path parts to the picked item
+        
+        command - the command from the list supplied by get_path_info
+        '''
+        if isinstance(path[-1], tuple) and len(path[-1]) == 3:
+            series, index, channel = path[-1]
+            filename = path[-2]
+            pathname = os.path.join(*path[:-1])
+        else:
+            series = index = channel = None
+            filename = path[-1]
+            pathname = os.path.join(*path)
+        if command == self.MI_SHOW_IMAGE:
+            from cellprofiler.gui.cpfigure import CPFigureFrame
+            from subimager.client import get_image
+            url = "file:" + urllib.pathname2url(pathname)
+            kwds = {}
+            if series is not None:
+                kwds["series"] = int(series)
+            if channel is not None:
+                kwds["channel"] = int(channel)
+            if index is not None:
+                kwds["index"] = int(index)
+            try:
+                image = get_image(url, **kwds)
+            except Exception, e:
+                from cellprofiler.gui.errordialog import display_error_dialog
+                display_error_dialog(None, e, None, 
+                                     "Failed to load %s" % pathname)
+            frame = CPFigureFrame(subplots = (1,1))
+            if image.ndim == 2:
+                frame.subplot_imshow_grayscale(0, 0, image, title = filename)
+            else:
+                frame.subplot_imshow_color(0, 0, image, title = filename)
+            frame.Refresh()
+        elif command == self.MI_REMOVE:
+            self.on_remove(self.add_modpath_to_modlist(path))
+            self.file_collection_display.update_ui()
+        elif command == self.MI_SHOW_METADATA:
+            import wx
+            ipd = self.get_image_plane_details(path)
+            text = "Metadata for %s\n" % filename
+            text += "\n".join(["%s = %s" % (k, ipd.metadata[k]) 
+                               for k in sorted(ipd.metadata.iteritems())])
+            wx.MessageBox(text, "Metadata for %s" % filename)
+    
+    def handle_walk_pause_resume_stop(self, command):
+        if self.pipeline is not None:
+            if command == self.file_collection_display.BKGND_PAUSE:
+                self.pipeline.file_walker.pause()
+            elif command == self.file_collection_display.BKGND_RESUME:
+                self.pipeline.file_walker.resume()
+            elif command == self.file_collection_display.BKGND_STOP:
+                self.pipeline.file_walker.stop()
+            elif self.pipeline.file_walker.get_state() == W.THREAD_PAUSE:
+                return self.file_collection_display.BKGND_PAUSE
+            elif (self.pipeline.file_walker.get_state() in 
+                  (W.THREAD_STOP, W.THREAD_STOPPING)):
+                return self.file_collection_display.BKGND_STOP
+            else:
+                return self.file_collection_display.BKGND_RESUME
         
     def pipeline_listener(self, pipeline, event):
-        if ((not self.modifying_ipds) and
-            isinstance(event, (cpp.ImagePlaneDetailsAddedEvent, 
-                               cpp.ImagePlaneDetailsRemovedEvent))):
-            self.initialize_file_collection_display(self.pipeline)
+        if isinstance(event, cpp.ImagePlaneDetailsAddedEvent):
+            self.on_ipds_added(event.image_plane_details)
+        elif isinstance(event, cpp.ImagePlaneDetailsMetadataEvent):
+            self.on_ipd_metadata_change(event.image_plane_details)
+        elif isinstance(event, cpp.ImagePlaneDetailsRemovedEvent):
+            self.on_ipds_removed(event.image_plane_details)
+        elif isinstance(event, cpp.FileWalkStartedEvent):
+            self.file_collection_display.update_ui(
+                cps.FileCollectionDisplay.BKGND_RESUME)
+        elif isinstance(event, cpp.FileWalkEndedEvent):
+            self.file_collection_display.update_ui(
+                cps.FileCollectionDisplay.BKGND_STOP)
+            
+    def on_ipds_added(self, image_plane_details):
+        modlist = []
+        for ipd in image_plane_details:
+            self.add_ipd_to_modlist(ipd, modlist)
+        self.file_collection_display.add(modlist)
+        
+    def on_ipds_removed(self, image_plane_details):
+        modlist = []
+        for ipd in image_plane_details:
+            self.add_ipd_to_modlist(ipd, modlist)
+        self.file_collection_display.remove(modlist)
+        
+    def on_ipd_metadata_change(self, ipd):
+            self.file_collection_display.modify(self.add_ipd_to_modlist(ipd))
+            
+    @classmethod
+    def add_ipd_to_modlist(self, ipd, modlist = None):
+        '''Add an image plane details to a modlist
+        
+        modlist - a list of two-tuples as described in cps.FileCollectionDisplay
+        
+        ipd - the image plane details record to add
+        '''
+        if modlist is None:
+            modlist = []
+        modpath = self.make_modpath_from_ipd(ipd)
+        return self.add_modpath_to_modlist(modpath, modlist)
+        
+    @classmethod
+    def add_modpath_to_modlist(self, modpath, modlist = None):
+        if modlist is None:
+            modlist = []
+        if len(modpath) == 1:
+            modlist.append(modpath[0])
+            return modlist
+        idxs = [i for i, mod in enumerate(modlist)
+                if isinstance(mod, tuple) and len(mod) == 2 and
+                mod[0] == modpath[0]]
+        if len(idxs) == 0:
+            modlist.append((modpath[0], self.add_modpath_to_modlist(modpath[1:])))
+            return modlist
+        idx = idxs[0]
+        self.add_modpath_to_modlist(modpath[1:], modlist[idx][1])
+        return modlist
         
     def initialize_file_collection_display(self, pipeline):
         d = {}
@@ -79,7 +272,7 @@ class Images(cpm.CPModule):
                     parts.insert(0, (detail.series, detail.index, detail.channel))
                 dd = d
                 for part in reversed(parts[1:]):
-                    if not dd.has_key(part):
+                    if not (dd.has_key(part) and dd[part] is not None):
                         dd[part] = {}
                     dd = dd[part]
                 dd[parts[0]] = None
@@ -93,14 +286,14 @@ class Images(cpm.CPModule):
                 else (k, self.make_mods_from_tree(tree[k]))
                 for k in tree.keys()]
     
+    @classmethod
     def make_parts_list_from_mod(self, mod):
         '''Convert a mod to a collection of parts lists
         
         A mod has the form (root, [...]). Convert this recursively
         to get lists starting with "root" for each member of the list.
         '''
-        if (cps.FileCollectionDisplay.mod_is_file(mod) or
-            cps.FileCollectionDisplay.mod_is_image_plane(mod)):
+        if cps.FileCollectionDisplay.is_leaf(mod):
             return [[mod]]
         root, modlist = mod
         return sum([[[root]+ x for x in self.make_parts_list_from_mod(submod)]
@@ -110,16 +303,20 @@ class Images(cpm.CPModule):
         ipds = []
         for mod in mods:
             for parts_list in self.make_parts_list_from_mod(mod):
-                if cps.FileCollectionDisplay.mod_is_image_plane(parts_list[-1]):
-                    path = os.path.join(*parts_list[:-1])
-                    series, index, channel = parts_list[-1]
-                else:
-                    path = os.path.join(*parts_list)
-                    series = index = channel = None
-                url = "file:" + urllib.pathname2url(path)
-                ipds.append(cpp.ImagePlaneDetails(url, series, index, channel))
+                ipds.append(self.make_ipd_from_modpath(parts_list))
         return ipds
-        
+    
+    @classmethod
+    def make_ipd_from_modpath(cls, modpath):
+        if isinstance(modpath[-1], tuple):
+            path = os.path.join(*modpath[:-1])
+            series, index, channel = modpath[-1]
+        else:
+            path = os.path.join(*modpath)
+            series = index = channel = None
+        url = "file:" + urllib.pathname2url(path)
+        return cpp.ImagePlaneDetails(url, series, index, channel)
+    
     @classmethod
     def make_modpath_from_ipd(cls, ipd):
         path = ipd.path
@@ -127,30 +324,12 @@ class Images(cpm.CPModule):
         while True:
             new_path, part = os.path.split(path)
             if len(new_path) == 0 or len(part) == 0:
+                if all([x is None for x in (ipd.series, ipd.index, ipd.channel)]):
+                    return [path] + result
                 return [path] + result + [(ipd.series, ipd.index, ipd.channel)]
             result.insert(0, part)
             path = new_path
             
-    def on_fcd_change(self, operation, *args):
-        if self.pipeline:
-            self.modifying_ipds = True
-            try:
-                if operation in (cps.FileCollectionDisplay.ADD,
-                                 cps.FileCollectionDisplay.REMOVE):
-                    mods = args[0]
-                    ipds = self.make_ipds_from_mods(mods)
-                if operation == cps.FileCollectionDisplay.ADD:
-                    self.pipeline.add_image_plane_details(ipds)
-                elif operation == cps.FileCollectionDisplay.REMOVE:
-                    self.pipeline.remove_image_plane_details(ipds)
-                elif operation == cps.FileCollectionDisplay.METADATA:
-                    path, metadata = args
-                    ipd = self.get_image_plane_details(path)
-                    if ipd is not None:
-                        ipd.metadata.update(metadata)
-            finally:
-                self.modifying_ipds = False
-                
     def get_image_plane_details(self, modpath):
         '''Find the image plane details, given a path list
         
@@ -164,7 +343,7 @@ class Images(cpm.CPModule):
         '''
         if self.pipeline is None:
             return None
-        if cps.FileCollectionDisplay.mod_is_image_plane(modpath[-1]):
+        if isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
             series, index, channel = modpath[-1]
             modpath = modpath[:-1]
         else:
@@ -200,7 +379,8 @@ class Images(cpm.CPModule):
         if not self.wants_filter:
             return True
         modpath = self.make_modpath_from_ipd(ipd)
-        match = self.filter.evaluate((NODE_IMAGE_PLANE, modpath, self))
+        match = self.filter.evaluate((
+            cps.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, self))
         return match or match is None
     
     def filter_tree(self, tree, keep, dont_keep, modpath = []):
@@ -209,10 +389,8 @@ class Images(cpm.CPModule):
                 continue
             subpath = modpath + [key]
             if isinstance(tree[key], bool):
-                if cps.FileCollectionDisplay.mod_is_image_plane(key):
-                    node_type = NODE_IMAGE_PLANE
-                else:
-                    node_type = NODE_FILE
+                display_name, node_type, tooltip, menu = self.get_path_info(
+                    subpath)
                 match = self.filter.evaluate((node_type, subpath, self))
                 if match is None or match:
                     keep.append(key)
@@ -266,16 +444,15 @@ class DirectoryPredicate(cps.Filter.FilterPredicate):
         modpath into a file path and applies it to the rest of
         the args.
         '''
-        if node_type == NODE_DIRECTORY:
-            path = os.path.join(*modpath)
-        elif node_type == NODE_FILE:
-            path = os.path.join(*modpath[:-1])
-        elif node_type == NODE_IMAGE_PLANE:
+        if isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
             path = os.path.join(*modpath[:-2])
+        else:
+            path = os.path.join(*modpath[:-1])
         return args[0](path, *args[1:])
     
     def test_valid(self, pipeline, *args):
-        self((NODE_FILE, ["/imaging","image.tif"], None), *args)
+        self((cps.FileCollectionDisplay.NODE_FILE, 
+              ["/imaging","image.tif"], None), *args)
 
 class FilePredicate(cps.Filter.FilterPredicate):
     '''A predicate that only filters files'''
@@ -301,16 +478,17 @@ class FilePredicate(cps.Filter.FilterPredicate):
         modpath into a file path and applies it to the rest of
         the args
         '''
-        if node_type == NODE_FILE:
-            filename = modpath[-1]
-        elif node_type == NODE_IMAGE_PLANE:
+        if node_type == cps.FileCollectionDisplay.NODE_DIRECTORY:
+            return None
+        elif isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
             filename = modpath[-2]
         else:
-            return None
+            filename = modpath[-1]
         return args[0](filename, *args[1:])
     
     def test_valid(self, pipeline, *args):
-        self((NODE_FILE, ["/imaging", "test.tif"], None), *args)
+        self((cps.FileCollectionDisplay.NODE_FILE, 
+              ["/imaging", "test.tif"], None), *args)
 
 class ExtensionPredicate(cps.Filter.FilterPredicate):
     '''A predicate that operates on file extensions'''
@@ -360,15 +538,12 @@ class ExtensionPredicate(cps.Filter.FilterPredicate):
         If the element is a file, try the different predicates on 
         all possible extension parsings.
         '''
-        if node_type == NODE_FILE:
-            filename = modpath[-1]
-        elif node_type == NODE_IMAGE_PLANE:
-            if cps.FileCollectionDisplay.mod_is_image_plane(modpath[-1]):
-                filename = modpath[-2]
-            else:
-                filename = modpath[-1]
-        else:
+        if node_type == cps.FileCollectionDisplay.NODE_DIRECTORY:
             return None
+        elif isinstance(modpath[-1], tuple) and len(modpath[-1]) == 3:
+            filename = modpath[-2]
+        else:
+                filename = modpath[-1]
         exts = []
         while True:
             filename, ext = os.path.splitext(filename)
@@ -380,7 +555,8 @@ class ExtensionPredicate(cps.Filter.FilterPredicate):
                 return True
             
     def test_valid(self, pipeline, *args):
-        self((NODE_FILE, ["/imaging", "test.tif"], None), *args)
+        self((cps.FileCollectionDisplay.NODE_FILE, 
+              ["/imaging", "test.tif"], None), *args)
             
 class ImagePredicate(cps.Filter.FilterPredicate):
     '''A predicate that applies subpredicates to image plane details'''
@@ -413,7 +589,7 @@ class ImagePredicate(cps.Filter.FilterPredicate):
             doc = "Filter based on image characteristics")
         
     def fn_filter(self, (node_type, modpath, module), *args):
-        if node_type not in (NODE_IMAGE_PLANE, NODE_FILE):
+        if node_type == cps.FileCollectionDisplay.NODE_DIRECTORY:
             return None
         ipd = module.get_image_plane_details(modpath)
         if ipd is None:
@@ -423,5 +599,6 @@ class ImagePredicate(cps.Filter.FilterPredicate):
     def test_valid(self, pipeline, *args):
         image_module = [m for m in pipeline.modules()
                         if isinstance(m, Images)][0]
-        self((NODE_FILE, ["/imaging", "test.tif"], image_module), *args)
+        self((cps.FileCollectionDisplay.NODE_FILE, 
+              ["/imaging", "test.tif"], image_module), *args)
 

@@ -27,8 +27,9 @@ import traceback
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
+import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
-from cellprofiler.analysis import PipelineRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, InteractionReply, ServerExited, ImageSetSuccess, SharedDictionaryRequest, DictionaryReqRep, DictionaryReqRepRep, Ack
+from cellprofiler.analysis import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, InteractionReply, ServerExited, ImageSetSuccess, SharedDictionaryRequest, DictionaryReqRep, DictionaryReqRepRep, Ack
 import subimager.client
 from cellprofiler.utilities.rpdb import Rpdb
 
@@ -39,7 +40,6 @@ import numpy as np
 np.seterr(all='ignore')
 
 logger = logging.getLogger(__name__)
-
 
 def main():
     # XXX - move all this to a class
@@ -66,8 +66,8 @@ def main():
 
     # known work servers (analysis_id -> socket_address)
     work_servers = {}
-    # their pipelines (analysis_id -> pipeline)
-    pipelines = {}
+    # their pipelines and preferences (analysis_id -> (pipeline, preferences dictionary))
+    pipelines_and_preferences = {}
     # their initial measurements (analysis_id -> measurements)
     initial_measurements = {}
     # lock for work_server and pipelines
@@ -75,7 +75,7 @@ def main():
 
     start_daemon_thread(target=listen_for_announcements,
                         args=(options.work_announce_address,
-                              work_servers, pipelines, initial_measurements,
+                              work_servers, pipelines_and_preferences, initial_measurements,
                               work_server_lock),
                         name="listen_for_announcements")
 
@@ -125,19 +125,20 @@ def main():
                 # no work, currently.
                 continue
 
-            # Fetch the pipeline for this analysis if we don't have it
-            current_pipeline = pipelines.get(current_analysis_id, None)
+            # Fetch the pipeline and preferences for this analysis if we don't have it
+            current_pipeline, current_preferences = pipelines_and_preferences.get(current_analysis_id, (None, None))
             if not current_pipeline:
-                rep = PipelineRequest().send(work_socket)
+                rep = PipelinePreferencesRequest().send(work_socket)
                 if isinstance(rep, ServerExited):
                     continue  # server went away
-                pipeline_blob = rep.pipeline_blob
+                pipeline_blob = rep.pipeline_blob.tostring()
                 pipeline = cpp.Pipeline()
                 pipeline.loadtxt(StringIO.StringIO(pipeline_blob), raise_on_error=True)
+                preferences_dict = rep.preferences
                 # make sure the server hasn't finished or quit since we fetched the pipeline
                 with work_server_lock:
                     if current_analysis_id in work_servers:
-                        current_pipeline = pipelines[current_analysis_id] = pipeline
+                        current_pipeline, current_preferences = pipelines_and_preferences[current_analysis_id] = (pipeline, preferences_dict)
                         pipeline.add_listener(pipeline_listener.handle_event)
                     else:
                         continue
@@ -145,6 +146,9 @@ def main():
             # point the pipeline event listener to the new work_socket
             pipeline_listener.work_socket = work_socket
             pipeline_listener.reset()
+
+            # update preferences to match remote values
+            cpprefs.set_preferences_from_dict(current_preferences)
 
             # Fetch the path to the intial measurements if needed.
             # XXX - when implementing distributed workers, this will need to be
@@ -360,7 +364,7 @@ def exit_on_stdin_close():
 
 
 def listen_for_announcements(work_announce_address,
-                             work_servers, pipelines, initial_measurements,
+                             work_servers, pipelines_and_preferences, initial_measurements,
                              work_server_lock):
     zmq_context = zmq.Context()
     work_announce_socket = zmq_context.socket(zmq.SUB)
@@ -374,8 +378,8 @@ def listen_for_announcements(work_announce_address,
                 # remove this work server
                 if analysis_id in work_servers:
                     del work_servers[analysis_id]
-                if analysis_id in pipelines:
-                    del pipelines[analysis_id]
+                if analysis_id in pipelines_and_preferences:
+                    del pipelines_and_preferences[analysis_id]
                 if analysis_id in initial_measurements:
                     del initial_measurements[analysis_id]
             else:
@@ -413,10 +417,8 @@ def setup_callbacks(pipeline, work_socket):
 
 
 if __name__ == "__main__":
-    import cellprofiler.preferences
-    import sys
     sys.modules['cellprofiler.utilities.jutil'] = None
-    cellprofiler.preferences.set_headless()
+    cpprefs.set_headless()
     logging.root.setLevel(logging.INFO)
     logging.root.addHandler(logging.StreamHandler())
     main()

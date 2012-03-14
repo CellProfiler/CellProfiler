@@ -96,6 +96,13 @@ def get_config():
             
     return config
 
+def preferences_as_dict():
+    return dict((k, config_read(k)) for k in ALL_KEYS)
+
+def set_preferences_from_dict(d):
+    for k, v in d.items():
+        config_write(k, v)
+
 def config_read(key):
     '''Read the given configuration value
     

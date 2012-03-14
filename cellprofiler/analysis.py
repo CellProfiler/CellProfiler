@@ -19,6 +19,7 @@ import logging
 import threading
 import Queue
 import uuid
+import numpy as np
 import cStringIO as StringIO
 import sys
 import os
@@ -31,13 +32,14 @@ import cellprofiler
 import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpimage
+import cellprofiler.preferences as cpprefs
 from cellprofiler.utilities.zmqrequest import Request, Reply, Boundary, BoundaryExited
 import subimager.client
 
 
 logger = logging.getLogger(__name__)
 
-use_analysis = False
+use_analysis = True
 
 DEBUG = 'DEBUG'
 
@@ -77,9 +79,9 @@ class Analysis(object):
         to measurements_filename, optionally starting with previous
         measurements.'''
         self.pipeline = pipeline
-        self.measurements = cpmeas.Measurements(image_set_start=None,
-                                                filename=measurements_filename,
-                                                copy=initial_measurements)
+        self.initial_measurements = cpmeas.Measurements(image_set_start=None,
+                                                        copy=initial_measurements)
+        self.output_path = measurements_filename
         self.debug_mode = False
         self.analysis_in_progress = False
         self.runner = None
@@ -93,7 +95,8 @@ class Analysis(object):
 
             self.runner = AnalysisRunner(self.analysis_in_progress,
                                          self.pipeline,
-                                         self.measurements,
+                                         self.initial_measurements,
+                                         self.output_path,
                                          analysis_event_callback)
             self.runner.start()
             return self.analysis_in_progress
@@ -163,12 +166,14 @@ class AnalysisRunner(object):
     STATUSES = [STATUS_UNPROCESSED, STATUS_IN_PROCESS, STATUS_FINISHED_WAITING, STATUS_DONE]
 
     def __init__(self, analysis_id, pipeline,
-                 initial_measurements, event_listener):
+                 initial_measurements, output_path, event_listener):
         # for sending to workers
         self.initial_measurements = cpmeas.Measurements(image_set_start=None,
                                                         copy=initial_measurements)
-        # for storing results locally - created in start()
+
+        # for writing results - initialized in start()
         self.measurements = None
+        self.output_path = output_path
 
         self.analysis_id = analysis_id
         self.pipeline = pipeline.copy()
@@ -197,8 +202,11 @@ class AnalysisRunner(object):
         workspace = cpw.Workspace(self.pipeline, None, None, None,
                                   self.initial_measurements, cpimage.ImageSetList())
         self.pipeline.prepare_run(workspace)
-        self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
         self.initial_measurements.flush()  # Make sure file is valid before we start threads.
+        self.measurements = cpmeas.Measurements(image_set_start=None,
+                                                filename=self.output_path,
+                                                copy=self.initial_measurements)
+        self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
         self.interface_thread = start_daemon_thread(target=self.interface, name='AnalysisRunner.interface')
         self.jobserver_thread = start_daemon_thread(target=self.jobserver, args=(self.analysis_id,), name='AnalysisRunner.jobserver')
 
@@ -243,11 +251,6 @@ class AnalysisRunner(object):
         image_set_end - final image set number
         overwrite - whether to recompute imagesets that already have data in initial_measurements.
         '''
-        # create copy of measurements for gathering results
-        # (we put it in self.measurements, but it's only ever referenced in this function)
-        self.measurements = cpmeas.Measurements(image_set_start=None,
-                                                copy=self.initial_measurements)
-
         # listen for pipeline events, and pass them upstream
         self.pipeline.add_listener(lambda pipe, evt: self.post_event(evt))
 
@@ -305,10 +308,15 @@ class AnalysisRunner(object):
 
             # gather measurements
             while not self.returned_measurements_queue.empty():
-                returned_measurements, job = self.returned_measurements_queue.get()
+                job, reported_measurements = self.returned_measurements_queue.get()
+                for object in reported_measurements.get_object_names():
+                    if object == cpmeas.EXPERIMENT:
+                        continue  # XXX - who writes this, when?
+                    for feature in reported_measurements.get_feature_names(object):
+                        for imagenumber in job:
+                            self.measurements[object, feature, imagenumber] = reported_measurements[object, feature, imagenumber]
                 for image_set_number in job:
                     self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
-                    # XXX - integrate measurements into our own
 
             # check for jobs in progress
             while not self.in_process_queue.empty():
@@ -356,10 +364,8 @@ class AnalysisRunner(object):
                          self.returned_measurements_queue.empty())):
                     self.interface_work_cv.wait()  # wait for a change of status or work to arrive
 
-        # make sure measurements are valid before returning
-        self.measurements.flush()
         self.post_event(AnalysisFinished(self.measurements, self.cancelled))
-        del self.measurements
+        self.measurements = None  # do not hang onto measurements
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
     def jobserver(self, analysis_id):
@@ -394,8 +400,9 @@ class AnalysisRunner(object):
                 i_was_paused_before = False
 
             req = request_queue.get()
-            if isinstance(req, PipelineRequest):
-                req.reply(Reply(pipeline_blob=self.pipeline_as_string()))
+            if isinstance(req, PipelinePreferencesRequest):
+                req.reply(Reply(pipeline_blob=np.array(self.pipeline_as_string()),
+                                preferences=cpprefs.preferences_as_dict()))
             elif isinstance(req, InitialMeasurementsRequest):
                 req.reply(Reply(path=self.initial_measurements.hdf5_dict.filename.encode('utf-8')))
             elif isinstance(req, WorkRequest):
@@ -419,7 +426,7 @@ class AnalysisRunner(object):
                 successes = [int(s) for s in req.image_set_numbers.split(",")]
                 try:
                     reported_measurements = cpmeas.load_measurements(measurements_path)
-                    self.queue_received_measurements(reported_measurements, successes)
+                    self.queue_received_measurements(successes, reported_measurements)
                 except Exception:
                     raise
                     # XXX - report error, push back job
@@ -451,8 +458,8 @@ class AnalysisRunner(object):
         with self.interface_work_cv:
             self.interface_work_cv.notify()
 
-    def queue_received_measurements(self, image_set_number, measure_blob):
-        self.returned_measurements_queue.put((image_set_number, measure_blob))
+    def queue_received_measurements(self, image_set_numbers, measure_blob):
+        self.returned_measurements_queue.put((image_set_numbers, measure_blob))
         # notify interface thread
         with self.interface_work_cv:
             self.interface_work_cv.notify()
@@ -577,7 +584,7 @@ class AnalysisFinished(object):
         self.cancelled = cancelled
 
 
-class PipelineRequest(Request):
+class PipelinePreferencesRequest(Request):
     pass
 
 

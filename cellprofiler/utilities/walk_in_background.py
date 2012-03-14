@@ -10,7 +10,6 @@ import os
 import threading
 import urllib
 import uuid
-import wx
 
 pause_lock = threading.Lock()
 pause_condition = threading.Condition(pause_lock)
@@ -107,6 +106,7 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
                 checkpoint.wait()
                 if len(filenames) == 0:
                     continue
+                import wx
                 wx.CallAfter(report, dirpath, dirnames, filenames)
                 if metadata_fn is not None:
                     path_list += [os.path.join(dirpath, filename)
@@ -115,6 +115,7 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
                 checkpoint.wait()
                 try:
                     metadata = get_metadata("file:" + urllib.pathname2url(subpath))
+                    import wx
                     wx.CallAfter(metadata_report, subpath, metadata)
                 except:
                     logger.info("Failed to read image metadata for %s" % subpath)
@@ -124,6 +125,7 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
             logger.exception("Exiting background walk after unhandled exception")
         finally:
             if completed_fn is not None:
+                import wx
                 wx.CallAfter(complete)
     thread = threading.Thread(target = fn)
     thread.start()

@@ -56,6 +56,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.cpmath.index import Indexes
 
 C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"
@@ -188,101 +189,12 @@ class CalculateImageOverlap(cpm.CPModule):
         else:
             false_negative_rate = (float(false_negative_count) / 
                                    float(true_count))
-        ###############################
-        #
-        # Caluclate the Rand Index
-        # http://en.wikipedia.org/wiki/Rand_index
-        #
-        # Given a set of N elements and two partitions of that set, X and Y
-        #
-        # A = the number of pairs of elements in S that are in the same set in
-        #     X and in the same set in Y
-        # B = the number of pairs of elements in S that are in different sets
-        #     in X and different sets in Y
-        # C = the number of pairs of elements in S that are in the same set in
-        #     X and different sets in Y
-        # D = the number of pairs of elements in S that are in different sets
-        #     in X and the same set in Y
-        #
-        # The rand index is:   A + B
-        #                      -----
-        #                      A+B+C+D
-        ##########################
-        
         ground_truth_labels, ground_truth_count = label(
             ground_truth_pixels & mask, np.ones((3, 3), bool))
         test_labels, test_count = label(
             test_pixels & mask, np.ones((3, 3), bool))
-        ground_truth_labels = ground_truth_labels[mask].astype(np.uint64)
-        test_labels = test_labels[mask].astype(np.uint64)
-        if len(test_labels) > 0:
-            #
-            # Create a sparse matrix of the pixel labels in each of the sets
-            # 
-            # The matrix, N(i,j) gives the counts of all of the pixels that were
-            # labeled with label I in the ground truth and label J in the 
-            # test set.
-            #
-            N_ij = coo_matrix((np.ones(len(test_labels)), 
-                               (ground_truth_labels, test_labels))).toarray()
-            def choose2(x):
-                '''Compute # of pairs of x things = x * (x-1) / 2'''
-                return x * (x - 1) / 2
-            #
-            # Each cell in the matrix is a count of a grouping of pixels whose
-            # pixel pairs are in the same set in both groups. The number of 
-            # pixel pairs is n * (n - 1), so A = sum(matrix * (matrix - 1))
-            #
-            A = np.sum(choose2(N_ij))
-            #
-            # B is the sum of pixels that were classified differently by both
-            # sets. But the easier calculation is to find A, C and D and get
-            # B by subtracting A, C and D from the N * (N - 1), the total
-            # number of pairs.
-            #
-            # For C, we take the number of pixels classified as "i" and for each
-            # "j", subtract N(i,j) from N(i) to get the number of pixels in
-            # N(i,j) that are in some other set = (N(i) - N(i,j)) * N(i,j)
-            #
-            # We do the similar calculation for D
-            #
-            N_i = np.sum(N_ij, 1)
-            N_j = np.sum(N_ij, 0)
-            C = np.sum((N_i[:, np.newaxis] - N_ij) * N_ij) / 2
-            D = np.sum((N_j[np.newaxis, :] - N_ij) * N_ij) / 2
-            total = choose2(len(test_labels))
-            # an astute observer would say, why bother computing A and B
-            # when all we need is A+B and C, D and the total can be used to do
-            # that. The calculations aren't too expensive, though, so I do them.
-            B = total - A - C - D
-            rand_index = (A + B) / total
-            #
-            # The adjusted rand index is the rand index adjusted for chance
-            # so as not to penalize situations with many segmentations.
-            #
-            # Jorge M. Santos, Mark Embrechts, "On the Use of the Adjusted Rand 
-            # Index as a Metric for Evaluating Supervised Classification",
-            # Lecture Notes in Computer Science, 
-            # Springer, Vol. 5769, pp. 175-184, 2009. Eqn # 6
-            #
-            # ExpectedIndex = best possible score
-            #
-            # ExpectedIndex = sum(N_i choose 2) * sum(N_j choose 2) 
-            #
-            # MaxIndex = worst possible score = 1/2 (sum(N_i choose 2) + sum(N_j choose 2)) * total
-            #
-            #  A * total - ExpectedIndex
-            # -------------------------
-            #  MaxIndex - ExpectedIndex
-            #
-            # 
-            expected_index = np.sum(choose2(N_i)) * np.sum(choose2(N_j))
-            max_index = (np.sum(choose2(N_i)) + np.sum(choose2(N_j))) * total / 2
-            
-            adjusted_rand_index = \
-                (A * total - expected_index) / (max_index - expected_index)
-        else:
-            rand_index = adjusted_rand_index = np.nan
+        rand_index, adjusted_rand_index = self.compute_rand_index(
+            test_labels, ground_truth_labels, mask)
             
         m = workspace.measurements
         m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), f_factor)
@@ -322,6 +234,10 @@ class CalculateImageOverlap(cpm.CPModule):
         ID_img = image_set.get_image(self.img_obj_found_in_ID.value)
         ID_pixels = ID_img.pixel_data
         GT_pixels = GT_img.pixel_data
+        GT_pixels = ID_img.crop_image_similarly(GT_pixels)
+        GT_mask = ID_img.crop_image_similarly(GT_img.mask)
+        ID_mask = ID_img.mask
+        mask  = GT_mask & ID_mask
         object_name_GT = self.object_name_GT.value
         objects_GT = workspace.get_objects(object_name_GT)
         iGT,jGT,lGT = objects_GT.ijv.transpose() 
@@ -425,7 +341,19 @@ class CalculateImageOverlap(cpm.CPModule):
         F_factor = 2*(precision*recall)/(precision+recall)
         false_positive_rate = FP/(FP+TN)
         false_negative_rate = FN/(FN+TP)
-
+        
+        #
+        # Temporary - assume not ijv
+        #
+        #rand_index, adjusted_rand_index = self.compute_rand_index_ijv(
+        #    gt_ijv, objects_ijv, mask)
+        #
+        gt_labels = np.zeros(mask.shape, np.int64)
+        gt_labels[iGT, jGT] = lGT
+        test_labels = np.zeros(mask.shape, np.int64)
+        test_labels[iID, jID] = lID
+        rand_index, adjusted_rand_index = self.compute_rand_index(
+            test_labels, gt_labels, mask)
         m = workspace.measurements
         m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), F_factor)
         m.add_image_measurement(self.measurement_name(FTR_PRECISION),
@@ -435,6 +363,10 @@ class CalculateImageOverlap(cpm.CPModule):
                                 false_positive_rate)
         m.add_image_measurement(self.measurement_name(FTR_FALSE_NEG_RATE),
                                 false_negative_rate)
+        m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX),
+                                rand_index)
+        m.add_image_measurement(self.measurement_name(FTR_ADJUSTED_RAND_INDEX),
+                                adjusted_rand_index)
         def subscripts(condition1, condition2):
             x1,y1 = np.where(GT_pixels == condition1)
             x2,y2 = np.where(ID_pixels == condition2)
@@ -472,9 +404,196 @@ class CalculateImageOverlap(cpm.CPModule):
                 (FTR_PRECISION, precision),
                 (FTR_RECALL, recall),
                 (FTR_FALSE_POS_RATE, false_positive_rate),
-                (FTR_FALSE_NEG_RATE, false_negative_rate)]
+                (FTR_FALSE_NEG_RATE, false_negative_rate),
+                (FTR_RAND_INDEX, rand_index),
+                (FTR_ADJUSTED_RAND_INDEX, adjusted_rand_index)
+            ]
 
+    def compute_rand_index(self, test_labels, ground_truth_labels, mask):
+        """Caluclate the Rand Index
+        
+        http://en.wikipedia.org/wiki/Rand_index
+        
+        Given a set of N elements and two partitions of that set, X and Y
+        
+        A = the number of pairs of elements in S that are in the same set in
+            X and in the same set in Y
+        B = the number of pairs of elements in S that are in different sets
+            in X and different sets in Y
+        C = the number of pairs of elements in S that are in the same set in
+            X and different sets in Y
+        D = the number of pairs of elements in S that are in different sets
+            in X and the same set in Y
+        
+        The rand index is:   A + B
+                             -----
+                            A+B+C+D
 
+        
+        The adjusted rand index is the rand index adjusted for chance
+        so as not to penalize situations with many segmentations.
+        
+        Jorge M. Santos, Mark Embrechts, "On the Use of the Adjusted Rand 
+        Index as a Metric for Evaluating Supervised Classification",
+        Lecture Notes in Computer Science, 
+        Springer, Vol. 5769, pp. 175-184, 2009. Eqn # 6
+        
+        ExpectedIndex = best possible score
+        
+        ExpectedIndex = sum(N_i choose 2) * sum(N_j choose 2) 
+        
+        MaxIndex = worst possible score = 1/2 (sum(N_i choose 2) + sum(N_j choose 2)) * total
+        
+        A * total - ExpectedIndex
+        -------------------------
+        MaxIndex - ExpectedIndex
+        
+        returns a tuple of the Rand Index and the adjusted Rand Index
+        """
+        ground_truth_labels = ground_truth_labels[mask].astype(np.uint64)
+        test_labels = test_labels[mask].astype(np.uint64)
+        if len(test_labels) > 0:
+            #
+            # Create a sparse matrix of the pixel labels in each of the sets
+            # 
+            # The matrix, N(i,j) gives the counts of all of the pixels that were
+            # labeled with label I in the ground truth and label J in the 
+            # test set.
+            #
+            N_ij = coo_matrix((np.ones(len(test_labels)), 
+                               (ground_truth_labels, test_labels))).toarray()
+            def choose2(x):
+                '''Compute # of pairs of x things = x * (x-1) / 2'''
+                return x * (x - 1) / 2
+            #
+            # Each cell in the matrix is a count of a grouping of pixels whose
+            # pixel pairs are in the same set in both groups. The number of 
+            # pixel pairs is n * (n - 1), so A = sum(matrix * (matrix - 1))
+            #
+            A = np.sum(choose2(N_ij))
+            #
+            # B is the sum of pixels that were classified differently by both
+            # sets. But the easier calculation is to find A, C and D and get
+            # B by subtracting A, C and D from the N * (N - 1), the total
+            # number of pairs.
+            #
+            # For C, we take the number of pixels classified as "i" and for each
+            # "j", subtract N(i,j) from N(i) to get the number of pixels in
+            # N(i,j) that are in some other set = (N(i) - N(i,j)) * N(i,j)
+            #
+            # We do the similar calculation for D
+            #
+            N_i = np.sum(N_ij, 1)
+            N_j = np.sum(N_ij, 0)
+            C = np.sum((N_i[:, np.newaxis] - N_ij) * N_ij) / 2
+            D = np.sum((N_j[np.newaxis, :] - N_ij) * N_ij) / 2
+            total = choose2(len(test_labels))
+            # an astute observer would say, why bother computing A and B
+            # when all we need is A+B and C, D and the total can be used to do
+            # that. The calculations aren't too expensive, though, so I do them.
+            B = total - A - C - D
+            rand_index = (A + B) / total
+            #
+            # Compute adjusted Rand Index
+            #
+            expected_index = np.sum(choose2(N_i)) * np.sum(choose2(N_j))
+            max_index = (np.sum(choose2(N_i)) + np.sum(choose2(N_j))) * total / 2
+            
+            adjusted_rand_index = \
+                (A * total - expected_index) / (max_index - expected_index)
+        else:
+            rand_index = adjusted_rand_index = np.nan
+        return rand_index, adjusted_rand_index 
+
+    def compute_rand_index_ijv(gt_ijv, test_ijv, mask):
+        '''Compute the Rand Index for an IJV matrix
+        
+        This is in part based on the Omega Index:
+        Collins, "Omega: A General Formulation of the Rand Index of Cluster
+        Recovery Suitable for Non-disjoint Solutions", Multivariate Behavioral
+        Research, 1988, 23, 231-242
+        
+        The basic idea of the paper is that a pair should be judged to 
+        agree only if the number of clusters in which they appear together
+        is the same.
+        '''
+        #
+        # The idea here is to assign a label to every pixel position based
+        # on the set of labels given to that position by both the ground
+        # truth and the test set. We then assess each pair of labels
+        # as agreeing or disagreeing as to the number of matches.
+        #
+        # First, add the backgrounds to the IJV with a label of zero
+        #
+        gt_bkgd = mask.copy()
+        gt_bkgd[gt_ijv[:, 0], gt_ijv[:, 1]] = False
+        test_bkgd = mask.copy()
+        test_bkgd[test_ijv[:, 0], test_ijv[:, 1]] = False
+        gt_ijv = np.vstack([
+            gt_ijv, 
+            np.column_stack([np.argwhere(gt_bkgd), 
+                             np.zeros(np.sum(gt_bkgd), gt_bkgd.dtype)])])
+        test_ijv = np.vstack([
+            test_ijv, 
+            np.column_stack([np.argwhere(test_bkgd), 
+                             np.zeros(np.sum(test_bkgd), test_bkgd.dtype)])])
+        #
+        # Create a unified structure for the pixels where a fourth column
+        # tells you whether the pixels came from the ground-truth or test
+        #
+        u = np.vstack([
+            np.column_stack([gt_ijv, np.zeros(gt_ijv.shape[0], gt_ijv.dtype)]),
+            np.column_stack([test_ijv, np.ones(test_ijv.shape[0], test_ijv.dtype)])])
+        #
+        # Sort by coordinates, then by identity
+        #
+        order = np.lexsort([u[:,1], u[:,0], u[:, 3], u[:,2]])
+        u = u[order, :]
+        #
+        # Create a 1-d indexer to point at each unique coordinate.
+        #
+        first_coord_idxs = np.hstack([
+            [0],
+            (u[:-1, 0] == u[1:, 0]) & (u[:-1, 1] == u[1:, 1]),
+            [u.shape[0]]])
+        first_coord_counts = first_coord_idxs[1:] - first_coord_idxs[:-1]
+        indexes = Indexes([first_coord_counts])
+        #
+        # Count the number of labels at each point for both gt and test
+        #
+        count_test = np.bincount(indexes.rev_idx, u[:, 3])
+        count_gt = first_coord_counts
+        #
+        # For each # of labels, pull out the coordinates that have
+        # that many labels. Count the number of similarly labeled coordinates
+        # and record the count and labels for that group.
+        #
+        labels = []
+        for i in range(1, np.max(count_test)+1):
+            for j in range(1, np.max(count_gt)+1):
+                match = ((count_test[indexes.rev_idx] == i) & 
+                         (count_gt[indexes.rev_idx] == j))
+                #
+                # Arrange into an array where the rows are coordinates
+                # and the columns are the labels for that coordinate
+                #
+                lm = u[match, 2].reshape(np.sum(match) / (i+j), i+j)
+                #
+                # Sort by label.
+                #
+                order = np.lexsort(lm.transpose())
+                lm = lm[order, :]
+                #
+                # Find indices of unique and # of each
+                #
+                lm_first = np.hstack([
+                    [0], np.all(lm[:-1, :] == lm[1:, :], 1), [lm.shape[0]]])
+                lm_count = lm_first[1:] - lm_first[:-1]
+                for idx, count in zip(lm_first[:-1], lm_count):
+                    labels.append((count, 
+                                   lm[lm_first:(lm_first+i)],
+                                   lm[(lm_first+i):(lm_first+i+j)]))
+        
 
     def display(self, workspace):
         '''Display the image confusion matrix & statistics'''

@@ -15,6 +15,7 @@ __version__="$Revision: 1 $"
 
 import base64
 import numpy as np
+import scipy.ndimage as ndimage
 import os
 import tempfile
 from StringIO import StringIO
@@ -159,8 +160,10 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         for name, d in ((GROUND_TRUTH_OBJ, ground_truth_obj),
                         (ID_OBJ, id_obj)):
             object = cpo.Objects()
-            object.segmented = d
-            object.ijv = d
+            if d.shape[1] == 3:
+                object.ijv = d
+            else:
+                object.segmented = d
             object_set.add_objects(object, name)
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   object_set, cpmeas.Measurements(),
@@ -550,3 +553,50 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         module.run(workspace)
         measurements = workspace.measurements
         self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+
+    def test_05_02_test_objects_rand_index(self):
+        r = np.random.RandomState()
+        r.seed(52)
+        base = np.zeros((100, 100), bool)
+        base[r.randint(0, 100, size=10),
+             r.randint(0, 100, size=10)] = True
+        gt = base.copy()
+        gt[r.randint(0, 100, size=5),
+           r.randint(0, 100, size=5)] = True
+        test = base.copy()
+        test[r.randint(0, 100, size=5),
+             r.randint(0, 100, size=5)] = True
+        gt = ndimage.binary_dilation(gt, np.ones((5,5), bool))
+        test = ndimage.binary_dilation(test, np.ones((5,5), bool))
+        workspace, module = self.make_workspace(
+            dict(image = gt),
+            dict(image = test))
+        module.run(workspace)
+        
+        measurements = workspace.measurements
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX, TEST_IMAGE_NAME))
+        expected_rand_index = measurements.get_current_image_measurement(mname)
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_ADJUSTED_RAND_INDEX,
+                      TEST_IMAGE_NAME))
+        expected_adjusted_rand_index = \
+            measurements.get_current_image_measurement(mname)
+        
+        gt_labels, _ = ndimage.label(gt, np.ones((3,3),bool))
+        test_labels, _ = ndimage.label(test, np.ones((3,3), bool))
+        
+        workspace, module = self.make_obj_workspace(
+            gt_labels, test_labels,
+            dict(image=np.ones(gt_labels.shape)),
+            dict(image=np.ones(test_labels.shape)))
+        module.run(workspace)
+        measurements = workspace.measurements
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX, 
+                          GROUND_TRUTH_OBJ_IMAGE_NAME))
+        rand_index = measurements.get_current_image_measurement(mname)
+        self.assertAlmostEqual(rand_index, expected_rand_index)
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_ADJUSTED_RAND_INDEX,
+                          GROUND_TRUTH_OBJ_IMAGE_NAME))
+        adjusted_rand_index = \
+            measurements.get_current_image_measurement(mname)
+        self.assertAlmostEqual(adjusted_rand_index, expected_adjusted_rand_index)
+        

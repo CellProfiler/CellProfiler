@@ -186,7 +186,10 @@ parser.add_option("-L", "--log-level",
 options, args = parser.parse_args()
 
 try:
-    logging.root.setLevel(options.log_level)
+    if options.log_level.isdigit():
+        logging.root.setLevel(int(options.log_level))
+    else:
+        logging.root.setLevel(options.log_level)
     logging.root.addHandler(logging.StreamHandler())
 except ValueError:
     import logging.config

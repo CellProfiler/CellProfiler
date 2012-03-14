@@ -545,11 +545,18 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         self.assertEqual(len(imnames), 0)
         
     def test_05_01_test_measure_overlap_objects(self):
+        r = np.random.RandomState()
+        r.seed(51)
+        
         workspace, module = self.make_obj_workspace(
-            np.ones((200,3), int),
-            np.ones((200,3), int),
-            dict(image = np.zeros((20,10), bool)),
-            dict(image = np.zeros((20,10), bool)))
+            np.column_stack([r.randint(0, 20, 150),
+                             r.randint(0, 10, 150),
+                             r.randint(1, 5, 150)]),
+            np.column_stack([r.randint(0, 20, 175),
+                             r.randint(0, 10, 175),
+                             r.randint(1, 5, 175)]),
+            dict(image = np.zeros((20, 10), bool)),
+            dict(image = np.zeros((20, 10), bool)))
         module.run(workspace)
         measurements = workspace.measurements
         self.assertTrue(isinstance(measurements, cpmeas.Measurements))

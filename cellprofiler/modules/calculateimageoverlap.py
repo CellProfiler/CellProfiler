@@ -281,8 +281,8 @@ class CalculateImageOverlap(cpm.CPModule):
         for i in range(0, ID_obj):
             indices_jj = np.nonzero(lID==i)
             indices_jj = indices_jj[0]
-            id_i = iGT[indices_jj]
-            id_j = jGT[indices_jj]
+            id_i = iID[indices_jj]
+            id_j = jID[indices_jj]
             ID_pixels[id_i, id_j] = 1
 
         for i in intersect_matrix:  # loop through the GT objects first                                
@@ -352,8 +352,8 @@ class CalculateImageOverlap(cpm.CPModule):
         gt_labels[iGT, jGT] = lGT
         test_labels = np.zeros(mask.shape, np.int64)
         test_labels[iID, jID] = lID
-        rand_index, adjusted_rand_index = self.compute_rand_index(
-            test_labels, gt_labels, mask)
+        rand_index, adjusted_rand_index = self.compute_rand_index_ijv(
+            objects_GT.ijv, objects_ID.ijv, mask)
         m = workspace.measurements
         m.add_image_measurement(self.measurement_name(FTR_F_FACTOR), F_factor)
         m.add_image_measurement(self.measurement_name(FTR_PRECISION),
@@ -505,7 +505,7 @@ class CalculateImageOverlap(cpm.CPModule):
             rand_index = adjusted_rand_index = np.nan
         return rand_index, adjusted_rand_index 
 
-    def compute_rand_index_ijv(gt_ijv, test_ijv, mask):
+    def compute_rand_index_ijv(self, gt_ijv, test_ijv, mask):
         '''Compute the Rand Index for an IJV matrix
         
         This is in part based on the Omega Index:
@@ -547,22 +547,28 @@ class CalculateImageOverlap(cpm.CPModule):
         #
         # Sort by coordinates, then by identity
         #
-        order = np.lexsort([u[:,1], u[:,0], u[:, 3], u[:,2]])
+        order = np.lexsort([u[:, 2], u[:, 3], u[:, 0], u[:, 1]])
         u = u[order, :]
+        # Get rid of any duplicate labelings (same point labeled twice with
+        # same label.
+        #
+        first = np.hstack([[True], np.any(u[:-1, :] != u[1:, :], 1)])
+        u = u[first, :]
         #
         # Create a 1-d indexer to point at each unique coordinate.
         #
         first_coord_idxs = np.hstack([
             [0],
-            (u[:-1, 0] == u[1:, 0]) & (u[:-1, 1] == u[1:, 1]),
+            np.argwhere((u[:-1, 0] != u[1:, 0]) | 
+                        (u[:-1, 1] != u[1:, 1])).flatten() + 1,
             [u.shape[0]]])
         first_coord_counts = first_coord_idxs[1:] - first_coord_idxs[:-1]
         indexes = Indexes([first_coord_counts])
         #
         # Count the number of labels at each point for both gt and test
         #
-        count_test = np.bincount(indexes.rev_idx, u[:, 3])
-        count_gt = first_coord_counts
+        count_test = np.bincount(indexes.rev_idx, u[:, 3]).astype(np.int64)
+        count_gt = first_coord_counts - count_test
         #
         # For each # of labels, pull out the coordinates that have
         # that many labels. Count the number of similarly labeled coordinates
@@ -573,6 +579,8 @@ class CalculateImageOverlap(cpm.CPModule):
             for j in range(1, np.max(count_gt)+1):
                 match = ((count_test[indexes.rev_idx] == i) & 
                          (count_gt[indexes.rev_idx] == j))
+                if not np.any(match):
+                    continue
                 #
                 # Arrange into an array where the rows are coordinates
                 # and the columns are the labels for that coordinate
@@ -587,14 +595,58 @@ class CalculateImageOverlap(cpm.CPModule):
                 # Find indices of unique and # of each
                 #
                 lm_first = np.hstack([
-                    [0], np.all(lm[:-1, :] == lm[1:, :], 1), [lm.shape[0]]])
+                    [0], 
+                    np.argwhere(np.any(lm[:-1, :] != lm[1:, :], 1)).flatten()+1,
+                    [lm.shape[0]]])
                 lm_count = lm_first[1:] - lm_first[:-1]
                 for idx, count in zip(lm_first[:-1], lm_count):
                     labels.append((count, 
-                                   lm[lm_first:(lm_first+i)],
-                                   lm[(lm_first+i):(lm_first+i+j)]))
+                                   lm[idx, :j],
+                                   lm[idx, j:]))
+        #
+        # We now have our sets partitioned. Do each against each to get
+        # the number of true positive and negative pairs.
+        #
+        max_t_labels = reduce(max, [len(t) for c, t, g in labels], 0)
+        max_g_labels = reduce(max, [len(g) for c, t, g in labels], 0)
+        #
+        # tbl is the contingency table from Table 4 of the Collins paper
+        # It's a table of the number of pairs which fall into M sets
+        # in the ground truth case and N in the test case.
+        #
+        tbl = np.zeros(((max_t_labels + 1), (max_g_labels + 1)))
+        for i, (c1, tobject_numbers1, gobject_numbers1) in enumerate(labels):
+            for j, (c2, tobject_numbers2, gobject_numbers2) in \
+                enumerate(labels[i:]):
+                nhits_test = np.sum(
+                    tobject_numbers1[:, np.newaxis] == 
+                    tobject_numbers2[np.newaxis, :])
+                nhits_gt = np.sum(
+                    gobject_numbers1[:, np.newaxis] == 
+                    gobject_numbers2[np.newaxis, :])
+                if j == 0:
+                    N = c1 * (c1 - 1) / 2
+                else:
+                    N = c1 * c2
+                tbl[nhits_test, nhits_gt] += N
+                
+        N = np.sum(tbl)
+        #
+        # Equation 13 from the paper
+        #
+        min_JK = min(max_t_labels, max_g_labels)+1
+        rand_index = np.sum(tbl[:min_JK, :min_JK] * np.identity(min_JK)) / N
+        #
+        # Equation 15 from the paper, the expected index
+        #
+        e_omega = np.sum(np.sum(tbl[:min_JK,:min_JK], 0) *
+                         np.sum(tbl[:min_JK,:min_JK], 1)) / N **2
+        #
+        # Equation 16 is the adjusted index
+        #
+        adjusted_rand_index = (rand_index - e_omega) / (1 - e_omega)
+        return rand_index, adjusted_rand_index
         
-
     def display(self, workspace):
         '''Display the image confusion matrix & statistics'''
         figure = workspace.create_or_find_figure(title="CalculateImageOverlap, image cycle #%d"%(

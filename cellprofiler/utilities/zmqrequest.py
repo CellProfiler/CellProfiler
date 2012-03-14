@@ -223,7 +223,7 @@ class Boundary(object):
         for req in self.reqs_pending:
             req.reply(BoundaryExited())
         while not self.downward_queue.empty():
-            req, orig_reply, rep = self.downward_queue.get()
+            req, orig_reply, rep, please_reply, please_reply_queue = self.downward_queue.get()
             try:
                 orig_reply(rep)
             except Communicable.MultipleReply:

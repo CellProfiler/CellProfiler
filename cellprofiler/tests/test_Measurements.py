@@ -869,6 +869,12 @@ class TestMeasurements(unittest.TestCase):
                     np.testing.assert_almost_equal(expected, value)
         finally:
             del m
+    def test_19_01_delete_tempfile(self):
+        m = cpmeas.Measurements()
+        filename = m.hdf5_dict.filename
+        self.assertTrue(os.path.exists(filename))
+        del m
+        self.assertFalse(os.path.exists(filename))
         
 if __name__ == "__main__":
     unittest.main()

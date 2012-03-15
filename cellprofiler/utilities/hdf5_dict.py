@@ -25,6 +25,7 @@ import threading
 import numpy as np
 import h5py
 import time
+import sys
 import logging
 logger = logging.getLogger(__name__)
 
@@ -116,6 +117,10 @@ class HDF5Dict(object):
         logger.debug("HDF5Dict.__init__(): %s, temporary=%s, copy=%s", self.filename, self.is_temporary, copy)
         # assert not os.path.exists(self.filename)  # currently, don't allow overwrite
         self.hdf5_file = h5py.File(self.filename, 'w')
+        if is_temporary and sys.platform != "win32":
+            # Unix-ish unlink lets us remove the file from the directory but
+            # it's still there.
+            os.unlink(self.hdf5_file)
         vdataset = self.hdf5_file.create_dataset(
             VERSION, data = np.array([version_number], int))
         self.top_level_group_name = top_level_group_name
@@ -161,12 +166,13 @@ class HDF5Dict(object):
             # This happens if the constructor could not open the hdf5 file
             return
         if self.is_temporary:
-            try:
-                self.hdf5_file.flush()  # just in case unlink fails
-                self.hdf5_file.close()
-                os.unlink(self.filename)
-            except Exception, e:
-                logger.warn("So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
+            if sys.platform == "win32":
+                try:
+                    self.hdf5_file.flush()  # just in case unlink fails
+                    self.hdf5_file.close()
+                    os.unlink(self.filename)
+                except Exception, e:
+                    logger.warn("So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
         else:
             self.hdf5_file.flush()
             self.hdf5_file.close()

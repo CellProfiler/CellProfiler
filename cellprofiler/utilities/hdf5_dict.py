@@ -120,7 +120,7 @@ class HDF5Dict(object):
         if is_temporary and sys.platform != "win32":
             # Unix-ish unlink lets us remove the file from the directory but
             # it's still there.
-            os.unlink(self.hdf5_file)
+            os.unlink(self.filename)
         vdataset = self.hdf5_file.create_dataset(
             VERSION, data = np.array([version_number], int))
         self.top_level_group_name = top_level_group_name

@@ -173,7 +173,7 @@ parser.add_option("--image-set-file",
                   
 parser.add_option("-L", "--log-level",
                   dest = "log_level",
-                  default = logging.INFO,
+                  default = "INFO",
                   help = ("Set the verbosity for logging messages: " +
                           ("%d or %s for debugging, " % (logging.DEBUG, "DEBUG")) +
                           ("%d or %s for informational, " % (logging.INFO, "INFO")) +

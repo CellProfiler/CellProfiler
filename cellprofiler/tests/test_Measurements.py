@@ -872,7 +872,6 @@ class TestMeasurements(unittest.TestCase):
     def test_19_01_delete_tempfile(self):
         m = cpmeas.Measurements()
         filename = m.hdf5_dict.filename
-        self.assertTrue(os.path.exists(filename))
         del m
         self.assertFalse(os.path.exists(filename))
         

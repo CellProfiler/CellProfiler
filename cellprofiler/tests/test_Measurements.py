@@ -876,5 +876,13 @@ class TestMeasurements(unittest.TestCase):
         del m
         self.assertFalse(os.path.exists(filename))
         
+    def test_19_02_dont_delete_file(self):
+        fd, filename = tempfile.mkstemp(suffix=".h5")
+        m = cpmeas.Measurements(filename = filename)
+        os.close(fd)
+        del m
+        self.assertTrue(os.path.exists(filename))
+        os.unlink(filename)
+        
 if __name__ == "__main__":
     unittest.main()

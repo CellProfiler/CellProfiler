@@ -888,6 +888,15 @@ class Measurements(object):
             image_numbers = list(range(start, last_image_number + 1))
         self.hdf5_dict.add_all(IMAGE, IMAGE_NUMBER, image_numbers, image_numbers)
         for feature, column in zip(header, columns):
+            # try to convert to an integer, then float, then leave as string
+            column = np.array(column)
+            try:
+                column = column.astype(int)
+            except:
+                try:
+                    column = column.astype(float)
+                except:
+                    pass
             self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
     
 def load_measurements(filename, dest_file = None, can_overwrite = False,

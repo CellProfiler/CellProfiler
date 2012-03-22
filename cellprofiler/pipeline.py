@@ -613,7 +613,7 @@ class Pipeline(object):
         pipeline.load(fd)
         return pipeline
     
-    def settings_hash(self):
+    def settings_hash(self, until_module=None, as_string=False):
         '''Return a hash of the module settings
         
         This function can be used to invalidate a cached calculation
@@ -628,6 +628,10 @@ class Pipeline(object):
             h.update(module.module_name)
             for setting in module.settings():
                 h.update(setting.unicode_value.encode('utf-8'))
+            if module.module_name == until_module:
+                break
+        if as_string:
+            return h.hexdigest()
         return h.digest()
 
     def create_from_handles(self,handles):
@@ -1112,6 +1116,11 @@ class Pipeline(object):
         else:
             fd = open(fd_or_filename,"wt")
             needs_close = True
+
+        # Don't write image plane details if we don't have any
+        if len(self.__image_plane_details) == 0:
+            save_image_plane_details = False
+
         fd.write("%s\n"%COOKIE)
         fd.write("%s:%d\n" % (H_VERSION, NATIVE_VERSION))
         fd.write("%s:%d\n" % (H_DATE_REVISION, version_number))
@@ -2156,6 +2165,9 @@ class Pipeline(object):
             
     LEGACY_LOAD_MODULES = ["LoadImages", "LoadData", "LoadSingleImage"]
 
+    def has_legacy_loaders(self):
+        return any(m.module_name in self.LEGACY_LOAD_MODULES for m in self.modules())
+
     def get_image_sets(self):
         '''Return the pipeline's image sets
         
@@ -2755,10 +2767,9 @@ class Pipeline(object):
         fd - file descriptor to write to
         
         '''
-        if any([m.module_name in self.LEGACY_LOAD_MODULES
-                for m in self.modules()]):
+        if self.has_legacy_loaders():
             return self.write_legacy_image_set(fd)
-        
+
         key_list, iscds, metadata_key_names, image_sets, groupings = \
             self.get_grouped_image_sets()
         
@@ -2857,7 +2868,21 @@ class Pipeline(object):
                 fd.write((u'"'+u'","'.join(values) + u'"\n').encode('utf-8'))
                 current_image_number += 1
         del measurements
-    
+
+    def loaders_settings_hash(self):
+        '''Return a hash for the settings that control image loading, or None
+        for legacy pipelines (which can't be hashed)
+        '''
+
+        # legacy pipelines can't be cached, because they can load from the
+        # Default Image or Output directories.  We could fix this by including
+        # them in the hash we use for naming the cache.
+        if self.has_legacy_loaders():
+            return None
+
+        assert "Groups" in [m.module_name for m in self.modules()]
+        return self.settings_hash(until_module="Groups", as_string=True)
+
 class AbstractPipelineEvent:
     """Something that happened to the pipeline and was indicated to the listeners
     """

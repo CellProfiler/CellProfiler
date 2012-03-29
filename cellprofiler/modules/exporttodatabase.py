@@ -2314,8 +2314,17 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     image_channel_colors = 'gray,'
                 else:
                     image_channel_colors = 'red, green, blue, cyan, magenta, yellow, gray, '+('none, ' * 10)
-                    image_channel_colors = ','.join(image_channel_colors.split(',')[:len(default_image_names)])
+                    num_images = len(default_image_names)+len(set([name for name in self.thumbnail_image_names.get_selections()]).difference(default_image_names)) if self.want_image_thumbnails else 0
+                    image_channel_colors = ','.join(image_channel_colors.split(',')[:num_images])
                 image_names_csl = ','.join(default_image_names) # Convert to comma-separated list
+                
+                if self.want_image_thumbnails:
+                    selected_thumbs = [name for name in self.thumbnail_image_names.get_selections()]
+                    thumb_names = [name for name in default_image_names if name in selected_thumbs] + [name for name in selected_thumbs if name not in default_image_names]
+                    image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in thumb_names])
+                else:
+                    image_thumbnail_cols = ''
+
             else:
                 # Extract user-specified image names and colors
                 user_image_names = [];
@@ -2332,15 +2341,16 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in selected_image_names])
                 image_path_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_PATH_NAME,name) for name in selected_image_names])
                 
-                # Sort user-specified names and colors according to alphabetical order.
-                #  If the user has thumbnails, they are listed in alphabetical order and unfortunately inherit the channel colors
-                #  so I try to get them to match. Not foolproof but oh well...
-                idx = [selected_image_names.index(x) for x in sorted(selected_image_names)]
-                user_image_names = [user_image_names[x] for x in idx]
-                image_channel_colors = [image_channel_colors[x] for x in idx]
+                # Try to match thumbnail order to selected image order
+                if self.want_image_thumbnails:
+                    selected_thumbs = [name for name in self.thumbnail_image_names.get_selections()]
+                    thumb_names = [name for name in selected_image_names if name in selected_thumbs] + [name for name in selected_thumbs if name not in selected_image_names]
+                    image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in thumb_names])
+                else:
+                    image_thumbnail_cols = ''
                 
                 # Convert to comma-separated list
-                image_channel_colors = ','.join(image_channel_colors)
+                image_channel_colors = ','.join(image_channel_colors + ['none']*len(set(selected_thumbs).difference(selected_image_names)))
                 image_names_csl = ','.join(user_image_names)
                 
             group_statements = ''

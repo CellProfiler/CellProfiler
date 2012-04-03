@@ -79,6 +79,8 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     '''
 
     import wx
+    assert wx.Thread_IsMain(), "Can only display errors from WX thread."
+
     if remote_exc_info:
         from_subprocess = True
         exc_name, exc_message, traceback_text, filename, line_number, remote_debug_callback = remote_exc_info
@@ -97,7 +99,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
         # find the place where this error occurred, and if we've already
         # reported it, don't do so again (instead, just log it to the
         # console), to prevent the UI from becoming unusable.
-        filename, line_number, _, _ = traceback.extract_tb(tb, 1)[0]
+        filename, line_number, _, _ = traceback.extract_tb(tb)[-1]
 
     if (filename, line_number) in previously_seen_error_locations:
         if from_subprocess:
@@ -184,16 +186,20 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
             def handle_pdb(event):
                 import pdb
                 pdb.post_mortem(tb)
+                # This level of interest seems to indicate the user might
+                # want to debug this error if it occurs again.
+                if (filename, line_number) in previously_seen_error_locations:
+                    previously_seen_error_locations.remove((filename, line_number))
         else:
             pdb_button = wx.Button(dialog, -1, "Debug remotely...")
             pdb_button.SetToolTipString("Debug remotely in pdb via telnet")
             aux_button_box.Add(pdb_button, 0, wx.EXPAND | wx.BOTTOM, 5)
             def handle_pdb(event):
                 remote_debug_callback()
-        # This level of interest seems to indicate the user might
-        # want to debug this error if it occurs again.
-        if (filename, line_number) in previously_seen_error_locations:
-            previously_seen_error_locations.remove((filename, line_number))
+                # This level of interest seems to indicate the user might
+                # want to debug this error if it occurs again.
+                if (filename, line_number) in previously_seen_error_locations:
+                    previously_seen_error_locations.remove((filename, line_number))
         dialog.Bind(wx.EVT_BUTTON, handle_pdb, pdb_button)
 
     #

@@ -19,16 +19,15 @@ import time
 import numpy as np
 import wx
 import cellprofiler.preferences as cpprefs
-import cellprofiler.distributed as cpdistributed
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.help import \
      DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, OUTPUT_FILENAME_HELP
+import cellprofiler.analysis as cpanalysis
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
 
 
 ANALYZE_IMAGES = 'Analyze Images'
-START_WORK_SERVER = 'Start Distributed Computation'
 
 WRITE_MAT_FILE = "MATLAB"
 WRITE_HDF_FILE = "HDF5"
@@ -195,10 +194,7 @@ class PreferencesView:
         self.__write_measurements_combo_box.Bind(
             wx.EVT_CHOICE, on_write_MAT_files_combo_box)
         output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
-        if not cpdistributed.run_distributed():
-            self.__analyze_images_button = wx.Button(panel, -1, ANALYZE_IMAGES)
-        else:
-            self.__analyze_images_button = wx.Button(panel, -1, START_WORK_SERVER)
+        self.__analyze_images_button = wx.Button(panel, -1, ANALYZE_IMAGES)
         self.__stop_analysis_button = wx.Button(panel,-1,'Stop analysis')
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([(output_filename_help_button,0,wx.ALIGN_CENTER|wx.ALL,1),
@@ -219,7 +215,6 @@ class PreferencesView:
         cpprefs.add_output_file_name_listener(self.__on_preferences_output_filename_event)
         cpprefs.add_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.add_output_directory_listener(self.__on_preferences_output_directory_event)
-        cpprefs.add_run_distributed_listener(self.__on_preferences_run_distributed_event)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
     
     def __make_progress_panel(self):
@@ -269,7 +264,6 @@ class PreferencesView:
         cpprefs.remove_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.remove_output_directory_listener(self.__on_preferences_output_directory_event)
         cpprefs.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
-        cpprefs.remove_run_distributed_listener(self.__on_preferences_run_distributed_event)
 
     def attach_to_pipeline_controller(self, pipeline_controller):
         self.__panel.Bind(wx.EVT_BUTTON,
@@ -302,7 +296,7 @@ class PreferencesView:
         # begin tracking progress
         self.__progress_watcher = ProgressWatcher(self.__progress_panel,
                                                   self.update_progress,
-                                                  distributed=cpdistributed.run_distributed())
+                                                  multiprocessing=cpanalysis.use_analysis)
         
     def on_pipeline_progress(self, *args):
         self.__progress_watcher.on_pipeline_progress(*args)
@@ -415,11 +409,6 @@ class PreferencesView:
         if self.__image_edit_box.Value != cpprefs.get_default_image_directory():
             self.__image_edit_box.Value = cpprefs.get_default_image_directory()
 
-    def __on_preferences_run_distributed_event(self, event):
-        self.__analyze_images_button.Label = START_WORK_SERVER if cpdistributed.run_distributed() else ANALYZE_IMAGES
-        self.__analyze_images_button.Size = self.__analyze_images_button.BestSize
-        self.__odds_and_ends_panel.Layout()
-
     def __notify_pipeline_list_view_directory_change(self, path):
         # modules may need revalidation
         if self.__pipeline_list_view is not None:
@@ -430,7 +419,7 @@ class PreferencesView:
 
 class ProgressWatcher:
     """ Tracks pipeline progress and estimates time to completion """
-    def __init__(self, parent, update_callback, distributed=False):
+    def __init__(self, parent, update_callback, multiprocessing=False):
         self.update_callback = update_callback
 
         # start tracking progress
@@ -442,21 +431,21 @@ class ProgressWatcher:
         self.image_set_index = 0
         self.num_image_sets = 1
 
-        # for distributed computation
+        # for multiprocessing computation
         self.num_jobs = 1
         self.num_received = 0
 
-        self.distributed = distributed
+        self.multiprocessing = multiprocessing
 
         timer_id = wx.NewId()
         self.timer = wx.Timer(parent, timer_id)
         self.timer.Start(500)
-        if not distributed:
+        if not multiprocessing:
             wx.EVT_TIMER(parent, timer_id, self.update)
             self.update()
         else:
-            wx.EVT_TIMER(parent, timer_id, self.update_distributed)
-            self.update_distributed()
+            wx.EVT_TIMER(parent, timer_id, self.update_multiprocessing)
+            self.update_multiprocessing()
 
     def stop(self):
         self.timer.Stop()
@@ -467,14 +456,14 @@ class ProgressWatcher:
                              self.elapsed_time(),
                              self.remaining_time())
 
-    def update_distributed(self, event=None):
-        status = 'Distributed work: %d/%d completed'%(self.num_received, self.num_jobs)
+    def update_multiprocessing(self, event=None):
+        status = 'Multiprocessing work: %d/%d completed'%(self.num_received, self.num_jobs)
         self.update_callback(status,
                              self.elapsed_time(),
-                             self.remaining_time_distributed())
+                             self.remaining_time_multiprocessing())
 
     def on_pipeline_progress(self, *args):
-        if not self.distributed:
+        if not self.multiprocessing:
             self.on_start_module(*args)
         else:
             self.on_receive_work(*args)
@@ -506,12 +495,12 @@ class ProgressWatcher:
     def on_receive_work(self, num_jobs, num_received):
         self.num_jobs = num_jobs
         self.num_received = num_received
-
         if self.end_times is None:
             # One extra element at the beginning for the start time
             self.end_times = np.zeros(1 + num_jobs)
+            self.end_times[0] = self.elapsed_time()
         self.end_times[num_received] = self.elapsed_time()
-        self.update_distributed()
+        self.update_multiprocessing()
 
     def pause(self, do_pause):
         if do_pause:
@@ -558,15 +547,14 @@ class ProgressWatcher:
             per_module_estimates[module_index] -= current_module_so_far
             return per_module_estimates.sum()
 
-    def remaining_time_distributed(self):
+    def remaining_time_multiprocessing(self):
         """Return our best estimate of the remaining duration, or None
         if we have no bases for guessing."""
-        if self.end_times is None:
+        if (self.end_times is None) or (self.num_received == 0):
             return 2 * self.elapsed_time() # We have not started the first module yet
         else:
-            expected_per_job = np.median(np.diff(self.end_times[:self.num_received + 1]))
+            expected_per_job = self.end_times[self.num_received] / self.num_received
             return expected_per_job * (self.num_jobs - self.num_received)
-
 
 def secs_to_timestr(duration):
     dur = int(round(duration))

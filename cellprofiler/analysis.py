@@ -201,6 +201,7 @@ class AnalysisRunner(object):
         '''start the analysis run'''
         workspace = cpw.Workspace(self.pipeline, None, None, None,
                                   self.initial_measurements, cpimage.ImageSetList())
+        # XXX - catch exceptions via RunException event listener.
         self.pipeline.prepare_run(workspace)
 
         # If we are running a new-style pipeline, load the imageset cache,

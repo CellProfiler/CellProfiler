@@ -321,7 +321,7 @@ class PipelineController:
                 except Exception, e:
                     display_error_dialog(self.__frame, e, self.__pipeline,
                                          "Failed to export image sets",
-                                         continue_only = True)
+                                         continue_only=True)
         finally:
             dlg.Destroy()
     
@@ -776,7 +776,8 @@ class PipelineController:
                                      e,
                                      self.__pipeline,
                                      "Failure in analysis startup.",
-                                     sys.exc_info()[2])
+                                     sys.exc_info()[2],
+                                     continue_only=True)
                 self.stop_running()
             return
 
@@ -844,6 +845,9 @@ class PipelineController:
             print "Analysis started"
         elif isinstance(evt, cpanalysis.AnalysisProgress):
             print "Progress", evt.counts
+            total_jobs = sum(evt.counts.values())
+            completed = evt.counts.get(cpanalysis.AnalysisRunner.STATUS_DONE, 0)
+            wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress, total_jobs, completed)
         elif isinstance(evt, cpanalysis.AnalysisFinished):
             print "Finished!"
             # drop any interaction/display requests or exceptions

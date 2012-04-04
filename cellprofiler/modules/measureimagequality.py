@@ -979,7 +979,8 @@ class MeasureImageQuality(cpm.CPModule):
                 magnitude = magnitude[valid].reshape((-1, 1))
                 power = power[valid].reshape((-1, 1))
                 if radii.shape[0] > 1:
-                    powerslope = lstsq(np.hstack((np.log(radii), np.ones(radii.shape))), np.log(power))[0][0]
+                    idx = np.isfinite(np.log(power))
+                    powerslope = lstsq(np.hstack((np.log(radii)[idx][:,np.newaxis], np.ones(radii.shape)[idx][:,np.newaxis])), np.log(power)[idx][:,np.newaxis])[0][0]
                 else:
                     powerslope = 0
             else:

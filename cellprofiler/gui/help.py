@@ -721,9 +721,8 @@ spurious objects. This can be overcome by setting a lower limit on the threshold
 the <b>IdentifyPrimaryObjects</b> module.</p>
 <p>The Test mode in CellProfiler may be used for previewing the results of your settings
 on images of your choice. Please refer to <i>%(TEST_MODE_HELP_REF)s</i>
-for more details on how to use this utility.</li>
-
-<li><i>Add the <b>CreateBatchFiles</b> module to the end of your pipeline.</i>
+for more details on how to use this utility.</li>"""%globals() +\
+"""<li><i>Add the <b>CreateBatchFiles</b> module to the end of your pipeline.</i>
 This module is needed to resolve the pathnames to your files with respect to 
 your local machine and the cluster computers. If you are processing large batches 
 of images, you may also consider adding <b>ExportToDatabase</b> to your pipeline, 
@@ -1337,7 +1336,7 @@ MAIN_HELP = (
         ("Other Features",(
             ("Batch Processing", BATCHPROCESSING_HELP),
             ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
-            ("Configuring logging", CONFIGURING_LOGGING_HELP)))
+            ("Configuring Logging", CONFIGURING_LOGGING_HELP)))
     ))
 )
 

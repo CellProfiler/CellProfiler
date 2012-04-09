@@ -190,7 +190,7 @@ if has_bioformats:
     SUPPORTED_IMAGE_EXTENSIONS.update([
         ".1sc",".2fl",".afm", ".aim", ".avi", ".co1",".flex", ".fli", ".gel", 
         ".ics", ".ids", ".im", ".img", ".j2k", ".lif", ".lsm", ".mpeg", ".pic", 
-        ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi"])
+        ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi", ".c01"])
     SUPPORTED_MOVIE_EXTENSIONS.update(['mng'] )
 else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]

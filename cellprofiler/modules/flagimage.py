@@ -193,7 +193,9 @@ class FlagImage(cpm.CPModule):
                     for the negative category for images whose power log slope is less than -2.5
                     pixels and will score the opposite for images whose slope is larger.
                     The filter adds positive and negative and flags the images whose
-                    positive score is higher than the negative score."""))
+                    positive score is higher than the negative score.
+                    <p>Note that if the rules are obtained from CellProfiler Analyst, the images
+                    that are fail are those represented by the second number between the brackets.</p>"""))
 
         group.append("measurement", cps.Measurement("Which measurement?",
                                                     object_fn))
@@ -302,7 +304,7 @@ class FlagImage(cpm.CPModule):
                         raise cps.ValidationError("The rules listed in %s describe objects instead of images."%measurement_setting.rules_file_name.value,
                                                     measurement_setting.rules_file_name)
                     rule_features = [r.feature for r in rules.rules]
-                    measurement_cols = [c[1] for c in pipeline.get_measurement_columns()]
+                    measurement_cols = [c[1] for c in pipeline.get_measurement_columns(self)]
                     undef_features = list(set(rule_features).difference(measurement_cols))
                     if undef_features:
                         raise cps.ValidationError("The rule described by %s has not been measured earlier in the pipeline."%undef_features[0],

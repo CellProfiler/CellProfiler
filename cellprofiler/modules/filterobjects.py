@@ -183,7 +183,9 @@ class FilterObjects(cpm.CPModule):
             for the negative category for nuclei whose area is less than 351.3 
             pixels and will score the opposite for nuclei whose area is larger.
             The filter adds positive and negative and keeps only objects whose
-            positive score is higher than the negative score""")
+            positive score is higher than the negative score.
+            <p>Note that if the rules are obtained from CellProfiler Analyst, the objects
+            that are removed are those represented by the second number between the brackets.</p>""")
         
         self.wants_outlines = cps.Binary('Retain outlines of the identified objects?', False)
         

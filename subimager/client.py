@@ -433,11 +433,12 @@ def decode_image(data):
 def stop_subimager():
     '''Stop the subimager process by web command'''
     global subprocess_thread
-    conn = connect()
-    conn.request("GET", "/stop")
-    conn.getresponse()
-    stop_semaphore.release()
-    subprocess_thread.join()
+    if subprocess_thread is not None:
+        conn = connect()
+        conn.request("GET", "/stop")
+        conn.getresponse()
+        stop_semaphore.release()
+        subprocess_thread.join()
 
 __all__ = (start_subimager, get_image, get_metadata, post_image, 
            stop_subimager, HTTPError)
@@ -564,6 +565,8 @@ if __name__ == "__main__":
                 menu_id = wx.NewId()
                 parent.Append(menu_id, module.MenuPath.get_menu_entry()[-1].Name)
                 menu_ids[menu_id] = module
+        textctrl = wx.StaticText(dialog)
+        dialog.Sizer.Add(textctrl, 0, wx.EXPAND | wx.ALL)
         listctrl = wx.ListCtrl(dialog, style=wx.LC_REPORT)
         listctrl.InsertColumn(0, "Name")
         listctrl.InsertColumn(1, "Label")
@@ -572,8 +575,9 @@ if __name__ == "__main__":
         dialog.Sizer.Add(listctrl, 1, wx.EXPAND)
         
         def on_menu(event):
-            listctrl.DeleteAllItems()
             module = menu_ids[event.Id]
+            textctrl.Label = "Title: %s\n" % module.Title
+            listctrl.DeleteAllItems()
             run_me = False
             for mi in sorted(set(module.Input + module.Output), 
                                  cmp = lambda a,b: cmp(a.Name, b.Name)):
@@ -637,10 +641,13 @@ if __name__ == "__main__":
         run_module = IJRQ.RunModuleRequestType(
             ContextID=context_id,
             DelegateClassName="imagej.core.plugins.assign.InvertDataValues")
+        axes = [ "X", "Y"]
+        if frame.image.ndim == 3:
+            axes.append("CHANNEL")
         run_module.add_Parameter(IJRQ.ParameterValueType(
             Name="display",
             ImageValue=IJRQ.ImageDisplayParameterValueType(
-                ImageName="MyImage", ImageID="ImageID")))
+                ImageName="MyImage", ImageID="ImageID", Axis=axes)))
         response, images_dict = make_imagej_request(
             IJRQ.RequestType(RunModule=run_module),
             {"ImageID": frame.image})

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*- 
 
 #
-# Generated Wed Apr 04 15:30:35 2012 by generateDS.py version 2.7b.
+# Generated Fri Apr 13 13:33:23 2012 by generateDS.py version 2.7b.
 #
 
 import sys
@@ -182,7 +182,7 @@ except ImportError, exp:
 # Globals
 #
 
-ExternalEncoding = 'utf-8'
+ExternalEncoding = 'ascii'
 Tag_pattern_ = re_.compile(r'({.*})?(.*)')
 String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
 Namespace_extract_pat_ = re_.compile(r'{(.*)}(.*)')
@@ -1706,7 +1706,7 @@ class ParameterValueType(GeneratedsSuper):
             outfile.write(' xsi:type="%s"' % self.extensiontype_)
     def exportChildren(self, outfile, level, namespace_='ijr:', name_='ParameterValueType', fromsubclass_=False):
         if self.ImageValue is not None:
-            self.ImageValue.export(outfile, level, namespace_, name_='ImageValue', )
+            self.ImageValue.export(outfile, level, namespace_, name_='ImageValue')
         if self.StringValue is not None:
             showIndent(outfile, level)
             outfile.write('<%sStringValue>%s</%sStringValue>\n' % (namespace_, self.gds_format_string(quote_xml(self.StringValue).encode(ExternalEncoding), input_name='StringValue'), namespace_))
@@ -1717,7 +1717,7 @@ class ParameterValueType(GeneratedsSuper):
             showIndent(outfile, level)
             outfile.write('<%sBooleanValue>%s</%sBooleanValue>\n' % (namespace_, self.gds_format_boolean(self.gds_str_lower(str(self.BooleanValue)), input_name='BooleanValue'), namespace_))
         if self.ColorValue is not None:
-            self.ColorValue.export(outfile, level, namespace_, name_='ColorValue', )
+            self.ColorValue.export(outfile, level, namespace_, name_='ColorValue')
     def hasContent_(self):
         if (
             self.ImageValue is not None or
@@ -2036,13 +2036,17 @@ class ImageDisplayParameterValueType(GeneratedsSuper):
     message."""
     subclass = None
     superclass = None
-    def __init__(self, ImageName=None, ImageID=None, Overlay=None):
+    def __init__(self, ImageName=None, ImageID=None, Overlay=None, Axis=None):
         self.ImageName = _cast(None, ImageName)
         self.ImageID = _cast(None, ImageID)
         if Overlay is None:
             self.Overlay = []
         else:
             self.Overlay = Overlay
+        if Axis is None:
+            self.Axis = []
+        else:
+            self.Axis = Axis
     def factory(*args_, **kwargs_):
         if ImageDisplayParameterValueType.subclass:
             return ImageDisplayParameterValueType.subclass(*args_, **kwargs_)
@@ -2053,6 +2057,10 @@ class ImageDisplayParameterValueType(GeneratedsSuper):
     def set_Overlay(self, Overlay): self.Overlay = Overlay
     def add_Overlay(self, value): self.Overlay.append(value)
     def insert_Overlay(self, index, value): self.Overlay[index] = value
+    def get_Axis(self): return self.Axis
+    def set_Axis(self, Axis): self.Axis = Axis
+    def add_Axis(self, value): self.Axis.append(value)
+    def insert_Axis(self, index, value): self.Axis[index] = value
     def get_ImageName(self): return self.ImageName
     def set_ImageName(self, ImageName): self.ImageName = ImageName
     def get_ImageID(self): return self.ImageID
@@ -2079,9 +2087,13 @@ class ImageDisplayParameterValueType(GeneratedsSuper):
     def exportChildren(self, outfile, level, namespace_='ijr:', name_='ImageDisplayParameterValueType', fromsubclass_=False):
         for Overlay_ in self.Overlay:
             Overlay_.export(outfile, level, namespace_, name_='Overlay')
+        for Axis_ in self.Axis:
+            showIndent(outfile, level)
+            outfile.write('<%sAxis>%s</%sAxis>\n' % (namespace_, self.gds_format_string(quote_xml(Axis_).encode(ExternalEncoding), input_name='Axis'), namespace_))
     def hasContent_(self):
         if (
-            self.Overlay
+            self.Overlay or
+            self.Axis
             ):
             return True
         else:
@@ -2113,6 +2125,15 @@ class ImageDisplayParameterValueType(GeneratedsSuper):
         level -= 1
         showIndent(outfile, level)
         outfile.write('],\n')
+        showIndent(outfile, level)
+        outfile.write('Axis=[\n')
+        level += 1
+        for Axis_ in self.Axis:
+            showIndent(outfile, level)
+            outfile.write('%s,\n' % quote_python(Axis_).encode(ExternalEncoding))
+        level -= 1
+        showIndent(outfile, level)
+        outfile.write('],\n')
     def build(self, node):
         self.buildAttributes(node, node.attrib, [])
         for child in node:
@@ -2132,19 +2153,78 @@ class ImageDisplayParameterValueType(GeneratedsSuper):
             obj_ = OverlayType.factory()
             obj_.build(child_)
             self.Overlay.append(obj_)
+        elif nodeName_ == 'Axis':
+            Axis_ = child_.text
+            Axis_ = self.gds_validate_string(Axis_, node, 'Axis')
+            self.Axis.append(Axis_)
 # end class ImageDisplayParameterValueType
+
+
+class Axis(GeneratedsSuper):
+    """The axis names in order of appearance in the array."""
+    subclass = None
+    superclass = None
+    def __init__(self, valueOf_=None):
+        self.valueOf_ = valueOf_
+    def factory(*args_, **kwargs_):
+        if Axis.subclass:
+            return Axis.subclass(*args_, **kwargs_)
+        else:
+            return Axis(*args_, **kwargs_)
+    factory = staticmethod(factory)
+    def export(self, outfile, level, namespace_='ijr:', name_='Axis', namespacedef_=''):
+        showIndent(outfile, level)
+        outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
+        already_processed = []
+        self.exportAttributes(outfile, level, already_processed, namespace_, name_='Axis')
+        if self.hasContent_():
+            outfile.write('>\n')
+            self.exportChildren(outfile, level + 1, namespace_, name_)
+            outfile.write('</%s%s>\n' % (namespace_, name_))
+        else:
+            outfile.write('/>\n')
+    def exportAttributes(self, outfile, level, already_processed, namespace_='ijr:', name_='Axis'):
+        pass
+    def exportChildren(self, outfile, level, namespace_='ijr:', name_='Axis', fromsubclass_=False):
+        pass
+    def hasContent_(self):
+        if (
+
+            ):
+            return True
+        else:
+            return False
+    def exportLiteral(self, outfile, level, name_='Axis'):
+        level += 1
+        self.exportLiteralAttributes(outfile, level, [], name_)
+        if self.hasContent_():
+            self.exportLiteralChildren(outfile, level, name_)
+    def exportLiteralAttributes(self, outfile, level, already_processed, name_):
+        pass
+    def exportLiteralChildren(self, outfile, level, name_):
+        pass
+    def build(self, node):
+        self.buildAttributes(node, node.attrib, [])
+        for child in node:
+            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName_)
+    def buildAttributes(self, node, attrs, already_processed):
+        pass
+    def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
+        pass
+# end class Axis
 
 
 class RunModuleRequestType(ContextRequestType):
     """Obtain a context ID from Subimager using the CreateContextRequest.
     Subimager uses the ImageJ context to get the DisplayService and
-    ModuleService that are used during this call. The delegate class
-    name from the ModuleInfo."""
+    ModuleService that are used during this call. The ModuleID from
+    the corresponding module in the GetModulesResponse."""
     subclass = None
     superclass = ContextRequestType
-    def __init__(self, ContextID=None, DelegateClassName=None, Parameter=None):
+    def __init__(self, ContextID=None, ModuleID=None, Parameter=None):
         super(RunModuleRequestType, self).__init__(ContextID, )
-        self.DelegateClassName = _cast(None, DelegateClassName)
+        self.ModuleID = _cast(None, ModuleID)
         if Parameter is None:
             self.Parameter = []
         else:
@@ -2159,8 +2239,8 @@ class RunModuleRequestType(ContextRequestType):
     def set_Parameter(self, Parameter): self.Parameter = Parameter
     def add_Parameter(self, value): self.Parameter.append(value)
     def insert_Parameter(self, index, value): self.Parameter[index] = value
-    def get_DelegateClassName(self): return self.DelegateClassName
-    def set_DelegateClassName(self, DelegateClassName): self.DelegateClassName = DelegateClassName
+    def get_ModuleID(self): return self.ModuleID
+    def set_ModuleID(self, ModuleID): self.ModuleID = ModuleID
     def export(self, outfile, level, namespace_='ijr:', name_='RunModuleRequestType', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -2175,9 +2255,9 @@ class RunModuleRequestType(ContextRequestType):
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='ijr:', name_='RunModuleRequestType'):
         super(RunModuleRequestType, self).exportAttributes(outfile, level, already_processed, namespace_, name_='RunModuleRequestType')
-        if self.DelegateClassName is not None and 'DelegateClassName' not in already_processed:
-            already_processed.append('DelegateClassName')
-            outfile.write(' DelegateClassName=%s' % (self.gds_format_string(quote_attrib(self.DelegateClassName).encode(ExternalEncoding), input_name='DelegateClassName'), ))
+        if self.ModuleID is not None and 'ModuleID' not in already_processed:
+            already_processed.append('ModuleID')
+            outfile.write(' ModuleID=%s' % (quote_attrib(self.ModuleID), ))
     def exportChildren(self, outfile, level, namespace_='ijr:', name_='RunModuleRequestType', fromsubclass_=False):
         super(RunModuleRequestType, self).exportChildren(outfile, level, namespace_, name_, True)
         for Parameter_ in self.Parameter:
@@ -2196,10 +2276,10 @@ class RunModuleRequestType(ContextRequestType):
         if self.hasContent_():
             self.exportLiteralChildren(outfile, level, name_)
     def exportLiteralAttributes(self, outfile, level, already_processed, name_):
-        if self.DelegateClassName is not None and 'DelegateClassName' not in already_processed:
-            already_processed.append('DelegateClassName')
+        if self.ModuleID is not None and 'ModuleID' not in already_processed:
+            already_processed.append('ModuleID')
             showIndent(outfile, level)
-            outfile.write('DelegateClassName = "%s",\n' % (self.DelegateClassName,))
+            outfile.write('ModuleID = "%s",\n' % (self.ModuleID,))
         super(RunModuleRequestType, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(RunModuleRequestType, self).exportLiteralChildren(outfile, level, name_)
@@ -2221,10 +2301,10 @@ class RunModuleRequestType(ContextRequestType):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('DelegateClassName', node)
-        if value is not None and 'DelegateClassName' not in already_processed:
-            already_processed.append('DelegateClassName')
-            self.DelegateClassName = value
+        value = find_attr_value_('ModuleID', node)
+        if value is not None and 'ModuleID' not in already_processed:
+            already_processed.append('ModuleID')
+            self.ModuleID = value
         super(RunModuleRequestType, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'Parameter':
@@ -2756,9 +2836,13 @@ class GetModulesRequestType(ContextRequestType):
 
 
 class ModuleInfoType(BasicDetailsType):
+    """The module ID identifies a module within the scope of the context.
+    The client should set the module ID in a run module request to
+    the module ID of the desired module in a prior get modules
+    response."""
     subclass = None
     superclass = BasicDetailsType
-    def __init__(self, Name=None, Label=None, Description=None, MenuRoot=None, IsEnabled=None, Priority=None, IsSelected=None, IsSelectable=None, SelectionGroup=None, IconPath=None, DelegateClassName=None, CanRunHeadless=None, Title=None, MenuPath=None, Input=None, Output=None):
+    def __init__(self, Name=None, Label=None, Description=None, MenuRoot=None, IsEnabled=None, Priority=None, IsSelected=None, IsSelectable=None, SelectionGroup=None, IconPath=None, CanRunHeadless=None, ModuleID=None, Title=None, MenuPath=None, Input=None, Output=None):
         super(ModuleInfoType, self).__init__(Name, Label, Description, )
         self.MenuRoot = _cast(None, MenuRoot)
         self.IsEnabled = _cast(bool, IsEnabled)
@@ -2767,8 +2851,8 @@ class ModuleInfoType(BasicDetailsType):
         self.IsSelectable = _cast(bool, IsSelectable)
         self.SelectionGroup = _cast(None, SelectionGroup)
         self.IconPath = _cast(None, IconPath)
-        self.DelegateClassName = _cast(None, DelegateClassName)
         self.CanRunHeadless = _cast(bool, CanRunHeadless)
+        self.ModuleID = _cast(None, ModuleID)
         self.Title = Title
         self.MenuPath = MenuPath
         if Input is None:
@@ -2811,10 +2895,10 @@ class ModuleInfoType(BasicDetailsType):
     def set_SelectionGroup(self, SelectionGroup): self.SelectionGroup = SelectionGroup
     def get_IconPath(self): return self.IconPath
     def set_IconPath(self, IconPath): self.IconPath = IconPath
-    def get_DelegateClassName(self): return self.DelegateClassName
-    def set_DelegateClassName(self, DelegateClassName): self.DelegateClassName = DelegateClassName
     def get_CanRunHeadless(self): return self.CanRunHeadless
     def set_CanRunHeadless(self, CanRunHeadless): self.CanRunHeadless = CanRunHeadless
+    def get_ModuleID(self): return self.ModuleID
+    def set_ModuleID(self, ModuleID): self.ModuleID = ModuleID
     def export(self, outfile, level, namespace_='ijr:', name_='ModuleInfoType', namespacedef_=''):
         showIndent(outfile, level)
         outfile.write('<%s%s%s' % (namespace_, name_, namespacedef_ and ' ' + namespacedef_ or '', ))
@@ -2850,12 +2934,12 @@ class ModuleInfoType(BasicDetailsType):
         if self.IconPath is not None and 'IconPath' not in already_processed:
             already_processed.append('IconPath')
             outfile.write(' IconPath=%s' % (self.gds_format_string(quote_attrib(self.IconPath).encode(ExternalEncoding), input_name='IconPath'), ))
-        if self.DelegateClassName is not None and 'DelegateClassName' not in already_processed:
-            already_processed.append('DelegateClassName')
-            outfile.write(' DelegateClassName=%s' % (self.gds_format_string(quote_attrib(self.DelegateClassName).encode(ExternalEncoding), input_name='DelegateClassName'), ))
         if self.CanRunHeadless is not None and 'CanRunHeadless' not in already_processed:
             already_processed.append('CanRunHeadless')
             outfile.write(' CanRunHeadless="%s"' % self.gds_format_boolean(self.gds_str_lower(str(self.CanRunHeadless)), input_name='CanRunHeadless'))
+        if self.ModuleID is not None and 'ModuleID' not in already_processed:
+            already_processed.append('ModuleID')
+            outfile.write(' ModuleID=%s' % (quote_attrib(self.ModuleID), ))
     def exportChildren(self, outfile, level, namespace_='ijr:', name_='ModuleInfoType', fromsubclass_=False):
         super(ModuleInfoType, self).exportChildren(outfile, level, namespace_, name_, True)
         if self.Title is not None:
@@ -2912,14 +2996,14 @@ class ModuleInfoType(BasicDetailsType):
             already_processed.append('IconPath')
             showIndent(outfile, level)
             outfile.write('IconPath = "%s",\n' % (self.IconPath,))
-        if self.DelegateClassName is not None and 'DelegateClassName' not in already_processed:
-            already_processed.append('DelegateClassName')
-            showIndent(outfile, level)
-            outfile.write('DelegateClassName = "%s",\n' % (self.DelegateClassName,))
         if self.CanRunHeadless is not None and 'CanRunHeadless' not in already_processed:
             already_processed.append('CanRunHeadless')
             showIndent(outfile, level)
             outfile.write('CanRunHeadless = %s,\n' % (self.CanRunHeadless,))
+        if self.ModuleID is not None and 'ModuleID' not in already_processed:
+            already_processed.append('ModuleID')
+            showIndent(outfile, level)
+            outfile.write('ModuleID = "%s",\n' % (self.ModuleID,))
         super(ModuleInfoType, self).exportLiteralAttributes(outfile, level, already_processed, name_)
     def exportLiteralChildren(self, outfile, level, name_):
         super(ModuleInfoType, self).exportLiteralChildren(outfile, level, name_)
@@ -3008,10 +3092,6 @@ class ModuleInfoType(BasicDetailsType):
         if value is not None and 'IconPath' not in already_processed:
             already_processed.append('IconPath')
             self.IconPath = value
-        value = find_attr_value_('DelegateClassName', node)
-        if value is not None and 'DelegateClassName' not in already_processed:
-            already_processed.append('DelegateClassName')
-            self.DelegateClassName = value
         value = find_attr_value_('CanRunHeadless', node)
         if value is not None and 'CanRunHeadless' not in already_processed:
             already_processed.append('CanRunHeadless')
@@ -3021,6 +3101,10 @@ class ModuleInfoType(BasicDetailsType):
                 self.CanRunHeadless = False
             else:
                 raise_parse_error(node, 'Bad boolean attribute')
+        value = find_attr_value_('ModuleID', node)
+        if value is not None and 'ModuleID' not in already_processed:
+            already_processed.append('ModuleID')
+            self.ModuleID = value
         super(ModuleInfoType, self).buildAttributes(node, attrs, already_processed)
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'Title':
@@ -3381,6 +3465,7 @@ if __name__ == '__main__':
 
 __all__ = [
     "AcceleratorType",
+    "Axis",
     "BasicDetailsType",
     "ChoicesType",
     "ColorType",

@@ -15,21 +15,19 @@ desired, retrieves images you want to process further in CellProfiler.'''
 
 __version__ = "$Revision$"
 
+import logging
+logger = logging.getLogger(__name__)
 import numpy as np
 import sys
+import uuid
 
-import bioformats
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
-if bioformats.USE_IJ2:
-    import imagej.imagej2 as IJ2
-else:
-    import imagej.macros as M
-    import imagej.parameterhandler as P
-import cellprofiler.utilities.jutil as J
+import imagej.ijbridge as ijb
+import subimager.imagejrequest as ijrq
 
 CM_COMMAND = "Command"
 CM_MACRO = "Macro"
@@ -40,7 +38,6 @@ D_LAST_IMAGE_SET = "LastImageSet"
 
 cached_commands = None
 cached_choice_tree = None
-ij2_module_service = None
 
 '''The index of the imageJ command in the settings'''
 IDX_COMMAND_CHOICE = 0
@@ -49,6 +46,18 @@ IDX_PRE_COMMAND_CHOICE = 9
 IDX_PRE_COMMAND = 10
 IDX_POST_COMMAND_CHOICE = 13
 IDX_POST_COMMAND = 14
+
+TYPE_BOOLEAN = ("boolean", "java.lang.Boolean")
+TYPE_INTEGER = ("int", "java.lang.Integer", "long", "java.lang.Long",
+                "short", "java.lang.Short", "byte", "java.lang.Byte")
+TYPE_FLOAT = ("float", "java.lang.Float", "double", "java.lang.Double")
+TYPE_STRING = ("java.lang.String")
+TYPE_IMAGE = ("imagej.data.dataset", "imagej.data.display.ImageDisplay")
+TYPE_COLOR = ("imagej.util.ColorRGB", "imagej.util.ColorRGBA")
+TYPE_FILE = ("java.io.File")
+
+'''ImageJ images are scaled from 0 to 255'''
+IMAGEJ_SCALE = 255.0
 
 class RunImageJ(cpm.CPModule):
     module_name = "RunImageJ"
@@ -237,40 +246,11 @@ class RunImageJ(cpm.CPModule):
         label - the label text for the setting
         doc - its documentation
         '''
-        if bioformats.USE_IJ2:
-            return cps.TreeChoice(label, "None", self.get_choice_tree, doc = doc)
-        else:
-            return cps.Choice(label, [], value="None", 
-                              choices_fn = self.get_command_choices,
-                              doc = doc)
+        return cps.TreeChoice(label, "None", self.get_choice_tree, doc = doc)
         
     def get_command_choices(self, pipeline):
         return sorted(self.get_cached_commands().keys())
     
-    @staticmethod
-    def get_context():
-        import imagej.ijbridge as ijbridge
-        ijb = ijbridge.get_ij_bridge()
-        return ijb.context
-    
-    @staticmethod
-    def get_cached_commands():
-        global cached_commands
-        global ij2_module_service
-        if cached_commands is None:
-            import imagej.ijbridge as ijbridge
-            ijb = ijbridge.get_ij_bridge()
-            import cellprofiler.utilities.jutil as J
-            commands = ijb.get_commands()
-            if hasattr(commands, 'values'):
-                values = commands.values
-            else:
-                values = [None] * len(commands)
-            cached_commands = {}
-            for key, value in zip(commands, values):
-                cached_commands[key] = value
-        return cached_commands
-
     def get_choice_tree(self):
         '''Get the ImageJ command choices for the TreeChoice control
         
@@ -278,22 +258,24 @@ class RunImageJ(cpm.CPModule):
         the ModuleInfo for the command.
         '''
         global cached_choice_tree
+        global cached_commands
         if cached_choice_tree is not None:
             return cached_choice_tree
-        context = RunImageJ.get_context()
-        ij2_module_service = IJ2.get_module_service(context)
         tree = []
         
-        for module_info in ij2_module_service.getModules():
-            menu_path = module_info.getMenuPath()
-            items = [IJ2.wrap_menu_entry(x)
-                     for x in J.iterate_collection(menu_path)]
-            if len(items) == 0:
+        for module_info in ijb.get_ij_bridge().get_commands():
+            assert isinstance(module_info, ijrq.ModuleInfoType)
+            cached_commands
+            if module_info.MenuRoot != "app":
+                continue
+            menu_path = module_info.MenuPath
+            if menu_path is None or len(menu_path.menu_entry) == 0:
                 continue
             current_tree = tree
-            for item in items:
-                name = item.getName()
-                weight = item.getWeight()
+            for item in menu_path.menu_entry:
+                assert isinstance(item, ijrq.MenuEntryType)
+                name = item.Name
+                weight = item.Weight
                 matches = [node for node in current_tree
                            if node[0] == name]
                 if len(matches) > 0:
@@ -304,6 +286,7 @@ class RunImageJ(cpm.CPModule):
                 current_tree = current_node[1]
             # mark the leaf.
             current_node[1] = None
+            
         def sort_tree(tree):
             '''Recursively sort a tree in-place'''
             for node in tree:
@@ -321,141 +304,92 @@ class RunImageJ(cpm.CPModule):
         '''
         key = command.get_unicode_value()
         if not d.has_key(key):
-            if bioformats.USE_IJ2:
-                try:
-                    module_info = command.get_selected_leaf()[2]
-                except cps.ValidationError:
-                    return []
-                result = []
-                inputs = module_info.getInputs()
-                module = module_info.createModule()
-                implied_outputs = []
-                for module_item in inputs:
-                    field_type = module_item.getType()
-                    label = module_item.getLabel()
-                    value = module_item.getValue(module)
-                    minimum = module_item.getMinimumValue()
-                    maximum = module_item.getMaximumValue()
-                    description = module_item.getDescription()
-                    if field_type == IJ2.FT_BOOL:
-                        setting = cps.Binary(
-                            label,
-                            J.call(value, "booleanValue", "()Z"),
-                            doc = description)
-                    elif field_type == IJ2.FT_INTEGER:
-                        if minimum is not None:
-                            minimum = J.call(minimum, "intValue", "()I")
-                        if maximum is not None:
-                            maximum = J.call(maximum, "intValue", "()I")
-                        setting = cps.Integer(
-                            label,
-                            J.call(value, "intValue", "()I"),
-                            minval = minimum,
-                            maxval = maximum,
-                            doc = description)
-                    elif field_type == IJ2.FT_FLOAT:
-                        if minimum is not None:
-                            minimum = J.call(minimum, "floatValue", "()F")
-                        if maximum is not None:
-                            maximum = J.call(maximum, "floatValue", "()F")
-                        setting = cps.Float(
-                            label,
-                            J.call(value, "floatValue", "()F"),
-                            minval = minimum,
-                            maxval = maximum,
-                            doc = description)
-                    elif field_type == IJ2.FT_STRING:
-                        choices = module_item.getChoices()
-                        value = J.to_string(value)
-                        if choices is not None:
-                            choices = [J.to_string(choice) 
-                                       for choice 
-                                       in J.iterate_collection(choices)]
-                            setting = cps.Choice(
-                                label, choices, value, doc = description)
-                        else:
-                            setting = cps.Text(
-                                label, value, doc = description)
-                    elif field_type == IJ2.FT_COLOR:
-                        if value is not None:
-                            value = IJ2.color_rgb_to_html(value)
-                        else:
-                            value = "#ffffff"
-                        setting = cps.Color(label, value, doc = description)
-                    elif field_type == IJ2.FT_IMAGE:
-                        setting = cps.ImageNameSubscriber(
-                            label, "InputImage",
-                            doc = description)
-                        #
-                        # This is a Display for ij2 - the plugin typically
-                        # scribbles all over the display's image. So
-                        # we list it as an output too.
-                        #
-                        implied_outputs.append((
-                            cps.ImageNameProvider(
-                                label, "OutputImage",
-                                doc = description), module_item))
-                    elif field_type == IJ2.FT_OVERLAY:
-                        setting = cps.ObjectNameSubscriber(
-                            label, "ImageJObject",
-                            doc = description)
+            try:
+                module_info = command.get_selected_leaf()[2]
+            except cps.ValidationError:
+                return []
+            result = []
+            assert isinstance(module_info, ijrq.ModuleInfoType)
+            inputs = module_info.Input
+            implied_outputs = []
+            for module_item in inputs:
+                assert isinstance(module_item, ijrq.ModuleItemType)
+                field_type = module_item.Type
+                label = module_item.Label
+                if label is None:
+                    label = module_item.Name
+                minimum = module_item.MinimumValue
+                maximum = module_item.MaximumValue
+                description = module_item.Description
+                if field_type in TYPE_BOOLEAN:
+                    setting = cps.Binary(
+                        label,
+                        doc = description)
+                elif field_type in TYPE_INTEGER:
+                    setting = cps.Integer(
+                        label,
+                        minval if minval is not None else
+                        maxval if maxval is not None else 0,
+                        minval = minimum,
+                        maxval = maximum,
+                        doc = description)
+                elif field_type in TYPE_FLOAT:
+                    setting = cps.Float(
+                        label,
+                        minval if minval is not None else
+                        maxval if maxval is not None else 0,
+                        minval = minimum,
+                        maxval = maximum,
+                        doc = description)
+                elif field_type in TYPE_STRING:
+                    choices = module_item.Choices
+                    value = J.to_string(value)
+                    if choices is not None and len(choices) > 0:
+                        choices = [J.to_string(choice) 
+                                   for choice 
+                                   in J.iterate_collection(choices)]
+                        setting = cps.Choice(
+                            label, choices, value, doc = description)
                     else:
-                        continue
-                    result.append((setting, module_item))
-                for output in module_info.getOutputs():
-                    field_type = output.getType()
-                    if field_type == IJ2.FT_IMAGE:
-                        result.append((cps.ImageNameProvider(
-                            label, "ImageJImage",
-                            doc = description), output))
-                result += implied_outputs
-                d[key] = result
-                return [setting for setting, module_info in result]
-            else:
-                cc = self.get_cached_commands()
-                if (not cc.has_key(key)) or (cc[key] is None):
-                    return []
-                classname = cc[key]
-                try:
-                    plugin = M.get_plugin(classname)
-                except:
-                    d[key] = []
-                    return []
-                fp_in = P.get_input_fields_and_parameters(plugin)
-                result = []
-                for field, parameter in fp_in:
-                    field_type = P.get_field_type(field)
-                    label = parameter.label() or ""
-                    if field_type == P.FT_BOOL:
-                        result += [cps.Binary(label, field.getBoolean(plugin))]
-                    elif field_type == P.FT_INTEGER:
-                        result += [cps.Integer(label, field.getLong(plugin))]
-                    elif field_type == P.FT_FLOAT:
-                        result += [cps.Float(label, field.getDouble(plugin))]
-                    elif field_type == P.FT_STRING:
-                        result += [cps.Text(label, J.to_string(field.get(plugin)))]
-                    else:
-                        assert field_type == P.FT_IMAGE
-                        result += [cps.ImageNameSubscriber(label, "None")]
-                        
-                fp_out = P.get_output_fields_and_parameters(plugin)
-                for field, parameter in fp_out:
-                    field_type = P.get_field_type(field)
-                    if field_type == P.FT_IMAGE:
-                        result += [cps.ImageNameProvider(parameter.label() or "",
-                                                         "Output")]
+                        setting = cps.Text(
+                            label, value, doc = description)
+                elif field_type in TYPE_COLOR:
+                    value = "#ffffff"
+                    setting = cps.Color(label, value, doc = description)
+                elif field_type in TYPE_IMAGE:
+                    setting = cps.ImageNameSubscriber(
+                        label, "InputImage",
+                        doc = description)
+                    #
+                    # This is a Display for ij2 - the plugin typically
+                    # scribbles all over the display's image. So
+                    # we list it as an output too.
+                    #
+                    implied_outputs.append((
+                        cps.ImageNameProvider(
+                            label, "OutputImage",
+                            doc = description), module_item))
+                elif field_type in TYPE_FILE:
+                    setting = cps.FilenameText(
+                        label, None, doc = description)
+                else:
+                    continue
+                result.append((setting, module_item))
+            for output in module_info.Output:
+                field_type = output.Type
+                if field_type in TYPE_IMAGE:
+                    result.append((cps.ImageNameProvider(
+                        label, "ImageJImage",
+                        doc = description), output))
+            result += implied_outputs
             d[key] = result
-        elif bioformats.USE_IJ2:
-            result = [setting for setting, module_info in d[key]]
         else:
             result = d[key]
-        return result
+        return [setting for setting, module_info in result]
         
     def is_advanced(self, command, d):
         '''A command is an advanced command if there are settings for it'''
-        if bioformats.USE_IJ2:
-            return True
-        return len(self.get_command_settings(command, d)) > 0
+        return True
     
     def settings(self):
         '''The settings as loaded or stored in the pipeline'''
@@ -474,20 +408,26 @@ class RunImageJ(cpm.CPModule):
             self.post_command_settings_count] + self.command_settings +
                 self.pre_command_settings + self.post_command_settings)
     
+    def on_setting_changed(self, setting, pipeline):
+        '''Respond to a setting change
+        
+        We have to update the ImageJ module settings in response to a
+        new choice.
+        '''
+        for command_setting, module_settings, d in (
+            (self.command, self.command_settings, self.command_settings_dictionary),
+            (self.prepare_group_command, self.pre_command_settings, self.pre_command_settings_dictionary),
+            (self.post_group_command, self.post_command_settings, self.post_command_settings_dictionary)):
+            if id(setting) == id(command_setting):
+                del module_settings[:]
+                module_settings.extend(self.get_command_settings(setting, d))
+                
     def visible_settings(self):
         '''The settings as seen by the user'''
         result = [self.command_or_macro]
-        del self.command_settings[:]
         if self.command_or_macro == CM_COMMAND:
             result += [self.command]
-            if not self.is_advanced(self.command,
-                                    self.command_settings_dictionary):
-                result += [self.options]
-            else:
-                cs = self.get_command_settings(self.command,
-                                               self.command_settings_dictionary)
-                result += cs
-                self.command_settings += cs
+            result += self.command_settings
         else:
             result += [self.macro]
         result += [self.wants_to_set_current_image]
@@ -497,33 +437,17 @@ class RunImageJ(cpm.CPModule):
         if self.wants_to_get_current_image:
             result += [self.current_output_image_name]
         result += [ self.prepare_group_choice]
-        del self.pre_command_settings[:]
         if self.prepare_group_choice == CM_MACRO:
             result += [self.prepare_group_macro]
         elif self.prepare_group_choice == CM_COMMAND:
             result += [self.prepare_group_command]
-            if not self.is_advanced(self.prepare_group_command,
-                                    self.pre_command_settings_dictionary):
-                result += [self.prepare_group_options]
-            else:
-                cs = self.get_command_settings(self.prepare_group_command,
-                                               self.pre_command_settings_dictionary)
-                result += cs
-                self.pre_command_settings += cs
+            result += self.pre_command_settings
         result += [self.post_group_choice]
-        del self.post_command_settings[:]
         if self.post_group_choice == CM_MACRO:
             result += [self.post_group_macro]
         elif self.post_group_choice == CM_COMMAND:
             result += [self.post_group_command]
-            if not self.is_advanced(self.post_group_command,
-                                    self.post_command_settings_dictionary):
-                result += [self.post_group_options]
-            else:
-                cs = self.get_command_settings(self.post_group_command,
-                                               self.post_command_settings_dictionary)
-                result += cs
-                self.post_command_settings += cs
+            result += self.post_command_settings
         if self.post_group_choice != CM_NOTHING:
             result += [self.wants_post_group_image]
             if self.wants_post_group_image:
@@ -537,19 +461,11 @@ class RunImageJ(cpm.CPModule):
         This method shows the ImageJ user interface when the user presses
         the Show ImageJ button.
         '''
-        if bioformats.USE_IJ2:
-            J.run_in_main_thread(
-                lambda :
-                RunImageJ.get_context().loadService("imagej.ui.UIService"),
-                True)
-        else:
-            import imagej.ijbridge as ijbridge
-            ijb = ijbridge.get_ij_bridge()
-            J.run_in_main_thread(lambda : ijb.show_imagej(), True)
+        ijb.get_ij_bridge().show_imagej()
         
     def is_interactive(self):
         # On Mac, run in main thread for stability
-        return sys.platform == 'darwin'
+        return False
     
     def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to run a group
@@ -563,66 +479,56 @@ class RunImageJ(cpm.CPModule):
         
     def run(self, workspace):
         '''Run the imageJ command'''
-        import imagej.ijbridge as ijbridge
+        bridge = ijb.get_ij_bridge()
+        image_set = workspace.image_set
+        assert isinstance(image_set, cpi.ImageSet)
+        d = self.get_dictionary(workspace.image_set_list)
+        if self.wants_to_set_current_image:
+            input_image_name = self.current_input_image_name.value
+            img = image_set.get_image(input_image_name,
+                                      must_be_grayscale = True)
+        else:
+            img = None
         
-        J.attach()
-        ijb = None
-        try:
-            ijb = ijbridge.get_ij_bridge()
-            
-            image_set = workspace.image_set
-            assert isinstance(image_set, cpi.ImageSet)
-            d = self.get_dictionary(workspace.image_set_list)
-            if self.wants_to_set_current_image:
-                input_image_name = self.current_input_image_name.value
-                img = image_set.get_image(input_image_name,
-                                          must_be_grayscale = True)
-            else:
-                img = None
-            
+        #
+        # Run a command or macro on the first image of the set
+        #
+        if d[D_FIRST_IMAGE_SET] == image_set.number + 1:
+            self.do_imagej(bridge, workspace, D_FIRST_IMAGE_SET)
+        #
+        # Install the input image as the current image
+        #
+        if img is not None:
+            bridge.inject_image(img.pixel_data * IMAGEJ_SCALE, input_image_name)
+
+        self.do_imagej(bridge, workspace)
+        #
+        # Get the output image
+        #
+        if self.wants_to_get_current_image:
+            output_image_name = self.current_output_image_name.value
+            pixel_data = bridge.get_current_image() / IMAGEJ_SCALE
+            image = cpi.Image(pixel_data)
+            image_set.add(output_image_name, image)
+        #
+        # Execute the post-group macro or command
+        #
+        if d[D_LAST_IMAGE_SET] == image_set.number + 1:
+            self.do_imagej(bridge, workspace, D_LAST_IMAGE_SET)
             #
-            # Run a command or macro on the first image of the set
+            # Save the current ImageJ image after executing the post-group
+            # command or macro
             #
-            if d[D_FIRST_IMAGE_SET] == image_set.number + 1:
-                self.do_imagej(ijb, workspace, D_FIRST_IMAGE_SET)
-            #
-            # Install the input image as the current image
-            #
-            if img is not None:
-                ijb.inject_image(img.pixel_data, input_image_name)
-    
-            self.do_imagej(ijb, workspace)
-            #
-            # Get the output image
-            #
-            if self.wants_to_get_current_image:
-                output_image_name = self.current_output_image_name.value
+            if (self.post_group_choice != CM_NOTHING and
+                self.wants_post_group_image):
+                output_image_name = self.post_group_output_image.value
                 pixel_data = ijb.get_current_image()
                 image = cpi.Image(pixel_data)
                 image_set.add(output_image_name, image)
-            #
-            # Execute the post-group macro or command
-            #
-            if d[D_LAST_IMAGE_SET] == image_set.number + 1:
-                self.do_imagej(ijb, workspace, D_LAST_IMAGE_SET)
-                #
-                # Save the current ImageJ image after executing the post-group
-                # command or macro
-                #
-                if (self.post_group_choice != CM_NOTHING and
-                    self.wants_post_group_image):
-                    output_image_name = self.post_group_output_image.value
-                    pixel_data = ijb.get_current_image()
-                    image = cpi.Image(pixel_data)
-                    image_set.add(output_image_name, image)
-            if self.is_interactive():
-                self.display(workspace)
-        finally:
-            if ijb is not None:
-                del(ijb)
-            J.detach()
+        if self.is_interactive():
+            self.display(workspace)
 
-    def do_imagej(self, ijb, workspace, when=None):
+    def do_imagej(self, bridge, workspace, when=None):
         if when == D_FIRST_IMAGE_SET:
             choice = self.prepare_group_choice.value
             command = self.prepare_group_command
@@ -643,13 +549,10 @@ class RunImageJ(cpm.CPModule):
             d = self.command_settings_dictionary
             
         if choice == CM_COMMAND:
-            if self.is_advanced(command, d):
-                self.execute_advanced_command(workspace, command, d)
-            else:
-                ijb.execute_command(command.value, options)
+            self.execute_advanced_command(workspace, command, d)
         elif choice == CM_MACRO:
             macro = workspace.measurements.apply_metadata(macro)
-            ijb.execute_macro(macro)
+            bridge.execute_macro(macro)
         if (choice != CM_NOTHING and 
             (not cpprefs.get_headless()) and 
             self.pause_before_proceeding):
@@ -663,130 +566,89 @@ class RunImageJ(cpm.CPModule):
         command - name of the command
         d - dictionary to be used to find settings
         '''
+        from subimager.client import make_imagej_request
+        self.get_command_settings(command, d)
         wants_display = workspace.frame is not None
         if wants_display:
             workspace.display_data.input_images = input_images = []
             workspace.display_data.output_images = output_images = []
         key = command.get_unicode_value()
-        if bioformats.USE_IJ2:
-            node = command.get_selected_leaf()
-            module_info = node[2]
-            module = IJ2.wrap_module(module_info.createModule())
-            context = self.get_context()
-            display_service = IJ2.get_display_service(context)
-                
-            display_dictionary = {}
-            for setting, module_item in d[key]:
-                field_type = module_item.getType()
-                if isinstance(setting, cps.ImageNameProvider):
-                    continue
-                if field_type == IJ2.FT_BOOL:
-                    value = J.make_instance("java/lang/Boolean",
-                                            "(Z)V", setting.value)
-                elif field_type == IJ2.FT_INTEGER:
-                    value = J.make_instance("java/lang/Integer",
-                                            "(I)V", setting.value)
-                elif field_type == IJ2.FT_FLOAT:
-                    value = J.make_instance("java/lang/Double",
-                                            "(D)V", setting.value)
-                elif field_type == IJ2.FT_STRING:
-                    value = setting.value
-                elif field_type == IJ2.FT_COLOR:
-                    value = IJ2.make_color_rgb_from_html(setting.value)
-                elif field_type == IJ2.FT_IMAGE:
-                    image_name = setting.value
-                    image = workspace.image_set.get_image(image_name)
-                    dataset = IJ2.create_dataset(image.pixel_data,
-                                                 setting.value)
-                    display = display_service.createDisplay(dataset)
-                    if image.has_mask:
-                        overlay = IJ2.create_overlay(image.mask)
-                        display.displayOverlay(overlay)
-                    value = display
-                    display_dictionary[module_item.getName()] = display
-                    if wants_display:
-                        input_images.append((image_name, image.pixel_data))
-                module.setInput(module_item.getName(), value)
-            module_service = IJ2.get_module_service(context)
-            module_service.run(module)
-            for setting, module_item in d[key]:
-                if isinstance(setting, cps.ImageNameProvider):
-                    name = module_item.getName()
-                    output_name = setting.value
-                    if display_dictionary.has_key(name):
-                        display = display_dictionary[name]
-                    else:
-                        display = IJ2.wrap_display(module.getOutput(name))
-                    ds = display_service.getActiveDataset(display)
-                    pixel_data = ds.get_pixel_data()
-                    image = cpi.Image(pixel_data)
-                    workspace.image_set.add(output_name, image)
-                    if wants_display:
-                        output_images.append((output_name, pixel_data))
-            for display in display_dictionary.values():
-                panel = IJ2.wrap_display_panel(display.getDisplayPanel())
-                panel.close()
-        else:
-            from imagej.imageplus import make_imageplus_from_processor
-            from imagej.imageplus import get_imageplus_wrapper
-            from imagej.imageprocessor import make_image_processor
-            from imagej.imageprocessor import get_image
-            
-            command = command.value
-            settings = d[command]
-            classname = self.get_cached_commands()[command]
-            plugin = M.get_plugin(classname)
-            fp_in = P.get_input_fields_and_parameters(plugin)
-            result = []
-            image_set = workspace.image_set
-            assert isinstance(image_set, cpi.ImageSet)
-            for (field, parameter), setting in zip(fp_in, settings[:len(fp_in)]):
-                field_type = P.get_field_type(field)
-                label = parameter.label() or ""
-                if field_type == P.FT_IMAGE:
-                    image_name = setting.value
-                    image = workspace.image_set.get_image(image_name,
-                                                          must_be_grayscale = True)
-                    pixel_data = (image.pixel_data * 255.0).astype(np.float32)
-                    if wants_display:
-                        input_images.append((image_name, pixel_data / 255.0))
-                    processor = make_image_processor(pixel_data)
-                    image_plus = make_imageplus_from_processor(image_name, processor)
-                    field.set(plugin, image_plus)
-                    del image_plus
-                    del processor
-                elif field_type == P.FT_INTEGER:
-                    field.setInt(plugin, setting.value)
-                elif field_type == P.FT_FLOAT:
-                    field.setFloat(plugin, setting.value)
-                elif field_type == P.FT_BOOL:
-                    field.setBoolean(plugin, setting.value)
-                else:
-                    field.set(plugin, setting.value)
-            #
-            # There are two ways to run this:
-            # * Batch - just call plugin.run()
-            # * Interactive - use PlugInFunctions.runInteractively
-            #
-            if self.pause_before_proceeding:
-                J.static_call('imagej/plugin/PlugInFunctions', 'runInteractively',
-                       '(Ljava/lang/Runnable)V', plugin)
-            else:
-                J.call(plugin, 'run', '()V')
-            setting_idx = len(fp_in)
-            fp_out = P.get_output_fields_and_parameters(plugin)
-            for field, parameter in fp_out:
-                field_type = P.get_field_type(field)
-                if field_type == P.FT_IMAGE:
-                    image_name = settings[setting_idx].value
-                    setting_idx += 1
-                    image_plus = get_imageplus_wrapper(field.get(plugin))
-                    processor = image_plus.getProcessor()
-                    pixel_data = get_image(processor).astype(np.float32) / 255.0
-                    if wants_display:
-                        output_images.append((image_name, pixel_data))
-                    image = cpi.Image(pixel_data)
-                    image_set.add(image_name, image)
+        node = command.get_selected_leaf()
+        module_info = node[2]
+        assert isinstance(module_info, ijrq.ModuleInfoType)
+        
+        run_module_request = ijrq.RunModuleRequestType(
+            ContextID = ijb.get_ij_bridge().context_id,
+            ModuleID = module_info.ModuleID)
+        image_dictionary = {}
+        for setting, module_item in d[key]:
+            assert isinstance(module_item, ijrq.ModuleItemType)
+            field_type = module_item.Type
+            if isinstance(setting, cps.ImageNameProvider):
+                continue
+            parameter = ijrq.ParameterValueType(
+                Name = module_item.Name)
+            if field_type in TYPE_BOOLEAN:
+                parameter.BooleanValue = setting.value
+            elif field_type in TYPE_INTEGER:
+                parameter.NumberValue = setting.value
+            elif field_type in TYPE_FLOAT:
+                parameter.NumberValue = setting.value
+            elif field_type in TYPE_STRING:
+                parameter.StringValue = setting.value
+            elif field_type in TYPE_COLOR:
+                assert isinstance(setting, cps.Color)
+                red, green, blue = setting.to_rgb()
+                parameter.ColorValue = ijrq.ColorType(
+                    Red = red, Green = green, Blue = blue)
+            elif field_type in TYPE_IMAGE:
+                image_name = setting.value
+                image = workspace.image_set.get_image(image_name)
+                pixel_data = image.pixel_data * IMAGEJ_SCALE
+                image_dictionary[image_name] = pixel_data
+                axis = ["X", "Y"] if pixel_data.ndim == 2 else \
+                    ["X", "Y", "CHANNEL"]
+                parameter.ImageValue = ijrq.ImageDisplayParameterValueType(
+                    ImageName = image_name,
+                    ImageID = image_name,
+                    Axis = axis)
+                if image.has_mask:
+                    overlay_name = "X" + uuid.uuid4().get_hex()
+                    image_dictionary[overlay_name] = image.mask
+                    parameter.ImageValue.Overlay = overlay_name
+                if wants_display:
+                    input_images.append((image_name, image.pixel_data))
+            elif field_type in TYPE_FILE:
+                parameter.StringValue = setting.value
+            run_module_request.add_Parameter(parameter)
+        request = ijrq.RequestType(RunModule = run_module_request)
+        response_xml, image_dictionary = \
+            make_imagej_request(request, image_dictionary)
+        response = ijrq.parseString(response_xml)
+        assert isinstance(response, ijrq.ResponseType)
+        if response.Exception is not None:
+            exception = response.Exception
+            assert isinstance(exception, ijrq.ExceptionResponseType)
+            logger.warn(exception.Message)
+            logger.warn(exception.StackTrace)
+            raise Exception(exception.Message)
+        parameters = response.RunModuleResponse.Parameter
+        for setting, module_item in d[key]:
+            if isinstance(setting, cps.ImageNameProvider):
+                matching_parameters = [
+                    p for p in parameters
+                    if p.Name == module_item.Name]
+                if len(matching_parameters) == 0:
+                    raise Exception("ImageJ call failed to set parameter, %s" %
+                                    module_item.Name)
+                parameter = matching_parameters[0]
+                output_name = setting.value
+                pixel_data = image_dictionary[parameter.ImageValue.ImageID]
+                pixel_data /= IMAGEJ_SCALE
+                image = cpi.Image(pixel_data)
+                workspace.image_set.add(output_name, image)
+                if wants_display:
+                    output_images.append((output_name, pixel_data))
                 
     def display(self, workspace):
         if (self.command_or_macro == CM_COMMAND and 

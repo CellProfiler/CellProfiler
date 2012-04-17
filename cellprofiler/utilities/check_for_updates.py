@@ -30,6 +30,7 @@ class VersionChecker(threading.Thread):
         self.current_version = current_version
         self.callback = callback
         self.daemon = True # if we hang it's no big deal
+        self.setName("VersionChecker")
     
     def run(self):
         try:

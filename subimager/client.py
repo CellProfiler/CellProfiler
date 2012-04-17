@@ -15,6 +15,9 @@
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from cStringIO import StringIO
+import email.parser
+import email
 import os
 import httplib
 import logging
@@ -251,7 +254,81 @@ def get_metadata(url, **kwargs):
         return unicode(response.read(), 'utf-8')
     finally:
         conn.close()
-
+    
+def make_imagej_request(xml, image_dict, **kwargs):
+    '''Make an ImageJ HTTP request
+    
+    xml - the XML to send, using the ImageJRequest.xsd schema or an
+          imagejreqest.RequestType
+          
+    image_dict - a dictionary of image ID to numpy array image
+    
+    returns a two tuple of XML response encoded using the ImageJRequest.xsd
+          and a dictionary of image ID to numpy array image.
+    '''
+    if not isinstance(xml, basestring):
+        import subimager.imagejrequest as IJRQ
+        xml_header = '<?xml version="1.0" encoding="UTF-8"?>'
+        fd = StringIO()
+        xml.export(fd, 0)
+        xml = xml_header + fd.getvalue()
+        del fd
+        
+    message = MIMEMultipart()
+    message.set_type("multipart/form-data")
+    message.add_header("Connection","close")
+    mimeXML = MIMEText(xml.encode("utf-8"), "plain", "utf-8")
+    mimeXML.add_header("Content-Disposition", "form-data", name="Request")
+    message.attach(mimeXML)
+    d = dict([(key, MIMEText(value.encode("utf-8"), "plain", "utf-8"))
+              for key, value in kwargs.iteritems()])
+    for image_id, image in image_dict.iteritems():
+        mime_image = MIMEApplication(encode_image(image))
+        mime_image.add_header("Content-Disposition", "form-data", name=image_id)
+        message.attach(mime_image)
+    for key, value in d.iteritems():
+        value.add_header("Content-Disposition", "form-data", name=key)
+        message.attach(value)
+    
+    conn = connect()
+    try:
+        body = message.as_string()
+        # oooo - translate line-feeds w/o carriage returns into cr/lf
+        #        The generator uses print to write the message, how bad.
+        #        This keeps us from being able to encode in binary too.
+        #
+        body = "\r\n".join(re.split("(?<!\\r)\\n", body))
+        
+        conn.request("POST", "/imagej", body, dict(message.items()))
+        response = conn.getresponse()
+        if response.status != httplib.OK:
+            raise HTTPError(response, "Image server failed to process ImageJ request")
+        raw_message = str(response.msg)+"\r\n"
+        while True:
+            chunk = response.read()
+            if len(chunk) == 0:
+                break
+            raw_message += chunk
+        message = email.message_from_string(raw_message)
+        image_dict = {}
+        for part_number, part in enumerate(message.walk()):
+            if part_number == 0:
+                # The whole message
+                continue
+            elif part_number == 1:
+                xml = part.get_payload()
+            else:
+                content_disposition_params = dict(
+                    [(a.lower(), b) for a, b in
+                     part.get_params(header="Content-Disposition")])
+                name = content_disposition_params["name"]
+                image_dict[name] = decode_image(part.get_payload())
+        return (xml, image_dict)
+        
+    finally:
+        conn.close()
+    
+        
 def encode_image(a):
     '''Encode the array according to the subimager protocol
     
@@ -356,11 +433,12 @@ def decode_image(data):
 def stop_subimager():
     '''Stop the subimager process by web command'''
     global subprocess_thread
-    conn = connect()
-    conn.request("GET", "/stop")
-    conn.getresponse()
-    stop_semaphore.release()
-    subprocess_thread.join()
+    if subprocess_thread is not None:
+        conn = connect()
+        conn.request("GET", "/stop")
+        conn.getresponse()
+        stop_semaphore.release()
+        subprocess_thread.join()
 
 __all__ = (start_subimager, get_image, get_metadata, post_image, 
            stop_subimager, HTTPError)
@@ -368,6 +446,8 @@ __all__ = (start_subimager, get_image, get_metadata, post_image,
 if __name__ == "__main__":
     import wx
     import matplotlib
+    import subimager.imagejrequest as IJRQ
+ 
     matplotlib.use("WX")
     from matplotlib.figure import Figure
     from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, FigureManager
@@ -377,15 +457,26 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         port = int(sys.argv[1])
     else:
-        fetch_external_dependencies(overwrite=True)
+        #fetch_external_dependencies(overwrite=True)
         start_subimager()
+    request = IJRQ.RequestType(
+        CreateContext = IJRQ.CreateContextRequestType())
+    response_xml, image_dict = make_imagej_request(request, {})
+    response = IJRQ.parseString(response_xml)
+    context_id = response.CreateContextResponse.ContextID.ContextID
     app = wx.PySimpleApp()
     frame = wx.Frame(None,size=(1024,768))
     menu = wx.Menu()
     metadata_item_id = wx.NewId()
+    get_modules_item_id = wx.NewId()
+    easter_egg_id = wx.NewId()
+    invert_id = wx.NewId()
     menu.Append(wx.ID_OPEN, "Open")
     menu.Append(metadata_item_id, "Open metadata")
     menu.Append(wx.ID_SAVEAS, "Save as")
+    menu.Append(get_modules_item_id, "Get modules")
+    menu.Append(easter_egg_id, "Easter egg")
+    menu.Append(invert_id, "Invert")
     menu.Append(wx.ID_EXIT, "Exit")
     menubar = wx.MenuBar()
     menubar.Append(menu, "File")
@@ -403,19 +494,22 @@ if __name__ == "__main__":
         if dialog.ShowModal() == wx.ID_OK:
             url = "file:" + urllib.pathname2url(dialog.Path)
             image = get_image(url, allowopenfiles="no")
-            frame.image = image
-            image = image.astype(float)
-            image /= np.max(image)
             frame.metadata = get_metadata(url, allowopenfiles="yes")
-            figure.clf()
-            axes = figure.add_subplot(1,1,1)
-            if image.ndim == 2:
-                axes.imshow(image, matplotlib.cm.gray)
-            else:
-                axes.imshow(image)
-            canvas.draw()
+            display_image(image)
         dialog.Destroy()
     frame.Bind(wx.EVT_MENU, on_open_image, id=wx.ID_OPEN)
+    
+    def display_image(image):
+        frame.image = image
+        image = image.astype(float)
+        image /= np.max(image)
+        figure.clf()
+        axes = figure.add_subplot(1,1,1)
+        if image.ndim == 2:
+            axes.imshow(image, matplotlib.cm.gray)
+        else:
+            axes.imshow(image)
+        canvas.draw()
     
     def on_open_metadata(event, frame = frame):
         dialog = wx.FileDialog(frame)
@@ -443,6 +537,123 @@ if __name__ == "__main__":
         dialog.Destroy()
     frame.Bind(wx.EVT_MENU, on_save_as, id=wx.ID_SAVEAS)
         
+    def on_get_modules(event, frame = frame):
+        request = IJRQ.RequestType(
+            GetModules=IJRQ.GetModulesRequestType(
+                ContextID = context_id))
+        response_xml, image_dict = make_imagej_request(request, {})
+        response = IJRQ.parseString(response_xml)
+        modules = response.GetModulesResponse.Module
+        dialog = wx.Frame(frame)
+        dialog.Sizer = wx.BoxSizer(wx.VERTICAL)
+        menubar = wx.MenuBar()
+        menus = {}
+        menu_ids = {}
+        for module in modules:
+            if module.MenuRoot == "app" and module.MenuPath is not None:
+                d = menus
+                parent = menubar
+                for menu_entry in module.MenuPath.get_menu_entry()[:-1]:
+                    name = menu_entry.Name
+                    if not d.has_key(name):
+                        d[name] = wx.Menu(name)
+                        if parent == menubar:
+                            parent.Append(d[name], name)
+                        else:
+                            parent.AppendMenu(-1, name, d[name])
+                    parent = d[name]
+                menu_id = wx.NewId()
+                parent.Append(menu_id, module.MenuPath.get_menu_entry()[-1].Name)
+                menu_ids[menu_id] = module
+        textctrl = wx.StaticText(dialog)
+        dialog.Sizer.Add(textctrl, 0, wx.EXPAND | wx.ALL)
+        listctrl = wx.ListCtrl(dialog, style=wx.LC_REPORT)
+        listctrl.InsertColumn(0, "Name")
+        listctrl.InsertColumn(1, "Label")
+        listctrl.InsertColumn(2, "Type")
+        listctrl.InsertColumn(3, "I/O")
+        dialog.Sizer.Add(listctrl, 1, wx.EXPAND)
+        
+        def on_menu(event):
+            module = menu_ids[event.Id]
+            textctrl.Label = "Title: %s\n" % module.Title
+            listctrl.DeleteAllItems()
+            run_me = False
+            for mi in sorted(set(module.Input + module.Output), 
+                                 cmp = lambda a,b: cmp(a.Name, b.Name)):
+                listctrl.Append((mi.Name, mi.Label, mi.Type, mi.IOType))
+                
+        dialog.Bind(wx.EVT_MENU, on_menu)
+        
+        dialog.SetMenuBar(menubar)
+        dialog.Fit()
+        dialog.Show()
+        
+    frame.Bind(wx.EVT_MENU, on_get_modules, id=get_modules_item_id)
+    
+    def on_easter_egg(event):
+        dialog = wx.FileDialog(frame)
+        dialog.Title = "Choose an image"
+        dialog.Wildcard = "JPeg file (*.jpg)|*.jpg|PNG file (*.png)|*.png|Tiff file (*.tif)|*.tif|Flex file (*.flex)|*.flex|Any file (*.*)|*.*"
+        if dialog.ShowModal() == wx.ID_OK:
+            url = "file:" + urllib.pathname2url(dialog.Path)
+            image = get_image(url, allowopenfiles="no")
+            run_module = IJRQ.RunModuleRequestType(
+                context_id, "imagej.core.plugins.app.EasterEgg")
+            run_module.add_Parameter(
+                IJRQ.ParameterValueType(
+                    Name= "dataset",
+                    ImageValue = IJRQ.ImageDisplayParameterValueType(
+                        dialog.Filename,
+                        "ImageID")))
+            response, _ = make_imagej_request(
+                IJRQ.RequestType(RunModule=run_module),
+                { "ImageID": image })
+            response = IJRQ.parseString(response)
+            rm_response = response.RunModuleResponse
+            assert isinstance(rm_response, IJRQ.RunModuleResponseType)
+            param = rm_response.Parameter[0]
+            assert isinstance(param, IJRQ.ParameterValueType)
+            print param.StringValue
+            lines = param.StringValue.split("\n")
+            width = len(lines[0])
+            height = len(lines[0])
+            if height > 100 or width > 100:
+                minx = max(int(width/2 - 50), 0)
+                maxx = min(int(width/2+50), width)
+                miny = max(int(height/2 - 50), 0)
+                maxy = min(int(height/2+50), height)
+                
+                lines = [x[minx:maxx]
+                         for x in lines[miny:maxy]]
+            md = wx.Dialog(frame)
+            md.Sizer = wx.BoxSizer(wx.VERTICAL)
+            st = wx.StaticText(md, -1,  "\n".join(lines))
+            md.Sizer.Add(st, 1, wx.EXPAND | wx.ALL)
+            st.SetFont(wx.SystemSettings.GetFont(wx.SYS_ANSI_FIXED_FONT))
+            md.Sizer.Add(md.CreateStdDialogButtonSizer(wx.OK), flag=wx.CENTER)
+            md.Fit()
+            md.ShowModal()
+        dialog.Destroy()
+    frame.Bind(wx.EVT_MENU, on_easter_egg, id=easter_egg_id)
+        
+    def on_invert(event, frame=frame):
+        run_module = IJRQ.RunModuleRequestType(
+            ContextID=context_id,
+            DelegateClassName="imagej.core.plugins.assign.InvertDataValues")
+        axes = [ "X", "Y"]
+        if frame.image.ndim == 3:
+            axes.append("CHANNEL")
+        run_module.add_Parameter(IJRQ.ParameterValueType(
+            Name="display",
+            ImageValue=IJRQ.ImageDisplayParameterValueType(
+                ImageName="MyImage", ImageID="ImageID", Axis=axes)))
+        response, images_dict = make_imagej_request(
+            IJRQ.RequestType(RunModule=run_module),
+            {"ImageID": frame.image})
+        display_image(images_dict.values()[0])
+    frame.Bind(wx.EVT_MENU, on_invert, id=invert_id)
+                
     def on_exit(event, frame=frame):
         frame.Close()
     frame.Bind(wx.EVT_MENU, on_exit, id=wx.ID_EXIT)

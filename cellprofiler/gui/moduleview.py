@@ -926,14 +926,14 @@ class ModuleView:
                 menu = make_menu(v.get_tree())
                 assert isinstance(control, wx.Window)
                 def on_event(event, v = v, control = control, id_dict = id_dict):
-                    new_path = id_dict[event.GetId()]
+                    new_path = v.encode_path_parts(id_dict[event.GetId()])
                     self.on_value_change(v, control, new_path, event)
                     
                 menu.Bind(wx.EVT_MENU, on_event)
                 control.PopupMenuXY(menu, 0, control.GetSize()[1])
                 menu.Destroy()
             control.Bind(wx.EVT_BUTTON, on_press)
-        control.SetLabel(">".join(v.get_value()))
+        control.SetLabel(">".join(v.get_path_parts()))
         return control
                 
     def make_callback_control(self,v,control_name,control):
@@ -3379,21 +3379,16 @@ def validate_module(pipeline, module_num, callback):
     wx.CallAfter(callback, setting_idx, message, level)
 
 def validation_queue_handler():
-    from cellprofiler.utilities.jutil import attach, detach
-    attach()
-    try:
-        while True:
-            validation_queue_semaphore.acquire()  # wait for work
-            with validation_queue_lock:
-                if len(validation_queue) == 0:
-                    continue
-                priority, module_num, pipeline, callback = heapq.heappop(validation_queue)
-            try:
-                validate_module(pipeline, module_num, callback)
-            except:
-                pass
-    finally:
-        detach()
+    while True:
+        validation_queue_semaphore.acquire()  # wait for work
+        with validation_queue_lock:
+            if len(validation_queue) == 0:
+                continue
+            priority, module_num, pipeline, callback = heapq.heappop(validation_queue)
+        try:
+            validate_module(pipeline, module_num, callback)
+        except:
+            pass
 
 def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_BACKGROUND):
     '''Request that a module be validated

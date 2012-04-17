@@ -396,7 +396,6 @@ try:
                     style = wx.OK | wx.ICON_ERROR)
                 logging.root.error("Unable to load pipeline", exc_info=True)
         App.MainLoop()
-        stop_subimager()
         del App  # to allow GC to clean up Measurements, etc.
     elif options.run_pipeline: # this includes distributed workers
         from subimager.client import start_subimager, stop_subimager
@@ -501,30 +500,19 @@ try:
                 fd.close()
             if measurements is not None:
                 del measurements  # clean up
-        stop_subimager()
         
 except Exception, e:
     logging.root.fatal("Uncaught exception in CellProfiler.py", exc_info=True)
     raise
+
 finally:
-    import gc
-    gc.collect()  # This will clean up any remaining objects, calling their __del__ methods.
-
-    # Smokey, my friend, you are entering a world of pain.
-    # No $#!+ sherlock.
     try:
-        import imagej.ijbridge as ijbridge
-        if ijbridge.inter_proc_ij_bridge._isInstantiated():
-            ijbridge.get_ij_bridge().quit()
+        from subimager.client import stop_subimager
+        stop_subimager()
     except:
-        logging.root.warning("Caught exception while killing ijbridge.", exc_info=True)
-
+        logging.root.warn("Failed to stop subimager")
     try:
-        if hasattr(sys, 'flags'):
-            if sys.flags.interactive:
-                assert False, "Don't kill JVM in interactive mode, because it calls exit()"
-        import cellprofiler.utilities.jutil as jutil
-        jutil.kill_vm()
+        from ilastik.core.jobMachine import GLOBAL_WM
+        GLOBAL_WM.stopWorkers()
     except:
-        logging.root.warning("Caught exception while killing VM.", exc_info=True)
-os._exit(0)
+        logging.root.warn("Failed to stop Ilastik")

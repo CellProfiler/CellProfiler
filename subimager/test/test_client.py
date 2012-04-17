@@ -21,6 +21,7 @@ import urllib
 import zlib
 
 import subimager.client as C
+import subimager.imagejrequest as IJRQ
 
 root_dir = os.path.split(os.path.split(os.path.split(__file__)[0])[0])[0]
 cp_logo_png = os.path.join(root_dir, "cellprofiler", "icons", "CP_logo.png")
@@ -30,11 +31,34 @@ class TestClient(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         C.start_subimager()
+        cls.contextID = None
+        cls.modules = None
         
     @classmethod
     def tearDownClass(cls):
         C.stop_subimager()
         
+    @classmethod
+    def get_context_id(cls):
+        if cls.contextID is None:
+            xml = IJRQ.RequestType(
+                CreateContext = IJRQ.CreateContextRequestType())
+            response, _ = C.make_imagej_request(xml, {})
+            response = IJRQ.parseString(response)
+            cls.contextID = response.CreateContextResponse.ContextID.ContextID
+        return cls.contextID
+    
+    @classmethod
+    def get_modules(cls):
+        if cls.modules is None:
+            xml = IJRQ.RequestType(
+                GetModules = IJRQ.GetModulesRequestType(cls.get_context_id()))
+            response, _ = C.make_imagej_request(xml, {})
+            rm = IJRQ.parseString(response).GetModulesResponse
+            assert isinstance(rm, IJRQ.GetModulesResponseType)
+            cls.modules = rm.Module
+        return cls.modules
+    
     def test_01_01_load_color(self):
         global cp_logo_url, cp_logo
         img = C.get_image(cp_logo_url)
@@ -107,6 +131,90 @@ class TestClient(unittest.TestCase):
             os.unlink(name)
         except:
             pass
+    
+    def test_04_01_get_context_id(self):
+        self.get_context_id()
+        
+    def test_04_02_get_modules(self):
+        request = IJRQ.RequestType(
+            GetModules=IJRQ.GetModulesRequestType(self.get_context_id()))
+        response, _ = C.make_imagej_request(request, {})
+        response = IJRQ.parseString(response)
+        self.assertIsNotNone(response.GetModulesResponse)
+        modules = response.GetModulesResponse.Module
+        self.assertIn("Invert [IJ2]",
+                      [m.Title for m in modules])
+        
+    def test_04_03_run_module(self):
+        modules = [m for m in self.get_modules()
+                   if m.Title == "TextDisplayTest [IJ2]"]
+        self.assertEqual(len(modules), 1)
+        rmr = IJRQ.RunModuleRequestType(
+            self.get_context_id(),
+            modules[0].ModuleID)
+        request = IJRQ.RequestType(RunModule = rmr)
+        response, _ = C.make_imagej_request(request, {})
+        response = IJRQ.parseString(response)
+        self.assertIsInstance(response, IJRQ.ResponseType)
+        self.assertIsNotNone(response.RunModuleResponse)
+        rmresponse = response.RunModuleResponse
+        self.assertIsInstance(rmresponse, IJRQ.RunModuleResponseType)
+        self.assertIsNone(rmresponse.Exception)
+        self.assertEqual(len(rmresponse.Parameter), 1)
+        p = rmresponse.Parameter[0]
+        assert isinstance(p, IJRQ.ParameterValueType)
+        self.assertEqual(p.Name, "output")
+        self.assertTrue(p.StringValue.startswith("Hello "))
+        
+    def test_04_04_run_image_module(self):
+        image_value = ImageValue=IJRQ.ImageDisplayParameterValueType(
+                ImageName="MyImageName",
+                ImageID = "ImageID",
+                Axis = [ "X", "Y", "CHANNEL" ]
+        )
+        
+        r = np.random.RandomState()
+        r.seed(0404)
+        image = r.uniform(size = (20, 10, 3))
+
+        modules = [m for m in self.get_modules()
+                   if m.Title == "Rotate 90 Degrees Left [IJ2]"]
+        self.assertEqual(len(modules), 1)
+        rmr = IJRQ.RunModuleRequestType(
+            self.get_context_id(),
+            modules[0].ModuleID)
+        rmr.add_Parameter(IJRQ.ParameterValueType(
+            Name = "display",
+            ImageValue = image_value))
+        request = IJRQ.RequestType(RunModule = rmr)
+        response, image_dict = C.make_imagej_request(request, 
+                                                     { "ImageID": image } )
+        response = IJRQ.parseString(response)
+        self.assertIsInstance(response, IJRQ.ResponseType)
+        self.assertIsNotNone(response.RunModuleResponse)
+        rmresponse = response.RunModuleResponse
+        self.assertIsInstance(rmresponse, IJRQ.RunModuleResponseType)
+        self.assertEqual(len(rmresponse.Parameter), 1)
+        p = rmresponse.Parameter[0]
+        self.assertEqual(p.Name, "display")
+        self.assertIsNotNone(p.ImageValue)
+        image_value = p.ImageValue
+        self.assertIn(image_value.ImageID, image_dict.keys())
+        rotated_image = image_dict[image_value.ImageID]
+        # Left side of image is now at bottom
+        np.testing.assert_array_equal(
+            rotated_image.transpose(1, 0, 2)[::-1, :, :],
+            image)
+        
+    def test_04_05_run_exception(self):
+        rmr = IJRQ.RunModuleRequestType(
+            self.get_context_id(),
+            "this.is.a.bogus.module.id")
+        request = IJRQ.RequestType(RunModule = rmr)
+        response, _ = C.make_imagej_request(request, {})
+        response = IJRQ.parseString(response)
+        assert isinstance(response, IJRQ.ResponseType)
+        self.assertIsNotNone(response.RunModuleResponse.Exception)
         
 def make_xml(size_x=187, size_y=70, size_c=4, size_z=1, size_t=1, 
              pixel_type="uint8", samples_per_pixel=4, big_endian=False):

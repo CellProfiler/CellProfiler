@@ -29,7 +29,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
-from cellprofiler.analysis import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, InteractionReply, ServerExited, ImageSetSuccess, SharedDictionaryRequest, DictionaryReqRep, DictionaryReqRepRep, Ack
+from cellprofiler.analysis import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, ServerExited, ImageSetSuccess, SharedDictionaryRequest, DictionaryReqRep, DictionaryReqRepRep, Ack
 import subimager.client
 from cellprofiler.utilities.rpdb import Rpdb
 
@@ -84,7 +84,7 @@ def main():
     current_analysis_id = None
 
     # pipeline listener object
-    pipeline_listener = PipelineEventListener()
+    pipeline_listener = PipelineEventListener(zmq_context)
 
     # Loop until exit
     while True:
@@ -144,7 +144,7 @@ def main():
                         continue
 
             # point the pipeline event listener to the new work_socket
-            pipeline_listener.work_socket = work_socket
+            pipeline_listener.current_server = current_server
             pipeline_listener.reset()
 
             # update preferences to match remote values
@@ -243,7 +243,7 @@ def main():
                     except Exception:
                         try:
                             logging.error("Error in pipeline", exc_info=True)
-                            if handle_exception(work_socket, image_set_number=image_set_number) == ED_STOP:
+                            if handle_exception(zmq_context, current_server, image_set_number=image_set_number) == ED_STOP:
                                 abort = True
                                 break
                         except:
@@ -280,48 +280,57 @@ def main():
         except Exception:
             logging.error("Error in worker", exc_info=True)
             # XXX - should we jsut assume complete failure and exit?
-            if handle_exception(work_socket) == ED_STOP:
+            if handle_exception(zmq_context, current_server) == ED_STOP:
                 # XXX - This should be an exit, yes?
                 break
 
 
-def handle_exception(work_socket, image_set_number=None, module_name=None, exc_info=None):
+def handle_exception(zmq_context, current_server, image_set_number=None, module_name=None, exc_info=None):
     '''report and handle an exception, possibly by remote debugging, returning
     how to proceed (skip or abort).
+
+    A new socket is created for each exception report, to allow us to sidestep
+    any REP/REQ state in the worker.
     '''
     if exc_info is None:
         t, exc, tb = sys.exc_info()
     else:
         t, exc, tb = exc_info
     filename, line_number, _, _ = traceback.extract_tb(tb, 1)[0]
-    if image_set_number is not None:
-        message = ["EXCEPTION", "PIPELINE", str(image_set_number), module_name,
-                   t.__name__, str(exc), "".join(traceback.format_exception(t, exc, tb)),
-                   filename, str(line_number)]
-    else:
-        message = ["EXCEPTION", "WORKER", t.__name__, str(exc),
-                   "".join(traceback.format_exception(t, exc, tb)), filename, str(line_number)]
-    work_socket.send_multipart(message)
-    reply = work_socket.recv_multipart()
+    report_socket = zmq_context.socket(zmq.REQ)
+    try:
+        report_socket.connect(current_server)
+    except:
+        return ED_STOP  # nothing to do but give up
+    reply = ExceptionReport(image_set_number,
+                            module_name,
+                            t.__name__, str(exc),
+                            "".join(traceback.format_exception(t, exc, tb)),
+                            filename, line_number).send(report_socket)
     while True:
-        if reply[0] == 'DEBUG':
+        if reply.disposition == 'DEBUG':
+            # We use a nonstandard Req/rep/rep/rep pattern, since the jobserver
+            # suspends execution during debugging.
+            debug_reply = [None]
             def pc(port):
-                work_socket.send_multipart(["DEBUG WAITING", str(port)])
-            rpdb = Rpdb(verification_hash=reply[1], port_callback=pc)
-            work_socket.recv()  # ACK
+                print "GOT PORT ", port
+                debug_reply[0] = reply.reply(DebugWaiting(port), please_reply=True)
+            print  "HASH", reply.verification_hash
+            rpdb = Rpdb(verification_hash=reply.verification_hash, port_callback=pc)
             rpdb.verify()
             rpdb.post_mortem(tb)
-            work_socket.send_multipart(["DEBUG COMPLETE"])
-            reply = work_socket.recv()  # next step (could be "DEBUG" again)
+            # We get a new reply at the end, which might be "DEBUG" again.
+            reply = debug_reply[0].reply(DebugComplete(), please_reply=True)
         else:
-            return reply[0]
+            return reply.disposition
 
 
 class PipelineEventListener(object):
     """listen for pipeline events, communicate them as necessary to the
     analysis manager."""
-    def __init__(self):
-        self.work_socket = None
+    def __init__(self, zmq_context):
+        self.zmq_context = zmq_context
+        self.current_server = None
         self.image_set_number = 0
         self.should_abort = False
         self.should_skip = False
@@ -332,7 +341,7 @@ class PipelineEventListener(object):
 
     def handle_event(self, pipeline, event):
         if isinstance(event, cpp.RunExceptionEvent):
-            disposition = handle_exception(self.work_socket,
+            disposition = handle_exception(self.zmq_context, self.current_server,
                                            image_set_number=self.image_set_number,
                                            module_name=event.module.module_name,
                                            exc_info=(type(event), event, event.tb))

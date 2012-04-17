@@ -59,7 +59,7 @@ class Rpdb(pdb.Pdb):
             verification = self.handle.readline().rstrip()
             if hashlib.sha1(verification).hexdigest() != self.verification_hash:
                 sys.stderr.write('Verification hash from %s does not match in Rpdb.verify()!  Closing.\n' % str(self.address))
-                sys.stderr.write('Got: %s, expected: %s\n' % (hashlib.sha1(verification).hexdigest(), verification))
+                sys.stderr.write('Got: %s, expected: %s\n' % (hashlib.sha1(verification).hexdigest(), self.verification_hash))
                 sys.stdin, sys.stdout = self.old_stds
                 self.clientsocket.close()
                 self.socket.close()

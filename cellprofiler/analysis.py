@@ -659,8 +659,29 @@ class SharedDictionaryReply(Reply):
 class DisplayRequest(Request):
     pass
 
-
 class ExceptionReport(Request):
+    def __init__(self,
+                 image_set_number, module_name,
+                 exc_type, exc_message, exc_traceback,
+                 filename, line_number):
+        Request.__init__(self,
+                         image_set_number=image_set_number,
+                         module_name=module_name,
+                         exc_type=exc_type,
+                         exc_message=exc_message,
+                         exc_traceback=exc_traceback,
+                         filename=filename,
+                         line_number=line_number)
+
+class ExceptionPleaseDebugReply(Reply):
+    def __init__(self, disposition, verification_hash=None):
+        Reply.__init__(self, disposition=disposition, verification_hash=verification_hash)
+
+class DebugWaiting(Reply):
+    def __init__(self, port):
+        Reply.__init__(self, port=port)
+
+class DebugComplete(Reply):
     pass
 
 

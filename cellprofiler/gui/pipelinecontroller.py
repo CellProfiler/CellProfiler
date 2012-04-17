@@ -22,6 +22,10 @@ import re
 import sys
 import Queue
 import cpframe
+import random
+import string
+import hashlib
+
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.cpimage as cpi
@@ -931,24 +935,46 @@ class PipelineController:
         '''Report an error in analysis to the user, giving options for
         skipping, aborting, and debugging.'''
 
+        # The interaction here is getting a bit overly complex.  It would
+        # probably be better to move all of this to a purely event-driven
+        # model (dropping the Request/reply/reply/reply/... pattern).
+        #
+        # In that model, we get something like:
+        # Exception -> display exception, reply with disposition (could be a
+        #     debug request).  Do not close the window in this case.
+        #
+        # Debug requests generate a completely separate event:
+        # DebugWaiting -> display information about where to connect to remote port.
+        #
+        # DebugDone -> using same display for the exception, reply with next disposition
+        #
+        # Should the error display go inactive until DebugDone?
+
         assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
 
-        def remote_debug():
+        evtlist = [evt]
+
+        def remote_debug(evtlist=evtlist):
             # choose a random string for verification
-            import string
-            import random
             verification = ''.join(random.choice(string.ascii_letters) for x in range(5))
 
-            def port_callback(port):
-                # called from another thread, use wx.CallAfter
-                def display_port_info():
-                    wx.MessageBox("Remote PDB waiting on port %d\nUse '%s' for verification" % (port, verification),
-                                  "Remote debugging started.",
-                                  wx.OK | wx.ICON_INFORMATION)
-                wx.CallAfter(display_port_info)
-            evt.disposition_callback(cpanalysis.DEBUG, verification, port_callback)
+            evt = evtlist[0]
 
-        if isinstance(evt, cpanalysis.AnalysisPipelineExceptionEvent):
+            def port_callback(port):
+                wx.MessageBox("Remote PDB waiting on port %d\nUse '%s' for verification" % (port, verification),
+                              "Remote debugging started.",
+                              wx.OK | wx.ICON_INFORMATION)
+            # Request debugging.  We get back a port.
+            port_reply = evt.reply(cpanalysis.ExceptionPleaseDebugReply(cpanalysis.DEBUG,
+                                                                        hashlib.sha1(verification).hexdigest()),
+                                   please_reply=True)
+            port_callback(port_reply.port)
+            # Acknowledge the port request, and we'll get back a
+            # DebugComplete(), which we use as a new evt to reply with the
+            # eventual CONTINUE/STOP choice.
+            evtlist[0] = port_reply.reply(cpanalysis.Ack(), please_reply=True)
+
+        if evt.module_name is not None:
             message = (("Error while processing %s:\n"
                         "%s\n\nDo you want to stop processing?") %
                        (evt.module_name, evt.exc_message))
@@ -960,7 +986,11 @@ class PipelineController:
         disposition = display_error_dialog(None, evt.exc_type, self.__pipeline, message,
                                            remote_exc_info=(evt.exc_type, evt.exc_message, evt.exc_traceback,
                                                             evt.filename, evt.line_number, remote_debug))
-        evt.disposition_callback(disposition)
+        if disposition == ED_STOP:
+            self.__analysis.cancel_analysis()
+
+        evtlist[0].reply(cpanalysis.Reply(disposition=disposition))
+
         wx.Yield()  # This allows cancel events to remove other exceptions from the queue.
 
     def on_restart(self, event):

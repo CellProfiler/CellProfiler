@@ -9,55 +9,9 @@ import sys
 import getopt
 import re as re_
 
-etree_ = None
-Verbose_import_ = False
-(   XMLParser_import_none, XMLParser_import_lxml,
-    XMLParser_import_elementtree
-    ) = range(3)
-XMLParser_import_library = None
-try:
-    # lxml
-    from lxml import etree as etree_
-    XMLParser_import_library = XMLParser_import_lxml
-    if Verbose_import_:
-        print("running with lxml.etree")
-except ImportError:
-    try:
-        # cElementTree from Python 2.5+
-        import xml.etree.cElementTree as etree_
-        XMLParser_import_library = XMLParser_import_elementtree
-        if Verbose_import_:
-            print("running with cElementTree on Python 2.5+")
-    except ImportError:
-        try:
-            # ElementTree from Python 2.5+
-            import xml.etree.ElementTree as etree_
-            XMLParser_import_library = XMLParser_import_elementtree
-            if Verbose_import_:
-                print("running with ElementTree on Python 2.5+")
-        except ImportError:
-            try:
-                # normal cElementTree install
-                import cElementTree as etree_
-                XMLParser_import_library = XMLParser_import_elementtree
-                if Verbose_import_:
-                    print("running with cElementTree")
-            except ImportError:
-                try:
-                    # normal ElementTree install
-                    import elementtree.ElementTree as etree_
-                    XMLParser_import_library = XMLParser_import_elementtree
-                    if Verbose_import_:
-                        print("running with ElementTree")
-                except ImportError:
-                    raise ImportError("Failed to import ElementTree from any known place")
+import xml.etree.ElementTree as etree_
 
 def parsexml_(*args, **kwargs):
-    if (XMLParser_import_library == XMLParser_import_lxml and
-        'parser' not in kwargs):
-        # Use the lxml ElementTree compatible parser so that, e.g.,
-        #   we ignore comments.
-        kwargs['parser'] = etree_.ETCompatXMLParser()
     doc = etree_.parse(*args, **kwargs)
     return doc
 
@@ -149,15 +103,6 @@ except ImportError, exp:
             self.get_path_list_(node.getparent(), path_list)
         def get_class_obj_(self, node, default_class=None):
             class_obj1 = default_class
-            if 'xsi' in node.nsmap:
-                classname = node.get('{%s}type' % node.nsmap['xsi'])
-                if classname is not None:
-                    names = classname.split(':')
-                    if len(names) == 2:
-                        classname = names[1]
-                    class_obj2 = globals().get(classname)
-                    if class_obj2 is not None:
-                        class_obj1 = class_obj2
             return class_obj1
         def gds_build_any(self, node, type_name=None):
             return None
@@ -248,25 +193,15 @@ def get_all_text_(node):
 def find_attr_value_(attr_name, node):
     attrs = node.attrib
     attr_parts = attr_name.split(':')
-    value = None
-    if len(attr_parts) == 1:
-        value = attrs.get(attr_name)
-    elif len(attr_parts) == 2:
-        prefix, name = attr_parts
-        namespace = node.nsmap.get(prefix)
-        if namespace is not None:
-            value = attrs.get('{%s}%s' % (namespace, name, ))
-    return value
+    assert len(attr_parts) == 1
 
+    return attrs.get(attr_name)
 
 class GDSParseError(Exception):
     pass
 
 def raise_parse_error(node, msg):
-    if XMLParser_import_library == XMLParser_import_lxml:
-        msg = '%s (element %s/line %d)' % (msg, node.tag, node.sourceline, )
-    else:
-        msg = '%s (element %s)' % (msg, node.tag, )
+    msg = '%s (element %s)' % (msg, node.tag, )
     raise GDSParseError(msg)
 
 
@@ -1125,10 +1060,6 @@ class BasicDetailsType(GeneratedsSuper):
         else:
             outfile.write('/>\n')
     def exportAttributes(self, outfile, level, already_processed, namespace_='ijr:', name_='BasicDetailsType'):
-        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
-            already_processed.append('xsi:type')
-            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
-            outfile.write(' xsi:type="%s"' % self.extensiontype_)
         pass
     def exportChildren(self, outfile, level, namespace_='ijr:', name_='BasicDetailsType', fromsubclass_=False):
         if self.Name is not None:
@@ -1172,10 +1103,8 @@ class BasicDetailsType(GeneratedsSuper):
             nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
             self.buildChildren(child, node, nodeName_)
     def buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_('xsi:type', node)
-        if value is not None and 'xsi:type' not in already_processed:
-            already_processed.append('xsi:type')
-            self.extensiontype_ = value
+        pass
+
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'Name':
             Name_ = child_.text
@@ -1608,10 +1537,7 @@ class ContextRequestType(GeneratedsSuper):
         if self.ContextID is not None and 'ContextID' not in already_processed:
             already_processed.append('ContextID')
             outfile.write(' ContextID=%s' % (quote_attrib(self.ContextID), ))
-        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
-            already_processed.append('xsi:type')
-            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
-            outfile.write(' xsi:type="%s"' % self.extensiontype_)
+
     def exportChildren(self, outfile, level, namespace_='ijr:', name_='ContextRequestType', fromsubclass_=False):
         pass
     def hasContent_(self):
@@ -1643,10 +1569,6 @@ class ContextRequestType(GeneratedsSuper):
         if value is not None and 'ContextID' not in already_processed:
             already_processed.append('ContextID')
             self.ContextID = value
-        value = find_attr_value_('xsi:type', node)
-        if value is not None and 'xsi:type' not in already_processed:
-            already_processed.append('xsi:type')
-            self.extensiontype_ = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         pass
 # end class ContextRequestType
@@ -1700,10 +1622,6 @@ class ParameterValueType(GeneratedsSuper):
         if self.Name is not None and 'Name' not in already_processed:
             already_processed.append('Name')
             outfile.write(' Name=%s' % (quote_attrib(self.Name), ))
-        if self.extensiontype_ is not None and 'xsi:type' not in already_processed:
-            already_processed.append('xsi:type')
-            outfile.write(' xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"')
-            outfile.write(' xsi:type="%s"' % self.extensiontype_)
     def exportChildren(self, outfile, level, namespace_='ijr:', name_='ParameterValueType', fromsubclass_=False):
         if self.ImageValue is not None:
             self.ImageValue.export(outfile, level, namespace_, name_='ImageValue')
@@ -1771,10 +1689,6 @@ class ParameterValueType(GeneratedsSuper):
         if value is not None and 'Name' not in already_processed:
             already_processed.append('Name')
             self.Name = value
-        value = find_attr_value_('xsi:type', node)
-        if value is not None and 'xsi:type' not in already_processed:
-            already_processed.append('xsi:type')
-            self.extensiontype_ = value
     def buildChildren(self, child_, node, nodeName_, fromsubclass_=False):
         if nodeName_ == 'ImageValue':
             obj_ = ImageDisplayParameterValueType.factory()

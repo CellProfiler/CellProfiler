@@ -166,11 +166,22 @@ opts = {
        }
 
 data_files = []
+######################################
+#
+# Nuageux fixups
+#
+######################################
 try:
     import nuageux
     opts['py2exe']['includes'] += ['nuageux']
 except:
     print "Nuageux not installed, no distributed support"
+
+####################################
+#
+# Ilastik fixups
+#
+####################################
 try:
     import vigra
     import ilastik
@@ -181,7 +192,7 @@ try:
                                    "h5py","h5py._stub","h5py._conv",
                                    "h5py.utils","h5py._proxy",
                                    "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic",
-                                   "sip"]
+                                   "sip", "zmq"]
     opts['py2exe']['excludes'] += ["ilastik"]
     il_path = ilastik.__path__[0]
     for root, subFolders, files in os.walk(il_path):
@@ -215,13 +226,42 @@ try:
         print "This installation will not supply OpenGL support for Ilastik"
 except:
     print "This installation will not include Ilastik"
-    
+
+##################################
+#
+# Scipy fixups
+#
+##################################
 try:
     # Include this package if present
     import scipy.io.matlab.streams
     opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
 except:
     pass
+
+##############################################
+#
+# 0MQ fixups
+#
+# libzmq.dll is not found by py2exe, so we
+# semi-manually copy it to the right place
+# and ask py2exe to ignore not being able
+# to find it.
+##############################################
+try:
+    import zmq
+    zmq_loc = os.path.split(zmq.__file__)[0]
+    data_files += [('.', (os.path.join(zmq_loc, "libzmq.dll"), ))]
+    opts['py2exe']['dll_excludes'] += ["libzmq.dll"]
+except:
+    print "This installation will not include 0MQ"
+
+##############################################
+#
+# Visual Studio DLL fixups - Much better to use the official installer
+#                            than to hand-patch the manifest and DLLs.
+#
+##############################################
 
 if do_modify:
     # A trick to load the dlls
@@ -245,13 +285,14 @@ data_files += [('cellprofiler\\icons',
                ['cellprofiler\\icons\\%s'%(x) 
                 for x in os.listdir('cellprofiler\\icons')
                 if x.endswith(".png") or x.endswith(".psd")]),
-              ('subimager', ['subimager\\subimager.jar']),
-              ('imagej', ['imagej\\'+jar_file
-                          for jar_file in os.listdir('imagej')
-                          if jar_file.endswith('.jar')])]
+              ('subimager', ['subimager\\subimager.jar'])]
 data_files += matplotlib.get_py2exe_datafiles()
+################################
+#
 # Collect the JVM
 #
+################################
+
 from cellprofiler.utilities.setup import find_jdk
 jdk_dir = find_jdk()
 def add_jre_files(path):
@@ -277,22 +318,10 @@ data_files += [("jre\\ext", [os.path.join(jdk_dir, "lib", "tools.jar")])]
 #
 # Call setup
 #
-try:
-    setup(console=[{'script':'CellProfiler.py',
-                    'icon_resources':[(1,'CellProfilerIcon.ico')]}],
-          name='Cell Profiler',
-          data_files = data_files,
-          cmdclass={'msi':CellProfilerMSI
-                    },
-          options=opts)
-finally:
-    try:
-        import cellprofiler.utilities.jutil as jutil
-        jutil.kill_vm()
-        sys.stderr.flush()
-        sys.stdout.flush()
-        os._exit(0)
-    except:
-        import traceback
-        traceback.print_exc()
-        print "Caught exception while killing VM"
+setup(console=[{'script':'CellProfiler.py',
+                'icon_resources':[(1,'CellProfilerIcon.ico')]}],
+      name='Cell Profiler',
+      data_files = data_files,
+      cmdclass={'msi':CellProfilerMSI
+                },
+      options=opts)

@@ -417,7 +417,7 @@ class Images(cpm.CPModule):
         if setting is self.wants_filter and not self.wants_filter:
             self.apply_filter()
     
-    def run(self):
+    def run(self, workspace):
         pass
     
 class DirectoryPredicate(cps.Filter.FilterPredicate):

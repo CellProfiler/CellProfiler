@@ -38,6 +38,15 @@ AVERAGE_IMAGE_NAME = "Ave"
 DILATED_IMAGE_NAME = "Dilate"
 
 class TestCorrectImage_Calculate(unittest.TestCase):
+    
+    @classmethod
+    def setUpClass(cls):
+        '''Backwards compatibility for Python 2.6 unittest'''
+        if not hasattr(cls, "assertIn"):
+            cls.assertIn = lambda self, x, y: self.assertTrue(x in y)
+        if not hasattr(cls, "assertNotIn"):
+            cls.assertNotIn = lambda self, x, y: self.assertFalse(x in y)
+            
     def error_callback(self, calller, event):
         if isinstance(event, cpp.RunExceptionEvent):
             self.fail(event.error.message)

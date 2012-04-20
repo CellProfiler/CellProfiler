@@ -716,7 +716,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         else:
             local_threshold,global_threshold = self.get_threshold(img, mask,
                                                               masking_objects, workspace)
-        blurred_image = self.smooth_image(img,mask,1)
+        blurred_image = self.smooth_image(img,mask,1) if not (self.threshold_method == cpthresh.TM_BINARY_IMAGE 
+                                                              or (self.threshold_method == cpthresh.TM_MANUAL and len(np.unique(img)) == 2)) else img
         binary_image = np.logical_and((blurred_image >= local_threshold),mask)
         #
         # Fill background holes inside foreground objects

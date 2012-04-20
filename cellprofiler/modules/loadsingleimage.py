@@ -479,6 +479,17 @@ class LoadSingleImage(cpm.CPModule):
                                  undefined_tags[0], 
                                  group.file_name)
         
+    def validate_module_warnings(self, pipeline):
+        '''Check for potentially dangerous settings'''
+        # Check that user-specified names don't have bad characters
+        invalid_chars_pattern = "^[A-Za-z][A-Za-z0-9_]+$"
+        warning_text = "The image name has questionable characters. The pipeline can use this name "\
+                       "and produce results, but downstream programs that use this data (e.g, MATLAB, MySQL) may error."
+        for file_setting in self.file_settings:
+            if file_setting.image_objects_choice == IO_IMAGES:
+                if not re.match(invalid_chars_pattern,file_setting.image_name.value):
+                        raise cps.ValidationError(warning_text,file_setting.image_name)
+                        
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 4:
             new_setting_values = list(setting_values)

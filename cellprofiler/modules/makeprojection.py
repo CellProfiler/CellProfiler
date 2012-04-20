@@ -153,10 +153,6 @@ class MakeProjection(cpm.CPModule):
                                          self.projection_type.value,
                                          self.frequency.value)
                 d[K_PROVIDER] = provider
-            for image_number in image_numbers:
-                image_set = image_set_list.get_image_set(image_number-1)
-                assert isinstance(image_set, cpi.ImageSet)
-                image_set.providers.append(provider)
         return True
         
     def is_interactive(self):
@@ -165,11 +161,25 @@ class MakeProjection(cpm.CPModule):
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value)
         pixels = image.pixel_data
-        provider = workspace.image_set.get_image_provider(self.projection_image_name.value)
+        provider = self.get_dictionary(workspace.image_set)[K_PROVIDER]
         if (not provider.has_image):
             provider.set_image(image)
         else:
             provider.accumulate_image(image)
+        workspace.image_set.providers.append(provider)
+        
+    def post_group(self, workspace, grouping):
+        '''Handle processing that takes place at the end of a group
+        
+        Add the provider to the workspace if not present. This could
+        happen if the image set didn't reach this module.
+        '''
+        image_set = workspace.image_set
+        assert isinstance(image_set, cpi.ImageSet)
+        if self.projection_image_name.value not in image_set.get_names():
+            d = self.get_dictionary(workspace.image_set_list)
+            provider = d[K_PROVIDER]
+            image_set.providers.append(provider)
             
     def display(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value)
@@ -260,6 +270,10 @@ class ImageProvider(cpi.AbstractImageProvider):
     @property
     def has_image(self):
         return self.__image_count is not None
+    
+    @property
+    def count(self):
+        return self.__image_count
     
     def set_image(self, image):
         self.__cached_image = None

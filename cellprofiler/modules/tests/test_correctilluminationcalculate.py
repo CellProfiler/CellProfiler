@@ -254,6 +254,79 @@ class TestCorrectImage_Calculate(unittest.TestCase):
                 intensity_choice       = %(intensity_choice)s
                 smoothing_method       = %(smoothing_method)s
                 automatic_object_width = %(ow)s"""%locals())
+                            
+    def test_01_03_filtered(self):
+        '''Regression test of issue #310
+        
+        post_group should add the composite image to the image set
+        if CorrectIllumination_Calculate didn't run because the image
+        set was filtered.
+        '''
+        r = np.random.RandomState()
+        r.seed(13)
+        i0 = r.uniform(size=(11,13))
+        i1 = r.uniform(size=(11,13))
+        i2 = r.uniform(size=(11,13))
+        workspaces, module = self.make_workspaces((
+            ( i0, None), 
+            (i1, None), 
+            (i2, None)))
+        module.each_or_all.value = calc.EA_ALL_ACROSS
+        module.smoothing_method.value = calc.SM_TO_AVERAGE
+        module.save_average_image.value = True
+        module.save_dilated_image.value = True
+        
+        module.prepare_group(workspaces[0], None, [1, 2, 3])
+        assert isinstance(module, calc.CorrectIlluminationCalculate)
+        for workspace in workspaces[:-1]:
+            assert isinstance(workspace, cpw.Workspace)
+            module.run(workspace)
+        image_set = workspaces[-1].image_set
+        self.assertNotIn(OUTPUT_IMAGE_NAME, image_set.get_names())
+        self.assertNotIn(DILATED_IMAGE_NAME, image_set.get_names())
+        self.assertNotIn(AVERAGE_IMAGE_NAME, image_set.get_names())
+        module.post_group(workspaces[-1], None)
+        self.assertIn(OUTPUT_IMAGE_NAME, image_set.get_names())
+        self.assertIn(DILATED_IMAGE_NAME, image_set.get_names())
+        self.assertIn(AVERAGE_IMAGE_NAME, image_set.get_names())
+    
+    def test_01_04_not_filtered(self):
+        '''Regression test of issue #310, negative case
+        
+        post_group should not add the composite image to the image set
+        if CorrectIllumination_Calculate did run.
+        '''
+        r = np.random.RandomState()
+        r.seed(13)
+        i0 = r.uniform(size=(11,13))
+        i1 = r.uniform(size=(11,13))
+        i2 = r.uniform(size=(11,13))
+        workspaces, module = self.make_workspaces((
+            ( i0, None), 
+            (i1, None), 
+            (i2, None)))
+        module.each_or_all.value = calc.EA_ALL_ACROSS
+        module.smoothing_method.value = calc.SM_TO_AVERAGE
+        module.save_average_image.value = True
+        module.save_dilated_image.value = True
+        
+        module.prepare_group(workspaces[0], None, [1, 2, 3])
+        assert isinstance(module, calc.CorrectIlluminationCalculate)
+        for workspace in workspaces:
+            assert isinstance(workspace, cpw.Workspace)
+            module.run(workspace)
+        image_set = workspaces[-1].image_set
+        self.assertIn(OUTPUT_IMAGE_NAME, image_set.get_names())
+        self.assertIn(DILATED_IMAGE_NAME, image_set.get_names())
+        self.assertIn(AVERAGE_IMAGE_NAME, image_set.get_names())
+        module.post_group(workspaces[-1], None)
+        #
+        # Make sure it appears only once
+        #
+        for image_name in (
+            OUTPUT_IMAGE_NAME, DILATED_IMAGE_NAME, AVERAGE_IMAGE_NAME):
+            self.assertEqual(len(filter(lambda x: x == image_name,
+                                        image_set.get_names())), 1)
     
     def test_02_02_Background(self):
         """Test an image with four distinct backgrounds"""

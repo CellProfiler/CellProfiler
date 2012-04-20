@@ -246,6 +246,14 @@ class Tile(cpm.CPModule):
         workspace.image_set.add(self.output_image.value, output_image)
         if workspace.frame is not None:
             workspace.display_data.image = output_pixels
+            
+    def post_group(self, workspace, grouping):
+        image_set = workspace.image_set
+        assert isinstance(image_set, cpi.ImageSet)
+        if self.output_image.value not in image_set.get_names():
+            d = self.get_dictionary(workspace.image_set_list)
+            image_set.add(self.output_image.value, 
+                          cpi.Image(d[TILED_IMAGE]))
     
     def display(self, workspace):
         '''Display 

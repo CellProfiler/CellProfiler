@@ -171,7 +171,8 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             self.assertEqual(module.projection_image_name, "ProjectionCh00Scale6")
             self.assertEqual(module.frequency, 6)
     
-    def run_image_set(self, projection_type, images_and_masks, frequency=9):
+    def run_image_set(self, projection_type, images_and_masks, 
+                      frequency=9, run_last = True):
         image_set_list = cpi.ImageSetList()
         image_count = len(images_and_masks)
         for i in range(image_count):
@@ -207,15 +208,25 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
                               cpo.ObjectSet(),
                               m,
                               image_set_list)
-            module.run(w)
-            image = w.image_set.get_image(PROJECTED_IMAGE_NAME)
+            if i < image_count - 1 or run_last:
+                module.run(w)
+        module.post_group(w, {})
+        self.assertEqual(len(filter(lambda x: x == PROJECTED_IMAGE_NAME,
+                             w.image_set.get_names())), 1)
+        image = w.image_set.get_image(PROJECTED_IMAGE_NAME)
         #
         # Make sure that the image provider is reset after prepare_group
         #
         module.prepare_group(workspace, {}, [image_count+1])
         image_set = image_set_list.get_image_set(image_count)
+        w = cpw.Workspace(pipeline, module, 
+                          image_set,
+                          cpo.ObjectSet(),
+                          m,
+                          image_set_list)
+        module.run(w)
         image_provider = image_set.get_image_provider(PROJECTED_IMAGE_NAME)
-        self.assertFalse(image_provider.has_image)
+        self.assertEqual(np.max(image_provider.count), 1)
         return image
     
     def test_02_01_average(self):
@@ -419,3 +430,19 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             expected = expected & mask
         image = self.run_image_set(M.P_MASK, images_and_masks)
         self.assertTrue(np.all(image.pixel_data == expected))
+        
+    def test_09_02_filtered(self):
+        '''Make sure the image shows up in the image set even if filtered
+        
+        This is similar to issue # 310 - the last image may be filtered before
+        the projection is done and the aggregate image is then missing
+        from the image set.
+        '''
+        np.random.seed (81)
+        images_and_masks = [ (np.random.uniform(size=(10,10)), None)
+                             for i in range(3)]
+        image = self.run_image_set(M.P_AVERAGE, images_and_masks, 
+                                   run_last=False)
+        np.testing.assert_array_almost_equal(
+            image.pixel_data,
+            (images_and_masks[0][0] + images_and_masks[1][0]) / 2)

@@ -494,7 +494,34 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         workspace.display_data.avg_image = avg_image
         workspace.display_data.dilated_image = dilated_image
         workspace.display_data.output_image = output_image
-    
+        
+    def post_group(self, workspace, grouping):
+        '''Handle tasks to be performed after a group has been processed
+        
+        For CorrectIllumninationCalculate, we make sure the current image
+        set includes the aggregate image. "run" may not have run if an
+        image was filtered out.
+        '''
+        if self.each_or_all != EA_EACH:
+            image_set = workspace.image_set
+            assert isinstance(image_set, cpi.ImageSet)
+            output_image_provider = \
+                self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
+            assert isinstance(output_image_provider, CorrectIlluminationImageProvider)
+            if not self.illumination_image_name.value in image_set.get_names():
+                workspace.image_set.providers.append(output_image_provider)
+            if (self.save_average_image and 
+                self.average_image_name.value not in image_set.get_names()):
+                workspace.image_set.add(
+                    self.average_image_name.value,
+                    output_image_provider.provide_avg_image())
+            if (self.save_dilated_image and
+                self.dilated_image_name.value not in image_set.get_names()):
+                workspace.image_set.add(
+                    self.dilated_image_name.value, 
+                    output_image_provider.provide_dilated_image())
+                
+            
     def display(self, workspace):
         avg_image = workspace.display_data.avg_image
         dilated_image = workspace.display_data.dilated_image

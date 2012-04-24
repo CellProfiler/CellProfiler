@@ -266,6 +266,8 @@ class Measurements(object):
         else:
             self.image_set_number = explicit_image_set_number
         self.__is_first_image = False
+        self.__images = {}
+        self.__image_providers = []
 
     @property
     def image_set_count(self):
@@ -898,6 +900,172 @@ class Measurements(object):
                 except:
                     pass
             self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
+            
+    ###########################################################
+    #
+    # Ducktyping measurements as image sets
+    #
+    ###########################################################
+    
+    @property
+    def image_number(self):
+        '''The image number of the current image'''
+        return self.image_set_number
+    
+    @property
+    def get_keys(self):
+        '''The keys that uniquely identify the image set
+        
+        Return key/value pairs for the metadata that specifies the site
+        for the image set, for instance, plate / well / site. If image set
+        was created by matching images by order, the image number will be
+        returned.
+        '''
+        #
+        # XXX (leek) - save the metadata tags used for matching in the HDF
+        #              then use it to look up the values per image set
+        #              and cache.
+        #
+        return { IMAGE_NUMBER: str(self.image_number) }
+    
+    def get_image(self, name, 
+                  must_be_binary = False,
+                  must_be_color = False,
+                  must_be_grayscale = False,
+                  must_be_rgb = False,
+                  cache = True):
+        """Return the image associated with the given name
+        
+        name - name of the image within the image_set
+        must_be_color - raise an exception if not a color image
+        must_be_grayscale - raise an exception if not a grayscale image
+        must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
+                      discard alpha channel.
+        """
+        from cellprofiler.modules.loadimages import LoadImagesImageProvider
+        name = str(name)
+        if self.__images.has_key(name):
+            image  = self.__images[name]
+        else:
+            matching_providers = [p for p in self.__image_providers
+                                  if p.get_name() == name]
+            if len(matching_providers) == 0:
+                #
+                # Try looking up the URL in measurements
+                #
+                url_feature_name = "_".join((C_URL, name))
+                series_feature_name = "_".join((C_SERIES, name))
+                index_feature_name = "_".join((C_FRAME, name))
+                if not self.has_feature(IMAGE, url_feature_name):
+                    raise ValueError("The %s image is missing from the pipeline."%(name))
+                url = self.get_current_image_measurement(url_feature_name)
+                if self.has_feature(IMAGE, series_feature_name):
+                    series = self.get_current_image_measurement(
+                        series_feature_name)
+                else:
+                    series = None
+                if self.has_feature(IMAGE, index_feature_name):
+                    index = self.get_current_image_measurement(
+                        index_feature_name)
+                else:
+                    index = None
+                pathname, filename = url.rsplit("/", 2)
+                #
+                # XXX (leek): Rescale needs to be bubbled up into 
+                #             NamesAndTypes and needs to be harvested
+                #             from LoadImages etc.
+                #             and stored in the measurements.
+                #
+                rescale = True
+                provider = LoadImagesImageProvider(
+                    name, pathname, filename, rescale,
+                    series, index)
+                self.__image_providers.append(provider)
+                matching_providers.append(provider)
+            image = matching_providers[0].provide_image(self)
+            if cache:
+                self.__images[name] = image
+        if must_be_binary and image.pixel_data.ndim == 3:
+            raise ValueError("Image must be binary, but it was color")
+        if must_be_binary and image.pixel_data.dtype != np.bool:
+            raise ValueError("Image was not binary")
+        if must_be_color and image.pixel_data.ndim != 3:
+            raise ValueError("Image must be color, but it was grayscale")
+        if (must_be_grayscale and 
+            (image.pixel_data.ndim != 2)):
+            pd = image.pixel_data
+            if pd.shape[2] >= 3 and\
+               np.all(pd[:,:,0]==pd[:,:,1]) and\
+               np.all(pd[:,:,0]==pd[:,:,2]):
+                return GrayscaleImage(image)
+            raise ValueError("Image must be grayscale, but it was color")
+        if must_be_grayscale and image.pixel_data.dtype.kind == 'b':
+            return GrayscaleImage(image)
+        if must_be_rgb:
+            if image.pixel_data.ndim != 3:
+                raise ValueError("Image must be RGB, but it was grayscale")
+            elif image.pixel_data.shape[2] not in (3,4):
+                raise ValueError("Image must be RGB, but it had %d channels" %
+                                 image.pixel_data.shape[2])
+            elif image.pixel_data.shape[2] == 4:
+                logger.warning("Discarding alpha channel.")
+                return RGBImage(image)
+        return image
+    
+    def get_providers(self):
+        """The list of providers (populated during the image discovery phase)"""
+        return self.__image_providers
+    
+    providers = property(get_providers)
+    
+    def get_image_provider(self, name):
+        """Get a named image provider
+        
+        name - return the image provider with this name
+        """
+        providers = filter(lambda x: x.name == name, self.__image_providers)
+        assert len(providers)>0, "No provider of the %s image"%(name)
+        assert len(providers)==1, "More than one provider of the %s image"%(name)
+        return providers[0]
+    
+    def remove_image_provider(self, name):
+        """Remove a named image provider
+        
+        name - the name of the provider to remove
+        """
+        self.__image_providers = filter(lambda x: x.name != name, 
+                                        self.__image_providers)
+        
+    def clear_image(self, name):
+        '''Remove the image memory associated with a provider
+        
+        name - the name of the provider
+        '''
+        self.get_image_provider(name).release_memory()
+        if self.__images.has_key(name):
+            del self.__images[name]
+            
+    def clear_cache(self):
+        '''Remove all of the cached images'''
+        self.__images.clear()
+    
+    def get_names(self):
+        """Get the image provider names
+        """
+        return [provider.name for provider in self.providers]
+    
+    names = property(get_names)
+    
+    def add(self, name, image):
+        from .cpimage import VanillaImageProvider
+        old_providers = [provider for provider in self.providers
+                         if provider.name == name]
+        if len(old_providers) > 0:
+            self.clear_image(name)
+        for provider in old_providers:
+            self.providers.remove(provider)
+        provider = VanillaImageProvider(name,image)
+        self.providers.append(provider)
     
 def load_measurements(filename, dest_file = None, can_overwrite = False,
                       run_name = None):

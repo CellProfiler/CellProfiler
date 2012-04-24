@@ -202,6 +202,10 @@ class Measurements(object):
         self.__initialized_explicitly = False
         self.__relationships = set()
         self.__relationship_names = set()
+        self.__images = {}
+        self.__image_providers = []
+        self.__images = {}
+        self.__image_providers = []
 
     def __del__(self):
         if hasattr(self, "hdf5_dict"):
@@ -871,6 +875,7 @@ class Measurements(object):
         reader = csv.reader(fd_or_file)
         header = reader.next()
         columns = [[] for _ in range(len(header))]
+        column_is_all_none = np.ones(len(header), bool)
         last_image_number = 0
         for i, fields in enumerate(reader):
             image_number = i + 1
@@ -878,7 +883,11 @@ class Measurements(object):
                 continue
             if stop is not None and image_number == stop:
                 break
-            for field, column in zip(fields, columns):
+            for j, (field, column) in enumerate(zip(fields, columns)):
+                if field == "None" or len(field) == 0:
+                    field = None
+                else:
+                    column_is_all_none[j] = False
                 column.append(field)
             last_image_number = image_number
         if last_image_number == 0:
@@ -889,17 +898,18 @@ class Measurements(object):
         else:
             image_numbers = list(range(start, last_image_number + 1))
         self.hdf5_dict.add_all(IMAGE, IMAGE_NUMBER, image_numbers, image_numbers)
-        for feature, column in zip(header, columns):
-            # try to convert to an integer, then float, then leave as string
-            column = np.array(column)
-            try:
-                column = column.astype(int)
-            except:
+        for feature, column, all_none in zip(header, columns, column_is_all_none):
+            if not all_none:
+                # try to convert to an integer, then float, then leave as string
+                column = np.array(column, object)
                 try:
-                    column = column.astype(float)
+                    column = column.astype(int)
                 except:
-                    pass
-            self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
+                    try:
+                        column = column.astype(float)
+                    except:
+                        pass
+                self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
             
     ###########################################################
     #
@@ -942,7 +952,7 @@ class Measurements(object):
         must_be_rgb - raise an exception if 2-d or if # channels not 3 or 4,
                       discard alpha channel.
         """
-        from cellprofiler.modules.loadimages import LoadImagesImageProvider
+        from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
         name = str(name)
         if self.__images.has_key(name):
             image  = self.__images[name]
@@ -958,7 +968,8 @@ class Measurements(object):
                 index_feature_name = "_".join((C_FRAME, name))
                 if not self.has_feature(IMAGE, url_feature_name):
                     raise ValueError("The %s image is missing from the pipeline."%(name))
-                url = self.get_current_image_measurement(url_feature_name)
+                # URL should be ASCII only
+                url = str(self.get_current_image_measurement(url_feature_name))
                 if self.has_feature(IMAGE, series_feature_name):
                     series = self.get_current_image_measurement(
                         series_feature_name)
@@ -969,7 +980,6 @@ class Measurements(object):
                         index_feature_name)
                 else:
                     index = None
-                pathname, filename = url.rsplit("/", 2)
                 #
                 # XXX (leek): Rescale needs to be bubbled up into 
                 #             NamesAndTypes and needs to be harvested
@@ -977,9 +987,8 @@ class Measurements(object):
                 #             and stored in the measurements.
                 #
                 rescale = True
-                provider = LoadImagesImageProvider(
-                    name, pathname, filename, rescale,
-                    series, index)
+                provider = LoadImagesImageProviderURL(
+                    name, url, rescale, series, index)
                 self.__image_providers.append(provider)
                 matching_providers.append(provider)
             image = matching_providers[0].provide_image(self)

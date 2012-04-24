@@ -2903,9 +2903,12 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         return self.__filename
     
     def cache_file(self):
-        '''Cache a file that needs to be HTTP downloaded'''
+        '''Cache a file that needs to be HTTP downloaded
+        
+        Return True if the file has been cached
+        '''
         if self.__cacheing_tried:
-            return
+            return self.__is_cached
         self.__cacheing_tried = True
         #
         # Check to see if the pathname can be accessed as a directory
@@ -2915,13 +2918,13 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         if len(path) == 0:
             filename = self.get_filename()
             if os.path.exists(filename):
-                return
+                return False
             parsed_path = urlparse.urlparse(filename)
             url = filename
             if len(parsed_path.scheme) < 2:
                 raise IOError("Test for access to file failed. File: %s" % filename)
         elif os.path.exists(path):
-            return
+            return False
         else:
             parsed_path = urlparse.urlparse(path)
             url = '/'.join((path, self.get_filename()))
@@ -2936,12 +2939,17 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         else:
             self.__cached_file, headers = urllib.urlretrieve(url)
         self.__is_cached = True
+        return True
             
     def get_full_name(self):
         self.cache_file()
         if self.__is_cached:
             return self.__cached_file
         return os.path.join(self.get_pathname(),self.get_filename())
+    
+    def get_url(self):
+        '''Get the URL representation of the file location'''
+        return pathname2url(self.get_full_name())
     
     def release_memory(self):
         '''Release any image memory
@@ -2956,6 +2964,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             except:
                 logger.warning("Could not delete file %s", self.__cached_file,
                                exc_info=True)
+                
 
     def __del__(self):
         # using __del__ is all kinds of bad, but we need to remove the
@@ -2986,7 +2995,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             self.scale = 255.0
             pixel_type_scale = 255.0
         else:
-            url = pathname2url(self.get_full_name())
+            url = self.get_url()
             properties = {}
             mproperties = {}
             if self.series is not None:
@@ -3044,6 +3053,26 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
         if img.ndim == 3 and len(channel_names) == img.shape[2]:
             image.channel_names = list(channel_names)
         return image
+    
+class LoadImagesImageProviderURL(LoadImagesImageProvider):
+    '''Reference an image via a URL'''
+    def __init__(self, name, url, rescale=True, 
+                 series = None, index = None, channel = None):
+        if url.lower().startswith("file:"):
+            path = url2pathname(url)
+            pathname, filename = os.path.split(path)
+        else:
+            pathname = ""
+            filename = url
+        super(LoadImagesImageProviderURL, self).__init__(
+            name, pathname, filename, rescale, series, index, channel)
+        self.url = url
+        
+    def get_url(self):
+        if self.cache_file():
+            return super(LoadImagesImageProviderURL, self).get_url()
+        return self.url
+    
  
 class LoadImagesMovieFrameProvider(LoadImagesImageProvider):
     """Provide an image by filename:frame, loading the file as it is requested

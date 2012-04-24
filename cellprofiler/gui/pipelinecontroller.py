@@ -25,6 +25,7 @@ import cpframe
 import random
 import string
 import hashlib
+from cStringIO import StringIO
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
@@ -1123,7 +1124,11 @@ class PipelineController:
         self.__test_controls_panel.Show()
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.close_debug_measurements()
+        fd = StringIO()
+        self.__pipeline.write_image_set(fd)
         self.__debug_measurements = cpm.Measurements(can_overwrite=True)
+        fd.seek(0)
+        self.__debug_measurements.load_image_sets(fd)
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cpp.Pipeline)

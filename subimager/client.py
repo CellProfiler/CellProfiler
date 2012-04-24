@@ -30,8 +30,12 @@ import threading
 import urllib
 import zlib
 
+__java_executable = "java"
 if hasattr(sys, 'frozen'):
     __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+    if sys.platform.startswith("win"):
+        __java_executable = os.path.join(
+            __root_path, "jre", "bin", "java")
 else:
     __root_path = os.path.abspath(os.path.split(__file__)[0])
     __root_path = os.path.split(__root_path)[0]
@@ -113,8 +117,7 @@ def run_subimager():
     logging.debug("Deadman port = %d" % deadman_port)
     logging.debug("Starting subimager subprocess")
     args = [
-        "java",
-        "-Djava.awt.headless=true",
+        __java_executable,
         "-cp",
         __jar_path,
         "org.cellprofiler.subimager.Main",

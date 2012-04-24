@@ -214,6 +214,7 @@ class NamesAndTypes(cpm.CPModule):
         '''Fix up metadata predicates after the pipeline loads'''
         if self.assignment_method == ASSIGN_RULES:
             filters = []
+            self.metadata_keys = []
             for group in self.assignments:
                 rules_filter = group.rule_filter
                 filters.append(rules_filter)
@@ -236,7 +237,6 @@ class NamesAndTypes(cpm.CPModule):
                  cps.Filter.DoesNotPredicate.SYMBOL,
                  cps.Filter.DoesPredicate.SYMBOL)
                 text = rules_filter.value_text
-                self.metadata_keys = []
                 while True:
                     match = re.search(pattern, text)
                     if match is None:

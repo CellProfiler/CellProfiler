@@ -15,12 +15,13 @@ TO DO: document module
 
 import logging
 logger = logging.getLogger(__name__)
-
+import numpy as np
 import os
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
+import cellprofiler.measurements as cpmeas
 
 class Groups(cpm.CPModule):
     variable_revision_number = 1
@@ -232,6 +233,28 @@ class Groups(cpm.CPModule):
             v.sort()
         return key_list, image_set_groupings
 
+    def get_groupings(self, workspace):
+        '''Return the image groupings of the image sets in an image set list
+        
+        returns a tuple of key_names and group_list:
+        key_names - the names of the keys that identify the groupings
+        group_list - a sequence composed of two-tuples.
+                     the first element of the tuple has the values for
+                     the key_names for this group.
+                     the second element of the tuple is a sequence of
+                     image numbers comprising the image sets of the group
+        For instance, an experiment might have key_names of 'Metadata_Row'
+        and 'Metadata_Column' and a group_list of:
+        [ ({'Row':'A','Column':'01'), [0,96,192]),
+          (('Row':'A','Column':'02'), [1,97,193]),... ]
+        '''
+        if not self.wants_groups:
+            return
+        key_list = ["_".join((cpmeas.C_METADATA, g.metadata_choice.value))
+                    for g in self.grouping_metadata]
+        m = workspace.measurements
+        return key_list, m.get_groupings(key_list)
+        
     def run(self, workspace):
         pass
     

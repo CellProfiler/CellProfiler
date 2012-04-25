@@ -528,6 +528,17 @@ class AnalysisRunner(object):
         else:
             os.environ['PYTHONPATH'] = os.path.join(os.path.dirname(cellprofiler.__file__), '..')
 
+        if 'CP_DEBUG_WORKER' in os.environ:
+            logger.info("Announcing work on port %d" % work_announce_port)
+            logger.info("Subimager port: %d" % subimager.client.port)
+            logger.info("Please manually start a worker using the command-line:")
+            logger.info(("python -u %s --work-announce tcp://127.0.0.1:%d "
+                         "--subimager-port %d") % (
+                             find_analysis_worker_source(),
+                             work_announce_port,
+                             subimager.client.port))
+            return
+                
         # start workers
         for idx in range(num):
             # stdin for the subprocesses serves as a deadman's switch.  When

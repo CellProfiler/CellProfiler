@@ -1668,7 +1668,7 @@ class Pipeline(object):
         measurements.group_number = measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER]
         measurements.group_index = measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX]
         object_set = cpo.ObjectSet()
-        image_set = cpi.ImageSet(image_set_number, {'number' : image_set_number}, {})
+        image_set = measurements
         outlines = {}
         grids = None
         should_write_measurements = True

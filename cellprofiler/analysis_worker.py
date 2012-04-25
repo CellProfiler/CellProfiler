@@ -404,30 +404,13 @@ def start_daemon_thread(target=None, args=(), name=None):
 class CancelledException(Exception):
     pass
 
-def setup_callbacks(pipeline, work_socket):
-    def post_module_callback(pipeline, module):
-        # XXX - handle display
-        work_socket.send_multipart(["POST_MODULE", module.module_name, str(module.module_number)])
-        work_socket.recv_multipart()  # empty acknowledgement
-
-    def exception_callback(event):
-        if isinstance(event, pipeline.RunExceptionEvent):
-            # XXX
-            # report error back to main process
-            # offer to PDB it
-            # invoke PDB
-            # Also need option to skip this set, continue pipeline, or cancel run.
-            event.cancel_run = True
-
-    pipeline.post_module_callback = post_module_callback
-    pipeline.interaction_callback = interaction_callback
-    pipeline.exception_callback = exception_callback
-    # XXX - set up listener on pipeline for Events of all kinds
-
-
 if __name__ == "__main__":
     sys.modules['cellprofiler.utilities.jutil'] = None
     cpprefs.set_headless()
     logging.root.setLevel(logging.INFO)
     logging.root.addHandler(logging.StreamHandler())
-    main()
+    try:
+        main()
+    except KeyboardInterrupt:
+        # KeyboardInterrupt is sent by thread.interrupt_main() in exit_on_stdin_close()
+        print "Exiting."

@@ -101,24 +101,25 @@ class Analysis(object):
             self.runner.start()
             return self.analysis_in_progress
 
-    def pause_analysis(self):
+    def pause(self):
         with self.runner_lock:
             assert self.analysis_in_progress
             self.runner.pause()
 
-    def resume_analysis(self):
+    def resume(self):
         with self.runner_lock:
             assert self.analysis_in_progress
             self.runner.resume()
 
-    def cancel_analysis(self):
+    def cancel(self):
         with self.runner_lock:
-            assert self.analysis_in_progress
+            if not self.analysis_in_progress:
+                return
             self.analysis_in_progress = False
             self.runner.cancel()
             self.runner = None
 
-    def check(self):
+    def check_running(self):
         '''Verify that an analysis is running, allowing the GUI to recover even
         if the AnalysisRunner fails in some way.
 
@@ -194,11 +195,20 @@ class AnalysisRunner(object):
         self.interface_thread = None
         self.jobserver_thread = None
 
-        self.start_workers(2)  # start worker pool via class method (below)
-
     # External control interfaces
     def start(self):
         '''start the analysis run'''
+
+        # Although it would be nice to reuse the worker pool, I'm not entirely
+        # sure they recover correctly from the user cancelling an analysis
+        # (e.g., during an interaction request).  This should be handled by
+        # zmqRequest.Boundary.stop(), but just in case, we stop the workers and
+        # restart them.  Note that this creates a new announce port, so we
+        # don't have to worry about old workers taking a job before noticing
+        # that their stdin has closed.
+        self.stop_workers()
+        announce_queue = self.start_workers(2)  # start worker pool via class method (below)
+
         workspace = cpw.Workspace(self.pipeline, None, None, None,
                                   self.initial_measurements, cpimage.ImageSetList())
         # XXX - catch exceptions via RunException event listener.
@@ -235,7 +245,7 @@ class AnalysisRunner(object):
                                                 copy=self.initial_measurements)
         self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
         self.interface_thread = start_daemon_thread(target=self.interface, name='AnalysisRunner.interface')
-        self.jobserver_thread = start_daemon_thread(target=self.jobserver, args=(self.analysis_id,), name='AnalysisRunner.jobserver')
+        self.jobserver_thread = start_daemon_thread(target=self.jobserver, args=(self.analysis_id, announce_queue), name='AnalysisRunner.jobserver')
 
     def check(self):
         return ((self.interface_thread is not None) and
@@ -252,6 +262,7 @@ class AnalysisRunner(object):
     def cancel(self):
         '''cancel the analysis run'''
         self.cancelled = True
+        self.paused = False
         self.notify_threads()
 
     def pause(self):
@@ -385,17 +396,19 @@ class AnalysisRunner(object):
 
             # not done, wait for more work
             with self.interface_work_cv:
-                if (self.paused or \
-                        (self.in_process_queue.empty() and
-                         self.finished_queue.empty() and
-                         self.returned_measurements_queue.empty())):
+                while (self.paused or
+                       ((not self.cancelled) and
+                        self.in_process_queue.empty() and
+                        self.finished_queue.empty() and
+                        self.returned_measurements_queue.empty())):
                     self.interface_work_cv.wait()  # wait for a change of status or work to arrive
 
         self.post_event(AnalysisFinished(self.measurements, self.cancelled))
+        self.stop_workers()
         self.measurements = None  # do not hang onto measurements
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
-    def jobserver(self, analysis_id):
+    def jobserver(self, analysis_id, announce_queue):
         # this server subthread should be very lightweight, as it has to handle
         # all the requests from workers, of which there might be several.
 
@@ -403,16 +416,15 @@ class AnalysisRunner(object):
         request_queue = Queue.Queue()
         boundary = Boundary('tcp://127.0.0.1', request_queue, self.jobserver_work_cv, random_port=True)
 
+        # XXX - is this just to keep from posting another AnalysisPaused event?
+        # If so, probably better to simplify the code and keep sending them
+        # (should be only one per second).
         i_was_paused_before = False
 
         # start serving work until the analysis is done (or changed)
         while self.analysis_id == analysis_id:
             # announce ourselves
-            self.announce_queue.put([boundary.request_address, analysis_id])
-
-            if self.cancelled:
-                self.post_event(AnalysisCancelled())
-                break
+            announce_queue.put([boundary.request_address, analysis_id])
 
             with self.jobserver_work_cv:
                 if self.paused and not i_was_paused_before:
@@ -465,7 +477,7 @@ class AnalysisRunner(object):
                 raise ValueError("Unknown request from worker: %s of type %s" % (req, type(req)))
 
         # announce that this job is done/cancelled
-        self.announce_queue.put(['DONE', analysis_id])
+        announce_queue.put(['DONE', analysis_id])
 
         # stop the ZMQ-boundary thread - will also deal with any requests waiting on replies
         boundary.stop()
@@ -514,11 +526,13 @@ class AnalysisRunner(object):
         work_announce_port = work_announce_socket.bind_to_random_port("tcp://127.0.0.1")
         cls.announce_queue = Queue.Queue()
 
-        def announcer():
+        def announcer(announce_queue):
             while True:
-                mesg = cls.announce_queue.get()
+                mesg = announce_queue.get()
+                if mesg == "STOP":  # request to stop this thread
+                    break
                 work_announce_socket.send_multipart(mesg)
-        start_daemon_thread(target=announcer, name='RunAnalysis.announcer')
+        start_daemon_thread(target=announcer, name='RunAnalysis.announcer', args=(cls.announce_queue,))
 
         # ensure subimager is started
         subimager.client.start_subimager()
@@ -557,23 +571,28 @@ class AnalysisRunner(object):
             def run_logger(workR, widx):
                 while(True):
                     try:
-                        line = workR.stdout.readline().rstrip()
-                        if line:
-                            logger.info("Worker %d: %s", widx, line)
+                        line = workR.stdout.readline()
+                        if not line:
+                            break
+                        logger.info("Worker %d: %s", widx, line.rstrip())
                     except:
-                        logger.info("stdout of Worker %d closed" % widx)
                         break
             start_daemon_thread(target=run_logger, args=(worker, idx,), name='worker stdout logger')
 
             cls.workers += [worker]
             cls.deadman_switches += [worker.stdin]  # closing stdin will kill subprocess
 
+        return cls.announce_queue
+
     @classmethod
     def stop_workers(cls):
-        for deadman_switch in cls.deadman_swtiches:
+        for deadman_switch in cls.deadman_switches:
             deadman_switch.close()
+        if cls.announce_queue:
+            cls.announce_queue.put("STOP")
         cls.workers = []
         cls.deadman_swtiches = []
+        cls.announce_queue = None
 
 
 def find_python():
@@ -609,10 +628,6 @@ class AnalysisPaused(object):
 
 
 class AnalysisResumed(object):
-    pass
-
-
-class AnalysisCancelled(object):
     pass
 
 

@@ -775,6 +775,7 @@ class PipelineController:
                 self.__analysis = cpanalysis.Analysis(self.__pipeline, self.get_output_file_path(),
                                                       initial_measurements=cpm.Measurements())
                 self.__analysis.start(self.analysis_event_handler)
+
             except Exception, e:
                 # Catastrophic failure
                 display_error_dialog(self.__frame,
@@ -789,8 +790,6 @@ class PipelineController:
         output_path = self.get_output_file_path()
         if output_path:
             self.__module_view.disable()
-            self.__frame.preferences_view.pause_button.Bind(wx.EVT_BUTTON,
-                                                            self.on_pause)
             if self.__running_pipeline:
                 self.__running_pipeline.close()
             self.__output_path = output_path
@@ -854,7 +853,7 @@ class PipelineController:
             completed = evt.counts.get(cpanalysis.AnalysisRunner.STATUS_DONE, 0)
             wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress, total_jobs, completed)
         elif isinstance(evt, cpanalysis.AnalysisFinished):
-            print "Finished!"
+            print ("Cancelled!" if evt.cancelled else "Finished!")
             # drop any interaction/display requests or exceptions
             while True:
                 try:
@@ -870,9 +869,6 @@ class PipelineController:
             wx.CallAfter(self.handle_analysis_feedback)
         elif isinstance(evt, cpanalysis.ExceptionReport):
             self.interaction_request_queue.put((PRI_EXCEPTION, self.analysis_exception, evt))
-            wx.CallAfter(self.handle_analysis_feedback)
-        elif isinstance(evt, cpanalysis.WorkerExceptionReport):
-            self.interaction_request_queue.put((PRI_EXCEPTION, self.worker_exception, evt))
             wx.CallAfter(self.handle_analysis_feedback)
         elif isinstance(evt, cpanalysis.AnalysisPaused):
             print "Paused"
@@ -988,7 +984,7 @@ class PipelineController:
                                            remote_exc_info=(evt.exc_type, evt.exc_message, evt.exc_traceback,
                                                             evt.filename, evt.line_number, remote_debug))
         if disposition == ED_STOP:
-            self.__analysis.cancel_analysis()
+            self.__analysis.cancel()
 
         evtlist[0].reply(cpanalysis.Reply(disposition=disposition))
 
@@ -1013,8 +1009,6 @@ class PipelineController:
         output_path = self.get_output_file_path()
         if output_path:
             self.__module_view.disable()
-            self.__frame.preferences_view.pause_button.Bind(wx.EVT_BUTTON,
-                                                            self.on_pause)
             if self.__running_pipeline:
                 self.__running_pipeline.close()
             self.__output_path = output_path
@@ -1051,6 +1045,8 @@ class PipelineController:
         if not self.__pause_pipeline:
             self.__frame.preferences_view.pause(True)
             self.__pause_pipeline = True
+            if cpanalysis.use_analysis:
+                self.__analysis.pause()
             # This is necessary for the case where the user hits pause
             # then resume during the time a module is executing, which
             # results in two calls to __running_pipeline.next() trying
@@ -1060,6 +1056,8 @@ class PipelineController:
         else:
             self.__frame.preferences_view.pause(False)
             self.__pause_pipeline = False
+            if cpanalysis.use_analysis:
+                self.__analysis.resume()
             if self.__need_unpause_event:
                 # see note above
                 cpp.post_module_runner_done_event(self.__frame)
@@ -1069,6 +1067,10 @@ class PipelineController:
     
     def on_stop_running(self,event):
         self.pipeline_list = []
+        if (self.__analysis is not None) and self.__analysis.check_running():
+            self.__analysis.cancel()
+            return  # self.stop_running() will be called when we receive the
+                    # AnalysisCancelled event in self.analysis_event_handler.
         self.stop_running()
         if self.__pipeline_measurements is not None:
             self.save_measurements()

@@ -267,11 +267,14 @@ class PreferencesView:
 
     def attach_to_pipeline_controller(self, pipeline_controller):
         self.__panel.Bind(wx.EVT_BUTTON,
-                          pipeline_controller.on_analyze_images, 
+                          pipeline_controller.on_analyze_images,
                           self.__analyze_images_button)
         self.__panel.Bind(wx.EVT_BUTTON,
                           pipeline_controller.on_stop_running,
                           self.__stop_analysis_button)
+        self.__panel.Bind(wx.EVT_BUTTON,
+                          pipeline_controller.on_pause,
+                          self.pause_button)
     
     def attach_to_pipeline_list_view(self, pipeline_list_view):
         self.__pipeline_list_view = pipeline_list_view

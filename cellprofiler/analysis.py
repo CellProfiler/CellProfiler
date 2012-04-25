@@ -405,6 +405,7 @@ class AnalysisRunner(object):
 
         self.post_event(AnalysisFinished(self.measurements, self.cancelled))
         self.stop_workers()
+        self.measurements.close()
         self.measurements = None  # do not hang onto measurements
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
@@ -512,7 +513,7 @@ class AnalysisRunner(object):
     @classmethod
     def start_workers(cls, num=None):
         if cls.workers:
-            return  # already started
+            return cls.annouce_queue # already started
 
         try:
             num = num or multiprocessing.cpu_count()
@@ -551,7 +552,7 @@ class AnalysisRunner(object):
                              find_analysis_worker_source(),
                              work_announce_port,
                              subimager.client.port))
-            return
+            return cls.announce_queue
                 
         # start workers
         for idx in range(num):

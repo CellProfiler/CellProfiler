@@ -2662,6 +2662,16 @@ CP version : %d\n""" % version_number
                     return 1
                 return cmp(x[1], y[1])
             d[D_MEASUREMENT_COLUMNS].sort(cmp=cmpfn)
+            #
+            # Remove all but the last duplicate
+            #
+            duplicate = [ 
+                c0[0] == c1[0] and c0[1] == c1[1]
+                for c0, c1 in zip(d[D_MEASUREMENT_COLUMNS][:-1], 
+                                  d[D_MEASUREMENT_COLUMNS][1:])] + [ False ]
+            d[D_MEASUREMENT_COLUMNS] = [
+                x for x, y in zip(d[D_MEASUREMENT_COLUMNS], duplicate)
+                if not y]
         if remove_postgroup_key:
             d[D_MEASUREMENT_COLUMNS] = [x[:3] for x in d[D_MEASUREMENT_COLUMNS]]
         return d[D_MEASUREMENT_COLUMNS]

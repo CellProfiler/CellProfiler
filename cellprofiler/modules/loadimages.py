@@ -1804,8 +1804,10 @@ class LoadImages(cpmodule.CPModule):
         if np.any(index_count != index_count[0]):
             bad = np.argwhere(index_count != index_count[0]).flatten()
             raise RuntimeError("Image %s has %d files, but image %s has %d files" %
-                               (self.images[0].channel[0].image_name.value,
-                                self.images[bad].channel[0].image_name.value))
+                               (self.images[0].channels[0].image_name.value,
+                                index_count[0],
+                                self.images[bad].channels[0].image_name.value,
+                                index_count[bad]))
         file_list = [ [] for _ in range(len(index_count))]
         for file_pathname, image_index in files:
             file_list[image_index].append(file_pathname)

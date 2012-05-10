@@ -374,7 +374,7 @@ class CreateBatchFiles(cpm.CPModule):
             
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
-        if from_matlab and variable_revision_number <= 8:
+        if from_matlab and variable_revision_number < 8:
             # We never were able to convert from pre-8 to 8 in Matlab.  Why may
             # be lost to history, but my guess is there were conflicting ways
             # to interpret settings previous to this point, so we decided not

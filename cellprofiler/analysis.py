@@ -285,8 +285,8 @@ class AnalysisRunner(object):
         '''Top-half thread for running an analysis.  Sets up grouping for jobs,
         deals with returned measurements, reports status periodically.
 
-        image_set_start - beginning image set number
-        image_set_end - final image set number
+        image_set_start - beginning image set number to process
+        image_set_end - last image set number to process
         overwrite - whether to recompute imagesets that already have data in initial_measurements.
         '''
         # listen for pipeline events, and pass them upstream
@@ -297,11 +297,12 @@ class AnalysisRunner(object):
 
         if image_set_end is None:
             image_set_end = len(self.measurements.get_image_numbers())
+        image_sets_to_process = range(image_set_start, image_set_end + 1)
 
         self.post_event(AnalysisStarted())
 
         # reset the status of every image set that needs to be processed
-        for image_set_number in range(image_set_start, image_set_end):
+        for image_set_number in image_sets_to_process:
             if (overwrite or
                 (not self.measurements.has_measurements(cpmeas.IMAGE, self.STATUS, image_set_number)) or
                 (self.measurements[cpmeas.IMAGE, self.STATUS, image_set_number] != self.STATUS_DONE)):
@@ -312,7 +313,7 @@ class AnalysisRunner(object):
         if self.measurements.has_groups():
             worker_runs_post_group = True
             job_groups = {}
-            for image_set_number in range(image_set_start, image_set_end):
+            for image_set_number in image_sets_to_process:
                 group_number = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number]
                 group_index = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number]
                 job_groups[group_number] = job_groups.get(group_number, []) + [(group_index, image_set_number)]
@@ -320,9 +321,9 @@ class AnalysisRunner(object):
             first_image_job_group = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_start]
         else:
             worker_runs_post_group = False  # prepare_group will be run in worker, but post_group is below.
-            job_groups = [[image_set_number] for image_set_number in range(image_set_start, image_set_end)]
+            job_groups = [[image_set_number] for image_set_number in image_sets_to_process]
             first_image_job_group = 0
-            for idx, image_set_number in enumerate(range(image_set_start, image_set_end)):
+            for idx, image_set_number in enumerate(image_sets_to_process):
                 self.initial_measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number] = 1
                 self.initial_measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number] = idx + 1
             self.initial_measurements.flush()
@@ -383,11 +384,11 @@ class AnalysisRunner(object):
 
             # check progress and report
             counts = collections.Counter(self.measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
-                                         for image_set_number in range(image_set_start, image_set_end))
+                                         for image_set_number in image_sets_to_process)
             self.post_event(AnalysisProgress(counts))
 
             # Are we finished?
-            if (counts[self.STATUS_DONE] == image_set_end - image_set_start):
+            if counts[self.STATUS_DONE] == len(image_sets_to_process):
                 if worker_runs_post_group:
                     self.pipeline.post_group(workspace, {})
                 # XXX - revise pipeline.post_run to use the workspace

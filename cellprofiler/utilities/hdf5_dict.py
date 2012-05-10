@@ -122,8 +122,6 @@ class HDF5Dict(object):
         mgroup = self.hdf5_file.create_group(top_level_group_name)
         self.top_group = mgroup.create_group(run_group_name)
         self.indices = {}  # nested indices for data slices, indexed by (object, feature) then by numerical index
-        self.string_references = StringReferencer(
-            self.top_group.require_group("StringReferences"))
         class HDF5Lock:
             def __init__(self):
                 self.lock = threading.RLock()

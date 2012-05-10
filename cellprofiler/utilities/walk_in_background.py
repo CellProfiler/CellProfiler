@@ -160,6 +160,7 @@ def get_metadata_in_background(pathnames, fn_callback, fn_completed = None):
                     else:
                         url = path
                     metadata = get_metadata(url)
+                    import wx
                     wx.CallAfter(metadata_fn, path, metadata)
                 except:
                     logger.info("Failed to read image metadata for %s" % path)

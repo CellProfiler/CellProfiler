@@ -2756,7 +2756,7 @@ class FileCollectionDisplayController(object):
                         self.tree_ctrl.SetItemImage(item_id, image_id)
                         return
                 elif hint == cps.FileCollectionDisplay.REMOVE:
-                    if not is_visible:
+                    if is_filtered:
                         return
                     self.remove_item(path)
                     return

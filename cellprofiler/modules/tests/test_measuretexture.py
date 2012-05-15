@@ -286,14 +286,18 @@ MeasureTexture:[module_num:2|svn_version:\'1\'|variable_revision_number:3|show_w
     def test_02_01_compare_to_matlab(self):
         path = os.path.split(__file__)[0]
         mask_file = os.path.join(path, 'Channel2-01-A-01Mask.png')
-        mask = pil_to_array(PILImage.open(mask_file))
+        pimg = PILImage.open(mask_file)
+        mask = np.fromstring(pimg.tostring("raw", pimg.mode, 0, -1), np.uint8)
+        mask.shape = pimg.size
         mask = np.flipud(mask)
         texture_measurements = loadmat(os.path.join(path,'texturemeasurements.mat'), struct_as_record=True)
         texture_measurements = texture_measurements['m'][0,0]
         image_file = os.path.join(example_images_directory(), 
                                   'ExampleSBSImages', 'Channel1-01-A-01.tif')
-        image = pil_to_array(PILImage.open(image_file))
-        image = np.flipud(image[:,:,0])
+        pimg = PILImage.open(image_file)
+        image = np.fromstring(pimg.tostring("raw", pimg.mode, 0, -1), np.uint8)
+        image.shape = pimg.size
+        image = np.flipud(image)
         image = image.astype(float) / 255.0
         labels,count = scind.label(mask.astype(bool),np.ones((3,3),bool))
         centers = scind.center_of_mass(np.ones(labels.shape), labels, 

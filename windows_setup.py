@@ -188,11 +188,11 @@ try:
     vigranumpy_path = os.path.join(vigra.__path__[0],"vigranumpycore.pyd")
     if os.path.exists(vigranumpy_path):
         data_files += [(".",[vigranumpy_path])]
-    opts['py2exe']['includes'] += ["vigra", "vigra.impex",
-                                   "h5py","h5py._stub","h5py._conv",
-                                   "h5py.utils","h5py._proxy",
-                                   "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic",
-                                   "sip", "zmq"]
+    opts['py2exe']['includes'] += [
+        "vigra", "vigra.impex",
+        "h5py", "h5py._stub", "h5py._conv", "h5py.utils", "h5py._proxy",
+        "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip", 
+        "zmq", "zmq.utils", "zmq.utils.jsonapi", "zmq.utils.strtypes"]
     opts['py2exe']['excludes'] += ["ilastik"]
     il_path = ilastik.__path__[0]
     for root, subFolders, files in os.walk(il_path):

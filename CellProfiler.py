@@ -17,6 +17,20 @@ import sys
 import os
 import numpy as np
 import tempfile
+if sys.platform.startswith('win'):
+    # This recipe is largely from zmq which seems to need this magic
+    # in order to import in frozen mode - a topic the developers never
+    # dealt with.
+    if hasattr(sys, 'frozen'):
+        here = os.path.split(sys.argv[0])[0]
+
+        import ctypes
+        print "here = %s" % here
+        libzmq = os.path.join(here, 'libzmq.dll')
+        if os.path.exists(libzmq):
+            print "loading %s" % libzmq
+            ctypes.cdll.LoadLibrary(libzmq)
+import zmq
 #
 # CellProfiler expects NaN as a result during calculation
 #

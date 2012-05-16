@@ -150,6 +150,9 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
+        self.__pipeline.clear()
+        if len(self.__pipeline.modules()) > 0:
+            self.__pipeline_list_view.select_one_module(1)
 
     def OnClose(self, event):
         if event.CanVeto() and not self.pipeline_controller.check_close():
@@ -590,7 +593,6 @@ All rights reserved."""
         self.__preferences_view.attach_to_pipeline_list_view(self.__pipeline_list_view)
         self.__directory_view = DirectoryView(self.__file_list_panel)
         self.__pipeline_controller.attach_to_directory_view(self.__directory_view)
-        self.pipeline.notify_listeners(cellprofiler.pipeline.PipelineClearedEvent())
 
     def __do_layout(self):
         width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)

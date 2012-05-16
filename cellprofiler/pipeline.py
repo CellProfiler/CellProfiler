@@ -605,7 +605,6 @@ class Pipeline(object):
         self.__undo_start = None
         self.__image_plane_details = []
         self.file_walker = WalkCollection(self.on_walk_completed)
-        self.__init_modules()
         self.__undo_stack = []
     
     def copy(self, save_image_plane_details = True):

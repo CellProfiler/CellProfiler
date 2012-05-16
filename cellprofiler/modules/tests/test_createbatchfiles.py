@@ -365,7 +365,7 @@ class TestCreateBatchFiles(unittest.TestCase):
         #
         pipeline = cpp.Pipeline()
         module = cpm.CPModule()
-        module.module_num = 1
+        module.module_num = len(pipeline.modules()) + 1
         pipeline.add_module(module)
         pipeline.test_valid()
         #
@@ -373,12 +373,12 @@ class TestCreateBatchFiles(unittest.TestCase):
         #
         pipeline = cpp.Pipeline()
         module = C.CreateBatchFiles()
-        module.module_num = 1
+        module.module_num = len(pipeline.modules()) + 1
         pipeline.add_module(module)
         pipeline.test_valid()
         
         module = cpm.CPModule()
-        module.module_num = 2
+        module.module_num = len(pipeline.modules()) + 1
         pipeline.add_module(module)
         self.assertRaises(cps.ValidationError, pipeline.test_valid)
     

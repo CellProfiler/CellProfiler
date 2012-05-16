@@ -67,10 +67,16 @@ def image_with_one_cell(size=(100,100)):
     img[ dist < 25] = (25.0-dist.astype(float)[dist<25])/25 # A circle in the middle of it
     return img
 
+def get_empty_pipeline():
+    pipeline = cpp.Pipeline()
+    while(len(pipeline.modules()) > 0):
+        pipeline.remove_module(pipeline.modules()[-1].module_num)
+    return pipeline
+
 def exploding_pipeline(test):
     """Return a pipeline that fails if the run exception callback is called during a run
     """
-    x = cpp.Pipeline()
+    x = get_empty_pipeline()
     def fn(pipeline,event):
         if isinstance(event, cpp.RunExceptionEvent):
             import traceback
@@ -100,9 +106,10 @@ class TestPipeline(unittest.TestCase):
         except:
             sys.stderr.write("Failed to remove temporary %s directory" % subdir)
             traceback.print_exc()
-
+            
     def test_00_00_init(self):
         x = cpp.Pipeline()
+        
     def test_01_01_load_mat(self):
         '''Regression test of img-942, load a batch data pipeline with notes'''
 
@@ -270,7 +277,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         
     def test_09_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
-        x = cpp.Pipeline()
+        x = get_empty_pipeline()
         module = MyClassForTest0801()
         module.module_num = 1
         module.my_variable.value = "foo"
@@ -494,7 +501,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertTrue(success)
         
     def test_13_01_save_pipeline(self):
-        pipeline = cpp.Pipeline()
+        pipeline = get_empty_pipeline()
         cellprofiler.modules.fill_modules()
         module = cellprofiler.modules.instantiate_module("Align")
         module.module_num = 1
@@ -515,7 +522,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertEqual(setting_in.value, setting_out.value)
             
     def test_13_02_save_measurements(self):
-        pipeline = cpp.Pipeline()
+        pipeline = get_empty_pipeline()
         cellprofiler.modules.fill_modules()
         module = cellprofiler.modules.instantiate_module("Align")
         module.module_num = 1
@@ -600,7 +607,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 self.assertTrue(np.all(m_in == m_out))
                 
     def test_13_04_pipeline_measurement(self):
-        pipeline = cpp.Pipeline()
+        pipeline = get_empty_pipeline()
         cellprofiler.modules.fill_modules()
         module = cellprofiler.modules.instantiate_module("Align")
         module.module_num = 1
@@ -623,7 +630,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertEqual(m1setting.value, m2setting.value)
                 
     def test_14_01_unicode_save(self):
-        pipeline = cpp.Pipeline()
+        pipeline = get_empty_pipeline()
         module = MyClassForTest0801()
         module.my_variable.value = u"\\\u2211"
         module.module_num = 1
@@ -663,7 +670,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         #
         # Continue with test
         #
-        pipeline = cpp.Pipeline()
+        pipeline = get_empty_pipeline()
         def callback(caller, event):
             self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
         pipeline.add_listener(callback)
@@ -736,7 +743,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
     def test_16_00_get_provider_dictionary_nothing(self):
         for module in (ATestModule(),
                        ATestModule([cps.Choice("foo", ["Hello", "World"])])):
-            pipeline = cpp.Pipeline()
+            pipeline = get_empty_pipeline()
             module.module_num = 1
             pipeline.add_module(module)
             for groupname in (cps.IMAGE_GROUP, cps.OBJECT_GROUP, cps.MEASUREMENTS_GROUP):
@@ -744,7 +751,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 self.assertEqual(len(d), 0)
     
     def test_16_01_get_provider_dictionary_image(self):
-        pipeline = cpp.Pipeline()
+        pipeline = get_empty_pipeline()
         my_setting = cps.ImageNameProvider("foo", IMAGE_NAME)
         module = ATestModule([my_setting])
         module.module_num = 1
@@ -761,7 +768,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
         
     def test_16_02_get_provider_dictionary_object(self):
-        pipeline = cpp.Pipeline()
+        pipeline = get_empty_pipeline()
         my_setting = cps.ObjectNameProvider("foo", OBJECT_NAME)
         module = ATestModule([my_setting])
         module.module_num = 1
@@ -778,7 +785,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
 
     def test_16_03_get_provider_dictionary_measurement(self):
-        pipeline = cpp.Pipeline()
+        pipeline = get_empty_pipeline()
         module = ATestModule(
             measurement_columns = [(OBJECT_NAME, FEATURE_NAME, cpmeas.COLTYPE_FLOAT)])
         module.module_num = 1
@@ -797,7 +804,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
         
     def test_16_04_get_provider_dictionary_other(self):
-        pipeline = cpp.Pipeline()
+        pipeline = get_empty_pipeline()
         module = ATestModule(other_providers = {cps.IMAGE_GROUP: [ IMAGE_NAME]})
         module.module_num = 1
         pipeline.add_module(module)
@@ -812,7 +819,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertEqual(len(pipeline.get_provider_dictionary(group)), 0)
         
     def test_16_05_get_provider_dictionary_combo(self):
-        pipeline = cpp.Pipeline()
+        pipeline = get_empty_pipeline()
         image_setting = cps.ImageNameProvider("foo", IMAGE_NAME)
         object_setting = cps.ObjectNameProvider("foo", OBJECT_NAME)
         measurement_columns = [(OBJECT_NAME, FEATURE_NAME, cpmeas.COLTYPE_FLOAT)]
@@ -866,7 +873,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         #
         # Test disambiguation of the sources
         #
-        pipeline = cpp.Pipeline()
+        pipeline = get_empty_pipeline()
         my_image_setting_1 = cps.ImageNameProvider("foo", IMAGE_NAME)
         my_image_setting_2 = cps.ImageNameProvider("foo", IMAGE_NAME)
         my_object_setting = cps.ObjectNameProvider("foo", OBJECT_NAME)

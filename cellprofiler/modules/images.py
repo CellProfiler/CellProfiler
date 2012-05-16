@@ -11,6 +11,8 @@ import cellprofiler.utilities.walk_in_background as W
 import os
 import urllib
 
+from .loadimages import pathname2url
+
 class Images(cpm.CPModule):
     variable_revision_number = 1
     module_name = "Images"
@@ -19,6 +21,7 @@ class Images(cpm.CPModule):
     MI_SHOW_IMAGE = "Show image"
     MI_REMOVE = "Remove"
     MI_SHOW_METADATA = "Show metadata"
+    MI_REFRESH = "Refresh"
     
     def create_settings(self):
         self.walk_collection = W.WalkCollection(self.on_walk_completed)
@@ -77,6 +80,7 @@ class Images(cpm.CPModule):
                 self.pipeline.remove_image_plane_details(ipds)
             finally:
                 self.pipeline.stop_undoable_action()
+                
             
     def get_path_info(self, modpath):
         '''Get a descriptive name, the image type, the tooltip and menu for a path'''
@@ -86,7 +90,8 @@ class Images(cpm.CPModule):
         else:
             ipd = self.pipeline.find_image_plane_details(exemplar)
         if ipd is None:
-            return exemplar.path, self.file_collection_display.NODE_FILE, None, []
+            return (exemplar.path, self.file_collection_display.NODE_FILE, 
+                    None, [ self.MI_REFRESH, self.MI_REMOVE])
         size_t = int(ipd.metadata.get(cpp.ImagePlaneDetails.MD_SIZE_T, 1))
         size_z = int(ipd.metadata.get(cpp.ImagePlaneDetails.MD_SIZE_Z, 1))
         size_c = int(ipd.metadata.get(cpp.ImagePlaneDetails.MD_SIZE_C, 1))
@@ -121,9 +126,10 @@ class Images(cpm.CPModule):
             self.file_collection_display.NODE_MONOCHROME_IMAGE,
             self.file_collection_display.NODE_IMAGE_PLANE,
             self.file_collection_display.NODE_COMPOSITE_IMAGE):
-            menu = [self.MI_SHOW_IMAGE, self.MI_REMOVE, self.MI_SHOW_METADATA]
+            menu = [self.MI_SHOW_IMAGE, self.MI_SHOW_METADATA,
+                    self.MI_REMOVE, self.MI_REFRESH]
         else:
-            menu = []
+            menu = [self.MI_REMOVE, self.MI_REFRESH]
         return name, image_type, None, menu
     
     def on_menu_command(self, path, command):
@@ -139,10 +145,13 @@ class Images(cpm.CPModule):
             series, index, channel = path[-1]
             filename = path[-2]
             pathname = os.path.join(*path[:-1])
+            is_plane = True
         else:
             series = index = channel = None
             filename = path[-1]
             pathname = os.path.join(*path)
+            is_plane = False
+        url = pathname2url(pathname)
         if command == self.MI_SHOW_IMAGE:
             from cellprofiler.gui.cpfigure import CPFigureFrame
             from subimager.client import get_image
@@ -167,8 +176,16 @@ class Images(cpm.CPModule):
                 frame.subplot_imshow_color(0, 0, image, title = filename)
             frame.Refresh()
         elif command == self.MI_REMOVE:
-            self.on_remove(self.add_modpath_to_modlist(path))
-            self.file_collection_display.update_ui()
+            if is_plane:
+                self.on_remove(self.add_modpath_to_modlist(path))
+            else:
+                self.pipeline.remove_image_plane_url(url)
+        elif command == self.MI_REFRESH:
+            if is_plane:
+                self.on_remove(self.add_modpath_to_modlist(path))
+            else:
+                self.pipeline.remove_image_plane_url(url)
+            self.pipeline.walk_paths([pathname])
         elif command == self.MI_SHOW_METADATA:
             import wx
             ipd = self.get_image_plane_details(path)

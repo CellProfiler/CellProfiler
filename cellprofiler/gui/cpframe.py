@@ -590,6 +590,7 @@ All rights reserved."""
         self.__preferences_view.attach_to_pipeline_list_view(self.__pipeline_list_view)
         self.__directory_view = DirectoryView(self.__file_list_panel)
         self.__pipeline_controller.attach_to_directory_view(self.__directory_view)
+        self.pipeline.notify_listeners(cellprofiler.pipeline.PipelineClearedEvent())
 
     def __do_layout(self):
         width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)

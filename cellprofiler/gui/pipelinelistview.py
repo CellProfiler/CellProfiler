@@ -475,10 +475,14 @@ class PipelineListView(object):
         finally:
             wx.EndBusyCursor()
                     
-    def __on_pipeline_loaded(self,pipeline,event):
+    def __on_pipeline_loaded(self,pipeline, event):
         """Repopulate the list view after the pipeline loads
         
         """
+        self.resetItems(pipeline)
+        
+    def resetItems(self, pipeline):
+        '''Reset the list view and repopulate the list items'''
         nrows = len(pipeline.modules())
         self.list_ctrl.DeleteAllItems()
         
@@ -550,10 +554,8 @@ class PipelineListView(object):
         module_name_item.Id = row
         self.list_ctrl.SetItem(module_name_item)
         
-    def __on_pipeline_cleared(self,pipeline,event):
-        self.list_ctrl.DeleteAllItems()
-        self.__adjust_rows()
-        self.__controller.enable_module_controls_panel_buttons()
+    def __on_pipeline_cleared(self, pipeline, event):
+        self.resetItems(pipeline)
         
     def __on_module_added(self,pipeline,event):
         module = pipeline.modules()[event.module_num - 1]

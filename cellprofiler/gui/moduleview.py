@@ -472,7 +472,8 @@ class ModuleView:
                     if control is not None:
                         control.file_collection_display.update()
                     else:
-                        fcd = FileCollectionDisplayController(self, v)
+                        fcd = FileCollectionDisplayController(
+                            self, v, self.__pipeline)
                         control = fcd.panel
                         fcd.panel.file_collection_display = fcd
                 elif isinstance(v, cps.Table):
@@ -1797,9 +1798,8 @@ class ModuleView:
         self.fit_ctrl(control)
         
     def __on_pipeline_event(self,pipeline,event):
-        if (isinstance(event,cpp.PipelineClearedEvent)):
-            self.clear_selection()
-        elif (isinstance(event, cpp.PipelineLoadedEvent)):
+        if (isinstance(event, cpp.PipelineClearedEvent) or
+            isinstance(event, cpp.PipelineLoadedEvent)):
             # clear validation cache, since settings might not have changed,
             # but pipeline itself may have (due to a module source reload)
             clear_validation_cache()
@@ -2463,10 +2463,12 @@ class FileCollectionDisplayController(object):
         def OnDropFiles(self, x, y, filenames):
             self.callback_fn(x, y, filenames)
             
-    def __init__(self, module_view, v):
+    def __init__(self, module_view, v, pipeline):
         assert isinstance(v, cps.FileCollectionDisplay)
         self.module_view = module_view
         self.v = v
+        assert isinstance(pipeline, cpp.Pipeline)
+        self.pipeline = pipeline
         self.panel = wx.Panel(self.module_view.module_panel, -1,
                               name = edit_control_name(v))
         self.panel.controller = self
@@ -2651,11 +2653,16 @@ class FileCollectionDisplayController(object):
                 menu.Append(-1, context_item)
             def on_menu(event):
                 logger.debug("On menu")
-                for menu_item in menu.GetMenuItems():
-                    if menu_item.Id == event.Id:
-                        logger.debug("    Command = %s" % menu_item.Text)
-                        self.v.fn_on_menu_command(path, menu_item.Text)
-                        break
+                
+                self.pipeline.start_undoable_action()
+                try:
+                    for menu_item in menu.GetMenuItems():
+                        if menu_item.Id == event.Id:
+                            logger.debug("    Command = %s" % menu_item.Text)
+                            self.v.fn_on_menu_command(path, menu_item.Text)
+                            break
+                finally:
+                    self.pipeline.stop_undoable_action()
                     
             self.tree_ctrl.Bind(wx.EVT_MENU, on_menu)
             self.tree_ctrl.PopupMenu(menu, event.GetPoint())
@@ -2760,32 +2767,21 @@ class FileCollectionDisplayController(object):
                         return
                     self.remove_item(path)
                     return
-                
-        if not self.needs_update:
-            self.needs_update = True
-            wx.CallLater(self.latency * 4 / 3, self.update)
-            self.request_update_timestamp = time.time()
+        self.update()
             
     def update(self):
-        if not self.needs_update:
-            return
-        self.latency = 1000 * (time.time() - self.request_update_timestamp)  # milliseconds
-        try:
-            self.update_subtree(self.v.file_tree, self.root_item, False, [])
-            if not self.user_collapsed_a_node:
-                #
-                # Expand all until we reach a node that has more than
-                # one child = ambiguous choice of which to expand
-                #
-                item = self.root_item
-                while self.tree_ctrl.GetChildrenCount(item, False) == 1:
-                    self.tree_ctrl.Expand(item)
-                    item, cookie = self.tree_ctrl.GetFirstChild(item)
-                if self.tree_ctrl.GetChildrenCount(item, False) > 0:
-                    self.tree_ctrl.Expand(item)
-                    
-        finally:
-            self.needs_update = False
+        self.update_subtree(self.v.file_tree, self.root_item, False, [])
+        if not self.user_collapsed_a_node:
+            #
+            # Expand all until we reach a node that has more than
+            # one child = ambiguous choice of which to expand
+            #
+            item = self.root_item
+            while self.tree_ctrl.GetChildrenCount(item, False) == 1:
+                self.tree_ctrl.Expand(item)
+                item, cookie = self.tree_ctrl.GetFirstChild(item)
+            if self.tree_ctrl.GetChildrenCount(item, False) > 0:
+                self.tree_ctrl.Expand(item)
         
     def update_subtree(self, file_tree, parent_item, is_filtered, modpath):
         existing_items = {}

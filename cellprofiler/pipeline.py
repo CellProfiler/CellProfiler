@@ -424,6 +424,8 @@ class ImagePlaneDetails(object):
         
     def __cmp__(self, other):
         '''A stable comparison method for sorting'''
+        if isinstance(other, basestring):
+            return cmp(self.url, other)
         assert isinstance(other, ImagePlaneDetails)
         return (cmp(self.url, other.url) or cmp(self.series, other.series) or
                 cmp(self.index, other.index) or cmp(self.channel, other.channel))
@@ -603,6 +605,8 @@ class Pipeline(object):
         self.__undo_start = None
         self.__image_plane_details = []
         self.file_walker = WalkCollection(self.on_walk_completed)
+        self.__init_modules()
+        self.__undo_stack = []
     
     def copy(self, save_image_plane_details = True):
         '''Create a copy of the pipeline modules and settings'''
@@ -756,6 +760,9 @@ class Pipeline(object):
         
         fd_or_filename - either the name of a file or a file-like object
         """
+        self.__modules = []
+        self.__undo_stack = []
+        self.__undo_start = None
         filename = None
         if hasattr(fd_or_filename,'seek') and hasattr(fd_or_filename,'read'):
             fd = fd_or_filename
@@ -2013,14 +2020,28 @@ class Pipeline(object):
     
 
     def clear(self):
-        old_modules = self.__modules
-        def undo():
-            for module in old_modules:
-                self.add_module(module)
-        self.__undo_stack.append((undo, 
-                                  "Undo clear"))
-        self.__modules = []
-        self.notify_listeners(PipelineClearedEvent())
+        self.start_undoable_action()
+        try:
+            while(len(self.__modules) > 0):
+                self.remove_module(self.__modules[-1].module_num)
+            self.notify_listeners(PipelineClearedEvent())
+            self.__init_modules()
+        finally:
+            self.stop_undoable_action()
+        
+    def __init_modules(self):
+        '''Initialize the module list
+        
+        Initialize the modules list to contain the four file modules.
+        '''
+        from cellprofiler.modules.images import Images
+        from cellprofiler.modules.metadata import Metadata
+        from cellprofiler.modules.namesandtypes import NamesAndTypes
+        from cellprofiler.modules.groups import Groups
+        for i, module in enumerate( 
+            (Images(), Metadata(), NamesAndTypes(), Groups())):
+            module.set_module_num(i + 1)
+            self.add_module(module)
     
     def move_module(self,module_num,direction):
         """Move module # ModuleNum either DIRECTION_UP or DIRECTION_DOWN in the list
@@ -2097,6 +2118,24 @@ class Pipeline(object):
             self.notify_listeners(ImagePlaneDetailsRemovedEvent(real_list))
             def undo():
                 self.add_image_plane_details(real_list)
+            self.__undo_stack.append((undo, "Remove images"))
+            
+    def remove_image_plane_url(self, url):
+        pos = bisect.bisect_left(self.image_plane_details, url)
+        end = pos
+        while True:
+            if end == len(self.image_plane_details):
+                break
+            if (self.image_plane_details[end].url != url and not
+                self.image_plane_details[end].url.startswith(url + "/")):
+                break
+            end += 1
+        if end > pos:
+            removed = self.image_plane_details[pos:end]
+            del self.image_plane_details[pos:end]
+            self.notify_listeners(ImagePlaneDetailsRemovedEvent(removed))
+            def undo():
+                self.add_image_plane_details(removed)
             self.__undo_stack.append((undo, "Remove images"))
         
     def find_image_plane_details(self, exemplar):
@@ -2322,7 +2361,7 @@ class Pipeline(object):
         assert module.module_num==module_num,'Misnumbered module. Expected %d, got %d'%(module_num,module.module_num)
         return module
     
-    def add_module(self,new_module):
+    def add_module(self, new_module):
         """Insert a module into the pipeline with the given module #
         
         Insert a module into the pipeline with the given module #. 

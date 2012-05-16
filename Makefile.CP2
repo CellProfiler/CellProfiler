@@ -127,9 +127,7 @@ WGETFLAGS				?= --continue --tries=10 --timeout=60 --no-check-certificate
 
 # Versions and prefixes of packages:
 CELLPROFILERPREFIX			?= $(PREFIX)
-CELLPROFILER_CO_ARGS			?= -rHEAD
-#CELLPROFILER_CO_ARGS			?= -r10415
-CELLPROFILER_CO_URL			= https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler
+CELLPROFILER_CO_URL			= https://github.com/CellProfiler/CellProfiler.git
 
 #PYVERSION				= 2.5
 PYVERSION				= 2.6
@@ -992,10 +990,10 @@ $(CELLPROFILERPREFIX)/CellProfiler/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $
 					cd "$(CELLPROFILERPREFIX)" && \
 					if test -d "./CellProfiler" ; then \
 						cd ./CellProfiler && \
-						svn status --no-ignore|grep "^[I?]"|cut -c8-|while read I ; do rm -fr "$${I}" ; done ; \
+						git clean -x -d . ; \
 					else \
 						rm -fr "./CellProfiler" && \
-						svn co $(CELLPROFILER_CO_ARGS) "$(CELLPROFILER_CO_URL)" ./CellProfiler && \
+                                                git clone "$(CELLPROFILER_CO_URL)" ./CellProfiler && \
 						cd ./CellProfiler ; \
 					fi && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \

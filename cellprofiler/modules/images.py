@@ -19,7 +19,7 @@ class Images(cpm.CPModule):
     category = "File Processing"
     
     MI_SHOW_IMAGE = "Show image"
-    MI_REMOVE = "Remove"
+    MI_REMOVE = "Remove from list"
     MI_SHOW_METADATA = "Show metadata"
     MI_REFRESH = "Refresh"
     

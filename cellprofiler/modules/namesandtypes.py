@@ -498,7 +498,7 @@ class NamesAndTypes(cpm.CPModule):
         For NamesAndTypes, we anticipate that the pipeline will create
         the text measurements for the images.
         '''
-        from cellprofiler.modules.load_images import \
+        from cellprofiler.modules.loadimages import \
              C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
              C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
              C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
@@ -510,7 +510,7 @@ class NamesAndTypes(cpm.CPModule):
         object_names = self.get_object_names()
         result = []
         for image_name in image_names:
-            result += [ (IMAGE, 
+            result += [ (cpmeas.IMAGE, 
                          "_".join([category, image_name]),
                          coltype)
                         for category, coltype in (

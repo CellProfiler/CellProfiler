@@ -2078,7 +2078,7 @@ class LoadImages(cpmodule.CPModule):
                 image_index += len(image.channels)
             else:
                 for i in range(frame_count):
-                    list_of_lists[image_index].append(
+                    list_of_lists[image_group_index].append(
                         (pathname, i, i, image_group_index))
         image_set_count = len(list_of_lists[0])
         for x,name in zip(list_of_lists[1:], image_names):

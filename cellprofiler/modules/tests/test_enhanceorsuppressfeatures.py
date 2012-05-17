@@ -73,7 +73,7 @@ class TestEnhanceOrSuppressSpeckles(unittest.TestCase):
     def test_01_00_check_version(self):
         '''Make sure the test covers the latest revision number'''
         # Create a new test and update this one after changing settings
-        self.assertEqual(E.EnhanceOrSuppressFeatures.variable_revision_number, 3)
+        self.assertEqual(E.EnhanceOrSuppressFeatures.variable_revision_number, 4)
         
     def test_01_01_load_v1(self):
         data = ( 'eJztWNFO2zAUdUqBsUkr28v26Ee60aotQ4NqKu0oEtUIVLRiQohtpnXba'
@@ -225,6 +225,60 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10591\'|variable_revision_
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
         self.assertEqual(module.enhance_method, E.E_DIC)
+        
+    def test_01_04_load_v4(self):
+        data = r'''CellProfiler Pipeline: http://www.cellprofiler.org
+Version:2
+DateRevision:20120516145742
+
+EnhanceOrSuppressFeatures:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Select the input image:Dendrite
+    Name the output image:EnhancedDendrite
+    Select the operation:Enhance
+    Feature size:10
+    Feature type:Neurites
+    Range of hole sizes:1,10
+    Smoothing scale:2.0
+    Shear angle:0
+    Decay:0.95
+    Enhancement method:Tubeness
+    
+EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Select the input image:Axon
+    Name the output image:EnhancedAxon
+    Select the operation:Enhance
+    Feature size:10
+    Feature type:Neurites
+    Range of hole sizes:1,10
+    Smoothing scale:2.0
+    Shear angle:0
+    Decay:0.95
+    Enhancement method:Line structures
+'''
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()),2)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
+        self.assertEqual(module.image_name, "Dendrite")
+        self.assertEqual(module.filtered_image_name, "EnhancedDendrite")
+        self.assertEqual(module.method, E.ENHANCE)
+        self.assertEqual(module.enhance_method, E.E_NEURITES)
+        self.assertEqual(module.smoothing, 2.0)
+        self.assertEqual(module.object_size, 10)
+        self.assertEqual(module.hole_size.min, 1)
+        self.assertEqual(module.hole_size.max, 10)
+        self.assertEqual(module.angle, 0)
+        self.assertEqual(module.decay, .95)
+        self.assertEqual(module.neurite_choice, E.N_TUBENESS)
+        
+        module = pipeline.modules()[1]
+        self.assertTrue(isinstance(module, E.EnhanceOrSuppressFeatures))
+        self.assertEqual(module.neurite_choice, E.N_GRADIENT)
+
     
     def test_02_01_enhance(self):
         '''Enhance an image composed of two circles of different diameters'''
@@ -563,10 +617,37 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'10591\'|variable_revision_
         self.assertTrue(isinstance(module, E.EnhanceOrSuppressSpeckles))
         module.method.value = E.ENHANCE
         module.enhance_method.value = E.E_NEURITES
+        module.neurite_choice.value = E.N_GRADIENT
         module.object_size.value = 8
         module.run(workspace)
         result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(np.abs(result.pixel_data - expected) < .002))
+        
+    def test_04_02_enhance_neurites_tubeness_positive(self):
+        image = np.zeros((20, 30))
+        image[5:15, 10:20] = np.identity(10)
+        workspace, module = self.make_workspace(image, None)
+        self.assertTrue(isinstance(module, E.EnhanceOrSuppressSpeckles))
+        module.method.value = E.ENHANCE
+        module.neurite_choice.value = E.N_TUBENESS
+        module.smoothing.value = 1.0
+        module.run(workspace)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        pixel_data = result.pixel_data
+        self.assertTrue(np.all(pixel_data[image > 0] > 0))
+        
+    def test_04_03_enhance_neurites_tubeness_negative(self):
+        image = np.ones((20, 30))
+        image[5:15, 10:20] -= np.identity(10)
+        workspace, module = self.make_workspace(image, None)
+        self.assertTrue(isinstance(module, E.EnhanceOrSuppressSpeckles))
+        module.method.value = E.ENHANCE
+        module.neurite_choice.value = E.N_TUBENESS
+        module.smoothing.value = 1.0
+        module.run(workspace)
+        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        pixel_data = result.pixel_data
+        np.testing.assert_array_almost_equal(pixel_data, 0)
         
     def test_05_01_enhance_dark_holes(self):
         '''Check enhancement of dark holes'''

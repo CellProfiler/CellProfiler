@@ -450,9 +450,60 @@ class HDF5Dict(object):
                     'index', data = idx, dtype=int,
                     compression = None, chunks = (self.chunksize, 3),
                     maxshape = (None,3))
+                
+class HDF5FileList(object):
+    '''An HDF5FileList is a hierarchical directory structure backed by HDF5
     
-    def get_filelist_group(self, filelist_name = DEFAULT_GROUP):
-        '''Get the name of the group that roots the file list'''
+    The HDFFileList holds a list of URLS in a hierarchical directory structure
+    that lets the caller list, add and remove the URLs in a directory. It
+    is meant to be used for a list of files curated by the user. The structure
+    is the following:
+    
+    FileList / group (default = default
+       schema name
+          directory name
+              ....
+              sub directory name
+                   index
+                   data
+                   
+    index and data are parts of a VStringArray (see below) and URLs are
+    stored in alpabetical order in the array. 
+    
+    Schema names and directory names are escape-encoded to allow characters that 
+    can appear in URLs but could cause problems as group names, most notably,
+    forward-slash. Characters other than alphanumerics, and percent ("%"), 
+    equals ("="), period ("."), underbar ("_") plus ("+") and dash ("-") are 
+    translated into backslash + 2 hex characters (for instance, "(hello)"
+    is encoded as "\50hello\51").
+    
+    Pragmatically, aside from perhaps a filename with a true 
+    backslash in it, the group names will be the same as the parts of the
+    url path with the one disturbing exception of the first one, because
+    there can be from zero to three consecutive forward slashes at the
+    start of the path and DOS file paths often start with c:. So there...
+    "c:\foo\bar" becomes "file:///C:/foo/bar" as a URL and becomes
+    "file", "\2F\2FC\58". SORRY!
+    '''
+    def __init__(self, 
+                 hdf5_file, 
+                 lock = None,
+                 filelist_name = DEFAULT_GROUP):
+        '''Initialize self with an HDF5 file
+        
+        hdf5_file - a h5py.File or a h5py.Group if you are perverse
+        
+        lock - a mutex object for locking such as threading.RLock. Default
+               is no locking.
+               
+        filelist_name - the name of this filelist within the file. Defaults
+                        to "Default".
+        '''
+        self.hdf5_file = hdf5_file
+        if lock is None:
+            self.lock = NullLock()
+        else:
+            self.lock = lock
         g = self.hdf5_file.require_group(FILE_LIST_GROUP)
         if filelist_name in g:
             g = g[filelist_name]
@@ -460,9 +511,14 @@ class HDF5Dict(object):
         else:
             g = g.require_group(filelist_name)
             g.attrs[A_CLASS] = CLASS_FILELIST_GROUP
-        return g
+        self.__top_level_group = g
+        
+    def get_filelist_group(self):
+        '''Get the top-level group of this filelist'''
+        return self.__top_level_group
     
-    LEGAL_GROUP_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
+    LEGAL_GROUP_CHARACTERS = \
+        "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-+.%="
     @staticmethod
     def encode(name):
         '''Encode a name so it can be used as the name of a group
@@ -479,7 +535,7 @@ class HDF5Dict(object):
         #
         # I sure hope this isn't slow...
         #
-        return "".join([c if c in HDF5Dict.LEGAL_GROUP_CHARACTERS
+        return "".join([c if c in HDF5FileList.LEGAL_GROUP_CHARACTERS
                         else r"\%02x" % ord(c)
                         for c in name])
     
@@ -560,7 +616,8 @@ class HDF5Dict(object):
                     g1 = g.require_group(self.encode(k))
                     g1.attrs[A_CLASS] = CLASS_DIRECTORY
                     fn(g1, d[k])
-        fn(group, d)
+        with self.lock:
+            fn(group, d)
                     
     def remove_files_from_filelist(self, urls, group = None):
         if group is None:
@@ -600,7 +657,8 @@ class HDF5Dict(object):
                 if g[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY:
                     return True
             return False
-        fn(group, d)
+        with self.lock:
+            fn(group, d)
         
     def get_filelist(self, root_url = None, group = None):
         '''Retrieve all URLs from a filelist

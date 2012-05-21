@@ -21,15 +21,15 @@ import tempfile
 import unittest
 
 import cellprofiler.utilities.hdf5_dict as H5DICT
-E = H5DICT.HDF5Dict.encode
-D = H5DICT.HDF5Dict.decode
+E = H5DICT.HDF5FileList.encode
+D = H5DICT.HDF5FileList.decode
 
 
-class TestHDF5Dict(unittest.TestCase):
+class TestHDF5FileList(unittest.TestCase):
     def setUp(self):
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
-        self.hdf_dict = H5DICT.HDF5Dict(self.temp_filename)
-        self.hdf_file = self.hdf_dict.hdf5_file
+        self.hdf_file = h5py.File(self.temp_filename)
+        self.filelist = H5DICT.HDF5FileList(self.hdf_file)
         
     def tearDown(self):
         self.hdf_file.close()
@@ -39,13 +39,13 @@ class TestHDF5Dict(unittest.TestCase):
     def test_01_01_encode_alphanumeric(self):
         r = np.random.RandomState()
         r.seed(101)
-        s = r.permutation(np.frombuffer("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-", "S1")).tostring()
+        s = r.permutation(np.frombuffer("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-+.%=", "S1")).tostring()
         self.assertEqual(s, E(s))
         
     def test_01_02_decode_alphanumeric(self):
         r = np.random.RandomState()
         r.seed(102)
-        s = r.permutation(np.frombuffer("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-", "S1")).tostring()
+        s = r.permutation(np.frombuffer("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-+.%=", "S1")).tostring()
         self.assertEqual(s, D(s))
         
     def test_01_03_decode_of_encode_is_same(self):
@@ -55,22 +55,22 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertEqual(s, D(E(s)))
         
     def test_02_01_get_new_filelist_group(self):
-        g = self.hdf_dict.get_filelist_group()
+        g = self.filelist.get_filelist_group()
         self.assertIn(H5DICT.FILE_LIST_GROUP, self.hdf_file)
         self.assertIn(H5DICT.DEFAULT_GROUP,
                       self.hdf_file[H5DICT.FILE_LIST_GROUP])
         
     def test_02_02_get_existing_filelist_group(self):
-        g1 = self.hdf_dict.get_filelist_group()
-        g2 = self.hdf_dict.get_filelist_group()
+        g1 = self.filelist.get_filelist_group()
+        g2 = self.filelist.get_filelist_group()
         self.assertEqual(g1, g2)
         
     def test_03_00_add_no_file(self):
-        self.hdf_dict.add_files_to_filelist([])
+        self.filelist.add_files_to_filelist([])
         
     def test_03_01_add_file(self):
-        g = self.hdf_dict.get_filelist_group()
-        self.hdf_dict.add_files_to_filelist(["file://foo/bar.jpg"])
+        g = self.filelist.get_filelist_group()
+        self.filelist.add_files_to_filelist(["file://foo/bar.jpg"])
         self.assertIn(E("file"), g)
         self.assertIn(E("//foo"), g["file"])
         filenames = H5DICT.VStringArray(g[E("file")][E("//foo")])
@@ -78,8 +78,8 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertIn("bar.jpg", filenames)
         
     def test_03_02_add_two_files(self):
-        g = self.hdf_dict.get_filelist_group()
-        self.hdf_dict.add_files_to_filelist(
+        g = self.filelist.get_filelist_group()
+        self.filelist.add_files_to_filelist(
             ["file://foo/bar.jpg", "file://foo/baz.jpg"])
         self.assertIn(E("file"), g)
         self.assertIn(E("//foo"), g[E("file")])
@@ -89,8 +89,8 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertEqual(filenames[1], "baz.jpg")
         
     def test_03_03_add_two_directories(self):
-        g = self.hdf_dict.get_filelist_group()
-        self.hdf_dict.add_files_to_filelist(
+        g = self.filelist.get_filelist_group()
+        self.filelist.add_files_to_filelist(
             ["file://foo/bar.jpg", "file://bar/baz.jpg"])
         for subdir, filename in (("//foo", "bar.jpg"),
                                  ("//bar", "baz.jpg")):
@@ -101,10 +101,10 @@ class TestHDF5Dict(unittest.TestCase):
             self.assertEqual(filenames[0], filename)
             
     def test_03_04_add_a_file_and_a_file(self):
-        g = self.hdf_dict.get_filelist_group()
-        self.hdf_dict.add_files_to_filelist(
+        g = self.filelist.get_filelist_group()
+        self.filelist.add_files_to_filelist(
             ["file://foo/bar.jpg"])
-        self.hdf_dict.add_files_to_filelist(
+        self.filelist.add_files_to_filelist(
             ["file://foo/baz.jpg"])
         self.assertIn(E("file"), g)
         self.assertIn(E("//foo"), g[E("file")])
@@ -114,8 +114,8 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertEqual(filenames[1], "baz.jpg")
         
     def test_03_05_add_a_file_with_a_stupid_DOS_name(self):
-        g = self.hdf_dict.get_filelist_group()
-        self.hdf_dict.add_files_to_filelist(
+        g = self.filelist.get_filelist_group()
+        self.filelist.add_files_to_filelist(
             ["file:///C:/foo/bar.jpg"])
         self.assertIn(E("file"), g)
         self.assertIn(E("///C:"), g[E("file")])
@@ -125,8 +125,8 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertEqual(filenames[0], "bar.jpg")
         
     def test_03_06_add_a_file_to_the_base(self):
-        g = self.hdf_dict.get_filelist_group()
-        self.hdf_dict.add_files_to_filelist(["file://foo.jpg"])
+        g = self.filelist.get_filelist_group()
+        self.filelist.add_files_to_filelist(["file://foo.jpg"])
         self.assertIn(E("file"), g)
         self.assertIn(E("//"), g[E("file")])
         filenames = list(H5DICT.VStringArray(g[E("file")][E("//")]))
@@ -134,18 +134,18 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertEqual(filenames[0], "foo.jpg")
         
     def test_03_07_add_a_file_to_the_schema(self):
-        g = self.hdf_dict.get_filelist_group()
-        self.hdf_dict.add_files_to_filelist(["file:foo.jpg"])
+        g = self.filelist.get_filelist_group()
+        self.filelist.add_files_to_filelist(["file:foo.jpg"])
         self.assertIn(E("file"), g)
         filenames = list(H5DICT.VStringArray(g[E("file")]))
         self.assertEqual(len(filenames), 1)
         self.assertEqual(filenames[0], "foo.jpg")
         
     def test_04_00_remove_none(self):
-        g = self.hdf_dict.get_filelist_group()
-        self.hdf_dict.add_files_to_filelist(
+        g = self.filelist.get_filelist_group()
+        self.filelist.add_files_to_filelist(
             ["file://foo/bar.jpg", "file://foo/baz.jpg"])
-        self.hdf_dict.remove_files_from_filelist([])
+        self.filelist.remove_files_from_filelist([])
         self.assertIn(E("file"), g)
         self.assertIn(E("//foo"), g[E("file")])
         filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
@@ -154,10 +154,10 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertEqual(filenames[1], "baz.jpg")
         
     def test_04_01_remove_file(self):
-        g = self.hdf_dict.get_filelist_group()
-        self.hdf_dict.add_files_to_filelist(
+        g = self.filelist.get_filelist_group()
+        self.filelist.add_files_to_filelist(
             ["file://foo/bar.jpg", "file://foo/baz.jpg", "file://foo/a.jpg"])
-        self.hdf_dict.remove_files_from_filelist(
+        self.filelist.remove_files_from_filelist(
             ["file://foo/bar.jpg"])
                                                  
         self.assertIn(E("file"), g)
@@ -168,21 +168,21 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertEqual(filenames[1], "baz.jpg")
         
     def test_04_02_remove_all_files_in_dir(self):
-        g = self.hdf_dict.get_filelist_group()
-        self.hdf_dict.add_files_to_filelist(
+        g = self.filelist.get_filelist_group()
+        self.filelist.add_files_to_filelist(
             ["file://foo/bar.jpg", "file://bar/baz.jpg"])
-        self.hdf_dict.remove_files_from_filelist(
+        self.filelist.remove_files_from_filelist(
             ["file://foo/bar.jpg"])
         self.assertIn(E("file"), g)
         self.assertIn(E("//bar"), g[E("file")])
         self.assertNotIn(E("//foo"), g[E("file")])
         
     def test_04_03_remove_all_files_in_parent(self):
-        g = self.hdf_dict.get_filelist_group()
-        self.hdf_dict.add_files_to_filelist(
+        g = self.filelist.get_filelist_group()
+        self.filelist.add_files_to_filelist(
             ["file://foo/bar.jpg", "file:baz.jpg"])
         self.assertTrue(H5DICT.VStringArray.has_vstring_array(g[E("file")]))
-        self.hdf_dict.remove_files_from_filelist(
+        self.filelist.remove_files_from_filelist(
             ["file:baz.jpg"])
         self.assertIn(E("file"), g)
         self.assertIn(E("//foo"), g[E("file")])
@@ -192,17 +192,17 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertFalse(H5DICT.VStringArray.has_vstring_array(g[E("file")]))
         
     def test_05_01_get_filelist(self):
-        self.hdf_dict.add_files_to_filelist(
+        self.filelist.add_files_to_filelist(
             ["file://foo/bar.jpg", "file://foo/baz.jpg"])
-        urls = self.hdf_dict.get_filelist()
+        urls = self.filelist.get_filelist()
         self.assertEqual(len(urls), 2)
         self.assertEqual(urls[0], "file://foo/bar.jpg")
         self.assertEqual(urls[1], "file://foo/baz.jpg")
         
     def test_05_02_get_multidir_filelist(self):
-        self.hdf_dict.add_files_to_filelist(
+        self.filelist.add_files_to_filelist(
             ["file://foo/bar.jpg", "file://bar/baz.jpg", "file://foo.jpg"])
-        urls = self.hdf_dict.get_filelist()
+        urls = self.filelist.get_filelist()
         self.assertEqual(len(urls), 3)
         self.assertEqual(urls[2], "file://foo/bar.jpg")
         self.assertEqual(urls[1], "file://bar/baz.jpg")
@@ -211,10 +211,10 @@ class TestHDF5Dict(unittest.TestCase):
     def test_06_00_walk_empty(self):
         def fn(root, directories, urls):
             raise AssertionError("Whoops! Should never be called")
-        self.hdf_dict.walk(fn)
+        self.filelist.walk(fn)
         
     def test_06_01_walk_one(self):
-        self.hdf_dict.add_files_to_filelist(
+        self.filelist.add_files_to_filelist(
             ["file://foo/bar.jpg", "file://foo/baz.jpg"])
         roots = []
         directories = []
@@ -223,7 +223,7 @@ class TestHDF5Dict(unittest.TestCase):
             roots.append(r)
             directories.append(d)
             urls.append(u)
-        self.hdf_dict.walk(fn)
+        self.filelist.walk(fn)
         self.assertEqual(len(roots), 2)
         self.assertEqual(roots[0], "file:")
         self.assertEqual(roots[1], "file://foo/")
@@ -236,7 +236,7 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertEqual(urls[1][1], "baz.jpg")
         
     def test_06_02_walk_many(self):
-        self.hdf_dict.add_files_to_filelist(
+        self.filelist.add_files_to_filelist(
             ["file://foo/bar.jpg", "file://foo/baz.jpg",
              "file://foo/bar/baz.jpg", "file://bar/foo.jpg",
              "file://foo/baz/bar.jpg"])
@@ -247,7 +247,7 @@ class TestHDF5Dict(unittest.TestCase):
             roots.append(r)
             directories.append(d)
             urls.append(u)
-        self.hdf_dict.walk(fn)
+        self.filelist.walk(fn)
         self.assertEqual(len(roots), 5)
         
         self.assertEqual(roots[0], "file:")

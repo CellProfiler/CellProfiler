@@ -100,7 +100,7 @@ class NamesAndTypes(cpm.CPModule):
             "Add another assignment rule", "Add",
             self.add_assignment)
         self.matching_choice = cps.Choice(
-            "Match channels by",
+            "Assign channels by",
             [MATCH_BY_ORDER, MATCH_BY_METADATA],
             doc = """How do you want to match the image from one channel with
             the images from other channels?

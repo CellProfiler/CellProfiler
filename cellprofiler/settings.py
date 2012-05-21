@@ -2514,7 +2514,7 @@ class FileCollectionDisplay(Setting):
                  fn_get_path_info,
                  fn_on_menu_command,
                  fn_on_bkgnd_control,
-                 hide_text = "Hide files", **kwargs):
+                 hide_text = "Hide filtered files", **kwargs):
         '''Constructor
         
         text - the label to the left of the setting

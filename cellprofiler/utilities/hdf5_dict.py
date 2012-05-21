@@ -26,6 +26,7 @@ import numpy as np
 import h5py
 import time
 import logging
+import urllib2
 logger = logging.getLogger(__name__)
 
 version_number = 1
@@ -56,6 +57,17 @@ def infer_hdf5_type(val):
         return int
     return np.asanyarray(val).dtype
 
+FILE_LIST_GROUP = "FileList"
+DEFAULT_GROUP = "Default"
+FILE_METADATA_GROUP = "FileMetadata"
+A_TIMESTAMP = "Timestamp"
+'''The attribute on a group or dataset that indicates how the data is organized'''
+A_CLASS = "Class"
+'''Indicates that a group has a filelist directory structure'''
+CLASS_DIRECTORY = "Directory"
+CLASS_VSTRING_ARRAY_INDEX = "VStringArrayIndex"
+CLASS_VSTRING_ARRAY_DATA = "VStringArrayData"
+CLASS_FILELIST_GROUP = "FileListGroup"
 
 class HDF5Dict(object):
     '''The HDF5Dict can be used to store data indexed by a tuple of
@@ -438,6 +450,270 @@ class HDF5Dict(object):
                     'index', data = idx, dtype=int,
                     compression = None, chunks = (self.chunksize, 3),
                     maxshape = (None,3))
+    
+    def get_filelist_group(self, filelist_name = DEFAULT_GROUP):
+        '''Get the name of the group that roots the file list'''
+        g = self.hdf5_file.require_group(FILE_LIST_GROUP)
+        if filelist_name in g:
+            g = g[filelist_name]
+            assert g.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP
+        else:
+            g = g.require_group(filelist_name)
+            g.attrs[A_CLASS] = CLASS_FILELIST_GROUP
+        return g
+    
+    LEGAL_GROUP_CHARACTERS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-"
+    @staticmethod
+    def encode(name):
+        '''Encode a name so it can be used as the name of a group
+        
+        Sadness: HDF5 interprets names such as "/foo" as a path from root and
+                 doesn't handle things like period, question mark, etc
+                 (see http://www.hdfgroup.org/HDF5/doc/UG/UG_frame13Attributes.html)
+                 
+                 So we need to do yet another lame, arbitrary encode/decode.
+                 Apparently, backslash is legal as are letters, numbers,
+                 underbar and dash. So the encoding is backslash + 2 hex
+                 digits for everything else, including backslash.
+        '''
+        #
+        # I sure hope this isn't slow...
+        #
+        return "".join([c if c in HDF5Dict.LEGAL_GROUP_CHARACTERS
+                        else r"\%02x" % ord(c)
+                        for c in name])
+    
+    @staticmethod
+    def decode(name):
+        '''Decode a name back to plaintext
+        
+        see encode for details and editorial commentary
+        '''
+        # Split string at every backslash. Every string after the first
+        # begins with two hex digits which contain the character to convert
+        parts = name.split("\\")
+        return parts[0] + "".join([chr(int(s[:2], 16)) + s[2:] 
+                                   for s in parts[1:]])
+    
+    @staticmethod
+    def split_url(url, is_directory = False):
+        '''Split a URL into the pieces that are used to traverse groups
+        
+        url - a url
+        
+        is_directory - if true, then the name should be treated as a root
+                       directory which will have a filename concatenated to
+                       it... the soul-deadening use case for this is
+                       "file://foo.jpg" which might be schema = "file",
+                       first directory = "//", filename = "foo.jpg" or it
+                       just might be that the caller wants to know what's
+                       in the "//foo.jpg" directory.
+        
+        returns a two tuple of schema + path part sequence
+        '''
+        if isinstance(url, unicode):
+            url = url.encode("utf-8")
+        else:
+            url = str(url)
+        schema, rest = urllib2.splittype(url)
+        #
+        # The first part always has leading slashes which should be preserved.
+        # If there are double slashes after the first, just remove them.
+        #
+        for i in range(len(rest)):
+            if rest[i] != "/":
+                parts = [s for s in rest[i:].split("/") if len(s) > 0]
+                if not is_directory and len(parts) == 1 and i > 0:
+                    return schema, [rest[:i], rest[i:]]
+                return schema, [rest[:i] + parts[0]] + parts[1:]
+        #
+        # If no slashes in url (e.g. http:someplace.org ), return schema + rest
+        #
+        return schema, [rest]
+    
+    def add_files_to_filelist(self, urls, group = None):
+        if group is None:
+            group = self.get_filelist_group()
+        d = {}
+        timestamp = time.time()
+        for url in urls:
+            schema, parts = self.split_url(url)
+            if not d.has_key(schema):
+                d[schema] = {}
+            d1 = d[schema]
+            for part in parts[:-1]:
+                if not d1.has_key(part):
+                    d1[part] = {}
+                d1 = d1[part]
+            if not d1.has_key(None):
+                d1[None] = []
+            d1[None].append(parts[-1])
+        def fn(g, d):
+            for k in d:
+                if k is None:
+                    g.attrs[A_TIMESTAMP] = timestamp
+                    dest = VStringArray(g, self.lock)
+                    leaves = set(dest)
+                    leaves.update(d[k])
+                    dest.set_all(sorted(leaves))
+                else:
+                    g1 = g.require_group(self.encode(k))
+                    g1.attrs[A_CLASS] = CLASS_DIRECTORY
+                    fn(g1, d[k])
+        fn(group, d)
+                    
+    def remove_files_from_filelist(self, urls, group = None):
+        if group is None:
+            group = self.get_filelist_group()
+        d = {}
+        for url in urls:
+            schema, parts = self.split_url(url)
+            if not d.has_key(schema):
+                d[schema] = {}
+            d1 = d[schema]
+            for part in parts[:-1]:
+                if not d1.has_key(part):
+                    d1[part] = {}
+                d1 = d1[part]
+            if not d1.has_key(None):
+                d1[None] = []
+            d1[None].append(parts[-1])
+        def fn(g, d):
+            for k in d:
+                if k is None:
+                    dest = VStringArray(g, self.lock)
+                    leaves = set(dest)
+                    leaves.difference_update(d[k])
+                    if len(leaves):
+                        dest.set_all(sorted(leaves))
+                    else:
+                        dest.delete()
+                else:
+                    encoded_key = self.encode(k)
+                    g1 = g.require_group(encoded_key)
+                    has_grandchildren = fn(g1, d[k])
+                    if not has_grandchildren:
+                        del g[encoded_key]
+            if VStringArray.has_vstring_array(g):
+                return True
+            for k in g:
+                if g[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY:
+                    return True
+            return False
+        fn(group, d)
+        
+    def get_filelist(self, root_url = None, group = None):
+        '''Retrieve all URLs from a filelist
+        
+        group - root group of the file list
+        root_url - if present, get the file list below this directory.
+        
+        returns a sequence of urls
+        '''
+        if group is None:
+            group = self.get_filelist_group()
+        with self.lock:
+            if root_url is None:
+                schemas = [ k for k in group.keys()
+                            if group[k].attrs[A_CLASS] == CLASS_DIRECTORY]
+                roots = [(s+":", group[s]) for s in schemas]
+            else:
+                schema, path = self.split_url(root_url)
+                g = group[self.encode(schema)]
+                for part in path:
+                    g = g[self.encode(part)]
+                
+            def fn(root, g):
+                urls = []
+                if VStringArray.has_vstring_array(g):
+                    urls += [ root + x for x in VStringArray(g)]
+                for k in sorted(g.keys()):
+                    g0 = g[k]
+                    if (isinstance(g0, h5py.Group) and 
+                        g0.attrs[A_CLASS] == CLASS_DIRECTORY):
+                        decoded_key = self.decode(k)
+                        if decoded_key.endswith("/"):
+                            # Special case - root of "file://foo.jpg" is
+                            # "file://" 
+                            # drawingclownsforaliving
+                            subroot = root + decoded_key
+                        else:
+                            subroot = root + decoded_key + "/"
+                        urls += fn(subroot, g0)
+                return urls
+            urls = []
+            for root, g in roots:
+                urls += fn(root, g)
+            return urls
+        
+    def get_refresh_timestamp(self, url, group = None):
+        '''Get the timestamp of the last refresh of the given directory
+        
+        url - url of the directory to reference
+        
+        group - root of file list, defaults to default list
+        
+        returns None if never, else seconds after the epoch
+        '''
+        if group is None:
+            group = self.get_filelist_group()
+        schema, path = self.split_url(url)
+        for part in path:
+            encoded_part = self.encode(part)
+            if encoded_part not in group:
+                return None
+            group = group[encoded_part]
+        return group.attrs.get(A_TIMESTAMP, None)
+        
+    def walk(self, callback, group = None):
+        '''Walk the file list in a manner like os.walk
+        
+        callback - function to be called when visiting each directory. The
+                   signature is: callback(root, directories, files)
+                   where root is the root of the URL being visited,
+                   directories is a sequence of subdirectories at the root
+                   and files is a sequence of "filenames" (root + file
+                   gives a URL rooted in the directory).
+        group - root of file list, defaults to default list
+                   
+        Directories are traversed deepest first and the directory
+        list can be trimmed during the callback to prevent traversal of children.
+        '''
+        with self.lock:
+            if group is None:
+                group = self.get_filelist_group()
+            stack = [ 
+                [k for k in group
+                 if group[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY ] ]
+            groups = [ group ]
+            roots = [ None ]
+            while len(stack):
+                current = stack.pop()
+                g0 = groups.pop()
+                root = roots[-1]
+                if len(current):
+                    k = current[0]
+                    groups.append(g0)
+                    stack.append(current[1:])
+                    g1 = g0[k]
+                    if root is None:
+                        root = self.decode(k) + ":"
+                    else:
+                        root += self.decode(k) + "/"
+                    directories = [
+                        self.decode(k) for k in g1
+                        if g1[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY]
+                    if VStringArray.has_vstring_array(g1):
+                        filenames = tuple(VStringArray(g1))
+                    else:
+                        filenames = tuple()
+                    callback(root, directories, filenames)
+                    if len(directories):
+                        stack.append([self.encode(d) for d in directories])
+                        groups.append(g1)
+                        roots.append(root)
+                else:
+                    roots.pop()
 
 def get_top_level_group(filename, group_name = 'Measurements', open_mode='r'):
     '''Open and return the Measurements HDF5 group
@@ -591,6 +867,13 @@ class VStringArray(object):
     snapshot of the array at the time of the call.
     '''
     VS_NULL = np.iinfo(np.uint32).max
+    
+    @staticmethod
+    def has_vstring_array(group):
+        return (("index" in group) and
+                (group["index"].attrs[A_CLASS] == CLASS_VSTRING_ARRAY_INDEX) and
+                ("data" in group) and
+                (group["data"].attrs[A_CLASS] == CLASS_VSTRING_ARRAY_DATA))
 
     def __init__(self, group, lock = None):
         '''Initialize or bind to a VStringArray within the named group
@@ -603,6 +886,7 @@ class VStringArray(object):
         self.group = group
         if "index" in group:
             self.index = group["index"]
+            assert self.index.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_INDEX
         else:
             self.index = group.create_dataset(
                 "index", 
@@ -611,16 +895,19 @@ class VStringArray(object):
                 shuffle = True,
                 chunks = (256, 2),
                 maxshape = (None, 2))
+            self.index.attrs[A_CLASS] = CLASS_VSTRING_ARRAY_INDEX
         if "data" in group:
             self.data = group["data"]
+            assert self.data.attrs[A_CLASS] == CLASS_VSTRING_ARRAY_DATA
         else:
-            self.data = group.require_dataset(
+            self.data = group.create_dataset(
                 "data", (0, ),
                 dtype = "S1",
                 shuffle = True,
                 compression = "gzip",
                 chunks = (32768, ),
                 maxshape = (None, ))
+            self.data.attrs[A_CLASS] = CLASS_VSTRING_ARRAY_DATA
         if lock is None:
             self.lock = NullLock()
         else:
@@ -695,6 +982,8 @@ class VStringArray(object):
     def __iter__(self):
         '''Iterates through the items in the array in a threadsafe manner'''
         with self.lock:
+            if self.index.shape[0] == 0:
+                return
             index = self.index[:,:]
             data = self.data[:]
         for begin, end in index:
@@ -714,13 +1003,95 @@ class VStringArray(object):
             if len(strings) > 0:
                 self.index[:, 1] = np.cumsum([len(s) for s in strings])
                 self.index[0, 0] = 0
-                self.index[1:, 0] = self.index[:(target_len-1), 1]
+                if len(strings) > 1:
+                    self.index[1:, 0] = self.index[:(target_len-1), 1]
                 if np.any(nulls):
                     self.index[nulls, 0] = self.VS_NULL
                 self.data.resize(self.index[(target_len-1), 1], 0)
             for s, (begin, end) in zip(strings, self.index):
                 if begin < end:
                     self.data[begin:end] = np.frombuffer(s, "S1")
+                    
+    def sort(self):
+        '''Sort strings in-place'''
+        with self.lock:
+            if len(self) == 0:
+                return
+            index = self.index[:, :]
+            def compare(i, j):
+                i0, i1 = index[i, :]
+                j0, j1 = index[j, :]
+                if i0 == self.VS_NULL:
+                    if j0 == self.VS_NULL:
+                        return 0
+                    return -1
+                elif j0 == self.VS_NULL:
+                    return 1
+                li, lj = i1 - i0, j1 - j0
+                l = min(li, lj)
+                # Read 16 byte chunks
+                for idx in range(0, l, 16):
+                    idx_end = min(idx+16, l)
+                    di = self.data[(i0+idx):(i0+idx_end)]
+                    dj = self.data[(j0+idx):(j0+idx_end)]
+                    diff = np.argwhere(di != dj).flatten()
+                    if len(diff) > 0:
+                        return cmp(di[diff[0]], dj[diff[0]])
+                return cmp(li, lj)
+            order = list(range(len(self)))
+            order.sort(cmp = compare)
+            self.index = index[order, :]
+            
+    def insert(self, index, s):
+        '''Insert a string into the array at an index'''
+        old_len = self.index.shape[0]
+        self.index.resize(old_len+1, 0)
+        if index < old_len:
+            self.index[index+1:, :] = self.index[index:old_len]
+        self.index[index, :] = (self.VS_NULL, 0)
+        self[index] = s
+        
+    def bisect_left(self, s):
+        '''Return the insertion point for s, assuming the array is sorted'''
+        if s is None:
+            return 0
+        elif isinstance(s, unicode):
+            s = s.encode("utf-8")
+        else:
+            s = str(s)
+        #
+        # bisection code taken from Python bisect package
+        # author: Raymond Hettinger
+        #
+        lo = 0
+        hi = len(self)
+        slen = len(s)
+        while lo < hi:
+            mid = int((lo+hi)/2)
+            i0, i1 = self.index[mid]
+            l = min(slen, i1 - i0)
+            for s0, s1 in zip(s, self.data[i0:i1]):
+                if s0 != s1:
+                    break
+            if s0 == s1:
+                if slen == i1 - i0:
+                    return mid
+                elif slen < i1 - i0:
+                    hi = mid
+                else:
+                    lo = mid+1
+            elif s0 < s1:
+                hi = mid
+            else:
+                lo = mid+1
+        return lo
+                    
+    def delete(self):
+        '''Remove the vstringarray from the group'''
+        del self.group[self.index.name]
+        del self.group[self.data.name]
+        del self.index
+        del self.data
 
 class StringReferencer(object):
     '''This class implements a B-tree of strings within an HDF5 file's group

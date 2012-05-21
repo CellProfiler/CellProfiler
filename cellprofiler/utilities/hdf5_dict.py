@@ -531,10 +531,16 @@ class HDF5FileList(object):
                  Apparently, backslash is legal as are letters, numbers,
                  underbar and dash. So the encoding is backslash + 2 hex
                  digits for everything else, including backslash.
+                 
+                 And if that's not enough, the keywords, "index" and "data"
+                 are needed for vstringarrays, so we encode "index" as
+                 "\69ndex" and "\64ata"
         '''
         #
         # I sure hope this isn't slow...
         #
+        if name in ("index", "data"):
+            return r"\%02x%s" % (ord(name[0]), name[1:])
         return "".join([c if c in HDF5FileList.LEGAL_GROUP_CHARACTERS
                         else r"\%02x" % ord(c)
                         for c in name])
@@ -587,9 +593,7 @@ class HDF5FileList(object):
         #
         return schema, [rest]
     
-    def add_files_to_filelist(self, urls, group = None):
-        if group is None:
-            group = self.get_filelist_group()
+    def add_files_to_filelist(self, urls):
         d = {}
         timestamp = time.time()
         for url in urls:
@@ -617,11 +621,10 @@ class HDF5FileList(object):
                     g1.attrs[A_CLASS] = CLASS_DIRECTORY
                     fn(g1, d[k])
         with self.lock:
-            fn(group, d)
+            fn(self.get_filelist_group(), d)
                     
-    def remove_files_from_filelist(self, urls, group = None):
-        if group is None:
-            group = self.get_filelist_group()
+    def remove_files_from_filelist(self, urls):
+        group = self.get_filelist_group()
         d = {}
         for url in urls:
             schema, parts = self.split_url(url)
@@ -658,25 +661,23 @@ class HDF5FileList(object):
                     return True
             return False
         with self.lock:
-            fn(group, d)
+            fn(self.get_filelist_group(), d)
         
-    def get_filelist(self, root_url = None, group = None):
+    def get_filelist(self, root_url = None):
         '''Retrieve all URLs from a filelist
         
-        group - root group of the file list
         root_url - if present, get the file list below this directory.
         
         returns a sequence of urls
         '''
-        if group is None:
-            group = self.get_filelist_group()
+        group = self.get_filelist_group()
         with self.lock:
             if root_url is None:
                 schemas = [ k for k in group.keys()
                             if group[k].attrs[A_CLASS] == CLASS_DIRECTORY]
                 roots = [(s+":", group[s]) for s in schemas]
             else:
-                schema, path = self.split_url(root_url)
+                schema, path = self.split_url(root_url, is_directory=True)
                 g = group[self.encode(schema)]
                 for part in path:
                     g = g[self.encode(part)]
@@ -704,17 +705,55 @@ class HDF5FileList(object):
                 urls += fn(root, g)
             return urls
         
-    def get_refresh_timestamp(self, url, group = None):
+    def list_files(self, url):
+        '''List the files in the directory specified by the URL
+        
+        returns just the filename parts of the files in the
+        directory.
+        '''
+        schema, parts = self.split_url(url, is_directory=True)
+        with self.lock:
+            group = self.get_filelist_group()
+            for part in [schema] + parts:
+                encoded_part = self.encode(part)
+                if encoded_part not in group:
+                    return []
+                group = group[encoded_part]
+            
+            if VStringArray.has_vstring_array(group):
+                return list(VStringArray(group, self.lock))
+            return []
+        
+    def list_directories(self, url):
+        '''List the subdirectories of the specified URL
+        
+        url - root directory to be searched.
+        
+        returns the directory names of the immediate subdirectories
+        at the URL. For instance, if the URLs in the file list are
+        "file://foo/bar/image.jpg" and "file://foo/baz/image.jpg",
+        then self.list_directories("file://foo") would return
+        [ "bar", "baz" ]
+        '''
+        schema, parts = self.split_url(url, is_directory=True)
+        with self.lock:
+            group = self.get_filelist_group()
+            for part in [schema] + parts:
+                encoded_part = self.encode(part)
+                if encoded_part not in group:
+                    return []
+                group = group[encoded_part]
+        return [self.decode(x) for x in group.keys()
+                if group[x].attrs.get(A_CLASS, None) == CLASS_DIRECTORY]
+        
+    def get_refresh_timestamp(self, url):
         '''Get the timestamp of the last refresh of the given directory
         
         url - url of the directory to reference
         
-        group - root of file list, defaults to default list
-        
         returns None if never, else seconds after the epoch
         '''
-        if group is None:
-            group = self.get_filelist_group()
+        group = self.get_filelist_group()
         schema, path = self.split_url(url)
         for part in path:
             encoded_part = self.encode(part)
@@ -723,7 +762,7 @@ class HDF5FileList(object):
             group = group[encoded_part]
         return group.attrs.get(A_TIMESTAMP, None)
         
-    def walk(self, callback, group = None):
+    def walk(self, callback):
         '''Walk the file list in a manner like os.walk
         
         callback - function to be called when visiting each directory. The
@@ -732,14 +771,12 @@ class HDF5FileList(object):
                    directories is a sequence of subdirectories at the root
                    and files is a sequence of "filenames" (root + file
                    gives a URL rooted in the directory).
-        group - root of file list, defaults to default list
                    
         Directories are traversed deepest first and the directory
         list can be trimmed during the callback to prevent traversal of children.
         '''
         with self.lock:
-            if group is None:
-                group = self.get_filelist_group()
+            group = self.get_filelist_group()
             stack = [ 
                 [k for k in group
                  if group[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY ] ]

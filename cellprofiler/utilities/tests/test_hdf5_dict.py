@@ -141,6 +141,25 @@ class TestHDF5FileList(unittest.TestCase):
         self.assertEqual(len(filenames), 1)
         self.assertEqual(filenames[0], "foo.jpg")
         
+    def test_03_08_what_if_the_user_has_a_directory_named_index(self):
+        #
+        # Another in the endless progression of disgusting corner cases
+        #
+        self.filelist.add_files_to_filelist(["file://foo/bar.jpg"])
+        self.filelist.add_files_to_filelist(
+            [ "file://foo/index/baz.jpg",
+              "file://foo/data/xyz.jpg"])
+        result = self.filelist.get_filelist()
+        self.assertEqual(len(result), 3)
+        self.assertEqual(result[0], "file://foo/bar.jpg")
+        self.assertEqual(result[1], "file://foo/data/xyz.jpg")
+        self.assertEqual(result[2], "file://foo/index/baz.jpg")
+        
+        self.filelist.add_files_to_filelist(
+            ["file://bar/index/baz.jpg",
+             "file://bar/data/baz.jpg"])
+        self.filelist.add_files_to_filelist(["file://bar/baz.jpg"])
+        
     def test_04_00_remove_none(self):
         g = self.filelist.get_filelist_group()
         self.filelist.add_files_to_filelist(
@@ -278,6 +297,30 @@ class TestHDF5FileList(unittest.TestCase):
         self.assertEqual(len(directories[4]), 0)
         self.assertEqual(len(urls[4]), 1)
         self.assertEqual(urls[4][0], "bar.jpg")
+        
+    def test_07_00_list_files_in_empty_dir(self):
+        self.assertEqual(len(self.filelist.list_files("file://foo")), 0)
+        self.filelist.add_files_to_filelist(["file://foo/bar/baz.jpg"])
+        self.assertEqual(len(self.filelist.list_files("file://foo")), 0)
+        self.assertEqual(len(self.filelist.list_files("file://foo/baz")), 0)
+        
+    def test_07_01_list_files(self):
+        self.filelist.add_files_to_filelist(["file://foo/bar/baz.jpg"])
+        result = self.filelist.list_files("file://foo/bar")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], "baz.jpg")
+        
+    def test_08_00_list_directories_in_empty_dir(self):
+        self.assertEqual(len(self.filelist.list_directories("file://foo")), 0)
+        self.filelist.add_files_to_filelist(["file://foo/bar/baz.jpg"])
+        self.assertEqual(len(self.filelist.list_directories("file://bar")), 0)
+        self.assertEqual(len(self.filelist.list_directories("file://foo/bar")), 0)
+        
+    def test_08_01_list_directories(self):
+        self.filelist.add_files_to_filelist(["file://foo/bar/baz.jpg"])
+        result = self.filelist.list_directories("file://foo")
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[0], "bar")
         
 class TestHDFCSV(unittest.TestCase):
     def setUp(self):

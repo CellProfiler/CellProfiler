@@ -2116,7 +2116,6 @@ def calculate_convex_hull_areas(labels,indexes=None):
     #
     # It works for a square...
     #
-    hull_nd = hull_nd.astype(np.float32)  # needed for the following lines to work with numpy 1.7
     hull_nd[hull_nd[:,1] < within_hull_per_pixel[:,0],1]  -= .5
     hull_nd[hull_nd[:,2] < within_hull_per_pixel[:,1],2]  -= .5
     hull_nd[hull_nd[:,1] >= within_hull_per_pixel[:,0],1] += .5

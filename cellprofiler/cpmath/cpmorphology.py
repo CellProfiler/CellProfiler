@@ -697,14 +697,14 @@ def convex_hull_ijv(pixel_labels, indexes):
         #
         # Compute the triangle areas
         #
-        t_left = triangle_areas(centers_per_point,
-                                a[n_minus_one,1:],
-                                a[:,1:])
-        t_right = triangle_areas(centers_per_point,
-                                 a[:,1:],
-                                 a[n_plus_one,1:])
+        t_left_plus_right = (triangle_areas(centers_per_point,
+                                            a[n_minus_one, 1:],
+                                            a[:, 1:]) +
+                             triangle_areas(centers_per_point,
+                                            a[:, 1:],
+                                            a[n_plus_one, 1:]))
         t_lr = triangle_areas(centers_per_point,
-                              a[n_minus_one,1:],a[n_plus_one,1:])
+                              a[n_minus_one, 1:], a[n_plus_one, 1:])
         #
         # Keep the points where the area of the left triangle plus the
         # area of the right triangle is bigger than the area of the triangle
@@ -712,13 +712,14 @@ def convex_hull_ijv(pixel_labels, indexes):
         # there's a little triangle sitting on top of t_lr with our point
         # on top and convex in relation to its neighbors.
         #
-        keep_me = t_left+t_right > t_lr
+        keep_me = t_left_plus_right > t_lr
         #
         # If all points on a line are co-linear with the center, then the
         # whole line goes away. Special handling for this to find the points
         # most distant from the center and on the same side
         #
-        consider_me = t_left+t_right == 0
+        consider_me = t_left_plus_right == 0
+        del t_lr, t_left_plus_right
         if np.any(consider_me):
             diff_i = a[:,1]-centers_per_point[:,0]
             diff_j = a[:,2]-centers_per_point[:,1]
@@ -731,18 +732,25 @@ def convex_hull_ijv(pixel_labels, indexes):
             #
             # If both signs are zero, then the point is in the center
             #
-            sign = np.sign(diff_i) + np.sign(diff_j)*2
+            # Compute np.sign(diff_i, out=diff_i) + np.sign(diff_j) * 2,
+            # but without any temporaries.
+            sign = np.sign(diff_j, out=diff_j)
+            sign *= 2
+            sign += np.sign(diff_i)
+            del diff_i, diff_j
+
             n_minus_one_consider = n_minus_one[consider_me]
             n_plus_one_consider = n_plus_one[consider_me]
-            left_is_worse = (
-                (dist[consider_me] > dist[n_minus_one_consider]) |
-                (sign[consider_me] != sign[n_minus_one_consider]))
+            left_is_worse = ((dist[consider_me] > dist[n_minus_one_consider]) |
+                             (sign[consider_me] != sign[n_minus_one_consider]))
             right_is_worse = ((dist[consider_me] > dist[n_plus_one_consider]) |
                               (sign[consider_me] != sign[n_plus_one_consider]))
             to_keep = left_is_worse & right_is_worse & (sign[consider_me] != 0)
-            keep_me[consider_me] = to_keep 
+            keep_me[consider_me] = to_keep
+            del dist, sign
         a = a[keep_me,:]
         centers_per_point = centers_per_point[keep_me]
+        del keep_me
         first_pass = False
     #
     # Finally, we have to shrink the results. We number each of the
@@ -761,16 +769,27 @@ def triangle_areas(p1,p2,p3):
     
     p1,p2,p3 - three Nx2 arrays of points
     """
-    v1 = p2-p1
-    v2 = p3-p1
-    cross1 = v1[:,1] * v2[:,0]
-    cross2 = v2[:,1] * v1[:,0]
-    a = (cross1-cross2) / 2
+    v1 = (p2 - p1)
+    v2 = (p3 - p1)
+    # Original:
+    #   cross1 = v1[:,1] * v2[:,0]
+    #   cross2 = v2[:,1] * v1[:,0]
+    #   a = (cross1-cross2) / 2
+    # Memory reduced:
+    cross1 = v1[:, 1]
+    cross1 *= v2[:, 0]
+    cross2 = v2[:, 1]
+    cross2 *= v1[:, 0]
+    a = cross1
+    a -= cross2
+    a /= 2.0
+    del v1, v2, cross1, cross2
+    a = a.copy()  # a is a view on v1; shed one dimension.
     #
     # Handle small round-off errors
     #
     a[a<np.finfo(np.float32).eps] = 0
-    return a  
+    return a
 
 def draw_line(labels,pt0,pt1,value=1):
     """Draw a line between two points
@@ -2097,6 +2116,7 @@ def calculate_convex_hull_areas(labels,indexes=None):
     #
     # It works for a square...
     #
+    hull_nd = hull_nd.astype(np.float32)  # needed for the following lines to work with numpy 1.7
     hull_nd[hull_nd[:,1] < within_hull_per_pixel[:,0],1]  -= .5
     hull_nd[hull_nd[:,2] < within_hull_per_pixel[:,1],2]  -= .5
     hull_nd[hull_nd[:,1] >= within_hull_per_pixel[:,0],1] += .5

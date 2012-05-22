@@ -218,7 +218,10 @@ class OverlayOutlines(cpm.CPModule):
         for outline in self.outlines:
             mask = image_set.get_image(outline.outline_name.value,
                                        must_be_binary=True).pixel_data
-            pixel_data[mask] = maximum
+            i_max = min(mask.shape[0], pixel_data.shape[0])
+            j_max = min(mask.shape[1], pixel_data.shape[1])
+            mask = mask[:i_max, :j_max]
+            pixel_data[:i_max, :j_max][mask] = maximum
         return pixel_data
     
     def run_color(self, workspace):
@@ -245,13 +248,22 @@ class OverlayOutlines(cpm.CPModule):
                 pixel_data = np.zeros(list(outline_img.shape[:2]) + [3], np.float32)
             i_max = min(outline_img.shape[0], pixel_data.shape[0])
             j_max = min(outline_img.shape[1], pixel_data.shape[1])
-            outline_img = outline_img[:i_max, :j_max,:]
+            outline_img = outline_img[:i_max, :j_max, :]
             window = pixel_data[:i_max, :j_max, :]
-            alpha = outline_img[:,:,3]
-            pixel_data[:i_max, :j_max, :] = (
-                window * (1 - alpha[:,:,np.newaxis]) + 
-                outline_img[:,:,:3] * alpha[:,:,np.newaxis] * pdmax)
-            
+            # Original:
+            #   alpha = outline_img[:,:,3]
+            #   pixel_data[:i_max, :j_max, :] = (
+            #       window * (1 - alpha[:,:,np.newaxis]) + 
+            #       outline_img[:,:,:3] * alpha[:,:,np.newaxis] * pdmax)
+            #
+            # Memory reduced:
+            alpha = outline_img[:, :, 3]
+            outline_img[:, :, :3] *= pdmax
+            outline_img[:, :, :3] *= alpha[:, :, np.newaxis]
+            # window is a view on pixel_data
+            window *= (1 - alpha)[:, :, np.newaxis]
+            window += outline_img[:, :, :3]
+
         return pixel_data
     
     def get_outline(self, image_set, name, color):
@@ -265,6 +277,9 @@ class OverlayOutlines(cpm.CPModule):
         else:
             output_image = np.dstack([pixel_data[:,:,i] for i in range(3)] +
                                      [np.sum(pixel_data, 2) > 0])
+        # float16s are slower, but since we're potentially allocating an image
+        # 4 times larger than our input, the tradeoff is worth it.
+        output_image = output_image.astype(np.float16)
         if self.line_width.value > 1:
             half_line_width = float(self.line_width.value) / 2
             d, (i,j) = distance_transform_edt(output_image[:,:,3] == 0, 

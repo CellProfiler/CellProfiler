@@ -237,9 +237,10 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
         expected = np.dstack((image,image,image))
-        expected[:,:,0][outline.astype(bool)] = 1
-        expected[:,:,1][outline.astype(bool)] = 0
-        expected[:,:,2][outline.astype(bool)] = 0
+        sub_expected = expected[:50, :40]
+        sub_expected[:,:,0][outline[:50, :40].astype(bool)] = 1
+        sub_expected[:,:,1][outline[:50, :40].astype(bool)] = 0
+        sub_expected[:,:,2][outline[:50, :40].astype(bool)] = 0
         workspace, module = self.make_workspace(image, outline)
         module.wants_color.value = O.WANTS_COLOR
         module.outlines[0].color.value = "Red"
@@ -256,9 +257,10 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
         outline[20:31,20:31] = 1
         outline[21:30,21:30] = 0
         expected = image.copy()
-        expected[:,:,0][outline.astype(bool)] = 1
-        expected[:,:,1][outline.astype(bool)] = 0
-        expected[:,:,2][outline.astype(bool)] = 0
+        sub_expected = expected[:50, :40]
+        sub_expected[:,:,0][outline[:50, :40].astype(bool)] = 1
+        sub_expected[:,:,1][outline[:50, :40].astype(bool)] = 0
+        sub_expected[:,:,2][outline[:50, :40].astype(bool)] = 0
         workspace, module = self.make_workspace(image, outline)
         module.wants_color.value = O.WANTS_COLOR
         module.outlines[0].color.value = "Red"
@@ -325,7 +327,7 @@ OverlayOutlines:[module_num:5|svn_version:\'9000\'|variable_revision_number:2|sh
         outline[20:31,20:31] = True
         outline[21:30,21:30] = False
         expected = image.copy()
-        expected[outline[:50,:40]] = 1
+        expected[:50, :40][outline[:50, :40]] = 1
         workspace, module = self.make_workspace(image, outline)
         module.blank_image.value = False
         module.wants_color.value = O.WANTS_GRAYSCALE

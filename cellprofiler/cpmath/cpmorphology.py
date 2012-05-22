@@ -734,7 +734,7 @@ def convex_hull_ijv(pixel_labels, indexes):
             #
             # Compute np.sign(diff_i, out=diff_i) + np.sign(diff_j) * 2,
             # but without any temporaries.
-            sign = np.sign(diff_j, out=diff_j)
+            sign = np.sign(diff_j, diff_j)
             sign *= 2
             sign += np.sign(diff_i)
             del diff_i, diff_j

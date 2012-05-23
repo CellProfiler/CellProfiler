@@ -279,7 +279,8 @@ class OverlayOutlines(cpm.CPModule):
                                      [np.sum(pixel_data, 2) > 0])
         # float16s are slower, but since we're potentially allocating an image
         # 4 times larger than our input, the tradeoff is worth it.
-        output_image = output_image.astype(np.float16)
+        if hasattr(np, 'float16'):
+            output_image = output_image.astype(np.float16)
         if self.line_width.value > 1:
             half_line_width = float(self.line_width.value) / 2
             d, (i,j) = distance_transform_edt(output_image[:,:,3] == 0, 

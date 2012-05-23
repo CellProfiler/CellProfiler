@@ -769,8 +769,8 @@ def triangle_areas(p1,p2,p3):
     
     p1,p2,p3 - three Nx2 arrays of points
     """
-    v1 = (p2 - p1)
-    v2 = (p3 - p1)
+    v1 = (p2 - p1).astype(np.float)
+    v2 = (p3 - p1).astype(np.float)
     # Original:
     #   cross1 = v1[:,1] * v2[:,0]
     #   cross2 = v2[:,1] * v1[:,0]

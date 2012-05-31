@@ -535,9 +535,10 @@ class AnalysisRunner(object):
                                        'tcp://127.0.0.1:%d' % (work_announce_port),
                                        '--subimager-port',
                                        '%d' % subimager.client.port],
-                                       stdin=subprocess.PIPE,
-                                       stdout=subprocess.PIPE,
-                                       stderr=subprocess.STDOUT)
+                                      env=find_worker_env(),
+                                      stdin=subprocess.PIPE,
+                                      stdout=subprocess.PIPE,
+                                      stderr=subprocess.STDOUT)
 
             def run_logger(workR, widx):
                 while(True):
@@ -567,13 +568,27 @@ class AnalysisRunner(object):
 
 
 def find_python():
+    if hasattr(sys, 'frozen'):
+        if sys.platform == "darwin":
+            app_python = os.path.join(os.path.dirname(os.environ['ARGVZERO']), "python")
+            return app_python
     return 'python'
+
+
+def find_worker_env():
+    if hasattr(sys, 'frozen'):
+        if sys.platform == "darwin":
+            newenv = os.environ.copy()
+            # http://mail.python.org/pipermail/pythonmac-sig/2005-April/013852.html
+            newenv['PYTHONPATH'] = ':'.join([p for p in sys.path if isinstance(p, basestring)])
+            return newenv
+    return os.environ
 
 
 def find_analysis_worker_source():
     # import here to break circular dependency.
-    import cellprofiler.analysis_worker  # used to get the path to the code
-    return cellprofiler.analysis_worker.__file__
+    import cellprofiler.analysis  # used to get the path to the code
+    return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "analysis_worker.py")
 
 
 def start_daemon_thread(target=None, args=(), name=None):

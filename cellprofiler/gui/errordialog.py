@@ -94,7 +94,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
             traceback_text = traceback.format_exc()
             tb = sys.exc_info()[2]
         else:
-            traceback_text = "".join(traceback.format_exception(type(exc), exc.message, tb))
+            traceback_text = "".join(traceback.format_exception(type(exc), exc, tb))
 
         # find the place where this error occurred, and if we've already
         # reported it, don't do so again (instead, just log it to the

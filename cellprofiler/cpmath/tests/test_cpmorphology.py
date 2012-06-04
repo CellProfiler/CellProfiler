@@ -369,7 +369,7 @@ class TestCpmaximum(unittest.TestCase):
         input = np.zeros((1001,1001))
         input[500,500] = 1
         expected = np.zeros((1001,1001))
-        expected[490:551,490:551][big_disk]=1
+        expected[490:511,490:511][big_disk]=1
         output = morph.cpmaximum(input,big_disk)
         self.assertTrue(np.all(output == expected))
 

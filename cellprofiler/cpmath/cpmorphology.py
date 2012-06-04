@@ -2116,10 +2116,19 @@ def calculate_convex_hull_areas(labels,indexes=None):
     #
     # It works for a square...
     #
-    hull_nd[hull_nd[:,1] < within_hull_per_pixel[:,0],1]  -= .5
-    hull_nd[hull_nd[:,2] < within_hull_per_pixel[:,1],2]  -= .5
-    hull_nd[hull_nd[:,1] >= within_hull_per_pixel[:,0],1] += .5
-    hull_nd[hull_nd[:,2] >= within_hull_per_pixel[:,1],2] += .5
+    # 2012-06-04 (thouis): Numpy trunk no longer allows unsafe type conversion
+    # in in-place operations, which was what used to happen here
+    # (adding/subtracting .5 from an integer array, which then just got
+    # truncated).  So now it just adds 1 to the pixels right or below the
+    # center.
+    #
+    # It would probably be better to do this in one of two other ways:
+    # - Compute area with a circular ferret
+    #   = polygon area + radius * perimeter + pi * radius^2
+    # - Compute area with a square ferret
+    #   = polygon area + 2 * radius * (horizontal_projection + vertical_projection) + 4*radius^2
+    hull_nd[hull_nd[:,1] >= within_hull_per_pixel[:,0],1] += 1
+    hull_nd[hull_nd[:,2] >= within_hull_per_pixel[:,1],2] += 1
     #
     # Finally, we go around the circle, computing triangle areas
     # from point n to point n+1 (modulo count) to the point within

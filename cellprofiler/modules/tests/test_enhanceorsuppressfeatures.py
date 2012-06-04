@@ -290,7 +290,7 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         expected = np.zeros((11,20))
         i,j = np.mgrid[-5:6,-5:16]
         image[i**2+j**2 < 23] = 1
-        i,j = np.mgrid[-5:5,-15:5]
+        i,j = np.mgrid[-5:6,-15:5]
         image[i**2+j**2 <= 9] = 1
         expected[i**2+j**2 <= 9] = 1
         workspace, module = self.make_workspace(image,
@@ -307,10 +307,10 @@ EnhanceOrSuppressFeatures:[module_num:2|svn_version:\'Unknown\'|variable_revisio
         '''Suppress a speckle in an image composed of two circles'''
         image = np.zeros((11,20))
         expected = np.zeros((11,20))
-        i,j = np.mgrid[-5:5,-5:15]
+        i,j = np.mgrid[-5:6,-5:15]
         image[i**2+j**2 <= 22] = 1
         expected[i**2+j**2 <= 22] = 1
-        i,j = np.mgrid[-5:5,-15:5]
+        i,j = np.mgrid[-5:6,-15:5]
         image[i**2+j**2 <= 9] = 1
         workspace, module = self.make_workspace(image, None)
         module.method.value = E.SUPPRESS

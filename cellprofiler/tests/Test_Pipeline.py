@@ -56,12 +56,12 @@ def module_directory():
         d = '..'
     return os.path.join(d,'Modules')
 
-def image_with_one_cell(size=(100,100)):
+def image_with_one_cell(size=(100, 100)):
     img = np.zeros(size)
     mgrid = np.lib.index_tricks.nd_grid()
-    g=mgrid[0:100,0:100]-50                              # the manhattan distance from 50,50
-    dist = g[0,:,:]*g[0,:,:]+g[1,:,:]*g[1,:,:]           # the 2-d distance (forgot the fancy name)
-    img[ dist < 25] = (25.0-dist.astype(float)[dist<25])/25 # A circle in the middle of it
+    g = mgrid[0:size[0], 0:size[1]] - 50
+    dist = g[0, :, :] * g[0, :, :] + g[1, :, :] * g[1, :, :]      # squared Euclidean distance.
+    img[dist < 25] = (25.0 - dist.astype(float)[dist < 25]) / 25  # A circle centered at (50, 50)
     return img
 
 def exploding_pipeline(test):

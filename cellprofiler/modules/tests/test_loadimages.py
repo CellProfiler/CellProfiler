@@ -2257,6 +2257,35 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         img2 = image.pixel_data
         self.assertEqual(tuple(img2.shape), (1040,1388))
         self.assertTrue(np.any(img1!=img2))
+        
+    def test_09_02_01_load_2_stk(self):
+        # Regression test of bug 327
+        path = T.testimages_directory()
+        files = [os.path.join(path, x) for x in ("C0.stk", "C1.stk")]
+        if not all([os.path.exists(f) for f in files]):
+            sys.stderr.write("Warning, could not find test files for STK test: %s\n" % str(files))
+            return
+        
+        module = LI.LoadImages()
+        module.file_types.value = LI.FF_STK_MOVIES
+        module.images[0].common_text.value = 'C0.stk'
+        module.images[0].channels[0].image_name.value = 'MyImage'
+        module.add_imagecb()
+        module.images[1].common_text.value = 'C1.stk'
+        module.images[1].channels[0].image_name.value = 'MyOtherImage'
+        
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = path
+        module.module_num = 1
+        pipeline = P.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = I.ImageSetList()
+        m = measurements.Measurements()
+        workspace = W.Workspace(pipeline, module, None, None, m,
+                                image_set_list)
+        module.prepare_run(workspace)
+        self.assertEqual(m.image_set_count, 7)
     
     def test_09_03_load_flex(self):
         flex_path = T.testimages_directory()

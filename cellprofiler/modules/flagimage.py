@@ -306,7 +306,7 @@ class FlagImage(cpm.CPModule):
                     rule_features = [r.feature for r in rules.rules]
                     measurement_cols = [c[1] for c in pipeline.get_measurement_columns(self)]
                     undef_features = list(set(rule_features).difference(measurement_cols))
-                    if undef_features:
+                    if len(undef_features) > 0:
                         raise cps.ValidationError("The rule described by %s has not been measured earlier in the pipeline."%undef_features[0],
                                                     measurement_setting.rules_file_name)
 

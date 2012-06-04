@@ -31,6 +31,7 @@ try:
     from _cpmorphology2 import ptrsize
 except:
     pass
+import _convex_hull
 
 logger = logging.getLogger(__name__)
 '''A structuring element for eight-connecting a neigborhood'''
@@ -487,7 +488,7 @@ def convex_hull_image(image):
     output = fill_labeled_holes(output)
     return output == 1
 
-def convex_hull(labels, indexes=None):
+def convex_hull(labels, indexes=None, fast=True):
     """Given a labeled image, return a list of points per object ordered by
     angle from an interior point, representing the convex hull.s
     
@@ -524,9 +525,9 @@ def convex_hull(labels, indexes=None):
     j = coords[:,1]
     labels_per_point = labels[i,j]
     pixel_labels = np.column_stack((i,j,labels_per_point))
-    return convex_hull_ijv(pixel_labels, indexes)
+    return convex_hull_ijv(pixel_labels, indexes, fast)
 
-def convex_hull_ijv(pixel_labels, indexes):
+def convex_hull_ijv(pixel_labels, indexes, fast=True):
     '''Return the convex hull for each label using an ijv labeling
     
     pixel_labels: the labeling of the pixels in i,j,v form where
@@ -541,7 +542,10 @@ def convex_hull_ijv(pixel_labels, indexes):
     counter-clockwise around the perimeter.
     The vector is a vector of #s of points in the convex hull per label
     '''
-    
+    if fast:
+        return _convex_hull.convex_hull_ijv(pixel_labels, indexes)
+
+    # We keep this code for testing.
     if len(indexes) == 0:
         return np.zeros((0,3),int),np.zeros((0,),int)
     #
@@ -2116,10 +2120,8 @@ def calculate_convex_hull_areas(labels,indexes=None):
     #
     # It works for a square...
     #
-    hull_nd[hull_nd[:,1] < within_hull_per_pixel[:,0],1]  -= .5
-    hull_nd[hull_nd[:,2] < within_hull_per_pixel[:,1],2]  -= .5
-    hull_nd[hull_nd[:,1] >= within_hull_per_pixel[:,0],1] += .5
-    hull_nd[hull_nd[:,2] >= within_hull_per_pixel[:,1],2] += .5
+    hull_nd[hull_nd[:,1] >= within_hull_per_pixel[:,0],1] += 1
+    hull_nd[hull_nd[:,2] >= within_hull_per_pixel[:,1],2] += 1
     #
     # Finally, we go around the circle, computing triangle areas
     # from point n to point n+1 (modulo count) to the point within

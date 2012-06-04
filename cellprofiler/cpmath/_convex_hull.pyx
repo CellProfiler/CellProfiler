@@ -172,12 +172,21 @@ def convex_hull_ijv(in_labels_ijv,
     # sort by the requested order
     cdef np.ndarray[DTYPE_t, ndim=2] reordered = np.empty((outidx, 3), np.int32)
     cdef np.ndarray[DTYPE_t, ndim=1] reordered_counts = np.empty(num_indexes, np.int32)
+    cdef np.ndarray[DTYPE_t, ndim=1] indexes_unreorder = np.argsort(indexes_reorder).astype(np.int32)
     cdef int reordered_idx, reordered_num, count, src_start, dest_start, tmpidx
     reordered_idx = 0
+    if DEBUG:
+        print "indexes", indexes
+        print "reorder", indexes_reorder
+        print "unreorder", indexes_unreorder
+        print "Hull offsets", hull_offsets
+    # Output in the order that the indices were passed in
     for reordered_num in range(num_indexes):
         cur_label = indexes[reordered_num]
-        count = vertex_counts[indexes_reorder[reordered_num]]
-        src_start = hull_offsets[indexes_reorder[reordered_num]]
+        count = vertex_counts[indexes_unreorder[reordered_num]]
+        src_start = hull_offsets[indexes_unreorder[reordered_num]]
+        if DEBUG:
+            print "writing index", cur_label, count, src_start
         dest_start = reordered_idx
         for tmpidx in range(count):
             # Reorder columns to match what CellProfiler expects.

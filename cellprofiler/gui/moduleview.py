@@ -228,7 +228,9 @@ class ModuleView:
     gives the ui for editing the setting.
     """
     
-    def __init__(self, module_panel, pipeline, as_datatool=False):
+    def __init__(self, module_panel, workspace, as_datatool=False):
+        pipeline = workspace.pipeline
+        self.__workspace = workspace
         self.refresh_pending = False
         #############################################
         #
@@ -350,7 +352,7 @@ class ModuleView:
             if reselecting:
                 self.hide_settings()
             else:
-                self.__module.on_activated(self.__pipeline)
+                self.__module.on_activated(self.__workspace)
                 
             #################################
             #
@@ -1686,18 +1688,21 @@ class ModuleView:
             #
             # Have #s of rows or columns changed?
             #
+            need_column_layout = False
             if len(v.column_names) < control.GetNumberCols():
                 tm = wx.grid.GridTableMessage(
                     control.Table,
                     wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED,
                     0, control.GetNumberCols() - len(v.column_names))
                 control.ProcessTableMessage(tm)
+                need_column_layout = True
             elif control.GetNumberCols() < len(v.column_names):
                 tm = wx.grid.GridTableMessage(
                     control.Table,
                     wx.grid.GRIDTABLE_NOTIFY_COLS_INSERTED,
                     0, len(v.column_names) - control.GetNumberCols())
                 control.ProcessTableMessage(tm)
+                need_column_layout = True
             if len(v.data) < control.GetNumberRows():
                 tm = wx.grid.GridTableMessage(
                     control.Table,
@@ -1710,7 +1715,8 @@ class ModuleView:
                     wx.grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,
                     0, len(v.data) - control.GetNumberRows())
                 control.ProcessTableMessage(tm)
-                
+            if need_column_layout:
+                control.AutoSizeColumns()
         control.ForceRefresh()
         return control
     

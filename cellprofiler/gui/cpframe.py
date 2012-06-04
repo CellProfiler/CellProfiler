@@ -19,6 +19,9 @@ import wx
 import wx.html
 import wx.lib.scrolledpanel
 import cellprofiler.preferences
+import cellprofiler.measurements as cpmeas
+import cellprofiler.workspace as cpw
+
 from cellprofiler.modules import get_data_tool_names, instantiate_module
 from cellprofiler.gui import get_cp_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
@@ -37,7 +40,7 @@ import cellprofiler.utilities.version as version
 import traceback
 import sys
 
-
+ID_FILE_OPEN_WORKSPACE = wx.NewId()
 ID_FILE_LOAD_PIPELINE=wx.NewId()
 ID_FILE_URL_LOAD_PIPELINE = wx.NewId()
 ID_FILE_EXIT=wx.NewId()
@@ -139,6 +142,8 @@ class CPFrame(wx.Frame):
         self.__preferences_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__preferences_panel.SetToolTipString("The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
         self.__pipeline = Pipeline()
+        self.__workspace = cpw.Workspace(
+            self.__pipeline, None, None, None, None, None)
         self.__add_menu()
         self.__attach_views()
         self.__set_properties()
@@ -150,7 +155,6 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
-        self.__pipeline.clear()
         if len(self.__pipeline.modules()) > 0:
             self.__pipeline_list_view.select_one_module(1)
 
@@ -172,6 +176,7 @@ class CPFrame(wx.Frame):
 
         """
         self.__menu_file = wx.Menu()
+        self.__menu_file.Append(ID_FILE_OPEN_WORKSPACE, "Open workspace", "Open a workspace from a .cpi file")
         self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...\tctrl+O','Load a pipeline from a .MAT or .CP file')
         self.__menu_file.Append(ID_FILE_URL_LOAD_PIPELINE, 'Load Pipeline from URL', 'Load a pipeline from the web')
         self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline\tctrl+shift+S','Save changes to a pipeline')
@@ -581,11 +586,11 @@ All rights reserved."""
             
     def __attach_views(self):
         self.__pipeline_list_view = PipelineListView(self.__module_list_panel, self)
-        self.__pipeline_controller = PipelineController(self.__pipeline,self)
+        self.__pipeline_controller = PipelineController(self.__workspace, self)
         self.__pipeline_list_view.attach_to_pipeline(self.__pipeline,self.__pipeline_controller)
         self.__pipeline_controller.attach_to_test_controls_panel(self.__pipeline_test_panel)
         self.__pipeline_controller.attach_to_module_controls_panel(self.__module_controls_panel)
-        self.__module_view = ModuleView(self.__module_panel,self.__pipeline)
+        self.__module_view = ModuleView(self.__module_panel,self.__workspace)
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view((self.__module_view))
         self.__preferences_view = PreferencesView(self.__preferences_panel)
@@ -593,6 +598,7 @@ All rights reserved."""
         self.__preferences_view.attach_to_pipeline_list_view(self.__pipeline_list_view)
         self.__directory_view = DirectoryView(self.__file_list_panel)
         self.__pipeline_controller.attach_to_directory_view(self.__directory_view)
+        self.__pipeline_controller.start()
 
     def __do_layout(self):
         width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)

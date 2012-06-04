@@ -1045,6 +1045,22 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                     else:
                         self.assertEqual(rr.metadata[k], tt.metadata[k])
                         
+    def test_18_03_serialize_ipds(self):
+        url = "file://foo/bar.baz"
+        ipds = [cpp.ImagePlaneDetails(url, None, None, None),
+                cpp.ImagePlaneDetails(url, 1, 2, 3, 
+                                      Plate="P-12345",
+                                      Well="A01" )]
+        data = cpp.ImagePlaneDetails.serialize_metadata(ipds)
+        result = cpp.ImagePlaneDetails.deserialize_metadata(url, data)
+        self.assertEqual(len(result), len(ipds))
+        for ipd_in, ipd_out in zip(ipds, result):
+            self.assertEqual(ipd_in.url, ipd_out.url)
+            self.assertEqual(ipd_in.series, ipd_out.series)
+            self.assertEqual(ipd_in.index, ipd_out.index)
+            self.assertEqual(ipd_in.channel, ipd_out.channel)
+            self.assertDictEqual(ipd_in.metadata, ipd_out.metadata)
+                        
     def test_19_01_write_legacy_image_set(self):
         pipeline = cpp.Pipeline()
         module = LI.LoadImages()

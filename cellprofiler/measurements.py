@@ -15,6 +15,7 @@ from __future__ import with_statement
 
 __version__ = "$Revision$"
 
+import json
 import logging
 logger = logging.getLogger(__name__)
 import numpy as np
@@ -144,6 +145,12 @@ C_OBJECTS_FRAME = "ObjectsFrame"
 '''The channel # of a color image plane'''
 C_OBJECTS_CHANNEL = "ObjectsChannel"
 
+'''The ChannelType experiment measurement category'''
+C_CHANNEL_TYPE = "ChannelType"
+
+'''The experiment feature name used to store the image set's metadata tags'''
+M_METADATA_TAGS = "_".join((C_METADATA, "Tags"))
+
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''
     m = re.match(r'^varchar\(([0-9]+)\)$', x)
@@ -158,7 +165,8 @@ class Measurements(object):
                  can_overwrite=False,
                  image_set_start=None,
                  filename = None,
-                 copy = None):
+                 copy = None,
+                 mode = "w"):
         """Create a new measurements collection
 
         can_overwrite - DEPRECATED and has no effect
@@ -167,9 +175,21 @@ class Measurements(object):
         filename - store the measurement in an HDF5 file with this name
         copy - initialize by copying measurements from here, either an HDF5Dict
                or an H5py group or file.
+        mode - open mode for the HDF5 file. 
+               "r" for read-only access to an existing measurements file, 
+               "w" to open a new file or truncate an old file, 
+               "w-" to open a new file and fail if the file exists,
+               "w+" to create a new measurements instance in an existing file,
+               "a" to create a new file or open an existing file as read/write
+               "r+" to open an existing file as read/write
+               "memory" to create an HDF5 memory-backed File
         """
         # XXX - allow saving of partial results
-        if filename is None:
+        if mode is "memory":
+            filename = None
+            mode = "w"
+            is_temporary = False
+        elif filename is None:
             dir = cpprefs.get_default_output_directory()
             if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
                 dir = None
@@ -182,16 +202,20 @@ class Measurements(object):
                 self.hdf5_dict = HDF5Dict(
                     filename, 
                     is_temporary = is_temporary,
-                    copy = copy.hdf5_dict.top_group)
+                    copy = copy.hdf5_dict.top_group,
+                    mode = mode)
         elif hasattr(copy, '__getitem__') and hasattr(copy, 'keys'):
             self.hdf5_dict = HDF5Dict(
                 filename,
                 is_temporary = is_temporary,
-                copy = copy)
+                copy = copy,
+                mode = mode)
         elif copy is not None:
             raise ValueError('Copy source for measurments is neither a Measurements or HDF5 group.')
         else:
-            self.hdf5_dict = HDF5Dict(filename, is_temporary = is_temporary)
+            self.hdf5_dict = HDF5Dict(filename, 
+                                      is_temporary = is_temporary,
+                                      mode = mode)
         if is_temporary:
             os.close(fd)
 
@@ -347,7 +371,8 @@ class Measurements(object):
 
         Experiment measurements have one value per experiment
         """
-        self.add_measurement(EXPERIMENT, feature_name, data)
+        data = unicode(data).encode('unicode_escape')
+        self.hdf5_dict.add_all(EXPERIMENT, feature_name, [data], [0])
 
     def get_group_number(self):
         '''The number of the group currently being processed'''
@@ -553,6 +578,23 @@ class Measurements(object):
             self.hdf5_dict.get_indices(IMAGE, IMAGE_NUMBER), int)
         image_numbers.sort()
         return image_numbers
+    
+    def reorder_image_measurements(self, new_image_numbers):
+        '''Assign all image measurements to new image numbers
+        
+        new_image_numbers - a zero-based array that maps old image number
+                            to new image number, e.g. if 
+                            new_image_numbers = [ 0, 3, 1, 2], then
+                            the measurements for old image number 1 will
+                            be the measurements for new image number 3, etc.
+                            
+        Note that this does not handle any image numbers that might be stored
+        in the measurements themselves. It is intended for use in
+        prepare_run when it is necessary to reorder image numbers because
+        of regrouping.
+        '''
+        for feature in self.get_feature_names(IMAGE):
+            self.hdf5_dict.reorder(IMAGE, feature, new_image_numbers)
 
     def has_feature(self, object_name, feature_name):
         return self.hdf5_dict.has_feature(object_name, feature_name)
@@ -1076,6 +1118,57 @@ class Measurements(object):
             self.providers.remove(provider)
         provider = VanillaImageProvider(name,image)
         self.providers.append(provider)
+        
+    def set_channel_descriptors(self, channel_descriptors):
+        '''Write the names and data types of the channel descriptors
+        
+        channel_descriptors - pipeline channel descriptors describing the
+                              channels in the image set.
+        '''
+        for iscd in channel_descriptors:
+            feature = "_".join((C_CHANNEL_TYPE, iscd.name))
+            self.add_experiment_measurement(feature, iscd.channel_type)
+        
+    def get_channel_descriptors(self):
+        '''Read the channel descriptors
+        
+        Returns pipeline.ImageSetChannelDescriptor instances for each
+        channel descriptor specified in the experiment measurements.
+        '''
+        from cellprofiler.pipeline import Pipeline
+        ImageSetChannelDescriptor = Pipeline.ImageSetChannelDescriptor
+        iscds = []
+        for feature_name in self.get_feature_names(EXPERIMENT):
+            if feature_name.startswith(C_CHANNEL_TYPE):
+                channel_name = feature_name[(len(C_CHANNEL_TYPE)+1):]
+                channel_type = self.get_experiment_measurement(feature_name)
+                if channel_type == ImageSetChannelDescriptor.CT_OBJECTS:
+                    url_feature = "_".join([C_OBJECTS_URL, channel_name])
+                else:
+                    url_feature = "_".join([C_URL, channel_name])
+                if url_feature not in self.get_feature_names(IMAGE):
+                    continue
+                iscds.append(ImageSetChannelDescriptor(channel_name, channel_type))
+        return iscds
+    
+    def set_metadata_tags(self, metadata_tags):
+        '''Write the metadata tags that are used to make an image set
+        
+        metadata_tags - image feature names of the metadata tags that uniquely
+                        define an image set. If metadata matching wasn't used,
+                        write the image number feature name.
+        '''
+        data = json.dumps(metadata_tags)
+        self.add_experiment_measurement(M_METADATA_TAGS, data)
+        
+    def get_metadata_tags(self):
+        '''Read the metadata tags that are used to make an image set
+        
+        returns a list of metadata tags
+        '''
+        if M_METADATA_TAGS not in self.get_feature_names(EXPERIMENT):
+            return [ IMAGE_NUMBER ]
+        return json.loads(self.get_experiment_measurement(M_METADATA_TAGS))
     
 def load_measurements(filename, dest_file = None, can_overwrite = False,
                       run_name = None):

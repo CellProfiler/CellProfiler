@@ -223,7 +223,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
                                         name=window_name, subplots=(2,2))
             
             title = "%s, cycle # %d"%(self.primary_objects_name.value,
-                                      workspace.image_set.number+1)
+                                      workspace.image_set.image_number)
             my_frame.subplot_imshow_labels(0,0,primary_labels,title)
             my_frame.subplot_imshow_labels(1,0,secondary_labels, 
                                            self.secondary_objects_name.value,

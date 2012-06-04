@@ -681,10 +681,10 @@ class CPModule(object):
         '''
         pass
     
-    def on_activated(self, pipeline):
+    def on_activated(self, workspace):
         '''Called when the module is activated in the GUI
         
-        pipeline - the pipeline that's currently running.
+        workspace - the workspace that's currently running
         
         on_activated is here to give modules the chance to modify other
         elements of the pipeline, such as the image plane details or image

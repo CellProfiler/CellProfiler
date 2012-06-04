@@ -53,8 +53,9 @@ class PipelineController:
     """Controls the pipeline through the UI
     
     """
-    def __init__(self,pipeline,frame):
-        self.__pipeline =pipeline
+    def __init__(self, workspace, frame):
+        self.__workspace = workspace
+        pipeline = self.__pipeline = workspace.pipeline
         pipeline.add_listener(self.__on_pipeline_event)
         self.__frame = frame
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
@@ -85,6 +86,9 @@ class PipelineController:
         self.menu_id_to_module_name = {}
         self.module_name_to_menu_id = {}
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
+        assert isinstance(frame, wx.Frame)
+        frame.Bind(wx.EVT_MENU, self.__on_open_workspace, 
+                   id = cpframe.ID_FILE_OPEN_WORKSPACE)
         wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_URL_LOAD_PIPELINE, self.__on_url_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
@@ -121,6 +125,22 @@ class PipelineController:
         wx.EVT_MENU_OPEN(frame, self.on_frame_menu_open)
         
         cpp.evt_modulerunner_done(frame, self.on_module_runner_done)
+        
+    def start(self):
+        '''Do initialization after GUI hookup
+        
+        Perform steps that need to happen after all of the user interface
+        elements have been initialized.
+        '''
+        workspace_file = cpprefs.get_workspace_file()
+        if os.path.exists(workspace_file):
+            try:
+                self.do_open_workspace(workspace_file, True)
+                return
+            except:
+                pass
+        self.__pipeline.clear()
+        self.do_create_workspace(workspace_file)
     
     def attach_to_pipeline_list_view(self,pipeline_list_view, movie_viewer):
         """Glom onto events from the list box with all of the module names in it
@@ -202,6 +222,38 @@ class PipelineController:
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_step, self.__tcp_step)
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set, self.__tcp_next_imageset)
 
+    def __on_open_workspace(self, event):
+        '''Handle the Open Workspace menu command'''
+        result = wx.MessageBox(
+            "Do you want to use the current pipeline in your workspace?\n"
+            '* Choose "Yes" to overwrite the workspace pipeline with\n'
+            '  the pipeline that is currently open in CellProfiler.\n'
+            '* Choose "No" to use the workspace\'s pipeline.\n'
+            '* Choose "Cancel" if you do not want to open a workspace',
+            'Overwrite current pipeline',
+            wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION, self.__frame)
+        if result != wx.YES and result != wx.NO:
+            return
+        with wx.FileDialog(
+            self.__frame,
+            "Choose a workspace file to open",
+            wildcard = "CellProfiler workspace (*.cpi)|*.cpi") as dlg:
+            dlg.Directory = cpprefs.get_default_output_directory()
+            if dlg.ShowModal() == wx.ID_OK:
+                self.do_open_workspace(dlg.Path, result == wx.YES)
+        
+    def do_open_workspace(self, filename, load_pipeline):
+        '''Open the given workspace file'''
+        self.__workspace.load(filename, load_pipeline)
+        cpprefs.set_workspace_file(filename)
+        self.__pipeline.load_image_plane_details(self.__workspace)
+        
+    def do_create_workspace(self, filename):
+        '''Create a new workspace file with the given name'''
+        self.__workspace.create(filename)
+        cpprefs.set_workspace_file(filename)
+        self.__pipeline.clear_image_plane_details()
+        
     def __on_load_pipeline(self,event):
         if self.__dirty_pipeline:
             if wx.MessageBox('Do you want to save your current pipeline\n'
@@ -244,11 +296,12 @@ class PipelineController:
             self.stop_debugging()
             if self.__running_pipeline:
                 self.stop_running()
-                del self.__pipeline_measurements
+                self.__pipeline_measurements.close()
                 self.__pipeline_measurements = None
 
             self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
+            self.__pipeline.load_image_plane_details(self.__workspace)
             self.__clear_errors()
             if isinstance(pathname, (str, unicode)):
                 self.set_current_pipeline_path(pathname)
@@ -482,6 +535,12 @@ class PipelineController:
                    cpp.ModuleRemovedPipelineEvent)]):
             self.__dirty_pipeline = True
             self.set_title()
+            m = self.__workspace.measurements
+            if isinstance(m, cpm.Measurements):
+                fd = StringIO()
+                self.__pipeline.savetxt(fd, save_image_plane_details=False)
+                m.add_experiment_measurement(cpp.M_PIPELINE, fd.getvalue())
+                m.flush()
             
     def on_load_exception_event(self, event):
         '''Handle a pipeline load exception'''
@@ -1126,20 +1185,18 @@ class PipelineController:
         self.__test_controls_panel.Show()
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.close_debug_measurements()
-        fd = StringIO()
-        self.__pipeline.write_image_set(fd)
-        self.__debug_measurements = cpm.Measurements(can_overwrite=True)
-        fd.seek(0)
-        self.__debug_measurements.load_image_sets(fd)
+        self.__pipeline.test_mode = True
+        self.__debug_measurements = cellprofiler.measurements.Measurements(
+            mode="memory")
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
         assert isinstance(self.__pipeline, cpp.Pipeline)
-        self.__pipeline.test_mode = True
         self.__debug_image_set_list = cpi.ImageSetList(True)
         workspace = cpw.Workspace(self.__pipeline, None, None, None,
                                   self.__debug_measurements,
                                   self.__debug_image_set_list,
                                   self.__frame)
+        workspace.set_file_list(self.__workspace.file_list)
         try:
             if not self.__pipeline.prepare_run(workspace):
                 raise ValueError("Failed to get image sets")

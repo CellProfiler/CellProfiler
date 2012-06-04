@@ -491,9 +491,9 @@ class OmeroLoadImages(cpm.CPModule):
 		if not image_set.legacy_fields.has_key(key):
 			image_set.legacy_fields[key] = {}
 		d = image_set.legacy_fields[key]
-		if not d.has_key(image_set.number):
-			d[image_set.number] = {}
-		return d[image_set.number]
+		if not d.has_key(image_set.image_number):
+			d[image_set.image_number] = {}
+		return d[image_set.image_number]
 	
 	def prepare_group(self, workspace, grouping, image_numbers):
 		'''Load the images from the dictionary into the image sets here'''		

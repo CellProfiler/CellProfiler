@@ -20,6 +20,7 @@ from __future__ import with_statement
 
 __version__ = "$Revision$"
 
+import bisect
 import os
 import threading
 import numpy as np
@@ -27,6 +28,7 @@ import h5py
 import time
 import logging
 import urllib2
+import uuid
 logger = logging.getLogger(__name__)
 
 version_number = 1
@@ -120,50 +122,117 @@ class HDF5Dict(object):
 
     def __init__(self, hdf5_filename, 
                  top_level_group_name = "Measurements",
-                 run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S"),
+                 run_group_name = None,
                  is_temporary = False,
-                 copy = None):
-        self.is_temporary = is_temporary
+                 copy = None,
+                 mode = "w"):
+        '''Initialize the HDF5Dict
+        
+        hdf5_filename - name of the file to open / create. 
+                        If None, a memory-only file is created.
+        
+        top_level_group_name - Name of the group hosting all measurements.
+                               The default is "Measurements".
+                               
+        run_group_name - Name of the particular measurements instance. You can
+                         store several versions of measurements or measurements
+                         from different CellProfiler runs by using a different
+                         run group name. If you open the file as
+        '''
+        assert mode in ("r", "r+", "w", "w+", "w-", "a")
+        open_mode = mode
+        file_exists = (hdf5_filename is not None) and os.path.exists(hdf5_filename)
+        if mode in ("r", "r+"):
+            load_measurements = True
+        elif mode == "a" and file_exists:
+            load_measurements = True
+        else:
+            load_measurements = False
+            run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S")
+            if mode == "w+" and file_exists:
+                open_mode = "r+"
+            
+        self.is_temporary = is_temporary and (hdf5_filename is not None)
         self.filename = hdf5_filename
-        logger.debug("HDF5Dict.__init__(): %s, temporary=%s, copy=%s", self.filename, self.is_temporary, copy)
-        # assert not os.path.exists(self.filename)  # currently, don't allow overwrite
-        self.hdf5_file = h5py.File(self.filename, 'w')
-        vdataset = self.hdf5_file.create_dataset(
-            VERSION, data = np.array([version_number], int))
         self.top_level_group_name = top_level_group_name
-        mgroup = self.hdf5_file.create_group(top_level_group_name)
-        self.top_group = mgroup.create_group(run_group_name)
-        self.indices = {}  # nested indices for data slices, indexed by (object, feature) then by numerical index
-        class HDF5Lock:
-            def __init__(self):
-                self.lock = threading.RLock()
-            def __enter__(self):
-                self.lock.acquire()
-                if hasattr(h5py.highlevel, "phil"):
-                    h5py.highlevel.phil.acquire()
-                
-            def __exit__(self, t, v, tb):
-                if hasattr(h5py.highlevel, "phil"):
-                    h5py.highlevel.phil.release()
-                self.lock.release()
-                
-        self.lock = HDF5Lock()
-                
-        self.must_exist = False
-        self.chunksize = 1024
-        if copy is not None:
-            for object_name in copy.keys():
-                object_group = copy[object_name]
-                self.top_group.copy(object_group, self.top_group)
-                for feature_name in object_group.keys():
-                    # some measurement objects are written at a higher level, and don't
-                    # have an index (e.g. Relationship).
-                    if 'index' in object_group[feature_name].keys():
-                        d = self.indices[object_name, feature_name] = {}
-                        hdf5_index = object_group[feature_name]['index'][:]
-                        for num_idx, start, stop in hdf5_index:
-                            d[num_idx] = slice(start, stop)
-            self.hdf5_file.flush()
+        logger.debug("HDF5Dict.__init__(): %s, temporary=%s, copy=%s, mode=%s", 
+                     self.filename, self.is_temporary, copy, open_mode)
+        if self.filename is None:
+            # core driver requires a unique filename even if the file
+            # never touches the disk... maybe the internals check for the
+            # conflict?
+            #
+            name = "%s.h5" % uuid.uuid4()
+            self.hdf5_file = h5py.File(name, driver = "core", 
+                                       backing_store = False)
+        else:
+            self.hdf5_file = h5py.File(self.filename, mode)
+        try:
+            if load_measurements:
+                if VERSION not in self.hdf5_file.keys():
+                    load_measurements = False
+                elif top_level_group_name not in self.hdf5_file:
+                    load_measurements = False
+                else:
+                    mgroup = self.hdf5_file[top_level_group_name]
+                    if run_group_name is None:
+                        run_group_name = sorted(mgroup.keys())[-1]
+                    self.top_group = mgroup[run_group_name]
+                    
+                if mode == "r" and not load_measurements:
+                    raise IOError(
+                        "%s was opened read-only but contains no measurements" % 
+                        hdf5_filename)
+            if not load_measurements:
+                if VERSION not in self.hdf5_file.keys():
+                    vdataset = self.hdf5_file.create_dataset(
+                        VERSION, data = np.array([version_number], int))
+                self.version = VERSION
+                mgroup = self.hdf5_file.create_group(top_level_group_name)
+                self.top_group = mgroup.create_group(run_group_name)
+                self.indices = {}  # nested indices for data slices, indexed by (object, feature) then by numerical index
+            else:
+                self.version = self.hdf5_file[VERSION][0]
+                #
+                # Populate self.indices
+                #
+                self.indices = {}
+                for object_name in self.top_group.keys():
+                    object_group = self.top_group[object_name]
+                    if not isinstance(object_group, h5py.Group):
+                        continue
+                    for feature_name in object_group.keys():
+                        feature_group = object_group[feature_name]
+                        if ((not isinstance(feature_group, h5py.Group)) or
+                            ("index" not in feature_group) or
+                            ("data" not in feature_group)):
+                            continue
+                        self.indices[object_name, feature_name] = dict([
+                            (object_number, slice(start, end))
+                            for object_number, start, end 
+                            in feature_group["index"]])
+                    
+            self.lock = HDF5Lock()
+                    
+            self.must_exist = False
+            self.chunksize = 1024
+            if copy is not None:
+                for object_name in copy.keys():
+                    object_group = copy[object_name]
+                    self.top_group.copy(object_group, self.top_group)
+                    for feature_name in object_group.keys():
+                        # some measurement objects are written at a higher level, and don't
+                        # have an index (e.g. Relationship).
+                        if 'index' in object_group[feature_name].keys():
+                            d = self.indices[object_name, feature_name] = {}
+                            hdf5_index = object_group[feature_name]['index'][:]
+                            for num_idx, start, stop in hdf5_index:
+                                d[num_idx] = slice(start, stop)
+                self.hdf5_file.flush()
+        except Exception, e:
+            self.hdf5_file.close()
+            logger.exception("Failed during initial processing of %s" % self.filename)
+            raise e
 
     def __del__(self):
         logger.debug("HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary)
@@ -183,17 +252,23 @@ class HDF5Dict(object):
         else:
             self.hdf5_file.flush()
             self.hdf5_file.close()
+        del self.top_group
         del self.hdf5_file
 
     def flush(self):
         logger.debug("HDF5Dict.flush(): %s, temporary=%s", self.filename, self.is_temporary)
         self.hdf5_file.flush()
 
+    @staticmethod
+    def __is_positive_int(idx):
+        '''Return True if the index is a positive integer suitable for HDF5 indexing'''
+        return (isinstance(idx, int) or isinstance(idx, np.integer)) and idx >=0
+    
     def __getitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name[, integer])"
         assert isinstance(idxs[0], basestring) and isinstance(idxs[1], basestring), "First two indices must be of type str."
         assert ((not np.isscalar(idxs[2]) and np.all(idxs[2] >= 0))
-                or (isinstance(idxs[2], int) and idxs[2] >= 0)),\
+                or self.__is_positive_int(idxs[2])),\
                "Third index must be a non-negative integer or integer array"
 
         object_name, feature_name, num_idx = idxs
@@ -226,7 +301,7 @@ class HDF5Dict(object):
     def __setitem__(self, idxs, val):
         assert isinstance(idxs, tuple), "Assigning to HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
         assert isinstance(idxs[0], basestring) and isinstance(idxs[1], basestring), "First two indices must be of type str."
-        assert isinstance(idxs[2], int) and idxs[2] >= 0, "Third index must be a non-negative integer"
+        assert self.__is_positive_int(idxs[2]), "Third index must be a non-negative integer"
 
         object_name, feature_name, num_idx = idxs
         full_name = '%s.%s' % (idxs[0], idxs[1])
@@ -326,7 +401,7 @@ class HDF5Dict(object):
         '''
         with self.lock:
             object_name, feature_name, num_idx = idxs
-            assert isinstance(num_idx, int)
+            assert self.__is_positive_int(num_idx)
             index = self.indices[object_name, feature_name]
             if (num_idx not in index) and (values is None):
                 return None  # no data
@@ -451,6 +526,36 @@ class HDF5Dict(object):
                     compression = None, chunks = (self.chunksize, 3),
                     maxshape = (None,3))
                 
+    def reorder(self, object_name, feature_name, image_numbers):
+        '''Change the image set order for a feature
+        
+        object_name, feature_name - picks out the feature to be modified
+        image_numbers - an array that maps old image number to new image number.
+                        The value in image_numbers[N] is the new image number
+                        for the measurement for old image number N. The array
+                        is zero-based even though there may not be an image
+                        number zero.
+                        
+        Note: this is intended primarily for reordering during prepare_run.
+              The image numbers will most likely be used as references within
+              other measurements at later stages of the pipeline and simply
+              remapping here is not sufficient.
+        '''
+        with self.lock:
+            feature_group = self.top_group.require_group(object_name).\
+                require_group(feature_name)
+            index_array = feature_group["index"][:, :]
+            index_array[:, 0] = image_numbers[index_array[:, 0]]
+            #
+            # Reorder sequentially.
+            #
+            order = np.lexsort((index_array[:, 0], ))
+            index_array = index_array[order, :]
+            feature_group["index"][:, :] = index_array
+            self.indices[object_name, feature_name] = dict([
+                (image_number, slice(start, stop))
+                for image_number, start, stop in index_array])
+                
 class HDF5FileList(object):
     '''An HDF5FileList is a hierarchical directory structure backed by HDF5
     
@@ -466,9 +571,14 @@ class HDF5FileList(object):
               sub directory name
                    index
                    data
+                   metadata
+                       index
+                       data
                    
     index and data are parts of a VStringArray (see below) and URLs are
-    stored in alpabetical order in the array. 
+    stored in alpabetical order in the array. The metadata group contains a
+    second string array whose indices correspond to those for the file name.
+    The metadata is the OME-XML as fetched by Bioformats.
     
     Schema names and directory names are escape-encoded to allow characters that 
     can appear in URLs but could cause problems as group names, most notably,
@@ -512,6 +622,23 @@ class HDF5FileList(object):
             g = g.require_group(filelist_name)
             g.attrs[A_CLASS] = CLASS_FILELIST_GROUP
         self.__top_level_group = g
+        self.__cache = {}
+        self.__notification_list = []
+        
+    def add_notification_callback(self, callback):
+        '''Add a callback that will be called if the file list changes in any way
+        
+        callback - a function taking no arguments.
+        '''
+        self.__notification_list.append(callback)
+        
+    def remove_notification_callback(self, callback):
+        '''Remove a previously installed callback'''
+        self.__notification_list.remove(callback)
+        
+    def notify(self):
+        for callback in self.__notification_list:
+            callback()
         
     def get_filelist_group(self):
         '''Get the top-level group of this filelist'''
@@ -539,7 +666,7 @@ class HDF5FileList(object):
         #
         # I sure hope this isn't slow...
         #
-        if name in ("index", "data"):
+        if name in ("index", "data", "metadata"):
             return r"\%02x%s" % (ord(name[0]), name[1:])
         return "".join([c if c in HDF5FileList.LEGAL_GROUP_CHARACTERS
                         else r"\%02x" % ord(c)
@@ -608,20 +735,38 @@ class HDF5FileList(object):
             if not d1.has_key(None):
                 d1[None] = []
             d1[None].append(parts[-1])
-        def fn(g, d):
+        def fn(g, d, parts = []):
             for k in d:
                 if k is None:
                     g.attrs[A_TIMESTAMP] = timestamp
+                    metadata_group = g.require_group("metadata")
+                    metadata = VStringArray(metadata_group, self.lock)
                     dest = VStringArray(g, self.lock)
-                    leaves = set(dest)
-                    leaves.update(d[k])
-                    dest.set_all(sorted(leaves))
+                    leaves = list(dest)
+                    old_len = len(leaves)
+                    to_add = set(d[k]).difference(leaves)
+                    if len(to_add) > 0:
+                        leaves += to_add
+                        dest.extend(to_add)
+                        sort_order = sorted(
+                            range(len(leaves)),
+                            cmp = lambda x, y: cmp(leaves[x], leaves[y]))
+                        dest.reorder(sort_order)
+                        self.__cache[tuple(parts)] = tuple([
+                            leaves[i] for i in sort_order])
+                        metadata.extend([None] * len(to_add))
+                        metadata.reorder(sort_order)
                 else:
                     g1 = g.require_group(self.encode(k))
                     g1.attrs[A_CLASS] = CLASS_DIRECTORY
-                    fn(g1, d[k])
+                    fn(g1, d[k], parts + [k])
         with self.lock:
             fn(self.get_filelist_group(), d)
+            self.hdf5_file.flush()
+        self.notify()
+            
+    def clear_cache(self):
+        self.__cache = {}
                     
     def remove_files_from_filelist(self, urls):
         group = self.get_filelist_group()
@@ -638,20 +783,31 @@ class HDF5FileList(object):
             if not d1.has_key(None):
                 d1[None] = []
             d1[None].append(parts[-1])
-        def fn(g, d):
+        def fn(g, d, parts = []):
             for k in d:
+                next_parts = parts + [k]
+                parts_tuple = tuple(parts)
                 if k is None:
+                    to_remove = set(d[k])
                     dest = VStringArray(g, self.lock)
-                    leaves = set(dest)
-                    leaves.difference_update(d[k])
-                    if len(leaves):
-                        dest.set_all(sorted(leaves))
+                    metadata = VStringArray(g.require_group("metadata"),
+                                            self.lock)
+                    leaves = list(dest)
+                    order = [i for i, leaf in enumerate(leaves)
+                             if leaf not in to_remove]
+                    if len(order) > 0:
+                        dest.reorder(order)
+                        metadata.reorder(order)
+                        self.__cache[parts_tuple] = tuple(
+                            [leaves[o] for o in order])
                     else:
                         dest.delete()
+                        del g["metadata"]
+                        self.__cache[parts_tuple] = tuple()
                 else:
                     encoded_key = self.encode(k)
                     g1 = g.require_group(encoded_key)
-                    has_grandchildren = fn(g1, d[k])
+                    has_grandchildren = fn(g1, d[k], next_parts)
                     if not has_grandchildren:
                         del g[encoded_key]
             if VStringArray.has_vstring_array(g):
@@ -662,6 +818,8 @@ class HDF5FileList(object):
             return False
         with self.lock:
             fn(self.get_filelist_group(), d)
+            self.hdf5_file.flush()
+        self.notify()
         
     def get_filelist(self, root_url = None):
         '''Retrieve all URLs from a filelist
@@ -675,34 +833,41 @@ class HDF5FileList(object):
             if root_url is None:
                 schemas = [ k for k in group.keys()
                             if group[k].attrs[A_CLASS] == CLASS_DIRECTORY]
-                roots = [(s+":", group[s]) for s in schemas]
+                roots = [(s+":", group[s], [s]) for s in schemas]
             else:
                 schema, path = self.split_url(root_url, is_directory=True)
                 g = group[self.encode(schema)]
                 for part in path:
                     g = g[self.encode(part)]
+                if not root_url.endswith("/"):
+                    root_url += "/"
+                roots = [ (root_url, g, path)]
                 
-            def fn(root, g):
+            def fn(root, g, path):
                 urls = []
-                if VStringArray.has_vstring_array(g):
-                    urls += [ root + x for x in VStringArray(g)]
+                path_tuple = tuple(path)
+                if path_tuple in self.__cache:
+                    urls += [ root + x for x in self.__cache[path_tuple]]
+                elif VStringArray.has_vstring_array(g):
+                    a = self.__cache[path_tuple] = tuple(VStringArray(g))
+                    urls += [ root + x for x in a]
                 for k in sorted(g.keys()):
                     g0 = g[k]
+                    next_path = path + [k]
                     if (isinstance(g0, h5py.Group) and 
-                        g0.attrs[A_CLASS] == CLASS_DIRECTORY):
+                        g0.attrs.get(A_CLASS, None) == CLASS_DIRECTORY):
                         decoded_key = self.decode(k)
                         if decoded_key.endswith("/"):
                             # Special case - root of "file://foo.jpg" is
                             # "file://" 
-                            # drawingclownsforaliving
                             subroot = root + decoded_key
                         else:
                             subroot = root + decoded_key + "/"
-                        urls += fn(subroot, g0)
+                        urls += fn(subroot, g0, next_path)
                 return urls
             urls = []
-            for root, g in roots:
-                urls += fn(root, g)
+            for root, g, path in roots:
+                urls += fn(root, g, path)
             return urls
         
     def list_files(self, url):
@@ -713,6 +878,9 @@ class HDF5FileList(object):
         '''
         schema, parts = self.split_url(url, is_directory=True)
         with self.lock:
+            path_tuple = tuple([schema] + parts)
+            if path_tuple in self.__cache:
+                return self.__cache[path_tuple]
             group = self.get_filelist_group()
             for part in [schema] + parts:
                 encoded_part = self.encode(part)
@@ -720,8 +888,11 @@ class HDF5FileList(object):
                     return []
                 group = group[encoded_part]
             
+            
             if VStringArray.has_vstring_array(group):
-                return list(VStringArray(group, self.lock))
+                result = self.__cache[path_tuple] = \
+                    tuple(VStringArray(group, self.lock))
+                return result
             return []
         
     def list_directories(self, url):
@@ -745,10 +916,96 @@ class HDF5FileList(object):
                 group = group[encoded_part]
         return [self.decode(x) for x in group.keys()
                 if group[x].attrs.get(A_CLASS, None) == CLASS_DIRECTORY]
+    
+    '''URL is a file'''
+    TYPE_FILE = "File"
+    '''URL is a directory'''
+    TYPE_DIRECTORY = "Directory"
+    '''URL is not present in the file list'''
+    TYPE_NONE = "None"
+    
+    def get_type(self, url):
+        schema, parts = self.split_url(url, is_directory=True)
+        with self.lock:
+            group = self.get_filelist_group()
+            for part in [schema] + parts[:-1]:
+                encoded_part = self.encode(part)
+                if encoded_part not in group:
+                    return self.TYPE_NONE
+                group = group[encoded_part]
+            last_encoded_part = self.encode(parts[-1])
+            if (last_encoded_part in group and 
+                group[last_encoded_part].attrs.get(A_CLASS, None) == CLASS_DIRECTORY):
+                return self.TYPE_DIRECTORY
+            else:
+                parts_tuple = tuple([schema] + parts[:-1])
+                if parts_tuple in self.__cache:
+                    a = self.__cache[parts_tuple]
+                elif VStringArray.has_vstring_array(group):
+                    self.__cache[parts_tuple] = a = tuple(VStringArray(group))
+                else:
+                    return self.TYPE_NONE
+                idx = bisect.bisect_left(a, parts[-1])
+                if idx < len(a) and a[idx] == parts[-1]:
+                    return self.TYPE_FILE
+            return self.TYPE_NONE
         
+    def add_metadata(self, url, metadata):
+        '''Add metadata associated with the URL
+        
+        url - url of the file. The URL must be present in the file list
+        
+        metadata - the OME-XML for the file
+        '''
+        group, index = self.find_url(url)
+        metadata_array = VStringArray(group.require_group("metadata"))
+        metadata_array[index] = metadata
+        self.notify()
+    
+    def get_metadata(self, url):
+        '''Get the metadata associated with a URL
+        
+        url - url of the file.
+        
+        metadata - the OME-XML for the file
+        '''
+        result = self.find_url(url)
+        if result is None:
+            return None
+        group, index = result
+        metadata = VStringArray(group.require_group("metadata"))
+        if len(metadata) <= index:
+            # Metadata wasn't initialized...
+            return None
+        return metadata[index]
+        
+    def find_url(self, url):
+        '''Find the group and index of a URL
+        
+        url - the URL to find in the file list
+        
+        returns the HDF5 group that represents the URL's
+        directory and the index of the URL in the file list
+        or None if the url is not present.
+        '''
+        schema, parts = self.split_url(url)
+        with self.lock:
+            group = self.get_filelist_group()
+            for part in [schema] + parts[:-1]:
+                encoded_part = self.encode(part)
+                if encoded_part not in group:
+                    return None
+                group = group[encoded_part]
+            a = VStringArray(group)
+            idx = bisect.bisect_left(a, parts[-1])
+            if idx < len(a) and a[idx] == parts[-1]:
+                return (group, idx)
+            return None
+        
+            
     def get_refresh_timestamp(self, url):
         '''Get the timestamp of the last refresh of the given directory
-        
+s        
         url - url of the directory to reference
         
         returns None if never, else seconds after the epoch
@@ -782,6 +1039,7 @@ class HDF5FileList(object):
                  if group[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY ] ]
             groups = [ group ]
             roots = [ None ]
+            path = [ None ]
             while len(stack):
                 current = stack.pop()
                 g0 = groups.pop()
@@ -791,24 +1049,34 @@ class HDF5FileList(object):
                     groups.append(g0)
                     stack.append(current[1:])
                     g1 = g0[k]
-                    if root is None:
-                        root = self.decode(k) + ":"
+                    kd = self.decode(k)
+                    if len(roots) == 1:
+                        root = kd + ":"
+                    elif len(roots) == 2:
+                        root += kd
                     else:
-                        root += self.decode(k) + "/"
+                        root += "/" + kd
                     directories = [
                         self.decode(k) for k in g1
                         if g1[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY]
-                    if VStringArray.has_vstring_array(g1):
+                    path_tuple = tuple(path[1:] + [kd])
+                    if path_tuple in self.__cache:
+                        filenames = self.__cache[path_tuple]
+                    elif VStringArray.has_vstring_array(g1):
                         filenames = tuple(VStringArray(g1))
+                        self.__cache[path_tuple] = filenames
                     else:
                         filenames = tuple()
+                        self.__cache[path_tuple] = filenames
                     callback(root, directories, filenames)
                     if len(directories):
                         stack.append([self.encode(d) for d in directories])
                         groups.append(g1)
                         roots.append(root)
+                        path.append(kd)
                 else:
                     roots.pop()
+                    path.pop()
 
 def get_top_level_group(filename, group_name = 'Measurements', open_mode='r'):
     '''Open and return the Measurements HDF5 group
@@ -943,6 +1211,19 @@ class NullLock(object):
     def __exit__(self, t, v, tb):
         return
     
+class HDF5Lock:
+    def __init__(self):
+        self.lock = threading.RLock()
+    def __enter__(self):
+        self.lock.acquire()
+        if hasattr(h5py.highlevel, "phil"):
+            h5py.highlevel.phil.acquire()
+        
+    def __exit__(self, t, v, tb):
+        if hasattr(h5py.highlevel, "phil"):
+            h5py.highlevel.phil.release()
+        self.lock.release()
+        
 class VStringArray(object):
     '''A 1-d array of variable-length strings backed by HDF5 datasets
     
@@ -1032,11 +1313,16 @@ class VStringArray(object):
                 self.index.resize(idx+1, 0)
                 begin = self.data.shape[0]
                 self.index[idx, 0] = begin
-            elif len(value) <= self.index[idx, 1] - self.index[idx, 0]:
-                begin = self.index[idx, 0]
             else:
-                begin = self.data.shape[0]
-                self.index[idx, 0] = begin
+                idx0, idx1 = self.index[idx]
+                if idx0 == self.VS_NULL:
+                    begin = self.data.shape[0]
+                    self.index[idx, 0] = begin
+                elif len(value) <= idx1 - idx0:
+                    begin = idx0
+                else:
+                    begin = self.data.shape[0]
+                    self.index[idx, 0] = begin
             end = begin + len(value)
             self.index[idx, 1] = end
             if self.data.shape[0] < end:
@@ -1095,20 +1381,30 @@ class VStringArray(object):
         with self.lock:
             target_len = len(strings)
             self.index.resize(target_len, 0)
+            index = np.zeros(self.index.shape, self.index.dtype)
             if len(strings) > 0:
-                self.index[:, 1] = np.cumsum([len(s) for s in strings])
-                self.index[0, 0] = 0
+                index[:, 1] = np.cumsum([len(s) for s in strings])
+                index[0, 0] = 0
                 if len(strings) > 1:
-                    self.index[1:, 0] = self.index[:(target_len-1), 1]
+                    index[1:, 0] = index[:(target_len-1), 1]
                 if np.any(nulls):
-                    self.index[nulls, 0] = self.VS_NULL
-                self.data.resize(self.index[(target_len-1), 1], 0)
-            for s, (begin, end) in zip(strings, self.index):
+                    index[nulls, 0] = self.VS_NULL
+                self.data.resize(index[(target_len-1), 1], 0)
+                self.index[:, :] = index
+            for s, (begin, end) in zip(strings, index):
                 if begin < end:
                     self.data[begin:end] = np.frombuffer(s, "S1")
                     
     def sort(self):
-        '''Sort strings in-place'''
+        '''Sort strings in-place
+        
+        returns a list containing the old indices as they appear in the
+        new array. For instance, if the array looked like
+        ( "foo", "bar", "baz")
+        before calling sort, it would look like
+        ( "bar", "baz", "foo" ) and would return
+        ( 1, 2, 0 )
+        '''
         with self.lock:
             if len(self) == 0:
                 return
@@ -1136,15 +1432,72 @@ class VStringArray(object):
             order = list(range(len(self)))
             order.sort(cmp = compare)
             self.index = index[order, :]
+            return order
             
+    def reorder(self, order):
+        '''Reorder the array
+        
+        order - a sequence of the old indices in the desired order. The order
+                can have missing indices in which case the corresponding
+                strings are deleted and the array is downsized.
+        '''
+        if len(order) == 0:
+            self.index.resize(0, 0)
+            return
+        index = self.index[:]
+        order = np.array(order, int)
+        if index.shape[0] > len(order):
+            self.index.resize(len(order), 0)
+        self.index[:, :] = index[order, :]
+        
     def insert(self, index, s):
         '''Insert a string into the array at an index'''
-        old_len = self.index.shape[0]
-        self.index.resize(old_len+1, 0)
-        if index < old_len:
-            self.index[index+1:, :] = self.index[index:old_len]
-        self.index[index, :] = (self.VS_NULL, 0)
-        self[index] = s
+        with self.lock:
+            old_len = self.index.shape[0]
+            self.index.resize(old_len+1, 0)
+            if index < old_len:
+                self.index[index+1:, :] = self.index[index:old_len]
+            self.index[index, :] = (self.VS_NULL, 0)
+            self[index] = s
+            
+    def append(self, s):
+        '''Append a string to the end of the array
+        
+        s - string to append
+        '''
+        with self.lock:
+            self.insert(len(self), s)
+            
+    def extend(self, strings):
+        '''Append a sequence of strings to the end of the array
+            
+        strings - strings to append
+        '''
+        if len(strings) == 0:
+            return
+        nulls = np.array([s is None for s in strings])
+        strings = ["" if s is None 
+                   else s.encode("utf-8") if isinstance(s, unicode)
+                   else str(s) for s in strings]
+        with self.lock:
+            old_len = len(self)
+            old_data_len = self.data.shape[0]
+            n_strings = len(strings)
+            target_len = n_strings + old_len
+            self.index.resize(target_len, 0)
+            index = np.zeros((n_strings, 2), self.index.dtype)
+            index[:, 1] = np.cumsum([len(s) for s in strings])
+            index[0, 0] = 0
+            if len(strings) > 1:
+                index[1:, 0] = index[:-1, 1]
+            index += old_data_len
+            if np.any(nulls):
+                index[nulls, 0] = self.VS_NULL
+            self.data.resize(index[-1, 1], 0)
+            self.index[old_len:, :] = index
+            for s, (begin, end) in zip(strings, index):
+                if begin < end:
+                    self.data[begin:end] = np.frombuffer(s, "S1")
         
     def bisect_left(self, s):
         '''Return the insertion point for s, assuming the array is sorted'''

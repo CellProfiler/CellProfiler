@@ -489,7 +489,7 @@ class RunImageJ(cpm.CPModule):
         #
         # Run a command or macro on the first image of the set
         #
-        if d[D_FIRST_IMAGE_SET] == image_set.number + 1:
+        if d[D_FIRST_IMAGE_SET] == image_set.image_number:
             self.do_imagej(bridge, workspace, D_FIRST_IMAGE_SET)
         #
         # Install the input image as the current image
@@ -509,7 +509,7 @@ class RunImageJ(cpm.CPModule):
         #
         # Execute the post-group macro or command
         #
-        if d[D_LAST_IMAGE_SET] == image_set.number + 1:
+        if d[D_LAST_IMAGE_SET] == image_set.image_number:
             self.do_imagej(bridge, workspace, D_LAST_IMAGE_SET)
             #
             # Save the current ImageJ image after executing the post-group

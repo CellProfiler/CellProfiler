@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 
 __version__="$Revision$"
 
+import h5py
 import numpy as np
 from scipy.io.matlab.mio import loadmat
 import wx
@@ -54,8 +55,17 @@ class DataToolFrame(wx.Frame):
         wx.Frame.__init__(self, *args, **kwds_copy)
         self.module = instantiate_module(module_name)
         self.pipeline = cpp.Pipeline()
-        self.pipeline.load(measurements_file_name)
-        self.load_measurements(measurements_file_name)
+        if h5py.is_hdf5(measurements_file_name):
+            self.workspace = cpw.Workspace(pipeline, self.module, None, None, None,
+                                           None)
+            self.workspace.load(measurements_file_name, True)
+            self.measurements = self.workspace.measurements
+        else:
+            self.pipeline.load(measurements_file_name)
+            self.load_measurements(measurements_file_name)
+            self.workspace = cpw.Workspace(pipeline, self.module, None, None,
+                                           measurements, None)
+        
         self.module.module_num = len(self.pipeline.modules())+1
         self.pipeline.add_module(self.module)
 
@@ -65,7 +75,7 @@ class DataToolFrame(wx.Frame):
         module_panel.BackgroundColour = cpprefs.get_background_color()
         self.BackgroundColour = cpprefs.get_background_color()
 
-        self.module_view = ModuleView(module_panel, self.pipeline, True)
+        self.module_view = ModuleView(module_panel, self.workspace, True)
         self.module_view.set_selection(self.module.module_num)
         def on_change(caller, event):
             setting = event.get_setting()

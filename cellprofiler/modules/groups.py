@@ -115,12 +115,12 @@ class Groups(cpm.CPModule):
         while len(self.grouping_metadata) < nmetadata:
             self.add_grouping_metadata()
             
-    def on_activated(self, pipeline):
-        self.pipeline = pipeline
-        assert isinstance(pipeline, cpp.Pipeline)
+    def on_activated(self, workspace):
+        self.pipeline = workspace.pipeline
+        assert isinstance(self.pipeline, cpp.Pipeline)
         self.image_set_channel_descriptors, \
             self.image_set_key_names, \
-            self.image_sets = pipeline.get_image_sets()
+            self.image_sets = self.pipeline.get_image_sets(workspace, self)
         for i, iscd in enumerate(self.image_set_channel_descriptors):
             column_name = iscd.name
             metadata_keys = set()
@@ -254,6 +254,59 @@ class Groups(cpm.CPModule):
                     for g in self.grouping_metadata]
         m = workspace.measurements
         return key_list, m.get_groupings(key_list)
+    
+    def change_causes_prepare_run(self, setting):
+        '''Return True if changing the setting passed changes the image sets
+        
+        setting - the setting that was changed
+        '''
+        return setting in self.settings
+    
+    def is_load_module(self):
+        '''Marks this module as a module that affects the image sets
+        
+        Groups is a load module because it can reorder image sets, but only
+        if grouping is turned on.
+        '''
+        return self.wants_groups.value
+    
+    def prepare_run(self, workspace):
+        '''Reorder the image sets and assign group number and index'''
+        if not self.wants_groups:
+            return True
+        
+        key_list, groupings = self.get_groupings(workspace)
+        #
+        # Sort the groupings by key
+        #
+        groupings = sorted(groupings)
+        #
+        # Create arrays of group number, group_index and image_number
+        #
+        group_numbers = np.hstack([
+            np.ones(len(image_numbers), int) * (i + 1)
+            for i, (keys, image_numbers) in enumerate(groupings)])
+        group_indexes = np.hstack([
+            np.arange(len(image_numbers)) + 1
+            for keys, image_numbers in groupings])
+        image_numbers = np.hstack([
+            image_numbers for keys, image_numbers in groupings])
+        order = np.lexsort((image_numbers, ))
+        group_numbers = group_numbers[order]
+        group_indexes = group_indexes[order]
+        
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
+        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_numbers)
+        #
+        # Downstream processing requires that image sets be ordered by
+        # increasing group number, then increasing group index.
+        #
+        new_image_numbers = np.zeros(np.max(image_numbers) + 1, int)
+        new_image_numbers[image_numbers[order]] = np.arange(len(image_numbers))
+        m.reorder_image_measurements(new_image_numbers)
+        return True
         
     def run(self, workspace):
         pass

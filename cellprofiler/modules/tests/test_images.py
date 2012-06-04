@@ -12,16 +12,35 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
+import csv
 import numpy as np
+import os
 from cStringIO import StringIO
+import tempfile
 import unittest
 import urllib
 
+import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
+import cellprofiler.workspace as cpw
 import cellprofiler.modules.images as I
 
 class TestImages(unittest.TestCase):
+    def setUp(self):
+        # The Images module needs a workspace and the workspace needs
+        # an HDF5 file.
+        #
+        self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
+        self.measurements = cpmeas.Measurements(
+            filename = self.temp_filename)
+        os.close(self.temp_fd)
+        
+    def tearDown(self):
+        self.measurements.close()
+        os.unlink(self.temp_filename)
+        self.assertFalse(os.path.exists(self.temp_filename))
+        
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -50,260 +69,432 @@ Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_win
         
         returns an activated Images module
         '''
-        data = """"Version":"1","PlaneCount":"127"
-"URL","Series","Index","Channel","ChannelName","ColorFormat","SizeC","SizeT","SizeZ","T","Z"
-"file:/TestImages/003002000.flex",,,,,"Planar","2","1","1",,
-"file:/TestImages/003002000.flex","0","0",,"Exp1Cam2","monochrome",,,,"0","0"
-"file:/TestImages/003002000.flex","0","1",,"Exp2Cam3","monochrome",,,,"0","0"
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF",,,,,"monochrome","1","21","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","0",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","1",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","2",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","3",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","4",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","5",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","6",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","7",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","8",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","9",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","10",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","11",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","12",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","13",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","14",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","15",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","16",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","17",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","18",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","19",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF","0","20",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF",,,,,"monochrome","1","21","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","0",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","1",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","2",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","3",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","4",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","5",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","6",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","7",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","8",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","9",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","10",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","11",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","12",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","13",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","14",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","15",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","16",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","17",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","18",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","19",,,"monochrome","1","1","1",,
-"file:/TestImages/397_w1447%20laser_s9_t1_good.TIF","0","20",,,"monochrome","1","1","1",,
-"file:/TestImages/5channel.tif",,,,,"Planar","5","1","1",,
-"file:/TestImages/Control.mov",,,,,,,,,,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi",,,,,"RGB","3","65","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","0",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","1",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","2",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","3",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","4",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","5",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","6",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","7",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","8",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","9",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","10",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","11",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","12",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","13",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","14",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","15",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","16",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","17",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","18",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","19",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","20",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","21",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","22",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","23",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","24",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","25",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","26",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","27",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","28",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","29",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","30",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","31",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","32",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","33",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","34",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","35",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","36",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","37",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","38",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","39",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","40",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","41",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","42",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","43",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","44",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","45",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","46",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","47",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","48",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","49",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","50",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","51",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","52",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","53",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","54",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","55",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","56",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","57",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","58",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","59",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","60",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","61",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","62",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","63",,,"RGB","3","1","1",,
-"file:/TestImages/DrosophilaEmbryo_GFPHistone.avi","0","64",,,"RGB","3","1","1",,
-"file:/TestImages/IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif",,,,,"monochrome","1","1","1",,
-"file:/TestImages/NikonTIF.tif",,,,,"RGB","3","1","1",,
-"file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex",,,,,,,,,,
-"file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex","0","0",,"1_Exp1Cam1","monochrome",,,,"0","0"
-"file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex","0","1",,"1_Exp1Cam2","monochrome",,,,"0","0"
-"file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex","1","0",,"2_Exp1Cam1","monochrome",,,,"0","0"
-"file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex","1","1",,"2_Exp1Cam2","monochrome",,,,"0","0"
-"file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex","2","0",,"3_Exp1Cam1","monochrome",,,,"0","0"
-"file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex","2","1",,"3_Exp1Cam2","monochrome",,,,"0","0"
-"file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex","3","0",,"4_Exp1Cam1","monochrome",,,,"0","0"
-"file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex","3","1",,"4_Exp1Cam2","monochrome",,,,"0","0"
-"file:/TestImages/icd002235_090127090001_a01f00d1.c01",,,,,"monochrome","1","1","1",,
-"""
-        
+        data = """file:/TestImages/003002000.flex
+file:/TestImages/397_w1447%20laser_s17_t1_bad.TIF
+file:/TestImages/397_w1447%20laser_s9_t1_good.TIF
+file:/TestImages/5channel.tif
+file:/TestImages/C0.stk
+file:/TestImages/C1.stk
+file:/TestImages/Control.mov
+file:/TestImages/DrosophilaEmbryo_GFPHistone.avi
+file:/TestImages/icd002235_090127090001_a01f00d1.c01
+file:/TestImages/IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif
+file:/TestImages/NikonTIF.tif
+file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex
+file:/ExampleImages/ExampleSBSImages/1049_FilenamesAndMetadata.csv
+file:/ExampleImages/ExampleSBSImages/1049_FilenamesAndMetadata_short.csv
+file:/ExampleImages/ExampleSBSImages/1049_Metadata.csv
+file:/ExampleImages/ExampleSBSImages/allscales.cp
+file:/ExampleImages/ExampleSBSImages/Channel1-01-A-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-02-A-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-03-A-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-04-A-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-05-A-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-06-A-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-07-A-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-08-A-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-09-A-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-10-A-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-11-A-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-12-A-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-13-B-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-14-B-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-15-B-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-16-B-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-17-B-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-18-B-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-19-B-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-20-B-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-21-B-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-22-B-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-23-B-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-24-B-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-25-C-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-26-C-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-27-C-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-28-C-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-29-C-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-30-C-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-31-C-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-32-C-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-33-C-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-34-C-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-35-C-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-36-C-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-37-D-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-38-D-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-39-D-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-40-D-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-41-D-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-42-D-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-43-D-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-44-D-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-45-D-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-46-D-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-47-D-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-48-D-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-49-E-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-50-E-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-51-E-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-52-E-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-53-E-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-54-E-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-55-E-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-56-E-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-57-E-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-58-E-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-59-E-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-60-E-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-61-F-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-62-F-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-63-F-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-64-F-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-65-F-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-66-F-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-67-F-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-68-F-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-69-F-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-70-F-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-71-F-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-72-F-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-73-G-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-74-G-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-75-G-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-76-G-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-77-G-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-78-G-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-79-G-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-80-G-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-81-G-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-82-G-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-83-G-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-84-G-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-85-H-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-86-H-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-87-H-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-88-H-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-89-H-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-90-H-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-91-H-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-92-H-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-93-H-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-94-H-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-95-H-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel1-96-H-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel1ILLUM.mat
+file:/ExampleImages/ExampleSBSImages/Channel2-01-A-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-02-A-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-03-A-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-04-A-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-05-A-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-06-A-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-07-A-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-08-A-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-09-A-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-10-A-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-11-A-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-12-A-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-13-B-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-14-B-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-15-B-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-16-B-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-17-B-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-18-B-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-19-B-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-20-B-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-21-B-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-22-B-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-23-B-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-24-B-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-25-C-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-26-C-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-27-C-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-28-C-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-29-C-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-30-C-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-31-C-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-32-C-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-33-C-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-34-C-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-35-C-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-36-C-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-37-D-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-38-D-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-39-D-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-40-D-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-41-D-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-42-D-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-43-D-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-44-D-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-45-D-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-46-D-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-47-D-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-48-D-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-49-E-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-50-E-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-51-E-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-52-E-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-53-E-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-54-E-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-55-E-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-56-E-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-57-E-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-58-E-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-59-E-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-60-E-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-61-F-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-62-F-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-63-F-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-64-F-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-65-F-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-66-F-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-67-F-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-68-F-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-69-F-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-70-F-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-71-F-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-72-F-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-73-G-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-74-G-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-75-G-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-76-G-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-77-G-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-78-G-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-79-G-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-80-G-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-81-G-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-82-G-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-83-G-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-84-G-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-85-H-01.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-86-H-02.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-87-H-03.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-88-H-04.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-89-H-05.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-90-H-06.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-91-H-07.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-92-H-08.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-93-H-09.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-94-H-10.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-95-H-11.tif
+file:/ExampleImages/ExampleSBSImages/Channel2-96-H-12.tif
+file:/ExampleImages/ExampleSBSImages/Channel2ILLUM.mat
+file:/ExampleImages/ExampleSBSImages/CreateBatchFile.cp
+file:/ExampleImages/ExampleSBSImages/ExampleSBS.cp
+file:/ExampleImages/ExampleSBSImages/ExampleSBSIllumination.cp
+file:/ExampleImages/ExampleSBSImages/foo.jpg
+file:/ExampleImages/ExampleSBSImages/foo.tif
+file:/ExampleImages/ExampleSBSImages/LoadDataSBS.cp
+file:/ExampleImages/ExampleSBSImages/Nuclei_A01.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_A02.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_A03.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_A04.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_A05.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_A06.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_A07.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_A08.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_A09.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_A10.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_A11.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_A12.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B01.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B02.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B03.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B04.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B05.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B06.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B07.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B08.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B09.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B10.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B11.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_B12.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C01.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C02.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C03.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C04.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C05.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C06.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C07.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C08.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C09.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C10.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C11.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_C12.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D01.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D02.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D03.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D04.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D05.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D06.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D07.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D08.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D09.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D10.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D11.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_D12.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E01.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E02.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E03.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E04.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E05.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E06.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E07.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E08.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E09.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E10.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E11.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_E12.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F01.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F02.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F03.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F04.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F05.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F06.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F07.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F08.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F09.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F10.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F11.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_F12.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G01.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G02.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G03.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G04.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G05.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G06.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G07.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G08.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G09.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G10.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G11.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_G12.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H01.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H02.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H03.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H04.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H05.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H06.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H07.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H08.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H09.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H10.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H11.tiff
+file:/ExampleImages/ExampleSBSImages/Nuclei_H12.tiff"""
         pipeline = cpp.Pipeline()
-        ipds = cpp.read_image_plane_details(StringIO(data))
-        pipeline.add_image_plane_details(ipds)
         module = I.Images()
         module.module_num = 1
         pipeline.add_module(module)
-        module.on_activated(pipeline)
+        workspace = cpw.Workspace(pipeline, module, None, None,
+                                  self.measurements, None)
+        file_list = workspace.file_list
+        self.urls = [d.strip() for d in data.split("\n")]
+        file_list.add_files_to_filelist(self.urls)
+        module.on_activated(workspace)
         return module
     
+    def in_filetree(self, url, module):
+        '''Return true if the URL is in the file collection display file tree
+        
+        '''
+        file_tree = module.file_collection_display.file_tree
+        path = module.url_to_modpath(url)
+        for part in path:
+            if part not in file_tree:
+                return False
+            file_tree = file_tree[part]
+        return True
+    
+    def in_filelist(self, url, module):
+        '''Return true if the url is in the module workspace file list'''
+        file_list = module.workspace.file_list
+        return file_list.get_type(url) != file_list.TYPE_NONE
+        
     def test_02_01_activate(self):
         module = self.make_module()
         self.assertIsInstance(module, I.Images)
         #
         # Make sure every IPD is in the file tree
         #
-        file_tree = module.file_collection_display.file_tree
-        for ipd in module.pipeline.image_plane_details:
-            path = module.make_modpath_from_ipd(ipd)
-            t = file_tree
-            while(len(path) > 0):
-                self.assertTrue(t.has_key(path[0]))
-                t = t[path[0]]
-                path = path[1:]
+        for url in self.urls:
+            self.assertTrue(self.in_filetree(url, module))
+            self.assertTrue(self.in_filelist(url, module))
     
-    def test_02_02_find_ipd(self):
+    def test_02_02_on_remove(self):
         module = self.make_module()
         self.assertIsInstance(module, I.Images)
-        exemplar = cpp.ImagePlaneDetails("file:/TestImages/NikonTIF.tif", None, None, None)
-        modpath = module.make_modpath_from_ipd(exemplar)
-        ipd = module.get_image_plane_details(modpath)
-        self.assertIsNotNone(ipd)
-        self.assertEqual(ipd.metadata[cpp.ImagePlaneDetails.MD_COLOR_FORMAT],
-                         cpp.ImagePlaneDetails.MD_RGB)
-        ipd = module.get_image_plane_details(modpath[:-1] + [ "foo.tif" ])
-        self.assertIsNone(ipd)
-        
-    def test_02_03_on_remove(self):
-        module = self.make_module()
-        self.assertIsInstance(module, I.Images)
-        exemplar1 = cpp.ImagePlaneDetails("file:/TestImages/NikonTIF.tif", None, None, None)
-        exemplar2 = cpp.ImagePlaneDetails("file:/TestImages/DrosophilaEmbryo_GFPHistone.avi", 0, 35, None)
-        exemplar3 = cpp.ImagePlaneDetails("file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex", None, None, None)
-        kept = cpp.ImagePlaneDetails("file:/TestImages/DrosophilaEmbryo_GFPHistone.avi", 0, 63, None)
-        modpath = module.make_modpath_from_ipd(exemplar1)
+        url1 = "file:/TestImages/NikonTIF.tif"
+        url2 = "file:/TestImages/DrosophilaEmbryo_GFPHistone.avi"
+        url3 = "file:/TestImages/RLM1%20SSN3%20300308%20008015000.flex"
+        kept = "file:/TestImages/Control.mov"
         mods = []
-        current_list = mods
-        for part in modpath[:-1]:
-            next_list = []
-            current_list.append((part, next_list))
-            current_list = next_list
-        current_list.append(modpath[-1])
-        modpath = module.make_modpath_from_ipd(exemplar2)
-        current_list.append((modpath[-2], [modpath[-1]]))
-        modpath = module.make_modpath_from_ipd(exemplar3)
-        current_list.append(modpath[-1])
+        for url in (url1, url2, url3):
+            module.add_modpath_to_modlist(module.url_to_modpath(url), mods)
         module.on_remove(mods)
-        kept_modpath = module.make_modpath_from_ipd(kept)
-        self.assertIsNotNone(module.get_image_plane_details(kept_modpath))
-        for exemplar in (exemplar1, exemplar2, exemplar3):
-            self.assertIsNone(module.get_image_plane_details(
-                module.make_modpath_from_ipd(exemplar)))
-        t = module.file_collection_display.file_tree
-        modpath = module.make_modpath_from_ipd(exemplar1)
-        for part in modpath[:-1]:
-            self.assertTrue(t.has_key(part))
-            t = t[part]
-        self.assertFalse(t.has_key(modpath[-1]))
-        modpath = module.make_modpath_from_ipd(exemplar2)
-        self.assertTrue(t.has_key(modpath[-2]))
-        self.assertFalse(t[modpath[-2]].has_key(modpath[-1]))
-        self.assertTrue(t[modpath[-2]].has_key(kept_modpath[-1]))
-        modpath = module.make_modpath_from_ipd(exemplar3)
-        self.assertFalse(t.has_key(modpath[-1]))
+        self.assertTrue(self.in_filetree(kept, module))
+        self.assertTrue(self.in_filelist(kept, module))
+        for url in (url1, url2, url3):
+            self.assertFalse(self.in_filetree(url, module))
+            self.assertFalse(self.in_filelist(url, module))
         
-    def test_02_04_get_path_info(self):
+    def test_02_03_get_path_info(self):
         module = self.make_module()
-        exemplar1 = cpp.ImagePlaneDetails("file:/TestImages/NikonTIF.tif", None, None, None)
-        exemplar2 = cpp.ImagePlaneDetails("file:/TestImages/DrosophilaEmbryo_GFPHistone.avi", 0, 35, None)
-        exemplar3 = cpp.ImagePlaneDetails("file:/TestImages/003002000.flex", None, None, None)
-        exemplar4 = cpp.ImagePlaneDetails("file:/TestImages/DrosophilaEmbryo_GFPHistone.avi", None, None, None)
-        exemplar5 = cpp.ImagePlaneDetails("file:/TestImages/003002000.flex", 0, 1, None)
         
-        for exemplar, expected_node_type in (
-            (exemplar1, cps.FileCollectionDisplay.NODE_COLOR_IMAGE),
-            (exemplar2, cps.FileCollectionDisplay.NODE_COLOR_IMAGE),
-            (exemplar3, cps.FileCollectionDisplay.NODE_COMPOSITE_IMAGE),
-            (exemplar4, cps.FileCollectionDisplay.NODE_MOVIE),
-            (exemplar5, cps.FileCollectionDisplay.NODE_IMAGE_PLANE)):
-            modpath = module.make_modpath_from_ipd(exemplar)
+        for url, expected_node_type in (
+            ("file:/TestImages/NikonTIF.tif", 
+             cps.FileCollectionDisplay.NODE_MONOCHROME_IMAGE),
+            ("file:/TestImages/DrosophilaEmbryo_GFPHistone.avi", 
+             cps.FileCollectionDisplay.NODE_MOVIE),
+            ("file:/ExampleImages/ExampleSBSImages/Channel2-96-H-12.tif",
+             cps.FileCollectionDisplay.NODE_MONOCHROME_IMAGE),
+            ("file:/ExampleImages/ExampleSBSImages",
+             cps.FileCollectionDisplay.NODE_DIRECTORY),
+            ("file:/ExampleImages/ExampleSBSImages/1049_Metadata.csv",
+             cps.FileCollectionDisplay.NODE_CSV),
+            ("file:/ExampleImages/ExampleSBSImages/ExampleSBS.cp",
+             cps.FileCollectionDisplay.NODE_FILE)):
+
+            modpath = module.url_to_modpath(url)
             name, node_type, tooltip, menu = module.get_path_info(modpath)
             self.assertEqual(node_type, expected_node_type)
-            
-    def test_02_05_on_ipds_added(self):
-        module = self.make_module()
-        ipds = [ cpp.ImagePlaneDetails("file:/ExampleImages/ExampleSBSImages/Channel1-01-A-01.tif", None, None, None),
-                 cpp.ImagePlaneDetails("file:/ExampleImages/ExampleSBSImages/Channel2-01-A-01.tif", None, None, None),
-                 cpp.ImagePlaneDetails("file:/ExampleImages/ExampleHT29/AS_09125_050116030001_D03f00d0.tif", 0, 1, None)]
-        
-        module.pipeline.add_image_plane_details(ipds)
-        for ipd in ipds:
-            modpath = module.make_modpath_from_ipd(ipd)
-            t = module.file_collection_display.file_tree
-            for part in modpath:
-                self.assertTrue(t.has_key(part))
-                t = t[part]
                 
-    def test_02_06_filter_ipd(self):
+    def test_02_04_filter_url(self):
         module = self.make_module()
         module.wants_filter.value = True
-        for ipd, filter_value, expected in (
-            (cpp.ImagePlaneDetails("file:/TestImages/NikonTIF.tif", None, None, None),
+        for url, filter_value, expected in (
+            ("file:/TestImages/NikonTIF.tif",
              'and (file does startwith "Nikon") (extension does istif)', True),
-            (cpp.ImagePlaneDetails("file:/TestImages/NikonTIF.tif", None, None, None),
+            ("file:/TestImages/NikonTIF.tif",
              'or (file doesnot startwith "Nikon") (extension doesnot istif)', False),
-            (cpp.ImagePlaneDetails("file:/TestImages/NikonTIF.tif", None, None, None),
-             'and (image does iscolor) (image doesnot ismonochrome)', True),
-            (cpp.ImagePlaneDetails("file:/TestImages/NikonTIF.tif", None, None, None),
-             'or (image doesnot iscolor) (image does ismonochrome)', False),
-            (cpp.ImagePlaneDetails("file:/TestImages/003002000.flex", 0, 1, None),
+            ("file:/TestImages/003002000.flex",
              'and (directory does endwith "ges") (directory doesnot contain "foo")', True),
-            (cpp.ImagePlaneDetails("file:/TestImages/003002000.flex", 0, 1, None),
+            ("file:/TestImages/003002000.flex",
              'or (directory doesnot endwith "ges") (directory does contain "foo")', False)):
             module.filter.value = filter_value
-            self.assertEqual(module.filter_ipd(ipd), expected)
+            self.assertEqual(module.filter_url(url), expected)
+            
+    def test_02_05_apply_filter(self):
+        module = self.make_module()
+        module.wants_filter.value = True
+        module.filter.value = ("and (directory does endwith \"SBSImages\") "
+                               "(extension does istif) "
+                               "(file doesnot contain \"9\")")
+        module.apply_filter()
+        for url in self.urls:
+            good = True
+            if not url.startswith("file:/ExampleImages/ExampleSBSImages"):
+                good = False
+            if not (url.lower().endswith(".tif") or
+                    url.lower().endswith(".tiff")):
+                good = False
+            if url.find("9") != -1:
+                good = False
+            file_tree = module.file_collection_display.file_tree
+            path = module.url_to_modpath(url)
+            for part in path[:-1]:
+                self.assertIn(part, file_tree)
+                file_tree = file_tree[part]
+            self.assertEqual(good, file_tree[path[-1]])
+                    
         
         

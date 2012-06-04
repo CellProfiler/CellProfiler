@@ -196,8 +196,7 @@ class Metadata(cpm.CPModule):
         group.append("filter", cps.Filter(
             "", [FilePredicate(),
                  DirectoryPredicate(),
-                 ExtensionPredicate(),
-                 ImagePredicate()],
+                 ExtensionPredicate()],
             'or (file does contain "")',
             doc = """Pick the files for metadata extraction."""))
         
@@ -215,6 +214,12 @@ class Metadata(cpm.CPModule):
             in the other, including the metadata extracted by previous
             metadata extractors in this module.
             """))
+        
+        group.append("update_metadata", cps.DoSomething(
+            "Update", "Update metadata",
+            lambda : self.do_update_metadata(group),
+            doc = """Press this button to automatically extract metadata from
+            your image files."""))
                  
         group.can_remove = can_remove
         if can_remove:
@@ -252,6 +257,11 @@ class Metadata(cpm.CPModule):
                     if group.filter_choice == F_FILTERED_IMAGES:
                         result += [group.filter]
                     result += [group.csv_joiner]
+                elif group.extraction_method == X_AUTOMATIC_EXTRACTION:
+                    result += [group.filter_choice]
+                    if group.filter_choice == F_FILTERED_IMAGES:
+                        result += [group.filter]
+                    result += [group.update_metadata]
                 if group.can_remove:
                     result += [group.remover]
             result += [self.add_extraction_method_button,
@@ -269,12 +279,75 @@ class Metadata(cpm.CPModule):
         if len(self.ipds) > 0:
             return os.path.split(self.ipds[0].path)[0]
         return "/images/2012_01_12"
+    
+    def change_causes_prepare_run(self, setting):
+        '''Return True if changing the setting passed changes the image sets
+        
+        setting - the setting that was changed
+        '''
+        return setting in self.settings
+    
+    def prepare_run(self, workspace):
+        '''Initialize the pipeline's metadata'''
+        from subimager.omexml import OMEXML
+        
+        file_list = workspace.file_list
+        pipeline = workspace.pipeline
+        for ipd in pipeline.image_plane_details:
+            metadata = self.get_ipd_metadata(ipd)
+            ipd.metadata.update(metadata)
+            metadata = file_list.get_metadata(ipd.url)
+            if metadata is not None:
+                try:
+                    pipeline.add_image_metadata(ipd.url, OMEXML(metadata))
+                except:
+                    logger.error("Failed to add metadata to %s" %ipd.url, 
+                                 exc_info=True)
+        return True
         
     def run(self, workspace):
         pass
     
-    get_image_plane_details = Images.get_image_plane_details
-    
+    def do_update_metadata(self, group):
+        filelist = self.workspace.file_list
+        urls = self.pipeline.filter_urls(filelist.get_filelist())
+        if len(urls) == 0:
+            return
+        def msg(url):
+            return "Processing %s" % url
+        import wx
+        from subimager.client import get_metadata
+        from subimager.omexml import OMEXML
+        with wx.ProgressDialog("Updating metadata", 
+                               msg(urls[0]),
+                               len(urls),
+                               style = wx.PD_CAN_ABORT
+                               | wx.PD_APP_MODAL
+                               | wx.PD_ELAPSED_TIME
+                               | wx.PD_REMAINING_TIME) as dlg:
+            for i, url in enumerate(urls):
+                if i > 0:
+                    keep_going, _ = dlg.Update(i, msg(url))
+                    if not keep_going:
+                        break
+                if group.filter_choice == F_FILTERED_IMAGES:
+                    match = group.filter.evaluate(
+                    (cps.FileCollectionDisplay.NODE_IMAGE_PLANE, 
+                     Images.url_to_modpath(url), self))
+                    if not match:
+                        continue
+                metadata = filelist.get_metadata(url)
+                if metadata is None:
+                    metadata = get_metadata(url)
+                    filelist.add_metadata(url, metadata)
+                metadata = OMEXML(metadata)
+                exemplar = cpp.ImagePlaneDetails(url, None, None, None)
+                if not self.pipeline.find_image_plane_details(exemplar):
+                    self.pipeline.add_image_plane_details([exemplar])
+                self.pipeline.add_image_metadata(url, metadata)
+            self.ipds = self.pipeline.get_filtered_image_plane_details()
+            self.update_metadata_keys()
+                
     def get_ipd_metadata(self, ipd):
         '''Get the metadata for an image plane details record'''
         assert isinstance(ipd, cpp.ImagePlaneDetails)
@@ -283,7 +356,7 @@ class Metadata(cpm.CPModule):
             if group.filter_choice == F_FILTERED_IMAGES:
                 match = group.filter.evaluate(
                     (cps.FileCollectionDisplay.NODE_IMAGE_PLANE, 
-                     Images.make_modpath_from_ipd(ipd), self))
+                     Images.url_to_modpath(ipd.url), self))
                 if (not match) and match is not None:
                     continue
             if group.extraction_method == X_MANUAL_EXTRACTION:
@@ -323,13 +396,12 @@ class Metadata(cpm.CPModule):
                 
         return {}
     
-    def on_activated(self, pipeline):
-        self.pipeline = pipeline
-        self.ipds = pipeline.get_filtered_image_plane_details()
-        self.ipd_metadata_keys = set()
-        for ipd in self.ipds:
-            self.ipd_metadata_keys.update(ipd.metadata.keys())
-        self.ipd_metadata_keys = sorted(self.ipd_metadata_keys)
+    def on_activated(self, workspace):
+        self.workspace = workspace
+        self.pipeline = workspace.pipeline
+        self.ipds = self.pipeline.get_filtered_image_plane_details()
+        self.ipd_metadata_keys = []
+        self.update_metadata_keys()
         self.update_imported_metadata()
         self.update_table()
         
@@ -407,6 +479,12 @@ class Metadata(cpm.CPModule):
             row += [metadata.get(column) for column in columns[4:]]
             data.append(row)
         self.table.add_rows(columns, data)
+        
+    def update_metadata_keys(self):
+        self.ipd_metadata_keys = set(self.ipd_metadata_keys)
+        for ipd in self.ipds:
+            self.ipd_metadata_keys.update(ipd.metadata.keys())
+        self.ipd_metadata_keys = sorted(self.ipd_metadata_keys)
         
     def on_deactivated(self):
         self.pipeline = None

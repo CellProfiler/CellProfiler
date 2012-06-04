@@ -24,17 +24,143 @@ import cellprofiler.utilities.hdf5_dict as H5DICT
 E = H5DICT.HDF5FileList.encode
 D = H5DICT.HDF5FileList.decode
 
+OBJECT_NAME = "objectname"
+FEATURE_NAME = "featurename"
 
+class TestHDF5Dict(unittest.TestCase):
+    def setUp(self):
+        self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
+        self.hdf5_dict = H5DICT.HDF5Dict(self.temp_filename)
+        
+    def tearDown(self):
+        self.hdf5_dict.close()
+        os.close(self.temp_fd)
+        os.remove(self.temp_filename)
+        self.assertFalse(os.path.exists(self.temp_filename),
+                         "If the file can't be removed, it's a bug. "
+                         "Clean up your trash: %s" % self.temp_filename)
+        
+    def test_00_00_init(self):
+        # Test setup and teardown - create HDF5 file / close
+        pass
+    
+    def test_01_01_read_write_ints(self):
+        r = np.random.RandomState()
+        r.seed(101)
+        data = r.randint(0, 100, 100)
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = data
+        result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1]
+        np.testing.assert_array_equal(data, result)
+        
+    def test_01_02_read_write_floats(self):
+        r = np.random.RandomState()
+        r.seed(102)
+        data = r.uniform(size=100)
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = data
+        result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1]
+        np.testing.assert_array_equal(data, result)
+        
+    def test_01_03_read_write_strings(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
+        self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1], "Hello")
+        
+    def test_02_01_read_write_twice(self):
+        r = np.random.RandomState()
+        r.seed(201)
+        data = r.randint(0, 100, (10,100))
+        p = r.permutation(data.shape[0])
+        for i, d in enumerate(data[p, :]):
+            self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, p[i]+1] = d
+        for i, d in enumerate(data):
+            result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, i+1]
+            np.testing.assert_array_equal(d, result)
+        
+    def test_02_02_read_none(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = "Hello"
+        self.assertIsNone(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1])
+        
+    def test_03_01_add_all(self):
+        r = np.random.RandomState()
+        r.seed(301)
+        data = r.randint(0, 100, (10,100))
+        self.hdf5_dict.add_all(OBJECT_NAME, FEATURE_NAME, data)
+        for i, d in enumerate(data):
+            result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, i+1]
+            np.testing.assert_array_equal(d, result)
+
+    def test_03_02_add_all_out_of_order(self):        
+        r = np.random.RandomState()
+        r.seed(302)
+        data = r.randint(0, 100, (10,100))
+        p = r.permutation(data.shape[0]) + 1
+        self.hdf5_dict.add_all(OBJECT_NAME, FEATURE_NAME, data, p)
+        for i, d in enumerate(data):
+            result = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, p[i]]
+            np.testing.assert_array_equal(d, result)
+
+    def test_04_01_reopen_read_only(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
+        self.hdf5_dict.close()
+    
+        self.hdf5_dict = H5DICT.HDF5Dict(self.temp_filename, mode="r")
+        self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1], "Hello")
+        with self.assertRaises(Exception):
+            self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = "World"
+            
+    def test_04_02_reopen_with_write(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
+        self.hdf5_dict.close()
+        self.hdf5_dict = H5DICT.HDF5Dict(self.temp_filename, mode="r+")
+        self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1], "Hello")
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = "World"
+        self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2], "World")
+        self.hdf5_dict.close()
+        self.hdf5_dict = H5DICT.HDF5Dict(self.temp_filename, mode="a")
+        self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1], "Hello")
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 3] = "Append"
+        self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 3], "Append")
+        
+    def test_05_01_in_memory(self):
+        hdf5_dict = H5DICT.HDF5Dict(None)
+        hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
+        self.assertEqual(hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1], "Hello")
+        
+    def test_06_01_reorder(self):
+        r = np.random.RandomState()
+        r.seed(601)
+        values = ["v%d" % i for i in range(1, 11)]
+        for idx in r.permutation(len(values)):
+            self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, idx+1] = values[idx]
+        new_image_numbers = np.hstack(([0], r.permutation(len(values)) + 1))
+        self.hdf5_dict.reorder(OBJECT_NAME, FEATURE_NAME, new_image_numbers)
+        for reopen in (False, True):
+            if reopen:
+                self.hdf5_dict.close()
+                self.hdf5_dict = H5DICT.HDF5Dict(self.temp_filename, mode="r")
+            for idx, image_number in enumerate(new_image_numbers[1:]):
+                self.assertEqual(
+                    values[idx], 
+                    self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, image_number])
+        
+        
 class TestHDF5FileList(unittest.TestCase):
     def setUp(self):
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")
         self.hdf_file = h5py.File(self.temp_filename)
         self.filelist = H5DICT.HDF5FileList(self.hdf_file)
         
+        self.temp_fd_nocache, self.temp_filename_nocache = tempfile.mkstemp(".h5")
+        self.hdf_file_nocache = h5py.File(self.temp_filename_nocache)
+        self.filelist_nocache = H5DICT.HDF5FileList(self.hdf_file_nocache)
+        
+        
     def tearDown(self):
         self.hdf_file.close()
         os.close(self.temp_fd)
         os.remove(self.temp_filename)
+        self.hdf_file_nocache.close()
+        os.close(self.temp_fd_nocache)
+        os.remove(self.temp_filename_nocache)
         
     def test_01_01_encode_alphanumeric(self):
         r = np.random.RandomState()
@@ -69,163 +195,245 @@ class TestHDF5FileList(unittest.TestCase):
         self.filelist.add_files_to_filelist([])
         
     def test_03_01_add_file(self):
-        g = self.filelist.get_filelist_group()
-        self.filelist.add_files_to_filelist(["file://foo/bar.jpg"])
-        self.assertIn(E("file"), g)
-        self.assertIn(E("//foo"), g["file"])
-        filenames = H5DICT.VStringArray(g[E("file")][E("//foo")])
-        self.assertEqual(len(filenames) ,1)
-        self.assertIn("bar.jpg", filenames)
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            g = filelist.get_filelist_group()
+            filelist.add_files_to_filelist(["file://foo/bar.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            self.assertIn(E("file"), g)
+            self.assertIn(E("//foo"), g["file"])
+            filenames = H5DICT.VStringArray(g[E("file")][E("//foo")])
+            self.assertEqual(len(filenames) ,1)
+            self.assertIn("bar.jpg", filenames)
         
     def test_03_02_add_two_files(self):
-        g = self.filelist.get_filelist_group()
-        self.filelist.add_files_to_filelist(
-            ["file://foo/bar.jpg", "file://foo/baz.jpg"])
-        self.assertIn(E("file"), g)
-        self.assertIn(E("//foo"), g[E("file")])
-        filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
-        self.assertEqual(len(filenames) ,2)
-        self.assertEqual(filenames[0], "bar.jpg")
-        self.assertEqual(filenames[1], "baz.jpg")
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            g = filelist.get_filelist_group()
+            if not cache:
+                filelist.clear_cache()
+            filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg", "file://foo/baz.jpg"])
+            self.assertIn(E("file"), g)
+            self.assertIn(E("//foo"), g[E("file")])
+            filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
+            self.assertEqual(len(filenames) ,2)
+            self.assertEqual(filenames[0], "bar.jpg")
+            self.assertEqual(filenames[1], "baz.jpg")
         
     def test_03_03_add_two_directories(self):
         g = self.filelist.get_filelist_group()
-        self.filelist.add_files_to_filelist(
-            ["file://foo/bar.jpg", "file://bar/baz.jpg"])
-        for subdir, filename in (("//foo", "bar.jpg"),
-                                 ("//bar", "baz.jpg")):
-            self.assertIn(E("file"), g)
-            self.assertIn(E(subdir), g[E("file")])
-            filenames = list(H5DICT.VStringArray(g[E("file")][E(subdir)]))
-            self.assertEqual(len(filenames) ,1)
-            self.assertEqual(filenames[0], filename)
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg", "file://bar/baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            for subdir, filename in (("//foo", "bar.jpg"),
+                                     ("//bar", "baz.jpg")):
+                self.assertIn(E("file"), g)
+                self.assertIn(E(subdir), g[E("file")])
+                filenames = list(H5DICT.VStringArray(g[E("file")][E(subdir)]))
+                self.assertEqual(len(filenames) ,1)
+                self.assertEqual(filenames[0], filename)
             
     def test_03_04_add_a_file_and_a_file(self):
-        g = self.filelist.get_filelist_group()
-        self.filelist.add_files_to_filelist(
-            ["file://foo/bar.jpg"])
-        self.filelist.add_files_to_filelist(
-            ["file://foo/baz.jpg"])
-        self.assertIn(E("file"), g)
-        self.assertIn(E("//foo"), g[E("file")])
-        filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
-        self.assertEqual(len(filenames) ,2)
-        self.assertEqual(filenames[0], "bar.jpg")
-        self.assertEqual(filenames[1], "baz.jpg")
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            g = filelist.get_filelist_group()
+            filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            filelist.add_files_to_filelist(
+                ["file://foo/baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            self.assertIn(E("file"), g)
+            self.assertIn(E("//foo"), g[E("file")])
+            filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
+            self.assertEqual(len(filenames) ,2)
+            self.assertEqual(filenames[0], "bar.jpg")
+            self.assertEqual(filenames[1], "baz.jpg")
         
     def test_03_05_add_a_file_with_a_stupid_DOS_name(self):
-        g = self.filelist.get_filelist_group()
-        self.filelist.add_files_to_filelist(
-            ["file:///C:/foo/bar.jpg"])
-        self.assertIn(E("file"), g)
-        self.assertIn(E("///C:"), g[E("file")])
-        self.assertIn(E("foo"), g[E("file")][E("///C:")])
-        filenames = list(H5DICT.VStringArray(g[E("file")][E("///C:")][E("foo")]))
-        self.assertEqual(len(filenames), 1)
-        self.assertEqual(filenames[0], "bar.jpg")
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            g = filelist.get_filelist_group()
+            filelist.add_files_to_filelist(
+                ["file:///C:/foo/bar.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            self.assertIn(E("file"), g)
+            self.assertIn(E("///C:"), g[E("file")])
+            self.assertIn(E("foo"), g[E("file")][E("///C:")])
+            filenames = list(H5DICT.VStringArray(g[E("file")][E("///C:")][E("foo")]))
+            self.assertEqual(len(filenames), 1)
+            self.assertEqual(filenames[0], "bar.jpg")
         
     def test_03_06_add_a_file_to_the_base(self):
-        g = self.filelist.get_filelist_group()
-        self.filelist.add_files_to_filelist(["file://foo.jpg"])
-        self.assertIn(E("file"), g)
-        self.assertIn(E("//"), g[E("file")])
-        filenames = list(H5DICT.VStringArray(g[E("file")][E("//")]))
-        self.assertEqual(len(filenames), 1)
-        self.assertEqual(filenames[0], "foo.jpg")
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            g = filelist.get_filelist_group()
+            filelist.add_files_to_filelist(["file://foo.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            self.assertIn(E("file"), g)
+            self.assertIn(E("//"), g[E("file")])
+            filenames = list(H5DICT.VStringArray(g[E("file")][E("//")]))
+            self.assertEqual(len(filenames), 1)
+            self.assertEqual(filenames[0], "foo.jpg")
         
     def test_03_07_add_a_file_to_the_schema(self):
-        g = self.filelist.get_filelist_group()
-        self.filelist.add_files_to_filelist(["file:foo.jpg"])
-        self.assertIn(E("file"), g)
-        filenames = list(H5DICT.VStringArray(g[E("file")]))
-        self.assertEqual(len(filenames), 1)
-        self.assertEqual(filenames[0], "foo.jpg")
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            g = filelist.get_filelist_group()
+            filelist.add_files_to_filelist(["file:foo.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            self.assertIn(E("file"), g)
+            filenames = list(H5DICT.VStringArray(g[E("file")]))
+            self.assertEqual(len(filenames), 1)
+            self.assertEqual(filenames[0], "foo.jpg")
         
     def test_03_08_what_if_the_user_has_a_directory_named_index(self):
-        #
-        # Another in the endless progression of disgusting corner cases
-        #
-        self.filelist.add_files_to_filelist(["file://foo/bar.jpg"])
-        self.filelist.add_files_to_filelist(
-            [ "file://foo/index/baz.jpg",
-              "file://foo/data/xyz.jpg"])
-        result = self.filelist.get_filelist()
-        self.assertEqual(len(result), 3)
-        self.assertEqual(result[0], "file://foo/bar.jpg")
-        self.assertEqual(result[1], "file://foo/data/xyz.jpg")
-        self.assertEqual(result[2], "file://foo/index/baz.jpg")
-        
-        self.filelist.add_files_to_filelist(
-            ["file://bar/index/baz.jpg",
-             "file://bar/data/baz.jpg"])
-        self.filelist.add_files_to_filelist(["file://bar/baz.jpg"])
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            #
+            # Another in the endless progression of disgusting corner cases
+            #
+            filelist.add_files_to_filelist(["file://foo/bar.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            filelist.add_files_to_filelist(
+                [ "file://foo/index/baz.jpg",
+                  "file://foo/data/xyz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            result = filelist.get_filelist()
+            self.assertEqual(len(result), 3)
+            self.assertEqual(result[0], "file://foo/bar.jpg")
+            self.assertEqual(result[1], "file://foo/data/xyz.jpg")
+            self.assertEqual(result[2], "file://foo/index/baz.jpg")
+            
+            filelist.add_files_to_filelist(
+                ["file://bar/index/baz.jpg",
+                 "file://bar/data/baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            filelist.add_files_to_filelist(["file://bar/baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
         
     def test_04_00_remove_none(self):
-        g = self.filelist.get_filelist_group()
-        self.filelist.add_files_to_filelist(
-            ["file://foo/bar.jpg", "file://foo/baz.jpg"])
-        self.filelist.remove_files_from_filelist([])
-        self.assertIn(E("file"), g)
-        self.assertIn(E("//foo"), g[E("file")])
-        filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
-        self.assertEqual(len(filenames) ,2)
-        self.assertEqual(filenames[0], "bar.jpg")
-        self.assertEqual(filenames[1], "baz.jpg")
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            g = filelist.get_filelist_group()
+            filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg", "file://foo/baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            self.filelist.remove_files_from_filelist([])
+            self.assertIn(E("file"), g)
+            self.assertIn(E("//foo"), g[E("file")])
+            filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
+            self.assertEqual(len(filenames) ,2)
+            self.assertEqual(filenames[0], "bar.jpg")
+            self.assertEqual(filenames[1], "baz.jpg")
         
     def test_04_01_remove_file(self):
-        g = self.filelist.get_filelist_group()
-        self.filelist.add_files_to_filelist(
-            ["file://foo/bar.jpg", "file://foo/baz.jpg", "file://foo/a.jpg"])
-        self.filelist.remove_files_from_filelist(
-            ["file://foo/bar.jpg"])
-                                                 
-        self.assertIn(E("file"), g)
-        self.assertIn(E("//foo"), g[E("file")])
-        filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
-        self.assertEqual(len(filenames) ,2)
-        self.assertEqual(filenames[0], "a.jpg")
-        self.assertEqual(filenames[1], "baz.jpg")
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            g = filelist.get_filelist_group()
+            filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg", "file://foo/baz.jpg", "file://foo/a.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            filelist.remove_files_from_filelist(
+                ["file://foo/bar.jpg"])
+            if not cache:
+                filelist.clear_cache()
+                                                     
+            self.assertIn(E("file"), g)
+            self.assertIn(E("//foo"), g[E("file")])
+            filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
+            self.assertEqual(len(filenames) ,2)
+            self.assertEqual(filenames[0], "a.jpg")
+            self.assertEqual(filenames[1], "baz.jpg")
         
     def test_04_02_remove_all_files_in_dir(self):
-        g = self.filelist.get_filelist_group()
-        self.filelist.add_files_to_filelist(
-            ["file://foo/bar.jpg", "file://bar/baz.jpg"])
-        self.filelist.remove_files_from_filelist(
-            ["file://foo/bar.jpg"])
-        self.assertIn(E("file"), g)
-        self.assertIn(E("//bar"), g[E("file")])
-        self.assertNotIn(E("//foo"), g[E("file")])
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            g = filelist.get_filelist_group()
+            filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg", "file://bar/baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            filelist.remove_files_from_filelist(
+                ["file://foo/bar.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            self.assertIn(E("file"), g)
+            self.assertIn(E("//bar"), g[E("file")])
+            self.assertNotIn(E("//foo"), g[E("file")])
         
     def test_04_03_remove_all_files_in_parent(self):
-        g = self.filelist.get_filelist_group()
-        self.filelist.add_files_to_filelist(
-            ["file://foo/bar.jpg", "file:baz.jpg"])
-        self.assertTrue(H5DICT.VStringArray.has_vstring_array(g[E("file")]))
-        self.filelist.remove_files_from_filelist(
-            ["file:baz.jpg"])
-        self.assertIn(E("file"), g)
-        self.assertIn(E("//foo"), g[E("file")])
-        filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
-        self.assertEqual(len(filenames), 1)
-        self.assertIn("bar.jpg", filenames)
-        self.assertFalse(H5DICT.VStringArray.has_vstring_array(g[E("file")]))
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            g = filelist.get_filelist_group()
+            filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg", "file:baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            self.assertTrue(H5DICT.VStringArray.has_vstring_array(g[E("file")]))
+            filelist.remove_files_from_filelist(
+                ["file:baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            self.assertIn(E("file"), g)
+            self.assertIn(E("//foo"), g[E("file")])
+            filenames = list(H5DICT.VStringArray(g[E("file")][E("//foo")]))
+            self.assertEqual(len(filenames), 1)
+            self.assertIn("bar.jpg", filenames)
+            self.assertFalse(H5DICT.VStringArray.has_vstring_array(g[E("file")]))
         
     def test_05_01_get_filelist(self):
-        self.filelist.add_files_to_filelist(
-            ["file://foo/bar.jpg", "file://foo/baz.jpg"])
-        urls = self.filelist.get_filelist()
-        self.assertEqual(len(urls), 2)
-        self.assertEqual(urls[0], "file://foo/bar.jpg")
-        self.assertEqual(urls[1], "file://foo/baz.jpg")
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            self.filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg", "file://foo/baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            urls = self.filelist.get_filelist()
+            self.assertEqual(len(urls), 2)
+            self.assertEqual(urls[0], "file://foo/bar.jpg")
+            self.assertEqual(urls[1], "file://foo/baz.jpg")
         
     def test_05_02_get_multidir_filelist(self):
-        self.filelist.add_files_to_filelist(
-            ["file://foo/bar.jpg", "file://bar/baz.jpg", "file://foo.jpg"])
-        urls = self.filelist.get_filelist()
-        self.assertEqual(len(urls), 3)
-        self.assertEqual(urls[2], "file://foo/bar.jpg")
-        self.assertEqual(urls[1], "file://bar/baz.jpg")
-        self.assertEqual(urls[0], "file://foo.jpg")
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg", "file://bar/baz.jpg", "file://foo.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            urls = filelist.get_filelist()
+            self.assertEqual(len(urls), 3)
+            self.assertEqual(urls[2], "file://foo/bar.jpg")
+            self.assertEqual(urls[1], "file://bar/baz.jpg")
+            self.assertEqual(urls[0], "file://foo.jpg")
+            
+    def test_05_03_get_sub_filelist(self):
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg", "file://bar/baz.jpg", "file://foo/baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            urls = filelist.get_filelist("file://foo")
+            self.assertEqual(len(urls), 2)
+            self.assertEqual(urls[0], "file://foo/bar.jpg")
+            self.assertEqual(urls[1], "file://foo/baz.jpg")
         
     def test_06_00_walk_empty(self):
         def fn(root, directories, urls):
@@ -233,70 +441,78 @@ class TestHDF5FileList(unittest.TestCase):
         self.filelist.walk(fn)
         
     def test_06_01_walk_one(self):
-        self.filelist.add_files_to_filelist(
-            ["file://foo/bar.jpg", "file://foo/baz.jpg"])
-        roots = []
-        directories = []
-        urls = []
-        def fn(r, d, u):
-            roots.append(r)
-            directories.append(d)
-            urls.append(u)
-        self.filelist.walk(fn)
-        self.assertEqual(len(roots), 2)
-        self.assertEqual(roots[0], "file:")
-        self.assertEqual(roots[1], "file://foo/")
-        self.assertEqual(len(directories[0]), 1)
-        self.assertEqual(directories[0][0], "//foo")
-        self.assertEqual(len(directories[1]), 0)
-        self.assertEqual(len(urls[0]), 0)
-        self.assertEqual(len(urls[1]), 2)
-        self.assertEqual(urls[1][0], "bar.jpg")
-        self.assertEqual(urls[1][1], "baz.jpg")
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg", "file://foo/baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            roots = []
+            directories = []
+            urls = []
+            def fn(r, d, u):
+                roots.append(r)
+                directories.append(d)
+                urls.append(u)
+            self.filelist.walk(fn)
+            self.assertEqual(len(roots), 2)
+            self.assertEqual(roots[0], "file:")
+            self.assertEqual(roots[1], "file://foo")
+            self.assertEqual(len(directories[0]), 1)
+            self.assertEqual(directories[0][0], "//foo")
+            self.assertEqual(len(directories[1]), 0)
+            self.assertEqual(len(urls[0]), 0)
+            self.assertEqual(len(urls[1]), 2)
+            self.assertEqual(urls[1][0], "bar.jpg")
+            self.assertEqual(urls[1][1], "baz.jpg")
         
     def test_06_02_walk_many(self):
-        self.filelist.add_files_to_filelist(
-            ["file://foo/bar.jpg", "file://foo/baz.jpg",
-             "file://foo/bar/baz.jpg", "file://bar/foo.jpg",
-             "file://foo/baz/bar.jpg"])
-        roots = []
-        directories = []
-        urls = []
-        def fn(r, d, u):
-            roots.append(r)
-            directories.append(d)
-            urls.append(u)
-        self.filelist.walk(fn)
-        self.assertEqual(len(roots), 5)
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(
+                ["file://foo/bar.jpg", "file://foo/baz.jpg",
+                 "file://foo/bar/baz.jpg", "file://bar/foo.jpg",
+                 "file://foo/baz/bar.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            roots = []
+            directories = []
+            urls = []
+            def fn(r, d, u):
+                roots.append(r)
+                directories.append(d)
+                urls.append(u)
+            self.filelist.walk(fn)
+            self.assertEqual(len(roots), 5)
+            
+            self.assertEqual(roots[0], "file:")
+            self.assertEqual(len(directories[0]), 2)
+            self.assertEqual(directories[0][0], "//bar")
+            self.assertEqual(directories[0][1], "//foo")
+            self.assertEqual(len(urls[0]), 0)
         
-        self.assertEqual(roots[0], "file:")
-        self.assertEqual(len(directories[0]), 2)
-        self.assertEqual(directories[0][0], "//bar")
-        self.assertEqual(directories[0][1], "//foo")
-        self.assertEqual(len(urls[0]), 0)
-    
-        self.assertEqual(roots[1], "file://bar/")
-        self.assertEqual(len(directories[1]), 0)
-        self.assertEqual(len(urls[1]), 1)
-        self.assertEqual(urls[1][0], "foo.jpg")
-        
-        self.assertEqual(roots[2], "file://foo/")
-        self.assertEqual(len(directories[2]), 2)
-        self.assertEqual(directories[2][0], "bar")
-        self.assertEqual(directories[2][1], "baz")
-        self.assertEqual(len(urls[2]), 2)
-        self.assertEqual(urls[2][0], "bar.jpg")
-        self.assertEqual(urls[2][1], "baz.jpg")
-        
-        self.assertEqual(roots[3], "file://foo/bar/")
-        self.assertEqual(len(directories[3]), 0)
-        self.assertEqual(len(urls[3]), 1)
-        self.assertEqual(urls[3][0], "baz.jpg")
-        
-        self.assertEqual(roots[4], "file://foo/baz/")
-        self.assertEqual(len(directories[4]), 0)
-        self.assertEqual(len(urls[4]), 1)
-        self.assertEqual(urls[4][0], "bar.jpg")
+            self.assertEqual(roots[1], "file://bar")
+            self.assertEqual(len(directories[1]), 0)
+            self.assertEqual(len(urls[1]), 1)
+            self.assertEqual(urls[1][0], "foo.jpg")
+            
+            self.assertEqual(roots[2], "file://foo")
+            self.assertEqual(len(directories[2]), 2)
+            self.assertEqual(directories[2][0], "bar")
+            self.assertEqual(directories[2][1], "baz")
+            self.assertEqual(len(urls[2]), 2)
+            self.assertEqual(urls[2][0], "bar.jpg")
+            self.assertEqual(urls[2][1], "baz.jpg")
+            
+            self.assertEqual(roots[3], "file://foo/bar")
+            self.assertEqual(len(directories[3]), 0)
+            self.assertEqual(len(urls[3]), 1)
+            self.assertEqual(urls[3][0], "baz.jpg")
+            
+            self.assertEqual(roots[4], "file://foo/baz")
+            self.assertEqual(len(directories[4]), 0)
+            self.assertEqual(len(urls[4]), 1)
+            self.assertEqual(urls[4][0], "bar.jpg")
         
     def test_07_00_list_files_in_empty_dir(self):
         self.assertEqual(len(self.filelist.list_files("file://foo")), 0)
@@ -305,10 +521,14 @@ class TestHDF5FileList(unittest.TestCase):
         self.assertEqual(len(self.filelist.list_files("file://foo/baz")), 0)
         
     def test_07_01_list_files(self):
-        self.filelist.add_files_to_filelist(["file://foo/bar/baz.jpg"])
-        result = self.filelist.list_files("file://foo/bar")
-        self.assertEqual(len(result), 1)
-        self.assertEqual(result[0], "baz.jpg")
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(["file://foo/bar/baz.jpg"])
+            if not cache:
+                filelist.clear_cache()
+            result = filelist.list_files("file://foo/bar")
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result[0], "baz.jpg")
         
     def test_08_00_list_directories_in_empty_dir(self):
         self.assertEqual(len(self.filelist.list_directories("file://foo")), 0)
@@ -321,6 +541,121 @@ class TestHDF5FileList(unittest.TestCase):
         result = self.filelist.list_directories("file://foo")
         self.assertEqual(len(result), 1)
         self.assertEqual(result[0], "bar")
+        
+    def test_09_00_get_type_none(self):
+        self.assertEqual(self.filelist.get_type("file://foo/bar.jpg"),
+                         self.filelist.TYPE_NONE)
+        
+    def test_09_01_get_type_file(self):
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            urls = [
+                "file://foo/bar/baz.jpg",
+                "file://foo/bar/foo.jpg",
+                "file://foo/bar/abc.jpg"]
+            filelist.add_files_to_filelist(urls)
+            if not cache:
+                filelist.clear_cache()
+            for url in urls:
+                self.assertEqual(filelist.get_type(url), 
+                                 filelist.TYPE_FILE)
+            
+    def test_09_02_get_type_dir(self):
+        urls = [
+            "file://foo.jpg",
+            "file://foo/bar.jpg",
+            "file://foo/bar/baz.jpg"]
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(urls)
+            if not cache:
+                filelist.clear_cache()
+            for url in ["file://", "file://foo", "file://foo/bar"] :
+                self.assertEqual(filelist.get_type(url),
+                                 filelist.TYPE_DIRECTORY)
+                
+    def test_10_01_get_no_metadata(self):
+        urls = [
+            "file://foo.jpg",
+            "file://foo/bar.jpg",
+            "file://foo/bar/baz.jpg"]
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(urls)
+            if not cache:
+                filelist.clear_cache()
+            for url in urls:
+                self.assertIsNone(filelist.get_metadata(url))
+                
+    def test_10_02_get_metadata(self):
+        urls = [
+            "file://foo.jpg",
+            "file://foo/bar.jpg",
+            "file://foo/bar/baz.jpg"]
+        def fn_metadata(url):
+            r = np.random.RandomState()
+            r.seed(np.fromstring(url, np.uint8))
+            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring()
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(urls)
+            for url in urls:
+                filelist.add_metadata(url, fn_metadata(url))
+            if not cache:
+                filelist.clear_cache()
+            for url in urls:
+                expected = fn_metadata(url)
+                self.assertEqual(expected, filelist.get_metadata(url))
+                
+    def test_10_03_get_metadata_after_insert(self):
+        urls = [
+            "file://foo/foo.jpg",
+            "file://foo/bar.jpg",
+            "file://foo/baz.jpg"]
+        extend = ["file://foo/pleasework.jpg",
+                  "file://foo/beesaregreat.jpg"]
+        def fn_metadata(url):
+            r = np.random.RandomState()
+            r.seed(np.fromstring(url, np.uint8))
+            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring()
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(urls)
+            for url in urls:
+                filelist.add_metadata(url, fn_metadata(url))
+            filelist.add_files_to_filelist(extend)
+            for url in extend:
+                filelist.add_metadata(url, fn_metadata(url))
+            if not cache:
+                filelist.clear_cache()
+            for url in urls + extend:
+                expected = fn_metadata(url)
+                self.assertEqual(expected, filelist.get_metadata(url))
+        
+    def test_10_04_get_metadata_after_remove(self):
+        to_remove = "file://foo/bar.jpg"
+        urls = [
+            "file://foo/foo.jpg",
+            to_remove,
+            "file://foo/baz.jpg"]
+        def fn_metadata(url):
+            r = np.random.RandomState()
+            r.seed(np.fromstring(url, np.uint8))
+            return r.randint(ord(" "), ord("~"), 300).astype(np.uint8).tostring()
+        for filelist, cache in ((self.filelist, True), 
+                                (self.filelist_nocache, False)):
+            filelist.add_files_to_filelist(urls)
+            for url in urls:
+                filelist.add_metadata(url, fn_metadata(url))
+            filelist.remove_files_from_filelist([to_remove])
+            if not cache:
+                filelist.clear_cache()
+            for url in urls:
+                if url == to_remove:
+                    self.assertIsNone(filelist.get_metadata(url))
+                else:
+                    expected = fn_metadata(url)
+                    self.assertEqual(expected, filelist.get_metadata(url))
         
 class TestHDFCSV(unittest.TestCase):
     def setUp(self):
@@ -630,7 +965,54 @@ class TestVStringArray(unittest.TestCase):
                 self.assertLessEqual(a[idx-1], s)
             if idx < len(a):
                 self.assertGreaterEqual(a[idx], s)
-
+                
+    def test_12_00_extend_none(self):
+        data = ["hello", "world"]
+        a = H5DICT.VStringArray(self.hdf_file)
+        a.set_all(data)
+        a.extend([])
+        self.assertSequenceEqual(data, a)
+        
+    def test_12_01_extend_one(self):
+        data = ["hello", "world"]
+        extend = ["."]
+        a = H5DICT.VStringArray(self.hdf_file)
+        a.set_all(data)
+        a.extend(extend)
+        self.assertSequenceEqual(data + extend, a)
+        
+    def test_12_02_extend_many(self):
+        data = ["hello", "world"]
+        extend = ["that", "is", "observing", "the", "transit", "of", "venus"]
+        a = H5DICT.VStringArray(self.hdf_file)
+        a.set_all(data)
+        a.extend(extend)
+        self.assertSequenceEqual(data + extend, a)
+        
+    def test_13_00_reorder_deleting_all(self):
+        data = ["hello", "world"]
+        a = H5DICT.VStringArray(self.hdf_file)
+        a.set_all(data)
+        a.reorder([])
+        self.assertEqual(len(a), 0)
+        
+    def test_13_01_reorder(self):
+        data = ["hello", "green", "world"]
+        order = [ 2, 0, 1]
+        a = H5DICT.VStringArray(self.hdf_file)
+        a.set_all(data)
+        a.reorder(order)
+        self.assertSequenceEqual([data[o] for o in order], a)
+        
+    def test_13_02_reorder_with_delete(self):
+        data = ["hello", "green", "world"]
+        order = [ 2, 0]
+        a = H5DICT.VStringArray(self.hdf_file)
+        a.set_all(data)
+        a.reorder(order)
+        self.assertEqual(len(a), len(order))
+        self.assertSequenceEqual([data[o] for o in order], a)
+        
 class TestStringReference(unittest.TestCase):
     def setUp(self):
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")

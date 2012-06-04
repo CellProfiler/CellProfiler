@@ -50,6 +50,9 @@ IDX_ASSIGNMENTS_COUNT = 5
 MATCH_BY_ORDER = "Order"
 MATCH_BY_METADATA = "Metadata"
 
+IMAGE_NAMES = ["DNA", "GFP", "Actin"]
+OBJECT_NAMES = ["Cell", "Nucleus", "Cytoplasm", "Speckle"]
+
 class NamesAndTypes(cpm.CPModule):
     variable_revision_number = 1
     module_name = "NamesAndTypes"
@@ -90,7 +93,7 @@ class NamesAndTypes(cpm.CPModule):
                          LOAD_AS_MASK])
         
         self.single_image_provider = cps.FileImageNameProvider(
-            "Image name", "DNA")
+            "Image name", IMAGE_NAMES[0])
             
         self.assignments = []
         self.assignments_count = cps.HiddenCount( self.assignments,
@@ -150,11 +153,39 @@ class NamesAndTypes(cpm.CPModule):
              mp],
             'or (file does contain "")'))
         
+        unique_image_name = None
+        all_image_names = [
+            other_group.image_name for other_group in self.assignments[:-1]]
+        for image_name in IMAGE_NAMES:
+            if image_name not in all_image_names:
+                unique_image_name = image_name
+                break
+        else:
+            for i in xrange(1, 1000):
+                image_name = "Channel%d" % i
+                if image_name not in all_image_names:
+                    unique_image_name = image_name
+                    break
+                    
         group.append("image_name", cps.ImageNameProvider(
-            "Image name", "DNA"))
+            "Image name", unique_image_name))
         
+        unique_object_name = None
+        all_object_names = [
+            other_group.object_name for other_group in self.assignments[:-1]]
+        for object_name in OBJECT_NAMES:
+            if object_name not in all_object_names:
+                unique_object_name = object_name
+                break
+        else:
+            for i in xrange(1, 1000):
+                object_name = "Object%d" % i
+                if object_name not in all_object_names:
+                    unique_object_name = object_name
+                    break
+
         group.append("object_name", cps.ObjectNameProvider(
-            "Objects name", "Cells"))
+            "Objects name", unique_object_name))
         
         group.append("load_as_choice", cps.Choice(
             "Load as", LOAD_AS_ALL))
@@ -249,12 +280,167 @@ class NamesAndTypes(cpm.CPModule):
                     if isinstance(predicate, MetadataPredicate):
                         predicate.set_metadata_keys(self.metadata_keys)
                         
+    def is_load_module(self):
+        return True
+    
+    def change_causes_prepare_run(self, setting):
+        '''Return True if changing the setting passed changes the image sets
+        
+        setting - the setting that was changed
+        '''
+        return setting in self.settings
+    
+    def prepare_run(self, workspace):
+        '''Write the image set to the measurements'''
+        try:
+            self.on_activated(workspace)
+            m = workspace.measurements
+            assert isinstance(m, cpmeas.Measurements)
+            image_sets = []
+            column_names = self.column_names
+            for keys, ipds in self.image_sets:
+                if any([len(ipds.get(column_name, tuple())) != 1
+                        for column_name in column_names]):
+                    logger.info("Skipping image set %s - no or multiple matches for some image" % repr(keys))
+                    continue
+                image_sets.append((keys, ipds))
+            
+            image_numbers = range(1, len(image_sets) + 1)
+            m.add_all_measurements(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, 
+                                   image_numbers)
+            
+            metadata_key_names = self.get_metadata_column_names()
+            if self.assignment_method == ASSIGN_ALL:
+                load_choices = [self.single_load_as_choice.value]
+            elif self.assignment_method == ASSIGN_RULES:
+                load_choices = [ group.load_as_choice.value
+                                 for group in self.assignments]
+                if self.matching_choice == MATCH_BY_METADATA:
+                    metadata_feature_names = [
+                        '_'.join((cpmeas.C_METADATA, n))
+                        for n in metadata_key_names]
+                    m.set_metadata_tags(metadata_feature_names)
+                    key_columns = [[] for f in metadata_feature_names]
+                    for keys, ipds in image_sets:
+                        for key_column, key in zip(key_columns, keys):
+                            key_column.append(key)
+                    for metadata_feature_name, key_column in zip(
+                        metadata_feature_names, key_columns):
+                        m.add_all_measurements(
+                            cpmeas.IMAGE, metadata_feature_name,
+                            key_column)
+                    
+            ImageSetChannelDescriptor = workspace.pipeline.ImageSetChannelDescriptor
+            d = { 
+                LOAD_AS_COLOR_IMAGE: ImageSetChannelDescriptor.CT_COLOR,
+                LOAD_AS_GRAYSCALE_IMAGE: ImageSetChannelDescriptor.CT_GRAYSCALE,
+                LOAD_AS_ILLUMINATION_FUNCTION: ImageSetChannelDescriptor.CT_FUNCTION,
+                LOAD_AS_MASK: ImageSetChannelDescriptor.CT_MASK,
+                LOAD_AS_OBJECTS: ImageSetChannelDescriptor.CT_OBJECTS }
+            iscds = [ImageSetChannelDescriptor(column_name, d[load_choice])
+                     for column_name, load_choice in zip(column_names, load_choices)]
+            m.set_channel_descriptors(iscds)
+            
+            ipd_columns = [[] for column_name in column_names]
+            
+            for keys, ipds in image_sets:
+                for column, column_name in zip(ipd_columns, column_names):
+                    column.append(ipds[column_name][0])
+            for iscd, ipds in zip(iscds, ipd_columns):
+                if iscd.channel_type == ImageSetChannelDescriptor.CT_OBJECTS:
+                    url_category = cpmeas.C_OBJECTS_URL
+                    path_name_category = cpmeas.C_OBJECTS_PATH_NAME
+                    file_name_category = cpmeas.C_OBJECTS_FILE_NAME
+                    series_category = cpmeas.C_OBJECTS_SERIES
+                    frame_category = cpmeas.C_OBJECTS_FRAME
+                    channel_category = cpmeas.C_OBJECTS_CHANNEL
+                else:
+                    url_category = cpmeas.C_URL
+                    path_name_category = cpmeas.C_PATH_NAME
+                    file_name_category = cpmeas.C_FILE_NAME
+                    series_category = cpmeas.C_SERIES
+                    frame_category = cpmeas.C_FRAME
+                    channel_category = cpmeas.C_CHANNEL
+                url_feature, path_name_feature, file_name_feature,\
+                    series_feature, frame_feature, channel_feature = [
+                        "%s_%s" % (category, iscd.name) for category in (
+                            url_category, path_name_category, file_name_category,
+                            series_category, frame_category, channel_category)]
+                m.add_all_measurements(cpmeas.IMAGE, url_feature,
+                                  [ipd.url for ipd in ipds])
+                m.add_all_measurements(
+                    cpmeas.IMAGE, path_name_feature,
+                    [os.path.split(ipd.path)[0] for ipd in ipds])
+                m.add_all_measurements(
+                    cpmeas.IMAGE, file_name_feature,
+                    [os.path.split(ipd.path)[1] for ipd in ipds])
+                all_series = [ipd.series for ipd in ipds]
+                if any([x is not None for x in all_series]):
+                    m.add_all_measurements(
+                        cpmeas.IMAGE, series_feature, all_series)
+                all_frames = [ipd.index for ipd in ipds]
+                if any([x is not None for x in all_frames]):
+                    m.add_all_measurements(
+                        cpmeas.IMAGE, frame_feature, all_frames)
+                all_channels = [ipd.channel for ipd in ipds]
+                if any([x is not None for x in all_channels]):
+                    m.add_all_measurements(
+                        cpmeas.IMAGE, channel_feature, all_channels)
+            #
+            # Scan through each image set's metadata to get a set of metadata
+            # columns. Every image set will have values for each
+            # metadata column.
+            #
+            md_dict = {}
+            #
+            # Populate the dictionary using the first image set
+            #
+            for ipd_column in ipd_columns:
+                for key, value in ipd_column[0].metadata.iteritems():
+                    if not md_dict.has_key(key):
+                        md_dict[key] = set()
+                    md_dict[key].add(value)
+            #
+            # Find all metadata items that are singly valued.
+            # Recreate the dictionary as key: list of one value element
+            #
+            md_dict = dict([ (k, [v.pop()]) for k, v in md_dict.iteritems()
+                             if len(v) == 1])
+            for i in range(1, len(ipd_columns[0])):
+                image_set_metadata = {}
+                for ipd_column in ipd_columns:
+                    metadata = ipd_column[i].metadata
+                    for key in md_dict:
+                        if key in metadata:
+                            if key in image_set_metadata:
+                                if image_set_metadata[key] != metadata[key]:
+                                    image_set_metadata[key] = False
+                            else:
+                                image_set_metadata[key] = metadata[key]
+                for key in md_dict.keys():
+                    if ((key not in image_set_metadata) or 
+                        image_set_metadata is False):
+                        del md_dict[key]
+                    else:
+                        md_dict[key].append(image_set_metadata[key])
+            #
+            # Populate the metadata measurements
+            #
+            for name, values in md_dict.iteritems():
+                feature_name = "_".join((cpmeas.C_METADATA, name))
+                m.add_all_measurements(cpmeas.IMAGE,
+                                       feature_name,
+                                       values)
+            return True
+        finally:
+            self.on_deactivated()
+                        
     def run(self, workspace):
         pass
                      
-    def on_activated(self, pipeline):
-        self.pipeline = pipeline
-        self.ipds = pipeline.get_filtered_image_plane_details(with_metadata=True)
+    def on_activated(self, workspace):
+        self.pipeline = workspace.pipeline
+        self.ipds = self.pipeline.get_filtered_image_plane_details(with_metadata=True)
         self.metadata_keys = set()
         for ipd in self.ipds:
             self.metadata_keys.update(ipd.metadata.keys())
@@ -517,16 +703,12 @@ class NamesAndTypes(cpm.CPModule):
                             (C_FILE_NAME, cpmeas.COLTYPE_VARCHAR_FILE_NAME),
                             (C_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
                             (C_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
-                            #
-                            # TO-DO: these need to be collected for every image
-                            #        and properly populated.
-                            #
-                            #(C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR % 32),
-                            #(C_SCALING, cpmeas.COLTYPE_FLOAT),
-                            #(C_WIDTH, cpmeas.COLTYPE_INTEGER),
-                            #(C_HEIGHT, cpmeas.COLTYPE_INTEGER),
-                            #(C_SERIES, cpmeas.COLTYPE_INTEGER),
-                            #(C_FRAME, cpmeas.COLTYPE_INTEGER)
+                            (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
+                            (C_SCALING, cpmeas.COLTYPE_FLOAT),
+                            (C_WIDTH, cpmeas.COLTYPE_INTEGER),
+                            (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
+                            (C_SERIES, cpmeas.COLTYPE_INTEGER),
+                            (C_FRAME, cpmeas.COLTYPE_INTEGER)
                         )]
         for object_name in object_names:
             result += [ (IMAGE,
@@ -537,15 +719,11 @@ class NamesAndTypes(cpm.CPModule):
                             (C_OBJECTS_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
                             (C_OBJECTS_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
                             (C_COUNT, cpmeas.COLTYPE_INTEGER),
-                            #
-                            # TO-DO: these need to be collected for every image
-                            #        and properly populated.
-                            #
-                            #(C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR % 32),
-                            #(C_WIDTH, cpmeas.COLTYPE_INTEGER),
-                            #(C_HEIGHT, cpmeas.COLTYPE_INTEGER),
-                            #(C_SERIES, cpmeas.COLTYPE_INTEGER),
-                            #(C_FRAME, cpmeas.COLTYPE_INTEGER)
+                            (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR % 32),
+                            (C_WIDTH, cpmeas.COLTYPE_INTEGER),
+                            (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
+                            (C_SERIES, cpmeas.COLTYPE_INTEGER),
+                            (C_FRAME, cpmeas.COLTYPE_INTEGER)
                             )]
             result += get_object_measurement_columns(object_name)
                             
@@ -601,7 +779,7 @@ class NamesAndTypes(cpm.CPModule):
             return self.ipd
         
     def filter_ipd(self, ipd, group):
-        modpath = Images.make_modpath_from_ipd(ipd)
+        modpath = Images.url_to_modpath(ipd.url)
         try:
             match = group.rule_filter.evaluate(
                 (cps.FileCollectionDisplay.NODE_IMAGE_PLANE, 

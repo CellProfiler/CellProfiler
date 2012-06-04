@@ -237,7 +237,7 @@ RUN_DISTRIBUTED = "RunDistributed"
 WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
 USE_MORE_FIGURE_SPACE = "UseMoreFigureSpace"
 WRITE_HDF5 = "WriteHDF5"
-IMAGE_SET_FILE = "ImageSetFile"
+WORKSPACE_FILE = "WorkspaceFile"
 
 '''The preference key for selecting the correct version of ImageJ'''
 IJ_VERSION = "ImageJVersion"
@@ -260,7 +260,10 @@ ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
              TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
              WRITE_MAT, USE_MORE_FIGURE_SPACE] + 
             [recent_file(n, category) for n in range(RECENT_FILE_COUNT)
-             for category in ("", DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY)])
+             for category in ("", 
+                              DEFAULT_IMAGE_DIRECTORY, 
+                              DEFAULT_OUTPUT_DIRECTORY,
+                              WORKSPACE_FILE)])
 
 def module_directory():
     if not get_config().Exists(MODULEDIRECTORY):
@@ -935,17 +938,19 @@ def set_ij_version(value):
     __ij_version = value
     config_write(IJ_VERSION, value)
 
-__image_set_file = None
-def get_image_set_file():
-    '''Return the path to the image set file'''
-    global __image_set_file
-    if __image_set_file is not None:
-        return __image_set_file
-    __image_set_file = config_read(IMAGE_SET_FILE)
-    return __image_set_file
+__workspace_file = None
+def get_workspace_file():
+    '''Return the path to the workspace file'''
+    global __workspace_file
+    if __workspace_file is not None:
+        return __workspace_file
+    if not get_config().Exists(WORKSPACE_FILE):
+        return os.path.expanduser("~/CellProfiler.cpi")
+    __workspace_file = config_read(WORKSPACE_FILE)
+    return __workspace_file
 
-def set_image_set_file(path, permanently = True):
-    '''Set the path to the image set file
+def set_workspace_file(path, permanently = True):
+    '''Set the path to the workspace file
 
     path - path to the file
     
@@ -953,7 +958,8 @@ def set_image_set_file(path, permanently = True):
                   should only be set for the running instance (e.g. as a
                   command-line parameter for a scripted run)
     '''
-    global __image_set_file
-    __image_set_file = path
+    global __workspace_file
+    __workspace_file = path
     if permanently:
-        config_write(IMAGE_SET_FILE, path)
+        add_recent_file(path, WORKSPACE_FILE)
+        config_write(WORKSPACE_FILE, path)

@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 __version__="$Revision$"
 
 from cellprofiler.cpgridinfo import CPGridInfo
+from .utilities.hdf5_dict import HDF5FileList
 
 '''Continue to run the pipeline
 
@@ -77,6 +78,8 @@ class Workspace(object):
         self.__disposition = DISPOSITION_CONTINUE
         self.__disposition_listeners = []
         self.__in_background = False # controls checks for calls to create_or_find_figure()
+        self.__file_list = (None if measurements is None 
+                            else HDF5FileList(measurements.hdf5_dict.hdf5_file))
 
         self.interaction_handler = None
 
@@ -143,6 +146,21 @@ class Workspace(object):
         data - the result of the measurement
         """
         self.measurements.add_measurement(object_name, feature_name, data)
+        
+    def get_file_list(self):
+        '''The user-curated list of files'''
+        return self.__file_list
+    
+    def set_file_list(self, file_list):
+        """Set the file list
+        
+        A caller can set the file list to the file list in some other
+        workspace. This lets a single, sometimes very bulky file list be
+        used without copying it to a measurements file.
+        """
+        self.__file_list = file_list
+    
+    file_list = property(get_file_list)
 
     def get_grid(self, grid_name):
         '''Return a grid with the given name'''
@@ -283,7 +301,50 @@ class Workspace(object):
 
     class NoInteractionException(Exception):
         pass
-
+    
+    def load(self, filename, load_pipeline):
+        '''Load a workspace from a .cpi file
+        
+        filename - path to file to load
+        
+        load_pipeline - true to load the pipeline from the file, false to
+                        use the current pipeline.
+        '''
+        import h5py
+        from .pipeline import M_PIPELINE
+        import cellprofiler.measurements as cpmeas
+        from cStringIO import StringIO
+        
+        if self.__measurements is not None:
+            self.__measurements.close()
+            
+        self.__measurements = cpmeas.Measurements(
+            filename = filename, mode = "r+")
+        self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
+        if load_pipeline and self.__measurements.has_feature(
+            cpmeas.EXPERIMENT, M_PIPELINE):
+            pipeline_txt = self.__measurements.get_experiment_measurement(
+                M_PIPELINE).encode("utf-8")
+            self.pipeline.load(StringIO(pipeline_txt))
+        elif load_pipeline:
+            self.pipeline.clear()
+        else:
+            fd = StringIO()
+            self.pipeline.savetxt(fd, save_image_plane_details = False)
+            self.__measurements.add_experiment_measurement(
+                M_PIPELINE, fd.getvalue())
+        
+    def create(self, filename):
+        '''Create a new workspace file
+        
+        filename - name of the workspace file
+        '''
+        from .measurements import Measurements
+        if isinstance(self.measurements, Measurements):
+            self.measurements.close()
+        self.__measurements = Measurements(filename = filename,
+                                           mode = "w")
+        self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
 
 class DispositionChangedEvent(object):
     def __init__(self, disposition):

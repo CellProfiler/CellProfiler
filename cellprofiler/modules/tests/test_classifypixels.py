@@ -28,7 +28,14 @@ import cellprofiler.workspace as cpw
 
 try:
     import cellprofiler.modules.classifypixels as C
+    #
+    # This tests for a version of Vigra that doesn't work with
+    # Ilastik.
+    #
+    import vigra
+    vigra.arraytypes._VigraArray # throws on latest version of Vigra
     has_ilastik = True
+    
 except:
     has_ilastik = False
     

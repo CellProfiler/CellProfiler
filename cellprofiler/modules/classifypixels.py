@@ -74,23 +74,31 @@ except ImportError, ilastikImport:
 CLASSIFIERS_KEY = "IlastikClassifiers"
 FEATURE_ITEMS_KEY = "IlastikFeatureItems"
 
+SI_PROBABILITY_MAP_COUNT = 3
+
 class ClassifyPixels(cpm.CPModule):
     module_name = 'ClassifyPixels'
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "Image Processing"
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image", "None")
         
-        # The following settings are used for the combine option
-        self.output_image = cps.ImageNameProvider(
-            "Name the output probability map", "ProbabilityMap")
+        self.probability_maps = []
         
-        self.class_sel = cps.Integer("Select the class", 
-            0, 0, 42, doc=
-            '''Select the class you want to use. The class number 
-            corresponds to the label-class in ilastik''')
+        self.probability_map_count = cps.HiddenCount(
+            self.probability_maps, "Probability map count")
+        
+        self.add_probability_map(False)
+        
+        self.add_probability_button = cps.DoSomething(
+            "Add another probability map", "Add", self.add_probability_map,
+            doc = """Press the <i>Add</i> button to output another
+            probability map image from the classifier. Ilastik can be trained
+            to recognize any number of classes of pixels. You can generate
+            probability maps for any or all of them simultaneously by adding
+            more images.""")
         
         self.h5_directory = cps.DirectoryPath(
             "Classifier file location",
@@ -119,9 +127,44 @@ class ClassifyPixels(cpm.CPModule):
             exts = [("Classfier file (*.h5)","*.h5"),("All files (*.*)","*.*")]
         )
         
+    def add_probability_map(self, can_remove=True):
+        group = cps.SettingsGroup()
+        group.can_remove = can_remove
+        self.probability_maps.append(group)
+        
+        # The following settings are used for the combine option
+        group.output_image = cps.ImageNameProvider(
+            "Name the output probability map", "ProbabilityMap")
+        
+        group.class_sel = cps.Integer("Select the class", 
+            0, 0, 42, doc=
+            '''Select the class you want to use. The class number 
+            corresponds to the label-class in ilastik''')
+        
+        if can_remove:
+            group.remover = cps.RemoveSettingButton(
+                "Remove probability map", "Remove", self.probability_maps, group,
+                doc = """Press the <i>Remove</i> button to remove the
+                probability map image from the list of images produced by this
+                module""")
+        
     def settings(self):
-        return [self.image_name, self.output_image, self.class_sel, self.h5_directory, self.classifier_file_name]
+        result = [self.image_name, self.h5_directory, self.classifier_file_name,
+                  self.probability_map_count]
+        for group in self.probability_maps:
+            result += [group.output_image, group.class_sel]
+        return result
     
+    def visible_settings(self):
+        result = [self.image_name]
+        for group in self.probability_maps:
+            result += [group.output_image, group.class_sel]
+            if group.can_remove:
+                result += [group.remover]
+        result += [self.add_probability_button, self.h5_directory,
+                   self.classifier_file_name]
+        return result
+        
     def run(self, workspace):
         # get input image
         image = workspace.image_set.get_image(self.image_name.value, must_be_color=False) 
@@ -170,13 +213,15 @@ class ClassifyPixels(cpm.CPModule):
         classificationPredict.start()
         classificationPredict.wait()
         
-        # Produce output image and select the probability map
-        probMap = classificationPredict._prediction[0][0,0,:,:, int(self.class_sel.value)]
-        # probMap = classificationPredict._prediction[0]
-        temp_image = cpi.Image(probMap, parent_image=image)
-        workspace.image_set.add(self.output_image.value, temp_image)
         workspace.display_data.source_image = image.pixel_data
-        workspace.display_data.dest_image = probMap
+        workspace.display_data.dest_images = []
+        for group in self.probability_maps:
+            # Produce output image and select the probability map
+            probMap = classificationPredict._prediction[0][
+                0 ,0 ,: ,: ,int(group.class_sel.value)]
+            temp_image = cpi.Image(probMap, parent_image=image)
+            workspace.image_set.add(group.output_image.value, temp_image)
+            workspace.display_data.dest_images.append(probMap)
 
     def get_classifiers(self, workspace):
         self.parse_classifier_file(workspace)
@@ -227,15 +272,45 @@ class ClassifyPixels(cpm.CPModule):
         return False
     
     def display(self, workspace):
-        figure = workspace.create_or_find_figure(subplots = (2,1))
+        figure = workspace.create_or_find_figure(
+            subplots = (len(workspace.display_data.dest_images)+1, 1))
         source_image = workspace.display_data.source_image
-        dest_image = workspace.display_data.dest_image
         if source_image.ndim == 3:
             src_plot = figure.subplot_imshow_color(
                 0, 0, source_image, title = self.image_name.value)
         else:
             src_plot = figure.subplot_imshow_grayscale(
                 0, 0, source_image, title = self.image_name.value)
-        figure.subplot_imshow_grayscale(
-            1, 0, dest_image, title = self.output_image.value,
-            sharex = src_plot, sharey = src_plot)
+        for i, dest_image in enumerate(workspace.display_data.dest_images):
+            figure.subplot_imshow_grayscale(
+                i+1, 0, dest_image, title = self.probability_maps[i].output_image.value,
+                sharex = src_plot, sharey = src_plot)
+    
+    def prepare_settings(self, setting_values):
+        '''Prepare the module to receive the settings'''
+        n_maps = int(setting_values[SI_PROBABILITY_MAP_COUNT])
+        if len(self.probability_maps) > n_maps:
+            del self.probability_maps[nmaps:]
+        elif len(self.probability_maps) < n_maps:
+            for _ in range(len(self.probability_maps), n_maps):
+                self.add_probability_map()
+            
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
+        '''Upgrade settings to maintain backwards compatibility
+        
+        setting_values - list of setting strings
+        variable_revision_number - version number used to save the settings
+        module_name - original module name used to save the settings
+        from_matlab - true if CellProfiler 1.0 pipeline
+        '''
+        if variable_revision_number == 1:
+            setting_values = [
+                setting_values[0], # image_name
+                setting_values[3], # h5_directory
+                setting_values[4], # classifier_file_name
+                "1",               # probability map count = 1
+                setting_values[1], # output_image
+                setting_values[2]] # class_sel
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab

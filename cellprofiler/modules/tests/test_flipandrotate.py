@@ -448,7 +448,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
                 line_i = 4+(pixels.shape[0]-20)/2
                 line_j = 4+(pixels.shape[1]-20)/2
                 self.assertTrue(np.all(pixels[line_i,line_j:line_j+12] > .2))
-                self.assertTrue(np.all(pixels[np.abs(i-line_i) > 1] < .1))
+                self.assertTrue(np.all(pixels[:20, :20][np.abs(i-line_i) > 1] < .1))
             else:
                 self.assertAlmostEqual(angle,
                                        -np.arctan2(pt1[1]-pt0[1],
@@ -457,7 +457,7 @@ Rotate:[module_num:1|svn_version:\'8913\'|variable_revision_number:2|show_window
                 line_i = 4+(pixels.shape[0]-20)/2
                 line_j = 15+(pixels.shape[1]-20)/2
                 self.assertTrue(np.all(pixels[line_i:line_i+12,line_j] > .2))
-                self.assertTrue(np.all(pixels[np.abs(j-line_j) > 1] < .1))
+                self.assertTrue(np.all(pixels[:20, :20][np.abs(j-line_j) > 1] < .1))
     
     def test_04_01_crop(self):
         '''Turn cropping on and check that the cropping mask covers the mask'''

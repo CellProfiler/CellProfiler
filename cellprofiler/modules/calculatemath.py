@@ -269,12 +269,15 @@ class CalculateMath(cpm.CPModule):
             # Copy the measurement (if it's right type) or else it gets altered by the operation
             if not np.isscalar(value):
                 value = value.copy()
-               
+            # ensure that the data can be changed in-place by floating point ops
+            value = value.astype(np.float)
+
             if isinstance(value, str) or isinstance(value, unicode):
                 try:
                     value = float(value)
                 except ValueError:
                     raise ValueError("Unable to use non-numeric value in measurement, %s"%operand.measurement.value)
+
             input_values.append(value)
             value *= operand.multiplicand.value
             value **= operand.exponent.value

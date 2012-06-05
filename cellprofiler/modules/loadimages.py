@@ -851,6 +851,7 @@ class LoadImages(cpmodule.CPModule):
             image_group.channels[0].wants_outlines,
             image_group.channels[0].outlines_name,
             image_group.channels[0].channel_number,
+            image_group.channels[0].rescale,
             image_group.metadata_choice,
             image_group.file_metadata, 
             image_group.path_metadata,

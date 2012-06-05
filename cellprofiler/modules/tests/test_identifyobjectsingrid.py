@@ -163,7 +163,7 @@ class TestIdentifyObjectsInGrid(unittest.TestCase):
         mask = ((i >= 0) & (j >= 0) & (i<ni) & (j < nj))
         grid = np.zeros((gridding.image_height, gridding.image_width), int)
         g = grid[:i.shape[0],:i.shape[1]]
-        g[mask] = gridding.spot_table[i[mask],j[mask]]
+        g[mask[:g.shape[0], :g.shape[1]]] = gridding.spot_table[i[mask],j[mask]]
         return grid
         
     def test_02_01_forced_location(self):

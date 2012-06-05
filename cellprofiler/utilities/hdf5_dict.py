@@ -142,13 +142,14 @@ class HDF5Dict(object):
         assert mode in ("r", "r+", "w", "w+", "w-", "a")
         open_mode = mode
         file_exists = (hdf5_filename is not None) and os.path.exists(hdf5_filename)
+        default_run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S")
         if mode in ("r", "r+"):
             load_measurements = True
         elif mode == "a" and file_exists:
             load_measurements = True
         else:
             load_measurements = False
-            run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S")
+            run_group_name = default_run_group_name
             if mode == "w+" and file_exists:
                 open_mode = "r+"
             
@@ -176,7 +177,11 @@ class HDF5Dict(object):
                 else:
                     mgroup = self.hdf5_file[top_level_group_name]
                     if run_group_name is None:
-                        run_group_name = sorted(mgroup.keys())[-1]
+                        if len(mgroup.keys()) > 0:
+                            run_group_name = sorted(mgroup.keys())[-1]
+                        else:
+                            run_group_name = default_run_group_name
+                            mgroup.create_group(run_group_name)
                     self.top_group = mgroup[run_group_name]
                     
                 if mode == "r" and not load_measurements:
@@ -441,8 +446,8 @@ class HDF5Dict(object):
 
     def clear(self):
         with self.lock:
-            del self.hdf5_file[self.top_level_group_name]
-            self.top_group = self.hdf5_file.create_group(self.top_level_group_name)
+            for object_name in self.top_level_names():
+                del self.top_group[object_name]
             self.indices = {}
 
     def erase(self, object_name, first_idx, mask):
@@ -635,6 +640,9 @@ class HDF5FileList(object):
     def remove_notification_callback(self, callback):
         '''Remove a previously installed callback'''
         self.__notification_list.remove(callback)
+        
+    def get_notification_callbacks(self):
+        return list(self.__notification_list)
         
     def notify(self):
         for callback in self.__notification_list:

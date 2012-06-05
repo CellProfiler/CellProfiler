@@ -371,7 +371,8 @@ class Measurements(object):
 
         Experiment measurements have one value per experiment
         """
-        data = unicode(data).encode('unicode_escape')
+        if isinstance(data, basestring):
+            data = unicode(data).encode('unicode_escape')
         self.hdf5_dict.add_all(EXPERIMENT, feature_name, [data], [0])
 
     def get_group_number(self):
@@ -558,6 +559,10 @@ class Measurements(object):
         image_number - the image set's image number
         '''
         del self.hdf5_dict[object_name, feature_name, image_number]
+        
+    def clear(self):
+        '''Remove all measurements'''
+        self.hdf5_dict.clear()
 
     def get_object_names(self):
         """The list of object names (including Image) that have measurements

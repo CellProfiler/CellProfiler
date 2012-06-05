@@ -288,7 +288,7 @@ class NamesAndTypes(cpm.CPModule):
         
         setting - the setting that was changed
         '''
-        return setting in self.settings
+        return setting in self.settings()
     
     def prepare_run(self, workspace):
         '''Write the image set to the measurements'''

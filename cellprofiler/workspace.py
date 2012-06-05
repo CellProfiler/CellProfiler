@@ -13,6 +13,9 @@ Website: http://www.cellprofiler.org
 """
 __version__="$Revision$"
 
+import logging
+logger = logging.getLogger(__name__)
+from cStringIO import StringIO
 from cellprofiler.cpgridinfo import CPGridInfo
 from .utilities.hdf5_dict import HDF5FileList
 
@@ -320,7 +323,13 @@ class Workspace(object):
             
         self.__measurements = cpmeas.Measurements(
             filename = filename, mode = "r+")
+        if self.__file_list is None:
+            file_list_callbacks = []
+        else:
+            file_list_callbacks = self.__file_list.get_notification_callbacks()
         self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
+        for callback in file_list_callbacks:
+            self.__file_list.add_notification_callback(callback)
         if load_pipeline and self.__measurements.has_feature(
             cpmeas.EXPERIMENT, M_PIPELINE):
             pipeline_txt = self.__measurements.get_experiment_measurement(
@@ -345,6 +354,57 @@ class Workspace(object):
         self.__measurements = Measurements(filename = filename,
                                            mode = "w")
         self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
+        
+    def save_pipeline_to_measurements(self):
+        from cellprofiler.pipeline import M_PIPELINE
+        fd = StringIO()
+        self.pipeline.savetxt(fd, save_image_plane_details=False)
+        self.measurements.add_experiment_measurement(M_PIPELINE, fd.getvalue())
+        self.measurements.flush()
+        
+    def invalidate_image_set(self):
+        self.measurements.clear()
+        self.save_pipeline_to_measurements()
+        
+    def refresh_image_set(self, force=False):
+        '''Refresh the image set if not present
+        
+        force - force a rewrite, even if the image set is cached
+        
+        This method executes Pipeline.prepare_run in order on self in order
+        to write the image set image measurements to our internal
+        measurements. If image set measurements are present, then we
+        assume that the cache reflects pipeline + file list unless "force"
+        is true.
+        '''
+        if len(self.measurements.get_image_numbers()) == 0 or force:
+            self.measurements.clear()
+            self.save_pipeline_to_measurements()
+            modules = self.pipeline.modules()
+            stop_module = None
+            if len(modules) > 1 and not modules[-1].is_load_module():
+                for module, next_module in zip(
+                    self.pipeline.modules()[:-1],
+                    self.pipeline.modules()[1:]):
+                    if module.is_load_module():
+                        stop_module = next_module
+            
+            # TODO: Get rid of image_set_list
+            no_image_set_list = self.image_set_list is None
+            if no_image_set_list:
+                from cellprofiler.cpimage import ImageSetList
+                self.__image_set_list = ImageSetList()
+            try:
+                result = self.pipeline.prepare_run(self, stop_module)
+                self.measurements.flush()
+                return result
+            except:
+                logger.error("Failed during prepare_run", exc_info=1)
+                return False
+            finally:
+                if no_image_set_list:
+                    self.__image_set_list = None
+        return True
 
 class DispositionChangedEvent(object):
     def __init__(self, disposition):

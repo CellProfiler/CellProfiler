@@ -385,6 +385,15 @@ class Images(cpm.CPModule):
         if setting is self.wants_filter and not self.wants_filter:
             self.apply_filter()
             
+    def change_causes_prepare_run(self, setting):
+        '''Return True if a change to the settings requires a call to prepare_run
+        
+        Images should return True if any setting changes because that
+        will affect the image plane descriptors passed onto later modules
+        which will change the image set produced by the pipeline.
+        '''
+        return setting in self.settings()
+            
     def prepare_run(self, workspace):
         '''Create an IPD for every url that passes the filter'''
         urls = filter(self.filter_url, workspace.file_list.get_filelist())

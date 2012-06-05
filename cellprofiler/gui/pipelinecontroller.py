@@ -133,14 +133,18 @@ class PipelineController:
         elements have been initialized.
         '''
         workspace_file = cpprefs.get_workspace_file()
-        if os.path.exists(workspace_file):
-            try:
-                self.do_open_workspace(workspace_file, True)
-                return
-            except:
-                pass
-        self.__pipeline.clear()
-        self.do_create_workspace(workspace_file)
+        for attempt in range(1):
+            if os.path.exists(workspace_file):
+                try:
+                    self.do_open_workspace(workspace_file, True)
+                    break
+                except:
+                    pass
+        else:
+            self.do_create_workspace(workspace_file)
+            self.__pipeline.clear()
+        self.__workspace.file_list.add_notification_callback(
+            self.on_file_list_changed)
     
     def attach_to_pipeline_list_view(self,pipeline_list_view, movie_viewer):
         """Glom onto events from the list box with all of the module names in it
@@ -247,12 +251,17 @@ class PipelineController:
         self.__workspace.load(filename, load_pipeline)
         cpprefs.set_workspace_file(filename)
         self.__pipeline.load_image_plane_details(self.__workspace)
+        if not load_pipeline:
+            self.__workspace.measurements.clear()
+            self.__workspace.save_pipeline_to_measurements()
         
     def do_create_workspace(self, filename):
         '''Create a new workspace file with the given name'''
         self.__workspace.create(filename)
         cpprefs.set_workspace_file(filename)
         self.__pipeline.clear_image_plane_details()
+        self.__workspace.measurements.clear()
+        self.__workspace.save_pipeline_to_measurements()
         
     def __on_load_pipeline(self,event):
         if self.__dirty_pipeline:
@@ -307,6 +316,7 @@ class PipelineController:
                 self.set_current_pipeline_path(pathname)
             self.__dirty_pipeline = False
             self.set_title()
+            self.__workspace.save_pipeline_to_measurements()
             
         except Exception,instance:
             self.__frame.display_error('Failed during loading of %s'%(pathname),instance)
@@ -528,20 +538,19 @@ class PipelineController:
                 
         elif isinstance(event, cpp.LoadExceptionEvent):
             self.on_load_exception_event(event)
-        elif any([isinstance(event, x) for x in
-                  (cpp.ModuleAddedPipelineEvent,
-                   cpp.ModuleEditedPipelineEvent,
-                   cpp.ModuleMovedPipelineEvent,
-                   cpp.ModuleRemovedPipelineEvent)]):
+        elif event.is_pipeline_modification:
             self.__dirty_pipeline = True
             self.set_title()
             m = self.__workspace.measurements
-            if isinstance(m, cpm.Measurements):
-                fd = StringIO()
-                self.__pipeline.savetxt(fd, save_image_plane_details=False)
-                m.add_experiment_measurement(cpp.M_PIPELINE, fd.getvalue())
-                m.flush()
+            if event.is_image_set_modification:
+                # Clear the image set cache
+                self.__workspace.invalidate_image_set()
+            self.__workspace.save_pipeline_to_measurements()
             
+    def on_file_list_changed(self):
+        '''Workspace's file list changed. Invalidate the workspace cache.'''
+        self.__workspace.invalidate_image_set()
+        
     def on_load_exception_event(self, event):
         '''Handle a pipeline load exception'''
         if event.module is None:
@@ -757,20 +766,19 @@ class PipelineController:
         setting = event.get_setting()
         proposed_value = event.get_proposed_value()
         setting.value = proposed_value
-        self.__pipeline.edit_module(event.get_module().module_num)
-        if self.is_in_debug_mode():
+        module = event.get_module()
+        is_image_set_modification = module.change_causes_prepare_run(setting)
+        self.__pipeline.edit_module(event.get_module().module_num,
+                                    is_image_set_modification)
+        if self.is_in_debug_mode() and is_image_set_modification:
             #
             # If someone edits a really important setting in debug mode,
             # then you want to reset the debugger to reprocess the image set
             # list.
             #
-            for module in self.__pipeline.modules():
-                setting = event.get_setting()
-                if setting.key() in [x.key() for x in module.settings()]:
-                    if module.change_causes_prepare_run(setting):
-                        self.stop_debugging()
-                        if cpprefs.get_show_exiting_test_mode_dlg():
-                            self.show_exiting_test_mode()
+            self.stop_debugging()
+            if cpprefs.get_show_exiting_test_mode_dlg():
+                self.show_exiting_test_mode()
 
     def status_callback(self, *args):
         self.__frame.preferences_view.on_pipeline_progress(*args)
@@ -831,8 +839,11 @@ class PipelineController:
             try:
                 self.__module_view.disable()
                 self.__frame.preferences_view.on_analyze_images()
-                self.__analysis = cpanalysis.Analysis(self.__pipeline, self.get_output_file_path(),
-                                                      initial_measurements=cpm.Measurements())
+                self.__workspace.refresh_image_set()
+                self.__analysis = cpanalysis.Analysis(
+                    self.__pipeline, 
+                    self.get_output_file_path(),
+                    initial_measurements=self.__workspace.measurements)
                 self.__analysis.start(self.analysis_event_handler)
 
             except Exception, e:
@@ -1184,9 +1195,27 @@ class PipelineController:
         self.__frame.preferences_view.start_debugging()
         self.__test_controls_panel.Show()
         self.__test_controls_panel.GetParent().GetSizer().Layout()
-        self.close_debug_measurements()
         self.__pipeline.test_mode = True
+        try:
+            if not self.__workspace.refresh_image_set():
+                raise ValueError("Failed to get image sets")
+            if self.__workspace.measurements.image_set_count == 0:
+                wx.MessageBox("The pipeline did not identify any image sets. "
+                              "Please check your settings for any modules that "
+                              "load images and try again.",
+                              "No image sets.",
+                              wx.OK | wx.ICON_ERROR, self.__frame)
+                self.stop_debugging()
+                return False
+        except ValueError, v:
+            message = "Error while preparing for run:\n%s"%(v)
+            wx.MessageBox(message, "Pipeline error", wx.OK | wx.ICON_ERROR, self.__frame)
+            self.stop_debugging()
+            return False
+        
+        self.close_debug_measurements()
         self.__debug_measurements = cellprofiler.measurements.Measurements(
+            copy = self.__workspace.measurements,
             mode="memory")
         self.__debug_object_set = cpo.ObjectSet(can_overwrite=True)
         self.__frame.enable_debug_commands()
@@ -1197,16 +1226,8 @@ class PipelineController:
                                   self.__debug_image_set_list,
                                   self.__frame)
         workspace.set_file_list(self.__workspace.file_list)
-        try:
-            if not self.__pipeline.prepare_run(workspace):
-                raise ValueError("Failed to get image sets")
-            self.__keys, self.__groupings = self.__pipeline.get_groupings(
-                workspace)
-        except ValueError, v:
-            message = "Error while preparing for run:\n%s"%(v)
-            wx.MessageBox(message, "Pipeline error", wx.OK | wx.ICON_ERROR, self.__frame)
-            self.stop_debugging()
-            return False
+        self.__keys, self.__groupings = self.__pipeline.get_groupings(
+            workspace)
 
         self.__grouping_index = 0
         self.__within_group_index = 0
@@ -1214,9 +1235,6 @@ class PipelineController:
                                       self.__groupings[0][0],
                                       self.__groupings[0][1])
         self.__debug_outlines = {}
-        if self.__debug_image_set_list == None:
-            self.stop_debugging()
-            return False
         return True
     
     def close_debug_measurements(self):

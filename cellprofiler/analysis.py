@@ -209,37 +209,6 @@ class AnalysisRunner(object):
         self.stop_workers()
         announce_queue = self.start_workers(2)  # start worker pool via class method (below)
 
-        workspace = cpw.Workspace(self.pipeline, None, None, None,
-                                  self.initial_measurements, cpimage.ImageSetList())
-        # XXX - catch exceptions via RunException event listener.
-        self.pipeline.prepare_run(workspace)
-
-        # If we are running a new-style pipeline, load the imageset cache,
-        # generating it if needed.
-        if not self.pipeline.has_legacy_loaders():
-            loaders_settings_hash = self.pipeline.loaders_settings_hash()
-            output_dir = cpprefs.get_default_output_directory()
-            imageset_cache_path = os.path.join(output_dir, "CPCache_%s.csv" % (loaders_settings_hash[:8]))
-            try:
-                if os.path.exists(imageset_cache_path):
-                    cachefd = open(imageset_cache_path, "r")
-                    create_cache = False
-                else:
-                    cachefd = open(imageset_cache_path, "w+")
-                    create_cache = True
-            except:
-                # We can't load or store the cache, so regenerate it in memory
-                logger.info("Can't open for reading or write to %s, regenerating imageset cache in memory." % (imageset_cache_path))
-                cachefd = StringIO.StringIO()
-                create_cache = True
-            if create_cache:
-                logger.info("Regenerating imageset cache.")
-                self.pipeline.write_image_set(cachefd)
-                cachefd.flush()
-            cachefd.seek(0)
-            self.initial_measurements.load_image_sets(cachefd)
-
-        self.initial_measurements.flush()  # Make sure file is valid before we start threads.
         self.measurements = cpmeas.Measurements(image_set_start=None,
                                                 filename=self.output_path,
                                                 copy=self.initial_measurements)

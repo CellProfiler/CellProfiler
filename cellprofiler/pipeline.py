@@ -2458,12 +2458,14 @@ class Pipeline(object):
         'file_name' - the path to the file containing the variables for the module.
         ModuleNum - the one-based index for the placement of the module in the pipeline
         """
+        is_image_set_modification = new_module.is_load_module()
         module_num = new_module.module_num
         idx = module_num-1
         self.__modules = self.__modules[:idx]+[new_module]+self.__modules[idx:]
         for module,mn in zip(self.__modules[idx+1:],range(module_num+1,len(self.__modules)+1)):
             module.module_num = mn
-        self.notify_listeners(ModuleAddedPipelineEvent(module_num))
+        self.notify_listeners(ModuleAddedPipelineEvent(
+            module_num, is_image_set_modification=is_image_set_modification))
         self.__settings.insert(idx, [str(setting) 
                                      for setting in new_module.settings()])
         def undo():
@@ -2479,17 +2481,19 @@ class Pipeline(object):
         """
         idx =module_num-1
         removed_module = self.__modules[idx]
+        is_image_set_modification = removed_module.is_load_module()
         self.__modules = self.__modules[:idx]+self.__modules[idx+1:]
         for module in self.__modules[idx:]:
             module.module_num = module.module_num-1
-        self.notify_listeners(ModuleRemovedPipelineEvent(module_num))
+        self.notify_listeners(ModuleRemovedPipelineEvent(
+            module_num, is_image_set_modification = is_image_set_modification))
         del self.__settings[idx]
         def undo():
             self.add_module(removed_module)
         self.__undo_stack.append((undo, "Remove %s module" %
                                   removed_module.module_name))
     
-    def edit_module(self, module_num):
+    def edit_module(self, module_num, is_image_set_modification):
         """Notify listeners of a module edit
         
         """
@@ -2497,7 +2501,8 @@ class Pipeline(object):
         old_settings = self.__settings[idx]
         module = self.modules()[idx]
         new_settings = [str(setting) for setting in module.settings()]
-        self.notify_listeners(ModuleEditedPipelineEvent(module_num))
+        self.notify_listeners(ModuleEditedPipelineEvent(
+            module_num, is_image_set_modification=is_image_set_modification))
         self.__settings[idx] = new_settings
         variable_revision_number = module.variable_revision_number
         module_name = module.module_name
@@ -3012,9 +3017,15 @@ class Pipeline(object):
         assert "Groups" in [m.module_name for m in self.modules()]
         return self.settings_hash(until_module="Groups", as_string=True)
 
-class AbstractPipelineEvent:
+class AbstractPipelineEvent(object):
     """Something that happened to the pipeline and was indicated to the listeners
     """
+    def __init__(self, 
+                 is_pipeline_modification = False,
+                 is_image_set_modification = False):
+        self.is_pipeline_modification = is_pipeline_modification
+        self.is_image_set_modification = is_image_set_modification
+        
     def event_type(self):
         raise NotImplementedError("AbstractPipelineEvent does not implement an event type")
 
@@ -3022,6 +3033,11 @@ class PipelineLoadedEvent(AbstractPipelineEvent):
     """Indicates that the pipeline has been (re)loaded
     
     """
+    def __init__(self):
+        super(PipelineLoadedEvent, self).__init__(
+            is_pipeline_modification = True,
+            is_image_set_modification = True)
+        
     def event_type(self):
         return "PipelineLoaded"
 
@@ -3029,6 +3045,11 @@ class PipelineClearedEvent(AbstractPipelineEvent):
     """Indicates that all modules have been removed from the pipeline
     
     """
+    def __init__(self):
+        super(PipelineClearedEvent, self).__init__(
+            is_pipeline_modification = True,
+            is_image_set_modification = True)
+        
     def event_type(self):
         return "PipelineCleared"
 
@@ -3038,7 +3059,10 @@ class ModuleMovedPipelineEvent(AbstractPipelineEvent):
     """A module moved up or down
     
     """
-    def __init__(self,module_num, direction):
+    def __init__(self, module_num, direction, is_image_set_modification):
+        super(ModuleMovedPipelineEvent, self).__init__(
+            is_pipeline_modification = True,
+            is_image_set_modification = is_image_set_modification)
         self.module_num = module_num
         self.direction = direction
     
@@ -3049,7 +3073,10 @@ class ModuleAddedPipelineEvent(AbstractPipelineEvent):
     """A module was added to the pipeline
     
     """
-    def __init__(self,module_num):
+    def __init__(self, module_num, is_image_set_modification = False):
+        super(ModuleAddedPipelineEvent, self).__init__(
+            is_pipeline_modification = True,
+            is_image_set_modification = is_image_set_modification)
         self.module_num = module_num
     
     def event_type(self):
@@ -3059,8 +3086,10 @@ class ModuleRemovedPipelineEvent(AbstractPipelineEvent):
     """A module was removed from the pipeline
     
     """
-    def __init__(self,module_num):
-        self.module_num = module_num
+    def __init__(self,module_num, is_image_set_modification = False):
+        super(ModuleRemovedPipelineEvent, self).__init__(
+            is_pipeline_modification = True,
+            is_image_set_modification = is_image_set_modification)
         
     def event_type(self):
         return "Module deleted"
@@ -3069,7 +3098,10 @@ class ModuleEditedPipelineEvent(AbstractPipelineEvent):
     """A module had its settings changed
     
     """
-    def __init__(self, module_num):
+    def __init__(self, module_num, is_image_set_modification = False):
+        super(ModuleEditedPipelineEvent, self).__init__(
+            is_pipeline_modification = True,
+            is_image_set_modification = is_image_set_modification)
         self.module_num = module_num
     
     def event_type(self):
@@ -3077,6 +3109,7 @@ class ModuleEditedPipelineEvent(AbstractPipelineEvent):
     
 class ImagePlaneDetailsAddedEvent(AbstractPipelineEvent):
     def __init__(self, ipds):
+        super(self.__class__, self).__init__()
         self.image_plane_details = ipds
         
     def event_type(self):
@@ -3084,6 +3117,7 @@ class ImagePlaneDetailsAddedEvent(AbstractPipelineEvent):
 
 class ImagePlaneDetailsRemovedEvent(AbstractPipelineEvent):
     def __init__(self, ipds):
+        super(self.__class__, self).__init__()
         self.image_plane_details = ipds
         
     def event_type(self):
@@ -3091,6 +3125,7 @@ class ImagePlaneDetailsRemovedEvent(AbstractPipelineEvent):
     
 class ImagePlaneDetailsMetadataEvent(AbstractPipelineEvent):
     def __init__(self, ipd):
+        super(self.__class__, self).__init__()
         self.image_plane_details = ipd
         
     def event_type(self):
@@ -3143,6 +3178,7 @@ class IPDLoadExceptionEvent(AbstractPipelineEvent):
     the image plane details from the workspace's file list.
     """
     def __init__(self, error):
+        super(self.__class__, self).__init__()
         self.error     = error
         self.cancel_run = True
     

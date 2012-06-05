@@ -407,7 +407,7 @@ class TestMeasureImageQuality(unittest.TestCase):
                      (f_std, np.std(data)))
         for feature, expected_value in expected:
             value = m.get_experiment_measurement(feature)
-            self.assertEqual(value, expected_value)
+            self.assertAlmostEqual(value, expected_value)
     
     def test_03_03_experiment_threshold_cycle_skipping(self):
         """Regression test of IMG-970: can you handle nulls in measurements?"""
@@ -447,7 +447,7 @@ class TestMeasureImageQuality(unittest.TestCase):
                      (f_std, np.std(data[mask])))
         for feature, expected_value in expected:
             value = m.get_experiment_measurement(feature)
-            self.assertEqual(value, expected_value)
+            self.assertAlmostEqual(value, expected_value)
 
     def test_03_04_use_all_thresholding_methods(self):
         workspace = self.make_workspace(np.zeros((100,100)))

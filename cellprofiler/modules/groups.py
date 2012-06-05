@@ -260,7 +260,7 @@ class Groups(cpm.CPModule):
         
         setting - the setting that was changed
         '''
-        return setting in self.settings
+        return setting in self.settings()
     
     def is_load_module(self):
         '''Marks this module as a module that affects the image sets
@@ -304,7 +304,7 @@ class Groups(cpm.CPModule):
         # increasing group number, then increasing group index.
         #
         new_image_numbers = np.zeros(np.max(image_numbers) + 1, int)
-        new_image_numbers[image_numbers[order]] = np.arange(len(image_numbers))
+        new_image_numbers[image_numbers[order]] = np.arange(len(image_numbers))+1
         m.reorder_image_measurements(new_image_numbers)
         return True
         

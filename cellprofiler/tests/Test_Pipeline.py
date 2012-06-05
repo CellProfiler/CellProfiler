@@ -555,7 +555,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             self.assertTrue(m_in == m_out)
         my_experiment_measurement_out = \
             measurements.get_experiment_measurement("expt")
-        self.assertEqual(my_experiment_measurement, my_experiment_measurement_out)
+        self.assertAlmostEqual(my_experiment_measurement, my_experiment_measurement_out)
             
         fd.seek(0)
         pipeline = cpp.Pipeline()

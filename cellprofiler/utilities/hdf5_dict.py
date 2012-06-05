@@ -1250,7 +1250,7 @@ class VStringArray(object):
     in order by using it as an iterator. The iterator is a thread-safe
     snapshot of the array at the time of the call.
     '''
-    VS_NULL = np.iinfo(np.uint32).max
+    VS_NULL = np.iinfo(np.int32).max
     
     @staticmethod
     def has_vstring_array(group):
@@ -1275,7 +1275,7 @@ class VStringArray(object):
             self.index = group.create_dataset(
                 "index", 
                 shape = (0, 2),
-                dtype = np.uint32,
+                dtype = np.int32,
                 shuffle = True,
                 chunks = (256, 2),
                 maxshape = (None, 2))

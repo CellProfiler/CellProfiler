@@ -32,7 +32,9 @@ def convex_hull_ijv(in_labels_ijv,
     # the output.  The sorting allocates a new copy, and it's guaranteed to be
     # large enough for the convex hulls.
     cdef np.ndarray[DTYPE_t, ndim=2] labels_ijv = in_labels_ijv.astype(np.int32)[np.lexsort(in_labels_ijv.T), :]
+    assert np.all(labels_ijv >= 0), "All ijv values must be >=0"
     cdef np.ndarray[DTYPE_t, ndim=1] indexes = np.asarray(indexes_in, np.int32).ravel()
+    assert np.all(indexes >= 0), "All indexes must be >= 0"
     # declaration of local variables
     cdef int num_indexes, max_i, max_j, max_label, pixidx, outidx, cur_req, cur_label
     cdef int num_vertices, start_j, cur_pix_i, cur_pix_j, end_j, need_last_upper_point

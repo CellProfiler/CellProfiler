@@ -41,6 +41,8 @@ import traceback
 import sys
 
 ID_FILE_OPEN_WORKSPACE = wx.NewId()
+ID_FILE_SAVE_AS_WORKSPACE = wx.NewId()
+ID_FILE_NEW_WORKSPACE = wx.NewId()
 ID_FILE_LOAD_PIPELINE=wx.NewId()
 ID_FILE_URL_LOAD_PIPELINE = wx.NewId()
 ID_FILE_EXIT=wx.NewId()
@@ -176,7 +178,12 @@ class CPFrame(wx.Frame):
 
         """
         self.__menu_file = wx.Menu()
-        self.__menu_file.Append(ID_FILE_OPEN_WORKSPACE, "Open workspace", "Open a workspace from a .cpi file")
+        self.__menu_file.Append(ID_FILE_NEW_WORKSPACE, "New workspace...", 
+                                "Create a blank workspace and .cpi file")
+        self.__menu_file.Append(ID_FILE_OPEN_WORKSPACE, "Open workspace...",
+                                "Open a workspace from a .cpi file")
+        self.__menu_file.Append(ID_FILE_SAVE_AS_WORKSPACE, "Save workspace as...",
+                                "Create a copy of your workspace as a new .cpi file and start using the new file as your workspace")
         self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...\tctrl+O','Load a pipeline from a .MAT or .CP file')
         self.__menu_file.Append(ID_FILE_URL_LOAD_PIPELINE, 'Load Pipeline from URL', 'Load a pipeline from the web')
         self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline\tctrl+shift+S','Save changes to a pipeline')
@@ -599,6 +606,7 @@ All rights reserved."""
         self.__directory_view = DirectoryView(self.__file_list_panel)
         self.__pipeline_controller.attach_to_directory_view(self.__directory_view)
         self.__pipeline_controller.start()
+        self.__module_view.start()
 
     def __do_layout(self):
         width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)

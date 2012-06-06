@@ -19,6 +19,7 @@ import numpy
 import wx
 import os
 import re
+import shutil
 import sys
 import Queue
 import cpframe
@@ -89,6 +90,10 @@ class PipelineController:
         assert isinstance(frame, wx.Frame)
         frame.Bind(wx.EVT_MENU, self.__on_open_workspace, 
                    id = cpframe.ID_FILE_OPEN_WORKSPACE)
+        frame.Bind(wx.EVT_MENU, self.__on_new_workspace,
+                   id = cpframe.ID_FILE_NEW_WORKSPACE)
+        frame.Bind(wx.EVT_MENU, self.__on_save_as_workspace,
+                   id = cpframe.ID_FILE_SAVE_AS_WORKSPACE)
         wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_URL_LOAD_PIPELINE, self.__on_url_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
@@ -143,8 +148,8 @@ class PipelineController:
         else:
             self.do_create_workspace(workspace_file)
             self.__pipeline.clear()
-        self.__workspace.file_list.add_notification_callback(
-            self.on_file_list_changed)
+        self.__workspace.add_notification_callback(
+            self.on_workspace_event)
     
     def attach_to_pipeline_list_view(self,pipeline_list_view, movie_viewer):
         """Glom onto events from the list box with all of the module names in it
@@ -254,6 +259,17 @@ class PipelineController:
         if not load_pipeline:
             self.__workspace.measurements.clear()
             self.__workspace.save_pipeline_to_measurements()
+            
+    def __on_new_workspace(self, event):
+        '''Handle the New Workspace menu command'''
+        with wx.FileDialog(
+            self.__frame,
+            "Choose the name for the new workspace file",
+            wildcard = "CellProfiler workspace (*.cpi)|*.cpi",
+            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            dlg.Directory = cpprefs.get_default_output_directory()
+            if dlg.ShowModal() == wx.ID_OK:
+                self.do_create_workspace(dlg.Path)
         
     def do_create_workspace(self, filename):
         '''Create a new workspace file with the given name'''
@@ -262,6 +278,49 @@ class PipelineController:
         self.__pipeline.clear_image_plane_details()
         self.__workspace.measurements.clear()
         self.__workspace.save_pipeline_to_measurements()
+        
+    def __on_save_as_workspace(self, event):
+        '''Handle the Save Workspace As menu command'''
+        with wx.FileDialog(
+            self.__frame,
+            "Save workspace file as",
+            wildcard = "CellProfiler workspace (*.cpi)|*.cpi",
+            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            dlg.Directory = cpprefs.get_default_output_directory()
+            if dlg.ShowModal() == wx.ID_OK:
+                self.do_save_as_workspace(dlg.Path)
+                
+    def do_save_as_workspace(self, filename):
+        '''Create a new copy of the workspace and change to it'''
+        import h5py
+        old_filename = self.__workspace.measurements.hdf5_dict.filename
+        try:
+            #
+            # Note: shutil.copy and similar don't seem to work under Windows.
+            #       I suspect that there's some file mapping magic that's
+            #       causing problems because I found some internet postings
+            #       where people tried to copy database files and failed.
+            #       If you're thinking, "He didn't close the file", I did.
+            #       shutil.copy creates a truncated file if you use it.
+            #
+            hdf5src = self.__workspace.measurements.hdf5_dict.hdf5_file
+            hdf5dest = h5py.File(filename, mode="w")
+            for key in hdf5src:
+                obj = hdf5src[key]
+                if isinstance(obj, h5py.Dataset):
+                    hdf5dest[key] = obj.value
+                else:
+                    hdf5src.copy(hdf5src[key], hdf5dest, key)
+            for key in hdf5src.attrs:
+                hdf5dest.attrs[key] = hdf5src.attrs[key]
+            hdf5dest.close()
+            self.__workspace.load(filename, False)
+            cpprefs.set_workspace_file(filename)
+        except Exception, e:
+            display_error_dialog(self.__frame, e, self.__pipeline,
+                                 "Failed to save workspace",
+                                 continue_only = True)
+            self__workspace.load(old_filename, False)
         
     def __on_load_pipeline(self,event):
         if self.__dirty_pipeline:
@@ -547,9 +606,10 @@ class PipelineController:
                 self.__workspace.invalidate_image_set()
             self.__workspace.save_pipeline_to_measurements()
             
-    def on_file_list_changed(self):
+    def on_workspace_event(self, event):
         '''Workspace's file list changed. Invalidate the workspace cache.'''
-        self.__workspace.invalidate_image_set()
+        if isinstance(event, cpw.Workspace.WorkspaceFileListNotification):
+            self.__workspace.invalidate_image_set()
         
     def on_load_exception_event(self, event):
         '''Handle a pipeline load exception'''

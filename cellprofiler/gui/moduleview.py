@@ -254,7 +254,6 @@ class ModuleView:
 
         self.__pipeline = pipeline
         self.__as_datatool = as_datatool
-        pipeline.add_listener(self.__on_pipeline_event)
         self.__listeners = []
         self.__value_listeners = []
         self.__module = None
@@ -269,6 +268,16 @@ class ModuleView:
             self.__startup_blurb = None
         wx.EVT_SIZE(self.top_panel, self.on_size)
         wx.EVT_IDLE(self.top_panel, self.on_idle)
+        
+    def start(self):
+        '''Start the module view
+        
+        Start the module view after the pipeline and workspace have been
+        properly initialized.
+        '''
+        self.__pipeline.add_listener(self.__on_pipeline_event)
+        self.__workspace.add_notification_callback(
+            self.__on_workspace_event)
 
     def skip_event(self, event):
         event.Skip(False)
@@ -1765,6 +1774,16 @@ class ModuleView:
         
     def on_value_change(self, setting, control, proposed_value, event, 
                         timeout = None):
+        '''Handle a change in value to a setting
+        
+        setting - the setting that changed
+        control - the WX control whose UI signalled the change
+        proposed_value - the proposed new value for the setting
+        event - the UI event signalling the change
+        timeout - None = reset view immediately, False = don't reset view
+                  otherwise the # of milliseconds to wait before
+                  refresh.
+        '''
         setting_edited_event = SettingEditedEvent(setting,
                                                   self.__module, 
                                                   proposed_value,
@@ -1774,7 +1793,7 @@ class ModuleView:
             self.__module.on_setting_changed(setting, self.__pipeline)
         if timeout is None:
             self.reset_view() # use the default timeout
-        else:
+        elif timeout is not False:
             self.reset_view(timeout)
     
     def fit_ctrl(self, ctrl):
@@ -1819,6 +1838,17 @@ class ModuleView:
             if (self.__module is not None and 
                 event.module_num == self.__module.module_num):
                 self.clear_selection()
+                
+    def __on_workspace_event(self, event):
+        import cellprofiler.workspace as cpw
+        if isinstance(event, (cpw.Workspace.WorkspaceLoadedEvent,
+                              cpw.Workspace.WorkspaceCreatedEvent)):
+            # Detach and reattach the current module to get it reacclimated
+            # to the current workspace and reselect
+            if self.__module is not None:
+                self.__module.on_deactivated()
+                self.__module.on_activated(self.__workspace)
+                self.do_reset()
     
     def __on_do_something(self, event, setting):
         setting.on_event_fired()
@@ -2092,10 +2122,10 @@ class FilterPanelController(object):
             return indexes[0]
         return None
     
-    def on_value_change(self, event, new_text):
+    def on_value_change(self, event, new_text, timeout=None):
         if not self.inside_update:
             self.module_view.on_value_change(
-                self.v, self.panel, new_text, event)
+                self.v, self.panel, new_text, event, timeout)
             
     def make_delete_button(self, address):
         name = self.remove_button_name(address)
@@ -2269,7 +2299,8 @@ class FilterPanelController(object):
                             else sequence[-1].subpredicates[0])
         sequence[index] = event.GetString()
         new_text = self.v.build_string(structure)
-        self.on_value_change(event, new_text)
+        self.on_value_change(event, new_text,
+                             timeout = None if self.v.reset_view else False)
 
     def make_anyall_ctrl(self, address):
         anyall = wx.Choice(self.panel, -1, choices = self.any_all_choices(),
@@ -2538,7 +2569,6 @@ class FileCollectionDisplayController(object):
         v.set_update_function(self.request_update)
         self.needs_update = False
         self.modpath_to_item = {}
-        self.latency = 500 # latency between update request and update
         self.request_update()
         
     def __del__(self):

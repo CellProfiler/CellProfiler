@@ -81,8 +81,10 @@ class Workspace(object):
         self.__disposition = DISPOSITION_CONTINUE
         self.__disposition_listeners = []
         self.__in_background = False # controls checks for calls to create_or_find_figure()
-        self.__file_list = (None if measurements is None 
-                            else HDF5FileList(measurements.hdf5_dict.hdf5_file))
+        self.__file_list = None
+        if measurements is not None:
+            self.set_file_list(HDF5FileList(measurements.hdf5_dict.hdf5_file))
+        self.__notification_callbacks = []
 
         self.interaction_handler = None
 
@@ -161,7 +163,10 @@ class Workspace(object):
         workspace. This lets a single, sometimes very bulky file list be
         used without copying it to a measurements file.
         """
+        if self.__file_list is not None:
+            self.__file_list.remove_notification_callback(self.__on_file_list_changed)
         self.__file_list = file_list
+        self.__file_list.add_notification_callback(self.__on_file_list_changed)
     
     file_list = property(get_file_list)
 
@@ -323,13 +328,11 @@ class Workspace(object):
             
         self.__measurements = cpmeas.Measurements(
             filename = filename, mode = "r+")
-        if self.__file_list is None:
-            file_list_callbacks = []
-        else:
-            file_list_callbacks = self.__file_list.get_notification_callbacks()
+        if self.__file_list is not None:
+            self.__file_list.remove_notification_callback(
+                self.__on_file_list_changed)
         self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
-        for callback in file_list_callbacks:
-            self.__file_list.add_notification_callback(callback)
+        self.__file_list.add_notification_callback(self.__on_file_list_changed)
         if load_pipeline and self.__measurements.has_feature(
             cpmeas.EXPERIMENT, M_PIPELINE):
             pipeline_txt = self.__measurements.get_experiment_measurement(
@@ -342,6 +345,7 @@ class Workspace(object):
             self.pipeline.savetxt(fd, save_image_plane_details = False)
             self.__measurements.add_experiment_measurement(
                 M_PIPELINE, fd.getvalue())
+        self.notify(self.WorkspaceLoadedEvent(self))
         
     def create(self, filename):
         '''Create a new workspace file
@@ -353,7 +357,12 @@ class Workspace(object):
             self.measurements.close()
         self.__measurements = Measurements(filename = filename,
                                            mode = "w")
+        if self.__file_list is not None:
+            self.__file_list.remove_notification_callback(
+                self.__on_file_list_changed)
         self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
+        self.__file_list.add_notification_callback(self.__on_file_list_changed)
+        self.notify(self.WorkspaceCreatedEvent(self))
         
     def save_pipeline_to_measurements(self):
         from cellprofiler.pipeline import M_PIPELINE
@@ -405,6 +414,56 @@ class Workspace(object):
                 if no_image_set_list:
                     self.__image_set_list = None
         return True
+    
+    def add_notification_callback(self, callback):
+        '''Add a callback that will be called on a workspace event
+        
+        Workspace events are load events, and file list events.
+        
+        callback - a function to be called when an event occurs. The signature
+        is: callback(event)
+        '''
+        self.__notification_callbacks.append(callback)
+        
+    def remove_notification_callback(self, callback):
+        self.__notification_callbacks.remove(callback)
+        
+    def notify(self, event):
+        for callback in self.__notification_callbacks:
+            try:
+                callback(event)
+            except:
+                logger.error("Notification callback threw an exception",
+                             exc_info = 1)
+                
+    def __on_file_list_changed(self):
+        self.notify(self.WorkspaceFileListNotification(self))
+                
+    class WorkspaceEvent(object):
+        '''The base for any event sent to a workspace callback via Workspace.notify
+        
+        '''
+        def __init__(self, workspace):
+            self.workspace = workspace
+            
+    class WorkspaceLoadedEvent(WorkspaceEvent):
+        '''Indicates that a workspace has been loaded
+        
+        When a workspace loads, the file list changes.
+        '''
+        def __init__(self, workspace):
+            super(self.__class__, self).__init__(workspace)
+            
+    class WorkspaceCreatedEvent(WorkspaceEvent):
+        '''Indicates that a blank workspace has been created'''
+        def __init__(self, workspace):
+            super(self.__class__, self).__init__(workspace)
+            
+    class WorkspaceFileListNotification(WorkspaceEvent):
+        '''Indicates that the workspace's file list changed'''
+        def __init__(self, workspace):
+            super(self.__class__, self).__init__(workspace)
+        
 
 class DispositionChangedEvent(object):
     def __init__(self, disposition):

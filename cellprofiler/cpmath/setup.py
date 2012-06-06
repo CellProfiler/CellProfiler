@@ -64,6 +64,11 @@ def configuration():
                             include_dirs=['src']+[get_include()],
                             extra_compile_args=extra_compile_args,
                             extra_link_args=extra_link_args),
+                  Extension(name="_convex_hull",
+                            sources=["_convex_hull.pyx"],
+                            include_dirs=['src']+[get_include()],
+                            extra_compile_args=extra_compile_args,
+                            extra_link_args=extra_link_args),
                   ]
     dict = { "name":"cpmath",
              "description":"algorithms for CellProfiler",

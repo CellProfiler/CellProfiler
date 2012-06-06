@@ -14,7 +14,7 @@ cdef inline int CONVEX(int a_i, int a_j,
     cdef int ab_i, ab_j, bc_i, bc_j
     # This special case handles a U-turn at the end of the points.  Since we're
     # working with the upper/lower envelopes, this can only happen when we
-    # switch from one to the other.
+    # switch from one envelope to the other.
     if ((a_i == c_i) and (a_j == c_j)):
         return 1
     ab_i = b_i - a_i
@@ -101,7 +101,7 @@ def convex_hull_ijv(in_labels_ijv,
         #     d_j_cur = pt_j - out[out_base_idx + nemitted - 1, 1]
         #     # note that x is j, y is i
         #     return (d_j_prev * d_i_cur - d_j_cur * d_i_prev) > 0
-        # 
+        #
         # def EMIT(pt_i, pt_j, nemitted):
         #     while (nemitted >= 2) and not CONVEX(pt_i, pt_j, nemitted):
         #         # The point we emitted just before this one created a
@@ -196,44 +196,3 @@ def convex_hull_ijv(in_labels_ijv,
         reordered_idx += count
         reordered_counts[reordered_num] = count
     return reordered, reordered_counts
-
-def convex_hull(labels, indexes=None):
-    """Given a labeled image, return a list of points per object ordered by
-    angle from an interior point, representing the convex hull.s
-
-    labels - the label matrix
-    indexes - an array of label #s to be processed, defaults to all non-zero
-              labels
-
-    Returns a matrix and a vector. The matrix consists of one row per
-    point in the convex hull. Each row has three columns, the label #,
-    the i coordinate of the point and the j coordinate of the point. The
-    result is organized first by label, then the points are arranged
-    counter-clockwise around the perimeter.
-    The vector is a vector of #s of points in the convex hull per label
-    """
-    if indexes == None:
-        indexes = np.unique(labels)
-        indexes.sort()
-        indexes=indexes[indexes!=0]
-    else:
-        indexes=np.array(indexes)
-    if len(indexes) == 0:
-        return np.zeros((0,2),int),np.zeros((0,),int)
-    #
-    # Reduce the # of points to consider
-    #
-    outlines = labels
-    coords = np.argwhere(outlines > 0).astype(np.int32)
-    if len(coords)==0:
-        # Every outline of every image is blank
-        return (np.zeros((0,3),int),
-                np.zeros((len(indexes),),int))
-
-    i = coords[:,0]
-    j = coords[:,1]
-    labels_per_point = labels[i,j]
-    pixel_labels = np.column_stack((i,j,labels_per_point))
-    return convex_hull_ijv(pixel_labels, indexes)
-
-

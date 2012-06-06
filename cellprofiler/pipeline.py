@@ -2153,7 +2153,7 @@ class Pipeline(object):
             
     def clear_image_plane_details(self):
         '''Remove the image plane details from the pipeline'''
-        self.image_plane_details = []
+        self.__image_plane_details = []
             
     def remove_image_plane_url(self, url):
         pos = bisect.bisect_left(self.image_plane_details, url)

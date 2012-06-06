@@ -304,6 +304,8 @@ class NamesAndTypes(cpm.CPModule):
                     logger.info("Skipping image set %s - no or multiple matches for some image" % repr(keys))
                     continue
                 image_sets.append((keys, ipds))
+            if len(image_sets) == 0:
+                return False
             
             image_numbers = range(1, len(image_sets) + 1)
             m.add_all_measurements(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, 

@@ -623,7 +623,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
         module.object_groups[0].file_name.value = "badfile"
         module.object_groups[0].wants_automatic_file_name.value = True
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurements(mode="memory")
         m.add_experiment_measurement("my_measurement", "Hello, world")
         m.add_experiment_measurement("my_other_measurement","Goodbye")
         image_set_list = cpi.ImageSetList()
@@ -664,7 +664,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         module.object_groups[0].name.value = cpmeas.EXPERIMENT
         module.object_groups[0].file_name.value = file_name
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurements(mode="memory")
         m.add_experiment_measurement("my_measurement", "Hello, world")
         m.add_experiment_measurement("Exit_Status", "Complete")
         image_set_list = cpi.ImageSetList()
@@ -855,7 +855,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         module.object_groups[0].name.value = "my_object"
         module.object_groups[0].file_name.value = path
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurements(mode="memory")
         np.random.seed(0)
         mvalues = np.random.uniform(size=(2,3))
         for i in range(3):
@@ -1140,7 +1140,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = "my_file.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurements(mode="memory")
         m.add_image_measurement("my_measurement", "Hello, world")
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
@@ -1180,7 +1180,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         module.object_groups[0].name.value = cpmeas.IMAGE
         module.object_groups[0].file_name.value = "my_file.csv"
         module.object_groups[0].wants_automatic_file_name.value = False
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurements(mode="memory")
         metadata_value = u"\u2211(Hello, world)"
         m.add_image_measurement("my_measurement", metadata_value)
         image_set_list = cpi.ImageSetList()
@@ -1270,7 +1270,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         module.wants_aggregate_means.value = False
         module.wants_aggregate_medians.value = False
         module.wants_aggregate_std.value = False
-        m = cpmeas.Measurements()
+        m = cpmeas.Measurements(mode="memory")
         m.add_image_measurement("Count_my_objects", 6)
         np.random.seed(0)
         data = np.random.uniform(size=(6,))

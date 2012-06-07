@@ -61,3 +61,28 @@ def fetch_external_dependencies(overwrite=False):
                 sys.stderr.write(traceback.format_exc())
                 sys.stderr.write("Could not fetch external binary dependency %s from %s.  Some functionality may be missing.  You might try installing it by hand.\n"%(path, url))
                 
+if __name__=="__main__":
+    import optparse
+    usage = """Fetch external dependencies from internet
+usage: %prog [options]"""
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option("-m", "--missing-only",
+                      action="store_const",
+                      const=False,
+                      dest="overwrite",
+                      default=False,
+                      help="Download external dependency only if missing")
+    parser.add_option("-o", "--overwrite",
+                      action="store_const",
+                      const=True,
+                      dest="overwrite",
+                      help="Download external dependency if hash doesn't match")
+    parser.add_option("-f", "--fail",
+                      action="store_const",
+                      const="fail",
+                      dest="overwrite",
+                      help="Fail if a dependency exists and its hash is wrong")
+    options, args = parser.parse_args()
+    print "Fetching external dependencies..."
+    fetch_external_dependencies(options.overwrite)
+    print "Fetch complete"

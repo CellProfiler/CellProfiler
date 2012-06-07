@@ -131,6 +131,7 @@ parser.add_option("--ij-plugins-directory",
 
 parser.add_option("--jvm-heap-size",
                   dest="jvm_heap_size",
+                  default="512m",
                   help=("This is the amount of memory reserved for the "
                         "Java Virtual Machine (similar to the java -Xmx switch)."
                         "Example formats: 512000k, 512m, 1g"))
@@ -396,7 +397,7 @@ try:
     if options.show_gui:
         import cellprofiler.gui.cpframe as cpgframe
         from subimager.client import start_subimager, stop_subimager
-        start_subimager()
+        start_subimager(options.jvm_heap_size)
         if options.pipeline_filename:
             try:
                 App.frame.pipeline.load(os.path.expanduser(options.pipeline_filename))
@@ -413,7 +414,7 @@ try:
         del App  # to allow GC to clean up Measurements, etc.
     elif options.run_pipeline: # this includes distributed workers
         from subimager.client import start_subimager, stop_subimager
-        start_subimager()
+        start_subimager(options.jvm_heap_size)
         if (options.pipeline_filename is not None) and (not options.pipeline_filename.lower().startswith('http')):
             options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
         if options.worker_mode_URL is not None:

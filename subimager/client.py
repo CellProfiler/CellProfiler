@@ -92,7 +92,7 @@ def connect():
 #     whatever text comes from the process.
 #
 ##############################
-def start_subimager():
+def start_subimager(jvm_heap_size="512m"):
     '''Start the subimager subprocess if it is not yet running'''
     global subprocess_thread
 
@@ -102,13 +102,14 @@ def start_subimager():
         return
 
     subprocess_thread = threading.Thread(target=run_subimager,
-                                         name="Subimager")
+                                         name="Subimager",
+                                         args = (jvm_heap_size,))
     subprocess_thread.daemon = True
     subprocess_thread.start()
     init_semaphore.acquire()  # wait for subprocess thread to release
     init_semaphore.release()
 
-def run_subimager():
+def run_subimager(jvm_heap_size):
     '''Thread function for controlling the subimager process'''
 
     global port, init_semaphore, stop_semaphore, subimager_process
@@ -125,6 +126,7 @@ def run_subimager():
             __java_executable,
             "-cp",
             __jar_path,
+            "-Xmx%s" % jvm_heap_size,
             "org.cellprofiler.subimager.Main",
             "--deadman-server=%s:%d" % (deadman_addr, deadman_port)
         ]
@@ -144,7 +146,7 @@ def run_subimager():
         stdout_thread.daemon = True
         stdout_thread.start()
     except:
-        logging.error("Could not start subimager server!", exc_info=True)
+        logging.error("Could not start subimager server!", exc_info=1)
         raise
     finally:
         # don't hang parent thread.

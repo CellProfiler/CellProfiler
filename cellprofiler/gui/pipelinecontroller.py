@@ -442,9 +442,8 @@ class PipelineController:
         try:
             if dlg.ShowModal() == wx.ID_OK:
                 try:
-                    fd = open(dlg.Path, "w")
-                    self.__pipeline.write_image_set(fd)
-                    fd.close()
+                    self.__workspace.refresh_image_set()
+                    self.__workspace.measurements.write_image_sets(dlg.Path)
                 except Exception, e:
                     display_error_dialog(self.__frame, e, self.__pipeline,
                                          "Failed to export image sets",

@@ -869,6 +869,68 @@ class TestMeasurements(unittest.TestCase):
                     np.testing.assert_almost_equal(expected, value)
         finally:
             del m
+            
+    def test_19_01_load_image_sets(self):
+        expected_features = ["GroupNumber", "GroupIndex",
+                             "URL_DNA", "PathName_DNA", "FileName_DNA"]
+        expected_values = [[1,1,"file://foo/bar.tif","/foo","bar.tif"],
+                           [1,2,"file://bar/foo.tif","/bar","foo.tif"],
+                           [2,1,"file://baz/foobar.tif","/baz","foobar.tif"]]
+
+        data = """"GroupNumber","GroupIndex","URL_DNA","PathName_DNA","FileName_DNA"
+1,1,"file://foo/bar.tif","/foo","bar.tif"
+1,2,"file://bar/foo.tif","/bar","foo.tif"
+2,1,"file://baz/foobar.tif","/baz","foobar.tif"
+"""
+        m = cpmeas.Measurements()
+        try:
+            m.load_image_sets(StringIO(data))
+            features = m.get_feature_names(cpmeas.IMAGE)
+            self.assertItemsEqual(features, expected_features)
+            for i, row_values in enumerate(expected_values):
+                image_number = i+1
+                for value, feature_name in zip(row_values, expected_features):
+                    self.assertEqual(value, m.get_measurement(
+                        cpmeas.IMAGE, feature_name, image_set_number=image_number))
+        finally:
+            m.close()
+    
+    def test_19_02_write_and_load_image_sets(self):
+        m = cpmeas.Measurements()
+        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, [1, 1, 2])
+        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, [1, 2, 1])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "URL_DNA", 
+            ["file://foo/bar.tif", "file://bar/foo.tif", "file://baz/foobar.tif"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "PathName_DNA", ["/foo", "/bar", "/baz"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "FileName_DNA", ["bar.tif", "foo.tif", "foobar.tif"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "Metadata_test",
+            ["quotetest\"", "backslashtest\\", "unicodeescapetest\\u0384"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "Metadata_testunicode",
+            [u"quotetest\"", u"backslashtest\\", u"unicodeescapetest\u0384"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "Metadata_testnull",
+            ["Something", None, "SomethingElse"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "Dont_copy", ["do", "not", "copy"])
+        fd = StringIO()
+        m.write_image_sets(fd)
+        fd.seek(0)
+        mdest = cpmeas.Measurements()
+        mdest.load_image_sets(fd)
+        expected_features = [
+            feature_name for feature_name in m.get_feature_names(cpmeas.IMAGE)
+            if feature_name != "Dont_copy"]
+        self.assertItemsEqual(expected_features, mdest.get_feature_names(cpmeas.IMAGE))
+        image_numbers = m.get_image_numbers()
+        for feature_name in expected_features:
+            src = m.get_measurement(cpmeas.IMAGE, feature_name, image_numbers)
+            dest = mdest.get_measurement(cpmeas.IMAGE, feature_name, image_numbers)
+            self.assertSequenceEqual(src.tolist(), dest.tolist())
         
 if __name__ == "__main__":
     unittest.main()

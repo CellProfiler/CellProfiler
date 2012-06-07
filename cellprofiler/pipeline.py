@@ -2895,114 +2895,6 @@ class Pipeline(object):
                          (", Image (optional) = %s" % image) +
                          (", Scale (optional) = %s" % scale))
 
-    def write_image_set(self, fd):
-        '''Write an image set to a file
-        
-        fd - file descriptor to write to
-        
-        '''
-        if self.has_legacy_loaders():
-            return self.write_legacy_image_set(fd)
-
-        key_list, iscds, metadata_key_names, image_sets, groupings = \
-            self.get_grouped_image_sets()
-        
-        writer = csv.writer(fd)
-        header = []
-        metadata_keys = None
-        #
-        # Take a pass through the ipds to find the keys that every image
-        # set has
-        #
-        for image_set in image_sets.values():
-            image_set_metadata = {}
-            not_good = set()
-            for ipd in image_set:
-                for key, value in ipd.metadata.iteritems():
-                    if image_set_metadata.has_key(key):
-                        if image_set_metadata[key] != value:
-                            not_good.add(key)
-                    else:
-                        image_set_metadata[key] = value
-            image_set_metadata = set(image_set_metadata.keys()).difference(not_good)
-            if metadata_keys is None:
-                metadata_keys = image_set_metadata
-            else:
-                metadata_keys.intersection_update(image_set_metadata)
-        metadata_keys = sorted(metadata_keys)
-        
-        header = ["_".join([cpmeas.C_METADATA, k]) for k in metadata_keys]
-        header += [cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX]
-        for iscd in iscds:
-            if iscd.channel_type == self.ImageSetChannelDescriptor.CT_OBJECTS:
-                cats = [cpmeas.C_OBJECTS_URL, cpmeas.C_OBJECTS_PATH_NAME,
-                        cpmeas.C_OBJECTS_FILE_NAME, cpmeas.C_OBJECTS_SERIES,
-                        cpmeas.C_OBJECTS_FRAME, cpmeas.C_OBJECTS_CHANNEL]
-            else:
-                cats = [cpmeas.C_URL, cpmeas.C_PATH_NAME, cpmeas.C_FILE_NAME,
-                        cpmeas.C_SERIES, cpmeas.C_FRAME, cpmeas.C_CHANNEL]
-            header += [ '_'.join( [cat, iscd.name] ) for cat in cats]
-        writer.writerow(header)
-        
-        for group_number_idx, grouping_key in enumerate(
-            sorted(groupings.keys())):
-            group_number = group_number_idx + 1
-            image_set_keys = sorted(groupings[grouping_key])
-            for group_index, image_set_key in enumerate(image_set_keys):
-                image_set = image_sets[image_set_key]
-                image_set_metadata = {}
-                for ipd in image_set:
-                    for metadata_key in metadata_keys:
-                        if ipd.metadata.has_key(metadata_key):
-                            image_set_metadata[metadata_key] = \
-                                ipd.metadata[metadata_key]
-                            
-                row = [image_set_metadata[k] for k in metadata_keys]
-                row += [str(group_number), str(group_index)]
-                for ipd in image_set:
-                    assert isinstance(ipd, ImagePlaneDetails)
-                    path = ipd.path
-                    url = ipd.url
-                    row += [ url ]
-                    row += list(os.path.split(path))
-                    row += [str(ipd.series), str(ipd.index), str(ipd.channel)]
-                writer.writerow(row)
-                
-    def write_legacy_image_set(self, fd):
-        '''Get image sets from legacy pipelines'''
-        measurements = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
-        for module in self.modules():
-            if not module.module_name in self.LEGACY_LOAD_MODULES:
-                continue
-            workspace = cpw.Workspace(self, module, None, None,
-                                      measurements, image_set_list)
-            if not module.prepare_run(workspace):
-                raise ValueError("Failed to get compile image sets")
-            
-        key_names, group_list = self.get_groupings(workspace)
-
-        header = [cpmeas.IMAGE_NUMBER, cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX]
-        features = [ ftr for ftr in measurements.get_feature_names(cpmeas.IMAGE)
-                     if ftr not in (cpmeas.IMAGE_NUMBER, 
-                                    cpmeas.GROUP_NUMBER, 
-                                    cpmeas.GROUP_INDEX)] 
-        header += features
-        fd.write((u'"'+u'","'.join(header) + u'"\n').encode('utf-8'))
-    
-        current_image_number = 1
-        for group_number, (group_key, image_numbers) in enumerate(group_list):
-            for group_index, image_number in enumerate(image_numbers):
-                values = [unicode(current_image_number),
-                          unicode(group_number),
-                          unicode(group_index)]
-                for feature in features:
-                    values.append(measurements.get_measurement(
-                        cpmeas.IMAGE, feature, image_number))
-                fd.write((u'"'+u'","'.join(values) + u'"\n').encode('utf-8'))
-                current_image_number += 1
-        del measurements
-
     def loaders_settings_hash(self):
         '''Return a hash for the settings that control image loading, or None
         for legacy pipelines (which can't be hashed)
@@ -3086,10 +2978,11 @@ class ModuleRemovedPipelineEvent(AbstractPipelineEvent):
     """A module was removed from the pipeline
     
     """
-    def __init__(self,module_num, is_image_set_modification = False):
+    def __init__(self, module_num, is_image_set_modification = False):
         super(ModuleRemovedPipelineEvent, self).__init__(
             is_pipeline_modification = True,
             is_image_set_modification = is_image_set_modification)
+        self.module_num = module_num
         
     def event_type(self):
         return "Module deleted"

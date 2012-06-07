@@ -292,6 +292,8 @@ class NamesAndTypes(cpm.CPModule):
     
     def prepare_run(self, workspace):
         '''Write the image set to the measurements'''
+        if workspace.pipeline.in_batch_mode():
+            return True
         try:
             self.on_activated(workspace)
             m = workspace.measurements

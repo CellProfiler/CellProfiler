@@ -272,6 +272,9 @@ class Groups(cpm.CPModule):
     
     def prepare_run(self, workspace):
         '''Reorder the image sets and assign group number and index'''
+        if workspace.pipeline.in_batch_mode():
+            return True
+        
         if not self.wants_groups:
             return True
         

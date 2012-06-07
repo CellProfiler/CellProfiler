@@ -957,7 +957,63 @@ class Measurements(object):
                     except:
                         pass
                 self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
+                
+    def write_image_sets(self, fd_or_file, start = None, stop = None):
+        if isinstance(fd_or_file, basestring):
+            with open(fd_or_file, "w") as fd:
+                return self.write_image_sets(fd, start, stop)
+        
+        fd = fd_or_file
+        
+        to_save = [ GROUP_NUMBER, GROUP_INDEX]
+        to_save_prefixes = [
+            C_URL, C_PATH_NAME, C_FILE_NAME, C_SERIES, C_FRAME,
+            C_CHANNEL, C_OBJECTS_URL, C_OBJECTS_PATH_NAME,
+            C_OBJECTS_FILE_NAME, C_OBJECTS_SERIES, C_OBJECTS_FRAME,
+            C_OBJECTS_CHANNEL, C_METADATA]
+        
+        keys = []
+        image_features = self.get_feature_names(IMAGE)
+        for feature in to_save:
+            if feature in image_features:
+                keys.append(feature)
+        for prefix in to_save_prefixes:
+            for feature in image_features:
+                if feature.startswith(prefix) and feature not in keys:
+                    keys.append(feature)
+        header = "\""+"\",\"".join(keys) + "\"\n"
+        fd.write(header)
+        image_numbers = self.get_image_numbers()
+        if start is not None:
+            image_numbers = [x for x in image_numbers if x >= start]
+        if stop is not None:
+            image_numbers = [x for x in image_numbers if x <= stop]
             
+        if len(image_numbers) == 0:
+            return
+        
+        columns = [self.get_measurement(IMAGE, feature_name, 
+                                        image_set_number = image_numbers)
+                   for feature_name in keys]
+        for i, image_number in enumerate(image_numbers):
+            for j, column in enumerate(columns):
+                field = column[i]
+                if field is None:
+                    field = ""
+                elif isinstance(field, unicode):
+                    field = field.encode("unicode-escape")
+                if isinstance(field, basestring):
+                    # The unicode character for double quote
+                    field = field.replace('"', "\\u0022")
+                    field = "\"" + field + "\""
+                else:
+                    field = str(field)
+                if j > 0:
+                    fd.write(","+field)
+                else:
+                    fd.write(field)
+            fd.write("\n")
+        
     ###########################################################
     #
     # Ducktyping measurements as image sets

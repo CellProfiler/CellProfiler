@@ -248,25 +248,27 @@ class CreateBatchFiles(cpm.CPModule):
         pipeline = workspace.pipeline
         m = cpmeas.Measurements(copy = workspace.measurements,
                                 filename = h5_path)
-        assert isinstance(image_set_list, cpi.ImageSetList)
-        assert isinstance(pipeline, cpp.Pipeline)
-        assert isinstance(m, cpmeas.Measurements)
-
-        pipeline = pipeline.copy()
-        target_workspace = cpw.Workspace(pipeline, None, None, None,
-                                         m, image_set_list,
-                                         workspace.frame)
-        pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
-        bizarro_self = pipeline.module(self.module_num)
-        bizarro_self.revision.value = version_number
-        if self.wants_default_output_directory:
-            bizarro_self.custom_output_directory.value = \
-                        self.alter_path(cpprefs.get_default_output_directory())
-        bizarro_self.default_image_directory.value = \
-                    self.alter_path(cpprefs.get_default_image_directory())
-        bizarro_self.batch_mode.value = True
-        pipeline.write_pipeline_measurement(m)
-        del m
+        try:
+            assert isinstance(image_set_list, cpi.ImageSetList)
+            assert isinstance(pipeline, cpp.Pipeline)
+            assert isinstance(m, cpmeas.Measurements)
+    
+            pipeline = pipeline.copy()
+            target_workspace = cpw.Workspace(pipeline, None, None, None,
+                                             m, image_set_list,
+                                             workspace.frame)
+            pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
+            bizarro_self = pipeline.module(self.module_num)
+            bizarro_self.revision.value = version_number
+            if self.wants_default_output_directory:
+                bizarro_self.custom_output_directory.value = \
+                            self.alter_path(cpprefs.get_default_output_directory())
+            bizarro_self.default_image_directory.value = \
+                        self.alter_path(cpprefs.get_default_image_directory())
+            bizarro_self.batch_mode.value = True
+            pipeline.write_pipeline_measurement(m)
+        finally:
+            m.close()
 
     def in_batch_mode(self):
         '''Tell the system whether we are in batch mode on the cluster'''

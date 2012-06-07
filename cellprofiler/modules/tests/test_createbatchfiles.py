@@ -428,7 +428,7 @@ class TestCreateBatchFiles(unittest.TestCase):
                 mapping = module.mappings[0]
                 mapping.local_directory.value = ipath
                 self.assertFalse(pipeline.in_batch_mode())
-                measurements = cpmeas.Measurements()
+                measurements = cpmeas.Measurements(mode="memory")
                 image_set_list = cpi.ImageSetList()
                 result = pipeline.prepare_run(
                     cpw.Workspace(pipeline, None, None, None,
@@ -438,23 +438,19 @@ class TestCreateBatchFiles(unittest.TestCase):
                 self.assertFalse(module.batch_mode.value)
                 pipeline = cpp.Pipeline()
                 pipeline.add_listener(callback)
-                fd = open(hfile,'rb')
-                try:
-                    pipeline.load(fd)
-                    fd.seek(0)
-                finally:
-                    fd.close()
-                
-                measurements = cpmeas.load_measurements(hfile)
                 image_set_list = cpi.ImageSetList()
+                measurements = cpmeas.Measurements(mode="memory")
+                workspace = cpw.Workspace(pipeline, None, None, None,
+                                          cpmeas.Measurements(),
+                                          image_set_list)
+                workspace.load(hfile, True)
+                measurements = workspace.measurements
                 self.assertTrue(pipeline.in_batch_mode())
                 module = pipeline.modules()[1]
                 self.assertTrue(isinstance(module, C.CreateBatchFiles))
                 self.assertTrue(module.batch_mode.value)
                 image_numbers = measurements.get_image_numbers()
                 self.assertTrue([x == i+1 for i, x in enumerate(image_numbers)])
-                workspace = cpw.Workspace(pipeline, None, None, None,
-                                          measurements, image_set_list)
                 pipeline.prepare_run(workspace)
                 pipeline.prepare_group(workspace, {}, range(1,97))
                 for i in range(96):
@@ -465,7 +461,7 @@ class TestCreateBatchFiles(unittest.TestCase):
                         self.assertEqual(pathname, 
                                          '\\imaging\\analysis' if windows_mode
                                          else '/imaging/analysis')
-                del measurements
+                measurements.close()
             finally:
                 if os.path.exists(bfile):
                     os.unlink(bfile)

@@ -41,10 +41,10 @@ APPNAME = 'CellProfiler2.0'
 APP = ['CellProfiler.py']
 DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler', 'icons', '*.png')))]
 OPTIONS = {'argv_emulation': True,
-           'packages': ['cellprofiler', 'contrib', 'bioformats', 'imagej'],
+           'packages': ['cellprofiler', 'contrib', 'bioformats', 'imagej', 'zmq', 'subimager'],
            'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib',
                         'sqlite3', 'libtiff', 'wx.lib.intctrl', 'libtiff.'+tiff_h_name,
-                        'xml.dom.minidom', 'h5py', 'h5py.defs', 'h5py.utils', 'h5py._proxy'],
+                        'xml.dom.minidom', 'h5py', 'h5py.defs', 'h5py.utils', 'h5py._proxy', 'readline'],
            'excludes': ['pylab', 'nose', 'Tkinter', 'Cython', 'scipy.weave'],
            'resources': ['CellProfilerIcon.png'],
            'iconfile' : 'CellProfilerIcon.icns',

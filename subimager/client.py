@@ -32,10 +32,14 @@ import zlib
 
 __java_executable = "java"
 if hasattr(sys, 'frozen'):
-    __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
     if sys.platform.startswith("win"):
+        __root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
         __java_executable = os.path.join(
             __root_path, "jre", "bin", "java")
+    elif sys.platform == "darwin":
+        __root_path = os.path.abspath(os.path.split(__file__)[0])
+        __root_path = os.path.split(__root_path)[0]
+        __java_executable = "/usr/bin/java"
 else:
     __root_path = os.path.abspath(os.path.split(__file__)[0])
     __root_path = os.path.split(__root_path)[0]
@@ -106,39 +110,45 @@ def start_subimager():
 
 def run_subimager():
     '''Thread function for controlling the subimager process'''
-    
+
     global port, init_semaphore, stop_semaphore, subimager_process
     global subimager_running, subimager_deadman_socket, subimager_deadman_connection
 
-    subimager_deadman_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    subimager_deadman_socket.bind(("127.0.0.1", 0))
-    subimager_deadman_socket.listen(1)
-    deadman_addr, deadman_port = subimager_deadman_socket.getsockname()
-    logging.debug("Deadman port = %d" % deadman_port)
-    logging.debug("Starting subimager subprocess")
-    args = [
-        __java_executable,
-        "-cp",
-        __jar_path,
-        "org.cellprofiler.subimager.Main",
-        "--deadman-server=%s:%d" % (deadman_addr, deadman_port)
-    ]
-    log4j_file = os.path.join(__root_path, "subimager", "log4j.properties")
-    if os.path.exists(log4j_file):
-        log4j_file = "file:"+urllib.pathname2url(log4j_file)
-        args = args[:1] + ["-Dlog4j.configuration=%s" % log4j_file] + args[1:]
-    subimager_process = subprocess.Popen(args, 
-                         stdout=subprocess.PIPE)
-    port = int(subimager_process.stdout.readline().strip())
-    logging.debug("Subimager subprocess started on port %d" % port)
-    (subimager_deadman_connection, client_addr) = subimager_deadman_socket.accept()
-    logging.debug("Connected to deadman at %s" % str(client_addr))
-    subimager_running = True
-    stdout_thread = threading.Thread(target=run_logger,
-                                     name="SubimagerLogger")
-    stdout_thread.daemon = True
-    stdout_thread.start()
-    init_semaphore.release()
+    try:
+        subimager_deadman_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        subimager_deadman_socket.bind(("127.0.0.1", 0))
+        subimager_deadman_socket.listen(1)
+        deadman_addr, deadman_port = subimager_deadman_socket.getsockname()
+        logging.debug("Deadman port = %d" % deadman_port)
+        logging.debug("Starting subimager subprocess")
+        args = [
+            __java_executable,
+            "-cp",
+            __jar_path,
+            "org.cellprofiler.subimager.Main",
+            "--deadman-server=%s:%d" % (deadman_addr, deadman_port)
+        ]
+        log4j_file = os.path.join(__root_path, "subimager", "log4j.properties")
+        if os.path.exists(log4j_file):
+            log4j_file = "file:" + urllib.pathname2url(log4j_file)
+            args = args[:1] + ["-Dlog4j.configuration=%s" % log4j_file] + args[1:]
+        subimager_process = subprocess.Popen(args,
+                             stdout=subprocess.PIPE)
+        port = int(subimager_process.stdout.readline().strip())
+        logging.debug("Subimager subprocess started on port %d" % port)
+        (subimager_deadman_connection, client_addr) = subimager_deadman_socket.accept()
+        logging.debug("Connected to deadman at %s" % str(client_addr))
+        subimager_running = True
+        stdout_thread = threading.Thread(target=run_logger,
+                                         name="SubimagerLogger")
+        stdout_thread.daemon = True
+        stdout_thread.start()
+    except:
+        logging.error("Could not start subimager server!", exc_info=True)
+        raise
+    finally:
+        # don't hang parent thread.
+        init_semaphore.release()
     stop_semaphore.acquire()
     subimager_deadman_connection.close()
     subimager_process.wait()  # output is handled by the run_logger thread

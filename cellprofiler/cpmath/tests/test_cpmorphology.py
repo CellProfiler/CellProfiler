@@ -623,8 +623,8 @@ class TestConvexHull(unittest.TestCase):
         labels = np.random.randint(0, 1000, (1000, 1000))
         indexes = np.arange(1, 1005)  # mix in some empty indices
         np.random.shuffle(indexes)
-        new_hulls, new_counts = old_hull(labels, indexes, fast=True)
-        old_hulls, old_counts = old_hull(labels, indexes, fast=False)
+        new_hulls, new_counts = morph.convex_hull(labels, indexes, fast=True)
+        old_hulls, old_counts = morph.convex_hull(labels, indexes, fast=False)
         old_hull_ends = np.cumsum(old_counts)
         old_hull_starts = old_hull_ends - old_counts
         new_hull_ends = np.cumsum(new_counts)

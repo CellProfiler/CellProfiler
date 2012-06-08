@@ -12,17 +12,18 @@ cdef inline int CONVEX(int a_i, int a_j,
                        int b_i, int b_j,
                        int c_i, int c_j) nogil:
     cdef int ab_i, ab_j, bc_i, bc_j
-    # This special case handles a U-turn at the end of the points.  Since we're
-    # working with the upper/lower envelopes, this can only happen when we
-    # switch from one envelope to the other.
-    if ((a_i == c_i) and (a_j == c_j)):
-        return 1
     ab_i = b_i - a_i
     ab_j = b_j - a_j
     bc_i = c_i - b_i
     bc_j = c_j - b_j
     # note that x is j, y is i
-    return (ab_j * bc_i - bc_j * ab_i) > 0
+    cross = (ab_j * bc_i - bc_j * ab_i)
+    if cross > 0:
+        return 1
+    if cross < 0:
+        return 0
+    # special case for a U-turn at the end of the points
+    return ((b_j > a_j) and (b_j > c_j))
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

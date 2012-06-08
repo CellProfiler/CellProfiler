@@ -773,7 +773,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         if workspace.frame != None:
             statistics = []
             statistics.append(["Threshold","%0.3f"%(global_threshold)])
-            statistics.append(["# of identified objects",
+            statistics.append(["# of accepted objects",
                                "%d"%(object_count)])
             if object_count > 0:
                 areas = scipy.ndimage.sum(np.ones(labeled_image.shape), labeled_image, np.arange(1, object_count + 1))
@@ -1181,12 +1181,12 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             outlined_axes = my_frame.subplot(0,1, sharex=orig_axes, sharey=orig_axes)
             table_axes    = my_frame.subplot(1,1, sharex=orig_axes, sharey=orig_axes)
     
-            title = "Original image, cycle #%d"%(workspace.image_set.number + 1,)
+            title = "Input image, cycle #%d"%(workspace.image_set.number + 1,)
             my_frame.subplot_imshow_grayscale(0, 0,
                                               workspace.display_data.image.pixel_data,
                                               title)
             my_frame.subplot_imshow_labels(1, 0, workspace.display_data.labeled_image, 
-                                           self.object_name.value)
+                                           "%s objects"%self.object_name.value)
     
             if workspace.display_data.image.pixel_data.ndim == 2:
                 # Outline the size-excluded pixels in red

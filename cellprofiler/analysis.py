@@ -528,17 +528,30 @@ class AnalysisRunner(object):
         for idx in range(num):
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.
-            worker = subprocess.Popen([find_python(),
-                                       '-u',  # unbuffered
-                                       find_analysis_worker_source(),
-                                       '--work-announce',
-                                       'tcp://127.0.0.1:%d' % (work_announce_port),
-                                       '--subimager-port',
-                                       '%d' % subimager.client.port],
-                                      env=find_worker_env(),
-                                      stdin=subprocess.PIPE,
-                                      stdout=subprocess.PIPE,
-                                      stderr=subprocess.STDOUT)
+            if hasattr(sys, 'frozen') and sys.platform.startswith("win"):
+                root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+                aw_path = os.path.join(root_path, "analysis_worker")
+                worker = subprocess.Popen([aw_path,
+                                           '--work-announce',
+                                           'tcp://127.0.0.1:%d' % (work_announce_port),
+                                           '--subimager-port',
+                                           '%d' % subimager.client.port],
+                                          env=find_worker_env(),
+                                          stdin=subprocess.PIPE,
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.STDOUT)
+            else:
+                worker = subprocess.Popen([find_python(),
+                                           '-u',  # unbuffered
+                                           find_analysis_worker_source(),
+                                           '--work-announce',
+                                           'tcp://127.0.0.1:%d' % (work_announce_port),
+                                           '--subimager-port',
+                                           '%d' % subimager.client.port],
+                                          env=find_worker_env(),
+                                          stdin=subprocess.PIPE,
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.STDOUT)
 
             def run_logger(workR, widx):
                 while(True):

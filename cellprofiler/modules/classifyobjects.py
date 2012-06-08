@@ -32,11 +32,16 @@ measurement per object, based on the object's class.</p>
 <li><i>Object features:</i>
 <ul>
 <li>Single measurement: Classification (true/false) of the N<sup>th</sup> bin for the M<sup>th</sup> measurement.</li>
-<li>Two measurement: Classification of the 1<sup>st</sup> measurement versus the 2<sup>nd</sup> measurement 
+<li>Two measurement: Classification (true/false) of the 1<sup>st</sup> measurement versus the 2<sup>nd</sup> measurement 
 binned into bins above ("high") and below ("low") the cutoff.</li>
 </ul>
 </li>
 </ul>
+
+<p>Note that objects without a measurement are not counted as belonging in a classification bin and will not show up
+in the output image (shown in the module display window); in the object classification they will have a value of False
+for all bins. However, they are still counted in the total number of objects and hence are reflected in the 
+classification percentages.</p>
 
 See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> category.
 '''
@@ -505,19 +510,19 @@ class ClassifyObjects(cpm.CPModule):
              self.second_threshold)):
             values = measurements.get_current_measurement(
                 self.object_name.value, feature.value)
-            saved_values.append(values)
+            saved_values.append(values[~np.isnan(values)])
             if threshold_method == TM_CUSTOM:
                 t = threshold.value
             elif len(values) == 0:
                 t = 0
             elif threshold_method == TM_MEAN:
-                t = np.mean(values)
+                t = np.mean(values[~np.isnan(values)])
             elif threshold_method == TM_MEDIAN:
-                t = np.median(values)
+                t = np.median(values[~np.isnan(values)])
             else:
                 raise ValueError("Unknown threshold method: %s" %
                                  threshold_method.value)
-            in_high_class.append(values >= t)
+            in_high_class.append(values[~np.isnan(values)] >= t)
         feature_names = self.get_feature_name_matrix()
         num_values = len(values)
         for i in range(2):
@@ -540,6 +545,7 @@ class ClassifyObjects(cpm.CPModule):
             class_1, class_2 = in_high_class
             object_codes = class_1.astype(int)+class_2.astype(int)*2 + 1
             object_codes = np.hstack(([0], object_codes))
+            object_codes[np.hstack((False,np.isnan(values)))] = 0
             labels = object_codes[objects.segmented]
             colors = self.get_colors(4)
             image = colors[labels,:3]
@@ -635,6 +641,7 @@ class ClassifyObjects(cpm.CPModule):
             colors = self.get_colors(bin_hits.shape[1])
             object_bins = np.sum(bin_hits * th_idx,1)+1
             object_color = np.hstack(([0],object_bins))
+            object_color[np.hstack((False,np.isnan(values)))] = 0
             labels = object_color[objects.segmented]
             if group.wants_images:
                 image = colors[labels,:3]
@@ -643,9 +650,9 @@ class ClassifyObjects(cpm.CPModule):
                     cpi.Image(image, parent_image = objects.parent_image))
             
             if workspace.frame is not None:
-                workspace.display_data.bins.append(object_bins)
+                workspace.display_data.bins.append(object_bins[~np.isnan(values)])
                 workspace.display_data.labels.append(labels)
-                workspace.display_data.values.append(values)
+                workspace.display_data.values.append(values[~np.isnan(values)])
     
     def display_single_measurement(self, workspace):
         '''Display an array of single measurements'''

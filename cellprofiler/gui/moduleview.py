@@ -2807,14 +2807,16 @@ class FileCollectionDisplayController(object):
             
     def update(self):
         self.update_subtree(self.v.file_tree, self.root_item, False, [])
-        if not self.user_collapsed_a_node:
+        if (not self.user_collapsed_a_node):
             #
             # Expand all until we reach a node that has more than
             # one child = ambiguous choice of which to expand
             #
             item = self.root_item
             while self.tree_ctrl.GetChildrenCount(item, False) == 1:
-                self.tree_ctrl.Expand(item)
+                # Can't expand the invisible root for Mac
+                if sys.platform != "darwin" or item != self.root_item:
+                    self.tree_ctrl.Expand(item)
                 item, cookie = self.tree_ctrl.GetFirstChild(item)
             if self.tree_ctrl.GetChildrenCount(item, False) > 0:
                 self.tree_ctrl.Expand(item)

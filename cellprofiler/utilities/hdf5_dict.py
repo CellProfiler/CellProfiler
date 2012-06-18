@@ -25,6 +25,7 @@ import os
 import threading
 import numpy as np
 import h5py
+import sys
 import time
 import logging
 import urllib2
@@ -630,6 +631,18 @@ class HDF5FileList(object):
         self.__cache = {}
         self.__notification_list = []
         
+    class __CacheEntry(object):
+        '''A cache entry in the file list cache
+        
+        The cache entry for a directory has the URLS for the directory,
+        the HDF5 group for the entry and an array of booleans that indicate
+        whether metadata was collected per URL.
+        '''
+        def __init__(self, group, urls, has_metadata):
+            self.group = group
+            self.urls = tuple(urls)
+            self.has_metadata = has_metadata
+        
     def add_notification_callback(self, callback):
         '''Add a callback that will be called if the file list changes in any way
         
@@ -760,10 +773,12 @@ class HDF5FileList(object):
                             range(len(leaves)),
                             cmp = lambda x, y: cmp(leaves[x], leaves[y]))
                         dest.reorder(sort_order)
-                        self.__cache[tuple(parts)] = tuple([
-                            leaves[i] for i in sort_order])
                         metadata.extend([None] * len(to_add))
                         metadata.reorder(sort_order)
+                        self.__cache[tuple(parts)] = \
+                            self.__CacheEntry(
+                                g, [leaves[i] for i in sort_order],
+                                metadata.is_not_none())
                 else:
                     g1 = g.require_group(self.encode(k))
                     g1.attrs[A_CLASS] = CLASS_DIRECTORY
@@ -806,12 +821,15 @@ class HDF5FileList(object):
                     if len(order) > 0:
                         dest.reorder(order)
                         metadata.reorder(order)
-                        self.__cache[parts_tuple] = tuple(
-                            [leaves[o] for o in order])
+                        self.__cache[parts_tuple] = \
+                            self.__CacheEntry(
+                                g, [leaves[o] for o in order],
+                                metadata.is_not_none())
                     else:
                         dest.delete()
                         del g["metadata"]
-                        self.__cache[parts_tuple] = tuple()
+                        self.__cache[parts_tuple] = \
+                            self.__CacheEntry(g, [], [])
                 else:
                     encoded_key = self.encode(k)
                     g1 = g.require_group(encoded_key)
@@ -855,9 +873,9 @@ class HDF5FileList(object):
                 urls = []
                 path_tuple = tuple(path)
                 if path_tuple in self.__cache:
-                    urls += [ root + x for x in self.__cache[path_tuple]]
+                    urls += [ root + x for x in self.__cache[path_tuple].urls]
                 elif VStringArray.has_vstring_array(g):
-                    a = self.__cache[path_tuple] = tuple(VStringArray(g))
+                    a = self.cache_urls(g, path_tuple)
                     urls += [ root + x for x in a]
                 for k in sorted(g.keys()):
                     g0 = g[k]
@@ -878,6 +896,21 @@ class HDF5FileList(object):
                 urls += fn(root, g, path)
             return urls
         
+    def cache_urls(self, g, path_tuple):
+        '''Look up the array of URLs in a group and cache that list
+        
+        g - the HDF5 group
+        path_tuple - the tuple of path parts to get to g
+        
+        returns the URL list
+        '''
+        if self.__cache.has_key(path_tuple):
+            return self.__cache[path_tuple].urls
+        a = tuple(VStringArray(g))
+        is_not_none = VStringArray(g.require_group("metadata")).is_not_none()
+        self.__cache[path_tuple] = self.__CacheEntry(g, a, is_not_none)
+        return a
+        
     def list_files(self, url):
         '''List the files in the directory specified by the URL
         
@@ -888,7 +921,7 @@ class HDF5FileList(object):
         with self.lock:
             path_tuple = tuple([schema] + parts)
             if path_tuple in self.__cache:
-                return self.__cache[path_tuple]
+                return self.__cache[path_tuple].urls
             group = self.get_filelist_group()
             for part in [schema] + parts:
                 encoded_part = self.encode(part)
@@ -898,8 +931,7 @@ class HDF5FileList(object):
             
             
             if VStringArray.has_vstring_array(group):
-                result = self.__cache[path_tuple] = \
-                    tuple(VStringArray(group, self.lock))
+                result = self.cache_urls(group, path_tuple)
                 return result
             return []
         
@@ -935,6 +967,15 @@ class HDF5FileList(object):
     def get_type(self, url):
         schema, parts = self.split_url(url, is_directory=True)
         with self.lock:
+            parts_tuple = tuple([schema] + parts[:-1])
+            #
+            # Look in cache first
+            #
+            if parts_tuple in self.__cache:
+                a = self.__cache[parts_tuple].urls
+                idx = bisect.bisect_left(a, parts[-1])
+                if idx < len(a) and a[idx] == parts[-1]:
+                    return self.TYPE_FILE
             group = self.get_filelist_group()
             for part in [schema] + parts[:-1]:
                 encoded_part = self.encode(part)
@@ -946,11 +987,8 @@ class HDF5FileList(object):
                 group[last_encoded_part].attrs.get(A_CLASS, None) == CLASS_DIRECTORY):
                 return self.TYPE_DIRECTORY
             else:
-                parts_tuple = tuple([schema] + parts[:-1])
-                if parts_tuple in self.__cache:
-                    a = self.__cache[parts_tuple]
-                elif VStringArray.has_vstring_array(group):
-                    self.__cache[parts_tuple] = a = tuple(VStringArray(group))
+                if VStringArray.has_vstring_array(group):
+                    a = self.cache_urls(group, parts_tuple)
                 else:
                     return self.TYPE_NONE
                 idx = bisect.bisect_left(a, parts[-1])
@@ -965,9 +1003,10 @@ class HDF5FileList(object):
         
         metadata - the OME-XML for the file
         '''
-        group, index = self.find_url(url)
+        group, index, has_metadata = self.find_url(url)
         metadata_array = VStringArray(group.require_group("metadata"))
         metadata_array[index] = metadata
+        has_metadata[index] = True
         self.notify()
     
     def get_metadata(self, url):
@@ -980,7 +1019,9 @@ class HDF5FileList(object):
         result = self.find_url(url)
         if result is None:
             return None
-        group, index = result
+        group, index, has_metadata = result
+        if not has_metadata[index]:
+            return None
         metadata = VStringArray(group.require_group("metadata"))
         if len(metadata) <= index:
             # Metadata wasn't initialized...
@@ -993,21 +1034,30 @@ class HDF5FileList(object):
         url - the URL to find in the file list
         
         returns the HDF5 group that represents the URL's
-        directory and the index of the URL in the file list
+        directory, the index of the URL in the file list
+        and the metadata indicators for the directory
         or None if the url is not present.
         '''
         schema, parts = self.split_url(url)
         with self.lock:
-            group = self.get_filelist_group()
-            for part in [schema] + parts[:-1]:
-                encoded_part = self.encode(part)
-                if encoded_part not in group:
-                    return None
-                group = group[encoded_part]
-            a = VStringArray(group)
+            path_tuple = tuple([schema] + parts[:-1])
+            if path_tuple in self.__cache:
+                entry = self.__cache[path_tuple]
+                group = entry.group
+                a = entry.urls
+                has_metadata = entry.has_metadata
+            else:
+                group = self.get_filelist_group()
+                for part in [schema] + parts[:-1]:
+                    encoded_part = self.encode(part)
+                    if encoded_part not in group:
+                        return None
+                    group = group[encoded_part]
+                a = self.cache_urls(group, path_tuple)
+                has_metadata = self.__cache[path_tuple].has_metadata
             idx = bisect.bisect_left(a, parts[-1])
             if idx < len(a) and a[idx] == parts[-1]:
-                return (group, idx)
+                return (group, idx, has_metadata)
             return None
         
             
@@ -1068,14 +1118,7 @@ s
                         self.decode(k) for k in g1
                         if g1[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY]
                     path_tuple = tuple(path[1:] + [kd])
-                    if path_tuple in self.__cache:
-                        filenames = self.__cache[path_tuple]
-                    elif VStringArray.has_vstring_array(g1):
-                        filenames = tuple(VStringArray(g1))
-                        self.__cache[path_tuple] = filenames
-                    else:
-                        filenames = tuple()
-                        self.__cache[path_tuple] = filenames
+                    filenames = self.cache_urls(g1, path_tuple)
                     callback(root, directories, filenames)
                     if len(directories):
                         stack.append([self.encode(d) for d in directories])
@@ -1541,6 +1584,22 @@ class VStringArray(object):
             else:
                 lo = mid+1
         return lo
+    
+    def is_not_none(self, index = slice(0, sys.maxint)):
+        '''Return True for indices that are not None
+        
+        index - either a single index (in which case, we return a single
+                True / False value) or some suitable slicing construct
+                that works with Numpy arrays. Default is return an indicator
+                per element.
+        '''
+        if isinstance(index, int) or hasattr(index, "__int__"):
+            return self[index] is not None
+        
+        if len(self) == 0:
+            return []
+        iii = self.index[:, :]
+        return iii[index, 0] <= iii[index, 1]
                     
     def delete(self):
         '''Remove the vstringarray from the group'''

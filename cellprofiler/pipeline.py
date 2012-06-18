@@ -2199,6 +2199,7 @@ class Pipeline(object):
             if x.cancel_run:
                 raise instance
             
+        self.__image_plane_details = []
         self.add_image_plane_details([
             ImagePlaneDetails(url, None, None, None) for url in urls], False)
         bypass_exceptions = False
@@ -2324,6 +2325,8 @@ class Pipeline(object):
             
             d = {}
             all_image_numbers = temp_measurements.get_image_numbers()
+            if len(all_image_numbers) == 0:
+                return (iscds, metadata_key_names, {})
             metadata_columns = [
                 temp_measurements.get_measurement(
                     cpmeas.IMAGE, feature, all_image_numbers)

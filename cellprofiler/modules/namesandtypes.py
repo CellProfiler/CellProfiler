@@ -444,6 +444,7 @@ class NamesAndTypes(cpm.CPModule):
                      
     def on_activated(self, workspace):
         self.pipeline = workspace.pipeline
+        self.pipeline.load_image_plane_details(workspace)
         self.ipds = self.pipeline.get_filtered_image_plane_details(with_metadata=True)
         self.metadata_keys = set()
         for ipd in self.ipds:

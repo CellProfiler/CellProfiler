@@ -56,6 +56,7 @@ ID_FILE_STOP_ANALYSIS=wx.NewId()
 ID_FILE_RESTART = wx.NewId()
 ID_FILE_PRINT=wx.NewId()
 ID_FILE_OPEN_IMAGE=wx.NewId()
+ID_FILE_PLATEVIEWER = wx.NewId()
 ID_FILE_RUN_MULTIPLE_PIPELINES = wx.NewId()
 ID_FILE_NEW_CP=wx.NewId()
 
@@ -178,11 +179,11 @@ class CPFrame(wx.Frame):
 
         """
         self.__menu_file = wx.Menu()
-        self.__menu_file.Append(ID_FILE_NEW_WORKSPACE, "New workspace...", 
+        self.__menu_file.Append(ID_FILE_NEW_WORKSPACE, "New Workspace...", 
                                 "Create a blank workspace and .cpi file")
-        self.__menu_file.Append(ID_FILE_OPEN_WORKSPACE, "Open workspace...",
+        self.__menu_file.Append(ID_FILE_OPEN_WORKSPACE, "Open Workspace...",
                                 "Open a workspace from a .cpi file")
-        self.__menu_file.Append(ID_FILE_SAVE_AS_WORKSPACE, "Save workspace as...",
+        self.__menu_file.Append(ID_FILE_SAVE_AS_WORKSPACE, "Save Workspace As...",
                                 "Create a copy of your workspace as a new .cpi file and start using the new file as your workspace")
         self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...\tctrl+O','Load a pipeline from a .MAT or .CP file')
         self.__menu_file.Append(ID_FILE_URL_LOAD_PIPELINE, 'Load Pipeline from URL', 'Load a pipeline from the web')
@@ -191,6 +192,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear Pipeline','Remove all modules from the current pipeline')
         self.__menu_file.Append(ID_FILE_EXPORT_IMAGE_SETS, 'Export Image Sets', "Export the pipeline's image sets to a .csv file")
         self.__menu_file.Append(ID_FILE_OPEN_IMAGE, 'Open Image', 'Open an image file for viewing')
+        self.__menu_file.Append(ID_FILE_PLATEVIEWER, 'Plate Viewer', 'Open the plate viewer to inspect the images in the current workspace')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze Images\tctrl+N','Run the pipeline on the images in the image directory')
         self.__menu_file.Append(ID_FILE_STOP_ANALYSIS,'Stop Analysis','Stop running the pipeline')

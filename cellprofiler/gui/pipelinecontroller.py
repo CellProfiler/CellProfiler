@@ -77,6 +77,7 @@ class PipelineController:
         self.__groupings = None
         self.__grouping_index = None
         self.__within_group_index = None
+        self.__plate_viewer = None
         self.pipeline_list = []
 
         # interaction/display requests and exceptions from an Analysis
@@ -100,6 +101,7 @@ class PipelineController:
         wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_AS_PIPELINE, self.__on_save_as_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_EXPORT_IMAGE_SETS, self.__on_export_image_sets)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_PLATEVIEWER, self.__on_plateviewer)
         wx.EVT_MENU(frame, cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
         wx.EVT_MENU(frame, cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
         wx.EVT_MENU(frame, cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES, self.on_run_multiple_pipelines)
@@ -450,6 +452,47 @@ class PipelineController:
                                          continue_only=True)
         finally:
             dlg.Destroy()
+            
+    def __on_plateviewer(self, event):
+        import cellprofiler.gui.plateviewer as pv
+        
+        data = pv.PlateData()
+        try:
+            self.__workspace.refresh_image_set()
+        except:
+            display_error_dialog(self.__frame, e, self.__pipeline,
+                                 "Failed to make image sets",
+                                 continue_only=True)
+            return
+        m = self.__workspace.measurements
+        assert isinstance(m, cpm.Measurements)
+        
+        url_features = [f for f in m.get_feature_names(cpm.IMAGE)
+                        if f.startswith(cpm.C_URL)]
+        image_numbers = m.get_image_numbers()
+        pws = []
+        for feature in ("Plate", "Well", "Site"):
+            measurement = cpm.C_METADATA + "_" + feature
+            if m.has_feature(cpm.IMAGE, measurement):
+                pws.append(
+                    m.get_measurement(cpm.IMAGE, measurement, image_numbers))
+            else:
+                pws.append([None] * len(image_numbers))
+        plate, well, site = pws
+        
+        for url_feature in url_features:
+            channel = [url_feature[(len(cpm.C_URL)+1):]] * len(image_numbers)
+            data.add_files(
+                m.get_measurement(cpm.IMAGE, url_feature, image_numbers),
+                plate, well, site, channel_names = channel)
+        if self.__plate_viewer is None:
+            self.__pv_frame = wx.Frame(self.__frame, title = "Plate viewer")
+        else:
+            self.__pv_frame.DestroyChildren()
+        self.__plate_viewer = pv.PlateViewer(self.__pv_frame, data)
+        self.__pv_frame.Fit()
+        self.__pv_frame.Show()
+            
     
     def set_current_pipeline_path(self, pathname):
         cpprefs.set_current_pipeline_path(pathname)

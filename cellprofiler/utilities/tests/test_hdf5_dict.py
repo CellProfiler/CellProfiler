@@ -1013,6 +1013,19 @@ class TestVStringArray(unittest.TestCase):
         self.assertEqual(len(a), len(order))
         self.assertSequenceEqual([data[o] for o in order], a)
         
+    def test_14_01_is_not_none_many(self):
+        data = ["hello", None, "world"]
+        a = H5DICT.VStringArray(self.hdf_file)
+        a.set_all(data)
+        self.assertSequenceEqual(list(a.is_not_none()), [True, False, True])
+        
+    def test_14_02_is_not_none_single(self):
+        data = ["hello", None, "world"]
+        a = H5DICT.VStringArray(self.hdf_file)
+        a.set_all(data)
+        for i, expected in enumerate( [True, False, True]):
+            self.assertEqual(a.is_not_none(i), expected)
+        
 class TestStringReference(unittest.TestCase):
     def setUp(self):
         self.temp_fd, self.temp_filename = tempfile.mkstemp(".h5")

@@ -399,6 +399,7 @@ class Metadata(cpm.CPModule):
     def on_activated(self, workspace):
         self.workspace = workspace
         self.pipeline = workspace.pipeline
+        self.pipeline.load_image_plane_details(workspace)
         self.ipds = self.pipeline.get_filtered_image_plane_details()
         self.ipd_metadata_keys = []
         self.update_metadata_keys()

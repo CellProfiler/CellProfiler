@@ -155,6 +155,10 @@ class PlateViewer(object):
         self.splitter = wx.SplitterWindow(self.frame)
         self.frame.Sizer.Add(self.splitter, 1, wx.EXPAND)
         self.plate_panel = wx.Panel(self.splitter)
+        rows, cols = data.plate_layout
+        w, h = self.plate_panel.GetTextExtent(" ".join(["00"] * cols))
+        h *= rows
+        self.plate_panel.SetMinSize((w, h))
         self.canvas_panel = wx.Panel(self.splitter)
         self.canvas_panel.Sizer = wx.BoxSizer(wx.VERTICAL)
         control_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -431,7 +435,7 @@ class PlateViewer(object):
                         channel = fd[PlateData.D_CHANNEL]
                     else:
                         channel = str(c+1)
-                    img = get_image(pathname2url(fd[PlateData.D_FILENAME]))
+                    img = get_image(fd[PlateData.D_FILENAME])
                     with self.image_dict_lock:
                         if self.image_dict_generation > generation:
                             return
@@ -475,7 +479,7 @@ class PlateViewer(object):
             site_dict[k] *= img_size
         img_size = np.hstack([np.ceil(tile_dims * img_size).astype(int), [3]])
         megapicture = np.zeros(img_size, np.uint8)
-        for site, sd in self.image_dict.iteritems():
+        for site, sd in image_dict.iteritems():
             offs = site_dict[site].astype(int)
             # TO_DO - handle images that aren't scaled from 0 to 255
             for channel, image in sd.iteritems():
@@ -508,7 +512,7 @@ if __name__=="__main__":
                     style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.THICK_FRAME)
     data = PlateData()
     root = r"\\iodine-cifs\imaging_analysis\2007_09_24_BBBC_ImagingPlatform\Fibroblasts"
-    paths = [os.path.join(root, filename)
+    paths = [pathname2url(os.path.join(root, filename))
              for filename in os.listdir(root)
              if filename.startswith("plate")]
     filenames = []

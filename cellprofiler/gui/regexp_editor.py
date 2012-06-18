@@ -31,6 +31,18 @@ STYLE_MATCH = 1
 STYLE_FIRST_LABEL = 2
 STYLE_ERROR = 31
 
+RE_GUESSES = [
+    # This is the generic naming convention for fluorescent microscopy images
+    "^(?P<Plate>.*?)_(?P<Well>[A-Z]+[0-9]+)f(?P<Site>[0-9]{2})d(?P<Channel>[0-9])\\.tif$",
+    # A full-well image with a UUID at the end
+    "^(?P<Plate>.*?)_(?P<Well>[A-Z]+[0-9]+)_w(?P<Channel>[0-9])_[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\\.tif$",
+    # Plate / well / site / channel without UUID
+    "^(?P<Plate>.*?)_(?P<Well>[A-Z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Channel>[0-9])\\.tif$",
+    # Plate / well / site / channel with UUID
+    '^(?P<Plate>.*?)_(?P<Well>[A-Z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Channel>[0-9])[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\\.tif$'
+    # Please add more guesses below
+    ]
+
 class RegexpDialog(wx.Dialog):
     def __init__(self, *args,**varargs):
         varargs["title"] = "Regular expression editor"
@@ -115,14 +127,17 @@ class RegexpDialog(wx.Dialog):
         sizer.Add(line, 0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.RIGHT|wx.LEFT, 5)
 
         hsizer = wx.StdDialogButtonSizer()
+        guess_button = wx.Button(self, label="Guess")
+        hsizer.Add(guess_button, 0, wx.ALIGN_RIGHT)
         ok_button = wx.Button(self,label="Submit")
         ok_button.SetDefault()
-        hsizer.Add(ok_button,0,wx.ALIGN_RIGHT)
+        hsizer.Add(ok_button,0,wx.ALIGN_RIGHT|wx.LEFT, 5)
         cancel_button = wx.Button(self, label="Cancel")
         hsizer.Add(cancel_button,0,wx.ALIGN_RIGHT|wx.LEFT,5)
         hsizer.Realize()
         sizer.Add(hsizer,0,wx.ALIGN_RIGHT|wx.ALL,5)
         
+        self.Bind(wx.EVT_BUTTON, self.on_guess, guess_button)
         self.Bind(wx.EVT_BUTTON,self.on_ok_button, ok_button)
         self.Bind(wx.EVT_BUTTON,self.on_cancel_button, cancel_button)
         self.Bind(wx.EVT_TEXT, self.on_test_text_text_change, self.test_text_ctl)
@@ -135,6 +150,14 @@ class RegexpDialog(wx.Dialog):
         color_db = ["BLACK", "RED", "GREEN", "BLUE", "CYAN","MAGENTA","SIENNA","PURPLE"]
         color_db = [wx.TheColourDatabase.FindColour(x) for x in color_db]
         return color_db
+    
+    def on_guess(self, event):
+        sample = self.test_text_ctl.Value
+        for guess in RE_GUESSES:
+            m = re.match(guess, sample)
+            if m is not None:
+                self.regexp_display.Text = guess
+                break
     
     def on_ok_button(self, event):
         self.EndModal(1)

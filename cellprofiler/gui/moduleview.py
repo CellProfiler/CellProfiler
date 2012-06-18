@@ -2772,9 +2772,10 @@ class FileCollectionDisplayController(object):
                     break
                 any_others = any_others or len(mp_list) > 1
                 mp = mp_list[0]
-            self.status_text.Label = \
-                ("Processing " + path[-1] if isinstance(path[-1], basestring) 
-                 else path[-2])
+            if hint != cps.FileCollectionDisplay.REMOVE:
+                self.status_text.Label = \
+                    ("Processing " + path[-1] if isinstance(path[-1], basestring) 
+                     else path[-2])
             self.status_text.Update()
             if not any_others:
                 #

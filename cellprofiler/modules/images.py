@@ -44,7 +44,8 @@ class Images(cpm.CPModule):
     
     def on_walk_completed(self):
         if self.workspace is not None:
-            self.file_collection_display.update_ui()
+            self.file_collection_display.update_ui(
+                self.file_collection_display.BKGND_STOP)
             
     def on_walk_callback(self, dirpath, dirnames, filenames):
         '''Handle an iteration of file walking'''

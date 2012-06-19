@@ -22,12 +22,15 @@ class Communicable(object):
         def numpy_encoder(data):
             if isinstance(data, np.ndarray):
                 idx = len(numpy_arrays)
-                numpy_arrays.append(data)
+                numpy_arrays.append(np.ascontiguousarray(data))
                 return {'__ndarray__' : True,
                         'dtype' : str(data.dtype),
                         'shape' : data.shape,
                         'idx' : idx}
-            return zmq.utils.jsonapi.jsonmod.JSONEncoder.default(self, data)
+            if isinstance(data, np.generic):
+                # http://docs.scipy.org/doc/numpy/reference/arrays.scalars.html
+                return data.astype(object)
+            raise TypeError("%r of type %r is not JSON serializable" % (data, type(data)))
 
         json_str = zmq.utils.jsonapi.dumps(sendable_dict, default=numpy_encoder)
         socket.send_multipart(routing +

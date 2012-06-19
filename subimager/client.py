@@ -130,6 +130,9 @@ def run_subimager(jvm_heap_size):
             "org.cellprofiler.subimager.Main",
             "--deadman-server=%s:%d" % (deadman_addr, deadman_port)
         ]
+        if sys.platform.startswith('darwin'):
+            # turn off icon
+            args[1:1] = ['-Dapple.awt.UIElement=true']
         log4j_file = os.path.join(__root_path, "subimager", "log4j.properties")
         if os.path.exists(log4j_file):
             log4j_file = "file:" + urllib.pathname2url(log4j_file)

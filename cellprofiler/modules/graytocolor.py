@@ -275,7 +275,7 @@ class GrayToColor(cpm.CPModule):
         ###############
         # Draw images #
         ###############
-        if workspace.frame != None:
+        if self.show_window:
             workspace.display_data.input_image_names = input_image_names
             workspace.display_data.rgb_pixel_data = rgb_pixel_data
             

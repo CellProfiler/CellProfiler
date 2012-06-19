@@ -436,7 +436,7 @@ class SaveImages(cpm.CPModule):
             workspace, make_dirs = False, check_overwrite = False)
         
     def display(self, workspace):
-        if workspace.frame != None:
+        if self.show_window:
             if self.save_image_or_figure == IF_MOVIE:
                 return
             figure = workspace.create_or_find_figure(title="SaveImages, image cycle #%d"%(

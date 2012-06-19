@@ -354,17 +354,10 @@ class Crop(cpm.CPModule):
         #
         # Display the image
         #
-        if workspace.frame != None:
-            window_name = "CellProfiler:%s:%d"%(self.module_name,self.module_num)
-            my_frame=workspace.create_or_find_figure(
-                        title="Crop, image cycle #%d"%(workspace.measurements.image_set_number), 
-                        window_name=window_name, subplots=(2,1))
-            
-            title = "Original: %s, cycle # %d"%(self.image_name.value,
-                                      workspace.image_set.image_number)
-            my_frame.subplot_imshow_grayscale(0,0, orig_image.pixel_data, title)
-            my_frame.subplot_imshow_bw(1, 0, cropped_pixel_data,
-                                       self.cropped_image_name.value)
+        if self.show_window:
+            workspace.display_data.orig_image = orig_image
+            workspace.disaply_data.cropped_pixel_data = cropped_pixel_data
+
         if save_flag:
             d[D_FIRST_CROPPING_MASK] = mask
             d[D_FIRST_CROPPING] = cropping
@@ -384,7 +377,23 @@ class Crop(cpm.CPModule):
         feature = FF_ORIGINAL_AREA%(self.cropped_image_name.value)
         m.add_measurement('Image', feature,
                           np.array([original_image_area]))
-    
+
+    def display(self, workspace):
+        orig_image = workspace.display_data.orig_image
+        cropped_pixel_data = workspace.display_data.cropped_pixel_data
+
+        window_name = "CellProfiler:%s:%d" % (self.module_name, self.module_num)
+        my_frame = workspace.create_or_find_figure(
+                    title="Crop, image cycle #%d" % (workspace.measurements.image_set_number),
+                    window_name=window_name, subplots=(2, 1))
+
+        title = "Original: %s, cycle # %d" % (self.image_name.value,
+                                  workspace.image_set.image_number)
+        my_frame.subplot_imshow_grayscale(0, 0, orig_image.pixel_data, title)
+        my_frame.subplot_imshow_bw(1, 0, cropped_pixel_data,
+                                   self.cropped_image_name.value)
+
+
     def get_measurement_columns(self, pipeline):
         '''Return information on the measurements made during cropping'''
         return [(cpmeas.IMAGE,

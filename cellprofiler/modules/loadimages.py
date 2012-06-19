@@ -2281,7 +2281,7 @@ class LoadImages(cpmodule.CPModule):
         workspace.display_data.ratio = ratio
 
     def display(self, workspace):
-        if workspace.frame != None:
+        if self.show_window:
             if hasattr(workspace.display_data, "warning"):
                 show_warning("Images have different sizes", 
                              workspace.display_data.warning,

@@ -766,7 +766,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         outline_size_excluded_image = cellprofiler.cpmath.outline.outline(size_excluded_labeled_image)
         outline_border_excluded_image = cellprofiler.cpmath.outline.outline(border_excluded_labeled_image)
         
-        if workspace.frame != None:
+        if self.show_window:
             statistics = []
             statistics.append(["Threshold","%0.3f"%(global_threshold)])
             statistics.append(["# of identified objects",
@@ -1164,7 +1164,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
     
     def display(self, workspace):
         import cellprofiler.gui.cpfigure as cpf
-        if workspace.frame != None:
+        if self.show_window:
             """Display the image and labeling"""
             window_name = "CellProfiler:%s:%d"%(self.module_name, self.module_num)
             my_frame=cpf.create_or_find(workspace.frame, 

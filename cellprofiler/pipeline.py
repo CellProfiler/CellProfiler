@@ -1628,7 +1628,7 @@ class Pipeline(object):
                         (start_time.ctime(), image_number, 
                          module.module_name, module.module_num, 
                          delta_sec))
-                    if ((workspace.frame is not None) and
+                    if (module.show_window and
                         (exception is None)):
                         try:
                             module.display(workspace)

@@ -487,7 +487,7 @@ class FilterObjects(cpm.CPModule):
                                   sharex = figure.subplot(0,0),
                                   sharey = figure.subplot(0,0))
             
-            if workspace.frame != None:
+            if self.show_window:
                 statistics = [  ["Number of objects pre-filtering",  np.max(src_objects.segmented)],
                                 ["Number of objects post-filtering", np.max(target_objects.segmented)]]
                 figure.subplot_table(1, 1, statistics, ratio=[.8,.2])

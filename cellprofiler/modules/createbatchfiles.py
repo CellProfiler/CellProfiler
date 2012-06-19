@@ -203,7 +203,7 @@ class CreateBatchFiles(cpm.CPModule):
         pass
 
     def display(self, workspace):
-        if workspace.frame != None:
+        if self.show_window:
             if workspace.pipeline.test_mode:
                 message = 'In test mode: no batch files created'
             else:

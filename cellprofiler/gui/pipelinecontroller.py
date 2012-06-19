@@ -1125,7 +1125,7 @@ class PipelineController:
         except:
             _, exc, tb = sys.exc_info()
             display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                 message="Exception in CellProfiler interaction request")
+                                 message="Exception in handling interaction request")
         finally:
             # we need to ensure that the reply_cb gets a reply (even if it
             # being empty causes futher exceptions).
@@ -1177,11 +1177,11 @@ class PipelineController:
         if evt.module_name is not None:
             message = (("Error while processing %s:\n"
                         "%s\n\nDo you want to stop processing?") %
-                       (evt.module_name, evt.exc_message))
+                       (evt.module_name, evt))
         else:
             message = (("Error while processing (remote worker):\n"
                         "%s\n\nDo you want to stop processing?") %
-                       (evt.exc_message))
+                       (evt))
 
         disposition = display_error_dialog(None, evt.exc_type, self.__pipeline, message,
                                            remote_exc_info=(evt.exc_type, evt.exc_message, evt.exc_traceback,

@@ -697,6 +697,9 @@ class ExceptionReport(Request):
                          filename=filename,
                          line_number=line_number)
 
+    def __str__(self):
+        return "(Worker) %s: %s"% (self.exc_type, self.exc_message)
+
 class ExceptionPleaseDebugReply(Reply):
     def __init__(self, disposition, verification_hash=None):
         Reply.__init__(self, disposition=disposition, verification_hash=verification_hash)

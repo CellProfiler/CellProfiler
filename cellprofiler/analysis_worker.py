@@ -314,11 +314,13 @@ def handle_exception(zmq_context, current_server, image_set_number=None, module_
         report_socket.connect(current_server)
     except:
         return ED_STOP  # nothing to do but give up
+
     reply = ExceptionReport(image_set_number,
                             module_name,
-                            t.__name__, str(exc),
-                            "".join(traceback.format_exception(t, exc, tb)),
-                            filename, line_number).send(report_socket)
+                            exc_type=t.__name__,
+                            exc_message=str(exc),
+                            exc_traceback="".join(traceback.format_exception(t, exc, tb)),
+                            filename=filename, line_number=line_number).send(report_socket)
     while True:
         if reply.disposition == 'DEBUG':
             # We use a nonstandard Req/rep/rep/rep pattern, since the jobserver
@@ -356,7 +358,7 @@ class PipelineEventListener(object):
             disposition = handle_exception(self.zmq_context, self.current_server,
                                            image_set_number=self.image_set_number,
                                            module_name=event.module.module_name,
-                                           exc_info=(type(event), event, event.tb))
+                                           exc_info=(type(event.error), event.error, event.tb))
             if disposition == ED_STOP:
                 self.should_abort = True
                 event.cancel_run = True

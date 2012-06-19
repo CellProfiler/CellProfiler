@@ -63,10 +63,10 @@ class CPModule(object):
                for instance on all measurements
     post_pipeline_load - use this to update any settings that require the pipeline
                 to be available before they can be adjusted.
-                
-    If your module requires state across image_sets, think of storing that 
-    state in the image_set_list's legacy_fields dictionary instead
-    of the module. 
+
+    If your module requires state across image_sets, think of storing
+    information in the module shared_state dictionary (fetched by
+    get_dictionary()).
     """
     
     def __init__(self):

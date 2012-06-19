@@ -1049,7 +1049,6 @@ class PipelineController:
                     break
             wx.CallAfter(self.stop_running)
         elif isinstance(evt, cpanalysis.DisplayRequest):
-            self.interaction_request_queue.put((PRI_DISPLAY, self.analysis_display, evt))
             wx.CallAfter(self.module_display_request, evt)
         elif isinstance(evt, cpanalysis.InteractionRequest):
             self.interaction_request_queue.put((PRI_INTERACTION, self.module_interaction_request, evt))
@@ -1092,6 +1091,23 @@ class PipelineController:
                 wx.CallAfter(self.handle_analysis_feedback)
         finally:
             self.interaction_pending = False
+
+    def module_display_request(self, evt):
+        '''
+        '''
+        module_num = evt.module_num
+        # use our shared workspace
+        self.__workspace.display_data.__dict__.update(evt.display_data_dict)
+        try:
+            module = self.__pipeline.modules()[module_num - 1]
+            module.display(self.__workspace)
+        except:
+            _, exc, tb = sys.exc_info()
+            display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
+                                 message="Exception in handling display request")
+        finally:
+            # we need to ensure that the reply_cb gets a reply
+            evt.reply(cpanalysis.Ack())
 
     def module_interaction_request(self, evt):
         '''forward a module interaction request from the running pipeline to

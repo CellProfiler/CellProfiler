@@ -29,7 +29,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
-from cellprofiler.analysis import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, ServerExited, ImageSetSuccess, SharedDictionaryRequest, DictionaryReqRep, DictionaryReqRepRep, Ack
+from cellprofiler.analysis import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, ServerExited, ImageSetSuccess, SharedDictionaryRequest, DictionaryReqRep, DictionaryReqRepRep, Ack
 import subimager.client
 from cellprofiler.utilities.rpdb import Rpdb
 
@@ -185,6 +185,15 @@ def main():
                     # the run was cancelled before we got a reply.
                     raise CancelledException()  # XXX - TODO - test this code path
 
+            def display_handler(module, display_data):
+                '''handle display requests'''
+                req = DisplayRequest(module_num=module.module_num,
+                                     display_data_dict=display_data.__dict__)
+                rep = req.send(work_socket)
+                if isinstance(rep, ServerExited):
+                    # the run was cancelled before we got a reply.
+                    raise CancelledException()  # XXX - TODO - test this code path
+
             # Safest not to clobber measurements from one job to the next.
             current_measurements = cpmeas.Measurements(copy=current_measurements)
             successful_image_set_numbers = []
@@ -221,7 +230,10 @@ def main():
                     gc.collect()
                     try:
                         pipeline_listener.image_set_number = image_set_number
-                        current_pipeline.run_image_set(current_measurements, image_set_number, interaction_handler)
+                        current_pipeline.run_image_set(current_measurements,
+                                                       image_set_number,
+                                                       interaction_handler,
+                                                       display_handler)
                         if pipeline_listener.should_abort:
                             abort = True
                             break

@@ -798,7 +798,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                    "%.1f"%(self.calc_smoothing_filter_size())])
                     statistics.append(["Maxima suppression size",
                                    "%.1f"%(maxima_suppression_size)])
-            workspace.display_data.image = image
+            workspace.display_data.image = image.pixel_data
             workspace.display_data.labeled_image = labeled_image
             workspace.display_data.outline_image = outline_image
             workspace.display_data.outline_size_excluded_image = outline_size_excluded_image
@@ -1177,22 +1177,22 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             outlined_axes = my_frame.subplot(0,1, sharex=orig_axes, sharey=orig_axes)
             table_axes    = my_frame.subplot(1,1, sharex=orig_axes, sharey=orig_axes)
     
-            title = "Original image, cycle #%d"%(workspace.image_set.image_number,)
+            title = "Original image, cycle #%d"%(workspace.measurements.image_number,)
             my_frame.subplot_imshow_grayscale(0, 0,
-                                              workspace.display_data.image.pixel_data,
+                                              workspace.display_data.image,
                                               title)
             my_frame.subplot_imshow_labels(1, 0, workspace.display_data.labeled_image, 
                                            self.object_name.value)
     
-            if workspace.display_data.image.pixel_data.ndim == 2:
+            if workspace.display_data.image.ndim == 2:
                 # Outline the size-excluded pixels in red
-                outline_img = np.ndarray(shape=(workspace.display_data.image.pixel_data.shape[0],
-                                                   workspace.display_data.image.pixel_data.shape[1],3))
-                outline_img[:,:,0] = workspace.display_data.image.pixel_data 
-                outline_img[:,:,1] = workspace.display_data.image.pixel_data
-                outline_img[:,:,2] = workspace.display_data.image.pixel_data
+                outline_img = np.ndarray(shape=(workspace.display_data.image.shape[0],
+                                                   workspace.display_data.image.shape[1],3))
+                outline_img[:,:,0] = workspace.display_data.image 
+                outline_img[:,:,1] = workspace.display_data.image
+                outline_img[:,:,2] = workspace.display_data.image
             else:
-                outline_img = workspace.display_data.image.pixel_data.copy()
+                outline_img = workspace.display_data.image.copy()
             
             # Outline the accepted objects pixels
             draw_outline(outline_img, workspace.display_data.outline_image,

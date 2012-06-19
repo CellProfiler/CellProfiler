@@ -670,6 +670,8 @@ class MeasurementsReport(Request):
 class InteractionRequest(Request):
     pass
 
+class DisplayRequest(Request):
+    pass
 
 class SharedDictionaryRequest(Request):
     def __init__(self, module_num=-1):
@@ -680,9 +682,6 @@ class SharedDictionaryReply(Reply):
     def __init__(self, dictionaries=[{}]):
         Reply.__init__(self, dictionaries=dictionaries)
 
-
-class DisplayRequest(Request):
-    pass
 
 class ExceptionReport(Request):
     def __init__(self,

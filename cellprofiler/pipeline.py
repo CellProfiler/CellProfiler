@@ -1688,12 +1688,16 @@ class Pipeline(object):
                 del measurements
             self.end_run()
 
-    def run_image_set(self, measurements, image_set_number, interaction_handler):
+    def run_image_set(self, measurements, image_set_number,
+                      interaction_handler, display_handler):
         """Run the pipeline for a single image set storing the results in measurements.
 
         Arguments:
              measurements - source of image information, destination for results.
              image_set_number - what image to analyze.
+             interaction_handler - callback (to be set in workspace) for
+                 interaction requests
+             display_handler - callback for display requests
 
              self.prepare_run() and self.prepare_group() must have already been called.
         """
@@ -1726,6 +1730,8 @@ class Pipeline(object):
             t0 = sum(os.times()[:-1])
             try:
                 module.run(workspace)
+                if module.show_window:
+                    display_handler(module, workspace.display_data)
             except Exception, exception:
                 logger.error("Error detected during run of module %s#%d",
                              module.module_name, module.module_num, exc_info=True)

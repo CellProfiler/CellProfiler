@@ -201,7 +201,6 @@ class OverlayOutlines(cpm.CPModule):
 
     def run_bw(self, workspace):
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         if self.blank_image.value:
             outline_image = image_set.get_image(
                 self.outlines[0].outline_name.value,

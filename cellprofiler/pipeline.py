@@ -1796,7 +1796,6 @@ class Pipeline(object):
             for i, image_number in enumerate(image_numbers):
                 m.image_set_number = image_number
                 image_set = image_set_list.get_image_set(image_number-1)
-                assert isinstance(image_set, cpi.ImageSet)
                 object_set = cpo.ObjectSet()
                 old_providers = list(image_set.providers)
                 for module in pipeline.modules():

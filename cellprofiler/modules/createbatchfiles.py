@@ -249,7 +249,6 @@ class CreateBatchFiles(cpm.CPModule):
         m = cpmeas.Measurements(copy = workspace.measurements,
                                 filename = h5_path)
         try:
-            assert isinstance(image_set_list, cpi.ImageSetList)
             assert isinstance(pipeline, cpp.Pipeline)
             assert isinstance(m, cpmeas.Measurements)
     

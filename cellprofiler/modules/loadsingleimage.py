@@ -321,6 +321,9 @@ class LoadSingleImage(cpm.CPModule):
         '''True if the file_setting produces images, false if it produces objects'''
         return file_setting.image_objects_choice == IO_IMAGES
     
+    def is_load_module(self):
+        return True
+    
     def prepare_run(self, workspace):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -366,7 +369,6 @@ class LoadSingleImage(cpm.CPModule):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         for file_setting in self.file_settings:
             wants_images = self.file_wants_images(file_setting)
             image_name = file_setting.image_name.value if wants_images else \

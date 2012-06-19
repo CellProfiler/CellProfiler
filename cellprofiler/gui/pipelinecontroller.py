@@ -79,6 +79,8 @@ class PipelineController:
         self.__within_group_index = None
         self.__plate_viewer = None
         self.pipeline_list = []
+        cpprefs.add_image_directory_listener(self.__on_image_directory_change)
+        cpprefs.add_output_directory_listener(self.__on_output_directory_change)
 
         # interaction/display requests and exceptions from an Analysis
         self.interaction_request_queue = Queue.PriorityQueue()
@@ -644,14 +646,23 @@ class PipelineController:
             self.set_title()
             m = self.__workspace.measurements
             if event.is_image_set_modification:
-                # Clear the image set cache
-                self.__workspace.invalidate_image_set()
+                self.on_image_set_modification()
             self.__workspace.save_pipeline_to_measurements()
             
+    def on_image_set_modification(self):
+        self.__workspace.invalidate_image_set()
+        self.exit_test_mode()
+        
+    def __on_image_directory_change(self, event):
+        self.on_image_set_modification()
+        
+    def __on_output_directory_change(self, event):
+        self.on_image_set_modification()
+        
     def on_workspace_event(self, event):
         '''Workspace's file list changed. Invalidate the workspace cache.'''
         if isinstance(event, cpw.Workspace.WorkspaceFileListNotification):
-            self.__workspace.invalidate_image_set()
+            self.on_image_set_modification()
         
     def on_load_exception_event(self, event):
         '''Handle a pipeline load exception'''
@@ -787,9 +798,13 @@ class PipelineController:
                 if self.__setting_errors.has_key(setting.key()):
                     self.__frame.preferences_view.pop_error_text(self.__setting_errors.pop(setting.key()))                    
             self.__pipeline.remove_module(module.module_num)
-        #
-        # Major event - restart from scratch
-        #
+        self.exit_test_mode()
+        
+    def exit_test_mode(self):
+        '''Exit test mode with all the bells and whistles
+        
+        This is safe to call if not in test mode
+        '''
         if self.is_in_debug_mode():
             self.stop_debugging()
             if cpprefs.get_show_exiting_test_mode_dlg():

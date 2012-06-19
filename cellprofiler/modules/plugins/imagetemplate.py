@@ -211,12 +211,8 @@ class ImageTemplate(cpm.CPModule):
         output_image_name = self.output_image_name.value
         #
         # Get the image set. The image set has all of the images in it.
-        # The assert statement makes sure that it really is an image set,
-        # but, more importantly, it lets my editor do context-sensitive
-        # completion for the image set.
         #
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         #
         # Get the input image object. We want a grayscale image here.
         # The image set will convert a color image to a grayscale one

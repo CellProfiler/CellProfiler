@@ -477,7 +477,6 @@ class RunImageJ(cpm.CPModule):
         '''Run the imageJ command'''
         bridge = ijb.get_ij_bridge()
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         d = self.get_dictionary(workspace.image_set_list)
         if self.wants_to_set_current_image:
             input_image_name = self.current_input_image_name.value

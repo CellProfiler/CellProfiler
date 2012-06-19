@@ -156,7 +156,7 @@ class PlateViewer(object):
         self.frame.Sizer.Add(self.splitter, 1, wx.EXPAND)
         self.plate_panel = wx.Panel(self.splitter)
         rows, cols = data.plate_layout
-        w, h = self.plate_panel.GetTextExtent(" ".join(["00"] * cols))
+        w, h = self.plate_panel.GetTextExtent("".join(["00"] * cols))
         h *= rows
         self.plate_panel.SetMinSize((w, h))
         self.canvas_panel = wx.Panel(self.splitter)
@@ -271,7 +271,10 @@ class PlateViewer(object):
     def on_update(self):
         if (tuple(sorted(self.plate_choice.GetItems())) !=
             tuple(sorted(self.data.get_plate_names()))):
-            self.plate_choice.SetItems(self.data.get_plate_names())
+            plate_names = self.data.get_plate_names()
+            self.plate_choice.SetItems(plate_names)
+            if len(plate_names) > 0:
+                self.plate_choice.SetSelection(0)
         self.plate_name = self.plate_choice.GetStringSelection()
         if self.plate_name in self.data.get_plate_names():
             self.plate_data = self.data.get_plate(self.plate_name)

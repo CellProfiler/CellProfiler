@@ -445,7 +445,6 @@ class MeasureObjectNeighbors(cpm.CPModule):
         m = workspace.measurements
         assert(isinstance(m, cpmeas.Measurements))
         image_set = workspace.image_set
-        assert(isinstance(image_set, cpi.ImageSet))
         features_and_data = [
             (M_NUMBER_OF_NEIGHBORS, neighbor_count),
             (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),

@@ -344,7 +344,6 @@ class UnmixColors(cpm.CPModule):
         figure = workspace.create_or_find_figure(title="UnmixColors, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(len(self.outputs)+1,1))
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         input_image_name = self.input_image_name.value
         input_image = image_set.get_image(input_image_name,
                                           must_be_color = True)

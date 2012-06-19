@@ -265,7 +265,6 @@ class Tile(cpm.CPModule):
         d = self.get_dictionary(workspace.image_set_list)
         rows, columns = self.get_grid_dimensions(d[IMAGE_COUNT])
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         image = image_set.get_image(self.input_image)
         pixels = image.pixel_data
         if d[TILED_IMAGE] is None:

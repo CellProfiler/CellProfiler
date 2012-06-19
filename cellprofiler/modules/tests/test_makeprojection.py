@@ -213,8 +213,7 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         # Make sure that the image provider is reset after prepare_group
         #
         module.prepare_group(workspace, {}, [image_count+1])
-        image_set = image_set_list.get_image_set(image_count)
-        image_provider = image_set.get_image_provider(PROJECTED_IMAGE_NAME)
+        image_provider = module.get_dictionary()[M.K_PROVIDER]
         self.assertFalse(image_provider.has_image)
         return image
     

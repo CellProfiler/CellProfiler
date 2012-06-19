@@ -283,7 +283,6 @@ class StraightenWorms(cpm.CPModule):
         assert isinstance(object_set, cpo.ObjectSet)
 
         image_set = workspace.image_set
-        assert(isinstance(image_set, cpi.ImageSet))
 
         objects_name = self.objects_name.value
         orig_objects = object_set.get_objects(objects_name)
@@ -764,7 +763,6 @@ class StraightenWorms(cpm.CPModule):
         nworms - # of labels.
         '''
         image_set = workspace.image_set
-        assert(isinstance(image_set, cpi.ImageSet))
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         object_name = self.straightened_objects_name.value

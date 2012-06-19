@@ -151,7 +151,6 @@ class InvertForPrinting(cpm.CPModule):
         
     def run(self, workspace):
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         shape = None
         if self.input_color_choice == CC_GRAYSCALE:
             if self.wants_red_input.value:

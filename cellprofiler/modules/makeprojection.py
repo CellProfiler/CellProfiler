@@ -142,9 +142,8 @@ class MakeProjection(cpm.CPModule):
 
     def prepare_group(self, workspace, grouping, image_numbers):
         '''Reset the aggregate image at the start of group processing'''
-        image_set_list = workspace.image_set_list
         if len(image_numbers) > 0:
-            d = self.get_dictionary(image_set_list)
+            d = self.get_dictionary()
             if d.has_key(K_PROVIDER):
                 provider = d[K_PROVIDER]
                 provider.reset()
@@ -153,16 +152,13 @@ class MakeProjection(cpm.CPModule):
                                          self.projection_type.value,
                                          self.frequency.value)
                 d[K_PROVIDER] = provider
-            for image_number in image_numbers:
-                image_set = image_set_list.get_image_set(image_number-1)
-                assert isinstance(image_set, cpi.ImageSet)
-                image_set.providers.append(provider)
         return True
         
     def run(self, workspace):
+        provider = self.get_dictionary()[K_PROVIDER]
+        workspace.image_set.providers.append(provider)
         image = workspace.image_set.get_image(self.image_name.value)
         pixels = image.pixel_data
-        provider = workspace.image_set.get_image_provider(self.projection_image_name.value)
         if (not provider.has_image):
             provider.set_image(image)
         else:

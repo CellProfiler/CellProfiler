@@ -9,9 +9,9 @@ import shutil
 import sys
 
 # The list of files (relative path) to fetch, their SHA1, and their source URL.
-subimager_version = "db06f96da25b28b87577ce55a31be7d69963542e"
+subimager_version = "e8d59b6a2831d7814ba29b947edc9db3e9b3a960"
 files = [
-    [['subimager', 'subimager.jar'], '7c5b417a8b7a4b88b16c7752760b5450ca283a7d', 
+    [['subimager', 'subimager.jar'], '228578131584ac76902171e0cb103457b4c2150e', 
      'http://www.cellprofiler.org/linked_files/subimager/builds/subimager-%s.jar' % subimager_version]
 ]
 

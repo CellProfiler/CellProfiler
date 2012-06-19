@@ -562,7 +562,6 @@ class UntangleWorms(cpm.CPModule):
         
         image_name = self.image_name.value
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         image = image_set.get_image(image_name,
                                     must_be_binary = True)
         num_control_points = self.ncontrol_points()
@@ -749,7 +748,6 @@ class UntangleWorms(cpm.CPModule):
         params = self.read_params()
         image_name = self.image_name.value
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         image = image_set.get_image(image_name,
                                     must_be_binary = True)
         labels, count = scind.label(image.pixel_data, morph.eight_connect)

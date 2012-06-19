@@ -129,7 +129,6 @@ class FlipAndRotate(cpm.CPModule):
         
     def run(self, workspace):
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         image = image_set.get_image(self.image_name.value)
         pixel_data = image.pixel_data.copy()
         mask = image.mask

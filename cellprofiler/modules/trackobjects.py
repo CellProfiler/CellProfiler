@@ -1641,6 +1641,9 @@ class TrackObjects(cpm.CPModule):
         #
         count = np.array([len(x) for x in parent_image_numbers])
         idx = Indexes(count)
+        if idx.length == 0:
+            # Nothing to do
+            return
         parent_image_numbers = np.hstack(parent_image_numbers).astype(int)
         parent_object_numbers = np.hstack(parent_object_numbers).astype(int)
         parent_image_indexes = image_index[parent_image_numbers]

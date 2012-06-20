@@ -429,15 +429,20 @@ class CalculateStatistics(cpm.CPModule):
             return False
         if len(image_numbers) == 0:
             return False
-        v = measurements.get_measurement(object_name, 
-                                         feature_name,
-                                         image_numbers[0])
+        for image_number in image_numbers:
+            v = measurements.get_measurement(object_name, 
+                                             feature_name,
+                                             image_number)
+            if v is not None:
+                break
+        else:
+            return False
         if np.isscalar(v):
             return not (isinstance(v, (str, unicode)))
         #
         # Make sure the measurement isn't a string or other oddity
         #
-        return v[0].dtype.kind not in "OSU"
+        return np.asanyarray(v).dtype.kind not in "OSU"
         
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):

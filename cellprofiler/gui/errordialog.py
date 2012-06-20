@@ -112,7 +112,8 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     previously_seen_error_locations.add((filename, line_number))
 
 
-    dialog = wx.Dialog(frame, title="Pipeline error")
+    dialog = wx.Dialog(frame, title="Pipeline error",
+                       style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
     sizer = wx.BoxSizer(wx.VERTICAL)
     dialog.SetSizer(sizer)
     question_control = wx.StaticText(dialog,-1, 

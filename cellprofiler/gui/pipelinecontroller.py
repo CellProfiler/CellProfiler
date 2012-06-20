@@ -1104,7 +1104,8 @@ class PipelineController:
         except:
             _, exc, tb = sys.exc_info()
             display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                 message="Exception in handling display request")
+                                 message="Exception in handling display request for module %s #%d" \
+                                     % (module.module_name, module_num))
         finally:
             # we need to ensure that the reply_cb gets a reply
             evt.reply(cpanalysis.Ack())
@@ -1125,7 +1126,8 @@ class PipelineController:
         except:
             _, exc, tb = sys.exc_info()
             display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
-                                 message="Exception in handling interaction request")
+                                 message="Exception in handling interaction request for module %s(#%d)" \
+                                     % (module.module_name, module_num))
         finally:
             # we need to ensure that the reply_cb gets a reply (even if it
             # being empty causes futher exceptions).

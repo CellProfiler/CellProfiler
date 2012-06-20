@@ -869,14 +869,14 @@ class DefineGrid(cpm.CPModule):
         d = self.get_dictionary()
         if not GOOD_GRIDDING in d:
             return None
-        return cpg.deserialize(d[GOOD_GRIDDING])
+        return d[GOOD_GRIDDING]
     
     def set_good_gridding(self, workspace, gridding):
         '''Set the gridding to use upon failure'''
         d = self.get_dictionary()
         if (self.failed_grid_choice == FAIL_ANY_PREVIOUS or
             not d.has_key(GOOD_GRIDDING)):
-            d[GOOD_GRIDDING] = cpg.serialize(gridding)
+            d[GOOD_GRIDDING] = gridding
             
     def validate_module(self, pipeline):
         '''Make sure that the row and column are different'''

@@ -356,10 +356,11 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                     measurements.add_measurement(
                         object_name, "_".join([M_CATEGORY, feature_name]),
                         np.zeros(0))
-                    measurement_name = "_".join([M_CATEGORY, feature,
-                                                 image_name, FF_OVERFLOW])
-                    measurements.add_measurement(
-                        object_name, measurement_name, np.zeros(0))
+                    if not wants_scaled:
+                        measurement_name = "_".join([M_CATEGORY, feature,
+                                                     image_name, FF_OVERFLOW])
+                        measurements.add_measurement(
+                            object_name, measurement_name, np.zeros(0))
             return [(image_name, object_name, "no objects","-","-","-","-")]
         name = (object_name if center_object_name is None 
                 else "%s_%s"%(object_name, center_object_name))

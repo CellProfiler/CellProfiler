@@ -253,7 +253,7 @@ class PipelineController:
             wildcard = "CellProfiler workspace (*.cpi)|*.cpi") as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
-                self.do_open_workspace(dlg.Path, result == wx.YES)
+                self.do_open_workspace(dlg.Path, result == wx.NO)
         
     def do_open_workspace(self, filename, load_pipeline):
         '''Open the given workspace file'''

@@ -293,6 +293,8 @@ class Metadata(cpm.CPModule):
         
         file_list = workspace.file_list
         pipeline = workspace.pipeline
+        self.ipd_metadata_keys = []
+        self.update_imported_metadata()
         for ipd in pipeline.image_plane_details:
             metadata = self.get_ipd_metadata(ipd)
             ipd.metadata.update(metadata)

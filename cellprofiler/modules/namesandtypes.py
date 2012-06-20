@@ -295,7 +295,16 @@ class NamesAndTypes(cpm.CPModule):
         if workspace.pipeline.in_batch_mode():
             return True
         try:
-            self.on_activated(workspace)
+            old_pipeline = self.pipeline
+            self.pipeline = workspace.pipeline
+            self.ipds = self.pipeline.get_filtered_image_plane_details()
+            self.metadata_keys = set()
+            for ipd in self.ipds:
+                self.metadata_keys.update(ipd.metadata.keys())
+            self.update_all_columns()
+            self.make_image_sets()
+            self.pipeline = old_pipeline
+            
             m = workspace.measurements
             assert isinstance(m, cpmeas.Measurements)
             image_sets = []

@@ -134,6 +134,8 @@ class Groups(cpm.CPModule):
                     metadata_keys.intersection_update(ipd.metadata.keys())
             self.metadata_keys[column_name] = list(metadata_keys)
         self.update_tables()
+        for group in self.grouping_metadata:
+            group.metadata_choice.test_valid(self.pipeline)
         
     def on_deactivated(self):
         self.pipeline = None

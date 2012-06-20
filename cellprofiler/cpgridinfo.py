@@ -39,10 +39,8 @@ class CPGridInfo(object):
         self.image_width = None
         self.image_height = None
 
-def serialize(gridinfo):
-    return dict((k, v) for k, v in gridinfo.__dict__.items() if not k.startswith('_'))
+    def serialize(self):
+        return dict((k, v) for k, v in self.__dict__.items() if not k.startswith('_'))
 
-def deserialize(serialized_gridinfo):
-    g = CPGridInfo()
-    g.__dict__.update(serialized_gridinfo)
-    return g
+    def deserialize(self, serialized_info):
+        self.__dict__.update(serialized_info)

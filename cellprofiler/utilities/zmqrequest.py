@@ -3,6 +3,40 @@ import threading
 import zmq
 import Queue
 import numpy as np
+import cellprofiler.cpgridinfo as cpg
+
+def make_CP_encoder(numpy_arrays):
+    '''create an encoder for CellProfiler data and numpy arrays (which will be
+    stored in the input argument)'''
+    def encoder(data, numpy_arrays=numpy_arrays):
+        if isinstance(data, np.ndarray):
+            idx = len(numpy_arrays)
+            numpy_arrays.append(np.ascontiguousarray(data))
+            return {'__ndarray__': True,
+                    'dtype': str(data.dtype),
+                    'shape': data.shape,
+                    'idx': idx}
+        if isinstance(data, np.generic):
+            # http://docs.scipy.org/doc/numpy/reference/arrays.scalars.html
+            return data.astype(object)
+        if isinstance(data, cpg.CPGridInfo):
+            d = data.serialize()
+            d['__CPGridInfo__'] = True
+            return d
+        raise TypeError("%r of type %r is not JSON serializable" % (data, type(data)))
+    return encoder
+
+def make_CP_decoder(numpy_arrays):
+    def decoder(dct, numpy_arrays=numpy_arrays):
+        if '__ndarray__' in dct:
+            buf = buffer(numpy_arrays[dct['idx']])
+            return np.frombuffer(buf, dtype=dct['dtype']).reshape(dct['shape']).copy()
+        if '__CPGridInfo__' in dct:
+            grid = cpg.CPGridInfo()
+            grid.deserialize(dct)
+            return grid
+        return dct
+    return decoder
 
 class Communicable(object):
     '''Base class for Requests and Replies.
@@ -13,26 +47,14 @@ class Communicable(object):
     def send(self, socket, routing=[]):
         if hasattr(self, '_remote'):
             assert not self._remote, "send() called on a non-local Communicable object."
-        sendable_dict = dict((k, v) for k,v in self.__dict__.items()
+        sendable_dict = dict((k, v) for k, v in self.__dict__.items()
                              if (not k.startswith('_'))
                              and (not callable(self.__dict__[k])))
 
         # replace each numpy array with its metadata, and send it separately
         numpy_arrays = []
-        def numpy_encoder(data):
-            if isinstance(data, np.ndarray):
-                idx = len(numpy_arrays)
-                numpy_arrays.append(np.ascontiguousarray(data))
-                return {'__ndarray__' : True,
-                        'dtype' : str(data.dtype),
-                        'shape' : data.shape,
-                        'idx' : idx}
-            if isinstance(data, np.generic):
-                # http://docs.scipy.org/doc/numpy/reference/arrays.scalars.html
-                return data.astype(object)
-            raise TypeError("%r of type %r is not JSON serializable" % (data, type(data)))
-
-        json_str = zmq.utils.jsonapi.dumps(sendable_dict, default=numpy_encoder)
+        encoder = make_CP_encoder(numpy_arrays)
+        json_str = zmq.utils.jsonapi.dumps(sendable_dict, default=encoder)
         socket.send_multipart(routing +
                               [self.__class__.__module__, self.__class__.__name__] +
                               [json_str] +
@@ -52,13 +74,8 @@ class Communicable(object):
             routing = []
         module, classname = message[:2]
         numpy_arrays = message[3:]
-        def numpy_decoder(dct):
-            if '__ndarray__' in dct:
-                buf = buffer(numpy_arrays[dct['idx']])
-                return np.frombuffer(
-                    buf, dtype=dct['dtype']).reshape(dct['shape']).copy()
-            return dct
-        attribute_dict = zmq.utils.jsonapi.loads(message[2], object_hook=numpy_decoder)
+        decoder = make_CP_decoder(numpy_arrays)
+        attribute_dict = zmq.utils.jsonapi.loads(message[2], object_hook=decoder)
         try:
             instance = sys.modules[module].__dict__[classname](**attribute_dict)
         except:

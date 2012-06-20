@@ -55,7 +55,8 @@ class Communicable(object):
         def numpy_decoder(dct):
             if '__ndarray__' in dct:
                 buf = buffer(numpy_arrays[dct['idx']])
-                return np.frombuffer(buf, dtype=dct['dtype']).reshape(dct['shape'])
+                return np.frombuffer(
+                    buf, dtype=dct['dtype']).reshape(dct['shape']).copy()
             return dct
         attribute_dict = zmq.utils.jsonapi.loads(message[2], object_hook=numpy_decoder)
         try:

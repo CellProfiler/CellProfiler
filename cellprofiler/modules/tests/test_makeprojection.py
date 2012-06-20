@@ -209,12 +209,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
                               image_set_list)
             module.run(w)
             image = w.image_set.get_image(PROJECTED_IMAGE_NAME)
-        #
-        # Make sure that the image provider is reset after prepare_group
-        #
-        module.prepare_group(workspace, {}, [image_count+1])
-        image_provider = module.get_dictionary()[M.K_PROVIDER]
-        self.assertFalse(image_provider.has_image)
         return image
     
     def test_02_01_average(self):

@@ -2398,6 +2398,9 @@ class Pipeline(object):
                 key_list, groupings = module.compute_groups(
                     iscds, metadata_key_names, image_sets)
                 break
+        else:
+            # If there was no groups module, harvest groupings from legacy modules
+            key_list, groupings = self.get_groupings(workspace)
         if key_list is None:
             key_list = []
             groupings = { ():sorted(image_sets.keys()) }

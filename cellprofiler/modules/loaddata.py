@@ -865,12 +865,23 @@ class LoadData(cpm.CPModule):
                     value = float(value)
                 c.append(value)
         
-        if len(metadata_columns) == 0:
-            image_numbers = [[i] for i in range(1, len(rows) + 1)]
-        else:
+        if len(metadata_columns) > 0:
+            # Reorder the rows by matching metadata against previous metadata
+            # (for instance, to assign metadata values to images from
+            #  loadimages)
+            #
             image_numbers = m.match_metadata(
                 metadata_columns.keys(), 
                 [columns[k] for k in metadata_columns.keys()])
+            image_numbers = np.array(image_numbers, int).flatten()
+            max_image_number = np.max(image_numbers)
+            new_columns = {}
+            for key, values in columns.iteritems():
+                new_values = [None] * max_image_number
+                for image_number, value in zip(image_numbers, values):
+                    new_values[image_number - 1] = value
+                new_columns[key] = new_values
+            columns = new_columns
         for feature, values in columns.iteritems():
             m.add_all_measurements(cpmeas.IMAGE, feature, values)
                 

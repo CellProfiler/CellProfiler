@@ -143,19 +143,14 @@ class MakeProjection(cpm.CPModule):
     def prepare_group(self, workspace, grouping, image_numbers):
         '''Reset the aggregate image at the start of group processing'''
         if len(image_numbers) > 0:
-            d = self.get_dictionary()
-            if d.has_key(K_PROVIDER):
-                provider = d[K_PROVIDER]
-                provider.reset()
-            else:
-                provider = ImageProvider(self.projection_image_name.value,
-                                         self.projection_type.value,
-                                         self.frequency.value)
-                d[K_PROVIDER] = provider
+            provider = ImageProvider(self.projection_image_name.value,
+                                     self.projection_type.value,
+                                     self.frequency.value)
+            provider.save_state(self.get_dictionary())
         return True
-        
+    
     def run(self, workspace):
-        provider = self.get_dictionary()[K_PROVIDER]
+        provider = ImageProvider.restore_from_state(self.get_dictionary())
         workspace.image_set.providers.append(provider)
         image = workspace.image_set.get_image(self.image_name.value)
         pixels = image.pixel_data
@@ -163,6 +158,7 @@ class MakeProjection(cpm.CPModule):
             provider.set_image(image)
         else:
             provider.accumulate_image(image)
+        provider.save_state(self.get_dictionary())
             
     def display(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value)
@@ -237,6 +233,63 @@ class ImageProvider(cpi.AbstractImageProvider):
         self.__bright_min = None
         self.__norm0 = None
         
+    D_NAME = "name"
+    D_FREQUENCY = "frequency"
+    D_IMAGE = "image"
+    D_HOW_TO_ACCUMULATE = "howtoaccumulate"
+    D_IMAGE_COUNT = "imagecount"
+    D_VSQUARED = "vsquared"
+    D_VSUM = "vsum"
+    D_POWER_IMAGE = "powerimage"
+    D_POWER_MASK = "powermask"
+    D_STACK_NUMBER = "stacknumber"
+    D_BRIGHT_MAX = "brightmax"
+    D_BRIGHT_MIN = "brightmin"
+    D_NORM0 = "norm0"
+    
+    def save_state(self, d):
+        '''Save the provider state to a dictionary
+        
+        d - store state in this dictionary
+        '''
+        d[self.D_NAME] = self.__name
+        d[self.D_FREQUENCY] = self.frequency
+        d[self.D_IMAGE] = self.__image
+        d[self.D_HOW_TO_ACCUMULATE] = self.__how_to_accumulate
+        d[self.D_IMAGE_COUNT] = self.__image_count
+        d[self.D_VSQUARED] = self.__vsquared
+        d[self.D_VSUM] = self.__vsum
+        d[self.D_POWER_IMAGE] = self.__power_image
+        d[self.D_POWER_MASK] = self.__power_mask
+        d[self.D_STACK_NUMBER] = self.__stack_number
+        d[self.D_BRIGHT_MIN] = self.__bright_min
+        d[self.D_BRIGHT_MAX] = self.__bright_max
+        d[self.D_NORM0] = self.__norm0
+        
+    @staticmethod
+    def restore_from_state(d):
+        '''Create a provider from the state stored in the dictionary
+        
+        d - dictionary from call to save_state
+        
+        returns a new ImageProvider built from the saved state
+        '''
+        name = d[ImageProvider.D_NAME]
+        frequency = d[ImageProvider.D_FREQUENCY]
+        how_to_accumulate = d[ImageProvider.D_HOW_TO_ACCUMULATE]
+        image_provider = ImageProvider(name, how_to_accumulate, frequency)
+        image_provider.__image = d[ImageProvider.D_IMAGE]
+        image_provider.__image_count = d[ImageProvider.D_IMAGE_COUNT]
+        image_provider.__vsquared = d[ImageProvider.D_VSQUARED]
+        image_provider.__vsum = d[ImageProvider.D_VSUM]
+        image_provider.__power_image = d[ImageProvider.D_POWER_IMAGE]
+        image_provider.__power_mask = d[ImageProvider.D_POWER_MASK]
+        image_provider.__stack_number = d[ImageProvider.D_STACK_NUMBER]
+        image_provider.__bright_min = d[ImageProvider.D_BRIGHT_MIN]
+        image_provider.__bright_max = d[ImageProvider.D_BRIGHT_MAX]
+        image_provider.__norm0 = d[ImageProvider.D_NORM0]
+        return image_provider
+    
     def reset(self):
         '''Reset accumulator at start of groups'''
         self.__image_count = None

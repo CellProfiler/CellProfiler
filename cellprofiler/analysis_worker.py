@@ -264,7 +264,7 @@ def main():
                     # There might be an exception in this call, but it will be
                     # handled elsewhere, and there's nothing we can do for it
                     # here.
-                    current_pipeline.post_group(workspace, current_measurements.get_grouping_keys(), image_set_numbers)
+                    current_pipeline.post_group(workspace, current_measurements.get_grouping_keys())
 
             # multiprocessing: send path of measurements.
             # XXX - distributed - package them up.

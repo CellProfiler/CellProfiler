@@ -866,15 +866,17 @@ class DefineGrid(cpm.CPModule):
     
     def get_good_gridding(self, workspace):
         '''Get either the first gridding or the most recent successful gridding'''
-        d = self.get_dictionary(workspace.image_set_list)
-        return d.get(GOOD_GRIDDING, None)
+        d = self.get_dictionary()
+        if not GOOD_GRIDDING in d:
+            return None
+        return cpg.deserialize(d[GOOD_GRIDDING])
     
     def set_good_gridding(self, workspace, gridding):
         '''Set the gridding to use upon failure'''
-        d = self.get_dictionary(workspace.image_set_list)
+        d = self.get_dictionary()
         if (self.failed_grid_choice == FAIL_ANY_PREVIOUS or
             not d.has_key(GOOD_GRIDDING)):
-            d[GOOD_GRIDDING] =gridding
+            d[GOOD_GRIDDING] = cpg.serialize(gridding)
             
     def validate_module(self, pipeline):
         '''Make sure that the row and column are different'''

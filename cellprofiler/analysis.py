@@ -286,7 +286,7 @@ class AnalysisRunner(object):
                 group_number = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number]
                 group_index = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number]
                 job_groups[group_number] = job_groups.get(group_number, []) + [(group_index, image_set_number)]
-            job_groups[group_number] = [[isn for _, isn in sorted(job_groups[group_number])] for group_number in job_groups]
+            job_groups = [[isn for _, isn in sorted(job_groups[group_number])] for group_number in job_groups]
             first_image_job_group = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_start]
         else:
             worker_runs_post_group = False  # prepare_group will be run in worker, but post_group is below.

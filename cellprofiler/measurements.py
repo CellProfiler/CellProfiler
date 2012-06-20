@@ -731,7 +731,21 @@ class Measurements(object):
         return single_backquote.join(result_pieces)
 
     def has_groups(self):
-        # XXX - need to implement this.
+        '''Return True if there is more than one group in the image sets
+        
+        Note - this works the dumb way now: it fetches all of the group numbers
+               and sees if there is a single unique group number. It involves
+               fetching the whole column and it doesn't cache, so it could
+               be expensive. Alternatively, this could be an experiment
+               measurement, populated after prepare_run.
+        '''
+        if self.has_feature(IMAGE, GROUP_NUMBER):
+            image_numbers = self.get_image_numbers()
+            if len(image_numbers) > 0:
+                group_numbers = self.get_measurement(
+                    IMAGE, GROUP_NUMBER,
+                    image_set_number = image_numbers)
+                return len(np.unique(group_numbers)) > 1
         return False
 
     def group_by_metadata(self, tags):
@@ -1040,6 +1054,21 @@ class Measurements(object):
         #              and cache.
         #
         return { IMAGE_NUMBER: str(self.image_number) }
+    
+    def get_grouping_keys(self):
+        '''Get a key, value dictionary that uniquely defines the group
+        
+        returns a dictionary for the current image set's group where the
+        key is the image feature name and the value is the value to match
+        in the image measurements.
+        
+        Note: this is somewhat legacy, from before GROUP_NUMBER was defined
+              and the only way to determine which images were in a group
+              was to get the metadata colums used to define groups and scan
+              them for matches. Now, we just return { GROUP_NUMBER: value }
+        '''
+        return { GROUP_NUMBER: 
+                 self.get_current_image_measurement(GROUP_NUMBER) }
     
     def get_image(self, name, 
                   must_be_binary = False,

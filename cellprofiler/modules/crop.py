@@ -316,6 +316,7 @@ class Crop(cpm.CPModule):
             masking_objects = workspace.get_objects(self.objects_source.value)
             cropping = masking_objects.segmented > 0
         elif self.crop_method == CM_MOUSE:
+            assert False, "Needs to use handle_interaction"
             cropping = self.ui_crop(workspace,orig_image)
         elif self.shape == SH_ELLIPSE:
             cropping = self.get_ellipse_cropping(workspace,orig_image)

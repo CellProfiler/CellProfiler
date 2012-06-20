@@ -433,31 +433,47 @@ class FilterObjects(cpm.CPModule):
                                           parent_image = target_objects.parent_image)
                 workspace.image_set.add(outlines_name, outline_image)
 
+        if self.show_window:
+            src_objects = workspace.get_objects(src_name)
+            image_names = \
+                [image for image in
+                 [m.measurement.get_image_name(workspace.pipeline)
+                  for m in self.measurements]
+                 if image is not None
+                 and image in workspace.image_set.get_names()]
+            if len(image_names) == 0:
+                # Measurement isn't image-based
+                if src_objects.has_parent_image:
+                    image = src_objects.parent_image.pixel_data
+                else:
+                    image = None
+            else:
+                image = workspace.image_set.get_image(image_names[0]).pixel_data
+
+            workspace.display_data.src_objects_segmented = \
+                src_objects.segmented
+            workspace.display_data.image_names = image_names
+            workspace.display_data.image = image
+            workspace.display_data.target_objects_segmented = target_objects.segmented
+
+
     def display(self, workspace):
         '''Display what was filtered'''
         src_name = self.object_name.value
-        src_objects = workspace.get_objects(src_name)
+        src_objects_segmented = workspace.display_data.src_objects_segmented
+        image = workspace.display_data.image
+        image_names = workspace.display_data.image_names
+        target_objects_segmented = workspace.display_data.target_objects_segmented
+
         target_name = self.target_name.value
-        target_objects = workspace.get_objects(target_name)
-        image = None
-        image_names = [image for image in 
-                       [m.measurement.get_image_name(workspace.pipeline)
-                        for m in self.measurements]
-                       if image is not None 
-                       and image in workspace.image_set.get_names()]
-        if len(image_names) == 0:
-            # Measurement isn't image-based
-            if src_objects.has_parent_image:
-                image = src_objects.parent_image
-        else:
-            image = workspace.image_set.get_image(image_names[0])
+
         if image is None:
             # Oh so sad - no image, just display the old and new labels
             figure = workspace.create_or_find_figure(title="FilterObjects, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(1,2))
-            figure.subplot_imshow_labels(0,0,src_objects.segmented,
+            figure.subplot_imshow_labels(0,0,src_objects_segmented,
                                          title="Original: %s"%src_name)
-            figure.subplot_imshow_labels(0,1,target_objects.segmented,
+            figure.subplot_imshow_labels(0,1,target_objects_segmented,
                                          title="Filtered: %s"%
                                          target_name,
                                          sharex = figure.subplot(0,0),
@@ -465,32 +481,30 @@ class FilterObjects(cpm.CPModule):
         else:
             figure = workspace.create_or_find_figure(title="FilterObjects, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(2,2))
-            figure.subplot_imshow_labels(0,0,src_objects.segmented,
+            figure.subplot_imshow_labels(0,0,src_objects_segmented,
                                          title="Original: %s"%src_name)
-            figure.subplot_imshow_labels(0,1,target_objects.segmented,
+            figure.subplot_imshow_labels(0,1,target_objects_segmented,
                                          title="Filtered: %s"%
                                          target_name,
                                          sharex = figure.subplot(0,0),
                                          sharey = figure.subplot(0,0))
-            outs = outline(target_objects.segmented) > 0
-            pixel_data = image.pixel_data
-            maxpix = np.max(pixel_data)
+            outs = outline(target_objects_segmented) > 0
+            maxpix = np.max(image)
             if maxpix == 0:
                 maxpix = 1.0
-            if len(pixel_data.shape) == 3:
-                picture = pixel_data.copy()
+            if len(image.shape) == 3:
+                picture = image.copy()
             else:
-                picture = np.dstack((pixel_data,pixel_data,pixel_data))
+                picture = np.dstack((image,image,image))
             red_channel = picture[:,:,0]
             red_channel[outs] = maxpix
             figure.subplot_imshow(1, 0, picture, "Filtered Outlines",
                                   sharex = figure.subplot(0,0),
                                   sharey = figure.subplot(0,0))
             
-            if self.show_window:
-                statistics = [  ["Number of objects pre-filtering",  np.max(src_objects.segmented)],
-                                ["Number of objects post-filtering", np.max(target_objects.segmented)]]
-                figure.subplot_table(1, 1, statistics, ratio=[.8,.2])
+            statistics = [  ["Number of objects pre-filtering",  np.max(src_objects_segmented)],
+                            ["Number of objects post-filtering", np.max(target_objects_segmented)]]
+            figure.subplot_table(1, 1, statistics, ratio=[.8,.2])
     
     def keep_one(self, workspace, src_objects):
         '''Return an array containing the single object to keep

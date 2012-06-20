@@ -472,7 +472,7 @@ class MeasureTexture(cpm.CPModule):
                                                          object_name, 
                                                          scale,
                                                          workspace)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.statistics = statistics
     
     def display(self, workspace):

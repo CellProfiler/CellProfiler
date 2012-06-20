@@ -352,7 +352,7 @@ class CalculateMath(cpm.CPModule):
                 m.add_measurement(object_name, feature, r)
             result = result[0]
                 
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.statistics = [("Measurement name","Measurement type","Result")]
             workspace.display_data.statistics += [(self.output_feature_name.value, 
                                                    "Image" if all_image_measurements else "Object", 

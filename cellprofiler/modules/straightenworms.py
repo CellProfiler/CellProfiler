@@ -418,7 +418,7 @@ class StraightenWorms(cpm.CPModule):
             mask = map_coordinates((orig_labels == i+1).astype(np.float32), 
                                    [ix[islice, jslice], jx[islice,jslice]]) > .5
             labels[islice, jslice][mask] = i+1
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.image_pairs = []
         #
         # Now create one straightened image for each input image
@@ -441,7 +441,7 @@ class StraightenWorms(cpm.CPModule):
                                            straightened_mask,
                                            parent_image = image)
             image_set.add(straightened_image_name, straightened_image)
-            if workspace.frame is not None:
+            if self.show_window:
                 workspace.display_data.image_pairs.append(
                     ((image.pixel_data, image_name),
                      (straightened_pixel_data, straightened_image_name)))

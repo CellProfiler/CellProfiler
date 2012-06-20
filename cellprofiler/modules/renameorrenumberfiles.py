@@ -229,7 +229,7 @@ class RenameOrRenumberFiles(cpm.CPModule):
         if self.wants_to_replace_spaces:
             new_file_name = new_file_name.replace(
                 " ", self.space_replacement.value)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.old_file_name = file_name
             workspace.display_data.new_file_name = new_file_name
         

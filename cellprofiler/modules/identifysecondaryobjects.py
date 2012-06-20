@@ -655,7 +655,6 @@ class IdentifySecondaryObjects(cpmi.Identify):
     def display(self, workspace):
         object_pct = workspace.display_data.object_pct
         img = workspace.display_data.img
-        outline_img = workspace.display_data.outline_img
         primary_outline = workspace.display_data.primary_outline
         secondary_outline = workspace.display_data.secondary_outline
         segmented_out = workspace.display_data.segmented_out
@@ -663,7 +662,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
 
         my_frame = workspace.create_or_find_figure(title="IdentifySecondaryObjects, image cycle #%d" % (
             workspace.measurements.image_set_number), subplots=(2, 2))
-        title = "Input image, cycle #%d" % (workspace.image_set.image_number)
+        title = "Input image, cycle #%d" % (workspace.measurements.image_number)
         my_frame.subplot_imshow_grayscale(0, 0, img, title)
         my_frame.subplot_imshow_labels(1, 0, segmented_out, "Labeled image",
                                        sharex = my_frame.subplot(0, 0),

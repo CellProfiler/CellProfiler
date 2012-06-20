@@ -396,7 +396,7 @@ class CalculateStatistics(cpm.CPModule):
             for statistic, value in expt_measurements.iteritems():
                 sfeature_name = '_'.join((statistic, object_name, feature_name))
                 measurements.add_experiment_measurement(sfeature_name, value[i])
-        if workspace.frame is not None:
+        if self.show_window:
             #
             # Create tables for the top 10 Z and V
             #

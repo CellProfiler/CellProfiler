@@ -101,23 +101,10 @@ class ConvertObjectsToImage(cpm.CPModule):
         objects = workspace.object_set.get_objects(self.object_name.value)
         labels = objects.segmented
         convert = True
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(title="ConvertObjectsToImage, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
-            figure.subplot_imshow_labels(0,0,labels,
-                                         "Original: %s"%self.object_name.value)
         if self.image_mode == IM_BINARY:
             pixel_data = labels != 0
-            if not workspace.frame is None:
-                figure.subplot_imshow_bw(1,0,pixel_data,self.image_name.value,
-                                         sharex=figure.subplot(0,0),
-                                         sharey=figure.subplot(0,0))
         elif self.image_mode == IM_GRAYSCALE:
             pixel_data = labels.astype(float) / (1.0 if np.max(labels) == 0 else np.max(labels))
-            if not workspace.frame is None:
-                figure.subplot_imshow_grayscale(1,0,pixel_data,self.image_name.value,
-                                                sharex=figure.subplot(0,0),
-                                                sharey=figure.subplot(0,0))
         elif self.image_mode == IM_COLOR:
             import matplotlib.cm
             from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
@@ -143,23 +130,42 @@ class ConvertObjectsToImage(cpm.CPModule):
             pixel_data = mapper.to_rgba(renumber_labels_for_display(labels))
             pixel_data = pixel_data[:,:,:3]
             pixel_data[labels == 0,:] = 0
-            if not workspace.frame is None:
-                figure.subplot_imshow(1, 0, pixel_data, self.image_name.value,
-                                      sharex=figure.subplot(0,0),
-                                      sharey=figure.subplot(0,0))
         elif self.image_mode == IM_UINT16:
             pixel_data = labels.copy()
-            if not workspace.frame is None:
-                figure.subplot_imshow_grayscale(1, 0, pixel_data,
-                                                self.image_name.value,
-                                                sharex=figure.subplot(0,0),
-                                                sharey=figure.subplot(0,0))
             convert = False
         image = cpi.Image(pixel_data, parent_image = objects.parent_image,
                           convert = convert)
         workspace.image_set.add(self.image_name.value, image)
-    
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+
+        if self.show_window:
+            workspace.display_data.labels = labels
+            workspace.display_data.pixel_data = pixel_data
+
+    def display(self, workspace):
+        labels = workspace.display_data.labels
+        pixel_data = workspace.display_data.pixel_data
+        figure = workspace.create_or_find_figure(title="ConvertObjectsToImage, image cycle #%d"%(
+                workspace.measurements.image_set_number),subplots=(2,1))
+        figure.subplot_imshow_labels(0, 0, labels,
+                                     "Original: %s" % self.object_name.value)
+        if self.image_mode == IM_BINARY:
+            figure.subplot_imshow_bw(1, 0, pixel_data,
+                                            self.image_name.value,
+                                            sharex=figure.subplot(0, 0),
+                                            sharey=figure.subplot(0, 0))
+        elif pixel_data.shape[1] == 2:
+            figure.subplot_imshow_grayscale(1, 0, pixel_data,
+                                            self.image_name.value,
+                                            sharex=figure.subplot(0, 0),
+                                            sharey=figure.subplot(0, 0))
+        else:
+            figure.subplot_imshow_grayscale(1, 0, pixel_data,
+                                            self.image_name.value,
+                                            sharex=figure.subplot(0, 0),
+                                            sharey=figure.subplot(0, 0))
+
+
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if variable_revision_number == 1 and from_matlab:
             from_matlab = False

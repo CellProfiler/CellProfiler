@@ -187,7 +187,6 @@ class CreateBatchFiles(cpm.CPModule):
         
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
-        frame = workspace.frame
         
         if pipeline.test_mode:
             return True
@@ -253,6 +252,7 @@ class CreateBatchFiles(cpm.CPModule):
             assert isinstance(m, cpmeas.Measurements)
     
             pipeline = pipeline.copy()
+            assert False, "Need to make sure use of workspace.frame is OK"
             target_workspace = cpw.Workspace(pipeline, None, None, None,
                                              m, image_set_list,
                                              workspace.frame)

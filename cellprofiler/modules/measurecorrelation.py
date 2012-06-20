@@ -189,10 +189,14 @@ class MeasureCorrelation(cpm.CPModule):
                                                               first_image_name,
                                                               second_image_name, 
                                                               object_name)
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(title="MeasureCorrelation, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-            figure.subplot_table(0,0,statistics,(0.2,0.2,0.2,0.2,0.2))
+        if self.show_window:
+            workspace.display_data.statistics = statistics
+
+    def display(self, workspace):
+        statistics = workspace.display_data.statistics
+        figure = workspace.create_or_find_figure(title="MeasureCorrelation, image cycle #%d"%(
+            workspace.measurements.image_set_number),subplots=(1,1))
+        figure.subplot_table(0,0,statistics,(0.2,0.2,0.2,0.2,0.2))
 
     def run_image_pair_images(self, workspace, first_image_name, 
                               second_image_name):

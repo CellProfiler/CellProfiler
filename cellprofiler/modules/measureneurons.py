@@ -385,7 +385,8 @@ class MeasureNeurons(cpm.CPModule):
                 if not d.has_key(file_path):
                     d[file_path] = True
                     if os.path.exists(file_path):
-                        if workspace.frame is not None:
+                        assert False, "Change to use handle_interaction"
+                        if self.show_window:
                             import wx
                             if wx.MessageBox(
                                 "%s already exists. Do you want to overwrite it?" %
@@ -401,13 +402,13 @@ class MeasureNeurons(cpm.CPModule):
                     fd = open(file_path, 'at')
                 np.savetxt(fd, table, fmt)
                 fd.close()
-                if workspace.frame is not None:
+                if self.show_window:
                     workspace.display_data.edge_graph = edge_graph
                     workspace.display_data.vertex_graph = vertex_graph
         #
         # Make the display image
         #
-        if workspace.frame is not None or self.wants_branchpoint_image:
+        if self.show_window or self.wants_branchpoint_image:
             branchpoint_image = np.zeros((skeleton.shape[0],
                                           skeleton.shape[1],
                                           3))
@@ -421,7 +422,7 @@ class MeasureNeurons(cpm.CPModule):
             branchpoint_image[end_mask, 2] = 1
             branchpoint_image[dilated_labels != 0,:] *= .875
             branchpoint_image[dilated_labels != 0,:] += .1
-            if workspace.frame:
+            if self.show_window:
                 workspace.display_data.branchpoint_image = branchpoint_image
             if self.wants_branchpoint_image:
                 bi = cpi.Image(branchpoint_image,

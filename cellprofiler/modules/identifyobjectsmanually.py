@@ -113,7 +113,7 @@ class IdentifyObjectsManually(I.Identify):
         #
         # Do the drawing here
         #
-        if workspace.frame is not None:
+        if self.show_window:
             figure = workspace.create_or_find_figure(title="IdentifyObjectsManually, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(2,1))
             figure.subplot_imshow_labels(0, 0, labels, objects_name)

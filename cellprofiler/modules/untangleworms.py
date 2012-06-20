@@ -570,7 +570,7 @@ class UntangleWorms(cpm.CPModule):
         distances = scind.distance_transform_edt(image.pixel_data)
         worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
         areas = np.bincount(labels.ravel())
-        if workspace.frame is not None:
+        if self.show_window:
             dworms = workspace.display_data.worms = []
             workspace.display_data.input_image = image.pixel_data
         for i in range(1, count+1):
@@ -602,7 +602,7 @@ class UntangleWorms(cpm.CPModule):
                 radial_profile += distances[ii, jj] * f
             worms.append(self.TrainingData(areas[i], cumul_lengths[-1],
                                            angles, radial_profile))
-            if workspace.frame is not None:
+            if self.show_window:
                 dworms.append(control_points)
     
     def post_group(self, workspace, grouping):
@@ -716,7 +716,7 @@ class UntangleWorms(cpm.CPModule):
                     values.appendChild(value)
             doc.writexml(fd, addindent="  ", newl="\n")
             fd.close()
-            if workspace.frame is not None:
+            if self.show_window:
                 from matplotlib.transforms import Bbox
                 figure = workspace.create_or_find_figure(
                     subplots = (4,1),
@@ -802,7 +802,7 @@ class UntangleWorms(cpm.CPModule):
         ijv, all_lengths, all_angles, all_control_coords_x, all_control_coords_y = \
            self.worm_descriptor_building(all_path_coords, params,
                                          labels.shape)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.input_image = image.pixel_data
             workspace.display_data.ijv = ijv
         object_set = workspace.object_set

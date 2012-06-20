@@ -343,25 +343,26 @@ class ImageMath(cpm.CPModule):
         #
         # Display results
         #
-        if workspace.frame is not None:
-            display_pixel_data = [image.pixel_data for image in images] + [output_pixel_data]
-            display_names = image_names + [self.output_image_name.value]
-            columns = (len(display_pixel_data) + 1 ) / 2
-            figure = workspace.create_or_find_figure(title="ImageMath, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(columns, 2))
-            for i in range(len(display_pixel_data)):
-                if display_pixel_data[i].ndim == 3:
-                    figure.subplot_imshow(i%columns, int(i / columns),
-                                          display_pixel_data[i],
-                                          title=display_names[i],
-                                          sharex = figure.subplot(0,0),
-                                          sharey = figure.subplot(0,0))
-                else:
-                    figure.subplot_imshow_bw(i%columns, int(i / columns),
-                                             display_pixel_data[i],
-                                             title=display_names[i],
-                                             sharex = figure.subplot(0,0),
-                                             sharey = figure.subplot(0,0))
+        if self.show_window:
+            workspace.display_data.pixel_data = \
+                [image.pixel_data for image in images] + [output_pixel_data]
+            workspace.display_data.display_names = \
+                image_names + [self.output_image_name.value]
+
+    def display(self, workspace):
+        pixel_data = workspace.display_data.pixel_data
+        display_names = workspace.display_data.display_names
+        columns = (len(pixel_data) + 1) / 2
+        figure = workspace.create_or_find_figure(title="ImageMath, image cycle #%d" % (
+            workspace.measurements.image_set_number), subplots=(columns, 2))
+        for i in range(len(pixel_data)):
+            show = figure.subplot_imshow if pixel_data[i].ndim == 3 else figure.subplot_imshow_bw
+            show(i % columns, int(i / columns),
+                 pixel_data[i],
+                 title=display_names[i],
+                 sharex = figure.subplot(0, 0),
+                 sharey = figure.subplot(0, 0))
+
 
     def validate_module(self, pipeline):
         '''Guarantee that at least one operand is an image'''

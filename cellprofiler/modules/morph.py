@@ -536,33 +536,38 @@ class Morph(cpm.CPModule):
         pixel_data = image.pixel_data
         for function in self.functions:
             count = function.repeat_count
-            
             pixel_data = self.run_function(function.function.value,
                                            pixel_data, mask, count,
                                            function.scale.value,
                                            function.custom_repeats.value)
         new_image = cpi.Image(pixel_data, parent_image = image) 
         workspace.image_set.add(self.output_image_name.value, new_image)
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(title="Morph, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
-            if pixel_data.dtype.kind == 'b':
-                figure.subplot_imshow_bw(0,0,image.pixel_data,
-                                         'Original image: %s'%
-                                         self.image_name.value)
-                figure.subplot_imshow_bw(1,0,pixel_data,
-                                         self.output_image_name.value,
-                                         sharex = figure.subplot(0,0),
-                                         sharey = figure.subplot(0,0))
-            else:
-                figure.subplot_imshow_grayscale(0,0,image.pixel_data,
-                                                'Original image: %s'%
-                                                self.image_name.value)
-                figure.subplot_imshow_grayscale(1,0,pixel_data,
-                                                self.output_image_name.value,
-                                                sharex = figure.subplot(0,0),
-                                                sharey = figure.subplot(0,0))
-    
+        if self.show_window:
+            workspace.display_data.image = image.pixel_data
+            workspace.display_data.pixel_data = pixel_data
+
+    def display(self, workspace):
+        image = workspace.display_data.image
+        pixel_data = workspace.display_data.pixel_data
+        figure = workspace.create_or_find_figure(title="Morph, image cycle #%d"%(
+            workspace.measurements.image_set_number),subplots=(2,1))
+        if pixel_data.dtype.kind == 'b':
+            figure.subplot_imshow_bw(0, 0, image,
+                                     'Original image: %s' %
+                                     self.image_name.value)
+            figure.subplot_imshow_bw(1, 0, pixel_data,
+                                     self.output_image_name.value,
+                                     sharex = figure.subplot(0, 0),
+                                     sharey = figure.subplot(0, 0))
+        else:
+            figure.subplot_imshow_grayscale(0, 0, image.pixel_data,
+                                            'Original image: %s' %
+                                            self.image_name.value)
+            figure.subplot_imshow_grayscale(1, 0, pixel_data,
+                                            self.output_image_name.value,
+                                            sharex = figure.subplot(0, 0),
+                                            sharey = figure.subplot(0, 0))
+
     def run_function(self, function_name, pixel_data, mask, count, scale,
                      custom_repeats):
         '''Apply the function once to the image, returning the result'''

@@ -210,6 +210,15 @@ class CorrectIlluminationApply(cpm.CPModule):
         #
         output_image = cpi.Image(output_pixels, parent_image = orig_image) 
         workspace.image_set.add(corrected_image_name, output_image)
+        #
+        # Save images for display
+        #
+        if self.show_window:
+            if not hasattr(workspace.display_data, 'images'):
+                workspace.display_data.images = {}
+            workspace.display_data.images[image_name] = orig_image.pixel_data
+            workspace.display_data.images[corrected_image_name] = output_pixels
+            workspace.display_data.images[illum_correct_name] = illum_function_pixel_data
 
     def display(self, workspace):
         ''' Display one row of orig / illum / output per image setting group'''
@@ -220,26 +229,24 @@ class CorrectIlluminationApply(cpm.CPModule):
             illum_correct_function_image_name = \
                 image.illum_correct_function_image_name.value
             corrected_image_name = image.corrected_image_name.value
-            orig_image = workspace.image_set.get_image(image_name)
-            illum_image = workspace.image_set.get_image(
-                illum_correct_function_image_name)
-            corrected_image = workspace.image_set.get_image(corrected_image_name)
-
+            orig_image = workspace.display_data.images[image_name]
+            illum_image = workspace.display_data.images[illum_correct_function_image_name]
+            corrected_image = workspace.display_data.images[corrected_image_name]
             def imshow(x, y, image, *args, **kwargs):
-                if image.pixel_data.ndim == 2:
+                if image.ndim == 2:
                     f = figure.subplot_imshow_grayscale
                 else:
                     f = figure.subplot_imshow_color
-                return f(x, y, image.pixel_data, *args, **kwargs)
-            
+                return f(x, y, image, *args, **kwargs)
+
             imshow(0, j, orig_image,
                    "Original image: %s" % image_name,
                    sharex=figure.subplot(0,0),
                    sharey=figure.subplot(0,0))
             title = ("Illumination function: %s\nmin=%f, max=%f" %
                      (illum_correct_function_image_name,
-                      round(illum_image.pixel_data.min(),4),
-                      round(illum_image.pixel_data.max(),4)))
+                      round(illum_image.min(), 4),
+                      round(illum_image.max(), 4)))
 
             imshow(1, j, illum_image, title,
                    sharex=figure.subplot(0,0),

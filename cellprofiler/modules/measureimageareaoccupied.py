@@ -193,7 +193,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
                 statistics += self.measure_objects(op,workspace) 
             if op.operand_choice == O_BINARY_IMAGE:
                 statistics += self.measure_images(op,workspace)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.statistics = statistics
     
     def display(self, workspace):

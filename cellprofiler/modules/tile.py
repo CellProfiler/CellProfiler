@@ -244,7 +244,7 @@ class Tile(cpm.CPModule):
             output_pixels = self.tile(workspace)
         output_image = cpi.Image(output_pixels)
         workspace.image_set.add(self.output_image.value, output_image)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.image = output_pixels
     
     def display(self, workspace):

@@ -490,12 +490,14 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         if self.save_dilated_image.value:
             workspace.image_set.add(self.dilated_image_name.value, 
                                     dilated_image)
-        # store images for potential display
-        workspace.display_data.avg_image = avg_image
-        workspace.display_data.dilated_image = dilated_image
-        workspace.display_data.output_image = output_image
+        if self.show_window:
+            # store images for  display
+            workspace.display_data.avg_image = avg_image.pixel_data
+            workspace.display_data.dilated_image = dilated_image.pixel_data
+            workspace.display_data.output_image = output_image.pixel_data
     
     def display(self, workspace):
+        # these are actually just the pixel data
         avg_image = workspace.display_data.avg_image
         dilated_image = workspace.display_data.dilated_image
         output_image = workspace.display_data.output_image
@@ -503,13 +505,13 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         figure = workspace.create_or_find_figure(title="CorrectIlluminationCalculate, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(2,2))
         def imshow(x, y, image, *args, **kwargs):
-            if image.pixel_data.ndim == 2:
+            if image.ndim == 2:
                 f = figure.subplot_imshow_grayscale
             else:
                 f = figure.subplot_imshow_color
-            return f(x, y, image.pixel_data, *args, **kwargs)
+            return f(x, y, image, *args, **kwargs)
         imshow(0, 0, avg_image, "Averaged image")
-        pixel_data = output_image.pixel_data
+        pixel_data = output_image
         imshow(0, 1, output_image,
                "Final illumination function",
                sharex=figure.subplot(0,0),
@@ -518,8 +520,8 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                "Dilated image",
                sharex=figure.subplot(0,0),
                sharey=figure.subplot(0,0))
-        statistics = [["Min value", round(np.min(output_image.pixel_data),2)],
-                      ["Max value", round(np.max(output_image.pixel_data),2)],
+        statistics = [["Min value", round(np.min(output_image),2)],
+                      ["Max value", round(np.max(output_image),2)],
                       ["Calculation type", self.intensity_choice.value]
                       ]
         if self.intensity_choice == IC_REGULAR:
@@ -530,7 +532,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         statistics.append(["Each or all?", self.each_or_all.value])
         statistics.append(["Smoothing method", self.smoothing_method.value])
         statistics.append(["Smoothing filter size",
-                           round(self.smoothing_filter_size(output_image.pixel_data.size),2)])
+                           round(self.smoothing_filter_size(output_image.size),2)])
         figure.subplot_table(1, 1, statistics, ratio=[.6,.4])
 
     def apply_dilation(self, image, orig_image=None):

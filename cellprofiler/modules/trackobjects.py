@@ -695,7 +695,7 @@ class TrackObjects(cpm.CPModule):
             image_pixels = figure_to_image(figure, dpi=figure.dpi)
             image = cpi.Image(image_pixels)
             workspace.image_set.add(self.image_name.value, image)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.labels = objects.segmented
             workspace.display_data.object_numbers = \
                      self.get_saved_object_numbers(workspace)

@@ -244,7 +244,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         objects.segmented = labels
         objects.parent_image = image
         object_set.add_objects(objects, object_name)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.i = center_y
             workspace.display_data.j = center_x
             workspace.display_data.angle = angles

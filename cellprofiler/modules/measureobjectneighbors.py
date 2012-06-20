@@ -485,7 +485,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
         
         image_set = workspace.image_set
         if self.wants_count_image.value:
-            neighbor_cm = get_colormap(self.count_colormap.value)
+            neighbor_cm_name = self.count_colormap.value
+            neighbor_cm = get_colormap(neighbor_cm_name)
             sm = matplotlib.cm.ScalarMappable(cmap = neighbor_cm)
             img = sm.to_rgba(neighbor_count_image)[:,:,:3]
             img[:,:,0][~ object_mask] = 0
@@ -494,9 +495,11 @@ class MeasureObjectNeighbors(cpm.CPModule):
             count_image = cpi.Image(img, masking_objects = objects)
             image_set.add(self.count_image_name.value, count_image)
         else:
-            neighbor_cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+            neighbor_cm_name = cpprefs.get_default_colormap()
+            neighbor_cm = matplotlib.cm.get_cmap(neighbor_cm_name)
         if self.neighbors_are_objects and self.wants_percent_touching_image:
-            percent_touching_cm = get_colormap(self.touching_colormap.value)
+            percent_touching_cm_name = self.touching_colormap.value
+            percent_touching_cm = get_colormap(percent_touching_cm_name)
             sm = matplotlib.cm.ScalarMappable(cmap = percent_touching_cm)
             img = sm.to_rgba(percent_touching_image)[:,:,:3]
             img[:,:,0][~ object_mask] = 0
@@ -506,13 +509,16 @@ class MeasureObjectNeighbors(cpm.CPModule):
             image_set.add(self.touching_image_name.value,
                           touching_image)
         else:
-            percent_touching_cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-        workspace.display_data.neighbor_cm = neighbor_cm
-        workspace.display_data.percent_touching_cm = percent_touching_cm
-        workspace.display_data.orig_labels = objects.segmented
-        workspace.display_data.labels = labels
-        workspace.display_data.object_mask = object_mask
-            
+            percent_touching_cm_name = cpprefs.get_default_colormap()
+            percent_touching_cm = matplotlib.cm.get_cmap(percent_touching_cm_name)
+
+        if self.show_window:
+            workspace.display_data.neighbor_cm_name = neighbor_cm_name
+            workspace.display_data.percent_touching_cm_name = percent_touching_cm_name
+            workspace.display_data.orig_labels = objects.segmented
+            workspace.display_data.labels = labels
+            workspace.display_data.object_mask = object_mask
+
     def display(self, workspace):
         figure = workspace.create_or_find_figure(title="MeasureObjectNeighbors, image cycle #%d"%(
             workspace.measurements.image_set_number),subplots=(2,2))
@@ -523,10 +529,11 @@ class MeasureObjectNeighbors(cpm.CPModule):
         labels = workspace.display_data.labels
         neighbor_count_image = workspace.display_data.neighbor_count_image
         neighbor_count_image[~ object_mask] = -1
-        neighbor_cm = workspace.display_data.neighbor_cm
+        neighbor_cm = get_colormap(workspace.display_data.neighbor_cm_name)
         neighbor_cm.set_under((0,0,0))
         if self.neighbors_are_objects:
-            percent_touching_cm = workspace.display_data.percent_touching_cm
+            percent_touching_cm = \
+                get_colormap(workspace.display_data.percent_touching_cm_name)
             percent_touching_cm.set_under((0,0,0))
             percent_touching_image = workspace.display_data.percent_touching_image 
             percent_touching_image[~ object_mask] = -1

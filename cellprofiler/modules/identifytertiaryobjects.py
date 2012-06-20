@@ -263,16 +263,13 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         secondary_labels = workspace.display_data.secondary_labels
         tertiary_labels = workspace.display_data.tertiary_labels
         tertiary_outlines = workspace.display_data.tertiary_outlines
-        import cellprofiler.gui.cpfigure as cpf
         #
         # Draw the primary, secondary and tertiary labels
         # and the outlines
         #
-        window_name = "CellProfiler:%s:%d" % (self.module_name, self.module_num)
-        my_frame = cpf.create_or_find(workspace.frame,
-                                      title="IdentifyTertiaryObjects, image cycle #%d" % (
-                workspace.display_data.image_set_number),
-                                    name=window_name, subplots=(2, 2))
+        my_frame = workspace.create_or_find_figure(
+            title="IdentifyTertiaryObjects, image cycle #%d" % (
+                workspace.display_data.image_set_number), subplots=(2, 2))
 
         title = "%s, cycle # %d" % (self.primary_objects_name.value,
                                     workspace.display_data.image_set_number)

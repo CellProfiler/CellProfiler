@@ -561,7 +561,7 @@ class RunImageJ(cpm.CPModule):
         '''
         from subimager.client import make_imagej_request
         self.get_command_settings(command, d)
-        wants_display = workspace.frame is not None
+        wants_display = self.show_window
         if wants_display:
             workspace.display_data.input_images = input_images = []
             workspace.display_data.output_images = output_images = []

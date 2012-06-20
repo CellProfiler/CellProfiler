@@ -279,7 +279,7 @@ class SendEmail(cpm.CPModule):
                 email_me.append(group.message.value)
         if len(email_me) > 0:
             d[K_RESULT] = self.send_email(workspace, email_me)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.result = d[K_RESULT]
             
     def display(self, workspace):

@@ -197,12 +197,17 @@ class MeasureGranularity(cpm.CPModule):
             statistic = self.run_on_image_setting(workspace, image)
             statistic += ["-"] * (max_scale - image.granular_spectrum_length.value)
             statistics.append(statistic)
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(title="MeasureGranularity, image cycle #%d"%(
+        if self.show_window:
+            workspace.display_data.statistics = statistics
+            workspace.display_data.ratio = [1.0 / float(max_scale+1)] * (max_scale+1)
+
+    def display(self, workspace):
+        statistics = workspace.display_data.statistics
+        ratio = workspace.display_data.ratio
+        figure = workspace.create_or_find_figure(title="MeasureGranularity, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(1,1))
-            ratio = [1.0 / float(max_scale+1)] * (max_scale+1)
-            figure.subplot_table(0, 0, statistics, ratio = ratio)
-    
+        figure.subplot_table(0, 0, statistics, ratio = ratio)
+
     def run_on_image_setting(self, workspace, image):
         assert isinstance(workspace, cpw.Workspace)
         image_set = workspace.image_set

@@ -357,8 +357,8 @@ class DefineGrid(cpm.CPModule):
         elif self.manual_choice == MAN_COORDINATES:
             gridding = self.run_coordinates(workspace)
         elif self.manual_choice == MAN_MOUSE:
-            serialized_gridding = workspace.interaction_request(self, background_image, workspace.measurements.image_set_number)
-            gridding = cpg.deserialize(serialized_gridding)
+            gridding = workspace.interaction_request(self, background_image,
+                                                     workspace.measurements.image_set_number)
         self.set_good_gridding(workspace, gridding)
         workspace.set_grid(self.grid_image.value, gridding)
         #
@@ -377,7 +377,7 @@ class DefineGrid(cpm.CPModule):
         background_image = self.get_background_image(workspace, gridding)
 
         workspace.display_data.gridding = gridding
-        background_image = workspace.background_image = background_image
+        workspace.display_data.background_image = background_image
         workspace.display_data.image_set_number = workspace.measurements.image_set_number
 
         if self.wants_image:
@@ -490,7 +490,7 @@ class DefineGrid(cpm.CPModule):
                                     shape)
     
     def handle_interaction(self, background_image, image_set_number):
-        return cpg.serialize(self.run_mouse(background_image, image_set_number))
+        return self.run_mouse(background_image, image_set_number)
 
     def run_mouse(self, background_image, image_set_number):
         '''Define a grid by running the UI
@@ -813,7 +813,7 @@ class DefineGrid(cpm.CPModule):
         return (row, column)
 
     def display(self, workspace):
-        if workspace.frame:
+        if self.show_window:
             figure = workspace.create_or_find_figure(title="DefineGrid, image cycle #%d" % (
                     workspace.measurements.image_set_number), subplots=(1, 1))
             figure.clf()

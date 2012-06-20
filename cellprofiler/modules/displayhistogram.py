@@ -131,7 +131,7 @@ class DisplayHistogram(cpm.CPModule):
     def run(self, workspace):
         """Run the module
         """
-        if workspace.frame:
+        if self.show_window:
             m = workspace.get_measurements()
             x = m.get_current_measurement(self.get_object(), self.x_axis.value)
             if self.wants_xbounds:
@@ -144,7 +144,7 @@ class DisplayHistogram(cpm.CPModule):
         self.run(workspace)
 
     def display(self, workspace):
-        if workspace.frame:
+        if self.show_window:
             figure = workspace.create_or_find_figure(title="DisplayHistogram, image cycle #%d" % (
                     workspace.measurements.image_set_number), subplots=(1, 1))
             figure.subplot_histogram(0, 0, workspace.display_data.x,

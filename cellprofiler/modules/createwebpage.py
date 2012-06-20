@@ -251,7 +251,7 @@ class CreateWebPage(cpm.CPModule):
         
         m = workspace.measurements
         statistics = []
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.statistics = statistics
             
         image_name = self.orig_image_name.value

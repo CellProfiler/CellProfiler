@@ -665,7 +665,8 @@ class ExportToSpreadsheet(cpm.CPModule):
             
     def check_excel_limits(self, workspace, file_name, row_count, col_count):
         '''Return False if we shouldn't write because of Excel'''
-        if self.excel_limits and workspace.frame is not None:
+        assert False, "Need to use handle_interaction"
+        if self.excel_limits and self.show_window:
             message = None
             if col_count > MAX_EXCEL_COLUMNS:
                 message = ("""The image file, "%s", will have %d columns, but Excel only supports %d.

@@ -272,25 +272,28 @@ class GrayToColor(cpm.CPModule):
                                       pd.pixel_data.shape))
             rgb_pixel_data = np.dstack(source_channels)
 
-        ###############
-        # Draw images #
-        ###############
-        if self.show_window:
-            workspace.display_data.input_image_names = input_image_names
-            workspace.display_data.rgb_pixel_data = rgb_pixel_data
-            
         ##############
         # Save image #
         ##############
         rgb_image = cpi.Image(rgb_pixel_data, parent_image = parent_image)
         rgb_image.channel_names = channel_names
         imgset.add(self.rgb_image_name.value, rgb_image)
-        
+
+        ##################
+        # Display images #
+        ##################
+        if self.show_window:
+            workspace.display_data.input_image_names = input_image_names
+            workspace.display_data.rgb_pixel_data = rgb_pixel_data
+            workspace.display_data.images = \
+                [imgset.get_image(name, must_be_grayscale=True).pixel_data
+                 for name in input_image_names]
+
     def display(self, workspace):
         input_image_names = workspace.display_data.input_image_names
-        title = "Gray to color #%d"%(self.module_num)
+        images = workspace.display_data.images
         nsubplots = len(input_image_names)
-        imgset = workspace.image_set
+
         if self.scheme_choice == SCHEME_CMYK:
             subplots = (3,2)
             subplot_indices = ((0,0),(0,1),(1,0),(1,1),(2,0))
@@ -305,19 +308,18 @@ class GrayToColor(cpm.CPModule):
             color_subplot = (nsubplots % 4, int(nsubplots / 4))
         my_frame = workspace.create_or_find_figure(title="GrayToColor, image cycle #%d"%(
             workspace.measurements.image_set_number), subplots = subplots)
-        for i, input_image_name in enumerate(input_image_names):
+        for i, (input_image_name, image_pixel_data) in \
+                enumerate(zip(input_image_names, images)):
             x,y = subplot_indices[i]
-            image = imgset.get_image(input_image_name,
-                                     must_be_grayscale=True)
-            my_frame.subplot_imshow_grayscale(x,y,image.pixel_data,
+            my_frame.subplot_imshow_grayscale(x, y, image_pixel_data,
                                               title=input_image_name,
                                               sharex = my_frame.subplot(0,0),
                                               sharey = my_frame.subplot(0,0))
             my_frame.subplot(x,y).set_visible(True)
-        for x,y in subplot_indices[len(input_image_names):]:
+        for x, y in subplot_indices[len(input_image_names):]:
             my_frame.subplot(x,y).set_visible(False)
-        my_frame.subplot_imshow(color_subplot[0], color_subplot[1]
-                                ,workspace.display_data.rgb_pixel_data,
+        my_frame.subplot_imshow(color_subplot[0], color_subplot[1],
+                                workspace.display_data.rgb_pixel_data,
                                 title=self.rgb_image_name.value,
                                 sharex = my_frame.subplot(0,0),
                                 sharey = my_frame.subplot(0,0))

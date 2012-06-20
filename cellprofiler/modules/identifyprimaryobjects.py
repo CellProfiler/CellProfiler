@@ -1163,14 +1163,12 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         return labeled_image
     
     def display(self, workspace):
-        import cellprofiler.gui.cpfigure as cpf
         if self.show_window:
             """Display the image and labeling"""
             window_name = "CellProfiler:%s:%d"%(self.module_name, self.module_num)
-            my_frame=cpf.create_or_find(workspace.frame, 
-                                        title="IdentifyPrimaryObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number), 
-                                        name=window_name, subplots=(2,2))
+            my_frame=workspace.create_or_find_figure(
+                title="IdentifyPrimaryObjects, image cycle #%d"%(
+                workspace.measurements.image_set_number), subplots=(2,2))
             
             orig_axes     = my_frame.subplot(0,0)
             label_axes    = my_frame.subplot(1,0, sharex=orig_axes, sharey=orig_axes)

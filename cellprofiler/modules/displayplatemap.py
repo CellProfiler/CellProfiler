@@ -173,7 +173,7 @@ class DisplayPlatemap(cpm.CPModule):
         return result
         
     def run(self, workspace):
-        if workspace.frame:
+        if self.show_window:
             m = workspace.get_measurements()
             # Get plates
             plates = m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value)

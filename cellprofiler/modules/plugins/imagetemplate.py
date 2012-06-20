@@ -260,7 +260,7 @@ class ImageTemplate(cpm.CPModule):
         #
         # Save intermediate results for display if the window frame is on
         #
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.input_pixels = pixels
             workspace.display_data.gradient = g
             workspace.display_data.output_pixels = output_pixels

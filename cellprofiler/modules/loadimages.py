@@ -1404,6 +1404,7 @@ class LoadImages(cpmodule.CPModule):
     def prepare_run_of_images(self, workspace):
         """Set up image providers for image files"""
         pipeline = workspace.pipeline
+        logger.warning("workspace.frame")
         frame = workspace.frame
         files = self.collect_files(pipeline.test_mode, frame)
         if len(files) == 0:
@@ -1426,6 +1427,7 @@ class LoadImages(cpmodule.CPModule):
         
         """
         pipeline = workspace.pipeline
+        logger.warning("workspace.frame")
         frame = workspace.frame
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -1468,6 +1470,7 @@ class LoadImages(cpmodule.CPModule):
         
         """
         pipeline = workspace.pipeline
+        logger.warning("workspace.frame")
         frame = workspace.frame
         #
         # Distribute files according to metadata tags. Each image_name
@@ -1780,6 +1783,7 @@ class LoadImages(cpmodule.CPModule):
     def prepare_run_of_flex(self, workspace):
         '''Set up image providers for flex files'''
         pipeline = workspace.pipeline
+        logger.warning("workspace.frame")
         frame = workspace.frame
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -2029,6 +2033,7 @@ class LoadImages(cpmodule.CPModule):
     def prepare_run_of_movies(self, workspace):
         """Set up image providers for movie files"""
         pipeline = workspace.pipeline
+        logger.warning("workspace.frame")
         frame = workspace.frame
         m = workspace.measurements
         files = self.collect_files(pipeline.test_mode, frame)
@@ -2247,7 +2252,7 @@ class LoadImages(cpmodule.CPModule):
                                                     pixel_data.shape[:2], filename)
                         if get_headless():
                             print warning
-                        elif workspace.frame is not None:
+                        elif self.show_window:
                             workspace.display_data.warning = warning
                 else:
                     #

@@ -302,7 +302,7 @@ class MeasureObjectIntensity(cpm.CPModule):
         return []
     
     def run(self, workspace):
-        if workspace.frame is not None:
+        if self.show_window:
             statistics = [("Image","Object","Feature","Mean","Median","STD")]
             workspace.display_data.statistics = statistics
         for image_name in [img.name for img in self.images]:
@@ -459,7 +459,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                                                    image_name.value)
                     m.add_measurement(object_name.value,measurement_name, 
                                       measurement)
-                    if workspace.frame is not None and len(measurement) > 0:
+                    if self.show_window and len(measurement) > 0:
                         statistics.append((image_name.value, object_name.value, 
                                            feature_name,
                                            np.round(np.mean(measurement),3),

@@ -238,7 +238,10 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             outlines = outline(labels!=0)
             outline_image = cpi.Image(outlines)
             workspace.image_set.add(self.outlines_name.value, outline_image)
-            
+        if self.show_window:
+            workspace.display_data.gridding = gridding
+            workspace.display_data.labels = labels
+
     def run_rectangle(self, workspace, gridding):
         '''Return a labels matrix composed of the grid rectangles'''
         return self.fill_grid(workspace, gridding)
@@ -430,24 +433,21 @@ class IdentifyObjectsInGrid(cpm.CPModule):
     def display(self, workspace):
         '''Display the resulting objects'''
         import matplotlib
-        gridding = workspace.get_grid(self.grid_name.value)
-        assert isinstance(gridding, cpg.CPGridInfo)
+        gridding = workspace.display_data.gridding
+        labels = workspace.display_data.labels
         objects_name = self.output_objects_name.value
-        o = workspace.object_set.get_objects(objects_name)
-        labels = o.segmented
-        figure = workspace.create_or_find_figure(title="IdentifyObjectsInGrid, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-        figure.subplot_imshow_labels(0,0,labels,
-                                     title="Identified %s"%objects_name)
-        axes = figure.subplot(0,0)
-        assert isinstance(axes,matplotlib.axes.Axes)
+        figure = workspace.create_or_find_figure(title="IdentifyObjectsInGrid, image cycle #%d" % (
+                workspace.measurements.image_set_number), subplots=(1, 1))
+        figure.subplot_imshow_labels(0, 0, labels,
+                                     title="Identified %s" % objects_name)
+        axes = figure.subplot(0, 0)
         for xc, yc in ((gridding.horiz_lines_x, gridding.horiz_lines_y),
                        (gridding.vert_lines_x, gridding.vert_lines_y)):
             for i in range(xc.shape[1]):
-                line = matplotlib.lines.Line2D(xc[:,i],yc[:,i],
+                line = matplotlib.lines.Line2D(xc[:, i], yc[:, i],
                                                color="red")
                 axes.add_line(line)
-                
+
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):
         '''Adjust setting values if they came from a previous revision

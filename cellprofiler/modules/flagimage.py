@@ -315,7 +315,7 @@ class FlagImage(cpm.CPModule):
         statistics = [ ("Flag", "Source", "Measurement", "Value","Pass/Fail")]
         for flag in self.flags:
             statistics += self.run_flag(workspace, flag)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.statistics = statistics
         
     def display(self, workspace):
@@ -331,7 +331,7 @@ class FlagImage(cpm.CPModule):
         image_set_count = m.image_set_count
         for i in range(image_set_count):
             self.run(workspace)
-            if workspace.frame is not None:
+            if self.show_window:
                 img_stats = workspace.display_data.statistics
                 if i == 0:
                     statistics = [["Image set"] + list(img_stats[0])]
@@ -339,7 +339,8 @@ class FlagImage(cpm.CPModule):
                                for x in img_stats[1:]]
             if i < image_set_count - 1:
                 m.next_image_set()
-        if workspace.frame is not None and image_set_count > 0:
+        assert False, "NEed to make run_as_data_cool called with show_window = True"
+        if self.show_window and image_set_count > 0:
             import wx
             from wx.grid import Grid, PyGridTableBase, EVT_GRID_LABEL_LEFT_CLICK
             from cellprofiler.gui import get_cp_icon

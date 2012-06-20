@@ -178,7 +178,7 @@ class ApplyThreshold(Identify):
                                         input.pixel_data, input.mask, 
                                         local_thresh, global_thresh,
                                         self.thresholded_image_name.value)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.input_pixel_data = input.pixel_data
             workspace.display_data.output_pixel_data = output.pixel_data
             statistics = workspace.display_data.statistics = [

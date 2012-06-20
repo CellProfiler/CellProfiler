@@ -294,7 +294,7 @@ class CalculateImageOverlap(cpm.CPModule):
         m.add_image_measurement(self.measurement_name(FTR_ADJUSTED_RAND_INDEX),
                                 adjusted_rand_index)
         
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.true_positives = true_positives
             workspace.display_data.true_negatives = true_negatives
             workspace.display_data.false_positives = false_positives
@@ -457,7 +457,7 @@ class CalculateImageOverlap(cpm.CPModule):
         FP_pixels = maskimg(FP_mask, FP_pixels)
         TN_pixels = maskimg(TN_mask, TN_pixels)
 
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.true_positives = TP_pixels
             workspace.display_data.true_negatives = FN_pixels
             workspace.display_data.false_positives = FP_pixels

@@ -459,7 +459,7 @@ class ClassifyObjects(cpm.CPModule):
     def run(self, workspace):
         """Classify the objects in the image cycle"""
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
-            if workspace.frame:
+            if self.show_window:
                 workspace.display_data.labels = []
                 workspace.display_data.bins = []
                 workspace.display_data.values = []
@@ -542,7 +542,7 @@ class ClassifyObjects(cpm.CPModule):
             image = cpi.Image(image,parent_image = objects.parent_image)
             workspace.image_set.add(self.image_name.value, image)
             
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.in_high_class=in_high_class
             workspace.display_data.labels = objects.segmented,
             workspace.display_data.saved_values = saved_values
@@ -627,7 +627,7 @@ class ClassifyObjects(cpm.CPModule):
             measurement_name = '_'.join((M_CATEGORY, feature_name,F_PCT_PER_BIN))
             measurements.add_measurement(cpmeas.IMAGE, measurement_name,
                                          100.0*float(num_hits)/num_values if num_values > 0 else 0)
-        if group.wants_images or (workspace.frame is not None):
+        if group.wants_images or (self.show_window):
             colors = self.get_colors(bin_hits.shape[1])
             object_bins = np.sum(bin_hits * th_idx,1)+1
             object_color = np.hstack(([0],object_bins))
@@ -638,7 +638,7 @@ class ClassifyObjects(cpm.CPModule):
                     group.image_name.value, 
                     cpi.Image(image, parent_image = objects.parent_image))
             
-            if workspace.frame is not None:
+            if self.show_window:
                 workspace.display_data.bins.append(object_bins)
                 workspace.display_data.labels.append(labels)
                 workspace.display_data.values.append(values)

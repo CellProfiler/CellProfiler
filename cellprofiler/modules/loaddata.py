@@ -997,7 +997,7 @@ class LoadData(cpm.CPModule):
                 elif tuple(pixel_data.shape[:2]) != image_size:
                     warning = bad_sizes_warning(image_size, first_filename,
                                                 pixel_data.shape, image.file_name)
-                    if workspace.frame is not None:
+                    if self.show_window:
                         workspace.display_data.warning = warning
                     else:
                         print warning

@@ -308,7 +308,7 @@ class ReassignObjectNumbers(cpm.CPModule):
             workspace.image_set.add(self.outlines_name.value,
                                     outline_image)
                     
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.orig_labels = objects.segmented
             workspace.display_data.output_labels = output_objects.segmented
     
@@ -381,7 +381,7 @@ class ReassignObjectNumbers(cpm.CPModule):
         objects = workspace.object_set.get_objects(self.objects_name.value)
         labels = objects.segmented
         image = self.get_image(workspace)
-        if workspace.frame is not None:
+        if self.show_window:
             # Save the image for display
             workspace.display_data.image = image
         #

@@ -280,7 +280,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""
         
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.statistics = \
                      [("Object","Feature","Mean","Median","STD")]
         for object_group in self.object_groups:
@@ -450,7 +450,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
         workspace.add_measurement(object_name, 
                                   "%s_%s"%(AREA_SHAPE,feature_name), 
                                   data)
-        if workspace.frame is not None and np.any(np.isfinite(data)) > 0:
+        if self.show_window and np.any(np.isfinite(data)) > 0:
             data = data[np.isfinite(data)]
             workspace.display_data.statistics.append(
                 (object_name, feature_name, 

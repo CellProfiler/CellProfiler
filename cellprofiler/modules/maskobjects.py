@@ -313,7 +313,7 @@ class MaskObjects(I.Identify):
         #
         # Save the input, mask and output images for display
         #
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.original_labels = original_objects.segmented
             workspace.display_data.final_labels = labels
             workspace.display_data.mask = mask

@@ -874,7 +874,7 @@ class PipelineController:
             # insert module last if nothing selected
             module_num = len(self.__pipeline.modules())+1 
         module = event.module_loader(module_num)
-        module.show_frame = True  # default to show in GUI
+        module.show_window = True  # default to show in GUI
         self.__pipeline.add_module(module)
         #
         # Major event - restart from scratch

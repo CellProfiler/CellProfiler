@@ -149,7 +149,7 @@ class TestPipeline(unittest.TestCase):
 Version:1
 SVNRevision:10253
 
-IdentifyPrimaryObjects:[module_num:1|svn_version:\'10244\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D]
+IdentifyPrimaryObjects:[module_num:1|svn_version:\'10244\'|variable_revision_number:7|show_window:False|notes:\x5B\x5D]
     Select the input image:OneCell
     Name the primary objects to be identified:Nuclei
     Typical diameter of objects, in pixel units (Min,Max):10,100
@@ -183,7 +183,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'10244\'|variable_revision_num
     Maximum number of objects:500
     Select the measurement to threshold with:None
 
-MeasureObjectIntensity:[module_num:2|svn_version:\'10087\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D]
+MeasureObjectIntensity:[module_num:2|svn_version:\'10087\'|variable_revision_number:3|show_window:False|notes:\x5B\x5D]
     Hidden:1
     Select an image to measure:OneCell
     Select objects to measure:Nuclei
@@ -207,11 +207,11 @@ MeasureObjectIntensity:[module_num:2|svn_version:\'10087\'|variable_revision_num
 Version:1
 SVNRevision:9870
 
-InputExternal:[module_num:1|svn_version:\'9859\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+InputExternal:[module_num:1|svn_version:\'9859\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
     Give this image a name:Hi
     Give this image a name:Ho
 
-OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
     Select an image a name to export:Hi
  """
         pipeline = cpp.Pipeline()
@@ -231,10 +231,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 Version:1
 SVNRevision:9870
 
-InputExternal:[module_num:1|svn_version:\'9859\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+InputExternal:[module_num:1|svn_version:\'9859\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
     Give this image a name:Hi
 
-OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
     Select an image a name to export:Hi
     Select an image a name to export:Ho
  """
@@ -254,11 +254,11 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
 Version:1
 SVNRevision:9870
 
-InputExternal:[module_num:1|svn_version:\'9859\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+InputExternal:[module_num:1|svn_version:\'9859\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
     Give this image a name:Hi
     Give this image a name:Ho
 
-OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D]
+OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D]
     Select an image a name to export:Hi
     Select an image a name to export:Ho
  """

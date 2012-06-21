@@ -116,6 +116,8 @@ class TestNoWX(unittest.TestCase):
                         break
                 if not removed_something:
                     break
+            for module in pipeline.modules():
+                module.show_window = False
             m = pipeline.run(image_set_end = 1)
             del m
         finally:

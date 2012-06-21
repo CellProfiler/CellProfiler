@@ -774,6 +774,7 @@ class PipelineController:
         if self.menu_id_to_module_name.has_key(event.Id):
             module_name = self.menu_id_to_module_name[event.Id]
             module = instantiate_module(module_name)
+            module.show_window = True  # default to show in GUI
             selected_modules = self.__get_selected_modules()
             if len(selected_modules) == 0:
                 module.module_num = len(self.__pipeline.modules())+1
@@ -824,6 +825,7 @@ class PipelineController:
             module = self.__pipeline.instantiate_module(m.module_name)
             module.module_num = module_num
             module.set_settings_from_values([str(s) for s in m.settings()], m.variable_revision_number, m.module_name, False)
+            module.show_window = m.show_window  # copy visibility
             self.__pipeline.add_module(module)
             module_num += 1
             
@@ -871,7 +873,9 @@ class PipelineController:
         else:
             # insert module last if nothing selected
             module_num = len(self.__pipeline.modules())+1 
-        self.__pipeline.add_module(event.module_loader(module_num))
+        module = event.module_loader(module_num)
+        module.show_frame = True  # default to show in GUI
+        self.__pipeline.add_module(module)
         #
         # Major event - restart from scratch
         #

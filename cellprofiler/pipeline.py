@@ -2077,6 +2077,7 @@ class Pipeline(object):
         for i, module in enumerate( 
             (Images(), Metadata(), NamesAndTypes(), Groups())):
             module.set_module_num(i + 1)
+            module.show_window = cpprefs.get_headless()
             self.add_module(module)
     
     def move_module(self,module_num,direction):

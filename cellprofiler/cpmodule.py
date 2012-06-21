@@ -76,7 +76,7 @@ class CPModule(object):
         self.__settings = []
         self.__notes = []
         self.__variable_revision_number = 0
-        self.__show_window = True
+        self.__show_window = False
         self.__wants_pause = False
         self.__svn_version = "Unknown"
         self.shared_state = {}  # used for maintaining state between modules, see get_dictionary()

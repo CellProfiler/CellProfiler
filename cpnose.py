@@ -1,8 +1,6 @@
 import nose
 import sys
 
-from killjavabridge import KillVMPlugin
-
 import numpy as np
 np.seterr(all='ignore')
 
@@ -24,5 +22,4 @@ if len(sys.argv) == 0:
 else:
     args = sys.argv
 
-nose.main(argv=args + ['--with-kill-vm', '--exe'],
-          addplugins=[KillVMPlugin()])
+nose.main(argv=args + ['--exe'])

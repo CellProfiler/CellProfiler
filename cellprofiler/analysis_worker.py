@@ -29,7 +29,7 @@ import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
-from cellprofiler.analysis import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, ServerExited, ImageSetSuccess, SharedDictionaryRequest, DictionaryReqRep, DictionaryReqRepRep, Ack
+from cellprofiler.analysis import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, ServerExited, ImageSetSuccess, SharedDictionaryRequest, DictionaryReqRep, DictionaryReqRepRep, Ack, BoundaryExited
 import subimager.client
 from cellprofiler.utilities.rpdb import Rpdb
 
@@ -117,7 +117,7 @@ def main():
         try:
             # fetch a job
             job = WorkRequest().send(work_socket)
-            if isinstance(job, ServerExited):
+            if isinstance(job, (ServerExited, BoundaryExited)):
                 continue  # server went away
 
             if isinstance(job, NoWorkReply):

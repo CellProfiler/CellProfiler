@@ -252,7 +252,8 @@ class CreateBatchFiles(cpm.CPModule):
             assert isinstance(m, cpmeas.Measurements)
     
             pipeline = pipeline.copy()
-            assert False, "Need to make sure use of workspace.frame is OK"
+            # this use of workspace.frame is okay, since we're called from
+            # prepare_run which happens in the main wx thread.
             target_workspace = cpw.Workspace(pipeline, None, None, None,
                                              m, image_set_list,
                                              workspace.frame)

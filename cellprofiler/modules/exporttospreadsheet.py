@@ -665,7 +665,6 @@ class ExportToSpreadsheet(cpm.CPModule):
             
     def check_excel_limits(self, workspace, file_name, row_count, col_count):
         '''Return False if we shouldn't write because of Excel'''
-        assert False, "Need to use handle_interaction"
         if self.excel_limits and self.show_window:
             message = None
             if col_count > MAX_EXCEL_COLUMNS:
@@ -677,7 +676,10 @@ Do you want to save it anyway?""" %
 Do you want to save it anyway?""" %
                             (file_name, row_count, MAX_EXCEL_COLUMNS))
             if message is not None:
+                # This is okay, as the only path to this function is via
+                # post_run(), which is called in the main thread.
                 import wx
+                assert wx.Thread_IsMain(), "exporttospreadsheet.post_run() called in non-main thread."
                 if wx.MessageBox(message, "Excel limits exceeded", wx.YES_NO) == wx.ID_NO:
                     return False
         return True

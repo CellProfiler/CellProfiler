@@ -1404,7 +1404,7 @@ class LoadImages(cpmodule.CPModule):
     def prepare_run_of_images(self, workspace):
         """Set up image providers for image files"""
         pipeline = workspace.pipeline
-        logger.warning("workspace.frame")
+        # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         files = self.collect_files(pipeline.test_mode, frame)
         if len(files) == 0:
@@ -1427,7 +1427,7 @@ class LoadImages(cpmodule.CPModule):
         
         """
         pipeline = workspace.pipeline
-        logger.warning("workspace.frame")
+        # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -1470,7 +1470,7 @@ class LoadImages(cpmodule.CPModule):
         
         """
         pipeline = workspace.pipeline
-        logger.warning("workspace.frame")
+        # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         #
         # Distribute files according to metadata tags. Each image_name
@@ -1783,7 +1783,7 @@ class LoadImages(cpmodule.CPModule):
     def prepare_run_of_flex(self, workspace):
         '''Set up image providers for flex files'''
         pipeline = workspace.pipeline
-        logger.warning("workspace.frame")
+        # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -2033,7 +2033,7 @@ class LoadImages(cpmodule.CPModule):
     def prepare_run_of_movies(self, workspace):
         """Set up image providers for movie files"""
         pipeline = workspace.pipeline
-        logger.warning("workspace.frame")
+        # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
         files = self.collect_files(pipeline.test_mode, frame)

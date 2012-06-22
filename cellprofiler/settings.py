@@ -2835,9 +2835,8 @@ class Table(Setting):
         column_indices = [self.column_names.index(c) for c in columns]
         if isinstance(row_index, int):
             row_index = slice(row_index, row_index+1)
-        return [[row[column_index] for i in column_indices]
-                for row in self.data[row_index]]
-    
+        return [[row[ci] for ci in column_indices] for row in self.data[row_index]]
+
     def set_row_attribute(self, row_index, attribute, set_attribute = True):
         '''Set an attribute on a row
         

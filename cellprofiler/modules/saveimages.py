@@ -959,21 +959,6 @@ class SaveImages(cpm.CPModule):
         return setting_values, variable_revision_number, from_matlab
     
     def validate_module(self, pipeline):
-        if (self.save_image_or_figure == IF_MOVIE and not has_bioformats):
-            raise cps.ValidationError("CellProfiler requires bioformats to write movies.",
-                                      self.save_image_or_figure)
-
-        if sys.platform == 'darwin':
-            if (self.file_format in FF_SUPPORTING_16_BIT and 
-                self.save_image_or_figure == IF_IMAGE and
-                self.get_bit_depth()== '16' and 
-                not has_tiff):
-                raise cps.ValidationError("Writing TIFFs on OS X using bioformats may cause CellProfiler to hang or crash (install libtiff & pylibtiff).",
-                                          self.bit_depth)
-            if (self.save_image_or_figure == IF_MOVIE):
-                raise cps.ValidationError("Saving movies on OS X may cause CellProfiler to hang or crash.",
-                                          self.save_image_or_figure)
-
         if (self.save_image_or_figure in (IF_IMAGE, IF_MASK, IF_CROPPING) and
             self.when_to_save in (WS_FIRST_CYCLE, WS_EVERY_CYCLE)):
             #

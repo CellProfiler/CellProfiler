@@ -325,7 +325,7 @@ class PipelineController:
             display_error_dialog(self.__frame, e, self.__pipeline,
                                  "Failed to save workspace",
                                  continue_only = True)
-            self__workspace.load(old_filename, False)
+            self.__workspace.load(old_filename, False)
         
     def __on_load_pipeline(self,event):
         if self.__dirty_pipeline:
@@ -462,7 +462,7 @@ class PipelineController:
         data = pv.PlateData()
         try:
             self.__workspace.refresh_image_set()
-        except:
+        except Exception, e:
             display_error_dialog(self.__frame, e, self.__pipeline,
                                  "Failed to make image sets",
                                  continue_only=True)
@@ -1404,12 +1404,6 @@ class PipelineController:
         self.__pipeline_list_view.on_stop_debugging()
         self.__pipeline.test_mode = False
         self.__pipeline.end_run()
-    
-    def on_debug_step(self, event):
-        
-        modules = self.__pipeline_list_view.get_selected_modules()
-        module = modules[0]
-        self.do_step(module)
     
     def do_step(self, module):
         """Do a debugging step by running a module

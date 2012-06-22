@@ -1831,8 +1831,8 @@ class StringReferencer(object):
             if not found:
                 if self.blockdesc[i][self.SR_BLOCKDESC_IDX_LEN] == self.blocksize:
                     # Need to split the block before insertion
-                    sr_split_block(i)
-                    i, j, idx = sr_search(s)
+                    self.sr_split_block(i)
+                    i, j, idx = self.sr_search(s)
                 idx = self.refs.shape[0]
                 self.refs.resize(idx+1, 0)
                 self.refs[idx, : ] = (i, j)
@@ -1873,9 +1873,9 @@ class StringReferencer(object):
         
         j_ref, j_data_idx, j_data_len, j_subblock = self.block[i, j, :]
         j_data = self.data[i, j_data_idx:(j_data_idx+j_data_len)]
-        if i0 == SR_NULL:
+        if i0 == self.SR_NULL:
             # Splitting the root. We need to promote.
-            i0 = self.sr_alloc_block(blockdesc, ol, data)
+            i0 = self.sr_alloc_block(self.blockdesc, ol, data)
             j0 = 0
             self.blockdesc[i0, self.SR_BLOCKDESC_LEFTMOST_CHILD] = i
         elif self.blockdesc[i0, self.SR_BLOCKDESC_IDX_LEN] == self.blocksize:

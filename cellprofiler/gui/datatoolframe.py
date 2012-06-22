@@ -57,15 +57,15 @@ class DataToolFrame(wx.Frame):
         self.module = instantiate_module(module_name)
         self.pipeline = cpp.Pipeline()
         if h5py.is_hdf5(measurements_file_name):
-            self.workspace = cpw.Workspace(pipeline, self.module, None, None, None,
+            self.workspace = cpw.Workspace(self.pipeline, self.module, None, None, None,
                                            None)
             self.workspace.load(measurements_file_name, True)
             self.measurements = self.workspace.measurements
         else:
             self.pipeline.load(measurements_file_name)
             self.load_measurements(measurements_file_name)
-            self.workspace = cpw.Workspace(pipeline, self.module, None, None,
-                                           measurements, None)
+            self.workspace = cpw.Workspace(self.pipeline, self.module, None, None,
+                                           self.measurements, None)
         
         self.module.module_num = len(self.pipeline.modules())+1
         self.pipeline.add_module(self.module)

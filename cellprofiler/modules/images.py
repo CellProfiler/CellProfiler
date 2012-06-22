@@ -491,9 +491,9 @@ class ExtensionPredicate(cps.Filter.FilterPredicate):
         doc = "The extension is associated with PNG image files")
     IS_IMAGE_PREDICATE = cps.Filter.FilterPredicate(
         'isimage', 'the extension of an image file',
-        lambda x: any([Images.ExtensionPredicate.IS_TIF_PREDICATE(x), 
-                       Images.ExtensionPredicate.IS_JPEG_PREDICATE(x),
-                       Images.ExtensionPredicate.IS_PNG_PREDICATE(x)]), [],
+        lambda x: any([ExtensionPredicate.IS_TIF_PREDICATE(x), 
+                       ExtensionPredicate.IS_JPEG_PREDICATE(x),
+                       ExtensionPredicate.IS_PNG_PREDICATE(x)]), [],
         'Is an extension commonly associated with image files')
     IS_FLEX_PREDICATE = cps.Filter.FilterPredicate(
         'isflex', '"flex"',

@@ -2117,7 +2117,7 @@ class Pipeline(object):
             self.__settings[idx] = prev_settings
         else:
             raise ValueError('Unknown direction: %s'%(direction))    
-        self.notify_listeners(ModuleMovedPipelineEvent(new_module_num,direction))
+        self.notify_listeners(ModuleMovedPipelineEvent(new_module_num, direction, False))
         def undo():
             self.move_module(module.module_num, 
                              DIRECTION_DOWN if direction == DIRECTION_UP

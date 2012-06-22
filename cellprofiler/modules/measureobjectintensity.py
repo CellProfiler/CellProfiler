@@ -466,8 +466,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                                            np.round(np.median(measurement),3),
                                            np.round(np.std(measurement),3)))
         
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="MeasureObjectIntensity, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
         figure.subplot_table(0,0,workspace.display_data.statistics,
                              ratio=(.2,.2,.3,.1,.1,.1))

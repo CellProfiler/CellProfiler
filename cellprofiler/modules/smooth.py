@@ -171,9 +171,8 @@ class Smooth(cpm.CPModule):
         workspace.display_data.pixel_data = pixel_data
         workspace.display_data.output_pixels = output_pixels
 
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="Smooth, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
+    def display(self, workspace, figure):
+        figure.set_subplots((2, 1))
         figure.subplot_imshow_grayscale(0, 0, 
                                         workspace.display_data.pixel_data,
                                         "Original: %s" % 

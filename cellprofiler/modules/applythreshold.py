@@ -188,9 +188,8 @@ class ApplyThreshold(Identify):
                 value = workspace.measurements.get_current_image_measurement(column[1])
                 statistics += [(column[1].split('_')[1], str(value))]
                 
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="ApplyThreshold, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,3))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 3))
 
         figure.subplot_imshow_grayscale(0,0, workspace.display_data.input_pixel_data,
                               title = "Original image: %s" % 

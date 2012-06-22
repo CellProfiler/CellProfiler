@@ -339,10 +339,9 @@ class UnmixColors(cpm.CPModule):
         output_image = cpi.Image(image, parent_image = input_image)
         workspace.image_set.add(image_name, output_image)
         
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display all of the images in a figure'''
-        figure = workspace.create_or_find_figure(title="UnmixColors, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(len(self.outputs)+1,1))
+        figure.set_subplots((len(self.outputs)+1, 1))
         image_set = workspace.image_set
         input_image_name = self.input_image_name.value
         input_image = image_set.get_image(input_image_name,

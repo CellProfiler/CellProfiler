@@ -652,7 +652,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             workspace.display_data.secondary_outline = secondary_outline
             workspace.display_data.global_threshold = global_threshold
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         object_pct = workspace.display_data.object_pct
         img = workspace.display_data.img
         primary_outline = workspace.display_data.primary_outline
@@ -660,38 +660,37 @@ class IdentifySecondaryObjects(cpmi.Identify):
         segmented_out = workspace.display_data.segmented_out
         global_threshold = workspace.display_data.global_threshold
 
-        my_frame = workspace.create_or_find_figure(title="IdentifySecondaryObjects, image cycle #%d" % (
-            workspace.measurements.image_set_number), subplots=(2, 2))
+        figure.set_subplots((2, 2))
         title = "Input image, cycle #%d" % (workspace.measurements.image_number)
-        my_frame.subplot_imshow_grayscale(0, 0, img, title)
-        my_frame.subplot_imshow_labels(1, 0, segmented_out, "Labeled image",
-                                       sharex = my_frame.subplot(0, 0),
-                                       sharey = my_frame.subplot(0, 0))
+        figure.subplot_imshow_grayscale(0, 0, img, title)
+        figure.subplot_imshow_labels(1, 0, segmented_out, "Labeled image",
+                                       sharex = figure.subplot(0, 0),
+                                       sharey = figure.subplot(0, 0))
 
         outline_img = np.dstack((img, img, img))
         cpmi.draw_outline(outline_img, secondary_outline > 0,
                           cpprefs.get_secondary_outline_color())
-        my_frame.subplot_imshow(0, 1, outline_img, "Outlined image",
+        figure.subplot_imshow(0, 1, outline_img, "Outlined image",
                                 normalize=False,
-                                sharex = my_frame.subplot(0, 0),
-                                sharey = my_frame.subplot(0, 0))
+                                sharex = figure.subplot(0, 0),
+                                sharey = figure.subplot(0, 0))
 
         primary_img = np.dstack((img, img, img))
         cpmi.draw_outline(primary_img, primary_outline > 0,
                           cpprefs.get_primary_outline_color())
         cpmi.draw_outline(primary_img, secondary_outline > 0,
                           cpprefs.get_secondary_outline_color())
-        my_frame.subplot_imshow(1, 1, primary_img,
+        figure.subplot_imshow(1, 1, primary_img,
                                 "Primary and output outlines",
                                 normalize=False,
-                                sharex = my_frame.subplot(0, 0),
-                                sharey = my_frame.subplot(0, 0))
+                                sharex = figure.subplot(0, 0),
+                                sharey = figure.subplot(0, 0))
         if global_threshold is not None:
-            my_frame.status_bar.SetFields(
+            figure.status_bar.SetFields(
                 ["Threshold: %.3f" % global_threshold,
                  "Area covered by objects: %.1f %%" % object_pct])
         else:
-            my_frame.status_bar.SetFields(
+            figure.status_bar.SetFields(
                 ["Area covered by objects: %.1f %%" % object_pct])
 
 

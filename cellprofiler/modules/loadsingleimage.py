@@ -424,12 +424,11 @@ class LoadSingleImage(cpm.CPModule):
     def is_interactive(self):
         return False
     
-    def display(self, workspace):
+    def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
         title = "Load single image: image cycle # %d"%(
             workspace.measurements.image_set_number+1)
-        figure = workspace.create_or_find_figure(title=title,
-                                                 subplots=(1,1))
+        figure.set_subplots((1, 1))
         figure.subplot_table(0,0, statistics)
     
     def get_measurement_columns(self, pipeline):

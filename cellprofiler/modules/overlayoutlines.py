@@ -171,9 +171,8 @@ class OverlayOutlines(cpm.CPModule):
             workspace.display_data.image_pixel_data = image.pixel_data
         workspace.display_data.pixel_data = pixel_data
 
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="OverlayOutlines, image cycle #%d"%(
-        workspace.measurements.image_set_number),subplots=(1,1))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
 
         pixel_data = workspace.display_data.pixel_data
         if self.blank_image.value:
@@ -184,11 +183,11 @@ class OverlayOutlines(cpm.CPModule):
                 figure.subplot_imshow_bw(0, 0, pixel_data,
                                          self.output_image_name.value)
         else:
-            figure = workspace.create_or_find_figure(subplots=(2, 1))
+            figure.set_subplots((2, 1))
 
             image_pixel_data = workspace.display_data.image_pixel_data
             if image_pixel_data.ndim == 2:
-                figure.subplot_imshow_bw(0, 0, image.pixel_data,
+                figure.subplot_imshow_bw(0, 0, image_pixel_data,
                                          "Original: %s" %
                                          self.image_name.value)
             else:

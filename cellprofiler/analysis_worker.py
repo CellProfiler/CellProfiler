@@ -185,10 +185,11 @@ def main():
                     # the run was cancelled before we got a reply.
                     raise CancelledException()  # XXX - TODO - test this code path
 
-            def display_handler(module, display_data):
+            def display_handler(module, display_data, image_set_number):
                 '''handle display requests'''
                 req = DisplayRequest(module_num=module.module_num,
-                                     display_data_dict=display_data.__dict__)
+                                     display_data_dict=display_data.__dict__,
+                                     image_set_number=image_set_number)
                 rep = req.send(work_socket)
                 if isinstance(rep, ServerExited):
                     # the run was cancelled before we got a reply.

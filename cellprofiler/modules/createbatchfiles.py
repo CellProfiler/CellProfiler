@@ -201,14 +201,13 @@ class CreateBatchFiles(cpm.CPModule):
         # all the actual work is done in prepare_run
         pass
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.show_window:
             if workspace.pipeline.test_mode:
                 message = 'In test mode: no batch files created'
             else:
                 message = 'Batch files created.'
-            figure = workspace.create_or_find_figure(title="CreateBatchFiles, image cycle #%d"%(
-                workspace.measurements.image_set_number), subplots=(1,1))
+            figure.set_subplots((1, 1))
             figure.subplot_table(0, 0, [[message]])
 
     def validate_module(self, pipeline):

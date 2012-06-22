@@ -268,11 +268,11 @@ class ColorToGray(cpm.CPModule):
         else:
             self.run_split(workspace, image)
     
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.should_combine():
-            self.display_combine(workspace)
+            self.display_combine(workspace, figure)
         else:
-            self.display_split(workspace)
+            self.display_split(workspace, figure)
 
     def run_combine(self, workspace, image):
         """Combine images to make a grayscale one
@@ -292,14 +292,12 @@ class ColorToGray(cpm.CPModule):
         workspace.display_data.output_image = output_image
        
     
-    def display_combine(self, workspace):
+    def display_combine(self, workspace, figure):
         import matplotlib.cm
 
         input_image = workspace.display_data.input_image
         output_image = workspace.display_data.output_image
-        figure = workspace.create_or_find_figure(title="ColorToGray, image cycle #%d"%(
-                workspace.measurements.image_set_number),
-                                                 subplots=(1,2))
+        figure.set_subplots((1, 2))
         figure.subplot_imshow(0, 0, input_image, 
                               title = "Original image: %s"%(self.image_name))
         figure.subplot_imshow(0, 1, output_image,
@@ -322,7 +320,7 @@ class ColorToGray(cpm.CPModule):
         workspace.display_data.input_image = input_image
         workspace.display_data.disp_collection = disp_collection
     
-    def display_split(self, workspace):
+    def display_split(self, workspace, figure):
         import matplotlib.cm
 
         input_image = workspace.display_data.input_image
@@ -332,9 +330,7 @@ class ColorToGray(cpm.CPModule):
             subplots = (1,2)
         else:
             subplots = (2,2)
-        figure=workspace.create_or_find_figure(title="ColorToGray, image cycle #%d"%(
-                workspace.measurements.image_set_number),
-                                               subplots=subplots)
+        figure.set_subplots(subplots)
         figure.subplot_imshow(0, 0, input_image,
                               title = "Original image")
         

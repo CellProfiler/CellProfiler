@@ -312,7 +312,7 @@ class ReassignObjectNumbers(cpm.CPModule):
             workspace.display_data.orig_labels = objects.segmented
             workspace.display_data.output_labels = output_objects.segmented
     
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display the results of relabeling
         
         workspace - workspace containing saved display data
@@ -320,8 +320,7 @@ class ReassignObjectNumbers(cpm.CPModule):
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         import matplotlib.cm as cm
         
-        figure = workspace.create_or_find_figure(title="ReassignObjectNumbers, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,2))
+        figure.set_subplots((1, 2))
         figure.subplot_imshow_labels(0,0, workspace.display_data.orig_labels,
                                      title = self.objects_name.value)
         if self.wants_image:

@@ -196,9 +196,8 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         if self.show_window:
             workspace.display_data.statistics = statistics
     
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="MeasureImageAreaOccupied, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
         figure.subplot_table(0, 0, workspace.display_data.statistics,
                              ratio=(.25,.25,.25))
         

@@ -819,10 +819,10 @@ class StraightenWorms(cpm.CPModule):
         add_object_location_measurements(m, straightened_objects_name,
                                          labels, nworms)
         
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display the results of the worm straightening'''
         image_pairs = workspace.display_data.image_pairs
-        figure = workspace.create_or_find_figure(subplots=(2,len(image_pairs)))
+        figure.set_subplots((2, len(image_pairs)))
         src_axis = None
         for i, ((src_pix, src_name), (dest_pix, dest_name)) in enumerate(image_pairs):
             if src_pix.ndim == 2:

@@ -44,6 +44,7 @@ from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
 import cellprofiler.gui.parametersampleframe as psf
 import cellprofiler.analysis as cpanalysis
+import cellprofiler.cpmodule as cpmodule
 
 logger = logging.getLogger(__name__)
 RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -1104,7 +1105,13 @@ class PipelineController:
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)
         try:
             module = self.__pipeline.modules()[module_num - 1]
-            module.display(self.__workspace)
+            if module.display != cpmodule.CPModule.display:
+                fig = self.__workspace.get_module_figure(module,
+                                                         evt.image_set_number,
+                                                         self.__frame)
+                fig.Raise()
+                module.display(self.__workspace, fig)
+                fig.Refresh()
         except:
             _, exc, tb = sys.exc_info()
             display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
@@ -1427,7 +1434,9 @@ class PipelineController:
             self.__debug_grids = workspace.set_grids(self.__debug_grids)
             module.run(workspace)
             if module.show_window:
-                module.display(workspace)
+                fig = workspace.get_module_figure(module, image_set_number)
+                module.display(workspace, fig)
+                fig.Refresh()
             workspace.refresh()
             if workspace.disposition == cpw.DISPOSITION_SKIP:
                 last_module_num = self.__pipeline.modules()[-1].module_num

@@ -706,11 +706,10 @@ class MeasureImageQuality(cpm.CPModule):
             statistics += self.run_on_image_group(image_group, workspace)
         workspace.display_data.statistics = statistics
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.show_window:
             statistics = workspace.display_data.statistics
-            figure = workspace.create_or_find_figure(title="%s, image cycle #%d"%(
-                workspace.module.module_name, workspace.measurements.image_set_number),subplots=(1,1))
+            figure.set_subplots((1, 1))
             figure.subplot_table(0,0,statistics)
     
     def post_run(self, workspace):

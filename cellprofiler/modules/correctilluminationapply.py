@@ -220,10 +220,9 @@ class CorrectIlluminationApply(cpm.CPModule):
             workspace.display_data.images[corrected_image_name] = output_pixels
             workspace.display_data.images[illum_correct_name] = illum_function_pixel_data
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         ''' Display one row of orig / illum / output per image setting group'''
-        figure = workspace.create_or_find_figure(title="CorrectIlluminationApply, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(3,len(self.images)))
+        figure.set_subplots((3, len(self.images)))
         for j, image in enumerate(self.images):
             image_name = image.image_name.value
             illum_correct_function_image_name = \

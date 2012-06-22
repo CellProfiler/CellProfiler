@@ -236,7 +236,7 @@ class Resize(cpm.CPModule):
                 workspace.display_data.input_image_names += [input_image_name]
                 workspace.display_data.output_image_names += [output_image_name]
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display the resized images
 
         workspace - the workspace being run
@@ -250,9 +250,7 @@ class Resize(cpm.CPModule):
         input_image_names = workspace.display_data.input_image_names
         output_image_names = workspace.display_data.output_image_names
 
-        figure = workspace.create_or_find_figure(title="Resize, image cycle #%d" % (
-                workspace.measurements.image_set_number),
-                                                 subplots=(2, len(input_images)))
+        figure.set_subplots((2, len(input_images)))
 
         for i, (input_image_pixels, output_image_pixels, input_image_name, output_image_name) in \
                 enumerate(zip(input_images, output_images, input_image_names, output_image_names)):

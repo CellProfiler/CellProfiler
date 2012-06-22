@@ -499,16 +499,18 @@ class CPModule(object):
         """
         pass
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         """Display the results, and possibly intermediate results, as
         appropriate for this module.  This method will be called after
         run() is finished if self.show_window is True.
 
         The run() method should store whatever data display() needs in
-        workspace.display_data.
+        workspace.display_data.  The module is given a CPFigure to use for
+        display in the third argument.
         """
-        pass
-    
+        figure.Close()  # modules that don't override display() shouldn't
+                        # display anything
+
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Prepare to create a batch file
         

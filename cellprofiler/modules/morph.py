@@ -546,11 +546,10 @@ class Morph(cpm.CPModule):
             workspace.display_data.image = image.pixel_data
             workspace.display_data.pixel_data = pixel_data
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         image = workspace.display_data.image
         pixel_data = workspace.display_data.pixel_data
-        figure = workspace.create_or_find_figure(title="Morph, image cycle #%d"%(
-            workspace.measurements.image_set_number),subplots=(2,1))
+        figure.set_subplots((2, 1))
         if pixel_data.dtype.kind == 'b':
             figure.subplot_imshow_bw(0, 0, image,
                                      'Original image: %s' %

@@ -717,6 +717,7 @@ class UntangleWorms(cpm.CPModule):
             doc.writexml(fd, addindent="  ", newl="\n")
             fd.close()
             if self.show_window:
+                assert False, "Needs update for use with multiprocessing"
                 from matplotlib.transforms import Bbox
                 figure = workspace.create_or_find_figure(
                     subplots = (4,1),
@@ -894,9 +895,9 @@ class UntangleWorms(cpm.CPModule):
                     measurements.add_measurement(name, feature, values[:, i])
             
     
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.mode == MODE_UNTANGLE:
-            figure = workspace.create_or_find_figure(subplots = (2,1))
+            figure.set_subplots((2, 1))
             axes = figure.subplot_imshow_bw(0, 0, workspace.display_data.input_image,
                                             title = self.image_name.value)
             if self.overlap in (OO_BOTH, OO_WITH_OVERLAP):
@@ -910,7 +911,7 @@ class UntangleWorms(cpm.CPModule):
         else:
             from matplotlib.path import Path
             from matplotlib.patches import PathPatch
-            figure = workspace.create_or_find_figure(subplots = (1,1))
+            figure.set_subplots((1, 1))
             figure.subplot_imshow_bw(0, 0, workspace.display_data.input_image,
                                      title = self.image_name.value)
             axes = figure.subplot(0,0)

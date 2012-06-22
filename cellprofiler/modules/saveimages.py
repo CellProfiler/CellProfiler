@@ -435,12 +435,11 @@ class SaveImages(cpm.CPModule):
         workspace.display_data.filename = self.get_filename(
             workspace, make_dirs = False, check_overwrite = False)
         
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.show_window:
             if self.save_image_or_figure == IF_MOVIE:
                 return
-            figure = workspace.create_or_find_figure(title="SaveImages, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
+            figure.set_subplots((1, 1))
             outcome = ("Wrote %s" if workspace.display_data.wrote_image
                        else "Did not write %s")
             figure.subplot_table(0, 0, [[outcome %

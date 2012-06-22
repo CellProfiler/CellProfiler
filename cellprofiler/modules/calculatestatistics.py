@@ -400,8 +400,8 @@ class CalculateStatistics(cpm.CPModule):
             #
             # Create tables for the top 10 Z and V
             #
-            figure = workspace.create_or_find_figure(title="CalculateStatistics, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
+            figure = workspace.get_module_figure(self, max(image_numbers))
+            figure.set_subplots((2, 1))
             for ii, key in enumerate(("Zfactor","Vfactor")):
                 a = expt_measurements[key]
                 indexes = np.lexsort((-a,))

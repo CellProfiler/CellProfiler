@@ -201,11 +201,10 @@ class MeasureGranularity(cpm.CPModule):
             workspace.display_data.statistics = statistics
             workspace.display_data.ratio = [1.0 / float(max_scale+1)] * (max_scale+1)
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
         ratio = workspace.display_data.ratio
-        figure = workspace.create_or_find_figure(title="MeasureGranularity, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
+        figure.set_subplots((1, 1))
         figure.subplot_table(0, 0, statistics, ratio = ratio)
 
     def run_on_image_setting(self, workspace, image):

@@ -248,11 +248,10 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             workspace.display_data.image = image.pixel_data
             workspace.display_data.result = result
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         image = workspace.display_data.image
         result = workspace.display_data.result
-        figure = workspace.create_or_find_figure(title="EnhanceOrSuppressFeatures, image cycle #%d" % (
-                workspace.measurements.image_set_number), subplots=(2, 1))
+        figure.set_subplots((2, 1))
         figure.subplot_imshow_grayscale(0, 0, image,
                                         "Original: %s" % self.image_name.value)
         figure.subplot_imshow_grayscale(1, 0, result,

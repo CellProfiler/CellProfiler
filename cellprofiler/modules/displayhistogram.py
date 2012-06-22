@@ -143,10 +143,9 @@ class DisplayHistogram(cpm.CPModule):
     def run_as_data_tool(self, workspace):
         self.run(workspace)
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.show_window:
-            figure = workspace.create_or_find_figure(title="DisplayHistogram, image cycle #%d" % (
-                    workspace.measurements.image_set_number), subplots=(1, 1))
+            figure.set_subplots((1, 1))
             figure.subplot_histogram(0, 0, workspace.display_data.x,
                                      bins=self.bins.value,
                                      xlabel=self.x_axis.value,

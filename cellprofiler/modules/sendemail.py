@@ -282,11 +282,9 @@ class SendEmail(cpm.CPModule):
         if self.show_window:
             workspace.display_data.result = d[K_RESULT]
             
-    def display(self, workspace):
+    def display(self, workspace, figure):
         import matplotlib
         message = workspace.display_data.result
-        figure = workspace.create_or_find_figure(title="SendEmail, image cycle #%d"%(
-                workspace.measurements.image_set_number))
         
         mfigure = figure.figure
         assert isinstance(mfigure, matplotlib.figure.Figure)

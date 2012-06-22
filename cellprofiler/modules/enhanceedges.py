@@ -197,12 +197,11 @@ class EnhanceEdges(cpm.CPModule):
             workspace.display_data.orig_pixels = orig_pixels
             workspace.display_data.output_pixels = output_pixels
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         orig_pixels = workspace.display_data.orig_pixels
         output_pixels = workspace.display_data.output_pixels
 
-        figure = workspace.create_or_find_figure(title="EnhanceEdges, image cycle #%d" % (
-                workspace.measurements.image_set_number), subplots=(2, 2))
+        figure.set_subplots((2, 2))
         figure.subplot_imshow_grayscale(0, 0, orig_pixels,
                                             "Original: %s" %
                                             self.image_name.value)

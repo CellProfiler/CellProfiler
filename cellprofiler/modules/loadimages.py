@@ -2285,7 +2285,7 @@ class LoadImages(cpmodule.CPModule):
         workspace.display_data.statistics = statistics
         workspace.display_data.ratio = ratio
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.show_window:
             if hasattr(workspace.display_data, "warning"):
                 show_warning("Images have different sizes", 
@@ -2293,9 +2293,7 @@ class LoadImages(cpmodule.CPModule):
                              get_show_report_bad_sizes_dlg,
                              set_show_report_bad_sizes_dlg)
 
-            figure = workspace.create_or_find_figure(title="LoadImages, image cycle #%d"%(
-                workspace.measurements.image_set_number),
-                                                 subplots=(1,1))
+            figure.set_subplots((1, 1))
             figure.subplot_table(0,0,workspace.display_data.statistics,
                              ratio=workspace.display_data.ratio)
 

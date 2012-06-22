@@ -191,12 +191,11 @@ class DisplayScatterPlot(cpm.CPModule):
             workspace.display_data.xvals = xvals
             workspace.display_data.yvals = yvals
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         xvals = workspace.display_data.xvals
         yvals = workspace.display_data.yvals
         title = '%s'%(self.title.value)
-        figure = workspace.create_or_find_figure(title="DisplayScatterplot', image cycle #%d"%(
-            workspace.measurements.image_set_number),subplots=(1,1))
+        figure.set_subplots((1, 1))
         figure.subplot_scatter(0, 0, xvals, yvals,
                                xlabel=self.x_axis.value,
                                ylabel=self.y_axis.value,

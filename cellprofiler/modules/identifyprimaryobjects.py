@@ -1162,24 +1162,22 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                     labeled_image[histogram_image > 0] = 0
         return labeled_image
     
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.show_window:
             """Display the image and labeling"""
-            window_name = "CellProfiler:%s:%d"%(self.module_name, self.module_num)
-            my_frame=workspace.create_or_find_figure(
-                title="IdentifyPrimaryObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number), subplots=(2,2))
+            figure.set_subplots((2, 2))
+
             
-            orig_axes     = my_frame.subplot(0,0)
-            label_axes    = my_frame.subplot(1,0, sharex=orig_axes, sharey=orig_axes)
-            outlined_axes = my_frame.subplot(0,1, sharex=orig_axes, sharey=orig_axes)
-            table_axes    = my_frame.subplot(1,1, sharex=orig_axes, sharey=orig_axes)
+            orig_axes     = figure.subplot(0,0)
+            label_axes    = figure.subplot(1,0, sharex=orig_axes, sharey=orig_axes)
+            outlined_axes = figure.subplot(0,1, sharex=orig_axes, sharey=orig_axes)
+            table_axes    = figure.subplot(1,1, sharex=orig_axes, sharey=orig_axes)
     
             title = "Original image, cycle #%d"%(workspace.measurements.image_number,)
-            my_frame.subplot_imshow_grayscale(0, 0,
+            figure.subplot_imshow_grayscale(0, 0,
                                               workspace.display_data.image,
                                               title)
-            my_frame.subplot_imshow_labels(1, 0, workspace.display_data.labeled_image, 
+            figure.subplot_imshow_labels(1, 0, workspace.display_data.labeled_image, 
                                            self.object_name.value)
     
             if workspace.display_data.image.ndim == 2:
@@ -1207,7 +1205,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                          cpp.get_tertiary_outline_color())
             
             title = "%s outlines"%(self.object_name.value) 
-            my_frame.subplot_imshow(0, 1, outline_img, title, normalize=False)
+            figure.subplot_imshow(0, 1, outline_img, title, normalize=False)
             
             table_axes.clear()
             table = table_axes.table(cellText=workspace.display_data.statistics,
@@ -1218,7 +1216,6 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             table_axes.set_axis_off()
             table.auto_set_font_size(False)
             table.set_fontsize(cpp.get_table_font_size())
-            my_frame.Refresh()
     
     def calc_smoothing_filter_size(self):
         """Return the size of the smoothing filter, calculating it if in automatic mode"""

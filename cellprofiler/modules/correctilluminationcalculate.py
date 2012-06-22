@@ -496,14 +496,13 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             workspace.display_data.dilated_image = dilated_image.pixel_data
             workspace.display_data.output_image = output_image.pixel_data
     
-    def display(self, workspace):
+    def display(self, workspace, figure):
         # these are actually just the pixel data
         avg_image = workspace.display_data.avg_image
         dilated_image = workspace.display_data.dilated_image
         output_image = workspace.display_data.output_image
         
-        figure = workspace.create_or_find_figure(title="CorrectIlluminationCalculate, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,2))
+        figure.set_subplots((2, 2))
         def imshow(x, y, image, *args, **kwargs):
             if image.ndim == 2:
                 f = figure.subplot_imshow_grayscale

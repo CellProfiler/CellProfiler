@@ -700,12 +700,11 @@ class TrackObjects(cpm.CPModule):
             workspace.display_data.object_numbers = \
                      self.get_saved_object_numbers(workspace)
             
-    def display(self, workspace):
-        frame = workspace.create_or_find_figure(title="TrackObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-        figure = frame.figure
-        figure.clf()
-        ax = figure.add_subplot(1,1,1)
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
+        subfigure = figure.figure
+        subfigure.clf()
+        ax = subfigure.add_subplot(1,1,1)
         self.draw(workspace.display_data.labels, ax, 
                   workspace.display_data.object_numbers)
 

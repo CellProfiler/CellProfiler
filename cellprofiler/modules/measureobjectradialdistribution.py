@@ -295,12 +295,11 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             workspace.display_data.names = d.keys()
             workspace.display_data.stats = stats
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         images = workspace.display_data.images
         names = workspace.display_data.names
         stats = workspace.display_data.stats
-        figure = workspace.create_or_find_figure(title="MeasureObjectRadialDistribution, image cycle #%d"%(
-            workspace.measurements.image_set_number),subplots=(1,len(images)))
+        figure.set_subplots((1, len(images)))
         figure.figure.clf()
         nimages = len(images)
         shrink = .05

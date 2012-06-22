@@ -232,7 +232,7 @@ class Align(cpm.CPModule):
              for (input_name, output_name), (y, x), shape
              in zip(names, offsets, shapes)]
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display the overlaid images
 
         workspace - the workspace being run, with display_data holding:
@@ -247,8 +247,7 @@ class Align(cpm.CPModule):
         image_info = workspace.display_data.image_info
         first_input_name = self.first_input_image.value
         first_output_name = self.first_output_image.value
-        figure = workspace.create_or_find_figure(title="Align, image cycle #%d" % (
-                workspace.measurements.image_set_number), subplots=(2, len(image_info) - 1))
+        figure.set_subplots((2, len(image_info) - 1))
 
         first_input_pixels = image_info[0][1]
         first_output_pixels = image_info[0][3]

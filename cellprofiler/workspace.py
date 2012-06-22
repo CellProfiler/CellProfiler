@@ -219,6 +219,32 @@ class Workspace(object):
         self.__in_background = val
     in_background = property(get_in_background, set_in_background)
 
+    def get_module_figure(self, module, image_set_number, parent=None):
+        """Create a CPFigure window or find one already created"""
+        import cellprofiler.gui.cpfigure as cpf
+
+        # catch any background threads trying to call display functions.
+        assert not self.__in_background
+
+        window_name = cpf.window_name(module)
+        title = "%s #%d, image cycle #%d" % (module.module_name,
+                                             module.module_num,
+                                             image_set_number)
+
+        if self.__create_new_window:
+            figure = cpf.CPFigureFrame(parent or self.__frame,
+                                       name=window_name,
+                                       title=title)
+        else:
+            figure = cpf.create_or_find(parent or self.__frame,
+                                        name=window_name,
+                                        title=title)
+
+        if not figure in self.__windows_used:
+            self.__windows_used.append(figure)
+
+        return figure
+
     def create_or_find_figure(self,title=None,subplots=None,window_name = None):
         """Create a matplotlib figure window or find one already created"""
         import cellprofiler.gui.cpfigure as cpf

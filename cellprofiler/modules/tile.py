@@ -247,11 +247,10 @@ class Tile(cpm.CPModule):
         if self.show_window:
             workspace.display_data.image = output_pixels
     
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display 
         '''
-        figure = workspace.create_or_find_figure(title="Tile, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
+        figure.set_subplots((1, 1))
         pixels = workspace.display_data.image
         name = self.output_image.value
         if pixels.ndim == 3:

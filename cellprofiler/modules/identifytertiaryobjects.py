@@ -258,7 +258,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             workspace.display_data.tertiary_labels = tertiary_labels
             workspace.display_data.tertiary_outlines = tertiary_outlines
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         primary_labels = workspace.display_data.primary_labels
         secondary_labels = workspace.display_data.secondary_labels
         tertiary_labels = workspace.display_data.tertiary_labels
@@ -267,25 +267,23 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         # Draw the primary, secondary and tertiary labels
         # and the outlines
         #
-        my_frame = workspace.create_or_find_figure(
-            title="IdentifyTertiaryObjects, image cycle #%d" % (
-                workspace.display_data.image_set_number), subplots=(2, 2))
+        figure.set_subplots((2, 2))
 
         title = "%s, cycle # %d" % (self.primary_objects_name.value,
                                     workspace.display_data.image_set_number)
-        my_frame.subplot_imshow_labels(0, 0, primary_labels, title)
-        my_frame.subplot_imshow_labels(1, 0, secondary_labels,
+        figure.subplot_imshow_labels(0, 0, primary_labels, title)
+        figure.subplot_imshow_labels(1, 0, secondary_labels,
                                        self.secondary_objects_name.value,
-                                       sharex = my_frame.subplot(0, 0),
-                                       sharey = my_frame.subplot(0, 0))
-        my_frame.subplot_imshow_labels(0, 1, tertiary_labels,
+                                       sharex = figure.subplot(0, 0),
+                                       sharey = figure.subplot(0, 0))
+        figure.subplot_imshow_labels(0, 1, tertiary_labels,
                                        self.subregion_objects_name.value,
-                                       sharex = my_frame.subplot(0, 0),
-                                       sharey = my_frame.subplot(0, 0))
-        my_frame.subplot_imshow_bw(1, 1, tertiary_outlines,
+                                       sharex = figure.subplot(0, 0),
+                                       sharey = figure.subplot(0, 0))
+        figure.subplot_imshow_bw(1, 1, tertiary_outlines,
                                    "Outlines",
-                                   sharex = my_frame.subplot(0, 0),
-                                   sharey = my_frame.subplot(0, 0))
+                                   sharex = figure.subplot(0, 0),
+                                   sharey = figure.subplot(0, 0))
 
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''

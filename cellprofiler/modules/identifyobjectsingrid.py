@@ -430,14 +430,13 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         return guide_labels
         
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display the resulting objects'''
         import matplotlib
         gridding = workspace.display_data.gridding
         labels = workspace.display_data.labels
         objects_name = self.output_objects_name.value
-        figure = workspace.create_or_find_figure(title="IdentifyObjectsInGrid, image cycle #%d" % (
-                workspace.measurements.image_set_number), subplots=(1, 1))
+        figure.set_subplots((1, 1))
         figure.subplot_imshow_labels(0, 0, labels,
                                      title="Identified %s" % objects_name)
         axes = figure.subplot(0, 0)

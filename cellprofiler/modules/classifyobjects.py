@@ -471,11 +471,11 @@ class ClassifyObjects(cpm.CPModule):
             raise ValueError("Invalid classification method: %s"%
                              self.contrast_choice.value)
     
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.contrast_choice == BY_TWO_MEASUREMENTS:
-            self.display_two_measurements(workspace)
+            self.display_two_measurements(workspace, figure)
         else:
-            self.display_single_measurement(workspace)
+            self.display_single_measurement(workspace, figure)
                 
     def get_feature_name_matrix(self):
         '''Get a 2x2 matrix of feature names for two measurements'''
@@ -547,9 +547,8 @@ class ClassifyObjects(cpm.CPModule):
             workspace.display_data.labels = objects.segmented,
             workspace.display_data.saved_values = saved_values
             
-    def display_two_measurements(self, workspace):            
-        figure = workspace.create_or_find_figure(title="ClassifyObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,2))
+    def display_two_measurements(self, workspace, figure):
+        figure.set_subplots((2, 2))
         object_name = self.object_name.value
         for i, feature_name in ((0, self.first_measurement.value),
                                 (1, self.second_measurement.value)):
@@ -643,11 +642,9 @@ class ClassifyObjects(cpm.CPModule):
                 workspace.display_data.labels.append(labels)
                 workspace.display_data.values.append(values)
     
-    def display_single_measurement(self, workspace):
+    def display_single_measurement(self, workspace, figure):
         '''Display an array of single measurements'''
-        figure = workspace.create_or_find_figure(title="ClassifyObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number),
-            subplots=(3,len(self.single_measurements)))
+        figure.set_subplots((3, len(self.single_measurements)))
         for i, group in enumerate(self.single_measurements):
             bin_hits = workspace.display_data.bins[i]
             labels = workspace.display_data.labels[i]

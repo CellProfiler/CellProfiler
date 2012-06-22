@@ -457,7 +457,7 @@ class FilterObjects(cpm.CPModule):
             workspace.display_data.target_objects_segmented = target_objects.segmented
 
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display what was filtered'''
         src_name = self.object_name.value
         src_objects_segmented = workspace.display_data.src_objects_segmented
@@ -469,8 +469,7 @@ class FilterObjects(cpm.CPModule):
 
         if image is None:
             # Oh so sad - no image, just display the old and new labels
-            figure = workspace.create_or_find_figure(title="FilterObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,2))
+            figure.set_subplots((1, 2))
             figure.subplot_imshow_labels(0,0,src_objects_segmented,
                                          title="Original: %s"%src_name)
             figure.subplot_imshow_labels(0,1,target_objects_segmented,
@@ -479,8 +478,7 @@ class FilterObjects(cpm.CPModule):
                                          sharex = figure.subplot(0,0),
                                          sharey = figure.subplot(0,0))
         else:
-            figure = workspace.create_or_find_figure(title="FilterObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,2))
+            figure.set_subplots((2, 2))
             figure.subplot_imshow_labels(0,0,src_objects_segmented,
                                          title="Original: %s"%src_name)
             figure.subplot_imshow_labels(0,1,target_objects_segmented,

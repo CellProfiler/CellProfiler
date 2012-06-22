@@ -340,10 +340,9 @@ class RescaleIntensity(cpm.CPModule):
             workspace.display_data.image_data = [input_image.pixel_data,
                                                  rescaled_image.pixel_data]
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display the input image and rescaled image'''
-        figure = workspace.create_or_find_figure(title="RescaleIntensity, image cycle #%d" % (
-                workspace.measurements.image_set_number), subplots=(2, 1))
+        figure.set_subplots((2, 1))
 
         for image_name, i, j in ((self.image_name, 0, 0),
                                 (self.rescaled_image_name, 1, 0)):

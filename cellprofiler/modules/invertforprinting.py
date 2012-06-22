@@ -215,9 +215,8 @@ class InvertForPrinting(cpm.CPModule):
             workspace.display_data.inverted_color = inverted_color
 
 
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="InvertForPrinting, image cycle #%d"%(
-            workspace.measurements.image_set_number),subplots=(2,1))
+    def display(self, workspace, figure):
+        figure.set_subplots((2, 1))
         color_image = workspace.display_data.color_image
         inverted_color = workspace.display_data.inverted_color
         figure.subplot_imshow(0, 0, color_image, "Original image")

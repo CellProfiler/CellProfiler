@@ -1023,15 +1023,14 @@ class LoadData(cpm.CPModule):
         if self.show_window:
             workspace.display_data.statistics = statistics
             
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if hasattr(workspace.display_data, "warning"):
             from cellprofiler.gui.errordialog import show_warning
             show_warning("Images have different sizes",
                          workspace.display_data.warning,
                          cpprefs.get_show_report_bad_sizes_dlg,
                          cpprefs.set_show_report_bad_sizes_dlg)
-        figure = workspace.create_or_find_figure(title="LoadData, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
+        figure.set_subplots((1, 1))
         figure.subplot_table(0,0, workspace.display_data.statistics, ratio=None)
     
     def get_groupings(self, workspace):

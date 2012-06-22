@@ -232,17 +232,21 @@ class EditObjectsManually(I.Identify):
             outlines = outline(filtered_labels)
             outlines_image = cpi.Image(outlines.astype(bool))
             workspace.image_set.add(outlines_name, outlines_image)
-        #
-        # Do the drawing here
-        #
-        if self.show_window:
-            figure = workspace.create_or_find_figure(title="EditObjectsManually, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
-            figure.subplot_imshow_labels(0, 0, orig_labels, orig_objects_name)
-            figure.subplot_imshow_labels(1, 0, filtered_labels,
-                                         filtered_objects_name,
-                                         sharex = figure.subplot(0,0),
-                                         sharey = figure.subplot(0,0))
+
+        workspace.display_data.orig_labels = orig_labels
+        workspace.display_data.filtered_labels = filtered_labels
+
+    def display(self, workspace, figure):
+        orig_objects_name = self.object_name.value
+        filtered_objects_name = self.filtered_objects.value
+        orig_labels = workspace.display_data.orig_labels
+        filtered_labels = workspace.display_data.filtered_labels
+        figure.set_subplots((2, 1))
+        figure.subplot_imshow_labels(0, 0, orig_labels, orig_objects_name)
+        figure.subplot_imshow_labels(1, 0, filtered_labels,
+                                     filtered_objects_name,
+                                     sharex = figure.subplot(0,0),
+                                     sharey = figure.subplot(0,0))
 
     def handle_interaction(self, orig_labels, guide_image):
         import wx

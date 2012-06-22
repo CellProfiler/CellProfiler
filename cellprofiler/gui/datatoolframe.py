@@ -26,6 +26,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
+import cellprofiler.gui.cpfigure as cpf
 from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.modules import instantiate_module
 from cellprofiler.gui import get_cp_icon
@@ -213,6 +214,10 @@ class DataToolFrame(wx.Frame):
                                   self.measurements,
                                   image_set_list,
                                   frame=self)
+        self.module.show_window = True  # to make sure it saves display data
         self.module.run_as_data_tool(workspace)
-        self.module.display()
-        workspace.refresh()
+        fig = cpf.create_or_find(parent=self,
+                                 title="%s Output" % (self.module.module_name),
+                                 name="CellProfiler:DataTool:%s" % (self.module.module_name))
+        self.module.display(workspace, fig)
+        fig.Refresh()

@@ -289,7 +289,7 @@ class GrayToColor(cpm.CPModule):
                 [imgset.get_image(name, must_be_grayscale=True).pixel_data
                  for name in input_image_names]
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         input_image_names = workspace.display_data.input_image_names
         images = workspace.display_data.images
         nsubplots = len(input_image_names)
@@ -306,23 +306,22 @@ class GrayToColor(cpm.CPModule):
             subplots = (min(nsubplots+1,4), int(nsubplots/4) + 1)
             subplot_indices = [(i % 4, int(i / 4)) for i in range(nsubplots)]
             color_subplot = (nsubplots % 4, int(nsubplots / 4))
-        my_frame = workspace.create_or_find_figure(title="GrayToColor, image cycle #%d"%(
-            workspace.measurements.image_set_number), subplots = subplots)
+        figure.set_subplots(subplots)
         for i, (input_image_name, image_pixel_data) in \
                 enumerate(zip(input_image_names, images)):
             x,y = subplot_indices[i]
-            my_frame.subplot_imshow_grayscale(x, y, image_pixel_data,
+            figure.subplot_imshow_grayscale(x, y, image_pixel_data,
                                               title=input_image_name,
-                                              sharex = my_frame.subplot(0,0),
-                                              sharey = my_frame.subplot(0,0))
-            my_frame.subplot(x,y).set_visible(True)
+                                              sharex = figure.subplot(0,0),
+                                              sharey = figure.subplot(0,0))
+            figure.subplot(x,y).set_visible(True)
         for x, y in subplot_indices[len(input_image_names):]:
-            my_frame.subplot(x,y).set_visible(False)
-        my_frame.subplot_imshow(color_subplot[0], color_subplot[1],
+            figure.subplot(x,y).set_visible(False)
+        figure.subplot_imshow(color_subplot[0], color_subplot[1],
                                 workspace.display_data.rgb_pixel_data,
                                 title=self.rgb_image_name.value,
-                                sharex = my_frame.subplot(0,0),
-                                sharey = my_frame.subplot(0,0))
+                                sharex = figure.subplot(0,0),
+                                sharey = figure.subplot(0,0))
     
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):

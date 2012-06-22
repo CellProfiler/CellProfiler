@@ -379,19 +379,15 @@ class Crop(cpm.CPModule):
         m.add_measurement('Image', feature,
                           np.array([original_image_area]))
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         orig_image_pixel_data = workspace.display_data.orig_image_pixel_data
         cropped_pixel_data = workspace.display_data.cropped_pixel_data
-
-        window_name = "CellProfiler:%s:%d" % (self.module_name, self.module_num)
-        my_frame = workspace.create_or_find_figure(
-                    title="Crop, image cycle #%d" % (workspace.display_data.image_set_number),
-                    window_name=window_name, subplots=(2, 1))
+        figure.set_subplots((2, 1))
 
         title = "Original: %s, cycle # %d" % (self.image_name.value,
                                   workspace.display_data.image_set_number)
-        my_frame.subplot_imshow_grayscale(0, 0, orig_image_pixel_data, title)
-        my_frame.subplot_imshow_bw(1, 0, cropped_pixel_data,
+        figure.subplot_imshow_grayscale(0, 0, orig_image_pixel_data, title)
+        figure.subplot_imshow_bw(1, 0, cropped_pixel_data,
                                    self.cropped_image_name.value)
 
     def get_measurement_columns(self, pipeline):

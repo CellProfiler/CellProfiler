@@ -812,10 +812,9 @@ class DefineGrid(cpm.CPModule):
             column -= 1
         return (row, column)
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.show_window:
-            figure = workspace.create_or_find_figure(title="DefineGrid, image cycle #%d" % (
-                    workspace.measurements.image_set_number), subplots=(1, 1))
+            figure.set_subplots((1, 1))
             figure.clf()
             ax = figure.subplot(0, 0)
             self.display_grid(workspace.display_data.background_image,

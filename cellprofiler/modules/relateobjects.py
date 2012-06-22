@@ -282,12 +282,11 @@ class RelateObjects(cpm.CPModule):
             workspace.display_data.children_segmented = children.segmented
             workspace.display_data.parents_of = parents_of
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         parents_segmented = workspace.display_data.parents_segmented
         children_segmented = workspace.display_data.children_segmented
         parents_of = workspace.display_data.parents_of
-        figure = workspace.create_or_find_figure(title="RelateObjects, image cycle #%d"%(
-            workspace.measurements.image_set_number),subplots=(2,2))
+        figure.set_subplots((2, 2))
         figure.subplot_imshow_labels(0,0,parents_segmented,
                                      title = self.parent_name.value)
         figure.subplot_imshow_labels(1,0,children_segmented,

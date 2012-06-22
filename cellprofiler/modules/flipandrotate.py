@@ -237,13 +237,12 @@ class FlipAndRotate(cpm.CPModule):
             workspace.display_data.vmin = vmin
             workspace.display_data.vmax = vmax
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         image_pixel_data = workspace.display_data.image_pixel_data
         output_image_pixel_data = workspace.display_data.output_image_pixel_data
         vmin = workspace.display_data.vmin
         vmax = workspace.display_data.vmax
-        figure = workspace.create_or_find_figure(title="FlipAndRotate, image cycle #%d" % (
-                workspace.measurements.image_set_number), subplots=(2, 1))
+        figure.set_subplots((2, 1))
         if vmin == vmax:
             vmin = 0
             vmax = 1

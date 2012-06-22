@@ -223,8 +223,8 @@ class ClassifyPixels(cpm.CPModule):
         d[FEATURE_ITEMS_KEY] = featureItems
             
         
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(subplots = (2,1))
+    def display(self, workspace, figure):
+        figure.set_subplots((2, 1))
         source_image = workspace.display_data.source_image
         dest_image = workspace.display_data.dest_image
         if source_image.ndim == 3:

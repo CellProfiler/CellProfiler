@@ -643,7 +643,7 @@ class RunImageJ(cpm.CPModule):
                 if wants_display:
                     output_images.append((output_name, pixel_data))
                 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if (self.command_or_macro == CM_COMMAND and 
               self.is_advanced(self.command,
                                self.command_settings_dictionary)):
@@ -652,8 +652,6 @@ class RunImageJ(cpm.CPModule):
             primary = None
             if len(input_images) == 0:
                 if len(output_images) == 0:
-                    figure = workspace.create_or_find_figure(title="RunImageJ, image cycle #%d"%(
-                            workspace.measurements.image_set_number))
                     figure.figure.text(.25, .5, "No input image",
                                        verticalalignment='center',
                                        horizontalalignment='center')
@@ -677,10 +675,7 @@ class RunImageJ(cpm.CPModule):
                         (name, img, i, 1) 
                         for i, (name, img) in enumerate(output_images)]
                     ncols = max(ncols, len(output_images))
-            figure = workspace.create_or_find_figure(
-                title="RunImageJ, image cycle #%d" % 
-                (workspace.measurements.image_set_number), 
-                subplots = (ncols, nrows))
+            figure.set_subplots((ncols, nrows))
             for title, pixel_data, x, y in input_images + output_images:
                 if pixel_data.ndim == 3:
                     mimg = figure.subplot_imshow_color(x, y, pixel_data, 
@@ -695,8 +690,7 @@ class RunImageJ(cpm.CPModule):
                 if primary is None:
                     primary = mimg
             return
-        figure = workspace.create_or_find_figure(title="RunImageJ, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
+        figure.set_subplots((2, 1))
         if self.wants_to_set_current_image:
             input_image_name = self.current_input_image_name.value
             img = workspace.image_set.get_image(input_image_name)

@@ -1631,7 +1631,9 @@ class Pipeline(object):
                     if (module.show_window and
                         (exception is None)):
                         try:
-                            module.display(workspace)
+                            fig = workspace.get_module_figure(module, image_number)
+                            module.display(workspace, fig)
+                            fig.Refresh()
                         except Exception, instance:
                             logger.error("Failed to display results for module %s",
                                          module.module_name, exc_info=True)
@@ -1731,7 +1733,7 @@ class Pipeline(object):
             try:
                 module.run(workspace)
                 if module.show_window:
-                    display_handler(module, workspace.display_data)
+                    display_handler(module, workspace.display_data, image_set_number)
             except Exception, exception:
                 logger.error("Error detected during run of module %s#%d",
                              module.module_name, module.module_num, exc_info=True)

@@ -395,9 +395,8 @@ class MeasureObjectSizeShape(cpm.CPModule):
                        for n,m in zernike_numbers]):
             self.record_measurement(workspace, object_name, f, m) 
             
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="MeasureObjectSizeShape, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
         figure.subplot_table(0,0,workspace.display_data.statistics,
                              ratio=(.25,.45,.1,.1,.1))
         

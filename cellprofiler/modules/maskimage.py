@@ -152,11 +152,10 @@ class MaskImage(cpm.CPModule):
             workspace.display_data.orig_image_pixel_data = orig_image.pixel_data
             workspace.display_data.masked_pixels = masked_pixels
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         orig_image_pixel_data = workspace.display_data.orig_image_pixel_data
         masked_pixels = workspace.display_data.masked_pixels
-        figure = workspace.create_or_find_figure(title="MaskImage, image cycle #%d"%(
-            workspace.measurements.image_set_number),subplots=(2,1))
+        figure.set_subplots((2, 1))
         if orig_image_pixel_data.ndim == 2:
             figure.subplot_imshow_grayscale(0, 0, orig_image_pixel_data,
                                             "Original image: %s" % (self.image_name.value))

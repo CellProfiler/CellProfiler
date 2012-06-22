@@ -137,9 +137,7 @@ def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
         if window:
             if len(title) and title != window.Title:
                 window.Title = title
-            window.clf()
-            if subplots!=None:
-                window.subplots = np.zeros(subplots,dtype=object)
+            window.set_subplots(subplots)
         return window
 
 def create_or_find(parent=None, id=-1, title="", 
@@ -543,7 +541,15 @@ class CPFigureFrame(wx.Frame):
             else:
                 format = "pdf"
             self.figure.savefig(path, format = format)
-            
+
+    def set_subplots(self, subplots):
+        self.clf()  # get rid of any existing subplots, menus, etc.
+        if subplots is None:
+            if hasattr(self, 'subplots'):
+                delattr(self, 'subplots')
+        else:
+            self.subplots = np.zeros(subplots, dtype=object)
+
     def subplot(self, x, y, sharex=None, sharey=None):
         """Return the indexed subplot
         
@@ -962,8 +968,8 @@ class CPFigureFrame(wx.Frame):
                                         self.get_imshow_menu((x,y)))
         
         # Attempt to update histogram plot if one was created
-        hist_fig = find_fig(self, name='%s %s image histogram'%(self.Title, 
-                                                                (x,y)))
+        hist_fig = find_fig(self, name='%s %s image histogram' % (self.Name,
+                                                                  (x, y)))
         if hist_fig:
             hist_fig.subplot_histogram(0, 0, self.images[(x,y)].flatten(), 
                                        bins=200, xlabel='pixel intensity')

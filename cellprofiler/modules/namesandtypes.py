@@ -725,7 +725,7 @@ class NamesAndTypes(cpm.CPModule):
                             (C_FRAME, cpmeas.COLTYPE_INTEGER)
                         )]
         for object_name in object_names:
-            result += [ (IMAGE,
+            result += [ (cpmeas.IMAGE,
                          "_".join([category, object_name]),
                          coltype)
                         for category, coltype in (

@@ -25,6 +25,7 @@ import cStringIO
 import wx
 import wx.grid
 import wx.lib.rcsizer
+import wx.lib.resizewidget
 import sys
 
 logger = logging.getLogger(__name__)
@@ -206,6 +207,9 @@ def help_ctrl_name(v):
 
 def subedit_control_name(v):
     return "%s_subedit" % str(v.key())
+
+def grid_control_name(v):
+    return "%s_grid" % str(v.key())
 
 def custom_label_name(v):
     return "%s_customlabel" % str(v.key())
@@ -1685,48 +1689,54 @@ class ModuleView:
                 
                 def DeleteRows(self, index, numRows):
                     return True
-                
-            control = wx.grid.Grid(self.module_panel, -1,
-                                   name = edit_control_name(v))
-            control.SetTable(TableController(v))
+            control = wx.lib.resizewidget.ResizeWidget(
+                self.module_panel,
+                name = edit_control_name(v))
+
+            grid = wx.grid.Grid(control, name = grid_control_name(v) )
+            grid.SetTable(TableController(v))
             #control.SetMinSize(v.min_size)
-            control.AutoSize()
-            control.EnableEditing(False)
-            control.SetDefaultCellOverflow(False)
+            grid.AutoSize()
+            grid.EnableEditing(False)
+            grid.SetDefaultCellOverflow(False)
         else:
             #
             # Have #s of rows or columns changed?
             #
+            grid = control.FindWindowByName(grid_control_name(v))
             need_column_layout = False
-            if len(v.column_names) < control.GetNumberCols():
+            if len(v.column_names) < grid.GetNumberCols():
                 tm = wx.grid.GridTableMessage(
-                    control.Table,
+                    grid.Table,
                     wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED,
-                    0, control.GetNumberCols() - len(v.column_names))
-                control.ProcessTableMessage(tm)
+                    0, grid.GetNumberCols() - len(v.column_names))
+                grid.ProcessTableMessage(tm)
                 need_column_layout = True
-            elif control.GetNumberCols() < len(v.column_names):
+            elif grid.GetNumberCols() < len(v.column_names):
                 tm = wx.grid.GridTableMessage(
-                    control.Table,
+                    grid.Table,
                     wx.grid.GRIDTABLE_NOTIFY_COLS_INSERTED,
-                    0, len(v.column_names) - control.GetNumberCols())
-                control.ProcessTableMessage(tm)
+                    0, len(v.column_names) - grid.GetNumberCols())
+                grid.ProcessTableMessage(tm)
                 need_column_layout = True
-            if len(v.data) < control.GetNumberRows():
+            if len(v.data) < grid.GetNumberRows():
                 tm = wx.grid.GridTableMessage(
-                    control.Table,
+                    grid.Table,
                     wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED,
-                    0, control.GetNumberRows() - len(v.data))
-                control.ProcessTableMessage(tm)
-            elif control.GetNumberRows() < len(v.data):
+                    0, grid.GetNumberRows() - len(v.data))
+                grid.ProcessTableMessage(tm)
+            elif grid.GetNumberRows() < len(v.data):
                 tm = wx.grid.GridTableMessage(
-                    control.Table,
+                    grid.Table,
                     wx.grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,
-                    0, len(v.data) - control.GetNumberRows())
-                control.ProcessTableMessage(tm)
+                    0, len(v.data) - grid.GetNumberRows())
+                grid.ProcessTableMessage(tm)
             if need_column_layout:
-                control.AutoSizeColumns()
-        control.ForceRefresh()
+                grid.AutoSizeColumns()
+        grid.ForceRefresh()
+        grid.SetBestFittingSize(v.min_size)
+        control.AdjustToSize((v.min_size[0] + wx.lib.resizewidget.RW_THICKNESS,
+                              v.min_size[1] + wx.lib.resizewidget.RW_THICKNESS))
         return control
     
     def add_listener(self,listener):

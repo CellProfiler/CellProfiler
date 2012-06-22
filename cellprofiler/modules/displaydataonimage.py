@@ -276,7 +276,6 @@ class DisplayDataOnImage(cpm.CPModule):
                                              use_imshow = True)
 
         self.display_on_figure(workspace, figure.subplot(0,0), imshow_fn)
-        figure.figure.canvas.draw_idle()
         
     def display_on_figure(self, workspace, axes, imshow_fn):
         import matplotlib

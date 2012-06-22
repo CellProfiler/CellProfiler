@@ -30,11 +30,7 @@ def make_CP_decoder(numpy_arrays):
     def decoder(dct, numpy_arrays=numpy_arrays):
         if '__ndarray__' in dct:
             buf = buffer(numpy_arrays[dct['idx']])
-            if len(buf) > 0:
-                return np.frombuffer(buf, dtype=dct['dtype']).reshape(dct['shape']).copy()
-            else:
-                # empty buffers cannot be converted to numpy arrays
-                return np.empty([0], dtype=dct['dtype']).reshape(dct['shape'])
+            return np.frombuffer(buf, dtype=dct['dtype']).reshape(dct['shape']).copy()
         if '__CPGridInfo__' in dct:
             grid = cpg.CPGridInfo()
             grid.deserialize(dct)

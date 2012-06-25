@@ -191,9 +191,15 @@ try:
     opts['py2exe']['includes'] += [
         "vigra", "vigra.impex",
         "h5py", "h5py._stub", "h5py._conv", "h5py.utils", "h5py._proxy",
-        "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip", 
+        "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip",
         "zmq", "zmq.utils", "zmq.utils.jsonapi", "zmq.utils.strtypes"]
     opts['py2exe']['excludes'] += ["ilastik"]
+    #
+    # Put path to QT dlls in PATH environment variable
+    #
+    import PyQt4
+    pyqt4_path = os.path.split(PyQt4.__file__)[0]
+    os.environ["PATH"] = os.environ["PATH"] + ";" + pyqt4_path
     il_path = ilastik.__path__[0]
     for root, subFolders, files in os.walk(il_path):
         #
@@ -251,8 +257,9 @@ except:
 try:
     import zmq
     zmq_loc = os.path.split(zmq.__file__)[0]
-    data_files += [('.', (os.path.join(zmq_loc, "libzmq.dll"), ))]
-    opts['py2exe']['dll_excludes'] += ["libzmq.dll"]
+    os.environ["PATH"] = os.environ["PATH"] + ";"+zmq_loc
+    #data_files += [('.', (os.path.join(zmq_loc, "libzmq.dll"), ))]
+    #opts['py2exe']['dll_excludes'] += ["libzmq.dll"]
 except:
     print "This installation will not include 0MQ"
 

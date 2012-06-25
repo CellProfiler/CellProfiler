@@ -23,6 +23,7 @@ import cStringIO as StringIO
 import gc
 import logging
 import traceback
+import mmap
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
@@ -282,8 +283,11 @@ def main():
             # multiprocessing: send path of measurements.
             # XXX - distributed - package them up.
             current_measurements.flush()
-            req = MeasurementsReport(path=current_measurements.hdf5_dict.filename.encode('utf-8'),
-                                     image_set_numbers=",".join(str(isn) for isn in successful_image_set_numbers))
+            with open(current_measurements.hdf5_dict.filename, "r") as f:
+                m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
+                b = buffer(m, 0, m.size())
+                req = MeasurementsReport(buf=b,
+                                         image_set_numbers=",".join(str(isn) for isn in successful_image_set_numbers))
             rep = req.send(work_socket)
             if isinstance(rep, ServerExited):
                 continue  # server went away

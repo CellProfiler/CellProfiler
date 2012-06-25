@@ -27,6 +27,7 @@ import os.path
 import zmq
 import gc
 import collections
+import tempfile
 
 import cellprofiler
 import cellprofiler.measurements as cpmeas
@@ -188,7 +189,9 @@ class AnalysisRunner(object):
         self.work_queue = Queue.Queue()
         self.in_process_queue = Queue.Queue()
         self.finished_queue = Queue.Queue()
-        self.returned_measurements_queue = Queue.Queue()
+        # if 10 ends up being too limiting, we should have the jobserver write
+        # the file.
+        self.returned_measurements_queue = Queue.Queue(maxsize=10)
 
         self.shared_dicts = None
 
@@ -207,7 +210,7 @@ class AnalysisRunner(object):
         # don't have to worry about old workers taking a job before noticing
         # that their stdin has closed.
         self.stop_workers()
-        announce_queue = self.start_workers(2)  # start worker pool via class method (below)
+        announce_queue = self.start_workers()  # start worker pool via class method (below)
 
         self.measurements = cpmeas.Measurements(image_set_start=None,
                                                 filename=self.output_path,
@@ -316,15 +319,28 @@ class AnalysisRunner(object):
 
             # gather measurements
             while not self.returned_measurements_queue.empty():
-                job, reported_measurements = self.returned_measurements_queue.get()
-                for object in reported_measurements.get_object_names():
-                    if object == cpmeas.EXPERIMENT:
-                        continue  # XXX - who writes this, when?
-                    for feature in reported_measurements.get_feature_names(object):
-                        for imagenumber in job:
-                            self.measurements[object, feature, imagenumber] = reported_measurements[object, feature, imagenumber]
-                for image_set_number in job:
-                    self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
+                # put the blob in a temporary file
+                job, buf = self.returned_measurements_queue.get()
+                dir = cpprefs.get_default_output_directory()
+                if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
+                    dir = None
+                fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
+                os.write(fd, buf)
+                os.close(fd)
+                try:
+                    reported_measurements = cpmeas.load_measurements(filename)
+                    for object in reported_measurements.get_object_names():
+                        if object == cpmeas.EXPERIMENT:
+                            continue  # XXX - who writes this, when?
+                        for feature in reported_measurements.get_feature_names(object):
+                            for imagenumber in job:
+                                self.measurements[object, feature, imagenumber] \
+                                    = reported_measurements[object, feature, imagenumber]
+                    for image_set_number in job:
+                        self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
+                    del reported_measurements
+                finally:
+                    os.unlink(filename)
 
             # check for jobs in progress
             while not self.in_process_queue.empty():
@@ -431,15 +447,9 @@ class AnalysisRunner(object):
             elif isinstance(req, SharedDictionaryRequest):
                 req.reply(SharedDictionaryReply(dictionaries=self.shared_dicts))
             elif isinstance(req, MeasurementsReport):
-                # Measurements are available at location indicated
-                measurements_path = req.path.decode('utf-8')
+                buf = req.buf
                 successes = [int(s) for s in req.image_set_numbers.split(",")]
-                try:
-                    reported_measurements = cpmeas.load_measurements(measurements_path)
-                    self.queue_received_measurements(successes, reported_measurements)
-                except Exception:
-                    raise
-                    # XXX - report error, push back job
+                self.queue_received_measurements(successes, buf)
                 req.reply(Ack())
             elif isinstance(req, (InteractionRequest, DisplayRequest, ExceptionReport)):
                 # bump upward
@@ -663,8 +673,8 @@ class DictionaryReqRepRep(Reply):
 
 
 class MeasurementsReport(Request):
-    def __init__(self, path="", image_set_numbers=""):
-        Request.__init__(self, path=path, image_set_numbers=image_set_numbers)
+    def __init__(self, buf, image_set_numbers=""):
+        Request.__init__(self, buf=buf, image_set_numbers=image_set_numbers)
 
 
 class InteractionRequest(Request):

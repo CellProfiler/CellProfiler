@@ -5,13 +5,13 @@ import Queue
 import numpy as np
 import cellprofiler.cpgridinfo as cpg
 
-def make_CP_encoder(numpy_arrays):
+def make_CP_encoder(buffers):
     '''create an encoder for CellProfiler data and numpy arrays (which will be
     stored in the input argument)'''
-    def encoder(data, numpy_arrays=numpy_arrays):
+    def encoder(data, buffers=buffers):
         if isinstance(data, np.ndarray):
-            idx = len(numpy_arrays)
-            numpy_arrays.append(np.ascontiguousarray(data))
+            idx = len(buffers)
+            buffers.append(np.ascontiguousarray(data))
             return {'__ndarray__': True,
                     'dtype': str(data.dtype),
                     'shape': data.shape,
@@ -23,14 +23,22 @@ def make_CP_encoder(numpy_arrays):
             d = data.serialize()
             d['__CPGridInfo__'] = True
             return d
+        if isinstance(data, buffer):
+            # arbitrary data
+            idx = len(buffers)
+            buffers.append(data)
+            return {'__buffer__': True,
+                    'idx': idx}
         raise TypeError("%r of type %r is not JSON serializable" % (data, type(data)))
     return encoder
 
-def make_CP_decoder(numpy_arrays):
-    def decoder(dct, numpy_arrays=numpy_arrays):
+def make_CP_decoder(buffers):
+    def decoder(dct, buffers=buffers):
         if '__ndarray__' in dct:
-            buf = buffer(numpy_arrays[dct['idx']])
+            buf = buffer(buffers[dct['idx']])
             return np.frombuffer(buf, dtype=dct['dtype']).reshape(dct['shape']).copy()
+        if '__buffer__' in dct:
+            return buffer(buffers[dct['idx']])
         if '__CPGridInfo__' in dct:
             grid = cpg.CPGridInfo()
             grid.deserialize(dct)
@@ -51,14 +59,14 @@ class Communicable(object):
                              if (not k.startswith('_'))
                              and (not callable(self.__dict__[k])))
 
-        # replace each numpy array with its metadata, and send it separately
-        numpy_arrays = []
-        encoder = make_CP_encoder(numpy_arrays)
+        # replace each buffer with its metadata, and send it separately
+        buffers = []
+        encoder = make_CP_encoder(buffers)
         json_str = zmq.utils.jsonapi.dumps(sendable_dict, default=encoder)
         socket.send_multipart(routing +
                               [self.__class__.__module__, self.__class__.__name__] +
                               [json_str] +
-                              numpy_arrays, copy=False)
+                              buffers, copy=False)
 
     class MultipleReply(RuntimeError):
         pass
@@ -73,8 +81,8 @@ class Communicable(object):
         else:
             routing = []
         module, classname = message[:2]
-        numpy_arrays = message[3:]
-        decoder = make_CP_decoder(numpy_arrays)
+        buffers = message[3:]
+        decoder = make_CP_decoder(buffers)
         attribute_dict = zmq.utils.jsonapi.loads(message[2], object_hook=decoder)
         try:
             instance = sys.modules[module].__dict__[classname](**attribute_dict)

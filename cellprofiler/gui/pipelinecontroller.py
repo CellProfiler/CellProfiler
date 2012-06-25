@@ -1100,6 +1100,8 @@ class PipelineController:
     def module_display_request(self, evt):
         '''
         '''
+        assert wx.Thread_IsMain(), "PipelineController.module_display_request() must be called from main thread!"
+
         module_num = evt.module_num
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)

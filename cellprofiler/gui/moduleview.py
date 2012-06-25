@@ -358,14 +358,14 @@ class ModuleView:
             self.__controls     = []
             self.__static_texts = []
             data                = []
-            settings            = self.check_settings(self.__module.module_name, 
-                                                      self.__module.visible_settings())
-            self.__sizer.Reset(len(settings), 3, False)
-            sizer    = self.__sizer
             if reselecting:
                 self.hide_settings()
             else:
                 self.__module.on_activated(self.__workspace)
+            settings            = self.check_settings(self.__module.module_name, 
+                                                      self.__module.visible_settings())
+            self.__sizer.Reset(len(settings), 3, False)
+            sizer    = self.__sizer
                 
             #################################
             #
@@ -961,6 +961,8 @@ class ModuleView:
                 self.__on_do_something(event, setting)
                 
             self.module_panel.Bind(wx.EVT_BUTTON, callback, control)
+        else:
+            control.Label = v.label
         return control
     
     def make_regexp_control(self, v, control):

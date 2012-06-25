@@ -265,7 +265,12 @@ class Metadata(cpm.CPModule):
                 if group.can_remove:
                     result += [group.remover]
             result += [self.add_extraction_method_button,
-                       self.update_table_button, self.table]
+                       self.update_table_button]
+            if len(self.table.data) > 0:
+                self.update_table_button.label = "Update table"
+                result += [self.table]
+            else:
+                self.update_table_button.label = "Show table"
         return result
     
     def example_file_fn(self):
@@ -406,7 +411,8 @@ class Metadata(cpm.CPModule):
         self.ipd_metadata_keys = []
         self.update_metadata_keys()
         self.update_imported_metadata()
-        self.update_table()
+        self.table.clear_rows()
+        self.table.clear_columns()
         
     def on_setting_changed(self, setting, pipeline):
         self.update_imported_metadata()

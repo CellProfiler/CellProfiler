@@ -1614,7 +1614,10 @@ class DoSomething(Setting):
         """Return the text label for the button"""
         return self.__label
     
-    label = property(get_label)
+    def set_label(self, label):
+        self.__label = label
+    
+    label = property(get_label, set_label)
     
     def on_event_fired(self):
         """Call the callback in response to the user's request to do something"""

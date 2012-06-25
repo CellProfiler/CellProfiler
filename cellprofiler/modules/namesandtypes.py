@@ -231,7 +231,12 @@ class NamesAndTypes(cpm.CPModule):
                 result += [self.matching_choice]
                 if self.matching_choice == MATCH_BY_METADATA:
                     result += [self.join]
-        result += [self.update_table_button, self.table]
+        result += [self.update_table_button]
+        if len(self.table.data) > 0:
+            self.update_table_button.label = "Update table"
+            result += [self.table]
+        else:
+            self.update_table_button.label = "Show table"
         return result
     
     def prepare_settings(self, setting_values):
@@ -459,9 +464,11 @@ class NamesAndTypes(cpm.CPModule):
         for ipd in self.ipds:
             self.metadata_keys.update(ipd.metadata.keys())
         self.update_all_metadata_predicates()
-        self.update_all_columns()
-        self.make_image_sets()
-        self.update_table()
+        if self.join in self.visible_settings():
+            self.update_all_columns()
+        else:
+            self.ipd_columns = []
+        self.table.clear_rows()
         
     def on_deactivated(self):
         self.pipeline = None

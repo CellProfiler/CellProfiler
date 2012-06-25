@@ -54,7 +54,7 @@ class Groups(cpm.CPModule):
         self.add_grouping_metadata_button = cps.DoSomething(
             "Add another metadata item", "Add", self.add_grouping_metadata)
 
-        self.grouping_list = cps.Table("Grouping list", min_size = (100, 100))
+        self.grouping_list = cps.Table("Grouping list", min_size = (300, 100))
         
         self.image_set_list = cps.Table("Image sets")
         
@@ -103,7 +103,7 @@ class Groups(cpm.CPModule):
                 if group.can_remove:
                     result += [group.remover]
                 result += [ group.divider ]
-            result += [self.add_grouping_metadata_button,
+            result += [self.add_grouping_metadata_button, 
                        self.grouping_list, self.image_set_list]
         return result
     
@@ -117,30 +117,41 @@ class Groups(cpm.CPModule):
             
     def on_activated(self, workspace):
         self.pipeline = workspace.pipeline
+        self.workspace = workspace
         assert isinstance(self.pipeline, cpp.Pipeline)
-        self.image_set_channel_descriptors, \
-            self.image_set_key_names, \
-            self.image_sets = self.pipeline.get_image_sets(workspace, self)
-        for i, iscd in enumerate(self.image_set_channel_descriptors):
-            column_name = iscd.name
-            metadata_keys = set()
-            first = True
-            for ipds in self.image_sets.values():
-                ipd = ipds[i]
-                if first:
-                    metadata_keys = set(ipd.metadata.keys())
-                    first = False
-                else:
-                    metadata_keys.intersection_update(ipd.metadata.keys())
-            self.metadata_keys[column_name] = list(metadata_keys)
-        self.update_tables()
-        for group in self.grouping_metadata:
-            group.metadata_choice.test_valid(self.pipeline)
+        if self.wants_groups:
+            self.image_sets_initialized = True
+            self.image_set_channel_descriptors, \
+                self.image_set_key_names, \
+                self.image_sets = self.pipeline.get_image_sets(workspace, self)
+            for i, iscd in enumerate(self.image_set_channel_descriptors):
+                column_name = iscd.name
+                metadata_keys = set()
+                first = True
+                for ipds in self.image_sets.values():
+                    ipd = ipds[i]
+                    if first:
+                        metadata_keys = set(ipd.metadata.keys())
+                        first = False
+                    else:
+                        metadata_keys.intersection_update(ipd.metadata.keys())
+                self.metadata_keys[column_name] = list(metadata_keys)
+            self.update_tables()
+            for group in self.grouping_metadata:
+                group.metadata_choice.test_valid(self.pipeline)
+        else:
+            self.image_sets_initialized = False
         
     def on_deactivated(self):
         self.pipeline = None
         
     def on_setting_changed(self, setting, pipeline):
+        if (setting == self.wants_groups and self.wants_groups and
+            not self.image_sets_initialized):
+            workspace = self.workspace
+            self.on_deactivated()
+            self.on_activated(workspace)
+            
         #
         # Unfortunately, test_valid has the side effect of getting
         # the choices set which is why it's called here

@@ -632,6 +632,12 @@ class Pipeline(object):
         self.__undo_stack = []
         self.__undo_start = None
         self.__image_plane_details = []
+        self.__image_plane_details_generation = -1
+        self.__filtered_image_plane_details = []
+        self.__filtered_image_plane_details_images_settings = tuple()
+        self.__filtered_image_plane_details_with_metadata = []
+        self.__filtered_image_plane_details_metadata_settings = tuple()
+        
         self.file_walker = WalkCollection(self.on_walk_completed)
         self.__undo_stack = []
     
@@ -2198,6 +2204,8 @@ class Pipeline(object):
         
         '''
         file_list = workspace.file_list
+        if self.__image_plane_details_generation == file_list.generation:
+            return self.__image_plane_details
         try:
             urls = file_list.get_filelist()
         except Exception, instance:
@@ -2208,6 +2216,9 @@ class Pipeline(object):
                 raise instance
             
         self.__image_plane_details = []
+        self.__filtered_image_plane_details_images_settings = tuple()
+        self.__filtered_image_plane_details_metadata_settings = tuple()
+        self.__image_plane_details_generation = file_list.generation
         self.add_image_plane_details([
             ImagePlaneDetails(url, None, None, None) for url in urls], False)
         bypass_exceptions = False
@@ -2247,9 +2258,17 @@ class Pipeline(object):
                           if module.module_name == "Images"]
         if (len(images_modules) > 0):
             images_module = images_modules[0]
-            ipds = [
-                ipd for ipd in self.image_plane_details
-                if images_module.filter_url(ipd.url) is not False]
+            images_settings = tuple([
+                s.unicode_value for s in images_module.settings()])
+            if (self.__filtered_image_plane_details_images_settings ==
+                images_settings):
+                ipds = self.__filtered_image_plane_details
+            else:
+                ipds = [
+                    ipd for ipd in self.image_plane_details
+                    if images_module.filter_url(ipd.url) is not False]
+                self.__filtered_image_plane_details = ipds
+                self.__filtered_image_plane_details_images_settings = images_settings
         else:
             ipds = self.image_plane_details
         if with_metadata:
@@ -2257,6 +2276,11 @@ class Pipeline(object):
                                 if module.module_name == "Metadata"]
             if len(metadata_modules) > 0:
                 metadata_module = metadata_modules[0]
+                metadata_settings = tuple([
+                    s.unicode_value for s in metadata_module.settings()])
+                if (metadata_settings == 
+                    self.__filtered_image_plane_details_metadata_settings):
+                    return self.__filtered_image_plane_details_with_metadata
                 ipds_with_metadata = []
                 for ipd in ipds:
                     metadata = ipd.metadata.copy()
@@ -2264,7 +2288,10 @@ class Pipeline(object):
                     ipds_with_metadata.append(
                         ImagePlaneDetails(ipd.url, ipd.series, ipd.index, 
                                           ipd.channel, **metadata))
-            ipds = ipds_with_metadata
+                ipds = ipds_with_metadata
+                self.__filtered_image_plane_details_with_metadata = ipds
+                self.__filtered_image_plane_details_metadata_settings = \
+                    metadata_settings
         return ipds
     
     class ImageSetChannelDescriptor(object):

@@ -257,9 +257,7 @@ except:
 try:
     import zmq
     zmq_loc = os.path.split(zmq.__file__)[0]
-    os.environ["PATH"] = os.environ["PATH"] + ";"+zmq_loc
-    #data_files += [('.', (os.path.join(zmq_loc, "libzmq.dll"), ))]
-    #opts['py2exe']['dll_excludes'] += ["libzmq.dll"]
+    #os.environ["PATH"] = os.environ["PATH"] + ";"+zmq_loc
 except:
     print "This installation will not include 0MQ"
 

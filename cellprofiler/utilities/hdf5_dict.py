@@ -630,6 +630,7 @@ class HDF5FileList(object):
         self.__top_level_group = g
         self.__cache = {}
         self.__notification_list = []
+        self.__generation = uuid.uuid4()
         
     class __CacheEntry(object):
         '''A cache entry in the file list cache
@@ -643,6 +644,16 @@ class HDF5FileList(object):
             self.urls = tuple(urls)
             self.has_metadata = has_metadata
         
+    def get_generation(self):
+        '''The generation # of this file list
+        
+        The generation # is incremented each time the file list changes (including
+        the metadata). Users of the file list can use the generation to determine
+        if derivative calculations need to be recalculated.
+        '''
+        return self.__generation
+    generation = property(get_generation)
+    
     def add_notification_callback(self, callback):
         '''Add a callback that will be called if the file list changes in any way
         
@@ -742,6 +753,7 @@ class HDF5FileList(object):
         return schema, [rest]
     
     def add_files_to_filelist(self, urls):
+        self.__generation = uuid.uuid4()
         d = {}
         timestamp = time.time()
         for url in urls:
@@ -792,6 +804,7 @@ class HDF5FileList(object):
         self.__cache = {}
                     
     def remove_files_from_filelist(self, urls):
+        self.__generation = uuid.uuid4()
         group = self.get_filelist_group()
         d = {}
         for url in urls:
@@ -1003,6 +1016,7 @@ class HDF5FileList(object):
         
         metadata - the OME-XML for the file
         '''
+        self.__generation = uuid.uuid4()
         group, index, has_metadata = self.find_url(url)
         metadata_array = VStringArray(group.require_group("metadata"))
         metadata_array[index] = metadata

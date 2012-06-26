@@ -587,9 +587,29 @@ class ImagePredicate(cps.Filter.FilterPredicate):
             cpp.ImagePlaneDetails.MD_MONOCHROME), [],
         doc = "The image is monochrome")
     
+    @staticmethod
+    def is_stack(x):
+        if (x.metadata.has_key(cpp.ImagePlaneDetails.MD_SIZE_T) and
+              x.metadata[cpp.ImagePlaneDetails.MD_SIZE_T] > 1):
+            return True
+        if (x.metadata.has_key(cpp.ImagePlaneDetails.MD_SIZE_Z) and
+            x.metadata[cpp.ImagePlaneDetails.MD_SIZE_Z] > 1):
+            return True
+        return False
+        
+    IS_STACK_PREDICATE = cps.Filter.FilterPredicate(
+        "isstack", "Stack", lambda x: ImagePredicate.is_stack(x), [],
+        doc = "The image is a Z-stack or movie")
+    
+    IS_STACK_FRAME_PREDICATE = cps.Filter.FilterPredicate(
+        "isstackframe", "Stack frame", lambda x: x.index is not None, [],
+        doc = "The image is a frame of a movie or a plane of a Z-stack")
+    
     def __init__(self):
         subpredicates = ( self.IS_COLOR_PREDICATE, 
-                          self.IS_MONOCHROME_PREDICATE)
+                          self.IS_MONOCHROME_PREDICATE,
+                          self.IS_STACK_PREDICATE,
+                          self.IS_STACK_FRAME_PREDICATE)
         predicates = [ pred_class(subpredicates, text)
                        for pred_class, text in (
                            (cps.Filter.DoesPredicate, "Is"),
@@ -607,9 +627,12 @@ class ImagePredicate(cps.Filter.FilterPredicate):
             return None
         return args[0](ipd, *args[1:])
 
+    class FakeModule(cpm.CPModule):
+        '''A fake module for setting validation'''
+        def get_image_plane_details(self, modpath):
+            url = Images.modpath_to_url(modpath)
+            return cpp.ImagePlaneDetails(url, None, None, None)
     def test_valid(self, pipeline, *args):
-        image_module = [m for m in pipeline.modules()
-                        if isinstance(m, Images)][0]
         self((cps.FileCollectionDisplay.NODE_FILE, 
-              ["/imaging", "test.tif"], image_module), *args)
+              ["/imaging", "test.tif"], self.FakeModule()), *args)
 

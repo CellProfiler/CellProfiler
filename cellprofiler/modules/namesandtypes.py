@@ -544,6 +544,7 @@ class NamesAndTypes(cpm.CPModule):
         self.update_joiner()
         
     def make_image_sets_and_update_table(self):
+        self.update_all_columns()
         self.make_image_sets()
         self.update_table()
         
@@ -884,10 +885,52 @@ class NamesAndTypes(cpm.CPModule):
             self.table.insert_column(i, name)
         f_pathname = "Pathname: %s"
         f_filename = "Filename: %s"
-        for i, column_name in enumerate(self.column_names):
-            idx = len(metadata_columns) + i*2
+        f_frame = "Frame: %s"
+        f_series = "Series: %s"
+        has_frame_numbers = {}
+        has_series = {}
+        column_counts = {}
+        idx = len(metadata_columns)
+        for column_name in self.column_names:
             self.table.insert_column(idx, f_pathname % column_name)
             self.table.insert_column(idx+1, f_filename % column_name)
+            idx += 2
+            hfn = None
+            hs = None
+            column_counts[column_name] = 2
+            has_frame_numbers[column_name] = False
+            has_series[column_name] = False
+
+            for (_, image_set) in self.image_sets:
+                for ipd in image_set.get(column_name, []):
+                    if ipd.index is not None:
+                        if hfn == None:
+                            hfn = ipd.index
+                        elif hfn != ipd.index and hfn is not True:
+                            hfn = True
+                            has_frame_numbers[column_name] = True
+                            if hs is True:
+                                break
+                    if ipd.series is not None:
+                        if hs == None:
+                            hs = ipd.series
+                        elif hs != ipd.series and hs is not True:
+                            hs = True
+                            has_series[column_name] = True
+                            if hfn is True:
+                                break
+                else:
+                    continue
+                break
+            if has_frame_numbers[column_name]:
+                self.table.insert_column(idx, f_frame % column_name)
+                idx += 1
+                column_counts[column_name] += 1
+            if has_series[column_name]:
+                self.table.insert_column(idx, f_series % column_name)
+                idx += 1
+                column_counts[column_name] += 1
+                
         data = []
         errors = []
         for i, (keys, image_set) in enumerate(self.image_sets):
@@ -895,15 +938,21 @@ class NamesAndTypes(cpm.CPModule):
             for column_name in self.column_names:
                 ipds = image_set.get(column_name, [])
                 if len(ipds) == 0:
-                    row += ["-- No image! --"] * 2
+                    row += ["-- No image! --"] * column_counts[column_name]
                     errors.append((i, column_name))
                 elif len(ipds) > 1:
                     row.append("-- Multiple images! --\n" + 
                                "\n".join([ipd.path for ipd in ipds]))
-                    row.append("-- Multiple images! --")
+                    row += ["-- Multiple images! --"] * (
+                        column_counts[column_name] - 1)
                     errors.append((i, column_name))
                 else:
-                    row += os.path.split(ipds[0].path)
+                    ipd = ipds[0]
+                    row += os.path.split(ipd.path)
+                    if has_frame_numbers[column_name]:
+                        row += [str(ipd.index)]
+                    if has_series[column_name]:
+                        row += [str(ipd.series)]
             data.append(row)
         self.table.data = data
         for error_row, column_name in errors:

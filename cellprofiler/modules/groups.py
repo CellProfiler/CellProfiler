@@ -138,7 +138,10 @@ class Groups(cpm.CPModule):
                 self.metadata_keys[column_name] = list(metadata_keys)
             self.update_tables()
             for group in self.grouping_metadata:
-                group.metadata_choice.test_valid(self.pipeline)
+                try:
+                    group.metadata_choice.test_valid(self.pipeline)
+                except:
+                    pass # bad pipeline
         else:
             self.image_sets_initialized = False
         
@@ -314,7 +317,7 @@ class Groups(cpm.CPModule):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
-        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_numbers)
+        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
         #
         # Downstream processing requires that image sets be ordered by
         # increasing group number, then increasing group index.

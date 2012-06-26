@@ -445,8 +445,8 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                        "preparing for run"%(len(image_numbers)))
             output_image_provider = CorrectIlluminationImageProvider(
                 self.illumination_image_name.value, self)
-            self.get_dictionary(image_set_list)[OUTPUT_IMAGE] = \
-                output_image_provider
+            d = self.get_dictionary(image_set_list)[OUTPUT_IMAGE] = {}
+            output_image_provider.serialize(d)
             if self.each_or_all == EA_ALL_FIRST:
                 for w in pipeline.run_group_with_yield(
                     workspace, grouping, image_numbers, self, title, message):
@@ -458,7 +458,9 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         
     def run(self, workspace):
         if self.each_or_all != EA_EACH:
-            output_image_provider = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
+            d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
+            output_image_provider = CorrectIlluminationImageProvider.deserialize(
+                d, self)
             if self.each_or_all == EA_ALL_ACROSS:
                 #
                 # We are accumulating a pipeline image. Add this image set's
@@ -858,10 +860,40 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         self.__module = module
         self.__dirty = False
         self.__image_sum = None
+        self.__mask_count = None
         self.__cached_image = None
         self.__cached_avg_image = None
         self.__cached_dilated_image = None
         self.__cached_mask_count = None
+        
+    D_NAME = "name"
+    D_IMAGE_SUM = "image_sum"
+    D_MASK_COUNT = "mask_count"
+    def serialize(self, d):
+        '''Save the internal state of the provider to a dictionary
+        
+        d - save to this dictionary, numpy arrays and json serializable only
+        '''
+        d[self.D_NAME] = self.__name
+        d[self.D_IMAGE_SUM] = self.__image_sum
+        d[self.D_MASK_COUNT] = self.__mask_count
+        
+    @staticmethod
+    def deserialize(d, module):
+        '''Restore a state saved by serialize
+        
+        d - dictionary containing the state
+        module - the module providing details on how to perform the correction
+        
+        returns a provider set up with the restored state
+        '''
+        provider = CorrectIlluminationImageProvider(
+            d[CorrectIlluminationImageProvider.D_NAME],
+            module)
+        provider.__dirty = True
+        provider.__image_sum = d[CorrectIlluminationImageProvider.D_IMAGE_SUM]
+        provider.__mask_count = d[CorrectIlluminationImageProvider.D_MASK_COUNT]
+        return provider
 
     def add_image(self, image):
         """Accumulate the data from the given image

@@ -374,7 +374,7 @@ class AnalysisRunner(object):
 
             # Are we finished?
             if counts[self.STATUS_DONE] == len(image_sets_to_process):
-                if worker_runs_post_group:
+                if not worker_runs_post_group:
                     self.pipeline.post_group(workspace, {})
                 # XXX - revise pipeline.post_run to use the workspace
                 self.pipeline.post_run(self.measurements, None, None)

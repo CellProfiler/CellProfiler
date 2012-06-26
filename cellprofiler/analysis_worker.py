@@ -273,7 +273,8 @@ def main():
                     continue
 
                 if worker_runs_post_group:
-                    workspace = cpw.Workspace(current_pipeline, None, None, None,
+                    workspace = cpw.Workspace(current_pipeline, None, 
+                                              current_measurements, None,
                                               current_measurements, None, None)
                     # There might be an exception in this call, but it will be
                     # handled elsewhere, and there's nothing we can do for it

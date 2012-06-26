@@ -245,8 +245,7 @@ class EditObjectsManually(I.Identify):
         figure.subplot_imshow_labels(0, 0, orig_labels, orig_objects_name)
         figure.subplot_imshow_labels(1, 0, filtered_labels,
                                      filtered_objects_name,
-                                     sharex = figure.subplot(0,0),
-                                     sharey = figure.subplot(0,0))
+                                     sharexy = figure.subplot(0,0))
 
     def handle_interaction(self, orig_labels, guide_image):
         import wx
@@ -280,11 +279,9 @@ class EditObjectsManually(I.Identify):
         orig_axes = figure.add_subplot(2, 2, 1)
         orig_axes._adjustable = 'box-forced'
         keep_axes = figure.add_subplot(2, 2, 2,
-                                       sharex = orig_axes,
-                                       sharey = orig_axes)
+                                       sharexy = orig_axes)
         remove_axes = figure.add_subplot(2, 2, 4,
-                                         sharex = orig_axes,
-                                         sharey = orig_axes)
+                                         sharexy = orig_axes)
         for axes in (orig_axes, keep_axes, remove_axes):
             axes._adjustable = 'box-forced'
             

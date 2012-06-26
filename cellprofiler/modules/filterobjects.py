@@ -475,8 +475,7 @@ class FilterObjects(cpm.CPModule):
             figure.subplot_imshow_labels(0,1,target_objects_segmented,
                                          title="Filtered: %s"%
                                          target_name,
-                                         sharex = figure.subplot(0,0),
-                                         sharey = figure.subplot(0,0))
+                                         sharexy = figure.subplot(0,0))
         else:
             figure.set_subplots((2, 2))
             figure.subplot_imshow_labels(0,0,src_objects_segmented,
@@ -484,8 +483,7 @@ class FilterObjects(cpm.CPModule):
             figure.subplot_imshow_labels(0,1,target_objects_segmented,
                                          title="Filtered: %s"%
                                          target_name,
-                                         sharex = figure.subplot(0,0),
-                                         sharey = figure.subplot(0,0))
+                                         sharexy = figure.subplot(0,0))
             outs = outline(target_objects_segmented) > 0
             maxpix = np.max(image)
             if maxpix == 0:
@@ -497,8 +495,7 @@ class FilterObjects(cpm.CPModule):
             red_channel = picture[:,:,0]
             red_channel[outs] = maxpix
             figure.subplot_imshow(1, 0, picture, "Filtered Outlines",
-                                  sharex = figure.subplot(0,0),
-                                  sharey = figure.subplot(0,0))
+                                  sharexy = figure.subplot(0,0))
             
             statistics = [  ["Number of objects pre-filtering",  np.max(src_objects_segmented)],
                             ["Number of objects post-filtering", np.max(target_objects_segmented)]]

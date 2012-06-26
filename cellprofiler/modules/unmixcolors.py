@@ -355,7 +355,7 @@ class UnmixColors(cpm.CPModule):
                                                must_be_grayscale = True)
             figure.subplot_imshow_grayscale(i+1, 0, output_image.pixel_data,
                                             title = image_name,
-                                            sharex = ax, sharey = ax)
+                                            sharexy = ax)
 
     def get_absorbances(self, output):
         '''Given one of the outputs, return the red, green and blue absorbance'''

@@ -678,8 +678,7 @@ class ClassifyObjects(cpm.CPModule):
             figure.subplot_imshow_labels(2,i, labels, 
                                          title = group.object_name.value,
                                          renumber=False, 
-                                         sharex=figure.subplot(2,0),
-                                         sharey=figure.subplot(2,0))
+                                         sharexy = figure.subplot(2,0))
             
     def get_colors(self, count):
         '''Get colors used for two-measurement labels image'''

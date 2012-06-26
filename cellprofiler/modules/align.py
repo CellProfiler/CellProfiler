@@ -262,8 +262,7 @@ class Align(cpm.CPModule):
             img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels
             img[:other_pixels.shape[0], :other_pixels.shape[1], 1] = other_pixels
             figure.subplot_imshow(0, j, img, unaligned_title,
-                                  sharex=figure.subplot(0, 0),
-                                  sharey=figure.subplot(0, 0))
+                                  sharexy = figure.subplot(0, 0))
 
             aligned_title = ("Aligned images: %s and %s\nX offset: %d, Y offset: %d" %
                              (first_output_name, output_name,
@@ -275,8 +274,7 @@ class Align(cpm.CPModule):
             img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels
             img[:other_pixels.shape[0], :other_pixels.shape[1], 1] = other_pixels
             figure.subplot_imshow(1, j, img, aligned_title,
-                                  sharex=figure.subplot(0, 0),
-                                  sharey=figure.subplot(0, 0))
+                                  sharexy = figure.subplot(0, 0))
 
     def align(self, workspace, input1_name, input2_name):
         '''Align the second image with the first

@@ -1169,9 +1169,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
             
             orig_axes     = figure.subplot(0,0)
-            label_axes    = figure.subplot(1,0, sharex=orig_axes, sharey=orig_axes)
-            outlined_axes = figure.subplot(0,1, sharex=orig_axes, sharey=orig_axes)
-            table_axes    = figure.subplot(1,1, sharex=orig_axes, sharey=orig_axes)
+            label_axes    = figure.subplot(1,0, sharexy = orig_axes)
+            outlined_axes = figure.subplot(0,1, sharexy = orig_axes)
+            table_axes    = figure.subplot(1,1, sharexy = orig_axes)
     
             title = "Original image, cycle #%d"%(workspace.measurements.image_number,)
             figure.subplot_imshow_grayscale(0, 0,

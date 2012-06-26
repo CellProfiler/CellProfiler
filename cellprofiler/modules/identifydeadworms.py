@@ -308,7 +308,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         figure.subplot_imshow_color(1, 0, color_image[:,:,:-1],
                                     title= self.object_name.value,
                                     normalize = False,
-                                    sharex = plot00, sharey = plot00)
+                                    sharexy = plot00)
     def get_diamond(self, angle):
         '''Get a diamond-shaped structuring element
         

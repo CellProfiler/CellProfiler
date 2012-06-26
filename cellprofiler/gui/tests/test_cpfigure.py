@@ -29,7 +29,7 @@ class TestCPFigure(unittest.TestCase):
     def setUp(self):
         self.app = wx.GetApp()
         if self.app is None:
-            self.app = wx.PySimpleApp(True)
+            self.app = wx.PySimpleApp(False)
         self.frame = wx.Frame(None, title="Hello, world")
         self.frame.Show()
 
@@ -252,5 +252,44 @@ class TestCPFigure(unittest.TestCase):
         for i, item in enumerate(f.menu_subplots.MenuItems):
             assert item.Label == 'rgb%s'%(i+1)
         f.Destroy()
-            
 
+    def test_04_01_sharexy(self):
+        '''Make sure we can use the sharexy argument.'''
+        image = np.zeros((100, 100))
+        for y in range(image.shape[0]):
+            image[y,:] = y / 200.0
+        my_frame = cpfig.create_or_find(self.frame, -1, subplots=(1, 2),
+                                        name="test_04_01_sharexy")
+        ax = my_frame.subplot_imshow(0, 0, image, normalize=False)
+        ax2 = my_frame.subplot_imshow(0, 1, image, normalize=False, sharexy=ax)
+        xgroup = ax.get_shared_x_axes()
+        assert ax in xgroup
+        assert ax2 in xgroup
+        ygroup = ax.get_shared_y_axes()
+        assert ax in ygroup
+        assert ax2 in ygroup
+        my_frame.Destroy()
+
+    def test_04_02_no_sharexy_and_sharex_or_y(self):
+        '''Make sure we can't specify sharex or sharey and sharexy'''
+        image = np.zeros((100, 100))
+        for y in range(image.shape[0]):
+            image[y,:] = y / 200.0
+        my_frame = cpfig.create_or_find(self.frame, -1, subplots=(1, 2),
+                                        name="test_04_01_sharexy")
+        ax = my_frame.subplot_imshow(0, 0, image, normalize=False)
+        raised = False
+        try:
+            ax2 = my_frame.subplot_imshow(0, 1, image, normalize=False,
+                                          sharex=ax, sharexy=ax)
+        except Exception, e:
+            raised = True
+        assert raised, "Specifying sharex and sharexy did not raise exception"
+        raised = False
+        try:
+            ax2 = my_frame.subplot_imshow(0, 1, image, normalize=False,
+                                          sharey=ax, sharexy=ax)
+        except Exception, e:
+            raised = True
+        assert raised, "Specifying sharey and sharexy did not raise exception"
+        my_frame.Destroy()

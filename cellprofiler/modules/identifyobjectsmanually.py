@@ -121,8 +121,7 @@ class IdentifyObjectsManually(I.Identify):
         figure.set_subplots((2, 1))
         figure.subplot_imshow_labels(0, 0, labels, objects_name)
         figure.subplot_imshow(1, 0, self.draw_outlines(pixel_data, labels),
-                              sharex = figure.subplot(0,0),
-                              sharey = figure.subplot(0,0))
+                              sharexy = figure.subplot(0,0))
 
     def draw_outlines(self, pixel_data, labels):
         '''Draw a color image that shows the objects

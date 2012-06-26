@@ -27,12 +27,9 @@ import matplotlib.patches
 import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
 from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
-import cellprofiler.utilities.matplotlib_axes_monkey_patch
 from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position, reset_cpfigure_position
-import scipy.misc
 from scipy.sparse import coo_matrix
-from cStringIO import StringIO
-import sys
+import functools
 
 from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
@@ -171,7 +168,20 @@ def close_all(parent):
             detach()
     except:
         pass
-        
+
+def allow_sharexy(fn):
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        if 'sharexy' in kwargs:
+            assert (not 'sharex' in kwargs) and (not 'sharey' in kwargs), \
+                "Cannot specify sharexy with sharex or sharey"
+            kwargs['sharex'] = kwargs['sharey'] = kwargs.pop('sharexy')
+        return fn(*args, **kwargs)
+    if wrapper.__doc__ is not None:
+        wrapper.__doc__ += \
+            '\n        sharexy=ax can be used to specify sharex=ax, sharey=ax'
+    return wrapper
+
 MENU_FILE_SAVE = wx.NewId()
 MENU_CLOSE_WINDOW = wx.NewId()
 MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
@@ -550,6 +560,7 @@ class CPFigureFrame(wx.Frame):
         else:
             self.subplots = np.zeros(subplots, dtype=object)
 
+    @allow_sharexy
     def subplot(self, x, y, sharex=None, sharey=None):
         """Return the indexed subplot
         
@@ -725,8 +736,8 @@ class CPFigureFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_LOG)
         return popup
-    
-    
+
+    @allow_sharexy
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=True, vmin=0, vmax=1, 
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
@@ -975,7 +986,8 @@ class CPFigureFrame(wx.Frame):
                                        bins=200, xlabel='pixel intensity')
             hist_fig.figure.canvas.draw()
         return subplot
-    
+
+    @allow_sharexy
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
                              normalize=True, rgb_mask=[1,1,1],
                              sharex=None, sharey=None,
@@ -984,7 +996,8 @@ class CPFigureFrame(wx.Frame):
                                    normalize=normalize, rgb_mask=rgb_mask, 
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)
-    
+
+    @allow_sharexy
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True, 
                               renumber=True, sharex=None, sharey=None,
                               use_imshow = False):
@@ -1014,7 +1027,8 @@ class CPFigureFrame(wx.Frame):
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)
-    
+
+    @allow_sharexy
     def subplot_imshow_ijv(self, x, y, ijv, shape = None, title=None, 
                            clear=True, renumber=True, sharex=None, sharey=None,
                            use_imshow = False):
@@ -1057,7 +1071,7 @@ class CPFigureFrame(wx.Frame):
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)
-        
+    @allow_sharexy
     def subplot_imshow_grayscale(self, x, y, image, title=None, clear=True,
                                  colorbar=False, normalize=True, vmin=0, vmax=1,
                                  sharex=None, sharey=None, 
@@ -1084,7 +1098,8 @@ class CPFigureFrame(wx.Frame):
                                    colorbar=colorbar, vmin=vmin, vmax=vmax,
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)
-    
+
+    @allow_sharexy
     def subplot_imshow_bw(self, x, y, image, title=None, clear=True, 
                           sharex=None, sharey=None, use_imshow = False):
         '''Show a binary image in black and white

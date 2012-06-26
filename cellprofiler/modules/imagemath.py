@@ -359,8 +359,7 @@ class ImageMath(cpm.CPModule):
             show(i % columns, int(i / columns),
                  pixel_data[i],
                  title=display_names[i],
-                 sharex = figure.subplot(0, 0),
-                 sharey = figure.subplot(0, 0))
+                 sharexy = figure.subplot(0, 0))
 
 
     def validate_module(self, pipeline):

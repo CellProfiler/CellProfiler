@@ -256,8 +256,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         "Original: %s" % self.image_name.value)
         figure.subplot_imshow_grayscale(1, 0, result,
                                         "Filtered: %s" % self.filtered_image_name.value,
-                                        sharex = figure.subplot(0, 0),
-                                        sharey = figure.subplot(0, 0))
+                                        sharexy = figure.subplot(0, 0))
         
     def upgrade_settings(self, setting_values, variable_revision_number,
                              module_name, from_matlab):

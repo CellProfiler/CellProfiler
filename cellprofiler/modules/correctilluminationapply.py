@@ -240,21 +240,18 @@ class CorrectIlluminationApply(cpm.CPModule):
 
             imshow(0, j, orig_image,
                    "Original image: %s" % image_name,
-                   sharex=figure.subplot(0,0),
-                   sharey=figure.subplot(0,0))
+                   sharexy = figure.subplot(0,0))
             title = ("Illumination function: %s\nmin=%f, max=%f" %
                      (illum_correct_function_image_name,
                       round(illum_image.min(), 4),
                       round(illum_image.max(), 4)))
 
             imshow(1, j, illum_image, title,
-                   sharex=figure.subplot(0,0),
-                   sharey=figure.subplot(0,0))
+                   sharexy = figure.subplot(0,0))
             imshow(2, j, corrected_image,
                    "Final image: %s" %
                    corrected_image_name,
-                   sharex=figure.subplot(0,0),
-                   sharey=figure.subplot(0,0))
+                   sharexy = figure.subplot(0,0))
 
     def validate_module_warnings(self, pipeline):
         """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""

@@ -173,15 +173,13 @@ class MakeProjection(cpm.CPModule):
                                   self.image_name.value)
             figure.subplot_imshow(1, 0, provider_pixels,
                                   self.projection_image_name.value,
-                                  sharex = figure.subplot(0, 0),
-                                  sharey = figure.subplot(0, 0))
+                                  sharexy = figure.subplot(0, 0))
         else:
             figure.subplot_imshow_bw(0, 0, pixels,
                                      self.image_name.value)
             figure.subplot_imshow_bw(1, 0, provider_pixels,
                                      self.projection_image_name.value,
-                                     sharex = figure.subplot(0, 0),
-                                     sharey = figure.subplot(0, 0))
+                                     sharexy = figure.subplot(0, 0))
 
     def upgrade_settings(self, setting_values, 
                          variable_revision_number, 

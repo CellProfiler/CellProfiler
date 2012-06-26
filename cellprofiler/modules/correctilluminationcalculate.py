@@ -513,12 +513,10 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         pixel_data = output_image
         imshow(0, 1, output_image,
                "Final illumination function",
-               sharex=figure.subplot(0,0),
-               sharey=figure.subplot(0,0))
+               sharexy = figure.subplot(0,0))
         imshow(1, 0, dilated_image,
                "Dilated image",
-               sharex=figure.subplot(0,0),
-               sharey=figure.subplot(0,0))
+               sharexy = figure.subplot(0,0))
         statistics = [["Min value", round(np.min(output_image),2)],
                       ["Max value", round(np.max(output_image),2)],
                       ["Calculation type", self.intensity_choice.value]

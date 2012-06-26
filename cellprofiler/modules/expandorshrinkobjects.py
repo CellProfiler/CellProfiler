@@ -182,8 +182,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
                                      self.object_name.value)
         figure.subplot_imshow_labels(1, 0, output_objects_segmented,
                                      self.output_object_name.value,
-                                     sharex = figure.subplot(0, 0),
-                                     sharey = figure.subplot(0, 0))
+                                     sharexy = figure.subplot(0, 0))
 
     def do_labels(self, labels):
         '''Run whatever transformation on the given labels matrix'''

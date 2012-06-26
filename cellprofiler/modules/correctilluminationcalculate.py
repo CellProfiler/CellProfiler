@@ -446,13 +446,13 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             output_image_provider = CorrectIlluminationImageProvider(
                 self.illumination_image_name.value, self)
             d = self.get_dictionary(image_set_list)[OUTPUT_IMAGE] = {}
-            output_image_provider.serialize(d)
             if self.each_or_all == EA_ALL_FIRST:
                 for w in pipeline.run_group_with_yield(
                     workspace, grouping, image_numbers, self, title, message):
                     image = w.image_set.get_image(self.image_name.value,
                                                   cache = False)
                     output_image_provider.add_image(image)
+            output_image_provider.serialize(d)
             
         return True
         

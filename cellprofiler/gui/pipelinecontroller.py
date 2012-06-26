@@ -170,13 +170,6 @@ class PipelineController:
         self.__module_view = module_view
         module_view.add_listener(self.__on_module_view_event)
     
-    def attach_to_directory_view(self,directory_view):
-        """Listen for requests to load pipelines
-        
-        """
-        self.__directory_view = directory_view
-        directory_view.add_pipeline_listener(self.__on_dir_load_pipeline)
-    
     def attach_to_module_controls_panel(self,module_controls_panel):
         """Attach the pipeline controller to the module controls panel
         

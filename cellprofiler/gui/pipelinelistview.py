@@ -164,7 +164,7 @@ class PipelineListView(object):
         self.list_ctrl.InsertColumn(MODULE_NAME_COLUMN, "Module")
         for column in (PAUSE_COLUMN, EYE_COLUMN, ERROR_COLUMN):
             self.list_ctrl.SetColumnWidth(column, 20)
-        self.list_ctrl.SetColumnWidth(MODULE_NAME_COLUMN, 100)
+        self.list_ctrl.SetColumnWidth(MODULE_NAME_COLUMN, -1)
         #
         # Bind events
         #
@@ -493,6 +493,7 @@ class PipelineListView(object):
             self.select_one_module(1)
         self.__panel.SetupScrolling()
         self.__controller.enable_module_controls_panel_buttons()
+        self.list_ctrl.SetColumnWidth(MODULE_NAME_COLUMN, -1)
     
     def __adjust_rows(self):
         """Adjust slider and dimensions after adding or removing rows"""

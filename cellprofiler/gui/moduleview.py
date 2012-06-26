@@ -2707,7 +2707,8 @@ class FileCollectionDisplayController(object):
         path = self.get_path_from_event(event)
         context_menu = self.v.get_context_menu(path)
         if len(context_menu) > 0:
-            with wx.Menu() as menu:
+            menu = wx.Menu()
+            try:
                 for context_item in context_menu:
                     menu.Append(-1, context_item)
                 def on_menu(event):
@@ -2726,6 +2727,8 @@ class FileCollectionDisplayController(object):
                 self.tree_ctrl.Bind(wx.EVT_MENU, on_menu)
                 self.tree_ctrl.PopupMenu(menu, event.GetPoint())
                 self.tree_ctrl.Unbind(wx.EVT_MENU, handler = on_menu)
+            finally:
+                menu.Destroy()
             
     def on_tree_doubleclick(self, event):
         path = self.get_path_from_event(event)

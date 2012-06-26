@@ -243,6 +243,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
         second_y_vector = np.zeros((nobjects,))
         angle = np.zeros((nobjects,))
         percent_touching = np.zeros((nobjects,))
+        expanded_labels = None
         if self.distance_method == D_EXPAND:
             # Find the i,j coordinates of the nearest foreground point
             # to every background point
@@ -252,6 +253,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             # Assign each background pixel to the label of its nearest
             # foreground pixel. Assign label to label for foreground.
             labels = labels[i,j]
+            expanded_labels = labels  # for display
             distance = 1 # dilate once to make touching edges overlap
             scale = S_EXPANDED
             if self.neighbors_are_objects:
@@ -516,7 +518,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             workspace.display_data.neighbor_cm_name = neighbor_cm_name
             workspace.display_data.percent_touching_cm_name = percent_touching_cm_name
             workspace.display_data.orig_labels = objects.segmented
-            workspace.display_data.labels = labels
+            workspace.display_data.labels = expanded_labels
             workspace.display_data.object_mask = object_mask
 
     def display(self, workspace, figure):
@@ -525,7 +527,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                      "Original: %s"%self.object_name.value)
         
         object_mask = workspace.display_data.object_mask
-        labels = workspace.display_data.labels
+        expanded_labels = workspace.display_data.expanded_labels
         neighbor_count_image = workspace.display_data.neighbor_count_image
         neighbor_count_image[~ object_mask] = -1
         neighbor_cm = get_colormap(workspace.display_data.neighbor_cm_name)
@@ -573,7 +575,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                       sharexy = figure.subplot(0,0))
             
         if self.distance_method == D_EXPAND:
-            figure.subplot_imshow_labels(1,0, labels,
+            figure.subplot_imshow_labels(1,0, expanded_labels,
                                          "Expanded %s"%
                                          self.object_name.value,
                                          sharexy = figure.subplot(0,0))

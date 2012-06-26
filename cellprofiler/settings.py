@@ -2540,7 +2540,8 @@ class FileCollectionDisplay(Setting):
                        ( "Show image", "Show metadata", "Delete image")]
                        
         fn_on_menu_command - called when the user selects a context menu
-                     command. The argument is the text from the context menu.
+                     command. The argument is the text from the context menu or
+                     None if the default command.
                      
         fn_on_bkgnd_control - called when the UI wants to stop, pause or resume
                      all background processing. BKGND_PAUSE asks for the

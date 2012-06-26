@@ -155,10 +155,30 @@ class Images(cpm.CPModule):
         
         path - a list of path parts to the picked item
         
-        command - the command from the list supplied by get_path_info
+        command - the command from the list supplied by get_path_info. None
+                  means default = view image.
         '''
         pathname = os.path.join(*path)
         url = pathname2url(pathname)
+        needs_raise_after = False
+        if command is None:
+            hdf_file_list = self.workspace.get_file_list()
+            if hdf_file_list.get_type(url) == hdf_file_list.TYPE_FILE:
+                command = self.MI_SHOW_IMAGE
+                #%$@ assuming this is a double click, the new frame
+                #    will be activated and then supplementary processing
+                #    will set the focus back to the tree control, bringing
+                #    the main window back to the front. Hence, we fight back
+                #    by raising the window after the GUI has finished
+                #    handling all events.
+                #    Yes, I tried preventing further processing of events
+                #    by the parent. Yes, this code is a disgusting hack.
+                #    Yes, I hate the way GUI code turns your application
+                #    into a giant pile of undecipherable spaghetti too.
+                needs_raise_after = True
+            else:
+                return False
+            
         if command == self.MI_SHOW_IMAGE:
             from cellprofiler.gui.cpfigure import CPFigureFrame
             from subimager.client import get_image
@@ -176,6 +196,11 @@ class Images(cpm.CPModule):
             else:
                 frame.subplot_imshow_color(0, 0, image, title = filename)
             frame.Refresh()
+            if needs_raise_after:
+                #%$@ hack hack hack
+                import wx
+                wx.CallAfter(lambda: frame.Raise())
+            return True
         elif command in (self.MI_REMOVE, self.MI_REFRESH):
             hdf_file_list = self.workspace.file_list
             modlist = []
@@ -190,6 +215,7 @@ class Images(cpm.CPModule):
                 W.walk_in_background(pathname,
                                      self.on_walk_callback,
                                      self.on_walk_completed)
+            return True
     
     def handle_walk_pause_resume_stop(self, command):
         if self.pipeline is not None:

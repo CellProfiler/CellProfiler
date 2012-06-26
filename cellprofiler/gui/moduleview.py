@@ -2550,6 +2550,8 @@ class FileCollectionDisplayController(object):
             self.user_collapsed_a_node = True
             
         self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_COLLAPSED, on_item_collapsed)
+        self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.on_tree_doubleclick)
+            
         self.panel.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
         self.root_item = self.tree_ctrl.AddRoot("I am the invisible root")
         self.tree_ctrl.SetPyData(self.root_item, None)
@@ -2684,8 +2686,13 @@ class FileCollectionDisplayController(object):
     def on_drop_files(self, x, y, filenames):
         self.v.fn_on_drop(filenames)
         
-    def on_tree_item_menu(self, event):
-        logger.debug("On tree item menu")
+    def get_path_from_event(self, event):
+        '''Given a tree control event, find the path from the root
+        
+        event - event from tree control (e.g. EVT_TREE_ITEM_ACTIVATED)
+        
+        returns a sequence of path items from the root
+        '''
         item = event.GetItem()
         path = []
         while True:
@@ -2694,28 +2701,37 @@ class FileCollectionDisplayController(object):
                 break
             path.insert(0, item_data)
             item = self.tree_ctrl.GetItemParent(item)
+        return path
+        
+    def on_tree_item_menu(self, event):
+        logger.debug("On tree item menu")
+        path = self.get_path_from_event(event)
         context_menu = self.v.get_context_menu(path)
         if len(context_menu) > 0:
-            menu = wx.Menu()
-            for context_item in context_menu:
-                menu.Append(-1, context_item)
-            def on_menu(event):
-                logger.debug("On menu")
-                
-                self.pipeline.start_undoable_action()
-                try:
-                    for menu_item in menu.GetMenuItems():
-                        if menu_item.Id == event.Id:
-                            logger.debug("    Command = %s" % menu_item.Text)
-                            self.v.fn_on_menu_command(path, menu_item.Text)
-                            break
-                finally:
-                    self.pipeline.stop_undoable_action()
+            with wx.Menu() as menu:
+                for context_item in context_menu:
+                    menu.Append(-1, context_item)
+                def on_menu(event):
+                    logger.debug("On menu")
                     
-            self.tree_ctrl.Bind(wx.EVT_MENU, on_menu)
-            self.tree_ctrl.PopupMenu(menu, event.GetPoint())
-            self.tree_ctrl.Unbind(wx.EVT_MENU, handler = on_menu)
-            menu.Destroy()
+                    self.pipeline.start_undoable_action()
+                    try:
+                        for menu_item in menu.GetMenuItems():
+                            if menu_item.Id == event.Id:
+                                logger.debug("    Command = %s" % menu_item.Text)
+                                self.v.fn_on_menu_command(path, menu_item.Text)
+                                break
+                    finally:
+                        self.pipeline.stop_undoable_action()
+                        
+                self.tree_ctrl.Bind(wx.EVT_MENU, on_menu)
+                self.tree_ctrl.PopupMenu(menu, event.GetPoint())
+                self.tree_ctrl.Unbind(wx.EVT_MENU, handler = on_menu)
+            
+    def on_tree_doubleclick(self, event):
+        path = self.get_path_from_event(event)
+        if self.v.fn_on_menu_command(path, None):
+            return True
         
     def on_tree_key_down(self, event):
         logger.debug("On tree key down")

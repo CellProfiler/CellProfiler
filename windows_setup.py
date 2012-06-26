@@ -257,7 +257,7 @@ except:
 try:
     import zmq
     zmq_loc = os.path.split(zmq.__file__)[0]
-    #os.environ["PATH"] = os.environ["PATH"] + ";"+zmq_loc
+    os.environ["PATH"] = os.environ["PATH"] + ";"+zmq_loc
 except:
     print "This installation will not include 0MQ"
 

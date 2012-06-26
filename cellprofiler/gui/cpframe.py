@@ -153,8 +153,6 @@ class CPFrame(wx.Frame):
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
-        if len(self.__pipeline.modules()) > 0:
-            self.__pipeline_list_view.select_one_module(1)
 
     def OnClose(self, event):
         if event.CanVeto() and not self.pipeline_controller.check_close():

@@ -1840,8 +1840,7 @@ class ModuleView:
             # clear validation cache, since settings might not have changed,
             # but pipeline itself may have (due to a module source reload)
             clear_validation_cache()
-            if len(self.__pipeline.modules()) == 0:
-                self.clear_selection()
+            self.clear_selection()
         elif isinstance(event, cpp.ModuleEditedPipelineEvent):
             if (not self.__inside_notify and self.__module is not None
                 and self.__module.module_num == event.module_num):

@@ -359,7 +359,8 @@ class PipelineController:
     
     def do_load_pipeline(self,pathname):
         try:
-            self.stop_debugging()
+            if self.__pipeline.test_mode:
+                self.stop_debugging()
             if self.__running_pipeline:
                 self.stop_running()
                 self.__pipeline_measurements.close()

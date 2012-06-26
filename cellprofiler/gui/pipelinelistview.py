@@ -489,8 +489,6 @@ class PipelineListView(object):
         for module in pipeline.modules():
             self.__populate_row(module)
         self.__adjust_rows()
-        if nrows > 0:
-            self.select_one_module(1)
         self.__panel.SetupScrolling()
         self.__controller.enable_module_controls_panel_buttons()
         self.list_ctrl.SetColumnWidth(MODULE_NAME_COLUMN, -1)

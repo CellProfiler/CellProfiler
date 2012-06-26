@@ -544,8 +544,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                   colorbar=True, vmin=0,
                                   vmax=max(neighbor_count_image.max(), 1),
                                   normalize=False,
-                                  sharex = figure.subplot(0,0),
-                                  sharey = figure.subplot(0,0))
+                                  sharexy = figure.subplot(0,0))
             if self.neighbors_are_objects:
                 figure.subplot_imshow(1,1, percent_touching_image,
                                       "%s colored by pct touching"%
@@ -554,8 +553,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                       colorbar=True, vmin=0, 
                                       vmax=max(percent_touching_image.max(),1),
                                       normalize=False,
-                                      sharex = figure.subplot(0,0),
-                                      sharey = figure.subplot(0,0))
+                                      sharexy = figure.subplot(0,0))
         else:
             # No objects - colorbar blows up.
             figure.subplot_imshow(0,1, neighbor_count_image,
@@ -564,8 +562,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                   colormap = neighbor_cm,
                                   vmin = 0,
                                   vmax = max(neighbor_count_image.max(),1),
-                                  sharex = figure.subplot(0,0),
-                                  sharey = figure.subplot(0,0))
+                                  sharexy = figure.subplot(0,0))
             if self.neighbors_are_objects:
                 figure.subplot_imshow(1,1, percent_touching_image,
                                       "%s colored by pct touching"%
@@ -573,15 +570,13 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                       colormap = percent_touching_cm,
                                       vmin = 0,
                                       vmax = max(neighbor_count_image.max(),1),
-                                      sharex = figure.subplot(0,0),
-                                      sharey = figure.subplot(0,0))
+                                      sharexy = figure.subplot(0,0))
             
         if self.distance_method == D_EXPAND:
             figure.subplot_imshow_labels(1,0, labels,
                                          "Expanded %s"%
                                          self.object_name.value,
-                                         sharex = figure.subplot(0,0),
-                                         sharey = figure.subplot(0,0))
+                                         sharexy = figure.subplot(0,0))
     
     @property
     def all_features(self):

@@ -209,20 +209,17 @@ class EnhanceEdges(cpm.CPModule):
             # Canny is binary
             figure.subplot_imshow_bw(0, 1, output_pixels,
                                      self.output_image_name.value,
-                                     sharex = figure.subplot(0, 0),
-                                     sharey = figure.subplot(0, 0))
+                                     sharexy = figure.subplot(0, 0))
         else:
             figure.subplot_imshow_grayscale(0, 1, output_pixels,
                                             self.output_image_name.value,
-                                            sharex = figure.subplot(0, 0),
-                                            sharey = figure.subplot(0, 0))
+                                            sharexy = figure.subplot(0, 0))
         color_image = np.zeros((output_pixels.shape[0],
                                 output_pixels.shape[1], 3))
         color_image[:, :, 0] = stretch(orig_pixels)
         color_image[:, :, 1] = stretch(output_pixels)
         figure.subplot_imshow(1, 0, color_image,"Composite image",
-                              sharex = figure.subplot(0, 0),
-                              sharey = figure.subplot(0, 0))
+                              sharexy = figure.subplot(0, 0))
 
     def get_sigma(self):
         if self.wants_automatic_sigma.value:

@@ -556,16 +556,14 @@ class Morph(cpm.CPModule):
                                      self.image_name.value)
             figure.subplot_imshow_bw(1, 0, pixel_data,
                                      self.output_image_name.value,
-                                     sharex = figure.subplot(0, 0),
-                                     sharey = figure.subplot(0, 0))
+                                     sharexy = figure.subplot(0, 0))
         else:
             figure.subplot_imshow_grayscale(0, 0, image.pixel_data,
                                             'Original image: %s' %
                                             self.image_name.value)
             figure.subplot_imshow_grayscale(1, 0, pixel_data,
                                             self.output_image_name.value,
-                                            sharex = figure.subplot(0, 0),
-                                            sharey = figure.subplot(0, 0))
+                                            sharexy = figure.subplot(0, 0))
 
     def run_function(self, function_name, pixel_data, mask, count, scale,
                      custom_repeats):

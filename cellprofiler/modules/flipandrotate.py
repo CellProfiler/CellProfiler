@@ -253,8 +253,7 @@ class FlipAndRotate(cpm.CPModule):
             figure.subplot_imshow_grayscale(1, 0, output_image_pixel_data,
                                             title = self.output_name.value,
                                             vmin=vmin, vmax = vmax,
-                                            sharex = figure.subplot(0, 0),
-                                            sharey = figure.subplot(0, 0))
+                                            sharexy = figure.subplot(0, 0))
         else:
             figure.subplot_imshow(0, 0, image_pixel_data,
                                   title = self.image_name.value,
@@ -266,8 +265,7 @@ class FlipAndRotate(cpm.CPModule):
                                   normalize=False,
                                   vmin=vmin,
                                   vmax=vmax,
-                                  sharex = figure.subplot(0, 0),
-                                  sharey = figure.subplot(0, 0))
+                                  sharexy = figure.subplot(0, 0))
 
     def angle_from_mouse(self, workspace, pixel_data):
         '''Run a UI that gets an angle from the user'''

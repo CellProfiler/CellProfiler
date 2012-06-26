@@ -235,4 +235,4 @@ class ClassifyPixels(cpm.CPModule):
                 0, 0, source_image, title = self.image_name.value)
         figure.subplot_imshow_grayscale(
             1, 0, dest_image, title = self.output_image.value,
-            sharex = src_plot, sharey = src_plot)
+            sharexy = src_plot)

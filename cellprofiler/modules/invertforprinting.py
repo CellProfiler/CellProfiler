@@ -221,8 +221,7 @@ class InvertForPrinting(cpm.CPModule):
         inverted_color = workspace.display_data.inverted_color
         figure.subplot_imshow(0, 0, color_image, "Original image")
         figure.subplot_imshow(1, 0, inverted_color, "Color-inverted image",
-                              sharex = figure.subplot(0,0),
-                              sharey = figure.subplot(0,0))
+                              sharexy = figure.subplot(0,0))
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

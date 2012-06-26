@@ -481,8 +481,7 @@ class CalculateImageOverlap(cpm.CPModule):
             (1, 0, workspace.display_data.false_negatives, "False negatives"),
             (1, 1, workspace.display_data.true_negatives, "True negatives")):
             figure.subplot_imshow_bw(x, y, image, title=label,
-                                     sharex=figure.subplot(0,0),
-                                     sharey=figure.subplot(0,0))
+                                     sharexy = figure.subplot(0,0))
             
         figure.subplot_table(1, 2, workspace.display_data.statistics,
                              ratio = (.5, .5))

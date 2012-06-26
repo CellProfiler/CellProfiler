@@ -680,13 +680,11 @@ class RunImageJ(cpm.CPModule):
                 if pixel_data.ndim == 3:
                     mimg = figure.subplot_imshow_color(x, y, pixel_data, 
                                                        title=title, 
-                                                       sharex = primary,
-                                                       sharey = primary)
+                                                       sharexy = primary)
                 else:
                     mimg = figure.subplot_imshow_bw(x, y, pixel_data, 
                                                     title=title,
-                                                    sharex = primary,
-                                                    sharey = primary)
+                                                    sharexy = primary)
                 if primary is None:
                     primary = mimg
             return
@@ -712,12 +710,10 @@ class RunImageJ(cpm.CPModule):
             title = "Output image: %s" % output_image_name
             if pixel_data.ndim == 3:
                 figure.subplot_imshow_color(1,0, pixel_data, title=title,
-                                            sharex = figure.subplot(0,0),
-                                            sharey = figure.subplot(0,0))
+                                            sharexy = figure.subplot(0,0))
             else:
                 figure.subplot_imshow_bw(1,0, pixel_data, title=title,
-                                         sharex = figure.subplot(0,0),
-                                         sharey = figure.subplot(0,0))
+                                         sharexy = figure.subplot(0,0))
         else:
             figure.figure.text(.75, .5, "No output image",
                                verticalalignment='center',

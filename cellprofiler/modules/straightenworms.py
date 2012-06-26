@@ -830,7 +830,7 @@ class StraightenWorms(cpm.CPModule):
             else:
                 imshow = figure.subplot_imshow_color
             axis = imshow(0, i, src_pix, title = src_name,
-                          sharex = src_axis, sharey = src_axis)
+                          sharexy = src_axis)
             if src_axis is None:
                 src_axis = axis
             if dest_pix.ndim == 2:

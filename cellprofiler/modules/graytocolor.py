@@ -312,16 +312,14 @@ class GrayToColor(cpm.CPModule):
             x,y = subplot_indices[i]
             figure.subplot_imshow_grayscale(x, y, image_pixel_data,
                                               title=input_image_name,
-                                              sharex = figure.subplot(0,0),
-                                              sharey = figure.subplot(0,0))
+                                              sharexy = figure.subplot(0,0))
             figure.subplot(x,y).set_visible(True)
         for x, y in subplot_indices[len(input_image_names):]:
             figure.subplot(x,y).set_visible(False)
         figure.subplot_imshow(color_subplot[0], color_subplot[1],
                                 workspace.display_data.rgb_pixel_data,
                                 title=self.rgb_image_name.value,
-                                sharex = figure.subplot(0,0),
-                                sharey = figure.subplot(0,0))
+                                sharexy = figure.subplot(0,0))
     
     def upgrade_settings(self,setting_values,variable_revision_number,
                          module_name,from_matlab):

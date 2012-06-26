@@ -907,7 +907,7 @@ class UntangleWorms(cpm.CPModule):
             figure.subplot_imshow_ijv(1, 0, workspace.display_data.ijv,
                                       shape = workspace.display_data.input_image.shape,
                                       title = title,
-                                      sharex = axes, sharey = axes)
+                                      sharexy = axes)
         else:
             from matplotlib.path import Path
             from matplotlib.patches import PathPatch

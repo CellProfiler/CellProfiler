@@ -448,8 +448,7 @@ class MeasureNeurons(cpm.CPModule):
             image = workspace.image_set.get_image(image_name)
             figure.subplot_imshow_grayscale(1, 0, image.pixel_data,
                                             title = "Neuron graph",
-                                            sharex = figure.subplot(0,0),
-                                            sharey = figure.subplot(0,0))
+                                            sharexy = figure.subplot(0,0))
             axes = figure.subplot(1, 0)
             assert isinstance(axes, Axes)
             edge_graph = workspace.display_data.edge_graph

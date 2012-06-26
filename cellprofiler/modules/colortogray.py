@@ -303,8 +303,7 @@ class ColorToGray(cpm.CPModule):
         figure.subplot_imshow(0, 1, output_image,
                               title = "Grayscale image: %s"%(self.grayscale_name),
                               colormap = matplotlib.cm.Greys_r, 
-                              sharex=figure.subplot(0,0),
-                              sharey=figure.subplot(0,0))
+                              sharexy = figure.subplot(0,0))
         
     def run_split(self, workspace, image):
         """Split image into individual components
@@ -344,8 +343,7 @@ class ColorToGray(cpm.CPModule):
             figure.subplot_imshow(xy[0], xy[1], disp[0],
                                   title = "%s image"%(disp[1]),
                                   colormap = matplotlib.cm.Greys_r, 
-                                  sharex=figure.subplot(0,0),
-                                  sharey=figure.subplot(0,0))
+                                  sharexy = figure.subplot(0,0))
         
     def prepare_settings(self, setting_values):
         '''Prepare the module to receive the settings

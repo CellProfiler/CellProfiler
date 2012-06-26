@@ -273,16 +273,13 @@ class IdentifyTertiaryObjects(cpm.CPModule):
                                      self.primary_objects_name.value)
         figure.subplot_imshow_labels(1, 0, secondary_labels,
                                        self.secondary_objects_name.value,
-                                       sharex = figure.subplot(0, 0),
-                                       sharey = figure.subplot(0, 0))
+                                       sharexy = figure.subplot(0, 0))
         figure.subplot_imshow_labels(0, 1, tertiary_labels,
                                        self.subregion_objects_name.value,
-                                       sharex = figure.subplot(0, 0),
-                                       sharey = figure.subplot(0, 0))
+                                       sharexy = figure.subplot(0, 0))
         figure.subplot_imshow_bw(1, 1, tertiary_outlines,
                                    "Outlines",
-                                   sharex = figure.subplot(0, 0),
-                                   sharey = figure.subplot(0, 0))
+                                   sharexy = figure.subplot(0, 0))
 
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''

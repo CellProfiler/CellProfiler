@@ -40,22 +40,19 @@ import cellprofiler.utilities.version as version
 import traceback
 import sys
 
-ID_FILE_OPEN_WORKSPACE = wx.NewId()
-ID_FILE_SAVE_AS_WORKSPACE = wx.NewId()
 ID_FILE_NEW_WORKSPACE = wx.NewId()
-ID_FILE_LOAD_PIPELINE=wx.NewId()
+ID_FILE_LOAD=wx.NewId()
 ID_FILE_URL_LOAD_PIPELINE = wx.NewId()
 ID_FILE_EXIT=wx.NewId()
 ID_FILE_WIDGET_INSPECTOR=wx.NewId()
 ID_FILE_SAVE_PIPELINE=wx.NewId()
-ID_FILE_SAVE_AS_PIPELINE = wx.NewId()
+ID_FILE_SAVE_AS = wx.NewId()
 ID_FILE_CLEAR_PIPELINE=wx.NewId()
 ID_FILE_EXPORT_IMAGE_SETS = wx.NewId()
 ID_FILE_ANALYZE_IMAGES=wx.NewId()
 ID_FILE_STOP_ANALYSIS=wx.NewId()
 ID_FILE_RESTART = wx.NewId()
 ID_FILE_PRINT=wx.NewId()
-ID_FILE_OPEN_IMAGE=wx.NewId()
 ID_FILE_PLATEVIEWER = wx.NewId()
 ID_FILE_RUN_MULTIPLE_PIPELINES = wx.NewId()
 ID_FILE_NEW_CP=wx.NewId()
@@ -173,17 +170,11 @@ class CPFrame(wx.Frame):
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(ID_FILE_NEW_WORKSPACE, "New Workspace...", 
                                 "Create a blank workspace and .cpi file")
-        self.__menu_file.Append(ID_FILE_OPEN_WORKSPACE, "Open Workspace...",
-                                "Open a workspace from a .cpi file")
-        self.__menu_file.Append(ID_FILE_SAVE_AS_WORKSPACE, "Save Workspace As...",
-                                "Create a copy of your workspace as a new .cpi file and start using the new file as your workspace")
-        self.__menu_file.Append(ID_FILE_LOAD_PIPELINE,'Load Pipeline...\tctrl+O','Load a pipeline from a .MAT or .CP file')
+        self.__menu_file.Append(ID_FILE_LOAD,'Load...\tctrl+O','Load a pipeline or workspace')
         self.__menu_file.Append(ID_FILE_URL_LOAD_PIPELINE, 'Load Pipeline from URL', 'Load a pipeline from the web')
         self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline\tctrl+shift+S','Save changes to a pipeline')
-        self.__menu_file.Append(ID_FILE_SAVE_AS_PIPELINE,'Save Pipeline as...','Save a pipeline as a .CP file')
+        self.__menu_file.Append(ID_FILE_SAVE_AS,'Save as...','Save a pipeline, a workspace or export an image set list')
         self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear Pipeline','Remove all modules from the current pipeline')
-        self.__menu_file.Append(ID_FILE_EXPORT_IMAGE_SETS, 'Export Image Sets', "Export the pipeline's image sets to a .csv file")
-        self.__menu_file.Append(ID_FILE_OPEN_IMAGE, 'Open Image', 'Open an image file for viewing')
         self.__menu_file.Append(ID_FILE_PLATEVIEWER, 'Plate Viewer', 'Open the plate viewer to inspect the images in the current workspace')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze Images\tctrl+N','Run the pipeline on the images in the image directory')
@@ -262,7 +253,6 @@ class CPFrame(wx.Frame):
         self.SetMenuBar(self.__menu_bar)
 
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
-        wx.EVT_MENU(self, ID_FILE_OPEN_IMAGE, self.on_open_image)
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
         wx.EVT_MENU(self, ID_FILE_NEW_CP,self.__on_new_cp)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
@@ -275,7 +265,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self, ID_DEBUG_NUMPY, self.__debug_numpy_references)
         accelerator_table = wx.AcceleratorTable(
             [(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
-             (wx.ACCEL_CMD,ord('O'),ID_FILE_LOAD_PIPELINE),
+             (wx.ACCEL_CMD,ord('O'),ID_FILE_LOAD),
              (wx.ACCEL_CMD|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE_PIPELINE),
              (wx.ACCEL_CMD,ord('L'),ID_WINDOW_CLOSE_ALL),
              (wx.ACCEL_CMD,ord('Q'),ID_FILE_EXIT),

@@ -45,6 +45,7 @@ from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
 import cellprofiler.gui.parametersampleframe as psf
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.cpmodule as cpmodule
+import cellprofiler.gui.loadsavedlg as cplsdlg
 
 logger = logging.getLogger(__name__)
 RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -92,18 +93,13 @@ class PipelineController:
         self.module_name_to_menu_id = {}
         self.populate_edit_menu(self.__frame.menu_edit_add_module)
         assert isinstance(frame, wx.Frame)
-        frame.Bind(wx.EVT_MENU, self.__on_open_workspace, 
-                   id = cpframe.ID_FILE_OPEN_WORKSPACE)
         frame.Bind(wx.EVT_MENU, self.__on_new_workspace,
                    id = cpframe.ID_FILE_NEW_WORKSPACE)
-        frame.Bind(wx.EVT_MENU, self.__on_save_as_workspace,
-                   id = cpframe.ID_FILE_SAVE_AS_WORKSPACE)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD_PIPELINE,self.__on_load_pipeline)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_LOAD,self.__on_load)
         wx.EVT_MENU(frame, cpframe.ID_FILE_URL_LOAD_PIPELINE, self.__on_url_load_pipeline)
         wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_PIPELINE,self.__on_save_pipeline)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_AS_PIPELINE, self.__on_save_as_pipeline)
+        wx.EVT_MENU(frame, cpframe.ID_FILE_SAVE_AS, self.__on_save_as)
         wx.EVT_MENU(frame, cpframe.ID_FILE_CLEAR_PIPELINE,self.__on_clear_pipeline)
-        wx.EVT_MENU(frame, cpframe.ID_FILE_EXPORT_IMAGE_SETS, self.__on_export_image_sets)
         wx.EVT_MENU(frame, cpframe.ID_FILE_PLATEVIEWER, self.__on_plateviewer)
         wx.EVT_MENU(frame, cpframe.ID_FILE_ANALYZE_IMAGES,self.on_analyze_images)
         wx.EVT_MENU(frame, cpframe.ID_FILE_STOP_ANALYSIS,self.on_stop_running)
@@ -229,25 +225,15 @@ class PipelineController:
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_step, self.__tcp_step)
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set, self.__tcp_next_imageset)
 
-    def __on_open_workspace(self, event):
+    def on_open_workspace(self, load_pipeline):
         '''Handle the Open Workspace menu command'''
-        result = wx.MessageBox(
-            "Do you want to use the current pipeline in your workspace?\n"
-            '* Choose "Yes" to overwrite the workspace pipeline with\n'
-            '  the pipeline that is currently open in CellProfiler.\n'
-            '* Choose "No" to use the workspace\'s pipeline.\n'
-            '* Choose "Cancel" if you do not want to open a workspace',
-            'Overwrite current pipeline',
-            wx.YES_NO | wx.CANCEL | wx.ICON_QUESTION, self.__frame)
-        if result != wx.YES and result != wx.NO:
-            return
         with wx.FileDialog(
             self.__frame,
             "Choose a workspace file to open",
             wildcard = "CellProfiler workspace (*.cpi)|*.cpi") as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
-                self.do_open_workspace(dlg.Path, result == wx.NO)
+                self.do_open_workspace(dlg.Path, load_pipeline)
         
     def do_open_workspace(self, filename, load_pipeline):
         '''Open the given workspace file'''
@@ -319,7 +305,18 @@ class PipelineController:
                                  "Failed to save workspace",
                                  continue_only = True)
             self.__workspace.load(old_filename, False)
-        
+
+    def __on_load(self, event):
+        result = cplsdlg.show_load_dlg(self.__frame)
+        if result == cplsdlg.LOAD_PIPELINE_ONLY:
+            self.on_load_pipeline(event)
+        elif result == cplsdlg.LOAD_PIPELINE_AND_WORKSPACE:
+            self.on_open_workspace(True)
+        elif result == cplsdlg.LOAD_WORKSPACE_ONLY:
+            self.on_open_workspace(False)
+        elif result == cplsdlg.LOAD_VIEW_IMAGE:
+            self.__frame.on_open_image(event)
+            
     def __on_load_pipeline(self,event):
         if self.__dirty_pipeline:
             if wx.MessageBox('Do you want to save your current pipeline\n'
@@ -395,7 +392,16 @@ class PipelineController:
             self.__frame.preferences_view.set_message_text(
                 "Saved pipeline to " + path)
             
-    def __on_save_as_pipeline(self,event):
+    def __on_save_as(self, event):
+        result = cplsdlg.show_save_dlg(self.__frame)
+        if result == cplsdlg.SAVE_PIPELINE_ONLY:
+            self.__on_save_as_pipeline(event)
+        elif result == cplsdlg.SAVE_PIPELINE_AND_WORKSPACE:
+            self.__on_save_as_workspace(event)
+        elif result == cplsdlg.SAVE_EXPORT_IMAGE_SET_LIST:
+            self.__on_export_image_sets(event)
+            
+    def __on_save_as_pipeline(self, event):
         try:
             self.do_save_pipeline()
         except Exception, e:

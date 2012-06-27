@@ -1111,7 +1111,6 @@ class PipelineController:
                 fig = self.__workspace.get_module_figure(module,
                                                          evt.image_set_number,
                                                          self.__frame)
-                fig.Raise()
                 module.display(self.__workspace, fig)
                 fig.Refresh()
         except:

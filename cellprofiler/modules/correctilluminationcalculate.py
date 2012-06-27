@@ -468,6 +468,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 # 
                 orig_image = workspace.image_set.get_image(self.image_name.value)
                 output_image_provider.add_image(orig_image)
+                output_image_provider.serialize(d)
 
             # fetch images for display
             avg_image = output_image_provider.provide_avg_image()

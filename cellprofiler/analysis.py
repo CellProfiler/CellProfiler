@@ -172,6 +172,7 @@ class AnalysisRunner(object):
         # for sending to workers
         self.initial_measurements = cpmeas.Measurements(image_set_start=None,
                                                         copy=initial_measurements)
+        self.initial_measurements_buf = self.initial_measurements.file_contents()
 
         # for writing results - initialized in start()
         self.measurements = None
@@ -321,26 +322,17 @@ class AnalysisRunner(object):
             while not self.returned_measurements_queue.empty():
                 # put the blob in a temporary file
                 job, buf = self.returned_measurements_queue.get()
-                dir = cpprefs.get_default_output_directory()
-                if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
-                    dir = None
-                fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
-                os.write(fd, buf)
-                os.close(fd)
-                try:
-                    reported_measurements = cpmeas.load_measurements(filename)
-                    for object in reported_measurements.get_object_names():
-                        if object == cpmeas.EXPERIMENT:
-                            continue  # XXX - who writes this, when?
-                        for feature in reported_measurements.get_feature_names(object):
-                            for imagenumber in job:
-                                self.measurements[object, feature, imagenumber] \
-                                    = reported_measurements[object, feature, imagenumber]
-                    for image_set_number in job:
-                        self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
-                    del reported_measurements
-                finally:
-                    os.unlink(filename)
+                reported_measurements = cpmeas.load_measurements_from_buffer(buf)
+                for object in reported_measurements.get_object_names():
+                    if object == cpmeas.EXPERIMENT:
+                        continue  # XXX - who writes this, when?
+                    for feature in reported_measurements.get_feature_names(object):
+                        for imagenumber in job:
+                            self.measurements[object, feature, imagenumber] \
+                                = reported_measurements[object, feature, imagenumber]
+                for image_set_number in job:
+                    self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
+                del reported_measurements
 
             # check for jobs in progress
             while not self.in_process_queue.empty():
@@ -430,7 +422,7 @@ class AnalysisRunner(object):
                 req.reply(Reply(pipeline_blob=np.array(self.pipeline_as_string()),
                                 preferences=cpprefs.preferences_as_dict()))
             elif isinstance(req, InitialMeasurementsRequest):
-                req.reply(Reply(path=self.initial_measurements.hdf5_dict.filename.encode('utf-8')))
+                req.reply(Reply(buf=self.initial_measurements_buf))
             elif isinstance(req, WorkRequest):
                 if not self.work_queue.empty():
                     job, worker_runs_post_group = self.work_queue.get()

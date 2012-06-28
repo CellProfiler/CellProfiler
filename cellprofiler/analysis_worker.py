@@ -23,7 +23,6 @@ import cStringIO as StringIO
 import gc
 import logging
 import traceback
-import mmap
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
@@ -159,13 +158,11 @@ def main():
                 rep = InitialMeasurementsRequest().send(work_socket)
                 if isinstance(rep, ServerExited):
                     continue  # server went away
-                measurements_path = rep.path.decode('utf-8')
-                # make sure the server hasn't finished or quit since we fetched the pipeline
                 with work_server_lock:
                     if current_analysis_id in work_servers:
                         current_measurements = \
                             initial_measurements[current_analysis_id] = \
-                            cpmeas.load_measurements(measurements_path)
+                            cpmeas.load_measurements_from_buffer(rep.buf)
                     else:
                         continue
 
@@ -283,12 +280,8 @@ def main():
 
             # multiprocessing: send path of measurements.
             # XXX - distributed - package them up.
-            current_measurements.flush()
-            with open(current_measurements.hdf5_dict.filename, "r") as f:
-                m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-                b = buffer(m, 0, m.size())
-                req = MeasurementsReport(buf=b,
-                                         image_set_numbers=",".join(str(isn) for isn in successful_image_set_numbers))
+            req = MeasurementsReport(buf=current_measurements.file_contents(),
+                                     image_set_numbers=",".join(str(isn) for isn in successful_image_set_numbers))
             rep = req.send(work_socket)
             if isinstance(rep, ServerExited):
                 continue  # server went away

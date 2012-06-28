@@ -292,6 +292,9 @@ class Metadata(cpm.CPModule):
         '''
         return setting in self.settings()
     
+    def is_input_module(self):
+        return True
+            
     def prepare_run(self, workspace):
         '''Initialize the pipeline's metadata'''
         from subimager.omexml import OMEXML

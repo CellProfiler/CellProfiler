@@ -420,6 +420,9 @@ class Images(cpm.CPModule):
         which will change the image set produced by the pipeline.
         '''
         return setting in self.settings()
+    
+    def is_input_module(self):
+        return True
             
     def prepare_run(self, workspace):
         '''Create an IPD for every url that passes the filter'''

@@ -18,6 +18,7 @@ try:
 except:
     from StringIO import StringIO
 import logging
+import numpy as np
 import time
 import base64
 import math
@@ -50,6 +51,10 @@ EYE_COLUMN = 1
 ERROR_COLUMN = 2
 MODULE_NAME_COLUMN = 3
 NUM_COLUMNS = 4
+INPUT_ERROR_COLUMN = 0
+INPUT_MODULE_NAME_COLUMN = 1
+NUM_INPUT_COLUMNS = 2
+
 ERROR = "error"
 WARNING = "warning"
 OK = "ok"
@@ -78,14 +83,36 @@ CHECK_FAIL_SEC = 20
 class PipelineListView(object):
     """View on a set of modules
     
+    Here is the window hierarchy within the panel:
+    top_sizer
+        input panel
+             box sizer
+                 "Input" static box
+                      static box sizer
+                          input module list control
+        "Modules" static box
+            self.__sizer
+                self.__pipeline_slider
+                self.list_ctrl
     """
     def __init__(self, panel, frame):
         self.__pipeline = None
         self.__panel=panel
         self.__frame = frame
         self.__module_controls_panel = None
-        self.__sizer=wx.BoxSizer(wx.HORIZONTAL)
-        self.__panel.SetSizer(self.__sizer)
+        # Map of ListCtrl.GetItemData value to module.id
+        self.__module_dictionary = {}
+        self.make_image_list()
+        panel.Sizer = top_sizer = wx.BoxSizer(wx.VERTICAL)
+        static_box = wx.StaticBox(self.__panel, label = "Input")
+        self.__input_controls = [static_box]
+        self.__input_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        top_sizer.Add(self.__input_sizer, 0, wx.EXPAND)
+        self.make_input_panel()
+        
+        modules_box = wx.StaticBox(panel, label = "Modules")
+        self.__sizer=wx.StaticBoxSizer(modules_box, wx.HORIZONTAL)
+        top_sizer.Add(self.__sizer, 1, wx.EXPAND)
         self.__panel.SetAutoLayout(True)
         self.__pipeline_slider = wx.Slider(self.__panel,
                                            size=(20, -1),
@@ -112,7 +139,7 @@ class PipelineListView(object):
         self.drag_start = None
         self.drag_time = None
         self.list_ctrl.SetDropTarget(PipelineDropTarget(self))
-        panel.SetDropTarget(PanelDropTarget(self))
+        # panel.SetDropTarget(PanelDropTarget(self))
         panel.SetupScrolling()
         #
         # The following code prevents the panel from scrolling every
@@ -125,9 +152,9 @@ class PipelineListView(object):
             event.Skip(False)
         panel.Bind(wx.EVT_CHILD_FOCUS, defeat_its_purpose)
 
-    def make_list(self):
-        '''Make the list control with the pipeline items in it'''
-        self.list_ctrl = wx.ListCtrl(self.__panel, style = wx.LC_REPORT)
+    def make_image_list(self):
+        '''Make the image list containing all of the graphic goodies like the eye
+        '''
         #
         # First, make all of the bitmaps for the image list. 
         #
@@ -156,6 +183,10 @@ class PipelineListView(object):
         for i in range(len(d)):
             index = self.image_list.Add(d[i])
         
+    def make_list(self):
+        '''Make the list control with the pipeline items in it'''
+        self.list_ctrl = wx.ListCtrl(self.__panel, style = wx.LC_REPORT)
+        
         self.list_ctrl.SetImageList(self.image_list, wx.IMAGE_LIST_SMALL)
         self.__sizer.Add(self.list_ctrl, 1, wx.EXPAND | wx.ALL, 2)
         self.list_ctrl.InsertColumn(PAUSE_COLUMN, "")
@@ -168,11 +199,24 @@ class PipelineListView(object):
         #
         # Bind events
         #
-        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_SELECTED, self.__on_item_selected, self.list_ctrl)
-        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_DESELECTED, self.__on_item_deselected, self.list_ctrl)
-        self.list_ctrl.Bind(wx.EVT_LEFT_DOWN, self.__on_list_left_down, self.list_ctrl)
-        self.list_ctrl.Bind(wx.EVT_LEFT_DCLICK, self.__on_list_dclick, self.list_ctrl)
-        self.list_ctrl.Bind(wx.EVT_RIGHT_DOWN, self.__on_list_right_down, self.list_ctrl)
+        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_SELECTED, 
+                            self.__on_item_selected, 
+                            self.list_ctrl)
+        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_DESELECTED, 
+                            self.__on_item_deselected, 
+                            self.list_ctrl)
+        self.input_list_ctrl.Bind(wx.EVT_LIST_ITEM_SELECTED,
+                                  self.__on_item_selected, 
+                                  self.input_list_ctrl)
+        self.list_ctrl.Bind(wx.EVT_LEFT_DOWN, 
+                            self.__on_list_left_down, 
+                            self.list_ctrl)
+        self.list_ctrl.Bind(wx.EVT_LEFT_DCLICK, 
+                            self.__on_list_dclick, 
+                            self.list_ctrl)
+        self.list_ctrl.Bind(wx.EVT_RIGHT_DOWN, 
+                            self.__on_list_right_down, 
+                            self.list_ctrl)
         #
         # Accelerators
         #
@@ -187,6 +231,23 @@ class PipelineListView(object):
             for child in self.list_ctrl.GetChildren():
                 child.Bind(wx.EVT_LEFT_DOWN, self.__on_list_left_down)
                 child.Bind(wx.EVT_RIGHT_DOWN, self.__on_list_right_down)
+                
+    def make_input_panel(self):
+        self.input_list_ctrl = wx.ListCtrl(
+            self.__panel, style = wx.LC_REPORT | wx.LC_SINGLE_SEL)
+        self.__input_controls.append(self.input_list_ctrl)
+        self.input_list_ctrl.SetImageList(self.image_list, wx.IMAGE_LIST_SMALL)
+        self.__input_sizer.Add(self.input_list_ctrl, 1, wx.EXPAND)
+        self.input_list_ctrl.InsertColumn(INPUT_ERROR_COLUMN, "")
+        self.input_list_ctrl.InsertColumn(INPUT_MODULE_NAME_COLUMN, "Module")
+        
+    def show_input_panel(self, show):
+        '''Show or hide the controls for input modules
+        
+        show - True to show the controls, False to hide
+        '''
+        for ctrl in self.__input_controls:
+            ctrl.Show(show)
         
     def set_debug_mode(self, mode):
         if self.__pipeline is not None:
@@ -196,19 +257,6 @@ class PipelineListView(object):
         self.__sizer.Layout()
         # force a re-check of all modules
         self.__first_dirty_module = 0
-        
-    def __set_min_width(self):
-        """Make the minimum width of the panel be the best width
-           of the list_ctrl and slider
-        """
-        text_width = 0
-        dc = wx.ClientDC(self.list_ctrl)
-        font = self.list_ctrl.Font
-        for i in range(self.list_ctrl.ItemCount):
-            item = self.list_ctrl.GetItem(i, MODULE_NAME_COLUMN)
-            text = item.Text
-            text_width = max(text_width,dc.GetFullTextExtent(text, font)[0])
-        self.list_ctrl.SetColumnWidth(MODULE_NAME_COLUMN, text_width+5)
 
     def attach_to_pipeline(self,pipeline,controller):
         """Attach the viewer to the pipeline to allow it to listen for changes
@@ -251,44 +299,119 @@ class PipelineListView(object):
     def notify_directory_change(self):
         # we can't know which modules use this information
         self.__first_dirty_module = 0
+        
+    def get_module_data_value(self, module):
+        '''Given a module, return the integer that represents it for GetItemData
+        
+        module - module in question
+        
+        ListCtrl.GetItemData / SetItemData takes an integer data item. This
+        routine returns the integer to use for a given module. Modules are
+        identified by module.id which is a GUID. The ID returned is an
+        integer suitable for SetItemData - a new one will be generated if
+        this is the first time a module has been seen.
+        '''
+        for data_value, module_id in self.__module_dictionary.iteritems():
+            if module_id == module.id:
+                break
+        else:
+            all_values = np.array(sorted(self.__module_dictionary.keys()))
+            if len(all_values) > 0 and all_values[0] != 1:
+                data_value = 1
+            else:
+                not_consecutive = np.argwhere(
+                    (all_values[:-1] + 1) != all_values[1:])
+                if len(not_consecutive) > 0:
+                    data_value = not_consecutive.flatten()[0] + 2
+                else:
+                    data_value = len(all_values) + 1
+                self.__module_dictionary[data_value] = module.id
+        return data_value
+    
+    def get_module_from_data_value(self, data_value):
+        '''Return the module associated with the value in ListCtrl.GetItemData
+        
+        data_value - the value from ListCtrl.GetItemData
+        '''
+        module_id = self.__module_dictionary[data_value]
+        modules = filter(lambda x: x.id == module_id,
+                         self.__pipeline.modules())
+        return None if len(modules) != 1 else modules[0]
+    
+    def iter_list_items(self):
+        '''Iterate over the list items in all list controls
+        
+        yields a tuple of control, index for each item in
+        the input and main list controls.
+        '''
+        for ctrl in (self.input_list_ctrl, self.list_ctrl):
+            for i in range(ctrl.GetItemCount()):
+                yield ctrl, i
+                
+    def get_ctrl_and_index(self, module):
+        '''Given a module, return its list control and index
+        
+        module - module to find
+        
+        returns tuple of list control and index
+        
+        raises an exception if module is not in proper list control
+        '''
+        data_value = self.get_module_data_value(module)
+        ctrl = (self.input_list_ctrl if module.is_input_module()
+                else self.list_ctrl)
+        assert isinstance(ctrl, wx.ListCtrl)
+        for i in range(ctrl.GetItemCount()):
+            if ctrl.GetItemData(i) == data_value:
+                return ctrl, i
+        raise IndexError("The module, %s, was not found in the list control" %
+                         module.name)
 
     def select_one_module(self, module_num):
         """Select only the given module number in the list box"""
-        for module in self.__pipeline.modules():
-            self.list_ctrl.Select(module.module_num-1, 
-                                  module.module_num == module_num)
+        module = self.__pipeline.modules()[module_num-1]
+        data_value = self.get_module_data_value(module)
+        for ctrl, idx in self.iter_list_items():
+            ctrl.Select(idx, ctrl.GetItemData(idx) == data_value)
         self.__on_item_selected(None)
         
-    def select_module(self,module_num,selected=True):
+    def select_module(self, module_num, selected=True):
         """Select the given one-based module number in the list
         This is mostly for testing
         """
-        self.list_ctrl.Select(module_num-1, selected)
+        module = self.__pipeline.modules()[module_num-1]
+        ctrl, idx = self.get_ctrl_and_index(module)
+        ctrl.Select(idx, selected)
         self.__on_item_selected(None)
         
     def get_selected_modules(self):
-        return [self.__pipeline.modules()[i]
-                for i in range(self.list_ctrl.ItemCount) 
-                if self.list_ctrl.IsSelected(i) and i < len(self.__pipeline.modules())]
+        ids = set()
+        for ctrl, idx in self.iter_list_items():
+            if ctrl.IsSelected(idx):
+                ids.add(self.__module_dictionary[ctrl.GetItemData(idx)])
+                
+        return [module for module in self.__pipeline.modules()
+                if module.id in ids]
         
     def __on_list_dclick(self, event):
+        list_ctrl = event.GetEventObject()
         if sys.platform.startswith("win"):
-            item, hit_code, subitem = self.list_ctrl.HitTestSubItem(event.Position)
+            item, hit_code, subitem = list_ctrl.HitTestSubItem(event.Position)
         else:
             # Mac's HitTestSubItem does not work. Sorry.
             #
-            item, hit_code = self.list_ctrl.HitTest(event.Position)
-            widths = [self.list_ctrl.GetColumnWidth(i) for i in range(4)]
+            item, hit_code = list_ctrl.HitTest(event.Position)
+            widths = [list_ctrl.GetColumnWidth(i) for i in range(4)]
             start = 0
             for subitem in range(4):
                 if event.Position[0] < start + widths[subitem]:
                     break
                 start += widths[subitem]
         
-        if (item >= 0 and item < self.list_ctrl.ItemCount and
+        if (item >= 0 and item < list_ctrl.ItemCount and
             (hit_code & wx.LIST_HITTEST_ONITEM) and 
             subitem == MODULE_NAME_COLUMN):
-            module = self.__pipeline.modules()[item]
+            module = self.get_module_from_data_value(list_ctrl.GetItemData(item))
             name = window_name(module)
             figure = self.__panel.TopLevelParent.FindWindowByName(name)
             if figure is not None:
@@ -311,7 +434,8 @@ class PipelineListView(object):
                 start += widths[subitem]
         if (item >= 0 and item < self.list_ctrl.ItemCount and
             (hit_code & wx.LIST_HITTEST_ONITEM)):
-            module = self.__pipeline.modules()[item]
+            module = self.get_module_from_data_value(
+                self.list_ctrl.GetItemData(item))
             if subitem == PAUSE_COLUMN and self.__debug_mode:
                 module.wants_pause = not module.wants_pause
                 pause_img = get_image_index(PAUSE if module.wants_pause
@@ -321,7 +445,7 @@ class PipelineListView(object):
                 module.show_window = not module.show_window
                 eye_img = get_image_index(EYE if module.show_window
                                           else CLOSED_EYE)
-                self.set_subitem_image(item, EYE_COLUMN, eye_img)
+                self.set_subitem_image(module, EYE_COLUMN, eye_img)
                 name = window_name(module)
                 figure = self.__panel.TopLevelParent.FindWindowByName(name)
                 if figure is not None:
@@ -358,7 +482,8 @@ class PipelineListView(object):
         '''Start dragging whatever is selected'''
         fd = StringIO()
         modules_to_save = [m.module_num for m in self.get_selected_modules()]
-        self.__pipeline.savetxt(fd, modules_to_save)
+        self.__pipeline.savetxt(fd, modules_to_save, 
+                                save_image_plane_details = False)
         pipeline_data_object = PipelineDataObject()
         fd.seek(0)
         pipeline_data_object.SetData(fd.read())
@@ -414,7 +539,7 @@ class PipelineListView(object):
         return True
     
     def where_to_drop_panel(self, x, y):
-        nmodules = len(self.__pipeline.modules())
+        nmodules = self.list_ctrl.GetItemCount()
         if nmodules == 0:
             return 0
         x_screen, y_screen = self.__panel.ClientToScreenXY(x,y)
@@ -422,20 +547,20 @@ class PipelineListView(object):
         if y_lv < 0:
             return 0
         elif y_lv >= self.list_ctrl.Rect.Height:
-            return nmodules
+            return nmodules + self.input_list_ctrl.GetItemCount()
         else:
             return None
 
     def where_to_drop(self, x, y):
-        nmodules = len(self.__pipeline.modules())
+        nmodules = self.list_ctrl.GetItemCount()
         if nmodules == 0:
-            return 0
+            return self.input_list_ctrl.GetItemCount()
         else:
             last_rect = self.list_ctrl.GetItemRect(nmodules-1)
             last_rect_bottom = last_rect[1] + last_rect[3]
             if last_rect_bottom < y:
                 # Below last item. Insert after last
-                return nmodules
+                return nmodules + self.input_list_ctrl.GetItemCount()
             index, code = self.list_ctrl.HitTest(wx.Point(x,y))
             if code & wx.LIST_HITTEST_ONITEM:
                 r = self.list_ctrl.GetItemRect(index)
@@ -445,7 +570,7 @@ class PipelineListView(object):
                 #
                 if y > r[1]+ r[3]/2:
                     index += 1
-                return index
+                return self.input_list_ctrl.GetItemCount() + index
         return None
     
     def on_data(self, x, y, action, data):
@@ -483,19 +608,34 @@ class PipelineListView(object):
         
     def resetItems(self, pipeline):
         '''Reset the list view and repopulate the list items'''
-        nrows = len(pipeline.modules())
         self.list_ctrl.DeleteAllItems()
+        self.input_list_ctrl.DeleteAllItems()
+        self.__module_dictionary = {}
+        assert isinstance(pipeline, cpp.Pipeline)
         
         for module in pipeline.modules():
             self.__populate_row(module)
         self.__adjust_rows()
         self.__panel.SetupScrolling()
         self.__controller.enable_module_controls_panel_buttons()
-        self.list_ctrl.SetColumnWidth(MODULE_NAME_COLUMN, -1)
     
     def __adjust_rows(self):
         """Adjust slider and dimensions after adding or removing rows"""
-        self.__set_min_width()
+        if self.__pipeline is not None:
+            for module in self.__pipeline.modules():
+                if module.is_input_module():
+                    self.show_input_panel(True)
+                    break
+            else:
+                self.show_input_panel(False)
+        for list_ctrl, column in (
+            (self.list_ctrl, MODULE_NAME_COLUMN),
+            (self.input_list_ctrl, INPUT_MODULE_NAME_COLUMN)):
+            if list_ctrl.GetItemCount() > 0:
+                list_ctrl.SetColumnWidth(column, wx.LIST_AUTOSIZE)
+            else:
+                list_ctrl.SetColumnWidth(
+                    column, wx.LIST_AUTOSIZE_USEHEADER)
         self.__pipeline_slider.Max = self.list_ctrl.ItemCount - 1
         if self.list_ctrl.ItemCount > 0:
             if self.__debug_mode:
@@ -519,74 +659,137 @@ class PipelineListView(object):
         else:
             self.__pipeline_slider.Hide()
             self.__pipeline_slider.SetMinSize((20, 10))
-        self.__sizer.Layout()
+        r = self.input_list_ctrl.GetItemRect(0, wx.LIST_RECT_BOUNDS)
+        height = r[3]
+        y = r[1]
+        min_width = self.input_list_ctrl.GetMinWidth()
+        min_height = y + max(1, self.input_list_ctrl.GetItemCount()) * height + 4
+        self.input_list_ctrl.SetMinSize((min_width, min_height))
+        self.__panel.Layout()
         self.__panel.SetupScrolling(scroll_x=False, scroll_y=True, scrollToTop=False)
     
-    def set_subitem_image(self, index, column, image_number):
+    def set_subitem_image(self, module, column, image_number):
+        list_ctrl, index = self.get_ctrl_and_index(module)
         item = wx.ListItem()
         item.Mask = wx.LIST_MASK_IMAGE
         item.Image = image_number
         item.Id = index
         item.Column = column
-        self.list_ctrl.SetItem(item)
+        list_ctrl.SetItem(item)
         
     def __populate_row(self, module):
         """Populate a row in the grid with a module."""
-        row = module.module_num-1
-        pause_item = wx.ListItem()
-        pause_item.Mask = wx.LIST_MASK_IMAGE
-        pause_item.Image = get_image_index(NOTDEBUG)
-        pause_item.Column = PAUSE_COLUMN
-        pause_item.Id = row
-        self.list_ctrl.InsertItem(pause_item)
-        
-        self.set_subitem_image(row, EYE_COLUMN,
-                               get_image_index(EYE if module.show_window else
-                                               CLOSED_EYE))
-        self.set_subitem_image(row, ERROR_COLUMN,
-                               get_image_index(OK))
-        
-        module_name_item = wx.ListItem()
-        module_name_item.Mask = wx.LIST_MASK_TEXT
-        module_name_item.Text = module.module_name
-        module_name_item.Column = MODULE_NAME_COLUMN
-        module_name_item.Id = row
-        self.list_ctrl.SetItem(module_name_item)
+        list_ctrl = (self.input_list_ctrl if module.is_input_module()
+                     else self.list_ctrl)
+        for row in range(list_ctrl.GetItemCount()):
+            other_module = self.get_module_from_data_value(
+                list_ctrl.GetItemData(row))
+            if other_module.module_num > module.module_num:
+                break
+        else:
+            row = list_ctrl.GetItemCount()
+        data_value = self.get_module_data_value(module)
+        if module.is_input_module():
+            error_item = wx.ListItem()
+            error_item.Mask = wx.LIST_MASK_IMAGE | wx.LIST_MASK_DATA
+            error_item.Column = INPUT_ERROR_COLUMN
+            error_item.Id = row
+            error_item.Data = data_value
+            self.input_list_ctrl.InsertItem(error_item)
+            
+            module_name_item = wx.ListItem()
+            module_name_item.Mask = wx.LIST_MASK_TEXT
+            module_name_item.Text = module.module_name
+            module_name_item.Column = INPUT_MODULE_NAME_COLUMN
+            module_name_item.Id = row
+            self.input_list_ctrl.SetItem(module_name_item)
+            self.input_list_ctrl.SetItemData
+        else:
+            pause_item = wx.ListItem()
+            pause_item.Mask = wx.LIST_MASK_IMAGE | wx.LIST_MASK_DATA
+            pause_item.Image = get_image_index(NOTDEBUG)
+            pause_item.Column = PAUSE_COLUMN
+            pause_item.Id = row
+            pause_item.Data = data_value
+            self.list_ctrl.InsertItem(pause_item)
+            
+            self.set_subitem_image(
+                module, EYE_COLUMN,
+                get_image_index(EYE if module.show_window else CLOSED_EYE))
+            self.set_subitem_image(
+                module, ERROR_COLUMN, get_image_index(OK))
+            
+            module_name_item = wx.ListItem()
+            module_name_item.Mask = wx.LIST_MASK_TEXT
+            module_name_item.Text = module.module_name
+            module_name_item.Column = MODULE_NAME_COLUMN
+            module_name_item.Id = row
+            self.list_ctrl.SetItem(module_name_item)
         
     def __on_pipeline_cleared(self, pipeline, event):
         self.resetItems(pipeline)
         
-    def __on_module_added(self,pipeline,event):
+    def __on_module_added(self,pipeline, event):
         module = pipeline.modules()[event.module_num - 1]
         self.__populate_row(module)
         self.__adjust_rows()
         self.select_one_module(event.module_num)
         self.__panel.SetupScrolling(scrollToTop=False)
 
-    def __on_module_removed(self,pipeline,event):
-        self.list_ctrl.DeleteItem(event.module_num - 1)
+    def __on_module_removed(self, pipeline, event):
+        all_module_ids = set([module.id for module in pipeline.modules()])
+        missing_modules = []
+        for list_ctrl, idx in self.iter_list_items():
+            data_value = list_ctrl.GetItemData(idx)
+            if self.__module_dictionary[data_value] not in all_module_ids:
+                missing_modules.append((list_ctrl, idx, data_value))
+        for list_ctrl, idx, data_value in reversed(missing_modules):
+            list_ctrl.DeleteItem(idx)
+            del self.__module_dictionary[data_value]
         self.__adjust_rows()
         self.__controller.enable_module_controls_panel_buttons()
         self.__panel.SetupScrolling(scrollToTop=False)
         
     def __on_module_moved(self,pipeline,event):
+        module = pipeline.modules()[event.module_num - 1]
+        list_ctrl, index = self.get_ctrl_and_index(module)
         if event.direction == cpp.DIRECTION_UP:
-            start = event.module_num - 1
+            # if this module was moved up, the one before it was moved down
+            # and is now after
+            other_module = pipeline.modules()[event.module_num]
+            modules = [module, other_module]
         else:
-            start = event.module_num - 2
-        first_selected = self.list_ctrl.IsSelected(start)
-        second_selected = self.list_ctrl.IsSelected(start+1)
-        self.list_ctrl.DeleteItem(start)
-        self.list_ctrl.DeleteItem(start)
-        self.__populate_row(pipeline.modules()[start])
-        self.__populate_row(pipeline.modules()[start+1])
-        self.list_ctrl.Select(start, second_selected)
-        self.list_ctrl.Select(start+1, first_selected)
+            # if this module was moved down, the one after it was moved up
+            # and is now before
+            other_module = pipeline.modules()[event.module_num - 2]
+            modules = [other_module, module]
+            
+        other_list_ctrl, other_index = self.get_ctrl_and_index(other_module)
+        if other_list_ctrl != list_ctrl:
+            # in different list controls, nothing changes
+            return
+        start = min(index, other_index)
+        first_selected = list_ctrl.IsSelected(start)
+        second_selected = list_ctrl.IsSelected(start+1)
+        list_ctrl.DeleteItem(start)
+        list_ctrl.DeleteItem(start)
+        for m in modules:
+            self.__populate_row(m)
+        list_ctrl.Select(start, second_selected)
+        list_ctrl.Select(start+1, first_selected)
         self.__adjust_rows()
         self.__controller.enable_module_controls_panel_buttons()
-        self.list_ctrl.Refresh()
+        list_ctrl.Refresh()
     
-    def __on_item_selected(self,event):
+    def __on_item_selected(self, event):
+        if isinstance(event, wx.Event):
+            def clear_all_selections(ctrl):
+                for i in range(ctrl.GetItemCount()):
+                    ctrl.Select(i, False)
+            if event.GetEventObject() == self.input_list_ctrl:
+                clear_all_selections(self.list_ctrl)
+            else:
+                clear_all_selections(self.input_list_ctrl)
         if self.__module_view:
             selections = self.get_selected_modules()
             if len(selections):
@@ -605,8 +808,10 @@ class PipelineListView(object):
         for module in self.__pipeline.modules():
             for module_setting in module.settings():
                 if setting is module_setting:
-                    if self.__pipeline_slider.Value >= module.module_num:
-                        self.__pipeline_slider.Value = module.module_num - 1
+                    list_ctrl, index = self.get_ctrl_and_index(module)
+                    if (not module.is_input_module() and
+                        self.__pipeline_slider.Value > index):
+                        self.__pipeline_slider.Value = index
                     return
                 
     def on_stop_debugging(self):
@@ -624,14 +829,29 @@ class PipelineListView(object):
             return
         request_more = True
         modules = self.__pipeline.modules()
-        for idx, module in enumerate(modules):
+        for i, module in enumerate(modules):
+            # skip to first dirty module for validation
+            if (module.module_num > self.__first_dirty_module and
+                 self.__submission_time + CHECK_FAIL_SEC < time.time()):
+                pipeline_hash = self.__pipeline.settings_hash()
+                def fn(setting_idx, message, level,
+                       idx=i, settings_hash = pipeline_hash):
+                    self.on_validate_module(setting_idx, message, level, idx, settings_hash)
+                self.__module_being_validated = i
+                self.__submission_time = time.time()
+                request_module_validation(self.__pipeline, module, fn)
+                
+            if module.is_input_module():
+                continue
+
+            list_ctrl, idx = self.get_ctrl_and_index(module)
             if module.show_window:
                 eye_value = get_image_index(EYE)
             else:
                 eye_value = get_image_index(CLOSED_EYE)
-            target_item = self.list_ctrl.GetItem(idx, EYE_COLUMN)
+            target_item = list_ctrl.GetItem(idx, EYE_COLUMN)
             if target_item.Image != eye_value:
-                self.set_subitem_image(idx, EYE_COLUMN, eye_value)
+                self.set_subitem_image(module, EYE_COLUMN, eye_value)
 
             if self.__debug_mode:
                 if module.wants_pause:
@@ -641,20 +861,9 @@ class PipelineListView(object):
             else:
                 pause_value = get_image_index(NOTDEBUG)
             
-            target_item = self.list_ctrl.GetItem(idx)
+            target_item = list_ctrl.GetItem(idx)
             if pause_value != target_item.Image:
-                self.list_ctrl.SetItemImage(idx, pause_value)
-
-            # skip to first dirty module for validation
-            if (idx >= self.__first_dirty_module and
-                 self.__submission_time + CHECK_FAIL_SEC < time.time()):
-                pipeline_hash = self.__pipeline.settings_hash()
-                def fn(setting_idx, message, level,
-                       idx=idx, settings_hash = pipeline_hash):
-                    self.on_validate_module(setting_idx, message, level, idx, settings_hash)
-                self.__module_being_validated = idx
-                self.__submission_time = time.time()
-                request_module_validation(self.__pipeline, module, fn)
+                list_ctrl.SetItemImage(idx, pause_value)
 
         event.RequestMore(False)
 
@@ -664,7 +873,10 @@ class PipelineListView(object):
             self.__submission_time = 0
             return
             
-        target_item = self.list_ctrl.GetItem(idx, ERROR_COLUMN)
+        module = self.__pipeline.modules()[idx]
+        error_column = INPUT_ERROR_COLUMN if module.is_input_module else ERROR_COLUMN
+        list_ctrl, index = self.get_ctrl_and_index(module)
+        target_item = list_ctrl.GetItem(index, error_column)
         if level == logging.WARNING:
             ec_value = WARNING
         elif level == logging.ERROR:
@@ -673,7 +885,7 @@ class PipelineListView(object):
             ec_value = OK
         ec_value = get_image_index(ec_value)
         if ec_value != target_item.Image:
-            self.set_subitem_image(idx, ERROR_COLUMN, ec_value)
+            self.set_subitem_image(module, error_column, ec_value)
         if self.__first_dirty_module == idx:
             self.__first_dirty_module = min(self.__first_dirty_module+1,
                                             len(self.__pipeline.modules()))

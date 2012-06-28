@@ -104,7 +104,8 @@ class CPFrame(wx.Frame):
         """
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        self.BackgroundColour = cellprofiler.preferences.get_background_color()
+        background_color = cellprofiler.preferences.get_background_color()
+        self.BackgroundColour = background_color
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
         
         # Crappy splitters leave crud on the screen because they want custom
@@ -113,7 +114,7 @@ class CPFrame(wx.Frame):
         self.__splitter.BackgroundStyle = 0
         
         self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
-        self.__right_win.BackgroundColour = self.BackgroundColour
+        self.__right_win.BackgroundColour = background_color
 
         self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
         # bottom left will be the file browser
@@ -121,7 +122,7 @@ class CPFrame(wx.Frame):
         self.__logo_panel = wx.Panel(self.__left_win,-1,style=wx.SIMPLE_BORDER)
         self.__logo_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__module_list_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__left_win, -1)
-        self.__module_list_panel.SetBackgroundColour('white')
+        self.__module_list_panel.SetBackgroundColour(background_color)
         self.__module_list_panel.SetToolTipString("The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
         self.__pipeline_test_panel = wx.Panel(self.__left_win,-1)
         self.__pipeline_test_panel.SetToolTipString("The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")

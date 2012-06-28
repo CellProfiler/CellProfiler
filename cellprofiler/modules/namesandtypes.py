@@ -453,6 +453,9 @@ class NamesAndTypes(cpm.CPModule):
         finally:
             self.on_deactivated()
                         
+    def is_input_module(self):
+        return True
+            
     def run(self, workspace):
         pass
                      

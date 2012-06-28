@@ -690,7 +690,15 @@ class PipelineController:
         #
         # Enable/disable the movement buttons
         #
-        selected_modules = self.__pipeline_list_view.get_selected_modules()
+        selected_modules = self.__get_selected_modules()
+        # The module_num of the first module that's not an input module
+        first_module_num, last_module_num = [
+            reduce(fn, 
+                   [module.module_num for module in self.__pipeline.modules()
+                    if not module.is_input_module()],
+                   initial)
+            for fn, initial in ((min, len(self.__pipeline.modules())),
+                                (max, -1))]
         enable_up = True
         enable_down = True
         enable_delete = True
@@ -698,9 +706,9 @@ class PipelineController:
         if len(selected_modules) == 0:
             enable_up = enable_down = enable_delete = enable_duplicate = False
         else:
-            if any([m.module_num == 1 for m in selected_modules]):
+            if any([m.module_num == first_module_num for m in selected_modules]):
                 enable_up = False
-            if any([m.module_num == len(self.__pipeline.modules())
+            if any([m.module_num == last_module_num
                     for m in selected_modules]):
                 enable_down = False
         for menu_id, control, state in (
@@ -714,8 +722,8 @@ class PipelineController:
             if menu_item is not None:
                 menu_item.Enable(state)
         
-    def __on_help(self,event):
-        modules = self.__get_selected_modules()
+    def __on_help(self, event):
+        modules = self.__pipeline_list_view.get_selected_modules()
         if len(modules) > 0:
             self.__frame.do_help_modules(modules)
         else:
@@ -788,7 +796,9 @@ class PipelineController:
             
         
     def __get_selected_modules(self):
-        return self.__pipeline_list_view.get_selected_modules()
+        '''Get the modules selected in the GUI, but not input modules'''
+        return filter(lambda x: not x.is_input_module(),
+                      self.__pipeline_list_view.get_selected_modules())
     
     def on_remove_module(self,event):
         self.remove_selected_modules()

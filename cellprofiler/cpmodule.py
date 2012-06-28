@@ -458,7 +458,7 @@ class CPModule(object):
             module - this module
             
             measurements - measurements structure that can be populated with
-                           image set file names and metadata.
+                          a image set file names and metadata.
             
             image_set_list - add any image sets to the image set list
             
@@ -471,6 +471,13 @@ class CPModule(object):
     
     def is_load_module(self):
         """If true, the module will load files and make image sets"""
+        return False
+    
+    def is_input_module(self):
+        """If true, the module is one of the input modules
+        
+        The input modules are "Images", "Metadata", "NamesAndTypes" and "Groups"
+        """
         return False
 
     def run(self,workspace):

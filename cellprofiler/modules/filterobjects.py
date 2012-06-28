@@ -178,15 +178,14 @@ class FilterObjects(cpm.CPModule):
             doc="""<i>(Used only when filtering using rules)</i>
             <br>The name of the file holding the rules. Each line of
             this file should be a rule naming a measurement to be made
-            on the object you selected, for instance:
-            <br><tt>
-            IF (Nuclei_AreaShape_Area < 351.3, [0.79, -0.79], [-0.94, 0.94])
-            </tt><br>
-            The above rule will score +.79 for the positive category and -0.94
+            on the object you selected, for instance:<pre>IF (Nuclei_AreaShape_Area &lt; 351.3, [0.79, -0.79], [-0.94, 0.94])</pre><br><br>
+            The above rule will score +0.79 for the positive category and -0.94
             for the negative category for nuclei whose area is less than 351.3 
             pixels and will score the opposite for nuclei whose area is larger.
             The filter adds positive and negative and keeps only objects whose
-            positive score is higher than the negative score""")
+            positive score is higher than the negative score.
+            <p>Note that if the rules are obtained from CellProfiler Analyst, the objects
+            that are removed are those represented by the second number between the brackets.</p>""")
         
         self.wants_outlines = cps.Binary('Retain outlines of the identified objects?', False)
         

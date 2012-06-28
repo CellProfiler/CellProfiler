@@ -31,6 +31,7 @@ try:
     from _cpmorphology2 import ptrsize
 except:
     pass
+import _convex_hull
 
 logger = logging.getLogger(__name__)
 '''A structuring element for eight-connecting a neigborhood'''
@@ -487,7 +488,7 @@ def convex_hull_image(image):
     output = fill_labeled_holes(output)
     return output == 1
 
-def convex_hull(labels, indexes=None):
+def convex_hull(labels, indexes=None, fast=True):
     """Given a labeled image, return a list of points per object ordered by
     angle from an interior point, representing the convex hull.s
     
@@ -524,9 +525,9 @@ def convex_hull(labels, indexes=None):
     j = coords[:,1]
     labels_per_point = labels[i,j]
     pixel_labels = np.column_stack((i,j,labels_per_point))
-    return convex_hull_ijv(pixel_labels, indexes)
+    return convex_hull_ijv(pixel_labels, indexes, fast)
 
-def convex_hull_ijv(pixel_labels, indexes):
+def convex_hull_ijv(pixel_labels, indexes, fast=True):
     '''Return the convex hull for each label using an ijv labeling
     
     pixel_labels: the labeling of the pixels in i,j,v form where
@@ -541,7 +542,10 @@ def convex_hull_ijv(pixel_labels, indexes):
     counter-clockwise around the perimeter.
     The vector is a vector of #s of points in the convex hull per label
     '''
-    
+    if fast:
+        return _convex_hull.convex_hull_ijv(pixel_labels, indexes)
+
+    # We keep this code for testing.
     if len(indexes) == 0:
         return np.zeros((0,3),int),np.zeros((0,),int)
     #
@@ -697,14 +701,14 @@ def convex_hull_ijv(pixel_labels, indexes):
         #
         # Compute the triangle areas
         #
-        t_left = triangle_areas(centers_per_point,
-                                a[n_minus_one,1:],
-                                a[:,1:])
-        t_right = triangle_areas(centers_per_point,
-                                 a[:,1:],
-                                 a[n_plus_one,1:])
+        t_left_plus_right = (triangle_areas(centers_per_point,
+                                            a[n_minus_one, 1:],
+                                            a[:, 1:]) +
+                             triangle_areas(centers_per_point,
+                                            a[:, 1:],
+                                            a[n_plus_one, 1:]))
         t_lr = triangle_areas(centers_per_point,
-                              a[n_minus_one,1:],a[n_plus_one,1:])
+                              a[n_minus_one, 1:], a[n_plus_one, 1:])
         #
         # Keep the points where the area of the left triangle plus the
         # area of the right triangle is bigger than the area of the triangle
@@ -712,13 +716,14 @@ def convex_hull_ijv(pixel_labels, indexes):
         # there's a little triangle sitting on top of t_lr with our point
         # on top and convex in relation to its neighbors.
         #
-        keep_me = t_left+t_right > t_lr
+        keep_me = t_left_plus_right > t_lr
         #
         # If all points on a line are co-linear with the center, then the
         # whole line goes away. Special handling for this to find the points
         # most distant from the center and on the same side
         #
-        consider_me = t_left+t_right == 0
+        consider_me = t_left_plus_right == 0
+        del t_lr, t_left_plus_right
         if np.any(consider_me):
             diff_i = a[:,1]-centers_per_point[:,0]
             diff_j = a[:,2]-centers_per_point[:,1]
@@ -731,18 +736,25 @@ def convex_hull_ijv(pixel_labels, indexes):
             #
             # If both signs are zero, then the point is in the center
             #
-            sign = np.sign(diff_i) + np.sign(diff_j)*2
+            # Compute np.sign(diff_i, out=diff_i) + np.sign(diff_j) * 2,
+            # but without any temporaries.
+            sign = np.sign(diff_j, diff_j)
+            sign *= 2
+            sign += np.sign(diff_i)
+            del diff_i, diff_j
+
             n_minus_one_consider = n_minus_one[consider_me]
             n_plus_one_consider = n_plus_one[consider_me]
-            left_is_worse = (
-                (dist[consider_me] > dist[n_minus_one_consider]) |
-                (sign[consider_me] != sign[n_minus_one_consider]))
+            left_is_worse = ((dist[consider_me] > dist[n_minus_one_consider]) |
+                             (sign[consider_me] != sign[n_minus_one_consider]))
             right_is_worse = ((dist[consider_me] > dist[n_plus_one_consider]) |
                               (sign[consider_me] != sign[n_plus_one_consider]))
             to_keep = left_is_worse & right_is_worse & (sign[consider_me] != 0)
-            keep_me[consider_me] = to_keep 
+            keep_me[consider_me] = to_keep
+            del dist, sign
         a = a[keep_me,:]
         centers_per_point = centers_per_point[keep_me]
+        del keep_me
         first_pass = False
     #
     # Finally, we have to shrink the results. We number each of the
@@ -761,16 +773,27 @@ def triangle_areas(p1,p2,p3):
     
     p1,p2,p3 - three Nx2 arrays of points
     """
-    v1 = p2-p1
-    v2 = p3-p1
-    cross1 = v1[:,1] * v2[:,0]
-    cross2 = v2[:,1] * v1[:,0]
-    a = (cross1-cross2) / 2
+    v1 = (p2 - p1).astype(np.float)
+    v2 = (p3 - p1).astype(np.float)
+    # Original:
+    #   cross1 = v1[:,1] * v2[:,0]
+    #   cross2 = v2[:,1] * v1[:,0]
+    #   a = (cross1-cross2) / 2
+    # Memory reduced:
+    cross1 = v1[:, 1]
+    cross1 *= v2[:, 0]
+    cross2 = v2[:, 1]
+    cross2 *= v1[:, 0]
+    a = cross1
+    a -= cross2
+    a /= 2.0
+    del v1, v2, cross1, cross2
+    a = a.copy()  # a is a view on v1; shed one dimension.
     #
     # Handle small round-off errors
     #
     a[a<np.finfo(np.float32).eps] = 0
-    return a  
+    return a
 
 def draw_line(labels,pt0,pt1,value=1):
     """Draw a line between two points
@@ -2097,10 +2120,19 @@ def calculate_convex_hull_areas(labels,indexes=None):
     #
     # It works for a square...
     #
-    hull_nd[hull_nd[:,1] < within_hull_per_pixel[:,0],1]  -= .5
-    hull_nd[hull_nd[:,2] < within_hull_per_pixel[:,1],2]  -= .5
-    hull_nd[hull_nd[:,1] >= within_hull_per_pixel[:,0],1] += .5
-    hull_nd[hull_nd[:,2] >= within_hull_per_pixel[:,1],2] += .5
+    # 2012-06-04 (thouis): Numpy trunk no longer allows unsafe type conversion
+    # in in-place operations, which was what used to happen here
+    # (adding/subtracting .5 from an integer array, which then just got
+    # truncated).  So now it just adds 1 to the pixels right or below the
+    # center.
+    #
+    # It would probably be better to do this in one of two other ways:
+    # - Compute area with a circular ferret
+    #   = polygon area + radius * perimeter + pi * radius^2
+    # - Compute area with a square ferret
+    #   = polygon area + 2 * radius * (horizontal_projection + vertical_projection) + 4*radius^2
+    hull_nd[hull_nd[:,1] >= within_hull_per_pixel[:,0],1] += 1
+    hull_nd[hull_nd[:,2] >= within_hull_per_pixel[:,1],2] += 1
     #
     # Finally, we go around the circle, computing triangle areas
     # from point n to point n+1 (modulo count) to the point within

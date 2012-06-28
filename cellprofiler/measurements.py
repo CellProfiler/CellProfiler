@@ -834,7 +834,7 @@ class Measurements(object):
         # more loosely matched.
         #
         def cast(x):
-            if x.isdigit():
+            if isinstance(x,basestring) and x.isdigit():
                 return int(x)
             return x
         

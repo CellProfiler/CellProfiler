@@ -436,4 +436,14 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
         result = self.execute(image, 'close', mask=np.ones(image.shape, np.bool))
         self.assertTrue(np.all(result >= image))
         
+    def test_03_01_color(self):
+        # Regression test for issue # 324
+        np.random.seed(0)
+        image = np.random.uniform(size=(20, 15)).astype(np.float32)
+        image = image[:, :, np.newaxis] * np.ones(3)[np.newaxis, np.newaxis, :]
+        result = self.execute(image, morph.F_ERODE, 
+                              mask=np.ones(image.shape[:2], np.bool))
+        self.assertTrue(np.all(result < image[:, :, 0] + np.finfo(np.float32).eps))
+        
+        
     

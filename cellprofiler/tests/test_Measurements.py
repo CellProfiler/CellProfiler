@@ -869,7 +869,7 @@ class TestMeasurements(unittest.TestCase):
                     np.testing.assert_almost_equal(expected, value)
         finally:
             del m
-            
+
     def test_19_01_load_image_sets(self):
         expected_features = ["GroupNumber", "GroupIndex",
                              "URL_DNA", "PathName_DNA", "FileName_DNA"]
@@ -931,6 +931,20 @@ class TestMeasurements(unittest.TestCase):
             src = m.get_measurement(cpmeas.IMAGE, feature_name, image_numbers)
             dest = mdest.get_measurement(cpmeas.IMAGE, feature_name, image_numbers)
             self.assertSequenceEqual(src.tolist(), dest.tolist())
-        
+
+    def test_19_03_delete_tempfile(self):
+        m = cpmeas.Measurements()
+        filename = m.hdf5_dict.filename
+        del m
+        self.assertFalse(os.path.exists(filename))
+
+    def test_19_04_dont_delete_file(self):
+        fd, filename = tempfile.mkstemp(suffix=".h5")
+        m = cpmeas.Measurements(filename = filename)
+        os.close(fd)
+        del m
+        self.assertTrue(os.path.exists(filename))
+        os.unlink(filename)
+
 if __name__ == "__main__":
     unittest.main()

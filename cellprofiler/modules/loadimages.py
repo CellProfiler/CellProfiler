@@ -150,7 +150,7 @@ FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
 SUPPORTED_IMAGE_EXTENSIONS.update([
     ".1sc",".2fl",".afm", ".aim", ".avi", ".co1",".flex", ".fli", ".gel", 
     ".ics", ".ids", ".im", ".img", ".j2k", ".lif", ".lsm", ".mpeg", ".pic", 
-    ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi"])
+    ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi", ".c01"])
 SUPPORTED_MOVIE_EXTENSIONS.update(['mng'] )
 
 # The metadata choices:
@@ -807,6 +807,7 @@ class LoadImages(cpmodule.CPModule):
             image_group.channels[0].wants_outlines,
             image_group.channels[0].outlines_name,
             image_group.channels[0].channel_number,
+            image_group.channels[0].rescale,
             image_group.metadata_choice,
             image_group.file_metadata, 
             image_group.path_metadata,
@@ -924,10 +925,31 @@ class LoadImages(cpmodule.CPModule):
                         image_group.common_text)
 
     def validate_module_warnings(self, pipeline):
-        '''Check for potentially dangerous settings
+        '''Check for potentially dangerous settings'''
         
-        The best practice is to have a single LoadImages or LoadData module.
-        '''
+        # Check that user has selected fields for grouping if grouping is turned on
+        if self.group_by_metadata.value and (len(self.metadata_fields.selections) == 0):
+            raise cps.ValidationError("Group images by metadata is True, but no metadata "
+                                      "fields have been chosen for grouping.",
+                                      self.metadata_fields)
+                
+        # Check that user-specified names don't have bad characters
+        invalid_chars_pattern = "^[A-Za-z][A-Za-z0-9_]+$"
+        warning_text = "The image name has questionable characters. The pipeline can use this name "\
+                       "and produce results, but downstream programs that use this data (e.g, MATLAB, MySQL) may error."
+        for i,fd in enumerate(self.images):
+            is_multichannel = (self.is_multichannel or fd.wants_movie_frame_grouping)
+            if not is_multichannel:
+                if self.channel_wants_images(fd.channels[0]):
+                    if not re.match(invalid_chars_pattern,fd.channels[0].image_name.value):
+                        raise cps.ValidationError(warning_text,fd.channels[0].image_name)
+            else:
+                for channel in fd.channels:
+                    if self.channel_wants_images(channel):
+                        if not re.match(invalid_chars_pattern,fd.channels[0].image_name.value):
+                            raise cps.ValidationError(warning_text,channel.image_name)
+        
+        #The best practice is to have a single LoadImages or LoadData module.
         from cellprofiler.modules.loaddata import LoadData
         for module in pipeline.modules():
             if id(module) == id(self):
@@ -949,11 +971,7 @@ class LoadImages(cpmodule.CPModule):
                     "LoadImages module. You can add additional images using\n"
                     "the Add button", self.add_image)
 
-        # check that user has selected fields for grouping if grouping is turned on
-        if self.group_by_metadata.value and (len(self.metadata_fields.selections) == 0):
-            raise cps.ValidationError("Group images by metadata is True, but no metadata "
-                                      "fields have been chosen for grouping.",
-                                      self.metadata_fields)
+        
     
     #
     # Slots for storing settings in the array
@@ -1804,8 +1822,10 @@ class LoadImages(cpmodule.CPModule):
         if np.any(index_count != index_count[0]):
             bad = np.argwhere(index_count != index_count[0]).flatten()
             raise RuntimeError("Image %s has %d files, but image %s has %d files" %
-                               (self.images[0].channel[0].image_name.value,
-                                self.images[bad].channel[0].image_name.value))
+                               (self.images[0].channels[0].image_name.value,
+                                index_count[0],
+                                self.images[bad].channels[0].image_name.value,
+                                index_count[bad]))
         file_list = [ [] for _ in range(len(index_count))]
         for file_pathname, image_index in files:
             file_list[image_index].append(file_pathname)
@@ -2087,7 +2107,7 @@ class LoadImages(cpmodule.CPModule):
                 image_index += len(image.channels)
             else:
                 for i in range(frame_count):
-                    list_of_lists[image_index].append(
+                    list_of_lists[image_group_index].append(
                         (pathname, i, i, image_group_index))
         image_set_count = len(list_of_lists[0])
         for x,name in zip(list_of_lists[1:], image_names):

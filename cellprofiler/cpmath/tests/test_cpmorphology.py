@@ -369,7 +369,7 @@ class TestCpmaximum(unittest.TestCase):
         input = np.zeros((1001,1001))
         input[500,500] = 1
         expected = np.zeros((1001,1001))
-        expected[490:551,490:551][big_disk]=1
+        expected[490:511,490:511][big_disk]=1
         output = morph.cpmaximum(input,big_disk)
         self.assertTrue(np.all(output == expected))
 
@@ -607,6 +607,7 @@ class TestConvexHull(unittest.TestCase):
                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
         result, counts = morph.convex_hull(labels, np.array([1]))
         self.assertEqual(counts[0], 2)
+
         
     def test_06_02_same_point_twice(self):
         '''Regression test of convex_hull_ijv - same point twice in list'''
@@ -616,6 +617,45 @@ class TestConvexHull(unittest.TestCase):
         h, c = morph.convex_hull_ijv(
             np.column_stack((ii, jj, np.ones(len(ii)))), [1])
         self.assertTrue(np.any((h[:,1] == 73) & (h[:,2] == 0)))
+
+    def test_07_01_new_vs_old(self):
+        '''Test Cython version vs original Python version'''
+        labels = np.random.randint(0, 1000, (1000, 1000))
+        indexes = np.arange(1, 1005)  # mix in some empty indices
+        np.random.shuffle(indexes)
+        new_hulls, new_counts = morph.convex_hull(labels, indexes, fast=True)
+        old_hulls, old_counts = morph.convex_hull(labels, indexes, fast=False)
+        old_hull_ends = np.cumsum(old_counts)
+        old_hull_starts = old_hull_ends - old_counts
+        new_hull_ends = np.cumsum(new_counts)
+        new_hull_starts = new_hull_ends - new_counts
+        for i in range(len(indexes)):
+            if old_counts[i] == 0:
+                self.assertEqual(new_counts[i], 0)
+                break
+            old_hull_i = old_hulls[old_hull_starts[i]:old_hull_ends[i], :]
+            new_hull_i = new_hulls[new_hull_starts[i]:new_hull_ends[i], :]
+            # The python code can sometimes leave sets of co-linear points,
+            # which we need to prune to compare to the new output, which never
+            # should do so.  To test that, we prune colinear points from the
+            # python output, and compare to the unpruned Cython version.
+            def colinear(idx, hull):
+                prev_idx = idx - 1
+                next_idx = idx + 1
+                if next_idx >= hull.shape[0]:
+                    next_idx -= hull.shape[0]
+                # discard label information and compute prev and current step directions
+                dprev = hull[idx, 1:] - hull[prev_idx, 1:]
+                dcur = hull[next_idx, 1:] - hull[idx, 1:]
+                # Colinear = zero dot product and same step direction
+                return (dprev[0] * dcur[1] - dprev[1] * dcur[0] == 0 and
+                        np.sign(dprev[0]) == np.sign(dcur[0]) and
+                        np.sign(dprev[1]) == np.sign(dcur[1]))
+            mask = np.array([not colinear(idx, old_hull_i) for idx in range(old_hull_i.shape[0])])
+            old_hull_i = old_hull_i[mask, :]
+            old_hull_i = old_hull_i[np.lexsort(old_hull_i.T), :]
+            new_hull_i = new_hull_i[np.lexsort(new_hull_i.T), :]
+            np.testing.assert_array_equal(old_hull_i, new_hull_i)
 
 class TestConvexHullImage(unittest.TestCase):
     def test_00_00_zeros(self):

@@ -784,7 +784,7 @@ class MeasureImageQuality(cpm.CPModule):
                 grid = i * n + j + 1
                 if image.has_mask:
                     grid[np.logical_not(image.mask)] = 0
-                grid_range = np.arange(0, m*n+1)
+                grid_range = np.arange(0, m*n+1,dtype=np.int32)
                 #
                 # Do the math per label
                 #
@@ -969,13 +969,14 @@ class MeasureImageQuality(cpm.CPModule):
                     pixel_data[~ image.mask] = 0
             
             radii, magnitude, power = rps.rps(pixel_data)
-            if sum(magnitude) > 0:
+            if sum(magnitude) > 0 and len(np.unique(pixel_data)) > 1:
                 valid = (magnitude > 0)
                 radii = radii[valid].reshape((-1, 1))
                 magnitude = magnitude[valid].reshape((-1, 1))
                 power = power[valid].reshape((-1, 1))
                 if radii.shape[0] > 1:
-                    powerslope = lstsq(np.hstack((np.log(radii), np.ones(radii.shape))), np.log(power))[0][0]
+                    idx = np.isfinite(np.log(power))
+                    powerslope = lstsq(np.hstack((np.log(radii)[idx][:,np.newaxis], np.ones(radii.shape)[idx][:,np.newaxis])), np.log(power)[idx][:,np.newaxis])[0][0]
                 else:
                     powerslope = 0
             else:

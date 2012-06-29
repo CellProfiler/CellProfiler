@@ -264,6 +264,10 @@ class HDF5Dict(object):
 
     def flush(self):
         logger.debug("HDF5Dict.flush(): %s, temporary=%s", self.filename, self.is_temporary)
+        # 2012-06-29: Ray is seeing a bug where file_contents() returns an
+        # invalid HDF if the file is flushed once then read, but with two calls
+        # to flush() it works.  h5py version 2.1.0, hdf version 1.8.9
+        self.hdf5_file.flush()
         self.hdf5_file.flush()
 
     def file_contents(self):

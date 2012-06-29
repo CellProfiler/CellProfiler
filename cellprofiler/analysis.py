@@ -27,7 +27,6 @@ import os.path
 import zmq
 import gc
 import collections
-import tempfile
 
 import cellprofiler
 import cellprofiler.measurements as cpmeas
@@ -190,9 +189,15 @@ class AnalysisRunner(object):
         self.work_queue = Queue.Queue()
         self.in_process_queue = Queue.Queue()
         self.finished_queue = Queue.Queue()
-        # if 10 ends up being too limiting, we should have the jobserver write
-        # the file.
-        self.returned_measurements_queue = Queue.Queue(maxsize=10)
+
+        # We use a queue size of 10 because we keep measurements in memory (as
+        # their HDF5 file contents) until they get merged into the full
+        # measurements set.  If at some point, this size is too limiting, we
+        # should have jobserver() call load_measurements_from_buffer() rather
+        # than interface() doing so.  Currently, passing measurements in this
+        # way seems like it might be buggy:
+        # http://code.google.com/p/h5py/issues/detail?id=244
+        self.received_measurements_queue = Queue.Queue(maxsize=10)
 
         self.shared_dicts = None
 
@@ -319,20 +324,19 @@ class AnalysisRunner(object):
                 break
 
             # gather measurements
-            while not self.returned_measurements_queue.empty():
-                # put the blob in a temporary file
-                job, buf = self.returned_measurements_queue.get()
-                reported_measurements = cpmeas.load_measurements_from_buffer(buf)
-                for object in reported_measurements.get_object_names():
+            while not self.received_measurements_queue.empty():
+                job, buf = self.received_measurements_queue.get()
+                recd_measurements = cpmeas.load_measurements_from_buffer(buf)
+                for object in recd_measurements.get_object_names():
                     if object == cpmeas.EXPERIMENT:
                         continue  # XXX - who writes this, when?
-                    for feature in reported_measurements.get_feature_names(object):
+                    for feature in recd_measurements.get_feature_names(object):
                         for imagenumber in job:
                             self.measurements[object, feature, imagenumber] \
-                                = reported_measurements[object, feature, imagenumber]
+                                = recd_measurements[object, feature, imagenumber]
                 for image_set_number in job:
                     self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
-                del reported_measurements
+                del recd_measurements
 
             # check for jobs in progress
             while not self.in_process_queue.empty():
@@ -378,7 +382,7 @@ class AnalysisRunner(object):
                        ((not self.cancelled) and
                         self.in_process_queue.empty() and
                         self.finished_queue.empty() and
-                        self.returned_measurements_queue.empty())):
+                        self.received_measurements_queue.empty())):
                     self.interface_work_cv.wait()  # wait for a change of status or work to arrive
 
         self.post_event(AnalysisFinished(self.measurements, self.cancelled))
@@ -439,9 +443,8 @@ class AnalysisRunner(object):
             elif isinstance(req, SharedDictionaryRequest):
                 req.reply(SharedDictionaryReply(dictionaries=self.shared_dicts))
             elif isinstance(req, MeasurementsReport):
-                buf = req.buf
-                successes = [int(s) for s in req.image_set_numbers.split(",")]
-                self.queue_received_measurements(successes, buf)
+                self.queue_received_measurements(req.image_set_numbers,
+                                                 req.buf)
                 req.reply(Ack())
             elif isinstance(req, (InteractionRequest, DisplayRequest, ExceptionReport)):
                 # bump upward
@@ -470,8 +473,8 @@ class AnalysisRunner(object):
         with self.interface_work_cv:
             self.interface_work_cv.notify()
 
-    def queue_received_measurements(self, image_set_numbers, measure_blob):
-        self.returned_measurements_queue.put((image_set_numbers, measure_blob))
+    def queue_received_measurements(self, image_set_numbers, measurements):
+        self.received_measurements_queue.put((image_set_numbers, measurements))
         # notify interface thread
         with self.interface_work_cv:
             self.interface_work_cv.notify()
@@ -665,7 +668,7 @@ class DictionaryReqRepRep(Reply):
 
 
 class MeasurementsReport(Request):
-    def __init__(self, buf, image_set_numbers=""):
+    def __init__(self, buf, image_set_numbers=[]):
         Request.__init__(self, buf=buf, image_set_numbers=image_set_numbers)
 
 

@@ -175,7 +175,7 @@ class FlagImage(cpm.CPModule):
          
         def get_directory_fn():
             '''Get the directory for the rules file name'''
-            return self.rules_directory.get_absolute_path()
+            return group.rules_directory.get_absolute_path()
                 
         def set_directory_fn(path):
             dir_choice, custom_path = group.rules_directory.get_parts_from_path(path)
@@ -188,15 +188,14 @@ class FlagImage(cpm.CPModule):
                     doc="""<i>(Used only when filtering using rules)</i>
                     <br>The name of the file holding the rules. Each line of
                     this file should be a rule naming a measurement to be made
-                    on an image, for instance:
-                    <br><tt>
-                    IF (Image_ImageQuality_PowerLogLogSlope_DNA < -2.5, [0.79, -0.79], [-0.94, 0.94])
-                    </tt><br>
-                    The above rule will score +.79 for the positive category and -0.94
+                    on an image, for instance:<pre>IF (Image_ImageQuality_PowerLogLogSlope_DNA &lt; -2.5, [0.79, -0.79], [-0.94, 0.94])</pre><br><br>
+                    The above rule will score +0.79 for the positive category and -0.94
                     for the negative category for images whose power log slope is less than -2.5
                     pixels and will score the opposite for images whose slope is larger.
                     The filter adds positive and negative and flags the images whose
-                    positive score is higher than the negative score."""))
+                    positive score is higher than the negative score.
+                    <p>Note that if the rules are obtained from CellProfiler Analyst, the images
+                    that are fail are those represented by the second number between the brackets.</p>"""))
 
         group.append("measurement", cps.Measurement("Which measurement?",
                                                     object_fn))
@@ -305,9 +304,9 @@ class FlagImage(cpm.CPModule):
                         raise cps.ValidationError("The rules listed in %s describe objects instead of images."%measurement_setting.rules_file_name.value,
                                                     measurement_setting.rules_file_name)
                     rule_features = [r.feature for r in rules.rules]
-                    measurement_cols = [c[1] for c in pipeline.get_measurement_columns()]
+                    measurement_cols = [c[1] for c in pipeline.get_measurement_columns(self)]
                     undef_features = list(set(rule_features).difference(measurement_cols))
-                    if undef_features:
+                    if len(undef_features) > 0:
                         raise cps.ValidationError("The rule described by %s has not been measured earlier in the pipeline."%undef_features[0],
                                                     measurement_setting.rules_file_name)
 

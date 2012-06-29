@@ -105,8 +105,11 @@ class Image(object):
         * int8/16/32/64: scale min to max to 0 to 1
         * logical: save as is (and get if must_be_binary)
         """
-        img = np.array(image)
+        img = np.asanyarray(image)
         if img.dtype.name == "bool" or not convert:
+            if img is image:
+                # make sure we have our own copy.
+                img = img.copy()
             self.__image = img
             return
         mval  = 0.
@@ -142,12 +145,13 @@ class Image(object):
             mval  = -scale / 2.0
             scale -= 1
             fix_range = True
-        
-        img = (img.astype(np.float32) - mval)/scale
+        # Avoid temporaries by doing the shift/scale in place.
+        img = img.astype(np.float32)
+        img -= mval
+        img /= scale
         if fix_range:
             # These types will always have ranges between 0 and 1. Make it so.
-            img[img<0]=0
-            img[img>1]=1
+            np.clip(img, 0, 1, out=img)
         check_consistency(img,self.__mask)
         self.__image = img
     

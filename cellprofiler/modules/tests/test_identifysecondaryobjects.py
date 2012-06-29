@@ -368,7 +368,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         expected[2:7,7:17] = 2
         mask = np.ones((10,10),bool)
         mask[:,7:9] = False
-        self.assertTrue(np.all(objects_out.segmented[mask]==expected[mask]))
+        self.assertTrue(np.all(objects_out.segmented[:10, :10][mask]==expected[mask]))
 
     def test_02_04_two_objects_propagation_distance(self):
         p = cpp.Pipeline()

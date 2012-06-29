@@ -466,11 +466,11 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                     d_from_center[good_mask] / maximum_radius
             dd[name] = [normalized_distance, i_center, j_center, good_mask]
         ngood_pixels = np.sum(good_mask)
-        good_labels = objects.segmented[good_mask]
+        good_labels = labels[good_mask]
         bin_indexes = (normalized_distance * bin_count).astype(int)
         bin_indexes[bin_indexes > bin_count] = bin_count
         labels_and_bins = (good_labels-1,bin_indexes[good_mask])
-        histogram = coo_matrix((image.pixel_data[good_mask], labels_and_bins),
+        histogram = coo_matrix((pixel_data[good_mask], labels_and_bins),
                                (nobjects, bin_count+1)).toarray()
         sum_by_object = np.sum(histogram, 1)
         sum_by_object_per_bin = np.dstack([sum_by_object]*(bin_count + 1))[0]

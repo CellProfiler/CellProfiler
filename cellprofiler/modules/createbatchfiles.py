@@ -45,7 +45,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.workspace as cpw
 
 '''# of settings aside from the mappings'''
-S_FIXED_COUNT = 7
+S_FIXED_COUNT = 8
 '''# of settings per mapping'''
 S_PER_MAPPING = 2
 
@@ -73,7 +73,7 @@ class CreateBatchFiles(cpm.CPModule):
     #     directory.
     module_name = "CreateBatchFiles"
     category = 'File Processing'
-    variable_revision_number = 5
+    variable_revision_number = 6
     
     #
     def create_settings(self):
@@ -103,6 +103,9 @@ class CreateBatchFiles(cpm.CPModule):
         self.default_image_directory = cps.Setting("Hidden: default input folder at time of save",
                                                    cpprefs.get_default_image_directory())
         self.revision = cps.Integer("Hidden: revision number", 0)
+        self.from_old_matlab = cps.Binary("Hidden: from old matlab", False)
+        self.acknowledge_old_matlab = cps.DoSomething("Could not update CP1.0 pipeline to be compatible with CP2.0.  See module notes.", "OK",
+                                                      self.clear_old_matlab)
         self.mappings = []
         self.add_mapping()
         self.add_mapping_button = cps.DoSomething("", "Add another path mapping",
@@ -154,7 +157,7 @@ class CreateBatchFiles(cpm.CPModule):
         result = [self.wants_default_output_directory,
                   self.custom_output_directory, self.remote_host_is_windows,
                   self.batch_mode, self.distributed_mode,
-                  self.default_image_directory, self.revision]
+                  self.default_image_directory, self.revision, self.from_old_matlab]
         for mapping in self.mappings:
             result += [mapping.local_directory, mapping.remote_directory]
         return result
@@ -173,6 +176,8 @@ class CreateBatchFiles(cpm.CPModule):
             self.add_mapping()
     
     def visible_settings(self):
+        if self.from_old_matlab:
+            return [self.acknowledge_old_matlab]
         result = [self.wants_default_output_directory]
         if not self.wants_default_output_directory.value:
             result += [self.custom_output_directory]
@@ -188,7 +193,7 @@ class CreateBatchFiles(cpm.CPModule):
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         
-        if pipeline.test_mode:
+        if pipeline.test_mode or self.from_old_matlab:
             return True
         if self.batch_mode.value:
             self.enter_batch_mode(workspace)
@@ -210,13 +215,22 @@ class CreateBatchFiles(cpm.CPModule):
             figure.set_subplots((1, 1))
             figure.subplot_table(0, 0, [[message]])
 
+    def clear_old_matlab(self):
+        self.from_old_matlab.value = cps.NO
+
     def validate_module(self, pipeline):
-        '''Make sure this is the last module in the pipeline'''
+        '''Make sure the module settings are valid'''
+        # Ensure we're not an un-updatable version of the module from way back.
+        if self.from_old_matlab.value:
+            raise cps.ValidationError("The pipeline you loaded was from an old version of CellProfiler 1.0, "
+                                      "which could not be made compatible with this version of CellProfiler.",
+                                      self.acknowledge_old_matlab)
+        # This must be the last module in the pipeline
         if self.module_num != len(pipeline.modules()):
             raise cps.ValidationError("The CreateBatchFiles module must be "
                                       "the last in the pipeline.",
                                       self.wants_default_output_directory)
-    
+
     def validate_module_warnings(self, pipeline):
         '''Warn user re: Test mode '''
         if pipeline.test_mode:
@@ -279,16 +293,9 @@ class CreateBatchFiles(cpm.CPModule):
         pipeline = workspace.pipeline
         assert isinstance(image_set_list, cpi.ImageSetList)
         assert isinstance(pipeline, cpp.Pipeline)
-        if self.distributed_mode:
-            import tempfile
-            try:
-                cpprefs.set_default_output_directory(tempfile.gettempdir())
-                cpprefs.set_default_image_directory(tempfile.gettempdir())
-            except:
-                pass
-        else:
-            cpprefs.set_default_output_directory(self.custom_output_directory.value)
-            cpprefs.set_default_image_directory(self.default_image_directory.value)
+        assert not self.distributed_mode, "Distributed mode no longer supported"
+        cpprefs.set_default_output_directory(self.custom_output_directory.value)
+        cpprefs.set_default_image_directory(self.default_image_directory.value)
     
     def turn_off_batch_mode(self):
         '''Remove any indications that we are in batch mode
@@ -358,6 +365,21 @@ class CreateBatchFiles(cpm.CPModule):
             
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
+        if from_matlab and variable_revision_number < 8:
+            # We never were able to convert from pre-8 to 8 in Matlab.  Why may
+            # be lost to history, but my guess is there were conflicting ways
+            # to interpret settings previous to this point, so we decided not
+            # to try to automate it.
+            self.notes = ["The pipeline you loaded was from an old version of CellProfiler 1.0, "
+                          "which could not be made compatible with this version of CellProfiler.",
+                          "For reference, previous values were:"] + [str(x) for x in setting_values]
+            setting_values = [cps.NO,
+                              "", cps.NO,
+                              cps.NO, cps.NO,
+                              "", 0, cps.YES]
+            variable_revision_number = 6
+            from_matlab = False
+
         if from_matlab and variable_revision_number == 8:
             batch_save_path, old_pathname, new_pathname = setting_values[:3]
             if batch_save_path == '.':
@@ -397,5 +419,9 @@ class CreateBatchFiles(cpm.CPModule):
         if (not from_matlab) and variable_revision_number == 4:
             setting_values = setting_values[:4] + [False] + setting_values[4:]
             variable_revision_number = 5
+        if (not from_matlab) and variable_revision_number == 5:
+            # added from_old_matlab
+            setting_values = setting_values[:7] + [False] + setting_values[7:]
+            variable_revision_number = 6
         return setting_values, variable_revision_number, from_matlab
     

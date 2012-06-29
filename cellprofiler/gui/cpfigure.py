@@ -1014,16 +1014,16 @@ class CPFigureFrame(wx.Frame):
         '''
         if renumber:
             labels = renumber_labels_for_display(labels)
-        if np.all(labels == 0):
-            image = np.zeros(labels.shape)
-        else:
-            cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-            cm.set_bad((0,0,0))
-            labels = numpy.ma.array(labels, mask=labels==0)
-            mappable = matplotlib.cm.ScalarMappable(cmap = cm)
+        
+        cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+        cm.set_bad((0,0,0))
+        labels = numpy.ma.array(labels, mask=labels==0)
+        mappable = matplotlib.cm.ScalarMappable(cmap = cm)
+        if not np.all(labels == 0):
             mappable.set_clim(1, labels.max())
-            image = mappable.to_rgba(labels)[:,:,:3]
-        return self.subplot_imshow(x, y, image, title, clear, 
+            cm = None
+        image = mappable.to_rgba(labels)[:,:,:3]
+        return self.subplot_imshow(x, y, image, title, clear, colormap=cm,
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)

@@ -1,9 +1,9 @@
 ## Mailing list
 
 CellProfiler development is discussed on the cellprofiler-dev mailing list.
-This is a fairly low-volume mailing list.  To subscribe, send mail with
-"Subscribe" in the Subject field to
-cellprofiler-dev-request@broadinstitute.org.
+This is a fairly low-volume mailing list.  To subscribe:
+
+> https://groups.google.com/a/broadinstitute.org/d/forum/cellprofiler-dev
 
 ## How to file new issues
 

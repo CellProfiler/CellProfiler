@@ -534,6 +534,11 @@ class Morph(cpm.CPModule):
         else:
             mask = None
         pixel_data = image.pixel_data
+        if pixel_data.ndim == 3:
+            if any([np.any(pixel_data[:, :, 0] != pixel_data[:, :, plane])
+                    for plane in range(1, pixel_data.shape[2])]):
+                logger.warn("Image is color, converting to grayscale")
+            pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
         for function in self.functions:
             count = function.repeat_count
             pixel_data = self.run_function(function.function.value,

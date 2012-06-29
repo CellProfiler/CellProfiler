@@ -18,6 +18,7 @@ to the rest of the image, by applying image processing filters to the image. It 
 __version__="$Revision$"
 
 import numpy as np
+from scipy.ndimage import gaussian_filter
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -25,6 +26,7 @@ import cellprofiler.settings as cps
 from cellprofiler.cpmath.cpmorphology import opening, closing, white_tophat
 from cellprofiler.cpmath.filter import enhance_dark_holes, circular_hough
 from cellprofiler.cpmath.filter import variance_transform, line_integration
+from cellprofiler.cpmath.filter import hessian
 from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
 
 ENHANCE = 'Enhance'
@@ -37,11 +39,14 @@ E_CIRCLES = 'Circles'
 E_TEXTURE = 'Texture'
 E_DIC = 'DIC'
 
+N_GRADIENT = "Line structures"
+N_TUBENESS = "Tubeness"
+
 class EnhanceOrSuppressFeatures(cpm.CPModule):
 
     module_name = 'EnhanceOrSuppressFeatures'
     category = "Image Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber('Select the input image',
@@ -77,10 +82,9 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         speckles by subtracting the effects of opening from the original image.
                                         </li>
                                         <li><i>Neurites</i>: Neurites are taken to be long, thin features
-                                        of enhanced intensity. The module takes the difference of the
-                                        white and black tophat filters (a black tophat filter is the 
-                                        morphological grayscale opening of the image minus the image itself). 
-                                        The effect is to enhance lines whose width is the "feature size".</li>
+                                        of enhanced intensity. Choose this option to enhance the intensity
+                                        of the neurites using the %(N_GRADIENT)s or %(N_TUBENESS)s methods
+                                        described below.</li>
                                         <li><i>Dark holes</i>: The module uses morphological reconstruction 
                                         (the rolling-ball algorithm) to identify dark holes within brighter
                                         areas, or brighter ring shapes. The image is inverted so that the dark holes turn into
@@ -110,7 +114,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                                         </li>
                                         </ul>
                                         In addition, this module enables you to suppress certain features (such as speckles)
-                                        by specifying the feature size.""")
+                                        by specifying the feature size.""" % globals())
         
         self.object_size = cps.Integer('Feature size',
                                         10,2,doc="""
@@ -129,7 +133,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         
         self.smoothing = cps.Float(
             'Smoothing scale', value = 2.0, minval = 0.1,
-            doc = """<i>(Used only for the texture or DIC methods)</i><br>
+            doc = """<i>(Used only for the texture, DIC or neurite methods)</i><br>
             For texture, this is the scale of the texture features, roughly
             in pixels. The algorithm uses the smoothing value entered as
             the sigma of the Gaussian used to weight nearby pixels by distance
@@ -141,7 +145,10 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             contributions from nearby pixels which decreases the noise but
             smooths the resulting image. For DIC, increase the smoothing to
             eliminate streakiness and decrease the smoothing to sharpen
-            the image.""")
+            the image.<br>
+            The %(N_TUBENESS)s option of the neurite method uses this scale
+            as the sigma of the Gaussian used to smooth the image prior to
+            gradient detection.""" % globals())
         self.angle = cps.Float(
             'Shear angle', value = 0,
             doc = """<i>(Used only for the DIC method)</i><br>
@@ -165,11 +172,34 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             of your objects if the intensities decrease toward the middle.
             Set the decay to a small value if there appears to be a bias
             in the integration direction.""")
+        self.neurite_choice = cps.Choice(
+            "Enhancement method", [N_TUBENESS, N_GRADIENT],
+            doc = """<i>(Used only for the neurites method)</i><br>
+            Two methods can be used to enhance neurites:<br>
+            <ul><li><i>%(N_TUBENESS)s</i></li>This method is an adaptation of
+            the metod used by the ImageJ Tubeness plugin
+            (<a href="http://www.longair.net/edinburgh/imagej/tubeness/">
+            http://www.longair.net/edinburgh/imagej/tubeness/</a>). The image
+            is smoothed with a Gaussian. The Hessian is then computed at every
+            point to measure the intensity gradient and the eigenvalues of the
+            Hessian are computed to determine the magnitude of the intensity.
+            The absolute maximum of the two eigenvalues gives a measure of
+            the ratio of the intensity of the gradient in the direction of
+            its most rapid descent versus in the orthogonal direction. The
+            output image is the absolute magnitude of the highest eigenvalue
+            if that eigenvalue is negative (white neurite on dark background),
+            otherwise, zero.</li>
+            <li><i>%(N_GRADIENT)s</i>The module takes the difference of the
+            white and black tophat filters (a black tophat filter is the 
+            morphological grayscale opening of the image minus the image itself). 
+            The effect is to enhance lines whose width is the "feature size".
+            </li></ul>""")
 
     def settings(self):
         return [ self.image_name, self.filtered_image_name,
                 self.method, self.object_size, self.enhance_method,
-                self.hole_size, self.smoothing, self.angle, self.decay]
+                self.hole_size, self.smoothing, self.angle, self.decay,
+                self.neurite_choice]
 
 
     def visible_settings(self):
@@ -183,6 +213,12 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
                 result += [self.smoothing]
             elif self.enhance_method == E_DIC:
                 result += [self.smoothing, self.angle, self.decay]
+            elif self.enhance_method == E_NEURITES:
+                result += [self.neurite_choice]
+                if self.neurite_choice == N_GRADIENT:
+                    result += [self.object_size]
+                else:
+                    result += [self.smoothing]
             else:
                 result += [self.object_size]
         else:
@@ -202,17 +238,32 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             if self.enhance_method == E_SPECKLES:
                 result = white_tophat(pixel_data, radius, mask)
             elif self.enhance_method == E_NEURITES:
-                #
-                # white_tophat = img - opening
-                # black_tophat = closing - img
-                # desired effect = img + white_tophat - black_tophat
-                #                = img + img - opening - closing + img
-                #                = 3*img - opening - closing
-                result = (3 * pixel_data - 
-                          opening(pixel_data, radius, mask) -
-                          closing(pixel_data, radius, mask))
-                result[result > 1] = 1
-                result[result < 0] = 0
+                if self.neurite_choice == N_GRADIENT:
+                    #
+                    # white_tophat = img - opening
+                    # black_tophat = closing - img
+                    # desired effect = img + white_tophat - black_tophat
+                    #                = img + img - opening - closing + img
+                    #                = 3*img - opening - closing
+                    result = (3 * pixel_data - 
+                              opening(pixel_data, radius, mask) -
+                              closing(pixel_data, radius, mask))
+                    result[result > 1] = 1
+                    result[result < 0] = 0
+                else:
+                    sigma = self.smoothing.value
+                    smoothed = gaussian_filter(pixel_data, sigma)
+                    L = hessian(smoothed, return_hessian = False,
+                                return_eigenvectors = False)
+                    #
+                    # The positive values are darker pixels with lighter
+                    # neighbors. The original ImageJ code scales the result
+                    # by sigma squared - I have a feeling this might be
+                    # a first-order correction for e**(-2*sigma), possibly
+                    # because the hessian is taken from one pixel away
+                    # and the gradient is less as sigma gets larger.
+                    #
+                    result = -L[:, :, 0] * (L[:, :, 0] < 0) * sigma * sigma
                 if image.has_mask:
                     result[~mask] = pixel_data[~mask]
             elif self.enhance_method == E_DARK_HOLES:
@@ -291,6 +342,9 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             #
             setting_values = setting_values + [ "2.0", "0", ".95"]
             variable_revision_number = 3
+        if not from_matlab and variable_revision_number == 3:
+            setting_values = setting_values + [N_GRADIENT]
+            variable_revision_number = 4
         return setting_values, variable_revision_number, from_matlab
 
 EnhanceOrSuppressSpeckles = EnhanceOrSuppressFeatures

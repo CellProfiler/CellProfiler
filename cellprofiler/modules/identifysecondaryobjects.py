@@ -663,13 +663,13 @@ class IdentifySecondaryObjects(cpmi.Identify):
         figure.set_subplots((2, 2))
         title = "Input image, cycle #%d" % (workspace.measurements.image_number)
         figure.subplot_imshow_grayscale(0, 0, img, title)
-        figure.subplot_imshow_labels(1, 0, segmented_out, "Labeled image",
+        figure.subplot_imshow_labels(1, 0, segmented_out, "%s objects" % self.objects_name.value,
                                        sharexy = figure.subplot(0, 0))
 
         outline_img = np.dstack((img, img, img))
         cpmi.draw_outline(outline_img, secondary_outline > 0,
                           cpprefs.get_secondary_outline_color())
-        figure.subplot_imshow(0, 1, outline_img, "Outlined image",
+        figure.subplot_imshow(0, 1, outline_img, "%s outlines"%self.objects_name.value,
                                 normalize=False,
                                 sharexy = figure.subplot(0, 0))
 
@@ -679,7 +679,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         cpmi.draw_outline(primary_img, secondary_outline > 0,
                           cpprefs.get_secondary_outline_color())
         figure.subplot_imshow(1, 1, primary_img,
-                                "Primary and output outlines",
+                                "%s and %s outlines"%(self.primary_objects.value,self.objects_name.value),
                                 normalize=False,
                                 sharexy = figure.subplot(0, 0))
         if global_threshold is not None:

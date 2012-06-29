@@ -233,7 +233,6 @@ SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
 SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
 SHOW_SAMPLING = "ShowSampling"
 WRITE_MAT = "WriteMAT"
-RUN_DISTRIBUTED = "RunDistributed"
 WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
 USE_MORE_FIGURE_SPACE = "UseMoreFigureSpace"
 WRITE_HDF5 = "WriteHDF5"
@@ -253,7 +252,7 @@ def recent_file(index, category=""):
 ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
              COLORMAP, DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY,
              IJ_PLUGIN_DIRECTORY, MODULEDIRECTORY, PLUGIN_DIRECTORY,
-             PRIMARY_OUTLINE_COLOR, RUN_DISTRIBUTED, SECONDARY_OUTLINE_COLOR,
+             PRIMARY_OUTLINE_COLOR, SECONDARY_OUTLINE_COLOR,
              SHOW_ANALYSIS_COMPLETE_DLG, SHOW_BAD_SIZES_DLG, 
              SHOW_EXITING_TEST_MODE_DLG, SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
              TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
@@ -560,35 +559,6 @@ def set_show_sampling(value):
     global __show_sampling
     get_config().WriteBool(SHOW_SAMPLING, bool(value))
     __show_sampling = bool(value)
-    
-__run_distributed = None
-__run_distributed_listeners = []
-
-def get_run_distributed():
-    global __run_distributed
-    if __run_distributed is not None:
-        return __run_distributed
-    if not get_config().Exists(RUN_DISTRIBUTED):
-        __run_distributed = False
-        return False
-    return get_config().ReadBool(RUN_DISTRIBUTED)
-
-def set_run_distributed(value):
-    global __run_distributed
-    get_config().WriteBool(RUN_DISTRIBUTED, bool(value))
-    __run_distributed = bool(value)
-    for listener in __run_distributed_listeners:
-        listener(PreferenceChangedEvent(__run_distributed))
-
-def add_run_distributed_listener(listener):
-    """Add a listener that will be notified when the image directory changes
-    """
-    __run_distributed_listeners.append(listener)
-
-def remove_run_distributed_listener(listener):
-    """Remove a previously-added image directory listener
-    """
-    __run_distributed_listeners.remove(listener)
 
 __recent_files = {}
 def get_recent_files(category=""):

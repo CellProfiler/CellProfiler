@@ -30,6 +30,7 @@ import numpy as np
 import warnings
 import os
 import os.path
+import mmap
 
 AGG_MEAN = "Mean"
 AGG_STD_DEV = "StDev"
@@ -254,6 +255,9 @@ class Measurements(object):
 
     def flush(self):
         self.hdf5_dict.flush()
+
+    def file_contents(self):
+        return self.hdf5_dict.file_contents()
 
     def initialize(self, measurement_columns):
         '''Initialize the measurements with a list of objects and features
@@ -830,7 +834,7 @@ class Measurements(object):
         # more loosely matched.
         #
         def cast(x):
-            if x.isdigit():
+            if isinstance(x,basestring) and x.isdigit():
                 return int(x)
             return x
         
@@ -1259,7 +1263,19 @@ class Measurements(object):
         if M_METADATA_TAGS not in self.get_feature_names(EXPERIMENT):
             return [ IMAGE_NUMBER ]
         return json.loads(self.get_experiment_measurement(M_METADATA_TAGS))
-    
+
+def load_measurements_from_buffer(buf):
+    dir = cpprefs.get_default_output_directory()
+    if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
+        dir = None
+    fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
+    os.write(fd, buf)
+    os.close(fd)
+    try:
+        return load_measurements(filename)
+    finally:
+        os.unlink(filename)
+
 def load_measurements(filename, dest_file = None, can_overwrite = False,
                       run_name = None):
     '''Load measurements from an HDF5 file

@@ -164,6 +164,17 @@ class MakeProjection(cpm.CPModule):
             workspace.display_data.provider_pixels = \
                 provider.provide_image(workspace.image_set).pixel_data
 
+    def post_group(self, workspace, grouping):
+        '''Handle processing that takes place at the end of a group
+
+        Add the provider to the workspace if not present. This could
+        happen if the image set didn't reach this module.
+        '''
+        image_set = workspace.image_set
+        if self.projection_image_name.value not in image_set.get_names():
+            provider = ImageProvider.restore_from_state(self.get_dictionary())
+            image_set.providers.append(provider)
+
     def display(self, workspace, figure):
         pixels = workspace.display_data.pixels
         provider_pixels = workspace.display_data.provider_pixels
@@ -306,7 +317,11 @@ class ImageProvider(cpi.AbstractImageProvider):
     @property
     def has_image(self):
         return self.__image_count is not None
-    
+
+    @property
+    def count(self):
+        return self.__image_count
+
     def set_image(self, image):
         self.__cached_image = None
         if image.has_mask:

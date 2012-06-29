@@ -334,6 +334,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
+        module.post_group(workspace, None)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
@@ -364,6 +365,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
+        module.post_group(workspace, None)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
@@ -394,6 +396,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
+        module.post_group(workspace, None)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
@@ -424,6 +427,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         for i in range(96):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
+        module.post_group(workspace, None)
         image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         pixel_data = image.pixel_data
         self.assertEqual(pixel_data.shape[0], 6 * 20)
@@ -455,6 +459,7 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         for i in range(4):
             workspace.set_image_set_for_testing_only(i)
             module.run(workspace)
+        module.post_group(workspace, None)
         pixel_data = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
         self.assertEqual(pixel_data.shape[0], 20)
         self.assertEqual(pixel_data.shape[1], 40)
@@ -465,6 +470,38 @@ Tile:[module_num:1|svn_version:\'9034\'|variable_revision_number:1|show_window:T
         self.assertTrue(np.all(pixel_data[:,25:30] == 0))
         self.assertTrue(np.all(pixel_data[:,30:] == images[3][:20,:10]))
 
+    def test_02_11_filtered(self):
+        np.random.seed(9)
+        images = [np.random.uniform(size=(20,10)).astype(np.float32) for i in range(96)]
+        workspace, module = self.make_tile_workspace(images)
+        self.assertTrue(isinstance(module, T.Tile))
+        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        module.wants_automatic_columns.value = False
+        module.wants_automatic_rows.value = False
+        module.rows.value = 6
+        module.columns.value = 16
+        module.tile_style.value = T.S_ROW
+        module.place_first.value = T.P_BOTTOM_RIGHT
+        
+        module.prepare_group(workspace, (), np.arange(1,97))
+        
+        for i in range(95):
+            workspace.set_image_set_for_testing_only(i)
+            module.run(workspace)
+        workspace.set_image_set_for_testing_only(95)
+        module.post_group(workspace, None)
+        image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        pixel_data = image.pixel_data
+        self.assertEqual(pixel_data.shape[0], 6 * 20)
+        self.assertEqual(pixel_data.shape[1], 16 * 10)
+        for i, image in enumerate(images[:-1]):
+            ii = 5 - int(i / 16)
+            jj = 15 - (i % 16)
+            iii = ii * 20
+            jjj = jj * 10
+            self.assertTrue(np.all(pixel_data[iii:(iii+20), jjj:(jjj+10)] ==
+                                   image))
+            
     def make_place_workspace(self, images):
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)

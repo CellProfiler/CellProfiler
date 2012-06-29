@@ -137,7 +137,7 @@ MeasureObjectSizeShape:[module_num:1|svn_version:\'1\'|variable_revision_number:
         object_set.add_objects(objects, "SomeObjects")
         labels = np.zeros((115,115),int)
         x,y = np.mgrid[-50:51,-50:51]
-        labels[x**2+y**2<=2500] = 1
+        labels[:101, :101][x**2+y**2<=2500] = 1
         objects = cpo.Objects()
         objects.segmented = labels
         object_set.add_objects(objects, "OtherObjects")

@@ -23,7 +23,6 @@ import cStringIO as StringIO
 import gc
 import logging
 import traceback
-import mmap
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
@@ -159,15 +158,15 @@ def main():
                 rep = InitialMeasurementsRequest().send(work_socket)
                 if isinstance(rep, ServerExited):
                     continue  # server went away
-                measurements_path = rep.path.decode('utf-8')
-                # make sure the server hasn't finished or quit since we fetched the pipeline
                 with work_server_lock:
                     if current_analysis_id in work_servers:
                         current_measurements = \
                             initial_measurements[current_analysis_id] = \
-                            cpmeas.load_measurements(measurements_path)
+                            cpmeas.load_measurements_from_buffer(rep.buf)
                     else:
                         continue
+            # Make a copy of the measurements for writing during this job
+            current_measurements = cpmeas.Measurements(copy=current_measurements)
 
             def interaction_handler(module, *args, **kwargs):
                 '''handle interaction requests by passing them to the jobserver and wait for the reply.'''
@@ -196,8 +195,6 @@ def main():
                     # the run was cancelled before we got a reply.
                     raise CancelledException()  # XXX - TODO - test this code path
 
-            # Safest not to clobber measurements from one job to the next.
-            current_measurements = cpmeas.Measurements(copy=current_measurements)
             successful_image_set_numbers = []
             image_set_numbers = job.image_set_numbers
             worker_runs_post_group = job.worker_runs_post_group
@@ -281,17 +278,24 @@ def main():
                     # here.
                     current_pipeline.post_group(workspace, current_measurements.get_grouping_keys())
 
-            # multiprocessing: send path of measurements.
-            # XXX - distributed - package them up.
-            current_measurements.flush()
-            with open(current_measurements.hdf5_dict.filename, "r") as f:
-                m = mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ)
-                b = buffer(m, 0, m.size())
-                req = MeasurementsReport(buf=b,
-                                         image_set_numbers=",".join(str(isn) for isn in successful_image_set_numbers))
-            rep = req.send(work_socket)
+            # send measurements back to server, one at a time for each image
+            for image_set_number in image_set_numbers:
+                single_measurements = cpmeas.Measurements()
+                for object in current_measurements.get_object_names():
+                    if object == cpmeas.EXPERIMENT:
+                        continue  # these are handled by the server
+                    for feature in current_measurements.get_feature_names(object):
+                        single_measurements[object, feature, image_set_number] \
+                            = current_measurements[object, feature, image_set_number]
+                req = MeasurementsReport(buf=single_measurements.file_contents(),
+                                         image_set_numbers=[image_set_number])
+                rep = req.send(work_socket)
+                del single_measurements
+                if isinstance(rep, ServerExited):
+                    break  # server went away
+
             if isinstance(rep, ServerExited):
-                continue  # server went away
+                continue
             # rep is just an ACK
             work_socket.close()
             del current_measurements

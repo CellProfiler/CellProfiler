@@ -596,6 +596,11 @@ class ModuleView:
         control_name - assign this name to the control
         style        - one of the CB_ styles 
         """
+        assert isinstance(v, cps.Choice)
+        try:
+            v.test_valid(self.__pipeline)
+        except:
+            pass
         if v.value not in choices and style == wx.CB_READONLY:
             choices = choices + [v.value]
         if not control:

@@ -713,7 +713,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         else:
             local_threshold,global_threshold = self.get_threshold(img, mask,
                                                               masking_objects, workspace)
-        blurred_image = self.smooth_image(img,mask,1)
+        blurred_image = self.smooth_image(img,mask,1) if not (self.threshold_method == cpthresh.TM_BINARY_IMAGE 
+                                                              or (self.threshold_method == cpthresh.TM_MANUAL and len(np.unique(img)) == 2)) else img
         binary_image = np.logical_and((blurred_image >= local_threshold),mask)
         #
         # Fill background holes inside foreground objects
@@ -769,7 +770,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         if self.show_window:
             statistics = []
             statistics.append(["Threshold","%0.3f"%(global_threshold)])
-            statistics.append(["# of identified objects",
+            statistics.append(["# of accepted objects",
                                "%d"%(object_count)])
             if object_count > 0:
                 areas = scipy.ndimage.sum(np.ones(labeled_image.shape), labeled_image, np.arange(1, object_count + 1))
@@ -1173,7 +1174,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             outlined_axes = figure.subplot(0,1, sharexy = orig_axes)
             table_axes    = figure.subplot(1,1, sharexy = orig_axes)
     
-            title = "Original image, cycle #%d"%(workspace.measurements.image_number,)
+            title = "Input image, cycle #%d"%(workspace.measurements.image_number,)
             figure.subplot_imshow_grayscale(0, 0,
                                               workspace.display_data.image,
                                               title)

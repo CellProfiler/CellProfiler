@@ -256,8 +256,8 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         labels=np.zeros((gridding.image_height,
                          gridding.image_width), int)
         i,j = np.mgrid[0:gridding.total_height,0:gridding.total_width]
-        i /= gridding.y_spacing
-        j /= gridding.x_spacing
+        i = i / gridding.y_spacing
+        j = j / gridding.x_spacing
         labels[i_min:(i_min+gridding.total_height),
                j_min:(j_min+gridding.total_width)] = \
               gridding.spot_table[i.astype(int),j.astype(int)]

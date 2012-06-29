@@ -324,7 +324,7 @@ class PipelineController:
                 self.do_save_pipeline()
         dlg = wx.FileDialog(self.__frame,
                             "Choose a pipeline file to open",
-                            wildcard = ("CellProfiler pipeline (*.cp,*.mat)|*.cp;*.mat"))
+                            wildcard = ("CellProfiler pipeline (*.cp,*.mat,*.h5)|*.cp;*.mat;*.h5"))
         dlg.Directory = cpprefs.get_default_output_directory()
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())

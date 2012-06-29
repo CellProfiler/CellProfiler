@@ -202,7 +202,7 @@ def header_to_column(field):
     Image_PathName to PathName so that the output column names
     in the database will be Image_FileName and Image_PathName
     '''
-    for name in (C_PATH_NAME, C_FILE_NAME):
+    for name in (C_PATH_NAME, C_FILE_NAME, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME):
         if field.startswith(cpmeas.IMAGE+'_'+name+'_'):
             return field[len(cpmeas.IMAGE)+1:]
     return field

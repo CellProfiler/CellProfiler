@@ -243,27 +243,38 @@ class HDF5Dict(object):
     def __del__(self):
         logger.debug("HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary)
         self.close()
-        
+
     def close(self):
         if not hasattr(self, "hdf5_file"):
-            # This happens if the constructor could not open the hdf5 file
+            # This happens if the constructor could not open the hdf5 file, or
+            # if close is called twice.
             return
-        if self.is_temporary:
-            try:
-                self.hdf5_file.flush()  # just in case unlink fails
-                self.hdf5_file.close()
-                os.unlink(self.filename)
-            except Exception, e:
-                logger.warn("So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
-        else:
-            self.hdf5_file.flush()
+        try:
             self.hdf5_file.close()
-        del self.top_group
+            if self.is_temporary:
+                try:
+                    if os.path.exists(self.filename):
+                        os.unlink(self.filename)
+                except:
+                    logger.warn("So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename, exc_info=True)
+        except:
+            logger.warn("Could not close %s." % self.filename, exc_info=True)
         del self.hdf5_file
+        del self.top_group
 
     def flush(self):
         logger.debug("HDF5Dict.flush(): %s, temporary=%s", self.filename, self.is_temporary)
+        # 2012-06-29: Ray is seeing a bug where file_contents() returns an
+        # invalid HDF if the file is flushed once then read, but with two calls
+        # to flush() it works.  h5py version 2.1.0, hdf version 1.8.9
         self.hdf5_file.flush()
+        self.hdf5_file.flush()
+
+    def file_contents(self):
+        with self.lock:
+            self.flush()
+            with open(self.filename, "r") as f:
+                return buffer(f.read())
 
     @staticmethod
     def __is_positive_int(idx):

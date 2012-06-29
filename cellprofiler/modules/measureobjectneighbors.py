@@ -518,7 +518,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
             workspace.display_data.neighbor_cm_name = neighbor_cm_name
             workspace.display_data.percent_touching_cm_name = percent_touching_cm_name
             workspace.display_data.orig_labels = objects.segmented
-            workspace.display_data.labels = expanded_labels
+            workspace.display_data.expanded_labels = expanded_labels
             workspace.display_data.object_mask = object_mask
 
     def display(self, workspace, figure):

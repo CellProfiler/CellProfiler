@@ -280,10 +280,7 @@ def main():
 
             # send measurements back to server, one at a time for each image
             for image_set_number in image_set_numbers:
-                fname = '/tmp/%d.hdf5' % (image_set_number)
-                if os.path.exists(fname):
-                    os.unlink(fname)
-                single_measurements = cpmeas.Measurements(filename=fname)
+                single_measurements = cpmeas.Measurements()
                 for object in current_measurements.get_object_names():
                     if object == cpmeas.EXPERIMENT:
                         continue  # these are handled by the server

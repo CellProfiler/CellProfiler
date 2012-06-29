@@ -176,7 +176,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             "Enhancement method", [N_TUBENESS, N_GRADIENT],
             doc = """<i>(Used only for the neurites method)</i><br>
             Two methods can be used to enhance neurites:<br>
-            <ul><li><i>%(N_TUBENESS)s</i></li>This method is an adaptation of
+            <ul><li><i>%(N_TUBENESS)s</i>This method is an adaptation of
             the metod used by the ImageJ Tubeness plugin
             (<a href="http://www.longair.net/edinburgh/imagej/tubeness/">
             http://www.longair.net/edinburgh/imagej/tubeness/</a>). The image

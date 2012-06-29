@@ -293,16 +293,9 @@ class CreateBatchFiles(cpm.CPModule):
         pipeline = workspace.pipeline
         assert isinstance(image_set_list, cpi.ImageSetList)
         assert isinstance(pipeline, cpp.Pipeline)
-        if self.distributed_mode:
-            import tempfile
-            try:
-                cpprefs.set_default_output_directory(tempfile.gettempdir())
-                cpprefs.set_default_image_directory(tempfile.gettempdir())
-            except:
-                pass
-        else:
-            cpprefs.set_default_output_directory(self.custom_output_directory.value)
-            cpprefs.set_default_image_directory(self.default_image_directory.value)
+        assert not self.distributed_mode, "Distributed mode no longer supported"
+        cpprefs.set_default_output_directory(self.custom_output_directory.value)
+        cpprefs.set_default_image_directory(self.default_image_directory.value)
     
     def turn_off_batch_mode(self):
         '''Remove any indications that we are in batch mode

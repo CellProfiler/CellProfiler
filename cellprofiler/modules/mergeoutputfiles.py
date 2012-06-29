@@ -306,9 +306,7 @@ class MergeOutputFiles(cpm.CPModule):
 
             pipeline.add_listener(callback)
 
-            # distributed processing passes a list of functions, not a
-            # list of filenames.
-            pipeline.load(sources[0]() if callable(sources[0]) else sources[0])
+            pipeline.load(sources[0])
             if has_error[0]:
                 return
             mdest = cpmeas.Measurements()
@@ -318,8 +316,7 @@ class MergeOutputFiles(cpm.CPModule):
                     keep_going, skip = progress.Update(count, "Loading " + source)
                     if not keep_going:
                         return
-                # distributed processing passes a list of functions
-                msource = cpmeas.load_measurements(source() if callable(source) else source)
+                msource = cpmeas.load_measurements(source)
                 dest_image_numbers = mdest.get_image_numbers()
                 source_image_numbers = msource.get_image_numbers()
                 if len(dest_image_numbers) == 0:

@@ -166,17 +166,6 @@ opts = {
        }
 
 data_files = []
-######################################
-#
-# Nuageux fixups
-#
-######################################
-try:
-    import nuageux
-    opts['py2exe']['includes'] += ['nuageux']
-except:
-    print "Nuageux not installed, no distributed support"
-
 ####################################
 #
 # Ilastik fixups

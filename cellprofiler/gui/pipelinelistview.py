@@ -258,14 +258,60 @@ class PipelineListView(object):
         # force a re-check of all modules
         self.__first_dirty_module = 0
 
-    def attach_to_pipeline(self,pipeline,controller):
+    def attach_to_pipeline(self, pipeline, controller):
         """Attach the viewer to the pipeline to allow it to listen for changes
         
         """
         self.__pipeline =pipeline
         self.__controller = controller
         pipeline.add_listener(self.notify)
-        controller.attach_to_pipeline_list_view(self,self.__pipeline_slider)
+        controller.attach_to_pipeline_list_view(self)
+        
+    def set_current_debug_module(self, module):
+        assert not module.is_input_module()
+        list_ctrl, index = self.get_ctrl_and_index(module)
+        self.__pipeline_slider.Value = index
+        self.select_one_module(module.module_num)
+        
+    def reset_debug_module(self):
+        '''Set the pipeline slider to the first module to be debugged
+        
+        Skip the input modules. If there are no other modules, return None,
+        otherwise return the first module
+        '''
+        for module in self.__pipeline.modules():
+            if not module.is_input_module():
+                self.set_current_debug_module(module)
+                return module
+        return None
+        
+    def get_current_debug_module(self):
+        '''Get the current debug module according to the slider'''
+        index = self.__pipeline_slider.Value
+        if index >= self.list_ctrl.GetItemCount():
+            return None
+        data_value = self.list_ctrl.GetItemData(index)
+        module_id = self.__module_dictionary[data_value]
+        for module in self.__pipeline.modules():
+            if module.id == module_id:
+                return module
+        return None
+    
+    def advance_debug_module(self):
+        '''Move to the next debug module in the pipeline
+        
+        returns the module or None if we are at the end
+        '''
+        index = self.__pipeline_slider.Value + 1
+        if index >= self.list_ctrl.GetItemCount():
+            return None
+        self.__pipeline_slider.Value = index
+        self.__pipeline_slider.Refresh()
+        module = self.get_current_debug_module()
+        if module is None:
+            return None
+        self.set_current_debug_module(module)
+        return module
         
     def attach_to_module_view(self, module_view):
         self.__module_view = module_view
@@ -670,6 +716,8 @@ class PipelineListView(object):
     
     def set_subitem_image(self, module, column, image_number):
         list_ctrl, index = self.get_ctrl_and_index(module)
+        if column == 0:
+            list_ctrl.SetItemImage(index, image_number)
         item = wx.ListItem()
         item.Mask = wx.LIST_MASK_IMAGE
         item.Image = image_number
@@ -874,7 +922,8 @@ class PipelineListView(object):
             return
             
         module = self.__pipeline.modules()[idx]
-        error_column = INPUT_ERROR_COLUMN if module.is_input_module else ERROR_COLUMN
+        error_column = (INPUT_ERROR_COLUMN if module.is_input_module() 
+                        else ERROR_COLUMN)
         list_ctrl, index = self.get_ctrl_and_index(module)
         target_item = list_ctrl.GetItem(index, error_column)
         if level == logging.WARNING:

@@ -152,12 +152,11 @@ class PipelineController:
         self.__workspace.add_notification_callback(
             self.on_workspace_event)
     
-    def attach_to_pipeline_list_view(self,pipeline_list_view, movie_viewer):
+    def attach_to_pipeline_list_view(self,pipeline_list_view,):
         """Glom onto events from the list box with all of the module names in it
         
         """
         self.__pipeline_list_view = pipeline_list_view
-        self.__movie_viewer = movie_viewer
         
     def attach_to_module_view(self,module_view):
         """Listen for setting changes from the module view
@@ -1343,8 +1342,14 @@ class PipelineController:
             self.on_debug_start(event)
             
     def on_debug_start(self, event):
-        self.__pipeline_list_view.select_one_module(1)
-        self.__movie_viewer.Value = 0
+        module = self.__pipeline_list_view.reset_debug_module()
+        if module is None:
+            wx.MessageBox("Test mode is disabled because this pipeline\n"
+                          "does not have any modules to run.",
+                          "Test mode is disabled",
+                          style = wx.OK | wx.ICON_ERROR,
+                          parent = self.__frame)
+            return
         self.start_debugging()
     
     def start_debugging(self):
@@ -1444,8 +1449,6 @@ class PipelineController:
                 fig.Refresh()
             workspace.refresh()
             if workspace.disposition == cpw.DISPOSITION_SKIP:
-                last_module_num = self.__pipeline.modules()[-1].module_num
-                self.__pipeline_list_view.select_one_module(last_module_num)
                 self.last_debug_module()
             elif module.module_num < len(self.__pipeline.modules()):
                 self.__pipeline_list_view.select_one_module(module.module_num+1)
@@ -1470,39 +1473,61 @@ class PipelineController:
     
     def current_debug_module(self):
         assert self.is_in_debug_mode()
-        module_idx = self.__movie_viewer.Value
-        return self.__pipeline.modules()[module_idx]
+        return self.__pipeline_list_view.get_current_debug_module()
 
     def next_debug_module(self):
-        if self.__movie_viewer.Value < len(self.__pipeline.modules()) - 1:
-            self.__movie_viewer.Value += 1
-            self.__movie_viewer.Refresh()
-            return True
-        else:
-            return False
+        return self.__pipeline_list_view.advance_debug_module() is not None
         
     def last_debug_module(self):
-        self.__movie_viewer.Value = len(self.__pipeline.modules()) - 1
+        for module in reversed(self.__pipeline.modules()):
+            if not module.is_input_module():
+                self.__pipeline_list_view.set_current_debug_module(module)
+                return module
+        self.__pipeline_list_view.reset_debug_module()
+        return None
 
     def on_debug_step(self, event):
-        if len(self.__pipeline.modules()) == 0:
+        module = self.current_debug_module()
+        if module is None:
             return
-        success = self.do_step(self.current_debug_module())
+        success = self.do_step(module)
         if success:
             self.next_debug_module()
         
     def on_debug_continue(self, event):
-        if len(self.__pipeline.modules()) == 0:
+        first_module = self.current_debug_module()
+        if first_module is None:
             return
-        while True:
-            module = self.current_debug_module()
-            success = self.do_step(module)
-            if not success:
-                return
-            if not self.next_debug_module():
-                return
-            if self.current_debug_module().wants_pause:
-                return
+        count = 1
+        for module in self.__pipeline.modules()[first_module.module_num:]:
+            count += 1
+            if module.wants_pause:
+                break
+        message_format = "Running module %d of %d: %s"
+        index = 0
+        with wx.ProgressDialog(
+            "Running modules in test mode",
+            message_format % (index+1, count, first_module.module_name),
+            maximum = count,
+            parent = self.__frame,
+            style = wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT) as dlg:
+            dlg.Show()
+            while True:
+                assert isinstance(dlg, wx.ProgressDialog)
+                wants_continue, wants_skip = dlg.Update(
+                    index, 
+                    message_format % (index, count, first_module.module_name))
+                if not wants_continue:
+                    return
+                index += 1
+                module = self.current_debug_module()
+                success = self.do_step(module)
+                if not success:
+                    return
+                if not self.next_debug_module():
+                    return
+                if self.current_debug_module().wants_pause:
+                    return
 
     def on_debug_next_image_set(self, event):
         #
@@ -1516,8 +1541,8 @@ class PipelineController:
                                      len(image_numbers))
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
-        self.__pipeline_list_view.select_one_module(1)
-        self.__movie_viewer.Value = 0
+        
+        self.__pipeline_list_view.reset_debug_module()
         self.__debug_outlines = {}
 
     def on_debug_prev_image_set(self, event):
@@ -1526,8 +1551,7 @@ class PipelineController:
                                      len(image_numbers))
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
-        self.__pipeline_list_view.select_one_module(1)
-        self.__movie_viewer.Value = 0
+        self.__pipeline_list_view.reset_debug_module()
         self.__debug_outlines = {}
 
     def on_debug_next_group(self, event):
@@ -1550,8 +1574,7 @@ class PipelineController:
         self.__within_group_index = ((image_number_index-1) % len(image_numbers))
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
-        self.__pipeline_list_view.select_one_module(1)
-        self.__movie_viewer.Value = 0
+        self.__pipeline_list_view.reset_debug_module()
         self.__debug_outlines = {}
         
     def debug_choose_group(self, index):
@@ -1568,8 +1591,7 @@ class PipelineController:
         key, image_numbers = self.__groupings[self.__grouping_index]
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
-        self.__pipeline_list_view.select_one_module(1)
-        self.__movie_viewer.Value = 0
+        self.__pipeline_list_view.reset_debug_module()
         self.__debug_outlines = {}
             
     def on_debug_choose_group(self, event):
@@ -1648,8 +1670,7 @@ class PipelineController:
             if dialog.ShowModal() == wx.ID_OK:
                 image_number = indexes[lb.Selection]
                 self.__debug_measurements.next_image_set(image_number)
-                self.__pipeline_list_view.select_one_module(1)
-                self.__movie_viewer.Value = 0
+                self.__pipeline_list_view.reset_debug_module()
                 for i, (grouping, image_numbers) in enumerate(self.__groupings):
                     if image_number in image_numbers:
                         self.__grouping_index = i

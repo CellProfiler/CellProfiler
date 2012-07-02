@@ -705,12 +705,13 @@ class PipelineListView(object):
         else:
             self.__pipeline_slider.Hide()
             self.__pipeline_slider.SetMinSize((20, 10))
-        r = self.input_list_ctrl.GetItemRect(0, wx.LIST_RECT_BOUNDS)
-        height = r[3]
-        y = r[1]
-        min_width = self.input_list_ctrl.GetMinWidth()
-        min_height = y + max(1, self.input_list_ctrl.GetItemCount()) * height + 4
-        self.input_list_ctrl.SetMinSize((min_width, min_height))
+        if self.input_list_ctrl.ItemCount > 0:
+            r = self.input_list_ctrl.GetItemRect(0, wx.LIST_RECT_BOUNDS)
+            height = r[3]
+            y = r[1]
+            min_width = self.input_list_ctrl.GetMinWidth()
+            min_height = y + max(1, self.input_list_ctrl.GetItemCount()) * height + 4
+            self.input_list_ctrl.SetMinSize((min_width, min_height))
         self.__panel.Layout()
         self.__panel.SetupScrolling(scroll_x=False, scroll_y=True, scrollToTop=False)
     

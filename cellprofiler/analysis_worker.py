@@ -23,13 +23,14 @@ import cStringIO as StringIO
 import gc
 import logging
 import traceback
+from weakref import WeakSet
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
-from cellprofiler.analysis import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, ServerExited, ImageSetSuccess, SharedDictionaryRequest, DictionaryReqRep, DictionaryReqRepRep, Ack, BoundaryExited
+from cellprofiler.analysis import PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, ServerExited, ImageSetSuccess, SharedDictionaryRequest, DictionaryReqRep, DictionaryReqRepRep, Ack, UpstreamExit
 import subimager.client
 from cellprofiler.utilities.rpdb import Rpdb
 
@@ -40,6 +41,10 @@ import numpy as np
 np.seterr(all='ignore')
 
 logger = logging.getLogger(__name__)
+
+# to guarantee closing of measurements, we store all of them in a WeakSet, and
+# close them on exit.
+all_measurements = WeakSet()
 
 def main():
     # XXX - move all this to a class
@@ -117,7 +122,7 @@ def main():
         try:
             # fetch a job
             job = WorkRequest().send(work_socket)
-            if isinstance(job, (ServerExited, BoundaryExited)):
+            if isinstance(job, UpstreamExit):
                 continue  # server went away
 
             if isinstance(job, NoWorkReply):
@@ -129,7 +134,7 @@ def main():
             current_pipeline, current_preferences = pipelines_and_preferences.get(current_analysis_id, (None, None))
             if not current_pipeline:
                 rep = PipelinePreferencesRequest().send(work_socket)
-                if isinstance(rep, ServerExited):
+                if isinstance(rep, UpstreamExit):
                     continue  # server went away
                 pipeline_blob = rep.pipeline_blob.tostring()
                 pipeline = cpp.Pipeline()
@@ -151,12 +156,10 @@ def main():
             cpprefs.set_preferences_from_dict(current_preferences)
 
             # Fetch the path to the intial measurements if needed.
-            # XXX - when implementing distributed workers, this will need to be
-            # changed to actually fetch the measurements.
             current_measurements = initial_measurements.get(current_analysis_id, None)
             if current_measurements is None:
                 rep = InitialMeasurementsRequest().send(work_socket)
-                if isinstance(rep, ServerExited):
+                if isinstance(rep, UpstreamExit):
                     continue  # server went away
                 with work_server_lock:
                     if current_analysis_id in work_servers:
@@ -167,6 +170,7 @@ def main():
                         continue
             # Make a copy of the measurements for writing during this job
             current_measurements = cpmeas.Measurements(copy=current_measurements)
+            all_measurements.add(current_measurements)
 
             def interaction_handler(module, *args, **kwargs):
                 '''handle interaction requests by passing them to the jobserver and wait for the reply.'''
@@ -181,7 +185,7 @@ def main():
                 rep = req.send(work_socket)
                 if isinstance(rep, InteractionReply):
                     return rep.result
-                elif isinstance(rep, ServerExited):
+                elif isinstance(rep, UpstreamExit):
                     # the run was cancelled before we got a reply.
                     raise CancelledException()  # XXX - TODO - test this code path
 
@@ -191,7 +195,7 @@ def main():
                                      display_data_dict=display_data.__dict__,
                                      image_set_number=image_set_number)
                 rep = req.send(work_socket)
-                if isinstance(rep, ServerExited):
+                if isinstance(rep, UpstreamExit):
                     # the run was cancelled before we got a reply.
                     raise CancelledException()  # XXX - TODO - test this code path
 
@@ -204,6 +208,8 @@ def main():
 
             # Get the shared state from the first imageset in this run.
             shared_dicts = SharedDictionaryRequest().send(work_socket).dictionaries
+            if isinstance(shared_dicts, UpstreamExit):
+                continue
             assert len(shared_dicts) == len(current_pipeline.modules())
             for module, new_dict in zip(current_pipeline.modules(), shared_dicts):
                 module.get_dictionary().clear()
@@ -281,6 +287,7 @@ def main():
             # send measurements back to server, one at a time for each image
             for image_set_number in image_set_numbers:
                 single_measurements = cpmeas.Measurements()
+                all_measurements.add(current_measurements)
                 for object in current_measurements.get_object_names():
                     if object == cpmeas.EXPERIMENT:
                         continue  # these are handled by the server
@@ -291,10 +298,10 @@ def main():
                                          image_set_numbers=[image_set_number])
                 rep = req.send(work_socket)
                 del single_measurements
-                if isinstance(rep, ServerExited):
+                if isinstance(rep, UpstreamExit):
                     break  # server went away
 
-            if isinstance(rep, ServerExited):
+            if isinstance(rep, UpstreamExit):
                 continue
             # rep is just an ACK
             work_socket.close()
@@ -393,6 +400,11 @@ def exit_on_stdin_close():
         thread.interrupt_main()  # try a soft shutdown
         # hard exit after 10 seconds
         time.sleep(10)
+        for m in all_measurements:
+            try:
+                m.close()
+            except:
+                pass
         os._exit(0)
 
 

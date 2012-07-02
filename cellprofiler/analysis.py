@@ -33,7 +33,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpimage
 import cellprofiler.preferences as cpprefs
-from cellprofiler.utilities.zmqrequest import Request, Reply, Boundary, BoundaryExited
+from cellprofiler.utilities.zmqrequest import Request, Reply, Boundary, UpstreamExit
 import subimager.client
 
 
@@ -173,8 +173,7 @@ class AnalysisRunner(object):
                                                         copy=initial_measurements)
         self.initial_measurements_buf = self.initial_measurements.file_contents()
 
-        # for writing results - initialized in start()
-        self.measurements = None
+        # for writing results
         self.output_path = output_path
 
         self.analysis_id = analysis_id
@@ -218,10 +217,6 @@ class AnalysisRunner(object):
         self.stop_workers()
         announce_queue = self.start_workers()  # start worker pool via class method (below)
 
-        self.measurements = cpmeas.Measurements(image_set_start=None,
-                                                filename=self.output_path,
-                                                copy=self.initial_measurements)
-        self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
         self.interface_thread = start_daemon_thread(target=self.interface, name='AnalysisRunner.interface')
         self.jobserver_thread = start_daemon_thread(target=self.jobserver, args=(self.analysis_id, announce_queue), name='AnalysisRunner.jobserver')
 
@@ -270,125 +265,130 @@ class AnalysisRunner(object):
         # listen for pipeline events, and pass them upstream
         self.pipeline.add_listener(lambda pipe, evt: self.post_event(evt))
 
+        measurements = cpmeas.Measurements(image_set_start=None,
+                                           filename=self.output_path,
+                                           copy=self.initial_measurements)
+        # The shared dicts are needed in jobserver()
+        self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
         workspace = cpw.Workspace(self.pipeline, None, None, None,
-                                  self.measurements, cpimage.ImageSetList())
+                                  measurements, cpimage.ImageSetList())
 
         if image_set_end is None:
-            image_set_end = len(self.measurements.get_image_numbers())
+            image_set_end = len(measurements.get_image_numbers())
         image_sets_to_process = range(image_set_start, image_set_end + 1)
 
-        self.post_event(AnalysisStarted())
+        try:
+            self.post_event(AnalysisStarted())
 
-        # reset the status of every image set that needs to be processed
-        for image_set_number in image_sets_to_process:
-            if (overwrite or
-                (not self.measurements.has_measurements(cpmeas.IMAGE, self.STATUS, image_set_number)) or
-                (self.measurements[cpmeas.IMAGE, self.STATUS, image_set_number] != self.STATUS_DONE)):
-                self.measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = self.STATUS_UNPROCESSED
-
-        # Find image groups.  These are written into measurements prior to
-        # analysis.  Groups are processed as a single job.
-        if self.measurements.has_groups():
-            worker_runs_post_group = True
-            job_groups = {}
+            # reset the status of every image set that needs to be processed
             for image_set_number in image_sets_to_process:
-                group_number = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number]
-                group_index = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number]
-                job_groups[group_number] = job_groups.get(group_number, []) + [(group_index, image_set_number)]
-            job_groups = [[isn for _, isn in sorted(job_groups[group_number])] for group_number in job_groups]
-            first_image_job_group = self.measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_start]
-        else:
-            worker_runs_post_group = False  # prepare_group will be run in worker, but post_group is below.
-            job_groups = [[image_set_number] for image_set_number in image_sets_to_process]
-            first_image_job_group = 0
-            for idx, image_set_number in enumerate(image_sets_to_process):
-                self.initial_measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number] = 1
-                self.initial_measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number] = idx + 1
-            self.initial_measurements.flush()
+                if (overwrite or
+                    (not measurements.has_measurements(cpmeas.IMAGE, self.STATUS, image_set_number)) or
+                    (measurements[cpmeas.IMAGE, self.STATUS, image_set_number] != self.STATUS_DONE)):
+                    measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = self.STATUS_UNPROCESSED
 
-        # XXX - check that any constructed groups are complete, i.e.,
-        # image_set_start and image_set_end shouldn't carve them up.
+            # Find image groups.  These are written into measurements prior to
+            # analysis.  Groups are processed as a single job.
+            if measurements.has_groups():
+                worker_runs_post_group = True
+                job_groups = {}
+                for image_set_number in image_sets_to_process:
+                    group_number = measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number]
+                    group_index = measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number]
+                    job_groups[group_number] = job_groups.get(group_number, []) + [(group_index, image_set_number)]
+                job_groups = [[isn for _, isn in sorted(job_groups[group_number])] for group_number in job_groups]
+                first_image_job_group = measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_start]
+            else:
+                worker_runs_post_group = False  # prepare_group will be run in worker, but post_group is below.
+                job_groups = [[image_set_number] for image_set_number in image_sets_to_process]
+                first_image_job_group = 0
+                for idx, image_set_number in enumerate(image_sets_to_process):
+                    self.initial_measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number] = 1
+                    self.initial_measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_set_number] = idx + 1
+                self.initial_measurements.flush()
 
-        # put the first job in the queue, then wait for the first image to
-        # finish (see the check of self.finish_queue below) to post the rest.
-        # This ensures that any shared data from the first imageset is
-        # available to later imagesets.
-        self.work_queue.put((job_groups[first_image_job_group], worker_runs_post_group))
-        del job_groups[first_image_job_group]
+            # XXX - check that any constructed groups are complete, i.e.,
+            # image_set_start and image_set_end shouldn't carve them up.
 
-        waiting_for_first_imageset = True
+            # put the first job in the queue, then wait for the first image to
+            # finish (see the check of self.finish_queue below) to post the rest.
+            # This ensures that any shared data from the first imageset is
+            # available to later imagesets.
+            self.work_queue.put((job_groups[first_image_job_group], worker_runs_post_group))
+            del job_groups[first_image_job_group]
 
-        # We loop until every image is completed, or an outside event breaks the loop.
-        while True:
-            if self.cancelled:
-                break
+            waiting_for_first_imageset = True
 
-            # gather measurements
-            while not self.received_measurements_queue.empty():
-                job, buf = self.received_measurements_queue.get()
-                recd_measurements = cpmeas.load_measurements_from_buffer(buf)
-                for object in recd_measurements.get_object_names():
-                    if object == cpmeas.EXPERIMENT:
-                        continue  # XXX - who writes this, when?
-                    for feature in recd_measurements.get_feature_names(object):
-                        for imagenumber in job:
-                            self.measurements[object, feature, imagenumber] \
-                                = recd_measurements[object, feature, imagenumber]
-                for image_set_number in job:
-                    self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
-                del recd_measurements
+            # We loop until every image is completed, or an outside event breaks the loop.
+            while True:
+                if self.cancelled:
+                    break
 
-            # check for jobs in progress
-            while not self.in_process_queue.empty():
-                image_set_numbers = self.in_process_queue.get()
-                for image_set_number in image_set_numbers:
-                    self.measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_IN_PROCESS
+                # gather measurements
+                while not self.received_measurements_queue.empty():
+                    job, buf = self.received_measurements_queue.get()
+                    recd_measurements = cpmeas.load_measurements_from_buffer(buf)
+                    for object in recd_measurements.get_object_names():
+                        if object == cpmeas.EXPERIMENT:
+                            continue  # XXX - who writes this, when?
+                        for feature in recd_measurements.get_feature_names(object):
+                            for imagenumber in job:
+                                measurements[object, feature, imagenumber] \
+                                    = recd_measurements[object, feature, imagenumber]
+                    for image_set_number in job:
+                        measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
+                    del recd_measurements
 
-            # check for finished jobs that haven't returned measurements, yet
-            while not self.finished_queue.empty():
-                finished_req = self.finished_queue.get()
-                self.measurements[cpmeas.IMAGE, self.STATUS, int(finished_req.image_set_number)] = self.STATUS_FINISHED_WAITING
-                if waiting_for_first_imageset:
-                    waiting_for_first_imageset = False
-                    # request shared state dictionary.
-                    # we use the nonstandard Request/Reply/Reply/Reply pattern.
-                    dict_reply = finished_req.reply(DictionaryReqRep(), please_reply=True)
-                    self.shared_dicts = dict_reply.shared_dicts
-                    assert len(self.shared_dicts) == len(self.pipeline.modules())
-                    dict_reply.reply(Ack())
-                    # if we had jobs waiting for the first image set to finish,
-                    # queue them now that the shared state is available.
-                    for job in job_groups:
-                        self.work_queue.put((job, worker_runs_post_group))
-                else:
-                    finished_req.reply(Ack())
+                # check for jobs in progress
+                while not self.in_process_queue.empty():
+                    image_set_numbers = self.in_process_queue.get()
+                    for image_set_number in image_set_numbers:
+                        measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_IN_PROCESS
 
-            # check progress and report
-            counts = collections.Counter(self.measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
-                                         for image_set_number in image_sets_to_process)
-            self.post_event(AnalysisProgress(counts))
+                # check for finished jobs that haven't returned measurements, yet
+                while not self.finished_queue.empty():
+                    finished_req = self.finished_queue.get()
+                    measurements[cpmeas.IMAGE, self.STATUS, int(finished_req.image_set_number)] = self.STATUS_FINISHED_WAITING
+                    if waiting_for_first_imageset:
+                        waiting_for_first_imageset = False
+                        # request shared state dictionary.
+                        # we use the nonstandard Request/Reply/Reply/Reply pattern.
+                        dict_reply = finished_req.reply(DictionaryReqRep(), please_reply=True)
+                        self.shared_dicts = dict_reply.shared_dicts
+                        assert len(self.shared_dicts) == len(self.pipeline.modules())
+                        dict_reply.reply(Ack())
+                        # if we had jobs waiting for the first image set to finish,
+                        # queue them now that the shared state is available.
+                        for job in job_groups:
+                            self.work_queue.put((job, worker_runs_post_group))
+                    else:
+                        finished_req.reply(Ack())
 
-            # Are we finished?
-            if counts[self.STATUS_DONE] == len(image_sets_to_process):
-                if not worker_runs_post_group:
-                    self.pipeline.post_group(workspace, {})
-                # XXX - revise pipeline.post_run to use the workspace
-                self.pipeline.post_run(self.measurements, None, None)
-                break
+                # check progress and report
+                counts = collections.Counter(measurements[cpmeas.IMAGE, self.STATUS, image_set_number]
+                                             for image_set_number in image_sets_to_process)
+                self.post_event(AnalysisProgress(counts))
 
-            # not done, wait for more work
-            with self.interface_work_cv:
-                while (self.paused or
-                       ((not self.cancelled) and
-                        self.in_process_queue.empty() and
-                        self.finished_queue.empty() and
-                        self.received_measurements_queue.empty())):
-                    self.interface_work_cv.wait()  # wait for a change of status or work to arrive
+                # Are we finished?
+                if counts[self.STATUS_DONE] == len(image_sets_to_process):
+                    if not worker_runs_post_group:
+                        self.pipeline.post_group(workspace, {})
+                    # XXX - revise pipeline.post_run to use the workspace
+                    self.pipeline.post_run(measurements, None, None)
+                    break
 
-        self.post_event(AnalysisFinished(self.measurements, self.cancelled))
-        self.stop_workers()
-        self.measurements.close()
-        self.measurements = None  # do not hang onto measurements
+                # not done, wait for more work
+                with self.interface_work_cv:
+                    while (self.paused or
+                           ((not self.cancelled) and
+                            self.in_process_queue.empty() and
+                            self.finished_queue.empty() and
+                            self.received_measurements_queue.empty())):
+                        self.interface_work_cv.wait()  # wait for a change of status or work to arrive
+        finally:
+            self.post_event(AnalysisFinished(None if self.cancelled else measurements, self.cancelled))
+            measurements.close()
+            self.stop_workers()
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
     def jobserver(self, analysis_id, announce_queue):
@@ -729,7 +729,7 @@ class NoWorkReply(Reply):
     pass
 
 
-class ServerExited(BoundaryExited):
+class ServerExited(UpstreamExit):
     pass
 
 

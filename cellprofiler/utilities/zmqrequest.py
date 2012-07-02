@@ -149,7 +149,11 @@ class Reply(Communicable):
         self.__dict__.update(kwargs)
 
 
-class BoundaryExited(Reply):
+# Two level hierarchy so other classes can inherit from UpstreamExit
+class UpstreamExit(Reply):
+    pass
+
+class BoundaryExited(UpstreamExit):
     pass
 
 
@@ -248,7 +252,9 @@ class Boundary(object):
                     with self.upcv:
                         self.upcv.notify_all()
 
-        # ensure every pending req gets a reply
+        # Ensure every pending req gets a reply.  There is a bit of a race
+        # condition here, which we ignore for now, in that new requests can
+        # come in during the shutdown phase, and not get a reply.
         for req in self.reqs_pending:
             req.reply(BoundaryExited())
         while not self.downward_queue.empty():

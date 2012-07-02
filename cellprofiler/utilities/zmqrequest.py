@@ -252,9 +252,9 @@ class Boundary(object):
                     with self.upcv:
                         self.upcv.notify_all()
 
-        # Ensure every pending req gets a reply.  There is a bit of a race
-        # condition here, which we ignore for now, in that new requests can
-        # come in during the shutdown phase, and not get a reply.
+        # Ensure every pending req gets a reply.  There is a race condition
+        # here, which we ignore for now, in that new requests come in during
+        # the shutdown phase, and do not get a reply.
         for req in self.reqs_pending:
             req.reply(BoundaryExited())
         while not self.downward_queue.empty():

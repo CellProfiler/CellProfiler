@@ -31,6 +31,7 @@ import warnings
 import os
 import os.path
 import mmap
+import sys
 
 AGG_MEAN = "Mean"
 AGG_STD_DEV = "StDev"
@@ -196,6 +197,10 @@ class Measurements(object):
                 dir = None
             fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
             is_temporary = True
+            import traceback
+            logger.info("Created temporary file %s" % filename)
+            for frame in traceback.extract_stack():
+                logger.info("%s: (%d %s): %s" % frame)
         else:
             is_temporary = False
         if isinstance(copy, Measurements):
@@ -1269,6 +1274,10 @@ def load_measurements_from_buffer(buf):
     if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
         dir = None
     fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
+    if sys.platform.startswith('win'):
+        # Change file descriptor mode to binary
+        import msvcrt
+        msvcrt.setmode(fd, os.O_BINARY)
     os.write(fd, buf)
     os.close(fd)
     try:

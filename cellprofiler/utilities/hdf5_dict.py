@@ -273,7 +273,7 @@ class HDF5Dict(object):
     def file_contents(self):
         with self.lock:
             self.flush()
-            with open(self.filename, "r") as f:
+            with open(self.filename, "rb") as f:
                 return buffer(f.read())
 
     @staticmethod

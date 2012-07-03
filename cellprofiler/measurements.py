@@ -198,9 +198,9 @@ class Measurements(object):
             fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
             is_temporary = True
             import traceback
-            logger.info("Created temporary file %s" % filename)
+            logger.debug("Created temporary file %s" % filename)
             for frame in traceback.extract_stack():
-                logger.info("%s: (%d %s): %s" % frame)
+                logger.debug("%s: (%d %s): %s" % frame)
         else:
             is_temporary = False
         if isinstance(copy, Measurements):

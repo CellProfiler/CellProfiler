@@ -19,6 +19,7 @@ import numpy as np
 import os
 import tempfile
 import unittest
+import sys
 
 import cellprofiler.utilities.hdf5_dict as H5DICT
 E = H5DICT.HDF5FileList.encode
@@ -141,6 +142,25 @@ class TestHDF5Dict(unittest.TestCase):
                 self.assertEqual(
                     values[idx], 
                     self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, image_number])
+                
+    def test_07_01_file_contents(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
+        contents = self.hdf5_dict.file_contents()
+        fd, filename = tempfile.mkstemp(".h5")
+        if sys.platform.startswith("win"):
+            import msvcrt
+            msvcrt.setmode(fd, os.O_BINARY)
+        os.write(fd, contents)
+        os.close(fd)
+        h5copy = None
+        try:
+            h5copy = H5DICT.HDF5Dict(filename, mode = "r")
+            self.assertTrue(h5copy.has_feature(OBJECT_NAME, FEATURE_NAME))
+            self.assertEqual(h5copy[OBJECT_NAME, FEATURE_NAME, 1], "Hello")
+        finally:
+            if h5copy is not None:
+                h5copy.close()
+            os.unlink(filename)
         
         
 class TestHDF5FileList(unittest.TestCase):

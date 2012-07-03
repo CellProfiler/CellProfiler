@@ -1088,7 +1088,7 @@ class HDF5FileList(object):
             
     def get_refresh_timestamp(self, url):
         '''Get the timestamp of the last refresh of the given directory
-s        
+        
         url - url of the directory to reference
         
         returns None if never, else seconds after the epoch

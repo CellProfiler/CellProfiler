@@ -420,7 +420,7 @@ file:/ExampleImages/ExampleSBSImages/Nuclei_H12.tiff"""
             self.assertTrue(self.in_filetree(url, module))
             self.assertTrue(self.in_filelist(url, module))
     
-    def test_02_02_on_remove(self):
+    def test_02_02_01_on_remove(self):
         module = self.make_module()
         self.assertIsInstance(module, I.Images)
         url1 = "file:/TestImages/NikonTIF.tif"
@@ -436,6 +436,33 @@ file:/ExampleImages/ExampleSBSImages/Nuclei_H12.tiff"""
         for url in (url1, url2, url3):
             self.assertFalse(self.in_filetree(url, module))
             self.assertFalse(self.in_filelist(url, module))
+            
+    def test_02_02_02_on_remove_dir(self):
+        module = self.make_module()
+        self.assertIsInstance(module, I.Images)
+        workspace = module.workspace
+        file_list = workspace.file_list
+        test_images_urls = file_list.list_files("file:/TestImages")
+        test_images_urls = ["file:/TestImages/" + x for x in test_images_urls]
+        kept = "file:/ExampleImages/ExampleSBSImages/Channel1-01-A-01.tif"
+        mods = []
+        for url in test_images_urls:
+            module.add_modpath_to_modlist(module.url_to_modpath(url), mods)
+        module.on_remove(mods)
+        self.assertTrue(self.in_filetree(kept, module))
+        self.assertTrue(self.in_filelist(kept, module))
+        for url in test_images_urls:
+            self.assertFalse(self.in_filetree(url, module))
+            self.assertFalse(self.in_filelist(url, module))
+        g = file_list.get_filelist_group()
+        gfile = g['file']
+        self.assertNotIn('TestImages', gfile)
+        #
+        # Make sure the image plane details are properly flushed
+        #
+        workspace.pipeline.load_image_plane_details(workspace)
+        for ipd in workspace.pipeline.image_plane_details:
+            self.assertFalse(ipd.url.startswith("file:/TestImages"))
         
     def test_02_03_get_path_info(self):
         module = self.make_module()

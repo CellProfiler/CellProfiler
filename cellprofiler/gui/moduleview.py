@@ -493,7 +493,7 @@ class ModuleView:
                         fcd.panel.file_collection_display = fcd
                 elif isinstance(v, cps.Table):
                     control = self.make_table_control(v, control)
-                    flag = wx.ALIGN_LEFT
+                    flag = wx.EXPAND
                 elif isinstance(v, cps.HTMLText):
                     control = self.make_html_control(v, control)
                     flag = wx.EXPAND|wx.ALL
@@ -2856,6 +2856,21 @@ class FileCollectionDisplayController(object):
                 item, cookie = self.tree_ctrl.GetFirstChild(item)
             if self.tree_ctrl.GetChildrenCount(item, False) > 0:
                 self.tree_ctrl.Expand(item)
+        #
+        # The bottom-most nodes don't have expand buttons (why?). If you
+        # have two bottom-most nodes, neither will be expanded and there
+        # is no way to expand them using the UI. So, we need to make sure
+        # all bottom-most nodes are expanded, no matter what.
+        #
+        for i in range(self.tree_ctrl.GetChildrenCount(self.root_item, False)):
+            if i == 0:
+                bottom_item, thing = \
+                    self.tree_ctrl.GetFirstChild(self.root_item)
+            else:
+                bottom_item, thing = \
+                    self.tree_ctrl.GetNextChild(self.root_item, thing)
+            if not self.tree_ctrl.IsExpanded(bottom_item):
+                self.tree_ctrl.Expand(bottom_item)
         
     def update_subtree(self, file_tree, parent_item, is_filtered, modpath):
         existing_items = {}

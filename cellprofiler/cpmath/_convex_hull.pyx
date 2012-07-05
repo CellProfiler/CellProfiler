@@ -11,7 +11,7 @@ cdef enum:
 cdef inline int CONVEX(int a_i, int a_j,
                        int b_i, int b_j,
                        int c_i, int c_j) nogil:
-    cdef int ab_i, ab_j, bc_i, bc_j
+    cdef int ab_i, ab_j, bc_i, bc_j, cross
     ab_i = b_i - a_i
     ab_j = b_j - a_j
     bc_i = c_i - b_i

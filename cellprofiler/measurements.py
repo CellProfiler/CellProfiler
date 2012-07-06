@@ -247,7 +247,9 @@ class Measurements(object):
         
     def __getitem__(self, key):
         # we support slicing the last dimension for the limited case of [..., :]
-        if len(key) == 3 and key[2] == slice(None, None, None):
+        if (len(key) == 3 and 
+            isinstance(key[2], slice) and
+            key[2] == slice(None, None, None)):
             return self.get_all_measurements(*key[:2])
         return self.get_measurement(*key)
 

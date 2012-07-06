@@ -1860,6 +1860,7 @@ class Pipeline(object):
         assert(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
         self.write_pipeline_measurement(m)
+        m.flush()
 
         for module in self.modules():
             if module == end_module:
@@ -1876,9 +1877,35 @@ class Pipeline(object):
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
-        assert not any([len(workspace.image_set_list.get_image_set(i).providers)
-                        for i in range(workspace.image_set_list.count())]),\
-               "Image providers cannot be added in prepare_run. Please add them in prepare_group instead"
+        if not m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
+            # Legacy pipelines don't populate group # or index
+            key_names, groupings = self.get_groupings(workspace)
+            image_numbers = m.get_image_numbers()
+            indexes = np.zeros(np.max(image_numbers) + 1, int)
+            indexes[image_numbers] = np.arange(len(image_numbers))
+            group_numbers = np.zeros(len(image_numbers), int)
+            group_indexes = np.zeros(len(image_numbers), int)
+            for i, (key, group_image_numbers) in enumerate(groupings):
+                iii = indexes[group_image_numbers]
+                group_numbers[iii] = i+1
+                group_indexes[iii] = np.arange(
+                    len(iii)) + 1
+            m.add_all_measurements(
+                cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
+            m.add_all_measurements(
+                cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
+            #
+            # The grouping for legacy pipelines may not be monotonically
+            # increasing by group number and index.
+            # We reorder here.
+            #
+            order = np.lexsort((group_indexes, group_numbers))
+            new_image_numbers = np.zeros(max(image_numbers)+1, int)
+            new_image_numbers[image_numbers[order]] = \
+                np.arange(len(image_numbers))+1
+            m.reorder_image_measurements(new_image_numbers)
+        m.flush()
+        
         return True
     
     def post_run(self, measurements, image_set_list, frame):
@@ -2269,6 +2296,7 @@ class Pipeline(object):
                     if images_module.filter_url(ipd.url) is not False]
                 self.__filtered_image_plane_details = ipds
                 self.__filtered_image_plane_details_images_settings = images_settings
+                self.__filtered_image_plane_details_metadata_settings = None
         else:
             ipds = self.image_plane_details
         if with_metadata:

@@ -970,7 +970,9 @@ class PipelineController:
             try:
                 self.__module_view.disable()
                 self.__frame.preferences_view.on_analyze_images()
-                self.__workspace.refresh_image_set()
+                if not self.__pipeline.prepare_run(self.__workspace):
+                    self.stop_running()
+                    return
                 self.__analysis = cpanalysis.Analysis(
                     self.__pipeline, 
                     self.get_output_file_path(),

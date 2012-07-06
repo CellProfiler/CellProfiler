@@ -1191,81 +1191,85 @@ class ExportToDatabase(cpm.CPModule):
         if pipeline.test_mode:
             return True
 
-        if self.db_type==DB_MYSQL:
-            self.connection, self.cursor = connect_mysql(self.db_host.value, 
-                                                         self.db_user.value, 
-                                                         self.db_passwd.value,
-                                                         self.db_name.value)
-            if self.wants_well_tables:
-                per_well = self.write_mysql_table_per_well(pipeline, image_set_list)
-        elif self.db_type==DB_SQLITE:
-            db_file = self.make_full_filename(self.sqlite_file.value)
-            self.connection, self.cursor = connect_sqlite(db_file)
-        #
-        # This caches the list of measurement columns for the run,
-        # fixing the column order, etc.
-        #
-        self.get_pipeline_measurement_columns(pipeline, image_set_list)
-        
-        if pipeline.in_batch_mode():
-            return True
-        if self.db_type == DB_ORACLE:
-            raise NotImplementedError("Writing to an Oracle database is not yet supported")
-        if self.db_type in (DB_MYSQL, DB_SQLITE):
-            tables = [self.get_table_name(cpmeas.IMAGE)]
-            if self.objects_choice != O_NONE:
-                if self.separate_object_tables == OT_COMBINE:
-                    tables.append(self.get_table_name(cpmeas.OBJECT))
-                else:
-                    for object_name in self.get_object_names(pipeline, image_set_list):
-                        tables.append(self.get_table_name(object_name))
-            tables_that_exist = []
-            for table in tables:
-                try:
-                    r = execute(self.cursor, 
-                                'SELECT * FROM %s LIMIT 1'%(table))
-                    tables_that_exist.append(table)
-                except:
-                    pass
-            if len(tables_that_exist) > 0:
-                if len(tables_that_exist) == 1:
-                    table_msg = "%s table" % tables_that_exist[0]
-                else:
-                    table_msg = "%s and %s tables" % (
-                        ", ".join(tables_that_exist[:-1]), 
-                        tables_that_exist[-1])
-                if cpprefs.get_headless():
-                    logger.warning("%s already in database, not creating" , table_msg)
-                    return True
-                import wx
-                dlg = wx.MessageDialog(
-                    workspace.frame, 
-                    'ExportToDatabase will overwrite the %s. OK?' % table_msg,
-                                    'Overwrite tables?', 
-                                    style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
-                if dlg.ShowModal() != wx.ID_OK:
+        needs_close = False
+        try:
+            if self.db_type==DB_MYSQL:
+                self.connection, self.cursor = connect_mysql(self.db_host.value, 
+                                                             self.db_user.value, 
+                                                             self.db_passwd.value,
+                                                             self.db_name.value)
+                needs_close = True
+                if self.wants_well_tables:
+                    per_well = self.write_mysql_table_per_well(pipeline, image_set_list)
+            elif self.db_type==DB_SQLITE:
+                db_file = self.make_full_filename(self.sqlite_file.value)
+                self.connection, self.cursor = connect_sqlite(db_file)
+                needs_close = True
+            #
+            # This caches the list of measurement columns for the run,
+            # fixing the column order, etc.
+            #
+            self.get_pipeline_measurement_columns(pipeline, image_set_list)
+            
+            if pipeline.in_batch_mode():
+                return True
+            if self.db_type == DB_ORACLE:
+                raise NotImplementedError("Writing to an Oracle database is not yet supported")
+            if self.db_type in (DB_MYSQL, DB_SQLITE):
+                tables = [self.get_table_name(cpmeas.IMAGE)]
+                if self.objects_choice != O_NONE:
+                    if self.separate_object_tables == OT_COMBINE:
+                        tables.append(self.get_table_name(cpmeas.OBJECT))
+                    else:
+                        for object_name in self.get_object_names(pipeline, image_set_list):
+                            tables.append(self.get_table_name(object_name))
+                tables_that_exist = []
+                for table in tables:
+                    try:
+                        r = execute(self.cursor, 
+                                    'SELECT * FROM %s LIMIT 1'%(table))
+                        tables_that_exist.append(table)
+                    except:
+                        pass
+                if len(tables_that_exist) > 0:
+                    if len(tables_that_exist) == 1:
+                        table_msg = "%s table" % tables_that_exist[0]
+                    else:
+                        table_msg = "%s and %s tables" % (
+                            ", ".join(tables_that_exist[:-1]), 
+                            tables_that_exist[-1])
+                    if cpprefs.get_headless():
+                        logger.warning("%s already in database, not creating" , table_msg)
+                        return True
+                    import wx
+                    dlg = wx.MessageDialog(
+                        workspace.frame, 
+                        'ExportToDatabase will overwrite the %s. OK?' % table_msg,
+                                        'Overwrite tables?', 
+                                        style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
+                    if dlg.ShowModal() != wx.ID_OK:
+                        dlg.Destroy()
+                        return False
                     dlg.Destroy()
-                    return False
-                dlg.Destroy()
-
-            mappings = self.get_column_name_mappings(pipeline, image_set_list)
-            column_defs = self.get_pipeline_measurement_columns(pipeline, 
-                                                                image_set_list)
-            if self.objects_choice != O_ALL:
-                onames = [cpmeas.EXPERIMENT, cpmeas.IMAGE, cpmeas.NEIGHBORS]
-                if self.objects_choice == O_SELECT:
-                    onames += self.objects_list.selections
-                column_defs = [column for column in column_defs
-                               if column[0] in onames]
-            self.create_database_tables(self.cursor, workspace)
-        return True
     
-    def prepare_group(self, workspace, grouping, image_numbers):
-        '''Initialize for writing post-group measurements'''
-        d = self.get_dictionary(workspace.image_set_list)
-        d[D_IMAGE_SET_INDEX] = []
-        d[C_IMAGE_NUMBER] = []
-
+                mappings = self.get_column_name_mappings(pipeline, image_set_list)
+                column_defs = self.get_pipeline_measurement_columns(pipeline, 
+                                                                    image_set_list)
+                if self.objects_choice != O_ALL:
+                    onames = [cpmeas.EXPERIMENT, cpmeas.IMAGE, cpmeas.NEIGHBORS]
+                    if self.objects_choice == O_SELECT:
+                        onames += self.objects_list.selections
+                    column_defs = [column for column in column_defs
+                                   if column[0] in onames]
+                self.create_database_tables(self.cursor, workspace)
+            return True
+        finally:
+            if needs_close:
+                self.connection.commit()
+                self.connection.close()
+                self.connection = None
+                self.cursor = None
+    
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Alter the output directory path for the remote batch host'''
         self.directory.alter_for_create_batch_files(fn_alter_path)
@@ -1351,10 +1355,22 @@ class ExportToDatabase(cpm.CPModule):
             return
         if (self.db_type == DB_MYSQL or self.db_type == DB_SQLITE):
             if not workspace.pipeline.test_mode:
-                d = self.get_dictionary(workspace.image_set_list)
-                d[D_IMAGE_SET_INDEX].append(workspace.measurements.image_set_number)
-                d[C_IMAGE_NUMBER].append(workspace.measurements.image_set_number)
-                self.write_data_to_db(workspace)
+                try:
+                    if self.db_type==DB_MYSQL:
+                        self.connection, self.cursor = connect_mysql(
+                            self.db_host.value, 
+                            self.db_user.value, 
+                            self.db_passwd.value,
+                            self.db_name.value)
+                    elif self.db_type==DB_SQLITE:
+                        db_file = self.make_full_filename(self.sqlite_file.value)
+                        self.connection, self.cursor = connect_sqlite(db_file)
+                    self.write_data_to_db(workspace)
+                finally:
+                    self.connection.commit()
+                    self.connection.close()
+                    self.connection = None
+                    self.cursor = None
 
     def post_group(self, workspace, grouping):
         '''Write out any columns that are only available post-group'''
@@ -1364,13 +1380,37 @@ class ExportToDatabase(cpm.CPModule):
         if self.db_type not in (DB_MYSQL, DB_SQLITE):
             return
         
-        d = self.get_dictionary(workspace.image_set_list)
-        for image_set_index, image_number in zip(d[D_IMAGE_SET_INDEX], 
-                                                 d[C_IMAGE_NUMBER]):
-            self.write_data_to_db(workspace,
-                                  post_group = True,
-                                  index = image_set_index,
-                                  image_number = image_number)
+        try:
+            if self.db_type==DB_MYSQL:
+                self.connection, self.cursor = connect_mysql(
+                    self.db_host.value, 
+                    self.db_user.value, 
+                    self.db_passwd.value,
+                    self.db_name.value)
+            elif self.db_type==DB_SQLITE:
+                db_file = self.make_full_filename(self.sqlite_file.value)
+                self.connection, self.cursor = connect_sqlite(db_file)
+            #
+            # Process the image numbers in the current image's group
+            #
+            m = workspace.measurements
+            assert isinstance(m, cpmeas.Measurements)
+            group_number = m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER,
+                             m.image_set_number]
+            all_image_numbers = m.get_image_numbers()
+            all_group_numbers = m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER,
+                                  all_image_numbers]
+            group_image_numbers = \
+                all_image_numbers[all_group_numbers == group_number]
+            for image_number in group_image_numbers:
+                    self.write_data_to_db(workspace,
+                                          post_group = True,
+                                          image_number = image_number)
+        finally:
+            self.connection.commit()
+            self.connection.close()
+            self.connection = None
+            self.cursor = None
         
     def post_run(self, workspace):
         if self.save_cpa_properties.value:
@@ -1384,9 +1424,6 @@ class ExportToDatabase(cpm.CPModule):
                 os.makedirs(path)
             self.write_mysql_table_defs(workspace)
             self.write_csv_data(workspace)
-        if self.db_type in (DB_MYSQL, DB_SQLITE):
-            self.connection.commit()
-
     
     @property
     def wants_well_tables(self):
@@ -1966,12 +2003,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
     
     def write_data_to_db(self, workspace, 
                          post_group = False, 
-                         index = None,
                          image_number = None):
         """Write the data in the measurements out to the database
         workspace - contains the measurements
         mappings  - map a feature name to a column name
-        index - index of image set's measurements. Defaults to current.
         image_number - image number for primary database key. Defaults to current.
         """
         try:            
@@ -1983,8 +2018,6 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             measurement_cols = self.get_pipeline_measurement_columns(pipeline,
                                                                      image_set_list)
             mapping = self.get_column_name_mappings(pipeline, image_set_list)
-            if index is None:
-                index = measurements.image_set_number - 1
             
             ###########################################
             #

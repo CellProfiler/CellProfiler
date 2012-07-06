@@ -434,35 +434,6 @@ class Workspace(object):
                 self.__image_set_list = ImageSetList()
             try:
                 result = self.pipeline.prepare_run(self, stop_module)
-                if not self.measurements.has_feature(
-                    cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
-                    # Legacy pipelines don't populate group # or index
-                    key_names, groupings = self.pipeline.get_groupings(self)
-                    image_numbers = self.measurements.get_image_numbers()
-                    indexes = np.zeros(np.max(image_numbers) + 1, int)
-                    indexes[image_numbers] = np.arange(len(image_numbers))
-                    group_numbers = np.zeros(len(image_numbers), int)
-                    group_indexes = np.zeros(len(image_numbers), int)
-                    for i, (key, group_image_numbers) in enumerate(groupings):
-                        iii = indexes[group_image_numbers]
-                        group_numbers[iii] = i+1
-                        group_indexes[iii] = np.arange(
-                            len(iii)) + 1
-                    self.measurements.add_all_measurements(
-                        cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
-                    self.measurements.add_all_measurements(
-                        cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
-                    #
-                    # The grouping for legacy pipelines may not be monotonically
-                    # increasing by group number and index.
-                    # We reorder here.
-                    #
-                    order = np.lexsort((group_indexes, group_numbers))
-                    new_image_numbers = np.zeros(max(image_numbers)+1, int)
-                    new_image_numbers[image_numbers[order]] = \
-                        np.arange(len(image_numbers))+1
-                    self.measurements.reorder_image_measurements(new_image_numbers)
-                self.measurements.flush()
                 return result
             except:
                 logger.error("Failed during prepare_run", exc_info=1)

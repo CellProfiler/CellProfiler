@@ -1904,9 +1904,9 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 cursor.close()
             if connection is not None:
                 connection.close()
-            if hasattr(module, "cursor"):
+            if hasattr(module, "cursor") and module.cursor is not None:
                 module.cursor.close()
-            if hasattr(module, "connection"):
+            if hasattr(module, "connection") and module.connection is not None:
                 module.connection.close()
             finally_fn()
             
@@ -1947,9 +1947,9 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 cursor.close()
             if connection is not None:
                 connection.close()
-            if hasattr(module, "cursor"):
+            if hasattr(module, "cursor") and module.cursor is not None:
                 module.cursor.close()
-            if hasattr(module, "connection"):
+            if hasattr(module, "connection") and module.connection is not None:
                 module.connection.close()
             finally_fn()
             
@@ -2017,9 +2017,9 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 cursor.close()
             if connection is not None:
                 connection.close()
-            if hasattr(module, "cursor"):
+            if hasattr(module, "cursor") and module.cursor is not None:
                 module.cursor.close()
-            if hasattr(module, "connection"):
+            if hasattr(module, "connection") and module.connection is not None:
                 module.connection.close()
             finally_fn()
 
@@ -2077,9 +2077,9 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 cursor.close()
             if connection is not None:
                 connection.close()
-            if hasattr(module, "cursor"):
+            if hasattr(module, "cursor") and module.cursor is not None:
                 module.cursor.close()
-            if hasattr(module, "connection"):
+            if hasattr(module, "connection") and module.connection is not None:
                 module.connection.close()
             finally_fn()
     
@@ -2774,9 +2774,9 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 cursor.close()
             if connection is not None:
                 connection.close()
-            if hasattr(module, "cursor"):
+            if hasattr(module, "cursor") and module.cursor is not None:
                 module.cursor.close()
-            if hasattr(module, "connection"):
+            if hasattr(module, "connection") and module.connection is not None:
                 module.connection.close()
             finally_fn()
     
@@ -2975,9 +2975,9 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 cursor.close()
             if connection is not None:
                 connection.close()
-            if hasattr(module, "cursor"):
+            if hasattr(module, "cursor") and module.cursor is not None:
                 module.cursor.close()
-            if hasattr(module, "connection"):
+            if hasattr(module, "connection") and module.connection is not None:
                 module.connection.close()
             finally_fn()
             

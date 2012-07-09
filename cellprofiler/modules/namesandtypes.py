@@ -167,7 +167,7 @@ class NamesAndTypes(cpm.CPModule):
                     unique_image_name = image_name
                     break
                     
-        group.append("image_name", cps.ImageNameProvider(
+        group.append("image_name", cps.FileImageNameProvider(
             "Image name", unique_image_name))
         
         unique_object_name = None

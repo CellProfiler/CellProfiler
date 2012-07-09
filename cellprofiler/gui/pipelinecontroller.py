@@ -1516,13 +1516,13 @@ class PipelineController:
             dlg.Show()
             while True:
                 assert isinstance(dlg, wx.ProgressDialog)
-                wants_continue, wants_skip = dlg.Update(
-                    index, 
-                    message_format % (index, count, first_module.module_name))
+                module = self.current_debug_module()
+                message = message_format % (
+                    index+1, count, module.module_name)
+                wants_continue, wants_skip = dlg.Update(index, message)
                 if not wants_continue:
                     return
                 index += 1
-                module = self.current_debug_module()
                 success = self.do_step(module)
                 if not success:
                     return

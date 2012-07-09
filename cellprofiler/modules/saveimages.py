@@ -398,10 +398,6 @@ class SaveImages(cpm.CPModule):
     def module_key(self):
         return "%s_%d"%(self.module_name, self.module_num)
     
-    def prepare_run(self, workspace, *args):
-        workspace.image_set_list.legacy_fields[self.module_key] = {}
-        return True
-
     def prepare_group(self, workspace, grouping, image_numbers):
         d = self.get_dictionary(workspace.image_set_list)
         d['FIRST_IMAGE'] = True

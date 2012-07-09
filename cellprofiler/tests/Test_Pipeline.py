@@ -324,44 +324,42 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline = exploding_pipeline(self)
         expects = ['PrepareRun',0]
         keys = ('foo','bar')
-        groupings = (({'foo':'foo-A','bar':'bar-A'},(1,3)),
-                     ({'foo':'foo-B','bar':'bar-B'},(2,4)))
+        groupings = (({'foo':'foo-A','bar':'bar-A'},(1,2)),
+                     ({'foo':'foo-B','bar':'bar-B'},(3,4)))
         def prepare_run(workspace):
             image_set_list = workspace.image_set_list
             self.assertEqual(expects[0], 'PrepareRun')
-            for i in range(4):
-                image_set_list.get_image_set(i)
+            for group_number_idx, (grouping, image_numbers) in enumerate(groupings):
+                for group_idx, image_number in enumerate(image_numbers):
+                    workspace.measurements[cpmeas.IMAGE, 
+                                           cpmeas.GROUP_NUMBER,
+                                           image_number] = group_number_idx + 1
+                    workspace.measurements[cpmeas.IMAGE,
+                                           cpmeas.GROUP_INDEX,
+                                           image_number] = group_idx + 1
             expects[0], expects[1] = ('PrepareGroup', 0)
             return True
         def prepare_group(workspace, grouping, image_numbers):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
-            for image_number in image_numbers:
-                i = image_number-1
-                image = cpi.Image(np.ones((10,10)) / (i+1))
-                image_set = workspace.image_set_list.get_image_set(i)
-                image_set.add('image', image)
-            for key in keys:
-                self.assertTrue(grouping.has_key(key))
-                value = groupings[expects_grouping][0][key]
-                self.assertEqual(grouping[key], value)
             if expects_grouping == 0:
                 expects[0], expects[1] = ('Run', 1)
+                self.assertSequenceEqual(image_numbers, (1, 2))
             else:
-                expects[0], expects[1] = ('Run', 2)
+                expects[0], expects[1] = ('Run', 3)
+                self.assertSequenceEqual(image_numbers, (3, 4))
             return True
+        
         def run(workspace):
             expects_state, expects_image_number = expects
             image_number = workspace.measurements.image_set_number
             self.assertEqual(expects_state, 'Run')
             self.assertEqual(expects_image_number, image_number)
-            image = workspace.image_set.get_image('image')
-            self.assertTrue(np.all(image.pixel_data == 1.0 / image_number))
             if image_number == 1:
-                expects[0],expects[1] = ('Run', 3)
-            elif image_number == 2:
-                expects[0],expects[1] = ('Run', 4)
+                expects[0],expects[1] = ('Run', 2)
             elif image_number == 3:
+                expects[0],expects[1] = ('Run', 4)
+            elif image_number == 2:
                 expects[0],expects[1] = ('PostGroup', 0)
             else:
                 expects[0],expects[1] = ('PostGroup', 1)
@@ -374,8 +372,10 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             if expects_grouping == 0:
+                self.assertEqual(workspace.measurements.image_set_number, 2)
                 expects[0],expects[1] = ('PrepareGroup', 1)
             else:
+                self.assertEqual(workspace.measurements.image_set_number, 4)
                 expects[0],expects[1] = ('PostRun', 0)
         def post_run(workspace):
             self.assertEqual(expects[0], 'PostRun')
@@ -396,37 +396,39 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertEqual(len(image_numbers), 4)
         self.assertTrue(np.all(image_numbers == np.array([1,2,3,4])))
         group_numbers = measurements.get_all_measurements("Image","Group_Number")
-        self.assertTrue(np.all(group_numbers == np.array([1,2,1,2])))
+        self.assertTrue(np.all(group_numbers == np.array([1,1,2,2])))
         group_indexes = measurements.get_all_measurements("Image","Group_Index")
-        self.assertTrue(np.all(group_indexes == np.array([1,1,2,2])))
+        self.assertTrue(np.all(group_indexes == np.array([1,2,1,2])))
          
     def test_10_02_one_group(self):
         '''Test running a pipeline on one group'''
         pipeline = exploding_pipeline(self)
         expects = ['PrepareRun',0]
         keys = ('foo','bar')
-        groupings = (({'foo':'foo-A','bar':'bar-A'},(1,4)),
-                     ({'foo':'foo-B','bar':'bar-B'},(2,5)),
-                     ({'foo':'foo-C','bar':'bar-C'},(3,6)))
+        groupings = (({'foo':'foo-A','bar':'bar-A'},(1,2)),
+                     ({'foo':'foo-B','bar':'bar-B'},(3,4)),
+                     ({'foo':'foo-C','bar':'bar-C'},(5,6)))
         def prepare_run(workspace):
             self.assertEqual(expects[0], 'PrepareRun')
-            for i in range(6):
-                workspace.image_set_list.get_image_set(i)
+            for group_number_idx, (grouping, image_numbers) in enumerate(groupings):
+                for group_idx, image_number in enumerate(image_numbers):
+                    workspace.measurements[cpmeas.IMAGE, 
+                                           cpmeas.GROUP_NUMBER,
+                                           image_number] = group_number_idx + 1
+                    workspace.measurements[cpmeas.IMAGE,
+                                           cpmeas.GROUP_INDEX,
+                                           image_number] = group_idx + 1
             expects[0], expects[1] = ('PrepareGroup', 1)
             return True
         def prepare_group(workspace, grouping,*args):
             expects_state, expects_grouping = expects
             self.assertEqual(expects_state, 'PrepareGroup')
-            for i in range(6):
-                image = cpi.Image(np.ones((10,10)) / (i+1))
-                image_set = workspace.image_set_list.get_image_set(i)
-                image_set.add('image', image)
             for key in keys:
                 self.assertTrue(grouping.has_key(key))
                 value = groupings[expects_grouping][0][key]
                 self.assertEqual(grouping[key], value)
             self.assertEqual(expects_grouping, 1)
-            expects[0], expects[1] = ('Run', 2)
+            expects[0], expects[1] = ('Run', 3)
             return True
         
         def run(workspace):
@@ -434,12 +436,11 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
             image_number = workspace.measurements.image_set_number
             self.assertEqual(expects_state, 'Run')
             self.assertEqual(expects_image_number, image_number)
-            image = workspace.image_set.get_image('image')
-            self.assertTrue(np.all(image.pixel_data == 1.0 / image_number))
-            if image_number == 2:
-                expects[0],expects[1] = ('Run', 5)
-            elif image_number == 5:
+            if image_number == 3:
+                expects[0],expects[1] = ('Run', 4)
+            elif image_number == 4:
                 expects[0],expects[1] = ('PostGroup', 1)
+                
             workspace.measurements.add_image_measurement("mymeasurement",image_number)
 
         def post_group(workspace, grouping):
@@ -464,9 +465,6 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.add_module(module)
         measurements = pipeline.run(grouping = {'foo':'foo-B', 'bar':'bar-B'})
         self.assertEqual(expects[0], 'Done')
-        image_numbers = measurements.get_image_numbers()
-        self.assertEqual(len(image_numbers), 2)
-        self.assertTrue(np.all(image_numbers == np.array([2,5])))
     
     def test_11_01_catch_operational_error(self):
         '''Make sure that a pipeline can catch an operational error
@@ -607,11 +605,64 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                 self.assertTrue(np.all(m_in == m_out))
                 
     def test_13_04_pipeline_measurement(self):
-        pipeline = get_empty_pipeline()
-        cellprofiler.modules.fill_modules()
-        module = cellprofiler.modules.instantiate_module("Align")
-        module.module_num = 1
-        pipeline.add_module(module)
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120709180131
+ModuleCount:1
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Elsewhere...\x7Cc\x3A\\\\trunk\\\\ExampleImages\\\\ExampleSBSImages
+    Check image sets for unmatched or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:
+    Image count:2
+    Text that these images have in common (case-sensitive):Channel1-01
+    Position of this image in each group:1
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:rawGFP
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):Channel2-01
+    Position of this image in each group:2
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:rawDNA
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+"""
+        path = os.path.join(example_images_directory(), "ExampleSBSImages")
+        pipeline = cpp.Pipeline()
+        pipeline.load(cStringIO.StringIO(data))
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, LI.LoadImages))
+        module.location.custom_path = path
         m = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
         self.assertTrue(pipeline.prepare_run(cpw.Workspace(

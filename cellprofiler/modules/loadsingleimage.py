@@ -380,7 +380,7 @@ class LoadSingleImage(cpm.CPModule):
                     C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH)]
             pathname = m.get_current_image_measurement(m_path)
             filename = m.get_current_image_measurement(m_file)
-            rescale = (wants_images and file_setting.rescale)
+            rescale = (wants_images and file_setting.rescale.value)
             
             provider = LoadImagesImageProvider(
                 image_name, pathname, filename, rescale)

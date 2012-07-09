@@ -3015,8 +3015,9 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
             img = imgdata["Image"]
-            self.scale = 255.0
-            pixel_type_scale = 255.0
+            # floating point - scale = 1:1
+            self.scale = 1.0
+            pixel_type_scale = 1.0
         else:
             url = self.get_url()
             properties = {}

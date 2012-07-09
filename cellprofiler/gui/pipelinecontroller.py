@@ -308,7 +308,7 @@ class PipelineController:
     def __on_load(self, event):
         result = cplsdlg.show_load_dlg(self.__frame)
         if result == cplsdlg.LOAD_PIPELINE_ONLY:
-            self.on_load_pipeline(event)
+            self.__on_load_pipeline(event)
         elif result == cplsdlg.LOAD_PIPELINE_AND_WORKSPACE:
             self.on_open_workspace(True)
         elif result == cplsdlg.LOAD_WORKSPACE_ONLY:
@@ -316,7 +316,7 @@ class PipelineController:
         elif result == cplsdlg.LOAD_VIEW_IMAGE:
             self.__frame.on_open_image(event)
             
-    def __on_load_pipeline(self,event):
+    def __on_load_pipeline(self, event):
         if self.__dirty_pipeline:
             if wx.MessageBox('Do you want to save your current pipeline\n'
                              'before loading?', 'Save modified pipeline',

@@ -561,6 +561,9 @@ class HDF5Dict(object):
         with self.lock:
             feature_group = self.top_group.require_group(object_name).\
                 require_group(feature_name)
+            if "index" not in feature_group:
+                # All values are None for the feature
+                return
             index_array = feature_group["index"][:, :]
             index_array[:, 0] = image_numbers[index_array[:, 0]]
             #

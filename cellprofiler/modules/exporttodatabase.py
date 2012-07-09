@@ -1353,25 +1353,52 @@ class ExportToDatabase(cpm.CPModule):
                 measurements.add_image_measurement('Thumbnail_%s'%(name), blob.encode('base64'))
         if workspace.pipeline.test_mode:
             return
-        if (self.db_type == DB_MYSQL or self.db_type == DB_SQLITE):
-            if not workspace.pipeline.test_mode:
-                try:
-                    if self.db_type==DB_MYSQL:
-                        self.connection, self.cursor = connect_mysql(
-                            self.db_host.value, 
-                            self.db_user.value, 
-                            self.db_passwd.value,
-                            self.db_name.value)
-                    elif self.db_type==DB_SQLITE:
-                        db_file = self.make_full_filename(self.sqlite_file.value)
-                        self.connection, self.cursor = connect_sqlite(db_file)
-                    self.write_data_to_db(workspace)
-                finally:
-                    self.connection.commit()
-                    self.connection.close()
-                    self.connection = None
-                    self.cursor = None
+        if self.db_type == DB_MYSQL and not workspace.pipeline.test_mode:
+            try:
+                self.connection, self.cursor = connect_mysql(
+                    self.db_host.value, 
+                    self.db_user.value, 
+                    self.db_passwd.value,
+                    self.db_name.value)
+                self.write_data_to_db(workspace)
+            finally:
+                self.connection.commit()
+                self.connection.close()
+                self.connection = None
+                self.cursor = None
+        elif self.db_type == DB_SQLITE and not workspace.pipeline.test_mode:
+            # For distributed, use the interaction handler to run the
+            # database commands on the server
+            #
+            self.connection = self.cursor = SQLiteCommands()
+            try:
+                self.write_data_to_db(workspace)
+                workspace.interaction_request(
+                    self, self.connection.get_state())
+            except workspace.NoInteractionException:
+                # Assume that the interaction can be handled directly,
+                # for instance, in headless mode with no handler
+                #
+                self.handle_interaction(self.connection.get_state())
+            finally:
+                self.connection = None
+                self.cursor = None
 
+    def handle_interaction(self, state):
+        '''Handle sqllite interactions from workers'''
+        commands = SQLiteCommands()
+        commands.set_state(state)
+        db_file = self.make_full_filename(self.sqlite_file.value)
+        connection, cursor = connect_sqlite(db_file)
+        try:
+            commands.execute_all(cursor)
+            connection.commit()
+        except:
+            connection.rollback()
+        finally:
+            cursor.close()
+            connection.close()
+        
     def post_group(self, workspace, grouping):
         '''Write out any columns that are only available post-group'''
         if workspace.pipeline.test_mode:
@@ -1388,8 +1415,7 @@ class ExportToDatabase(cpm.CPModule):
                     self.db_passwd.value,
                     self.db_name.value)
             elif self.db_type==DB_SQLITE:
-                db_file = self.make_full_filename(self.sqlite_file.value)
-                self.connection, self.cursor = connect_sqlite(db_file)
+                self.connection = self.cursor = SQLiteCommands()
             #
             # Process the image numbers in the current image's group
             #
@@ -1406,6 +1432,15 @@ class ExportToDatabase(cpm.CPModule):
                     self.write_data_to_db(workspace,
                                           post_group = True,
                                           image_number = image_number)
+            if self.db_type == DB_SQLITE:
+                try:
+                    workspace.interaction_request(
+                        self, self.connection.get_state())
+                except workspace.NoInteractionException:
+                    # Assume that the interaction can be handled directly,
+                    # for instance, in headless mode with no handler
+                    #
+                    self.handle_interaction(self.connection.get_state())
         finally:
             self.connection.commit()
             self.connection.close()
@@ -2073,7 +2108,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         (self.get_table_name(cpmeas.IMAGE), 
                          C_IMAGE_NUMBER,
                          image_number))
-                execute(self.cursor, stmt)
+                execute(self.cursor, stmt, return_result=False)
             
             ########################################
             #
@@ -2150,7 +2185,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     if not post_group:
                         stmt = ('DELETE FROM %s WHERE %s=%d'%
                                 (table_name, C_IMAGE_NUMBER, image_number))
-                        execute(self.cursor, stmt)
+                        execute(self.cursor, stmt, return_result=False)
                         #
                         # Write the object table data
                         #
@@ -2174,7 +2209,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         for row in object_rows:
                             row = [ 'NULL' if x is None else x for x in row]
                             row_stmt = stmt % tuple(row)
-                            self.cursor.execute(row_stmt)
+                            execute(self.cursor, row_stmt, return_result=False)
             
             image_table = self.get_table_name(cpmeas.IMAGE)
             replacement = '%s' if self.db_type == DB_MYSQL else "?"
@@ -2201,7 +2236,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         ',\n'.join(["  %s = %s" % (mapping[colname], replacement)
                                     for val, dtype, colname in image_row]) +
                         ('\nWHERE %s = %d' % (C_IMAGE_NUMBER, image_number)))
-                execute(self.cursor, stmt, image_row_values)
+                execute(self.cursor, stmt, image_row_values, return_result=False)
             self.connection.commit()
         except:
             logger.error("Failed to write measurements to database", exc_info=True)
@@ -3115,3 +3150,34 @@ def random_number_generator(seed):
         m.update(digest)
         yield ord(digest[0]) + 256 * ord(digest[1])
     
+class SQLiteCommands(object):
+    '''This class ducktypes a connection and cursor to aggregate and bulk execute SQL'''
+    
+    def __init__(self):
+        self.commands_and_bindings = []
+        
+    def execute(self, query, bindings = None):
+        self.commands_and_bindings.append((query, bindings))
+        
+    def commit(self):
+        pass
+    
+    def close(self):
+        del self.commands_and_bindings
+    
+    def rollback(self):
+        self.commands_and_bindings = []
+        
+    def next(self):
+        raise NotImplementedError(
+            "The SQLite interaction handler can only write to the database")
+    
+    def get_state(self):
+        return self.commands_and_bindings
+    
+    def set_state(self, state):
+        self.commands_and_bindings = state
+        
+    def execute_all(self, cursor):
+        for query, binding in self.commands_and_bindings:
+            execute(cursor, query, binding)

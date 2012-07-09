@@ -1854,61 +1854,71 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
     
     def test_03_01_write_sqlite_direct(self):
         '''Write directly to a SQLite database'''
-        workspace, module, output_dir, finally_fn = self.make_workspace(True)
-        cursor = None
-        connection = None
-        try:
-            self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type.value = E.DB_SQLITE
-            module.wants_agg_mean.value = False
-            module.wants_agg_median.value = False
-            module.wants_agg_std_dev.value = False
-            module.objects_choice.value = E.O_ALL
-            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
-            module.directory.custom_path = output_dir
-            module.separate_object_tables.value = E.OT_COMBINE
-            module.prepare_run(workspace)
-            module.prepare_group(workspace, {}, [1])
-            module.run(workspace)
-            cursor, connection = self.get_sqlite_cursor(module)
-            #
-            # Now read the image file from the database
-            #
-            image_table = module.table_prefix.value + "Per_Image"
-            statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
-                         "from %s" %
-                         (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
-                          STRING_IMG_MEASUREMENT, OBJECT_NAME, image_table))
-            cursor.execute(statement)
-            row = cursor.fetchone()
-            self.assertEqual(len(row), 5)
-            self.assertEqual(row[0],1)
-            self.assertAlmostEqual(row[1], INT_VALUE)
-            self.assertAlmostEqual(row[2], FLOAT_VALUE)
-            self.assertEqual(row[3], STRING_VALUE)
-            self.assertEqual(row[4], len(OBJ_VALUE))
-            self.assertRaises(StopIteration, cursor.next)
-            statement = ("select ImageNumber, ObjectNumber, %s_%s "
-                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
-                         (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
-            cursor.execute(statement)
-            for i, value in enumerate(OBJ_VALUE):
+        for with_interaction_handler in (False, True):
+            workspace, module, output_dir, finally_fn = self.make_workspace(True)
+            ran_interaction_handler = [False]
+            if with_interaction_handler:
+                def interaction_handler(*args, **vargs):
+                    self.assertTrue(len(args) > 0)
+                    args[0].handle_interaction(*args[1:], **vargs)
+                    ran_interaction_handler[0] = True
+                workspace.interaction_handler = interaction_handler
+            cursor = None
+            connection = None
+            try:
+                self.assertTrue(isinstance(module, E.ExportToDatabase))
+                module.db_type.value = E.DB_SQLITE
+                module.wants_agg_mean.value = False
+                module.wants_agg_median.value = False
+                module.wants_agg_std_dev.value = False
+                module.objects_choice.value = E.O_ALL
+                module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+                module.directory.custom_path = output_dir
+                module.separate_object_tables.value = E.OT_COMBINE
+                module.prepare_run(workspace)
+                module.prepare_group(workspace, {}, [1])
+                module.run(workspace)
+                self.assertEqual(with_interaction_handler, 
+                                 ran_interaction_handler[0])
+                cursor, connection = self.get_sqlite_cursor(module)
+                #
+                # Now read the image file from the database
+                #
+                image_table = module.table_prefix.value + "Per_Image"
+                statement = ("select ImageNumber, Image_%s, Image_%s, Image_%s, Image_Count_%s "
+                             "from %s" %
+                             (INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                              STRING_IMG_MEASUREMENT, OBJECT_NAME, image_table))
+                cursor.execute(statement)
                 row = cursor.fetchone()
-                self.assertEqual(len(row), 3)
-                self.assertEqual(row[0], 1)
-                self.assertEqual(row[1], i+1)
-                self.assertAlmostEqual(row[2], value)
-            self.assertRaises(StopIteration, cursor.next)
-        finally:
-            if cursor is not None:
-                cursor.close()
-            if connection is not None:
-                connection.close()
-            if hasattr(module, "cursor") and module.cursor is not None:
-                module.cursor.close()
-            if hasattr(module, "connection") and module.connection is not None:
-                module.connection.close()
-            finally_fn()
+                self.assertEqual(len(row), 5)
+                self.assertEqual(row[0],1)
+                self.assertAlmostEqual(row[1], INT_VALUE)
+                self.assertAlmostEqual(row[2], FLOAT_VALUE)
+                self.assertEqual(row[3], STRING_VALUE)
+                self.assertEqual(row[4], len(OBJ_VALUE))
+                self.assertRaises(StopIteration, cursor.next)
+                statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                             "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                             (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
+                cursor.execute(statement)
+                for i, value in enumerate(OBJ_VALUE):
+                    row = cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], 1)
+                    self.assertEqual(row[1], i+1)
+                    self.assertAlmostEqual(row[2], value)
+                self.assertRaises(StopIteration, cursor.next)
+            finally:
+                if cursor is not None:
+                    cursor.close()
+                if connection is not None:
+                    connection.close()
+                if hasattr(module, "cursor") and module.cursor is not None:
+                    module.cursor.close()
+                if hasattr(module, "connection") and module.connection is not None:
+                    module.connection.close()
+                finally_fn()
             
     def test_03_02_write_sqlite_backslash(self):
         '''Regression test of IMG-898 sqlite with backslash in string'''
@@ -2082,7 +2092,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             if hasattr(module, "connection") and module.connection is not None:
                 module.connection.close()
             finally_fn()
-    
+            
     def test_04_01_stable_column_mapper(self):
         '''Make sure the column mapper always yields the same output'''
         mapping = E.ColumnNameMapping()
@@ -3328,6 +3338,109 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
             self.drop_tables(module, ("Per_Image","Per_Object"))
+            
+    def test_09_05_post_group_sqlite(self):
+        for with_interaction_handler in (False, True):
+            count = 5
+            workspace, module, output_dir, finally_fn = self.make_workspace(
+                True, image_set_count=count, group_measurement=True)
+            ran_interaction_handler = [False]
+            if with_interaction_handler:
+                def interaction_handler(*args, **vargs):
+                    self.assertTrue(len(args) > 0)
+                    args[0].handle_interaction(*args[1:], **vargs)
+                    ran_interaction_handler[0] = True
+                workspace.interaction_handler = interaction_handler
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            self.assertTrue(isinstance(workspace, cpw.Workspace))
+            measurements = workspace.measurements
+            self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+            module.db_type.value = E.DB_SQLITE
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            cursor, connection = self.get_sqlite_cursor(module)
+            try:
+                module.separate_object_tables.value = E.OT_COMBINE
+                module.prepare_run(workspace)
+                module.prepare_group(workspace, {}, np.arange(count)+1)
+                for i in range(count):
+                    workspace.set_image_set_for_testing_only(i+1)
+                    measurements.next_image_set(i + 1)
+                    module.run(workspace)
+                    self.assertEqual(with_interaction_handler,
+                                     ran_interaction_handler[0])
+                    ran_interaction_handler[0] = False
+                #
+                # Read the image data after the run but before group.
+                # It should be null.
+                #
+                image_table = module.table_prefix.value + "Per_Image"
+                statement = ("select ImageNumber, Image_%s from %s order by ImageNumber" %
+                             (GROUP_IMG_MEASUREMENT, image_table))
+                cursor.execute(statement)
+                for i in range(count):
+                    row = cursor.fetchone()
+                    self.assertEqual(len(row), 2)
+                    self.assertEqual(row[0], i+1)
+                    self.assertTrue(row[1] is None)
+                self.assertRaises(StopIteration, cursor.next)
+                #
+                # Read the object data too
+                #
+                object_table = module.table_prefix.value + "Per_Object"
+                statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                             "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                             (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, 
+                              module.table_prefix.value))
+                cursor.execute(statement)
+                for i in range(count):
+                    for j in range(len(OBJ_VALUE)):
+                        row = cursor.fetchone()
+                        self.assertEqual(len(row), 3)
+                        self.assertEqual(row[0], i+1)
+                        self.assertEqual(row[1], j+1)
+                        self.assertTrue(row[2] is None)
+                self.assertRaises(StopIteration, cursor.next)
+                #
+                # Run post_group and see that the values do show up
+                #
+                module.post_group(workspace, {})
+                self.assertEqual(with_interaction_handler,
+                                 ran_interaction_handler[0])
+                image_table = module.table_prefix.value + "Per_Image"
+                statement = ("select ImageNumber, Image_%s from %s" %
+                             (GROUP_IMG_MEASUREMENT, image_table))
+                cursor.execute(statement)
+                for i in range(count):
+                    row = cursor.fetchone()
+                    self.assertEqual(len(row), 2)
+                    self.assertEqual(row[0], i+1)
+                    self.assertEqual(row[1], INT_VALUE)
+                self.assertRaises(StopIteration, cursor.next)
+                #
+                # Read the object data
+                #
+                object_table = module.table_prefix.value + "Per_Object"
+                statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                             "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                             (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, 
+                              module.table_prefix.value))
+                cursor.execute(statement)
+                for i in range(count):
+                    for j in range(len(OBJ_VALUE)):
+                        row = cursor.fetchone()
+                        self.assertEqual(len(row), 3)
+                        self.assertEqual(row[0], i+1)
+                        self.assertEqual(row[1], j+1)
+                        self.assertAlmostEqual(row[2], OBJ_VALUE[j])
+                self.assertRaises(StopIteration, cursor.next)
+            finally:
+                cursor.close()
+                connection.close()
+                finally_fn()
 
     def test_10_01_properties_file(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(

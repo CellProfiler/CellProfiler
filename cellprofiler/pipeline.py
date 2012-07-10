@@ -1472,6 +1472,7 @@ class Pipeline(object):
         Run the pipeline, returning the measurements made
         """
 
+        can_display = not cpprefs.get_headless()
         def group(workspace):
             """Enumerate relevant image sets.  This function is
             side-effect free, so it can be called more than once."""
@@ -1560,9 +1561,10 @@ class Pipeline(object):
                 image_set_count += 1
                 if not closure():
                     return
-                if last_image_number is not None:
-                    image_set_list.purge_image_set(last_image_number-1)
                 last_image_number = image_number
+                measurements.clear_cache()
+                for provider in measurements.providers:
+                    provider.release_memory()
                 measurements.next_image_set(image_number)
                 if is_first_image_set:
                     measurements.image_set_start = image_number
@@ -1573,7 +1575,7 @@ class Pipeline(object):
                 numberof_windows = 0;
                 slot_number = 0
                 object_set = cpo.ObjectSet()
-                image_set = image_set_list.get_image_set(image_number-1)
+                image_set = measurements
                 outlines = {}
                 should_write_measurements = True
                 grids = None
@@ -1634,7 +1636,7 @@ class Pipeline(object):
                         (start_time.ctime(), image_number, 
                          module.module_name, module.module_num, 
                          delta_sec))
-                    if (module.show_window and
+                    if (module.show_window and can_display and
                         (exception is None)):
                         try:
                             fig = workspace.get_module_figure(module, image_number)

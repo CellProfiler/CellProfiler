@@ -1516,8 +1516,9 @@ class Pipeline(object):
                                   measurements, image_set_list, frame)
 
         try:
-            if not self.prepare_run(workspace):
-                return
+            if not self.in_batch_mode():
+                if not self.prepare_run(workspace):
+                    return
             #
             # Remove image sets outside of the requested ranges
             #

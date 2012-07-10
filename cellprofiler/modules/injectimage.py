@@ -61,7 +61,6 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         """
     
     def prepare_run(self, workspace):
-        workspace.image_set_list.get_image_set(0)
         digest = hashlib.md5()
         digest.update(np.ascontiguousarray(self.__image).data)
 
@@ -70,17 +69,6 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
             image_set_number = 1)
         return True
     
-    def prepare_group(self, workspace, grouping, image_numbers):
-        """Set up all of the image providers inside the image_set_list
-        """
-        image_set_list = workspace.image_set_list
-        image = cellprofiler.cpimage.Image(self.__image, self.__mask)
-        provider = cellprofiler.cpimage.VanillaImageProvider(self.__image_name,
-                                                             image)
-        for image_number in image_numbers:
-            image_set_list.get_image_set(image_number-1).providers.append(provider)
-        return True 
-
     def run(self,workspace):
         """Run the module (abstract method)
         
@@ -89,7 +77,8 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         object_set   - the objects (labeled masks) in this image set
         measurements - the measurements for this run
         """
-        pass
+        image = cellprofiler.cpimage.Image(self.__image, self.__mask)
+        workspace.image_set.add(self.__image_name, image)
 
     def post_run(self, workspace):
         if self.__release_image:

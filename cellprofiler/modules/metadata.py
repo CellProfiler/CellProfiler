@@ -298,7 +298,7 @@ class Metadata(cpm.CPModule):
     def prepare_run(self, workspace):
         '''Initialize the pipeline's metadata'''
         if workspace.pipeline.in_batch_mode():
-            return
+            return True
         
         from subimager.omexml import OMEXML
         

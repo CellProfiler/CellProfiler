@@ -13,6 +13,7 @@
 #Website: http://www.cellprofiler.org
 
 import numpy as np
+import os
 from cStringIO import StringIO
 import unittest
 
@@ -20,6 +21,9 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.modules.namesandtypes as N
 import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
+from cellprofiler.modules.tests import example_images_directory, testimages_directory
+from cellprofiler.modules.loadimages import pathname2url
+from subimager.client import start_subimager, stop_subimager
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]
@@ -47,6 +51,14 @@ def md(keys_and_counts):
                   
 
 class TestNamesAndTypes(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        start_subimager()
+        
+    @classmethod
+    def tearDownClass(cls):
+        stop_subimager()
+        
     def test_00_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
@@ -456,3 +468,168 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
                                        feature + "_" + name,
                                        np.arange(1, 3))
             self.assertSequenceEqual(list(expected), list(values))
+        
+    def run_workspace(self, path, load_as_type, 
+                      series = None, index = None, channel = None,
+                      single=False):
+        '''Run a workspace to load a file
+        
+        path - path to the file
+        load_as_type - one of the LOAD_AS... constants
+        series, index, channel - pick a plane from within a file
+        
+        returns the workspace after running
+        '''
+        n = N.NamesAndTypes()
+        n.assignment_method.value = N.ASSIGN_ALL if single else N.ASSIGN_RULES
+        n.single_image_provider.value = IMAGE_NAME
+        n.single_load_as_choice.value = load_as_type
+        n.assignments[0].image_name.value = IMAGE_NAME
+        n.assignments[0].object_name.value = OBJECTS_NAME
+        n.assignments[0].load_as_choice.value = load_as_type
+        n.module_num = 1
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(n)
+        url = pathname2url(path)
+        pathname, filename = os.path.split(path)
+        m = cpmeas.Measurements(mode="memory")
+        if load_as_type == N.LOAD_AS_OBJECTS:
+            url_feature = cpmeas.C_OBJECTS_URL + "_" + OBJECTS_NAME
+            path_feature = cpmeas.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
+            file_feature = cpmeas.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME
+            series_feature = cpmeas.C_OBJECTS_SERIES + "_" + OBJECTS_NAME
+            frame_feature = cpmeas.C_OBJECTS_FRAME + "_" + OBJECTS_NAME
+            channel_feature = cpmeas.C_OBJECTS_CHANNEL + "_" + OBJECTS_NAME
+        else:
+            url_feature = cpmeas.C_URL + "_" + IMAGE_NAME
+            path_feature = cpmeas.C_PATH_NAME + "_" + IMAGE_NAME
+            file_feature = cpmeas.C_FILE_NAME + "_" + IMAGE_NAME
+            series_feature = cpmeas.C_SERIES + "_" + IMAGE_NAME
+            frame_feature = cpmeas.C_FRAME + "_" + IMAGE_NAME
+            channel_feature = cpmeas.C_CHANNEL + "_" + IMAGE_NAME
+            
+        m.image_set_number = 1
+        m.add_measurement(cpmeas.IMAGE, url_feature, url)
+        m.add_measurement(cpmeas.IMAGE, path_feature, pathname)
+        m.add_measurement(cpmeas.IMAGE, file_feature, filename)
+        if series is not None:
+            m.add_measurement(cpmeas.IMAGE, series_feature, series)
+        if index is not None:
+            m.add_measurement(cpmeas.IMAGE, frame_feature, index)
+        if channel is not None:
+            m.add_measurement(cpmeas.IMAGE, channel_feature, channel)
+        m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1)
+        m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1)
+        
+        workspace = cpw.Workspace(pipeline, n, m,
+                                  N.cpo.ObjectSet(),
+                                  m, None)
+        n.run(workspace)
+        return workspace
+        
+    def test_03_01_load_color(self):
+        path = os.path.join(example_images_directory(), 
+                            "ExampleColorToGray",
+                            "AS_09125_050116030001_D03f00_color.tif")
+        workspace = self.run_workspace(path, N.LOAD_AS_COLOR_IMAGE)
+        image = workspace.image_set.get_image(IMAGE_NAME)
+        pixel_data = image.pixel_data
+        self.assertSequenceEqual(pixel_data.shape, (512, 512, 3))
+        self.assertTrue(np.all(pixel_data >= 0))
+        self.assertTrue(np.all(pixel_data <= 1))
+        
+    def test_03_02_load_monochrome_as_color(self):
+        path = os.path.join(example_images_directory(),
+                            "ExampleGrayToColor",
+                            "AS_09125_050116030001_D03f00d0.tif")
+        workspace = self.run_workspace(path, N.LOAD_AS_COLOR_IMAGE)
+        image = workspace.image_set.get_image(IMAGE_NAME)
+        pixel_data = image.pixel_data
+        self.assertSequenceEqual(pixel_data.shape, (512, 512, 3))
+        self.assertTrue(np.all(pixel_data >= 0))
+        self.assertTrue(np.all(pixel_data <= 1))
+        np.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 1])
+        np.testing.assert_equal(pixel_data[:, :, 0], pixel_data[:, :, 2])
+        
+    def test_03_03_load_color_frame(self):
+        path = os.path.join(testimages_directory(),
+                            "DrosophilaEmbryo_GFPHistone.avi")
+        workspace = self.run_workspace(path, N.LOAD_AS_COLOR_IMAGE,
+                                       index = 3)
+        image = workspace.image_set.get_image(IMAGE_NAME)
+        pixel_data = image.pixel_data
+        self.assertSequenceEqual(pixel_data.shape, (264, 542, 3))
+        self.assertTrue(np.all(pixel_data >= 0))
+        self.assertTrue(np.all(pixel_data <= 1))
+        self.assertTrue(np.any(pixel_data[:, :, 0] != pixel_data[:, :, 1]))
+        self.assertTrue(np.any(pixel_data[:, :, 0] != pixel_data[:, :, 2]))
+        
+    def test_03_04_load_monochrome(self):
+        path = os.path.join(example_images_directory(),
+                            "ExampleGrayToColor",
+                            "AS_09125_050116030001_D03f00d0.tif")
+        workspace = self.run_workspace(path, N.LOAD_AS_GRAYSCALE_IMAGE)
+        image = workspace.image_set.get_image(IMAGE_NAME)
+        pixel_data = image.pixel_data
+        self.assertSequenceEqual(pixel_data.shape, (512, 512))
+        self.assertTrue(np.all(pixel_data >= 0))
+        self.assertTrue(np.all(pixel_data <= 1))
+
+    def test_03_05_load_color_as_monochrome(self):
+        path = os.path.join(example_images_directory(),
+                            "ExampleGrayToColor",
+                            "AS_09125_050116030001_D03f00d0.tif")
+        workspace = self.run_workspace(path, N.LOAD_AS_GRAYSCALE_IMAGE)
+        image = workspace.image_set.get_image(IMAGE_NAME)
+        pixel_data = image.pixel_data
+        self.assertSequenceEqual(pixel_data.shape, (512, 512))
+        self.assertTrue(np.all(pixel_data >= 0))
+        self.assertTrue(np.all(pixel_data <= 1))
+        
+    def test_03_06_load_monochrome_plane(self):
+        path = os.path.join(testimages_directory(), "5channel.tif")
+        
+        for i in range(5):
+            workspace = self.run_workspace(path, N.LOAD_AS_GRAYSCALE_IMAGE,
+                                           index=i)
+            image = workspace.image_set.get_image(IMAGE_NAME)
+            pixel_data = image.pixel_data
+            self.assertSequenceEqual(pixel_data.shape, (64, 64))
+            if i == 0:
+                plane_0 = pixel_data.copy()
+            else:
+                self.assertTrue(np.any(pixel_data != plane_0))
+                
+    def test_03_07_load_raw(self):
+        path = os.path.join(example_images_directory(),
+                            "ExampleSpecklesImages",
+                            "1-162hrh2ax2.tif")
+        workspace = self.run_workspace(path, N.LOAD_AS_ILLUMINATION_FUNCTION)
+        image = workspace.image_set.get_image(IMAGE_NAME)
+        pixel_data = image.pixel_data
+        self.assertSequenceEqual(pixel_data.shape, (1000, 1200))
+        self.assertTrue(np.all(pixel_data >= 0))
+        self.assertTrue(np.all(pixel_data <= 1. / 16.))
+        
+    def test_03_08_load_mask(self):
+        path = os.path.join(example_images_directory(),
+                            "ExampleSBSImages",
+                            "Channel2-01-A-01.tif")
+        workspace = self.run_workspace(path, N.LOAD_AS_MASK)
+        image = workspace.image_set.get_image(IMAGE_NAME)
+        pixel_data = image.pixel_data
+        self.assertSequenceEqual(pixel_data.shape, (640, 640))
+        self.assertEqual(np.sum(~pixel_data), 627)
+        
+    def test_03_09_load_objects(self):
+        path = os.path.join(example_images_directory(),
+                            "ExampleSBSImages",
+                            "Channel2-01-A-01.tif")
+        workspace = self.run_workspace(path, N.LOAD_AS_OBJECTS)
+        o = workspace.object_set.get_objects(OBJECTS_NAME)
+        assert isinstance(o, N.cpo.Objects)
+        areas = o.areas
+        self.assertEqual(areas[0], 9)
+        self.assertEqual(areas[1], 321)
+        self.assertEqual(areas[2], 2655)
+        

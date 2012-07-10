@@ -17,10 +17,12 @@ TO-DO: document module
 import logging
 logger = logging.getLogger(__name__)
 
+import numpy as np
 import os
 import re
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
@@ -29,6 +31,8 @@ from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.images import Images
+from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
+from cellprofiler.modules.loadimages import convert_image_to_objects
 
 ASSIGN_ALL = "Assign all images"
 ASSIGN_GUESS = "Try to guess image assignment"
@@ -481,7 +485,73 @@ class NamesAndTypes(cpm.CPModule):
         return True
             
     def run(self, workspace):
-        pass
+        if self.assignment_method == ASSIGN_ALL:
+            name = self.single_image_provider.value
+            load_choice = self.single_load_as_choice.value
+            self.add_image_provider(workspace, name, load_choice)
+        else:
+            for group in self.assignments:
+                if group.load_as_choice == LOAD_AS_OBJECTS:
+                    self.add_objects(workspace, group.object_name.value)
+                else:
+                    self.add_image_provider(workspace, 
+                                            group.image_name.value,
+                                            group.load_as_choice.value)
+            
+    
+    def add_image_provider(self, workspace, name, load_choice):
+        '''Put an image provider into the image set
+        
+        workspace - current workspace
+        name - name of the image
+        load_choice - one of the LOAD_AS_... choices
+        '''
+        def fetch_measurement_or_none(category):
+            feature = category + "_" + name
+            if workspace.measurements.has_feature(cpmeas.IMAGE, feature):
+                return workspace.measurements.get_measurement(
+                    cpmeas.IMAGE, feature)
+            else:
+                return None
+            
+        url = fetch_measurement_or_none(cpmeas.C_URL).encode("utf-8")
+        series = fetch_measurement_or_none(cpmeas.C_SERIES)
+        index = fetch_measurement_or_none(cpmeas.C_FRAME)
+        channel = fetch_measurement_or_none(cpmeas.C_CHANNEL)
+        
+        if load_choice == LOAD_AS_COLOR_IMAGE:
+            provider = ColorImageProvider(name, url, series, index)
+        elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
+            provider = MonochromeImageProvider(name, url, series, index,
+                                               channel)
+        elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
+            provider = MonochromeImageProvider(name, url, series, index, 
+                                               channel, False)
+        elif load_choice == LOAD_AS_MASK:
+            provider = MaskImageProvider(name, url, series, index, channel)
+        workspace.image_set.providers.append(provider)
+    
+    def add_objects(self, workspace, name):
+        '''Add objects loaded from a file to the object set'''
+        def fetch_measurement_or_none(category):
+            feature = category + "_" + name
+            if workspace.measurements.has_feature(cpmeas.IMAGE, feature):
+                return workspace.measurements.get_measurement(
+                    cpmeas.IMAGE, feature)
+            else:
+                return None
+            
+        url = fetch_measurement_or_none(cpmeas.C_OBJECTS_URL).encode("utf-8")
+        series = fetch_measurement_or_none(cpmeas.C_OBJECTS_SERIES)
+        index = fetch_measurement_or_none(cpmeas.C_OBJECTS_FRAME)
+        channel = fetch_measurement_or_none(cpmeas.C_OBJECTS_CHANNEL)
+        provider = MonochromeImageProvider(name, url, series, index, channel,
+                                           rescale = False)
+        image = provider.provide_image(workspace.image_set)
+        pixel_data = convert_image_to_objects(image.pixel_data)
+        o = cpo.Objects()
+        o.segmented = pixel_data
+        workspace.object_set.add_objects(o, name)
                      
     def on_activated(self, workspace):
         self.pipeline = workspace.pipeline
@@ -1037,3 +1107,50 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
         ipd = cpp.ImagePlaneDetails("/imaging/image.png", None, None, None)
         self((cps.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath,
               NamesAndTypes.FakeModpathResolver(modpath, ipd)), *args)
+
+
+class ColorImageProvider(LoadImagesImageProviderURL):
+    '''Provide a color image, tripling a monochrome plane if needed'''
+    def __init__(self, name, url, series, index):
+        LoadImagesImageProviderURL.__init__(self, name, url,
+                                            rescale = True,
+                                            series = series,
+                                            index = index)
+        
+    def provide_image(self, image_set):
+        image = LoadImagesImageProviderURL.provide_image(self, image_set)
+        if image.pixel_data.ndim == 2:
+            image.pixel_data = np.dstack([image.pixel_data] * 3)
+        return image
+    
+class MonochromeImageProvider(LoadImagesImageProviderURL):
+    '''Provide a monochrome image, combining RGB if needed'''
+    def __init__(self, name, url, series, index, channel, rescale = True):
+        LoadImagesImageProviderURL.__init__(self, name, url,
+                                            rescale = rescale,
+                                            series = series,
+                                            index = index,
+                                            channel = channel)
+        
+    def provide_image(self, image_set):
+        image = LoadImagesImageProviderURL.provide_image(self, image_set)
+        if image.pixel_data.ndim == 3:
+            image.pixel_data = \
+                np.sum(image.pixel_data, 2) / image.pixel_data.shape[2]
+        return image
+    
+class MaskImageProvider(MonochromeImageProvider):
+    '''Provide a boolean image, converting nonzero to True, zero to False if needed'''
+    def __init__(self, name, url, series, index, channel):
+        MonochromeImageProvider.__init__(self, name, url,
+                                            rescale = True,
+                                            series = series,
+                                            index = index,
+                                            channel = channel)
+        
+    def provide_image(self, image_set):
+        image = MonochromeImageProvider.provide_image(self, image_set)
+        if image.pixel_data.dtype.kind != 'b':
+            image.pixel_data = image.pixel_data != 0
+        return image
+    

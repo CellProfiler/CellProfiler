@@ -1038,7 +1038,56 @@ class Measurements(object):
                 else:
                     fd.write(field)
             fd.write("\n")
+            
+    def alter_path_for_create_batch(self, name, is_image, fn_alter_path):
+        '''Alter the path of image location measurements for CreateBatchFiles
         
+        name - name of the image or objects
+        is_image - True to load as an image, False to load as objects
+        fn_later_path - call this function to alter the path for batch processing
+        '''
+        from cellprofiler.modules.loadimages import url2pathname, pathname2url
+        if is_image:
+            path_feature = C_PATH_NAME
+            file_feature = C_FILE_NAME
+            url_feature = C_URL
+        else:
+            path_feature = C_OBJECTS_PATH_NAME
+            file_feature = C_OBJECTS_FILE_NAME
+            url_feature = C_OBJECTS_URL
+        path_feature, file_feature, url_feature = [
+            "_".join((f, name))
+            for f in (path_feature, file_feature, url_feature)]
+        
+        all_image_numbers = self.get_image_numbers()
+        urls = self.get_measurement(IMAGE, url_feature, 
+                                    image_set_number=all_image_numbers)
+
+        new_urls = []
+        for url in urls:
+            if url.lower().startswith("file:"):
+                full_name = url2pathname(url.encode("utf-8"))
+                full_name = fn_alter_path(full_name)
+                new_url = pathname2url(full_name)
+            else:
+                new_url = url
+            new_urls.append(new_url)
+        if any([url != new_url for url, new_url in zip(urls, new_urls)]):
+            self.add_all_measurements(IMAGE, url_feature, new_urls)
+            
+        paths = self.get_measurement(IMAGE, path_feature,
+                                     image_set_number = all_image_numbers)
+        new_paths = [fn_alter_path(path) for path in paths]
+        if any([path != new_path for path, new_path in zip(paths, new_paths)]):
+            self.add_all_measurements(IMAGE, path_feature, new_paths)
+            
+        filenames = self.get_measurement(IMAGE, file_feature,
+                                         image_set_number = all_image_numbers)
+        new_filenames = [fn_alter_path(filename) for filename in filenames]
+        if any([filename != new_filename
+                for filename, new_filename in zip(filenames, new_filenames)]):
+            self.add_all_measurements(IMAGE, file_feature, new_filenames)
+                
     ###########################################################
     #
     # Ducktyping measurements as image sets

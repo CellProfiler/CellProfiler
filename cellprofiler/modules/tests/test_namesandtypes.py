@@ -18,9 +18,16 @@ import unittest
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.namesandtypes as N
+import cellprofiler.measurements as cpmeas
+import cellprofiler.workspace as cpw
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]
+
+IMAGE_NAME = "imagename"
+ALT_IMAGE_NAME = "altimagename"
+OBJECTS_NAME = "objectsname"
+ALT_OBJECTS_NAME = "altobjectsname"
 
 def md(keys_and_counts):
     '''Generate metadata dictionaries for the given metadata shape
@@ -372,4 +379,80 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
                 self.assertEqual(len(image_set[column_name]), 1)
                 ipd = image_set[column_name][0]
                 self.assertEqual(ipd.url, "%s%d" % (column_name, i+1))
+                
+    def test_02_01_prepare_to_create_batch_single(self):
+        n = N.NamesAndTypes()
+        n.module_num = 1
+        n.assignment_method.value = N.ASSIGN_ALL
+        n.single_image_provider.value = IMAGE_NAME
+        m = cpmeas.Measurements(mode="memory")
+        pathnames = ["foo", "fuu"]
+        expected_pathnames = ["bar", "fuu"]
+        filenames = ["boo", "foobar"]
+        expected_filenames = ["boo", "barbar"]
+        urlnames = ["file:/foo/bar", "http://foo/bar"]
+        expected_urlnames = ["file:/bar/bar", "http://foo/bar"]
         
+        m.add_all_measurements(cpmeas.IMAGE,
+                               cpmeas.C_FILE_NAME + "_" + IMAGE_NAME,
+                               filenames)
+        m.add_all_measurements(cpmeas.IMAGE,
+                               cpmeas.C_PATH_NAME + "_" + IMAGE_NAME,
+                               pathnames)
+        m.add_all_measurements(cpmeas.IMAGE,
+                               cpmeas.C_URL + "_" + IMAGE_NAME,
+                               urlnames)
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(n)
+        workspace = cpw.Workspace(pipeline, n, m, None, m, None)
+        n.prepare_to_create_batch(workspace, lambda x: x.replace("foo", "bar"))
+        for feature, expected in ((cpmeas.C_FILE_NAME, expected_filenames),
+                                  (cpmeas.C_PATH_NAME, expected_pathnames),
+                                  (cpmeas.C_URL, expected_urlnames)):
+            values = m.get_measurement(cpmeas.IMAGE, 
+                                       feature + "_" + IMAGE_NAME,
+                                       np.arange(len(expected)) + 1)
+            self.assertSequenceEqual(expected, list(values))
+            
+    def test_02_02_prepare_to_create_batch_multiple(self):
+        n = N.NamesAndTypes()
+        n.module_num = 1
+        n.assignment_method.value = N.ASSIGN_RULES
+        n.add_assignment()
+        n.assignments[0].load_as_choice.value = N.LOAD_AS_GRAYSCALE_IMAGE
+        n.assignments[0].image_name.value = IMAGE_NAME
+        n.assignments[1].load_as_choice.value = N.LOAD_AS_OBJECTS
+        n.assignments[1].object_name.value = OBJECTS_NAME
+        m = cpmeas.Measurements(mode="memory")
+        pathnames = ["foo", "fuu"]
+        expected_pathnames = ["bar", "fuu"]
+        filenames = ["boo", "foobar"]
+        expected_filenames = ["boo", "barbar"]
+        urlnames = ["file:/foo/bar", "http://foo/bar"]
+        expected_urlnames = ["file:/bar/bar", "http://foo/bar"]
+        
+        for feature, name, values in (
+            (cpmeas.C_FILE_NAME, IMAGE_NAME, filenames),
+            (cpmeas.C_OBJECTS_FILE_NAME, OBJECTS_NAME, reversed(filenames)),
+            (cpmeas.C_PATH_NAME, IMAGE_NAME, pathnames),
+            (cpmeas.C_OBJECTS_PATH_NAME, OBJECTS_NAME, reversed(pathnames)),
+            (cpmeas.C_URL, IMAGE_NAME, urlnames),
+            (cpmeas.C_OBJECTS_URL, OBJECTS_NAME, reversed(urlnames))):
+            m.add_all_measurements(cpmeas.IMAGE,
+                                   feature + "_" + name,
+                                   values)
+        pipeline = cpp.Pipeline()
+        pipeline.add_module(n)
+        workspace = cpw.Workspace(pipeline, n, m, None, m, None)
+        n.prepare_to_create_batch(workspace, lambda x: x.replace("foo", "bar"))
+        for feature, name, expected in (
+            (cpmeas.C_FILE_NAME, IMAGE_NAME, expected_filenames),
+            (cpmeas.C_OBJECTS_FILE_NAME, OBJECTS_NAME, reversed(expected_filenames)),
+            (cpmeas.C_PATH_NAME, IMAGE_NAME, expected_pathnames),
+            (cpmeas.C_OBJECTS_PATH_NAME, OBJECTS_NAME, reversed(expected_pathnames)),
+            (cpmeas.C_URL, IMAGE_NAME, expected_urlnames),
+            (cpmeas.C_OBJECTS_URL, OBJECTS_NAME, reversed(expected_urlnames))):
+            values = m.get_measurement(cpmeas.IMAGE, 
+                                       feature + "_" + name,
+                                       np.arange(1, 3))
+            self.assertSequenceEqual(list(expected), list(values))

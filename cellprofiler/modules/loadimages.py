@@ -2145,44 +2145,12 @@ class LoadImages(cpmodule.CPModule):
         '''
         image_set_list = workspace.image_set_list
         m = workspace.measurements
-        for i in m.get_image_numbers():
-            image_set = image_set_list.get_image_set(i - 1)
-            for image_group in self.images:
-                for channel in image_group.channels:
-                    if self.channel_wants_images(channel):
-                        path_feature = C_PATH_NAME
-                        file_feature = C_FILE_NAME
-                        url_feature = C_URL
-                    else:
-                        path_feature = C_OBJECTS_PATH_NAME
-                        file_feature = C_OBJECTS_FILE_NAME
-                        url_feature = C_URL
-                    path_feature, file_feature, url_feature = [
-                        "_".join((f, channel.get_image_name()))
-                        for f in (path_feature, file_feature, url_feature)]
-                    
-                    url = m.get_measurement(cpmeas.IMAGE, url_feature,
-                                            image_set_number = i)
-                    if url.lower().startswith("file:"):
-                        full_name = url2pathname(url.encode("utf-8"))
-                        full_name = fn_alter_path(full_name)
-                        new_url = pathname2url(full_name)
-                        if url != new_url:
-                            m.add_measurement(cpmeas.IMAGE, url_feature,
-                                              new_url,
-                                              image_set_number = i)
-                    path = m.get_measurement(cpmeas.IMAGE, path_feature,
-                                             image_set_number = i)
-                    new_path = fn_alter_path(path)
-                    if (path != new_path):
-                        m.add_measurement(cpmeas.IMAGE, path_feature,
-                                          new_path, image_set_number = i)
-                    filename = m.get_measurement(cpmeas.IMAGE, file_feature,
-                                                 image_set_number = i)
-                    new_filename = fn_alter_path(filename)
-                    if new_filename != filename:
-                        m.add_measurement(cpmeas.IMAGE, file_feature,
-                                          new_filename, image_set_number = i)
+        for image_group in self.images:
+            for channel in image_group.channels:
+                m.alter_path_for_create_batch(
+                    channel.get_image_name(),
+                    self.channel_wants_images(channel),
+                    fn_alter_path)
                                     
         self.location.alter_for_create_batch_files(fn_alter_path)
         return True

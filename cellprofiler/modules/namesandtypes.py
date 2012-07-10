@@ -452,6 +452,30 @@ class NamesAndTypes(cpm.CPModule):
             return True
         finally:
             self.on_deactivated()
+            
+    def prepare_to_create_batch(self, workspace, fn_alter_path):
+        '''Alter pathnames in preparation for batch processing
+        
+        workspace - workspace containing pipeline & image measurements
+        fn_alter_path - call this function to alter any path to target
+                        operating environment
+        '''
+        if self.assignment_method == ASSIGN_ALL:
+            names = [self.single_image_provider.value]
+            is_image = [True]
+        else:
+            names = []
+            is_image = []
+            for group in self.assignments:
+                if group.load_as_choice == LOAD_AS_OBJECTS:
+                    names.append(group.object_name.value)
+                    is_image.append(False)
+                else:
+                    names.append(group.image_name.value)
+                    is_image.append(True)
+        for name, iz_image in zip(names, is_image):
+            workspace.measurements.alter_path_for_create_batch(
+                name, iz_image, fn_alter_path)
                         
     def is_input_module(self):
         return True

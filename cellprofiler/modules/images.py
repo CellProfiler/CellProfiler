@@ -426,6 +426,8 @@ class Images(cpm.CPModule):
             
     def prepare_run(self, workspace):
         '''Create an IPD for every url that passes the filter'''
+        if workspace.pipeline.in_batch_mode():
+            return True
         urls = filter(self.filter_url, workspace.file_list.get_filelist())
         ipds = [cpp.ImagePlaneDetails(url, None, None, None) for url in urls]
         workspace.pipeline.add_image_plane_details(ipds, False)

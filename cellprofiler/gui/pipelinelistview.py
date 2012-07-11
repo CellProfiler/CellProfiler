@@ -38,6 +38,7 @@ IMG_EYE = get_builtin_image('IMG_EYE')
 IMG_CLOSED_EYE = get_builtin_image('IMG_CLOSED_EYE')
 IMG_PAUSE = get_builtin_image('IMG_PAUSE')
 IMG_GO = get_builtin_image('IMG_GO')
+IMG_UNAVAILABLE = get_builtin_image('IMG_UNAVAILABLE')
 BMP_WARNING = wx.ArtProvider.GetBitmap(wx.ART_WARNING,size=(16,16))
 
 NO_PIPELINE_LOADED = 'No pipeline loaded'
@@ -63,6 +64,7 @@ CLOSED_EYE = "closedeye"
 PAUSE = "pause"
 GO = "go"
 NOTDEBUG = "notdebug"
+UNAVAILABLE = "unavailable"
 
 ############################
 #
@@ -166,7 +168,8 @@ class PipelineListView(object):
                             (EYE, IMG_EYE),
                             (CLOSED_EYE, IMG_CLOSED_EYE),
                             (PAUSE, IMG_PAUSE),
-                            (GO, IMG_GO)):
+                            (GO, IMG_GO),
+                            (UNAVAILABLE, IMG_UNAVAILABLE)):
             bitmap = plv_get_bitmap(image)
             idx = get_image_index(name)
             d[idx] = bitmap
@@ -240,14 +243,82 @@ class PipelineListView(object):
         self.__input_sizer.Add(self.input_list_ctrl, 1, wx.EXPAND)
         self.input_list_ctrl.InsertColumn(INPUT_ERROR_COLUMN, "")
         self.input_list_ctrl.InsertColumn(INPUT_MODULE_NAME_COLUMN, "Module")
+        #
+        # The fake input list control is shown for legacy pipelines. It's
+        # disabled to make it tantalizingly unavailable.
+        #
+        self.fake_input_list_ctrl = wx.ListCtrl(
+            self.__panel, style = wx.LC_REPORT | wx.LC_SINGLE_SEL)
+        self.__input_controls.append(self.fake_input_list_ctrl)
+        self.fake_input_list_ctrl.SetImageList(self.image_list, wx.IMAGE_LIST_SMALL)
+        self.__input_sizer.Add(self.fake_input_list_ctrl, 1, wx.EXPAND)
+        self.fake_input_list_ctrl.InsertColumn(INPUT_ERROR_COLUMN, "")
+        self.fake_input_list_ctrl.InsertColumn(INPUT_MODULE_NAME_COLUMN, "Module")
+        self.fake_input_list_ctrl.Enable(False)
+        self.fake_input_list_ctrl.SetForegroundColour(
+            wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
+        #
+        # You can't display a tooltip over a disabled window. But you can
+        # display a tooltip over a transparent window in front of the disabled
+        # window. 
+        #
+        self.transparent_window = wx.Panel(self.__panel)
+        def on_background_paint(event):
+            assert isinstance(event, wx.EraseEvent)
+            dc = event.GetDC()
+            assert isinstance(dc, wx.DC)
+            # Mostly, this painting activity is for debugging, so you
+            # can see how big the control is. But you need to handle
+            # the event to keep the control from being painted.
+            dc.SetBackgroundMode(wx.TRANSPARENT)
+            dc.SetBrush(wx.TRANSPARENT_BRUSH)
+            dc.SetPen(wx.TRANSPARENT_PEN)
+            r = self.transparent_window.GetRect()
+            dc.DrawRectangle(0, 0, r.Width, r.Height)
+            return True
+        self.transparent_window.Bind(wx.EVT_ERASE_BACKGROUND, on_background_paint)
+        def on_fake_size(event):
+            assert isinstance(event, wx.SizeEvent)
+            self.transparent_window.SetSize(event.Size)
+        self.fake_input_list_ctrl.Bind(wx.EVT_SIZE, on_fake_size)
+        def on_fake_move(event):
+            assert isinstance(event, wx.MoveEvent)
+            self.transparent_window.Move(event.Position)
+        self.fake_input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
+        self.transparent_window.SetToolTipString(
+            "The current pipeline is a legacy pipeline that does not use these modules")
+        
+        from cellprofiler.modules.images import Images
+        from cellprofiler.modules.metadata import Metadata
+        from cellprofiler.modules.namesandtypes import NamesAndTypes
+        from cellprofiler.modules.groups import Groups
+        for row, module_class in enumerate((
+            Images, Metadata, NamesAndTypes, Groups)):
+            error_item = wx.ListItem()
+            error_item.Mask = wx.LIST_MASK_IMAGE
+            error_item.Id = row
+            error_item.Image = get_image_index(UNAVAILABLE)
+            error_item.Column = INPUT_ERROR_COLUMN
+            self.fake_input_list_ctrl.InsertItem(error_item)
+            
+            module_name_item = wx.ListItem()
+            module_name_item.Mask = wx.LIST_MASK_TEXT
+            module_name_item.Text = module_class.module_name
+            module_name_item.Column = INPUT_MODULE_NAME_COLUMN
+            module_name_item.Id = row
+            self.fake_input_list_ctrl.SetItem(module_name_item)
+        self.fake_input_list_ctrl.SetColumnWidth(INPUT_MODULE_NAME_COLUMN,
+                                                 wx.LIST_AUTOSIZE)
+        
         
     def show_input_panel(self, show):
         '''Show or hide the controls for input modules
         
         show - True to show the controls, False to hide
         '''
-        for ctrl in self.__input_controls:
-            ctrl.Show(show)
+        self.input_list_ctrl.Show(show)
+        self.fake_input_list_ctrl.Show(not show)
+        self.transparent_window.Show(not show)
         
     def set_debug_mode(self, mode):
         if self.__pipeline is not None:
@@ -706,12 +777,15 @@ class PipelineListView(object):
             self.__pipeline_slider.Hide()
             self.__pipeline_slider.SetMinSize((20, 10))
         if self.input_list_ctrl.ItemCount > 0:
-            r = self.input_list_ctrl.GetItemRect(0, wx.LIST_RECT_BOUNDS)
-            height = r[3]
-            y = r[1]
-            min_width = self.input_list_ctrl.GetMinWidth()
-            min_height = y + max(1, self.input_list_ctrl.GetItemCount()) * height + 4
-            self.input_list_ctrl.SetMinSize((min_width, min_height))
+            input_list_ctrl = self.input_list_ctrl
+        else:
+            input_list_ctrl = self.fake_input_list_ctrl
+        r = input_list_ctrl.GetItemRect(0, wx.LIST_RECT_BOUNDS)
+        height = r[3]
+        y = r[1]
+        min_width = input_list_ctrl.GetMinWidth()
+        min_height = y + max(1, input_list_ctrl.GetItemCount()) * height + 4
+        input_list_ctrl.SetMinSize((min_width, min_height))
         self.__panel.Layout()
         self.__panel.SetupScrolling(scroll_x=False, scroll_y=True, scrollToTop=False)
     
@@ -752,7 +826,6 @@ class PipelineListView(object):
             module_name_item.Column = INPUT_MODULE_NAME_COLUMN
             module_name_item.Id = row
             self.input_list_ctrl.SetItem(module_name_item)
-            self.input_list_ctrl.SetItemData
         else:
             pause_item = wx.ListItem()
             pause_item.Mask = wx.LIST_MASK_IMAGE | wx.LIST_MASK_DATA

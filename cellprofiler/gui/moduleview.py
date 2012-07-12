@@ -2555,6 +2555,7 @@ class FileCollectionDisplayController(object):
             
         self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_COLLAPSED, on_item_collapsed)
         self.tree_ctrl.Bind(wx.EVT_TREE_ITEM_ACTIVATED, self.on_tree_doubleclick)
+        self.tree_ctrl.Bind(wx.EVT_ERASE_BACKGROUND, self.on_erase_background)
             
         self.panel.Bind(wx.EVT_WINDOW_DESTROY, self.on_destroy)
         self.root_item = self.tree_ctrl.AddRoot("I am the invisible root")
@@ -2595,6 +2596,26 @@ class FileCollectionDisplayController(object):
     def on_destroy(self, event):
         self.v.set_update_function()
 
+    def on_erase_background(self, event):
+        assert isinstance(event, wx.EraseEvent)
+        dc = event.DC
+        assert isinstance(dc, wx.DC)
+        brush = wx.Brush(self.tree_ctrl.GetBackgroundColour())
+        dc.SetBrush(brush)
+        dc.SetPen(wx.TRANSPARENT_PEN)
+        width, height = self.tree_ctrl.GetSize()
+        dc.DrawRectangle(0, 0, width, height)
+        if len(self.modpath_to_item) == 0:
+            text = "Drop files and folders here"
+            font = wx.Font(36, wx.FONTFAMILY_SWISS, wx.FONTSTYLE_NORMAL,
+                           wx.FONTWEIGHT_BOLD)
+            dc.SetTextForeground(wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
+            dc.SetFont(font)
+            text_width, text_height = dc.GetTextExtent(text)
+            dc.DrawText(text,
+                        (width - text_width) / 2, 
+                        (height - text_height) / 2)
+        
     def on_browse(self, event):
         logger.debug("Browsing for file collection directory")
         dlg = wx.DirDialog(self.panel, "Select a directory to add")

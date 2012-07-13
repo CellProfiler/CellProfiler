@@ -1204,6 +1204,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         self.assertEqual(module.rules_directory.dir_choice, cpprefs.DEFAULT_INPUT_FOLDER_NAME)
         self.assertEqual(module.rules_directory.custom_path, "./rules")
         self.assertEqual(module.rules_file_name, "myrules.txt")
+        self.assertEqual(module.rules_class, "1")
         self.assertEqual(module.measurement_count.value, 2)
         self.assertEqual(module.additional_object_count.value, 2)
         self.assertEqual(module.measurements[0].measurement, 
@@ -1224,6 +1225,79 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
             self.assertFalse(group.wants_outlines)
         
+    def test_05_08_load_v6(self):
+            data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+    Version:1
+    SVNRevision:9025
+    
+    FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:6|show_window:True|notes:\x5B\x5D]
+        Name the output objects:MyFilteredObjects
+        Select the object to filter:MyObjects
+        Filter using classifier rules or measurements?:Measurements
+        Select the filtering method:Limits
+        What did you call the objects that contain the filtered objects?:None
+        Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?:No
+        Name the outline image:FilteredObjects
+        Rules file location:Default input folder\x7C./rules
+        Rules file name:myrules.txt
+        Rules class:1
+        Hidden:2
+        Hidden:2
+        Select the measurement to filter by:Intensity_LowerQuartileIntensity_DNA
+        Filter using a minimum measurement value?:Yes
+        Minimum value:0.2
+        Filter using a maximum measurement value?:No
+        Maximum value:1.5
+        Select the measurement to filter by:Intensity_UpperQuartileIntensity_DNA
+        Filter using a minimum measurement value?:No
+        Minimum value:0.9
+        Filter using a maximum measurement value?:Yes
+        Maximum value:1.8
+        Select additional object to relabel:Cells
+        Name the relabeled objects:FilteredCells
+        Save outlines of relabeled objects?:No
+        Name the outline image:OutlinesFilteredCells
+        Select additional object to relabel:Cytoplasm
+        Name the relabeled objects:FilteredCytoplasm
+        Save outlines of relabeled objects?:No
+        Name the outline image:OutlinesFilteredCytoplasm
+    """
+            pipeline = cpp.Pipeline()
+            def callback(caller,event):
+                self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            pipeline.add_listener(callback)
+            pipeline.load(StringIO.StringIO(data))
+            self.assertEqual(len(pipeline.modules()), 1)
+            module = pipeline.modules()[-1]
+            self.assertTrue(isinstance(module, F.FilterObjects))
+            self.assertEqual(module.target_name, "MyFilteredObjects")
+            self.assertEqual(module.object_name, "MyObjects")
+            self.assertEqual(module.rules_or_measurement, F.ROM_MEASUREMENTS)
+            self.assertEqual(module.filter_choice, F.FI_LIMITS)
+            self.assertEqual(module.rules_directory.dir_choice, cpprefs.DEFAULT_INPUT_FOLDER_NAME)
+            self.assertEqual(module.rules_directory.custom_path, "./rules")
+            self.assertEqual(module.rules_file_name, "myrules.txt")
+            self.assertEqual(module.rules_class, "1")
+            self.assertEqual(module.measurement_count.value, 2)
+            self.assertEqual(module.additional_object_count.value, 2)
+            self.assertEqual(module.measurements[0].measurement, 
+                             "Intensity_LowerQuartileIntensity_DNA")
+            self.assertTrue(module.measurements[0].wants_minimum)
+            self.assertFalse(module.measurements[0].wants_maximum)
+            self.assertAlmostEqual(module.measurements[0].min_limit.value, 0.2)
+            self.assertAlmostEqual(module.measurements[0].max_limit.value, 1.5)
+            self.assertEqual(module.measurements[1].measurement,
+                             "Intensity_UpperQuartileIntensity_DNA")
+            self.assertFalse(module.measurements[1].wants_minimum)
+            self.assertTrue(module.measurements[1].wants_maximum)
+            self.assertAlmostEqual(module.measurements[1].min_limit.value, 0.9)
+            self.assertAlmostEqual(module.measurements[1].max_limit.value, 1.8)
+            for group, name in zip(module.additional_objects,('Cells','Cytoplasm')):
+                self.assertEqual(group.object_name, name)
+                self.assertEqual(group.target_name, "Filtered%s" % name)
+                self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
+                self.assertFalse(group.wants_outlines) 
+                
     def test_06_01_get_measurement_columns(self):
         '''Test the get_measurement_columns function'''
         workspace, module = self.make_workspace({ "my_objects": np.zeros((10,10),int) })
@@ -1314,3 +1388,41 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertTrue(np.all(target_labels[labels != 2] == 0))
         finally:
             os.remove(rules_path)
+            
+    def test_08_02_filter_by_3_class_rule(self):
+        rules_file_contents = (
+            "IF (MyObjects_MyMeasurement > 2.0, [1.0,-1.0,-1.0], [-0.5,0.5,0.5])\n"
+            "IF (MyObjects_MyMeasurement > 1.6, [0.5,0.5,-0.5], [-1.0,-1.0,1.0])\n")
+        expected_class = [None, "3", "1", "2"]
+        rules_path = tempfile.mktemp()
+        fd = open(rules_path, 'wt')
+        fd.write(rules_file_contents)
+        fd.close()
+        try:
+            for rules_class in ("1", "2", "3"):
+                labels = np.zeros((10,20),int)
+                labels[3:5,4:9] = 1
+                labels[7:9,6:12] = 2
+                labels[4:9, 14:18] = 3
+                workspace, module = self.make_workspace({ "MyObjects": labels })
+                self.assertTrue(isinstance(module, F.FilterByObjectMeasurement))
+                m = workspace.measurements
+                m.add_measurement("MyObjects","MyMeasurement", 
+                                  np.array([ 1.5, 2.3,1.8]))
+                rules_dir, rules_file = os.path.split(rules_path)
+                module.object_name.value = "MyObjects"
+                module.rules_or_measurement.value = F.ROM_RULES
+                module.rules_file_name.value = rules_file
+                module.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+                module.rules_directory.custom_path = rules_dir
+                module.rules_class.value = rules_class
+                module.target_name.value = "MyTargetObjects"
+                module.run(workspace)
+                target_objects = workspace.object_set.get_objects("MyTargetObjects")
+                target_labels = target_objects.segmented
+                kept = expected_class.index(rules_class)
+                self.assertTrue(np.all(target_labels[labels == kept] > 0))
+                self.assertTrue(np.all(target_labels[labels != kept] == 0))
+        finally:
+            os.remove(rules_path)
+        

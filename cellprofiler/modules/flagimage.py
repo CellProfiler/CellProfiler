@@ -58,16 +58,19 @@ S_ALL = [S_IMAGE, S_AVERAGE_OBJECT, S_ALL_OBJECTS, S_RULES]
 
 '''Number of settings in the module, aside from those in the flags'''
 N_FIXED_SETTINGS = 1
+
 '''Number of settings in each flag, aside from those in the measurements'''
 N_FIXED_SETTINGS_PER_FLAG = 5
-'''Number of settings per measurement'''
+
 N_SETTINGS_PER_MEASUREMENT_V2 = 7
-N_SETTINGS_PER_MEASUREMENT = 9
+N_SETTINGS_PER_MEASUREMENT_V3 = 9
+'''Number of settings per measurement'''
+N_SETTINGS_PER_MEASUREMENT = 10
 
 class FlagImage(cpm.CPModule):
    
     category = "Data Tools"
-    variable_revision_number = 3
+    variable_revision_number = 4
     module_name = "FlagImage"
     
     def create_settings(self):
@@ -196,6 +199,24 @@ class FlagImage(cpm.CPModule):
                     positive score is higher than the negative score.
                     <p>Note that if the rules are obtained from CellProfiler Analyst, the images
                     that are fail are those represented by the second number between the brackets.</p>"""))
+        def get_rules_class_choices(pipeline, group=group):
+            try:
+                rules = self.get_rules(group)
+                nclasses = len(rules.rules[0].weights[0])
+                return [str(i) for i in range(1, nclasses+1)]
+            except:
+                return [str(i) for i in range(1, 3)]
+        group.append("rules_class", cps.Choice(
+            "Class number",
+            choices = ["1", "2"],
+            choices_fn = get_rules_class_choices,
+            doc = """<i>(Used only when filtering by rules)</i>
+            <br>
+            Select which of the classes to keep when filtering. The
+            CellProfiler Analyst classifier user interface lists the names of 
+            the classes in order. By default, these are the positive (class 1)
+            and negative (class 2) classes. <b>FlagImage</b> uses the
+            first class from CellProfiler Analyst if you choose "1", etc."""))
 
         group.append("measurement", cps.Measurement("Which measurement?",
                                                     object_fn))
@@ -224,7 +245,8 @@ class FlagImage(cpm.CPModule):
                 result += [mg.source_choice, mg.object_name, mg.measurement,
                            mg.wants_minimum, mg.minimum_value,
                            mg.wants_maximum, mg.maximum_value, 
-                           mg.rules_directory, mg.rules_file_name]
+                           mg.rules_directory, mg.rules_file_name,
+                           mg.rules_class]
         return result
     
     def prepare_settings(self, setting_values):
@@ -255,7 +277,8 @@ class FlagImage(cpm.CPModule):
             if m_g.source_choice == S_ALL_OBJECTS or m_g.source_choice == S_AVERAGE_OBJECT:
                 result += [m_g.object_name]
             if m_g.source_choice == S_RULES:
-                result += [m_g.rules_directory, m_g.rules_file_name]
+                result += [m_g.rules_directory, m_g.rules_file_name,
+                           m_g.rules_class]
             else:
                 result += [m_g.measurement, m_g.wants_minimum]
                 if m_g.wants_minimum.value:
@@ -488,15 +511,21 @@ class FlagImage(cpm.CPModule):
         elif ms.source_choice == S_RULES:
             rules = self.get_rules(ms)
             scores = rules.score(workspace.measurements)
+            rules_class = int(ms.rules_class.value) - 1
             #
-            # NaN positive scores get - infinity. NaN negative scores get
-            # infinity. This means all NaN images get rejected.
+            # There should only be one in the vector, but if not, take
+            # a majority vote (e.g. are there more class 1 objects than
+            # class 2?)
             #
-            scores[np.isnan(scores[:,0]),0] = -np.Infinity
-            scores[np.isnan(scores[:,1]),1] = np.Infinity
-            fail = not (scores[:,0] > scores[:,1])
+            is_not_nan = np.any(~ np.isnan(scores), 1)
+            hit_count = np.sum(
+                np.argmax(scores[is_not_nan, :], 1).flatten() == rules_class)
+            fail = hit_count < scores.shape[0] - hit_count
             source = cpmeas.IMAGE
-            display_value = "--"
+            if len(scores) > 1:
+                display_value = "%d of %d" % (hit_count, scores.shape[0])
+            else:
+                display_value = "--"
         else:
             raise NotImplementedError("Source choice of %s not implemented" %
                                       ms.source_choice)
@@ -615,6 +644,23 @@ class FlagImage(cpm.CPModule):
             setting_values = new_setting_values
             
             variable_revision_number = 3
+            
+        if (not from_matlab) and variable_revision_number == 3:
+            # Added rules_class
+            new_setting_values = setting_values[:1]
+            idx = 1
+            for flag_idx in range(int(setting_values[0])):
+                new_setting_values += \
+                    setting_values[idx:(idx+N_FIXED_SETTINGS_PER_FLAG)]
+                meas_count = int(setting_values[idx])
+                idx += N_FIXED_SETTINGS_PER_FLAG
+                for meas_idx in range(meas_count):
+                    new_setting_values += \
+                        setting_values[idx:(idx+N_SETTINGS_PER_MEASUREMENT_V3)]
+                    new_setting_values += ["1"]
+                    idx += N_SETTINGS_PER_MEASUREMENT_V3
+            setting_values = new_setting_values
+            variable_revision_number = 4
             
         return setting_values, variable_revision_number, from_matlab
     

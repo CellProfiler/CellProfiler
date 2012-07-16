@@ -247,6 +247,7 @@ class EditObjectsManually(I.Identify):
         from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
         from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
+        from cellprofiler.icons import get_builtin_image
         
         assert isinstance(workspace,cpw.Workspace)
         orig_objects_name = self.object_name.value
@@ -265,9 +266,9 @@ class EditObjectsManually(I.Identify):
         figure = matplotlib.figure.Figure()
         panel = FigureCanvasWxAgg(dialog_box, -1, figure)
         sizer.Add(panel, 1, wx.EXPAND)
+        
         toolbar = NavigationToolbar2WxAgg(panel)
         sizer.Add(toolbar, 0, wx.EXPAND)
-        mask = orig_labels != 0
         #
         # Make 3 axes
         #
@@ -341,14 +342,42 @@ class EditObjectsManually(I.Identify):
         button_sizer.SetNegativeButton(cancel_button)
         button_sizer.Realize()
         
+        #########################################
+        #
+        # Construct a stable label index transform
+        # and a color display image.
+        #
+        #########################################
+        
+        clabels = renumber_labels_for_display(orig_labels)
+        nlabels = clabels.max()
+        label_map = np.zeros(nlabels + 1, clabels.dtype)
+        label_map[orig_labels.flatten()] = clabels.flatten()
+        outlines = outline(clabels)
+        oi, oj = np.argwhere(outlines != 0).transpose()
+        ol = orig_labels[oi, oj]
+        image = workspace.image_set.get_image(self.image_name.value)
+        image = image.pixel_data.astype(np.float)
+        image, _ = cpo.size_similarly(orig_labels, image)
+        if image.ndim == 2:
+            image = np.dstack((image, image, image))
+        cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+        cm.set_bad((0,0,0))
+    
+        mappable = matplotlib.cm.ScalarMappable(cmap=cm)
+        mappable.set_clim(1, nlabels+1)
+        colormap = mappable.to_rgba(np.arange(nlabels + 1))[:, :3]
+        colormap = colormap[label_map, :]
+        oc = colormap[ol, :]
+        
+        to_keep = np.ones(nlabels + 1, bool)
+
         ################### d i s p l a y #######
         #
         # The following is a function that we can call to refresh
         # the figure's appearance based on the mask and the original labels
         #
         ##########################################
-        cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-        cm.set_bad((0,0,0))
         
         def display():
             if len(orig_axes.images) > 0:
@@ -358,36 +387,21 @@ class EditObjectsManually(I.Identify):
                 set_lim = True
             else:
                 set_lim = False
-            for axes, labels, title in (
-                (orig_axes, orig_labels, "Original: %s"%orig_objects_name),
-                (keep_axes, orig_labels * mask,"Objects to keep"),
-                (remove_axes, orig_labels * (~ mask), "Objects to remove")):
+            for axes, keep, title in (
+                (orig_axes, np.ones(nlabels+1, bool), 
+                 "Original: %s"%orig_objects_name),
+                (keep_axes, to_keep,"Objects to keep"),
+                (remove_axes, ~ to_keep, "Objects to remove")):
                 
                 assert isinstance(axes, matplotlib.axes.Axes)
-                labels = renumber_labels_for_display(labels)
                 axes.clear()
-                if np.all(labels == 0):
-                    use_cm = matplotlib.cm.gray
-                    is_blank = True
-                else:
-                    use_cm = cm
-                    is_blank = False
                 if wants_image_display[0]:
-                    outlines = outline(labels)
-                    image = workspace.image_set.get_image(self.image_name.value)
-                    image = image.pixel_data.astype(np.float)
-                    image, _ = cpo.size_similarly(labels, image)
-                    if image.ndim == 2:
-                        image = np.dstack((image, image, image))
-                    if not is_blank:
-                        mappable = matplotlib.cm.ScalarMappable(cmap=use_cm)
-                        mappable.set_clim(1,labels.max())
-                        limage = mappable.to_rgba(labels)[:,:,:3]
-                        image[outlines != 0,:] = limage[outlines != 0, :]
-                    axes.imshow(image)
-                    
+                    cimage = image.copy()
                 else:
-                    axes.imshow(labels, cmap = use_cm)
+                    cimage = np.zeros(image.shape, image.dtype)
+                kmask = keep[ol]
+                cimage[oi[kmask], oj[kmask], :] = oc[kmask, :]
+                axes.imshow(cimage)
                 axes.set_title(title,
                                fontname=cpprefs.get_title_font_name(),
                                fontsize=cpprefs.get_title_font_size())
@@ -435,11 +449,11 @@ class EditObjectsManually(I.Identify):
             if lnum == 0:
                 return
             if event.inaxes == orig_axes:
-                mask[orig_labels == lnum] = ~mask[orig_labels == lnum]
+                to_keep[lnum] = not to_keep[lnum]
             elif event.inaxes == keep_axes:
-                mask[orig_labels == lnum] = False
+                to_keep[lnum] = False
             else:
-                mask[orig_labels == lnum] = True
+                to_keep[lnum] = True
             display()
             
         figure.canvas.mpl_connect('button_press_event', on_click)
@@ -451,17 +465,17 @@ class EditObjectsManually(I.Identify):
         ################################
 
         def on_keep(event):
-            mask[:,:] = (orig_labels != 0)
+            to_keep[1:] = True
             display()
         dialog_box.Bind(wx.EVT_BUTTON, on_keep, keep_button)
         
         def on_remove(event):
-            mask[:,:] = 0
+            to_keep[1:] = False
             display()
         dialog_box.Bind(wx.EVT_BUTTON, on_remove, remove_button)
         
         def on_toggle(event):
-            mask[orig_labels != 0] = ~mask[orig_labels != 0]
+            to_keep[1:] = ~ to_keep[1:]
             display()
         dialog_box.Bind(wx.EVT_BUTTON, on_toggle, toggle_button)
         
@@ -471,8 +485,7 @@ class EditObjectsManually(I.Identify):
         dialog_box.Destroy()
         if result != wx.OK:
             raise RuntimeError("User cancelled EditObjectsManually")
-        filtered_labels = orig_labels.copy()
-        filtered_labels[~mask] = 0
+        filtered_labels = orig_labels * to_keep[orig_labels]
         return filtered_labels
     
     def get_measurement_columns(self, pipeline):

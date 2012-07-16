@@ -166,7 +166,20 @@ class TestFillLabeledHoles(unittest.TestCase):
             [ 0, 1, 1, 1, 2, 2, 2, 0 ],
             [ 0, 0, 0, 0, 0, 0, 0, 0 ]])
         result = morph.fill_labeled_holes(labels)
-        self
+        self.assertTrue(np.all(labels == result))
+        
+    def test_12_too_many_objects(self):
+        # Regression test of issue # 352 - code failed if
+        # more than 64K objects in background 4-labeling
+        #
+        # Create a checkerboard image. The 4-labeling will have > 64K
+        # labels.
+        #
+        i, j = np.mgrid[0:513, 0:513]
+        labels = (i % 2) != (j % 2)
+        # Program would segfault within this call
+        result = morph.fill_labeled_holes(labels)
+    
 
 class TestAdjacent(unittest.TestCase):
     def test_00_00_zeros(self):

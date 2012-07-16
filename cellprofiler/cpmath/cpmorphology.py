@@ -75,8 +75,8 @@ def fill_labeled_holes(labels, mask=None, size_fn = None):
         background &= mask
     
     blabels, count = scind.label(background, four_connect)
-    lcount = np.max(labels)
     labels = labels.copy().astype(int)
+    lcount = np.max(labels)
     labels[blabels != 0] = blabels[blabels != 0] + lcount + 1
     lmax = lcount + count + 1
     is_not_hole = np.ascontiguousarray(np.zeros(lmax + 1, np.uint8))
@@ -95,15 +95,17 @@ def fill_labeled_holes(labels, mask=None, size_fn = None):
     #
     # Find all 4-connected adjacent pixels
     #
-    a = np.unique(labels[:-1, :] + labels[1:, :] * (lmax + 1))
-    a = np.unique(np.hstack([a, np.unique(labels[:, :-1] + labels[:, 1:] *
-                                          (lmax + 1))]))
-    i, j = (a % (lmax + 1), (a / (lmax + 1)).astype(int))
-    i, j = i[i != j], j[i != j]
+    i = np.hstack([labels[:-1, :].flatten(), labels[:, :-1].flatten()])
+    j = np.hstack([labels[1:, :].flatten(), labels[:, 1:].flatten()])
+    i, j = i[i!=j], j[i!=j]
     if (len(i)) > 0:
         order = np.lexsort((j, i))
         i = i[order]
         j = j[order]
+        # Remove duplicates.
+        first = np.hstack([[True], (i[:-1] != i[1:]) | (j[:-1] != j[1:])])
+        i = i[first]
+        j = j[first]
         #
         # Now we make a ragged array of i and j
         #

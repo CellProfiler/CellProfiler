@@ -1140,23 +1140,27 @@ class ExportToDatabase(cpm.CPModule):
                  "to only one object's data at a time in CPA. Choose %s to write a single\n"
                  "object table.") % OT_COMBINE, self.separate_object_tables)
                 
-        '''Warn user re: bad characters in filter/group names and class_table name'''
+        '''Warn user re: bad characters in object used for center, filter/group names and class_table name'''
         if self.save_cpa_properties:
+            warning_string = "CellProfiler Analyst will not recogize this %s because it contains invalid characters. Allowable characters are letters, numbers and underscores."
+            if not re.match("^[\w]*$",self.location_object.value):
+                raise cps.ValidationError(warning_string%"object",self.location_object)
+            
             if self.properties_wants_groups:
                 for group in self.group_field_groups:
                     if not re.match("^[\w]*$",group.group_name.value) or group.group_name.value == '':
-                        raise cps.ValidationError("CellProfiler Analyst will not recognize this group name because it has invalid characters.",group.group_name)
+                        raise cps.ValidationError(warning_string%"group name",group.group_name)
             
             if self.properties_wants_filters:
                 for group in self.filter_field_groups:
                     if not re.match("^[\w]*$",group.filter_name.value) or group.filter_name.value == '':
-                        raise cps.ValidationError("CellProfiler Analyst will not recognize this filter name because it has invalid characters.",group.filter_name)
+                        raise cps.ValidationError(warning_string%"filter name",group.filter_name)
                     if not re.match("^[\w\s\"\'=]*$",group.filter_statement.value) or group.filter_statement.value == '':
-                        raise cps.ValidationError("CellProfiler Analyst will not recognize this filter statement because it has invalid characters.",group.filter_statement)
+                        raise cps.ValidationError(warning_string%"filter statement",group.filter_statement)
 
             if self.properties_class_table_name:
                 if not re.match("^[\w]*$",self.properties_class_table_name.value):
-                    raise cps.ValidationError("CellProfiler Analyst will not recognize this class table name because it has invalid characters.",self.properties_class_table_name)
+                    raise cps.ValidationError(warning_string%"class table name",self.properties_class_table_name)
             
     def make_full_filename(self, file_name, 
                            workspace = None, image_set_index = None):

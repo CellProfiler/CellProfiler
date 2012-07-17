@@ -183,19 +183,19 @@ SUPPORTED_IMAGE_EXTENSIONS = set([
 SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
 
 SUPPORTED_MOVIE_EXTENSIONS = set(['.avi', '.mpeg', '.stk','.flex', '.mov', '.tif', 
-                                  '.tiff','.zvi'])
+                                  '.tiff','.zvi','.lsm'])
 
 if has_bioformats:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
     SUPPORTED_IMAGE_EXTENSIONS.update([
         ".1sc",".2fl",".afm", ".aim", ".avi", ".co1",".flex", ".fli", ".gel", 
         ".ics", ".ids", ".im", ".img", ".j2k", ".lif", ".lsm", ".mpeg", ".pic", 
-        ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi", ".c01"])
+        ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi", ".c01", ".lsm"])
     SUPPORTED_MOVIE_EXTENSIONS.update(['mng'] )
 else:
     FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
 
-USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01",'.zvi','.mov','.png']
+USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01",'.zvi','.mov','.png','.lsm']
 
 # The metadata choices:
 # M_NONE - don't extract metadata
@@ -425,7 +425,7 @@ class LoadImages(cpmodule.CPModule):
                 to place the images from each plate in a separate folder). The next setting allows you
                 to select the metadata tags by which to group.%(USING_METADATA_GROUPING_HELP_REF)s
                 
-                <p>Plase note that if you are loading a movie file(e.g., TIFs, FLEX, STKs, AVIs, ZVIs), each movie
+                <p>Please note that if you are loading a movie file(e.g., TIFs, FLEX, STKs, AVIs, ZVIs), each movie
                 is already treated as a group of images, so there is no need to enable here."""%globals())
         
         self.metadata_fields = cps.MultiChoice('Specify metadata fields to group by',[],doc="""

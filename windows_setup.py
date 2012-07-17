@@ -159,7 +159,7 @@ opts = {
                               "matplotlib", "matplotlib.numerix.random_array",
                               "email.iterators",
                               "cellprofiler.modules.*"],
-                'excludes': ['pylab','Tkinter','Cython'],
+                'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],
                 'dll_excludes': ["jvm.dll"]
               },
     'msi': {}
@@ -183,6 +183,12 @@ try:
                                    "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic",
                                    "sip"]
     opts['py2exe']['excludes'] += ["ilastik"]
+    #
+    # Put path to QT dlls in PATH environment variable
+    #
+    import PyQt4
+    pyqt4_path = os.path.split(PyQt4.__file__)[0]
+    os.environ["PATH"] = os.environ["PATH"] + ";" + pyqt4_path
     il_path = ilastik.__path__[0]
     for root, subFolders, files in os.walk(il_path):
         #

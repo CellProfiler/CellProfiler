@@ -265,7 +265,14 @@ class inter_proc_ij_bridge(ij_bridge, Singleton):
         self.server_socket.listen(5)
         self.server_socket.listen(5)
         print "ImageJ bridge TCPServer waiting for client on port", self.port
-        self.ijproc = Popen(shlex.split('java -Xmx512m TCPClient %s'%(self.port)),
+        from cellprofiler.preferences import get_ij_plugin_directory
+        plugin_dir =  get_ij_plugin_directory()
+        if plugin_dir is not None:
+            command = 'java -Xmx512m -Dplugins.dir=%s TCPClient %s' % (
+                plugin_dir, self.port)
+        else:
+            command = 'java -Xmx512m TCPClient %s' % self.port
+        self.ijproc = Popen(shlex.split(command),
                             stdin=None, stdout=None, stderr=None)
         self.client_socket, address = self.server_socket.accept()
         print "ImageJ bridge got a connection from", address      

@@ -1,3 +1,5 @@
+import logging
+logger = logging.getLogger(__name__)
 import sys
 import threading
 import zmq
@@ -5,6 +7,7 @@ import Queue
 import numpy as np
 import cellprofiler.cpgridinfo as cpg
 
+NOTIFY_SOCKET_ADDR = 'inproc://BoundaryNotifications'
 def make_CP_encoder(buffers):
     '''create an encoder for CellProfiler data and numpy arrays (which will be
     stored in the input argument)'''
@@ -105,7 +108,8 @@ class Communicable(object):
         Communicable.send(reply_obj, self._socket, self._routing)
         self._replied = True
         if please_reply:
-            return reply_obj.recv(self._socket)
+            raise NotImplementedError(
+                "Req / rep / rep / rep pattern is no longer supported")
 
 
 class Request(Communicable):
@@ -129,6 +133,18 @@ class Request(Communicable):
     def send(self, socket):
         Communicable.send(self, socket)
         return Communicable.recv(socket)
+    
+    def send_only(self, socket):
+        '''Send the request but don't perform the .recv
+        
+        socket - send on this socket
+        
+        First part of a two-part client-side request: send the request
+        with an expected .recv, possibly after polling to make the .recv
+        non-blocking.
+        '''
+        Communicable.send(self, socket)
+        
 
     def reply(self, reply_obj, please_reply=False):
         '''send a reply to a request.  If please_reply is True, wait for and
@@ -136,6 +152,17 @@ class Request(Communicable):
         like a Request object, i.e., it should be replied to.'''
         assert isinstance(reply_obj, Reply), "send_reply() called with something other than a Reply object!"
         return Communicable.reply(self, reply_obj, please_reply)
+    
+class AnalysisRequest(Request):
+    '''A request associated with an analysis
+    
+    Every analysis request is made with an analysis ID. The Boundary
+    will reply with BoundaryExited if the analysis associated with the
+    analysis ID has been cancelled.
+    '''
+    def __init__(self, analysis_id, **kwargs):
+        Request.__init__(self, **kwargs)
+        self.analysis_id = analysis_id
 
 
 class Reply(Communicable):
@@ -156,7 +183,130 @@ class UpstreamExit(Reply):
 class BoundaryExited(UpstreamExit):
     pass
 
+the_boundary = None
 
+def start_boundary():
+    global the_boundary
+    if the_boundary is None:
+        the_boundary = Boundary("tcp://127.0.0.1")
+    return the_boundary
+
+def get_announcer_address():
+    return start_boundary().announce_address
+
+def register_analysis(analysis_id, upward_queue, upward_cv):
+    '''Register for all analysis request messages with the given ID
+    
+    analysis_id - the analysis ID present in every AnalysisRequest
+    
+    upward_queue - requests are placed on this queue
+    
+    upward_cv - the condition variable used to signal the queue's thread
+    
+    returns the boundary singleton.
+    '''
+    global the_boundary
+    start_boundary()
+    the_boundary.register_analysis(analysis_id, upward_queue, upward_cv)
+    return the_boundary
+
+def cancel_analysis(analysis_id):
+    '''Cancel an analysis.
+    
+    analysis_id - analysis ID of the analysis to be cancelled
+    
+    Calling cancel_analysis guarantees that all AnalysisRequests with the 
+    given analysis_id without matching replies will receive replies of
+    BoundaryExited and that no request will be added to the upward_queue
+    after the call returns.
+    '''
+    global the_boundary
+    the_boundary.cancel_analysis(analysis_id)
+    
+def join_to_the_boundary():
+    '''Send a stop signal to the boundary thread and join to it'''
+    global the_boundary
+    if the_boundary is not None:
+        the_boundary.join()
+        the_boundary = None
+
+class AnalysisContext(object):
+    '''The analysis context holds the pieces needed to route analysis requests'''
+    
+    def __init__(self, analysis_id, upq, upcv, lock):
+        self.lock = lock
+        self.analysis_id = analysis_id
+        self.upq = upq
+        self.upcv = upcv
+        self.cancelled = False
+        # A map of requests pending to the closure that can be used to
+        # reply to the request
+        self.reqs_pending = {}
+        
+    def reply(self, req, rep):
+        '''Reply to a AnalysisRequest with this analysis ID
+        
+        rep - the intended reply
+        
+        Returns True if the intended reply was sent, returns False
+        if BoundaryExited was sent instead.
+        
+        Always executed on the boundary thread.
+        '''
+        with self.lock:
+            if self.cancelled:
+                return False
+            self.reqs_pending[req](rep)
+            del self.reqs_pending[req]
+            return True
+        
+    def enqueue(self, req):
+        '''Enqueue a request on the upward queue
+        
+        req - request to be enqueued. The enqueue should be done before
+              req.reply is replaced.
+        
+        returns True if the request was enqueued, False if the analysis
+        has been cancelled. It is up to the caller to send a BoundaryExited
+        reply to the request.
+        
+        Always executes on the boundary thread.
+        '''
+        with self.lock:
+            if not self.cancelled:
+                assert req not in self.reqs_pending
+                self.reqs_pending[req] = req.reply
+                self.upq.put(req)
+                with self.upcv:
+                    self.upcv.notify_all()
+                return True
+            else:
+                req.reply(BoundaryExited())
+                return False
+        
+    def cancel(self):
+        '''Cancel this analysis
+        
+        All analysis requests will receive BoundaryExited() after this
+        method returns.
+        '''
+        with self.lock:
+            if self.cancelled:
+                return
+            self.cancelled = True
+            self.upq = None
+            self.upcv = None
+            
+    def handle_cancel(self):
+        '''Handle a cancel in the boundary thread.
+        
+        Take care of workers expecting replies.
+        '''
+        with self.lock:
+            for req, reply_fn in self.reqs_pending.iteritems():
+                reply_fn(BoundaryExited())
+            self.reqs_pending = {}
+            
 class Boundary(object):
     '''This object serves as the interface between a ZMQ socket passing
     Requests and Replies, and a thread or threads serving those requests.
@@ -164,110 +314,237 @@ class Boundary(object):
     and notify_all() is called on updward_cv.  Replies (via the Request.reply()
     method) are dispatched to their requesters via a downward queue.
 
-    The address of the request
+    The Boundary wakes up the socket thread via the notify socket. This lets
+    the socket thread poll for changes on the notify and request sockets, but
+    allows it to receive Python objects via the downward queue.
     '''
-    def __init__(self, zmq_address, upward_queue, upward_cv, random_port=True):
+    def __init__(self, zmq_address, port=None):
+        '''Construction
+        
+        zmq_address - the address for announcements and requests
+        port - the port for announcements, defaults to random
+        '''
+        self.analysis_dictionary = {}
+        self.analysis_dictionary_lock = threading.RLock()
         self.zmq_context = zmq.Context()
-        self.upq = upward_queue
-        self.upcv = upward_cv
+        # The downward queue is used to feed replies to the socket thread
         self.downward_queue = Queue.Queue()
-        self.reqs_pending = set()
-        self._stop = False
 
         # socket for handling downward notifications
         self.selfnotify_socket = self.zmq_context.socket(zmq.SUB)
-        self.selfnotify_socket.bind('inproc://BoundaryNotifications')
+        self.selfnotify_socket.bind(NOTIFY_SOCKET_ADDR)
         self.selfnotify_socket.setsockopt(zmq.SUBSCRIBE, '')
         self.threadlocal = threading.local()  # for connecting to notification socket, and receiving replies
 
+        # announce socket
+        
+        self.announce_socket = self.zmq_context.socket(zmq.PUB)
+        if port is None:
+            self.announce_port = self.announce_socket.bind_to_random_port(zmq_address)
+            self.announce_address = "%s:%d" % (zmq_address, self.announce_port)
+        else:
+            self.announce_address = "%s:%d" % (zmq_address, port)
+            self.announce_port = self.announce_socket.bind(self.announce_address)
+            
         # socket where we receive Requests
         self.request_socket = self.zmq_context.socket(zmq.ROUTER)
-        if random_port:
-            self.request_port = self.request_socket.bind_to_random_port(zmq_address)
-            self.request_address = zmq_address + (':%d' % self.request_port)
-        else:
-            self.request_port = self.request_socket.bind(zmq_address)
-            self.request_address = zmq_address
-
-        self.thread = threading.Thread(target=self.spin,
-                                       args=(self.selfnotify_socket, self.request_socket),
-                                       name="Boundary spin()")
+        self.request_port = self.request_socket.bind_to_random_port(zmq_address)
+        self.request_address = zmq_address + (':%d' % self.request_port)
+            
+        self.thread = threading.Thread(
+            target=self.spin,
+            args=(self.selfnotify_socket, self.request_socket),
+            name="Boundary spin()")
         self.thread.daemon = True
         self.thread.start()
+        
+    '''Notify the socket thread that an analysis was added'''
+    NOTIFY_REGISTER_ANALYSIS = "register analysis"
+    '''Notify the socket thread that a reply is ready to be sent'''
+    NOTIFY_REPLY_READY = "reply ready"
+    '''Cancel an analysis. The analysis ID is the second part of the message'''
+    NOTIFY_CANCEL_ANALYSIS = "cancel analysis"
+    '''Stop the socket thread'''
+    NOTIFY_STOP = "stop"
+    
+    def register_analysis(self, analysis_id, upward_queue, upward_cv):
+        '''Register a queue to receive analysis requests
+        
+        analysis_id - the analysis ID embedded in each analysis request
+        
+        upward_queue - place the requests on this queue
+        
+        upward_cv - signal the queue's thread with this condition variable
+        '''
+        with self.analysis_dictionary_lock:
+            self.analysis_dictionary[analysis_id] = AnalysisContext(
+                analysis_id, upward_queue, upward_cv, 
+                self.analysis_dictionary_lock)
+        response_queue = Queue.Queue()
+        self.send_to_boundary_thread(self.NOTIFY_REGISTER_ANALYSIS,
+                                     (analysis_id, response_queue))
+        response_queue.get()
+            
+    def cancel(self, analysis_id):
+        '''Cancel an analysis
+        
+        All requests with the given analysis ID will get a BoundaryExited
+        reply after this call returns.
+        '''
+        with self.analysis_dictionary_lock:
+            if self.analysis_dictionary[analysis_id].cancelled:
+                return
+            self.analysis_dictionary[analysis_id].cancel()
+        response_queue = Queue.Queue()
+        self.send_to_boundary_thread(self.NOTIFY_CANCEL_ANALYSIS, 
+                                     (analysis_id, response_queue))
+        response_queue.get()
+        
+    def handle_cancel(self, analysis_id, response_queue):
+        '''Handle cancellation in the boundary thread'''
+        with self.analysis_dictionary_lock:
+            self.analysis_dictionary[analysis_id].handle_cancel()
+        self.announce_analyses()
+        response_queue.put("OK")
+        
+    def join(self):
+        '''Join to the boundary thread.
+
+        Note that this should only be done at a point where no worker truly
+        expects a reply to its requests.
+        '''
+        self.send_to_boundary_thread(self.NOTIFY_STOP, None)
+        self.thread.join()
 
     def spin(self, selfnotify_socket, request_socket):
-        poller = zmq.Poller()
-        poller.register(selfnotify_socket, zmq.POLLIN)
-        poller.register(request_socket, zmq.POLLIN)
+        try:
+            poller = zmq.Poller()
+            poller.register(selfnotify_socket, zmq.POLLIN)
+            poller.register(request_socket, zmq.POLLIN)
+            
+            received_stop = False
+    
+            while not received_stop:
+                self.announce_analyses()
+                socks = dict(poller.poll(1000))  # milliseconds
+                if socks.get(selfnotify_socket, None) == zmq.POLLIN:
+                    # Discard the actual contents
+                    _ = selfnotify_socket.recv()
+                #
+                # Under all circumstances, read everything from the queue
+                #
+                try:
+                    while True:
+                        notification, arg = self.downward_queue.get_nowait()
+                        if notification == self.NOTIFY_REPLY_READY:
+                            req, rep = arg
+                            self.handle_reply(req, rep)
+                        elif notification == self.NOTIFY_CANCEL_ANALYSIS:
+                            analysis_id, response_queue = arg
+                            self.handle_cancel(analysis_id, response_queue)
+                        elif notification == self.NOTIFY_REGISTER_ANALYSIS:
+                            analysis_id, response_queue = arg
+                            self.handle_register_analysis(analysis_id, response_queue)
+                        elif notification == self.NOTIFY_STOP:
+                            received_stop = True
+                except Queue.Empty:
+                    pass
+                if socks.get(request_socket, None) == zmq.POLLIN:
+                    req = Communicable.recv(request_socket, routed=True)
+                    if not isinstance(req, AnalysisRequest):
+                        logger.warn(
+                            "Received a request that wasn't an AnalysisRequest: %s"% 
+                            str(type(req)))
+                        req.reply(BoundaryExited())
+                        continue
+                    #
+                    # Filter out requests for cancelled analyses.
+                    #
+                    with self.analysis_dictionary_lock:
+                        analysis_context = self.analysis_dictionary[req.analysis_id]
+                        if not analysis_context.enqueue(req):
+                            continue
+    
+                        # ZMQ requires that replies sent out on the socket be from the
+                        # thread that received them.
+    
+                        def reply_in_boundary_thread(rep, 
+                                                     req = req, 
+                                                     please_reply=False):
+                            self.send_to_boundary_thread(
+                                self.NOTIFY_REPLY_READY, (req, rep))
+                        
+                        req.reply = reply_in_boundary_thread
+                
+            #
+            # We assume here that workers trying to communicate with us will
+            # be shut down abruptly without needing replies to pending requests.
+            # There's not much we can do in terms of handling that in a more
+            # orderly fashion since workers might be formulating requests as or
+            # after we have shut down. But calling cancel on all the analysis
+            # contexts will raise exceptions in any thread waiting for a rep/rep.
+            #
+            # You could call analysis_context.handle_cancel() here, what if it
+            # blocks?
+            self.announce_socket.close()
+            with self.analysis_dictionary_lock:
+                for analysis_context in self.analysis_dictionary.values():
+                    analysis_context.cancel()
+    
+            self.request_socket.close()  # will linger until messages are delivered
+        except:
+            #
+            # Pretty bad - a logic error or something extremely unexpected
+            #              We're close to hosed here, best to die an ugly death.
+            #
+            logger.critical("Unhandled exception in boundary thread.",
+                            exc_info=10)
+            import os
+            os._exit(-1)
+        
+    def send_to_boundary_thread(self, msg, arg):
+        '''Send a message to the boundary thread via the notify socket
+        
+        Send a wakeup call to the boundary thread by sending arbitrary
+        data to the notify socket, placing the real objects of interest
+        on the downward queue.
+        
+        msg - message placed in the downward queue indicating the purpose
+              of the wakeup call
+              
+        args - supplementary arguments passed to the boundary thread via
+               the downward queue.
+        '''
+        if not hasattr(self.threadlocal, 'notify_socket'):
+            self.threadlocal.notify_socket = self.zmq_context.socket(zmq.PUB)
+            self.threadlocal.notify_socket.connect(NOTIFY_SOCKET_ADDR)
+        self.downward_queue.put((msg, arg))
+        self.threadlocal.notify_socket.send('WAKE UP!')
+        
+    def announce_analyses(self):
+        with self.analysis_dictionary_lock:
+            valid_analysis_ids = [
+                analysis_id for analysis_id in self.analysis_dictionary.keys()
+                if not self.analysis_dictionary[analysis_id].cancelled]
+        self.announce_socket.send_json([
+            (analysis_id, self.request_address)
+            for analysis_id in valid_analysis_ids])
 
-        # Dict of routing info for replies using please_reply=True, with values
-        # of the Queue to put the result on.
-        waiting_for_reply = {}
-
-        while (not self._stop) or (not self.downward_queue.empty()):
-            socks = dict(poller.poll(1000))  # milliseconds
-            if socks.get(selfnotify_socket, None) == zmq.POLLIN:
-                selfnotify_socket.recv()  # drop notification
-                req, orig_reply, rep, please_reply, please_reply_queue = self.downward_queue.get()
-                if please_reply:
-                    waiting_for_reply[req.routing()] = please_reply_queue
-                orig_reply(rep)
-                self.reqs_pending.remove(req)
-            if socks.get(request_socket, None) == zmq.POLLIN:
-                req = Communicable.recv(request_socket, routed=True)
-
-                # ZMQ requires that replies sent out on the socket be from the
-                # thread that received them.
-                def wrap_reply(req, orig_reply):
-                    def reply_in_boundary_thread(rep, please_reply=False):
-                        # connect to the notify socket using thread-local data.
-                        if not hasattr(self.threadlocal, 'notify_socket'):
-                            self.threadlocal.notify_socket = self.zmq_context.socket(zmq.PUB)
-                            self.threadlocal.notify_socket.connect('inproc://BoundaryNotifications')
-                            self.threadlocal.please_reply_queue = Queue.Queue()
-                        self.downward_queue.put((req, orig_reply, rep,
-                                                 please_reply, self.threadlocal.please_reply_queue))
-                        # signal boundary thread to process reply
-                        self.threadlocal.notify_socket.send("reply ready")
-                        if please_reply:
-                            return self.threadlocal.please_reply_queue.get()
-                    return reply_in_boundary_thread
-
-                req.reply = wrap_reply(req, req.reply)
-
-                # Further, REQ sockets must receive a reply before sending
-                # another request, so we ensure that any not-yet-replied-to
-                # reqs get a reply when we exit to keep from freezing the other
-                # process
-                self.reqs_pending.add(req)
-
-                # If this req is actually a Reply in response to a Reply with
-                # please_reply=True, put it in the relevant queue.
-                if req.routing() in waiting_for_reply:
-                    waiting_for_reply[req.routing()].put(req)
-                    del waiting_for_reply[req.routing()]
-                else:
-                    # otherwise, put it in the default queue
-                    self.upq.put(req)
-                    with self.upcv:
-                        self.upcv.notify_all()
-
-        # Ensure every pending req gets a reply.  There is a race condition
-        # here, which we ignore for now, in that new requests come in during
-        # the shutdown phase, and do not get a reply.
-        for req in self.reqs_pending:
-            req.reply(BoundaryExited())
-        while not self.downward_queue.empty():
-            req, orig_reply, rep, please_reply, please_reply_queue = self.downward_queue.get()
-            try:
-                orig_reply(rep)
-            except Communicable.MultipleReply:
-                pass
-
-        self.request_socket.close()  # will linger until messages are delivered
-
-    def stop(self):
-        self._stop = True
+    def handle_reply(self, req, rep):
+        with self.analysis_dictionary_lock:
+            analysis_context = self.analysis_dictionary.get(req.analysis_id)
+            analysis_context.reply(req, rep)
+        
+    def handle_register_analysis(self, analysis_id, response_queue):
+        '''Handle a request to register an analysis
+        
+        analysis_id - analysis_id of new analysis
+        response_queue - response queue. Any announce subscriber that registers
+                         after the response is placed in this queue
+                         will receive an announcement of the analysis.
+        '''
+        self.announce_analyses()
+        response_queue.put("OK")
 
 
 if __name__ == '__main__':

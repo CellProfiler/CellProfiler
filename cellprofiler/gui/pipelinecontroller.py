@@ -87,6 +87,7 @@ class PipelineController:
         # interaction/display requests and exceptions from an Analysis
         self.interaction_request_queue = Queue.PriorityQueue()
         self.interaction_pending = False
+        self.debug_request_queue = None
 
         self.populate_recent_files()
         self.menu_id_to_module_name = {}
@@ -1057,6 +1058,10 @@ class PipelineController:
             wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress, total_jobs, completed)
         elif isinstance(evt, cpanalysis.AnalysisFinished):
             print ("Cancelled!" if evt.cancelled else "Finished!")
+            # The event has the measurements for the run and the measurements
+            # file is open - maybe later you want to do something with this
+            # file? But for now, we close it.
+            evt.measurements.close()
             # drop any interaction/display requests or exceptions
             while True:
                 try:
@@ -1072,6 +1077,16 @@ class PipelineController:
         elif isinstance(evt, cpanalysis.ExceptionReport):
             self.interaction_request_queue.put((PRI_EXCEPTION, self.analysis_exception, evt))
             wx.CallAfter(self.handle_analysis_feedback)
+        elif isinstance(evt, (cpanalysis.DebugWaiting, cpanalysis.DebugComplete)):
+            # These are handled by the dialog reading the debug
+            # request queue
+            if self.debug_request_queue is None:
+                # Things are in a bad state here, possibly because the
+                # user hasn't properly run the debugger. Chances are that
+                # the user knows that something is going wrong.
+                evt.reply(cpanalysis.ServerExited())
+            else:
+                self.debug_request_queue.put(evt)
         elif isinstance(evt, cpanalysis.AnalysisPaused):
             print "Paused"
         elif isinstance(evt, cpanalysis.AnalysisResumed):
@@ -1160,44 +1175,48 @@ class PipelineController:
         '''Report an error in analysis to the user, giving options for
         skipping, aborting, and debugging.'''
 
-        # The interaction here is getting a bit overly complex.  It would
-        # probably be better to move all of this to a purely event-driven
-        # model (dropping the Request/reply/reply/reply/... pattern).
-        #
-        # In that model, we get something like:
-        # Exception -> display exception, reply with disposition (could be a
-        #     debug request).  Do not close the window in this case.
-        #
-        # Debug requests generate a completely separate event:
-        # DebugWaiting -> display information about where to connect to remote port.
-        #
-        # DebugDone -> using same display for the exception, reply with next disposition
-        #
-        # Should the error display go inactive until DebugDone?
 
         assert wx.Thread_IsMain(), "PipelineController.analysis_exception() must be called from main thread!"
 
-        evtlist = [evt]
+        self.debug_request_queue = Queue.Queue()
 
-        def remote_debug(evtlist=evtlist):
+        evtlist = [evt]
+        def remote_debug(evtlist = evtlist):
             # choose a random string for verification
             verification = ''.join(random.choice(string.ascii_letters) for x in range(5))
-
             evt = evtlist[0]
-
-            def port_callback(port):
-                wx.MessageBox("Remote PDB waiting on port %d\nUse '%s' for verification" % (port, verification),
-                              "Remote debugging started.",
-                              wx.OK | wx.ICON_INFORMATION)
             # Request debugging.  We get back a port.
-            port_reply = evt.reply(cpanalysis.ExceptionPleaseDebugReply(cpanalysis.DEBUG,
-                                                                        hashlib.sha1(verification).hexdigest()),
-                                   please_reply=True)
-            port_callback(port_reply.port)
+            evt.reply(
+                cpanalysis.ExceptionPleaseDebugReply(
+                    cpanalysis.DEBUG,
+                    hashlib.sha1(verification).hexdigest()))
+            evt = self.debug_request_queue.get()
+            port = evt.port
+            result = wx.MessageBox(
+                "Remote PDB waiting on port %d\nUse '%s' for verification" % 
+                (port, verification),
+                "Remote debugging started.",
+                wx.OK | wx.CANCEL | wx.ICON_INFORMATION)
+            if result == wx.ID_CANCEL:
+                evt.reply(cpanalysis.DebugCancel())
+                return False
             # Acknowledge the port request, and we'll get back a
             # DebugComplete(), which we use as a new evt to reply with the
             # eventual CONTINUE/STOP choice.
-            evtlist[0] = port_reply.reply(cpanalysis.Ack(), please_reply=True)
+            with wx.ProgressDialog(
+                "Remote debugging on port %d" % port,
+                "Debugging remotely, Cancel to abandon",
+                style = wx.PD_APP_MODAL | wx.PD_CAN_ABORT) as dlg:
+                while True:
+                    try:
+                        evtlist[0] = self.debug_request_queue.get(timeout = .25)
+                        return True
+                    except Queue.Empty:
+                        keep_going, skip = dlg.UpdatePulse(
+                            "Debugging remotely, Cancel to abandon")
+                        if not keep_going:
+                            self.debug_request_queue = None
+                            return False
 
         if evt.module_name is not None:
             message = (("Error while processing %s:\n"
@@ -1208,9 +1227,11 @@ class PipelineController:
                         "%s\n\nDo you want to stop processing?") %
                        (evt))
 
-        disposition = display_error_dialog(None, evt.exc_type, self.__pipeline, message,
-                                           remote_exc_info=(evt.exc_type, evt.exc_message, evt.exc_traceback,
-                                                            evt.filename, evt.line_number, remote_debug))
+        disposition = display_error_dialog(
+            None, evt.exc_type, self.__pipeline, message,
+            remote_exc_info=(evt.exc_type, evt.exc_message, evt.exc_traceback,
+                             evt.filename, evt.line_number, 
+                             remote_debug))
         if disposition == ED_STOP:
             self.__analysis.cancel()
 

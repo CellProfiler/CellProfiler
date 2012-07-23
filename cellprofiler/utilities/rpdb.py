@@ -88,6 +88,8 @@ class Rpdb(pdb.Pdb):
                              "exception is being handled.")
         self.reset()
         self.interaction(None, t)
+        sys.stdin, sys.stdout = self.old_stds
+        self.socket.close()
 
 
 if __name__ == '__main__':

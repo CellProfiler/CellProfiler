@@ -279,9 +279,11 @@ class EditObjectsManually(I.Identify):
         orig_axes = figure.add_subplot(2, 2, 1)
         orig_axes._adjustable = 'box-forced'
         keep_axes = figure.add_subplot(2, 2, 2,
-                                       sharexy = orig_axes)
+                                       sharex = orig_axes,
+                                       sharey = orig_axes)
         remove_axes = figure.add_subplot(2, 2, 4,
-                                         sharexy = orig_axes)
+                                         sharex = orig_axes,
+                                         sharey = orig_axes)
         for axes in (orig_axes, keep_axes, remove_axes):
             axes._adjustable = 'box-forced'
             

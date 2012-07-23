@@ -100,21 +100,50 @@ def preferences_as_dict():
     return dict((k, config_read(k)) for k in ALL_KEYS)
 
 def set_preferences_from_dict(d):
-    for k, v in d.items():
-        config_write(k, v)
+    '''Set the preferences by faking the configuration cache'''
+    global __cached_values
+    __cached_values = d.copy()
+    #
+    # We also have to defeat value-specific caches.
+    #
+    global __recent_files
+    __recent_files = {}
+    for cache_var in (
+        "__default_colormap", "__default_image_directory",
+        "__default_output_directory", "__allow_output_file_overwrite",
+        "__current_pipeline_path", "__has_reported_jvm_error",
+        "__ij_plugin_directory", "__ij_version", "__output_filename",
+        "__plugin_directory", "__show_analysis_complete_dlg",
+        "__show_exiting_test_mode_dlg", "__show_report_bad_sizes_dlg",
+        "__show_sampling", "__use_more_figure_space",
+        "__warn_about_old_pipeline", "__write_MAT_files",
+        "__workspace_file"):
+        globals()[cache_var] = None
 
+__cached_values = {}
 def config_read(key):
     '''Read the given configuration value
     
+    Only read from the registry once. This is both technically efficient
+    and keeps parallel running instances of CellProfiler from overwriting
+    each other's values for things like the current output directory.
+    
     Decode escaped config sequences too.
     '''
+    global __cached_values
     if not __is_headless:
         #
         # Keeps popup box from appearing during testing I hope
         #
         import wx
         shutup = wx.LogNull()
-    value = get_config().Read(key)
+    if __cached_values.has_key(key):
+        return __cached_values[key]
+    if get_config().Exists(key):
+        value = get_config().Read(key)
+    else:
+        value = None
+    __cached_values[key] = value
     if value is None:
         return None
     return utf16decode(value)
@@ -130,10 +159,11 @@ def config_write(key, value):
         #
         import wx
         shutup = wx.LogNull()
+    __cached_values[key] = value
     if value is not None:
         value = utf16encode(value)
     get_config().Write(key, value)
-
+    
 def cell_profiler_root_directory():
     if __cp_root:
         return __cp_root
@@ -248,7 +278,7 @@ IJ_2 = "ImageJ 2.0"
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
 
-
+'''All keys saved in the registry'''
 ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
              COLORMAP, DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY,
              IJ_PLUGIN_DIRECTORY, MODULEDIRECTORY, PLUGIN_DIRECTORY,
@@ -257,7 +287,7 @@ ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
              SHOW_EXITING_TEST_MODE_DLG, SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
              TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
              TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
-             WRITE_MAT, USE_MORE_FIGURE_SPACE] + 
+             WRITE_MAT, USE_MORE_FIGURE_SPACE, WORKSPACE_FILE] + 
             [recent_file(n, category) for n in range(RECENT_FILE_COUNT)
              for category in ("", 
                               DEFAULT_IMAGE_DIRECTORY, 
@@ -504,12 +534,19 @@ def is_url_path(path):
             return True
     return False
 
+__default_colormap = None
 def get_default_colormap():
-    if not get_config().Exists(COLORMAP):
-        return 'jet'
-    return config_read(COLORMAP)
+    global __default_colormap
+    if __default_colormap is None:
+        if not get_config().Exists(COLORMAP):
+            __default_colormap = 'jet'
+        else:
+            __default_colormap = config_read(COLORMAP)
+    return __default_colormap
 
 def set_default_colormap(colormap):
+    global __default_colormap
+    __default_colormap = colormap
     config_write(COLORMAP, colormap)
 
 __current_pipeline_path = None
@@ -933,3 +970,4 @@ def set_workspace_file(path, permanently = True):
     if permanently:
         add_recent_file(path, WORKSPACE_FILE)
         config_write(WORKSPACE_FILE, path)
+

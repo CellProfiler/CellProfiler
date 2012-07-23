@@ -431,3 +431,8 @@ finally:
         GLOBAL_WM.stopWorkers()
     except:
         logging.root.warn("Failed to stop Ilastik")
+    try:
+        from cellprofiler.utilities.zmqrequest import join_to_the_boundary
+        join_to_the_boundary()
+    except:
+        logging.root.warn("Failed to stop zmq boundary")

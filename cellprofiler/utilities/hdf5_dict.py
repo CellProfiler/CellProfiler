@@ -209,14 +209,16 @@ class HDF5Dict(object):
                         continue
                     for feature_name in object_group.keys():
                         feature_group = object_group[feature_name]
-                        if ((not isinstance(feature_group, h5py.Group)) or
-                            ("index" not in feature_group) or
-                            ("data" not in feature_group)):
+                        if not isinstance(feature_group, h5py.Group):
                             continue
-                        self.indices[object_name, feature_name] = dict([
-                            (object_number, slice(start, end))
-                            for object_number, start, end 
-                            in feature_group["index"]])
+                        if "index" not in feature_group:
+                            # All entries for feature are None
+                            self.indices[object_name, feature_name] = {}
+                        else:
+                            self.indices[object_name, feature_name] = dict([
+                                (object_number, slice(start, end))
+                                for object_number, start, end 
+                                in feature_group["index"]])
                     
             self.lock = HDF5Lock()
                     
@@ -229,11 +231,12 @@ class HDF5Dict(object):
                     for feature_name in object_group.keys():
                         # some measurement objects are written at a higher level, and don't
                         # have an index (e.g. Relationship).
+                        d = self.indices[object_name, feature_name] = {}
                         if 'index' in object_group[feature_name].keys():
-                            d = self.indices[object_name, feature_name] = {}
                             hdf5_index = object_group[feature_name]['index'][:]
                             for num_idx, start, stop in hdf5_index:
                                 d[num_idx] = slice(start, stop)
+                            
                 self.hdf5_file.flush()
         except Exception, e:
             self.hdf5_file.close()
@@ -295,9 +298,12 @@ class HDF5Dict(object):
             with self.lock:
                 indices = self.indices[(object_name, feature_name)]
                 dataset = self.get_dataset(object_name, feature_name)
-                return [None if (isinstance(dest, slice) and 
-                                 dest.start is not None and 
-                                 dest.start == dest.stop) else dataset[dest]
+                return [None 
+                        if ((dataset is None) or
+                            (isinstance(dest, slice) and 
+                             dest.start is not None and 
+                             dest.start == dest.stop))
+                        else dataset[dest]
                         for dest in [ indices.get(image_number, slice(0,0))
                                       for image_number in num_idx]]
 
@@ -330,11 +336,15 @@ class HDF5Dict(object):
             if not self.has_object(object_name):
                 self.add_object(object_name)
             self.add_feature(object_name, feature_name)
-
+            
         # find the destination for the data, and check that its
         # the right size for the values.  This may extend the
         # _index and data arrays. It may also overwrite the old value.
         dest = self.find_index_or_slice(idxs, val)
+        if dest is None:
+            # No dataset + val is None: can't create the dataset
+            # without knowing the data type
+            return
 
         with self.lock:
             dataset = self.get_dataset(object_name, feature_name)

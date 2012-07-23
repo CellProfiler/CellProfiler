@@ -551,15 +551,19 @@ class Measurements(object):
             if data is None:
                 data = []
             self.hdf5_dict[IMAGE, feature_name, image_set_number] = wrap_string(data)
-            if not self.hdf5_dict.has_data(object_name, 'ImageNumber', image_set_number):
-                self.hdf5_dict[IMAGE, 'ImageNumber', image_set_number] = image_set_number
+            if not self.hdf5_dict.has_data(object_name, IMAGE_NUMBER, image_set_number):
+                self.hdf5_dict[IMAGE, IMAGE_NUMBER, image_set_number] = image_set_number
         else:
             self.hdf5_dict[object_name, feature_name, image_set_number] = data
             if not self.hdf5_dict.has_data(IMAGE, IMAGE_NUMBER, image_set_number):
                 self.hdf5_dict[IMAGE, IMAGE_NUMBER, image_set_number] = image_set_number
-            if not self.hdf5_dict.has_data(object_name, 'ObjectNumber', image_set_number):
-                self.hdf5_dict[object_name, 'ImageNumber', image_set_number] = [image_set_number] * len(data)
-                self.hdf5_dict[object_name, 'ObjectNumber', image_set_number] = np.arange(1, len(data) + 1)
+            if ((not self.hdf5_dict.has_data(
+                object_name, OBJECT_NUMBER, image_set_number)) and 
+                (data is not None)):
+                self.hdf5_dict[object_name, IMAGE_NUMBER, image_set_number] =\
+                    [image_set_number] * len(data)
+                self.hdf5_dict[object_name, OBJECT_NUMBER, image_set_number] =\
+                    np.arange(1, len(data) + 1)
                 
     def remove_measurement(self, object_name, feature_name, image_number):
         '''Remove the measurement for the given image number

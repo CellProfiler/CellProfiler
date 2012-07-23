@@ -73,7 +73,8 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     continue_only - show "continue" option, only
     remote_exc_info - None (the default) for exceptions in the current process.
         For remote processes:
-            (exc_name, exc_message, traceback_text, filename, line_number, remote_debug_callback)
+            (exc_name, exc_message, traceback_text, filename, 
+             line_number, remote_event_queue)
 
     Returns either ED_STOP or ED_CONTINUE indicating how to handle.
     '''
@@ -83,7 +84,8 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
 
     if remote_exc_info:
         from_subprocess = True
-        exc_name, exc_message, traceback_text, filename, line_number, remote_debug_callback = remote_exc_info
+        exc_name, exc_message, traceback_text, \
+            filename, line_number, remote_debug_callback = remote_exc_info
         if message is None:
             message = exc_message
     else:
@@ -196,7 +198,9 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
             pdb_button.SetToolTipString("Debug remotely in pdb via telnet")
             aux_button_box.Add(pdb_button, 0, wx.EXPAND | wx.BOTTOM, 5)
             def handle_pdb(event):
-                remote_debug_callback()
+                if not remote_debug_callback():
+                    # The user has told us that remote debugging has gone wonky
+                    pdb_button.Enable(False)
                 # This level of interest seems to indicate the user might
                 # want to debug this error if it occurs again.
                 if (filename, line_number) in previously_seen_error_locations:

@@ -121,13 +121,13 @@ class AnalysisWorker(object):
     def __init__(self, work_announce_address):
         self.work_announce_address = work_announce_address
         self.zmq_context = the_zmq_context
-        self.notify_socket = self.zmq_context.socket(zmq.SUB)
-        self.notify_socket.setsockopt(zmq.SUBSCRIBE, "")
-        self.notify_socket.connect(NOTIFY_ADDR)
         self.cancelled = False
         self.current_analysis_id = False
         
     def __enter__(self):
+        self.notify_socket = self.zmq_context.socket(zmq.SUB)
+        self.notify_socket.setsockopt(zmq.SUBSCRIBE, "")
+        self.notify_socket.connect(NOTIFY_ADDR)
         self.cancelled = False
         # (analysis_id -> (pipeline, preferences dictionary))
         self.pipelines_and_preferences = {}
@@ -142,6 +142,7 @@ class AnalysisWorker(object):
         return self
         
     def __exit__(self, type, value, traceback):
+        self.notify_socket.close()
         for m in self.initial_measurements.values():
             m.close()
         self.initial_measurements = {}

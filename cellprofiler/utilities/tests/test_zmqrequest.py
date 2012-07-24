@@ -38,8 +38,11 @@ class TestZMQRequest(unittest.TestCase):
         
         must be instantiated after an analysis has been started
         '''
+        MSG_STOP = "STOP"
+        MSG_SEND = "SEND"
         def __init__(self, analysis_id, name="Client thread"):
             threading.Thread.__init__(self, name = name)
+            self.notify_addr = "inproc://" + uuid.uuid4().hex
             self.setDaemon(True)
             self.queue = Queue.Queue()
             self.response_queue = Queue.Queue()
@@ -49,6 +52,8 @@ class TestZMQRequest(unittest.TestCase):
             self.start()
             with self.cv:
                 self.cv.wait()
+            self.send_notify_socket = TestZMQRequest.zmq_context.socket(zmq.PUB)
+            self.send_notify_socket.connect(self.notify_addr)
                 
         def __enter__(self):
             return self
@@ -60,33 +65,40 @@ class TestZMQRequest(unittest.TestCase):
         def run(self):
             self.work_socket = TestZMQRequest.zmq_context.socket(zmq.REQ)
             self.work_socket.connect(Z.the_boundary.request_address)
+            self.notify_socket = TestZMQRequest.zmq_context.socket(zmq.SUB)
+            self.notify_socket.setsockopt(zmq.SUBSCRIBE, '')
+            self.notify_socket.bind(self.notify_addr)
+            poller = zmq.Poller()
+            poller.register(self.work_socket, zmq.POLLIN)
+            poller.register(self.notify_socket, zmq.POLLIN)
             with self.cv:
                 self.cv.notify_all()
-                
-            while True:
-                with self.cv:
-                    self.cv.wait(10.)
-                    try:
-                        if not self.keep_going:
-                            break
-                        req = self.queue.get_nowait()
-                    except Queue.Empty:
-                        continue
-                try:
-                    self.response_queue.put((None, req.send(self.work_socket)))
-                except Exception,e:
-                    self.response_queue.put((e, None))
-            self.work_socket.close()
+            try:
+                while self.keep_going:
+                    for sock, state in poller.poll():
+                        if sock == self.work_socket:
+                            rep = Z.Communicable.recv(self.work_socket)
+                            self.response_queue.put((None, rep))
+                        elif sock == self.notify_socket:
+                            msg = self.notify_socket.recv()
+                            if msg == self.MSG_STOP:
+                                return
+                            elif msg == self.MSG_SEND:
+                                req = self.queue.get_nowait()
+                                req.send_only(self.work_socket)
+            except Exception, e:
+                self.response_queue.put((e, None))
+            finally:
+                self.work_socket.close()
+                self.notify_socket.close()
                 
         def stop(self):
-            with self.cv:
-                self.keep_going = False
-                self.cv.notify_all()
+            self.keep_going = False
+            self.send_notify_socket.send(self.MSG_STOP)
             
         def send(self, req):
-            with self.cv:
-                self.queue.put(req)
-                self.cv.notify_all()
+            self.queue.put(req)
+            self.send_notify_socket.send(self.MSG_SEND)
                 
         def recv(self):
             exception, result = self.response_queue.get()

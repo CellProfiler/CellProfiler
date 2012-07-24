@@ -1,5 +1,6 @@
 import logging
 logger = logging.getLogger(__name__)
+import json
 import sys
 import threading
 import zmq
@@ -65,7 +66,7 @@ class Communicable(object):
         # replace each buffer with its metadata, and send it separately
         buffers = []
         encoder = make_CP_encoder(buffers)
-        json_str = zmq.utils.jsonapi.dumps(sendable_dict, default=encoder)
+        json_str = json.dumps(sendable_dict, default=encoder)
         socket.send_multipart(routing +
                               [self.__class__.__module__, self.__class__.__name__] +
                               [json_str] +
@@ -86,7 +87,7 @@ class Communicable(object):
         module, classname = message[:2]
         buffers = message[3:]
         decoder = make_CP_decoder(buffers)
-        attribute_dict = zmq.utils.jsonapi.loads(message[2], object_hook=decoder)
+        attribute_dict = json.loads(message[2], object_hook=decoder)
         try:
             instance = sys.modules[module].__dict__[classname](**attribute_dict)
         except:

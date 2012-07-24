@@ -44,19 +44,24 @@ class TestAnalysisWorker(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         start_subimager()
+        cls.zmq_context = cpaw.the_zmq_context
+        cls.notify_socket = cls.zmq_context.socket(zmq.PUB)
+        cls.notify_socket.bind(cpaw.NOTIFY_ADDR)
+        
+    @classmethod
+    def tearDownClass(cls):
+        cls.notify_socket.close()
+        
         
     def setUp(self):
         self.out_dir = tempfile.mkdtemp()
         cpprefs.set_default_output_directory(self.out_dir)
-        self.zmq_context = cpaw.the_zmq_context
         self.announce_addr = "inproc://"+uuid.uuid4().hex
         self.work_addr = "inproc://"+uuid.uuid4().hex
         self.announce_socket = self.zmq_context.socket(zmq.PUB)
         self.announce_socket.bind(self.announce_addr)
         self.work_socket = self.zmq_context.socket(zmq.REP)
         self.work_socket.bind(self.work_addr)
-        self.notify_socket = self.zmq_context.socket(zmq.PUB)
-        self.notify_socket.bind(cpaw.NOTIFY_ADDR)
         self.awthread = None
         
     def tearDown(self):
@@ -64,7 +69,6 @@ class TestAnalysisWorker(unittest.TestCase):
             self.notify_socket.send(cpaw.NOTIFY_STOP)
             self.awthread.join(10000)
             self.assertFalse(self.awthread.isAlive())
-        self.notify_socket.close()
         self.work_socket.close()
         self.announce_socket.close()
         #

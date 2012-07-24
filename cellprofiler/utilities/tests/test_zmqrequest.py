@@ -46,12 +46,11 @@ class TestZMQRequest(unittest.TestCase):
             self.setDaemon(True)
             self.queue = Queue.Queue()
             self.response_queue = Queue.Queue()
-            self.cv = threading.Condition()
+            self.start_signal = threading.Semaphore(0)
             self.keep_going = True
             self.analysis_id = analysis_id
             self.start()
-            with self.cv:
-                self.cv.wait()
+            self.start_signal.acquire()
             self.send_notify_socket = TestZMQRequest.zmq_context.socket(zmq.PUB)
             self.send_notify_socket.connect(self.notify_addr)
                 
@@ -61,6 +60,7 @@ class TestZMQRequest(unittest.TestCase):
         def __exit__(self, type, value, traceback):
             self.stop()
             self.join()
+            self.send_notify_socket.close()
             
         def run(self):
             self.work_socket = TestZMQRequest.zmq_context.socket(zmq.REQ)
@@ -71,8 +71,7 @@ class TestZMQRequest(unittest.TestCase):
             poller = zmq.Poller()
             poller.register(self.work_socket, zmq.POLLIN)
             poller.register(self.notify_socket, zmq.POLLIN)
-            with self.cv:
-                self.cv.notify_all()
+            self.start_signal.release()
             try:
                 while self.keep_going:
                     for sock, state in poller.poll():

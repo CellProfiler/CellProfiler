@@ -50,14 +50,13 @@ class TestAnalysis(unittest.TestCase):
             self.zmq_context = zmq.Context()
             self.queue = Queue.Queue()
             self.response_queue = Queue.Queue()
-            self.cv = threading.Condition()
+            self.start_signal = threading.Semaphore(0)
             self.keep_going = True
             self.notify_addr = "inproc://%s" % uuid.uuid4().hex
             self.notify_socket = self.zmq_context.socket(zmq.PUB)
             self.notify_socket.bind(self.notify_addr)
             self.start()
-            with self.cv:
-                self.cv.wait()
+            self.start_signal.acquire()
                 
         def __enter__(self):
             return self
@@ -77,9 +76,7 @@ class TestAnalysis(unittest.TestCase):
                 self.announce_socket = None
                 self.poller = zmq.Poller()
                 self.poller.register(self.recv_notify_socket, zmq.POLLIN)
-    
-                with self.cv:
-                    self.cv.notify_all()
+                self.start_signal.release()
                     
                 while self.keep_going:
                     socks = dict(self.poller.poll(1000))
@@ -103,6 +100,7 @@ class TestAnalysis(unittest.TestCase):
                             self.response_queue.put((e, None))
             except:
                 logger.warn("Client thread caught exception", exc_info=10)
+                self.start_signal.release()
             finally:
                 logger.debug("Client thread exiting")
                 

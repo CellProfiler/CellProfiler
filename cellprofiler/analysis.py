@@ -215,25 +215,23 @@ class AnalysisRunner(object):
         # that their stdin has closed.
         self.stop_workers()
 
-        started_cv = threading.Condition()
+        start_signal = threading.Semaphore(0)
         self.interface_thread = start_daemon_thread(
             target=self.interface, 
-            args=(started_cv,),
+            args=(start_signal,),
             name='AnalysisRunner.interface')
         #
         # Wait for signal on interface started.
         #
-        with started_cv:
-            started_cv.wait()
+        start_signal.acquire()
         self.jobserver_thread = start_daemon_thread(
             target=self.jobserver, 
-            args=(self.analysis_id, started_cv), 
+            args=(self.analysis_id, start_signal), 
             name='AnalysisRunner.jobserver')
         #
         # Wait for signal on jobserver started.
         #
-        with started_cv:
-            started_cv.wait()
+        start_signal.acquire()
         # start worker pool via class method (below)        
         self.start_workers(num_workers)
 
@@ -279,14 +277,14 @@ class AnalysisRunner(object):
 
     # XXX - catch and deal with exceptions in interface() and jobserver() threads
     def interface(self, 
-                  start_cv,
+                  start_signal,
                   image_set_start=1, 
                   image_set_end=None,
                   overwrite=True):
         '''Top-half thread for running an analysis.  Sets up grouping for jobs,
         deals with returned measurements, reports status periodically.
 
-        start_cv - signal this condition variable when jobs are ready.
+        start_signal- signal this semaphore when jobs are ready.
         image_set_start - beginning image set number to process
         image_set_end - last image set number to process
         overwrite - whether to recompute imagesets that already have data in initial_measurements.
@@ -355,9 +353,8 @@ class AnalysisRunner(object):
             self.work_queue.put((job_groups[0], 
                                  worker_runs_post_group,
                                  True))
-            with start_cv:
-                start_cv.notify_all()
-                acknowledged_thread_start = True
+            start_signal.release()
+            acknowledged_thread_start = True
             del job_groups[0]
 
             waiting_for_first_imageset = True
@@ -438,8 +435,7 @@ class AnalysisRunner(object):
             #        but possibly useful measurements.
             #
             if not acknowledged_thread_start:
-                with start_cv:
-                    start_cv.notify_all()
+                start_signal.release()
             if posted_analysis_started:
                 was_cancelled = self.cancelled
                 self.post_event(AnalysisFinished(
@@ -451,7 +447,7 @@ class AnalysisRunner(object):
             self.stop_workers()
         self.analysis_id = False  # this will cause the jobserver thread to exit
 
-    def jobserver(self, analysis_id, start_cv):
+    def jobserver(self, analysis_id, start_signal):
         # this server subthread should be very lightweight, as it has to handle
         # all the requests from workers, of which there might be several.
 
@@ -464,8 +460,7 @@ class AnalysisRunner(object):
         # The boundary is announcing our analysis at this point. Workers
         # will get announcements if they connect.
         #
-        with start_cv:
-            start_cv.notify_all()
+        start_signal.release()
 
         # XXX - is this just to keep from posting another AnalysisPaused event?
         # If so, probably better to simplify the code and keep sending them

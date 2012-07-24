@@ -467,7 +467,6 @@ class TestAnalysisWorker(unittest.TestCase):
                              image_set_numbers = [1],
                              worker_runs_post_group = False,
                              wants_dictionary = True))
-        self.awthread.ex(self.awthread.aw.do_job)
         #
         # The worker should ask for the pipeline and preferences next.
         #
@@ -554,7 +553,6 @@ class TestAnalysisWorker(unittest.TestCase):
                              image_set_numbers = [2, 3],
                              worker_runs_post_group = True,
                              wants_dictionary = False))
-        self.awthread.ex(self.awthread.aw.do_job)
         #
         # The worker should ask for the pipeline and preferences next.
         #
@@ -635,7 +633,6 @@ class TestAnalysisWorker(unittest.TestCase):
                              image_set_numbers = [2],
                              worker_runs_post_group = False,
                              wants_dictionary = False))
-        self.awthread.ex(self.awthread.aw.do_job)
         #
         # The worker should ask for the pipeline and preferences next.
         #
@@ -718,7 +715,6 @@ class TestAnalysisWorker(unittest.TestCase):
                              image_set_numbers = [2, 3],
                              worker_runs_post_group = False,
                              wants_dictionary = False))
-        self.awthread.ex(self.awthread.aw.do_job)
         #
         # The worker should ask for the pipeline and preferences next.
         #

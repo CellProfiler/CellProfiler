@@ -360,9 +360,7 @@ class AnalysisRunner(object):
             waiting_for_first_imageset = True
 
             # We loop until every image is completed, or an outside event breaks the loop.
-            while True:
-                if self.cancelled:
-                    break
+            while not self.cancelled:
 
                 # gather measurements
                 while not self.received_measurements_queue.empty():
@@ -454,8 +452,7 @@ class AnalysisRunner(object):
         # start the zmqrequest Boundary
         request_queue = Queue.Queue()
         boundary = register_analysis(analysis_id, 
-                                     request_queue, 
-                                     self.jobserver_work_cv)
+                                     request_queue)
         #
         # The boundary is announcing our analysis at this point. Workers
         # will get announcements if they connect.
@@ -468,7 +465,7 @@ class AnalysisRunner(object):
         i_was_paused_before = False
 
         # start serving work until the analysis is done (or changed)
-        while self.analysis_id == analysis_id:
+        while not self.cancelled:
 
             with self.jobserver_work_cv:
                 if self.paused and not i_was_paused_before:

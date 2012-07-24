@@ -130,6 +130,7 @@ class Request(Communicable):
     def __init__(self, **kwargs):
         # all keywords become attributes
         self.__dict__.update(kwargs)
+        self._boundary = None
 
     def send(self, socket):
         Communicable.send(self, socket)
@@ -146,13 +147,22 @@ class Request(Communicable):
         '''
         Communicable.send(self, socket)
         
+    def set_boundary(self, boundary):
+        '''Set the boundary object to use when sending the reply
+        
+        boundary - the reply will be enqueued on this boundary's transmit thread
+        '''
+        self._boundary = boundary
 
     def reply(self, reply_obj, please_reply=False):
         '''send a reply to a request.  If please_reply is True, wait for and
         return a reply to the reply.  Note that that reply should be treated
         like a Request object, i.e., it should be replied to.'''
         assert isinstance(reply_obj, Reply), "send_reply() called with something other than a Reply object!"
-        return Communicable.reply(self, reply_obj, please_reply)
+        if self._boundary is None:
+            return Communicable.reply(self, reply_obj, please_reply)
+        else:
+            self._boundary.enqueue_reply(self, reply_obj)
     
 class AnalysisRequest(Request):
     '''A request associated with an analysis
@@ -195,7 +205,7 @@ def start_boundary():
 def get_announcer_address():
     return start_boundary().announce_address
 
-def register_analysis(analysis_id, upward_queue, upward_cv):
+def register_analysis(analysis_id, upward_queue):
     '''Register for all analysis request messages with the given ID
     
     analysis_id - the analysis ID present in every AnalysisRequest
@@ -208,7 +218,7 @@ def register_analysis(analysis_id, upward_queue, upward_cv):
     '''
     global the_boundary
     start_boundary()
-    the_boundary.register_analysis(analysis_id, upward_queue, upward_cv)
+    the_boundary.register_analysis(analysis_id, upward_queue)
     return the_boundary
 
 def cancel_analysis(analysis_id):
@@ -234,15 +244,14 @@ def join_to_the_boundary():
 class AnalysisContext(object):
     '''The analysis context holds the pieces needed to route analysis requests'''
     
-    def __init__(self, analysis_id, upq, upcv, lock):
+    def __init__(self, analysis_id, upq, lock):
         self.lock = lock
         self.analysis_id = analysis_id
         self.upq = upq
-        self.upcv = upcv
         self.cancelled = False
         # A map of requests pending to the closure that can be used to
         # reply to the request
-        self.reqs_pending = {}
+        self.reqs_pending = set()
         
     def reply(self, req, rep):
         '''Reply to a AnalysisRequest with this analysis ID
@@ -257,8 +266,9 @@ class AnalysisContext(object):
         with self.lock:
             if self.cancelled:
                 return False
-            self.reqs_pending[req](rep)
-            del self.reqs_pending[req]
+            if req in self.reqs_pending:
+                Communicable.reply(req, rep)
+                self.reqs_pending.remove(req)
             return True
         
     def enqueue(self, req):
@@ -276,13 +286,11 @@ class AnalysisContext(object):
         with self.lock:
             if not self.cancelled:
                 assert req not in self.reqs_pending
-                self.reqs_pending[req] = req.reply
+                self.reqs_pending.add(req)
                 self.upq.put(req)
-                with self.upcv:
-                    self.upcv.notify_all()
                 return True
             else:
-                req.reply(BoundaryExited())
+                Communicable.reply(req, BoundaryExited())
                 return False
         
     def cancel(self):
@@ -296,7 +304,6 @@ class AnalysisContext(object):
                 return
             self.cancelled = True
             self.upq = None
-            self.upcv = None
             
     def handle_cancel(self):
         '''Handle a cancel in the boundary thread.
@@ -304,9 +311,9 @@ class AnalysisContext(object):
         Take care of workers expecting replies.
         '''
         with self.lock:
-            for req, reply_fn in self.reqs_pending.iteritems():
-                reply_fn(BoundaryExited())
-            self.reqs_pending = {}
+            for req in list(self.reqs_pending):
+                Communicable.reply(req, BoundaryExited())
+            self.reqs_pending = set()
             
 class Boundary(object):
     '''This object serves as the interface between a ZMQ socket passing
@@ -368,23 +375,29 @@ class Boundary(object):
     '''Stop the socket thread'''
     NOTIFY_STOP = "stop"
     
-    def register_analysis(self, analysis_id, upward_queue, upward_cv):
+    def register_analysis(self, analysis_id, upward_queue):
         '''Register a queue to receive analysis requests
         
         analysis_id - the analysis ID embedded in each analysis request
         
         upward_queue - place the requests on this queue
-        
-        upward_cv - signal the queue's thread with this condition variable
         '''
         with self.analysis_dictionary_lock:
             self.analysis_dictionary[analysis_id] = AnalysisContext(
-                analysis_id, upward_queue, upward_cv, 
+                analysis_id, upward_queue,
                 self.analysis_dictionary_lock)
         response_queue = Queue.Queue()
         self.send_to_boundary_thread(self.NOTIFY_REGISTER_ANALYSIS,
                                      (analysis_id, response_queue))
         response_queue.get()
+        
+    def enqueue_reply(self, req, rep):
+        '''Enqueue a reply to be sent from the boundary thread
+        
+        req - original request
+        rep - the reply to the request
+        '''
+        self.send_to_boundary_thread(self.NOTIFY_REPLY_READY,(req, rep))
             
     def cancel(self, analysis_id):
         '''Cancel an analysis
@@ -452,6 +465,7 @@ class Boundary(object):
                     pass
                 if socks.get(request_socket, None) == zmq.POLLIN:
                     req = Communicable.recv(request_socket, routed=True)
+                    req.set_boundary(self)
                     if not isinstance(req, AnalysisRequest):
                         logger.warn(
                             "Received a request that wasn't an AnalysisRequest: %s"% 
@@ -466,17 +480,6 @@ class Boundary(object):
                         if not analysis_context.enqueue(req):
                             continue
     
-                        # ZMQ requires that replies sent out on the socket be from the
-                        # thread that received them.
-    
-                        def reply_in_boundary_thread(rep, 
-                                                     req = req, 
-                                                     please_reply=False):
-                            self.send_to_boundary_thread(
-                                self.NOTIFY_REPLY_READY, (req, rep))
-                        
-                        req.reply = reply_in_boundary_thread
-                
             #
             # We assume here that workers trying to communicate with us will
             # be shut down abruptly without needing replies to pending requests.

@@ -38,9 +38,6 @@ from cellprofiler.modules.tests import example_images_directory
 from subimager.client import start_subimager, stop_subimager
 from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 
-ANNOUNCE_ADDR = "inproc://announce"
-WORK_ADDR = "inproc://work"
-
 cpprefs.set_headless()
 
 class TestAnalysisWorker(unittest.TestCase):
@@ -52,10 +49,12 @@ class TestAnalysisWorker(unittest.TestCase):
         self.out_dir = tempfile.mkdtemp()
         cpprefs.set_default_output_directory(self.out_dir)
         self.zmq_context = cpaw.the_zmq_context
+        self.announce_addr = "inproc://"+uuid.uuid4().hex
+        self.work_addr = "inproc://"+uuid.uuid4().hex
         self.announce_socket = self.zmq_context.socket(zmq.PUB)
-        self.announce_socket.bind(ANNOUNCE_ADDR)
+        self.announce_socket.bind(self.announce_addr)
         self.work_socket = self.zmq_context.socket(zmq.REP)
-        self.work_socket.bind(WORK_ADDR)
+        self.work_socket.bind(self.work_addr)
         self.notify_socket = self.zmq_context.socket(zmq.PUB)
         self.notify_socket.bind(cpaw.NOTIFY_ADDR)
         self.awthread = None
@@ -87,6 +86,10 @@ class TestAnalysisWorker(unittest.TestCase):
             
     class AWThread(threading.Thread):
         
+        def __init__(self, announce_addr, *args, **kwargs):
+            threading.Thread.__init__(self, *args, **kwargs)
+            self.announce_addr = announce_addr
+            
         def start(self):
             self.setDaemon(True)
             self.setName("Analysis worker thread")
@@ -102,7 +105,7 @@ class TestAnalysisWorker(unittest.TestCase):
         def run(self):
             up_queue_send_socket = cpaw.the_zmq_context.socket(zmq.PUB)
             up_queue_send_socket.connect(self.notify_addr)
-            with cpaw.AnalysisWorker(ANNOUNCE_ADDR) as aw:
+            with cpaw.AnalysisWorker(self.announce_addr) as aw:
                 self.aw = aw
                 self.up_queue.put("OK")
                 while not self.aw.cancelled:
@@ -187,8 +190,8 @@ class TestAnalysisWorker(unittest.TestCase):
         self.analysis_id = uuid.uuid4().hex
         def do_set_work_socket(aw):
             aw.work_socket = aw.zmq_context.socket(zmq.REQ)
-            aw.work_socket.connect(WORK_ADDR)
-            aw.work_request_address = WORK_ADDR
+            aw.work_socket.connect(self.work_addr)
+            aw.work_request_address = self.work_addr
             aw.current_analysis_id = self.analysis_id
         self.awthread.execute(do_set_work_socket, self.awthread.aw)
             
@@ -197,14 +200,14 @@ class TestAnalysisWorker(unittest.TestCase):
         self.analysis_id = uuid.uuid4().hex
         while True:
             self.announce_socket.send_json(
-                ((self.analysis_id, WORK_ADDR),))
+                ((self.analysis_id, self.work_addr),))
             try:
                 return self.awthread.recv(self.work_socket, 250)
             except Queue.Empty:
                 continue
 
     def test_01_01_get_announcement(self):
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.awthread.ex(self.awthread.aw.get_announcement)
         while True:
@@ -223,14 +226,14 @@ class TestAnalysisWorker(unittest.TestCase):
         # Call AnalysisWorker.get_announcement, then notify the worker
         # that it should exit.
         #
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.awthread.ex(self.awthread.aw.get_announcement)
         self.notify_socket.send(cpaw.NOTIFY_STOP)
         self.assertRaises(cpaw.CancelledException, self.awthread.ecute)
         
     def test_02_01_send(self):
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
         def send_something():
@@ -246,7 +249,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(reply.foo, "bar")
         
     def test_02_02_send_cancellation(self):
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
         def send_something():
@@ -257,7 +260,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertRaises(cpaw.CancelledException, self.awthread.ecute)
 
     def test_02_03_send_upstream_exit(self):
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
         def send_something():
@@ -273,7 +276,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Walk the worker through the connect sequence through
         # WorkRequest, then kill it.
         #
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.awthread.ex(self.awthread.aw.run)
         #
@@ -286,7 +289,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Walk the worker up through pipelines and preferences.
         #
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(self.awthread.aw.do_job, 
@@ -332,7 +335,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Walk to the initial measurements
         #
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(self.awthread.aw.do_job, 
@@ -389,7 +392,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # The SharedDictionaryRequest
         #
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(self.awthread.aw.do_job, 
@@ -452,7 +455,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Run the worker clear through to the end
         # for the first imageset
         #
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(self.awthread.aw.do_job, 
@@ -539,7 +542,7 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # Give the worker image sets # 2 and 3 and tell it to run post_group
         #
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(self.awthread.aw.do_job, 
@@ -620,7 +623,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Run using the bad pipeline and lead the analysis worker
         # through debug post-mortem
         #
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(self.awthread.aw.do_job, 
@@ -703,7 +706,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Run using the good pipeline, but change one of the URLs so
         # an exception is thrown.
         #
-        self.awthread = self.AWThread()
+        self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.set_work_socket()
         self.awthread.ex(self.awthread.aw.do_job, 

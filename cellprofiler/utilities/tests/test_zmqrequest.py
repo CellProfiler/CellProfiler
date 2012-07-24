@@ -110,21 +110,17 @@ class TestZMQRequest(unittest.TestCase):
         def __enter__(self):
             self.analysis_id = uuid.uuid4().hex
             self.upq = Queue.Queue()
-            self.upcv = threading.Condition()
             self.boundary = Z.register_analysis(self.analysis_id,
-                                                self.upq,
-                                                self.upcv)
+                                                self.upq)
             return self
             
         def recv(self, timeout):
             '''Receive a message'''
-            with self.upcv:
-                self.upcv.wait(timeout)
-                try:
-                    req = self.upq.get_nowait()
-                    return req
-                except Queue.Empty:
-                    raise AssertionError("Failed to receive message within timeout of %f sec" % timeout)
+            try:
+                req = self.upq.get(timeout)
+                return req
+            except Queue.Empty:
+                raise AssertionError("Failed to receive message within timeout of %f sec" % timeout)
                     
         def __exit__(self, type, value, traceback):
             self.cancel()

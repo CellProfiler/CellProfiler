@@ -849,7 +849,7 @@ class NamesAndTypes(cpm.CPModule):
         return result
         
     def get_categories(self, pipeline, object_name):
-        from cellprofiler.modules.load_images import \
+        from cellprofiler.modules.loadimages import \
              C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
              C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
              C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
@@ -867,7 +867,7 @@ class NamesAndTypes(cpm.CPModule):
         return result
     
     def get_measurements(self, pipeline, object_name, category):
-        from cellprofiler.modules.load_images import \
+        from cellprofiler.modules.loadimages import \
              C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
              C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
              C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL

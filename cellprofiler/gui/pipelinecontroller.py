@@ -749,6 +749,8 @@ class PipelineController:
         for module_name in get_module_names():
             try:
                 module = cellprofiler.modules.instantiate_module(module_name)
+                if module.is_input_module():
+                    continue
                 category = module.category
                 if isinstance(category, (str,unicode)):
                     categories = [category, "All"]
@@ -1061,7 +1063,8 @@ class PipelineController:
             # The event has the measurements for the run and the measurements
             # file is open - maybe later you want to do something with this
             # file? But for now, we close it.
-            evt.measurements.close()
+            if evt.measurements is not None:
+                evt.measurements.close()
             # drop any interaction/display requests or exceptions
             while True:
                 try:

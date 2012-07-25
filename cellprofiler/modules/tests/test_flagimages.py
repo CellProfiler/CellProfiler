@@ -820,29 +820,32 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         self.assertEqual(workspace.disposition, cpw.DISPOSITION_CONTINUE)
         
     def test_08_01_filter_by_rule(self):
-        module, workspace = self.make_workspace([1.0],[])
-        flag = module.flags[0]
-        self.assertTrue(isinstance(flag, cps.SettingsGroup))
-        flag.wants_skip.value = False
-        measurement = flag.measurement_settings[0]
-        self.assertTrue(isinstance(measurement, cps.SettingsGroup))
         rules_file_contents = "IF (%s > 2.0, [1.0,-1.0], [-1.0,1.0])\n"%('_'.join((cpmeas.IMAGE,image_measurement_name(0))))
         rules_path = tempfile.mktemp()
         rules_dir, rules_file = os.path.split(rules_path)
-        measurement.source_choice.value = F.S_RULES
-        measurement.rules_file_name.value = rules_file
-        measurement.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
-        measurement.rules_directory.custom_path = rules_dir
-        
         fd = open(rules_path, 'wt')
         try:
             fd.write(rules_file_contents)
             fd.close()
-            module.run(workspace)
-            m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
-            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-            self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
+            for value, choice, expected in ((1.0, 1, 0), (3.0, 1, 1),
+                                            (1.0, 2, 1), (3.0, 2, 0)):
+                module, workspace = self.make_workspace([value],[])
+                flag = module.flags[0]
+                self.assertTrue(isinstance(flag, cps.SettingsGroup))
+                flag.wants_skip.value = False
+                measurement = flag.measurement_settings[0]
+                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+                measurement.source_choice.value = F.S_RULES
+                measurement.rules_file_name.value = rules_file
+                measurement.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+                measurement.rules_directory.custom_path = rules_dir
+                measurement.rules_class.set_value([str(choice)])
+                module.run(workspace)
+                m = workspace.measurements
+                self.assertTrue(isinstance(m, cpmeas.Measurements))
+                self.assertIn(MEASUREMENT_NAME, m.get_feature_names(cpmeas.IMAGE))
+                self.assertEqual(
+                    m.get_current_image_measurement(MEASUREMENT_NAME), expected)
         finally:
             os.remove(rules_path)
 
@@ -859,7 +862,8 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
         fd.write(rules_file_contents)
         fd.close()
         try:
-            for rules_class in ("1", "2", "3"):
+            for rules_classes in (["1"], ["2"], ["3"],
+                                  ["1", "2"], ["1", "3"], ["2", "3"]):
                 for expected_class, measurement_value in zip(
                     expected_classes, measurement_values):
                     module, workspace = self.make_workspace([measurement_value],[])
@@ -872,14 +876,14 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_
                     measurement.rules_file_name.value = rules_file
                     measurement.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
                     measurement.rules_directory.custom_path = rules_dir
-                    measurement.rules_class.value = rules_class
+                    measurement.rules_class.set_value(rules_classes)
                     
                     m = workspace.measurements
                     self.assertTrue(isinstance(m, cpmeas.Measurements))
                     module.run(workspace)
                     self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
                     value = m.get_current_image_measurement(MEASUREMENT_NAME)
-                    expected_value = 0 if expected_class == rules_class else 1
+                    expected_value = 1 if expected_class in rules_classes else 0
                     self.assertEqual(value, expected_value)
         finally:
             os.remove(rules_path)

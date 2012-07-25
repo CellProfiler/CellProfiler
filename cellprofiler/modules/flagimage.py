@@ -199,24 +199,25 @@ class FlagImage(cpm.CPModule):
                     positive score is higher than the negative score.
                     <p>Note that if the rules are obtained from CellProfiler Analyst, the images
                     that are fail are those represented by the second number between the brackets.</p>"""))
-        def get_rules_class_choices(pipeline, group=group):
+        def get_rules_class_choices(group=group):
+            '''Get the available choices from the rules file'''
             try:
                 rules = self.get_rules(group)
                 nclasses = len(rules.rules[0].weights[0])
                 return [str(i) for i in range(1, nclasses+1)]
             except:
                 return [str(i) for i in range(1, 3)]
-        group.append("rules_class", cps.Choice(
+        group.append("rules_class", cps.MultiChoice(
             "Class number",
             choices = ["1", "2"],
-            choices_fn = get_rules_class_choices,
             doc = """<i>(Used only when filtering by rules)</i>
             <br>
-            Select which of the classes to keep when filtering. The
+            Select which classes to flag when filtering. The
             CellProfiler Analyst classifier user interface lists the names of 
             the classes in order. By default, these are the positive (class 1)
             and negative (class 2) classes. <b>FlagImage</b> uses the
             first class from CellProfiler Analyst if you choose "1", etc."""))
+        group.rules_class.get_choices = get_rules_class_choices
 
         group.append("measurement", cps.Measurement("Which measurement?",
                                                     object_fn))
@@ -511,16 +512,18 @@ class FlagImage(cpm.CPModule):
         elif ms.source_choice == S_RULES:
             rules = self.get_rules(ms)
             scores = rules.score(workspace.measurements)
-            rules_class = int(ms.rules_class.value) - 1
+            rules_classes = np.array(
+                [int(x)-1 for x in ms.rules_class.get_selections()])
             #
             # There should only be one in the vector, but if not, take
             # a majority vote (e.g. are there more class 1 objects than
             # class 2?)
             #
             is_not_nan = np.any(~ np.isnan(scores), 1)
+            objclass = np.argmax(scores[is_not_nan, :], 1).flatten()
             hit_count = np.sum(
-                np.argmax(scores[is_not_nan, :], 1).flatten() == rules_class)
-            fail = hit_count < scores.shape[0] - hit_count
+                objclass[:, np.newaxis] == rules_classes[np.newaxis, :])
+            fail = hit_count > scores.shape[0] - hit_count
             source = cpmeas.IMAGE
             if len(scores) > 1:
                 display_value = "%d of %d" % (hit_count, scores.shape[0])

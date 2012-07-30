@@ -5111,3 +5111,131 @@ class TestSingleShortestPaths(unittest.TestCase):
             self.assertEqual(len(found_path), len(best_path))
             self.assertTrue(all([a == b for a,b in zip(found_path, best_path)]))
             
+class TestPolygonLinesToMask(unittest.TestCase):
+    def test_00_00_nothing(self):
+        result = morph.polygon_lines_to_mask([], [], [], [], (10, 12))
+        self.assertEqual(tuple(result.shape), (10, 12))
+        self.assertFalse(np.any(result))
+        
+    def test_01_01_diamond(self):
+        # A diamond shape tests exclusion of top pixels.
+        #
+        result = morph.polygon_lines_to_mask([0, 2, 4, 2],
+                                             [2, 0, 2, 4],
+                                             [2, 4, 2, 0],
+                                             [0, 2, 4, 2], (5, 5))
+        expected = np.array(
+            [[ 0, 0, 1, 0, 0 ],
+             [ 0, 1, 1, 1, 0 ],
+             [ 1, 1, 1, 1, 1 ],
+             [ 0, 1, 1, 1, 0 ],
+             [ 0, 0, 1, 0, 0 ]], bool)
+        np.testing.assert_array_equal(result, expected)
+        
+    def test_01_02_square(self):
+        #
+        # A square tests total exclusion of horizontal lines. Side = 3
+        # results in a count of 3 which, if not excluded would make 3,0
+        # a foreground pixel.
+        #
+        result = morph.polygon_lines_to_mask([0, 2, 2, 0],
+                                             [0, 0, 2, 2],
+                                             [2, 2, 0, 0],
+                                             [0, 2, 2, 0], (4, 4))
+        expected = np.zeros((4,4), bool)
+        expected[:3, :3] = True
+        np.testing.assert_array_equal(result, expected)
+        
+    def test_01_03_long_side(self):
+        #
+        # Test a triangle with small slope. For small slope,
+        # the line looks like this:
+        #
+        # ++
+        #   ++
+        #     ++
+        #
+        # If the doubles are included in the cross, counting, there will
+        # be 3 points counted after exiting to the right edge.
+        #
+        result = morph.polygon_lines_to_mask([0, 2, 2],
+                                             [0, 5, 0],
+                                             [2, 2, 0],
+                                             [5, 0, 0], (4, 10))
+        self.assertFalse(np.any(result[:, -1]))
+        
+    def test_02_01_two_disjoint(self):
+        #
+        # Test two disjoint diamonds
+        #
+        result = morph.polygon_lines_to_mask([0, 2, 4, 2,  0,  2,  4,  2],
+                                             [2, 0, 2, 4,  8,  6,  8, 10],
+                                             [2, 4, 2, 0,  2,  4,  2,  0],
+                                             [0, 2, 4, 2,  6,  8, 10,  8],
+                                             (5, 11))
+        expected = np.array(
+            [[ 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0 ],
+             [ 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0 ],
+             [ 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1 ],
+             [ 0, 1, 1, 1, 0, 0, 0, 1, 1, 1, 0 ],
+             [ 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0 ]], bool)
+        np.testing.assert_array_equal(result, expected)
+        
+    def test_02_02_two_touching(self):
+        #
+        # Test two diamonds touching at one vertex
+        #
+        result = morph.polygon_lines_to_mask([0, 2, 4, 2, 0, 2, 4, 2],
+                                             [2, 0, 2, 4, 6, 4, 6, 8],
+                                             [2, 4, 2, 0, 2, 4, 2, 0],
+                                             [0, 2, 4, 2, 4, 6, 8, 6],
+                                             (5, 9))
+        expected = np.array(
+            [[ 0, 0, 1, 0, 0, 0, 1, 0, 0 ],
+             [ 0, 1, 1, 1, 0, 1, 1, 1, 0 ],
+             [ 1, 1, 1, 1, 1, 1, 1, 1, 1 ],
+             [ 0, 1, 1, 1, 0, 1, 1, 1, 0 ],
+             [ 0, 0, 1, 0, 0, 0, 1, 0, 0 ]], bool)
+        np.testing.assert_array_equal(result, expected)
+        
+        
+    def test_02_03_two_sharing_side(self):
+        #
+        # Test two diamonds sharing a common side
+        #
+        result = morph.polygon_lines_to_mask([0, 2, 4, 2, 2, 4, 6, 4],
+                                             [2, 0, 2, 4, 4, 2, 4, 6],
+                                             [2, 4, 2, 0, 4, 6, 4, 2],
+                                             [0, 2, 4, 2, 2, 4, 6, 4],
+                                             (7, 7))
+        
+        expected = np.array(
+            [[ 0, 0, 1, 0, 0, 0, 0],
+             [ 0, 1, 1, 1, 0, 0, 0 ],
+             [ 1, 1, 1, 1, 1, 0, 0 ],
+             [ 0, 1, 1, 1, 1, 1, 0 ],
+             [ 0, 0, 1, 1, 1, 1, 1 ],
+             [ 0, 0, 0, 1, 1, 1, 0 ],
+             [ 0, 0, 0, 0, 1, 0, 0 ]], bool)
+        np.testing.assert_array_equal(result, expected)
+
+    def test_03_01_hole(self):
+        #
+        # Test a square with a diamond hole
+        #
+        result = morph.polygon_lines_to_mask([0, 6, 6, 0, 1, 3, 5, 3],
+                                             [0, 0, 6, 6, 3, 1, 3, 5],
+                                             [6, 6, 0, 0, 3, 5, 3, 1],
+                                             [0, 6, 6, 0, 1, 3, 5, 3],
+                                             (8, 8))
+        expected = np.array(
+            [[ 1, 1, 1, 1, 1, 1, 1, 0],
+             [ 1, 1, 1, 1, 1, 1, 1, 0],
+             [ 1, 1, 1, 0, 1, 1, 1, 0],
+             [ 1, 1, 0, 0, 0, 1, 1, 0],
+             [ 1, 1, 1, 0, 1, 1, 1, 0],
+             [ 1, 1, 1, 1, 1, 1, 1, 0],
+             [ 1, 1, 1, 1, 1, 1, 1, 0],
+             [ 0, 0, 0, 0, 0, 0, 0, 0]], bool)
+        np.testing.assert_array_equal(result, expected)
+        

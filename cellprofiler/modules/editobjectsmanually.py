@@ -50,6 +50,7 @@ See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>Con
 __version__="$Revision$"
 
 import numpy as np
+import sys
 
 import cellprofiler.preferences as cpprefs
 import cellprofiler.cpmodule as cpm
@@ -259,6 +260,7 @@ class EditObjectsManually(I.Identify):
             
     def filter_objects(self, workspace, orig_labels):
         import wx
+        import wx.html
         import matplotlib
         from matplotlib.lines import Line2D
         from matplotlib.path import Path
@@ -304,9 +306,12 @@ class EditObjectsManually(I.Identify):
                 #
                 # Display a UI for choosing objects
                 #
-                style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
+                frame_size = wx.GetDisplaySize()
+                frame_size = [max(frame_size[0], frame_size[1]) / 2] * 2
+                style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX
                 wx.Dialog.__init__(self, workspace.frame, -1,
                                    "Choose objects to keep",
+                                   size=frame_size,
                                    style = style)
                 self.module = module
                 self.workspace = workspace
@@ -323,7 +328,9 @@ class EditObjectsManually(I.Identify):
                 self.build_ui()
                 self.init_labels()
                 self.display()
-                self.Fit()
+                self.Layout()
+                self.Raise()
+                self.panel.SetFocus()
                 
             def build_ui(self):
                 sizer = wx.BoxSizer(wx.VERTICAL)
@@ -331,6 +338,70 @@ class EditObjectsManually(I.Identify):
                 self.figure = matplotlib.figure.Figure()
                 self.panel = FigureCanvasWxAgg(self, -1, self.figure)
                 sizer.Add(self.panel, 1, wx.EXPAND)
+                if True:
+                    self.html_frame = wx.MiniFrame(self)
+                    self.html_panel = wx.html.HtmlWindow(self.html_frame)
+                    if sys.platform == 'darwin':
+                        LEFT_MOUSE = "mouse"
+                        LEFT_MOUSE_BUTTON = "mouse button"
+                        RIGHT_MOUSE = "[control] + mouse"
+                    else:
+                        LEFT_MOUSE = "left mouse button"
+                        LEFT_MOUSE_BUTTON = LEFT_MOUSE
+                        RIGHT_MOUSE = "right mouse button"
+                    self.html_panel.SetPage(
+                    """<H1>Editing help</H1>
+                    The editing user interface lets you create, remove and
+                    edit objects. You can remove an object by clicking on it
+                    with the %(LEFT_MOUSE)s in the "Objects to keep" window
+                    and add it back by clicking on it in the "Objects to
+                    remove" window. You can edit objects by selecting them
+                    with the %(RIGHT_MOUSE)s. You can move object control points
+                    by dragging them while holding the %(LEFT_MOUSE_BUTTON)s
+                    down (you cannot move a control point across the boundary
+                    of the object you are editing and you cannot move the
+                    edges on either side across another control point).
+                    When you are finished editing,
+                    click on the object again with the %(RIGHT_MOUSE)s to save changes
+                    or hit the <i>Esc</i> key to abandon your changes.
+                    <br>
+                    Press the <i>Done</i> key to save your edits.
+                    You can always reset your edits to the original state
+                    before editing by pressing the <i>Reset</i> key.
+                    <h2>Editing commands</h2>
+                    The following keys perform editing commands when pressed:
+                    <br><ul>
+                    <li><b>1</b>: Toggle between one display (the editing
+                    display) and three.</li>
+                    <li><b>A</b>: Add a control point to the line nearest the
+                    mouse cursor</li>
+                    <li><b>C</b>: Join all selected objects into one that forms a
+                    convex hull around them all. The convex hull is the smallest
+                    shape that has no indentations and encloses all of the
+                    objects. You can use this to combine several pieces into
+                    one round object.</li>
+                    <li><b>D</b>: Delete the control point nearest to the
+                    cursor.</li>
+                    <li><b>J</b>: Join all selected objects into one object.</li>
+                    <li><b>N</b>: Create a new object under the cursor.</li>
+                    <li><b>S</b>: Split an object. Pressing <b>S</b> puts
+                    the user interface into <i>Split Mode</i>. The user interface
+                    will prompt you to select a first and second point for the
+                    split. Two types of splits are allowed: a split between
+                    two points on the same contour and a split between the
+                    inside and the outside of an object that has a hole in it.
+                    The former split creates two separate objects. The latter
+                    creates a channel from the hole to the outside of the object.
+                    </li>
+                    </ul>
+                    <br><i>Note: editing is disabled in zoom or pan mode. The
+                    zoom or pan button on the navigation toolbar is depressed
+                    during this mode and your cursor is no longer an arrow.
+                    You can exit from zoom or pan mode by pressing the
+                    appropriate button on the navigation toolbar.
+                    """ % locals())
+                    self.html_frame.Show(False)
+                    self.html_frame.Bind(wx.EVT_CLOSE, self.on_help_close)
         
                 toolbar = NavigationToolbar2WxAgg(self.panel)
                 sizer.Add(toolbar, 0, wx.EXPAND)
@@ -360,30 +431,6 @@ class EditObjectsManually(I.Identify):
                 self.info_axes = self.figure.add_subplot(2, 2, 3)
                 self.info_axes.set_axis_off()
 
-                #
-                # This text is available if you press the help button.
-                #
-                ui_text = ("Keep or remove objects by clicking\n"
-                           "on them with the left mouse button.\n\n"
-                           "Select an object for editing by clicking on it\n"
-                           "with the right mouse button, then click on it\n"
-                           "again with the right mouse button when editing\n"
-                           "is complete.\n\n"
-                           "Press the 1 key to toggle between one display\n"
-                           "(the editing display) and three.\n\n"
-                           "Press the J key to join all selected objects\n"
-                           "into a single object.\n\n"
-                           "Press the C key to enlarge the selected object\n"
-                           "to the convex hull around it.\n\n"
-                           "Press the A key to add a control point to the\n"
-                           "line nearest the cursor.\n\n"
-                           "Press the D key to delete the control point\n"
-                           "nearest to the cursor\n\n"
-                           "Press the N key to make a new object at the cursor\n"
-                           "Press the S key to split, then pick two control\n"
-                           "points to split an object in two\n"
-                           "Esc cancels the current edit.\n\n"
-                           'Press the "Done" button when editing is complete.')
                 sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
                 #
                 # Need padding on top because tool bar is wonky about its height
@@ -435,11 +482,7 @@ class EditObjectsManually(I.Identify):
                 self.Bind(wx.EVT_BUTTON, on_cancel, cancel_button)
                 button_sizer.SetNegativeButton(cancel_button)
                 button_sizer.AddButton(wx.Button(self, wx.ID_HELP))
-                def on_help(event):
-                    wx.MessageBox(ui_text, 
-                                  caption = "Help for editing objects",
-                                  parent = self)
-                self.Bind(wx.EVT_BUTTON, on_help, id= wx.ID_HELP)
+                self.Bind(wx.EVT_BUTTON, self.on_help, id= wx.ID_HELP)
                                   
                 button_sizer.Realize()
                 if self.module.wants_image_display:
@@ -643,6 +686,8 @@ class EditObjectsManually(I.Identify):
                 if event.key == "1":
                     self.toggle_single_panel(event)
                     return
+                if event.key == "f1":
+                    self.on_help(event)
                 if self.mode == self.NORMAL_MODE:
                     if event.key == "j":
                         self.join_objects(event)
@@ -1002,32 +1047,61 @@ class EditObjectsManually(I.Identify):
                     #
                     # Create two new artists from the former artist.
                     #
+                    is_outside = self.artists[pick_artist][self.K_OUTSIDE]
+                    old_object_number = self.artists[pick_artist][self.K_LABEL]
                     xy = pick_artist.get_xydata()
                     idx0 = min(pick_index, self.split_pick_index)
                     idx1 = max(pick_index, self.split_pick_index)
-                    xy0 = np.vstack((xy[:(idx0+1), :],
-                                     xy[idx1:, :]))
-                    xy1 = np.vstack((xy[idx0:(idx1+1), :],
-                                     xy[idx0:(idx0+1), :]))
+                    if is_outside:
+                        xy0 = np.vstack((xy[:(idx0+1), :],
+                                         xy[idx1:, :]))
+                        xy1 = np.vstack((xy[idx0:(idx1+1), :],
+                                         xy[idx0:(idx0+1), :]))
+                    else:
+                        border_pts = np.zeros((2,2,2))
+                            
+                        border_pts[0, 0, :], border_pts[1, 1, :] = \
+                            self.get_split_points(pick_artist, idx0)
+                        border_pts[0, 1, :], border_pts[1, 0, :] = \
+                            self.get_split_points(pick_artist, idx1)
+                        xy0 = np.vstack((xy[:idx0, :],
+                                         border_pts[:, 0, :],
+                                         xy[(idx1+1):, :]))
+                        xy1 = np.vstack((border_pts[:, 1, :],
+                                         xy[(idx0+1):idx1, :],
+                                         border_pts[:1, 1, :]))
+                        
                     pick_artist.set_data((xy0[:, 0], xy0[:, 1]))
-                    new_artist = Line2D(xy1[:, 0], xy1[:, 1], animated = True)
-                    new_object_number = len(self.to_keep)
-                    old_object_number = self.artists[pick_artist][self.K_LABEL]
-                    self.artists[new_artist] = { 
-                        self.K_EDITED: True,
-                        self.K_LABEL: new_object_number,
-                        self.K_OUTSIDE: self.artists[pick_artist][self.K_OUTSIDE]}
+                    new_artist = Line2D(xy1[:, 0], xy1[:, 1],
+                                        marker='o', markerfacecolor='r',
+                                        markersize=6,
+                                        color=self.colormap[old_object_number, :],
+                                        animated = True)
                     self.orig_axes.add_line(new_artist)
-                    self.artists[pick_artist][self.K_EDITED] = True
-                    temp = np.ones(self.to_keep.shape[0] + 1, bool)
-                    temp[:-1] = self.to_keep
-                    self.to_keep = temp
-                    self.close_label(old_object_number, False)
-                    self.close_label(new_object_number, False)
-                    self.init_labels()
-                    self.make_control_points(old_object_number)
-                    self.make_control_points(new_object_number)
-                    self.display()
+                    if is_outside:
+                        new_object_number = len(self.to_keep)
+                        self.artists[new_artist] = { 
+                            self.K_EDITED: True,
+                            self.K_LABEL: new_object_number,
+                            self.K_OUTSIDE: is_outside}
+                        self.artists[pick_artist][self.K_EDITED] = True
+                        temp = np.ones(self.to_keep.shape[0] + 1, bool)
+                        temp[:-1] = self.to_keep
+                        self.to_keep = temp
+                        self.close_label(old_object_number, False)
+                        self.close_label(new_object_number, False)
+                        self.init_labels()
+                        self.make_control_points(old_object_number)
+                        self.make_control_points(new_object_number)
+                        self.display()
+                    else:
+                        # Splitting a hole: the two parts are still in
+                        # the same object.
+                        self.artists[new_artist] = {
+                            self.K_EDITED: True,
+                            self.K_LABEL: old_object_number,
+                            self.K_OUTSIDE: False }
+                        self.update_artists()
                 else:
                     #
                     # Join head and tail of different objects. The opposite
@@ -1058,19 +1132,11 @@ class EditObjectsManually(I.Identify):
                     # 1 for the point to be contributed last. 
                     #
                     border_pts = np.zeros((2,2,2))
-                    for i0, (idx, a) in enumerate((
-                        (outside_index, xy0), (inside_index, xy1))):
-                        a = a.astype(float)
-                        if idx == 0:
-                            idx_left = a.shape[0] - 2
-                        else:
-                            idx_left = idx - 1
-                        if idx == a.shape[0] - 2:
-                            idx_right = 0
-                        else:
-                            idx_right = idx+1
-                        border_pts[0, i0, :] = (a[idx_left, :]+a[idx, :])/2
-                        border_pts[1, 1-i0, :]  = (a[idx_right, :]+a[idx, :])/2
+                        
+                    border_pts[0, 0, :], border_pts[1, 1, :] = \
+                        self.get_split_points(outside_artist, outside_index)
+                    border_pts[0, 1, :], border_pts[1, 0, :] = \
+                        self.get_split_points(inside_artist, inside_index)
                         
                     xy = np.vstack((xy0[:outside_index, :], 
                                     border_pts[:, 0, :],
@@ -1086,6 +1152,31 @@ class EditObjectsManually(I.Identify):
                     object_number = self.artists[outside_artist][self.K_LABEL]
                     self.update_artists()
                 self.exit_split_mode(event)
+                
+            @staticmethod
+            def get_split_points(artist, idx):
+                '''Return the split points on either side of the indexed point
+                
+                artist - artist in question
+                idx - index of the point
+                
+                returns a point midway between the previous point and the
+                point in question and a point midway between the next point
+                and the point in question.
+                '''
+                a = artist.get_xydata().astype(float)
+                if idx == 0:
+                    idx_left = a.shape[0] - 2
+                else:
+                    idx_left = idx - 1
+                if idx == a.shape[0] - 2:
+                    idx_right = 0
+                elif idx == a.shape[0] - 1:
+                    idx_right = 1
+                else:
+                    idx_right = idx+1
+                return ((a[idx_left, :] + a[idx, :]) / 2,
+                        (a[idx_right, :] + a[idx, :]) / 2)
                 
             ################################
             #
@@ -1110,6 +1201,13 @@ class EditObjectsManually(I.Identify):
                 self.artists = {}
                 self.init_labels()
                 self.display()
+                
+            def on_help(self, event):
+                self.html_frame.Show(True)
+                
+            def on_help_close(self, event):
+                event.Veto()
+                self.html_frame.Show(False)
                 
             def make_control_points(self, object_number):
                 '''Create an artist with control points for editing an object
@@ -1212,13 +1310,13 @@ class EditObjectsManually(I.Identify):
                             jc += t[1]
                             direction = t[2]
                             if ic == start_i and jc == start_j:
-                                if not polarity:
-                                    # Reverse the winding order
-                                    chain = chain[::-1]
                                 if len(chain) > 40:
                                     markevery = min(10, int((len(chain)+ 19) / 20))
                                     chain = chain[::markevery]
                                 chain.append((ic - 1, jc - 1))
+                                if not polarity:
+                                    # Reverse the winding order
+                                    chain = chain[::-1]
                                 break
                         chain = np.array(chain)
                         artist = Line2D(chain[:, 1], chain[:, 0],

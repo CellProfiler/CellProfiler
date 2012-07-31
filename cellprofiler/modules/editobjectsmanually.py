@@ -281,6 +281,7 @@ class EditObjectsManually(I.Identify):
             remove_all_id = wx.NewId()
             reverse_select = wx.NewId()
             epsilon = 5 # maximum pixel distance to a vertex for hit test
+            FREEHAND_DRAW_MODE = "freehanddrawmode"
             SPLIT_PICK_FIRST_MODE = "split1"
             SPLIT_PICK_SECOND_MODE = "split2"
             NORMAL_MODE = "normal"
@@ -339,7 +340,9 @@ class EditObjectsManually(I.Identify):
                 self.panel = FigureCanvasWxAgg(self, -1, self.figure)
                 sizer.Add(self.panel, 1, wx.EXPAND)
                 if True:
-                    self.html_frame = wx.MiniFrame(self)
+                    self.html_frame = wx.MiniFrame(
+                        self, style = wx.DEFAULT_MINIFRAME_STYLE | 
+                        wx.CLOSE_BOX | wx.SYSTEM_MENU | wx.RESIZE_BORDER)
                     self.html_panel = wx.html.HtmlWindow(self.html_frame)
                     if sys.platform == 'darwin':
                         LEFT_MOUSE = "mouse"
@@ -382,6 +385,9 @@ class EditObjectsManually(I.Identify):
                     one round object.</li>
                     <li><b>D</b>: Delete the control point nearest to the
                     cursor.</li>
+                    <li><b>f</b>: Freehand draw. Press down on the %(LEFT_MOUSE)s
+                    to draw a new object outline, then release to complete
+                    the outline and return to normal editing.</li>
                     <li><b>J</b>: Join all selected objects into one object.</li>
                     <li><b>N</b>: Create a new object under the cursor.</li>
                     <li><b>S</b>: Split an object. Pressing <b>S</b> puts
@@ -398,7 +404,7 @@ class EditObjectsManually(I.Identify):
                     zoom or pan button on the navigation toolbar is depressed
                     during this mode and your cursor is no longer an arrow.
                     You can exit from zoom or pan mode by pressing the
-                    appropriate button on the navigation toolbar.
+                    appropriate button on the navigation toolbar.</i>
                     """ % locals())
                     self.html_frame.Show(False)
                     self.html_frame.Bind(wx.EVT_CLOSE, self.on_help_close)
@@ -649,6 +655,9 @@ class EditObjectsManually(I.Identify):
                 elif self.mode == self.SPLIT_PICK_SECOND_MODE:
                     self.on_split_second_click(event)
                     return
+                elif self.mode == self.FREEHAND_DRAW_MODE:
+                    self.on_freehand_draw_click(event)
+                    return
                 if event.inaxes == self.orig_axes and event.button == 1:
                     best_artist, best_index = self.get_control_point(event)
                     if best_artist is not None:
@@ -697,6 +706,8 @@ class EditObjectsManually(I.Identify):
                         self.add_control_point(event)
                     elif event.key == "d":
                         self.delete_control_point(event)
+                    elif event.key == "f":
+                        self.enter_freehand_draw_mode(event)
                     elif event.key == "n":
                         self.new_object(event)
                     elif event.key == "s":
@@ -707,17 +718,27 @@ class EditObjectsManually(I.Identify):
                                    self.SPLIT_PICK_SECOND_MODE):
                     if event.key == "escape":
                         self.exit_split_mode(event)
+                elif self.mode == self.FREEHAND_DRAW_MODE:
+                    self.exit_freehand_draw_mode(event)
             
             def on_key_up(self, event):
                 if event.key in self.pressed_keys:
                     self.pressed_keys.remove(event.key)
             
             def on_mouse_button_up(self, event):
-                self.active_artist = None
-                self.active_index = None
+                if (event.inaxes is not None and 
+                    event.inaxes.get_navigate_mode() is not None):
+                    return
+                if self.mode == self.FREEHAND_DRAW_MODE:
+                    self.on_mouse_button_up_freehand_draw_mode(event)
+                else:
+                    self.active_artist = None
+                    self.active_index = None
                 
             def on_mouse_moved(self, event):
-                if self.active_artist is not None:
+                if self.mode == self.FREEHAND_DRAW_MODE:
+                    self.handle_mouse_moved_freehand_draw_mode(event)
+                elif self.active_artist is not None:
                     self.handle_mouse_moved_active_mode(event)
                 elif self.mode == self.SPLIT_PICK_SECOND_MODE:
                     self.handle_mouse_moved_pick_second_mode(event)
@@ -794,6 +815,9 @@ class EditObjectsManually(I.Identify):
                     self.orig_axes.draw_artist(artist)
                 if self.split_artist is not None:
                     self.orig_axes.draw_artist(self.split_artist)
+                if (self.mode == self.FREEHAND_DRAW_MODE and 
+                    self.active_artist is not None):
+                    self.orig_axes.draw_artist(self.active_artist)
                 self.figure.canvas.blit(self.orig_axes.bbox)
                 
             def toggle_single_panel(self, event):
@@ -958,11 +982,18 @@ class EditObjectsManually(I.Identify):
             SPLIT_PICK_SECOND_TITLE = "Pick second point for split or hit Esc to exit"
             
             def set_orig_axes_title(self):
-                title = (
-                    self.orig_objects_title if self.mode == self.NORMAL_MODE
-                    else self.SPLIT_PICK_FIRST_TITLE 
-                    if self.mode == self.SPLIT_PICK_FIRST_MODE
-                    else self.SPLIT_PICK_SECOND_TITLE)
+                if self.mode == self.SPLIT_PICK_FIRST_MODE:
+                    title = self.SPLIT_PICK_FIRST_TITLE 
+                elif self.mode == self.SPLIT_PICK_SECOND_MODE:
+                    title = self.SPLIT_PICK_SECOND_TITLE
+                elif self.mode == self.FREEHAND_DRAW_MODE:
+                    if self.active_artist is None:
+                        title = "Click the mouse to begin to draw or hit Esc"
+                    else:
+                        title = "Freehand drawing"
+                else:
+                    title = self.orig_objects_title
+                                                
                 self.orig_axes.set_title(
                     title,
                     fontname=cpprefs.get_title_font_name(),
@@ -1177,7 +1208,68 @@ class EditObjectsManually(I.Identify):
                     idx_right = idx+1
                 return ((a[idx_left, :] + a[idx, :]) / 2,
                         (a[idx_right, :] + a[idx, :]) / 2)
+            
+            ################################
+            #
+            # Freehand draw mode
+            #
+            ################################
+            def enter_freehand_draw_mode(self, event):
+                self.mode = self.FREEHAND_DRAW_MODE
+                self.active_artist = None
+                self.set_orig_axes_title()
+                self.figure.canvas.draw()
                 
+            def exit_freehand_draw_mode(self, event):
+                if self.active_artist is not None:
+                    self.active_artist.remove()
+                    self.active_artist = None
+                self.mode = self.NORMAL_MODE
+                self.set_orig_axes_title()
+                self.figure.canvas.draw()
+                
+            def on_freehand_draw_click(self, event):
+                '''Begin drawing on mouse-down'''
+                self.active_artist = Line2D([ event.xdata], [event.ydata],
+                                            color = "blue",
+                                            animated = True)
+                self.orig_axes.add_line(self.active_artist)
+                self.update_artists()
+                
+            def handle_mouse_moved_freehand_draw_mode(self, event):
+                if event.inaxes != self.orig_axes:
+                    return
+                if self.active_artist is not None:
+                    xdata, ydata = self.active_artist.get_data()
+                    self.active_artist.set_data(
+                        np.hstack((xdata, [event.xdata])),
+                        np.hstack((ydata, [event.ydata])))
+                    self.update_artists()
+            
+            def on_mouse_button_up_freehand_draw_mode(self, event):
+                xydata = self.active_artist.get_xydata()
+                if event.inaxes == self.orig_axes:
+                    xydata = np.vstack((
+                        xydata,
+                        np.array([[event.xdata, event.ydata]])))
+                xydata = np.vstack((
+                    xydata,
+                    np.array([[xydata[0, 0], xydata[0, 1]]])))
+                
+                object_number = len(self.to_keep)
+                temp = np.ones(object_number + 1, bool)
+                temp[:-1] = self.to_keep
+                self.to_keep = temp
+                mask = polygon_lines_to_mask(xydata[:-1, 1],
+                                             xydata[:-1, 0],
+                                             xydata[1:, 1],
+                                             xydata[1:, 0],
+                                             self.orig_labels.shape)
+                self.labels[mask] = object_number
+                self.exit_freehand_draw_mode(event)
+                self.init_labels()
+                self.display()
+            
             ################################
             #
             # Functions for keep / remove/ toggle
@@ -1351,7 +1443,7 @@ class EditObjectsManually(I.Identify):
                         j, i = artist.get_data()
                         m1 = polygon_lines_to_mask(i[:-1], j[:-1],
                                                    i[1:], j[1:],
-                                                   orig_labels.shape)
+                                                   self.orig_labels.shape)
                         mask[m1] = ~mask[m1]
                     self.labels[self.labels == label] = 0
                     self.labels[mask] = label

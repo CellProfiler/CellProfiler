@@ -866,7 +866,7 @@ def get_line_pts(pt0i, pt0j, pt1i, pt1j):
     #
     diff_i = np.abs(pt0i - pt1i)
     diff_j = np.abs(pt0j - pt1j)
-    count = np.maximum(diff_i, diff_j) + 1
+    count = np.maximum(diff_i, diff_j).astype(int) + 1
     #
     # The indexes of the ends of the coordinate vectors are at the
     # cumulative sum of the counts. We get to the starts by subtracting
@@ -980,6 +980,107 @@ def get_line_pts(pt0i, pt0j, pt1i, pt1j):
             i[index_t+n] = current_i
             j[index_t+n] = current_j
     return index, count, i, j
+
+def polygon_lines_to_mask(pt0i, pt0j, pt1i, pt1j, shape):
+    '''Convert a series of polygon lines to a background / foreground mask
+    
+    pt0i, pt0j, pt1i, pt1j - start / end points of lines. Points are rounded
+                             to the nearest integer coordinate if float.
+    
+    shape - shape of the mask array
+    
+    This algorithm assumes that the lines form closed polygons. The lines
+    can be in any desired order.
+    returns a binary array of the given shape with the interiors of
+    polygons filled in.
+    
+    The algorithm assumes that polygons do not overlap. Overlapping polygons
+    should be evaluated separately and their results should be or'ed
+    '''
+    #
+    # Use get_line_pts to find the points along the lines. Mark all of
+    # these points as within the mask.
+    #
+    # Add all points along all lines, except for those whose i coordinate
+    # is at the minimum for that line. This avoids doubly counting in cases
+    # such as this:
+    #
+    #   O
+    #   | \
+    #   O  0
+    #   | /
+    #   O
+    #
+    # and this
+    #
+    #         O
+    #         |\
+    #     O---0 \
+    #
+    # Also remove all points in a line at a particular i but the last to
+    # correct for this:
+    #
+    #    0
+    #    | + +
+    #    |     + + <- count = 3
+    #    0 + + + + 0
+    #
+    # Use a sparse matrix to sum the hits at every pixel. Some pixels will have
+    # double hits:
+    #
+    #  1       1
+    #    1   1
+    #      2
+    #
+    # Also, if two polygons share a common side, that side will be doubly
+    # numbered and will disappear.
+    #
+    #Pixels with odd numbers are foreground and with
+    # even numbers are background.
+    #
+    #  1 1 1 1 2 <- 2 already included because it's on a line.
+    #    1 1 2
+    #      2
+    #
+    pt0i, pt0j, pt1i, pt1j = [np.round(np.atleast_1d(x)).astype(int)
+                              for x in (pt0i, pt0j, pt1i, pt1j)]
+    result = np.zeros(shape, bool)
+    discard_me = pt0i == pt1i
+    index, count, i, j = get_line_pts(pt0i[discard_me], pt0j[discard_me],
+                                      pt1i[discard_me], pt1j[discard_me])
+    result[i, j] = True
+    pt0i, pt0j, pt1i, pt1j = [x[~discard_me] for x in (pt0i, pt0j, pt1i, pt1j)]
+    reverse_me = pt0i > pt1i
+    pt0i[reverse_me], pt0j[reverse_me], pt1i[reverse_me], pt1j[reverse_me] = \
+        pt1i[reverse_me], pt1j[reverse_me], pt0i[reverse_me], pt0j[reverse_me]
+    index, count, i, j = get_line_pts(pt0i, pt0j, pt1i, pt1j)
+    #
+    # Mark all i,j as foreground
+    #
+    result[i, j] = True
+    #
+    # Remove any pixel whose I is pt0i
+    #
+    indexer = Indexes(count)
+    dont_use = pt0i[indexer.rev_idx] == i
+    #
+    # Remove any pixel which is from the same line as the next pixel
+    # and has the same "i"
+    #
+    dont_use[:-1] |= ((indexer.rev_idx[:-1] == indexer.rev_idx[1:]) &
+                      (i[:-1] == i[1:]))
+    i, j = i[~ dont_use], j[~ dont_use]
+    #
+    # Create a sparse matrix to do the counting, then convert.
+    #
+    hitcounts = scipy.sparse.coo_matrix((np.ones(len(i), int), (i, j)),
+                                        shape = shape,
+                                        dtype = np.uint16).toarray()
+    #
+    # Scan along the I direction. Odd pixels are inside.
+    #
+    result[(np.cumsum(hitcounts, 1) % 2) == 1] = True
+    return result
     
 def fixup_scipy_ndimage_result(whatever_it_returned):
     """Convert a result from scipy.ndimage to a numpy array

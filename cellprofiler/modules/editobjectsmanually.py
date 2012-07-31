@@ -30,10 +30,27 @@ and continue the pipeline.
 
 See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>ConvertToImage</b>.
 '''
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2012 Broad Institute
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
+#
+# Some matplotlib interactive editing code is derived from the sample:
+#
+# http://matplotlib.sourceforge.net/examples/event_handling/poly_editor.html
+#
+# Copyright 2008, John Hunter, Darren Dale, Michael Droettboom
+# 
 
 __version__="$Revision$"
 
 import numpy as np
+import sys
 
 import cellprofiler.preferences as cpprefs
 import cellprofiler.cpmodule as cpm
@@ -243,250 +260,1116 @@ class EditObjectsManually(I.Identify):
             
     def filter_objects(self, workspace, orig_labels):
         import wx
+        import wx.html
         import matplotlib
+        from matplotlib.lines import Line2D
+        from matplotlib.path import Path
         from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
         from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
+        import scipy.ndimage
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
         from cellprofiler.icons import get_builtin_image
+        from cellprofiler.cpmath.cpmorphology import polygon_lines_to_mask
+        from cellprofiler.cpmath.cpmorphology import convex_hull_image
+        from cellprofiler.cpmath.cpmorphology import distance2_to_line
         
         assert isinstance(workspace,cpw.Workspace)
-        orig_objects_name = self.object_name.value
-        #
-        # Get the labels matrix and make a mask of objects to keep from it
-        #
-        #
-        # Display a UI for choosing objects
-        #
-        style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-        dialog_box = wx.Dialog(workspace.frame, -1,
-                               "Choose objects to keep",
-                               style = style)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        dialog_box.SetSizer(sizer)
-        figure = matplotlib.figure.Figure()
-        panel = FigureCanvasWxAgg(dialog_box, -1, figure)
-        sizer.Add(panel, 1, wx.EXPAND)
-        
-        toolbar = NavigationToolbar2WxAgg(panel)
-        sizer.Add(toolbar, 0, wx.EXPAND)
-        #
-        # Make 3 axes
-        #
-        orig_axes = figure.add_subplot(2, 2, 1)
-        orig_axes._adjustable = 'box-forced'
-        keep_axes = figure.add_subplot(2, 2, 2,
-                                       sharex = orig_axes,
-                                       sharey = orig_axes)
-        remove_axes = figure.add_subplot(2, 2, 4,
-                                         sharex = orig_axes,
-                                         sharey = orig_axes)
-        for axes in (orig_axes, keep_axes, remove_axes):
-            axes._adjustable = 'box-forced'
-            
-        info_axes = figure.add_subplot(2, 2, 3)
-        assert isinstance(info_axes, matplotlib.axes.Axes)
-        info_axes.set_axis_off()
-        #
-        # Add an explanation and possibly a checkbox to the info axis
-        #
-        ui_text = ("Keep or remove objects by clicking\n"
-                   "on them with the mouse.\n"
-                   'Press the "Done" button when\nediting is complete.')
-        info_axes.text(0,0, ui_text, size="small")
-        wants_image_display = [self.wants_image_display.value]
-        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        #
-        # Need padding on top because tool bar is wonky about its height
-        #
-        sizer.Add(sub_sizer, 0, wx.EXPAND | wx.TOP, 10)
-        
-        resume_id = 100
-        cancel_id = 101
-        keep_all_id = 102
-        remove_all_id = 103
-        reverse_select = 104
-        #########################################
-        #
-        # Buttons for keep / remove / toggle
-        #
-        #########################################
-        
-        keep_button = wx.Button(dialog_box, keep_all_id, "Keep all")
-        sub_sizer.Add(keep_button, 0, wx.ALIGN_CENTER)
-        
-        remove_button = wx.Button(dialog_box, remove_all_id, "Remove all")
-        sub_sizer.Add(remove_button,0, wx.ALIGN_CENTER)
-        
-        toggle_button = wx.Button(dialog_box, reverse_select, "Reverse selection")
-        sub_sizer.Add(toggle_button,0, wx.ALIGN_CENTER)
-        
-        ######################################
-        #
-        # Buttons for resume and cancel
-        #
-        ######################################
-        button_sizer = wx.StdDialogButtonSizer()
-        resume_button = wx.Button(dialog_box, resume_id, "Done")
-        button_sizer.AddButton(resume_button)
-        sub_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER)
-        def on_resume(event):
-            dialog_box.EndModal(wx.OK)
-        dialog_box.Bind(wx.EVT_BUTTON, on_resume, resume_button)
-        button_sizer.SetAffirmativeButton(resume_button)
-        
-        cancel_button = wx.Button(dialog_box, cancel_id, "Cancel")
-        button_sizer.AddButton(cancel_button)
-        def on_cancel(event):
-            dialog_box.EndModal(wx.CANCEL)
-        dialog_box.Bind(wx.EVT_BUTTON, on_cancel, cancel_button)
-        button_sizer.SetNegativeButton(cancel_button)
-        button_sizer.Realize()
-        
-        #########################################
-        #
-        # Construct a stable label index transform
-        # and a color display image.
-        #
-        #########################################
-        
-        clabels = renumber_labels_for_display(orig_labels)
-        nlabels = clabels.max()
-        label_map = np.zeros(nlabels + 1, clabels.dtype)
-        label_map[orig_labels.flatten()] = clabels.flatten()
-        outlines = outline(clabels)
-        oi, oj = np.argwhere(outlines != 0).transpose()
-        ol = orig_labels[oi, oj]
-        image = workspace.image_set.get_image(self.image_name.value)
-        image = image.pixel_data.astype(np.float)
-        image, _ = cpo.size_similarly(orig_labels, image)
-        if image.ndim == 2:
-            image = np.dstack((image, image, image))
-        cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-        cm.set_bad((0,0,0))
-    
-        mappable = matplotlib.cm.ScalarMappable(cmap=cm)
-        mappable.set_clim(1, nlabels+1)
-        colormap = mappable.to_rgba(np.arange(nlabels + 1))[:, :3]
-        colormap = colormap[label_map, :]
-        oc = colormap[ol, :]
-        
-        to_keep = np.ones(nlabels + 1, bool)
-
-        ################### d i s p l a y #######
-        #
-        # The following is a function that we can call to refresh
-        # the figure's appearance based on the mask and the original labels
-        #
-        ##########################################
-        
-        def display():
-            if len(orig_axes.images) > 0:
-                # Save zoom and scale if coming through here a second time
-                x0, x1 = orig_axes.get_xlim()
-                y0, y1 = orig_axes.get_ylim()
-                set_lim = True
-            else:
-                set_lim = False
-            for axes, keep, title in (
-                (orig_axes, np.ones(nlabels+1, bool), 
-                 "Original: %s"%orig_objects_name),
-                (keep_axes, to_keep,"Objects to keep"),
-                (remove_axes, ~ to_keep, "Objects to remove")):
+        class FilterObjectsDialog(wx.Dialog):
+            resume_id = wx.NewId()
+            cancel_id = wx.NewId()
+            keep_all_id = wx.NewId()
+            remove_all_id = wx.NewId()
+            reverse_select = wx.NewId()
+            epsilon = 5 # maximum pixel distance to a vertex for hit test
+            SPLIT_PICK_FIRST_MODE = "split1"
+            SPLIT_PICK_SECOND_MODE = "split2"
+            NORMAL_MODE = "normal"
+            #
+            # The object_number for an artist
+            #
+            K_LABEL = "label"
+            #
+            # Whether the artist has been edited
+            #
+            K_EDITED = "edited"
+            #
+            # Whether the artist is on the outside of the object (True)
+            # or is the border of a hole (False)
+            #
+            K_OUTSIDE = "outside"
+            def __init__(self, module, workspace, orig_labels):
+                assert isinstance(module, EditObjectsManually)
+                assert isinstance(workspace, cpw.Workspace)
+                #
+                # Get the labels matrix and make a mask of objects to keep from it
+                #
+                #
+                # Display a UI for choosing objects
+                #
+                frame_size = wx.GetDisplaySize()
+                frame_size = [max(frame_size[0], frame_size[1]) / 2] * 2
+                style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX
+                wx.Dialog.__init__(self, workspace.frame, -1,
+                                   "Choose objects to keep",
+                                   size=frame_size,
+                                   style = style)
+                self.module = module
+                self.workspace = workspace
+                self.orig_labels = orig_labels
+                self.labels = orig_labels.copy()
+                self.artists = {}
+                self.active_artist = None
+                self.active_index = None
+                self.mode = self.NORMAL_MODE
+                self.split_artist = None
+                self.wants_image_display = module.wants_image_display.value
+                self.pressed_keys = set()
+                self.to_keep = np.ones(np.max(orig_labels) + 1, bool)
+                self.build_ui()
+                self.init_labels()
+                self.display()
+                self.Layout()
+                self.Raise()
+                self.panel.SetFocus()
                 
-                assert isinstance(axes, matplotlib.axes.Axes)
-                axes.clear()
-                if wants_image_display[0]:
-                    cimage = image.copy()
+            def build_ui(self):
+                sizer = wx.BoxSizer(wx.VERTICAL)
+                self.SetSizer(sizer)
+                self.figure = matplotlib.figure.Figure()
+                self.panel = FigureCanvasWxAgg(self, -1, self.figure)
+                sizer.Add(self.panel, 1, wx.EXPAND)
+                if True:
+                    self.html_frame = wx.MiniFrame(self)
+                    self.html_panel = wx.html.HtmlWindow(self.html_frame)
+                    if sys.platform == 'darwin':
+                        LEFT_MOUSE = "mouse"
+                        LEFT_MOUSE_BUTTON = "mouse button"
+                        RIGHT_MOUSE = "[control] + mouse"
+                    else:
+                        LEFT_MOUSE = "left mouse button"
+                        LEFT_MOUSE_BUTTON = LEFT_MOUSE
+                        RIGHT_MOUSE = "right mouse button"
+                    self.html_panel.SetPage(
+                    """<H1>Editing help</H1>
+                    The editing user interface lets you create, remove and
+                    edit objects. You can remove an object by clicking on it
+                    with the %(LEFT_MOUSE)s in the "Objects to keep" window
+                    and add it back by clicking on it in the "Objects to
+                    remove" window. You can edit objects by selecting them
+                    with the %(RIGHT_MOUSE)s. You can move object control points
+                    by dragging them while holding the %(LEFT_MOUSE_BUTTON)s
+                    down (you cannot move a control point across the boundary
+                    of the object you are editing and you cannot move the
+                    edges on either side across another control point).
+                    When you are finished editing,
+                    click on the object again with the %(RIGHT_MOUSE)s to save changes
+                    or hit the <i>Esc</i> key to abandon your changes.
+                    <br>
+                    Press the <i>Done</i> key to save your edits.
+                    You can always reset your edits to the original state
+                    before editing by pressing the <i>Reset</i> key.
+                    <h2>Editing commands</h2>
+                    The following keys perform editing commands when pressed:
+                    <br><ul>
+                    <li><b>1</b>: Toggle between one display (the editing
+                    display) and three.</li>
+                    <li><b>A</b>: Add a control point to the line nearest the
+                    mouse cursor</li>
+                    <li><b>C</b>: Join all selected objects into one that forms a
+                    convex hull around them all. The convex hull is the smallest
+                    shape that has no indentations and encloses all of the
+                    objects. You can use this to combine several pieces into
+                    one round object.</li>
+                    <li><b>D</b>: Delete the control point nearest to the
+                    cursor.</li>
+                    <li><b>J</b>: Join all selected objects into one object.</li>
+                    <li><b>N</b>: Create a new object under the cursor.</li>
+                    <li><b>S</b>: Split an object. Pressing <b>S</b> puts
+                    the user interface into <i>Split Mode</i>. The user interface
+                    will prompt you to select a first and second point for the
+                    split. Two types of splits are allowed: a split between
+                    two points on the same contour and a split between the
+                    inside and the outside of an object that has a hole in it.
+                    The former split creates two separate objects. The latter
+                    creates a channel from the hole to the outside of the object.
+                    </li>
+                    </ul>
+                    <br><i>Note: editing is disabled in zoom or pan mode. The
+                    zoom or pan button on the navigation toolbar is depressed
+                    during this mode and your cursor is no longer an arrow.
+                    You can exit from zoom or pan mode by pressing the
+                    appropriate button on the navigation toolbar.
+                    """ % locals())
+                    self.html_frame.Show(False)
+                    self.html_frame.Bind(wx.EVT_CLOSE, self.on_help_close)
+        
+                toolbar = NavigationToolbar2WxAgg(self.panel)
+                sizer.Add(toolbar, 0, wx.EXPAND)
+                #
+                # Make 3 axes
+                #
+                self.orig_axes = self.figure.add_subplot(2, 2, 1)
+                self.orig_axes.set_zorder(1) # preferentially select on click.
+                self.orig_axes._adjustable = 'box-forced'
+                self.keep_axes = self.figure.add_subplot(
+                    2, 2, 2, sharex = self.orig_axes, sharey = self.orig_axes)
+                self.remove_axes = self.figure.add_subplot(
+                    2, 2, 4, sharex = self.orig_axes, sharey = self.orig_axes)
+                for axes in (self.orig_axes, self.keep_axes, self.remove_axes):
+                    axes._adjustable = 'box-forced'
+                orig_objects_name = self.module.object_name.value
+                self.orig_objects_title = "Original: %s" % orig_objects_name
+                for axes, title in (
+                    (self.orig_axes, 
+                     self.orig_objects_title),
+                    (self.keep_axes, "Objects to keep"),
+                    (self.remove_axes, "Objects to remove")):
+                    axes.set_title(title,
+                                   fontname=cpprefs.get_title_font_name(),
+                                   fontsize=cpprefs.get_title_font_size())
+            
+                self.info_axes = self.figure.add_subplot(2, 2, 3)
+                self.info_axes.set_axis_off()
+
+                sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+                #
+                # Need padding on top because tool bar is wonky about its height
+                #
+                sizer.Add(sub_sizer, 0, wx.EXPAND | wx.TOP, 10)
+                        
+                #########################################
+                #
+                # Buttons for keep / remove / toggle
+                #
+                #########################################
+                
+                keep_button = wx.Button(self, self.keep_all_id, "Keep all")
+                sub_sizer.Add(keep_button, 0, wx.ALIGN_CENTER)
+        
+                remove_button = wx.Button(self, self.remove_all_id, "Remove all")
+                sub_sizer.Add(remove_button,0, wx.ALIGN_CENTER)
+        
+                toggle_button = wx.Button(self, self.reverse_select, 
+                                          "Reverse selection")
+                sub_sizer.Add(toggle_button,0, wx.ALIGN_CENTER)
+                reset_button = wx.Button(self, -1, "Reset")
+                reset_button.SetToolTipString(
+                    "Undo all editing and restore the original objects")
+                sub_sizer.Add(reset_button)
+                self.Bind(wx.EVT_BUTTON, self.on_toggle, toggle_button)
+                self.Bind(wx.EVT_BUTTON, self.on_keep, keep_button)
+                self.Bind(wx.EVT_BUTTON, self.on_remove, remove_button)
+                self.Bind(wx.EVT_BUTTON, self.on_reset, reset_button)
+        
+                ######################################
+                #
+                # Buttons for resume and cancel
+                #
+                ######################################
+                button_sizer = wx.StdDialogButtonSizer()
+                resume_button = wx.Button(self, self.resume_id, "Done")
+                button_sizer.AddButton(resume_button)
+                sub_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER)
+                def on_resume(event):
+                    self.EndModal(wx.OK)
+                self.Bind(wx.EVT_BUTTON, on_resume, resume_button)
+                button_sizer.SetAffirmativeButton(resume_button)
+        
+                cancel_button = wx.Button(self, self.cancel_id, "Cancel")
+                button_sizer.AddButton(cancel_button)
+                def on_cancel(event):
+                    self.EndModal(wx.CANCEL)
+                self.Bind(wx.EVT_BUTTON, on_cancel, cancel_button)
+                button_sizer.SetNegativeButton(cancel_button)
+                button_sizer.AddButton(wx.Button(self, wx.ID_HELP))
+                self.Bind(wx.EVT_BUTTON, self.on_help, id= wx.ID_HELP)
+                                  
+                button_sizer.Realize()
+                if self.module.wants_image_display:
+                    #
+                    # Note: the checkbutton must have a reference or it
+                    #       will cease to be checkable.
+                    #
+                    self.display_image_checkbox = matplotlib.widgets.CheckButtons(
+                        self.info_axes, ["Display image"], [True])
+                    self.display_image_checkbox.labels[0].set_size("small")
+                    r = self.display_image_checkbox.rectangles[0]
+                    rwidth = r.get_width()
+                    rheight = r.get_height()
+                    rx, ry = r.get_xy()
+                    new_rwidth = rwidth / 2 
+                    new_rheight = rheight / 2
+                    new_rx = rx + rwidth/2
+                    new_ry = ry + rheight/4
+                    r.set_width(new_rwidth)
+                    r.set_height(new_rheight)
+                    r.set_xy((new_rx, new_ry))
+                    l1, l2 = self.display_image_checkbox.lines[0]
+                    l1.set_data((np.array((new_rx, new_rx+new_rwidth)),
+                                 np.array((new_ry, new_ry+new_rheight))))
+                    l2.set_data((np.array((new_rx, new_rx+new_rwidth)),
+                                 np.array((new_ry + new_rheight, new_ry))))
+                    
+                    self.display_image_checkbox.on_clicked(
+                        self.on_display_image_clicked)
+                self.figure.canvas.mpl_connect('button_press_event', 
+                                               self.on_click)
+                self.figure.canvas.mpl_connect('draw_event', self.draw_callback)
+                self.figure.canvas.mpl_connect('button_release_event',
+                                               self.on_mouse_button_up)
+                self.figure.canvas.mpl_connect('motion_notify_event',
+                                               self.on_mouse_moved)
+                self.figure.canvas.mpl_connect('key_press_event',
+                                               self.on_key_down)
+                self.figure.canvas.mpl_connect('key_release_event',
+                                               self.on_key_up)
+                
+            def on_display_image_clicked(self, event):
+                self.wants_image_display = not self.wants_image_display
+                self.display()
+                
+            def init_labels(self):
+                #########################################
+                #
+                # Construct a stable label index transform
+                # and a color display image.
+                #
+                #########################################
+                
+                clabels = renumber_labels_for_display(self.labels)
+                nlabels = len(self.to_keep) - 1
+                label_map = np.zeros(nlabels + 1, clabels.dtype)
+                label_map[self.labels.flatten()] = clabels.flatten()
+                outlines = outline(clabels)
+                self.oi, self.oj = np.argwhere(outlines != 0).transpose()
+                self.ol = self.labels[self.oi, self.oj]
+                
+                cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+                cm.set_bad((0,0,0))
+            
+                mappable = matplotlib.cm.ScalarMappable(cmap=cm)
+                mappable.set_clim(1, nlabels+1)
+                self.colormap = mappable.to_rgba(np.arange(nlabels + 1))[:, :3]
+                self.colormap = self.colormap[label_map, :]
+                self.oc = self.colormap[self.ol, :]
+                
+            ################### d i s p l a y #######
+            #
+            # The following is a function that we can call to refresh
+            # the figure's appearance based on the mask and the original labels
+            #
+            ##########################################
+            
+            def display(self):
+                orig_objects_name = self.module.object_name.value
+                if len(self.orig_axes.images) > 0:
+                    # Save zoom and scale if coming through here a second time
+                    x0, x1 = self.orig_axes.get_xlim()
+                    y0, y1 = self.orig_axes.get_ylim()
+                    set_lim = True
                 else:
-                    cimage = np.zeros(image.shape, image.dtype)
-                kmask = keep[ol]
-                cimage[oi[kmask], oj[kmask], :] = oc[kmask, :]
-                axes.imshow(cimage)
-                axes.set_title(title,
-                               fontname=cpprefs.get_title_font_name(),
-                               fontsize=cpprefs.get_title_font_size())
-            if set_lim:
-                orig_axes.set_xlim((x0, x1))
-                orig_axes.set_ylim((y0, y1))
-            figure.canvas.draw()
-            panel.Refresh()
+                    set_lim = False
+                for axes, keep in (
+                    (self.orig_axes, np.ones(self.to_keep.shape, bool)),
+                    (self.keep_axes, self.to_keep),
+                    (self.remove_axes, ~ self.to_keep)):
+                    
+                    assert isinstance(axes, matplotlib.axes.Axes)
+                    axes.clear()
+                    if self.wants_image_display:
+                        image = self.workspace.image_set.get_image(
+                            self.module.image_name.value)
+                        image = image.pixel_data.astype(np.float)
+                        image, _ = cpo.size_similarly(self.orig_labels, image)
+                        if image.ndim == 2:
+                            image = np.dstack((image, image, image))
+                        cimage = image.copy()
+                    else:
+                        cimage = np.zeros(
+                            (self.orig_labels.shape[0],
+                             self.orig_labels.shape[1],
+                             3), np.float)
+                    kmask = keep[self.ol]
+                    cimage[self.oi[kmask], self.oj[kmask], :] = self.oc[kmask, :]
+                    axes.imshow(cimage)
+                self.set_orig_axes_title()
+                self.keep_axes.set_title("Objects to keep",
+                                         fontname=cpprefs.get_title_font_name(),
+                                         fontsize=cpprefs.get_title_font_size())
+                self.remove_axes.set_title("Objects to remove",
+                                           fontname=cpprefs.get_title_font_name(),
+                                           fontsize=cpprefs.get_title_font_size())
+                if set_lim:
+                    self.orig_axes.set_xlim((x0, x1))
+                    self.orig_axes.set_ylim((y0, y1))
+                for artist in self.artists:
+                    self.orig_axes.add_line(artist)
+                if self.split_artist is not None:
+                    self.orig_axes.add_line(self.split_artist)
+                self.figure.canvas.draw()
+                self.panel.Refresh()
                 
-        if self.wants_image_display:
-            display_image_checkbox = matplotlib.widgets.CheckButtons(
-                info_axes, ["Display image"], [True])
-            display_image_checkbox.labels[0].set_size("small")
-            r = display_image_checkbox.rectangles[0]
-            rwidth = r.get_width()
-            rheight = r.get_height()
-            rx, ry = r.get_xy()
-            new_rwidth = rwidth / 2 
-            new_rheight = rheight / 2
-            new_rx = rx + rwidth/2
-            new_ry = ry + rheight/4
-            r.set_width(new_rwidth)
-            r.set_height(new_rheight)
-            r.set_xy((new_rx, new_ry))
-            l1, l2 = display_image_checkbox.lines[0]
-            l1.set_data((np.array((new_rx, new_rx+new_rwidth)),
-                         np.array((new_ry, new_ry+new_rheight))))
-            l2.set_data((np.array((new_rx, new_rx+new_rwidth)),
-                         np.array((new_ry + new_rheight, new_ry))))
+            def draw_callback(self, event):
+                '''Decorate the drawing with the animated artists'''
+                self.background = self.figure.canvas.copy_from_bbox(self.orig_axes.bbox)
+                for artist in self.artists:
+                    self.orig_axes.draw_artist(artist)
+                self.figure.canvas.blit(self.orig_axes.bbox)
+                
+            def get_control_point(self, event):
+                '''Find the artist and control point under the cursor
+                
+                returns tuple of artist, and index of control point or None, None
+                '''
+                best_d = np.inf
+                best_artist = None
+                best_index = None
+                for artist in self.artists:
+                    data = artist.get_xydata()[:-1, :]
+                    xy = artist.get_transform().transform(data)
+                    x, y = xy.transpose()
+                    d = np.sqrt((x-event.x)**2 + (y-event.y)**2)
+                    idx = np.atleast_1d(np.argmin(d)).flatten()[0]
+                    d = d[idx]
+                    if d < self.epsilon and d < best_d:
+                        best_d = d
+                        best_artist = artist
+                        best_index = idx
+                return best_artist, best_index
+                    
+            def on_click(self, event):
+                if event.inaxes not in (
+                    self.orig_axes, self.keep_axes, self.remove_axes):
+                    return
+                if event.inaxes.get_navigate_mode() is not None:
+                    return
+                if self.mode == self.SPLIT_PICK_FIRST_MODE:
+                    self.on_split_first_click(event)
+                    return
+                elif self.mode == self.SPLIT_PICK_SECOND_MODE:
+                    self.on_split_second_click(event)
+                    return
+                if event.inaxes == self.orig_axes and event.button == 1:
+                    best_artist, best_index = self.get_control_point(event)
+                    if best_artist is not None:
+                        self.active_artist = best_artist
+                        self.active_index = best_index
+                        return
+                elif event.inaxes == self.orig_axes and event.button == 3:
+                    for artist in self.artists:
+                        path = Path(artist.get_xydata())
+                        if path.contains_point((event.xdata, event.ydata)):
+                            self.close_label(self.artists[artist][self.K_LABEL])
+                            return
+                x = int(event.xdata)
+                y = int(event.ydata)
+                if (x < 0 or x >= self.orig_labels.shape[1] or
+                    y < 0 or y >= self.orig_labels.shape[0]):
+                    return
+                lnum = self.labels[y,x]
+                if lnum == 0:
+                    return
+                if event.button == 1:
+                    # Move object into / out of working set
+                    if event.inaxes == self.orig_axes:
+                        self.to_keep[lnum] = not self.to_keep[lnum]
+                    elif event.inaxes == self.keep_axes:
+                        self.to_keep[lnum] = False
+                    else:
+                        self.to_keep[lnum] = True
+                    self.display()
+                elif event.button == 3:
+                    self.make_control_points(lnum)
             
-            def on_display_image_clicked(_):
-                wants_image_display[0] = not wants_image_display[0]
-                display()
-            display_image_checkbox.on_clicked(on_display_image_clicked)
+            def on_key_down(self, event):
+                self.pressed_keys.add(event.key)
+                if event.key == "1":
+                    self.toggle_single_panel(event)
+                    return
+                if event.key == "f1":
+                    self.on_help(event)
+                if self.mode == self.NORMAL_MODE:
+                    if event.key == "j":
+                        self.join_objects(event)
+                    elif event.key == "c":
+                        self.convex_hull(event)
+                    elif event.key == "a":
+                        self.add_control_point(event)
+                    elif event.key == "d":
+                        self.delete_control_point(event)
+                    elif event.key == "n":
+                        self.new_object(event)
+                    elif event.key == "s":
+                        self.enter_split_mode(event)
+                    elif event.key == "escape":
+                        self.remove_artists(event)
+                elif self.mode in (self.SPLIT_PICK_FIRST_MODE, 
+                                   self.SPLIT_PICK_SECOND_MODE):
+                    if event.key == "escape":
+                        self.exit_split_mode(event)
             
-        def on_click(event):
-            if event.inaxes not in (orig_axes, keep_axes, remove_axes):
-                return
-            x = int(event.xdata)
-            y = int(event.ydata)
-            if (x < 0 or x >= orig_labels.shape[1] or
-                y < 0 or y >= orig_labels.shape[0]):
-                return
-            lnum = orig_labels[y,x]
-            if lnum == 0:
-                return
-            if event.inaxes == orig_axes:
-                to_keep[lnum] = not to_keep[lnum]
-            elif event.inaxes == keep_axes:
-                to_keep[lnum] = False
-            else:
-                to_keep[lnum] = True
-            display()
+            def on_key_up(self, event):
+                if event.key in self.pressed_keys:
+                    self.pressed_keys.remove(event.key)
             
-        figure.canvas.mpl_connect('button_press_event', on_click)
+            def on_mouse_button_up(self, event):
+                self.active_artist = None
+                self.active_index = None
+                
+            def on_mouse_moved(self, event):
+                if self.active_artist is not None:
+                    self.handle_mouse_moved_active_mode(event)
+                elif self.mode == self.SPLIT_PICK_SECOND_MODE:
+                    self.handle_mouse_moved_pick_second_mode(event)
+                    
+            def handle_mouse_moved_active_mode(self, event):
+                if event.inaxes != self.orig_axes:
+                    return
+                #
+                # Don't let the user make any lines that cross other lines
+                # in this object.
+                #
+                object_number = self.artists[self.active_artist][self.K_LABEL]
+                data = [d[:-1] for d in self.active_artist.get_data()]
+                n_points = len(data[0])
+                before_index = (n_points - 1 + self.active_index) % n_points
+                after_index = (self.active_index + 1) % n_points
+                before_pt, after_pt = [
+                    np.array([data[0][idx], data[1][idx]]) 
+                             for idx in (before_index, after_index)]
+                new_pt = np.array([event.xdata, event.ydata], int)
+                path = Path(np.array((before_pt, new_pt, after_pt)))
+                eps = np.finfo(np.float32).eps
+                for artist in self.artists:
+                    if self.artists[artist][self.K_LABEL] != object_number:
+                        continue
+                    if artist == self.active_artist:
+                        if n_points <= 4:
+                            continue
+                        # Exclude the lines -2 and 2 before and after ours.
+                        #
+                        xx, yy = [np.hstack((d[self.active_index:],
+                                             d[:(self.active_index+1)]))
+                                  for d in data]
+                        xx, yy = xx[2:-2], yy[2:-2]
+                        xydata = np.column_stack((xx, yy))
+                    else:
+                        xydata = artist.get_xydata()
+                    other_path = Path(xydata)
+                    
+                    l0 = xydata[:-1, :]
+                    l1 = xydata[1:, :]
+                    neww_pt = np.ones(l0.shape) * new_pt[np.newaxis, :]
+                    d = distance2_to_line(neww_pt, l0, l1)
+                    different_sign = (np.sign(neww_pt - l0) != 
+                                      np.sign(neww_pt - l1))
+                    on_segment = ((d < eps) & different_sign[:, 0] & 
+                                  different_sign[:, 1])
+                        
+                    if any(on_segment):
+                        # it's ok if the point is on the line.
+                        continue
+                    if path.intersects_path(other_path, filled = False):
+                        return
+                 
+                data = self.active_artist.get_data()   
+                data[0][self.active_index] = event.xdata
+                data[1][self.active_index] = event.ydata
+                
+                #
+                # Handle moving the first point which is the
+                # same as the last and they need to be moved together.
+                # The last should never be moved.
+                #
+                if self.active_index == 0:
+                    data[0][-1] = event.xdata
+                    data[1][-1] = event.ydata
+                self.active_artist.set_data(data)
+                self.artists[self.active_artist]['edited'] = True
+                self.update_artists()
+                
+            def update_artists(self):
+                self.figure.canvas.restore_region(self.background)
+                for artist in self.artists:
+                    self.orig_axes.draw_artist(artist)
+                if self.split_artist is not None:
+                    self.orig_axes.draw_artist(self.split_artist)
+                self.figure.canvas.blit(self.orig_axes.bbox)
+                
+            def toggle_single_panel(self, event):
+                for ax in (self.keep_axes, self.info_axes, self.remove_axes):
+                    ax.set_visible(not ax.get_visible())
+                if self.keep_axes.get_visible():
+                    self.orig_axes.change_geometry(2,2,1)
+                else:
+                    self.orig_axes.change_geometry(1,1,1)
+                self.figure.canvas.draw()
+                
+            def join_objects(self, event):
+                all_labels = np.unique([
+                    v[self.K_LABEL] for v in self.artists.values()])
+                if len(all_labels) < 2:
+                    return
+                assert all_labels[0] == np.min(all_labels)
+                for label in all_labels:
+                    self.close_label(label, display=False)
+                
+                keep_to_keep = np.ones(len(self.to_keep), bool)
+                keep_to_keep[all_labels[1:]] = False
+                self.to_keep = self.to_keep[keep_to_keep]
+                #
+                # Renumber the labels matrix, changing the other labels'
+                # label numbers to the primary one and renumbering so
+                # labels appear consecutively.
+                #
+                renumbering = np.ones(len(keep_to_keep), self.labels.dtype)
+                renumbering[keep_to_keep] = \
+                    np.arange(np.sum(keep_to_keep), dtype = self.labels.dtype)
+                renumbering[~keep_to_keep] = all_labels[0]
+                self.labels = renumbering[self.labels]
+                self.init_labels()
+                self.make_control_points(all_labels[0])
+                self.display()
+                return all_labels[0]
+                
+            def convex_hull(self, event):
+                if len(self.artists) == 0:
+                    return
+                
+                all_labels = np.unique([
+                    v[self.K_LABEL] for v in self.artists.values()])
+                for label in all_labels:
+                    self.close_label(label, display=False)
+                object_number = all_labels[0]
+                if len(all_labels) > 1:
+                    keep_to_keep = np.ones(len(self.to_keep), bool)
+                    keep_to_keep[all_labels[1:]] = False
+                    self.to_keep = self.to_keep[keep_to_keep]
+                    #
+                    # Renumber the labels matrix, changing the other labels'
+                    # label numbers to the primary one and renumbering so
+                    # labels appear consecutively.
+                    #
+                    renumbering = np.ones(len(keep_to_keep), self.labels.dtype)
+                    renumbering[keep_to_keep] = \
+                        np.arange(np.sum(keep_to_keep), dtype = self.labels.dtype)
+                    renumbering[~keep_to_keep] = object_number
+                    self.labels = renumbering[self.labels]
+                    
+                mask = convex_hull_image(self.labels == object_number)
+                self.labels[mask] = object_number
+                self.init_labels()
+                self.make_control_points(object_number)
+                self.display()
+            
+            def add_control_point(self, event):
+                if len(self.artists) == 0:
+                    return
+                pt_i, pt_j = event.ydata, event.xdata
+                best_artist = None
+                best_index = None
+                best_distance = np.inf
+                new_pt = None
+                for artist in self.artists:
+                    l = artist.get_xydata()[:, ::-1]
+                    l0 = l[:-1, :]
+                    l1 = l[1:, :]
+                    llen = np.sqrt(np.sum((l1 - l0) ** 2, 1))
+                    # the unit vector
+                    v = (l1 - l0) / llen[:, np.newaxis]
+                    pt = np.ones(l0.shape, l0.dtype)
+                    pt[:, 0] = pt_i
+                    pt[:, 1] = pt_j
+                    #
+                    # Project l0<->pt onto l0<->l1. If the result
+                    # is longer than l0<->l1, then the closest point is l1.
+                    # If the result is negative, then the closest point is l0.
+                    # In either case, don't add.
+                    #
+                    proj = np.sum(v * (pt - l0), 1)
+                    d2 = distance2_to_line(pt, l0, l1)
+                    d2[proj <= 0] = np.inf
+                    d2[proj >= llen] = np.inf
+                    best = np.argmin(d2)
+                    if best_distance > d2[best]:
+                        best_distance = d2[best]
+                        best_artist = artist
+                        best_index = best
+                        new_pt = (l0[best_index, :] + 
+                                  proj[best_index, np.newaxis] * v[best_index, :])
+                if best_artist is None:
+                    return
+                l = best_artist.get_xydata()[:, ::-1]
+                l = np.vstack((l[:(best_index+1)], new_pt.reshape(1,2),
+                               l[(best_index+1):]))
+                best_artist.set_data((l[:, 1], l[:, 0]))
+                self.artists[best_artist][self.K_EDITED] = True
+                self.update_artists()
+            
+            def delete_control_point(self, event):
+                best_artist, best_index = self.get_control_point(event)
+                if best_artist is not None:
+                    l = best_artist.get_xydata()
+                    if len(l) < 4:
+                        best_artist.remove()
+                        del self.artists[best_artist]
+                    else:
+                        l = np.vstack((l[:best_index, :], l[(best_index+1):, :]))
+                        best_artist.set_data((l[:, 0], l[:, 1]))
+                        self.artists[best_artist][self.K_EDITED] = True
+                    self.update_artists()
+                    
+            def new_object(self, event):
+                object_number = len(self.to_keep)
+                temp = np.ones(object_number+1, bool)
+                temp[:-1] = self.to_keep
+                self.to_keep = temp
+                angles = np.pi * 2 * np.arange(13) / 12
+                x = 20 * np.cos(angles) + event.xdata
+                y = 20 * np.sin(angles) + event.ydata
+                x[x < 0] = 0
+                x[x >= self.labels.shape[1]] = self.labels.shape[1]-1
+                y[y >= self.labels.shape[0]] = self.labels.shape[0]-1
+                self.init_labels()
+                new_artist = Line2D(x, y,
+                                    marker='o', markerfacecolor='r',
+                                    markersize=6,
+                                    color=self.colormap[object_number, :],
+                                    animated = True)
+                
+                self.artists[new_artist] = { self.K_LABEL: object_number,
+                                             self.K_EDITED: True,
+                                             self.K_OUTSIDE: True}
+                self.display()
+                
+            def remove_artists(self, event):
+                for artist in self.artists:
+                    artist.remove()
+                self.artists = {}
+                self.update_artists()
+                
+            ################################
+            #
+            # Split mode
+            #
+            ################################
+                
+            SPLIT_PICK_FIRST_TITLE = "Pick first point for split or hit Esc to exit"
+            SPLIT_PICK_SECOND_TITLE = "Pick second point for split or hit Esc to exit"
+            
+            def set_orig_axes_title(self):
+                title = (
+                    self.orig_objects_title if self.mode == self.NORMAL_MODE
+                    else self.SPLIT_PICK_FIRST_TITLE 
+                    if self.mode == self.SPLIT_PICK_FIRST_MODE
+                    else self.SPLIT_PICK_SECOND_TITLE)
+                self.orig_axes.set_title(
+                    title,
+                    fontname=cpprefs.get_title_font_name(),
+                    fontsize=cpprefs.get_title_font_size())
+                
+            def enter_split_mode(self, event):
+                self.mode = self.SPLIT_PICK_FIRST_MODE
+                self.set_orig_axes_title()
+                self.figure.canvas.draw()
+                
+            def exit_split_mode(self, event):
+                if self.mode == self.SPLIT_PICK_SECOND_MODE:
+                    self.split_artist.remove()
+                    self.split_artist = None
+                    self.update_artists()
+                self.mode = self.NORMAL_MODE
+                self.set_orig_axes_title()
+                self.figure.canvas.draw()
+                
+            def on_split_first_click(self, event):
+                if event.inaxes != self.orig_axes:
+                    return
+                pick_artist, pick_index = self.get_control_point(event)
+                if pick_artist is None:
+                    return
+                x, y = pick_artist.get_data()
+                x, y = x[pick_index], y[pick_index]
+                self.split_pick_artist = pick_artist
+                self.split_pick_index = pick_index
+                self.split_artist = Line2D(np.array((x, x)), 
+                                           np.array((y, y)),
+                                           color = "blue",
+                                           animated = True)
+                self.orig_axes.add_line(self.split_artist)
+                self.mode = self.SPLIT_PICK_SECOND_MODE
+                self.set_orig_axes_title()
+                self.figure.canvas.draw()
+                
+            def handle_mouse_moved_pick_second_mode(self, event):
+                if event.inaxes == self.orig_axes:
+                    x, y = self.split_artist.get_data()
+                    x[1] = event.xdata
+                    y[1] = event.ydata
+                    self.split_artist.set_data((x, y))
+                    pick_artist, pick_index = self.get_control_point(event)
+                    if pick_artist is not None and self.ok_to_split(
+                        pick_artist, pick_index):
+                        self.split_artist.set_color("red")
+                    else:
+                        self.split_artist.set_color("blue")
+                    self.update_artists()
+                    
+            def ok_to_split(self, pick_artist, pick_index):
+                if (self.artists[pick_artist][self.K_LABEL] != 
+                    self.artists[self.split_pick_artist][self.K_LABEL]):
+                    # Second must be same object as first.
+                    return False
+                if pick_artist == self.split_pick_artist:
+                    min_index, max_index = [
+                        fn(pick_index, self.split_pick_index)
+                        for fn in (min, max)]
+                    if max_index - min_index < 2:
+                        # don't allow split of neighbors
+                        return False
+                    if (len(pick_artist.get_xdata()) - max_index <= 2 and
+                        min_index == 0):
+                        # don't allow split of last and first
+                        return False
+                elif (self.artists[pick_artist][self.K_OUTSIDE] ==
+                      self.artists[self.split_pick_artist][self.K_OUTSIDE]):
+                    # Only allow inter-object split of outside to inside
+                    return False
+                return True
+                
+            def on_split_second_click(self, event):
+                if event.inaxes != self.orig_axes:
+                    return
+                pick_artist, pick_index = self.get_control_point(event)
+                if not self.ok_to_split(pick_artist, pick_index):
+                    return
+                if pick_artist == self.split_pick_artist:
+                    #
+                    # Create two new artists from the former artist.
+                    #
+                    is_outside = self.artists[pick_artist][self.K_OUTSIDE]
+                    old_object_number = self.artists[pick_artist][self.K_LABEL]
+                    xy = pick_artist.get_xydata()
+                    idx0 = min(pick_index, self.split_pick_index)
+                    idx1 = max(pick_index, self.split_pick_index)
+                    if is_outside:
+                        xy0 = np.vstack((xy[:(idx0+1), :],
+                                         xy[idx1:, :]))
+                        xy1 = np.vstack((xy[idx0:(idx1+1), :],
+                                         xy[idx0:(idx0+1), :]))
+                    else:
+                        border_pts = np.zeros((2,2,2))
+                            
+                        border_pts[0, 0, :], border_pts[1, 1, :] = \
+                            self.get_split_points(pick_artist, idx0)
+                        border_pts[0, 1, :], border_pts[1, 0, :] = \
+                            self.get_split_points(pick_artist, idx1)
+                        xy0 = np.vstack((xy[:idx0, :],
+                                         border_pts[:, 0, :],
+                                         xy[(idx1+1):, :]))
+                        xy1 = np.vstack((border_pts[:, 1, :],
+                                         xy[(idx0+1):idx1, :],
+                                         border_pts[:1, 1, :]))
+                        
+                    pick_artist.set_data((xy0[:, 0], xy0[:, 1]))
+                    new_artist = Line2D(xy1[:, 0], xy1[:, 1],
+                                        marker='o', markerfacecolor='r',
+                                        markersize=6,
+                                        color=self.colormap[old_object_number, :],
+                                        animated = True)
+                    self.orig_axes.add_line(new_artist)
+                    if is_outside:
+                        new_object_number = len(self.to_keep)
+                        self.artists[new_artist] = { 
+                            self.K_EDITED: True,
+                            self.K_LABEL: new_object_number,
+                            self.K_OUTSIDE: is_outside}
+                        self.artists[pick_artist][self.K_EDITED] = True
+                        temp = np.ones(self.to_keep.shape[0] + 1, bool)
+                        temp[:-1] = self.to_keep
+                        self.to_keep = temp
+                        self.close_label(old_object_number, False)
+                        self.close_label(new_object_number, False)
+                        self.init_labels()
+                        self.make_control_points(old_object_number)
+                        self.make_control_points(new_object_number)
+                        self.display()
+                    else:
+                        # Splitting a hole: the two parts are still in
+                        # the same object.
+                        self.artists[new_artist] = {
+                            self.K_EDITED: True,
+                            self.K_LABEL: old_object_number,
+                            self.K_OUTSIDE: False }
+                        self.update_artists()
+                else:
+                    #
+                    # Join head and tail of different objects. The opposite
+                    # winding means we don't have to reverse the array.
+                    # We figure out which object is inside which and 
+                    # combine them to form the outside artist.
+                    #
+                    xy0 = self.split_pick_artist.get_xydata()
+                    xy1 = pick_artist.get_xydata()
+                    path0 = Path(xy0)
+                    path1 = Path(xy1)
+                    if path0.contains_path(path1):
+                        outside_artist = self.split_pick_artist
+                        inside_artist = pick_artist
+                        outside_index = self.split_pick_index
+                        inside_index = pick_index
+                    else:
+                        outside_artist = pick_artist
+                        inside_artist = self.split_pick_artist
+                        outside_index = pick_index
+                        inside_index = self.split_pick_index
+                        xy0, xy1 = xy1, xy0
+                    #
+                    # We move the outside and inside points in order to make
+                    # a gap. border_pts's first index is 0 for the outside
+                    # point and 1 for the inside point. The second index
+                    # is 0 for the point to be contributed first and
+                    # 1 for the point to be contributed last. 
+                    #
+                    border_pts = np.zeros((2,2,2))
+                        
+                    border_pts[0, 0, :], border_pts[1, 1, :] = \
+                        self.get_split_points(outside_artist, outside_index)
+                    border_pts[0, 1, :], border_pts[1, 0, :] = \
+                        self.get_split_points(inside_artist, inside_index)
+                        
+                    xy = np.vstack((xy0[:outside_index, :], 
+                                    border_pts[:, 0, :],
+                                    xy1[(inside_index+1):-1, :],
+                                    xy1[:inside_index, :],
+                                    border_pts[:, 1, :],
+                                    xy0[(outside_index+1):, :]))
+                    xy[-1, : ] = xy[0, :] # if outside_index == 0
+                    
+                    outside_artist.set_data((xy[:, 0], xy[:, 1]))
+                    del self.artists[inside_artist]
+                    inside_artist.remove()
+                    object_number = self.artists[outside_artist][self.K_LABEL]
+                    self.update_artists()
+                self.exit_split_mode(event)
+                
+            @staticmethod
+            def get_split_points(artist, idx):
+                '''Return the split points on either side of the indexed point
+                
+                artist - artist in question
+                idx - index of the point
+                
+                returns a point midway between the previous point and the
+                point in question and a point midway between the next point
+                and the point in question.
+                '''
+                a = artist.get_xydata().astype(float)
+                if idx == 0:
+                    idx_left = a.shape[0] - 2
+                else:
+                    idx_left = idx - 1
+                if idx == a.shape[0] - 2:
+                    idx_right = 0
+                elif idx == a.shape[0] - 1:
+                    idx_right = 1
+                else:
+                    idx_right = idx+1
+                return ((a[idx_left, :] + a[idx, :]) / 2,
+                        (a[idx_right, :] + a[idx, :]) / 2)
+                
+            ################################
+            #
+            # Functions for keep / remove/ toggle
+            #
+            ################################
+    
+            def on_keep(self, event):
+                self.to_keep[1:] = True
+                self.display()
+            
+            def on_remove(self, event):
+                self.to_keep[1:] = False
+                self.display()
+            
+            def on_toggle(self, event):
+                self.to_keep[1:] = ~ self.to_keep[1:]
+                self.display()
+                
+            def on_reset(self, event):
+                self.labels = self.orig_labels.copy()
+                self.artists = {}
+                self.init_labels()
+                self.display()
+                
+            def on_help(self, event):
+                self.html_frame.Show(True)
+                
+            def on_help_close(self, event):
+                event.Veto()
+                self.html_frame.Show(False)
+                
+            def make_control_points(self, object_number):
+                '''Create an artist with control points for editing an object
+                
+                object_number - # of object to edit
+                '''
+                #
+                # For outside edges, we trace clockwise, conceptually standing 
+                # to the left of the outline and putting our right hand on the
+                # outline. Inside edges have the opposite winding.
+                # We remember the direction we are going and that gives
+                # us an order for the points. For instance, if we are going
+                # north:
+                #
+                #  2  3  4
+                #  1  x  5
+                #  0  7  6
+                #
+                # If "1" is available, our new direction is southwest:
+                #
+                #  5  6  7
+                #  4  x  0
+                #  3  2  1
+                #
+                #  Take direction 0 to be northeast (i-1, j-1). We look in
+                #  this order:
+                #
+                #  3  4  5
+                #  2  x  6
+                #  1  0  7
+                #
+                # The directions are
+                #
+                #  0  1  2
+                #  7     3
+                #  6  5  4
+                #
+                traversal_order = np.array(
+                    #   i   j   new direction
+                    ((  1,  0,  5 ),
+                     (  1, -1,  6 ),
+                     (  0, -1,  7 ),
+                     ( -1, -1,  0 ),
+                     ( -1,  0,  1 ),
+                     ( -1,  1,  2 ),
+                     (  0,  1,  3 ),
+                     (  1,  1,  4 )))
+                direction, index, ijd = np.mgrid[0:8, 0:8, 0:3]
+                traversal_order = \
+                    traversal_order[((direction + index) % 8), ijd]
+                #
+                # We need to make outlines of both objects and holes.
+                # Objects are 8-connected and holes are 4-connected
+                #
+                for polarity, structure in (
+                    (True, np.ones((3,3), bool)),
+                    (False, np.array([[0, 1, 0], 
+                                      [1, 1, 1], 
+                                      [0, 1, 0]], bool))):
+                    #
+                    # Pad the mask so we don't have to deal with out of bounds
+                    #
+                    mask = np.zeros((self.labels.shape[0] + 2,
+                                     self.labels.shape[1] + 2), bool)
+                    mask[1:-1, 1:-1] = self.labels == object_number
+                    if not polarity:
+                        mask = ~mask
+                    labels, count = scipy.ndimage.label(mask, structure)
+                    if not polarity:
+                        #
+                        # The object touching the border is not a hole.
+                        # There should only be one because of the padding.
+                        #
+                        border_object = labels[0,0]
+                    for sub_object_number in range(1, count+1):
+                        if not polarity and sub_object_number == border_object:
+                            continue
+                        mask = labels == sub_object_number
+                        i, j = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
+                        i, j = i[mask], j[mask]
+                        if len(i) < 2:
+                            continue
+                        topleft = np.argmin(i*i+j*j)
+                        chain = []
+                        start_i = i[topleft]
+                        start_j = j[topleft]
+                        #
+                        # Pick a direction that points normal and to the right
+                        # from the point at the top left.
+                        #
+                        direction = 2
+                        ic = start_i
+                        jc = start_j
+                        while True:
+                            chain.append((ic - 1, jc - 1))
+                            hits = mask[ic + traversal_order[direction, :, 0],
+                                        jc + traversal_order[direction, :, 1]]
+                            t = traversal_order[direction, hits, :][0, :]
+                            ic += t[0]
+                            jc += t[1]
+                            direction = t[2]
+                            if ic == start_i and jc == start_j:
+                                if len(chain) > 40:
+                                    markevery = min(10, int((len(chain)+ 19) / 20))
+                                    chain = chain[::markevery]
+                                chain.append((ic - 1, jc - 1))
+                                if not polarity:
+                                    # Reverse the winding order
+                                    chain = chain[::-1]
+                                break
+                        chain = np.array(chain)
+                        artist = Line2D(chain[:, 1], chain[:, 0],
+                                        marker='o', markerfacecolor='r',
+                                        markersize=6,
+                                        color=self.colormap[object_number, :],
+                                        animated = True)
+                        self.orig_axes.add_line(artist)
+                        self.artists[artist] = { 
+                            self.K_LABEL: object_number, 
+                            self.K_EDITED: False,
+                            self.K_OUTSIDE: polarity}
+                self.update_artists()
+            
+            def close_label(self, label, display = True):
+                '''Close the artists associated with a label
+                
+                label - label # of label being closed.
+                
+                If edited, update the labeled pixels.
+                '''
+                my_artists = [artist for artist, data in self.artists.items()
+                              if data[self.K_LABEL] == label]
+                if any([self.artists[artist][self.K_EDITED] 
+                        for artist in my_artists]):
+                    #
+                    # Convert polygons to labels. The assumption is that
+                    # a polygon within a polygon is a hole.
+                    #
+                    mask = np.zeros(self.orig_labels.shape, bool)
+                    for artist in my_artists:
+                        j, i = artist.get_data()
+                        m1 = polygon_lines_to_mask(i[:-1], j[:-1],
+                                                   i[1:], j[1:],
+                                                   orig_labels.shape)
+                        mask[m1] = ~mask[m1]
+                    self.labels[self.labels == label] = 0
+                    self.labels[mask] = label
+                    if display:
+                        self.init_labels()
+                        self.display()
+                    
+                for artist in my_artists:
+                    artist.remove()
+                    del self.artists[artist]
+                if display:
+                    self.update_artists()
         
-        ################################
-        #
-        # Functions for keep / remove/ toggle
-        #
-        ################################
-
-        def on_keep(event):
-            to_keep[1:] = True
-            display()
-        dialog_box.Bind(wx.EVT_BUTTON, on_keep, keep_button)
-        
-        def on_remove(event):
-            to_keep[1:] = False
-            display()
-        dialog_box.Bind(wx.EVT_BUTTON, on_remove, remove_button)
-        
-        def on_toggle(event):
-            to_keep[1:] = ~ to_keep[1:]
-            display()
-        dialog_box.Bind(wx.EVT_BUTTON, on_toggle, toggle_button)
-        
-        display()
-        dialog_box.Fit()
-        result = dialog_box.ShowModal()
-        dialog_box.Destroy()
+        with FilterObjectsDialog(self, workspace, orig_labels) as dialog_box:
+            result = dialog_box.ShowModal()
         if result != wx.OK:
             raise RuntimeError("User cancelled EditObjectsManually")
-        filtered_labels = orig_labels * to_keep[orig_labels]
-        return filtered_labels
+        return dialog_box.labels
     
     def get_measurement_columns(self, pipeline):
         '''Return information to use when creating database columns'''

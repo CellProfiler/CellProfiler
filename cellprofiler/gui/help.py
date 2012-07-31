@@ -238,7 +238,7 @@ easy access to module manipulation or help.</li>
 <li><i>Error handling:</i> This feature sends bug reports (stack traces) to our developers.
 <li><i>Better access for developers:</i> We are providing a developer's guide 
 as a practical introduction for programming in the CellProfiler environment, an 
-email list, and wiki, in addition to the available user forum.
+email list, and wiki, in addition to the available user <a href="http://cellprofiler.org/forum/viewforum.php?f=15">forum</a>.
 </ul>
 
 <h3>Module improvements</h3>
@@ -677,6 +677,7 @@ will let you choose the individual movie frame from that file.
 </p>
 """%globals()
 
+# The help below contains a Google URL shortener since the URL has a control character that the URL reader doesn't interpret correctly
 BATCHPROCESSING_HELP = """ 
 CellProfiler is designed to analyze images in a high-throughput manner.   
 Once a pipeline has been established for a set of images, CellProfiler    
@@ -782,8 +783,10 @@ for that batch of images in the output folder. Check the output from the batch
 processes to make sure all batches complete. Batches that fail for transient reasons
 can be resubmitted.</p>
 
-<p>For additional help on batch processing, please post your questions on 
-the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=14">forum</a>.</p>
+<p>For additional help on batch processing, refer to our 
+<a href = "http://goo.gl/HtTzD">wiki</a> 
+if installing CellProfiler on a Unix system, or post your questions on 
+the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=18">CPCluster forum</a>.</p>
 """
 
 RUN_MULTIPLE_PIPELINES_HELP = """

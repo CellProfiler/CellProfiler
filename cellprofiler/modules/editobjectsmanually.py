@@ -73,7 +73,7 @@ R_RETAIN = "Retain"
 
 class EditObjectsManually(I.Identify):
     category = "Object Processing"
-    variable_revision_number = 2
+    variable_revision_number = 3
     module_name = 'EditObjectsManually'
     
     def create_settings(self):
@@ -100,6 +100,16 @@ class EditObjectsManually(I.Identify):
             doc="""What do you want to call the objects that remain
             after editing? These objects will be available for use by
             subsequent modules.""")
+        
+        self.allow_overlap = cps.Binary(
+            "Allow overlapping objects", False,
+            doc = """<b>EditObjectsManually</b> can allow you to edit an
+            object so that it overlaps another or it can prevent you from
+            overlapping one object with another. Objects such as worms or
+            the neurites of neurons may cross each other and might need to
+            be edited with overlapping allowed, whereas a monolayer of cells
+            might be best edited with overlapping off. Check this setting to
+            allow overlaps or uncheck it to prevent them.""") 
         
         self.wants_outlines = cps.Binary(
             "Retain outlines of the edited objects?", False,
@@ -156,7 +166,7 @@ class EditObjectsManually(I.Identify):
         """
         return [self.object_name, self.filtered_objects, self.wants_outlines,
                 self.outlines_name, self.renumber_choice, 
-                self.wants_image_display, self.image_name]
+                self.wants_image_display, self.image_name, self.allow_overlap]
     
     def is_interactive(self):
         return True
@@ -167,7 +177,8 @@ class EditObjectsManually(I.Identify):
         #
         # Only display the outlines_name if wants_outlines is true
         #
-        result = [self.object_name, self.filtered_objects, self.wants_outlines]
+        result = [self.object_name, self.filtered_objects, 
+                  self.allow_overlap, self.wants_outlines]
         if self.wants_outlines:
             result.append(self.outlines_name)
         result += [ self.renumber_choice, self.wants_image_display]
@@ -190,8 +201,7 @@ class EditObjectsManually(I.Identify):
         
         orig_objects = workspace.object_set.get_objects(orig_objects_name)
         assert isinstance(orig_objects, cpo.Objects)
-        orig_labels = orig_objects.segmented
-        mask = orig_labels != 0
+        orig_labels = [l for l, c in orig_objects.get_labels()]
 
         if workspace.frame is None:
             # Accept the labels as-is
@@ -201,18 +211,26 @@ class EditObjectsManually(I.Identify):
         #
         # Renumber objects consecutively if asked to do so
         #
-        unique_labels = np.unique(filtered_labels)
+        unique_labels = np.unique(np.array(filtered_labels))
         unique_labels = unique_labels[unique_labels != 0]
         object_count = len(unique_labels)
         if self.renumber_choice == R_RENUMBER:
             mapping = np.zeros(1 if len(unique_labels) == 0 else np.max(unique_labels)+1, int)
             mapping[unique_labels] = np.arange(1,object_count + 1)
-            filtered_labels = mapping[filtered_labels]
+            filtered_labels = [mapping[l] for l in filtered_labels]
         #
         # Make the objects out of the labels
         #
         filtered_objects = cpo.Objects()
-        filtered_objects.segmented = filtered_labels
+        i, j = np.mgrid[0:filtered_labels[0].shape[0],
+                        0:filtered_labels[0].shape[1]]
+        ijv = np.zeros((0, 3), filtered_labels[0].dtype)
+        for l in filtered_labels:
+            ijv = np.vstack((ijv,
+                             np.column_stack((i[l != 0],
+                                              j[l != 0],
+                                              l[l != 0]))))
+        filtered_objects.ijv = ijv
         filtered_objects.unedited_segmented = orig_objects.unedited_segmented
         filtered_objects.parent_image = orig_objects.parent_image
         workspace.object_set.add_objects(filtered_objects, 
@@ -236,15 +254,17 @@ class EditObjectsManually(I.Identify):
         #
         # The object locations
         #
-        I.add_object_location_measurements(m, filtered_objects_name,
-                                           filtered_labels)
+        I.add_object_location_measurements_ijv(m, filtered_objects_name, ijv)
         #
         # Outlines if we want them
         #
         if self.wants_outlines:
             outlines_name = self.outlines_name.value
-            outlines = outline(filtered_labels)
-            outlines_image = cpi.Image(outlines.astype(bool))
+            outlines = np.zeros((filtered_labels[0].shape, 
+                                 filtered_labels[1].shape, 3), bool)
+            for l in filtered_labels:
+                outlines |= outline(l).astype(bool)
+            outlines_image = cpi.Image(outlines)
             workspace.image_set.add(outlines_name, outlines_image)
         #
         # Do the drawing here
@@ -252,11 +272,14 @@ class EditObjectsManually(I.Identify):
         if workspace.frame is not None:
             figure = workspace.create_or_find_figure(title="EditObjectsManually, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(2,1))
-            figure.subplot_imshow_labels(0, 0, orig_labels, orig_objects_name)
-            figure.subplot_imshow_labels(1, 0, filtered_labels,
-                                         filtered_objects_name,
-                                         sharex = figure.subplot(0,0),
-                                         sharey = figure.subplot(0,0))
+            figure.subplot_imshow_ijv(0, 0, orig_objects.ijv,
+                                      shape = orig_labels[0].shape,
+                                      title = orig_objects_name)
+            figure.subplot_imshow_ijv(1, 0, filtered_objects.ijv,
+                                      shape = filtered_labels[0].shape,
+                                      title = filtered_objects_name,
+                                      sharex = figure.subplot(0,0),
+                                      sharey = figure.subplot(0,0))
             
     def filter_objects(self, workspace, orig_labels):
         import wx
@@ -317,7 +340,8 @@ class EditObjectsManually(I.Identify):
                 self.module = module
                 self.workspace = workspace
                 self.orig_labels = orig_labels
-                self.labels = orig_labels.copy()
+                self.shape = self.orig_labels[0].shape
+                self.labels = [l.copy() for l in orig_labels]
                 self.artists = {}
                 self.active_artist = None
                 self.active_index = None
@@ -325,7 +349,8 @@ class EditObjectsManually(I.Identify):
                 self.split_artist = None
                 self.wants_image_display = module.wants_image_display.value
                 self.pressed_keys = set()
-                self.to_keep = np.ones(np.max(orig_labels) + 1, bool)
+                nlabels = np.max([np.max(l) for l in orig_labels])
+                self.to_keep = np.ones(nlabels + 1, bool)
                 self.build_ui()
                 self.init_labels()
                 self.display()
@@ -542,14 +567,26 @@ class EditObjectsManually(I.Identify):
                 #
                 #########################################
                 
-                clabels = renumber_labels_for_display(self.labels)
                 nlabels = len(self.to_keep) - 1
-                label_map = np.zeros(nlabels + 1, clabels.dtype)
-                label_map[self.labels.flatten()] = clabels.flatten()
-                outlines = outline(clabels)
-                self.oi, self.oj = np.argwhere(outlines != 0).transpose()
-                self.ol = self.labels[self.oi, self.oj]
-                
+                label_map = np.zeros(nlabels + 1, self.labels[0].dtype)
+                lstart = 0
+                self.oi = np.zeros(0, int)
+                self.oj = np.zeros(0, int)
+                self.ol = np.zeros(0, int)
+                for label in self.labels:
+                    # drive each successive matrix's labels away
+                    # from all others.
+                    distinct_label_count = np.sum(np.unique(label) != 0)
+                    clabels = renumber_labels_for_display(label)
+                    clabels[clabels != 0] += lstart
+                    lstart += distinct_label_count
+                    label_map[label.flatten()] = clabels.flatten()
+                    outlines = outline(clabels)
+                    oi, oj = np.argwhere(outlines != 0).transpose()
+                    ol = label[oi, oj]
+                    self.oi = np.hstack((self.oi, oi))
+                    self.oj = np.hstack((self.oj, oj))
+                    self.ol = np.hstack((self.ol, ol))
                 cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
                 cm.set_bad((0,0,0))
             
@@ -558,6 +595,40 @@ class EditObjectsManually(I.Identify):
                 self.colormap = mappable.to_rgba(np.arange(nlabels + 1))[:, :3]
                 self.colormap = self.colormap[label_map, :]
                 self.oc = self.colormap[self.ol, :]
+                
+            def remove_label(self, object_number):
+                for l in self.labels:
+                    l[l == object_number] = 0
+                
+            def replace_label(self, mask, object_number):
+                self.remove_label(object_number)
+                self.labels.append(mask.astype(self.labels[0].dtype) * object_number)
+                self.restructure_labels()
+                
+            def restructure_labels(self):
+                '''Convert the labels into ijv and back to get the colors right'''
+                
+                ii = []
+                jj = []
+                vv = []
+                i, j = np.mgrid[0:self.shape[0], 0:self.shape[1]]
+                for l in self.labels:
+                    mask = l != 0
+                    ii.append(i[mask])
+                    jj.append(j[mask])
+                    vv.append(l[mask])
+                temp = cpo.Objects()
+                temp.ijv = np.column_stack(
+                    [np.hstack(x) for x in (ii, jj, vv)])
+                self.labels = [l for l,c in temp.get_labels(self.shape)]
+                
+            def add_label(self, mask):
+                object_number = len(self.to_keep)
+                temp = np.ones(self.to_keep.shape[0] + 1, bool)
+                temp[:-1] = self.to_keep
+                self.to_keep = temp
+                self.labels.append(mask.astype(self.labels[0].dtype) * object_number)
+                self.restructure_labels()
                 
             ################### d i s p l a y #######
             #
@@ -575,8 +646,13 @@ class EditObjectsManually(I.Identify):
                     set_lim = True
                 else:
                     set_lim = False
+                orig_to_show = np.ones(len(self.to_keep), bool)
+                for d in self.artists.values():
+                    object_number = d[self.K_LABEL]
+                    if object_number < len(orig_to_show):
+                        orig_to_show[object_number] = False
                 for axes, keep in (
-                    (self.orig_axes, np.ones(self.to_keep.shape, bool)),
+                    (self.orig_axes, orig_to_show),
                     (self.keep_axes, self.to_keep),
                     (self.remove_axes, ~ self.to_keep)):
                     
@@ -586,14 +662,14 @@ class EditObjectsManually(I.Identify):
                         image = self.workspace.image_set.get_image(
                             self.module.image_name.value)
                         image = image.pixel_data.astype(np.float)
-                        image, _ = cpo.size_similarly(self.orig_labels, image)
+                        image, _ = cpo.size_similarly(self.orig_labels[0], image)
                         if image.ndim == 2:
                             image = np.dstack((image, image, image))
                         cimage = image.copy()
                     else:
                         cimage = np.zeros(
-                            (self.orig_labels.shape[0],
-                             self.orig_labels.shape[1],
+                            (self.shape[0],
+                             self.shape[1],
                              3), np.float)
                     kmask = keep[self.ol]
                     cimage[self.oi[kmask], self.oj[kmask], :] = self.oc[kmask, :]
@@ -672,10 +748,13 @@ class EditObjectsManually(I.Identify):
                             return
                 x = int(event.xdata)
                 y = int(event.ydata)
-                if (x < 0 or x >= self.orig_labels.shape[1] or
-                    y < 0 or y >= self.orig_labels.shape[0]):
+                if (x < 0 or x >= self.shape[1] or
+                    y < 0 or y >= self.shape[0]):
                     return
-                lnum = self.labels[y,x]
+                for labels in self.labels:
+                    lnum = labels[y,x]
+                    if lnum != 0:
+                        break
                 if lnum == 0:
                     return
                 if event.button == 1:
@@ -689,6 +768,7 @@ class EditObjectsManually(I.Identify):
                     self.display()
                 elif event.button == 3:
                     self.make_control_points(lnum)
+                    self.display()
             
             def on_key_down(self, event):
                 self.pressed_keys.add(event.key)
@@ -762,7 +842,8 @@ class EditObjectsManually(I.Identify):
                 path = Path(np.array((before_pt, new_pt, after_pt)))
                 eps = np.finfo(np.float32).eps
                 for artist in self.artists:
-                    if self.artists[artist][self.K_LABEL] != object_number:
+                    if (self.module.allow_overlap and 
+                        self.artists[artist][self.K_LABEL] != object_number):
                         continue
                     if artist == self.active_artist:
                         if n_points <= 4:
@@ -846,11 +927,17 @@ class EditObjectsManually(I.Identify):
                 # label numbers to the primary one and renumbering so
                 # labels appear consecutively.
                 #
-                renumbering = np.ones(len(keep_to_keep), self.labels.dtype)
+                labels = []
+                renumbering = np.ones(len(keep_to_keep), 
+                                      label.dtype)
                 renumbering[keep_to_keep] = \
-                    np.arange(np.sum(keep_to_keep), dtype = self.labels.dtype)
+                    np.arange(np.sum(keep_to_keep), 
+                              dtype = label.dtype)
                 renumbering[~keep_to_keep] = all_labels[0]
-                self.labels = renumbering[self.labels]
+                for label in self.labels:
+                    labels.append(renumbering[label])
+                self.labels = labels
+                self.restructure_labels()
                 self.init_labels()
                 self.make_control_points(all_labels[0])
                 self.display()
@@ -865,23 +952,20 @@ class EditObjectsManually(I.Identify):
                 for label in all_labels:
                     self.close_label(label, display=False)
                 object_number = all_labels[0]
+                mask = np.zeros(self.shape, bool)
+                for label in self.labels:
+                    for n in all_labels:
+                        mask |= label == n
+                        
+                for n in all_labels:
+                    self.remove_label(n)
                 if len(all_labels) > 1:
                     keep_to_keep = np.ones(len(self.to_keep), bool)
                     keep_to_keep[all_labels[1:]] = False
                     self.to_keep = self.to_keep[keep_to_keep]
-                    #
-                    # Renumber the labels matrix, changing the other labels'
-                    # label numbers to the primary one and renumbering so
-                    # labels appear consecutively.
-                    #
-                    renumbering = np.ones(len(keep_to_keep), self.labels.dtype)
-                    renumbering[keep_to_keep] = \
-                        np.arange(np.sum(keep_to_keep), dtype = self.labels.dtype)
-                    renumbering[~keep_to_keep] = object_number
-                    self.labels = renumbering[self.labels]
                     
-                mask = convex_hull_image(self.labels == object_number)
-                self.labels[mask] = object_number
+                mask = convex_hull_image(mask)
+                self.replace_label(mask, object_number)
                 self.init_labels()
                 self.make_control_points(object_number)
                 self.display()
@@ -935,10 +1019,20 @@ class EditObjectsManually(I.Identify):
                 if best_artist is not None:
                     l = best_artist.get_xydata()
                     if len(l) < 4:
+                        object_number = self.artists[best_artist][self.K_LABEL]
                         best_artist.remove()
                         del self.artists[best_artist]
+                        if not any([d[self.K_LABEL] == object_number
+                                    for d in self.artists.values()]):
+                            self.remove_label(object_number)
+                            self.init_labels()
+                            self.display()
+                            return
                     else:
-                        l = np.vstack((l[:best_index, :], l[(best_index+1):, :]))
+                        l = np.vstack((
+                            l[:best_index, :], 
+                            l[(best_index+1):-1, :]))
+                        l = np.vstack((l, l[:1, :]))
                         best_artist.set_data((l[:, 0], l[:, 1]))
                         self.artists[best_artist][self.K_EDITED] = True
                     self.update_artists()
@@ -952,8 +1046,8 @@ class EditObjectsManually(I.Identify):
                 x = 20 * np.cos(angles) + event.xdata
                 y = 20 * np.sin(angles) + event.ydata
                 x[x < 0] = 0
-                x[x >= self.labels.shape[1]] = self.labels.shape[1]-1
-                y[y >= self.labels.shape[0]] = self.labels.shape[0]-1
+                x[x >= self.shape[1]] = self.shape[1]-1
+                y[y >= self.shape[0]] = self.shape[0]-1
                 self.init_labels()
                 new_artist = Line2D(x, y,
                                     marker='o', markerfacecolor='r',
@@ -1256,16 +1350,12 @@ class EditObjectsManually(I.Identify):
                     xydata,
                     np.array([[xydata[0, 0], xydata[0, 1]]])))
                 
-                object_number = len(self.to_keep)
-                temp = np.ones(object_number + 1, bool)
-                temp[:-1] = self.to_keep
-                self.to_keep = temp
                 mask = polygon_lines_to_mask(xydata[:-1, 1],
                                              xydata[:-1, 0],
                                              xydata[1:, 1],
                                              xydata[1:, 0],
-                                             self.orig_labels.shape)
-                self.labels[mask] = object_number
+                                             self.shape)
+                self.add_label(mask)
                 self.exit_freehand_draw_mode(event)
                 self.init_labels()
                 self.display()
@@ -1289,7 +1379,7 @@ class EditObjectsManually(I.Identify):
                 self.display()
                 
             def on_reset(self, event):
-                self.labels = self.orig_labels.copy()
+                self.labels = [l.copy() for l in self.orig_labels]
                 self.artists = {}
                 self.init_labels()
                 self.display()
@@ -1362,9 +1452,10 @@ class EditObjectsManually(I.Identify):
                     #
                     # Pad the mask so we don't have to deal with out of bounds
                     #
-                    mask = np.zeros((self.labels.shape[0] + 2,
-                                     self.labels.shape[1] + 2), bool)
-                    mask[1:-1, 1:-1] = self.labels == object_number
+                    mask = np.zeros((self.shape[0] + 2,
+                                     self.shape[1] + 2), bool)
+                    for l in self.labels:
+                        mask[1:-1, 1:-1] |= l == object_number
                     if not polarity:
                         mask = ~mask
                     labels, count = scipy.ndimage.label(mask, structure)
@@ -1438,24 +1529,27 @@ class EditObjectsManually(I.Identify):
                     # Convert polygons to labels. The assumption is that
                     # a polygon within a polygon is a hole.
                     #
-                    mask = np.zeros(self.orig_labels.shape, bool)
+                    mask = np.zeros(self.shape, bool)
                     for artist in my_artists:
                         j, i = artist.get_data()
                         m1 = polygon_lines_to_mask(i[:-1], j[:-1],
                                                    i[1:], j[1:],
-                                                   self.orig_labels.shape)
+                                                   self.shape)
                         mask[m1] = ~mask[m1]
-                    self.labels[self.labels == label] = 0
-                    self.labels[mask] = label
+                    for artist in my_artists:
+                        artist.remove()
+                        del self.artists[artist]
+                    self.replace_label(mask, label)
                     if display:
                         self.init_labels()
                         self.display()
                     
-                for artist in my_artists:
-                    artist.remove()
-                    del self.artists[artist]
-                if display:
-                    self.update_artists()
+                else:
+                    for artist in my_artists:
+                        artist.remove()
+                        del self.artists[artist]
+                    if display:
+                        self.display()
         
         with FilterObjectsDialog(self, workspace, orig_labels) as dialog_box:
             result = dialog_box.ShowModal()
@@ -1536,5 +1630,10 @@ class EditObjectsManually(I.Identify):
             # Added wants image + image
             setting_values = setting_values + [ cps.NO, "None"]
             variable_revision_number = 2
+            
+        if (not from_matlab) and variable_revision_number == 2:
+            # Added allow overlap, default = False
+            setting_values = setting_values + [ cps.NO ]
+            variable_revision_number = 3
         
         return setting_values, variable_revision_number, from_matlab

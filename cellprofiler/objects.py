@@ -101,7 +101,7 @@ class Objects(object):
         '''Return true if there is an IJV formulation for the object'''
         return self.__ijv is not None
     
-    def get_labels(self):
+    def get_labels(self, shape = None):
         '''Get a set of labels matrices consisting of non-overlapping labels
         
         In IJV format, a single pixel might have multiple labels. If you
@@ -114,8 +114,10 @@ class Objects(object):
         if self.__segmented is not None:
             return [(self.__segmented, self.indices)]
         elif self.__ijv is not None:
-            def ijv_to_segmented(ijv):
-                if self.has_parent_image:
+            def ijv_to_segmented(ijv, shape=shape):
+                if shape is not None:
+                    pass
+                elif self.has_parent_image:
                     shape = self.parent_image.pixel_data.shape
                 elif len(ijv) == 0:
                     # degenerate case, no parent info and no labels

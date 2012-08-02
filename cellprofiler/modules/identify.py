@@ -631,6 +631,25 @@ def add_object_location_measurements(measurements,
     measurements.add_measurement(object_name, M_LOCATION_CENTER_Y,
                                  location_center_y)
     measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER, number)
+    
+def add_object_location_measurements_ijv(measurements,
+                                         object_name,
+                                         ijv, object_count = None):
+    '''Add object location measurements for IJV-style objects'''
+    if object_count is None:
+        object_count = np.max(ijv[:, 2])
+    if object_count == 0:
+        center_x = np.zeros(0)
+        center_y = np.zeros(0)
+    else:
+        areas = np.bincount(ijv[:, 2], minlength = object_count+1)[1:]
+        center_x = np.bincount(ijv[:, 2], ijv[:, 1])[1:] / areas
+        center_y = np.bincount(ijv[:, 2], ijv[:, 0])[1:] / areas
+    measurements.add_measurement(object_name, M_LOCATION_CENTER_X, center_x)
+    measurements.add_measurement(object_name, M_LOCATION_CENTER_Y, center_y)
+    measurements.add_measurement(object_name, M_NUMBER_OBJECT_NUMBER, 
+                                 np.arange(1, object_count+1))
+    
 
 def add_object_count_measurements(measurements, object_name, object_count):
     """Add the # of objects to the measurements"""

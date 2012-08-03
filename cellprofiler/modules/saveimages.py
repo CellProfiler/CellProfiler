@@ -559,15 +559,18 @@ class SaveImages(cpm.CPModule):
         if filename is None:  # failed overwrite check
             return
 
-        pixels = objects.segmented
+        pixels = np.dstack([l for l,c in objects.get_labels()])
         if ((self.gray_or_color == GC_GRAYSCALE) and 
-            (self.file_format in (FF_TIF, FF_TIFF))):
-            if (objects.count > 255):
-                if has_bioformats:
-                    self.save_image_with_bioformats(workspace, pixels)
-                else:
-                    self.save_image_with_libtiff(workspace, pixels)
-                return
+            (self.file_format in (FF_TIF, FF_TIFF) and 
+             (objects.count > 255 or pixels.shape[2] > 1))):
+            if has_bioformats:
+                self.save_image_with_bioformats(
+                    workspace, pixels, 
+                    channel_names = ["Labels%d" for i in range(pixels.shape[2])])
+            else:
+                self.save_image_with_libtiff(workspace, pixels)
+            return
+        pixels = pixels[:, :, 0]
         if self.file_format != FF_MAT:
             if self.gray_or_color == GC_GRAYSCALE:
                 if objects.count > 255:
@@ -676,7 +679,6 @@ class SaveImages(cpm.CPModule):
             # delete it explicitly if it exists.
             os.remove(filename)
         
-        channel_names = None
         if pixels is None:
             # Get the image data to be written
             image = workspace.image_set.get_image(self.image_name.value)
@@ -793,7 +795,7 @@ class SaveImages(cpm.CPModule):
         ''' Saves using libtiff.
         '''
         assert self.file_format in (FF_TIF, FF_TIFF)
-        assert self.save_image_or_figure == IF_IMAGE
+        assert self.save_image_or_figure in (IF_IMAGE, IF_OBJECTS)
 
         workspace.display_data.wrote_image = False
 
@@ -837,11 +839,17 @@ class SaveImages(cpm.CPModule):
         # convert to uint16
         pixels = pixels.astype(np.uint16)
 
-        if len(pixels.shape) == 3 and pixels.shape[2] == 3:  
+        planar = (self.save_image_or_figure == IF_OBJECTS and
+                  self.gray_or_color == GC_GRAYSCALE and pixels.ndim == 3)
+        if (not planar) and len(pixels.shape) == 3 and pixels.shape[2] == 3:  
             pixels = np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]])
 
         out = libtiff.TIFF.open(filename, 'w')
-        out.write_image(pixels, write_rgb=True)
+        if planar:
+            for i in range(pixels.shape[2]):
+                out.write_image(pixels[:, :, i], write_rgb = False)
+        else:
+            out.write_image(pixels, write_rgb=True)
         out.close()
         workspace.display_data.wrote_image = True
         if self.when_to_save != WS_LAST_CYCLE:

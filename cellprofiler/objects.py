@@ -52,11 +52,16 @@ class Objects(object):
         self.__small_removed_segmented = None
         self.__parent_image = None
         self.__ijv = None
+        self.__shape = None
     
     def get_segmented(self):
         """Get the de-facto segmentation of the image into objects: a matrix 
         of object numbers.
         """
+        if self.__segmented is None:
+            label_stack = [l for l,c in self.get_labels()]
+            assert len(label_stack) == 1, "Operation failed because objects overlapped. Please try with non-overlapping objects"
+            return label_stack[0]
         return self.__segmented
     
     def set_segmented(self,labels):
@@ -69,13 +74,14 @@ class Objects(object):
     
     segmented = property(get_segmented,set_segmented)
     
-    def set_ijv(self, ijv):
+    def set_ijv(self, ijv, shape=None):
         '''Set the segmentation to an IJV object format
         
         The ijv format is a list of i,j coordinates in slots 0 and 1
         and the label at the pixel in slot 2.
         '''
         self.__ijv = ijv
+        self.__shape = shape
         
     def get_ijv(self):
         '''Get the segmentation in IJV object format
@@ -114,6 +120,8 @@ class Objects(object):
         if self.__segmented is not None:
             return [(self.__segmented, self.indices)]
         elif self.__ijv is not None:
+            if shape is None:
+                shape = self.__shape
             def ijv_to_segmented(ijv, shape=shape):
                 if shape is not None:
                     pass
@@ -125,7 +133,8 @@ class Objects(object):
                 else:
                     shape = np.max(ijv[:,:2], 0) + 2 # add a border of "0" to the right
                 labels = np.zeros(shape, np.int16)
-                labels[ijv[:,0],ijv[:,1]] = ijv[:,2]
+                if ijv.shape[0] > 0:
+                    labels[ijv[:,0],ijv[:,1]] = ijv[:,2]
                 return labels
             
             if len(self.__ijv) == 0:

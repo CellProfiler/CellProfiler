@@ -637,7 +637,7 @@ def add_object_location_measurements_ijv(measurements,
                                          ijv, object_count = None):
     '''Add object location measurements for IJV-style objects'''
     if object_count is None:
-        object_count = np.max(ijv[:, 2])
+        object_count = 0 if ijv.shape[0] == 0 else np.max(ijv[:, 2])
     if object_count == 0:
         center_x = np.zeros(0)
         center_y = np.zeros(0)

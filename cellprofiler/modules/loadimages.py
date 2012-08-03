@@ -2225,9 +2225,9 @@ class LoadImages(cpmodule.CPModule):
                 else:
                     provider = LoadImagesImageProvider(
                         image_name, path, filename, rescale)
-                image = provider.provide_image(workspace.image_set)
-                pixel_data = image.pixel_data
                 if wants_images:
+                    image = provider.provide_image(workspace.image_set)
+                    pixel_data = image.pixel_data
                     image_set.providers.append(provider)
                     digest = hashlib.md5()
                     digest.update(np.ascontiguousarray(pixel_data).data)
@@ -2254,9 +2254,44 @@ class LoadImages(cpmodule.CPModule):
                     #
                     # Save as objects.
                     #
-                    pixel_data = convert_image_to_objects(pixel_data)
+                    provider.cache_file()
+                    fullname = provider.get_full_name()
+                    #
+                    # Get the frame count
+                    #
+                    n_frames = 1
+                    formatreader.jutil.attach()
+                    try:
+                        rdr = ImageReader()
+                        rdr.setGroupFiles(False)
+                        rdr.setId(fullname)
+                        n_frames = rdr.getImageCount()
+                    except:
+                        logger.warn("Failed to get number of frames from %s" %
+                                    filename)
+                    finally:
+                        formatreader.jutil.detach()
+                    ijv = np.zeros((0, 3), int)
+                    offset = 0
+                    for index in range(n_frames):
+                        if n_frames == 1:
+                            # Handle special case of interleaved color
+                            labels = load_using_bioformats(
+                                fullname, rescale = False)
+                        else:
+                            labels = load_using_bioformats(
+                                fullname, index = index, rescale = False)
+                        labels = convert_image_to_objects(labels)
+                        shape = labels.shape[:2]
+                        i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+                        ijv = np.vstack((
+                            ijv, np.column_stack((i[labels!=0],
+                                                  j[labels!=0],
+                                                  labels[labels!=0] + offset))))
+                        if ijv.shape[0] > 0:
+                            offset = np.max(ijv[:, 2])
                     o = cpo.Objects()
-                    o.segmented = pixel_data
+                    o.set_ijv(ijv, shape)
                     object_set = workspace.object_set
                     assert isinstance(object_set, cpo.ObjectSet)
                     object_name = channel.object_name.value
@@ -2264,10 +2299,14 @@ class LoadImages(cpmodule.CPModule):
                     provider.release_memory()
                     row[0] = object_name
                     I.add_object_count_measurements(m, object_name, o.count)
-                    I.add_object_location_measurements(m, object_name, pixel_data)
+                    I.add_object_location_measurements_ijv(m, object_name, ijv)
                     if channel.wants_outlines:
-                        outlines = cellprofiler.cpmath.outline.outline(o.segmented)
-                        outline_image = cpimage.Image(outlines.astype(bool), parent_image = image)
+                        outlines = np.zeros(shape, bool)
+                        for l, c in o.get_labels():
+                            outlines |= cellprofiler.cpmath.outline.outline(l)
+                        outline_image = cpimage.Image(outlines, 
+                                                      path_name = path,
+                                                      file_name = filename)
                         workspace.image_set.add(channel.outlines_name.value, outline_image)
 
                 for tag in tags:

@@ -1269,7 +1269,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
             self.assertTrue(column[1] in ("PathName_MyImage","FileName_MyImage"))
             
     def make_workspace(self, image, filename = None, path = None, 
-                       convert=True, save_objects=False):
+                       convert=True, save_objects=False, shape=None):
         '''Make a workspace and module appropriate for running saveimages'''
         module = cpm_si.SaveImages()
         module.module_num = 1
@@ -1282,7 +1282,12 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         object_set = cpo.ObjectSet()
         if save_objects:
             objects = cpo.Objects()
-            objects.segmented = image
+            if save_objects == "ijv":
+                objects.ijv = image
+                if shape is not None:
+                    objects.parent_image = cpi.Image(np.zeros(shape))
+            else:
+                objects.segmented = image
             object_set.add_objects(objects, OBJECTS_NAME)
             module.save_image_or_figure.value = cpm_si.IF_OBJECTS
         else:
@@ -1701,6 +1706,53 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
                     '%s\n'
                     %(setting, im[:,0], expected[:,0]))
             
+    def test_06_03_save_planar_libtiff(self):
+        r = np.random.RandomState()
+        r.seed(63)
+        labels = r.randint(0, 20, (40, 50, 5)).astype(np.uint16)
+        workspace, module = self.make_workspace(labels[:, :, 0], 
+                                                save_objects = True)
+        module.gray_or_color.value = cpm_si.GC_GRAYSCALE
+        module.save_image_or_figure.value = cpm_si.IF_OBJECTS
+        module.file_format.value = cpm_si.FF_TIFF
+        module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.pathname.custom_path = self.custom_directory
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.single_file_name.value = FILE_NAME
+        module.save_image_with_libtiff(workspace, pixels = labels)
+        filename = module.get_filename(workspace, make_dirs = False,
+                                       check_overwrite = False)
+        for i in range(labels.shape[2]):
+            image = cpm_li.load_using_bioformats(filename, t=i,
+                                                 rescale=False)
+            np.testing.assert_array_equal(image, labels[:, :, i])
+        
+    def test_06_04_save_planar_bioformats(self):
+        r = np.random.RandomState()
+        r.seed(64)
+        labels = r.randint(0, 20, (40, 50, 5)).astype(np.uint16)
+        workspace, module = self.make_workspace(labels[:, :, 0], 
+                                                save_objects = True)
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        module.gray_or_color.value = cpm_si.GC_GRAYSCALE
+        module.save_image_or_figure.value = cpm_si.IF_OBJECTS
+        module.file_format.value = cpm_si.FF_TIFF
+        module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.pathname.custom_path = self.custom_directory
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.single_file_name.value = FILE_NAME
+        module.save_image_with_bioformats(
+            workspace, 
+            pixels = labels,
+            channel_names = ["Mary", "had", "a", "little", "lamb"]) 
+        # A little steak, a little ham
+        filename = module.get_filename(workspace, make_dirs = False,
+                                       check_overwrite = False)
+        for i in range(labels.shape[2]):
+            image = cpm_li.load_using_bioformats(filename, c=i,
+                                                 rescale=False)
+            np.testing.assert_array_equal(image, labels[:, :, i])
+            
     def test_07_01_save_objects_grayscale8_tiff(self):
         if BIOFORMATS_CANT_WRITE:
             print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
@@ -1734,7 +1786,6 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        image = PILImage.open(filename)
         im = cpm_li.load_using_bioformats(filename, rescale=False)
         self.assertTrue(np.all(labels == im))
         
@@ -1771,7 +1822,6 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        image = PILImage.open(filename)
         im = cpm_li.load_using_bioformats(filename, rescale=False)
         self.assertTrue(np.all(labels == im))
         
@@ -1800,7 +1850,6 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        image = PILImage.open(filename)
         im = cpm_li.load_using_bioformats(filename, rescale=False)
         self.assertTrue(np.all(labels == im))
         
@@ -1842,6 +1891,53 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         x = coo.coo_matrix((np.ones(len(indices)),
                             (labels.ravel(), im.ravel()))).toarray()
         self.assertEqual(np.sum(x != 0), 10)
+        
+    def test_07_05_save_overlapping_objects(self):
+        if BIOFORMATS_CANT_WRITE:
+            print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."
+            try:
+                import libtiff
+            except:
+                sys.stderr.write("Failed to import libtiff.\n")
+                traceback.print_exc()
+                return
+        r = np.random.RandomState()
+        i,j = np.mgrid[0:20, 0:25]
+        o1 = (i-10) ** 2 + (j - 10) **2 < 64
+        o2 = (i-10) ** 2 + (j - 15) **2 < 64
+        ijv = np.vstack(
+            [np.column_stack((i[o], j[o], np.ones(np.sum(o), int) * (n+1)))
+             for n, o in enumerate((o1, o2))])
+        workspace, module = self.make_workspace(ijv, save_objects = "ijv",
+                                                shape = o1.shape)
+        assert isinstance(module, cpm_si.SaveImages)
+        module.update_file_names.value = True
+        module.gray_or_color.value = cpm_si.GC_GRAYSCALE
+        module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.pathname.custom_path = self.custom_directory
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.file_format.value = cpm_si.FF_TIFF
+
+        filename = module.get_filename(workspace, make_dirs = False,
+                                       check_overwrite = False)
+        if os.path.isfile(filename):
+            os.remove(filename)
+        module.run(workspace)
+        m = workspace.measurements
+        assert isinstance(m, cpm.Measurements)
+        feature = cpm_si.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME
+        m_filename = m.get_current_image_measurement(feature)
+        self.assertEqual(m_filename, os.path.split(filename)[1])
+        feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
+        m_pathname = m.get_current_image_measurement(feature)
+        self.assertEqual(m_pathname, os.path.split(filename)[0])
+        for i in range(2):
+            im = cpm_li.load_using_bioformats(filename, rescale=False, c=i)
+            o = o1 if 1 in np.unique(im) else o2
+            self.assertEqual(tuple(im.shape), tuple(o.shape))
+            np.testing.assert_array_equal(
+                o, im.astype(bool))
+            
         
 def make_array(encoded,shape,dtype=np.uint8):
     data = base64.b64decode(encoded)

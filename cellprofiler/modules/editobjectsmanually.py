@@ -47,6 +47,7 @@ See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>Con
 # Copyright 2008, John Hunter, Darren Dale, Michael Droettboom
 # 
 
+
 __version__="$Revision$"
 
 import numpy as np
@@ -916,30 +917,25 @@ class EditObjectsManually(I.Identify):
                 if len(all_labels) < 2:
                     return
                 assert all_labels[0] == np.min(all_labels)
+                object_number = all_labels[0]
                 for label in all_labels:
                     self.close_label(label, display=False)
                 
-                keep_to_keep = np.ones(len(self.to_keep), bool)
-                keep_to_keep[all_labels[1:]] = False
-                self.to_keep = self.to_keep[keep_to_keep]
+                to_join = np.zeros(len(self.to_keep), bool)
+                to_join[all_labels] = True
                 #
-                # Renumber the labels matrix, changing the other labels'
-                # label numbers to the primary one and renumbering so
-                # labels appear consecutively.
+                # Copy all labels to join to the mask and erase.
                 #
-                labels = []
-                renumbering = np.ones(len(keep_to_keep), 
-                                      label.dtype)
-                renumbering[keep_to_keep] = \
-                    np.arange(np.sum(keep_to_keep), 
-                              dtype = label.dtype)
-                renumbering[~keep_to_keep] = all_labels[0]
+                mask = np.zeros(self.shape, bool)
                 for label in self.labels:
-                    labels.append(renumbering[label])
-                self.labels = labels
+                    mask |= to_join[label]
+                    label[to_join[label]] = 0
+                self.labels.append(
+                    mask.astype(self.labels[0].dtype) * object_number)
+                    
                 self.restructure_labels()
                 self.init_labels()
-                self.make_control_points(all_labels[0])
+                self.make_control_points(object_number)
                 self.display()
                 return all_labels[0]
                 
@@ -1064,7 +1060,7 @@ class EditObjectsManually(I.Identify):
                 for artist in self.artists:
                     artist.remove()
                 self.artists = {}
-                self.update_artists()
+                self.display()
                 
             ################################
             #
@@ -1166,6 +1162,8 @@ class EditObjectsManually(I.Identify):
                 if event.inaxes != self.orig_axes:
                     return
                 pick_artist, pick_index = self.get_control_point(event)
+                if pick_artist is None:
+                    return
                 if not self.ok_to_split(pick_artist, pick_index):
                     return
                 if pick_artist == self.split_pick_artist:
@@ -1236,9 +1234,12 @@ class EditObjectsManually(I.Identify):
                     #
                     xy0 = self.split_pick_artist.get_xydata()
                     xy1 = pick_artist.get_xydata()
-                    path0 = Path(xy0)
-                    path1 = Path(xy1)
-                    if path0.contains_path(path1):
+                    #
+                    # Determine who is inside who by area
+                    #
+                    a0 = self.get_area(self.split_pick_artist)
+                    a1 = self.get_area(pick_artist)
+                    if a0 > a1:
                         outside_artist = self.split_pick_artist
                         inside_artist = pick_artist
                         outside_index = self.split_pick_index
@@ -1275,8 +1276,26 @@ class EditObjectsManually(I.Identify):
                     del self.artists[inside_artist]
                     inside_artist.remove()
                     object_number = self.artists[outside_artist][self.K_LABEL]
-                    self.update_artists()
+                    self.artists[outside_artist][self.K_EDITED] = True
+                    self.close_label(object_number, display=False)
+                    self.init_labels()
+                    self.make_control_points(object_number)
+                    self.display()
                 self.exit_split_mode(event)
+                
+            @staticmethod
+            def get_area(artist):
+                '''Get the area inside an artist polygon'''
+                #
+                # Thank you Darel Rex Finley:
+                #
+                # http://alienryderflex.com/polygon_area/
+                #
+                # Code is public domain
+                #
+                x, y = artist.get_data()
+                area = abs(np.sum((x[:-1] + x[1:]) * (y[:-1] - y[1:]))) / 2
+                return area
                 
             @staticmethod
             def get_split_points(artist, idx):
@@ -1380,6 +1399,8 @@ class EditObjectsManually(I.Identify):
                 
             def on_reset(self, event):
                 self.labels = [l.copy() for l in self.orig_labels]
+                nlabels = np.max([np.max(l) for l in orig_labels])
+                self.to_keep = np.ones(nlabels + 1, bool)
                 self.artists = {}
                 self.init_labels()
                 self.display()

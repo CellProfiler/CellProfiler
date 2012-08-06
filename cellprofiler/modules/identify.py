@@ -642,7 +642,7 @@ def add_object_location_measurements_ijv(measurements,
         center_x = np.zeros(0)
         center_y = np.zeros(0)
     else:
-        areas = np.zeros(object_count+1, int)
+        areas = np.zeros(object_count, int)
         areas_bc = np.bincount(ijv[:, 2])[1:]
         areas[:len(areas_bc)] = areas_bc
         center_x = np.bincount(ijv[:, 2], ijv[:, 1])[1:] / areas

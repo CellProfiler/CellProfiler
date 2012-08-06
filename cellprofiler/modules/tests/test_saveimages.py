@@ -1707,6 +1707,12 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
                     %(setting, im[:,0], expected[:,0]))
             
     def test_06_03_save_planar_libtiff(self):
+        try:
+            import libtiff
+        except:
+            sys.stderr.write("Failed to import libtiff.\n")
+            traceback.print_exc()
+            return
         r = np.random.RandomState()
         r.seed(63)
         labels = r.randint(0, 20, (40, 50, 5)).astype(np.uint16)

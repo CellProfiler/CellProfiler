@@ -193,7 +193,7 @@ class Objects(object):
             #
             processing_order = np.lexsort((np.arange(len(overlap_counts)), overlap_counts))
             processing_order = processing_order[overlap_counts[processing_order] > 0]
-            max_color = 1
+            
             for index in processing_order:
                 neighbors = second[indexes[index]:indexes[index] + overlap_counts[index]]
                 colors = np.unique(v_color[neighbors])
@@ -219,7 +219,7 @@ class Objects(object):
             # Now, get ijv groups by color
             #
             result = []
-            for color in range(1, max_color+1):
+            for color in np.unique(v_color):
                 ijv = self.__ijv[v_color[self.__ijv[:,2]] == color]
                 indices = np.arange(len(v_color))[v_color == color]
                 result.append((ijv_to_segmented(ijv), indices))

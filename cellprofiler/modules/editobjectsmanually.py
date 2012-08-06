@@ -342,16 +342,13 @@ class EditObjectsManually(I.Identify):
                 self.workspace = workspace
                 self.orig_labels = orig_labels
                 self.shape = self.orig_labels[0].shape
-                self.labels = [l.copy() for l in orig_labels]
-                self.artists = {}
+                self.reset(display=False)
                 self.active_artist = None
                 self.active_index = None
                 self.mode = self.NORMAL_MODE
                 self.split_artist = None
                 self.wants_image_display = module.wants_image_display.value
                 self.pressed_keys = set()
-                nlabels = np.max([np.max(l) for l in orig_labels])
-                self.to_keep = np.ones(nlabels + 1, bool)
                 self.build_ui()
                 self.init_labels()
                 self.display()
@@ -721,6 +718,7 @@ class EditObjectsManually(I.Identify):
                 return best_artist, best_index
                     
             def on_click(self, event):
+                self.ui_actions.append(lambda event=event: self.on_click(event))                
                 if event.inaxes not in (
                     self.orig_axes, self.keep_axes, self.remove_axes):
                     return
@@ -772,6 +770,11 @@ class EditObjectsManually(I.Identify):
                     self.display()
             
             def on_key_down(self, event):
+                if event.key == 'r':
+                    self.replay()
+                    return
+                
+                self.ui_actions.append(lambda event=event: self.on_key_down(event))
                 self.pressed_keys.add(event.key)
                 if event.key == "1":
                     self.toggle_single_panel(event)
@@ -803,10 +806,13 @@ class EditObjectsManually(I.Identify):
                     self.exit_freehand_draw_mode(event)
             
             def on_key_up(self, event):
+                self.ui_actions.append(lambda event=event: self.on_key_up(event))                
                 if event.key in self.pressed_keys:
                     self.pressed_keys.remove(event.key)
             
             def on_mouse_button_up(self, event):
+                self.ui_actions.append(
+                    lambda event=event: self.on_mouse_button_up(event))                
                 if (event.inaxes is not None and 
                     event.inaxes.get_navigate_mode() is not None):
                     return
@@ -817,6 +823,8 @@ class EditObjectsManually(I.Identify):
                     self.active_index = None
                 
             def on_mouse_moved(self, event):
+                self.ui_actions.append(
+                    lambda event=event: self.on_mouse_moved(event))                
                 if self.mode == self.FREEHAND_DRAW_MODE:
                     self.handle_mouse_moved_freehand_draw_mode(event)
                 elif self.active_artist is not None:
@@ -1398,10 +1406,23 @@ class EditObjectsManually(I.Identify):
                 self.display()
                 
             def on_reset(self, event):
+                self.reset()
+                
+            def reset(self, display=True):
                 self.labels = [l.copy() for l in self.orig_labels]
                 nlabels = np.max([np.max(l) for l in orig_labels])
                 self.to_keep = np.ones(nlabels + 1, bool)
                 self.artists = {}
+                self.ui_actions = []
+                if display:
+                    self.init_labels()
+                    self.display()
+                
+            def replay(self):
+                actions = self.ui_actions
+                self.reset()
+                for action in actions:
+                    action()
                 self.init_labels()
                 self.display()
                 

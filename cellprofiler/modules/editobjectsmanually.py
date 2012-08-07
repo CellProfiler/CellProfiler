@@ -356,6 +356,91 @@ class EditObjectsManually(I.Identify):
                 self.Raise()
                 self.panel.SetFocus()
                 
+            def record_undo(self):
+                '''Push an undo record onto the undo stack'''
+                #
+                # The undo record is a diff between the last ijv and
+                # the current, plus the current state of the artists.
+                #
+                ijv = self.calculate_ijv()
+                #
+                # Sort the current and last ijv together, adding
+                # an old_new_indicator.
+                #
+                ijvx = np.vstack((
+                    np.column_stack((ijv, np.zeros(ijv.shape[0], ijv.dtype))),
+                    np.column_stack((self.last_ijv,
+                                     np.ones(self.last_ijv.shape[0], ijv.dtype)))))
+                order = np.lexsort((ijvx[:, 3], ijvx[:, 2], ijvx[:, 1], ijvx[:, 0]))
+                ijvx = ijvx[order, :]
+                #
+                # Then mark all prev and next where i,j,v match (in both sets)
+                #
+                matches = np.hstack(
+                    ((np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1) &
+                      (ijvx[:-1, 3] == 0) &
+                      (ijvx[1:, 3] == 1)), [False]))
+                matches[1:] = matches[1:] | matches[:-1]
+                ijvx = ijvx[~matches, :]
+                artist_save = [(a.get_data(), self.artists[a].copy())
+                               for a in self.artists]
+                self.undo_stack.append((ijvx, self.last_artist_save))
+                self.last_artist_save = artist_save
+                self.last_ijv = ijv
+                
+            def undo(self):
+                '''Pop an entry from the undo stack and apply'''
+                #
+                # Mix what's on the undo ijv with what's in self.last_ijv
+                # and remove any 0/1 pairs.
+                #
+                ijvx, artist_save = self.undo_stack.pop()
+                ijvx = np.vstack((
+                    ijvx, np.column_stack(
+                        (self.last_ijv, np.ones(self.last_ijv.shape[0],
+                                                self.last_ijv.dtype)))))
+                order = np.lexsort((ijvx[:, 3], ijvx[:, 2], ijvx[:, 1], ijvx[:, 0]))
+                ijvx = ijvx[order, :]
+                #
+                # Then mark all prev and next where i,j,v match (in both sets)
+                #
+                matches = np.hstack(
+                    (np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1), [False]))
+                matches[1:] = matches[1:] | matches[:-1]
+                ijvx = ijvx[~matches, :]
+                self.last_ijv = ijvx[:, :3]
+                self.last_artist_save = artist_save
+                temp = cpo.Objects()
+                temp.ijv = self.last_ijv
+                self.labels = [l for l, c in temp.get_labels(self.shape)]
+                self.init_labels()
+                #
+                # replace the artists
+                #
+                for artist in self.artists:
+                    artist.remove()
+                self.artists = {}
+                for (x, y), d in artist_save:
+                    object_number = d[self.K_LABEL]
+                    artist = Line2D(x, y,
+                                    marker='o', markerfacecolor='r',
+                                    markersize=6,
+                                    color=self.colormap[object_number, :],
+                                    animated = True)
+                    self.artists[artist] = d
+                    self.orig_axes.add_line(artist)
+                self.display()
+                
+            def calculate_ijv(self):
+                '''Return the current IJV representation of the labels'''
+                i, j = np.mgrid[0:self.shape[0], 0:self.shape[1]]
+                ijv = np.zeros((0, 3), int)
+                for l in self.labels:
+                    ijv = np.vstack(
+                        (ijv,
+                         np.column_stack([i[l!=0], j[l!=0], l[l!=0]])))
+                return ijv
+                
             def build_ui(self):
                 sizer = wx.BoxSizer(wx.VERTICAL)
                 self.SetSizer(sizer)
@@ -718,7 +803,6 @@ class EditObjectsManually(I.Identify):
                 return best_artist, best_index
                     
             def on_click(self, event):
-                self.ui_actions.append(lambda event=event: self.on_click(event))                
                 if event.inaxes not in (
                     self.orig_axes, self.keep_axes, self.remove_axes):
                     return
@@ -744,6 +828,7 @@ class EditObjectsManually(I.Identify):
                         path = Path(artist.get_xydata())
                         if path.contains_point((event.xdata, event.ydata)):
                             self.close_label(self.artists[artist][self.K_LABEL])
+                            self.record_undo()
                             return
                 x = int(event.xdata)
                 y = int(event.ydata)
@@ -770,11 +855,6 @@ class EditObjectsManually(I.Identify):
                     self.display()
             
             def on_key_down(self, event):
-                if event.key == 'r':
-                    self.replay()
-                    return
-                
-                self.ui_actions.append(lambda event=event: self.on_key_down(event))
                 self.pressed_keys.add(event.key)
                 if event.key == "1":
                     self.toggle_single_panel(event)
@@ -796,6 +876,9 @@ class EditObjectsManually(I.Identify):
                         self.new_object(event)
                     elif event.key == "s":
                         self.enter_split_mode(event)
+                    elif event.key =="z":
+                        if len(self.undo_stack) > 0:
+                            self.undo()
                     elif event.key == "escape":
                         self.remove_artists(event)
                 elif self.mode in (self.SPLIT_PICK_FIRST_MODE, 
@@ -806,13 +889,10 @@ class EditObjectsManually(I.Identify):
                     self.exit_freehand_draw_mode(event)
             
             def on_key_up(self, event):
-                self.ui_actions.append(lambda event=event: self.on_key_up(event))                
                 if event.key in self.pressed_keys:
                     self.pressed_keys.remove(event.key)
             
             def on_mouse_button_up(self, event):
-                self.ui_actions.append(
-                    lambda event=event: self.on_mouse_button_up(event))                
                 if (event.inaxes is not None and 
                     event.inaxes.get_navigate_mode() is not None):
                     return
@@ -823,8 +903,6 @@ class EditObjectsManually(I.Identify):
                     self.active_index = None
                 
             def on_mouse_moved(self, event):
-                self.ui_actions.append(
-                    lambda event=event: self.on_mouse_moved(event))                
                 if self.mode == self.FREEHAND_DRAW_MODE:
                     self.handle_mouse_moved_freehand_draw_mode(event)
                 elif self.active_artist is not None:
@@ -945,6 +1023,7 @@ class EditObjectsManually(I.Identify):
                 self.init_labels()
                 self.make_control_points(object_number)
                 self.display()
+                self.record_undo()
                 return all_labels[0]
                 
             def convex_hull(self, event):
@@ -973,6 +1052,7 @@ class EditObjectsManually(I.Identify):
                 self.init_labels()
                 self.make_control_points(object_number)
                 self.display()
+                self.record_undo()
             
             def add_control_point(self, event):
                 if len(self.artists) == 0:
@@ -1017,6 +1097,7 @@ class EditObjectsManually(I.Identify):
                 best_artist.set_data((l[:, 1], l[:, 0]))
                 self.artists[best_artist][self.K_EDITED] = True
                 self.update_artists()
+                self.record_undo()
             
             def delete_control_point(self, event):
                 best_artist, best_index = self.get_control_point(event)
@@ -1031,6 +1112,7 @@ class EditObjectsManually(I.Identify):
                             self.remove_label(object_number)
                             self.init_labels()
                             self.display()
+                            self.record_undo()
                             return
                     else:
                         l = np.vstack((
@@ -1039,6 +1121,7 @@ class EditObjectsManually(I.Identify):
                         l = np.vstack((l, l[:1, :]))
                         best_artist.set_data((l[:, 0], l[:, 1]))
                         self.artists[best_artist][self.K_EDITED] = True
+                        self.record_undo()
                     self.update_artists()
                     
             def new_object(self, event):
@@ -1063,6 +1146,7 @@ class EditObjectsManually(I.Identify):
                                              self.K_EDITED: True,
                                              self.K_OUTSIDE: True}
                 self.display()
+                self.record_undo()
                 
             def remove_artists(self, event):
                 for artist in self.artists:
@@ -1289,6 +1373,7 @@ class EditObjectsManually(I.Identify):
                     self.init_labels()
                     self.make_control_points(object_number)
                     self.display()
+                self.record_undo()
                 self.exit_split_mode(event)
                 
             @staticmethod
@@ -1386,6 +1471,7 @@ class EditObjectsManually(I.Identify):
                 self.exit_freehand_draw_mode(event)
                 self.init_labels()
                 self.display()
+                self.record_undo()
             
             ################################
             #
@@ -1413,18 +1499,12 @@ class EditObjectsManually(I.Identify):
                 nlabels = np.max([np.max(l) for l in orig_labels])
                 self.to_keep = np.ones(nlabels + 1, bool)
                 self.artists = {}
-                self.ui_actions = []
+                self.undo_stack = []
+                self.last_ijv = self.calculate_ijv()
+                self.last_artist_save = {}
                 if display:
                     self.init_labels()
                     self.display()
-                
-            def replay(self):
-                actions = self.ui_actions
-                self.reset()
-                for action in actions:
-                    action()
-                self.init_labels()
-                self.display()
                 
             def on_help(self, event):
                 self.html_frame.Show(True)

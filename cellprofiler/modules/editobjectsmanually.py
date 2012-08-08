@@ -48,7 +48,8 @@ See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>Con
 # 
 
 
-__version__="$Revision$"
+import logging
+logger = logging.getLogger(__name__)
 
 import numpy as np
 import sys
@@ -204,11 +205,18 @@ class EditObjectsManually(I.Identify):
         assert isinstance(orig_objects, cpo.Objects)
         orig_labels = [l for l, c in orig_objects.get_labels()]
 
+        if self.wants_image_display:
+            guide_image = workspace.image_set.get_image(self.image_name.value)
+            guide_image = guide_image.pixel_data
+            if any(guide_image != np.min(guide_image)):
+                guide_image = (guide_image - np.min(guide_image)) / (np.max(guide_image) - np.min(guide_image))
+        else:
+            guide_image = None
         if workspace.frame is None:
             # Accept the labels as-is
             filtered_labels = orig_labels
         else:
-            filtered_labels = self.filter_objects(workspace, orig_labels)
+            filtered_labels = self.filter_objects(guide_image, orig_labels)
         #
         # Renumber objects consecutively if asked to do so
         #
@@ -232,8 +240,10 @@ class EditObjectsManually(I.Identify):
                                               j[l != 0],
                                               l[l != 0]))))
         filtered_objects.ijv = ijv
-        filtered_objects.unedited_segmented = orig_objects.unedited_segmented
-        filtered_objects.parent_image = orig_objects.parent_image
+        if orig_objects.unedited_segmented is not None:
+            filtered_objects.unedited_segmented = orig_objects.unedited_segmented
+        if orig_objects.parent_image is not None:
+            filtered_objects.parent_image = orig_objects.parent_image
         workspace.object_set.add_objects(filtered_objects, 
                                          filtered_objects_name)
         #
@@ -261,10 +271,8 @@ class EditObjectsManually(I.Identify):
         #
         if self.wants_outlines:
             outlines_name = self.outlines_name.value
-            outlines = np.zeros((filtered_labels[0].shape, 
-                                 filtered_labels[1].shape, 3), bool)
-            for l in filtered_labels:
-                outlines |= outline(l).astype(bool)
+            outlines = np.zeros((filtered_labels[0].shape[0], 
+                                 filtered_labels[0].shape[1]), bool)
             outlines_image = cpi.Image(outlines)
             workspace.image_set.add(outlines_name, outlines_image)
         #
@@ -281,8 +289,134 @@ class EditObjectsManually(I.Identify):
                                       title = filtered_objects_name,
                                       sharex = figure.subplot(0,0),
                                       sharey = figure.subplot(0,0))
+    
+    def run_as_data_tool(self):
+        import wx
+        import cellprofiler.utilities.jutil as jutil
+        from cellprofiler.modules.loadimages import load_using_bioformats, convert_image_to_objects
+        import bioformats.formatreader as formatreader
+        from bioformats.formatwriter import make_ome_tiff_writer_class
+        from bioformats.metadatatools import createOMEXMLMetadata, wrap_imetadata_object, make_pixel_type_class
+        
+        self.allow_overlap.value = True
+        dlg = wx.FileDialog(None)
+        dlg.Title = "Pick object image"
+        dlg.Path = cpprefs.get_default_image_directory()
+        dlg.Wildcard = "Object image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*"
+        result =  dlg.ShowModal()
+        fullname = dlg.Path
+        dlg.Destroy()
+        if result != wx.ID_OK:
+            return
+        dlg = wx.FileDialog(None)
+        dlg.Title = "Pick guiding image"
+        dlg.Path = fullname
+        dlg.Wildcard = "Guide image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*"
+        result =  dlg.ShowModal()
+        guidename = dlg.Path
+        dlg.Destroy()
+        if result != wx.ID_OK:
+            return
+        #
+        # Load the objects
+        #
+        n_frames = 1
+        try:
+            ImageReader = formatreader.make_image_reader_class()
+            rdr = ImageReader()
+            rdr.setGroupFiles(False)
+            rdr.setId(fullname)
+            n_frames = rdr.getImageCount()
+        except:
+            logger.warn("Failed to get number of frames from %s" %
+                        filename)
+        ijv = np.zeros((0, 3), int)
+        offset = 0
+        for index in range(n_frames):
+            if n_frames == 1:
+                # Handle special case of interleaved color
+                labels = load_using_bioformats(
+                    fullname, rescale = False)
+            else:
+                labels = load_using_bioformats(
+                    fullname, index = index, rescale = False)
+            shape = labels.shape[:2]
+            labels = convert_image_to_objects(labels)
+            shape = labels.shape[:2]
+            i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+            ijv = np.vstack((
+                ijv, np.column_stack((i[labels!=0],
+                                      j[labels!=0],
+                                      labels[labels!=0] + offset))))
+            if ijv.shape[0] > 0:
+                offset = np.max(ijv[:, 2])
+        o = cpo.Objects()
+        o.ijv = ijv
+        o.shape = shape
+        labels = [l for l,c in o.get_labels(shape)]
+        #
+        # Load the guide image
+        #
+        guide_image = load_using_bioformats(
+            guidename)
+        if np.min(guide_image) != np.max(guide_image):
+            guide_image = (guide_image - np.min(guide_image)) / (np.max(guide_image)  - np.min(guide_image))
+        labels = self.filter_objects(guide_image, labels)
+        n_frames = len(labels)
+        dlg = wx.FileDialog(None,
+                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
+        
+        dlg.Path = fullname
+        dlg.Wildcard = "Object image file (*.tif,*.tiff)|*.tif;*.tiff"
+        result = dlg.ShowModal()
+        fullname = dlg.Path
+        dlg.Destroy()
+        if result == wx.ID_OK:
+            md = createOMEXMLMetadata()
+            md = wrap_imetadata_object(md)
+            md.createRoot()
+            md.setPixelsBigEndian(False, 0, 0)
+            md.setPixelsDimensionOrder('XYCZT', 0, 0)
+            try:
+                PixelType = make_pixel_type_class()
+                md.setPixelsType(PixelType.UINT16, 0)
+            except:
+                FormatTools = formatreader.make_format_tools_class()
+                md.setPixelsPixelType(FormatTools.UINT16, 0, 0)
+            md.setPixelsSizeX(shape[1], 0, 0)
+            md.setPixelsSizeY(shape[0], 0, 0)
+            md.setPixelsSizeC(n_frames, 0, 0)
+            md.setPixelsSizeZ(1, 0, 0)
+            md.setPixelsSizeT(1, 0, 0)
+            md.setImageID("Image1", 0)
+            md.setPixelsID("Pixels1", 0)
+            for i in range(n_frames):
+                md.setLogicalChannelSamplesPerPixel(1, 0, i)
+                md.setChannelID("Channel%d" % (i+1), 0, i)
+            ImageWriter = make_ome_tiff_writer_class()
+            writer = ImageWriter()
+            writer.setMetadataRetrieve(md)
+            writer.setInterleaved(False)
+            writer.setId(fullname)
+            for i, l in enumerate(labels):
+                s = l.astype("<u2").tostring()
+                pixels = np.fromstring(s, dtype = np.uint8)
+                ifd = formatreader.jutil.make_instance("loci/formats/tiff/IFD","()V")
+                #
+                # Need to explicitly set the maximum sample value or images
+                # get rescaled inside the TIFF writer.
+                #
+                min_sample_value = jutil.get_static_field(
+                    "loci/formats/tiff/IFD", "MIN_SAMPLE_VALUE", "I")
+                jutil.call(ifd, "putIFDValue", "(II)V", min_sample_value, 0)
+                max_sample_value = jutil.get_static_field(
+                    "loci/formats/tiff/IFD", "MAX_SAMPLE_VALUE","I")
+                jutil.call(ifd, "putIFDValue","(II)V",
+                           max_sample_value, 65535)
+                writer.saveBytesIFD(i, jutil.get_env().make_byte_array(pixels), ifd)
+            writer.close()
             
-    def filter_objects(self, workspace, orig_labels):
+    def filter_objects(self, guide_image, orig_labels):
         import wx
         import wx.html
         import matplotlib
@@ -297,7 +431,6 @@ class EditObjectsManually(I.Identify):
         from cellprofiler.cpmath.cpmorphology import convex_hull_image
         from cellprofiler.cpmath.cpmorphology import distance2_to_line
         
-        assert isinstance(workspace,cpw.Workspace)
         class FilterObjectsDialog(wx.Dialog):
             resume_id = wx.NewId()
             cancel_id = wx.NewId()
@@ -322,9 +455,8 @@ class EditObjectsManually(I.Identify):
             # or is the border of a hole (False)
             #
             K_OUTSIDE = "outside"
-            def __init__(self, module, workspace, orig_labels):
+            def __init__(self, module, guide_image, orig_labels):
                 assert isinstance(module, EditObjectsManually)
-                assert isinstance(workspace, cpw.Workspace)
                 #
                 # Get the labels matrix and make a mask of objects to keep from it
                 #
@@ -334,12 +466,12 @@ class EditObjectsManually(I.Identify):
                 frame_size = wx.GetDisplaySize()
                 frame_size = [max(frame_size[0], frame_size[1]) / 2] * 2
                 style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX
-                wx.Dialog.__init__(self, workspace.frame, -1,
+                wx.Dialog.__init__(self, None, -1,
                                    "Choose objects to keep",
                                    size=frame_size,
                                    style = style)
                 self.module = module
-                self.workspace = workspace
+                self.guide_image = guide_image
                 self.orig_labels = orig_labels
                 self.shape = self.orig_labels[0].shape
                 self.reset(display=False)
@@ -347,7 +479,7 @@ class EditObjectsManually(I.Identify):
                 self.active_index = None
                 self.mode = self.NORMAL_MODE
                 self.split_artist = None
-                self.wants_image_display = module.wants_image_display.value
+                self.wants_image_display = guide_image != None
                 self.pressed_keys = set()
                 self.build_ui()
                 self.init_labels()
@@ -387,8 +519,9 @@ class EditObjectsManually(I.Identify):
                 self.undo_stack.append((ijvx, self.last_artist_save))
                 self.last_artist_save = artist_save
                 self.last_ijv = ijv
+                self.undo_button.Enable(True)
                 
-            def undo(self):
+            def undo(self, event=None):
                 '''Pop an entry from the undo stack and apply'''
                 #
                 # Mix what's on the undo ijv with what's in self.last_ijv
@@ -430,6 +563,8 @@ class EditObjectsManually(I.Identify):
                     self.artists[artist] = d
                     self.orig_axes.add_line(artist)
                 self.display()
+                if len(self.undo_stack) == 0:
+                    self.undo_button.Enable(False)
                 
             def calculate_ijv(self):
                 '''Return the current IJV representation of the labels'''
@@ -566,6 +701,10 @@ class EditObjectsManually(I.Identify):
                 toggle_button = wx.Button(self, self.reverse_select, 
                                           "Reverse selection")
                 sub_sizer.Add(toggle_button,0, wx.ALIGN_CENTER)
+                self.undo_button = wx.Button(self, wx.ID_UNDO)
+                self.undo_button.SetToolTipString("Undo last edit")
+                self.undo_button.Enable(False)
+                sub_sizer.Add(self.undo_button)
                 reset_button = wx.Button(self, -1, "Reset")
                 reset_button.SetToolTipString(
                     "Undo all editing and restore the original objects")
@@ -573,6 +712,7 @@ class EditObjectsManually(I.Identify):
                 self.Bind(wx.EVT_BUTTON, self.on_toggle, toggle_button)
                 self.Bind(wx.EVT_BUTTON, self.on_keep, keep_button)
                 self.Bind(wx.EVT_BUTTON, self.on_remove, remove_button)
+                self.Bind(wx.EVT_BUTTON, self.undo, id = wx.ID_UNDO)
                 self.Bind(wx.EVT_BUTTON, self.on_reset, reset_button)
         
                 ######################################
@@ -741,11 +881,9 @@ class EditObjectsManually(I.Identify):
                     
                     assert isinstance(axes, matplotlib.axes.Axes)
                     axes.clear()
-                    if self.wants_image_display:
-                        image = self.workspace.image_set.get_image(
-                            self.module.image_name.value)
-                        image = image.pixel_data.astype(np.float)
-                        image, _ = cpo.size_similarly(self.orig_labels[0], image)
+                    if self.wants_image_display and self.guide_image is not None:
+                        image, _ = cpo.size_similarly(self.orig_labels[0], 
+                                                      self.guide_image)
                         if image.ndim == 2:
                             image = np.dstack((image, image, image))
                         cimage = image.copy()
@@ -1500,6 +1638,9 @@ class EditObjectsManually(I.Identify):
                 self.to_keep = np.ones(nlabels + 1, bool)
                 self.artists = {}
                 self.undo_stack = []
+                if hasattr(self, "undo_button"):
+                    # minor unfortunate hack - reset called before GUI is built
+                    self.undo_button.Enable(False)
                 self.last_ijv = self.calculate_ijv()
                 self.last_artist_save = {}
                 if display:
@@ -1673,7 +1814,7 @@ class EditObjectsManually(I.Identify):
                     if display:
                         self.display()
         
-        with FilterObjectsDialog(self, workspace, orig_labels) as dialog_box:
+        with FilterObjectsDialog(self, guide_image, orig_labels) as dialog_box:
             result = dialog_box.ShowModal()
         if result != wx.OK:
             raise RuntimeError("User cancelled EditObjectsManually")

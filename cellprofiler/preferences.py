@@ -586,8 +586,11 @@ def get_recent_files(category=""):
         __recent_files[category] = []
         for i in range(RECENT_FILE_COUNT):
             key = recent_file(i, category)
-            if get_config().Exists(key):
-                __recent_files[category].append(config_read(key)) 
+            try:
+                if get_config().Exists(key):
+                    __recent_files[category].append(config_read(key)) 
+            except:
+                pass
     return __recent_files[category]
 
 def add_recent_file(filename, category=""):

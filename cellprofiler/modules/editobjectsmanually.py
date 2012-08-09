@@ -208,7 +208,7 @@ class EditObjectsManually(I.Identify):
         if self.wants_image_display:
             guide_image = workspace.image_set.get_image(self.image_name.value)
             guide_image = guide_image.pixel_data
-            if any(guide_image != np.min(guide_image)):
+            if np.any(guide_image != np.min(guide_image)):
                 guide_image = (guide_image - np.min(guide_image)) / (np.max(guide_image) - np.min(guide_image))
         else:
             guide_image = None
@@ -1252,6 +1252,11 @@ class EditObjectsManually(I.Identify):
                             self.display()
                             self.record_undo()
                             return
+                        else:
+                            # Mark some other artist as edited.
+                            for artist, d in self.artists.iteritems():
+                                if d[self.K_LABEL] == object_number:
+                                    d[self.K_EDITED] = True
                     else:
                         l = np.vstack((
                             l[:best_index, :], 

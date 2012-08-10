@@ -52,6 +52,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 import numpy as np
+import os
 import sys
 
 import cellprofiler.preferences as cpprefs
@@ -273,6 +274,9 @@ class EditObjectsManually(I.Identify):
             outlines_name = self.outlines_name.value
             outlines = np.zeros((filtered_labels[0].shape[0], 
                                  filtered_labels[0].shape[1]), bool)
+            for l in filtered_labels:
+                plane_outlines = outline(l) != 0
+                outlines[plane_outlines] = True
             outlines_image = cpi.Image(outlines)
             workspace.image_set.add(outlines_name, outlines_image)
         #
@@ -292,68 +296,100 @@ class EditObjectsManually(I.Identify):
     
     def run_as_data_tool(self):
         import wx
+        from wx.lib.filebrowsebutton import FileBrowseButton
         import cellprofiler.utilities.jutil as jutil
         from cellprofiler.modules.loadimages import load_using_bioformats, convert_image_to_objects
         import bioformats.formatreader as formatreader
         from bioformats.formatwriter import make_ome_tiff_writer_class
         from bioformats.metadatatools import createOMEXMLMetadata, wrap_imetadata_object, make_pixel_type_class
         
-        self.allow_overlap.value = True
-        dlg = wx.FileDialog(None)
-        dlg.Title = "Pick object image"
-        dlg.Path = cpprefs.get_default_image_directory()
-        dlg.Wildcard = "Object image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*"
-        result =  dlg.ShowModal()
-        fullname = dlg.Path
-        dlg.Destroy()
-        if result != wx.ID_OK:
-            return
-        dlg = wx.FileDialog(None)
-        dlg.Title = "Pick guiding image"
-        dlg.Path = fullname
-        dlg.Wildcard = "Guide image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*"
-        result =  dlg.ShowModal()
-        guidename = dlg.Path
-        dlg.Destroy()
-        if result != wx.ID_OK:
-            return
-        #
-        # Load the objects
-        #
-        n_frames = 1
+        dlg = wx.Dialog(None)
         try:
-            ImageReader = formatreader.make_image_reader_class()
-            rdr = ImageReader()
-            rdr.setGroupFiles(False)
-            rdr.setId(fullname)
-            n_frames = rdr.getImageCount()
-        except:
-            logger.warn("Failed to get number of frames from %s" %
-                        filename)
-        ijv = np.zeros((0, 3), int)
-        offset = 0
-        for index in range(n_frames):
-            if n_frames == 1:
-                # Handle special case of interleaved color
-                labels = load_using_bioformats(
-                    fullname, rescale = False)
-            else:
-                labels = load_using_bioformats(
-                    fullname, index = index, rescale = False)
-            shape = labels.shape[:2]
-            labels = convert_image_to_objects(labels)
-            shape = labels.shape[:2]
-            i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
-            ijv = np.vstack((
-                ijv, np.column_stack((i[labels!=0],
-                                      j[labels!=0],
-                                      labels[labels!=0] + offset))))
-            if ijv.shape[0] > 0:
-                offset = np.max(ijv[:, 2])
-        o = cpo.Objects()
-        o.ijv = ijv
-        o.shape = shape
-        labels = [l for l,c in o.get_labels(shape)]
+            dlg.Title = "Choose files for editing"
+            dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+            box = wx.StaticBox(dlg, -1, "Choose or create new objects file")
+            sub_sizer = wx.StaticBoxSizer(box, wx.HORIZONTAL)
+            dlg.Sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 5)
+            new_or_existing_rb = wx.RadioBox(dlg, style=wx.RA_VERTICAL,
+                                             choices = ("New", "Existing"))
+            sub_sizer.Add(new_or_existing_rb, 0, wx.EXPAND)
+            objects_file_fbb = FileBrowseButton(
+                dlg, size=(300, -1),
+                fileMask="Objects file (*.tif, *.tiff, *.png, *.bmp, *.jpg)|*.tif;*.tiff;*.png;*.bmp;*.jpg",
+                dialogTitle="Select objects file",
+                labelText="Objects file:")
+            objects_file_fbb.Enable(False)
+            sub_sizer.AddSpacer(5)
+            sub_sizer.Add(objects_file_fbb, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
+            def on_radiobox(event):
+                objects_file_fbb.Enable(new_or_existing_rb.GetSelection() == 1)
+            new_or_existing_rb.Bind(wx.EVT_RADIOBOX, on_radiobox)
+            
+            image_file_fbb = FileBrowseButton(
+                dlg, size=(300, -1),
+                fileMask="Objects file (*.tif, *.tiff, *.png, *.bmp, *.jpg)|*.tif;*.tiff;*.png;*.bmp;*.jpg",
+                dialogTitle="Select guide image file",
+                labelText="Guide image:")
+            dlg.Sizer.Add(image_file_fbb, 0, wx.EXPAND | wx.ALL, 5)
+            
+            allow_overlap_checkbox = wx.CheckBox(dlg, -1, "Allow objects to overlap")
+            allow_overlap_checkbox.Value = True
+            dlg.Sizer.Add(allow_overlap_checkbox, 0, wx.EXPAND | wx.ALL, 5)
+            
+            buttons = wx.StdDialogButtonSizer()
+            dlg.Sizer.Add(buttons, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.ALL, 5)
+            buttons.Add(wx.Button(dlg, wx.ID_OK))
+            buttons.Add(wx.Button(dlg, wx.ID_CANCEL))
+            buttons.Realize()
+            dlg.Fit()
+            result = dlg.ShowModal()
+            if result != wx.ID_OK:
+                return
+            self.allow_overlap.value = allow_overlap_checkbox.Value
+            fullname = objects_file_fbb.GetValue()
+            guidename = image_file_fbb.GetValue()
+        finally:
+            dlg.Destroy()
+        if new_or_existing_rb.GetSelection() == 1:
+            #
+            # Load the objects
+            #
+            n_frames = 1
+            try:
+                ImageReader = formatreader.make_image_reader_class()
+                rdr = ImageReader()
+                rdr.setGroupFiles(False)
+                rdr.setId(fullname)
+                n_frames = rdr.getImageCount()
+            except:
+                logger.warn("Failed to get number of frames from %s" %
+                            filename)
+            ijv = np.zeros((0, 3), int)
+            offset = 0
+            for index in range(n_frames):
+                if n_frames == 1:
+                    # Handle special case of interleaved color
+                    labels = load_using_bioformats(
+                        fullname, rescale = False)
+                else:
+                    labels = load_using_bioformats(
+                        fullname, index = index, rescale = False)
+                shape = labels.shape[:2]
+                labels = convert_image_to_objects(labels)
+                shape = labels.shape[:2]
+                i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+                ijv = np.vstack((
+                    ijv, np.column_stack((i[labels!=0],
+                                          j[labels!=0],
+                                          labels[labels!=0] + offset))))
+                if ijv.shape[0] > 0:
+                    offset = np.max(ijv[:, 2])
+            o = cpo.Objects()
+            o.ijv = ijv
+            o.shape = shape
+            labels = [l for l,c in o.get_labels(shape)]
+        else:
+            labels = None
         #
         # Load the guide image
         #
@@ -361,6 +397,9 @@ class EditObjectsManually(I.Identify):
             guidename)
         if np.min(guide_image) != np.max(guide_image):
             guide_image = (guide_image - np.min(guide_image)) / (np.max(guide_image)  - np.min(guide_image))
+        if labels is None:
+            shape = guide_image.shape[:2]
+            labels = [np.zeros(shape, int)]
         labels = self.filter_objects(guide_image, labels)
         n_frames = len(labels)
         dlg = wx.FileDialog(None,
@@ -397,6 +436,8 @@ class EditObjectsManually(I.Identify):
             writer = ImageWriter()
             writer.setMetadataRetrieve(md)
             writer.setInterleaved(False)
+            if os.path.exists(fullname):
+                os.unlink(fullname)
             writer.setId(fullname)
             for i, l in enumerate(labels):
                 s = l.astype("<u2").tostring()
@@ -495,25 +536,33 @@ class EditObjectsManually(I.Identify):
                 # the current, plus the current state of the artists.
                 #
                 ijv = self.calculate_ijv()
-                #
-                # Sort the current and last ijv together, adding
-                # an old_new_indicator.
-                #
-                ijvx = np.vstack((
-                    np.column_stack((ijv, np.zeros(ijv.shape[0], ijv.dtype))),
-                    np.column_stack((self.last_ijv,
-                                     np.ones(self.last_ijv.shape[0], ijv.dtype)))))
-                order = np.lexsort((ijvx[:, 3], ijvx[:, 2], ijvx[:, 1], ijvx[:, 0]))
-                ijvx = ijvx[order, :]
-                #
-                # Then mark all prev and next where i,j,v match (in both sets)
-                #
-                matches = np.hstack(
-                    ((np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1) &
-                      (ijvx[:-1, 3] == 0) &
-                      (ijvx[1:, 3] == 1)), [False]))
-                matches[1:] = matches[1:] | matches[:-1]
-                ijvx = ijvx[~matches, :]
+                if ijv.shape[0] == 0:
+                    ijvx = np.zeros((0, 4), int)
+                else:
+                    #
+                    # Sort the current and last ijv together, adding
+                    # an old_new_indicator.
+                    #
+                    ijvx = np.vstack((
+                        np.column_stack(
+                            (ijv, np.zeros(ijv.shape[0], ijv.dtype))),
+                        np.column_stack(
+                            (self.last_ijv,
+                             np.ones(self.last_ijv.shape[0], ijv.dtype)))))
+                    order = np.lexsort((ijvx[:, 3], 
+                                        ijvx[:, 2], 
+                                        ijvx[:, 1], 
+                                        ijvx[:, 0]))
+                    ijvx = ijvx[order, :]
+                    #
+                    # Then mark all prev and next where i,j,v match (in both sets)
+                    #
+                    matches = np.hstack(
+                        ((np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1) &
+                          (ijvx[:-1, 3] == 0) &
+                          (ijvx[1:, 3] == 1)), [False]))
+                    matches[1:] = matches[1:] | matches[:-1]
+                    ijvx = ijvx[~matches, :]
                 artist_save = [(a.get_data(), self.artists[a].copy())
                                for a in self.artists]
                 self.undo_stack.append((ijvx, self.last_artist_save))
@@ -892,8 +941,11 @@ class EditObjectsManually(I.Identify):
                             (self.shape[0],
                              self.shape[1],
                              3), np.float)
-                    kmask = keep[self.ol]
-                    cimage[self.oi[kmask], self.oj[kmask], :] = self.oc[kmask, :]
+                    if len(keep) > 1:
+                        kmask = keep[self.ol]
+                        if np.any(kmask):
+                            cimage[self.oi[kmask], self.oj[kmask], :] = \
+                                self.oc[kmask, :]
                     axes.imshow(cimage)
                 self.set_orig_axes_title()
                 self.keep_axes.set_title("Objects to keep",

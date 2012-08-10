@@ -902,6 +902,8 @@ class Measurements(object):
         whose value is the aggregate measurement value
         """
         d = {}
+        if len(aggs) == 0:
+            return d
         for object_name in self.get_object_names():
             if object_name == 'Image':
                 continue

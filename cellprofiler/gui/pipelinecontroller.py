@@ -1423,7 +1423,7 @@ class PipelineController:
                                       self.__groupings[0][0],
                                       self.__groupings[0][1])
         self.__debug_outlines = {}
-        return True
+        return self.debug_init_imageset()
     
     def close_debug_measurements(self):
         del self.__debug_measurements
@@ -1703,8 +1703,17 @@ class PipelineController:
                         self.__within_group_index = \
                             list(image_numbers).index(image_number)
                         break
+                self.debug_init_imageset()
         finally:
             dialog.Destroy()
+            
+    def debug_init_imageset(self):
+        '''Initialize the current image set by running the input modules'''
+        for module in self.__pipeline.modules():
+            if module.is_input_module():
+                if not self.do_step(module):
+                    return False
+        return True
 
     def on_debug_reload(self, event):
         '''Reload modules from source, warning the user if the pipeline could

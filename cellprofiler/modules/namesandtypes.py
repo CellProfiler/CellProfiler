@@ -562,8 +562,7 @@ class NamesAndTypes(cpm.CPModule):
                 ijv = np.vstack(
                     (ijv, 
                      np.column_stack([x[plane != 0] for x in (i, j, plane)])))
-            o.ijv = ijv
-            o.shape = shape
+            o.set_ijv(ijv, shape)
         workspace.object_set.add_objects(o, name)
                      
     def on_activated(self, workspace):
@@ -851,7 +850,7 @@ class NamesAndTypes(cpm.CPModule):
                             (C_OBJECTS_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
                             (C_OBJECTS_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
                             (C_COUNT, cpmeas.COLTYPE_INTEGER),
-                            (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR % 32),
+                            (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
                             (C_WIDTH, cpmeas.COLTYPE_INTEGER),
                             (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
                             (C_SERIES, cpmeas.COLTYPE_INTEGER),

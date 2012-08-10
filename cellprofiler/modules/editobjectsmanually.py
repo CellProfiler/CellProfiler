@@ -48,8 +48,10 @@ See also <b>FilterObjects</b>, <b>MaskObject</b>, <b>OverlayOutlines</b>, <b>Con
 # 
 
 
-__version__="$Revision$"
+import logging
+logger = logging.getLogger(__name__)
 
+import os
 import numpy as np
 import sys
 
@@ -200,15 +202,17 @@ class EditObjectsManually(I.Identify):
         orig_objects = workspace.object_set.get_objects(orig_objects_name)
         assert isinstance(orig_objects, cpo.Objects)
         orig_labels = [l for l, c in orig_objects.get_labels()]
-        mask = orig_labels != 0
 
         try:
-            if self.wants_image_display.value:
-                guide_image = workspace.image_set.get_image(self.image_name.value).pixel_data
+            if self.wants_image_display:
+                guide_image = workspace.image_set.get_image(self.image_name.value)
+                guide_image = guide_image.pixel_data
+                if np.any(guide_image != np.min(guide_image)):
+                    guide_image = (guide_image - np.min(guide_image)) / (np.max(guide_image) - np.min(guide_image))
             else:
                 guide_image = None
-
-            filtered_labels = workspace.interaction_request(self, orig_labels, guide_image=guide_image)
+            filtered_labels = workspace.interaction_request(
+                self, orig_labels, guide_image)
         except workspace.NoInteractionException:
             # Accept the labels as-is
             filtered_labels = orig_labels
@@ -235,9 +239,11 @@ class EditObjectsManually(I.Identify):
                              np.column_stack((i[l != 0],
                                               j[l != 0],
                                               l[l != 0]))))
-        filtered_objects.ijv = ijv
-        filtered_objects.unedited_segmented = orig_objects.unedited_segmented
-        filtered_objects.parent_image = orig_objects.parent_image
+        filtered_objects.set_ijv(ijv, orig_labels[0].shape)
+        if orig_objects.unedited_segmented is not None:
+            filtered_objects.unedited_segmented = orig_objects.unedited_segmented
+        if orig_objects.parent_image is not None:
+            filtered_objects.parent_image = orig_objects.parent_image
         workspace.object_set.add_objects(filtered_objects, 
                                          filtered_objects_name)
         #
@@ -265,26 +271,131 @@ class EditObjectsManually(I.Identify):
         #
         if self.wants_outlines:
             outlines_name = self.outlines_name.value
-            outlines = np.zeros((filtered_labels[0].shape, 
-                                 filtered_labels[1].shape, 3), bool)
-            for l in filtered_labels:
-                outlines |= outline(l).astype(bool)
+            outlines = np.zeros((filtered_labels[0].shape[0], 
+                                 filtered_labels[0].shape[1]), bool)
             outlines_image = cpi.Image(outlines)
             workspace.image_set.add(outlines_name, outlines_image)
 
-        workspace.display_data.orig_labels = orig_labels
-        workspace.display_data.filtered_labels = filtered_labels
+        workspace.display_data.orig_ijv = orig_objects.ijv
+        workspace.display_data.filtered_ijv = filtered_objects.ijv
+        workspace.display_data.shape = orig_labels[0].shape
 
     def display(self, workspace, figure):
-        orig_objects_name = self.object_name.value
-        filtered_objects_name = self.filtered_objects.value
-        orig_labels = workspace.display_data.orig_labels
-        filtered_labels = workspace.display_data.filtered_labels
-        figure.set_subplots((2, 1))
-        figure.subplot_imshow_labels(0, 0, orig_labels, orig_objects_name)
-        figure.subplot_imshow_labels(1, 0, filtered_labels,
-                                     filtered_objects_name,
-                                     sharexy = figure.subplot(0,0))
+        orig_ijv = workspace.display_data.orig_ijv
+        filtered_ijv = workspace.display_data.filtered_ijv
+        shape = workspace.display_data.shape
+        figure = workspace.create_or_find_figure(
+            title="EditObjectsManually, image cycle #%d"%(
+                workspace.measurements.image_set_number),
+            subplots=(2,1))
+        figure.subplot_imshow_ijv(0, 0, orig_ijv,
+                                  shape = shape,
+                                  title = self.object_name.value)
+        figure.subplot_imshow_ijv(1, 0, filtered_ijv,
+                                  shape = shape,
+                                  title = self.filtered_objects.value,
+                                  sharex = figure.subplot(0,0),
+                                  sharey = figure.subplot(0,0))
+    
+    def run_as_data_tool(self):
+        import wx
+        from wx.lib.filebrowsebutton import FileBrowseButton
+        from subimager.client import get_image, post_image
+        import subimager.omexml as ome
+        from cellprofiler.modules.namesandtypes import ObjectsImageProvider
+        from cellprofiler.modules.loadimages import pathname2url
+        
+        with wx.Dialog(None) as dlg:
+            dlg.Title = "Choose files for editing"
+            dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+            box = wx.StaticBox(dlg, -1, "Choose or create new objects file")
+            sub_sizer = wx.StaticBoxSizer(box, wx.HORIZONTAL)
+            dlg.Sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 5)
+            new_or_existing_rb = wx.RadioBox(dlg, style=wx.RA_VERTICAL,
+                                             choices = ("New", "Existing"))
+            sub_sizer.Add(new_or_existing_rb, 0, wx.EXPAND)
+            objects_file_fbb = FileBrowseButton(
+                dlg, size=(300, -1),
+                fileMask="Objects file (*.tif, *.tiff, *.png, *.bmp, *.jpg)|*.tif;*.tiff;*.png;*.bmp;*.jpg",
+                dialogTitle="Select objects file",
+                labelText="Objects file:")
+            objects_file_fbb.Enable(False)
+            sub_sizer.AddSpacer(5)
+            sub_sizer.Add(objects_file_fbb, 0, wx.ALIGN_TOP | wx.ALIGN_RIGHT)
+            def on_radiobox(event):
+                objects_file_fbb.Enable(new_or_existing_rb.GetSelection() == 1)
+            new_or_existing_rb.Bind(wx.EVT_RADIOBOX, on_radiobox)
+            
+            image_file_fbb = FileBrowseButton(
+                dlg, size=(300, -1),
+                fileMask="Objects file (*.tif, *.tiff, *.png, *.bmp, *.jpg)|*.tif;*.tiff;*.png;*.bmp;*.jpg",
+                dialogTitle="Select guide image file",
+                labelText="Guide image:")
+            dlg.Sizer.Add(image_file_fbb, 0, wx.EXPAND | wx.ALL, 5)
+            
+            allow_overlap_checkbox = wx.CheckBox(dlg, -1, "Allow objects to overlap")
+            allow_overlap_checkbox.Value = True
+            dlg.Sizer.Add(allow_overlap_checkbox, 0, wx.EXPAND | wx.ALL, 5)
+            
+            buttons = wx.StdDialogButtonSizer()
+            dlg.Sizer.Add(buttons, 0, wx.ALIGN_CENTER_VERTICAL | wx.ALIGN_RIGHT | wx.ALL, 5)
+            buttons.Add(wx.Button(dlg, wx.ID_OK))
+            buttons.Add(wx.Button(dlg, wx.ID_CANCEL))
+            buttons.Realize()
+            dlg.Fit()
+            result = dlg.ShowModal()
+            if result != wx.ID_OK:
+                return
+            self.allow_overlap.value = allow_overlap_checkbox.Value
+            fullname = objects_file_fbb.GetValue()
+            guidename = image_file_fbb.GetValue()
+
+        if new_or_existing_rb.GetSelection() == 1:
+            provider = ObjectsImageProvider(
+                "InputObjects",
+                pathname2url(fullname),
+                None, None)
+            image = provider.provide_image(None)
+            pixel_data = image.pixel_data
+            shape = pixel_data.shape[:2]
+            labels = [pixel_data[:, :, i] for i in range(pixel_data.shape[2])]
+        else:
+            labels = None
+        #
+        # Load the guide image
+        #
+        guide_image = get_image(pathname2url(guidename))
+        if np.min(guide_image) != np.max(guide_image):
+            guide_image = ((guide_image - np.min(guide_image)) / 
+                           (np.max(guide_image)  - np.min(guide_image)))
+        if labels is None:
+            shape = guide_image.shape[:2]
+            labels = [np.zeros(shape, int)]
+        labels = self.handle_interaction(labels, guide_image)
+        n_frames = len(labels)
+        with wx.FileDialog(None,
+                           style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+        
+            dlg.Path = fullname
+            dlg.Wildcard = "Object image file (*.tif,*.tiff)|*.tif;*.tiff"
+            result = dlg.ShowModal()
+            fullname = dlg.Path
+            if result == wx.ID_OK:
+                md = ome.OMEXML()
+                mdp = md.image().Pixels
+                mdp.SizeX = shape[1]
+                mdp.SizeY = shape[0]
+                mdp.SizeC = n_frames
+                mdp.SizeT = 1
+                mdp.SizeZ = 1
+                mdp.PixelType = ome.PT_UINT16
+                mdp.channel_count = n_frames
+                if os.path.exists(fullname):
+                    os.unlink(fullname)
+                xml = md.to_xml()
+                for i, l in enumerate(labels):
+                    post_image(pathname2url(fullname),
+                               l, xml, index = str(i))
 
     def handle_interaction(self, orig_labels, guide_image):
         import wx
@@ -301,7 +412,6 @@ class EditObjectsManually(I.Identify):
         from cellprofiler.cpmath.cpmorphology import convex_hull_image
         from cellprofiler.cpmath.cpmorphology import distance2_to_line
         
-        assert isinstance(workspace,cpw.Workspace)
         class FilterObjectsDialog(wx.Dialog):
             resume_id = wx.NewId()
             cancel_id = wx.NewId()
@@ -326,9 +436,8 @@ class EditObjectsManually(I.Identify):
             # or is the border of a hole (False)
             #
             K_OUTSIDE = "outside"
-            def __init__(self, module, workspace, orig_labels):
+            def __init__(self, module, guide_image, orig_labels):
                 assert isinstance(module, EditObjectsManually)
-                assert isinstance(workspace, cpw.Workspace)
                 #
                 # Get the labels matrix and make a mask of objects to keep from it
                 #
@@ -338,12 +447,12 @@ class EditObjectsManually(I.Identify):
                 frame_size = wx.GetDisplaySize()
                 frame_size = [max(frame_size[0], frame_size[1]) / 2] * 2
                 style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX
-                wx.Dialog.__init__(self, workspace.frame, -1,
+                wx.Dialog.__init__(self, None, -1,
                                    "Choose objects to keep",
                                    size=frame_size,
                                    style = style)
                 self.module = module
-                self.workspace = workspace
+                self.guide_image = guide_image
                 self.orig_labels = orig_labels
                 self.shape = self.orig_labels[0].shape
                 self.reset(display=False)
@@ -351,7 +460,7 @@ class EditObjectsManually(I.Identify):
                 self.active_index = None
                 self.mode = self.NORMAL_MODE
                 self.split_artist = None
-                self.wants_image_display = module.wants_image_display.value
+                self.wants_image_display = guide_image != None
                 self.pressed_keys = set()
                 self.build_ui()
                 self.init_labels()
@@ -359,6 +468,94 @@ class EditObjectsManually(I.Identify):
                 self.Layout()
                 self.Raise()
                 self.panel.SetFocus()
+                
+            def record_undo(self):
+                '''Push an undo record onto the undo stack'''
+                #
+                # The undo record is a diff between the last ijv and
+                # the current, plus the current state of the artists.
+                #
+                ijv = self.calculate_ijv()
+                #
+                # Sort the current and last ijv together, adding
+                # an old_new_indicator.
+                #
+                ijvx = np.vstack((
+                    np.column_stack((ijv, np.zeros(ijv.shape[0], ijv.dtype))),
+                    np.column_stack((self.last_ijv,
+                                     np.ones(self.last_ijv.shape[0], ijv.dtype)))))
+                order = np.lexsort((ijvx[:, 3], ijvx[:, 2], ijvx[:, 1], ijvx[:, 0]))
+                ijvx = ijvx[order, :]
+                #
+                # Then mark all prev and next where i,j,v match (in both sets)
+                #
+                matches = np.hstack(
+                    ((np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1) &
+                      (ijvx[:-1, 3] == 0) &
+                      (ijvx[1:, 3] == 1)), [False]))
+                matches[1:] = matches[1:] | matches[:-1]
+                ijvx = ijvx[~matches, :]
+                artist_save = [(a.get_data(), self.artists[a].copy())
+                               for a in self.artists]
+                self.undo_stack.append((ijvx, self.last_artist_save))
+                self.last_artist_save = artist_save
+                self.last_ijv = ijv
+                self.undo_button.Enable(True)
+                
+            def undo(self, event=None):
+                '''Pop an entry from the undo stack and apply'''
+                #
+                # Mix what's on the undo ijv with what's in self.last_ijv
+                # and remove any 0/1 pairs.
+                #
+                ijvx, artist_save = self.undo_stack.pop()
+                ijvx = np.vstack((
+                    ijvx, np.column_stack(
+                        (self.last_ijv, np.ones(self.last_ijv.shape[0],
+                                                self.last_ijv.dtype)))))
+                order = np.lexsort((ijvx[:, 3], ijvx[:, 2], ijvx[:, 1], ijvx[:, 0]))
+                ijvx = ijvx[order, :]
+                #
+                # Then mark all prev and next where i,j,v match (in both sets)
+                #
+                matches = np.hstack(
+                    (np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1), [False]))
+                matches[1:] = matches[1:] | matches[:-1]
+                ijvx = ijvx[~matches, :]
+                self.last_ijv = ijvx[:, :3]
+                self.last_artist_save = artist_save
+                temp = cpo.Objects()
+                temp.ijv = self.last_ijv
+                self.labels = [l for l, c in temp.get_labels(self.shape)]
+                self.init_labels()
+                #
+                # replace the artists
+                #
+                for artist in self.artists:
+                    artist.remove()
+                self.artists = {}
+                for (x, y), d in artist_save:
+                    object_number = d[self.K_LABEL]
+                    artist = Line2D(x, y,
+                                    marker='o', markerfacecolor='r',
+                                    markersize=6,
+                                    color=self.colormap[object_number, :],
+                                    animated = True)
+                    self.artists[artist] = d
+                    self.orig_axes.add_line(artist)
+                self.display()
+                if len(self.undo_stack) == 0:
+                    self.undo_button.Enable(False)
+                
+            def calculate_ijv(self):
+                '''Return the current IJV representation of the labels'''
+                i, j = np.mgrid[0:self.shape[0], 0:self.shape[1]]
+                ijv = np.zeros((0, 3), int)
+                for l in self.labels:
+                    ijv = np.vstack(
+                        (ijv,
+                         np.column_stack([i[l!=0], j[l!=0], l[l!=0]])))
+                return ijv
                 
             def build_ui(self):
                 sizer = wx.BoxSizer(wx.VERTICAL)
@@ -485,6 +682,10 @@ class EditObjectsManually(I.Identify):
                 toggle_button = wx.Button(self, self.reverse_select, 
                                           "Reverse selection")
                 sub_sizer.Add(toggle_button,0, wx.ALIGN_CENTER)
+                self.undo_button = wx.Button(self, wx.ID_UNDO)
+                self.undo_button.SetToolTipString("Undo last edit")
+                self.undo_button.Enable(False)
+                sub_sizer.Add(self.undo_button)
                 reset_button = wx.Button(self, -1, "Reset")
                 reset_button.SetToolTipString(
                     "Undo all editing and restore the original objects")
@@ -492,6 +693,7 @@ class EditObjectsManually(I.Identify):
                 self.Bind(wx.EVT_BUTTON, self.on_toggle, toggle_button)
                 self.Bind(wx.EVT_BUTTON, self.on_keep, keep_button)
                 self.Bind(wx.EVT_BUTTON, self.on_remove, remove_button)
+                self.Bind(wx.EVT_BUTTON, self.undo, id = wx.ID_UNDO)
                 self.Bind(wx.EVT_BUTTON, self.on_reset, reset_button)
         
                 ######################################
@@ -660,11 +862,9 @@ class EditObjectsManually(I.Identify):
                     
                     assert isinstance(axes, matplotlib.axes.Axes)
                     axes.clear()
-                    if self.wants_image_display:
-                        image = self.workspace.image_set.get_image(
-                            self.module.image_name.value)
-                        image = image.pixel_data.astype(np.float)
-                        image, _ = cpo.size_similarly(self.orig_labels[0], image)
+                    if self.wants_image_display and self.guide_image is not None:
+                        image, _ = cpo.size_similarly(self.orig_labels[0], 
+                                                      self.guide_image)
                         if image.ndim == 2:
                             image = np.dstack((image, image, image))
                         cimage = image.copy()
@@ -722,7 +922,6 @@ class EditObjectsManually(I.Identify):
                 return best_artist, best_index
                     
             def on_click(self, event):
-                self.ui_actions.append(lambda event=event: self.on_click(event))                
                 if event.inaxes not in (
                     self.orig_axes, self.keep_axes, self.remove_axes):
                     return
@@ -748,6 +947,7 @@ class EditObjectsManually(I.Identify):
                         path = Path(artist.get_xydata())
                         if path.contains_point((event.xdata, event.ydata)):
                             self.close_label(self.artists[artist][self.K_LABEL])
+                            self.record_undo()
                             return
                 x = int(event.xdata)
                 y = int(event.ydata)
@@ -774,11 +974,6 @@ class EditObjectsManually(I.Identify):
                     self.display()
             
             def on_key_down(self, event):
-                if event.key == 'r':
-                    self.replay()
-                    return
-                
-                self.ui_actions.append(lambda event=event: self.on_key_down(event))
                 self.pressed_keys.add(event.key)
                 if event.key == "1":
                     self.toggle_single_panel(event)
@@ -800,6 +995,9 @@ class EditObjectsManually(I.Identify):
                         self.new_object(event)
                     elif event.key == "s":
                         self.enter_split_mode(event)
+                    elif event.key =="z":
+                        if len(self.undo_stack) > 0:
+                            self.undo()
                     elif event.key == "escape":
                         self.remove_artists(event)
                 elif self.mode in (self.SPLIT_PICK_FIRST_MODE, 
@@ -810,13 +1008,10 @@ class EditObjectsManually(I.Identify):
                     self.exit_freehand_draw_mode(event)
             
             def on_key_up(self, event):
-                self.ui_actions.append(lambda event=event: self.on_key_up(event))                
                 if event.key in self.pressed_keys:
                     self.pressed_keys.remove(event.key)
             
             def on_mouse_button_up(self, event):
-                self.ui_actions.append(
-                    lambda event=event: self.on_mouse_button_up(event))                
                 if (event.inaxes is not None and 
                     event.inaxes.get_navigate_mode() is not None):
                     return
@@ -827,8 +1022,6 @@ class EditObjectsManually(I.Identify):
                     self.active_index = None
                 
             def on_mouse_moved(self, event):
-                self.ui_actions.append(
-                    lambda event=event: self.on_mouse_moved(event))                
                 if self.mode == self.FREEHAND_DRAW_MODE:
                     self.handle_mouse_moved_freehand_draw_mode(event)
                 elif self.active_artist is not None:
@@ -949,6 +1142,7 @@ class EditObjectsManually(I.Identify):
                 self.init_labels()
                 self.make_control_points(object_number)
                 self.display()
+                self.record_undo()
                 return all_labels[0]
                 
             def convex_hull(self, event):
@@ -977,6 +1171,7 @@ class EditObjectsManually(I.Identify):
                 self.init_labels()
                 self.make_control_points(object_number)
                 self.display()
+                self.record_undo()
             
             def add_control_point(self, event):
                 if len(self.artists) == 0:
@@ -1021,6 +1216,7 @@ class EditObjectsManually(I.Identify):
                 best_artist.set_data((l[:, 1], l[:, 0]))
                 self.artists[best_artist][self.K_EDITED] = True
                 self.update_artists()
+                self.record_undo()
             
             def delete_control_point(self, event):
                 best_artist, best_index = self.get_control_point(event)
@@ -1035,7 +1231,13 @@ class EditObjectsManually(I.Identify):
                             self.remove_label(object_number)
                             self.init_labels()
                             self.display()
+                            self.record_undo()
                             return
+                        else:
+                            # Mark some other artist as edited.
+                            for artist, d in self.artists.iteritems():
+                                if d[self.K_LABEL] == object_number:
+                                    d[self.K_EDITED] = True
                     else:
                         l = np.vstack((
                             l[:best_index, :], 
@@ -1043,6 +1245,7 @@ class EditObjectsManually(I.Identify):
                         l = np.vstack((l, l[:1, :]))
                         best_artist.set_data((l[:, 0], l[:, 1]))
                         self.artists[best_artist][self.K_EDITED] = True
+                        self.record_undo()
                     self.update_artists()
                     
             def new_object(self, event):
@@ -1067,6 +1270,7 @@ class EditObjectsManually(I.Identify):
                                              self.K_EDITED: True,
                                              self.K_OUTSIDE: True}
                 self.display()
+                self.record_undo()
                 
             def remove_artists(self, event):
                 for artist in self.artists:
@@ -1293,6 +1497,7 @@ class EditObjectsManually(I.Identify):
                     self.init_labels()
                     self.make_control_points(object_number)
                     self.display()
+                self.record_undo()
                 self.exit_split_mode(event)
                 
             @staticmethod
@@ -1390,6 +1595,7 @@ class EditObjectsManually(I.Identify):
                 self.exit_freehand_draw_mode(event)
                 self.init_labels()
                 self.display()
+                self.record_undo()
             
             ################################
             #
@@ -1417,18 +1623,15 @@ class EditObjectsManually(I.Identify):
                 nlabels = np.max([np.max(l) for l in orig_labels])
                 self.to_keep = np.ones(nlabels + 1, bool)
                 self.artists = {}
-                self.ui_actions = []
+                self.undo_stack = []
+                if hasattr(self, "undo_button"):
+                    # minor unfortunate hack - reset called before GUI is built
+                    self.undo_button.Enable(False)
+                self.last_ijv = self.calculate_ijv()
+                self.last_artist_save = {}
                 if display:
                     self.init_labels()
                     self.display()
-                
-            def replay(self):
-                actions = self.ui_actions
-                self.reset()
-                for action in actions:
-                    action()
-                self.init_labels()
-                self.display()
                 
             def on_help(self, event):
                 self.html_frame.Show(True)
@@ -1597,7 +1800,7 @@ class EditObjectsManually(I.Identify):
                     if display:
                         self.display()
         
-        with FilterObjectsDialog(self, workspace, orig_labels) as dialog_box:
+        with FilterObjectsDialog(self, guide_image, orig_labels) as dialog_box:
             result = dialog_box.ShowModal()
         if result != wx.OK:
             raise RuntimeError("User cancelled EditObjectsManually")

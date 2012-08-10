@@ -1641,6 +1641,7 @@ class ModuleView:
                     super(self.__class__, self).__init__()
                     assert isinstance(v, cps.Table)
                     self.v = v
+                    self.column_size = [v.max_field_size] * len(v.column_names)
                     
                 def GetAttr(self, row, col, kind):
                     attrs = self.v.get_cell_attributes(
@@ -1668,7 +1669,14 @@ class ModuleView:
                 def GetValue(self, row, col):
                     if self.IsEmptyCell(row, col):
                         return None
-                    return self.v.data[row][col]
+                    s = self.v.data[row][col]
+                    if len(self.column_size) <= col:
+                        self.column_size += [self.v.max_field_size] * (col - len(self.column_size)+1) 
+                    field_size = self.column_size[col]
+                    if len(s) > field_size:
+                        half = int(field_size - 3) / 2
+                        s = s[:half] + "..." + s[-half:]
+                    return s
                 
                 def GetRowLabelValue(self, row):
                     attrs = self.v.get_row_attributes(row)
@@ -1706,6 +1714,36 @@ class ModuleView:
             grid.AutoSize()
             grid.EnableEditing(False)
             grid.SetDefaultCellOverflow(False)
+            #
+            # Below largely taken from 
+            # http://wiki.wxpython.org/wxGrid%20ToolTips
+            #
+            last_pos = [None, None]
+            def on_mouse_motion(event, v=v):
+                x, y = grid.CalcUnscrolledPosition(event.GetPosition())
+                row = grid.YToRow(y)
+                col = grid.XToCol(x)
+                this_pos = (row, col)
+                if this_pos != tuple(last_pos) and row >= 0 and col >= 0:
+                    last_pos[:] = this_pos
+                    s = v.data[row][col]
+                    if s <= v.max_field_size:
+                        s = ''
+                    grid.GetGridWindow().SetToolTipString(s)
+                event.Skip()
+            def on_column_resize(event):
+                col = event.GetRowOrCol()
+                width = grid.GetColSize(col)
+                table = grid.GetTable()
+                table.column_size[col] = int(width * 1.1) / grid.CharWidth
+                tm = wx.grid.GridTableMessage(
+                    table,
+                    wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+                grid.ProcessTableMessage(tm)
+                grid.ForceRefresh()
+                
+            grid.GetGridWindow().Bind(wx.EVT_MOTION, on_mouse_motion)
+            grid.Bind(wx.grid.EVT_GRID_COL_SIZE, on_column_resize)
         else:
             #
             # Have #s of rows or columns changed?

@@ -2772,13 +2772,21 @@ class Table(Setting):
     
     ATTR_ERROR = "Error"
     
-    def __init__(self, text, min_size = (400, 300), **kwargs):
+    def __init__(self, text, min_size = (400, 300), max_field_size=30, **kwargs):
+        '''Constructor
+        
+        text - text label to display to the left of the table
+        min_size - initial size of the table before user stretches it
+        max_field_size - any field with more than this # of characters will
+                         be truncated using an ellipsis.
+        '''
         super(self.__class__, self).__init__(text, "", **kwargs)
         self.column_names = []
         self.data = []
         self.row_attributes = {}
         self.cell_attributes = {}
         self.min_size = min_size
+        self.max_field_size = max_field_size
         
     def insert_column(self, index, column_name):
         '''Insert a column at the given index

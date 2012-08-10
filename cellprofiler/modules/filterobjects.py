@@ -75,16 +75,16 @@ FI_ALL = [ FI_MINIMAL, FI_MAXIMAL, FI_MINIMAL_PER_OBJECT,
           FI_MAXIMAL_PER_OBJECT, FI_LIMITS ]
 
 '''The number of settings for this module in the pipeline if no additional objects'''
-FIXED_SETTING_COUNT = 14
+FIXED_SETTING_COUNT = 15
 
 '''The number of settings per additional object'''
 ADDITIONAL_OBJECT_SETTING_COUNT = 4
 
 '''The location of the setting count'''
-ADDITIONAL_OBJECT_SETTING_INDEX = 10
+ADDITIONAL_OBJECT_SETTING_INDEX = 11
 
 '''The location of the measurements count setting'''
-MEASUREMENT_COUNT_SETTING_INDEX = 9
+MEASUREMENT_COUNT_SETTING_INDEX = 10
 
 ROM_RULES = "Rules"
 ROM_MEASUREMENTS = "Measurements"
@@ -95,7 +95,7 @@ class FilterObjects(cpm.CPModule):
 
     module_name = 'FilterObjects'
     category = "Object Processing"
-    variable_revision_number = 5
+    variable_revision_number = 6
     
     def create_settings(self):
         '''Create the initial settings and name the module'''
@@ -162,6 +162,24 @@ class FilterObjects(cpm.CPModule):
             <br>
             Select the location of the rules file that will be used for filtering.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals())
+        def get_rules_class_choices(pipeline):
+            try:
+                rules = self.get_rules()
+                nclasses = len(rules.rules[0].weights[0])
+                return [str(i) for i in range(1, nclasses+1)]
+            except:
+                return [str(i) for i in range(1, 3)]
+        self.rules_class = cps.Choice(
+            "Class number",
+            choices = ["1", "2"],
+            choices_fn = get_rules_class_choices,
+            doc = """<i>(Used only when filtering by rules)</i>
+            <br>
+            Select which of the classes to keep when filtering. The
+            CellProfiler Analyst classifier user interface lists the names of 
+            the classes in order. By default, these are the positive (class 1)
+            and negative (class 2) classes. <b>FilterObjects</b> uses the
+            first class from CellProfiler Analyst if you choose "1", etc.""")
  
         def get_directory_fn():
             '''Get the directory for the rules file name'''
@@ -282,6 +300,7 @@ class FilterObjects(cpm.CPModule):
                   self.wants_outlines, self.outlines_name,
                   self.rules_directory, 
                   self.rules_file_name,
+                  self.rules_class,
                   self.measurement_count, self.additional_object_count]
         for x in self.measurements:
             result += x.pipeline_settings()
@@ -292,14 +311,17 @@ class FilterObjects(cpm.CPModule):
     def help_settings(self):
         return [self.target_name, self.object_name, self.rules_or_measurement,
                 self.filter_choice, self.rules_directory, 
-                self.rules_file_name,self.enclosing_object_name,
+                self.rules_file_name, self.rules_class,
+                self.enclosing_object_name,
                 self.wants_outlines, self.outlines_name]
     
     def visible_settings(self):
         result =[self.target_name, self.object_name, 
                  self.spacer_2, self.rules_or_measurement]
         if self.rules_or_measurement == ROM_RULES:
-            result += [self.rules_file_name, self.rules_directory]
+            result += [self.rules_file_name, self.rules_directory,
+                       self.rules_class]
+            
         else:
             result += [self.spacer_1, self.filter_choice]
             if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
@@ -351,9 +373,18 @@ class FilterObjects(cpm.CPModule):
                 logger.warning("Failed to load rules: %s", str(instance), exc_info=True)
                 raise cps.ValidationError(str(instance),
                                           self.rules_file_name)
-            if not np.all([r.object_name == self.object_name.value for r in rules.rules]):
-                raise cps.ValidationError("%s do not match the objects listed in the rules"%self.object_name.value,
-                                            self.rules_file_name)
+            measurement_columns = pipeline.get_measurement_columns(self)
+            for r in rules.rules:
+                if not any([mc[0] == r.object_name and
+                            mc[1] == r.feature for mc in measurement_columns]):
+                    raise cps.ValidationError(
+                        ("The rules file, %s, uses the measurement, %s "
+                         "for object %s, but that measurement is not available "
+                         "at this stage of the pipeline. Consider editing the "
+                         "rules to match the available measurements or adding "
+                         "measurement modules to produce the measurement.") %
+                        (self.rules_file_name, r.feature, r.object_name),
+                        self.rules_file_name)
 
     def run(self, workspace):
         '''Filter objects for this image set, display results'''
@@ -617,15 +648,13 @@ class FilterObjects(cpm.CPModule):
         objects by the rules. Return the indexes of the objects that pass.
         '''
         rules = self.get_rules()
+        rules_class = int(self.rules_class.value)-1
         scores = rules.score(workspace.measurements)
-        #
-        # NaN positive scores get - infinity. NaN negative scores get
-        # infinity. This means all NaN cells get rejected.
-        #
-        scores[np.isnan(scores[:,0]),0] = -np.Infinity
-        scores[np.isnan(scores[:,1]),1] = np.Infinity
-        hits = scores[:,0] > scores[:,1]
-        indexes = np.argwhere(hits)[:,0] + 1
+        is_not_nan = np.any(~ np.isnan(scores), 1)
+        best_class = np.argmax(scores[is_not_nan], 1).flatten()
+        hits = np.zeros(scores.shape[0], bool)
+        hits[is_not_nan] = best_class == rules_class
+        indexes = np.argwhere(hits).flatten() + 1
         return indexes
     
     def get_measurement_columns(self, pipeline):
@@ -895,6 +924,14 @@ class FilterObjects(cpm.CPModule):
                 rules_directory_choice, rules_path_name)
             setting_values = (
                 setting_values[:7] + [rules_directory] + setting_values[9:])
+            variable_revision_number = 5
+            
+        if (not from_matlab) and variable_revision_number == 5:
+            #
+            # added rules class
+            #
+            setting_values = setting_values[:9] + ["1"] + setting_values[9:]
+            variable_revision_number = 6
             
         SLOT_DIRECTORY = 7
         setting_values[SLOT_DIRECTORY] = cps.DirectoryPath.upgrade_setting(

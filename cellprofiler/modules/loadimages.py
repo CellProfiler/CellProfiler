@@ -381,7 +381,7 @@ class LoadImages(cpmodule.CPModule):
                 to place the images from each plate in a separate folder). The next setting allows you
                 to select the metadata tags by which to group.%(USING_METADATA_GROUPING_HELP_REF)s
                 
-                <p>Plase note that if you are loading a movie file(e.g., TIFs, FLEX, STKs, AVIs, ZVIs), each movie
+                <p>Please note that if you are loading a movie file(e.g., TIFs, FLEX, STKs, AVIs, ZVIs), each movie
                 is already treated as a group of images, so there is no need to enable here."""%globals())
         
         self.metadata_fields = cps.MultiChoice('Specify metadata fields to group by',[],doc="""
@@ -2217,9 +2217,9 @@ class LoadImages(cpmodule.CPModule):
                 else:
                     provider = LoadImagesImageProvider(
                         image_name, path, filename, rescale)
-                image = provider.provide_image(workspace.image_set)
-                pixel_data = image.pixel_data
                 if wants_images:
+                    image = provider.provide_image(workspace.image_set)
+                    pixel_data = image.pixel_data
                     image_set.providers.append(provider)
                     digest = hashlib.md5()
                     digest.update(np.ascontiguousarray(pixel_data).data)
@@ -2243,12 +2243,47 @@ class LoadImages(cpmodule.CPModule):
                         elif self.show_window:
                             workspace.display_data.warning = warning
                 else:
+                    ################
                     #
-                    # Save as objects.
+                    #  Interpret file as objects
                     #
-                    pixel_data = convert_image_to_objects(pixel_data)
+                    # Get the frame count from subimager's metadta
+                    #
+                    md = subimager.client.get_metadata(url, 
+                                                       series = provider.series,
+                                                       allowfileopen="yes",
+                                                       groupfiles="no")
+                    md = subimager.omexml.OMEXML(md)
+                    mdpixels = md.image().Pixels
+                    if (mdpixels.channel_count == 1 and 
+                        mdpixels.Channel().SamplesPerPixel == 3):
+                        #
+                        # Single interleaved color image
+                        #
+                        n_frames = 1
+                    else:
+                        n_frames = mdpixels.SizeZ * mdpixels.SizeC * mdpixels.SizeT
+                    series = provider.series
+                    ijv = np.zeros((0, 3), int)
+                    offset = 0
+                    for index in range(n_frames):
+                        kwparams = dict(groupfiles="no")
+                        if n_frames > 1:
+                            kwparams["index"] = index
+                        if series is not None:
+                            kwparams["series"] = series
+                        labels = subimager.client.get_image(url, **kwparams)
+                        shape = labels.shape[:2]
+                        labels = convert_image_to_objects(labels)
+                        i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+                        ijv = np.vstack((
+                            ijv, np.column_stack((i[labels!=0],
+                                                  j[labels!=0],
+                                                  labels[labels!=0] + offset))))
+                        if ijv.shape[0] > 0:
+                            offset = np.max(ijv[:, 2])
                     o = cpo.Objects()
-                    o.segmented = pixel_data
+                    o.set_ijv(ijv, shape)
                     object_set = workspace.object_set
                     assert isinstance(object_set, cpo.ObjectSet)
                     object_name = channel.object_name.value
@@ -2256,10 +2291,14 @@ class LoadImages(cpmodule.CPModule):
                     provider.release_memory()
                     row[0] = object_name
                     I.add_object_count_measurements(m, object_name, o.count)
-                    I.add_object_location_measurements(m, object_name, pixel_data)
+                    I.add_object_location_measurements_ijv(m, object_name, ijv)
                     if channel.wants_outlines:
-                        outlines = cellprofiler.cpmath.outline.outline(o.segmented)
-                        outline_image = cpimage.Image(outlines.astype(bool), parent_image = image)
+                        outlines = np.zeros(shape, bool)
+                        for l, c in o.get_labels():
+                            outlines |= cellprofiler.cpmath.outline.outline(l)
+                        outline_image = cpimage.Image(outlines, 
+                                                      path_name = path,
+                                                      file_name = filename)
                         workspace.image_set.add(channel.outlines_name.value, outline_image)
 
                 for tag in tags:

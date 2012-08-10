@@ -15,6 +15,7 @@
 import numpy as np
 import os
 from cStringIO import StringIO
+import tempfile
 import unittest
 
 import cellprofiler.pipeline as cpp
@@ -632,4 +633,31 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
         self.assertEqual(areas[0], 9)
         self.assertEqual(areas[1], 321)
         self.assertEqual(areas[2], 2655)
+        
+    def test_03_10_load_overlapped_objects(self):
+        from .test_loadimages import overlapped_objects_data
+        from .test_loadimages import overlapped_objects_data_masks
+        fd, path = tempfile.mkstemp(".tif")
+        f = os.fdopen(fd, "wb")
+        f.write(overlapped_objects_data)
+        f.close()
+        try:
+            workspace = self.run_workspace(path, N.LOAD_AS_OBJECTS)
+            o = workspace.object_set.get_objects(OBJECTS_NAME)
+            assert isinstance(o, N.cpo.Objects)
+            self.assertEqual(o.count, 2)
+            mask = np.zeros(overlapped_objects_data_masks[0].shape, bool)
+            expected_mask = (overlapped_objects_data_masks[0] |
+                             overlapped_objects_data_masks[1])
+            for i in range(2):
+                expected = overlapped_objects_data_masks[i]
+                i, j = o.ijv[o.ijv[:, 2] == i+1, :2].transpose()
+                self.assertTrue(np.all(expected[i, j]))
+                mask[i, j] = True
+            self.assertFalse(np.any(mask[~ expected_mask]))
+        finally:
+            try:
+                os.unlink(path)
+            except:
+                pass
         

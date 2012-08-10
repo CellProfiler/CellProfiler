@@ -51,8 +51,9 @@ from cellprofiler.preferences import \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
      IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
 from cellprofiler.utilities.relpath import relpath
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
-from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
+from cellprofiler.modules.loadimages import \
+     C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.cpmath.cpmorphology import distance_color_labels
 from subimager.client import post_image
@@ -493,8 +494,9 @@ class SaveImages(cpm.CPModule):
         if filename is None:  # failed overwrite check
             return
 
-        pixels = objects.segmented
+        labels = [l for l, c in objects.get_labels()]
         if self.get_file_format() == FF_MAT:
+            pixels = objects.segmented
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
         
         elif self.gray_or_color == GC_GRAYSCALE:
@@ -502,7 +504,9 @@ class SaveImages(cpm.CPModule):
                 pixel_type = ome.PT_UINT16
             else:
                 pixel_type = ome.PT_UINT8
-            self.do_save_image(workspace, filename, pixels, pixel_type)
+            for i, l in enumerate(labels):
+                self.do_save_image(
+                    workspace, filename, l, pixel_type, c=i, size_c=len(labels))
         
         else:
             if self.colormap == cps.DEFAULT:
@@ -511,9 +515,16 @@ class SaveImages(cpm.CPModule):
                 colormap = self.colormap.value
             cm = matplotlib.cm.get_cmap(colormap)
                 
+            cpixels = np.zeros((labels[0].shape[0], labels[0].shape[1], 3))
+            counts = np.zeros(labels[0].shape, int)
             mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-            cpixels = mapper.to_rgba(distance_color_labels(pixels), bytes=True)
-            cpixels[pixels == 0,:3] = 0
+            for pixels in labels:
+                cpixels[pixels != 0, :] += \
+                    mapper.to_rgba(distance_color_labels(pixels), 
+                                   bytes=True)[pixels != 0, :3]
+                counts[pixels != 0] += 1
+            counts[counts == 0] = 1
+            cpixels = cpixels / counts[:, :, np.newaxis]
             self.do_save_image(workspace, filename, cpixels, ome.PT_UINT8)
         self.save_filename_measurements(workspace)
         workspace.display_data.wrote_image = True
@@ -568,6 +579,8 @@ class SaveImages(cpm.CPModule):
             p.Channel(0).SamplesPerPixel = pixels.shape[2]
             omexml.structured_annotations.add_original_metadata(
                 ome.OM_SAMPLES_PER_PIXEL, str(pixels.shape[2]))
+        elif size_c > 1:
+            p.channel_count = size_c
         
         url = pathname2url(filename)
         post_image(url, pixels, omexml.to_xml(), index = str(index))
@@ -674,13 +687,18 @@ class SaveImages(cpm.CPModule):
             filename = self.get_filename(workspace, make_dirs = False,
                                          check_overwrite = False)
             pn, fn = os.path.split(filename)
-            workspace.measurements.add_measurement('Image',
+            url = pathname2url(filename)
+            workspace.measurements.add_measurement(cpmeas.IMAGE,
                                                    self.file_name_feature,
                                                    fn,
                                                    can_overwrite=True)
-            workspace.measurements.add_measurement('Image',
+            workspace.measurements.add_measurement(cpmeas.IMAGE,
                                                    self.path_name_feature,
                                                    pn,
+                                                   can_overwrite=True)
+            workspace.measurements.add_measurement(cpmeas.IMAGE,
+                                                   self.url_feature,
+                                                   url,
                                                    can_overwrite=True)
     
     @property
@@ -696,6 +714,13 @@ class SaveImages(cpm.CPModule):
         if self.save_image_or_figure == IF_OBJECTS:
             return '_'.join((C_OBJECTS_PATH_NAME, self.objects_name.value))
         return '_'.join((C_PATH_NAME, self.image_name.value))
+    
+    @property
+    def url_feature(self):
+        '''The URL measurement for the output file'''
+        if self.save_image_or_figure == IF_OBJECTS:
+            return '_'.join((C_OBJECTS_URL, self.objects_name.value))
+        return '_'.join((C_URL, self.image_name.value))
     
     @property
     def source_file_name_feature(self):

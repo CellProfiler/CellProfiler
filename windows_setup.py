@@ -159,7 +159,7 @@ opts = {
                               "matplotlib", "matplotlib.numerix.random_array",
                               "email.iterators",
                               "cellprofiler.modules.*"],
-                'excludes': ['pylab','Tkinter','Cython'],
+                'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],
                 'dll_excludes': ["jvm.dll"]
               },
     'msi': {}

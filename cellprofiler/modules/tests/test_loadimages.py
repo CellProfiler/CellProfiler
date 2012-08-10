@@ -2682,8 +2682,14 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
     def make_objects_workspace(self, image, mode = "L", filename="myfile.tif"):
         directory = tempfile.mkdtemp()
         self.directory = directory
-        pilimage = PIL.Image.fromarray(image.astype(np.uint8), mode)
-        pilimage.save(os.path.join(directory, filename))
+        path = os.path.join(directory, filename)
+        if mode == "raw":
+            fd = open(path, "wb")
+            fd.write(image)
+            fd.close()
+        else:
+            pilimage = PIL.Image.fromarray(image.astype(np.uint8), mode)
+            pilimage.save(path)
         module = LI.LoadImages()
         module.file_types.value = LI.FF_INDIVIDUAL_IMAGES
         module.images[0].common_text.value = filename
@@ -2785,6 +2791,23 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         image_set = workspace.get_image_set()
         outlines = image_set.get_image(OUTLINES_NAME)
         np.testing.assert_equal(outlines.pixel_data, expected_outlines)
+        
+    def test_12_06_overlapped_objects(self):
+        workspace, module = self.make_objects_workspace(
+            overlapped_objects_data, mode="raw")
+        module.run(workspace)
+        o = workspace.object_set.get_objects(OBJECTS_NAME)
+        self.assertEqual(o.count, 2)
+        labels_and_indices = o.get_labels()
+        for n, mask in enumerate(overlapped_objects_data_masks):
+            object_number = n+1
+            for label, idx in labels_and_indices:
+                if object_number in idx:
+                    np.testing.assert_array_equal(
+                        label, mask.astype(label.dtype) * object_number)
+                    break
+            else:
+                assert "Object number %d not found" % object_number
         
     def test_13_01_batch_images(self):
         module = LI.LoadImages()
@@ -3148,6 +3171,38 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertEqual(group_list[1][0]["Column"], "2")
         self.assertEqual(len(group_list[1][1]), 1)
         self.assertEqual(group_list[1][1][0], image_numbers[-1])
-        
+
+'''A two-channel tif containing two overlapped objects'''
+overlapped_objects_data = zlib.decompress(base64.b64decode(
+    "eJztlU9oI1Ucx1/abau7KO7irq6u8BwQqnYymfTfNiRZ2NRAILsJNMVuQfBl"
+    "5iV5dOa9MPPGtJ487UkUBL148uTdkxc9CZ48efIuIp48CZ7qdyaTbbs0DXHL"
+    "itAXPplvXn7f937z5pdfarW3yDOEkGuEZGZJBuomyKT6RTCT6hfAbKpj5o/p"
+    "5zMzxJgj5MYVQq5mLiW+38D1YzE3MD/SL6Uxa/jwchoTj5upPjwk5JXMXKIf"
+    "4u3VVH+Ct1tpzAxYTPUssJHDVVy/wMTWsX0/RV5fQ/wCrsBUAgp8BX4GczCv"
+    "AwG+BD+BQ2BfIsQBn4Mfwd/gbaz1HsiT8yUev88eXeuNSo3eFcqsqsBnOiT/"
+    "h5E58ZouerLr9PizPNM6xseP81w4zud8x43pHdPX1Wmu/248eRseZT9qw/78"
+    "5Db83fzkNvzcwlEbvr4wuQ2/tnCyDccji7n3wWfgB/AXWMS/zy74GHwP/gTG"
+    "s4S0wEPwLfgD3LpMyH3wEfgG/Hr5og1PGDMnXtNFT3adHn+WZ1rH+PhxngvH"
+    "+ZzvuDG9Y/q6Os31tEfxzr7v0Q94EAolS4adzRmUS0e5QnZLxnarat42aKiZ"
+    "dJmnJC8ZUhl3ysXXTZO+ywKJqALVPRFSR/k+l5pCMkkb994xd+7Vqc81c5lm"
+    "tO0pZ2+JDnrC6SFWaiYkTEHkCOZRV8AbZwDdZwGDDRlhIZcq3eMBFX5fBchC"
+    "P1oxS5seZyGn3BWaOizSQkWhd0AXRYcyTZnnvbmUrNBmzh6N+kiTUxWIroh3"
+    "GSbFOyrg1FW4DRqqLEX3o348JWQnaYRIaYmGnCfm+KZatWqVDnibhkLzAu1p"
+    "3S9YlvK5iXPMqqBrDcSesBo+b4lOJ0tNs1yEj+JbGZaMNH4wGGRVn0tfOIEK"
+    "HdU/SKxbTo/7LLRgsPI52zZza8bQWdgPxQn3YDlx5HM528JBD50mzhSH5HCD"
+    "bm/XNktGFMhCFAm3YHdW2RpfXjHzTsc2Vzba6+bGqp0z83lnvbN8e4VvrOLB"
+    "Y5NCmKxUV05y8/8iYzq1Iz6+7H7oGuVizWddTuPUhezjkcYfCw08tLtexLMa"
+    "R4qgptjnXkg3R0XTCFwelIydB5XdlnG2mW6JD3mlZOSHqoWKH6odzK0O5QPI"
+    "3FDuJt+3Dvoo/EhIba9h+0qPScm9xzeqszayesOFk/l9j4dNHiSZxmuUi3XR"
+    "7ekm0z2rXLTSJc53rbjgNuOyroog1LhJ3EQiW0dyN5G16mZybXpM8oqKpB6u"
+    "GxcN4jx+H7/AkvHYuU9VTEUrXgzpjbI6JT/7zPzsp52fNawriKQKcUWNlsk/"
+    "8nHpyw=="))
+
+'''The two objects that were used to generate the above TIF'''
+overlapped_objects_data_masks = [
+    np.arange(-offi, 20-offi)[:, np.newaxis] **2 + 
+    np.arange(-offj, 25-offj)[np.newaxis, :] ** 2 < 64
+    for offi, offj in ((10, 10), (10, 15))]
+
 if __name__=="main":
     unittest.main()

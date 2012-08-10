@@ -23,6 +23,7 @@ import re
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.objects as cpo
+import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
@@ -33,6 +34,9 @@ from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.images import Images
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
+from cellprofiler.modules.loadimages import needs_allowopenfiles
+import subimager.client
+import subimager.omexml
 
 ASSIGN_ALL = "Assign all images"
 ASSIGN_GUESS = "Try to guess image assignment"
@@ -544,13 +548,22 @@ class NamesAndTypes(cpm.CPModule):
         url = fetch_measurement_or_none(cpmeas.C_OBJECTS_URL).encode("utf-8")
         series = fetch_measurement_or_none(cpmeas.C_OBJECTS_SERIES)
         index = fetch_measurement_or_none(cpmeas.C_OBJECTS_FRAME)
-        channel = fetch_measurement_or_none(cpmeas.C_OBJECTS_CHANNEL)
-        provider = MonochromeImageProvider(name, url, series, index, channel,
-                                           rescale = False)
+        provider = ObjectsImageProvider(name, url, series, index)
         image = provider.provide_image(workspace.image_set)
-        pixel_data = convert_image_to_objects(image.pixel_data)
         o = cpo.Objects()
-        o.segmented = pixel_data
+        if image.pixel_data.shape[2] == 1:
+            o.segmented = image.pixel_data[:, :, 0]
+        else:
+            ijv = np.zeros((0, 3), int)
+            for i in range(image.pixel_data.shape[2]):
+                plane = image.pixel_data[:, :, i]
+                shape = plane.shape
+                i, j = np.mgrid[0:shape[0], 0:shape[1]]
+                ijv = np.vstack(
+                    (ijv, 
+                     np.column_stack([x[plane != 0] for x in (i, j, plane)])))
+            o.ijv = ijv
+            o.shape = shape
         workspace.object_set.add_objects(o, name)
                      
     def on_activated(self, workspace):
@@ -1152,5 +1165,53 @@ class MaskImageProvider(MonochromeImageProvider):
         image = MonochromeImageProvider.provide_image(self, image_set)
         if image.pixel_data.dtype.kind != 'b':
             image.pixel_data = image.pixel_data != 0
+        return image
+    
+class ObjectsImageProvider(LoadImagesImageProviderURL):
+    '''Provide a multi-plane integer image, interpreting an image file as objects'''
+    def __init__(self, name, url, series, index):
+        LoadImagesImageProviderURL.__init__(self, name, url,
+                                            rescale = False,
+                                            series = series,
+                                            index = index)
+    def provide_image(self, image_set):
+        """Load an image from a pathname
+        """
+        self.cache_file()
+        filename = self.get_filename()
+        channel_names = []
+        url = self.get_url()
+        properties = {}
+        mproperties = {}
+        if self.series is not None:
+            properties["series"] = str(self.series)
+        if needs_allowopenfiles(url):
+            properties["allowopenfiles"] = "yes"
+            mproperties["allowopenfiles"] = "yes"
+        if self.index is not None:
+            indexes = [self.index]
+        else:
+            metadata = subimager.client.get_metadata(url, **mproperties)
+            ometadata = subimager.omexml.OMEXML(metadata)
+            pixel_metadata = ometadata.image(0 if self.series is None
+                                             else self.series).Pixels
+            nplanes = (pixel_metadata.SizeC * pixel_metadata.SizeZ * 
+                       pixel_metadata.SizeT)
+            indexes = range(nplanes)
+            
+        planes = []
+        offset = 0
+        for index in indexes:
+            properties["index"] = str(index)
+            img = subimager.client.get_image(url, **properties).astype(int)
+            img = convert_image_to_objects(img).astype(np.int32)
+            img[img != 0] += offset
+            offset += np.max(img)
+            planes.append(img)
+            
+        image = cpi.Image(np.dstack(planes),
+                          path_name = self.get_pathname(),
+                          file_name = self.get_filename(),
+                          convert=False)
         return image
     

@@ -60,8 +60,8 @@ IF (Nuclei_Intensity_LowerQuartileIntensity_CorrDend > 0.075424000000000005, [0.
         self.assertEqual(rule.feature, "Intensity_UpperQuartileIntensity_CorrDend")
         self.assertAlmostEqual(rule.threshold, 0.127625)
         self.assertAlmostEqual(rule.weights[0,0], 0.79607587785712131)
-        self.assertAlmostEqual(rule.weights[1,0], -0.79607587785712131)
-        self.assertAlmostEqual(rule.weights[0,1], -0.94024303819690347)
+        self.assertAlmostEqual(rule.weights[0,1], -0.79607587785712131)
+        self.assertAlmostEqual(rule.weights[1,0], -0.94024303819690347)
         self.assertAlmostEqual(rule.weights[1,1], 0.94024303819690347)
         
     def test_02_00_no_measurements(self):

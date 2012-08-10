@@ -56,7 +56,10 @@ class Rules(object):
             '''
             values = measurements.get_current_measurement(self.object_name,
                                                           self.feature)
-            values = np.array([values]) if np.isscalar(values) else values
+            if values is None:
+                values = np.array([np.NaN])
+            elif  np.isscalar(values):
+                values = np.array([values])
             score = np.zeros((len(values),self.weights.shape[1]),float)
             if len(values) == 0:
                 return score
@@ -90,14 +93,12 @@ class Rules(object):
                      that fd_or_file is a file name if it's a string or
                      unicode, otherwise it assumes that it's a file descriptor.
         '''
-        pattern = ("^IF\\s+\\((?P<object_name>[^_]+)"
-                   "_(?P<feature>\\S+)"
-                   "\\s*(?P<comparitor>[><]=?)"
-                   "\\s*(?P<threshold>[^,]+)"
-                   ",\\s*\\[\\s*(?P<w1true>[^,]+)"
-                   ",\\s*(?P<w1false>[^\\]]+)"
-                   "\\]\\s*,\\s*\\[\\s*(?P<w2true>[^,]+)"
-                   ",\\s*(?P<w2false>[^\\]]+)\\s*\\]\\s*\\)$")
+        line_pattern = ("^IF\\s+\\((?P<object_name>[^_]+)"
+                        "_(?P<feature>\\S+)"
+                        "\\s*(?P<comparitor>[><]=?)"
+                        "\\s*(?P<threshold>[^,]+)"
+                        ",\\s*\\[\\s*(?P<true>[^\\]]+)\\s*\\]"
+                        ",\\s*\\[\\s*(?P<false>[^\\]]+)\\s*\\]\\s*\\)$")
         if isinstance(fd_or_file, str) or isinstance(fd_or_file, unicode):
             fd = open(fd_or_file, 'r')
             needs_close = True
@@ -107,11 +108,12 @@ class Rules(object):
         try:
             for line in fd:
                 line = line.strip()
-                match = re.match(pattern, line)
+                match = re.match(line_pattern, line)
                 if match is not None:
                     d = match.groupdict()
-                    weights = np.array([[float(d["w1true"]),float(d["w2true"])],
-                                        [float(d["w1false"]),float(d["w2false"])]])
+                    weights = np.array(
+                        [[float(w.strip()) for w in d[key].split(",")]
+                         for key in ("true", "false")])
                     rule = self.Rule(d["object_name"],
                                      d["feature"],
                                      d["comparitor"],

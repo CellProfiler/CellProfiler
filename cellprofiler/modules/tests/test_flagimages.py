@@ -393,7 +393,107 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_
                     self.assertAlmostEqual(measurement.maximum_value.value,
                                            max_value)
                 self.assertEqual(measurement.rules_file_name, rules_file)
+                self.assertEqual(measurement.rules_class, "1")
 
+    def test_01_05_load_v4(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:2
+DateRevision:20120306205005
+
+FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Hidden:2
+    Hidden:3
+    Name the flag\'s category:Metadata
+    Name the flag:QCFlag
+    Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
+    Skip image set if flagged?:No
+    Flag is based on:Whole-image measurement
+    Select the object whose measurements will be used to flag:None
+    Which measurement?:Intensity_MaxIntensity_DNA
+    Flag images based on low values?:No
+    Minimum value:0.0
+    Flag images based on high values?:Yes
+    Maximum value:0.95
+    Rules file location:Default Input Folder\x7CNone
+    Rules file name:foo.txt
+    Rules class:4
+    Flag is based on:Whole-image measurement
+    Select the object whose measurements will be used to flag:None
+    Which measurement?:Intensity_MinIntensity_Cytoplasm
+    Flag images based on low values?:Yes
+    Minimum value:0.05
+    Flag images based on high values?:No
+    Maximum value:1.0
+    Rules file location:Default Input Folder\x7CNone
+    Rules file name:bar.txt
+    Rules class:2
+    Flag is based on:Whole-image measurement
+    Select the object whose measurements will be used to flag:None
+    Which measurement?:Intensity_MeanIntensity_DNA
+    Flag images based on low values?:Yes
+    Minimum value:0.1
+    Flag images based on high values?:Yes
+    Maximum value:0.9
+    Rules file location:Default Input Folder\x7CNone
+    Rules file name:baz.txt
+    Rules class:1
+    Hidden:1
+    Name the flag\'s category:Metadata
+    Name the flag:HighCytoplasmIntensity
+    Flag if any, or all, measurement(s) fails to meet the criteria?:Flag if any fail
+    Skip image set if flagged?:Yes
+    Flag is based on:Whole-image measurement
+    Select the object whose measurements will be used to flag:None
+    Which measurement?:Intensity_MeanIntensity_Cytoplasm
+    Flag images based on low values?:No
+    Minimum value:0.0
+    Flag images based on high values?:Yes
+    Maximum value:.8
+    Rules file location:Default Input Folder\x7CNone
+    Rules file name:dunno.txt
+    Rules class:3
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, F.FlagImage))
+        expected = (("QCFlag", F.C_ANY, False,
+                     (("Intensity_MaxIntensity_DNA", None, .95, "foo.txt", "4"),
+                      ("Intensity_MinIntensity_Cytoplasm", .05, None, "bar.txt", "2"),
+                      ("Intensity_MeanIntensity_DNA", .1, .9, "baz.txt", "1"))),
+                    ("HighCytoplasmIntensity", None, True,
+                     (("Intensity_MeanIntensity_Cytoplasm", None, .8, "dunno.txt", "3"),)))
+        self.assertEqual(len(expected),module.flag_count.value)
+        for flag, (feature_name, combine, skip, measurements) \
+            in zip(module.flags, expected):
+            self.assertTrue(isinstance(flag, cps.SettingsGroup))
+            self.assertEqual(flag.category, "Metadata")
+            self.assertEqual(flag.feature_name, feature_name)
+            self.assertEqual(flag.wants_skip, skip)
+            if combine is not None:
+                self.assertEqual(flag.combination_choice, combine)
+            self.assertEqual(len(measurements), flag.measurement_count.value)
+            for measurement, (
+                measurement_name, min_value, max_value, rules_file, rules_class) \
+                in zip(flag.measurement_settings, measurements):
+                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+                self.assertEqual(measurement.source_choice, F.S_IMAGE)
+                self.assertEqual(measurement.measurement, measurement_name)
+                self.assertEqual(measurement.wants_minimum.value, min_value is not None)
+                if measurement.wants_minimum.value:
+                    self.assertAlmostEqual(measurement.minimum_value.value,
+                                           min_value)
+                self.assertEqual(measurement.wants_maximum.value, max_value is not None)
+                if measurement.wants_maximum.value:
+                    self.assertAlmostEqual(measurement.maximum_value.value,
+                                           max_value)
+                self.assertEqual(measurement.rules_file_name, rules_file)
+                self.assertEqual(measurement.rules_class, rules_class)
+                
     def make_workspace(self, image_measurements, object_measurements):
         '''Make a workspace with a FlagImage module and the given measurements
         
@@ -720,28 +820,70 @@ FlagImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_
         self.assertEqual(workspace.disposition, cpw.DISPOSITION_CONTINUE)
         
     def test_08_01_filter_by_rule(self):
-        module, workspace = self.make_workspace([1.0],[])
-        flag = module.flags[0]
-        self.assertTrue(isinstance(flag, cps.SettingsGroup))
-        flag.wants_skip.value = False
-        measurement = flag.measurement_settings[0]
-        self.assertTrue(isinstance(measurement, cps.SettingsGroup))
         rules_file_contents = "IF (%s > 2.0, [1.0,-1.0], [-1.0,1.0])\n"%('_'.join((cpmeas.IMAGE,image_measurement_name(0))))
         rules_path = tempfile.mktemp()
         rules_dir, rules_file = os.path.split(rules_path)
-        measurement.source_choice.value = F.S_RULES
-        measurement.rules_file_name.value = rules_file
-        measurement.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
-        measurement.rules_directory.custom_path = rules_dir
-        
         fd = open(rules_path, 'wt')
         try:
             fd.write(rules_file_contents)
             fd.close()
-            module.run(workspace)
-            m = workspace.measurements
-            self.assertTrue(isinstance(m, cpmeas.Measurements))
-            self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
-            self.assertEqual(m.get_current_image_measurement(MEASUREMENT_NAME), 1)
+            for value, choice, expected in ((1.0, 1, 0), (3.0, 1, 1),
+                                            (1.0, 2, 1), (3.0, 2, 0)):
+                module, workspace = self.make_workspace([value],[])
+                flag = module.flags[0]
+                self.assertTrue(isinstance(flag, cps.SettingsGroup))
+                flag.wants_skip.value = False
+                measurement = flag.measurement_settings[0]
+                self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+                measurement.source_choice.value = F.S_RULES
+                measurement.rules_file_name.value = rules_file
+                measurement.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+                measurement.rules_directory.custom_path = rules_dir
+                measurement.rules_class.set_value([str(choice)])
+                module.run(workspace)
+                m = workspace.measurements
+                self.assertTrue(isinstance(m, cpmeas.Measurements))
+                self.assertIn(MEASUREMENT_NAME, m.get_feature_names(cpmeas.IMAGE))
+                self.assertEqual(
+                    m.get_current_image_measurement(MEASUREMENT_NAME), expected)
+        finally:
+            os.remove(rules_path)
+
+    def test_08_02_filter_by_3class_rule(self):
+        f = '_'.join((cpmeas.IMAGE, image_measurement_name(0)))
+        rules_file_contents = (
+            "IF (%(f)s > 2.0, [1.0,-1.0,-1.0], [-0.5,0.5,0.5])\n"
+            "IF (%(f)s > 1.6, [0.5,0.5,-0.5], [-1.0,-1.0,1.0])\n") % locals()
+        measurement_values = [ 1.5, 2.3, 1.8]
+        expected_classes = ["3", "1", "2"]
+        rules_path = tempfile.mktemp()
+        rules_dir, rules_file = os.path.split(rules_path)
+        fd = open(rules_path, 'wt')
+        fd.write(rules_file_contents)
+        fd.close()
+        try:
+            for rules_classes in (["1"], ["2"], ["3"],
+                                  ["1", "2"], ["1", "3"], ["2", "3"]):
+                for expected_class, measurement_value in zip(
+                    expected_classes, measurement_values):
+                    module, workspace = self.make_workspace([measurement_value],[])
+                    flag = module.flags[0]
+                    self.assertTrue(isinstance(flag, cps.SettingsGroup))
+                    flag.wants_skip.value = False
+                    measurement = flag.measurement_settings[0]
+                    self.assertTrue(isinstance(measurement, cps.SettingsGroup))
+                    measurement.source_choice.value = F.S_RULES
+                    measurement.rules_file_name.value = rules_file
+                    measurement.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+                    measurement.rules_directory.custom_path = rules_dir
+                    measurement.rules_class.set_value(rules_classes)
+                    
+                    m = workspace.measurements
+                    self.assertTrue(isinstance(m, cpmeas.Measurements))
+                    module.run(workspace)
+                    self.assertTrue(MEASUREMENT_NAME in m.get_feature_names(cpmeas.IMAGE))
+                    value = m.get_current_image_measurement(MEASUREMENT_NAME)
+                    expected_value = 1 if expected_class in rules_classes else 0
+                    self.assertEqual(value, expected_value)
         finally:
             os.remove(rules_path)

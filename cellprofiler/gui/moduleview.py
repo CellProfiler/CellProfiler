@@ -1915,6 +1915,7 @@ class ModuleView:
     def on_size(self, evt):
         if self.__startup_blurb:
             self.__startup_blurb.Size = self.__module_panel.ClientSize
+        evt.Skip()
 
     def on_idle(self,event):
         """Check to see if the selected module is valid"""

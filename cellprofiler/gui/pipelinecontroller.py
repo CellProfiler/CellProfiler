@@ -48,7 +48,8 @@ import cellprofiler.cpmodule as cpmodule
 import cellprofiler.gui.loadsavedlg as cplsdlg
 
 logger = logging.getLogger(__name__)
-RECENT_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
+RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
+RECENT_WORKSPACE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
 WRITING_MAT_FILE = "Writing .MAT measurements file..."
 WROTE_MAT_FILE = ".MAT measurements file has been saved"
 
@@ -235,7 +236,7 @@ class PipelineController:
             if dlg.ShowModal() == wx.ID_OK:
                 self.do_open_workspace(dlg.Path, load_pipeline)
         
-    def do_open_workspace(self, filename, load_pipeline):
+    def do_open_workspace(self, filename, load_pipeline=True):
         '''Open the given workspace file'''
         self.__workspace.load(filename, load_pipeline)
         cpprefs.set_workspace_file(filename)
@@ -504,18 +505,25 @@ class PipelineController:
         
     def populate_recent_files(self):
         '''Populate the recent files menu'''
-        recent_files = self.__frame.recent_files
-        assert isinstance(recent_files, wx.Menu)
-        while len(recent_files.MenuItems) > 0:
-            self.__frame.Unbind(wx.EVT_MENU, id = recent_files.MenuItems[0].Id)
-            recent_files.RemoveItem(recent_files.MenuItems[0])
-        for index, file_name in enumerate(cpprefs.get_recent_files()):
-            recent_files.Append(RECENT_FILE_MENU_ID[index], file_name)
-            def on_recent_file(event, file_name = file_name):
-                self.do_load_pipeline(file_name)
-            self.__frame.Bind(wx.EVT_MENU,
-                              on_recent_file,
-                              id = RECENT_FILE_MENU_ID[index])
+        for menu, ids, file_names, fn in (
+            (self.__frame.recent_pipeline_files, 
+             RECENT_PIPELINE_FILE_MENU_ID,
+             cpprefs.get_recent_files(),
+             self.do_load_pipeline),
+            (self.__frame.recent_workspace_files,
+             RECENT_WORKSPACE_FILE_MENU_ID,
+             cpprefs.get_recent_files(cpprefs.WORKSPACE_FILE),
+             self.do_open_workspace)):
+            assert isinstance(menu, wx.Menu)
+            while len(menu.MenuItems) > 0:
+                self.__frame.Unbind(wx.EVT_MENU, id = menu.MenuItems[0].Id)
+                menu.RemoveItem(menu.MenuItems[0])
+            for index, file_name in enumerate(file_names):
+                menu.Append(ids[index], file_name)
+                self.__frame.Bind(
+                    wx.EVT_MENU,
+                    lambda event, file_name=file_name, fn=fn: fn(file_name),
+                    id = ids[index])
         
     def set_title(self):
         '''Set the title of the parent frame'''

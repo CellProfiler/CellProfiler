@@ -280,10 +280,14 @@ class PipelineListView(object):
         def on_fake_size(event):
             assert isinstance(event, wx.SizeEvent)
             self.transparent_window.SetSize(event.Size)
+            event.Skip()
+            
         self.fake_input_list_ctrl.Bind(wx.EVT_SIZE, on_fake_size)
         def on_fake_move(event):
             assert isinstance(event, wx.MoveEvent)
             self.transparent_window.Move(event.Position)
+            event.Skip()
+            
         self.fake_input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
         self.transparent_window.SetToolTipString(
             "The current pipeline is a legacy pipeline that does not use these modules")

@@ -938,6 +938,19 @@ class NameProvider(Text):
         that was loaded from  a file.
         '''
         return self.__provided_attributes
+    
+    def test_valid(self, pipeline):
+        '''Restrict names to legal ascii C variables
+        
+        First letter = a-zA-Z and underbar, second is that + digit.
+        '''
+        pattern = "^[A-Za-z_][A-Za-z_0-9]*$"
+        match = re.match(pattern, self.value)
+        if match is None:
+            raise ValidationError(
+                'Names must start with an ASCII letter or underbar ("_")'
+                ' optionally followed by ASCII letters, underbars or digits.',
+                self)
 
 class ImageNameProvider(NameProvider):
     """A setting that provides an image name
@@ -945,6 +958,7 @@ class ImageNameProvider(NameProvider):
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         super(ImageNameProvider,self).__init__(text, IMAGE_GROUP, value,
                                                *args, **kwargs)
+        
 
 class FileImageNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has an associated file"""

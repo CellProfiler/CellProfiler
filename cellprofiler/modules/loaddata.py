@@ -839,6 +839,15 @@ class LoadData(cpm.CPModule):
                                                         row[file_name_column])
                             url = pathname2url(fullname)
                             row.append(url)
+                    if path_name_column is None:
+                        #
+                        # Add path column
+                        #
+                        d[name].append(len(header))
+                        path_feature = "_".join((path_name_category, name))
+                        header.append(path_feature)
+                        for row in rows:
+                            row.append(path_base)
         column_type = {}
         for column in self.get_measurement_columns(pipeline):
             column_type[column[1]] = column[2]
@@ -1131,18 +1140,21 @@ class LoadData(cpm.CPModule):
         result = [(cpmeas.IMAGE, colname, coltype)
                    for colname, coltype in zip(header, coltypes)
                    if colname not in previous_fields]
-        for feature, coltype in (
-            (C_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
-            (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
-            (C_SCALING, cpmeas.COLTYPE_FLOAT),
-            (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
-            (C_WIDTH, cpmeas.COLTYPE_INTEGER)):
-            result += [(cpmeas.IMAGE, feature +'_'+image_name, coltype)
-                       for image_name in image_names]
-        #
-        # Add the object features
-        #
         if self.wants_images:
+            for feature, coltype in (
+                (C_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                (C_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
+                (C_SCALING, cpmeas.COLTYPE_FLOAT),
+                (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
+                (C_WIDTH, cpmeas.COLTYPE_INTEGER)):
+                for image_name in image_names:
+                    measurement = feature +'_'+image_name
+                    if not any([measurement == c[1] for c in result]):
+                        result.append((cpmeas.IMAGE, measurement, coltype))
+            #
+            # Add the object features
+            #
             for object_name in get_object_names(header):
                 result += I.get_object_measurement_columns(object_name)
                 url_feature = C_OBJECTS_URL + "_" + object_name

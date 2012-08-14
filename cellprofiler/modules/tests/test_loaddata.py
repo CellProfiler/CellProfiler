@@ -829,6 +829,34 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                 except:
                     pass
             
+    def test_13_01_load_filename(self):
+        #
+        # Load a file, only specifying the FileName in the CSV
+        #
+        dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        file_name = 'Channel2-01-A-01.tif'
+        csv_text = '''"Image_FileName_DNA"
+"%s"
+'''% file_name
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        assert isinstance(module, L.LoadData)
+        module.image_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.image_directory.custom_path = dir
+        m = cpmeas.Measurements(mode="memory")
+        workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+                                  m, cpi.ImageSetList())
+        self.assertTrue(module.prepare_run(workspace))
+        self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
+                         file_name)
+        path = m.get_measurement(cpmeas.IMAGE, "PathName_DNA", 1)
+        self.assertEqual(path, dir)
+        self.assertEqual(m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
+                         L.pathname2url(os.path.join(dir, file_name)))
+        module.prepare_group(workspace, {}, [1])
+        module.run(workspace)
+        img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
+        self.assertEqual(tuple(img.pixel_data.shape), (640, 640))
+        
     
 class C0(cpm.CPModule):
     module_name = 'C0'

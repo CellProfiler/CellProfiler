@@ -76,6 +76,12 @@ FEATURE_ITEMS_KEY = "IlastikFeatureItems"
 
 SI_PROBABILITY_MAP_COUNT = 3
 
+#
+# Classifiers by file. Key is file name, value is a tuple of stat modification
+# time and classifier
+#
+classifier_dict = {}
+
 class ClassifyPixels(cpm.CPModule):
     module_name = 'ClassifyPixels'
     variable_revision_number = 2
@@ -224,24 +230,25 @@ class ClassifyPixels(cpm.CPModule):
             workspace.display_data.dest_images.append(probMap)
 
     def get_classifiers(self, workspace):
-        self.parse_classifier_file(workspace)
-        d = self.get_dictionary(workspace.image_set_list)
+        d = self.parse_classifier_file(workspace)
         return d[CLASSIFIERS_KEY]
     
     def get_feature_items(self, workspace):
-        self.parse_classifier_file(workspace)
-        d = self.get_dictionary(workspace.image_set_list)
+        d = self.parse_classifier_file(workspace)
         return d[FEATURE_ITEMS_KEY]
         
     def parse_classifier_file(self, workspace):
-        d = self.get_dictionary(workspace.image_set_list)
-        if all([d.has_key(k) for k in (CLASSIFIERS_KEY, FEATURE_ITEMS_KEY)]):
-            return
-        
+        global classifier_dict
         # Load classifier from hdf5
         fileName = str(os.path.join(self.h5_directory.get_absolute_path(), 
                                     self.classifier_file_name.value))
+        modtime = os.stat(fileName).st_mtime
+        if fileName in classifier_dict:
+            last_modtime, d = classifier_dict[fileName]
+            if modtime == last_modtime:
+                return d
         
+        d = {}
         hf = h5py.File(fileName,'r')
         temp = hf['classifiers'].keys()
         # If hf is not closed this leads to an error in win64 and mac os x
@@ -266,9 +273,11 @@ class ClassifyPixels(cpm.CPModule):
         f.close()
         del f
         d[FEATURE_ITEMS_KEY] = featureItems
+        classifier_dict[fileName] = (modtime, d)
+        return d
 
     def display(self, workspace, figure):
-        figure.set_subplots(len(workspace.display_data.dest_images) + 1, 1)
+        figure.set_subplots((len(workspace.display_data.dest_images) + 1, 1))
         source_image = workspace.display_data.source_image
         if source_image.ndim == 3:
             src_plot = figure.subplot_imshow_color(

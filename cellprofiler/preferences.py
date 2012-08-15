@@ -164,6 +164,13 @@ def config_write(key, value):
         value = utf16encode(value)
     get_config().Write(key, value)
     
+def config_exists(key):
+    '''Return True if the key is defined in the configuration'''
+    global __cached_values
+    if key in __cached_values:
+        return True
+    return get_config().Exists(key)
+    
 def cell_profiler_root_directory():
     if __cp_root:
         return __cp_root
@@ -295,7 +302,7 @@ ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
                               WORKSPACE_FILE)])
 
 def module_directory():
-    if not get_config().Exists(MODULEDIRECTORY):
+    if not config_exists(MODULEDIRECTORY):
         return os.path.join(cell_profiler_root_directory(), 'Modules')
     return str(get_config().Read(MODULEDIRECTORY))
 
@@ -311,7 +318,7 @@ def get_default_image_directory():
     if __default_image_directory is not None:
         return __default_image_directory
     # I'm not sure what it means for the preference not to exist.  No read-write preferences file?
-    if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
+    if not config_exists(DEFAULT_IMAGE_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
     # Fetch the default.  Note that it might be None
     default_image_directory = config_read(DEFAULT_IMAGE_DIRECTORY) or ''
@@ -364,7 +371,7 @@ def get_default_output_directory():
     global __default_output_directory
     if __default_output_directory is not None:
         return __default_output_directory
-    if not get_config().Exists(DEFAULT_OUTPUT_DIRECTORY):
+    if not config_exists(DEFAULT_OUTPUT_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
 
     # Fetch the default.  Note that it might be None
@@ -406,7 +413,7 @@ def remove_output_directory_listener(listener):
     __output_directory_listeners.remove(listener)
 
 def get_title_font_size():
-    if not get_config().Exists(TITLE_FONT_SIZE):
+    if not config_exists(TITLE_FONT_SIZE):
         return 12
     title_font_size = config_read(TITLE_FONT_SIZE)
     return float(title_font_size)
@@ -415,7 +422,7 @@ def set_title_font_size(title_font_size):
     config_write(TITLE_FONT_SIZE,str(title_font_size))
 
 def get_title_font_name():
-    if not get_config().Exists(TITLE_FONT_NAME):
+    if not config_exists(TITLE_FONT_NAME):
         return "Tahoma"
     return config_read(TITLE_FONT_NAME)
 
@@ -423,7 +430,7 @@ def set_title_font_name(title_font_name):
     config_write(TITLE_FONT_NAME, title_font_name)
 
 def get_table_font_name():
-    if not get_config().Exists(TABLE_FONT_NAME):
+    if not config_exists(TABLE_FONT_NAME):
         return "Tahoma"
     return config_read(TABLE_FONT_NAME)
 
@@ -431,7 +438,7 @@ def set_table_font_name(title_font_name):
     config_write(TABLE_FONT_NAME, title_font_name)
     
 def get_table_font_size():
-    if not get_config().Exists(TABLE_FONT_SIZE):
+    if not config_exists(TABLE_FONT_SIZE):
         return 9
     table_font_size = config_read(TABLE_FONT_SIZE)
     return float(table_font_size)
@@ -453,7 +460,7 @@ def get_background_color():
     the background for all frames and dialogs
     '''
     default_color = (143, 188, 143) # darkseagreen
-    if not get_config().Exists(BACKGROUND_COLOR):
+    if not config_exists(BACKGROUND_COLOR):
         return tuple_to_color(default_color)
     else:
         color = config_read(BACKGROUND_COLOR).split(',')
@@ -468,7 +475,7 @@ def set_background_color(color):
 
 def get_pixel_size():
     """The size of a pixel in microns"""
-    if not get_config().Exists(PIXEL_SIZE):
+    if not config_exists(PIXEL_SIZE):
         return 1.0
     return float(config_read(PIXEL_SIZE))
 
@@ -538,7 +545,7 @@ __default_colormap = None
 def get_default_colormap():
     global __default_colormap
     if __default_colormap is None:
-        if not get_config().Exists(COLORMAP):
+        if not config_exists(COLORMAP):
             __default_colormap = 'jet'
         else:
             __default_colormap = config_read(COLORMAP)
@@ -559,7 +566,7 @@ def set_current_pipeline_path(path):
     __current_pipeline_path = path
 
 def get_check_new_versions():
-    if not get_config().Exists(CHECKFORNEWVERSIONS):
+    if not config_exists(CHECKFORNEWVERSIONS):
         # should this check for whether we can actually save preferences?
         return True
     return get_config().ReadBool(CHECKFORNEWVERSIONS)
@@ -574,7 +581,7 @@ def set_check_new_versions(val):
     
 
 def get_skip_version():
-    if not get_config().Exists(SKIPVERSION):
+    if not config_exists(SKIPVERSION):
         return 0
     return get_config().ReadInt(SKIPVERSION)
 
@@ -587,7 +594,7 @@ def get_show_sampling():
     global __show_sampling
     if __show_sampling is not None:
         return __show_sampling
-    if not get_config().Exists(SHOW_SAMPLING):
+    if not config_exists(SHOW_SAMPLING):
         __show_sampling = False
         return False
     return get_config().ReadBool(SHOW_SAMPLING)
@@ -605,7 +612,7 @@ def get_recent_files(category=""):
         for i in range(RECENT_FILE_COUNT):
             key = recent_file(i, category)
             try:
-                if get_config().Exists(key):
+                if config_exists(key):
                     __recent_files[category].append(config_read(key)) 
             except:
                 pass
@@ -629,7 +636,7 @@ def get_plugin_directory():
     if __plugin_directory is not None:
         return __plugin_directory
     
-    if get_config().Exists(PLUGIN_DIRECTORY):
+    if config_exists(PLUGIN_DIRECTORY):
         __plugin_directory = config_read(PLUGIN_DIRECTORY)
     elif get_headless():
         return None
@@ -652,7 +659,7 @@ def get_ij_plugin_directory():
     if __ij_plugin_directory is not None:
         return __ij_plugin_directory
     
-    if get_config().Exists(IJ_PLUGIN_DIRECTORY):
+    if config_exists(IJ_PLUGIN_DIRECTORY):
         __ij_plugin_directory = config_read(IJ_PLUGIN_DIRECTORY)
     else:
         # The default is the startup directory
@@ -725,7 +732,7 @@ def update_cpfigure_position():
                                __cpfigure_position[1] + 24)
     
 def get_startup_blurb():
-    if not get_config().Exists(STARTUPBLURB):
+    if not config_exists(STARTUPBLURB):
         return True
     return get_config().ReadBool(STARTUPBLURB)
 
@@ -734,7 +741,7 @@ def set_startup_blurb(val):
 
 def get_primary_outline_color():
     default = (0,255,0)
-    if not get_config().Exists(PRIMARY_OUTLINE_COLOR):
+    if not config_exists(PRIMARY_OUTLINE_COLOR):
         return tuple_to_color(default)
     return tuple_to_color(config_read(PRIMARY_OUTLINE_COLOR).split(","))
 
@@ -744,7 +751,7 @@ def set_primary_outline_color(color):
 
 def get_secondary_outline_color():
     default = (255,0,0)
-    if not get_config().Exists(SECONDARY_OUTLINE_COLOR):
+    if not config_exists(SECONDARY_OUTLINE_COLOR):
         return tuple_to_color(default)
     return tuple_to_color(config_read(SECONDARY_OUTLINE_COLOR).split(","))
 
@@ -754,7 +761,7 @@ def set_secondary_outline_color(color):
 
 def get_tertiary_outline_color():
     default = (255,255,0)
-    if not get_config().Exists(TERTIARY_OUTLINE_COLOR):
+    if not config_exists(TERTIARY_OUTLINE_COLOR):
         return tuple_to_color(default)
     return tuple_to_color(config_read(TERTIARY_OUTLINE_COLOR).split(","))
 
@@ -768,7 +775,7 @@ def get_report_jvm_error():
     '''Return true if user still wants to report a JVM error'''
     if __has_reported_jvm_error:
         return False
-    if not get_config().Exists(JVM_ERROR):
+    if not config_exists(JVM_ERROR):
         return True
     return config_read(JVM_ERROR) == "True"
 
@@ -790,7 +797,7 @@ def get_allow_output_file_overwrite():
     global __allow_output_file_overwrite
     if __allow_output_file_overwrite is not None:
         return __allow_output_file_overwrite
-    if not get_config().Exists(ALLOW_OUTPUT_FILE_OVERWRITE):
+    if not config_exists(ALLOW_OUTPUT_FILE_OVERWRITE):
         return False
     return config_read(ALLOW_OUTPUT_FILE_OVERWRITE) == "True"
 
@@ -809,7 +816,7 @@ def get_show_analysis_complete_dlg():
     global __show_analysis_complete_dlg
     if __show_analysis_complete_dlg is not None:
         return __show_analysis_complete_dlg
-    if not get_config().Exists(SHOW_ANALYSIS_COMPLETE_DLG):
+    if not config_exists(SHOW_ANALYSIS_COMPLETE_DLG):
         return True
     return config_read(SHOW_ANALYSIS_COMPLETE_DLG) == "True"
 
@@ -828,7 +835,7 @@ def get_show_exiting_test_mode_dlg():
     global __show_exiting_test_mode_dlg
     if __show_exiting_test_mode_dlg is not None:
         return __show_exiting_test_mode_dlg
-    if not get_config().Exists(SHOW_EXITING_TEST_MODE_DLG):
+    if not config_exists(SHOW_EXITING_TEST_MODE_DLG):
         return True
     return config_read(SHOW_EXITING_TEST_MODE_DLG) == "True"
 
@@ -847,7 +854,7 @@ def get_show_report_bad_sizes_dlg():
     global __show_report_bad_sizes_dlg
     if __show_report_bad_sizes_dlg is not None:
         return __show_report_bad_sizes_dlg
-    if not get_config().Exists(SHOW_BAD_SIZES_DLG):
+    if not config_exists(SHOW_BAD_SIZES_DLG):
         return True
     return config_read(SHOW_BAD_SIZES_DLG) == "True"
 
@@ -869,7 +876,7 @@ def get_write_MAT_files():
     global __write_MAT_files
     if __write_MAT_files is not None:
         return __write_MAT_files
-    if not get_config().Exists(WRITE_MAT):
+    if not config_exists(WRITE_MAT):
         return True
     value = config_read(WRITE_MAT)
     if value == "True":
@@ -892,7 +899,7 @@ def get_warn_about_old_pipeline():
     global __warn_about_old_pipeline
     if __warn_about_old_pipeline is not None:
         return __warn_about_old_pipeline
-    if not get_config().Exists(WARN_ABOUT_OLD_PIPELINE):
+    if not config_exists(WARN_ABOUT_OLD_PIPELINE):
         return True
     return config_read(WARN_ABOUT_OLD_PIPELINE) == "True"
 
@@ -909,7 +916,7 @@ def get_use_more_figure_space():
     global __use_more_figure_space
     if __use_more_figure_space is not None:
         return __use_more_figure_space
-    if not get_config().Exists(USE_MORE_FIGURE_SPACE):
+    if not config_exists(USE_MORE_FIGURE_SPACE):
         return False
     return config_read(USE_MORE_FIGURE_SPACE) == "True"
 
@@ -933,7 +940,7 @@ def get_ij_version():
     global __ij_version
     if __ij_version is not None:
         return __ij_version
-    if not get_config().Exists(IJ_VERSION):
+    if not config_exists(IJ_VERSION):
         return IJ_1
     result = config_read(IJ_VERSION)
     return IJ_1 if result not in (IJ_1, IJ_2) else result
@@ -954,7 +961,7 @@ def get_workspace_file():
     global __workspace_file
     if __workspace_file is not None:
         return __workspace_file
-    if not get_config().Exists(WORKSPACE_FILE):
+    if not config_exists(WORKSPACE_FILE):
         return os.path.expanduser("~/CellProfiler.cpi")
     __workspace_file = config_read(WORKSPACE_FILE)
     return __workspace_file

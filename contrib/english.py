@@ -1,3 +1,5 @@
+# No CellProfiler copyright notice here.
+
 # english - generic english tools
 
 '''

@@ -1,3 +1,5 @@
+# No CellProfiler copyright notice here.
+
 import os
 import os.path
 

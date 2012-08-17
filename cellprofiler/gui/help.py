@@ -1348,10 +1348,11 @@ MAIN_HELP = (
     ))
 )
 
-def make_help_menu(h, window):
+def make_help_menu(h, window, menu=None):
     import wx
     import htmldialog
-    menu = wx.Menu()
+    if menu is None:
+        menu = wx.Menu()
     for key, value in h:
         my_id = wx.NewId()
         if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):

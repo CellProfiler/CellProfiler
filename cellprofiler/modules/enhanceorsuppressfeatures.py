@@ -180,9 +180,8 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             doc = """<i>(Used only for the neurites method)</i><br>
             Two methods can be used to enhance neurites:<br>
             <ul><li><i>%(N_TUBENESS)s</i>: This method is an adaptation of
-            the metod used by the ImageJ Tubeness plugin
-            (<a href="http://www.longair.net/edinburgh/imagej/tubeness/">
-            http://www.longair.net/edinburgh/imagej/tubeness/</a>). The image
+            the method used by the <a href="http://www.longair.net/edinburgh/imagej/tubeness/">
+            ImageJ Tubeness plugin</a>. The image
             is smoothed with a Gaussian. The Hessian is then computed at every
             point to measure the intensity gradient and the eigenvalues of the
             Hessian are computed to determine the magnitude of the intensity.

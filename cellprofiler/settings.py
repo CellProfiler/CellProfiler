@@ -1081,13 +1081,14 @@ def get_name_provider_choices(pipeline, last_setting, group):
     returns a list of tuples, each with (provider name, module name, module number)
     '''
     choices = []
-    for module in pipeline.modules():
+    for module in pipeline.modules(False):
         module_choices = [(other_name, module.module_name, module.module_num)
                           for other_name in module.other_providers(group)]
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
                 return filter_duplicate_names(choices)
             if (isinstance(setting, NameProvider) and
+                module.enabled and
                 setting != DO_NOT_USE and
                 last_setting.matches(setting)):
                 module_choices.append((setting.value, module.module_name, module.module_num))
@@ -1103,13 +1104,14 @@ def get_name_providers(pipeline, last_setting):
     same name as that of the subscriber
     '''
     choices = []
-    for module in pipeline.modules():
+    for module in pipeline.modules(False):
         module_choices = []
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
                 return choices
             if (isinstance(setting, NameProvider) and 
                 setting != DO_NOT_USE and
+                module.enabled and
                 last_setting.matches(setting) and
                 setting.value == last_setting.value):
                 module_choices.append(setting)

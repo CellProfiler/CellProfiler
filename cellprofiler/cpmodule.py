@@ -79,6 +79,7 @@ class CPModule(object):
         self.__show_window = False
         self.__wants_pause = False
         self.__svn_version = "Unknown"
+        self.__enabled = True
         self.shared_state = {}  # used for maintaining state between modules, see get_dictionary()
         self.id = uuid.uuid4()
         self.batch_state = np.zeros((0,),np.uint8)
@@ -369,6 +370,17 @@ class CPModule(object):
         
         """
         return self.__module__+'.'+self.module_name
+    
+    def get_enabled(self):
+        """True if the module should be executed, False if it should be ignored.
+        
+        """
+        return self.__enabled
+    
+    def set_enabled(self, enable):
+        self.__enabled = enable
+        
+    enabled = property(get_enabled, set_enabled)
     
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

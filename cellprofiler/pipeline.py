@@ -757,14 +757,14 @@ class Pipeline(object):
         # where an empty cell is a (1,0) array of float64
 
         try:
-            variable_count = max([len(module.settings()) for module in self.modules()])
+            variable_count = max([len(module.settings()) for module in self.modules(False)])
         except:
-            for module in self.modules():
+            for module in self.modules(False):
                 if not isinstance(module.settings(), list):
                     raise ValueError('Module %s.settings() did not return a list\n value: %s'%(module.module_name, module.settings()))
                 raise
 
-        module_count = len(self.modules())
+        module_count = len(self.modules(False))
         setting[VARIABLE_VALUES] =          new_string_cell_array((module_count,variable_count))
         # The variable info types are similarly shaped
         setting[VARIABLE_INFO_TYPES] =      new_string_cell_array((module_count,variable_count))
@@ -784,7 +784,7 @@ class Pipeline(object):
         for i in range(module_count):
             setting[BATCH_STATE][0,i] = np.zeros((0,),np.uint8)
             
-        for module in self.modules():
+        for module in self.modules(False):
             module.save_to_handles(handles)
         return handles
     
@@ -873,7 +873,7 @@ class Pipeline(object):
             handles=handles["handles"][0,0]
         self.create_from_handles(handles)
         self.__settings = [[str(setting) for setting in module.settings()]
-                           for module in self.modules()]
+                           for module in self.modules(False)]
         self.__undo_stack = []
     
     def loadtxt(self, fd_or_filename, raise_on_error=False):
@@ -1072,8 +1072,8 @@ class Pipeline(object):
             
         self.__modules = new_modules
         self.__settings = [[str(setting) for setting in module.settings()]
-                           for module in self.modules()]
-        for module in self.modules():
+                           for module in self.modules(False)]
+        for module in self.modules(False):
             module.post_pipeline_load(self)
         self.notify_listeners(PipelineLoadedEvent())
         self.__undo_stack = []
@@ -1164,12 +1164,12 @@ class Pipeline(object):
         fd.write("%s\n"%COOKIE)
         fd.write("%s:%d\n" % (H_VERSION, NATIVE_VERSION))
         fd.write("%s:%d\n" % (H_DATE_REVISION, version_number))
-        fd.write("%s:%d\n" % (H_MODULE_COUNT, len(self.modules())))
+        fd.write("%s:%d\n" % (H_MODULE_COUNT, len(self.__modules)))
         fd.write("%s:%s\n" % (H_HAS_IMAGE_PLANE_DETAILS, str(save_image_plane_details)))
         attributes = ('module_num','svn_version','variable_revision_number',
-                      'show_window','notes','batch_state')
+                      'show_window','notes','batch_state','enabled')
         notes_idx = 4
-        for module in self.modules():
+        for module in self.__modules:
             if ((modules_to_save is not None) and 
                 module.module_num not in modules_to_save):
                 continue
@@ -1356,7 +1356,7 @@ class Pipeline(object):
         This call is designed to erase any information that users might
         not like to see uploaded. You should copy a pipeline before obfuscating.
         '''
-        for module in self.modules():
+        for module in self.modules(False):
             module.obfuscate()
         
     def restart_with_yield(self, file_name, frame=None, status_callback = None):
@@ -2160,6 +2160,33 @@ class Pipeline(object):
         message = "Move %s %s" % (module.module_name, direction)
         self.__undo_stack.append((undo, message))
         
+    def enable_module(self, module):
+        '''Enable a module = make it executable'''
+        if module.enabled:
+            logger.warn(
+                "Asked to enable module %s, but it was already enabled" %
+                module.module_name)
+            return
+        module.enabled = True
+        self.notify_listeners(ModuleEnabledEvent(module))
+        def undo():
+            module.enabled = False
+        message = "Enable %s" % (module.module_name)
+        self.__undo_stack.append((undo, message))
+        
+    def disable_module(self, module):
+        '''Disable a module = prevent it from being executed'''
+        if not module.enabled:
+            logger.warn(
+                "Asked to disable module %s, but it was already disabled" %
+                module.module_name)
+        module.enabled = False
+        self.notify_listeners(ModuleDisabledEvent(module))
+        def undo():
+            module.enabled = True
+        message = "Disable %s" % (module.module_name)
+        self.__undo_stack.append((undo, message))
+        
     def add_image_plane_details(self, details_list, add_undo = True):
         real_list = []
         details_list = sorted(details_list)
@@ -2514,10 +2541,17 @@ class Pipeline(object):
                     action()
             self.__undo_stack.append((undo, name))
             
-    def modules(self):
-        return self.__modules
+    def modules(self, exclude_disabled = True):
+        '''Return the list of modules
+        
+        exclude_disabled - only return enabled modules if True (default)
+        '''
+        if exclude_disabled:
+            return [m for m in self.__modules if m.enabled]
+        else:
+            return self.__modules
     
-    def module(self,module_num):
+    def module(self, module_num):
         module = self.__modules[module_num-1]
         assert module.module_num==module_num,'Misnumbered module. Expected %d, got %d'%(module_num,module.module_num)
         return module
@@ -2570,7 +2604,7 @@ class Pipeline(object):
         """
         idx = module_num - 1
         old_settings = self.__settings[idx]
-        module = self.modules()[idx]
+        module = self.__modules[idx]
         new_settings = [str(setting) for setting in module.settings()]
         self.notify_listeners(ModuleEditedPipelineEvent(
             module_num, is_image_set_modification=is_image_set_modification))
@@ -2578,7 +2612,7 @@ class Pipeline(object):
         variable_revision_number = module.variable_revision_number
         module_name = module.module_name
         def undo():
-            module = self.modules()[idx]
+            module = self.__modules[idx]
             module.set_settings_from_values(old_settings,
                                             variable_revision_number,
                                             module_name, False)
@@ -2797,7 +2831,7 @@ class Pipeline(object):
             self.__measurement_columns = {}
             self.__measurement_column_hash = hash
         
-        terminating_module_num = ((len(self.modules())+1) 
+        terminating_module_num = (sys.maxint 
                                   if terminating_module == None
                                   else terminating_module.module_num)
         if self.__measurement_columns.has_key(terminating_module_num):
@@ -2809,7 +2843,7 @@ class Pipeline(object):
         should_write_columns = True
         for module in self.modules():
             if (terminating_module is not None and 
-                terminating_module_num == module.module_num):
+                terminating_module_num <= module.module_num):
                 break
             columns += module.get_measurement_columns(self)
             if module.should_stop_writing_measurements():
@@ -3154,6 +3188,38 @@ class EndRunEvent(AbstractPipelineEvent):
     """A run ended"""
     def event_type(self):
         return "Run ended"
+    
+class ModuleEnabledEvent(AbstractPipelineEvent):
+    """A module was enabled
+    
+    module - the module that was enabled.
+    """
+    def __init__(self, module):
+        """Constructor
+        
+        module - the module that was enabled
+        """
+        super(self.__class__, self).__init__()
+        self.module = module
+        
+    def event_type(self):
+        return "Module enabled"
+
+class ModuleDisabledEvent(AbstractPipelineEvent):
+    """A module was disabled
+    
+    module - the module that was disabled.
+    """
+    def __init__(self, module):
+        """Constructor
+        
+        module - the module that was enabled
+        """
+        super(self.__class__, self).__init__()
+        self.module = module
+        
+    def event_type(self):
+        return "Module disabled"
 
 class Dependency(object):
     '''This class documents the dependency of one module on another

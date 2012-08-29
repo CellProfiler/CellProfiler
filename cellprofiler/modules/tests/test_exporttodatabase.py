@@ -883,7 +883,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         class TestModule(cpm.CPModule):
             module_name = "TestModule"
             module_num = 1
-            def __init__(self):
+            def create_settings(self):
                 self.image_name = cps.ImageNameProvider("Foo", IMAGE_NAME)
                 self.objects_name = cps.ObjectNameProvider("Bar", OBJECT_NAME)
                 if alt_object:

@@ -230,12 +230,16 @@ class CPFrame(wx.Frame):
         self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS,"Hide All Windows on Run",
                                   "Hide all module display windows for all modules during analysis")
         self.__menu_window.AppendSeparator()
-        self.__menu_help = make_help_menu(MAIN_HELP, self)
+        self.__menu_help = wx.Menu()
+        # We must add a non-submenu menu item before
+        # make_help_menu adds submenus, otherwise the submenus
+        # will disappear on the Mac.
+        self.__menu_help.Append(ID_HELP_ONLINE_MANUAL, "Online Manual",
+                                "Launch the HTML help in a browser")
+        make_help_menu(MAIN_HELP, self, self.__menu_help)
         self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data Tool Help','Display documentation for available data tools')
         self.__menu_help.Append(ID_HELP_MODULE,'Module Help','Display Documentation for the Current Module')
         self.__menu_help.AppendSeparator()
-        self.__menu_help.Append(ID_HELP_ONLINE_MANUAL,"Online Manual",
-                                "Launch the HTML help in a browser")
         self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's Guide",
                                 "Launch the developer's guide webpage")
         self.__menu_help.Append(ID_HELP_ABOUT, "&About",

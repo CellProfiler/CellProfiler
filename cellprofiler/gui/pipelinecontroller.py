@@ -1365,7 +1365,7 @@ class PipelineController:
                 self.__pipeline.save_measurements(path, event.measurements)
         finally:
             event.measurements.close()
-        self.stop_running()
+            self.stop_running()
         
     def on_save_measurements(self, event):
         if self.__pipeline_measurements is not None:

@@ -218,7 +218,7 @@ class CorrectIlluminationApply(cpm.CPModule):
                 workspace.display_data.images = {}
             workspace.display_data.images[image_name] = orig_image.pixel_data
             workspace.display_data.images[corrected_image_name] = output_pixels
-            workspace.display_data.images[illum_correct_name] = illum_function_pixel_data
+            workspace.display_data.images[illum_correct_name] = illum_function.pixel_data
 
     def display(self, workspace, figure):
         ''' Display one row of orig / illum / output per image setting group'''

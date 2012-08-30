@@ -16,9 +16,11 @@ from __future__ import with_statement
 import subprocess
 import multiprocessing
 import logging
+import tempfile
 import threading
 import Queue
 import uuid
+import h5py
 import numpy as np
 import cStringIO as StringIO
 import sys
@@ -297,12 +299,30 @@ class AnalysisRunner(object):
             # listen for pipeline events, and pass them upstream
             self.pipeline.add_listener(lambda pipe, evt: self.post_event(evt))
             
-            fd = open(self.output_path, "wb")
-            fd.write(self.initial_measurements_buf)
-            fd.close()
-            measurements = cpmeas.Measurements(image_set_start=None,
-                                               filename=self.output_path,
-                                               mode="a")
+            initial_measurements = None
+            if self.output_path is None:
+                # Caller wants a temporary measurements file.
+                fd, filename = tempfile.mkstemp(".h5")
+                try:
+                    fd = os.fdopen(fd, "wb")
+                    fd.write(self.initial_measurements_buf)
+                    fd.close()
+                    initial_measurements = cpmeas.Measurements(
+                        filename=filename, mode="r")
+                    measurements = cpmeas.Measurements(
+                        image_set_start = None,
+                        copy = initial_measurements,
+                        mode = "a")
+                finally:
+                    if initial_measurements is not None:
+                        initial_measurements.close()
+                    os.unlink(filename)
+            else:
+                with open(self.output_path, "wb") as fd:
+                    fd.write(self.initial_measurements_buf)
+                measurements = cpmeas.Measurements(image_set_start=None,
+                                                   filename=self.output_path,
+                                                   mode="a")
             # The shared dicts are needed in jobserver()
             self.shared_dicts = [m.get_dictionary() for m in self.pipeline.modules()]
             workspace = cpw.Workspace(self.pipeline, None, None, None,
@@ -426,22 +446,13 @@ class AnalysisRunner(object):
                         self.interface_work_cv.wait()  # wait for a change of status or work to arrive
         finally:
             # Note - the measurements file is owned by the queue consumer
-            #        after this post_event unless the analysis was cancelled.
-            #        If cancelled, the consumer never sees it and we
-            #        close it immediately. If it is temporary, it will be
-            #        deleted, otherwise, it will have partially complete
-            #        but possibly useful measurements.
+            #        after this post_event.
             #
             if not acknowledged_thread_start:
                 start_signal.release()
             if posted_analysis_started:
                 was_cancelled = self.cancelled
-                self.post_event(AnalysisFinished(
-                    None if was_cancelled else measurements, was_cancelled))
-                if was_cancelled and measurements is not None:
-                    if workspace is not None:
-                        del workspace
-                    measurements.close()
+                self.post_event(AnalysisFinished(measurements, was_cancelled))
             self.stop_workers()
         self.analysis_id = False  # this will cause the jobserver thread to exit
 

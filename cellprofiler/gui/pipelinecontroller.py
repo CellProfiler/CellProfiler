@@ -984,9 +984,13 @@ class PipelineController:
                 if not self.__pipeline.prepare_run(self.__workspace):
                     self.stop_running()
                     return
+                measurements_file_path = None
+                if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
+                    measurements_file_path = self.get_output_file_path()
+                    
                 self.__analysis = cpanalysis.Analysis(
                     self.__pipeline, 
-                    self.get_output_file_path(),
+                    measurements_file_path,
                     initial_measurements=self.__workspace.measurements)
                 self.__analysis.start(self.analysis_event_handler)
 
@@ -1068,18 +1072,13 @@ class PipelineController:
             wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress, total_jobs, completed)
         elif isinstance(evt, cpanalysis.AnalysisFinished):
             print ("Cancelled!" if evt.cancelled else "Finished!")
-            # The event has the measurements for the run and the measurements
-            # file is open - maybe later you want to do something with this
-            # file? But for now, we close it.
-            if evt.measurements is not None:
-                evt.measurements.close()
             # drop any interaction/display requests or exceptions
             while True:
                 try:
                     self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
                 except Queue.Empty:
                     break
-            wx.CallAfter(self.stop_running)
+            wx.CallAfter(self.on_stop_analysis, evt)
         elif isinstance(evt, cpanalysis.DisplayRequest):
             wx.CallAfter(self.module_display_request, evt)
         elif isinstance(evt, cpanalysis.InteractionRequest):
@@ -1337,12 +1336,43 @@ class PipelineController:
         del self.__pipeline_measurements
         self.__pipeline_measurements = None
     
+    def on_stop_analysis(self, event):
+        '''Stop an analysis run.
+        
+        Handle chores that need completing after an analysis is cancelled
+        or finished, like closing the measurements file or writing the .MAT
+        file.
+        
+        event - a cpanalysis.AnalysisFinished event
+        '''
+        try:
+            if cpprefs.get_write_MAT_files() is True:
+                # The user wants to write a .mat file.
+                if event.cancelled:
+                    if event.measurements is None:
+                        return
+                    with wx.FileDialog(
+                        self.__frame,
+                        "Save measurements to a file",
+                        wildcard="CellProfiler measurements (*.mat)|*.mat",
+                        style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+                        if dlg.ShowModal() == wx.ID_OK:
+                            path = dlg.Path
+                        else:
+                            return
+                else:
+                    path = self.get_output_file_path()
+                self.__pipeline.save_measurements(path, event.measurements)
+        finally:
+            event.measurements.close()
+        self.stop_running()
+        
     def on_save_measurements(self, event):
         if self.__pipeline_measurements is not None:
             self.save_measurements()
         
     def save_measurements(self):
-        if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
+        if cpprefs.get_write_MAT_files() is not True:
             return
         dlg = wx.FileDialog(self.__frame,
                             "Save measurements to a file",

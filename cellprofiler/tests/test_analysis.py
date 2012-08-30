@@ -226,9 +226,12 @@ class TestAnalysis(unittest.TestCase):
         self.analysis = None
         self.wants_analysis_finished = False
         self.wants_pipeline_events = False
+        self.measurements_to_close = None
         
     def tearDown(self):
         self.cancel_analysis()
+        if self.measurements_to_close is not None:
+            self.measurements_to_close.close()
         if os.path.exists(self.filename):
             os.unlink(self.filename)
         
@@ -240,9 +243,10 @@ class TestAnalysis(unittest.TestCase):
     def analysis_event_handler(self, event):
         if isinstance(event, cpanalysis.AnalysisProgress):
             return
-        if (isinstance(event, cpanalysis.AnalysisFinished) and 
-            (not self.wants_analysis_finished)):
-            return
+        if isinstance(event, cpanalysis.AnalysisFinished):
+            self.measurements_to_close = event.measurements
+            if not self.wants_analysis_finished:
+                return
         if (isinstance(event, cpp.AbstractPipelineEvent) and
              not self.wants_pipeline_events):
             return
@@ -288,6 +292,8 @@ class TestAnalysis(unittest.TestCase):
         analysis_finished = self.event_queue.get()
         self.assertIsInstance(analysis_finished, cpanalysis.AnalysisFinished)
         self.assertTrue(analysis_finished.cancelled)
+        self.assertIsInstance(analysis_finished.measurements, 
+                              cpmeas.Measurements)
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
         
     def test_02_01_announcement(self):
@@ -620,7 +626,6 @@ class TestAnalysis(unittest.TestCase):
             np.testing.assert_almost_equal(
                 measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1],
                 objects_measurements)
-            measurements.close()
             
     def test_06_02_test_three_imagesets(self):
         # Test an analysis of three imagesets
@@ -703,17 +708,14 @@ class TestAnalysis(unittest.TestCase):
             self.assertIsInstance(result, cpanalysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
-            try:
-                self.assertSequenceEqual(list(measurements.get_image_numbers()), 
-                                         [1, 2, 3])
-                for i in range(1, 4):
-                    self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i], 
-                                     "Hello %d" % i)
-                    np.testing.assert_almost_equal(
-                        measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
-                        objects_measurements[i-1])
-            finally:
-                measurements.close()
+            self.assertSequenceEqual(list(measurements.get_image_numbers()), 
+                                     [1, 2, 3])
+            for i in range(1, 4):
+                self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i], 
+                                 "Hello %d" % i)
+                np.testing.assert_almost_equal(
+                    measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
+                    objects_measurements[i-1])
                 
     def test_06_03_test_grouped_imagesets(self):
         # Test an analysis of four imagesets in two groups
@@ -794,19 +796,14 @@ class TestAnalysis(unittest.TestCase):
             self.assertIsInstance(result, cpanalysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
             measurements = result.measurements
-            try:
-                self.assertSequenceEqual(list(measurements.get_image_numbers()), 
-                                         [1, 2, 3, 4])
-                for i in range(1, 5):
-                    self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i], 
-                                     "Hello %d" % i)
-                    np.testing.assert_almost_equal(
-                        measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
-                        objects_measurements[i-1])
-            finally:
-                measurements.close()
-        
-        
+            self.assertSequenceEqual(list(measurements.get_image_numbers()), 
+                                     [1, 2, 3, 4])
+            for i in range(1, 5):
+                self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i], 
+                                 "Hello %d" % i)
+                np.testing.assert_almost_equal(
+                    measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
+                    objects_measurements[i-1])
         
             
 SBS_PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org

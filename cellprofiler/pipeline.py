@@ -1350,6 +1350,45 @@ class Pipeline(object):
                     result.append(setting.value)
         return result
     
+    def can_convert_legacy_input_modules(self):
+        '''Can legacy modules like LoadImages be converted to modern form?
+        
+        Returns True if all legacy input modules can be converted to
+        Images / Metadata / NamesAndTypes / Groups.
+        '''
+        needs_conversion = False
+        try:
+            for module in self.__modules:
+                if module.needs_conversion():
+                    needs_conversion = True
+            return needs_conversion
+        except:
+            return False
+        
+    def convert_legacy_input_modules(self):
+        '''Convert a pipeline from legacy to using Images, NamesAndTypes etc'''
+        if not self.can_convert_legacy_input_modules():
+            return
+        from cellprofiler.modules.images import Images
+        from cellprofiler.modules.metadata import Metadata
+        from cellprofiler.modules.namesandtypes import NamesAndTypes
+        from cellprofiler.modules.groups import Groups
+        self.start_undoable_action()
+        try:
+            images, metadata, namesandtypes, groups = (
+                Images(), Metadata(), NamesAndTypes(), Groups())
+            for i, module in enumerate((images, metadata, namesandtypes, groups)):
+                module.set_module_num(i + 1)
+                module.show_window = cpprefs.get_headless()
+                module.notes += ["Settings converted from legacy pipeline."]
+                self.add_module(module)
+            for module in list(self.__modules):
+                if module.needs_conversion():
+                    module.convert(metadata, namesandtypes, groups)
+                    self.remove_module(module.module_num)
+        finally:
+            self.stop_undoable_action()
+    
     def obfuscate(self):
         '''Tell all modules in the pipeline to obfuscate any sensitive info
         

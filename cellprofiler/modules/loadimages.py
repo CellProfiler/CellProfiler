@@ -2859,6 +2859,139 @@ class LoadImages(cpmodule.CPModule):
         # It's safest to say that any change in loadimages requires a restart
         #
         return True
+    
+    def needs_conversion(self):
+        if self.match_method not in (MS_EXACT_MATCH, MS_REGEXP):
+            raise ValueError(
+                "Can't convert a LoadImages module that matches images by %s" %
+                self.match_method.value)
+        return True
+    
+    def convert(self, metadata, namesandtypes, groups):
+        '''Convert to the modern format using the input modules
+        
+        This method converts any LoadImages modules in the pipeline to
+        Images / Metadata / NamesAndTypes and Groups
+        
+        metadata - the metadata module
+        namesandtypes - the namesandtypes module
+        groups - the groups module
+        first - True if no images have been added to namesandtypes yet.
+        '''
+        import cellprofiler.modules.metadata as cpmetadata
+        import cellprofiler.modules.namesandtypes as cpnamesandtypes
+        import cellprofiler.modules.groups as cpgroups
+        assert isinstance(metadata, cpmetadata.Metadata)
+        assert isinstance(namesandtypes, cpnamesandtypes.NamesAndTypes)
+        assert isinstance(groups, cpgroups.Groups)
+
+        if self.match_method not in (MS_EXACT_MATCH, MS_REGEXP):
+            raise ValueError(
+                "Can't convert a LoadImages module that matches images by %s" %
+                self.match_method.value)
+        if self.group_by_metadata:
+            groups.notes.append(
+                "WARNING: original pipeline used metadata grouping"
+                " which was not converted during processing"
+                " of current pipeline.")
+        warn_metadata_match = False
+        warn_gray_color = False
+        for group in self.images:
+            for channel in group.channels:
+                if namesandtypes.assignment_method == cpnamesandtypes.ASSIGN_ALL:
+                    namesandtypes.assignment_method.value = \
+                        cpnamesandtypes.ASSIGN_RULES
+                else:
+                    namesandtypes.add_assignment()
+                assignment = namesandtypes.assignments[-1]
+                if channel.image_object_choice == IO_IMAGES:
+                    name = assignment.image_name.value = \
+                        channel.image_name.value
+                    assignment.load_as_choice.value = \
+                        cpnamesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+                    warn_gray_color = True
+                else:
+                    name = assignment.object_name.value = \
+                        channel.object_name.value
+                    assignment.load_as_choice.value = \
+                        cpnamesandtypes.LOAD_AS_OBJECTS
+                rfilter = assignment.rule_filter
+                assert isinstance(rfilter, cps.Filter)
+                structure = [cps.Filter.AND_PREDICATE ]
+                fp = cpnamesandtypes.FilePredicate()
+                fp_does, fp_does_not = [
+                    [d for d in fp.subpredicates if isinstance(d, c)][0]
+                    for c in (cps.Filter.DoesPredicate, cps.Filter.DoesNotPredicate)]
+                if self.exclude:
+                    # Exclude with a predicate of
+                    # File doesnot contain <match_exclude>
+                    #
+                    structure.append([
+                        fp, fp_does_not, cps.Filter.CONTAINS_PREDICATE, 
+                        self.match_exclude.value])
+                if self.match_method == MS_EXACT_MATCH:
+                    structure.append([
+                        fp, fp_does, cps.Filter.CONTAINS_PREDICATE, 
+                        group.common_text.value])
+                else:
+                    structure.append([
+                        fp, fp_does, cps.Filter.CONTAINS_REGEXP_PREDICATE,
+                        group.common_text.value])
+                assignment.rule_filter.build(structure)
+                my_tags = set()
+                for metadata_choice, source, value in (
+                    (M_FILE_NAME, cpmetadata.XM_FILE_NAME, group.file_metadata.value),
+                    (M_PATH, cpmetadata.XM_FOLDER_NAME, group.path_metadata.value)):
+                    if group.metadata_choice in (metadata_choice, M_BOTH):
+                        if not metadata.wants_metadata:
+                            metadata.wants_metadata.value = True
+                        else:
+                            metadata.add_extraction_method()
+                        mgroup = metadata.extraction_methods[-1]
+                        mgroup.source.value = source
+                        if metadata_choice == M_FILE_NAME:
+                            mgroup.file_regexp.value = value
+                        else:
+                            mgroup.folder_regexp.value = value
+                        mgroup.filter_choice.value = cpmetadata.F_FILTERED_IMAGES
+                        mgroup.extraction_method.value = cpmetadata.X_MANUAL_EXTRACTION
+                        mgroup.filter.build(structure)
+                        my_tags.update(cpmeas.find_metadata_tokens(value))
+                if namesandtypes.matching_choice == cpnamesandtypes.MATCH_BY_METADATA:
+                    # Add our metadata tags to the joiner
+                    current = namesandtypes.join.parse()
+                    for d in current:
+                        for v in d.values():
+                            if v in my_tags:
+                                d[name] = v
+                                my_tags.remove(v)
+                                break
+                        else:
+                            warn_metadata_match = True
+                            d[name] = None
+                    if len(my_tags) > 0:
+                        warn_metadata_match = True
+                        if len(current) == 0:
+                            for tag in my_tags:
+                                current.append({ name:tag })
+                        else:
+                            for tag in my_tags:
+                                entry = dict([(k, None) for k in current[0]])
+                                entry[name] = tag
+                                current.append(entry)
+                    namesandtypes.join.build(current)
+                elif len(my_tags) > 0:
+                    namesandtypes.matching_choice.value = \
+                        cpnamesandtypes.MATCH_BY_METADATA
+                    namesandtypes.join.build([ { name: tag} for tag in my_tags])
+        if warn_metadata_match:
+            namesandtypes.notes.append(
+                "WARNING: the metadata matching for this pipeline may not"
+                " have been converted correctly.")
+        if warn_gray_color:
+            namesandtypes.notes.append(
+                'Please change any color images from "Load as Grayscale image"'
+                ' to "Load as Color image"')
             
 def well_metadata_tokens(tokens):
     '''Return the well row and well column tokens out of a set of metadata tokens'''

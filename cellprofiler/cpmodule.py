@@ -491,6 +491,29 @@ class CPModule(object):
         The input modules are "Images", "Metadata", "NamesAndTypes" and "Groups"
         """
         return False
+    
+    def needs_conversion(self):
+        '''Return True if the module needs to be converted from legacy
+        
+        A module can throw an exception if it is impossible to convert - for
+        instance, LoadData.
+        '''
+        return False
+    
+    def convert(self, metadata, namesandtypes, groups):
+        '''Convert the input processing of this module from the legacy format
+        
+        Legacy modules like LoadImages should copy their settings into
+        the Metadata, NamesAndTypes and Groups modules when this call is made.
+        
+        metadata - the pipeline's Metadata module
+        
+        namesandtypes - the pipeline's NamesAndTypes module
+        
+        groups - the pipeline's Groups module
+        
+        '''
+        pass
 
     def run(self,workspace):
         """Run the module (abstract method)

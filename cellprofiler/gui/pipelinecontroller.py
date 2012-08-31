@@ -368,6 +368,16 @@ class PipelineController:
             self.__pipeline.turn_off_batch_mode()
             self.__pipeline.load_image_plane_details(self.__workspace)
             self.__clear_errors()
+            if (self.__pipeline.can_convert_legacy_input_modules() and
+                (wx.MessageBox(
+                    "Your pipeline contains legacy modules such as LoadImages."
+                    "CellProfiler can convert this pipeline to use the new"
+                    " input modules (Images, Metadata, NamesAndTypes, Groups).\n\n"
+                    "Do you want to perform the conversion?",
+                    "Convert legacy pipeline?",
+                    wx.YES_NO | wx.ICON_QUESTION, self.__frame) & wx.YES)):
+                self.__pipeline.convert_legacy_input_modules()
+                
             if isinstance(pathname, (str, unicode)):
                 self.set_current_pipeline_path(pathname)
             self.__dirty_pipeline = False

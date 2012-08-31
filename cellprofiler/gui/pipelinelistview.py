@@ -466,7 +466,7 @@ class PipelineListView(object):
                     data_value = not_consecutive.flatten()[0] + 2
                 else:
                     data_value = len(all_values) + 1
-                self.__module_dictionary[data_value] = module.id
+            self.__module_dictionary[data_value] = module.id
         return data_value
     
     def get_module_from_data_value(self, data_value):

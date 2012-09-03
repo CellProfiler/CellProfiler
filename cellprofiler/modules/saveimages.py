@@ -409,7 +409,8 @@ class SaveImages(cpm.CPModule):
             if self.gray_or_color == GC_COLOR:
                 result.append(self.colormap)
         result.append(self.update_file_names)
-        result.append(self.create_subdirectories)
+        if self.file_name_method == FN_FROM_IMAGE:
+            result.append(self.create_subdirectories)
         return result
     
     @property

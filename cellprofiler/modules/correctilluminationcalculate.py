@@ -89,96 +89,106 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE:True,
                                  cps.AVAILABLE_ON_LAST_ATTRIBUTE:False })
         
-        self.intensity_choice = cps.Choice("Select how the illumination function is calculated",
-                                           [IC_REGULAR, IC_BACKGROUND],
-                                           IC_REGULAR, doc = '''
-                                           Do you want to calculate using regular intensities or background intensities?<br>
-                                           <ul>
-                                           <li><i>Regular:</i> If you have objects that are evenly dispersed across your image(s) and
-                                            cover most of the image, the <i>Regular</i> method might be appropriate. Regular
-                                            intensities makes the illumination function based on the intensity at
-                                            each pixel of the image (or group of images if you are in <i>All</i> mode) and
-                                            is most often rescaled (see below) and applied by division using
-                                            <b>CorrectIlluminationApply.</b> Note that if you are in <i>Each</i> mode or using a
-                                            small set of images with few objects, there will be regions in the
-                                            average image that contain no objects and smoothing by median filtering
-                                            is unlikely to work well.
-                                            <i>Note:</i> it does not make sense to choose (<i>Regular + No Smoothing + Each</i>)
-                                            because the illumination function would be identical to the original
-                                            image and applying it will yield a blank image. You either need to smooth
-                                            each image, or you need to use <i>All</i> images.</li>
-                                            <li><i>Background intensities:</i>
-                                            If you think that the background (dim points) between objects show the
-                                            same pattern of illumination as your objects of interest, you can choose the
-                                            <i>Background</i> method. Background intensities finds the minimum pixel
-                                            intensities in blocks across the image (or group of images if you are in
-                                            <i>All</i> mode) and is most often applied by subtraction using the
-                                            <b>CorrectIlluminationApply</b> module.
-                                            <i>Note:</i> if you will be using the <i>Subtract</i> option in the
-                                            <b>CorrectIlluminationApply</b> module, you almost certainly do not want to
-                                            <i>Rescale</i>. </li>
-                                            </ul> ''')
+        self.intensity_choice = cps.Choice(
+            "Select how the illumination function is calculated",
+            [IC_REGULAR, IC_BACKGROUND],
+            IC_REGULAR, doc = '''
+            Do you want to calculate using regular intensities or background intensities?<br>
+            <ul>
+            <li><i>Regular:</i> If you have objects that are evenly dispersed across your image(s) and
+             cover most of the image, the <i>Regular</i> method might be appropriate. Regular
+             intensities makes the illumination function based on the intensity at
+             each pixel of the image (or group of images if you are in <i>All</i> mode) and
+             is most often rescaled (see below) and applied by division using
+             <b>CorrectIlluminationApply.</b> Note that if you are in <i>Each</i> mode or using a
+             small set of images with few objects, there will be regions in the
+             average image that contain no objects and smoothing by median filtering
+             is unlikely to work well.
+             <i>Note:</i> it does not make sense to choose (<i>Regular + No Smoothing + Each</i>)
+             because the illumination function would be identical to the original
+             image and applying it will yield a blank image. You either need to smooth
+             each image, or you need to use <i>All</i> images.</li>
+             <li><i>Background intensities:</i>
+             If you think that the background (dim points) between objects show the
+             same pattern of illumination as your objects of interest, you can choose the
+             <i>Background</i> method. Background intensities finds the minimum pixel
+             intensities in blocks across the image (or group of images if you are in
+             <i>All</i> mode) and is most often applied by subtraction using the
+             <b>CorrectIlluminationApply</b> module.
+             <i>Note:</i> if you will be using the <i>Subtract</i> option in the
+             <b>CorrectIlluminationApply</b> module, you almost certainly do not want to
+             <i>Rescale</i>. </li>
+             </ul> 
+             <p>Please note that if a mask was applied to the input image, the pixels outside of the
+             mask will be exlcuded from consideration. This is useful, for instance, in cases where
+             you have masked out the well edge in an image from a multi-well plate; the dark well 
+             edge would distort the illumination correction function along the interior well edge.
+             Masking the image beforehand solves this problem.</p>''')
         
-        self.dilate_objects = cps.Binary("Dilate objects in the final averaged image?",False, doc = '''
-                                            <i>(Used only if the Regular method is selected)</i><br>
-                                            Do you want to dilate objects in the final averaged image?
-                                            For some applications, the incoming images are binary and each object
-                                            should be dilated with a Gaussian filter in the final averaged
-                                            (projection) image. This is for a sophisticated method of illumination
-                                            correction where model objects are produced.''')
+        self.dilate_objects = cps.Binary(
+            "Dilate objects in the final averaged image?",False, doc = '''
+            <i>(Used only if the Regular method is selected)</i><br>
+            Do you want to dilate objects in the final averaged image?
+            For some applications, the incoming images are binary and each object
+            should be dilated with a Gaussian filter in the final averaged
+            (projection) image. This is for a sophisticated method of illumination
+            correction where model objects are produced.''')
         
-        self.object_dilation_radius = cps.Integer("Dilation radius",1,0,doc='''
-                                            <i>(Used only if the Regular method and dilation is selected)</i><br>
-                                            This value should be roughly equal to the original radius of the objects''')
+        self.object_dilation_radius = cps.Integer(
+            "Dilation radius",1,0,doc='''
+            <i>(Used only if the Regular method and dilation is selected)</i><br>
+            This value should be roughly equal to the original radius of the objects''')
         
-        self.block_size = cps.Integer("Block size",60,1,doc = '''
-                                            <i>(Used only if Background is selected)</i><br>
-                                            The block size should be large enough that every square block of pixels is likely 
-                                            to contain some background pixels, where no objects are located.''')
+        self.block_size = cps.Integer(
+            "Block size",60,1,doc = '''
+            <i>(Used only if Background is selected)</i><br>
+            The block size should be large enough that every square block of pixels is likely 
+            to contain some background pixels, where no objects are located.''')
         
-        self.rescale_option = cps.Choice("Rescale the illumination function?",
-                                         [cps.YES, cps.NO, RE_MEDIAN], doc = '''
-                                        The illumination function can be rescaled so that the pixel intensities
-                                        are all equal to or greater than 1. Rescaling is recommended if you plan to
-                                        use the <i>Regular</i> method (and hence, the <i>Division</i> option in 
-                                        <b>CorrectIlluminationApply</b>) so that the corrected images are in the 
-                                        range 0 to 1. It is not recommended if you plan to use the <i>Background</i> 
-                                        method, which is paired with the <i>Subtract</i> option in <b>CorrectIlluminationApply</b>. 
-                                        Note that as a result of the illumination function being rescaled from 1 to
-                                        infinity, the rescaling of each image might be dramatic if there is substantial 
-                                        variation across the field of view, causing the corrected images
-                                        to be very dark. The <i>Median</i> option chooses the median value in the 
-                                        image to rescale so that division increases some values and decreases others.''')
+        self.rescale_option = cps.Choice(
+            "Rescale the illumination function?",
+            [cps.YES, cps.NO, RE_MEDIAN], doc = '''
+            The illumination function can be rescaled so that the pixel intensities
+            are all equal to or greater than 1. Rescaling is recommended if you plan to
+            use the <i>Regular</i> method (and hence, the <i>Division</i> option in 
+            <b>CorrectIlluminationApply</b>) so that the corrected images are in the 
+            range 0 to 1. It is not recommended if you plan to use the <i>Background</i> 
+            method, which is paired with the <i>Subtract</i> option in <b>CorrectIlluminationApply</b>. 
+            Note that as a result of the illumination function being rescaled from 1 to
+            infinity, the rescaling of each image might be dramatic if there is substantial 
+            variation across the field of view, causing the corrected images
+            to be very dark. The <i>Median</i> option chooses the median value in the 
+            image to rescale so that division increases some values and decreases others.''')
         
         self.each_or_all = cps.Choice(
-                                            "Calculate function for each image individually, or based on all images?",
-                                            [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS], doc = '''
-                                            Calculate a separate function for each image, or one for all the images?
-                                            You can calculate the illumination function using just the current
-                                            image or you can calculate the illumination function using all of
-                                            the images in each group.
-                                            The illumination function can be calculated in one of the three ways:
-                                            <ul>
-                                            <li><i>%(EA_EACH)s:</i> Calculate an illumination function for each image 
-                                            individually. </li>
-                                            <li><i>%(EA_ALL_FIRST)s:</i> Calculate an illumination 
-                                            function based on all of the images in a group, performing the
-                                            calculation before proceeding to the next module. This means that the
-                                            illumination function will be created in the first cycle (making the first 
-                                            cycle longer than subsequent cycles), and lets you use the function in a subsequent
-                                            <b>CorrectIllumination_Apply</b> module in the same pipeline, but also
-                                            means that you will not have the ability to filter out images (e.g., by using
-                                            <b>FlagImage</b>). The input images need to be produced by a <b>LoadImage</b> 
-                                            or <b>LoadData</b> module; using images produced by other modules will yield an error.</li>
-                                            <li><i>%(EA_ALL_ACROSS)s:</i> Calculate an illumination function 
-                                            across all cycles in each group. This option takes any image
-                                            as input; however, the illumination function 
-                                            will not be completed until the end of the last cycle in the group.
-                                            You can use <b>SaveImages</b> to save the illumination function
-                                            after the last cycle in the group and then use the resulting
-                                            image in another pipeline. The option is useful if you want to exclude
-                                            images that are filtered by a prior <b>FlagImage</b> module.</li>
-                                            </ul>''' % globals())
+            "Calculate function for each image individually, or based on all images?",
+            [EA_EACH, EA_ALL_FIRST, EA_ALL_ACROSS], doc = '''
+            Calculate a separate function for each image, or one for all the images?
+            You can calculate the illumination function using just the current
+            image or you can calculate the illumination function using all of
+            the images in each group.
+            The illumination function can be calculated in one of the three ways:
+            <ul>
+            <li><i>%(EA_EACH)s:</i> Calculate an illumination function for each image 
+            individually. </li>
+            <li><i>%(EA_ALL_FIRST)s:</i> Calculate an illumination 
+            function based on all of the images in a group, performing the
+            calculation before proceeding to the next module. This means that the
+            illumination function will be created in the first cycle (making the first 
+            cycle longer than subsequent cycles), and lets you use the function in a subsequent
+            <b>CorrectIllumination_Apply</b> module in the same pipeline, but also
+            means that you will not have the ability to filter out images (e.g., by using
+            <b>FlagImage</b>). The input images need to be produced by a <b>LoadImage</b> 
+            or <b>LoadData</b> module; using images produced by other modules will yield an error.</li>
+            <li><i>%(EA_ALL_ACROSS)s:</i> Calculate an illumination function 
+            across all cycles in each group. This option takes any image
+            as input; however, the illumination function 
+            will not be completed until the end of the last cycle in the group.
+            You can use <b>SaveImages</b> to save the illumination function
+            after the last cycle in the group and then use the resulting
+            image in another pipeline. The option is useful if you want to exclude
+            images that are filtered by a prior <b>FlagImage</b> module.</li>
+            </ul>''' % globals())
         
         self.smoothing_method = cps.Choice(
             "Smoothing method",

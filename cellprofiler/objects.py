@@ -238,11 +238,9 @@ class Objects(object):
         The default, if no unedited matrix is available, is the
         segmented labeling.
         """
-        if self.__segmented != None:
-            if self.__unedited_segmented != None:
-                return self.__unedited_segmented
-            return self.__segmented
-        return self.__unedited_segmented
+        if self.__unedited_segmented != None:
+            return self.__unedited_segmented
+        return self.segmented
     
     def set_unedited_segmented(self,labels):
         check_consistency(self.__segmented, labels, 

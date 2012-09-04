@@ -371,32 +371,96 @@ class EditObjectsManually(I.Identify):
         if labels is None:
             shape = guide_image.shape[:2]
             labels = [np.zeros(shape, int)]
-        labels = self.handle_interaction(labels, guide_image)
+        try:
+            labels = self.handle_interaction(labels, guide_image)
+        except self.InteractionCancelledException:
+            return
         n_frames = len(labels)
         with wx.FileDialog(None,
                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
         
             dlg.Path = fullname
-            dlg.Wildcard = "Object image file (*.tif,*.tiff)|*.tif;*.tiff"
+            dlg.Wildcard = ("Object image file (*.tif,*.tiff)|*.tif;*.tiff|"
+                            "Ilastik project file (*.ilp)|*.ilp")
             result = dlg.ShowModal()
             fullname = dlg.Path
             if result == wx.ID_OK:
-                md = ome.OMEXML()
-                mdp = md.image().Pixels
-                mdp.SizeX = shape[1]
-                mdp.SizeY = shape[0]
-                mdp.SizeC = n_frames
-                mdp.SizeT = 1
-                mdp.SizeZ = 1
-                mdp.PixelType = ome.PT_UINT16
-                mdp.channel_count = n_frames
-                if os.path.exists(fullname):
-                    os.unlink(fullname)
-                xml = md.to_xml()
-                for i, l in enumerate(labels):
-                    post_image(pathname2url(fullname),
-                               l, xml, index = str(i))
+                if fullname.endswith(".ilp"):
+                    self.save_into_ilp(fullname, labels, guidename)
+                else:
+                    md = ome.OMEXML()
+                    mdp = md.image().Pixels
+                    mdp.SizeX = shape[1]
+                    mdp.SizeY = shape[0]
+                    mdp.SizeC = n_frames
+                    mdp.SizeT = 1
+                    mdp.SizeZ = 1
+                    mdp.PixelType = ome.PT_UINT16
+                    mdp.channel_count = n_frames
+                    if os.path.exists(fullname):
+                        os.unlink(fullname)
+                    xml = md.to_xml()
+                    for i, l in enumerate(labels):
+                        post_image(pathname2url(fullname),
+                                   l, xml, index = str(i))
 
+    def save_into_ilp(self, project_name, labels, guidename):
+        import h5py
+        with h5py.File(project_name) as f:
+            g = f["DataSets"]
+            for k in g:
+                data_item = g[k]
+                if data_item.attrs.get("fileName") == guidename:
+                    break
+            else:
+                wx.MessageBox("Sorry, could not find the file, %s, in the project, %s" %
+                              (guidname, project_name))
+            project_labels = data_item["labels"]["data"]
+            mask = np.ones(project_labels.shape[2:4], project_labels.dtype)
+            for label in labels:
+                mask[label != 0] = 2
+            #
+            # "only" use the first 100,000 points in the image
+            #
+            subsample = 100000
+            npts = np.prod(mask.shape)
+            if npts > subsample:
+                r = np.random.RandomState()
+                r.seed(np.sum(mask))
+                i, j = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
+                i0 = i[mask==1]
+                j0 = j[mask==1]
+                i1 = i[mask==2]
+                j1 = j[mask==2]
+                if len(i1) < subsample / 2:
+                    p0 = r.permutation(len(i0))[:(subsample - len(i1))]
+                    p1 = np.arange(len(i1))
+                elif len(i0) < subsample / 2:
+                    p0 = np.arange(len(i0))
+                    p1 = r.permutation(len(i1))[:(subsample - len(i0))]
+                else:
+                    p0 = r.permutation(len(i0))[:(subsample / 2)]
+                    p1 = r.permutation(len(i1))[:(subsample / 2)]
+                mask_copy = np.zeros(mask.shape, mask.dtype)
+                mask_copy[i0[p0], j0[p0]] = 1
+                mask_copy[i1[p1], j1[p1]] = 2
+                if "prediction" in data_item:
+                    prediction = data_item["prediction"]
+                    if np.max(prediction[0, 0, :, :, 0]) > .5:
+                        # Only do if prediction was done (otherwise all == 0)
+                        for n in range(2):
+                            p = prediction[0, 0, :, :, n]
+                            bad = (p < .5) & (mask == n+1)
+                            mask_copy[i[bad], j[bad]] = n+1
+                mask = mask_copy
+            project_labels[0, 0, :, :, 0] = mask
+            
+    class InteractionCancelledException(RuntimeError):
+        def __init__(self, *args):
+            if len(args) == 0:
+                args = ["User cancelled EditObjectsManually"]
+            super(self.__class__, self).__init__(*args)
+            
     def handle_interaction(self, orig_labels, guide_image):
         import wx
         import wx.html
@@ -949,8 +1013,8 @@ class EditObjectsManually(I.Identify):
                             self.close_label(self.artists[artist][self.K_LABEL])
                             self.record_undo()
                             return
-                x = int(event.xdata)
-                y = int(event.ydata)
+                x = int(event.xdata + .5)
+                y = int(event.ydata + .5)
                 if (x < 0 or x >= self.shape[1] or
                     y < 0 or y >= self.shape[0]):
                     return
@@ -1044,7 +1108,10 @@ class EditObjectsManually(I.Identify):
                 before_pt, after_pt = [
                     np.array([data[0][idx], data[1][idx]]) 
                              for idx in (before_index, after_index)]
-                new_pt = np.array([event.xdata, event.ydata], int)
+                ydata, xdata = [
+                    min(self.shape[i]-1, max(yx, 0)) 
+                    for i, yx in enumerate((event.ydata, event.xdata))]
+                new_pt = np.array([xdata, ydata], int)
                 path = Path(np.array((before_pt, new_pt, after_pt)))
                 eps = np.finfo(np.float32).eps
                 for artist in self.artists:
@@ -1080,9 +1147,9 @@ class EditObjectsManually(I.Identify):
                     if path.intersects_path(other_path, filled = False):
                         return
                  
-                data = self.active_artist.get_data()   
-                data[0][self.active_index] = event.xdata
-                data[1][self.active_index] = event.ydata
+                data = self.active_artist.get_data()
+                data[0][self.active_index] = xdata
+                data[1][self.active_index] = ydata
                 
                 #
                 # Handle moving the first point which is the
@@ -1090,8 +1157,8 @@ class EditObjectsManually(I.Identify):
                 # The last should never be moved.
                 #
                 if self.active_index == 0:
-                    data[0][-1] = event.xdata
-                    data[1][-1] = event.ydata
+                    data[0][-1] = xdata
+                    data[1][-1] = ydata
                 self.active_artist.set_data(data)
                 self.artists[self.active_artist]['edited'] = True
                 self.update_artists()
@@ -1161,10 +1228,6 @@ class EditObjectsManually(I.Identify):
                         
                 for n in all_labels:
                     self.remove_label(n)
-                if len(all_labels) > 1:
-                    keep_to_keep = np.ones(len(self.to_keep), bool)
-                    keep_to_keep[all_labels[1:]] = False
-                    self.to_keep = self.to_keep[keep_to_keep]
                     
                 mask = convex_hull_image(mask)
                 self.replace_label(mask, object_number)
@@ -1424,11 +1487,28 @@ class EditObjectsManually(I.Identify):
                             self.K_LABEL: new_object_number,
                             self.K_OUTSIDE: is_outside}
                         self.artists[pick_artist][self.K_EDITED] = True
+                        #
+                        # Find all points within holes in the old object
+                        #
+                        hmask = np.zeros(self.shape, bool)
+                        for artist, attrs in list(self.artists.items()):
+                            if (not attrs[self.K_OUTSIDE] and
+                                attrs[self.K_LABEL] == old_object_number):
+                                hx, hy = artist.get_data()
+                                hmask = hmask | polygon_lines_to_mask(
+                                    hy[:-1], hx[:-1], hy[1:], hx[1:], 
+                                    self.shape)
                         temp = np.ones(self.to_keep.shape[0] + 1, bool)
                         temp[:-1] = self.to_keep
                         self.to_keep = temp
                         self.close_label(old_object_number, False)
                         self.close_label(new_object_number, False)
+                        #
+                        # Remove hole points from both objects
+                        #
+                        for label in self.labels:
+                            label[hmask & ((label == old_object_number) |
+                                            (label == new_object_number))] = 0
                         self.init_labels()
                         self.make_control_points(old_object_number)
                         self.make_control_points(new_object_number)
@@ -1571,6 +1651,9 @@ class EditObjectsManually(I.Identify):
                     return
                 if self.active_artist is not None:
                     xdata, ydata = self.active_artist.get_data()
+                    ydata, xdata = [
+                        min(self.shape[i]-1, max(yx, 0)) 
+                        for i, yx in enumerate((ydata, xdata))]
                     self.active_artist.set_data(
                         np.hstack((xdata, [event.xdata])),
                         np.hstack((ydata, [event.ydata])))
@@ -1720,37 +1803,38 @@ class EditObjectsManually(I.Identify):
                         mask = labels == sub_object_number
                         i, j = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
                         i, j = i[mask], j[mask]
-                        if len(i) < 2:
-                            continue
                         topleft = np.argmin(i*i+j*j)
-                        chain = []
                         start_i = i[topleft]
                         start_j = j[topleft]
-                        #
-                        # Pick a direction that points normal and to the right
-                        # from the point at the top left.
-                        #
-                        direction = 2
-                        ic = start_i
-                        jc = start_j
-                        while True:
-                            chain.append((ic - 1, jc - 1))
-                            hits = mask[ic + traversal_order[direction, :, 0],
-                                        jc + traversal_order[direction, :, 1]]
-                            t = traversal_order[direction, hits, :][0, :]
-                            ic += t[0]
-                            jc += t[1]
-                            direction = t[2]
-                            if ic == start_i and jc == start_j:
-                                if len(chain) > 40:
-                                    markevery = min(10, int((len(chain)+ 19) / 20))
-                                    chain = chain[::markevery]
+                        if len(i) == 1:
+                            chain = [(start_i, start_j), (start_i, start_j)]
+                        else:
+                            chain = []
+                            #
+                            # Pick a direction that points normal and to the right
+                            # from the point at the top left.
+                            #
+                            direction = 2
+                            ic = start_i
+                            jc = start_j
+                            while True:
                                 chain.append((ic - 1, jc - 1))
-                                if not polarity:
-                                    # Reverse the winding order
-                                    chain = chain[::-1]
-                                break
-                        chain = np.array(chain)
+                                hits = mask[ic + traversal_order[direction, :, 0],
+                                            jc + traversal_order[direction, :, 1]]
+                                t = traversal_order[direction, hits, :][0, :]
+                                ic += t[0]
+                                jc += t[1]
+                                direction = t[2]
+                                if ic == start_i and jc == start_j:
+                                    if len(chain) > 40:
+                                        markevery = min(10, int((len(chain)+ 19) / 20))
+                                        chain = chain[::markevery]
+                                    chain.append((ic, jc))
+                                    if not polarity:
+                                        # Reverse the winding order
+                                        chain = chain[::-1]
+                                    break
+                        chain = np.array(chain, dtype=float)
                         artist = Line2D(chain[:, 1], chain[:, 0],
                                         marker='o', markerfacecolor='r',
                                         markersize=6,
@@ -1803,7 +1887,7 @@ class EditObjectsManually(I.Identify):
         with FilterObjectsDialog(self, guide_image, orig_labels) as dialog_box:
             result = dialog_box.ShowModal()
         if result != wx.OK:
-            raise RuntimeError("User cancelled EditObjectsManually")
+            raise self.InteractionCancelledException()
         return dialog_box.labels
     
     def get_measurement_columns(self, pipeline):

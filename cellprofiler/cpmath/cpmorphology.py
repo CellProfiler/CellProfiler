@@ -791,6 +791,7 @@ def triangle_areas(p1,p2,p3):
     a /= 2.0
     del v1, v2, cross1, cross2
     a = a.copy()  # a is a view on v1; shed one dimension.
+    a = np.abs(a)
     #
     # Handle small round-off errors
     #

@@ -63,6 +63,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 from cellprofiler.cpmath.outline import outline
+from cellprofiler.cpmath.cpmorphology import triangle_areas
 
 import identify as I
 
@@ -1826,15 +1827,39 @@ class EditObjectsManually(I.Identify):
                                 jc += t[1]
                                 direction = t[2]
                                 if ic == start_i and jc == start_j:
-                                    if len(chain) > 40:
-                                        markevery = min(10, int((len(chain)+ 19) / 20))
-                                        chain = chain[::markevery]
-                                    chain.append((ic, jc))
+                                    chain.append((ic - 1, jc - 1))
                                     if not polarity:
                                         # Reverse the winding order
                                         chain = chain[::-1]
                                     break
                         chain = np.array(chain, dtype=float)
+                        #
+                        # Start with the first point and a midpoint in the
+                        # chain and keep adding points until the maximum
+                        # error caused by leaving a point out is 4
+                        #
+                        minarea = 10
+                        if len(chain) > 10:
+                            accepted = np.zeros(len(chain), bool)
+                            accepted[0] = True
+                            accepted[-1] = True
+                            accepted[int(len(chain)/2)] = True
+                            while True:
+                                idx1 = np.cumsum(accepted[:-1])
+                                idx0 = idx1 - 1
+                                ca = chain[accepted]
+                                aidx = np.argwhere(accepted).flatten()
+                                a = triangle_areas(ca[idx0],
+                                                   ca[idx1],
+                                                   chain[:-1])
+                                idxmax = np.argmax(a)
+                                if a[idxmax] < 4:
+                                    break
+                                # Pick a point halfway in-between
+                                idx = int((aidx[idx0[idxmax]] + 
+                                           aidx[idx1[idxmax]]) / 2)
+                                accepted[idx] = True
+                            chain = chain[accepted]
                         artist = Line2D(chain[:, 1], chain[:, 0],
                                         marker='o', markerfacecolor='r',
                                         markersize=6,

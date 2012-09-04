@@ -30,6 +30,8 @@ from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.images import Images
+from cellprofiler.modules.loadimages import needs_well_metadata
+from cellprofiler.modules.loadimages import well_metadata_tokens
 
 X_AUTOMATIC_EXTRACTION = "Automatic"
 X_MANUAL_EXTRACTION = "Manual"
@@ -405,7 +407,13 @@ class Metadata(cpm.CPModule):
         match = re.search(pattern, text)
         if match is None:
             return {}
-        return match.groupdict()
+        result = match.groupdict()
+        tokens = result.keys()
+        if needs_well_metadata(tokens):
+            well_row_token, well_column_token = well_metadata_tokens(tokens)
+            result[cpmeas.FTR_WELL] = \
+                result[well_row_token] + result[well_column_token]
+        return result
     
     def automatically_extract_metadata(self, group, ipd):
         return {}
@@ -553,10 +561,15 @@ class Metadata(cpm.CPModule):
     
     def get_measurement_columns(self, pipeline):
         '''Get the metadata measurements collected by this module'''
-        return [ (cpmeas.IMAGE, 
-                  '_'.join((cpmeas.C_METADATA, key)),
-                  cpmeas.COLTYPE_VARCHAR_FILE_NAME)
-                 for key in self.get_metadata_keys()]
+        keys = self.get_metadata_keys()
+        result = [ (cpmeas.IMAGE, 
+                    '_'.join((cpmeas.C_METADATA, key)),
+                    cpmeas.COLTYPE_VARCHAR_FILE_NAME)
+                   for key in keys]
+        if needs_well_metadata(keys):
+            result.append((cpmeas.IMAGE, cpmeas.M_WELL, 
+                           cpmeas.COLTYPE_VARCHAR_FORMAT % 4))
+        return result
     
     class ImportedMetadata(object):
         '''A holder for the metadata from a csv file'''

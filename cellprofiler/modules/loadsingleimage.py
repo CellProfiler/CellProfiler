@@ -336,7 +336,7 @@ class LoadSingleImage(cpm.CPModule):
             image_numbers = m.get_image_numbers()
             
         for image_number in image_numbers:
-            dict = self.get_file_names(workspace)
+            dict = self.get_file_names(workspace, image_set_number=image_number)
             for image_name in dict.keys():
                 file_settings = self.get_file_settings(image_name)
                 if file_settings.image_objects_choice == IO_IMAGES:
@@ -533,7 +533,109 @@ class LoadSingleImage(cpm.CPModule):
             if file_setting.image_objects_choice == IO_IMAGES:
                 if not re.match(invalid_chars_pattern,file_setting.image_name.value):
                         raise cps.ValidationError(warning_text,file_setting.image_name)
-                        
+                    
+    def needs_conversion(self):
+        return True
+    
+    def convert(self, metadata, namesandtypes, groups):
+        '''Convert from legacy to modern'''
+        import cellprofiler.modules.metadata as cpmetadata
+        import cellprofiler.modules.namesandtypes as cpnamesandtypes
+        import cellprofiler.modules.groups as cpgroups
+        assert isinstance(metadata, cpmetadata.Metadata)
+        assert isinstance(namesandtypes, cpnamesandtypes.NamesAndTypes)
+        assert isinstance(groups, cpgroups.Groups)
+        
+        for group in self.file_settings:
+            tags = []
+            file_name = group.file_name.value
+            if group.image_objects_choice == IO_IMAGES:
+                name = group.image_name.value
+            else:
+                name = group.objects_name.value
+            loc = 0
+            regexp = "^"
+            while True:
+                m = re.search('\\\\g[<](.+?)[>]', file_name[loc:])
+                if m is None:
+                    break
+                tag = m.groups()[0]
+                tags.append(tag)
+                start = loc + m.start()
+                end = loc + m.end()
+                regexp += re.escape(file_name[loc:start])
+                regexp += "(?P<%s>.+?)" % tag
+                loc = end
+                if loc == len(file_name):
+                    break
+            regexp += re.escape(file_name[loc:])+"$"
+            if namesandtypes.assignment_method != cpnamesandtypes.ASSIGN_RULES:
+                namesandtypes.assignment_method.value = cpnamesandtypes.ASSIGN_RULES
+            else:
+                namesandtypes.add_assignment()
+            assignment = namesandtypes.assignments[-1]
+            structure = [cps.Filter.AND_PREDICATE ]
+            fp = cpnamesandtypes.FilePredicate()
+            fp_does, fp_does_not = [
+                [d for d in fp.subpredicates if isinstance(d, c)][0]
+                for c in (cps.Filter.DoesPredicate, cps.Filter.DoesNotPredicate)]
+            if len(tags) == 0:
+                structure.append([fp, fp_does, cps.Filter.EQ_PREDICATE,
+                                  file_name])
+            else:
+                #
+                # Unfortunately, we can't replace metadata in the file name.
+                # We have to extract metadata from files that match the
+                # parts of the file name outside of the metadata region. This
+                # isn't what the user intended, but we do the best we can.
+                #
+                # Examples: file_A01.TIF, file_thumbnail.TIF will both match
+                # file_(?P<well>.+?)\.TIF even though the user doesn't want
+                # file_thumbnail.TIF.
+                #
+                metadata.notes.append(
+                    "WARNING: LoadSingleImage used metadata matching. The conversion "
+                    "might match files that were not matched by the legacy "
+                    "module.")
+                namesandtypes.notes.append(
+                    ("WARNING: LoadSingleImage used metadata matching for the %s "
+                     "image. The conversion might match files that were not "
+                     "matched by the legacy module.") % name)
+                structure.append([
+                    fp, fp_does, cps.Filter.CONTAINS_REGEXP_PREDICATE, regexp])
+                if not metadata.wants_metadata:
+                    metadata.wants_metadata.value = True
+                else:
+                    metadata.add_extraction_method()
+                em = metadata.extraction_methods[-1]
+                em.extraction_method.value = cpmetadata.X_MANUAL_EXTRACTION
+                em.source.value = cpmetadata.XM_FILE_NAME
+                em.file_regexp.value = regexp
+                em.filter_choice.value = cpmetadata.F_FILTERED_IMAGES
+                em.filter.build(structure)
+                #
+                # If there was metadata to match, namesandtypes should
+                # have a metadata joiner.
+                #
+                joins = namesandtypes.join.parse()
+                for d in joins:
+                    for v in d.values():
+                        if v in tags:
+                            d[name] = v
+                            tags.remove(v)
+                            break
+                    else:
+                        d[name] = None
+                namesandtypes.join.build(joins)
+                
+            assignment.rule_filter.build(structure)
+            if group.image_objects_choice == IO_IMAGES:
+                assignment.image_name.value = name
+                assignment.load_as_choice.value = cpnamesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+            else:
+                assignment.object_name.value = name
+                assignment.load_as_choice.value = cpnamesandtypes.LOAD_AS_OBJECTS
+                
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 4:
             new_setting_values = list(setting_values)

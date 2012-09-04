@@ -21,6 +21,7 @@ import urllib
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
+import cellprofiler.measurements as cpmeas
 import cellprofiler.modules.metadata as M
 
 class TestMetadata(unittest.TestCase):
@@ -195,4 +196,32 @@ C10,BRD041618
                 os.unlink(path)
             except:
                 pass
+            
+    def test_03_01_well_row_column(self):
+        # Make sure that Metadata_Well is generated if we have
+        # Metadata_Row and Metadata_Column
+        #
+        for row_tag, column_tag in (
+            ("row", "column"),
+            ("wellrow", "wellcolumn"),
+            ("well_row", "well_column")):
+            module = M.Metadata()
+            em = module.extraction_methods[0]
+            em.filter_choice.value = M.F_ALL_IMAGES
+            em.extraction_method.value = M.X_MANUAL_EXTRACTION
+            em.source.value = M.XM_FILE_NAME
+            em.file_regexp.value = (
+                "^Channel(?P<Wavelength>[1-2])-"
+                "(?P<%(row_tag)s>[A-H])-"
+                "(?P<%(column_tag)s>[0-9]{2}).tif$") % locals()
+            em.filter_choice.value = M.F_ALL_IMAGES
+            ipd = cpp.ImagePlaneDetails("file:/imaging/analysis/Channel1-C-05.tif",
+                                        None, None, None)
+            metadata = module.get_ipd_metadata(ipd)
+            self.assertDictEqual(metadata, { "Wavelength":"1",
+                                             row_tag:"C",
+                                             column_tag:"05",
+                                             cpmeas.FTR_WELL:"C05"})
+            self.assertIn(cpmeas.M_WELL, 
+                          [c[1] for c in module.get_measurement_columns(None)])
                 

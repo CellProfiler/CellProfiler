@@ -50,7 +50,79 @@ ALT_IMAGE_NAME = "altimage"
 OBJECTS_NAME = "objects"
 OUTLINES_NAME = "outlines"
 
-class testLoadImages(unittest.TestCase):
+class ConvtesterMixin:
+    '''Mixin class that supplies a generic legacy conversion tester method
+    
+    '''
+    def convtester(self, pipeline_text, directory, fn_filter = (lambda x: True)):
+        '''Test whether a converted pipeline yields the same output
+        
+        pipeline_text - the pipeline as a text file
+        
+        directory - the default input directory
+        
+        fn_filter - a function that returns True if a file should be included
+                    in the workspace file list.
+        '''
+        cpprefs.set_default_image_directory(directory)
+        pipeline = cpp.Pipeline()
+        pipeline.load(StringIO(pipeline_text))
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        m = [m for m in pipeline.modules() if isinstance(m, LI.LoadImages)][0]
+        m1 = measurements.Measurements(mode="memory")
+        w1 = W.Workspace(pipeline, m, m1, None, m1, None)
+        pipeline.prepare_run(w1)
+        
+        m2 = measurements.Measurements(mode="memory")
+        w2 = W.Workspace(pipeline, m, m2, None, m2, None)
+        urls = [LI.pathname2url(os.path.join(directory, filename))
+                 for filename in os.listdir(directory)
+                 if fn_filter(filename)]
+        w2.file_list.add_files_to_filelist(urls)
+        pipeline.convert_legacy_input_modules()
+        pipeline.prepare_run(w2)
+        
+        ff1 = m1.get_feature_names(measurements.IMAGE)
+        ffexpected = [f.replace("IMAGE_FOR_", "") for f in ff1]
+        ff2 = m2.get_feature_names(measurements.IMAGE)
+        self.assertItemsEqual(ffexpected, ff2)
+        self.assertEqual(m1.image_set_count, m2.image_set_count)
+        image_numbers = m1.get_image_numbers()
+        #
+        # Order images by URL
+        #
+        m_url1 = sorted(ff1, key=lambda f: f.replace("IMAGE_FOR_", ""))
+        m_url2 = sorted(ff2)
+        order1, order2 = [np.lexsort(
+            [mm.get_measurement(measurements.IMAGE, f, image_numbers)
+             for f in m_url]) for mm, m_url in ((m1, m_url1), (m2, m_url2))]
+        image_numbers1 = image_numbers[order1]
+        image_numbers2 = image_numbers[order2]
+        for f1, f2 in zip(ff1, ff2):
+            if f1 in (measurements.GROUP_INDEX, measurements.GROUP_NUMBER,
+                      measurements.IMAGE_NUMBER):
+                continue
+            v1 = m1.get_measurement(measurements.IMAGE, f1,
+                                    image_set_number = image_numbers1)
+            v2 = m2.get_measurement(measurements.IMAGE, f2,
+                                    image_set_number = image_numbers2)
+            if (f1.startswith(measurements.C_PATH_NAME) or
+                f1.startswith(measurements.C_OBJECTS_PATH_NAME)):
+                for p1, p2 in zip(v1, v2):
+                    self.assertEqual(os.path.normcase(p1),
+                                     os.path.normcase(p2))
+            elif (f1.startswith(measurements.C_URL) or
+                  f1.startswith(measurements.C_OBJECTS_URL)):
+                for p1, p2 in zip(v1, v2):
+                    self.assertEqual(
+                        os.path.normcase(LI.url2pathname(p1.encode("utf-8"))),
+                        os.path.normcase(LI.url2pathname(p2.encode("utf-8"))))
+            else:        
+                np.testing.assert_array_equal(v1, v2)
+
+class testLoadImages(unittest.TestCase, ConvtesterMixin):
     @classmethod
     def setUpClass(cls):
         start_subimager()
@@ -3173,61 +3245,6 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertEqual(len(group_list[1][1]), 1)
         self.assertEqual(group_list[1][1][0], image_numbers[-1])
         
-    def convtester(self, pipeline_text, directory, fn_filter = (lambda x: True)):
-        '''Test whether a converted pipeline yields the same output
-        
-        pipeline_text - the pipeline as a text file
-        
-        directory - the default input directory
-        
-        fn_filter - a function that returns True if a file should be included
-                    in the workspace file list.
-        '''
-        cpprefs.set_default_image_directory(directory)
-        pipeline = cpp.Pipeline()
-        pipeline.load(StringIO(pipeline_text))
-        def callback(caller, event):
-            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
-        pipeline.add_listener(callback)
-        m = [m for m in pipeline.modules() if isinstance(m, LI.LoadImages)][0]
-        m1 = measurements.Measurements(mode="memory")
-        w1 = W.Workspace(pipeline, m, m1, None, m1, None)
-        pipeline.prepare_run(w1)
-        
-        m2 = measurements.Measurements(mode="memory")
-        w2 = W.Workspace(pipeline, m, m2, None, m2, None)
-        urls = [LI.pathname2url(os.path.join(directory, filename))
-                 for filename in os.listdir(directory)
-                 if fn_filter(filename)]
-        w2.file_list.add_files_to_filelist(urls)
-        pipeline.convert_legacy_input_modules()
-        pipeline.prepare_run(w2)
-        
-        ff1 = m1.get_feature_names(measurements.IMAGE)
-        ffexpected = [f.replace("IMAGE_FOR_", "") for f in ff1]
-        ff2 = m2.get_feature_names(measurements.IMAGE)
-        self.assertItemsEqual(ffexpected, ff2)
-        self.assertEqual(m1.image_set_count, m2.image_set_count)
-        image_numbers = m1.get_image_numbers()
-        for f1, f2 in zip(ff1, ff2):
-            v1 = m1.get_measurement(measurements.IMAGE, f1,
-                                    image_set_number = image_numbers)
-            v2 = m2.get_measurement(measurements.IMAGE, f2,
-                                    image_set_number = image_numbers)
-            if (f1.startswith(measurements.C_PATH_NAME) or
-                f1.startswith(measurements.C_OBJECTS_PATH_NAME)):
-                for p1, p2 in zip(v1, v2):
-                    self.assertEqual(os.path.normcase(p1),
-                                     os.path.normcase(p2))
-            elif (f1.startswith(measurements.C_URL) or
-                  f1.startswith(measurements.C_OBJECTS_URL)):
-                for p1, p2 in zip(v1, v2):
-                    self.assertEqual(
-                        os.path.normcase(LI.url2pathname(p1.encode("utf-8"))),
-                        os.path.normcase(LI.url2pathname(p2.encode("utf-8"))))
-            else:        
-                np.testing.assert_array_equal(v1, v2)
-    
     def test_17_01_single_channel(self):
         pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3

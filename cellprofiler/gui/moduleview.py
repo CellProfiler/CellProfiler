@@ -2712,9 +2712,17 @@ class FileCollectionDisplayController(object):
             parent_item = self.modpath_to_item[parent_key]
         else:
             parent_item = self.add_item(parent_key)
+            self.tree_ctrl.SetItemImage(parent_item, self.FOLDER_IMAGE_INDEX)
+            self.tree_ctrl.SetItemImage(parent_item, 
+                                        self.FOLDER_OPEN_IMAGE_INDEX,
+                                        wx.TreeItemIcon_Expanded)
+            
+        want_erase = len(self.modpath_to_item) == 0
         item = self.tree_ctrl.AppendItem(parent_item, text)
         self.tree_ctrl.SetPyData(item, modpath[-1])
         self.modpath_to_item[modpath] = item
+        if want_erase:
+            self.tree_ctrl.Refresh(True)
         return item
     
     def remove_item(self, modpath):
@@ -2733,6 +2741,12 @@ class FileCollectionDisplayController(object):
                     self.remove_item(sub_modpath)
             self.tree_ctrl.Delete(self.modpath_to_item[modpath])
             del self.modpath_to_item[modpath]
+            if len(modpath) > 1:
+                super_modpath = modpath[:-1]
+                item = self.modpath_to_item[super_modpath]
+                n_children = self.tree_ctrl.GetChildrenCount(item, False)
+                if n_children == 0:
+                    self.remove_item(super_modpath)
             
     @classmethod
     def get_modpath(cls, path):
@@ -2893,6 +2907,7 @@ class FileCollectionDisplayController(object):
                         item_id = self.add_item(path, text)
                         image_id = self.get_image_id_from_nodetype(node_type)
                         self.tree_ctrl.SetItemImage(item_id, image_id)
+                        self.manage_expansion()
                         return
                 elif hint == cps.FileCollectionDisplay.REMOVE:
                     if is_filtered:
@@ -2903,6 +2918,14 @@ class FileCollectionDisplayController(object):
             
     def update(self):
         self.update_subtree(self.v.file_tree, self.root_item, False, [])
+        self.manage_expansion()
+        
+    def manage_expansion(self):
+        '''Handle UI expansion issues
+        
+        Make sure that the tree is auto-expanded if appropriate and that
+        the root nodes are expanded.
+        '''
         if (not self.user_collapsed_a_node):
             #
             # Expand all until we reach a node that has more than

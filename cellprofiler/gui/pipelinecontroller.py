@@ -799,17 +799,16 @@ class PipelineController:
             
     def on_menu_add_module(self, event):
         from cellprofiler.modules import instantiate_module
+        from cellprofiler.gui.addmoduleframe import AddToPipelineEvent
         assert isinstance(event, wx.CommandEvent)
         if self.menu_id_to_module_name.has_key(event.Id):
             module_name = self.menu_id_to_module_name[event.Id]
-            module = instantiate_module(module_name)
-            module.show_window = True  # default to show in GUI
-            selected_modules = self.__get_selected_modules()
-            if len(selected_modules) == 0:
-                module.module_num = len(self.__pipeline.modules())+1
-            else:
-                module.module_num = selected_modules[0].module_num + 1
-            self.__pipeline.add_module(module)
+            def loader(module_num, module_name=module_name):
+                module = instantiate_module(module_name)
+                module.set_module_num(module_num)
+                return module
+            self.on_add_to_pipeline(
+                self, AddToPipelineEvent(module_name, loader))
         else:
             logger.warn("Could not find module associated with ID = %d, module = %s" % (
                 event.Id, event.GetString()))
@@ -824,13 +823,23 @@ class PipelineController:
         self.remove_selected_modules()
     
     def remove_selected_modules(self):
-        selected_modules = self.__get_selected_modules()
-        for module in selected_modules:
-            for setting in module.settings():
-                if self.__setting_errors.has_key(setting.key()):
-                    self.__frame.preferences_view.pop_error_text(self.__setting_errors.pop(setting.key()))                    
-            self.__pipeline.remove_module(module.module_num)
-        self.exit_test_mode()
+        with self.__pipeline.undoable_action("Remove modules"):
+            selected_modules = self.__get_selected_modules()
+            for module in selected_modules:
+                for setting in module.settings():
+                    if self.__setting_errors.has_key(setting.key()):
+                        self.__frame.preferences_view.pop_error_text(self.__setting_errors.pop(setting.key()))                    
+                self.__pipeline.remove_module(module.module_num)
+            has_input_modules = any([m.is_input_module()
+                                     for m in self.__pipeline.modules()])
+            has_legacy_modules = any([m.is_load_module()
+                                      for m in self.__pipeline.modules()])
+            if (not has_input_modules) and (not has_legacy_modules):
+                #
+                # We need input modules if legacy modules have been deleted
+                #
+                self.__pipeline.init_modules()
+            self.exit_test_mode()
         
     def exit_test_mode(self):
         '''Exit test mode with all the bells and whistles
@@ -896,17 +905,52 @@ class PipelineController:
         finally:
             wx.EndBusyCursor()
     
-    def on_add_to_pipeline(self,caller,event):
-        """Add a module to the pipeline using the event's module loader"""
+    def on_add_to_pipeline(self, caller, event):
+        """Add a module to the pipeline using the event's module loader
+        
+        caller - ignored
+        
+        event - an AddToPipeline event
+        """
         selected_modules = self.__get_selected_modules()
         if len(selected_modules):
             module_num=selected_modules[-1].module_num+1
         else:
             # insert module last if nothing selected
-            module_num = len(self.__pipeline.modules())+1 
+            module_num = len(self.__pipeline.modules(False))+1 
         module = event.module_loader(module_num)
         module.show_window = True  # default to show in GUI
+        remove_input_modules = False
+        if (module.is_load_module() and 
+            any([m.is_input_module() for m in self.__pipeline.modules()])):
+            #
+            # A legacy load module, ask user if they want to convert to a
+            # legacy pipeline
+            #
+            message = ("%s is a legacy input module that is incompatible\n"
+                       "with the Images, Metadata, NamesAndTypes, and Groups\n"
+                       "input modules. Do you want to remove these input\n"
+                       "modules and use %s instead?") % (
+                           module.module_name, module.module_name)
+            if wx.MessageBox(
+                message, 
+                caption = "Use legacy input module, %s" %module.module_name,
+                style = wx.YES_NO | wx.YES_DEFAULT | wx.ICON_QUESTION,
+                parent = self.__frame) != wx.YES:
+                return
+            remove_input_modules = True
+            
         self.__pipeline.add_module(module)
+        if remove_input_modules:
+            while True:
+                for m in self.__pipeline.modules():
+                    if m.is_input_module():
+                        self.__pipeline.remove_module(m.module_num)
+                        break
+                else:
+                    break
+            self.__pipeline_list_view.select_one_module(module.module_num)
+            
         #
         # Major event - restart from scratch
         #

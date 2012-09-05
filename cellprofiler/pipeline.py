@@ -2137,11 +2137,11 @@ class Pipeline(object):
             while(len(self.__modules) > 0):
                 self.remove_module(self.__modules[-1].module_num)
             self.notify_listeners(PipelineClearedEvent())
-            self.__init_modules()
+            self.init_modules()
         finally:
             self.stop_undoable_action()
         
-    def __init_modules(self):
+    def init_modules(self):
         '''Initialize the module list
         
         Initialize the modules list to contain the four file modules.
@@ -2561,6 +2561,27 @@ class Pipeline(object):
             return "Nothing to undo"
         return self.__undo_stack[-1][1]
     
+    def undoable_action(self, name = "Composite edit"):
+        '''Return an object that starts and stops an undoable action
+        
+        Use this with the "with" statement to create a scope where all
+        actions are collected for undo:
+        
+        with pipeline.undoable_action():
+            pipeline.add_module(module1)
+            pipeline.add_module(module2)
+        '''
+        class UndoableAction():
+            def __init__(self, pipeline, name):
+                self.pipeline = pipeline
+                self.name = name
+            def __enter__(self):
+                self.pipeline.start_undoable_action()
+                
+            def __exit__(self, ttype, value, traceback):
+                self.pipeline.stop_undoable_action(name)
+        return UndoableAction(self, name)
+                
     def start_undoable_action(self):
         '''Start editing the pipeline
         

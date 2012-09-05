@@ -1224,6 +1224,7 @@ class HDFCSV(object):
             self.top_level_group = self.parent_group.create_group(name)
             self.top_level_group.attrs[self.CLASS] = self.HDFCSV_CLASS
             self.top_level_group.attrs[self.VERSION] = self.CURRENT_VERSION
+        self.columns = {}
             
     def clear(self):
         '''Clear all columns in the CSV'''
@@ -1233,7 +1234,8 @@ class HDFCSV(object):
                 if column.attrs[self.CLASS] == self.COLUMN:
                     del column
                     del self.top_level_group[key]
-                
+            self.columns = {}
+            
     def add_column(self, name, data = None):
         '''Add a column
         
@@ -1249,6 +1251,7 @@ class HDFCSV(object):
             kolumn = VStringArray(column, self.lock)
             if data is not None:
                 kolumn.set_all(data)
+            self.columns[name] = kolumn
             return kolumn
                 
     def set_all(self, d):
@@ -1277,7 +1280,9 @@ class HDFCSV(object):
         
         returns a VStringArray which may be used like a sequence
         '''
-        return VStringArray(self.top_level_group[key])
+        if key not in self.columns:
+            self.columns[key] = VStringArray(self.top_level_group[key])
+        return self.columns[key]
     
     def __len__(self):
         return len(self.get_column_names())

@@ -350,9 +350,9 @@ class CPFigureFrame(wx.Frame):
         
     def on_paint(self, event):
         dc = wx.PaintDC(self)
-        self.panel.draw(dc)
+        self.panel.gui_repaint(dc)
         event.Skip()
-        del dc
+        dc.Destroy()
     
     def on_close(self, event):
         if self.close_fn is not None:

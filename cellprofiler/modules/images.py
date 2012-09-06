@@ -23,6 +23,7 @@ import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.utilities.walk_in_background as W
 import os
+import sys
 import urllib
 
 from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
@@ -34,7 +35,7 @@ class Images(cpm.CPModule):
     category = "File Processing"
     
     MI_SHOW_IMAGE = "Show image"
-    MI_REMOVE = "Remove from list"
+    MI_REMOVE = cps.FileCollectionDisplay.DeleteMenuItem("Remove from list")
     MI_REFRESH = "Refresh"
     
     def create_settings(self):
@@ -84,13 +85,19 @@ class Images(cpm.CPModule):
         '''The module is no longer in the GUI'''
         self.workspace = None
         
-    def on_drop(self, pathnames):
+    def on_drop(self, pathnames, check_for_directories):
         '''Called when the UI is asking to add files or directories'''
         if self.workspace is not None:
             modlist = []
             urls = []
             for pathname in pathnames:
-                if os.path.isfile(pathname):
+                # Hack - convert drive names to lower case in
+                #        Windows to normalize them.
+                if (sys.platform == 'win32' and pathname[0].isalpha()
+                    and pathname[1] == ":"):
+                    pathname = os.path.normpath(pathname[:2]) + pathname[2:]
+                    
+                if (not check_for_directories) or os.path.isfile(pathname):
                     urls.append(pathname2url(pathname))
                     modpath = self.make_modpath_from_path(pathname)
                     self.add_files_to_modlist(modpath[:-1], [modpath[-1]],
@@ -214,7 +221,7 @@ class Images(cpm.CPModule):
                 import wx
                 wx.CallAfter(lambda: frame.Raise())
             return True
-        elif command in (self.MI_REMOVE, self.MI_REFRESH):
+        elif command == self.MI_REFRESH:
             hdf_file_list = self.workspace.file_list
             modlist = []
             if hdf_file_list.get_type(url) == hdf_file_list.TYPE_DIRECTORY:

@@ -485,7 +485,8 @@ class ModuleView:
                         control.filter_panel_controller = fc
                 elif isinstance(v, cps.FileCollectionDisplay):
                     if control is not None:
-                        control.file_collection_display.update()
+                        # control.file_collection_display.update()
+                        pass
                     else:
                         fcd = FileCollectionDisplayController(
                             self, v, self.__pipeline)
@@ -2547,13 +2548,42 @@ class FileCollectionDisplayController(object):
     
     ACTIVE_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
     FILTERED_COLOR = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
-    class FCDCFileDropTarget(wx.FileDropTarget):
-        def __init__(self, callback_fn):
+    class FCDCDropTarget(wx.PyDropTarget):
+        def __init__(self, file_callback_fn, text_callback_fn):
             super(self.__class__, self).__init__()
-            self.callback_fn = callback_fn
+            self.file_callback_fn = file_callback_fn
+            self.text_callback_fn = text_callback_fn
+            self.file_data_object = wx.FileDataObject()
+            self.text_data_object = wx.TextDataObject()
+            self.composite_data_object = wx.DataObjectComposite()
+            self.composite_data_object.Add(self.file_data_object, True)
+            self.composite_data_object.Add(self.text_data_object)
+            self.SetDataObject(self.composite_data_object)
             
         def OnDropFiles(self, x, y, filenames):
-            self.callback_fn(x, y, filenames)
+            self.file_callback_fn(x, y, filenames)
+            
+        def OnDropText(self, x, y, text):
+            self.text_callback_fn(x, y, text)
+            
+        def OnEnter(self, x, y, d):
+            return wx.DragCopy
+            
+        def OnDragOver(self, x, y, d):
+            return wx.DragCopy
+        
+        def OnData(self, x, y, d):
+            if self.GetData():
+                df = self.composite_data_object.GetReceivedFormat().GetType()
+                if  df in (wx.DF_TEXT, wx.DF_UNICODETEXT):
+                    self.OnDropText(x, y, self.text_data_object.GetText())
+                elif df == wx.DF_FILENAME:
+                    self.OnDropFiles(self, x, y,
+                                     self.file_data_object.GetFilenames())
+            return wx.DragCopy
+            
+        def OnDrop(self, x, y):
+            return True
             
     def __init__(self, module_view, v, pipeline):
         assert isinstance(v, cps.FileCollectionDisplay)
@@ -2605,7 +2635,8 @@ class FileCollectionDisplayController(object):
                                     wx.TreeItemIcon_Expanded)
         self.tree_ctrl.SetMinSize((100, 300))
         self.tree_ctrl.SetMaxSize((sys.maxint, 300))
-        self.file_drop_target = self.FCDCFileDropTarget(self.on_drop_files)
+        self.file_drop_target = self.FCDCDropTarget(self.on_drop_files,
+                                                    self.on_drop_text)
         self.tree_ctrl.SetDropTarget(self.file_drop_target)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.panel.Sizer.Add(sizer, 0, wx.EXPAND)
@@ -2741,12 +2772,6 @@ class FileCollectionDisplayController(object):
                     self.remove_item(sub_modpath)
             self.tree_ctrl.Delete(self.modpath_to_item[modpath])
             del self.modpath_to_item[modpath]
-            if len(modpath) > 1:
-                super_modpath = modpath[:-1]
-                item = self.modpath_to_item[super_modpath]
-                n_children = self.tree_ctrl.GetChildrenCount(item, False)
-                if n_children == 0:
-                    self.remove_item(super_modpath)
             
     @classmethod
     def get_modpath(cls, path):
@@ -2762,7 +2787,13 @@ class FileCollectionDisplayController(object):
             
                     
     def on_drop_files(self, x, y, filenames):
-        self.v.fn_on_drop(filenames)
+        self.v.fn_on_drop(filenames, True)
+        
+    def on_drop_text(self, x, y, text):
+        '''Text is assumed to be one file name per line'''
+        filenames = [line.strip() for line in text.split("\n")
+                     if len(line.strip()) > 0]
+        self.v.fn_on_drop(filenames, False)
         
     def get_path_from_event(self, event):
         '''Given a tree control event, find the path from the root
@@ -2788,8 +2819,14 @@ class FileCollectionDisplayController(object):
         if len(context_menu) > 0:
             menu = wx.Menu()
             try:
+                delete_menu_items = []
                 for context_item in context_menu:
-                    menu.Append(-1, context_item)
+                    if isinstance(context_item, 
+                                  cps.FileCollectionDisplay.DeleteMenuItem):
+                        delete_menu_items.append(
+                            menu.Append(-1, context_item.text).Id)
+                    else:
+                        menu.Append(-1, context_item)
                 def on_menu(event):
                     logger.debug("On menu")
                     
@@ -2798,7 +2835,10 @@ class FileCollectionDisplayController(object):
                         for menu_item in menu.GetMenuItems():
                             if menu_item.Id == event.Id:
                                 logger.debug("    Command = %s" % menu_item.Text)
-                                self.v.fn_on_menu_command(path, menu_item.Text)
+                                if menu_item.Id in delete_menu_items:
+                                    self.on_delete_selected(event)
+                                else:
+                                    self.v.fn_on_menu_command(path, menu_item.Text)
                                 break
                     finally:
                         self.pipeline.stop_undoable_action()
@@ -2913,6 +2953,15 @@ class FileCollectionDisplayController(object):
                     if is_filtered:
                         return
                     self.remove_item(path)
+                    if len(path) > 1:
+                        super_modpath = path[:-1]
+                        if super_modpath in self.modpath_to_item:
+                            item = self.modpath_to_item[super_modpath]
+                            n_children = self.tree_ctrl.GetChildrenCount(
+                                item, False)
+                            if n_children == 0:
+                                self.remove_item(super_modpath)
+                    
                     return
         self.update()
             

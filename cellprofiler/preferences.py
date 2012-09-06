@@ -498,7 +498,10 @@ def add_output_file_name_listener(listener):
     __output_filename_listeners.append(listener)
 
 def remove_output_file_name_listener(listener):
-    __output_filename_listeners.remove(listener)
+    try:
+        __output_filename_listeners.remove(listener)
+    except:
+        logger.warn("File name listener doubly removed")
 
 def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
     """Convert a path into an absolute path using the path conventions

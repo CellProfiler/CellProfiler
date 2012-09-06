@@ -2527,6 +2527,18 @@ class FileCollectionDisplay(Setting):
     BKGND_RESUME = "resume"
     BKGND_STOP = "stop"
     BKGND_GET_STATE = "getstate"
+    class DeleteMenuItem(object):
+        '''A placeholder in the context menu for the delete command
+        
+        The DeleteMenuItem can be placed in the context menu returned
+        by fn_get_path_info so that the user can delete the selected items
+        from the context menu.
+        
+        text - the text to display in the context menu
+        '''
+        def __init__(self, text):
+            self.text = text
+            
     def __init__(self, text, value, 
                  fn_on_drop, 
                  fn_on_remove,
@@ -2542,11 +2554,15 @@ class FileCollectionDisplay(Setting):
                 the appearance (for instance, whether to show or hide
                 filtered files).
                 
-        fn_on_drop - called when files are dropped. Has one argument
-                     which is a list of pathnames of the dropped files.
+        fn_on_drop - called when files are dropped. The signature is
+                     fn_on_drop(pathnames, check_for_directories) The first
+                     argument is a list of pathnames of the dropped files.
+                     The second argument is True if the user has performed
+                     a file name drop which might include directories and
+                     False if the user has dropped text file names.
                      
         fn_on_remove - called when the UI requests that files be removed. Has
-                       one argument which is a collection of
+                       one argument which is a collection of paths to remove.
                      
         fn_get_path_info - called when the UI needs to know the display name,
                      icon type, context menu and tool tip for an item. These

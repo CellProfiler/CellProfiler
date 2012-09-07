@@ -64,6 +64,7 @@ from cellprofiler.utilities import product
 
 from untangleworms import C_WORM, F_CONTROL_POINT_X, F_CONTROL_POINT_Y
 from untangleworms import F_LENGTH, ATTR_WORM_MEASUREMENTS
+from untangleworms import recalculate_single_worm_control_points
 from untangleworms import read_params
 
 from identify import get_object_measurement_columns
@@ -111,12 +112,15 @@ class StraightenWorms(cpm.CPModule):
 
         self.objects_name = cps.ObjectNameSubscriber(
             'Select the input untangled worm objects', 'OverlappingWorms',
-            required_attributes = { ATTR_WORM_MEASUREMENTS:True},
             doc = """This is the name of the objects produced by the
             <b>UntangleWorms</b> module. <b>StraightenWorms</b> can use
             either the overlapping or non-overlapping objects as input. It
             will use the control point measurements associated with the objects
-            to reconstruct the straight worms.""")
+            to reconstruct the straight worms. You can also use objects
+            saved from a previous run and loaded via <b>LoadImages</b>, objects
+            edited using <b>EditObjectsManually</b> or objects from one
+            of the Identify modulues. <b>StraightenWorms</b>
+            will recalculate the control points for these images.""")
 
         self.straightened_objects_name = cps.ObjectNameProvider(
             "Name the output straightened worm objects", "StraightenedWorms",
@@ -303,20 +307,30 @@ class StraightenWorms(cpm.CPModule):
         cpy = [ f for f in features
                 if f.startswith("_".join((C_WORM, F_CONTROL_POINT_Y)))]
         ncontrolpoints = len(cpx)
-        
-        def sort_fn(a,b):
-            '''Sort by control point number'''
-            acp = int(a.split("_")[-1])
-            bcp = int(b.split("_")[-1])
-            return cmp(acp, bcp)
-        
-        cpx.sort(sort_fn)
-        cpy.sort(sort_fn)
-        control_points = np.array([
-            [m.get_current_measurement(objects_name, f) for f in cp]
-            for cp in (cpy, cpx)])
-        m_length = "_".join((C_WORM, F_LENGTH))
-        lengths = np.ceil(m.get_current_measurement(objects_name, m_length))
+        if ncontrolpoints == 0:
+            #
+            # Recalculate control points.
+            #
+            params = self.read_params(workspace)
+            ncontrolpoints = params.num_control_points
+            all_labels = [l for l, idx in orig_objects.get_labels()]
+            control_points, lengths = recalculate_single_worm_control_points(
+                all_labels, ncontrolpoints)
+            control_points = control_points.transpose(2, 1, 0)
+        else:
+            def sort_fn(a,b):
+                '''Sort by control point number'''
+                acp = int(a.split("_")[-1])
+                bcp = int(b.split("_")[-1])
+                return cmp(acp, bcp)
+            
+            cpx.sort(sort_fn)
+            cpy.sort(sort_fn)
+            control_points = np.array([
+                [m.get_current_measurement(objects_name, f) for f in cp]
+                for cp in (cpy, cpx)])
+            m_length = "_".join((C_WORM, F_LENGTH))
+            lengths = np.ceil(m.get_current_measurement(objects_name, m_length))
         
         nworms = len(lengths)
         half_width = self.width.value / 2
@@ -459,17 +473,24 @@ class StraightenWorms(cpm.CPModule):
         #
         self.make_objects(workspace, labels, nworms)
             
+    def read_params(self, workspace):
+        '''Read the training params or use the cached value'''
+        d = self.get_dictionary(workspace.image_set_list)
+        if hasattr(d, "training_params"):
+            return d["training_params"]
+        params = d["training_params"] = {}
+        params = read_params(self.training_set_directory,
+                             self.training_set_file_name,
+                             params)
+        return params
+    
     def measure_worms(self, workspace, labels, nworms, width):
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         object_name = self.straightened_objects_name.value
         nbins_vertical = self.number_of_segments.value
         nbins_horizontal = self.number_of_stripes.value
-        if not hasattr(self, "training_params"):
-            self.training_params = {}
-        params = read_params(self.training_set_directory,
-                             self.training_set_file_name,
-                             self.training_params)
+        params = self.read_params(workspace)
         if nworms == 0:
             # # # # # # # # # # # # # # # # # # # # # #
             #

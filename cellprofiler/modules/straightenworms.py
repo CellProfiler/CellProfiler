@@ -476,7 +476,7 @@ class StraightenWorms(cpm.CPModule):
     def read_params(self, workspace):
         '''Read the training params or use the cached value'''
         d = self.get_dictionary(workspace.image_set_list)
-        if hasattr(d, "training_params"):
+        if "training_params" in d:
             return d["training_params"]
         params = d["training_params"] = {}
         params = read_params(self.training_set_directory,

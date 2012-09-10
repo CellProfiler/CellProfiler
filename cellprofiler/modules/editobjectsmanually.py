@@ -515,6 +515,7 @@ class EditObjectsManually(I.Identify):
                 self.guide_image = guide_image
                 self.orig_labels = orig_labels
                 self.shape = self.orig_labels[0].shape
+                self.background = None # background = None if full repaint needed
                 self.reset(display=False)
                 self.active_artist = None
                 self.active_index = None
@@ -763,6 +764,7 @@ class EditObjectsManually(I.Identify):
                 self.Bind(wx.EVT_BUTTON, self.on_remove, remove_button)
                 self.Bind(wx.EVT_BUTTON, self.undo, id = wx.ID_UNDO)
                 self.Bind(wx.EVT_BUTTON, self.on_reset, reset_button)
+                self.figure.canvas.Bind(wx.EVT_PAINT, self.on_paint)
         
                 ######################################
                 #
@@ -961,14 +963,28 @@ class EditObjectsManually(I.Identify):
                     self.orig_axes.add_line(artist)
                 if self.split_artist is not None:
                     self.orig_axes.add_line(self.split_artist)
-                self.figure.canvas.draw()
-                self.panel.Refresh()
+                self.background = None
+                self.Refresh()
+                
+            def on_paint(self, event):
+                dc = wx.PaintDC(self.panel)
+                if self.background == None:
+                    self.panel.draw(dc)
+                else:
+                    self.panel.gui_repaint(dc)
+                dc.Destroy()
+                event.Skip()
                 
             def draw_callback(self, event):
                 '''Decorate the drawing with the animated artists'''
                 self.background = self.figure.canvas.copy_from_bbox(self.orig_axes.bbox)
                 for artist in self.artists:
                     self.orig_axes.draw_artist(artist)
+                if self.split_artist is not None:
+                    self.orig_axes.draw_artist(self.split_artist)
+                if (self.mode == self.FREEHAND_DRAW_MODE and 
+                    self.active_artist is not None):
+                    self.orig_axes.draw_artist(self.active_artist)
                 self.figure.canvas.blit(self.orig_axes.bbox)
                 
             def get_control_point(self, event):
@@ -1176,7 +1192,40 @@ class EditObjectsManually(I.Identify):
                 if (self.mode == self.FREEHAND_DRAW_MODE and 
                     self.active_artist is not None):
                     self.orig_axes.draw_artist(self.active_artist)
-                self.figure.canvas.blit(self.orig_axes.bbox)
+                    old = self.panel.IsShownOnScreen
+                #
+                # Need to keep "blit" from drawing on the screen.
+                #
+                # On Mac:
+                #     Blit makes a new ClientDC
+                #     Blit calls gui_repaint
+                #     if IsShownOnScreen:
+                #        ClientDC.EndDrawing is called
+                #        ClientDC.EndDrawing processes queued GUI events
+                #        If there are two mouse motion events queued,
+                #        the mouse event handler is called recursively.
+                #        Blit is called a second time.
+                #        A second ClientDC is created which, on the Mac,
+                #        throws an exception.
+                #
+                # It's not my fault that the Mac can't deal with two
+                # client dcs being created - not an impossible problem for
+                # them to solve.
+                #
+                # It's not my fault that WX decides to process all pending
+                # events in the queue.
+                #
+                # It's not my fault that Blit is called without an optional
+                # dc argument that could be used instead of creating a client
+                # DC.
+                #
+                old = self.panel.IsShownOnScreen
+                self.panel.IsShownOnScreen = lambda *args: False
+                try:
+                    self.figure.canvas.blit(self.orig_axes.bbox)
+                finally:
+                    self.panel.IsShownOnScreen = old
+                self.panel.Refresh()
                 
             def toggle_single_panel(self, event):
                 for ax in (self.keep_axes, self.info_axes, self.remove_axes):

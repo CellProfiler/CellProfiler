@@ -940,8 +940,11 @@ class EditObjectsManually(I.Identify):
                             (self.shape[0],
                              self.shape[1],
                              3), np.float)
-                    kmask = keep[self.ol]
-                    cimage[self.oi[kmask], self.oj[kmask], :] = self.oc[kmask, :]
+                    if len(keep) > 1:
+                        kmask = keep[self.ol]
+                        if np.any(kmask):
+                            cimage[self.oi[kmask], self.oj[kmask], :] = \
+                                self.oc[kmask, :]
                     axes.imshow(cimage)
                 self.set_orig_axes_title()
                 self.keep_axes.set_title("Objects to keep",

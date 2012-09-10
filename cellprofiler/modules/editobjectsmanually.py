@@ -542,25 +542,33 @@ class EditObjectsManually(I.Identify):
                 # the current, plus the current state of the artists.
                 #
                 ijv = self.calculate_ijv()
-                #
-                # Sort the current and last ijv together, adding
-                # an old_new_indicator.
-                #
-                ijvx = np.vstack((
-                    np.column_stack((ijv, np.zeros(ijv.shape[0], ijv.dtype))),
-                    np.column_stack((self.last_ijv,
-                                     np.ones(self.last_ijv.shape[0], ijv.dtype)))))
-                order = np.lexsort((ijvx[:, 3], ijvx[:, 2], ijvx[:, 1], ijvx[:, 0]))
-                ijvx = ijvx[order, :]
-                #
-                # Then mark all prev and next where i,j,v match (in both sets)
-                #
-                matches = np.hstack(
-                    ((np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1) &
-                      (ijvx[:-1, 3] == 0) &
-                      (ijvx[1:, 3] == 1)), [False]))
-                matches[1:] = matches[1:] | matches[:-1]
-                ijvx = ijvx[~matches, :]
+                if ijv.shape[0] == 0:
+                    ijvx = np.zeros((0, 4), int)
+                else:
+                    #
+                    # Sort the current and last ijv together, adding
+                    # an old_new_indicator.
+                    #
+                    ijvx = np.vstack((
+                        np.column_stack(
+                            (ijv, np.zeros(ijv.shape[0], ijv.dtype))),
+                        np.column_stack(
+                            (self.last_ijv,
+                             np.ones(self.last_ijv.shape[0], ijv.dtype)))))
+                    order = np.lexsort((ijvx[:, 3], 
+                                        ijvx[:, 2], 
+                                        ijvx[:, 1], 
+                                        ijvx[:, 0]))
+                    ijvx = ijvx[order, :]
+                    #
+                    # Then mark all prev and next where i,j,v match (in both sets)
+                    #
+                    matches = np.hstack(
+                        ((np.all(ijvx[:-1, :3] == ijvx[1:, :3], 1) &
+                          (ijvx[:-1, 3] == 0) &
+                          (ijvx[1:, 3] == 1)), [False]))
+                    matches[1:] = matches[1:] | matches[:-1]
+                    ijvx = ijvx[~matches, :]
                 artist_save = [(a.get_data(), self.artists[a].copy())
                                for a in self.artists]
                 self.undo_stack.append((ijvx, self.last_artist_save))

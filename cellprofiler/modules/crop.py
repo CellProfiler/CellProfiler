@@ -31,7 +31,6 @@ this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImag
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import logging
 import math

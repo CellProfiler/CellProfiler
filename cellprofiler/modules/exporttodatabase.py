@@ -60,7 +60,6 @@ See also <b>ExportToSpreadsheet</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import csv
 import datetime

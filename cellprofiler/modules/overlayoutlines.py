@@ -17,7 +17,6 @@ See also <b>IdentifyPrimaryObjects, IdentifySecondaryObjects, IdentifyTertiaryOb
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 from scipy.ndimage import distance_transform_edt

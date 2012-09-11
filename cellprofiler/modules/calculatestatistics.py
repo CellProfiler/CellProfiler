@@ -110,7 +110,6 @@ Here is an example file:<br><br>
 
 See also <b>LoadData</b>.
 '''
-__version__="$Revision$"
 
 import numpy as np
 import scipy.optimize

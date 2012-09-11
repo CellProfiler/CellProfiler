@@ -19,7 +19,6 @@ produces a binary (black/white) mask image consisting of the edge pixels.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__ = "$Revision$"
 
 import numpy as np
 from scipy.ndimage import convolve

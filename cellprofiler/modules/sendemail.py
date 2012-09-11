@@ -23,7 +23,6 @@ the point in the pipeline when you want the emails to be sent. If email
 sending fails for any reason, a warning message will appear but
 processing will continue regardless.'''
 
-__version__ = "$Revision$"
 
 import logging
 import email.message

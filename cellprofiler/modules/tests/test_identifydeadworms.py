@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version__ = "$Revision$"
 
 import numpy as np
 from scipy.ndimage import binary_fill_holes

@@ -23,7 +23,6 @@ See also <b>ApplyThreshold</b>, <b>IdentifyPrimaryObjects</b>, <b>IdentifyObject
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 

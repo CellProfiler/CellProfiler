@@ -26,7 +26,6 @@ root path is <tt>/imaging/analysis</tt>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import httplib
 import numpy as np

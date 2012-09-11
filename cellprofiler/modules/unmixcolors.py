@@ -44,7 +44,6 @@ deconvolution.</i> Analytical & Quantitative Cytology & Histology 2001; 23: 291-
 # 
 # Website: http://www.cellprofiler.org
 
-__version__ = "$Revision$"
 
 import numpy as np
 from scipy.linalg import lstsq

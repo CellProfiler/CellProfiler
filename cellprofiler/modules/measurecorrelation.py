@@ -36,7 +36,6 @@ measurements will be made between the following:
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 from scipy.linalg import lstsq

@@ -80,7 +80,6 @@ See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>L
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 import numpy.ma

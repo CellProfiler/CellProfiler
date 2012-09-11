@@ -27,7 +27,6 @@ The output is in the JUnit format:
     <failure type="<type>" message="<message>" />
 </testsuite>
 '''
-__version__="$Revision$"
 
 import csv
 import numpy as np

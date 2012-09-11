@@ -52,7 +52,6 @@ See also <b>IdentifyPrimaryObject</b> and <b>IdentifySecondaryObject</b> modules
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 import matplotlib

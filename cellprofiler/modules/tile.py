@@ -50,7 +50,6 @@ Other packages are referenced <a href="http://graphicssoft.about.com/od/panorama
 
 This module replaces the functionality of the obsolete module <b>PlaceAdjacent</b>.
 '''
-__version__ = "$Revision: 9034 $"
 
 import logging
 import numpy as np

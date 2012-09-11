@@ -24,7 +24,6 @@ See also <b>DisplayDensityPlot</b>, <b>DisplayScatterPlot</b>.
 #
 #Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 

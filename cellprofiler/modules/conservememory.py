@@ -18,7 +18,6 @@ moved to the preferences settings (<i>File > Preferences</i>).
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import gc
 import numpy as np

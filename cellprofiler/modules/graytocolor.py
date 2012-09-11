@@ -18,7 +18,6 @@ blue (RGB) image or a cyan, magenta, yellow, black (CMYK) image. Each color's br
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 

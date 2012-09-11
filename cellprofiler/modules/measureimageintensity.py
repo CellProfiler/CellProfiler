@@ -41,7 +41,6 @@ See also <b>LoadImages</b>, <b>MeasureObjectIntensity</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 

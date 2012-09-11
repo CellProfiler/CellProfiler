@@ -31,7 +31,6 @@ modules upon which the flags are based.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import logging
 import numpy as np

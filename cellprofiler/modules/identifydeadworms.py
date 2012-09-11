@@ -34,7 +34,6 @@ in pixels along the short axis of the diamond and should be less than
 the width of the worm.
 '''
 
-__version__ = "$Revision$"
 
 import numpy as np
 from scipy.ndimage import binary_erosion, binary_fill_holes

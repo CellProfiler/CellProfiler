@@ -31,7 +31,6 @@ the branchpoints that lie outside the seed objects.</li>
 #
 # Website: http://www.cellprofiler.org
 #
-__version__="$Revision$"
 
 import numpy as np
 from scipy.ndimage import binary_erosion, grey_dilation, grey_erosion

@@ -15,7 +15,6 @@ Website: http://www.cellprofiler.org
 
 # The help text for various thresholding options whose code resides here is in modules/identify.py
 
-__version__="$Revision$"
 
 import inspect
 import math

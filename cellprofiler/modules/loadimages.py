@@ -43,7 +43,6 @@ See also <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import logging
 import numpy as np

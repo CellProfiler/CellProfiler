@@ -11,4 +11,3 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision: 1$"

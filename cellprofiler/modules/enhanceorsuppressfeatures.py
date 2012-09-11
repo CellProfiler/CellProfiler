@@ -15,7 +15,6 @@ to the rest of the image, by applying image processing filters to the image. It 
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 from scipy.ndimage import gaussian_filter

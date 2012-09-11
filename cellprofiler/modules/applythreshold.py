@@ -15,7 +15,6 @@ based on a threshold which can be pre-selected or calculated automatically using
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision: 6746 $"
 
 
 from cellprofiler.cpmodule import CPModule

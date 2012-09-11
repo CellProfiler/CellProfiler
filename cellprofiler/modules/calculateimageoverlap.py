@@ -44,7 +44,6 @@ while a background pixel in the test image that overlaps with foreground in the 
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision: 9000 $"
 
 import numpy as np
 from contrib.english import ordinal

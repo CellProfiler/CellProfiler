@@ -35,7 +35,6 @@ number of images per plate is the same. </li>
 
 See also <b>LoadImages</b>.
 '''
-__version__ = "$Revision$"
 
 import numpy as np
 

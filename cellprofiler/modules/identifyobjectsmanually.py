@@ -27,7 +27,6 @@ display to within that rectangle.</li>
 <li><i>Erase:</i> Erases an object if you click on it.</li></ul>
 '''
 
-__version__ = "$Revision$"
 
 import numpy as np
 

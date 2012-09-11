@@ -50,7 +50,6 @@ See also <b>CreateBatchFiles</b>, <b>ExportToDatabase</b>.
 # 
 # Website: http://www.cellprofiler.org
 #
-__version__="$Revision$"
 
 import numpy as np
 import os

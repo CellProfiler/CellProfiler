@@ -9,7 +9,6 @@
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision: 10732 $"
 
 import itertools
 import numpy as np

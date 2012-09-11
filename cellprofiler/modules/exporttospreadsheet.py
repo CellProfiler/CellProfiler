@@ -45,7 +45,6 @@ See also <b>ExportToDatabase</b>.
 # Please see the AUTHORS file for credits.
 # 
 # Website: http://www.cellprofiler.org
-__version__="$Revision$"
 
 import csv
 import numpy as np

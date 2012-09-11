@@ -42,7 +42,6 @@ See also: <b>ReassignObjectNumbers</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__ = "$Revision$"
 
 import sys
 import numpy as np

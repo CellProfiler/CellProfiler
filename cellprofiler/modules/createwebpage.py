@@ -16,7 +16,6 @@ images, and optionally a link to a compressed ZIP file of all of the images show
 # 
 # Website: http://www.cellprofiler.org
 
-__version__ = "$Revision$"
 
 import os
 import sys

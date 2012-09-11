@@ -16,7 +16,6 @@ See also <b>RunImageJ</b>
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps

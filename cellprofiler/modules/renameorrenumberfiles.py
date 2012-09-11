@@ -79,7 +79,6 @@ want to:
 See also: <b>LoadImages</b>, <b>SaveImages</b>
 '''
 
-__version__="$Revision$"
 
 import os
 

@@ -56,7 +56,6 @@ See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> categ
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import cellprofiler.preferences as cpprefs
 

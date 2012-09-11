@@ -124,7 +124,6 @@ See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, and <b
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import math
 import scipy.ndimage

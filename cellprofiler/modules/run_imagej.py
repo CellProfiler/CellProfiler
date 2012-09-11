@@ -26,7 +26,6 @@ The <b>RunImageJ</b> module runs one ImageJ command or macro per cycle. It first
 loads the images you want to process into ImageJ, then runs the command, and, if
 desired, retrieves images you want to process further in CellProfiler.'''
 
-__version__ = "$Revision$"
 
 import logging
 logger = logging.getLogger(__name__)

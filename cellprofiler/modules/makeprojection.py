@@ -40,7 +40,6 @@ See also <b>LoadImages</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 

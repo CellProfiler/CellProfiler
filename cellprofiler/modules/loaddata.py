@@ -138,8 +138,6 @@ See also <b>LoadImages</b> and <b>CalculateStatistics</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version = "$Revision$"
-
 import csv
 import hashlib
 import logging

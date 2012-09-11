@@ -32,7 +32,6 @@ See also any of the <b>MeasureObject</b> modules, <b>MeasureTexture</b>,
 # 
 # Website: http://www.cellprofiler.org
 
-__version__ = "$Revision$"
 
 import logging
 logger = logging.getLogger(__name__)

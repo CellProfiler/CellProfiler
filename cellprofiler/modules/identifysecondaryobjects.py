@@ -64,7 +64,6 @@ See also the other <b>Identify</b> modules.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 import os

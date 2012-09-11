@@ -23,7 +23,6 @@ See also <b>CorrectIlluminationApply</b>, <b>EnhanceOrSuppressFeatures</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as scind

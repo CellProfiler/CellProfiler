@@ -26,7 +26,6 @@ the region, remove the whole object if it is partially or fully
 outside of the region, or retain the whole object unless it is fully outside
 of the region. </p>
 '''
-__version__="$Revision$"
 import numpy as np
 import scipy.ndimage as scind
 

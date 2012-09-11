@@ -29,7 +29,6 @@ See also <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, <b>Iden
 # 
 # Website: http://www.cellprofiler.org
 
-__version__ = "$Revision$"
 
 import numpy as np
 

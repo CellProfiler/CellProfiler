@@ -24,7 +24,6 @@ See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIllumination_
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 from contrib.english import ordinal

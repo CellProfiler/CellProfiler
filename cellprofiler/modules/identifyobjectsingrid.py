@@ -48,7 +48,6 @@ according to the arrangement order specified by the user.</li>
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 

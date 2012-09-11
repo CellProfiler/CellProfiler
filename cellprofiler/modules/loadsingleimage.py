@@ -32,7 +32,6 @@ will want to use <b>LoadImages</b> or <b>LoadData</b> with a single, hardcoded f
 See also <b>LoadImages</b>,<b>LoadData</b>.
 
 """
-__version__="$Revision$"
 
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

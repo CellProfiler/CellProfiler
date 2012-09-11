@@ -19,7 +19,6 @@ If you want to invert the grayscale intensities of an image, use <b>ImageMath</b
 # Please see the AUTHORS file for credits.
 # 
 # Website: http://www.cellprofiler.org
-__version__="$Revision$"
 
 import numpy as np
 

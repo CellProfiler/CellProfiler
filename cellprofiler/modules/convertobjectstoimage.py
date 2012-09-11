@@ -20,7 +20,6 @@ by specifying "Objects" as the type of image to save.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 

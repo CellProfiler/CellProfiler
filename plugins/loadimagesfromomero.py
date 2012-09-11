@@ -40,7 +40,6 @@ In the above example the pipeline "mypipeline" will be run with "1" as omero obj
 
 # module author: Bram Gerritsen
 # e-mail: b.gerritsen@nki.nl
-__version__="$Revision: 10415 $"
 
 import numpy as np
 import wx

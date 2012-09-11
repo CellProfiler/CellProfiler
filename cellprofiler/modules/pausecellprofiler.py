@@ -18,7 +18,6 @@ This module allows you to pause CellProfiler's processing at the point where the
 resides in the pipeline, which can be helpful if you want to examine the results before proceeding. 
 '''
 
-__version__="$Revision$"
 
 import numpy as np
 

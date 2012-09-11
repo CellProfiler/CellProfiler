@@ -33,7 +33,6 @@ aligned image with respect to the original image.</li>
 </ul>
 
 '''
-__version__ = "$Revision$"
 
 import numpy as np
 from scipy.fftpack import fft2, ifft2

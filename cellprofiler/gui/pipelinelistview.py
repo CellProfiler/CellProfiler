@@ -332,8 +332,11 @@ class PipelineListView(object):
         self.transparent_window.Show(not show)
         
     def set_debug_mode(self, mode):
-        if self.__pipeline is not None:
-            self.select_one_module(1)
+        if (mode == True) and (self.__pipeline is not None):
+            modules = filter((lambda m:not m.is_input_module()),
+                             self.__pipeline.modules())
+            if len(modules) > 0:
+                self.select_one_module(modules[0].module_num)
         self.__debug_mode = mode
         self.__pipeline_slider.Show(mode)
         self.__sizer.Layout()

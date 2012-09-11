@@ -223,13 +223,15 @@ class AnalysisWorker(object):
         
             self.pipeline_listener.image_set_number = image_set_numbers[0]
         
-            # Get the shared state from the first imageset in this run.
-            shared_dicts = self.send(
-                SharedDictionaryRequest(self.current_analysis_id)).dictionaries
-            assert len(shared_dicts) == len(current_pipeline.modules())
-            for module, new_dict in zip(current_pipeline.modules(), shared_dicts):
-                module.get_dictionary().clear()
-                module.get_dictionary().update(new_dict)
+            if not worker_runs_post_group:
+                # Get the shared state from the first imageset in this run.
+                shared_dicts = self.send(
+                    SharedDictionaryRequest(self.current_analysis_id)).dictionaries
+                assert len(shared_dicts) == len(current_pipeline.modules())
+                for module, new_dict in zip(current_pipeline.modules(), 
+                                            shared_dicts):
+                    module.get_dictionary().clear()
+                    module.get_dictionary().update(new_dict)
         
             # Run prepare group if this is the first image in the group.  We do
             # this here (even if there's no grouping in the pipeline) to ensure

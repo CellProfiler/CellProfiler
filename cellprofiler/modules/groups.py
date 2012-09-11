@@ -269,6 +269,9 @@ class Groups(cpm.CPModule):
         key_list = ["_".join((cpmeas.C_METADATA, g.metadata_choice.value))
                     for g in self.grouping_metadata]
         m = workspace.measurements
+        if any([key not in m.get_feature_names(cpmeas.IMAGE) for key in key_list]):
+            # Premature execution of get_groupings if module is mis-configured
+            return None
         return key_list, m.get_groupings(key_list)
     
     def change_causes_prepare_run(self, setting):

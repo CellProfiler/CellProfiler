@@ -581,14 +581,9 @@ class TestAnalysisWorker(unittest.TestCase):
         finally:
             m.close()
         #
-        # Next, the worker asks for the shared dictionary
+        # In group mode, the worker issues a display request and constructs
+        # its own dictonaries
         #
-        req = self.awthread.recv(self.work_socket)
-        self.assertIsInstance(req, cpanalysis.SharedDictionaryRequest)
-        shared_dictionaries = [{ ("foo%d" % i):"bar%d" % i} for i in range(1,8)]
-        rep = cpanalysis.SharedDictionaryReply(
-            dictionaries = shared_dictionaries)
-        req.reply(rep)
         for image_number in (2, 3):
             #
             # The worker sends a display request for FlipAndRotate

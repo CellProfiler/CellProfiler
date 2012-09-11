@@ -15,6 +15,7 @@ __version__="$Revision$"
 
 import inspect
 import os
+import pdb
 import wx
 import wx.html
 import wx.lib.scrolledpanel
@@ -77,6 +78,7 @@ ID_DEBUG_CHOOSE_IMAGE_SET = wx.NewId()
 ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET = wx.NewId()
 ID_DEBUG_RELOAD = wx.NewId()
 ID_DEBUG_NUMPY = wx.NewId()
+ID_DEBUG_PDB = wx.NewId()
 
 # ~*~
 ID_SAMPLE_INIT = wx.NewId()
@@ -212,9 +214,10 @@ class CPFrame(wx.Frame):
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET, 'Random Image Cycle','Advance to a random image cycle in the current image set list')
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_GROUP, 'Choose Group', 'Choose which image set group to process in test-mode')
         self.__menu_debug.Append(ID_DEBUG_CHOOSE_IMAGE_SET, 'Choose Image Cycle','Choose any of the available image cycles in the current image set list')
-        if not hasattr(sys, 'frozen'):
+        if not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG'):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
             self.__menu_debug.Append(ID_DEBUG_NUMPY, "Numpy Memory Usage...")
+            self.__menu_debug.Append(ID_DEBUG_PDB, "Break into debugger")
         self.__menu_debug.Enable(ID_DEBUG_STEP,False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, False)
@@ -272,6 +275,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_CHECK_NEW_VERSION, self.__on_check_new_version)
         wx.EVT_MENU(self,ID_WINDOW_CLOSE_ALL, self.__on_close_all)
         wx.EVT_MENU(self, ID_DEBUG_NUMPY, self.__debug_numpy_references)
+        wx.EVT_MENU(self, ID_DEBUG_PDB, self.__debug_pdb)
         accelerator_table = wx.AcceleratorTable(
             [(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
              (wx.ACCEL_CMD,ord('O'),ID_FILE_LOAD),
@@ -435,6 +439,9 @@ All rights reserved."""
             print "Couldn't generate objgraph: %s"%(e)
             import pdb
             pdb.post_mortem(sys.exc_traceback)
+
+    def __debug_pdb(self, event):
+        pdb.set_trace()
 
     def do_help_modules(self, modules):
         for module in modules:

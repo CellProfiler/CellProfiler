@@ -164,6 +164,10 @@ class MakeProjection(cpm.CPModule):
             workspace.display_data.provider_pixels = \
                 provider.provide_image(workspace.image_set).pixel_data
 
+    def is_aggregation_module(self):
+        '''Return True because we aggregate over all images in a group'''
+        return True
+    
     def post_group(self, workspace, grouping):
         '''Handle processing that takes place at the end of a group
 

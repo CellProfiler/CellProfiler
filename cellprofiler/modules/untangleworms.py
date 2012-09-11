@@ -605,6 +605,10 @@ class UntangleWorms(cpm.CPModule):
             if self.show_window:
                 dworms.append(control_points)
     
+    def is_aggregation_module(self):
+        '''Building the model requires aggregation across image sets'''
+        return self.mode == MODE_TRAIN
+            
     def post_group(self, workspace, grouping):
         '''Write the training data file as we finish grouping.'''
         if self.mode == MODE_TRAIN:

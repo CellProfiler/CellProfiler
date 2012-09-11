@@ -346,7 +346,7 @@ class AnalysisRunner(object):
 
             # Find image groups.  These are written into measurements prior to
             # analysis.  Groups are processed as a single job.
-            if measurements.has_groups():
+            if measurements.has_groups() or self.pipeline.requires_aggregation():
                 worker_runs_post_group = True
                 job_groups = {}
                 for image_set_number in image_sets_to_process:
@@ -366,18 +366,24 @@ class AnalysisRunner(object):
             # XXX - check that any constructed groups are complete, i.e.,
             # image_set_start and image_set_end shouldn't carve them up.
 
-            # put the first job in the queue, then wait for the first image to
-            # finish (see the check of self.finish_queue below) to post the rest.
-            # This ensures that any shared data from the first imageset is
-            # available to later imagesets.
-            self.work_queue.put((job_groups[0], 
-                                 worker_runs_post_group,
-                                 True))
+            if not worker_runs_post_group:
+                # put the first job in the queue, then wait for the first image to
+                # finish (see the check of self.finish_queue below) to post the rest.
+                # This ensures that any shared data from the first imageset is
+                # available to later imagesets.
+                self.work_queue.put((job_groups[0], 
+                                     worker_runs_post_group,
+                                     True))
+                waiting_for_first_imageset = True
+                del job_groups[0]
+            else:
+                waiting_for_first_imageset = False
+                for job in job_groups:
+                    self.work_queue.put((job, worker_runs_post_group, False))
+                job_groups = []
             start_signal.release()
             acknowledged_thread_start = True
-            del job_groups[0]
 
-            waiting_for_first_imageset = True
 
             # We loop until every image is completed, or an outside event breaks the loop.
             while not self.cancelled:

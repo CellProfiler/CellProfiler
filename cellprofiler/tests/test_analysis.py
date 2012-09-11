@@ -550,14 +550,10 @@ class TestAnalysis(unittest.TestCase):
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.request_work()
             self.assertTrue(response.worker_runs_post_group)
-            self.assertTrue(response.wants_dictionary)
+            self.assertFalse(response.wants_dictionary)
             self.assertSequenceEqual(response.image_set_numbers, [1,2])
-            dictionaries = [ dict([(uuid.uuid4().hex, r.uniform(size=(10,15)))
-                                   for _ in range(10)])
-                             for module in pipeline.modules()]
-            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
-                worker.analysis_id, response.image_set_numbers[0],
-                dictionaries))()
+            response = worker.send(cpanalysis.ImageSetSuccess(
+                worker.analysis_id, response.image_set_numbers[0]))()
             response = worker.request_work()
             self.assertSequenceEqual(response.image_set_numbers, [3, 4])
             self.assertTrue(response.worker_runs_post_group)
@@ -741,17 +737,8 @@ class TestAnalysis(unittest.TestCase):
                 worker.analysis_id))()
             client_measurements = cpmeas.load_measurements_from_buffer(
                 response.buf)
-            #####################################################
-            #
-            # Report the dictionary, add some measurements and
-            # report the results of the first job
-            #
-            #####################################################
-            dictionaries = [ dict([(uuid.uuid4().hex, r.uniform(size=(10,15)))
-                                   for _ in range(10)])
-                             for module in pipeline.modules()]
-            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
-                worker.analysis_id, 1, dictionaries))()
+            response = worker.send(cpanalysis.ImageSetSuccess(
+                worker.analysis_id, 1))()
             #####################################################
             #
             # Get the second group.

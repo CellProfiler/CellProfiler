@@ -499,6 +499,10 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             workspace.display_data.dilated_image = dilated_image.pixel_data
             workspace.display_data.output_image = output_image.pixel_data
 
+    def is_aggregation_module(self):
+        '''Return True if aggregation is performed within a group'''
+        return self.each_or_all != EA_EACH
+    
     def post_group(self, workspace, grouping):
         '''Handle tasks to be performed after a group has been processed
         

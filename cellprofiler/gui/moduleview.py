@@ -2578,7 +2578,7 @@ class FileCollectionDisplayController(object):
                 if  df in (wx.DF_TEXT, wx.DF_UNICODETEXT):
                     self.OnDropText(x, y, self.text_data_object.GetText())
                 elif df == wx.DF_FILENAME:
-                    self.OnDropFiles(self, x, y,
+                    self.OnDropFiles(x, y,
                                      self.file_data_object.GetFilenames())
             return wx.DragCopy
             
@@ -2954,7 +2954,7 @@ class FileCollectionDisplayController(object):
                         return
                     self.remove_item(path)
                     if len(path) > 1:
-                        super_modpath = path[:-1]
+                        super_modpath = tuple(path[:-1])
                         if super_modpath in self.modpath_to_item:
                             item = self.modpath_to_item[super_modpath]
                             n_children = self.tree_ctrl.GetChildrenCount(

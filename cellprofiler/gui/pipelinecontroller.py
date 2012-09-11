@@ -1539,7 +1539,7 @@ class PipelineController:
         self.__pipeline.test_mode = False
         self.__pipeline.end_run()
     
-    def do_step(self, module):
+    def do_step(self, module, select_next_module=True):
         """Do a debugging step by running a module
         """
         failure = 1
@@ -1568,7 +1568,8 @@ class PipelineController:
             workspace.refresh()
             if workspace.disposition == cpw.DISPOSITION_SKIP:
                 self.last_debug_module()
-            elif module.module_num < len(self.__pipeline.modules()):
+            elif (module.module_num < len(self.__pipeline.modules()) and
+                  select_next_module):
                 self.__pipeline_list_view.select_one_module(module.module_num+1)
             failure=0
         except Exception,instance:
@@ -1803,8 +1804,15 @@ class PipelineController:
         '''Initialize the current image set by running the input modules'''
         for module in self.__pipeline.modules():
             if module.is_input_module():
-                if not self.do_step(module):
+                if not self.do_step(module, False):
                     return False
+        modules = filter((lambda m:not m.is_input_module()),
+                         self.__pipeline.modules())
+        #
+        # Select the first executable module
+        #
+        if len(modules) > 0:
+            self.__pipeline_list_view.select_one_module(modules[0].module_num)
         return True
 
     def on_debug_reload(self, event):

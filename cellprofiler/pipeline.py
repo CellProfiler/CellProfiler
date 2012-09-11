@@ -1388,6 +1388,17 @@ class Pipeline(object):
                     self.remove_module(module.module_num)
         finally:
             self.stop_undoable_action()
+            
+    def requires_aggregation(self):
+        '''Return True if the pipeline requires aggregation across image sets
+        
+        If a pipeline has aggregation modules, the image sets in a group
+        need to be run sequentially on the same worker.
+        '''
+        for module in self.modules():
+            if module.is_aggregation_module():
+                return True
+        return False
     
     def obfuscate(self):
         '''Tell all modules in the pipeline to obfuscate any sensitive info
@@ -1850,7 +1861,7 @@ class Pipeline(object):
         try:
             for i, image_number in enumerate(image_numbers):
                 m.image_set_number = image_number
-                image_set = image_set_list.get_image_set(image_number-1)
+                image_set = m
                 object_set = cpo.ObjectSet()
                 old_providers = list(image_set.providers)
                 for module in pipeline.modules():

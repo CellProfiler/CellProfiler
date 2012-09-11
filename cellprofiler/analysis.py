@@ -346,7 +346,7 @@ class AnalysisRunner(object):
 
             # Find image groups.  These are written into measurements prior to
             # analysis.  Groups are processed as a single job.
-            if measurements.has_groups():
+            if measurements.has_groups() or self.pipeline.requires_aggregation():
                 worker_runs_post_group = True
                 job_groups = {}
                 for image_set_number in image_sets_to_process:

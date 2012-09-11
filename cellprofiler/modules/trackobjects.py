@@ -1124,6 +1124,10 @@ class TrackObjects(cpm.CPModule):
             z = self.flood(c[i], at, a, b, c, d, z)
         return z
 
+    def is_aggregation_module(self):
+        '''We connect objects across imagesets within a group = aggregation'''
+        return True
+    
     def post_group(self, workspace, grouping):
         # If any tracking method other than LAP, recalculate measurements
         # (Really, only the final age needs to be re-done)

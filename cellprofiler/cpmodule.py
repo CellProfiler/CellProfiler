@@ -492,6 +492,16 @@ class CPModule(object):
         """
         return False
     
+    def is_aggregation_module(self):
+        """If true, the module uses data from other imagesets in a group
+        
+        Aggregation modules perform operations that require access to
+        all image sets in a group, generally resulting in an aggregation
+        operation during the last image set or in post_group. Examples are
+        TrackObjects, MakeProjection and CorrectIllumination_Calculate.
+        """
+        return False
+    
     def needs_conversion(self):
         '''Return True if the module needs to be converted from legacy
         

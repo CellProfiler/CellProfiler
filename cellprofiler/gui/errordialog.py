@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 '''
 __version__ = "$Revision$"
 
+import os
 from StringIO import StringIO
 import urllib
 import urllib2
@@ -181,7 +182,7 @@ def _display_error_dialog(frame, exc, pipeline, message=None, tb=None, continue_
     #
     # Handle pdb button
     #
-    if ((tb or remote_exc_info) is not None) and (not hasattr(sys, 'frozen')):
+    if ((tb or remote_exc_info) is not None) and (not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG')):
         if not from_subprocess:
             pdb_button = wx.Button(dialog, -1, "Debug in pdb...")
             pdb_button.SetToolTipString("Debug in python's pdb on the console")

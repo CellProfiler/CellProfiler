@@ -187,7 +187,12 @@ class Measurements(object):
                "memory" to create an HDF5 memory-backed File
         """
         # XXX - allow saving of partial results
-        if mode is "memory":
+        if mode == "memory" and sys.platform == "darwin":
+            # Core driver doesn't work on Mac
+            # http://code.google.com/p/h5py/issues/detail?id=215
+            filename = None
+            mode = "w"
+        if mode == "memory":
             filename = None
             mode = "w"
             is_temporary = False

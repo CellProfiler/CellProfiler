@@ -163,6 +163,12 @@ class HDF5Dict(object):
             # never touches the disk... maybe the internals check for the
             # conflict?
             #
+            if sys.platform == "darwin":
+                raise NotImplementedError(
+                    "Sorry, for Mac, the core driver is fatally flawed at "
+                    "this point and will cause you sorrow when you try to "
+                    "flush or close the h5py file.\n"
+                    "See http://code.google.com/p/h5py/issues/detail?id=215")
             name = "%s.h5" % uuid.uuid4()
             self.hdf5_file = h5py.File(name, driver = "core", 
                                        backing_store = False)

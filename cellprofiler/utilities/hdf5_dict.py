@@ -915,7 +915,6 @@ class HDF5FileList(object):
                     urls += [ root + x for x in a]
                 for k in sorted(g.keys()):
                     g0 = g[k]
-                    next_path = path + [k]
                     if (isinstance(g0, h5py.Group) and 
                         g0.attrs.get(A_CLASS, None) == CLASS_DIRECTORY):
                         decoded_key = self.decode(k)
@@ -925,6 +924,7 @@ class HDF5FileList(object):
                             subroot = root + decoded_key
                         else:
                             subroot = root + decoded_key + "/"
+                        next_path = path + [self.decode(k)]
                         urls += fn(subroot, g0, next_path)
                 return urls
             urls = []

@@ -2749,7 +2749,23 @@ class FileCollectionDisplayController(object):
                                         wx.TreeItemIcon_Expanded)
             
         want_erase = len(self.modpath_to_item) == 0
-        item = self.tree_ctrl.AppendItem(parent_item, text)
+        #
+        # Put in alpha order
+        #
+        n_children = self.tree_ctrl.GetChildrenCount(parent_item)
+        if n_children == 0:
+            item = self.tree_ctrl.AppendItem(parent_item, text)
+        else:
+            child, cookie = self.tree_ctrl.GetFirstChild(parent_item)
+            for i in range(n_children):
+                ctext = self.tree_ctrl.GetItemText(child)
+                if ctext > text:
+                    item = self.tree_ctrl.InsertItemBefore(parent_item, i, text)
+                    break
+                child = self.tree_ctrl.GetNextSibling(child)
+            else:
+                item = self.tree_ctrl.AppendItem(parent_item, text)
+        
         self.tree_ctrl.SetPyData(item, modpath[-1])
         self.modpath_to_item[modpath] = item
         if want_erase:
@@ -3149,7 +3165,12 @@ class FileCollectionDisplayController(object):
 
 class JoinerController(object):
     '''The JoinerController managers a joiner setting'''
-    
+    #
+    # It's important that DISPLAY_NONE be an illegal name for metadata
+    # so that it can be recognized by its string. If this isn't acceptable,
+    # code must be added to keep track of its position in each dropdown.
+    #
+    DISPLAY_NONE = "(None)"
     def __init__(self, module_view, v):
         super(self.__class__, self).__init__()
         assert isinstance(module_view, ModuleView)
@@ -3240,12 +3261,12 @@ class JoinerController(object):
             for j, column_name in enumerate(column_names):
                 choice_ctrl_name = self.get_choice_control_name(i, j)
                 ctrl = self.panel.FindWindowByName(choice_ctrl_name)
-                selection = join.get(column_name, "None")
+                selection = join.get(column_name, self.DISPLAY_NONE)
                 if selection is None:
-                    selection = "None"
+                    selection = self.DISPLAY_NONE
                 choices = sorted(self.v.entities.get(column_name, []))
                 if self.v.allow_none:
-                    choices += [ "None" ]
+                    choices += [ self.DISPLAY_NONE ]
                 if selection not in choices:
                     choices += [ selection ]
                 if ctrl is None:
@@ -3326,10 +3347,12 @@ class JoinerController(object):
             ctrl.Show(value)
             
     def on_choice_changed(self, event, row, column):
+        new_value = event.EventObject.GetItems()[event.GetSelection()]
+        if new_value == self.DISPLAY_NONE:
+            new_value = None
         joins = list(self.joins)
         join = joins[row].copy()
-        join[self.column_names[column]] = \
-            event.EventObject.GetItems()[event.GetSelection()]
+        join[self.column_names[column]] = new_value
         joins[row] = join
         self.module_view.on_value_change(self.v, self.panel,
                                          self.v.build_string(joins), event)

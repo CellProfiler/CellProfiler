@@ -571,6 +571,20 @@ class Metadata(cpm.CPModule):
                            cpmeas.COLTYPE_VARCHAR_FORMAT % 4))
         return result
     
+    def get_categories(self, pipeline, object_name):
+        '''Return the measurement categories for a particular object'''
+        if object_name == cpmeas.IMAGE and len(self.get_metadata_keys()) > 0:
+            return [cpmeas.C_METADATA]
+        return []
+            
+    def get_measurements(self, pipeline, object_name, category):
+        if object_name == cpmeas.IMAGE and category == cpmeas.C_METADATA:
+            keys = self.get_metadata_keys()
+            if needs_well_metadata(keys):
+                keys = list(keys) + [cpmeas.FTR_WELL]
+            return keys
+        return []
+    
     class ImportedMetadata(object):
         '''A holder for the metadata from a csv file'''
         def __init__(self, path):

@@ -2721,7 +2721,7 @@ class FileCollectionDisplayController(object):
             self.pause_button.Label = "Pause"
         self.v.fn_on_bkgnd_control(action)
             
-    def add_item(self, modpath, text=None):
+    def add_item(self, modpath, text=None, sort=True):
         '''Add an item to the tree
         
         modpath - a collection of path parts to the item in the tree
@@ -2742,7 +2742,7 @@ class FileCollectionDisplayController(object):
         elif self.modpath_to_item.has_key(parent_key):
             parent_item = self.modpath_to_item[parent_key]
         else:
-            parent_item = self.add_item(parent_key)
+            parent_item = self.add_item(parent_key, sort=sort)
             self.tree_ctrl.SetItemImage(parent_item, self.FOLDER_IMAGE_INDEX)
             self.tree_ctrl.SetItemImage(parent_item, 
                                         self.FOLDER_OPEN_IMAGE_INDEX,
@@ -2753,7 +2753,7 @@ class FileCollectionDisplayController(object):
         # Put in alpha order
         #
         n_children = self.tree_ctrl.GetChildrenCount(parent_item)
-        if n_children == 0:
+        if n_children == 0 or not sort:
             item = self.tree_ctrl.AppendItem(parent_item, text)
         else:
             child, cookie = self.tree_ctrl.GetFirstChild(parent_item)
@@ -3049,7 +3049,7 @@ class FileCollectionDisplayController(object):
                     item_id = existing_items[x][0]
                     self.tree_ctrl.SetItemText(item_id, text)
                 else:
-                    item_id = self.add_item(sub_modpath, text)
+                    item_id = self.add_item(sub_modpath, text, sort=False)
                     existing_items[x] = (item_id, True)
                     needs_sort = True
                     
@@ -3093,7 +3093,7 @@ class FileCollectionDisplayController(object):
                     item_id = existing_items[x][0]
                     self.tree_ctrl.SetItemText(item_id, text)
                 else:
-                    item_id = self.add_item(sub_modpath, text)
+                    item_id = self.add_item(sub_modpath, text, sort=False)
                     existing_items[x] = (item_id, True)
                     needs_sort = True
                 self.tree_ctrl.SetItemImage(item_id, image_id)

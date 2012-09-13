@@ -29,6 +29,18 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
     variable_revision_number = 1
 
     def __init__(self, image_name, image, mask=None, release_image = False):
+        '''Initializer
+        
+        image_name - the name of the image to put into the image set
+        
+        image - either the pixel data for the image if adding the same
+                image to every set or a list or tuple of pixel data,
+                one per image set
+                
+        mask - None for no mask (default), a binary 2-d matrix if same mask
+               for all image sets or a list or tuple of masks if one
+               different mask per image set.
+        '''
         super(InjectImage,self).__init__()
         self.__image_name = image_name
         self.__image = image
@@ -76,7 +88,15 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         object_set   - the objects (labeled masks) in this image set
         measurements - the measurements for this run
         """
-        image = cellprofiler.cpimage.Image(self.__image, self.__mask)
+        if isinstance(self.__image, (tuple, list)):
+            image = self.__image[workspace.image_set.image_number-1]
+        else:
+            image = self.__image
+        if isinstance(self.__mask, (tuple, list)):
+            mask = self.__mask[workspace.image_set.image_number-1]
+        else:
+            mask = self.__mask
+        image = cellprofiler.cpimage.Image(image, mask)
         workspace.image_set.add(self.__image_name, image)
 
     def post_run(self, workspace):

@@ -178,8 +178,12 @@ class Images(cpm.CPModule):
         command - the command from the list supplied by get_path_info. None
                   means default = view image.
         '''
-        pathname = os.path.join(*path)
-        url = pathname2url(pathname)
+        if path[0] in ("http:", "https:", "ftp:"):
+            url = path[0] + "//" + "/".join(path[1:])
+            pathname = url
+        else:
+            pathname = os.path.join(*path)
+            url = pathname2url(pathname)
         needs_raise_after = False
         if command is None:
             hdf_file_list = self.workspace.get_file_list()
@@ -202,8 +206,7 @@ class Images(cpm.CPModule):
         if command == self.MI_SHOW_IMAGE:
             from cellprofiler.gui.cpfigure import CPFigureFrame
             from subimager.client import get_image
-            url = pathname2url(pathname)
-            filename = os.path.split(pathname)[-1]
+            filename = path[-1]
             try:
                 image = get_image(url)
             except Exception, e:

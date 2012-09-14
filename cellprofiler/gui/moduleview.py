@@ -3555,6 +3555,8 @@ class ModuleSizer(wx.PySizer):
             for i in range(self.__rows):
                 text_item = self.get_item(0, i)
                 edit_item = self.get_item(1, i)
+                if edit_item is None:
+                    continue
                 inner_text_width = text_width - 2 * text_item.GetBorder() 
                 control = text_item.GetWindow()
                 assert isinstance(control, wx.StaticText), 'Control at column 0, %d of grid is not StaticText: %s'%(i,str(control))

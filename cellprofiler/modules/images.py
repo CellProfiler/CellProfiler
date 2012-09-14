@@ -28,6 +28,7 @@ import urllib
 
 from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
 from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
+from cellprofiler.utilities.hdf5_dict import HDF5FileList
 
 class Images(cpm.CPModule):
     variable_revision_number = 1
@@ -96,8 +97,15 @@ class Images(cpm.CPModule):
                 if (sys.platform == 'win32' and pathname[0].isalpha()
                     and pathname[1] == ":"):
                     pathname = os.path.normpath(pathname[:2]) + pathname[2:]
-                    
-                if (not check_for_directories) or os.path.isfile(pathname):
+                
+                if (pathname.startswith("http:") or 
+                    pathname.startswith("https:") or
+                    pathname.startswith("ftp:")):
+                    modpath = self.url_to_modpath(pathname)
+                    self.add_files_to_modlist(modpath[:-1], [modpath[-1]],
+                                              modlist)
+                    urls.append(pathname)
+                elif (not check_for_directories) or os.path.isfile(pathname):
                     urls.append(pathname2url(pathname))
                     modpath = self.make_modpath_from_path(pathname)
                     self.add_files_to_modlist(modpath[:-1], [modpath[-1]],
@@ -178,8 +186,8 @@ class Images(cpm.CPModule):
         command - the command from the list supplied by get_path_info. None
                   means default = view image.
         '''
-        if path[0] in ("http:", "https:", "ftp:"):
-            url = path[0] + "//" + "/".join(path[1:])
+        if path[0] in ("http", "https", "ftp"):
+            url = path[0] + ":" + "/".join(path[1:])
             pathname = url
         else:
             pathname = os.path.join(*path)
@@ -294,13 +302,22 @@ class Images(cpm.CPModule):
     
     @staticmethod
     def modpath_to_url(modpath):
+        if modpath[0] in ("http", "https", "ftp"):
+            if len(modpath) == 1:
+                return modpath[0] + ":"
+            elif len(modpath) == 2:
+                return modpath[0] + ":" + modpath[1] 
+            else:
+                return modpath[0] + ":" + modpath[1] + "/" + "/".join(
+                    [urllib.quote(part) for part in modpath[2:]])
         path = os.path.join(*modpath)
         return pathname2url(path)
     
     @staticmethod
     def url_to_modpath(url):
         if not url.lower().startswith("file:"):
-            return None
+            schema, rest = HDF5FileList.split_url(url)
+            return [schema] + rest[0:1] + [urllib.unquote(part) for part in rest[1:]]
         path = urllib.url2pathname(url[5:])
         parts = []
         while True:
@@ -337,6 +354,15 @@ class Images(cpm.CPModule):
                     dd = dd[part]
                 dd[parts[0]] = dict(
                     [(urllib.url2pathname(f), None) for f in files])
+            else:
+                schema, path = hdf_file_list.split_url(root)
+                parts = [schema] + [urllib.unquote(part) for part in path]
+                dd = d
+                for part in parts[:-1]:
+                    if not (dd.has_key(part) and dd[part] is not None):
+                        dd[part] = {}
+                    dd= dd[part]
+                dd[parts[-1]] = dict([(urllib.unquote(f), None) for f in files])
         hdf_file_list.walk(fn)
         mods = self.make_mods_from_tree(d)
         self.file_collection_display.initialize_tree(mods)

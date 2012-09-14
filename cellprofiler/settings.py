@@ -2646,6 +2646,20 @@ class FileCollectionDisplay(Setting):
         '''
         return len(mod) != 2 or not isinstance(mod[0], basestring)
     
+    def node_count(self, file_tree = None):
+        '''Count the # of nodes (leaves + directories) in the tree'''
+        if file_tree == None:
+            file_tree = self.file_tree
+        count = 0
+        for key in file_tree.keys():
+            if key is None:
+                pass
+            elif isinstance(file_tree[key], dict):
+                count += 1 + self.node_count(file_tree[key])
+            else:
+                count += 1
+        return count
+    
     def get_tree_modpaths(self, path):
         '''Create a modpath containing the selected node and all children
         

@@ -415,13 +415,16 @@ class PipelineListView(object):
             self.__first_dirty_module = 0
         elif isinstance(event,cpp.ModuleAddedPipelineEvent):
             self.__on_module_added(pipeline,event)
-            self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 1)
+            self.__first_dirty_module = \
+                min(self.__first_dirty_module, event.module_num - 1)
         elif isinstance(event,cpp.ModuleMovedPipelineEvent):
             self.__on_module_moved(pipeline,event)
-            self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 2)
+            self.__first_dirty_module = \
+                max(0, min(self.__first_dirty_module, event.module_num - 2))
         elif isinstance(event,cpp.ModuleRemovedPipelineEvent):
             self.__on_module_removed(pipeline,event)
-            self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 1)
+            self.__first_dirty_module = \
+                min(self.__first_dirty_module, event.module_num - 1)
         elif isinstance(event,cpp.PipelineClearedEvent):
             self.__on_pipeline_cleared(pipeline, event)
             self.__first_dirty_module = 0
@@ -429,7 +432,8 @@ class PipelineListView(object):
             if event.module_num not in [
                 x.module_num for x in self.get_selected_modules()]:
                 self.select_one_module(event.module_num)
-            self.__first_dirty_module = min(self.__first_dirty_module, event.module_num - 1)
+            self.__first_dirty_module = \
+                min(self.__first_dirty_module, event.module_num - 1)
         elif isinstance(event, cpp.ModuleEnabledEvent):
             self.__on_module_enabled(event)
             self.__first_dirty_module = min(self.__first_dirty_module, 

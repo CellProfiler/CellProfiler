@@ -214,6 +214,8 @@ class PreferencesView:
         cpprefs.add_output_file_name_listener(self.__on_preferences_output_filename_event)
         cpprefs.add_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.add_output_directory_listener(self.__on_preferences_output_directory_event)
+        self.__hold_a_reference_to_progress_callback = self.progress_callback
+        cpprefs.add_progress_callback(self.__hold_a_reference_to_progress_callback)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
     
     def __make_progress_panel(self):
@@ -234,6 +236,60 @@ class PreferencesView:
                        (self.pause_button, 0, wx.BOTTOM|wx.ALIGN_CENTER, 2)])
         panel.SetSizer(sizer)
         panel.Layout()
+        #
+        # The progress model is that one operation might invoke sub-operations
+        # which might report their own progress. We model this as a stack,
+        # tracking the innermost operation until done, then popping.
+        #
+        # The dictionary has as its key the operation ID and as it's value
+        # a tuple of amount done and current message
+        #
+        self.__progress_stack = []
+        self.__progress_dictionary = {}
+        self.__progress_dialog = None
+        
+    def progress_callback(self, operation_id, progress, message):
+        '''Monitor progress events in the UI thread
+        
+        operation_id - a unique id identifying an instance of an operation
+        progress - a number from 0 to 1 where 0 is the start of the operation
+                   and 1 is its end.
+        message - the message to display to the user.
+        '''
+        def reset_progress(): 
+            self.__progress_stack = []
+            self.__progress_dictionary = {}
+            if self.__progress_dialog is not None:
+                self.__progress_dialog.Destroy()
+                self.__progress_dialog = None
+            wx.SetCursor(wx.NullCursor)
+            self.set_message_text(WELCOME_MESSAGE)
+            wx.Yield()
+        
+        if operation_id == None:
+            reset_progress()
+            return
+        
+        if operation_id not in self.__progress_stack:
+            self.__progress_stack.append(operation_id)
+        else:
+            loc = self.__progress_stack.index(operation_id)
+            if loc == 0 and progress == 1:
+                reset_progress()
+                return
+            if progress == 1:
+                loc = loc-1
+            for operation_id in self.__progress_stack[(loc+1):]:
+                del self.__progress_dictionary[operation_id]
+            self.__progress_stack = self.__progress_stack[:(loc+1)]
+        self.__progress_dictionary[operation_id] = (progress, message)
+        wx.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+        message = ", ".join(
+            ["%s (%d %%)" % (message , int(progress * 100))
+             for progress, message in [
+                 self.__progress_dictionary[o] for o in self.__progress_stack]])
+        self.set_message_text(message)
+        wx.Yield() #ouch
 
     def check_preferences(self):
         '''Return True if preferences are OK (e.g. directories exist)'''

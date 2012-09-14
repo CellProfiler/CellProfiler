@@ -23,7 +23,10 @@ import os
 import os.path
 import re
 import sys
+import threading
+import time
 import traceback
+import weakref
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 
 logger = logging.getLogger(__name__)
@@ -983,3 +986,72 @@ def set_workspace_file(path, permanently = True):
         add_recent_file(path, WORKSPACE_FILE)
         config_write(WORKSPACE_FILE, path)
 
+__progress_data = threading.local()
+__progress_data.last_report = time.time()
+__progress_data.callbacks = None
+
+def add_progress_callback(callback):
+    '''Add a callback function that listens to progress calls
+    
+    The progress indicator is designed to monitor progress of operations
+    on the user interface thread. The model is that operations are nested
+    so that both an operation and sub-operation can report their progress.
+    An operation reports its initial progress and is pushed onto the
+    stack at that point. When it reports 100% progress, it's popped from
+    the stack.
+    
+    callback - callback function with signature of 
+               fn(operation_id, progress, message)
+               where operation_id names the instance of the operation being
+               performed (e.g. a UUID), progress is a number between 0 and 1
+               where 1 indicates that the operation has completed and
+               message is the message to show.
+               
+               Call the callback with operation_id = None to pop the operation
+               stack after an exception.
+               
+    Note that the callback must remain in-scope. For example:
+    
+    class Foo():
+       def callback(operation_id, progress, message):
+          ...
+          
+    works but
+    
+    class Bar():
+        def __init__(self):
+            def callback(operation_id, progress, message):
+                ...
+            
+    does not work because the reference is lost when __init__ returns.
+    '''
+    global __progress_data
+    if __progress_data.callbacks is None:
+        __progress_data.callbacks = weakref.WeakSet()
+    __progress_data.callbacks.add(callback)
+    
+def report_progress(operation_id, progress, message):
+    '''Report progress to all callbacks registered on the caller's thread
+    
+    operation_id - ID of operation being performed
+    
+    progress - a number between 0 and 1 indicating the extent of progress.
+               None indicates indeterminate operation duration. 0 should be
+               reported at the outset and 1 at the end.
+               
+    message - an informative message.
+    '''
+    global __progress_data
+    
+    t = time.time()
+    if progress in (None, 0, 1) or t - __progress_data.last_report > .25:
+        for callback in __progress_data.callbacks:
+            callback(operation_id, progress, message)
+        __progress_data.last_report = t
+        
+def cancel_progress():
+    '''Cancel all progress indicators
+    
+    for instance, after an exception is thrown that bubbles to the top.
+    '''
+    report_progress(None, None, None)

@@ -2982,8 +2982,14 @@ class FileCollectionDisplayController(object):
         self.update()
             
     def update(self):
-        self.update_subtree(self.v.file_tree, self.root_item, False, [])
+        operation_id = uuid.uuid4()
+        total = self.v.node_count()
+        if total == 0:
+            return
+        self.update_subtree(self.v.file_tree, self.root_item, False, [],
+                            operation_id, 0, total)
         self.manage_expansion()
+        cpprefs.report_progress(operation_id, 1, None)
         
     def manage_expansion(self):
         '''Handle UI expansion issues
@@ -3020,7 +3026,8 @@ class FileCollectionDisplayController(object):
             if not self.tree_ctrl.IsExpanded(bottom_item):
                 self.tree_ctrl.Expand(bottom_item)
         
-    def update_subtree(self, file_tree, parent_item, is_filtered, modpath):
+    def update_subtree(self, file_tree, parent_item, 
+                       is_filtered, modpath, operation_id, count, total):
         existing_items = {}
         show_filtered = self.v.show_filtered
         needs_sort = False
@@ -3034,11 +3041,16 @@ class FileCollectionDisplayController(object):
                     child_item_id = \
                         self.tree_ctrl.GetNextSibling(child_item_id)
             
-        for x in file_tree.keys():
+        for x in sorted(file_tree.keys()):
             sub_modpath = modpath + [x]
             if x is None:
                 continue
             text, node_type, tooltip = self.v.get_node_info(sub_modpath)
+            cpprefs.report_progress(
+                operation_id,
+                float(count) / float(total),
+                "Processing %s" % text)
+            count += 1
             image_id = self.get_image_id_from_nodetype(node_type)
             if isinstance(file_tree[x], bool) or isinstance(x, tuple):
                 node_is_filtered = (not file_tree[x]) or is_filtered
@@ -3101,8 +3113,9 @@ class FileCollectionDisplayController(object):
                                             wx.TreeItemIcon_Expanded)
                 has_children = n_subfolders + n_files > 0
                 self.tree_ctrl.SetItemHasChildren(item_id, has_children)
-                self.update_subtree(subtree, item_id, node_is_filtered, 
-                                    sub_modpath)
+                count = self.update_subtree(
+                    subtree, item_id, node_is_filtered, 
+                    sub_modpath, operation_id, count, total)
                     
             color = self.FILTERED_COLOR if node_is_filtered else self.ACTIVE_COLOR
             self.tree_ctrl.SetItemTextColour(item_id, color)
@@ -3111,6 +3124,7 @@ class FileCollectionDisplayController(object):
                 self.remove_item(modpath + [last_part])
         if needs_sort:
             self.tree_ctrl.SortChildren(parent_item)
+        return count
             
     def get_image_id_from_nodetype(self, node_type):
         if node_type == cps.FileCollectionDisplay.NODE_COLOR_IMAGE:
@@ -3446,10 +3460,14 @@ class ModuleSizer(wx.PySizer):
                 return wx.Size(0,0)
             height = 0
             for j in range(0,self.__rows):
-                height_border = max([self.get_item(col,j).GetBorder() 
-                                     for col in range(2)
-                                     if self.get_item(col,j) is not None])
-                height += self.get_row_height(j) + 2*height_border
+                borders = [self.get_item(col,j).GetBorder() 
+                           for col in range(2)
+                           if self.get_item(col,j) is not None]
+                if len(borders) == 0:
+                    height += 10
+                else:
+                    height_border = max(borders)
+                    height += self.get_row_height(j) + 2*height_border
             self.__printed_exception = False
             return wx.Size(self.calc_edit_size()[0] + self.__min_text_width + 
                            self.calc_help_size()[0],

@@ -67,6 +67,7 @@ class CellProfilerApp(wx.App):
         # set up error dialog for uncaught exceptions
         def show_errordialog(type, exc, tb):
             def doit():
+                cpp.cancel_progress()
                 display_error_dialog(self.frame, exc, None, tb=tb, continue_only=True,
                                      message="Exception in CellProfiler core processing")
                 # continue is really the only choice

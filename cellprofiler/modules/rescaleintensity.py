@@ -304,6 +304,11 @@ class RescaleIntensity(cpm.CPModule):
         if self.wants_automatic_low == LOW_ALL_IMAGES:
             self.set_automatic_minimum(workspace.image_set_list, min_value)
 
+    def is_aggregation_module(self):
+        '''We scan through all images in a group in some cases'''
+        return ((self.wants_automatic_high == HIGH_ALL_IMAGES) or
+                (self.wants_automatic_low == LOW_ALL_IMAGES))
+    
     def run(self, workspace):
         input_image = workspace.image_set.get_image(self.image_name.value)
         output_mask = None

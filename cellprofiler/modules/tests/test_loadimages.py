@@ -3650,6 +3650,63 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
                                  "ExampleFlyImages")
         self.convtester(pipeline_text, directory)
 
+    def test_17_07_group_by_metadata(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120917145632
+ModuleCount:1
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C
+    Check image sets for unmatched or duplicate files?:Yes
+    Group images by metadata?:Yes
+    Exclude certain files?:No
+    Specify metadata fields to group by:Column,Row
+    Select subfolders to analyze:
+    Image count:2
+    Text that these images have in common (case-sensitive):Channel1-
+    Position of this image in each group:1
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:rawGFP
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):Channel2-
+    Position of this image in each group:2
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:rawDNA
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleSBSImages")
+        self.convtester(pipeline_text, directory)
+        
 '''A two-channel tif containing two overlapped objects'''
 overlapped_objects_data = zlib.decompress(base64.b64decode(
     "eJztlU9oI1Ucx1/abau7KO7irq6u8BwQqnYymfTfNiRZ2NRAILsJNMVuQfBl"

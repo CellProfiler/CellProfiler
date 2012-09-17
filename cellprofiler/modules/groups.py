@@ -75,8 +75,11 @@ class Groups(cpm.CPModule):
             group.append("remover", cps.RemoveSettingButton(
                 "Remove the above metadata item", "Remove", 
                 self.grouping_metadata, group))
-        if self.pipeline is not None:
-            self.update_tables()
+        #
+        # Has side effect of updating the metadata choices if the pipeline
+        # is defined.
+        #
+        group.metadata_choice.test_valid(self.pipeline)
         
     def get_metadata_choices(self, pipeline, group):
         if self.pipeline is not None:

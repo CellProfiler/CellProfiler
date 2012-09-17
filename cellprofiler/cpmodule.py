@@ -509,11 +509,13 @@ class CPModule(object):
         '''
         return False
     
-    def convert(self, metadata, namesandtypes, groups):
+    def convert(self, pipeline, metadata, namesandtypes, groups):
         '''Convert the input processing of this module from the legacy format
         
         Legacy modules like LoadImages should copy their settings into
         the Metadata, NamesAndTypes and Groups modules when this call is made.
+        
+        pipeline - the pipeline being converted
         
         metadata - the pipeline's Metadata module
         

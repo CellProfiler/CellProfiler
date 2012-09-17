@@ -2866,7 +2866,7 @@ class LoadImages(cpmodule.CPModule):
                 self.match_method.value)
         return True
     
-    def convert(self, metadata, namesandtypes, groups):
+    def convert(self, pipeline, metadata, namesandtypes, groups):
         '''Convert to the modern format using the input modules
         
         This method converts any LoadImages modules in the pipeline to
@@ -2895,6 +2895,7 @@ class LoadImages(cpmodule.CPModule):
                 " of current pipeline.")
         warn_metadata_match = False
         warn_gray_color = False
+        edited_modules = set()
         for group in self.images:
             for channel in group.channels:
                 if namesandtypes.assignment_method == cpnamesandtypes.ASSIGN_ALL:
@@ -2902,6 +2903,7 @@ class LoadImages(cpmodule.CPModule):
                         cpnamesandtypes.ASSIGN_RULES
                 else:
                     namesandtypes.add_assignment()
+                edited_modules.add(namesandtypes)
                 assignment = namesandtypes.assignments[-1]
                 if channel.image_object_choice == IO_IMAGES:
                     name = assignment.image_name.value = \
@@ -2946,6 +2948,7 @@ class LoadImages(cpmodule.CPModule):
                             metadata.wants_metadata.value = True
                         else:
                             metadata.add_extraction_method()
+                        edited_modules.add(metadata)
                         mgroup = metadata.extraction_methods[-1]
                         mgroup.source.value = source
                         if metadata_choice == M_FILE_NAME:
@@ -2979,10 +2982,29 @@ class LoadImages(cpmodule.CPModule):
                                 entry[name] = tag
                                 current.append(entry)
                     namesandtypes.join.build(current)
+                    edited_modules.add(namesandtypes)
                 elif len(my_tags) > 0:
                     namesandtypes.matching_choice.value = \
                         cpnamesandtypes.MATCH_BY_METADATA
                     namesandtypes.join.build([ { name: tag} for tag in my_tags])
+                    edited_modules.add(namesandtypes)
+        if self.group_by_metadata:
+            groups.wants_groups.value = True
+            edited_modules.add(groups)
+            metadata_fields = self.metadata_fields.get_selections()
+            if (len(groups.grouping_metadata) > len(metadata_fields)):
+                del groups.grouping_metadata[len(metadata_fields):]
+            else:
+                while (len(groups.grouping_metadata) < len(metadata_fields)):
+                    groups.add_grouping_metadata()
+                
+            for i, field in enumerate(metadata_fields):
+                md_group = groups.grouping_metadata[i]
+                md_group.image_name.value = \
+                    self.images[0].channels[0].image_name.value
+                md_group.metadata_choice.value = \
+                    field
+                
         if warn_metadata_match:
             namesandtypes.notes.append(
                 "WARNING: the metadata matching for this pipeline may not"
@@ -2991,6 +3013,8 @@ class LoadImages(cpmodule.CPModule):
             namesandtypes.notes.append(
                 'Please change any color images from "Load as Grayscale image"'
                 ' to "Load as Color image"')
+        for module in edited_modules:
+            pipeline.edit_module(module.module_num, True)
             
 def well_metadata_tokens(tokens):
     '''Return the well row and well column tokens out of a set of metadata tokens'''

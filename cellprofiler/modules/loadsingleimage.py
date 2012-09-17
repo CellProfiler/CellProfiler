@@ -536,7 +536,7 @@ class LoadSingleImage(cpm.CPModule):
     def needs_conversion(self):
         return True
     
-    def convert(self, metadata, namesandtypes, groups):
+    def convert(self, pipeline, metadata, namesandtypes, groups):
         '''Convert from legacy to modern'''
         import cellprofiler.modules.metadata as cpmetadata
         import cellprofiler.modules.namesandtypes as cpnamesandtypes
@@ -545,6 +545,7 @@ class LoadSingleImage(cpm.CPModule):
         assert isinstance(namesandtypes, cpnamesandtypes.NamesAndTypes)
         assert isinstance(groups, cpgroups.Groups)
         
+        edited_modules = set()
         for group in self.file_settings:
             tags = []
             file_name = group.file_name.value
@@ -572,6 +573,7 @@ class LoadSingleImage(cpm.CPModule):
                 namesandtypes.assignment_method.value = cpnamesandtypes.ASSIGN_RULES
             else:
                 namesandtypes.add_assignment()
+            edited_modules.add(namesandtypes)
             assignment = namesandtypes.assignments[-1]
             structure = [cps.Filter.AND_PREDICATE ]
             fp = cpnamesandtypes.FilePredicate()
@@ -606,6 +608,7 @@ class LoadSingleImage(cpm.CPModule):
                     metadata.wants_metadata.value = True
                 else:
                     metadata.add_extraction_method()
+                edited_modules.add(metadata)
                 em = metadata.extraction_methods[-1]
                 em.extraction_method.value = cpmetadata.X_MANUAL_EXTRACTION
                 em.source.value = cpmetadata.XM_FILE_NAME
@@ -634,6 +637,8 @@ class LoadSingleImage(cpm.CPModule):
             else:
                 assignment.object_name.value = name
                 assignment.load_as_choice.value = cpnamesandtypes.LOAD_AS_OBJECTS
+        for module in edited_modules:
+            pipeline.edit_module(module.module_num, True)
                 
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 4:

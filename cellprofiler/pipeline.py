@@ -1383,7 +1383,7 @@ class Pipeline(object):
                 self.add_module(module)
             for module in list(self.__modules):
                 if module.needs_conversion():
-                    module.convert(metadata, namesandtypes, groups)
+                    module.convert(self, metadata, namesandtypes, groups)
                     self.remove_module(module.module_num)
         finally:
             self.stop_undoable_action()

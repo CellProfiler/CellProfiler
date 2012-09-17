@@ -289,7 +289,7 @@ class PreferencesView:
              for progress, message in [
                  self.__progress_dictionary[o] for o in self.__progress_stack]])
         self.set_message_text(message)
-        wx.Yield() #ouch
+        wx.SafeYield(None, True) #ouch, can't repaint without it.
 
     def check_preferences(self):
         '''Return True if preferences are OK (e.g. directories exist)'''

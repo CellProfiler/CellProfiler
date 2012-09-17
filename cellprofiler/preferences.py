@@ -1044,10 +1044,10 @@ def report_progress(operation_id, progress, message):
     global __progress_data
     
     t = time.time()
-    if progress in (None, 0, 1) or t - __progress_data.last_report > .25:
+    if progress in (None, 0, 1) or t - __progress_data.last_report > 1:
         for callback in __progress_data.callbacks:
             callback(operation_id, progress, message)
-        __progress_data.last_report = t
+        __progress_data.last_report = time.time()
         
 def cancel_progress():
     '''Cancel all progress indicators

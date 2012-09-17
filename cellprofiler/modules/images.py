@@ -19,12 +19,14 @@ TO DO: document this
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.utilities.walk_in_background as W
 import os
 import sys
 import urllib
+import uuid
 
 from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
 from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
@@ -414,9 +416,14 @@ class Images(cpm.CPModule):
         else:
             keep = []
             dont_keep = []
-            self.filter_tree(self.file_collection_display.file_tree, keep, dont_keep)
+            operation_id = uuid.uuid4()
+            self.filter_tree(self.file_collection_display.file_tree, 
+                             keep, dont_keep,
+                             operation_id, 0, 
+                             self.file_collection_display.node_count())
             self.file_collection_display.mark(keep, True)
             self.file_collection_display.mark(dont_keep, False)
+            cpprefs.report_progress(operation_id,  1, None)
             
     def filter_url(self, url):
         '''Return True if a URL passes the module's filter'''
@@ -427,14 +434,19 @@ class Images(cpm.CPModule):
             cps.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, self))
         return match or match is None
     
-    def filter_tree(self, tree, keep, dont_keep, modpath = []):
-        for key in tree.keys():
+    def filter_tree(self, tree, keep, dont_keep,
+                    operation_id, count, total, modpath = []):
+        for key in sorted(tree.keys()):
             if key is None:
                 continue
             subpath = modpath + [key]
             if isinstance(tree[key], bool):
                 display_name, node_type, tooltip, menu = self.get_path_info(
                     subpath)
+                cpprefs.report_progress(
+                    operation_id,
+                    float(count) / float(total),
+                    "Filtering %s" % display_name)
                 match = self.filter.evaluate((node_type, subpath, self))
                 if match is None or match:
                     keep.append(key)
@@ -445,8 +457,10 @@ class Images(cpm.CPModule):
                 keep.append(keep_node)
                 dont_keep_node = (key, [])
                 dont_keep.append(dont_keep_node)
-                self.filter_tree(tree[key], keep_node[1], dont_keep_node[1], 
+                self.filter_tree(tree[key], keep_node[1], dont_keep_node[1],
+                                 operation_id, count, total,
                                  subpath)
+            count += 1
     
     def settings(self):
         return [self.file_collection_display, self.wants_filter, self.filter]

@@ -393,6 +393,32 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
                 ipd = image_set[column_name][0]
                 self.assertEqual(ipd.url, "%s%d" % (column_name, i+1))
                 
+    def test_01_11_by_order_bad(self):
+        # Regression test of issue #392: columns of different lengths
+        n = N.NamesAndTypes()
+        n.assignment_method.value = N.ASSIGN_RULES
+        n.matching_choice.value = N.MATCH_BY_ORDER
+        n.ipd_columns = \
+            [[cpp.ImagePlaneDetails("%s%d" % (C0, (3-i)), None, None, None, **m)
+              for i, m in enumerate(md([(M0, 3)]))],
+             [cpp.ImagePlaneDetails("%s%d" % (C1, i+1), None, None, None, **m)
+                           for i, m in enumerate(md([(M1, 2)]))]]
+        n.column_names = [C0, C1]
+        n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M1))
+        n.make_image_sets()
+        self.assertEqual(len(n.image_sets), 3)
+        for i, (image_set_keys, image_set) in enumerate(n.image_sets):
+            self.assertEqual(len(image_set_keys), 1)
+            self.assertEqual(str(i+1), image_set_keys[0])
+            for column_name in (C0, C1):
+                self.assertTrue(image_set.has_key(column_name))
+                if i < 2 or column_name != C1:
+                    self.assertEqual(len(image_set[column_name]), 1)
+                    ipd = image_set[column_name][0]
+                    self.assertEqual(ipd.url, "%s%d" % (column_name, i+1))
+                else:
+                    self.assertEqual(len(image_set[column_name]), 0)
+                
     def test_02_01_prepare_to_create_batch_single(self):
         n = N.NamesAndTypes()
         n.module_num = 1

@@ -692,11 +692,15 @@ class NamesAndTypes(cpm.CPModule):
                 self.image_sets = []
                 n_image_sets = reduce(max, [len(x) for x in self.ipd_columns], 0)
                 for i in range(n_image_sets):
-                    self.image_sets.append(
-                        ((str(i+1), ),
-                         dict([(column_name, (self.ipd_columns[j][i],))
-                               for j, column_name 
-                               in enumerate(self.column_names)])))
+                    d = {}
+                    for column_name, ipd_column \
+                        in zip(self.column_names, self.ipd_columns):
+                        if i < len(ipd_column):
+                            d[column_name] = (ipd_column[i],)
+                        else:
+                            d[column_name] = tuple()
+                            
+                    self.image_sets.append(((str(i+1), ), d))
                 return
             try:
                 joins = self.join.parse()

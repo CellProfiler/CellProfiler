@@ -277,29 +277,49 @@ class RelateObjects(cpm.CPModule):
                 self.calculate_minimum_distances(workspace, parent_name)
 
         if self.show_window:
-            workspace.display_data.parents_segmented = parents.segmented
-            workspace.display_data.children_segmented = children.segmented
+            workspace.display_data.parent_labels = parents.segmented
+            workspace.display_data.parent_count = parents.count
+            workspace.display_data.child_labels = children.segmented
             workspace.display_data.parents_of = parents_of
 
     def display(self, workspace, figure):
-        parents_segmented = workspace.display_data.parents_segmented
-        children_segmented = workspace.display_data.children_segmented
+        if not self.show_window:
+            return
+        from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+        figure.set_subplots((2,2))
+        renumbered_parent_labels = renumber_labels_for_display(
+            workspace.display_data.parent_labels)
+        child_labels = workspace.display_data.child_labels
         parents_of = workspace.display_data.parents_of
-        figure.set_subplots((2, 2))
-        figure.subplot_imshow_labels(0,0,parents_segmented,
-                                     title = self.parent_name.value)
-        figure.subplot_imshow_labels(1,0,children_segmented,
-                                     title = self.sub_object_name.value,
-                                     sharexy = figure.subplot(0,0))
-        parent_labeled_children = np.zeros(children_segmented.shape, int)
-        parent_labeled_children[children_segmented > 0] = \
-            parents_of[children_segmented[children_segmented > 0] - 1]
-        figure.subplot_imshow_labels(0,1,parent_labeled_children,
-                                     "%s labeled by %s"%
-                                     (self.sub_object_name.value,
-                                      self.parent_name.value),
-                                     sharexy = figure.subplot(0,0))
-
+        #
+        # discover the mapping so that we can apply it to the children
+        #
+        mapping = np.arange(workspace.display_data.parent_count+1)
+        mapping[workspace.display_data.parent_labels.flatten()] = \
+            renumbered_parent_labels.flatten()
+        parent_labeled_children = np.zeros(child_labels.shape, int)
+        mask = child_labels > 0
+        parent_labeled_children[mask] = \
+            mapping[parents_of[child_labels[mask] - 1]]
+        
+        figure.subplot_imshow_labels(
+            0, 0, renumbered_parent_labels,
+            title = self.parent_name.value,
+            renumber=False)
+        figure.subplot_imshow_labels(
+            1, 0, child_labels,
+            title = self.sub_object_name.value,
+            sharex = figure.subplot(0,0),
+            sharey = figure.subplot(0,0))
+        figure.subplot_imshow_labels(
+            0, 1, parent_labeled_children,
+            "%s labeled by %s"%
+            (self.sub_object_name.value,
+             self.parent_name.value),
+            renumber=False,
+            sharex = figure.subplot(0,0),
+            sharey = figure.subplot(0,0))
+    
     def get_parent_names(self):
         '''Get the names of parents to be measured for distance'''
         parent_names = [self.parent_name.value]

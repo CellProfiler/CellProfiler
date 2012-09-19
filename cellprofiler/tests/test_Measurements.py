@@ -18,6 +18,7 @@ import h5py
 import unittest
 import numpy as np
 import os
+import sys
 import tempfile
 import uuid
 import zlib
@@ -954,14 +955,25 @@ ALT_OBJECT_NAME = "AltObjectName"
 METADATA_NAMES = [ "Metadata_%d" % i for i in range(1, 10)]
 
 class TestImageSetCache(unittest.TestCase):
+    def setUp(self):
+        if sys.platform == "darwin":
+            fd, self.path = tempfile.mkstemp(".h5")
+            os.close(fd)
+            self.f = h5py.File(self.path)
+        else:
+            self.f = h5py.File("foo", driver="core", backing_store=False)
+            
+    def tearDown(self):
+        self.f.close()
+        if sys.platform == "darwin":
+            os.unlink(self.path)
+            
     def test_01_01_no_cache(self):
-        f = h5py.File("foo", driver="core", backing_store=False)
-        cache = cpmeas.ImageSetCache(f)
+        cache = cpmeas.ImageSetCache(self.f)
         self.assertFalse(cache.has_cache)
         
     def test_02_01_one_image(self):
-        f = h5py.File("foo", driver="core", backing_store=False)
-        cache = cpmeas.ImageSetCache(f)
+        cache = cpmeas.ImageSetCache(self.f)
         urls = ["file:///foo", "file:///bar"]
         cache.cache_image_set(
             [(IMAGE_NAME, cpmeas.IMAGE)], 
@@ -971,7 +983,7 @@ class TestImageSetCache(unittest.TestCase):
              for url in urls])
         for reopen in (False, True):
             if reopen:
-                cache = cpmeas.ImageSetCache(f)
+                cache = cpmeas.ImageSetCache(self.f)
             self.assertTrue(cache.has_cache)
             self.assertSequenceEqual(cache.image_names, [IMAGE_NAME])
             self.assertIsNone(cache.metadata_keys)
@@ -987,8 +999,7 @@ class TestImageSetCache(unittest.TestCase):
                 self.assertIsNone(ipd.channel)
             
     def test_02_02_image_and_metadata(self):
-        f = h5py.File("foo", driver="core", backing_store=False)
-        cache = cpmeas.ImageSetCache(f)
+        cache = cpmeas.ImageSetCache(self.f)
         metadata_column_name = "Metadata_well"
         urls = ["file:///foo", "file:///bar"]
         series = (0, 2)
@@ -1003,7 +1014,7 @@ class TestImageSetCache(unittest.TestCase):
             metadata_keys = [metadata_column_name])
         for reopen in (False, True):
             if reopen:
-                cache = cpmeas.ImageSetCache(f)
+                cache = cpmeas.ImageSetCache(self.f)
             self.assertTrue(cache.has_cache)
             self.assertSequenceEqual(cache.image_names, [IMAGE_NAME])
             self.assertSequenceEqual(cache.image_or_object, [cpmeas.IMAGE])
@@ -1021,8 +1032,7 @@ class TestImageSetCache(unittest.TestCase):
                 self.assertEqual(image_set_data.ipds[0].channel, c)
                 
     def test_02_03_images_and_objects(self):
-        f = h5py.File("foo", driver="core", backing_store=False)
-        cache = cpmeas.ImageSetCache(f)
+        cache = cpmeas.ImageSetCache(self.f)
         metadata_columns = ["%s_%d"%(cpmeas.C_METADATA, i) for i in range(1,3)]
         image_names = [IMAGE_NAME, ALT_IMAGE_NAME, OBJECT_NAME, ALT_OBJECT_NAME]
         image_or_object = [cpmeas.IMAGE, cpmeas.IMAGE, cpmeas.OBJECT, cpmeas.OBJECT]
@@ -1036,7 +1046,7 @@ class TestImageSetCache(unittest.TestCase):
             metadata_columns)
         for reopen in (False, True):
             if reopen:
-                cache = cpmeas.ImageSetCache(f)
+                cache = cpmeas.ImageSetCache(self.f)
             self.assertTrue(cache.has_cache)
             self.assertSequenceEqual(cache.image_names, image_names)
             self.assertSequenceEqual(cache.image_or_object, image_or_object)
@@ -1051,8 +1061,7 @@ class TestImageSetCache(unittest.TestCase):
                         self.assertIsNone(x)
     
     def test_03_01_errors(self):
-        f = h5py.File("foo", driver="core", backing_store=False)
-        cache = cpmeas.ImageSetCache(f)
+        cache = cpmeas.ImageSetCache(self.f)
         image_names = [IMAGE_NAME, ALT_IMAGE_NAME]
         data = [
             cpmeas.ImageSetCache.ImageSetData(
@@ -1064,7 +1073,7 @@ class TestImageSetCache(unittest.TestCase):
                               data)
         for reopen in (False, True):
             if reopen:
-                cache = cpmeas.ImageSetCache(f)
+                cache = cpmeas.ImageSetCache(self.f)
             self.assertTrue(cache.has_cache)
             for i, expected in enumerate(data):
                 image_set_data = cache.get_image_set_data(i)

@@ -1042,7 +1042,8 @@ def report_progress(operation_id, progress, message):
     message - an informative message.
     '''
     global __progress_data
-    
+    if __progress_data.callbacks is None:
+        return
     t = time.time()
     if progress in (None, 0, 1) or t - __progress_data.last_report > 1:
         for callback in __progress_data.callbacks:

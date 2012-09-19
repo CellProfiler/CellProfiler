@@ -263,12 +263,7 @@ class Objects(object):
         """
         if self.__small_removed_segmented != None:
             return self.__small_removed_segmented
-        if self.__segmented != None:
-            if self.has_unedited_segmented():
-                return self.__unedited_segmented
-            # If there's only a segmented, then there is no junk.
-            return self.__segmented
-        return self.__small_removed_segmented
+        return self.unedited_segmented
     
     def set_small_removed_segmented(self,labels):
         check_consistency(self.__segmented, self.__unedited_segmented, labels)

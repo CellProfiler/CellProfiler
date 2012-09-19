@@ -241,7 +241,7 @@ class EditObjectsManually(I.Identify):
                                               j[l != 0],
                                               l[l != 0]))))
         filtered_objects.set_ijv(ijv, orig_labels[0].shape)
-        if orig_objects.unedited_segmented is not None:
+        if orig_objects.has_unedited_segmented():
             filtered_objects.unedited_segmented = orig_objects.unedited_segmented
         if orig_objects.parent_image is not None:
             filtered_objects.parent_image = orig_objects.parent_image

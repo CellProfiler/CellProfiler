@@ -18,14 +18,22 @@ import os
 import os.path
 import glob
 from subprocess import call
+import ctypes.util
 
 # fix from
 #  http://mail.python.org/pipermail/pythonmac-sig/2008-June/020111.html
 import pytz
 pytz.zoneinfo = pytz.tzinfo
 pytz.zoneinfo.UTC = pytz.UTC
-
+#
+# It's necessary to install libtiff and libjpeg explicitly
+# so that libtiff can find itself and so that libjpeg
+# is the one that we want and not the one that WX thinks
+# it wants.
+#
 from libtiff.libtiff_ctypes import tiff_h_name
+tiff_dylib = ctypes.util.find_library('tiff')
+jpeg_dylib = ctypes.util.find_library('jpeg')
 
 # make sure external dependencies match requirements
 import external_dependencies
@@ -49,7 +57,7 @@ OPTIONS = {'argv_emulation': True,
            'excludes': ['pylab', 'nose', 'Tkinter', 'Cython', 'scipy.weave'],
            'resources': ['CellProfilerIcon.png'],
            'iconfile' : 'CellProfilerIcon.icns',
-           'frameworks' : ['libtiff.dylib'],
+           'frameworks' : [tiff_dylib, jpeg_dylib],
            }
 
 if sys.argv[-1] == 'py2app':

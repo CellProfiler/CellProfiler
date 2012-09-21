@@ -56,6 +56,7 @@ try:
     has_tiff = True
 except:
     if sys.platform == 'darwin':
+        traceback.print_exc()
         logger.error("Failed to load pylibtiff.  SaveImages on Mac may not be "
                      "able to write 16-bit TIFF format.")
     has_tiff = False

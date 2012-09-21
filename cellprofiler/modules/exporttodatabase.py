@@ -352,9 +352,16 @@ class ExportToDatabase(cpm.CPModule):
             of the cells to be displayed. Choose one of the listed objects
             and CellProfiler will save that object's location columns in
             the properties file so that CellProfiler Analyst centers cells
-            using that object's center.<p>
-            You can manually change this choice in the properties file by
+            using that object's center.
+            <p>You can manually change this choice in the properties file by
             edting the <i>cell_x_loc</i> and <i>cell_y_loc</i> properties.
+            </p>
+            <p>
+            Note that if there are no objects defined in the pipeline (e.g. 
+            if only using MeasureImageQuality and/or Illumination Correction modules), 
+            a warning will diplay until you choose 'None' for the subsequent setting:
+            'Export measurements for all objects to the database?'.
+            </p>
             """)
         
         #

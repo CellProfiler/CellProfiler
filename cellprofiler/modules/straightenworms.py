@@ -45,6 +45,7 @@ Stuart Kim, Eugene Myers, Bioinformatics Vol 24 # 2, 2008, pp 234-242.
 __version__="$Revision: 10717 %"
 
 import numpy as np
+import os
 from scipy.interpolate import interp1d
 from scipy.interpolate.fitpack import bisplrep, dblint
 from scipy.ndimage import map_coordinates, extrema
@@ -275,6 +276,13 @@ class StraightenWorms(cpm.CPModule):
         result += [ self.add_image_button ]
         return result
     
+    def validate_module(self, pipeline):
+        path = os.path.join(self.training_set_directory.get_absolute_path(),
+                            self.training_set_file_name.value)
+        if not os.path.exists(path):
+            raise cps.ValidationError("Can't find file %s" % self.training_set_file_name.value,
+                                      self.training_set_file_name)
+            
     def prepare_settings(self, setting_values):
         nimages = int(setting_values[IDX_IMAGE_COUNT])
         del self.images[1:]

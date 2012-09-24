@@ -117,7 +117,7 @@ class HDF5Dict(object):
         logger.debug("HDF5Dict.__init__(): %s, temporary=%s, copy=%s", self.filename, self.is_temporary, copy)
         # assert not os.path.exists(self.filename)  # currently, don't allow overwrite
         self.hdf5_file = h5py.File(self.filename, 'w')
-        if is_temporary and sys.platform != "win32":
+        if is_temporary and self.can_unlink_temporary():
             # Unix-ish unlink lets us remove the file from the directory but
             # it's still there.
             os.unlink(self.filename)
@@ -156,6 +156,10 @@ class HDF5Dict(object):
                         hdf5_index = object_group[feature_name]['index'][:]
                         for num_idx, start, stop in hdf5_index:
                             d[num_idx] = slice(start, stop)
+                            
+    @staticmethod
+    def can_unlink_temporary():
+        return sys.platform != "win32" and h5py.version.version_tuple[0] < 2        
 
     def __del__(self):
         logger.debug("HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary)
@@ -166,7 +170,7 @@ class HDF5Dict(object):
             # This happens if the constructor could not open the hdf5 file
             return
         if self.is_temporary:
-            if sys.platform == "win32":
+            if not self.can_unlink_temporary():
                 try:
                     self.hdf5_file.flush()  # just in case unlink fails
                     self.hdf5_file.close()

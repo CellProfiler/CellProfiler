@@ -107,6 +107,17 @@ class Objects(object):
         '''Return true if there is an IJV formulation for the object'''
         return self.__ijv is not None
     
+    @property
+    def shape(self):
+        '''The i and j extents of the labels'''
+        if self.__shape is not None:
+            return self.__shape
+        if self.__segmented is not None:
+            return self.__segmented.shape
+        if self.has_parent_image is not None:
+            return self.parent_image.pixel_data.shape
+        return tuple([np.max(self.__ijv[i]) for i in range(2)])
+    
     def get_labels(self, shape = None):
         '''Get a set of labels matrices consisting of non-overlapping labels
         

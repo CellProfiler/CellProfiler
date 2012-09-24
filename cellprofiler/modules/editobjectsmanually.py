@@ -241,7 +241,7 @@ class EditObjectsManually(I.Identify):
                                               j[l != 0],
                                               l[l != 0]))))
         filtered_objects.set_ijv(ijv, orig_labels[0].shape)
-        if orig_objects.unedited_segmented is not None:
+        if orig_objects.has_unedited_segmented():
             filtered_objects.unedited_segmented = orig_objects.unedited_segmented
         if orig_objects.parent_image is not None:
             filtered_objects.parent_image = orig_objects.parent_image
@@ -777,6 +777,7 @@ class EditObjectsManually(I.Identify):
                 sub_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER)
                 def on_resume(event):
                     self.EndModal(wx.OK)
+                    self.on_close(event)
                 self.Bind(wx.EVT_BUTTON, on_resume, resume_button)
                 button_sizer.SetAffirmativeButton(resume_button)
         
@@ -784,10 +785,12 @@ class EditObjectsManually(I.Identify):
                 button_sizer.AddButton(cancel_button)
                 def on_cancel(event):
                     self.EndModal(wx.CANCEL)
+                    self.on_close(event)
                 self.Bind(wx.EVT_BUTTON, on_cancel, cancel_button)
                 button_sizer.SetNegativeButton(cancel_button)
                 button_sizer.AddButton(wx.Button(self, wx.ID_HELP))
                 self.Bind(wx.EVT_BUTTON, self.on_help, id= wx.ID_HELP)
+                self.Bind(wx.EVT_CLOSE, self.on_close)
                                   
                 button_sizer.Realize()
                 if self.module.wants_image_display:
@@ -869,6 +872,16 @@ class EditObjectsManually(I.Identify):
                 self.colormap = mappable.to_rgba(np.arange(nlabels + 1))[:, :3]
                 self.colormap = self.colormap[label_map, :]
                 self.oc = self.colormap[self.ol, :]
+                
+            def on_close(self, event):
+                '''Fix up the labels as we close'''
+                if self.GetReturnCode() == wx.OK:
+                    open_labels = set([d[self.K_LABEL] for d in self.artists.values()])
+                    for l in open_labels:
+                        self.close_label(l, False)
+                    for idx in np.where(~self.to_keep):
+                        if idx > 0:
+                            self.remove_label(idx)
                 
             def remove_label(self, object_number):
                 for l in self.labels:
@@ -968,7 +981,7 @@ class EditObjectsManually(I.Identify):
                 
             def on_paint(self, event):
                 dc = wx.PaintDC(self.panel)
-                if self.background == None:
+                if self.background == None or tuple(self.Size) != self.draw_size:
                     self.panel.draw(dc)
                 else:
                     self.panel.gui_repaint(dc)
@@ -986,6 +999,7 @@ class EditObjectsManually(I.Identify):
                     self.active_artist is not None):
                     self.orig_axes.draw_artist(self.active_artist)
                 self.figure.canvas.blit(self.orig_axes.bbox)
+                self.draw_size = tuple(self.Size)
                 
             def get_control_point(self, event):
                 '''Find the artist and control point under the cursor

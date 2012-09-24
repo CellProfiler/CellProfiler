@@ -1031,7 +1031,7 @@ class CPFigureFrame(wx.Frame):
                 shape = [1,1]
             else:
                 shape = [np.max(ijv[:,0])+1, np.max(ijv[:,1])+1]
-        image = np.zeros(list(shape) + [3], np.uint8)
+        image = np.zeros(list(shape) + [3], np.float)
         if len(ijv) > 0:
             cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
             max_label = np.max(ijv[:,2])
@@ -1040,13 +1040,13 @@ class CPFigureFrame(wx.Frame):
                 order = np.random.permutation(max_label)
             else:
                 order = np.arange(max_label)
-            order = np.hstack(([0], order))
+            order = np.hstack(([0], order+1))
             colors = matplotlib.cm.ScalarMappable(cmap = cm).to_rgba(order)
             r,g,b,a = [coo_matrix((colors[ijv[:,2],i],(ijv[:,0],ijv[:,1])),
                                   shape = shape).toarray()
                        for i in range(4)]
             for i, plane in enumerate((r,g,b)):
-                image[a != 0,i] = plane[a != 0] * 255. / a[a != 0]
+                image[a != 0,i] = plane[a != 0] / a[a != 0]
         return self.subplot_imshow(x, y, image, title, clear, 
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,

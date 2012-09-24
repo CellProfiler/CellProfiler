@@ -441,8 +441,22 @@ class MeasureObjectIntensity(cpm.CPModule):
                             #
                             qmask = (~qmask) & (areas > 0)
                             dest[lindexes[qmask]-1] = limg[order[qindex[qmask]]]
-                        mad_intensity[lindexes-1] = fix(nd.median(limg - median_intensity[llabels-1], 
-                                        llabels, lindexes))
+                        #
+                        # Once again, for the MAD
+                        #
+                        madimg = limg - median_intensity[llabels-1]
+                        order =  np.lexsort((limg, llabels))
+                        qindex = indices.astype(float) + areas / 2.0
+                        qfraction = qindex - np.floor(qindex)
+                        qindex = qindex.astype(int)
+                        qmask = qindex < indices + areas-1
+                        qi = qindex[qmask]
+                        qf = qfraction[qmask]
+                        mad_intensity[lindexes[qmask]-1] = (
+                            madimg[order[qi]] * (1 - qf) +
+                            madimg[order[qi + 1]] * qf)
+                        qmask = (~qmask) & (areas > 0)
+                        mad_intensity[lindexes[qmask]-1] = madimg[order[qindex[qmask]]]
                         
                 m = workspace.measurements
                 for category, feature_name, measurement in \

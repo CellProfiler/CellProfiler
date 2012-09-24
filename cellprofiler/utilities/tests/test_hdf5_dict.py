@@ -122,9 +122,12 @@ class TestHDF5Dict(unittest.TestCase):
         self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 3], "Append")
         
     def test_05_01_in_memory(self):
-        hdf5_dict = H5DICT.HDF5Dict(None)
-        hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
-        self.assertEqual(hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1], "Hello")
+        if sys.platform == "darwin":
+            self.assertRaises(NotImplementedError, H5DICT.HDF5Dict, [None])
+        else:
+            hdf5_dict = H5DICT.HDF5Dict(None)
+            hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
+            self.assertEqual(hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1], "Hello")
         
     def test_06_01_reorder(self):
         r = np.random.RandomState()

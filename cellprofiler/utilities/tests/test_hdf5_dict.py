@@ -123,7 +123,7 @@ class TestHDF5Dict(unittest.TestCase):
         
     def test_05_01_in_memory(self):
         if sys.platform == "darwin":
-            self.assertRaises(NotImplementedError, H5DICT.HDF5Dict, [None])
+            self.assertRaises(NotImplementedError, H5DICT.HDF5Dict, None)
         else:
             hdf5_dict = H5DICT.HDF5Dict(None)
             hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"

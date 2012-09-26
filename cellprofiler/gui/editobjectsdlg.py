@@ -419,7 +419,7 @@ class EditObjectsDialog(wx.Dialog):
             open_labels = set([d[self.K_LABEL] for d in self.artists.values()])
             for l in open_labels:
                 self.close_label(l, False)
-            for idx in np.where(~self.to_keep):
+            for idx in np.argwhere(~self.to_keep).flatten():
                 if idx > 0:
                     self.remove_label(idx)
         

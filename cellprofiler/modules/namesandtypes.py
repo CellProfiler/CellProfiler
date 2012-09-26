@@ -285,7 +285,9 @@ class NamesAndTypes(cpm.CPModule):
                     match = re.search(pattern, text)
                     if match is None:
                         break
-                    self.metadata_keys.append(match.groups()[0])
+                    key = cps.Filter.FilterPredicate.decode_symbol(
+                        match.groups()[0])
+                    self.metadata_keys.append(key)
                     text = text[match.end():]
             self.metadata_keys = list(set(self.metadata_keys))
             for rules_filter in filters:
@@ -1094,7 +1096,8 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
         '''
         sub_subpredicates = [
             cps.Filter.FilterPredicate(
-                key, self.display_fmt % key, 
+                key, 
+                self.display_fmt % key, 
                 lambda ipd, match, key=key: 
                 ipd.metadata.has_key(key) and
                 ipd.metadata[key] == match,

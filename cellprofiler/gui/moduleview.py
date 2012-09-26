@@ -2691,7 +2691,7 @@ class FileCollectionDisplayController(object):
         dlg = wx.DirDialog(self.panel, "Select a directory to add")
         try:
             if dlg.ShowModal() == wx.ID_OK:
-                self.v.fn_on_drop([dlg.Path])
+                self.v.fn_on_drop([dlg.Path], True)
         finally:
             dlg.Destroy()
             

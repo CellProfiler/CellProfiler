@@ -252,6 +252,10 @@ class ImageMath(cpm.CPModule):
             if not wants_image[i]:
                 value = measurements.get_current_image_measurement(
                     self.images[i].measurement.value)
+                if value is None:
+                    value = np.NaN
+                else:
+                    value = float(value)
                 pixel_data.insert(i, value)
                 masks.insert(i, True)
         #

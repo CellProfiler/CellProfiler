@@ -553,7 +553,8 @@ class Measurements(object):
         elif object_name == IMAGE:
             if not np.isscalar(data) and data is not None:
                 data = data[0]
-            if data is None:
+            if ((data is None) or 
+                ((not isinstance(data, basestring)) and np.isnan(data))):
                 data = []
             self.hdf5_dict[IMAGE, feature_name, image_set_number] = wrap_string(data)
             if not self.hdf5_dict.has_data(object_name, IMAGE_NUMBER, image_set_number):

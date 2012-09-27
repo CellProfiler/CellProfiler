@@ -294,7 +294,7 @@ Multiply:[module_num:1|svn_version:\'8913\'|variable_revision_number:1|show_wind
         pipeline.add_module(module)
         measurements = cpmeas.Measurements()
         if measurement is not None:
-            measurements.add_image_measurement(MEASUREMENT_NAME, measurement)
+            measurements.add_image_measurement(MEASUREMENT_NAME, str(measurement))
         workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
                                   measurements, image_set_list)
         module.run(workspace)

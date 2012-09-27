@@ -873,17 +873,17 @@ class TestMeasurements(unittest.TestCase):
             del m
 
     def test_19_01_load_image_sets(self):
-        expected_features = ["GroupNumber", "GroupIndex",
+        expected_features = [cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX,
                              "URL_DNA", "PathName_DNA", "FileName_DNA"]
         expected_values = [[1,1,"file://foo/bar.tif","/foo","bar.tif"],
                            [1,2,"file://bar/foo.tif","/bar","foo.tif"],
                            [2,1,"file://baz/foobar.tif","/baz","foobar.tif"]]
 
-        data = """"GroupNumber","GroupIndex","URL_DNA","PathName_DNA","FileName_DNA"
+        data = """"%s","%s","URL_DNA","PathName_DNA","FileName_DNA"
 1,1,"file://foo/bar.tif","/foo","bar.tif"
 1,2,"file://bar/foo.tif","/bar","foo.tif"
 2,1,"file://baz/foobar.tif","/baz","foobar.tif"
-"""
+""" % (cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX)
         m = cpmeas.Measurements()
         try:
             m.load_image_sets(StringIO(data))

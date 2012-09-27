@@ -523,6 +523,9 @@ class HDF5Dict(object):
                 idxs = [i+1 for i, value in enumerate(values)
                         if value is not None]
                 values = [value for value in values if value is not None]
+            else:
+                idxs = [i for i, value in zip(idxs, values) if value is not None]
+                values = [value for value in values if value is not None]
             if len(values) > 0:
                 if np.isscalar(values[0]):
                     idx = np.column_stack((idxs,

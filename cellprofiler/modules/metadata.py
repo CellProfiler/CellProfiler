@@ -446,7 +446,7 @@ class Metadata(cpm.CPModule):
         
     def update_imported_metadata(self):
         new_imported_metadata = []
-        ipd_metadata_keys = set(self.ipd_metadata_keys)
+        ipd_metadata_keys = set(getattr(self, "ipd_metadata_keys", []))
         for group in self.extraction_methods:
             if group.extraction_method == X_MANUAL_EXTRACTION:
                 if group.source == XM_FILE_NAME:

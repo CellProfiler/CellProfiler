@@ -2387,6 +2387,7 @@ class Pipeline(object):
                 if (metadata_settings == 
                     self.__filtered_image_plane_details_metadata_settings):
                     return self.__filtered_image_plane_details_with_metadata
+                metadata_module.update_imported_metadata() # update cache
                 ipds_with_metadata = []
                 for ipd in ipds:
                     metadata = ipd.metadata.copy()

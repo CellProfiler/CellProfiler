@@ -5238,3 +5238,155 @@ class TestPolygonLinesToMask(unittest.TestCase):
              [ 0, 0, 0, 0, 0, 0, 0, 0]], bool)
         np.testing.assert_array_equal(result, expected)
         
+class TestGetOutlinePts(unittest.TestCase):
+    def run_tst(self, labels, idx, 
+                expected_coords = None, expected_count = None):
+        coords, offsets, count = morph.get_outline_pts(labels, idx)
+        if expected_coords is None:
+            expected_coords, eoffsets, expected_count = \
+                self.slow_get_outline_pts(labels, idx)
+        else:
+            eoffsets = np.hstack(([0], np.cumsum(expected_count)))
+        np.testing.assert_equal(count, expected_count)
+        for i in range(len(idx)):
+            if count[i] == 0:
+                continue
+            np.testing.assert_equal(
+                expected_coords[eoffsets[i]:(eoffsets[i]+expected_count[i])],
+                coords[offsets[i]:(offsets[i] + count[i])])
+            
+    @staticmethod
+    def slow_get_outline_pts(labels, idx):
+        #
+        # This is a pure Python implementation of the method that
+        # we believe works.
+        #
+        traversal_order = np.array(
+            #   i   j   new direction
+            ((  1,  0,  5 ),
+             (  1, -1,  6 ),
+             (  0, -1,  7 ),
+             ( -1, -1,  0 ),
+             ( -1,  0,  1 ),
+             ( -1,  1,  2 ),
+             (  0,  1,  3 ),
+             (  1,  1,  4 )))
+        direction, index, ijd = np.mgrid[0:8, 0:8, 0:3]
+        traversal_order = \
+            traversal_order[((direction + index) % 8), ijd]
+        
+        points = []
+        offsets = []
+        counts = []
+        big_labels = np.zeros(np.array(labels.shape)+2, labels.dtype)
+        big_labels[1:-1, 1:-1] = labels
+        labels = big_labels
+        for sub_object_number in idx:
+            offsets.append(len(points))
+            mask = labels == sub_object_number
+            i, j = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
+            i, j = i[mask], j[mask]
+            topleft = np.argmin(i*i+j*j)
+            start_i = i[topleft]
+            start_j = j[topleft]
+            if len(i) == 1:
+                points.append((start_i, start_j))
+                counts.append(1)
+                continue
+            #
+            # Pick a direction that points normal and to the right
+            # from the point at the top left.
+            #
+            direction = 2
+            ic = start_i
+            jc = start_j
+            this_count = 0
+            while this_count == 0 or ic != start_i or jc != start_j:
+                points.append((ic - 1, jc - 1))
+                this_count += 1
+                hits = mask[ic + traversal_order[direction, :, 0],
+                            jc + traversal_order[direction, :, 1]]
+                t = traversal_order[direction, hits, :][0, :]
+                ic += t[0]
+                jc += t[1]
+                direction = t[2]
+            counts.append(this_count)
+        return np.array(points), np.array(offsets), np.array(counts)
+            
+    def test_00_00_empty(self):
+        self.run_tst(np.zeros((10, 20), int), [],
+                     np.zeros((0, 2), int), np.zeros(0, int))
+        
+    def test_00_01_no_labeled_pts_all(self):
+        self.run_tst(np.zeros((10, 20), int), [1, 2, 3],
+                     np.zeros((0, 2), int), np.zeros(3, int))
+
+    def test_00_02_no_labeled_pts_one(self):
+        labels = np.zeros((17, 11), int)
+        labels[2, 3] = 1
+        labels[5, 1] = 3
+        self.run_tst(labels, [1, 2, 3],
+                     np.array([[2, 3], [5, 1]], int), np.array([1, 0, 1], int))
+        
+    def test_01_01_square(self):
+        #
+        # Simplest no-brainer, easy to find top-left, no point visited twice
+        #
+        labels = np.zeros((9, 13), int)
+        labels[2:5, 3:6] = 1
+        expected_coords = np.array(
+            [[2, 3], [2, 4], [2, 5], 
+             [3, 5], [4, 5],
+             [4, 4], [4, 3],
+             [3, 3]])
+        expected_counts = np.array([8])
+        self.run_tst(labels, [1], expected_coords, expected_counts)
+        
+    def test_01_02_line(self):
+        #
+        # Line pts visited twice
+        #
+        labels = np.zeros((5, 11))
+        labels[2, 2:7] = 1
+        expected_j = np.hstack([np.arange(2, 7), np.arange(5, 2, -1)])
+        expected_i = np.ones(len(expected_j), int) * 2
+        expected_coords = np.column_stack((expected_i, expected_j))
+        expected_count = np.array([len(expected_i)])
+        self.run_tst(labels, [1], expected_coords, expected_count)
+        
+    def test_01_03_all_shapes(self):
+        #
+        # A compass star tests many of the traversal possibilities.
+        #
+        labels = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                           [0, 1, 0, 0, 1, 0, 0, 1, 0],
+                           [0, 0, 1, 0, 1, 0, 1, 0, 0],
+                           [0, 0, 0, 1, 1, 1, 0, 0, 0],
+                           [0, 1, 1, 1, 1, 1, 1, 1, 0],
+                           [0, 0, 0, 1, 1, 1, 0, 0, 0],
+                           [0, 0, 1, 0, 1, 0, 1, 0, 0],
+                           [0, 1, 0, 0, 1, 0, 0, 1, 0],
+                           [0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        self.run_tst(labels, [1])
+        #
+        # A circle has some of the more oblique angles
+        #
+        i, j = np.mgrid[0:7, 0:7]
+        labels = i*i + j*j <=49
+        self.run_tst(labels, [1])
+        
+    def test_01_04_multiple(self):
+        #
+        # Fill a grid with shapes generated by randomly dialating
+        #
+        r = np.random.RandomState()
+        r.seed(14)
+        mask = np.zeros((100, 100), bool)
+        mask[10::20, 10::20] = True
+        for _ in range(9):
+            dilated = scind.binary_dilation(mask, np.ones((3,3), bool))
+            dilated[r.uniform(size=dilated.shape) > .5] = False
+            mask = mask | dilated
+        labels, count = scind.label(mask, np.ones((3,3), bool))
+        self.run_tst(labels, np.arange(1, count+1))
+        

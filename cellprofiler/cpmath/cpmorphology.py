@@ -26,6 +26,7 @@ from _cpmorphology2 import grey_reconstruction_loop
 from _cpmorphology2 import _all_connected_components
 from _cpmorphology2 import index_lookup, prepare_for_index_lookup
 from _cpmorphology2 import extract_from_image_lookup, fill_labeled_holes_loop
+from _cpmorphology2 import trace_outlines
 try:
     from _cpmorphology2 import ptrsize
 except:
@@ -4239,3 +4240,144 @@ def single_shortest_paths(start_node, weights):
         path_cost[to_do[to_relax]] = alt_cost[to_relax]
         predecessors[to_do[to_relax]] = best_node
     return predecessors, path_cost
+
+def get_outline_pts(labels, idxs):
+    '''Get the outline points of objects in clockwise order
+    
+    Given a labels matrix of contiguously-labeled objects, trace
+    the exteriors of those objects to get the points of the outline
+    in clockwise order.
+    
+    labels - a labels matrix
+    
+    idxs - return points for the labels named by this array
+    
+    Returns an Nx2 array of points, a vector of offsets to the first point
+    for each object and a vector of counts of points per
+    indexed object.
+    '''
+    idxs = np.atleast_1d(idxs)
+    if len(idxs) == 0:
+        return np.zeros((0, 2), int), np.zeros(0, int), np.zeros(0, int)
+    #
+    # Do some preprocessing on the labels matrix to get a map of chosen labels
+    #
+    end_label = max(np.max(labels), np.max(idxs)) + 1
+    chosen_labels = np.zeros(end_label, bool)
+    chosen_labels[idxs] = True
+    #
+    # We trace clockwise, conceptually standing 
+    # to the left of the outline and putting our right hand on the
+    # outline.
+    # We remember the direction we are going and that gives
+    # us an order for the points. For instance, if we are going
+    # north:
+    #
+    #  2  3  4
+    #  1  x  5
+    #  0  7  6
+    #
+    # If "1" is available, our new direction is southwest:
+    #
+    #  5  6  7
+    #  4  x  0
+    #  3  2  1
+    #
+    #  Take direction 0 to be northeast (i-1, j-1). We look in
+    #  this order:
+    #
+    #  3  4  5
+    #  2  x  6
+    #  1  0  7
+    #
+    # The directions are
+    #
+    #  0  1  2
+    #  7     3
+    #  6  5  4
+    #
+    traversal_order = np.array(
+        #   i   j   new direction
+        ((  1,  0,  5 ),
+         (  1, -1,  6 ),
+         (  0, -1,  7 ),
+         ( -1, -1,  0 ),
+         ( -1,  0,  1 ),
+         ( -1,  1,  2 ),
+         (  0,  1,  3 ),
+         (  1,  1,  4 )))
+    #
+    # Pad the labels matrix if any objects touch the border. This keeps
+    # us from having to handle border cases. For many labels matrices,
+    # no object touches the border
+    #
+    border = np.hstack((labels[0, :], labels[:, 0], labels[-1, :], labels[:, -1]))
+    border = np.unique(border)
+    if any([idx in border for idx in idxs]):
+        big_labels = np.zeros((labels.shape[0]+2, labels.shape[1]+2), np.uint32)
+        big_labels[1:-1, 1:-1] = labels
+        offset = np.ones(2, int)
+        labels = big_labels
+        del big_labels
+    else:
+        labels = np.ascontiguousarray(labels, np.uint32)
+        offset = np.zeros(2, int)
+    assert isinstance(labels, np.ndarray)
+    strides = np.array(labels.strides) / labels.dtype.itemsize
+    assert strides[1] == 1, "Last stride must be 1 for modulo unravel to work"
+    stride_table = np.ascontiguousarray(
+        np.sum(traversal_order[:, :2] * strides, 1), np.int32)
+    new_direction_table = np.ascontiguousarray(traversal_order[:, 2], np.int32)
+    #
+    # The worst case is a line - each point in the outline is visited twice.
+    #
+    consider_only_these = (
+        (scind.grey_erosion(labels, footprint=np.ones((3,3), bool)) !=
+         scind.grey_dilation(labels, footprint=np.ones((3,3), bool))) &
+        chosen_labels[labels])
+    max_output = np.sum(consider_only_these) * 2
+    output = np.zeros(max_output, np.uint32)
+    #
+    # The algorithm starts at the northwest corner of every object. Find the
+    # point with the minimum i**2 + j**2 for each object.
+    #
+    i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+    rlabels = labels[consider_only_these]
+    if len(rlabels) == 0:
+        # Corner case - no pixels for *any* label
+        return np.zeros((0, 2), int), np.zeros(len(idxs), int), np.zeros(len(idxs), int)
+    i = i[consider_only_these]
+    j = j[consider_only_these]
+    d = i * i + j * j
+    order = np.lexsort((d, rlabels))
+    stride_pts = i[order] * strides[0] + j[order] * strides[1]
+    rlabels = rlabels[order]
+
+    first = np.hstack(([True], rlabels[:-1] != rlabels[1:]))
+    first_strides = np.ascontiguousarray(stride_pts[first], np.uint32)
+    idx_of_first = rlabels[first]
+    output_count = np.zeros(len(idx_of_first), np.uint32)
+    trace_outlines(labels.ravel(),
+                   first_strides,
+                   stride_table,
+                   new_direction_table,
+                   output,
+                   output_count)
+    #
+    # on output, we have to do some fixing up:
+    #
+    # need to convert output to i, j
+    # need to arrange output_count in the same order as idxs
+    #
+    output = output[:np.sum(output_count)]
+    mapper = np.zeros(np.max(idxs)+1, int)
+    mapper[idxs] = np.arange(len(idxs))
+    coord_offsets = np.zeros(len(idxs), output_count.dtype)
+    coord_counts = np.zeros(len(idxs), output_count.dtype)
+    coord_counts[mapper[idx_of_first]] = output_count
+    if len(idx_of_first) > 1:
+        coord_offsets[mapper[idx_of_first[1:]]] = np.cumsum(output_count[:-1])
+    coords = np.column_stack((
+        output / strides[0] - offset[0],
+        output % strides[0] - offset[1]))
+    return coords, coord_offsets, coord_counts

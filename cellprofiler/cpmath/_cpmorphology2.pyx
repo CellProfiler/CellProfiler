@@ -24,6 +24,7 @@ cdef extern from "numpy/arrayobject.h":
     ctypedef class numpy.ndarray [object PyArrayObject]:
         cdef char *data
         cdef Py_intptr_t *dimensions
+        cdef Py_intptr_t *shape        
         cdef Py_intptr_t *strides
     cdef void import_array()
     cdef int  PyArray_ITEMSIZE(np.ndarray)
@@ -597,3 +598,95 @@ def fill_labeled_holes_loop(
                     p_to_do[to_do_count] = jj
                     to_do_count += 1
 
+@cython.boundscheck(False)
+def trace_outlines(
+    np.ndarray[dtype = np.uint32_t, ndim = 1, negative_indices = False] labels,
+    np.ndarray[dtype = np.uint32_t, ndim = 1, negative_indices = False] firsts,
+    np.ndarray[dtype = np.int32_t, ndim = 1, negative_indices = False] stride_table,
+    np.ndarray[dtype = np.int32_t, ndim = 1, negative_indices = False] new_direction_table,
+    np.ndarray[dtype = np.uint32_t, ndim = 1, negative_indices = False] output,
+    np.ndarray[dtype = np.uint32_t, ndim = 1, negative_indices = False] output_count):
+    '''Trace the border of contiguous, labeled objects
+    
+    Trace the border of contiguous, labeled objects using the maze traversal
+    technique of conceptually putting your right hand on the wall and walking
+    forward to visit each border pixel in turn. To prepare, the caller
+    ravels a labels matrix of contiguous objects and supplies the index into
+    the ravel of the point with the mininimum i**2 + j**2 (a northwest corner).
+    The traversal order used when visiting points is supplied as a stride
+    table that addresses, relatively, the pixel to be checked and visited.
+    
+    labels - a raveled labels matrix of the objects, zero-padded at the edges if
+             necessary.
+             
+    firsts - the index of the northwest corner of each object to be checked.
+    
+    stride_table - gives the relative offset from the pixel of interest to
+                   the pixel to be checked.
+                   
+    new_direction_table - gives the offset in the stride_table and 
+                          new_direction_table of the next direction if
+                          the entry is a hit.
+                          
+    output - an array of sufficient size to hold the indexes of the visited
+             pixels in the outline. The worst case is that a pixel not in
+             the interior can be visited twice.
+             
+    output_count - on output, the # of indexes per object in the tracing
+    '''
+    cdef:
+        int n_labels = <int>(firsts.shape[0])
+        int *p_labels = <int *>(labels.data)
+        int *p_firsts = <int *>(firsts.data)
+        int *p_stride_table = <int *>(stride_table.data)
+        int *p_new_direction_table = <int *>(new_direction_table.data)
+        int *p_output = <int *>(output.data)
+        int *p_output_count = <int *>(output_count.data)
+        int first_idx = 0
+        int output_idx = 0
+        int output_start
+        int current_direction
+        int current_location
+        int current_label
+        int test_location
+        int output_end = <int>(output.shape[0])
+        int overrun = 0
+        int traversal_idx
+        int traversal_entry
+
+    assert len(stride_table) == 8
+    assert len(new_direction_table) == 8
+    if True:
+        for first_idx from 0 <= first_idx < n_labels:
+            #print "Label %d of %d" % (first_idx, n_labels)
+            current_direction = 2
+            current_location = p_firsts[first_idx]
+            current_label = p_labels[current_location]
+            output_start = output_idx
+            #print "Label = %d, start = %d" % (current_label, current_location)
+            while output_idx < output_end:
+                p_output[output_idx] = current_location
+                output_idx += 1
+                for traversal_idx from 0 <= traversal_idx < 8:
+                    traversal_entry = (traversal_idx + current_direction) & 7
+                    test_location = current_location + p_stride_table[traversal_entry]
+                    if p_labels[test_location] == current_label:
+                        break
+                else:
+                    # Case: a single point can't find anything in the traversal
+                    #print "No traversal"
+                    break
+                if test_location == p_firsts[first_idx]:
+                    #print "Found %d" % p_firsts[first_idx]
+                    break
+                current_location = test_location
+                current_direction = new_direction_table[traversal_entry]
+                #print "Moving to %d, direction=%d" % (current_location, current_direction)
+            else:
+                overrun = 1
+                break
+            p_output_count[first_idx] = output_idx - output_start
+    if overrun:
+        raise IndexError("Output buffer overrun")
+                
+            

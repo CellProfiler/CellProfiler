@@ -484,23 +484,25 @@ class Metadata(cpm.CPModule):
                         except:
                             logger.debug("Failed to load csv file: %s" % csv_path)
                             continue
-                    joiner.entities[self.CSV_JOIN_NAME] = \
-                        imported_metadata.get_csv_metadata_keys()
-                    joiner.entities[self.IPD_JOIN_NAME] = \
-                        list(ipd_metadata_keys)
-                    imported_metadata.set_joiner(joiner,
-                                                 self.CSV_JOIN_NAME,
-                                                 self.IPD_JOIN_NAME)
                     new_imported_metadata.append(imported_metadata)
+                joiner.entities[self.CSV_JOIN_NAME] = \
+                    imported_metadata.get_csv_metadata_keys()
+                joiner.entities[self.IPD_JOIN_NAME] = \
+                    list(ipd_metadata_keys)
+                imported_metadata.set_joiner(joiner,
+                                             self.CSV_JOIN_NAME,
+                                             self.IPD_JOIN_NAME)
                 ipd_metadata_keys.update(imported_metadata.get_csv_metadata_keys())
                     
         self.imported_metadata = new_imported_metadata            
         
     def update_table(self):
         columns = set()
+        metadata = []
         for ipd in self.ipds:
-            for column in self.get_ipd_metadata(ipd).keys():
-                columns.add(column)
+            ipd_metadata = self.get_ipd_metadata(ipd)
+            metadata.append(ipd_metadata)
+            columns.update(ipd_metadata.keys())
         columns = [COL_PATH, COL_SERIES, COL_INDEX, COL_CHANNEL] + \
             sorted(list(columns))
         self.table.clear_columns()
@@ -509,10 +511,9 @@ class Metadata(cpm.CPModule):
             self.table.insert_column(i, column)
             
         data = []
-        for ipd in self.ipds:
+        for ipd, ipd_metadata in zip(self.ipds, metadata):
             row = [ipd.path, ipd.series, ipd.index, ipd.channel]
-            metadata = self.get_ipd_metadata(ipd)
-            row += [metadata.get(column) for column in columns[4:]]
+            row += [ipd_metadata.get(column) for column in columns[4:]]
             data.append(row)
         self.table.add_rows(columns, data)
         

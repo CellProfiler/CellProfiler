@@ -38,6 +38,8 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.cpmath.cpmorphology import triangle_areas, distance2_to_line
 from cellprofiler.cpmath.cpmorphology import polygon_lines_to_mask
+from cellprofiler.cpmath.cpmorphology import get_outline_pts, thicken
+from cellprofiler.cpmath.index import Indexes
 from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
 
 class EditObjectsDialog(wx.Dialog):
@@ -393,13 +395,37 @@ class EditObjectsDialog(wx.Dialog):
         for label in self.labels:
             # drive each successive matrix's labels away
             # from all others.
-            distinct_label_count = np.sum(np.unique(label) != 0)
+            idxs = np.unique(label)
+            idxs = idxs[idxs!=0]
+            distinct_label_count = len(idxs)
             clabels = renumber_labels_for_display(label)
             clabels[clabels != 0] += lstart
             lstart += distinct_label_count
             label_map[label.flatten()] = clabels.flatten()
-            outlines = outline(clabels)
-            oi, oj = np.argwhere(outlines != 0).transpose()
+            if False:
+                outlines = outline(clabels)
+                oi, oj = np.argwhere(outlines != 0).transpose()
+            else:
+                l, ct = scipy.ndimage.label(label != 0, 
+                                            structure=np.ones((3,3), bool))
+                coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
+                oi, oj = coords.transpose()
+                l, ct = scipy.ndimage.label(label == 0) # 4-connected
+                #
+                # Have to remove the label that touches the edge, if any
+                #
+                ledge = np.hstack([l[0, :][label[0, :] == 0],
+                                   l[-1, :][label[-1, :] == 0],
+                                   l[:, 0][label[:, 0] == 0],
+                                   l[:, -1][label[:, -1] == 0]])
+                if len(ledge) > 0:
+                    l[l == ledge[0]] = 0
+
+                coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
+                if coords.shape[0] > 0:
+                    oi, oj = [np.hstack((o, coords[:,i]))
+                              for i, o in enumerate((oi, oj))]
+                
             ol = label[oi, oj]
             self.oi = np.hstack((self.oi, oi))
             self.oj = np.hstack((self.oj, oj))
@@ -493,35 +519,37 @@ class EditObjectsDialog(wx.Dialog):
         if len(self.to_keep) > 1:
             i, j = np.mgrid[0:self.shape[0], 0:self.shape[1]]
             for k, stipple in ((self.to_keep, False), (~self.to_keep, True)):
-                if not np.any(k):
-                    continue
                 k = k.copy()
                 # Don't show outlines for labels being edited
                 for d in self.artists.values():
                     k[d[self.K_LABEL]] = False
+                if not np.any(k):
+                    continue
                 mask = k[self.ol]
+                intensity = np.zeros(self.shape, float)
+                intensity[self.oi[mask], self.oj[mask]] = 1
+                color = np.zeros((self.shape[0], self.shape[1], 3), float)
                 if stipple:
-                    pattern = np.zeros(self.shape, bool)
-                    pattern[self.oi[mask], self.oj[mask]] = True
-                    color = np.zeros((self.shape[0], self.shape[1], 3), float)
-                    color[pattern, :] = self.oc[mask]
-                    pattern = binary_dilation(pattern, np.ones((3,3), bool))
-                    color = grey_dilation(color, footprint=np.ones((3,3,1), bool))
-                    pattern[(((i % 8) >=4) != ((j % 8) >= 4))] = False
-                    cimage[pattern, :] = color[pattern, :]
+                    # Make dashed outlines by throwing away the first 4
+                    # border pixels and keeping the next 4. This also makes
+                    # small objects disappear when clicked-on.
+                    lmap = np.zeros(len(k), int)
+                    lmap[k] = np.arange(np.sum(k))
+                    counts = np.bincount(lmap[self.ol[mask]])
+                    indexer = Indexes((counts,))
+                    e = 1 + 3 * (counts[indexer.rev_idx] >= 16)
+                    dash_mask = (indexer.idx[0] & (2**e - 1)) >= 2**(e-1)
+                    color[self.oi[mask], self.oj[mask]] = \
+                        self.oc[mask] * dash_mask[:, np.newaxis]
                 else:
-                    sigma = 1
-                    intensity = np.zeros(self.shape, float)
-                    intensity[self.oi[mask], self.oj[mask]] = 1
-                    intensity = gaussian_filter(intensity, sigma)
-                    eps = intensity > np.finfo(intensity.dtype).eps
-                    color = np.zeros((self.shape[0], self.shape[1], 3), float)
                     color[self.oi[mask], self.oj[mask]] = self.oc[mask]
-                    gcolor = gaussian_filter(color, (sigma, sigma,0))
-                    color = gcolor[eps, :]
-                    intensity = intensity[eps]
-                    cimage[eps, :] = \
-                        cimage[eps, :] * (1 - intensity[:, np.newaxis]) + color
+                sigma = 1
+                intensity = gaussian_filter(intensity, sigma)
+                eps = intensity > np.finfo(intensity.dtype).eps
+                color = gaussian_filter(color, (sigma, sigma,0))[eps, :]
+                intensity = intensity[eps]
+                cimage[eps, :] = \
+                    cimage[eps, :] * (1 - intensity[:, np.newaxis]) + color
                 
         self.orig_axes.imshow(cimage)
         self.set_orig_axes_title()
@@ -1337,50 +1365,6 @@ class EditObjectsDialog(wx.Dialog):
         object_number - # of object to edit
         '''
         #
-        # For outside edges, we trace clockwise, conceptually standing 
-        # to the left of the outline and putting our right hand on the
-        # outline. Inside edges have the opposite winding.
-        # We remember the direction we are going and that gives
-        # us an order for the points. For instance, if we are going
-        # north:
-        #
-        #  2  3  4
-        #  1  x  5
-        #  0  7  6
-        #
-        # If "1" is available, our new direction is southwest:
-        #
-        #  5  6  7
-        #  4  x  0
-        #  3  2  1
-        #
-        #  Take direction 0 to be northeast (i-1, j-1). We look in
-        #  this order:
-        #
-        #  3  4  5
-        #  2  x  6
-        #  1  0  7
-        #
-        # The directions are
-        #
-        #  0  1  2
-        #  7     3
-        #  6  5  4
-        #
-        traversal_order = np.array(
-            #   i   j   new direction
-            ((  1,  0,  5 ),
-             (  1, -1,  6 ),
-             (  0, -1,  7 ),
-             ( -1, -1,  0 ),
-             ( -1,  0,  1 ),
-             ( -1,  1,  2 ),
-             (  0,  1,  3 ),
-             (  1,  1,  4 )))
-        direction, index, ijd = np.mgrid[0:8, 0:8, 0:3]
-        traversal_order = \
-            traversal_order[((direction + index) % 8), ijd]
-        #
         # We need to make outlines of both objects and holes.
         # Objects are 8-connected and holes are 4-connected
         #
@@ -1400,46 +1384,17 @@ class EditObjectsDialog(wx.Dialog):
                 mask = ~mask
             labels, count = scipy.ndimage.label(mask, structure)
             if not polarity:
-                #
-                # The object touching the border is not a hole.
-                # There should only be one because of the padding.
-                #
                 border_object = labels[0,0]
-            for sub_object_number in range(1, count+1):
-                if not polarity and sub_object_number == border_object:
-                    continue
-                mask = labels == sub_object_number
-                i, j = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
-                i, j = i[mask], j[mask]
-                topleft = np.argmin(i*i+j*j)
-                start_i = i[topleft]
-                start_j = j[topleft]
-                if len(i) == 1:
-                    chain = [(start_i, start_j), (start_i, start_j)]
-                else:
-                    chain = []
-                    #
-                    # Pick a direction that points normal and to the right
-                    # from the point at the top left.
-                    #
-                    direction = 2
-                    ic = start_i
-                    jc = start_j
-                    while True:
-                        chain.append((ic - 1, jc - 1))
-                        hits = mask[ic + traversal_order[direction, :, 0],
-                                    jc + traversal_order[direction, :, 1]]
-                        t = traversal_order[direction, hits, :][0, :]
-                        ic += t[0]
-                        jc += t[1]
-                        direction = t[2]
-                        if ic == start_i and jc == start_j:
-                            chain.append((ic - 1, jc - 1))
-                            if not polarity:
-                                # Reverse the winding order
-                                chain = chain[::-1]
-                            break
-                chain = np.array(chain, dtype=float)
+                labels[labels == labels[0,0]] = 0
+            sub_object_numbers = [
+                n for n in range(1, count+1)
+                if polarity or n != border_object]
+            coords, offsets, counts = get_outline_pts(labels, sub_object_numbers)
+            for i, sub_object_number in enumerate(sub_object_numbers):
+                chain = coords[offsets[i]:(offsets[i] + counts[i]), :]
+                if not polarity:
+                    chain = chain[::-1]
+                chain = np.vstack((chain, chain[:1, :])).astype(float)
                 #
                 # Start with the first point and a midpoint in the
                 # chain and keep adding points until the maximum

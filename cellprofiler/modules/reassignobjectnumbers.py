@@ -327,14 +327,22 @@ class ReassignObjectNumbers(cpm.CPModule):
                 workspace.measurements.image_set_number),subplots=(1,2))
         figure.subplot_imshow_labels(0,0, workspace.display_data.orig_labels,
                                      title = self.objects_name.value)
-        if self.wants_image:
-            #
-            # Make a nice picture which superimposes the labels on the
-            # guiding image
-            #
-            output_labels = renumber_labels_for_display(
+        
+        output_labels = renumber_labels_for_display(
                 workspace.display_data.output_labels)
-            image = (stretch(workspace.display_data.image) * 255).astype(np.uint8)
+        if self.relabel_option == OPTION_UNIFY:
+            if self.unify_option == UNIFY_DISTANCE and self.wants_image:
+                #
+                # Make a nice picture which superimposes the labels on the
+                # guiding image
+                #
+                image = (stretch(workspace.display_data.image) * 255).astype(np.uint8)
+            elif self.unify_option == UNIFY_PARENT:
+                parent_objects = workspace.object_set.get_objects(self.parent_object.value)
+                labels = parent_objects.segmented
+                image = labels.astype(float) / (1.0 if np.max(labels) == 0 else np.max(labels))
+                image = (stretch(image) * 255).astype(np.uint8)
+            
             image = np.dstack((image,image,image))
             my_cm = cm.get_cmap(cpprefs.get_default_colormap())
             my_cm.set_bad((0,0,0))
@@ -345,6 +353,7 @@ class ReassignObjectNumbers(cpm.CPModule):
             image[output_labels > 0 ] = (
                 image[output_labels > 0] / 4 * 3 +
                 output_image[output_labels > 0,:] / 4)
+        
             figure.subplot_imshow(0,1, image,
                                   title = self.output_objects_name.value,
                                   sharex = figure.subplot(0,0),

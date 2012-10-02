@@ -2831,6 +2831,9 @@ class FileCollectionDisplayController(object):
     def on_tree_item_menu(self, event):
         logger.debug("On tree item menu")
         path = self.get_path_from_event(event)
+        if len(path) == 0:
+            logger.warn("Could not find item associated with tree event")
+            return
         context_menu = self.v.get_context_menu(path)
         if len(context_menu) > 0:
             menu = wx.Menu()

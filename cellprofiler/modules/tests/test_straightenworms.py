@@ -172,9 +172,8 @@ StraightenWorms:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2
         module.training_set_directory.dir_choice == cps.URL_FOLDER_NAME
         module.training_set_directory.custom_path = "http://www.cellprofiler.org"
         module.training_set_file_name.value = "TrainingSet.xml"
-        module.training_params = {
-            "TrainingSet.xml": ( P(), "URL")
-        }
+        module.get_dictionary = lambda dummy: { 
+            "training_params" : { "TrainingSet.xml": (P(), "URL")} }
         
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)

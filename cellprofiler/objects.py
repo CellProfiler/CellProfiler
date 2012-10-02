@@ -107,6 +107,17 @@ class Objects(object):
         '''Return true if there is an IJV formulation for the object'''
         return self.__ijv is not None
     
+    @property
+    def shape(self):
+        '''The i and j extents of the labels'''
+        if self.__shape is not None:
+            return self.__shape
+        if self.__segmented is not None:
+            return self.__segmented.shape
+        if self.has_parent_image is not None:
+            return self.parent_image.pixel_data.shape
+        return tuple([np.max(self.__ijv[i]) for i in range(2)])
+    
     def get_labels(self, shape = None):
         '''Get a set of labels matrices consisting of non-overlapping labels
         
@@ -238,11 +249,9 @@ class Objects(object):
         The default, if no unedited matrix is available, is the
         segmented labeling.
         """
-        if self.__segmented != None:
-            if self.__unedited_segmented != None:
-                return self.__unedited_segmented
-            return self.__segmented
-        return self.__unedited_segmented
+        if self.__unedited_segmented != None:
+            return self.__unedited_segmented
+        return self.segmented
     
     def set_unedited_segmented(self,labels):
         check_consistency(self.__segmented, labels, 
@@ -265,12 +274,7 @@ class Objects(object):
         """
         if self.__small_removed_segmented != None:
             return self.__small_removed_segmented
-        if self.__segmented != None:
-            if self.has_unedited_segmented():
-                return self.__unedited_segmented
-            # If there's only a segmented, then there is no junk.
-            return self.__segmented
-        return self.__small_removed_segmented
+        return self.unedited_segmented
     
     def set_small_removed_segmented(self,labels):
         check_consistency(self.__segmented, self.__unedited_segmented, labels)

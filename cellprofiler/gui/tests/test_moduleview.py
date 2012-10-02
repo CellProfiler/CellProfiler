@@ -27,7 +27,7 @@ import cellprofiler.gui.moduleview as cpmv
 from cellprofiler.modules import add_module_for_tst
 import sys
 
-if not sys.platform.startswith('linux'):
+if sys.platform.startswith('win32'):
     class TestModuleView(unittest.TestCase):
         
         def set_pipeline(self, module):

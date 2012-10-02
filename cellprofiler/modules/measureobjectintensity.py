@@ -26,6 +26,7 @@ corresponding grayscale images. Measurements are recorded for each object.
 <li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25%
  of the pixels in the object have lower values.</li>
 <li><i>MedianIntensity:</i> The median intensity value within the object</li>
+<li><i>MADIntensity:</i> The median abolsute deviation (MAD) value within the object</li>
 <li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
  of the pixels in the object have lower values.</li>
  <li><i>Location_CenterMassIntensity_X, Location_CenterMassIntensity_Y:</i> The 
@@ -88,6 +89,7 @@ MAX_INTENSITY_EDGE = 'MaxIntensityEdge'
 MASS_DISPLACEMENT = 'MassDisplacement'
 LOWER_QUARTILE_INTENSITY = 'LowerQuartileIntensity'
 MEDIAN_INTENSITY = 'MedianIntensity'
+MAD_INTENSITY = 'MADIntensity'
 UPPER_QUARTILE_INTENSITY = 'UpperQuartileIntensity'
 LOC_CMI_X = 'CenterMassIntensity_X'
 LOC_CMI_Y = 'CenterMassIntensity_Y'
@@ -99,7 +101,7 @@ ALL_MEASUREMENTS = [INTEGRATED_INTENSITY, MEAN_INTENSITY, STD_INTENSITY,
                         MEAN_INTENSITY_EDGE, STD_INTENSITY_EDGE,
                         MIN_INTENSITY_EDGE, MAX_INTENSITY_EDGE, 
                         MASS_DISPLACEMENT, LOWER_QUARTILE_INTENSITY,
-                        MEDIAN_INTENSITY, UPPER_QUARTILE_INTENSITY]
+                        MEDIAN_INTENSITY, MAD_INTENSITY, UPPER_QUARTILE_INTENSITY]
 ALL_LOCATION_MEASUREMENTS = [LOC_CMI_X, LOC_CMI_Y, LOC_MAX_X, LOC_MAX_Y]
 
 class MeasureObjectIntensity(cpm.CPModule):
@@ -334,6 +336,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                 mass_displacement = np.zeros((nobjects,))
                 lower_quartile_intensity = np.zeros((nobjects,))
                 median_intensity = np.zeros((nobjects,))
+                mad_intensity = np.zeros((nobjects,))
                 upper_quartile_intensity = np.zeros((nobjects,))
                 cmi_x = np.zeros((nobjects,))
                 cmi_y = np.zeros((nobjects,))
@@ -438,6 +441,23 @@ class MeasureObjectIntensity(cpm.CPModule):
                             #
                             qmask = (~qmask) & (areas > 0)
                             dest[lindexes[qmask]-1] = limg[order[qindex[qmask]]]
+                        #
+                        # Once again, for the MAD
+                        #
+                        madimg = limg - median_intensity[llabels-1]
+                        order =  np.lexsort((limg, llabels))
+                        qindex = indices.astype(float) + areas / 2.0
+                        qfraction = qindex - np.floor(qindex)
+                        qindex = qindex.astype(int)
+                        qmask = qindex < indices + areas-1
+                        qi = qindex[qmask]
+                        qf = qfraction[qmask]
+                        mad_intensity[lindexes[qmask]-1] = (
+                            madimg[order[qi]] * (1 - qf) +
+                            madimg[order[qi + 1]] * qf)
+                        qmask = (~qmask) & (areas > 0)
+                        mad_intensity[lindexes[qmask]-1] = madimg[order[qindex[qmask]]]
+                        
                 m = workspace.measurements
                 for category, feature_name, measurement in \
                     ((INTENSITY, INTEGRATED_INTENSITY, integrated_intensity),
@@ -453,6 +473,7 @@ class MeasureObjectIntensity(cpm.CPModule):
                      (INTENSITY, MASS_DISPLACEMENT, mass_displacement),
                      (INTENSITY, LOWER_QUARTILE_INTENSITY, lower_quartile_intensity),
                      (INTENSITY, MEDIAN_INTENSITY, median_intensity),
+                     (INTENSITY, MAD_INTENSITY, mad_intensity),
                      (INTENSITY, UPPER_QUARTILE_INTENSITY, upper_quartile_intensity),
                      (C_LOCATION, LOC_CMI_X, cmi_x),
                      (C_LOCATION, LOC_CMI_Y, cmi_y),

@@ -241,7 +241,7 @@ class EditObjectsManually(I.Identify):
                                               j[l != 0],
                                               l[l != 0]))))
         filtered_objects.set_ijv(ijv, orig_labels[0].shape)
-        if orig_objects.unedited_segmented is not None:
+        if orig_objects.has_unedited_segmented():
             filtered_objects.unedited_segmented = orig_objects.unedited_segmented
         if orig_objects.parent_image is not None:
             filtered_objects.parent_image = orig_objects.parent_image
@@ -515,6 +515,7 @@ class EditObjectsManually(I.Identify):
                 self.guide_image = guide_image
                 self.orig_labels = orig_labels
                 self.shape = self.orig_labels[0].shape
+                self.background = None # background = None if full repaint needed
                 self.reset(display=False)
                 self.active_artist = None
                 self.active_index = None
@@ -763,6 +764,7 @@ class EditObjectsManually(I.Identify):
                 self.Bind(wx.EVT_BUTTON, self.on_remove, remove_button)
                 self.Bind(wx.EVT_BUTTON, self.undo, id = wx.ID_UNDO)
                 self.Bind(wx.EVT_BUTTON, self.on_reset, reset_button)
+                self.figure.canvas.Bind(wx.EVT_PAINT, self.on_paint)
         
                 ######################################
                 #
@@ -775,6 +777,7 @@ class EditObjectsManually(I.Identify):
                 sub_sizer.Add(button_sizer, 0, wx.ALIGN_CENTER)
                 def on_resume(event):
                     self.EndModal(wx.OK)
+                    self.on_close(event)
                 self.Bind(wx.EVT_BUTTON, on_resume, resume_button)
                 button_sizer.SetAffirmativeButton(resume_button)
         
@@ -782,10 +785,12 @@ class EditObjectsManually(I.Identify):
                 button_sizer.AddButton(cancel_button)
                 def on_cancel(event):
                     self.EndModal(wx.CANCEL)
+                    self.on_close(event)
                 self.Bind(wx.EVT_BUTTON, on_cancel, cancel_button)
                 button_sizer.SetNegativeButton(cancel_button)
                 button_sizer.AddButton(wx.Button(self, wx.ID_HELP))
                 self.Bind(wx.EVT_BUTTON, self.on_help, id= wx.ID_HELP)
+                self.Bind(wx.EVT_CLOSE, self.on_close)
                                   
                 button_sizer.Realize()
                 if self.module.wants_image_display:
@@ -867,6 +872,16 @@ class EditObjectsManually(I.Identify):
                 self.colormap = mappable.to_rgba(np.arange(nlabels + 1))[:, :3]
                 self.colormap = self.colormap[label_map, :]
                 self.oc = self.colormap[self.ol, :]
+                
+            def on_close(self, event):
+                '''Fix up the labels as we close'''
+                if self.GetReturnCode() == wx.OK:
+                    open_labels = set([d[self.K_LABEL] for d in self.artists.values()])
+                    for l in open_labels:
+                        self.close_label(l, False)
+                    for idx in np.argwhere(~self.to_keep).flatten():
+                        if idx > 0:
+                            self.remove_label(idx)
                 
             def remove_label(self, object_number):
                 for l in self.labels:
@@ -961,15 +976,30 @@ class EditObjectsManually(I.Identify):
                     self.orig_axes.add_line(artist)
                 if self.split_artist is not None:
                     self.orig_axes.add_line(self.split_artist)
-                self.figure.canvas.draw()
-                self.panel.Refresh()
+                self.background = None
+                self.Refresh()
+                
+            def on_paint(self, event):
+                dc = wx.PaintDC(self.panel)
+                if self.background == None or tuple(self.Size) != self.draw_size:
+                    self.panel.draw(dc)
+                else:
+                    self.panel.gui_repaint(dc)
+                dc.Destroy()
+                event.Skip()
                 
             def draw_callback(self, event):
                 '''Decorate the drawing with the animated artists'''
                 self.background = self.figure.canvas.copy_from_bbox(self.orig_axes.bbox)
                 for artist in self.artists:
                     self.orig_axes.draw_artist(artist)
+                if self.split_artist is not None:
+                    self.orig_axes.draw_artist(self.split_artist)
+                if (self.mode == self.FREEHAND_DRAW_MODE and 
+                    self.active_artist is not None):
+                    self.orig_axes.draw_artist(self.active_artist)
                 self.figure.canvas.blit(self.orig_axes.bbox)
+                self.draw_size = tuple(self.Size)
                 
             def get_control_point(self, event):
                 '''Find the artist and control point under the cursor
@@ -1176,7 +1206,40 @@ class EditObjectsManually(I.Identify):
                 if (self.mode == self.FREEHAND_DRAW_MODE and 
                     self.active_artist is not None):
                     self.orig_axes.draw_artist(self.active_artist)
-                self.figure.canvas.blit(self.orig_axes.bbox)
+                    old = self.panel.IsShownOnScreen
+                #
+                # Need to keep "blit" from drawing on the screen.
+                #
+                # On Mac:
+                #     Blit makes a new ClientDC
+                #     Blit calls gui_repaint
+                #     if IsShownOnScreen:
+                #        ClientDC.EndDrawing is called
+                #        ClientDC.EndDrawing processes queued GUI events
+                #        If there are two mouse motion events queued,
+                #        the mouse event handler is called recursively.
+                #        Blit is called a second time.
+                #        A second ClientDC is created which, on the Mac,
+                #        throws an exception.
+                #
+                # It's not my fault that the Mac can't deal with two
+                # client dcs being created - not an impossible problem for
+                # them to solve.
+                #
+                # It's not my fault that WX decides to process all pending
+                # events in the queue.
+                #
+                # It's not my fault that Blit is called without an optional
+                # dc argument that could be used instead of creating a client
+                # DC.
+                #
+                old = self.panel.IsShownOnScreen
+                self.panel.IsShownOnScreen = lambda *args: False
+                try:
+                    self.figure.canvas.blit(self.orig_axes.bbox)
+                finally:
+                    self.panel.IsShownOnScreen = old
+                self.panel.Refresh()
                 
             def toggle_single_panel(self, event):
                 for ax in (self.keep_axes, self.info_axes, self.remove_axes):

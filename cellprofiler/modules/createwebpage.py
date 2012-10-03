@@ -18,13 +18,17 @@ images, and optionally a link to a compressed ZIP file of all of the images show
 
 
 import os
+from cStringIO import StringIO
 import sys
+import uuid
 import zipfile
 
 import cellprofiler.cpmodule as cpm
+import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
+from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.gui.help import USING_METADATA_TAGS_REF, USING_METADATA_HELP_REF
 
 DIR_ABOVE = "One level over the images"
@@ -232,155 +236,135 @@ class CreateWebPage(cpm.CPModule):
                                  undefined_tags[0], 
                                  cntrl)
                 
-    def get_filenames(self, image_set_list):
-        '''Return the set of file names'''
-        return self.get_dictionary(image_set_list)["Filenames"]
-        
-    def prepare_run(self, workspace):
-        '''Initialize the dictionary of file names here'''
-        d = self.get_dictionary(workspace.image_set_list)
-        d["Filenames"] = {}
-        return True
-        
     def run(self, workspace):
-        '''Process the current image set - write the image links to the web page
-        
-        workspace - workspace for current image set
-        '''
-        
-        m = workspace.measurements
-        statistics = []
-        if self.show_window:
-            workspace.display_data.statistics = statistics
-            
-        image_name = self.orig_image_name.value
-        image_path_name, image_file_name = self.get_image_location(
-            workspace, image_name)
-        abs_image_path_name = os.path.abspath(os.path.join(image_path_name,
-                                                           image_file_name))
-        if self.directory_choice == DIR_ABOVE:
-            path_name, image_path_name = os.path.split(image_path_name)
-            image_path_name = '/'.join((image_path_name, image_file_name))
-        else:
-            path_name = image_path_name
-            image_path_name = image_file_name
-        
-        if self.wants_thumbnails:
-            thumbnail_image_name = self.thumbnail_image_name.value
-            thumbnail_path_name, thumbnail_file_name = self.get_image_location(
-                workspace, thumbnail_image_name)
-            #
-            # Make the thumbnail path name relative to the location for
-            # the .html file
-            #
-            thumbnail_path_name = relpath(thumbnail_path_name, path_name)
-            if os.path.sep != '/':
-                thumbnail_path_name = thumbnail_path_name.replace(
-                    os.path.sep, '/')
-            thumbnail_path_name = '/'.join((thumbnail_path_name, 
-                                           thumbnail_file_name))
-            
-        file_name = self.web_page_file_name.value
-        file_name = m.apply_metadata(file_name)
-        if file_name.find('.') == -1:
-            file_name += ".html"
-        file_path = os.path.join(path_name, file_name)
-        statistics += [["HTML file", file_path],
-                       ["Image file", image_file_name]]
-        if self.wants_thumbnails:
-            statistics += [["Thumbnail file", thumbnail_path_name]]
-                       
-        d = self.get_filenames(workspace.image_set_list)
-        if self.wants_zip_file:
-            zip_file_name = self.zipfile_name.value
-            zip_file_name = m.apply_metadata(zip_file_name)
-            if zip_file_name.find('.') == -1:
-                zip_file_name += ".zip"
-            zip_file_path = os.path.join(path_name, zip_file_name)
-            mode = "a" if os.path.exists(zip_file_path) else "w"
-            z = zipfile.ZipFile(zip_file_path, mode)
-            z.write(abs_image_path_name)
-            z.close()
-            statistics += [["Zip file", zip_file_path]]
-        if not file_path in d.keys():
-            #
-            # Here, we make a new file, including HTML header
-            #
-            d[file_path] = { "column": 0 }
-            fd = open(file_path, "w")
-            title = m.apply_metadata(self.title.value)
-            bgcolor = self.background_color.value.replace(' ', '')
-            table_border_width = self.table_border_width.value
-            table_border_color = self.table_border_color.value.replace(' ','')
-            cell_spacing = self.image_spacing.value
-            fd.write("""<html>
-<head><title>%(title)s</title></head>
-<body bgcolor='%(bgcolor)s'>\n""" % locals())
-            if self.wants_thumbnails:
-                fd.write("""<div>Click an image to see a higher-resolution version.</div>\n""")
-            if self.wants_zip_file:
-                fd.write("""<center><a href='%s'>Download all high-resolution 
-    images as a zipped file.</a></center><p>\n""" % zip_file_name)
-            fd.write("""<center>
-<table border='%(table_border_width)d' 
-       bordercolor='%(table_border_color)s'
-       cellpadding='0'
-       cellspacing='%(cell_spacing)s'>""" % locals())
-        else:
-            fd = open(file_path, "a")
-        column = d[file_path]["column"]
-        if column == 0:
-            fd.write("<tr>\n")
-        image_border_width = self.image_border_width.value
-        fd.write("<td>\n")
-        if self.wants_thumbnails:
-            #
-            # Get the target attribute for the link - tells which
-            # window will open when clicked. "_blank" = new window each time
-            #
-            if self.create_new_window == OPEN_ONCE:
-                target = " target='_CPNewWindow'"
-            elif self.create_new_window == OPEN_EACH:
-                target = " target='_blank'"
-            else:
-                target = ""
-            #
-            # Write a link tag going to the real image with an image
-            # tag pointing at the thumbnail
-            #
-            fd.write("""<a href='%(image_path_name)s' %(target)s>
-    <img src='%(thumbnail_path_name)s' border='%(image_border_width)d' /></a>\n""" %
-                     locals())
-        else:
-            #
-            # Write an image tag pointing at the image
-            #
-            fd.write("""<img src='%(image_path_name)s' 
-            border='%(image_border_width)d' />\n""" % locals())
-        fd.write("</td>\n")
-        column += 1
-        if column == self.columns:
-            fd.write("</tr>\n")
-            column = 0
-        d[file_path]["column"] = column
-        fd.close()
-
-    def display(self, workspace, figure):
-        '''Put up a simple display of web file statistics'''
-        figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0, workspace.display_data.statistics)
-        
+        pass
+    
     def post_run(self, workspace):
-        '''Write the last few tags for each file at the end of the run'''
-        d = self.get_filenames(workspace.image_set_list)
+        '''Make all the webpages after the run'''
+        d = {}
+        zipfiles = {}
+        m = workspace.measurements
+        image_name = self.orig_image_name.value
+        for image_number in m.get_image_numbers():
+            image_path_name, image_file_name = self.get_image_location(
+                workspace, image_name, image_number)
+            abs_image_path_name = os.path.abspath(
+                os.path.join(image_path_name,image_file_name))
+            if self.directory_choice == DIR_ABOVE:
+                path_name, image_path_name = os.path.split(image_path_name)
+                image_path_name = '/'.join((image_path_name, image_file_name))
+            else:
+                path_name = image_path_name
+                image_path_name = image_file_name
+            
+            if self.wants_thumbnails:
+                thumbnail_image_name = self.thumbnail_image_name.value
+                thumbnail_path_name, thumbnail_file_name = self.get_image_location(
+                    workspace, thumbnail_image_name, image_number)
+                #
+                # Make the thumbnail path name relative to the location for
+                # the .html file
+                #
+                thumbnail_path_name = relpath(thumbnail_path_name, path_name)
+                if os.path.sep != '/':
+                    thumbnail_path_name = thumbnail_path_name.replace(
+                        os.path.sep, '/')
+                thumbnail_path_name = '/'.join((thumbnail_path_name, 
+                                               thumbnail_file_name))
+                
+            file_name = self.web_page_file_name.value
+            file_name = m.apply_metadata(file_name, image_number)
+            if file_name.find('.') == -1:
+                file_name += ".html"
+            file_path = os.path.join(path_name, file_name)
+                           
+            if self.wants_zip_file:
+                zip_file_name = self.zipfile_name.value
+                zip_file_name = m.apply_metadata(zip_file_name, image_number)
+                if zip_file_name.find('.') == -1:
+                    zip_file_name += ".zip"
+                zip_file_path = os.path.join(path_name, zip_file_name)
+                if not zip_file_path in zipfiles:
+                    zipfiles[zip_file_path] = []
+                zipfiles[zip_file_path].append((abs_image_path_name, 
+                                                image_file_name))
+            if not file_path in d.keys():
+                #
+                # Here, we make a new file, including HTML header
+                #
+                d[file_path] = dict(column = 0, fd = StringIO())
+                fd = d[file_path]["fd"]
+                title = m.apply_metadata(self.title.value)
+                bgcolor = self.background_color.value.replace(' ', '')
+                table_border_width = self.table_border_width.value
+                table_border_color = self.table_border_color.value.replace(' ','')
+                cell_spacing = self.image_spacing.value
+                fd.write("""<html>
+    <head><title>%(title)s</title></head>
+    <body bgcolor='%(bgcolor)s'>\n""" % locals())
+                if self.wants_thumbnails:
+                    fd.write("""<div>Click an image to see a higher-resolution version.</div>\n""")
+                if self.wants_zip_file:
+                    fd.write("""<center><a href='%s'>Download all high-resolution 
+        images as a zipped file.</a></center><p>\n""" % zip_file_name)
+                fd.write("""<center>
+    <table border='%(table_border_width)d' 
+           bordercolor='%(table_border_color)s'
+           cellpadding='0'
+           cellspacing='%(cell_spacing)s'>""" % locals())
+            else:
+                fd = d[file_path]["fd"]
+            column = d[file_path]["column"]
+            if column == 0:
+                fd.write("<tr>\n")
+            image_border_width = self.image_border_width.value
+            fd.write("<td>\n")
+            if self.wants_thumbnails:
+                #
+                # Get the target attribute for the link - tells which
+                # window will open when clicked. "_blank" = new window each time
+                #
+                if self.create_new_window == OPEN_ONCE:
+                    target = " target='_CPNewWindow'"
+                elif self.create_new_window == OPEN_EACH:
+                    target = " target='_blank'"
+                else:
+                    target = ""
+                #
+                # Write a link tag going to the real image with an image
+                # tag pointing at the thumbnail
+                #
+                fd.write("""<a href='%(image_path_name)s' %(target)s>
+        <img src='%(thumbnail_path_name)s' border='%(image_border_width)d' /></a>\n""" %
+                         locals())
+            else:
+                #
+                # Write an image tag pointing at the image
+                #
+                fd.write("""<img src='%(image_path_name)s' 
+                border='%(image_border_width)d' />\n""" % locals())
+            fd.write("</td>\n")
+            column += 1
+            if column == self.columns:
+                fd.write("</tr>\n")
+                column = 0
+            d[file_path]["column"] = column
+
+        # Copy each of the StringIO files to real files
         for key in d:
-            fd = open(key, "a")
+            fd = d[key]["fd"]
             if d[key]["column"] != 0:
                 fd.write("</tr>\n")
             fd.write("</table></center>\n</body>\n</html>\n")
-            fd.close()
+            with open(key, "w") as real_file:
+                real_file.write(fd.getvalue())
         
-    def get_image_location(self, workspace, image_name):
+        for zip_file_path, filenames in zipfiles.iteritems():
+            with zipfile.ZipFile(zip_file_path, "w") as z:
+                for abs_path_name,filename  in filenames:
+                    z.write(abs_path_name, arcname=filename)
+        
+    def get_image_location(self, workspace, image_name, image_number):
         '''Get the path and file name for an image
         
         workspace - workspace for current image set
@@ -389,8 +373,8 @@ class CreateWebPage(cpm.CPModule):
         file_name_feature = '_'.join((C_FILE_NAME, image_name))
         path_name_feature = '_'.join((C_PATH_NAME, image_name))
         m = workspace.measurements
-        image_file_name = m.get_current_image_measurement(file_name_feature)
-        image_path_name = m.get_current_image_measurement(path_name_feature)
+        image_file_name = m[cpmeas.IMAGE, file_name_feature, image_number]
+        image_path_name = m[cpmeas.IMAGE, path_name_feature, image_number]
         return image_path_name, image_file_name
         
     def upgrade_settings(self, setting_values, variable_revision_number,

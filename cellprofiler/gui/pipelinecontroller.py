@@ -1031,88 +1031,33 @@ class PipelineController:
         #
         ##################################
 
-        if cpanalysis.use_analysis:
-            try:
-                self.__module_view.disable()
-                self.__frame.preferences_view.on_analyze_images()
-                if not self.__pipeline.prepare_run(self.__workspace):
-                    self.stop_running()
-                    return
-                measurements_file_path = None
-                if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
-                    measurements_file_path = self.get_output_file_path()
-                    
-                self.__analysis = cpanalysis.Analysis(
-                    self.__pipeline, 
-                    measurements_file_path,
-                    initial_measurements=self.__workspace.measurements)
-                self.__analysis.start(self.analysis_event_handler)
-
-            except Exception, e:
-                # Catastrophic failure
-                display_error_dialog(self.__frame,
-                                     e,
-                                     self.__pipeline,
-                                     "Failure in analysis startup.",
-                                     sys.exc_info()[2],
-                                     continue_only=True)
-                self.stop_running()
-            return
-
-        output_path = self.get_output_file_path()
-        if output_path:
+        try:
             self.__module_view.disable()
-            if self.__running_pipeline:
-                self.__running_pipeline.close()
-            self.__output_path = output_path
             self.__frame.preferences_view.on_analyze_images()
+            if not self.__pipeline.prepare_run(self.__workspace):
+                self.stop_running()
+                return
+            measurements_file_path = None
             if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
-                if self.__pipeline_measurements is not None:
-                    del self.__pipeline_measurements
-                    self.__pipeline_measurements = None
-                m = cpm.Measurements(filename = output_path)
-            else:
-                m = None
-            self.__running_pipeline = self.__pipeline.run_with_yield(
-                self.__frame,
-                status_callback=self.status_callback,
-                initial_measurements = m)
-            try:
-                # Start the first module.
-                self.__pipeline_measurements = self.__running_pipeline.next()
-            except StopIteration:
-                #
-                # Pipeline finished on the first go (typical for something
-                # like CreateBatchFiles)
-                #
-                self.stop_running()
-                if (self.__pipeline_measurements is not None and
-                    cpprefs.get_write_MAT_files() is True):
-                    self.__pipeline.save_measurements(self.__output_path, self.__pipeline_measurements)
-                    self.__output_path = None
-                    message = "Finished processing pipeline"
-                    title = "Analysis complete"
-                else:
-                    message = "Pipeline processing finished, no measurements taken"
-                    title = "Analysis complete"
-                # allow cleanup of measurements
-                del self.__pipeline_measurements
-                self.__pipeline_measurements = None
-                if len(self.pipeline_list) > 0:
-                    self.run_next_pipeline(event)
-                    return
-                wx.MessageBox(message,title)
-            except Exception, e:
-                # Catastrophic failure on start
-                display_error_dialog(self.__frame,
-                                     e,
-                                     self.__pipeline,
-                                     "Failed to initialize pipeline",
-                                     sys.exc_info()[2])
-                if self.__pipeline_measurements is not None:
-                    # try to leave measurements in a readable state
-                    self.__pipeline_measurements.flush()
-                self.stop_running()
+                measurements_file_path = self.get_output_file_path()
+                
+            self.__analysis = cpanalysis.Analysis(
+                self.__pipeline, 
+                measurements_file_path,
+                initial_measurements=self.__workspace.measurements)
+            self.__analysis.start(self.analysis_event_handler)
+
+        except Exception, e:
+            # Catastrophic failure
+            display_error_dialog(self.__frame,
+                                 e,
+                                 self.__pipeline,
+                                 "Failure in analysis startup.",
+                                 sys.exc_info()[2],
+                                 continue_only=True)
+            self.stop_running()
+        return
+
 
     def analysis_event_handler(self, evt):
         PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = range(3)
@@ -1306,11 +1251,12 @@ class PipelineController:
     def on_restart(self, event):
         '''Restart a pipeline from a measurements file'''
         dlg = wx.FileDialog(self.__frame, "Select measurements file",
-                            wildcard = "Measurements file (*.mat)|*.mat",
+                            wildcard = "Measurements file (*.mat, *.h5)|*.mat;*.h5",
                             style = wx.FD_OPEN)
         try:
             if dlg.ShowModal() != wx.ID_OK:
                 return
+            path = dlg.Path
         finally:
             dlg.Destroy()
         
@@ -1319,40 +1265,34 @@ class PipelineController:
         # Start the pipeline
         #
         ##################################
-        output_path = self.get_output_file_path()
-        if output_path:
+        
+        try:
+            measurements = cpm.load_measurements(path)
+            pipeline_txt = measurements.get_experiment_measurement(
+                cpp.M_PIPELINE)
+            self.__pipeline.loadtxt(StringIO(pipeline_txt.encode("utf-8")))
             self.__module_view.disable()
-            if self.__running_pipeline:
-                self.__running_pipeline.close()
-            self.__output_path = output_path
             self.__frame.preferences_view.on_analyze_images()
-            self.__running_pipeline = \
-                self.__pipeline.restart_with_yield(dlg.Path, self.__frame,
-                                                   self.status_callback)
-            try:
-                # Start the first module.
-                self.__pipeline_measurements = self.__running_pipeline.next()
-            except StopIteration:
-                #
-                # Pipeline finished on the first go (typical for something
-                # like CreateBatchFiles)
-                #
-                self.stop_running()
-                if (self.__pipeline_measurements is not None and 
-                    cpprefs.get_write_MAT_files() is True):
-                    self.__pipeline.save_measurements(self.__output_path,self.__pipeline_measurements)
-                    del self.__pipeline_measurements
-                    self.__pipeline_measurements = None
-                    self.__output_path = None
-                    message = "Finished processing pipeline"
-                    title = "Analysis complete"
-                else:
-                    message = "Pipeline processing finished, no measurements taken"
-                    title = "Analysis complete"
-                if len(self.pipeline_list) > 0:
-                    self.run_next_pipeline(event)
-                    return
-                wx.MessageBox(message,title)
+            measurements_file_path = None
+            if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
+                measurements_file_path = self.get_output_file_path()
+                
+            self.__analysis = cpanalysis.Analysis(
+                self.__pipeline, 
+                measurements_file_path,
+                initial_measurements=measurements)
+            self.__analysis.start(self.analysis_event_handler,
+                                  overwrite = False)
+            
+        except Exception, e:
+            # Catastrophic failure
+            display_error_dialog(self.__frame,
+                                 e,
+                                 self.__pipeline,
+                                 "Failure in analysis startup.",
+                                 sys.exc_info()[2],
+                                 continue_only=True)
+            self.stop_running()
                 
     def on_pause(self, event):
         if not self.__pause_pipeline:

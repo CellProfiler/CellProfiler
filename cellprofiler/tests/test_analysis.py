@@ -274,9 +274,18 @@ class TestAnalysis(unittest.TestCase):
     
     def make_pipeline_and_measurements_and_start(self, **kwargs):
         pipeline, m = self.make_pipeline_and_measurements(**kwargs)
+        if "status" in kwargs:
+            overwrite = False
+            for i, status in enumerate(kwargs["status"]):
+                m.add_measurement(cpmeas.IMAGE, 
+                                  cpanalysis.AnalysisRunner.STATUS,
+                                  status, image_set_number = i+1)
+        else:
+            overwrite = True
         self.analysis = cpanalysis.Analysis(pipeline, self.filename, m)
         
-        self.analysis.start(self.analysis_event_handler, 0)
+        self.analysis.start(self.analysis_event_handler, 
+                            num_workers = 0, overwrite=overwrite)
         analysis_started = self.event_queue.get()
         self.assertIsInstance(analysis_started, cpanalysis.AnalysisStarted)
         return pipeline, m
@@ -785,6 +794,7 @@ class TestAnalysis(unittest.TestCase):
             measurements = result.measurements
             self.assertSequenceEqual(list(measurements.get_image_numbers()), 
                                      [1, 2, 3, 4])
+            objects_measurements = [r.uniform(size=10) for _ in range(4)]
             for i in range(1, 5):
                 self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i], 
                                  "Hello %d" % i)
@@ -792,7 +802,168 @@ class TestAnalysis(unittest.TestCase):
                     measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                     objects_measurements[i-1])
         
+    def test_06_04_test_restart(self):
+        # Test a restart of an analysis
+        #
+        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
+        self.wants_analysis_finished = True
+        pipeline, m = self.make_pipeline_and_measurements_and_start(
+            nimage_sets = 3, 
+            status = [cpanalysis.AnalysisRunner.STATUS_UNPROCESSED,
+                      cpanalysis.AnalysisRunner.STATUS_DONE,
+                      cpanalysis.AnalysisRunner.STATUS_IN_PROCESS])
+        r = np.random.RandomState()
+        r.seed(62)
+        with self.FakeWorker() as worker:
+            #####################################################
+            #
+            # Connect the worker to the analysis server and get
+            # the initial measurements.
+            #
+            #####################################################
+            worker.connect(self.analysis.runner.work_announce_address)
+            response = worker.request_work()
+            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+                worker.analysis_id))()
+            client_measurements = cpmeas.load_measurements_from_buffer(
+                response.buf)
+            #####################################################
+            #
+            # Report the dictionary, add some measurements and
+            # report the results of the first job
+            #
+            #####################################################
+            dictionaries = [ dict([(uuid.uuid4().hex, r.uniform(size=(10,15)))
+                                   for _ in range(10)])
+                             for module in pipeline.modules()]
+            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
+                worker.analysis_id, 1, dictionaries))()
+            #####################################################
+            #
+            # The analysis server should be ready to send us just
+            # the third job.
+            #
+            #####################################################
+            response = worker.request_work()
+            image_numbers = response.image_set_numbers
+            self.assertEqual(len(image_numbers), 1)
+            self.assertEqual(image_numbers[0], 3)
+            #####################################################
+            #
+            # Send the measurement groups
+            #
+            #####################################################
+            objects_measurements = [r.uniform(size=10) for _ in range(3)]
+            for image_number, om in ((1, objects_measurements[0]), 
+                          (3, objects_measurements[2])):
+                worker.send(cpanalysis.ImageSetSuccess(
+                    worker.analysis_id, 
+                    image_set_number = image_number))
+                m = cpmeas.Measurements(copy = client_measurements)
+                m[cpmeas.IMAGE, IMAGE_FEATURE, image_number] = \
+                    "Hello %d" % image_number
+                m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = om
+                req = cpanalysis.MeasurementsReport(
+                    worker.analysis_id,
+                    m.file_contents(),
+                    image_set_numbers = [image_number])
+                m.close()
+                response = worker.send(req)()
+            client_measurements.close()
+            #####################################################
+            #
+            # The server should receive the measurements reports,
+            # It should merge the measurements and post an
+            # AnalysisFinished event.
+            #
+            #####################################################
             
+            result = self.event_queue.get()
+            self.assertIsInstance(result, cpanalysis.AnalysisFinished)
+            self.assertFalse(result.cancelled)
+            measurements = result.measurements
+            assert isinstance(measurements, cpmeas.Measurements)
+            self.assertSequenceEqual(list(measurements.get_image_numbers()), 
+                                     [1, 2, 3])
+            for i in range(1, 4):
+                if i == 2:
+                    for feature in (IMAGE_FEATURE, OBJECTS_FEATURE):
+                        self.assertFalse(measurements.has_measurements(
+                            cpmeas.IMAGE, feature, 2))
+                else:
+                    self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i], 
+                                     "Hello %d" % i)
+                    np.testing.assert_almost_equal(
+                        measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
+                        objects_measurements[i-1])
+            
+    def test_06_05_test_grouped_restart(self):
+        # Test an analysis of four imagesets in two groups with all but one
+        # complete.
+        #
+        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
+        self.wants_analysis_finished = True
+        pipeline, m = self.make_pipeline_and_measurements_and_start(
+            nimage_sets = 4,
+            group_numbers = [1, 1, 2, 2],
+            group_indexes = [1, 2, 1, 2],
+            status = [ cpanalysis.AnalysisRunner.STATUS_DONE,
+                       cpanalysis.AnalysisRunner.STATUS_UNPROCESSED,
+                       cpanalysis.AnalysisRunner.STATUS_DONE,
+                       cpanalysis.AnalysisRunner.STATUS_DONE]
+        )
+        r = np.random.RandomState()
+        r.seed(62)
+        with self.FakeWorker() as worker:
+            #####################################################
+            #
+            # Connect the worker to the analysis server and get
+            # the initial measurements.
+            #
+            #####################################################
+            worker.connect(self.analysis.runner.work_announce_address)
+            response = worker.request_work()
+            self.assertSequenceEqual(response.image_set_numbers, [1, 2])
+            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+                worker.analysis_id))()
+            client_measurements = cpmeas.load_measurements_from_buffer(
+                response.buf)
+            for image_number in (1, 2):
+                response = worker.send(cpanalysis.ImageSetSuccess(
+                    worker.analysis_id, image_number))()
+            m = cpmeas.Measurements(copy = client_measurements)
+            objects_measurements = [r.uniform(size=10) for _ in range(2)]
+            for image_number in (1,2):
+                m[cpmeas.IMAGE, IMAGE_FEATURE, image_number] = \
+                    "Hello %d" % image_number
+                m[OBJECTS_NAME, OBJECTS_FEATURE, image_number] = \
+                    objects_measurements[image_number-1]
+            req = cpanalysis.MeasurementsReport(
+                worker.analysis_id,
+                m.file_contents(),
+                image_set_numbers = (1,2))
+            m.close()
+            response = worker.send(req)()
+            client_measurements.close()
+            #####################################################
+            #
+            # The server should receive the measurements reports,
+            # It should merge the measurements and post an
+            # AnalysisFinished event.
+            #
+            #####################################################
+            
+            result = self.event_queue.get()
+            self.assertIsInstance(result, cpanalysis.AnalysisFinished)
+            self.assertFalse(result.cancelled)
+            measurements = result.measurements
+            for i in range(1, 3):
+                self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i], 
+                                 "Hello %d" % i)
+                np.testing.assert_almost_equal(
+                    measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
+                    objects_measurements[i-1])
+                
 SBS_PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120424205644

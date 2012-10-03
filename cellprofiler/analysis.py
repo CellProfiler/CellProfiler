@@ -92,7 +92,17 @@ class Analysis(object):
 
         self.runner_lock = threading.Lock()  # defensive coding purposes
 
-    def start(self, analysis_event_callback, num_workers = None):
+    def start(self, analysis_event_callback, num_workers = None, overwrite=True):
+        '''Start the analysis runner
+        
+        analysis_event_callback - callback from runner to UI thread for
+                                  event progress and UI handlers
+        
+        num_workers - # of worker processes to instantiate, default is # of cores
+        
+        overwrite - True (default) to process all image sets, False to only
+                    process incomplete ones (or incomplete groups if grouping)
+        '''
         with self.runner_lock:
             assert not self.analysis_in_progress
             self.analysis_in_progress = uuid.uuid1().hex
@@ -102,7 +112,7 @@ class Analysis(object):
                                          self.initial_measurements_buf,
                                          self.output_path,
                                          analysis_event_callback)
-            self.runner.start(num_workers)
+            self.runner.start(num_workers=num_workers, overwrite=overwrite)
             return self.analysis_in_progress
 
     def pause(self):
@@ -205,8 +215,13 @@ class AnalysisRunner(object):
         self.jobserver_thread = None
 
     # External control interfaces
-    def start(self, num_workers = None):
-        '''start the analysis run'''
+    def start(self, num_workers = None, overwrite = True):
+        '''start the analysis run
+        
+        num_workers - # of workers to run, default = # of cores
+        overwrite - if True, overwrite existing image set measurements, False
+                    try to reuse them.
+        '''
 
         # Although it would be nice to reuse the worker pool, I'm not entirely
         # sure they recover correctly from the user cancelling an analysis
@@ -221,6 +236,7 @@ class AnalysisRunner(object):
         self.interface_thread = start_daemon_thread(
             target=self.interface, 
             args=(start_signal,),
+            kwargs=dict(overwrite = overwrite),
             name='AnalysisRunner.interface')
         #
         # Wait for signal on interface started.
@@ -338,15 +354,47 @@ class AnalysisRunner(object):
             posted_analysis_started = True
 
             # reset the status of every image set that needs to be processed
+            has_groups = measurements.has_groups()
+            if self.pipeline.requires_aggregation():
+                overwrite = True
+            if has_groups and not overwrite:
+                if not measurements.has_feature(cpmeas.IMAGE, self.STATUS):
+                    overwrite = True
+                else:
+                    group_status = {}
+                    for image_number in measurements.get_image_numbers():
+                        group_number = measurements[
+                            cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_number]
+                        status = measurements[cpmeas.IMAGE, self.STATUS,
+                                              image_number]
+                        if status != self.STATUS_DONE:
+                            group_status[group_number] = self.STATUS_UNPROCESSED
+                        elif group_number not in group_status:
+                            group_status[group_number] = self.STATUS_DONE
+                            
+            new_image_sets_to_process = []
             for image_set_number in image_sets_to_process:
+                needs_reset = False
                 if (overwrite or
-                    (not measurements.has_measurements(cpmeas.IMAGE, self.STATUS, image_set_number)) or
-                    (measurements[cpmeas.IMAGE, self.STATUS, image_set_number] != self.STATUS_DONE)):
-                    measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = self.STATUS_UNPROCESSED
+                    (not measurements.has_measurements(
+                        cpmeas.IMAGE, self.STATUS, image_set_number)) or
+                    (measurements[cpmeas.IMAGE, self.STATUS, image_set_number] 
+                     != self.STATUS_DONE)):
+                    needs_reset = True
+                elif has_groups:
+                    group_number = measurements[
+                        cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_set_number]
+                    if group_status[group_number] != self.STATUS_DONE:
+                        needs_reset = True
+                if needs_reset:
+                    measurements[cpmeas.IMAGE, self.STATUS, image_set_number] =\
+                        self.STATUS_UNPROCESSED
+                    new_image_sets_to_process.append(image_set_number)
+            image_sets_to_process = new_image_sets_to_process
 
             # Find image groups.  These are written into measurements prior to
             # analysis.  Groups are processed as a single job.
-            if measurements.has_groups() or self.pipeline.requires_aggregation():
+            if has_groups or self.pipeline.requires_aggregation():
                 worker_runs_post_group = True
                 job_groups = {}
                 for image_set_number in image_sets_to_process:
@@ -676,8 +724,8 @@ def find_analysis_worker_source():
     return os.path.join(os.path.dirname(cellprofiler.analysis.__file__), "analysis_worker.py")
 
 
-def start_daemon_thread(target=None, args=(), name=None):
-    thread = threading.Thread(target=target, args=args, name=name)
+def start_daemon_thread(target=None, args=(), kwargs = None, name=None):
+    thread = threading.Thread(target=target, args=args, kwargs=kwargs, name=name)
     thread.daemon = True
     thread.start()
     return thread

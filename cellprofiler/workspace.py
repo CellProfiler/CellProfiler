@@ -293,13 +293,28 @@ class Workspace(object):
         self.__module = module
     
     def interaction_request(self, module, *args, **kwargs):
-        '''make a request for GUI interaction via a pipeline event'''
+        '''make a request for GUI interaction via a pipeline event
+        
+        module - target module for interaction request
+        
+        headless_ok - True if the interaction request can be made in
+                      a headless context. An example is synchronized access to 
+                      a shared resource which must be coordinated among all
+                      workers.
+        '''
         # See also:
         # main().interaction_handler() in analysis_worker.py
         # PipelineController.module_interaction_request() in pipelinecontroller.py
         import cellprofiler.preferences as cpprefs
+        if "headless_ok" in kwargs:
+            tmp = kwargs.copy()
+            del tmp["headless_ok"]
+            headless_ok = kwargs["headless_ok"]
+            kwargs = tmp
+        else:
+            headless_ok = False
         if self.interaction_handler is None:
-            if cpprefs.get_headless():
+            if cpprefs.get_headless() and not headless_ok:
                 raise self.NoInteractionException()
             else:
                 return module.handle_interaction(*args, **kwargs)

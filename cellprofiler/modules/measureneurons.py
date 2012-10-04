@@ -185,6 +185,71 @@ class MeasureNeurons(cpm.CPModule):
                        self.vertex_file_name, self.edge_file_name]
         return result
     
+    def get_graph_file_paths(self, m, image_number):
+        '''Get the paths to the graph files for the given image set
+        
+        Apply metadata tokens to the graph file names to get the graph files
+        for the given image set.
+        
+        m - measurements for the run
+        
+        image_number - the image # for the current image set
+        
+        Returns the edge file's path and vertex file's path
+        '''
+        path = self.directory.get_absolute_path(m)
+        edge_file = m.apply_metadata(self.edge_file_name.value, image_number)
+        edge_path = os.path.abspath(os.path.join(path, edge_file))
+        vertex_file = m.apply_metadata(self.vertex_file_name.value, image_number)
+        vertex_path = os.path.abspath(os.path.join(path, vertex_file))
+        return edge_path, vertex_path
+    
+    VF_IMAGE_NUMBER = "image_number"
+    VF_VERTEX_NUMBER = "vertex_number"
+    VF_I = "i"
+    VF_J = "j"
+    VF_LABELS = "labels"
+    VF_KIND = "kind"
+    vertex_file_columns = (VF_IMAGE_NUMBER, VF_VERTEX_NUMBER, 
+                           VF_I, VF_J, VF_LABELS,
+                           VF_KIND)
+    EF_IMAGE_NUMBER = "image_number"
+    EF_V1 = "v1"
+    EF_V2 = "v2"
+    EF_LENGTH = "length"
+    EF_TOTAL_INTENSITY = "total_intensity"
+    edge_file_columns = (EF_IMAGE_NUMBER, EF_V1, EF_V2, EF_LENGTH, 
+                         EF_TOTAL_INTENSITY)
+    def prepare_run(self, workspace):
+        '''Initialize graph files'''
+        if not self.wants_neuron_graph:
+            return True
+        edge_files = set()
+        vertex_files = set()
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        for image_number in m.get_image_numbers():
+            edge_path, vertex_path = self.get_graph_file_paths(m, image_number)
+            edge_files.add(edge_path)
+            vertex_files.add(vertex_path)
+            
+        for file_path, header in ((edge_path, self.edge_file_columns),
+                                  (vertex_path, self.vertex_file_columns)):
+            if os.path.exists(file_path):
+                import wx
+                if wx.MessageBox(
+                    "%s already exists. Do you want to overwrite it?" %
+                    file_path, "Warning: overwriting file",
+                    style = wx.YES_NO, 
+                    parent = workspace.frame) != wx.YES:
+                    return False
+                os.remove(file_path)
+            fd = open(file_path, 'wt')
+            header = ','.join(header)
+            fd.write(header + '\n')
+            fd.close()
+        return True
+    
     def run(self, workspace):
         '''Run the module on the image set'''
         seed_objects_name = self.seed_objects_name.value
@@ -345,65 +410,17 @@ class MeasureNeurons(cpm.CPModule):
                 branch_points & ~trunk_mask,
                 end_points,
                 intensity_image.pixel_data)
-            #
-            # Add an image number column to both and change vertex index
-            # to vertex number (one-based)
-            #
+
             image_number = workspace.measurements.image_set_number
-            vertex_graph = np.rec.fromarrays(
-                (np.ones(len(vertex_graph)) * image_number,
-                 np.arange(1, len(vertex_graph) + 1),
-                 vertex_graph['i'],
-                 vertex_graph['j'],
-                 vertex_graph['labels'],
-                 vertex_graph['kind']),
-                names = ("image_number", "vertex_number", "i", "j",
-                         "labels", "kind"))
             
-            edge_graph = np.rec.fromarrays(
-                (np.ones(len(edge_graph)) * image_number,
-                 edge_graph["v1"],
-                 edge_graph["v2"],
-                 edge_graph["length"],
-                 edge_graph["total_intensity"]),
-                names = ("image_number", "v1", "v2", "length", 
-                         "total_intensity"))
+            edge_path, vertex_path = self.get_graph_file_paths(m, m.image_number)
+            workspace.interaction_request(
+                self, m.image_number, edge_path, edge_graph,
+                vertex_path, vertex_graph, headless_ok = True)
             
-            path = self.directory.get_absolute_path(m)
-            edge_file = m.apply_metadata(self.edge_file_name.value)
-            edge_path = os.path.abspath(os.path.join(path, edge_file))
-            vertex_file = m.apply_metadata(self.vertex_file_name.value)
-            vertex_path = os.path.abspath(os.path.join(path, vertex_file))
-            d = self.get_dictionary(workspace.image_set_list)
-            for file_path, table, fmt in (
-                (edge_path, edge_graph, "%d,%d,%d,%d,%.4f"),
-                (vertex_path, vertex_graph, "%d,%d,%d,%d,%d,%s")):
-                #
-                # Delete files first time through / otherwise append
-                #
-                if not d.has_key(file_path):
-                    d[file_path] = True
-                    if os.path.exists(file_path):
-                        assert False, "Change to use handle_interaction"
-                        if self.show_window:
-                            import wx
-                            if wx.MessageBox(
-                                "%s already exists. Do you want to overwrite it?" %
-                                file_path, "Warning: overwriting file",
-                                style = wx.YES_NO, 
-                                parent = workspace.frame) != wx.YES:
-                                raise ValueError("Can't overwrite %s" % file_path)
-                        os.remove(file_path)
-                    fd = open(file_path, 'wt')
-                    header = ','.join(table.dtype.names)
-                    fd.write(header + '\n')
-                else:
-                    fd = open(file_path, 'at')
-                np.savetxt(fd, table, fmt)
-                fd.close()
-                if self.show_window:
-                    workspace.display_data.edge_graph = edge_graph
-                    workspace.display_data.vertex_graph = vertex_graph
+            if self.show_window:
+                workspace.display_data.edge_graph = edge_graph
+                workspace.display_data.vertex_graph = vertex_graph
         #
         # Make the display image
         #
@@ -427,6 +444,22 @@ class MeasureNeurons(cpm.CPModule):
                 bi = cpi.Image(branchpoint_image,
                                parent_image = skeleton_image)
                 workspace.image_set.add(self.branchpoint_image_name.value, bi)
+
+    def handle_interaction(self, image_number, edge_path, edge_graph, 
+                           vertex_path, vertex_graph):
+        columns = tuple([vertex_graph[f].tolist() 
+                         for f in self.vertex_file_columns[2:]])
+        with open(vertex_path, "at") as fd:
+            for vertex_number, fields in enumerate(zip(*columns)):
+                fd.write(("%d,%d," % (image_number, vertex_number+1)) +
+                         ("%d,%d,%d,%s\n" % fields))
+                
+        columns = tuple([edge_graph[f].tolist() 
+                         for f in self.edge_file_columns[1:]])
+        with open(edge_path, "at") as fd:
+            line_format = "%d,%%d,%%d,%%d,%%.4f\n" % image_number
+            for fields in zip(*columns):
+                fd.write(line_format % fields)
     
     def display(self, workspace, figure):
         '''Display a visualization of the results'''
@@ -591,8 +624,11 @@ class MeasureNeurons(cpm.CPModule):
         j_idx = j[points_of_interest]
         poe_labels = skeleton_labels[points_of_interest]
         tbe = tbe[points_of_interest]
-        vertex_table = np.rec.fromarrays((i_idx, j_idx, poe_labels, tbe),
-                                         names=("i","j","labels","kind"))
+        vertex_table = {
+            self.VF_I: i_idx,
+            self.VF_J: j_idx,
+            self.VF_LABELS: poe_labels,
+            self.VF_KIND: tbe }
         #
         # First, break the skeleton by removing the branchpoints, endpoints
         # and trunks
@@ -711,8 +747,11 @@ class MeasureNeurons(cpm.CPModule):
         #
         # Put it all together into a table
         #
-        edge_table = np.rec.fromarrays(
-            (v1, v2, lengths, magnitudes),
-            names = ("v1","v2","length","total_intensity"))
+        edge_table = {
+            self.EF_V1: v1,
+            self.EF_V2: v2,
+            self.EF_LENGTH: lengths,
+            self.EF_TOTAL_INTENSITY: magnitudes
+        }            
         return edge_table, vertex_table
         

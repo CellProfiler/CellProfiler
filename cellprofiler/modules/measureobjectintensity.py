@@ -5,6 +5,10 @@ Given an image with objects identified (e.g. nuclei or cells), this
 module extracts intensity features for each object based on one or more
 corresponding grayscale images. Measurements are recorded for each object.
 
+Keep in mind that intensity measurements are made for all combinations of the images
+and objects entered. If you want only specific image/object measurements, you can 
+use multiple MeasureObjectIntensity modules for each group of measurements desired.
+
 <h4>Available measurements</h4>
 <ul><li><i>IntegratedIntensity:</i> The sum of the pixel intensities within an
  object.</li>

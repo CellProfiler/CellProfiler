@@ -313,7 +313,8 @@ class CalculateStatistics(cpm.CPModule):
         for i, image_number in enumerate(image_numbers):
             value = measurements.get_measurement(
                 cpmeas.IMAGE, feature_name, image_number)
-            result[i] = value if np.isscalar(value) else value[0]
+            result[i] = (None if value is None 
+                         else value if np.isscalar(value) else value[0])
         return result
     
     def aggregate_measurement(self, measurements, object_name, feature_name):

@@ -2247,6 +2247,9 @@ class Pipeline(object):
                 real_list.append(details)
                 self.image_plane_details.insert(pos, details)
             start = pos
+        # Invalidate caches
+        self.__filtered_image_plane_details_images_settings = None
+        self.__filtered_image_plane_details_metadata_settings = None
         self.notify_listeners(ImagePlaneDetailsAddedEvent(real_list))
         if add_undo:
             def undo():

@@ -1670,7 +1670,7 @@ class ModuleView:
                 def GetValue(self, row, col):
                     if self.IsEmptyCell(row, col):
                         return None
-                    s = self.v.data[row][col]
+                    s = unicode(self.v.data[row][col])
                     if len(self.column_size) <= col:
                         self.column_size += [self.v.max_field_size] * (col - len(self.column_size)+1) 
                     field_size = self.column_size[col]

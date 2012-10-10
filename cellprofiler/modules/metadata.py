@@ -526,6 +526,12 @@ class Metadata(cpm.CPModule):
     def on_deactivated(self):
         self.pipeline = None
         
+    def prepare_to_create_batch(self, workspace, fn_alter_path):
+        '''Alter internal paths for batch creation'''
+        for group in self.extraction_methods:
+            if group.extraction_method == X_IMPORTED_EXTRACTION:
+                group.csv_location.alter_for_create_batch(fn_alter_path)
+                
     def prepare_settings(self, setting_values):
         '''Prepare the module to receive the settings'''
         #

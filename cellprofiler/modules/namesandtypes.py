@@ -17,6 +17,7 @@ TO-DO: document module
 import logging
 logger = logging.getLogger(__name__)
 
+import hashlib
 import numpy as np
 import os
 import re
@@ -312,7 +313,7 @@ class NamesAndTypes(cpm.CPModule):
         try:
             old_pipeline = self.pipeline
             self.pipeline = workspace.pipeline
-            self.ipds = self.pipeline.get_filtered_image_plane_details()
+            self.ipds = self.pipeline.get_filtered_image_plane_details(True)
             self.metadata_keys = set()
             for ipd in self.ipds:
                 self.metadata_keys.update(ipd.metadata.keys())
@@ -536,6 +537,43 @@ class NamesAndTypes(cpm.CPModule):
         elif load_choice == LOAD_AS_MASK:
             provider = MaskImageProvider(name, url, series, index, channel)
         workspace.image_set.providers.append(provider)
+        self.add_provider_measurements(provider, workspace.measurements, \
+                                       cpmeas.IMAGE)
+        
+    @staticmethod
+    def add_provider_measurements(provider, m, image_or_objects):
+        '''Add image measurements using the provider image and file
+        
+        provider - an image provider: get the height and width of the image
+                   from the image pixel data and the MD5 hash from the file
+                   itself.
+        m - measurements structure
+        image_or_objects - cpmeas.IMAGE if the provider is an image provider
+                           otherwise cpmeas.OBJECT if it provides objects
+        '''
+        from cellprofiler.modules.loadimages import \
+             C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH
+        
+        name = provider.get_name()
+        m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + name] = \
+            NamesAndTypes.get_file_hash(provider)
+        img = provider.provide_image(m)
+        m[cpmeas.IMAGE, C_WIDTH + "_" + name] = img.pixel_data.shape[1]
+        m[cpmeas.IMAGE, C_HEIGHT + "_" + name] = img.pixel_data.shape[0]
+        if image_or_objects == cpmeas.IMAGE:
+            m[cpmeas.IMAGE, C_SCALING + "_" + name] = provider.scale
+        
+    @staticmethod
+    def get_file_hash(provider):
+        '''Get an md5 checksum from the (cached) file courtesy of the provider'''
+        hasher = hashlib.md5()
+        with open(provider.get_full_name(), "rb") as fd:
+            while True:
+                buf = fd.read(65536)
+                if len(buf) == 0:
+                    break
+                hasher.update(buf)
+        return hasher.hexdigest()
     
     def add_objects(self, workspace, name):
         '''Add objects loaded from a file to the object set'''
@@ -551,6 +589,8 @@ class NamesAndTypes(cpm.CPModule):
         series = fetch_measurement_or_none(cpmeas.C_OBJECTS_SERIES)
         index = fetch_measurement_or_none(cpmeas.C_OBJECTS_FRAME)
         provider = ObjectsImageProvider(name, url, series, index)
+        self.add_provider_measurements(provider, workspace.measurements, 
+                                       cpmeas.OBJECT)
         image = provider.provide_image(workspace.image_set)
         o = cpo.Objects()
         if image.pixel_data.shape[2] == 1:

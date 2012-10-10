@@ -23,7 +23,7 @@ import cellprofiler.modules.namesandtypes as N
 import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.tests import example_images_directory, testimages_directory
-from cellprofiler.modules.loadimages import pathname2url
+from cellprofiler.modules.loadimages import pathname2url, C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
 from subimager.client import start_subimager, stop_subimager
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
@@ -564,6 +564,12 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
         self.assertSequenceEqual(pixel_data.shape, (512, 512, 3))
         self.assertTrue(np.all(pixel_data >= 0))
         self.assertTrue(np.all(pixel_data <= 1))
+        m = workspace.measurements
+        self.assertEqual(m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + IMAGE_NAME],
+                         "16729de931dc40f5ca19621598a3e7d6")
+        self.assertEqual(m[cpmeas.IMAGE, C_HEIGHT + "_" + IMAGE_NAME], 512)
+        self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_" + IMAGE_NAME], 512)
+        
         
     def test_03_02_load_monochrome_as_color(self):
         path = os.path.join(example_images_directory(),
@@ -659,6 +665,10 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
         self.assertEqual(areas[0], 9)
         self.assertEqual(areas[1], 321)
         self.assertEqual(areas[2], 2655)
+        m = workspace.measurements
+        self.assertEqual(m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + OBJECTS_NAME],
+                         "67880f6269fbf438d4b9c92256aa1d8f")
+        self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_" + OBJECTS_NAME], 640)
         
     def test_03_10_load_overlapped_objects(self):
         from .test_loadimages import overlapped_objects_data

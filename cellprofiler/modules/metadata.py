@@ -417,8 +417,8 @@ class Metadata(cpm.CPModule):
     
     def automatically_extract_metadata(self, group, ipd):
         return {}
-    
-    def import_metadata(self, group, ipd, m):
+
+    def get_imported_metadata_for_group(self, group):
         for imported_metadata in self.imported_metadata:
             assert isinstance(imported_metadata, self.ImportedMetadata)
             if imported_metadata.is_match(
@@ -426,8 +426,13 @@ class Metadata(cpm.CPModule):
                 group.csv_joiner,
                 self.CSV_JOIN_NAME,
                 self.IPD_JOIN_NAME):
-                return imported_metadata.get_ipd_metadata(m)
-                
+                return imported_metadata
+        return None
+        
+    def import_metadata(self, group, ipd, m):
+        imported_metadata = self.get_imported_metadata_for_group(group)
+        if imported_metadata is not None:
+            return imported_metadata.get_ipd_metadata(m)
         return {}
     
     def on_activated(self, workspace):
@@ -548,6 +553,7 @@ class Metadata(cpm.CPModule):
     def get_metadata_keys(self):
         '''Return a collection of metadata keys to be associated with files'''
         keys = set()
+        self.update_imported_metadata()
         for group in self.extraction_methods:
             if group.extraction_method == X_MANUAL_EXTRACTION:
                 if group.source == XM_FILE_NAME:
@@ -556,14 +562,11 @@ class Metadata(cpm.CPModule):
                     regexp = group.folder_regexp
                 keys.update(cpmeas.find_metadata_tokens(regexp.value))
             elif group.extraction_method == X_IMPORTED_EXTRACTION:
-                # TO-DO: come up with yet another bogus cacheing strategy
-                try:
-                    with open(group.csv_location.value, "r") as fd:
-                        rdr = csv.reader(fd)
-                        header = rdr.next()
-                        keys.update(header)
-                except:
-                    logger.debug("Failed to read %s" % group.csv_location.value)
+                imported_metadata = self.get_imported_metadata_for_group(group)
+                if imported_metadata is None:
+                    logger.warn("Unable to import metadata from %s" %
+                                group.csv_location.value)
+                keys.update(imported_metadata.metadata_keys)
         return list(keys)
     
     def get_measurement_columns(self, pipeline):

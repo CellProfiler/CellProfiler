@@ -1188,6 +1188,7 @@ class ExportToDatabase(cpm.CPModule):
         '''Prepare to run the pipeline
         Establish a connection to the database.'''
 
+        self.get_dictionary().clear()
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         

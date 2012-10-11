@@ -160,7 +160,8 @@ class EnhanceEdges(cpm.CPModule):
         elif self.method == M_LOG:
             sigma = self.get_sigma()
             size = int(sigma * 4)+1
-            output_pixels = laplacian_of_gaussian(orig_pixels, mask, size, sigma)
+            edge_correction = laplacian_of_gaussian(np.ones(orig_pixels.shape, float) * np.mean(orig_pixels), mask, size, sigma)
+            output_pixels = laplacian_of_gaussian(orig_pixels, mask, size, sigma) - edge_correction
         elif self.method == M_PREWITT:
             if self.direction == E_ALL:
                 output_pixels = prewitt(orig_pixels)

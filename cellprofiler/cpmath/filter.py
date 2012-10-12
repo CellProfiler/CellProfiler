@@ -291,13 +291,22 @@ def laplacian_of_gaussian(image, mask, size, sigma):
     # Normalize the kernel to have a sum of zero
     #
     log = log - np.mean(log)
-    output = convolve(image, log, mode='constant', cval=100.0)
     if mask is None:
-        mask = np.ones(image.shape,np.uint8)
-    else:
-        mask = np.array(mask, np.uint8)
-    output = masked_convolution(image, mask, log)
-    output[mask==0] = image[mask==0]
+        mask = np.ones(image.shape[:2], bool)
+    masked_image = image.copy()
+    masked_image[~mask] = 0
+    output = convolve(masked_image, log, mode='constant', cval=0)
+    #
+    # Do the LoG of the inverse of the mask. This finds the magnitude of the
+    # contribution of the masked pixels. We then fudge by multiplying by the
+    # value at the pixel of interest - this effectively sets the value at a
+    # masked pixel to that of the pixel of interest.
+    #
+    # It underestimates the LoG, that's not a terrible thing.
+    #
+    correction = convolve((~ mask).astype(float), log, mode='constant', cval = 1)
+    output += correction * image
+    output[~ mask] = image[~ mask]
     return output
 
 def masked_convolution(data, mask, kernel):

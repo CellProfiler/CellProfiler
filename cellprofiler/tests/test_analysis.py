@@ -794,7 +794,6 @@ class TestAnalysis(unittest.TestCase):
             measurements = result.measurements
             self.assertSequenceEqual(list(measurements.get_image_numbers()), 
                                      [1, 2, 3, 4])
-            objects_measurements = [r.uniform(size=10) for _ in range(4)]
             for i in range(1, 5):
                 self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, i], 
                                  "Hello %d" % i)

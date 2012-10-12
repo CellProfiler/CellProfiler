@@ -191,7 +191,7 @@ class ReassignObjectNumbers(cpm.CPModule):
             </ul>""")
         
         self.wants_outlines = cps.Binary(
-            "Retain outlines of the relabeled objests?", False,
+            "Retain outlines of the relabeled objects?", False,
             doc = """<i>(Used only if objects are output)</i><br>
             Check this setting if you want to save an image of the outlines
             of the relabeled objects.""")

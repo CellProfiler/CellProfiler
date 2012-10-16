@@ -315,7 +315,7 @@ class MeasureImageQuality(cpm.CPModule):
             image blur whereas smaller numbers measure more localized patterns of 
             blur. We suggest selecting a window size that is on the order of the feature of interest 
             (e.g., the object diameter). You can measure these metrics for multiple window sizes 
-            by selecting adiditonal scales for each image. """))
+            by selecting additional scales for each image. """))
         
         group.can_remove = can_remove
         if can_remove:

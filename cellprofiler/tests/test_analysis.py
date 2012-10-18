@@ -33,6 +33,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpmeas
 import cellprofiler.utilities.zmqrequest as cpzmq
+from cellprofiler.modules.tests import example_images_directory, testimages_directory
 
 IMAGE_NAME = "imagename"
 OBJECTS_NAME = "objectsname"
@@ -360,6 +361,8 @@ class TestAnalysis(unittest.TestCase):
         cpprefs.set_headless()
         title_font_name = "Rosewood Std Regular"
         cpprefs.set_title_font_name(title_font_name)
+        cpprefs.set_default_image_directory(example_images_directory())
+        cpprefs.set_default_output_directory(testimages_directory())
         with self.FakeWorker() as worker:
             worker.connect(self.analysis.runner.work_announce_address)
             response = worker.send(cpanalysis.PipelinePreferencesRequest(
@@ -386,6 +389,13 @@ class TestAnalysis(unittest.TestCase):
             self.assertIn(cpprefs.TITLE_FONT_NAME, preferences)
             self.assertEqual(preferences[cpprefs.TITLE_FONT_NAME],
                              title_font_name)
+            self.assertIn(cpprefs.DEFAULT_IMAGE_DIRECTORY, preferences)
+            self.assertEqual(preferences[cpprefs.DEFAULT_IMAGE_DIRECTORY],
+                             cpprefs.get_default_image_directory())
+            self.assertIn(cpprefs.DEFAULT_OUTPUT_DIRECTORY, preferences)
+            self.assertEqual(preferences[cpprefs.DEFAULT_OUTPUT_DIRECTORY],
+                             cpprefs.get_default_output_directory())
+            
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
             
     def test_04_02_initial_measurements_request(self):

@@ -309,11 +309,18 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(req.analysis_id, self.analysis_id)
         
         input_dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        output_dir = os.path.join(example_images_directory(), "ExampleHT29")
         cpprefs.set_default_image_directory(input_dir)
+        input_dir = cpprefs.get_default_image_directory()
+        cpprefs.set_default_output_directory(output_dir)
+        output_dir = cpprefs.get_default_output_directory()
         preferences = {cpprefs.DEFAULT_IMAGE_DIRECTORY: 
-                       cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY) }
+                       cpprefs.config_read(cpprefs.DEFAULT_IMAGE_DIRECTORY),
+                       cpprefs.DEFAULT_OUTPUT_DIRECTORY:
+                       cpprefs.config_read(cpprefs.DEFAULT_OUTPUT_DIRECTORY)}
         
         cpprefs.set_default_image_directory(example_images_directory())
+        cpprefs.set_default_output_directory(example_images_directory())
         rep = cpanalysis.Reply(
             pipeline_blob = np.array(GOOD_PIPELINE),
             preferences = preferences)
@@ -323,7 +330,10 @@ class TestAnalysisWorker(unittest.TestCase):
         # processed the preferences.
         #
         req = self.awthread.recv(self.work_socket)
-        self.assertEqual(cpprefs.get_default_image_directory(), input_dir)
+        self.assertEqual(cpprefs.get_default_image_directory(), 
+                         input_dir)
+        self.assertEqual(cpprefs.get_default_output_directory(),
+                         output_dir)
         self.assertIn(self.analysis_id, 
                       self.awthread.aw.pipelines_and_preferences)
         pipe, prefs = self.awthread.aw.pipelines_and_preferences[

@@ -145,10 +145,10 @@ def config_read(key):
         value = get_config().Read(key)
     else:
         value = None
+    if value is not None:
+        value = utf16decode(value)
     __cached_values[key] = value
-    if value is None:
-        return None
-    return utf16decode(value)
+    return value
 
 def config_write(key, value):
     '''Write the given configuration value

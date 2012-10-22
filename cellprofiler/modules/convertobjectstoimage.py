@@ -98,54 +98,77 @@ class ConvertObjectsToImage(cpm.CPModule):
 
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
-        labels = objects.segmented
-        convert = True
+        alpha = np.zeros(objects.shape)
         if self.image_mode == IM_BINARY:
-            pixel_data = labels != 0
+            pixel_data = np.zeros(objects.shape, bool)
         elif self.image_mode == IM_GRAYSCALE:
-            pixel_data = labels.astype(float) / (1.0 if np.max(labels) == 0 else np.max(labels))
-        elif self.image_mode == IM_COLOR:
-            import matplotlib.cm
-            from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
-            if self.colormap.value == DEFAULT_COLORMAP:
-                cm_name = cpprefs.get_default_colormap()
-            elif self.colormap.value == COLORCUBE:
-                # Colorcube missing from matplotlib
-                cm_name = "gist_rainbow"
-            elif self.colormap.value == LINES:
-                # Lines missing from matplotlib and not much like it,
-                # Pretty boring palette anyway, hence
-                cm_name = "Pastel1"
-            elif self.colormap.value == WHITE:
-                # White missing from matplotlib, it's just a colormap
-                # of all completely white... not even different kinds of
-                # white. And, isn't white just a uniform sampling of
-                # frequencies from the spectrum?
-                cm_name = "Spectral"
-            else:
-                cm_name = self.colormap.value
-            cm = matplotlib.cm.get_cmap(cm_name)
-            mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-            pixel_data = mapper.to_rgba(renumber_labels_for_display(labels))
-            pixel_data = pixel_data[:,:,:3]
-            pixel_data[labels == 0,:] = 0
+            pixel_data = np.zeros(objects.shape)
         elif self.image_mode == IM_UINT16:
-            pixel_data = labels.copy()
-            convert = False
+            pixel_data = np.zeros(objects.shape, np.int32)
+        else:
+            pixel_data = np.zeros((objects.shape[0], objects.shape[1], 3))
+        convert = True
+        for labels, indices in objects.get_labels():
+            mask = labels != 0
+            if np.all(~ mask):
+                continue
+            if self.image_mode == IM_BINARY:
+                pixel_data[mask] = True
+                alpha[mask] = 1
+            elif self.image_mode == IM_GRAYSCALE:
+                pixel_data[mask] = labels[mask].astype(float) / np.max(labels)
+                alpha[mask] = 1
+            elif self.image_mode == IM_COLOR:
+                import matplotlib.cm
+                from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+                if self.colormap.value == DEFAULT_COLORMAP:
+                    cm_name = cpprefs.get_default_colormap()
+                elif self.colormap.value == COLORCUBE:
+                    # Colorcube missing from matplotlib
+                    cm_name = "gist_rainbow"
+                elif self.colormap.value == LINES:
+                    # Lines missing from matplotlib and not much like it,
+                    # Pretty boring palette anyway, hence
+                    cm_name = "Pastel1"
+                elif self.colormap.value == WHITE:
+                    # White missing from matplotlib, it's just a colormap
+                    # of all completely white... not even different kinds of
+                    # white. And, isn't white just a uniform sampling of
+                    # frequencies from the spectrum?
+                    cm_name = "Spectral"
+                else:
+                    cm_name = self.colormap.value
+                cm = matplotlib.cm.get_cmap(cm_name)
+                mapper = matplotlib.cm.ScalarMappable(cmap=cm)
+                pixel_data[mask, :] += \
+                    mapper.to_rgba(renumber_labels_for_display(labels))[mask, :3]
+                alpha[mask] += 1
+            elif self.image_mode == IM_UINT16:
+                pixel_data[mask] = labels[mask]
+                alpha[mask] = 1
+                convert = False
+        mask = alpha > 0
+        if self.image_mode == IM_BINARY:
+            pass
+        elif self.image_mode == IM_COLOR:
+            pixel_data[mask, :] = pixel_data[mask, :] / alpha[mask][:, np.newaxis]
+        else:
+            pixel_data[mask] = pixel_data[mask] / alpha[mask]
         image = cpi.Image(pixel_data, parent_image = objects.parent_image,
                           convert = convert)
         workspace.image_set.add(self.image_name.value, image)
-
         if self.show_window:
-            workspace.display_data.labels = labels
+            workspace.display_data.ijv = objects.ijv
             workspace.display_data.pixel_data = pixel_data
 
     def display(self, workspace, figure):
         labels = workspace.display_data.labels
         pixel_data = workspace.display_data.pixel_data
         figure.set_subplots((2, 1))
-        figure.subplot_imshow_labels(0, 0, labels,
-                                     "Original: %s" % self.object_name.value)
+        figure.subplot_imshow_ijv(
+            0, 0, workspace.display_data.ijv,
+            shape = workspace.display_data.pixel_data.shape[:2],
+                title = "Original: %s"%self.object_name.value)
         if self.image_mode == IM_BINARY:
             figure.subplot_imshow_bw(1, 0, pixel_data,
                                             self.image_name.value,

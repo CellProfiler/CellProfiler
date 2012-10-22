@@ -16,6 +16,7 @@ __version__="$Revision$"
 
 import base64
 import numpy as np
+from scipy.sparse.coo import coo_matrix
 from StringIO import StringIO
 import unittest
 import zlib
@@ -159,3 +160,84 @@ class TestConvertObjectsToImage(unittest.TestCase):
         expected = np.reshape(np.arange(256),(16,16))
         self.assertTrue(np.all(pixel_data== expected))
         
+    def make_workspace_ijv(self):
+        module = C.ConvertToImage()
+        shape = (14, 16)
+        r = np.random.RandomState()
+        r.seed(0)
+        i = r.randint(0, shape[0], size = np.prod(shape))
+        j = r.randint(0, shape[1], size = np.prod(shape))
+        v = r.randint(1, 8, size = np.prod(shape))
+        order = np.lexsort((i, j, v))
+        ijv = np.column_stack((i, j, v))
+        ijv = ijv[order, :]
+        same = np.all(ijv[:-1, :] == ijv[1:, :], 1)
+        ijv = ijv[~same, :]
+
+        pipeline = cpp.Pipeline()
+        object_set = cpo.ObjectSet()
+        image_set_list = cpi.ImageSetList()
+        image_set = image_set_list.get_image_set(0)
+        workspace = cpw.Workspace(pipeline,
+                                  module,
+                                  image_set,
+                                  object_set,
+                                  cpmeas.Measurements(),
+                                  image_set_list)
+        objects = cpo.Objects()
+        objects.set_ijv(ijv, shape)
+        object_set.add_objects(objects, OBJECTS_NAME)
+        self.assertGreater(len(objects.get_labels()), 1)
+        module.image_name.value = IMAGE_NAME
+        module.object_name.value = OBJECTS_NAME
+        return (workspace, module, ijv)
+        
+    def test_03_01_binary_ijv(self):
+        workspace, module, ijv = self.make_workspace_ijv()
+        self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
+        module.image_mode.value = C.IM_BINARY
+        module.run(workspace)
+        pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
+        self.assertEqual(len(np.unique(ijv[:, 0] + ijv[:, 1] * pixel_data.shape[0])),
+                         np.sum(pixel_data))
+        self.assertTrue(np.all(pixel_data[ijv[:, 0],ijv[:, 1]]))
+        
+    def test_03_02_gray_ijv(self):
+        workspace, module, ijv = self.make_workspace_ijv()
+        self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
+        module.image_mode.value = C.IM_GRAYSCALE
+        module.run(workspace)
+        pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
+        
+        counts = coo_matrix((np.ones(ijv.shape[0]), ijv[:, :2])).toarray()
+        self.assertTrue(np.all(pixel_data[counts == 0] == 0))
+        pd_values = np.unique(pixel_data)
+        pd_labels = np.zeros(pixel_data.shape, int)
+        for i in range(1, len(pd_values)):
+            pd_labels[pixel_data == pd_values[i]] = i
+        
+        pd_ok = np.zeros(pixel_data.shape, bool)
+        ok = pd_labels[ijv[:, 0], ijv[:, 1]] == ijv[:, 2]
+        pd_ok[ijv[ok, 0], ijv[ok, 1]] = True
+        self.assertTrue(np.all(pd_ok[counts > 0]))
+        
+    def test_03_03_color_ijv(self):
+        workspace, module, ijv = self.make_workspace_ijv()
+        self.assertTrue(isinstance(module, C.ConvertObjectsToImage))
+        module.image_mode.value = C.IM_COLOR
+        module.run(workspace)
+        pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
+        #
+        # convert the labels into individual bits (1, 2, 4, 8)
+        # the labels matrix is a matrix of bits that are on
+        #
+        vbit = 2 ** (ijv[:, 2] - 1)
+        vbit_color = np.zeros((np.max(vbit) * 2, 3))
+        bits = coo_matrix((vbit, (ijv[:, 0], ijv[:, 1]))).toarray()
+        #
+        # Get some color for every represented bit combo
+        #
+        vbit_color[bits[ijv[:, 0], ijv[:,1]], :] = pixel_data[ijv[:, 0], ijv[:,1], :]
+        
+        self.assertTrue(np.all(pixel_data == vbit_color[bits, :]))
+                

@@ -209,15 +209,17 @@ class TestConvertObjectsToImage(unittest.TestCase):
         module.run(workspace)
         pixel_data = workspace.image_set.get_image(IMAGE_NAME).pixel_data
         
-        counts = coo_matrix((np.ones(ijv.shape[0]), ijv[:, :2])).toarray()
+        counts = coo_matrix((np.ones(ijv.shape[0]), (ijv[:, 0], ijv[:, 1]))).toarray()
         self.assertTrue(np.all(pixel_data[counts == 0] == 0))
         pd_values = np.unique(pixel_data)
         pd_labels = np.zeros(pixel_data.shape, int)
         for i in range(1, len(pd_values)):
             pd_labels[pixel_data == pd_values[i]] = i
         
+        dest_v = np.zeros(np.max(ijv[:, 2] + 1), int)
+        dest_v[ijv[:, 2]] = pd_labels[ijv[:, 0], ijv[:, 1]]
         pd_ok = np.zeros(pixel_data.shape, bool)
-        ok = pd_labels[ijv[:, 0], ijv[:, 1]] == ijv[:, 2]
+        ok = pd_labels[ijv[:, 0], ijv[:, 1]] == dest_v[ijv[:, 2]]
         pd_ok[ijv[ok, 0], ijv[ok, 1]] = True
         self.assertTrue(np.all(pd_ok[counts > 0]))
         

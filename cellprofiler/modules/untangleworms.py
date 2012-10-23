@@ -841,7 +841,7 @@ class UntangleWorms(cpm.CPModule):
                     colormap = cpprefs.get_default_colormap()
                 if len(ijv) == 0:
                     ishape = image.pixel_data.shape
-                    outline_pixels = np.zeros((ishape[0],ishape[1], 3), int)
+                    outline_pixels = np.zeros((ishape[0],ishape[1], 3))
                 else:
                     my_map = ScalarMappable(cmap = colormap)
                     colors = my_map.to_rgba(np.unique(ijv[:,2]))

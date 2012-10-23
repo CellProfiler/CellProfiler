@@ -16,6 +16,7 @@ import logging
 import sys
 import os
 import numpy as np
+from cStringIO import StringIO
 import tempfile
 #
 # CellProfiler expects NaN as a result during calculation
@@ -354,11 +355,16 @@ try:
     else:
         image_set_start = None
     
+    image_set_numbers = None
     if not options.last_image_set is None:
         if not options.last_image_set.isdigit():
             raise ValueError("The --last-image-set option takes a numeric argument")
         else:
             image_set_end = int(options.last_image_set)
+            if image_set_start is None:
+                image_set_numbers = np.arange(1, image_set_end+1)
+            else:
+                image_set_numbers = np.arange(image_set_start, image_set_end+1)
     else:
         image_set_end = None
     
@@ -391,7 +397,7 @@ try:
             last_success = time.time() # timeout checking for distributed workers.
         continue_looping = True # for distributed workers
         while continue_looping:
-            from cellprofiler.pipeline import Pipeline, EXIT_STATUS
+            from cellprofiler.pipeline import Pipeline, EXIT_STATUS, M_PIPELINE
             import cellprofiler.measurements as cpmeas
             continue_looping = False # distributed workers reset this, below
             pipeline = Pipeline()
@@ -399,12 +405,21 @@ try:
             try:
                 import h5py
                 if h5py.is_hdf5(options.pipeline_filename):
-                    initial_measurements = cpmeas.load_measurements(options.pipeline_filename)
+                    initial_measurements = cpmeas.load_measurements(
+                        options.pipeline_filename,
+                        image_numbers=image_set_numbers)
             except:
                 logging.root.info("Failed to load measurements from pipeline")
             if options.worker_mode_URL is None:
                 # normal behavior
-                pipeline.load(options.pipeline_filename)
+                if initial_measurements is not None:
+                    pipeline_text = \
+                        initial_measurements.get_experiment_measurement(
+                            M_PIPELINE)
+                    pipeline_text = pipeline_text.encode('us-ascii')
+                    pipeline.load(StringIO(pipeline_text))
+                else:
+                    pipeline.load(options.pipeline_filename)
             else:
                 # distributed worker
                 continue_looping = True

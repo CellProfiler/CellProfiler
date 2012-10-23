@@ -111,7 +111,8 @@ class HDF5Dict(object):
                  top_level_group_name = "Measurements",
                  run_group_name = time.strftime("%Y-%m-%d-%H-%m-%S"),
                  is_temporary = False,
-                 copy = None):
+                 copy = None,
+                 image_numbers = None):
         self.is_temporary = is_temporary
         self.filename = hdf5_filename
         logger.debug("HDF5Dict.__init__(): %s, temporary=%s, copy=%s", self.filename, self.is_temporary, copy)
@@ -145,17 +146,87 @@ class HDF5Dict(object):
         self.must_exist = False
         self.chunksize = 1024
         if copy is not None:
-            for object_name in copy.keys():
-                object_group = copy[object_name]
-                self.top_group.copy(object_group, self.top_group)
-                for feature_name in object_group.keys():
-                    # some measurement objects are written at a higher level, and don't
-                    # have an index (e.g. Relationship).
-                    if 'index' in object_group[feature_name].keys():
-                        d = self.indices[object_name, feature_name] = {}
-                        hdf5_index = object_group[feature_name]['index'][:]
-                        for num_idx, start, stop in hdf5_index:
-                            d[num_idx] = slice(start, stop)
+            if image_numbers is None:
+                for object_name in copy.keys():
+                    object_group = copy[object_name]
+                    self.top_group.copy(object_group, self.top_group)
+                    for feature_name in object_group.keys():
+                        # some measurement objects are written at a higher level, and don't
+                        # have an index (e.g. Relationship).
+                        if 'index' in object_group[feature_name].keys():
+                            d = self.indices[object_name, feature_name] = {}
+                            hdf5_index = object_group[feature_name]['index'][:]
+                            for num_idx, start, stop in hdf5_index:
+                                d[num_idx] = slice(start, stop)
+            else:
+                image_numbers = np.array(image_numbers)
+                mask = np.zeros(np.max(image_numbers)+1, bool)
+                mask[image_numbers] = True
+                for object_name in copy.keys():
+                    src_object_group = copy[object_name]
+                    if object_name == 'Experiment':
+                        self.top_group.copy(src_object_group, self.top_group)
+                        for feature_name in src_object_group.keys():
+                            d = self.indices[object_name, feature_name] = {}
+                            hdf5_index = src_object_group[feature_name]['index'][:]
+                            for num_idx, start, stop in hdf5_index:
+                                d[num_idx] = slice(start, stop)
+                        continue
+                    dest_object_group = self.top_group.require_group(object_name)
+                    for feature_name in src_object_group.keys():
+                        src_feature_group = src_object_group[feature_name]
+                        if 'index' not in src_object_group[feature_name]:
+                            dest_object_group.copy(src_feature_group, dest_object_group)
+                            continue
+                        src_index_dataset = src_feature_group['index'][:]
+                        src_image_numbers = src_index_dataset[:, 0]
+                        max_image_number = np.max(src_image_numbers)
+                        if max_image_number >= len(mask):
+                            tmp = np.zeros(max_image_number+1, bool)
+                            tmp[:len(mask)] = mask
+                            mask = tmp
+                        src_dataset = src_feature_group['data']
+                        src_index_dataset = \
+                            src_index_dataset[mask[src_index_dataset[:,0]], :]
+                        #
+                        # Almost always, the fast case should work. We can
+                        # copy a data chunk from one to the other without
+                        # having to restructure.
+                        #
+                        found_bad_case = False
+                        for (prev_num_idx, prev_start, prev_stop),\
+                            (next_num_idx, next_start, next_stop) in zip(
+                                src_index_dataset[:-1], src_index_dataset[1:]):
+                            if prev_stop != next_start:
+                                found_bad_case = True
+                                break
+                        if found_bad_case:
+                            for num_idx, start, stop in src_index_dataset:
+                                self[object_name, feature_name, num_idx] =\
+                                    src_dataset[start:stop]
+                        else:
+                            src_off = src_index_dataset[0, 1]
+                            src_stop = src_index_dataset[-1, 2]
+                            dest_index_dataset = src_index_dataset.copy()
+                            dest_index_dataset[:, 1:] -= src_off
+                            d = dict([(num_idx, slice(start-src_off, stop-src_off))
+                                      for num_idx, start, stop in src_index_dataset])
+                            self.indices[object_name, feature_name] = d
+                            dest_feature_group = dest_object_group.require_group(feature_name)
+                            dest_feature_group.create_dataset(
+                                'index', data = dest_index_dataset.astype(int),
+                                compression = None, shuffle=True, 
+                                chunks=(self.chunksize, 3), 
+                                maxshape=(None, 3))
+                            dest_feature_group.create_dataset(
+                                'data', data = src_dataset[src_off:src_stop],
+                                compression = 'gzip', shuffle=True,
+                                chunks = (self.chunksize, ), 
+                                maxshape = (None, ))                                
+                            
+                            
+                        
+                
                             
     @staticmethod
     def can_unlink_temporary():
@@ -478,3 +549,34 @@ if __name__ == '__main__':
     h['Object1', 'objfeature1', 1] = [1, 2, 3, 5, 6]
     h['Object1', 'objfeature1', 1] = [9, 4.0, 2.5]
     print     h['Object1', 'objfeature1', 1]
+
+    def randtext():
+        return "".join(["ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"[np.random.randint(0,52)] for _ in range(np.random.randint(5, 8))])
+
+    for i in range(1, 20):
+        h["Image", "t1", i] = randtext()
+        
+    for i in np.random.permutation(np.arange(1, 20)):
+        h["Image", "t2", i] = randtext()
+    
+    for i in range(3, 20):
+        h['Image', 'f1', i] = np.random.randint(0, 100)
+        h['Object1', 'objfeature1', i] = np.random.randint(0, 100, size=5)
+        
+    for i in np.random.permutation(np.arange(3, 20)):
+        h['Image', 'f2', i] = np.random.randint(0, 100)
+        h['Object1', 'objfeature2', i] = np.random.randint(0, 100, size=5)
+        
+    hdest = HDF5Dict('temp1.hdf5', copy = h.top_group, 
+                     image_numbers=np.arange(4,15))
+    for i in range(4, 15):
+        for object_name, feature_name in (("Image", "f1"),
+                                          ("Image", "f2"),
+                                          ("Image", "t1"),
+                                          ("Image", "t2"),
+                                          ("Object1", "objfeature1"),
+                                          ("Object1", "objfeature2")):
+            src = np.atleast_1d(h[object_name, feature_name, i])
+            dest = np.atleast_1d(hdest[object_name, feature_name, i])
+            np.testing.assert_array_equal(src, dest)
+    

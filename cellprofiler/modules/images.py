@@ -43,10 +43,7 @@ class Images(cpm.CPModule):
     
     def create_settings(self):
         self.workspace = None
-        self.file_collection_display = cps.FileCollectionDisplay(
-            "", "", self.on_drop, self.on_remove, 
-            self.get_path_info, self.on_menu_command,
-            self.handle_walk_pause_resume_stop)
+        self.path_list_display = cps.PathListDisplay()
         predicates = [FilePredicate(),
                       DirectoryPredicate(),
                       ExtensionPredicate()]
@@ -56,251 +53,6 @@ class Images(cpm.CPModule):
             
         self.filter = cps.Filter("Filter", predicates, 
                                  'or (file does contain "")')
-        self.do_filter = cps.DoSomething("","Apply filter", 
-                                         self.apply_filter)
-    
-    def on_walk_completed(self):
-        if self.workspace is not None:
-            self.file_collection_display.update_ui(
-                self.file_collection_display.BKGND_STOP)
-            
-    def on_walk_callback(self, dirpath, dirnames, filenames):
-        '''Handle an iteration of file walking'''
-        if self.workspace is not None:
-            hdf_file_list = self.workspace.get_file_list()
-            file_list = [pathname2url(os.path.join(dirpath, filename))
-                         for filename in filenames]
-            hdf_file_list.add_files_to_filelist(file_list)
-            modpath = self.make_modpath_from_path(dirpath)
-            modlist = self.add_files_to_modlist(modpath, filenames)
-            self.file_collection_display.add(modlist)
-            
-    def on_activated(self, workspace):
-        '''The module is gui-activated
-        
-        workspace - the user's workspace
-        '''
-        self.workspace = workspace
-        assert isinstance(workspace, cpw.Workspace)
-        self.initialize_file_collection_display(workspace)
-        
-    def on_deactivated(self):
-        '''The module is no longer in the GUI'''
-        self.workspace = None
-        
-    def on_drop(self, pathnames, check_for_directories):
-        '''Called when the UI is asking to add files or directories'''
-        if self.workspace is not None:
-            modlist = []
-            urls = []
-            for pathname in pathnames:
-                # Hack - convert drive names to lower case in
-                #        Windows to normalize them.
-                if (sys.platform == 'win32' and pathname[0].isalpha()
-                    and pathname[1] == ":"):
-                    pathname = os.path.normpath(pathname[:2]) + pathname[2:]
-                
-                if (pathname.startswith("http:") or 
-                    pathname.startswith("https:") or
-                    pathname.startswith("ftp:")):
-                    modpath = self.url_to_modpath(pathname)
-                    self.add_files_to_modlist(modpath[:-1], [modpath[-1]],
-                                              modlist)
-                    urls.append(pathname)
-                elif (not check_for_directories) or os.path.isfile(pathname):
-                    urls.append(pathname2url(pathname))
-                    modpath = self.make_modpath_from_path(pathname)
-                    self.add_files_to_modlist(modpath[:-1], [modpath[-1]],
-                                              modlist)
-                elif os.path.isdir(pathname):
-                    W.walk_in_background(pathname,
-                                         self.on_walk_callback,
-                                         self.on_walk_completed)
-            if len(modlist) > 0:
-                self.file_collection_display.add(modlist)
-            if len(urls) > 0 and self.workspace.file_list is not None:
-                self.workspace.file_list.add_files_to_filelist(urls)
-                
-            
-    def on_remove(self, mods):
-        '''Called when the UI is asking to remove files from the list
-        
-        mods - two-tuple modpaths (see docs for FileCollectionDisplay)
-        '''
-        if self.workspace is not None:
-            modpaths = sum([self.make_parts_list_from_mod(mod)
-                            for mod in mods], [])
-            urls = [self.modpath_to_url(modpath) for modpath in modpaths]
-            hdf_file_list = self.workspace.get_file_list()
-            hdf_file_list.remove_files_from_filelist(urls)
-            self.file_collection_display.remove(mods)
-            
-    ext_dict = None
-    def get_path_info(self, modpath):
-        '''Get a descriptive name, the image type, the tooltip and menu for a path'''
-        if self.ext_dict is None:
-            self.ext_dict = {}
-            #Order is important here, last in list will be the winner
-            for (exts, node_type, menu) in (
-                (SUPPORTED_IMAGE_EXTENSIONS, 
-                 self.file_collection_display.NODE_MONOCHROME_IMAGE,
-                 (self.MI_SHOW_IMAGE, self.MI_REMOVE)),
-                (SUPPORTED_MOVIE_EXTENSIONS,
-                 self.file_collection_display.NODE_MOVIE,
-                 (self.MI_SHOW_IMAGE, self.MI_REMOVE)),
-                ((".tif", ".ome.tiff", ".tiff"),
-                 self.file_collection_display.NODE_MONOCHROME_IMAGE,
-                 (self.MI_SHOW_IMAGE, self.MI_REMOVE)),
-                ((".csv",), self.file_collection_display.NODE_CSV,
-                 (self.MI_REMOVE,))):
-                for ext in exts:
-                    self.ext_dict[ext] = (node_type, menu)
-                
-        hdf_file_list = self.workspace.get_file_list()
-        pathtype = hdf_file_list.get_type(self.modpath_to_url(modpath))
-        if pathtype == hdf_file_list.TYPE_DIRECTORY:
-            pathtype = self.file_collection_display.NODE_DIRECTORY
-            menu = [self.MI_REMOVE, self.MI_REFRESH]
-        else:
-            # handle double-dot extensions: foo.bar.baz
-            start = 0
-            filename = modpath[-1]
-            pathtype = self.file_collection_display.NODE_FILE
-            menu = (self.MI_REMOVE,)
-            while True:
-                start = filename.find(".", start)
-                if start == -1:
-                    break
-                x = self.ext_dict.get(filename[start:].lower(), None)
-                if x is not None:
-                    pathtype, menu = x
-                    break
-                start += 1
-        return modpath[-1], pathtype, modpath[-1], menu
-    
-    def on_menu_command(self, path, command):
-        '''Context menu callback
-        
-        This is called when the user picks a command from a context menu.
-        
-        path - a list of path parts to the picked item
-        
-        command - the command from the list supplied by get_path_info. None
-                  means default = view image.
-        '''
-        if path[0] in ("http", "https", "ftp"):
-            url = path[0] + ":" + "/".join(path[1:])
-            pathname = url
-        else:
-            pathname = os.path.join(*path)
-            url = pathname2url(pathname)
-        needs_raise_after = False
-        if command is None:
-            hdf_file_list = self.workspace.get_file_list()
-            if hdf_file_list.get_type(url) == hdf_file_list.TYPE_FILE:
-                command = self.MI_SHOW_IMAGE
-                #%$@ assuming this is a double click, the new frame
-                #    will be activated and then supplementary processing
-                #    will set the focus back to the tree control, bringing
-                #    the main window back to the front. Hence, we fight back
-                #    by raising the window after the GUI has finished
-                #    handling all events.
-                #    Yes, I tried preventing further processing of events
-                #    by the parent. Yes, this code is a disgusting hack.
-                #    Yes, I hate the way GUI code turns your application
-                #    into a giant pile of undecipherable spaghetti too.
-                needs_raise_after = True
-            else:
-                return False
-            
-        if command == self.MI_SHOW_IMAGE:
-            from cellprofiler.gui.cpfigure import CPFigureFrame
-            from subimager.client import get_image
-            filename = path[-1]
-            try:
-                image = get_image(url)
-            except Exception, e:
-                from cellprofiler.gui.errordialog import display_error_dialog
-                display_error_dialog(None, e, None, 
-                                     "Failed to load %s" % pathname)
-            frame = CPFigureFrame(subplots = (1,1))
-            if image.ndim == 2:
-                frame.subplot_imshow_grayscale(0, 0, image, title = filename)
-            else:
-                frame.subplot_imshow_color(0, 0, image, title = filename)
-            frame.Refresh()
-            if needs_raise_after:
-                #%$@ hack hack hack
-                import wx
-                wx.CallAfter(lambda: frame.Raise())
-            return True
-        elif command == self.MI_REFRESH:
-            hdf_file_list = self.workspace.file_list
-            modlist = []
-            if hdf_file_list.get_type(url) == hdf_file_list.TYPE_DIRECTORY:
-                urls = hdf_file_list.get_filelist(url)
-            else:
-                urls = [url]
-            for url in urls:
-                self.add_modpath_to_modlist(self.url_to_modpath(url), modlist)
-            self.on_remove(modlist)
-            if command == self.MI_REFRESH:
-                W.walk_in_background(pathname,
-                                     self.on_walk_callback,
-                                     self.on_walk_completed)
-            return True
-    
-    def handle_walk_pause_resume_stop(self, command):
-        if self.pipeline is not None:
-            if command == self.file_collection_display.BKGND_PAUSE:
-                self.pipeline.file_walker.pause()
-            elif command == self.file_collection_display.BKGND_RESUME:
-                self.pipeline.file_walker.resume()
-            elif command == self.file_collection_display.BKGND_STOP:
-                self.pipeline.file_walker.stop()
-            elif self.pipeline.file_walker.get_state() == W.THREAD_PAUSE:
-                return self.file_collection_display.BKGND_PAUSE
-            elif (self.pipeline.file_walker.get_state() in 
-                  (W.THREAD_STOP, W.THREAD_STOPPING)):
-                return self.file_collection_display.BKGND_STOP
-            else:
-                return self.file_collection_display.BKGND_RESUME
-        
-    @classmethod
-    def add_modpath_to_modlist(self, modpath, modlist = None):
-        if modlist is None:
-            modlist = []
-        if len(modpath) == 1:
-            modlist.append(modpath[0])
-            return modlist
-        idxs = [i for i, mod in enumerate(modlist)
-                if isinstance(mod, tuple) and len(mod) == 2 and
-                mod[0] == modpath[0]]
-        if len(idxs) == 0:
-            modlist.append((modpath[0], self.add_modpath_to_modlist(modpath[1:])))
-            return modlist
-        idx = idxs[0]
-        self.add_modpath_to_modlist(modpath[1:], modlist[idx][1])
-        return modlist
-        
-    @classmethod
-    def add_files_to_modlist(self, modpath, files, modlist = None):
-        '''Add files to the tip of a modpath'''
-        if modlist is None:
-            modlist = []
-        if len(modpath) == 1:
-            modlist.append((modpath[0], files))
-            return modlist
-        idxs = [i for i, mod in enumerate(modlist)
-                if isinstance(mod, tuple) and len(mod) == 2 and
-                mod[0] == modpath[0]]
-        if len(idxs) == 0:
-            modlist.append((modpath[0], 
-                            self.add_files_to_modlist(modpath[1:], files)))
-            return modlist
-        idx = idxs[0]
-        self.add_files_to_modlist(modpath[1:], files, modlist[idx][1])
-        return modlist
     
     @staticmethod
     def modpath_to_url(modpath):
@@ -331,64 +83,6 @@ class Images(cpm.CPModule):
             path = new_path
         return parts
     
-    def initialize_file_collection_display(self, workspace):
-        d = {}
-        hdf_file_list = workspace.file_list
-        if hdf_file_list is None:
-            return
-        def fn(root, directories, files):
-            if len(files) == 0:
-                return
-            if root.lower().startswith("file:") and len(root) > 5:
-                path = urllib.url2pathname(root[5:])
-                parts = []
-                while True:
-                    new_path, part = os.path.split(path)
-                    if len(new_path) == 0 or len(part) == 0:
-                        parts.append(path)
-                        break
-                    parts.append(part)
-                    path = new_path
-                dd = d
-                for part in reversed(parts[1:]):
-                    if not (dd.has_key(part) and dd[part] is not None):
-                        dd[part] = {}
-                    dd = dd[part]
-                dd[parts[0]] = dict(
-                    [(urllib.url2pathname(f), None) for f in files])
-            else:
-                schema, path = hdf_file_list.split_url(root)
-                parts = [schema] + [urllib.unquote(part) for part in path]
-                dd = d
-                for part in parts[:-1]:
-                    if not (dd.has_key(part) and dd[part] is not None):
-                        dd[part] = {}
-                    dd= dd[part]
-                dd[parts[-1]] = dict([(urllib.unquote(f), None) for f in files])
-        hdf_file_list.walk(fn)
-        mods = self.make_mods_from_tree(d)
-        self.file_collection_display.initialize_tree(mods)
-        self.apply_filter()
-        
-    def make_mods_from_tree(self, tree):
-        '''Create a list of FileCollectionDisplay mods from a tree'''
-        return [k if tree[k] is None
-                else (k, self.make_mods_from_tree(tree[k]))
-                for k in tree.keys()]
-    
-    @classmethod
-    def make_parts_list_from_mod(self, mod):
-        '''Convert a mod to a collection of parts lists
-        
-        A mod has the form (root, [...]). Convert this recursively
-        to get lists starting with "root" for each member of the list.
-        '''
-        if cps.FileCollectionDisplay.is_leaf(mod):
-            return [[mod]]
-        root, modlist = mod
-        return sum([[[root]+ x for x in self.make_parts_list_from_mod(submod)]
-                    for submod in modlist],[])
-    
     @classmethod
     def make_modpath_from_path(cls, path):
         result = []
@@ -399,32 +93,6 @@ class Images(cpm.CPModule):
             result.insert(0, part)
             path = new_path
             
-    def apply_filter(self):
-        if not self.wants_filter:
-            def all_mods(tree):
-                result = []
-                for key in tree.keys():
-                    if key is None:
-                        continue
-                    if isinstance(tree[key], bool):
-                        result.append(key)
-                    else:
-                        result.append((key, all_mods(tree[key])))
-                return result
-            keep = all_mods(self.file_collection_display.file_tree)
-            self.file_collection_display.mark(keep, True)
-        else:
-            keep = []
-            dont_keep = []
-            operation_id = uuid.uuid4()
-            self.filter_tree(self.file_collection_display.file_tree, 
-                             keep, dont_keep,
-                             operation_id, 0, 
-                             self.file_collection_display.node_count())
-            self.file_collection_display.mark(keep, True)
-            self.file_collection_display.mark(dont_keep, False)
-            cpprefs.report_progress(operation_id,  1, None)
-            
     def filter_url(self, url):
         '''Return True if a URL passes the module's filter'''
         if not self.wants_filter:
@@ -434,46 +102,14 @@ class Images(cpm.CPModule):
             cps.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, self))
         return match or match is None
     
-    def filter_tree(self, tree, keep, dont_keep,
-                    operation_id, count, total, modpath = []):
-        for key in sorted(tree.keys()):
-            if key is None:
-                continue
-            subpath = modpath + [key]
-            if isinstance(tree[key], bool):
-                display_name, node_type, tooltip, menu = self.get_path_info(
-                    subpath)
-                cpprefs.report_progress(
-                    operation_id,
-                    float(count) / float(total),
-                    "Filtering %s" % display_name)
-                match = self.filter.evaluate((node_type, subpath, self))
-                if match is None or match:
-                    keep.append(key)
-                else:
-                    dont_keep.append(key)
-            else:
-                keep_node = (key, [])
-                keep.append(keep_node)
-                dont_keep_node = (key, [])
-                dont_keep.append(dont_keep_node)
-                self.filter_tree(tree[key], keep_node[1], dont_keep_node[1],
-                                 operation_id, count, total,
-                                 subpath)
-            count += 1
-    
     def settings(self):
-        return [self.file_collection_display, self.wants_filter, self.filter]
+        return [self.path_list_display, self.wants_filter, self.filter]
     
     def visible_settings(self):
-        result = [self.file_collection_display, self.wants_filter]
+        result = [self.path_list_display, self.wants_filter]
         if self.wants_filter:
-            result += [self.filter, self.do_filter]
+            result += [self.filter]
         return result
-            
-    def on_setting_changed(self, setting, pipeline):
-        if setting is self.wants_filter and not self.wants_filter:
-            self.apply_filter()
             
     def change_causes_prepare_run(self, setting):
         '''Return True if a change to the settings requires a call to prepare_run

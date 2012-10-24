@@ -34,6 +34,7 @@ from cellprofiler.gui.preferencesview import PreferencesView
 from cellprofiler.gui.directoryview import DirectoryView
 from cellprofiler.gui.datatoolframe import DataToolFrame
 from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
+from cellprofiler.gui.pathlist import PathListCtrl
 import cellprofiler.gui.html
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.utilities.version as version
@@ -135,6 +136,12 @@ class CPFrame(wx.Frame):
         self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__right_win,-1,style=wx.SUNKEN_BORDER | wx.TAB_TRAVERSAL)
         self.__module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__module_panel.SetToolTipString("The settings panel contains the available options for each module.")
+        self.__path_list_ctrl = PathListCtrl(self.__module_panel)
+        self.__path_list_filter_checkbox = wx.CheckBox(
+            self.__module_panel,
+            label = "Show filtered files")
+        self.__path_list_button = wx.Button(self.__module_panel,
+                                            label = "Update filter")
         self.__preferences_panel = wx.Panel(self.__right_win,-1)
         self.__preferences_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__preferences_panel.SetToolTipString("The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
@@ -597,7 +604,14 @@ All rights reserved."""
         self.__pipeline_list_view.attach_to_pipeline(self.__pipeline,self.__pipeline_controller)
         self.__pipeline_controller.attach_to_test_controls_panel(self.__pipeline_test_panel)
         self.__pipeline_controller.attach_to_module_controls_panel(self.__module_controls_panel)
-        self.__module_view = ModuleView(self.__module_panel,self.__workspace)
+        self.__pipeline_controller.attach_to_path_list_ctrl(
+            self.__path_list_ctrl, self.__path_list_button)
+        self.__module_view = ModuleView(
+            self.__module_panel,
+            self.__workspace,
+            path_list_ctrl = self.__path_list_ctrl,
+            path_list_filter_checkbox = self.__path_list_filter_checkbox,
+            path_list_update_button = self.__path_list_button)
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view((self.__module_view))
         self.__preferences_view = PreferencesView(self.__preferences_panel)

@@ -40,6 +40,7 @@ from treecheckboxdialog import TreeCheckboxDialog
 from metadatactrl import MetadataControl
 from namesubscriber import NameSubcriberComboBox
 import cellprofiler.utilities.walk_in_background as W
+import cellprofiler.gui.pathlist as PL
 
 
 ERROR_COLOR = wx.RED
@@ -232,7 +233,19 @@ class ModuleView:
     gives the ui for editing the setting.
     """
     
-    def __init__(self, module_panel, workspace, as_datatool=False):
+    def __init__(self, module_panel, workspace, 
+                 as_datatool=False, 
+                 path_list_ctrl = None,
+                 path_list_filter_checkbox = None,
+                 path_list_update_button = None):
+        '''Constructor
+        
+        module_panel - the top-level panel used by the view
+        workspace - the current workspace
+        path_list_ctrl - the path_list_ctrl displays the current list of files
+        path_list_filter_checkbox - check this to show/hide filtered files
+        path_list_update_button - click this to update the filter status of files
+        '''
         pipeline = workspace.pipeline
         self.__workspace = workspace
         self.refresh_pending = False
@@ -242,6 +255,9 @@ class ModuleView:
         #
         #############################################
         self.top_panel = module_panel
+        self.path_list_ctrl = path_list_ctrl
+        self.path_list_filter_checkbox = path_list_filter_checkbox
+        self.path_list_display_setting = None
         self.notes_panel = wx.Panel(self.top_panel)
         self.__module_panel = wx.Panel(self.top_panel)
         self.__sizer = ModuleSizer(0, 3)
@@ -254,6 +270,19 @@ class ModuleView:
         self.notes_panel.Hide()
         if not as_datatool:
             self.top_level_sizer.Add(self.notes_panel, 0, wx.EXPAND | wx.ALL, 4)
+        if path_list_ctrl is not None:
+            self.path_list_sizer = wx.BoxSizer(wx.VERTICAL)
+            self.top_level_sizer.Add(self.path_list_sizer, 1, wx.EXPAND | wx.ALL, 4)
+            self.path_list_sizer.Add(path_list_ctrl, 1, wx.EXPAND)
+            self.path_list_sizer.AddSpacer(2)
+            subsizer = wx.BoxSizer(wx.HORIZONTAL)
+            subsizer.Add(self.path_list_filter_checkbox)
+            subsizer.AddSpacer(5)
+            subsizer.Add(path_list_update_button)
+            self.path_list_sizer.Add(subsizer)
+            self.top_level_sizer.Hide(self.path_list_sizer)
+            self.path_list_filter_checkbox.Bind(
+                wx.EVT_CHECKBOX, self.on_path_list_filter_checkbox_event)
         self.top_level_sizer.Add(self.module_panel, 1, wx.EXPAND | wx.ALL, 4)
 
         self.__pipeline = pipeline
@@ -358,6 +387,9 @@ class ModuleView:
             self.__controls     = []
             self.__static_texts = []
             data                = []
+            if self.path_list_ctrl is not None:
+                self.top_level_sizer.Hide(self.path_list_sizer)
+                self.path_list_display_setting = None
             if reselecting:
                 self.hide_settings()
             else:
@@ -380,6 +412,14 @@ class ModuleView:
             #
             #################################
             for i, v in enumerate(settings):
+                if isinstance(v, cps.PathListDisplay):
+                    if self.path_list_ctrl is not None:
+                        should_show = v.should_show_filter()
+                        self.top_level_sizer.Show(self.path_list_sizer)
+                        self.path_list_filter_checkbox.SetValue(should_show)
+                        self.path_list_display_setting = v
+                        self.path_list_ctrl.set_show_disabled(should_show)
+                    continue
                 flag = wx.EXPAND
                 border = 0
                 control_name = edit_control_name(v)
@@ -526,6 +566,16 @@ class ModuleView:
             self.top_panel.Refresh()
             self.__handle_change = True
 
+    def on_path_list_filter_checkbox_event(self, event):
+        '''Called when user checks checkbox to show filtered files'''
+        if self.path_list_display_setting is not None:
+            is_checked = self.path_list_filter_checkbox.IsChecked()
+            text = self.path_list_display_setting.get_proposed_text(
+                show_filtered=is_checked)
+            self.on_value_change(self.path_list_display_setting,
+                                 self.path_list_filter_checkbox,
+                                 text, event)
+            
     def make_notes_gui(self):
         '''Make the GUI elements that contain the module notes'''
         #

@@ -2328,7 +2328,8 @@ class Pipeline(object):
         self.__filtered_image_plane_details_metadata_settings = tuple()
         self.__image_plane_details_generation = file_list.generation
         self.add_image_plane_details([
-            ImagePlaneDetails(url, None, None, None) for url in urls], False)
+            ImagePlaneDetails(url.encode('utf-8'), None, None, None) 
+            for url in urls], False)
         bypass_exceptions = False
         for ipd in self.image_plane_details:
             try:

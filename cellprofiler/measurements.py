@@ -247,8 +247,9 @@ class Measurements(object):
             self.close()
 
     def close(self):
-        self.hdf5_dict.close()
-        del self.hdf5_dict
+        if hasattr(self, "hdf5_dict"):
+            self.hdf5_dict.close()
+            del self.hdf5_dict
         
     def __getitem__(self, key):
         # we support slicing the last dimension for the limited case of [..., :]

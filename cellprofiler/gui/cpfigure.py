@@ -1464,7 +1464,33 @@ def format_plate_data_as_array(plate_dict, plate_type):
             continue
         data[r,c] = val
     return data
-        
+
+def show_image(url, parent = None, needs_raise_after = True):
+    '''Show an image in a figure frame
+    
+    url - url of the image
+    parent - parent frame to this one.
+    '''
+    from subimager.client import get_image
+    filename = url[(url.rfind("/")+1):]
+    try:
+        image = get_image(url)
+    except Exception, e:
+        from cellprofiler.gui.errordialog import display_error_dialog
+        display_error_dialog(None, e, None, 
+                             "Failed to load %s" % url)
+    frame = CPFigureFrame(parent = parent, subplots = (1,1))
+    if image.ndim == 2:
+        frame.subplot_imshow_grayscale(0, 0, image, title = filename)
+    else:
+        frame.subplot_imshow_color(0, 0, image, title = filename)
+    frame.Refresh()
+    if needs_raise_after:
+        #%$@ hack hack hack
+        import wx
+        wx.CallAfter(lambda: frame.Raise())
+    return True
+    
 if __name__ == "__main__":
     import numpy as np
 

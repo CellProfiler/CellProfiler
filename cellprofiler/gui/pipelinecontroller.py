@@ -42,10 +42,12 @@ import cellprofiler.utilities.version as version
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
+from cellprofiler.modules.loadimages import pathname2url
 import cellprofiler.gui.parametersampleframe as psf
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.gui.loadsavedlg as cplsdlg
+import cellprofiler.utilities.walk_in_background as W
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -154,11 +156,30 @@ class PipelineController:
         self.__workspace.add_notification_callback(
             self.on_workspace_event)
     
-    def attach_to_pipeline_list_view(self,pipeline_list_view,):
+    def attach_to_pipeline_list_view(self, pipeline_list_view):
         """Glom onto events from the list box with all of the module names in it
         
         """
         self.__pipeline_list_view = pipeline_list_view
+        
+    def attach_to_path_list_ctrl(self, path_list_ctrl, path_list_update_button):
+        '''Attach the pipeline controller to the path_list_ctrl
+        
+        This lets the pipeline controller populate the path list as
+        it changes.
+        '''
+        self.__path_list_ctrl = path_list_ctrl
+        path_list_update_button.Bind(wx.EVT_BUTTON, self.on_update_pathlist)
+        path_list_ctrl.set_context_menu_fn(
+            self.get_pathlist_file_context_menu,
+            self.get_pathlist_folder_context_menu,
+            self.on_pathlist_file_command,
+            self.on_pathlist_folder_command)
+        path_list_ctrl.set_delete_fn(self.on_pathlist_file_delete)
+        self.path_list_drop_target = FLDropTarget(
+            self.on_pathlist_drop_files,
+            self.on_pathlist_drop_text)
+        path_list_ctrl.SetDropTarget(self.path_list_drop_target)
         
     def attach_to_module_view(self,module_view):
         """Listen for setting changes from the module view
@@ -660,6 +681,10 @@ class PipelineController:
                 
         elif isinstance(event, cpp.LoadExceptionEvent):
             self.on_load_exception_event(event)
+        elif isinstance(event, cpp.ImagePlaneDetailsAddedEvent):
+            self.on_image_plane_details_added(event)
+        elif isinstance(event, cpp.ImagePlaneDetailsRemovedEvent):
+            self.on_image_plane_details_removed(event)
         elif event.is_pipeline_modification:
             self.__dirty_pipeline = True
             self.set_title()
@@ -703,6 +728,110 @@ class PipelineController:
                          wx.YES_NO | wx.ICON_ERROR, 
                          self.__frame) == wx.NO:
             event.cancel_run = False
+            
+    def on_image_plane_details_added(self, event):
+        '''Callback from pipeline when paths are added to the pipeline'''
+        self.__path_list_ctrl.add_paths(
+            [ipd.url for ipd in event.image_plane_details])
+        
+    def on_image_plane_details_removed(self, event):
+        '''Callback from pipeline when paths are removed from the pipeline'''
+        self.__path_list_ctrl.remove_paths(
+            [ipd.url for ipd in event.image_plane_details])
+        
+    def on_update_pathlist(self, event):
+        ipds = self.__pipeline.get_filtered_image_plane_details()
+        enabled_urls = set([ipd.url for ipd in ipds])
+        disabled_urls = set(self.__path_list_ctrl.get_paths())
+        disabled_urls.difference_update(enabled_urls)
+        self.__path_list_ctrl.enable_paths(enabled_urls, True)
+        self.__path_list_ctrl.enable_paths(disabled_urls, False)
+        
+    PATHLIST_CMD_SHOW = "Show image"
+    PATHLIST_CMD_REMOVE = "Remove from list"
+    PATHLIST_CMD_REFRESH = "Refresh"
+    def get_pathlist_file_context_menu(self, paths):
+        return ((self.PATHLIST_CMD_SHOW, self.PATHLIST_CMD_SHOW),
+                (self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE))
+    
+    def on_pathlist_file_command(self, paths, cmd):
+        if cmd == self.PATHLIST_CMD_SHOW:
+            if len(paths) == 0:
+                return
+            from cellprofiler.gui.cpfigure import show_image
+            show_image(paths[0], self.__frame)
+        elif cmd == self.PATHLIST_CMD_REMOVE:
+            self.on_pathlist_file_delete(paths)
+
+    def get_pathlist_folder_context_menu(self, path):
+        return ((self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
+                (self.PATHLIST_CMD_REFRESH, self.PATHLIST_CMD_REFRESH))
+    
+    def on_pathlist_folder_command(self, path, cmd):
+        if cmd == self.PATHLIST_CMD_REMOVE:
+            paths = self.__path_list_ctrl.get_folder(
+                path, self.__path_list_ctrl.FLAG_RECURSE)
+            self.on_pathlist_file_delete(paths)
+        elif cmd == self.PATHLIST_CMD_REFRESH:
+            W.walk_in_background(path, 
+                                 self.on_walk_callback, 
+                                 self.on_walk_completed)
+    
+    def on_pathlist_file_delete(self, paths):
+        self.__pipeline.remove_image_plane_details(
+            [ cpp.ImagePlaneDetails(url, None, None, None)
+              for url in paths])
+        self.__workspace.file_list.remove_files_from_filelist(paths)
+            
+    def on_pathlist_drop_files(self, x, y, filenames):
+        urls = []
+        for pathname in filenames:
+            # Hack - convert drive names to lower case in
+            #        Windows to normalize them.
+            if (sys.platform == 'win32' and pathname[0].isalpha()
+                and pathname[1] == ":"):
+                pathname = os.path.normpath(pathname[:2]) + pathname[2:]
+            
+            if os.path.isfile(pathname):
+                urls.append(pathname2url(pathname))
+            elif os.path.isdir(pathname):
+                W.walk_in_background(pathname,
+                                     self.on_walk_callback,
+                                     self.on_walk_completed)
+        self.add_urls(urls)
+    
+    def on_pathlist_drop_text(self, x, y, text):
+        pathnames = [p.strip() for p in text.split("\n")]
+        urls = []
+        for pathname in pathnames:
+            if (pathname.startswith("http:") or 
+                pathname.startswith("https:") or
+                pathname.startswith("ftp:")):
+                urls.append(pathname)
+            else:
+                urls.append(pathname2url(pathname))
+        self.add_urls(urls)
+                
+    def add_urls(self, urls):
+        '''Add URLS to the pipeline and file list'''
+        self.__pipeline.add_image_plane_details([
+            cpp.ImagePlaneDetails(url, None, None, None)
+            for url in urls])
+        self.__workspace.file_list.add_files_to_filelist(urls)
+        
+    def on_walk_callback(self, dirpath, dirnames, filenames):
+        '''Handle an iteration of file walking'''
+        
+        hdf_file_list = self.__workspace.get_file_list()
+        file_list = [pathname2url(os.path.join(dirpath, filename))
+                     for filename in filenames]
+        hdf_file_list.add_files_to_filelist(file_list)
+        self.__pipeline.add_image_plane_details([
+            cpp.ImagePlaneDetails(url, None, None, None)
+            for url in file_list])
+        
+    def on_walk_completed(self):
+        pass
         
     def enable_module_controls_panel_buttons(self):
         #
@@ -1979,3 +2108,41 @@ class PipelineController:
         """
         return self.__pipeline.Run(self.__frame)
     
+class FLDropTarget(wx.PyDropTarget):
+    '''A generic drop target (for the path list)'''
+    def __init__(self, file_callback_fn, text_callback_fn):
+        super(self.__class__, self).__init__()
+        self.file_callback_fn = file_callback_fn
+        self.text_callback_fn = text_callback_fn
+        self.file_data_object = wx.FileDataObject()
+        self.text_data_object = wx.TextDataObject()
+        self.composite_data_object = wx.DataObjectComposite()
+        self.composite_data_object.Add(self.file_data_object, True)
+        self.composite_data_object.Add(self.text_data_object)
+        self.SetDataObject(self.composite_data_object)
+        
+    def OnDropFiles(self, x, y, filenames):
+        self.file_callback_fn(x, y, filenames)
+        
+    def OnDropText(self, x, y, text):
+        self.text_callback_fn(x, y, text)
+        
+    def OnEnter(self, x, y, d):
+        return wx.DragCopy
+        
+    def OnDragOver(self, x, y, d):
+        return wx.DragCopy
+    
+    def OnData(self, x, y, d):
+        if self.GetData():
+            df = self.composite_data_object.GetReceivedFormat().GetType()
+            if  df in (wx.DF_TEXT, wx.DF_UNICODETEXT):
+                self.OnDropText(x, y, self.text_data_object.GetText())
+            elif df == wx.DF_FILENAME:
+                self.OnDropFiles(x, y,
+                                 self.file_data_object.GetFilenames())
+        return wx.DragCopy
+        
+    def OnDrop(self, x, y):
+        return True
+        

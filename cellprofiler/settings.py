@@ -2811,6 +2811,61 @@ class FileCollectionDisplay(Setting):
         self.update_ui()
     
     show_filtered = property(get_show_filtered, set_show_filtered)
+
+class PathListDisplay(Setting):
+    '''This setting's only purpose is to signal that the path list should be shown
+    
+    '''
+    SHOW_FILTERED = "ShowFiltered"
+    DEFAULT_PROPERTIES = { SHOW_FILTERED: True }
+    def __init__(self):
+        super(self.__class__, self).__init__(
+            "", value = json.dumps(PathListDisplay.DEFAULT_PROPERTIES))
+        
+    def __getitem__(self, key):
+        '''Get a property from the properties serialized in the values'''
+        try:
+            return self.get_properties()[key]
+        except:
+            pass
+        return self.DEFAULT_PROPERTIES[key]
+    
+    def get_properties(self):
+        try:
+            properties = json.loads(self.value)
+            assert isinstance(properties, dict)
+        except:
+            properties = self.DEFAULT_PROPERTIES.copy()
+        return properties
+        
+    def __setitem__(self, key, value):
+        '''Set a property in the properties serialized in the values'''
+        properties = self.get_properties()
+        properties[key] = value
+        self.set_value_text(json.dumps(properties))
+        
+    def get_proposed_text(self, show_filtered = None):
+        '''Get the text value that makes the proposed change
+        
+        show_filtered - True or False if changed, None to leave as-is
+        
+        returns text appropriate for self.set_value_text
+        '''
+        properties = self.get_properties()
+        if show_filtered is not None:
+            properties[self.SHOW_FILTERED] = show_filtered
+        return json.dumps(properties)
+        
+    def show_filtered(self, wants_to_show_filtered):
+        '''Set the path list to show filtered files
+        
+        wants_to_show_filtered: True to see filtered files, False to hide them.
+        '''
+        self[self.SHOW_FILTERED] = wants_to_show_filtered
+        
+    def should_show_filter(self):
+        '''Return true if we should show filtered files'''
+        return self[self.SHOW_FILTERED]
     
 class Table(Setting):
     '''The Table setting displays a table of values'''

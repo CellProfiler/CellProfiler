@@ -2275,7 +2275,14 @@ class Pipeline(object):
             
     def clear_image_plane_details(self):
         '''Remove the image plane details from the pipeline'''
+        old_ipds = list(self.__image_plane_details)
         self.__image_plane_details = []
+        self.notify_listeners(ImagePlaneDetailsRemovedEvent(old_ipds))
+        if len(old_ipds):
+            self.notify_listeners(ImagePlaneDetailsRemovedEvent(old_ipds))
+            def undo():
+                self.add_image_plane_details(old_ipds)
+            self.__undo_stack.append((undo, "Remove images"))
             
     def remove_image_plane_url(self, url):
         pos = bisect.bisect_left(self.image_plane_details, url)
@@ -2323,7 +2330,7 @@ class Pipeline(object):
             if x.cancel_run:
                 raise instance
             
-        self.__image_plane_details = []
+        self.clear_image_plane_details()
         self.__filtered_image_plane_details_images_settings = tuple()
         self.__filtered_image_plane_details_metadata_settings = tuple()
         self.__image_plane_details_generation = file_list.generation

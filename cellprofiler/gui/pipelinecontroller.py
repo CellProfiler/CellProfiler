@@ -755,7 +755,7 @@ class PipelineController:
                 (self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE))
     
     def on_pathlist_file_command(self, paths, cmd):
-        if cmd == self.PATHLIST_CMD_SHOW:
+        if cmd == self.PATHLIST_CMD_SHOW or cmd is None:
             if len(paths) == 0:
                 return
             from cellprofiler.gui.cpfigure import show_image

@@ -285,18 +285,15 @@ class EditObjectsManually(I.Identify):
         orig_ijv = workspace.display_data.orig_ijv
         filtered_ijv = workspace.display_data.filtered_ijv
         shape = workspace.display_data.shape
-        figure = workspace.create_or_find_figure(
-            title="EditObjectsManually, image cycle #%d"%(
-                workspace.measurements.image_set_number),
-            subplots=(2,1))
-        figure.subplot_imshow_ijv(0, 0, orig_ijv,
-                                  shape = shape,
-                                  title = self.object_name.value)
+        figure.set_subplots((2,1))
+        ax0 = figure.subplot_imshow_ijv(0, 0, orig_ijv,
+                                        shape = shape,
+                                        title = self.object_name.value)
         figure.subplot_imshow_ijv(1, 0, filtered_ijv,
                                   shape = shape,
                                   title = self.filtered_objects.value,
-                                  sharex = figure.subplot(0,0),
-                                  sharey = figure.subplot(0,0))
+                                  sharex = ax0,
+                                  sharey = ax0)
     
     def run_as_data_tool(self):
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog

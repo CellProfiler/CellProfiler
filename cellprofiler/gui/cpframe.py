@@ -136,6 +136,10 @@ class CPFrame(wx.Frame):
         self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__right_win,-1,style=wx.SUNKEN_BORDER | wx.TAB_TRAVERSAL)
         self.__module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
         self.__module_panel.SetToolTipString("The settings panel contains the available options for each module.")
+        #
+        # The path list control that holds all of the files being dealt with
+        # by the pipeline
+        #
         self.__path_list_ctrl = PathListCtrl(self.__module_panel)
         self.__path_list_filter_checkbox = wx.CheckBox(
             self.__module_panel,

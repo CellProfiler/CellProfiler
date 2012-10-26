@@ -1,3 +1,16 @@
+"""PathList - the PathListCtrl displays folders and paths in a scalable way
+
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2012 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
 import bisect
 import numpy as np
 import wx
@@ -470,6 +483,11 @@ class PathListCtrl(wx.PyScrolledWindow):
         line_height = self.line_height + self.leading
         idx = int(y / line_height) + self.GetScrollPos(wx.SB_VERTICAL)
         idx = max(0, min(len(self)-1, idx))
+        if y < line_height:
+            # It's the slightly bogus directory at the top
+            self.recalc()
+            folder_idx = bisect.bisect_right(self.folder_idxs, idx)-1
+            idx = self.folder_idxs[folder_idx]
         return idx
         
     def on_mouse_down(self, event):
@@ -490,9 +508,12 @@ class PathListCtrl(wx.PyScrolledWindow):
             self.Refresh(eraseBackground=False)
             return
             
+        if event.ShiftDown() and len(self.selections) == 1:
+            self.mouse_down_idx = self.selections.pop()
+        else:
+            self.mouse_down_idx = idx
         if not event.ControlDown():
             self.selections = set()
-        self.mouse_down_idx = idx
         self.mouse_idx = idx
         self.focus_item = idx
         self.CaptureMouse()

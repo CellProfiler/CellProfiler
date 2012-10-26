@@ -336,6 +336,7 @@ class ImagePredicate(cps.Filter.FilterPredicate):
         def get_image_plane_details(self, modpath):
             url = Images.modpath_to_url(modpath)
             return cpp.ImagePlaneDetails(url, None, None, None)
+        
     def test_valid(self, pipeline, *args):
         self((cps.FileCollectionDisplay.NODE_FILE, 
               ["/imaging", "test.tif"], self.FakeModule()), *args)

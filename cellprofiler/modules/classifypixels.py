@@ -14,7 +14,8 @@ the pixel belongs to the chosen class; this image is similar to
 an intensity image that would be produced by fluorescence imaging.
 Provided that the classifier is sufficiently accruate, the image is
 well-suited for input into one of the <b>Identify</b> modules for
-object detection.
+object detection. More instructions on using the interface may be found 
+<a href="http://ilastik.org/index.php?cat=20_Documentation&page=03_Cellprofiler">here</a>.
 
 Currently, ilastik is only avilable for Windows, and is accessible from
 in the CellProfiler folder under the Start Menu. A 64-bit system is 

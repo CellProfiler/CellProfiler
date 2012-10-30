@@ -122,7 +122,8 @@ class Measurements(object):
                  can_overwrite=False,
                  image_set_start=None,
                  filename = None,
-                 copy = None):
+                 copy = None,
+                 image_numbers = None):
         """Create a new measurements collection
 
         can_overwrite - DEPRECATED and has no effect
@@ -146,12 +147,14 @@ class Measurements(object):
                 self.hdf5_dict = HDF5Dict(
                     filename, 
                     is_temporary = is_temporary,
-                    copy = copy.hdf5_dict.top_group)
+                    copy = copy.hdf5_dict.top_group,
+                    image_numbers=image_numbers)
         elif hasattr(copy, '__getitem__') and hasattr(copy, 'keys'):
             self.hdf5_dict = HDF5Dict(
                 filename,
                 is_temporary = is_temporary,
-                copy = copy)
+                copy = copy,
+                image_numbers=image_numbers)
         else:
             self.hdf5_dict = HDF5Dict(filename, is_temporary = is_temporary)
         if is_temporary:
@@ -812,7 +815,8 @@ class Measurements(object):
         return d
     
 def load_measurements(filename, dest_file = None, can_overwrite = False,
-                      run_name = None):
+                      run_name = None,
+                      image_numbers = None):
     '''Load measurements from an HDF5 file
     
     filename - path to file containing the measurements or file-like object
@@ -850,7 +854,8 @@ def load_measurements(filename, dest_file = None, can_overwrite = False,
                     # Assume that the user wants the last one
                     last_key = sorted(top_level.keys())[-1]
                     top_level = top_level[last_key]
-            m = Measurements(filename=dest_file, copy = top_level)
+            m = Measurements(filename=dest_file, copy = top_level,
+                             image_numbers = image_numbers)
             return m
         except:
             logger.error("Error loading HDF5 %s", filename, exc_info=True)

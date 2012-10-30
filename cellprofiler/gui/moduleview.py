@@ -2235,9 +2235,12 @@ class ModuleSizer(wx.PySizer):
                 return wx.Size(0,0)
             height = 0
             for j in range(0,self.__rows):
-                height_border = max([self.get_item(col,j).GetBorder() 
-                                     for col in range(2)
-                                     if self.get_item(col,j) is not None])
+                border_heights = [self.get_item(col,j).GetBorder() 
+                                  for col in range(2)
+                                  if self.get_item(col,j) is not None]
+                if len(border_heights) == 0:
+                    continue
+                height_border = max(border_heights)
                 height += self.get_row_height(j) + 2*height_border
             self.__printed_exception = False
             return wx.Size(self.calc_edit_size()[0] + self.__min_text_width + 

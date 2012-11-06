@@ -20,12 +20,24 @@ import urllib
 import urllib2
 
 class PathListCtrl(wx.PyScrolledWindow):
+    #
+    # The width of the expander image (seems like all code samples have this
+    # hardcoded)
+    #
+    TREEITEM_WIDTH = 16
+    TREEITEM_HEIGHT = 16
+    #
+    # Gap between tree item and text
+    #
+    TREEITEM_GAP = 2
     class FolderItem(object):
         def __init__(self, ctrl, folder_name):
             self.folder_name = folder_name
             self.folder_display_name = PathListCtrl.get_folder_display_name(
                 folder_name)
             self.display_width, _ = ctrl.GetTextExtent(self.folder_display_name)
+            self.display_width += \
+                PathListCtrl.TREEITEM_WIDTH + PathListCtrl.TREEITEM_GAP
             self.widths = []
             self.filenames = []
             self.file_display_names = []
@@ -441,8 +453,6 @@ class PathListCtrl(wx.PyScrolledWindow):
             
         enabled_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
         disabled_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
-        treeitem_width = wx.SystemSettings.GetMetric(wx.SYS_SMALLICON_X)
-        treeitem_height = wx.SystemSettings.GetMetric(wx.SYS_SMALLICON_Y)
         if len(self) == 0:
             text = self.DROP_FILES_AND_FOLDERS_HERE
             font = self.DROP_FILES_AND_FOLDERS_FONT
@@ -472,12 +482,14 @@ class PathListCtrl(wx.PyScrolledWindow):
                     break
                 if pidx is None or idx == yline:
                     paint_dc.SetTextForeground(dir_color)
+                    rTreeItem = wx.Rect(
+                        -x, yy, self.TREEITEM_WIDTH, self.TREEITEM_HEIGHT)
                     rn.DrawTreeItemButton(
-                        self, paint_dc, 
-                        (-x, yy, treeitem_width, treeitem_height),
+                        self, paint_dc, rTreeItem,
                         wx.CONTROL_EXPANDED if item.opened else 0)
-                    paint_dc.DrawText(item.folder_display_name,
-                                      treeitem_width-x, yy)
+                    paint_dc.DrawText(
+                        item.folder_display_name,
+                        self.TREEITEM_WIDTH + self.TREEITEM_GAP - x, yy)
                 else:
                     selected = (idx in self.selections or (
                         self.mouse_down_idx is not None and
@@ -498,8 +510,9 @@ class PathListCtrl(wx.PyScrolledWindow):
                         paint_dc.SetTextForeground(
                             enabled_color if item.enabled[pidx] 
                             else disabled_color)
-                    paint_dc.DrawText(item.file_display_names[pidx], 
-                                      treeitem_width - x, yy)
+                    paint_dc.DrawText(
+                        item.file_display_names[pidx], 
+                        self.TREEITEM_WIDTH + self.TREEITEM_GAP - x, yy)
         finally:
             paint_dc.SetBrush(wx.NullBrush)
             paint_dc.SetFont(wx.NullFont)

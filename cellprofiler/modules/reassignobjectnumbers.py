@@ -57,6 +57,7 @@ from cellprofiler.modules.identify import FF_CHILDREN_COUNT, FF_PARENT
 import cellprofiler.cpmath.cpmorphology as morph
 from cellprofiler.cpmath.filter import stretch
 import cellprofiler.cpmath.outline
+from scipy.ndimage import grey_dilation, grey_erosion
 
 OPTION_UNIFY = "Unify"
 OPTION_SPLIT = "Split"
@@ -312,58 +313,22 @@ class ReassignObjectNumbers(cpm.CPModule):
 
                 # It would be easier to start if I knew which objects were touching which other objects
                 neighbors = np.zeros((max_objects+1, max_objects+1), bool) # neighbors[i,j] = True when object j is a neighbor of object i.
-                for k in range(1, max_objects+1):
-                    k_bounds_array = object_slices[k-1]
-                    k_dim1_bounds = k_bounds_array[0].indices(output_labels.shape[0])
-                    k_dim2_bounds = k_bounds_array[1].indices(output_labels.shape[1])
+                lmax = grey_dilation(output_labels, footprint=np.ones((3,3), bool))
+                lbig = output_labels.copy()
+                lbig[lbig == 0] = np.iinfo(output_labels.dtype).max
+                lmin = grey_erosion(lbig, footprint=np.ones((3,3), bool))
+                
+                for i in range(1, max_objects+1):
+                    object_bounds = (object_slices[i-1][0],object_slices[i-1][1])
+                    object_map = output_labels[object_bounds] == i # The part of the slice that contains the object
                     
-                    for i in range(-1,2):
-                        ki_min = 0
-                        ki_max = 0
-                        if k_dim1_bounds[0] + i < 0:
-                            ki_min = -i
-                        else:
-                            ki_min = k_dim1_bounds[0]
+                    lower_neighbors = np.unique(lmin[object_bounds][object_map])
+                    higher_neighbors = np.unique(lmax[object_bounds][object_map])
 
-                        if k_dim1_bounds[1] + i > output_labels.shape[0]:
-                            ki_max = output_labels.shape[0] - i
-                        else:
-                            ki_max = k_dim1_bounds[1]
-                            
-                        ki_slice = slice(ki_min, ki_max)
-                        ki_test_slice = slice(ki_min+i, ki_max+i)
-                        
-                        for j in range(-1,2):
-                            if i == j == 0:
-                                continue
-
-                            kj_min = 0
-                            kj_max = 0
-                            
-                            if k_dim2_bounds[0] + j < 0:
-                                kj_min = -j
-                            else:
-                                kj_min = k_dim2_bounds[0]
-
-                            if k_dim2_bounds[1] + j > output_labels.shape[1]:
-                                kj_max = output_labels.shape[1] - j
-                            else:
-                                kj_max = k_dim2_bounds[1]
-
-                            if kj_min == kj_max or ki_min == ki_max:
-                                continue
-
-                            kj_slice = slice(kj_min, kj_max)
-                            kj_test_slice = slice(kj_min+j, kj_max+j)
-                        
-                            k_bounds = (ki_slice, kj_slice)
-                            k_test_bounds = (ki_test_slice, kj_test_slice)
-                            
-                            for l in range(1, max_objects+1):
-                                if k == l:
-                                    continue
-                                neighbors[k,l] = neighbors[k,l] or np.max(np.logical_and(output_labels[k_bounds] == k,
-                                                                                         output_labels[k_test_bounds] == l))
+                    for neighbor_list in [lower_neighbors, higher_neighbors]:
+                        for j in range(0, len(neighbor_list)):
+                            neighbors[i,j] = True
+                    neighbors[i,i] = False
 
                 # Generate window dimensions for each location
                 dim1_window = np.ones(output_labels.shape, int) * half_window_size

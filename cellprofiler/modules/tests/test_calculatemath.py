@@ -524,3 +524,31 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
                 data = measurements.get_current_measurement(
                     OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
                 np.testing.assert_almost_equal(e1, data)
+
+    def test_10_01_issue_422(self):
+        # Regression test of issue # 422
+        #
+        # If no operation is chosen, get_measurement_columns and
+        # get_categories report measurements for both operands when
+        # they should report for only a single one
+        #
+        module = C.CalculateMath()
+        module.operation.value = C.O_NONE
+        module.operands[0].operand_objects.value = OBJECT[0]
+        module.operands[1].operand_objects.value = OBJECT[1]
+        module.operands[0].operand_choice.value = C.MC_OBJECT
+        module.operands[1].operand_choice.value = C.MC_OBJECT
+        module.output_feature_name.value = OUTPUT_MEASUREMENTS
+        
+        c = module.get_measurement_columns(None)
+        self.assertEqual(len(c), 1)
+        self.assertEqual(c[0][0], OBJECT[0])
+        self.assertEqual(c[0][1], MATH_OUTPUT_MEASUREMENTS)
+        
+        self.assertEqual(len(module.get_categories(None, OBJECT[0])), 1)
+        self.assertEqual(len(module.get_categories(None, OBJECT[1])), 0)
+        
+        self.assertEqual(
+            len(module.get_measurements(None, OBJECT[0], C.C_MATH)), 1)
+        self.assertEqual(
+            len(module.get_measurements(None, OBJECT[1], C.C_MATH)), 0)        

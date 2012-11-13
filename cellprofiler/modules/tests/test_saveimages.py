@@ -1759,6 +1759,35 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
                                                  rescale=False)
             np.testing.assert_array_equal(image, labels[:, :, i])
             
+    def test_07_00_save_no_objects(self):
+        # Regression test of issue #423
+        workspace, module = self.make_workspace(
+            np.zeros((31,19), int), save_objects = True)
+        assert isinstance(module, cpm_si.SaveImages)
+        module.update_file_names.value = True
+        module.gray_or_color.value = cpm_si.GC_GRAYSCALE
+        module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.pathname.custom_path = self.custom_directory
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.file_format.value = cpm_si.FF_PNG
+
+        filename = module.get_filename(workspace, make_dirs = False,
+                                       check_overwrite = False)
+        if os.path.isfile(filename):
+            os.remove(filename)
+        module.run(workspace)
+        m = workspace.measurements
+        assert isinstance(m, cpm.Measurements)
+        feature = cpm_si.C_OBJECTS_FILE_NAME + "_" + OBJECTS_NAME
+        m_filename = m.get_current_image_measurement(feature)
+        self.assertEqual(m_filename, os.path.split(filename)[1])
+        feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
+        m_pathname = m.get_current_image_measurement(feature)
+        self.assertEqual(m_pathname, os.path.split(filename)[0])
+        im = cpm_li.load_using_bioformats(filename, rescale=False)
+        self.assertTrue(np.all(im == 0))
+        
+            
     def test_07_01_save_objects_grayscale8_tiff(self):
         if BIOFORMATS_CANT_WRITE:
             print "WARNING: Skipping test. The current version of bioformats can't be used for writing images on MacOS X."

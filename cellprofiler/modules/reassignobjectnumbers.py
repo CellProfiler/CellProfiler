@@ -299,8 +299,8 @@ class ReassignObjectNumbers(cpm.CPModule):
                 output_labels = parent_objects.segmented.copy()
                 output_labels[labels == 0] = 0
             elif self.unify_option == UNIFY_SHAPE:
-                half_window_size = self.shape_window_size
-                threshold = self.shape_threshold
+                half_window_size = self.shape_window_size.value
+                threshold = self.shape_threshold.value
                 output_labels = objects.segmented.copy()
                 max_objects = np.max(output_labels)
                 indices = np.arange(max_objects+1)
@@ -313,10 +313,10 @@ class ReassignObjectNumbers(cpm.CPModule):
 
                 # It would be easier to start if I knew which objects were touching which other objects
                 neighbors = np.zeros((max_objects+1, max_objects+1), bool) # neighbors[i,j] = True when object j is a neighbor of object i.
-                lmax = grey_dilation(output_labels, footprint=np.ones((3,3), bool))
+                lmax = grey_dilation(output_labels, footprint=np.ones((3,3), bool)) # lower pixel values will be replaced by adjacent larger pixel values
                 lbig = output_labels.copy()
-                lbig[lbig == 0] = np.iinfo(output_labels.dtype).max
-                lmin = grey_erosion(lbig, footprint=np.ones((3,3), bool))
+                lbig[lbig == 0] = np.iinfo(output_labels.dtype).max # set the background to be large so that it is ignored next
+                lmin = grey_erosion(lbig, footprint=np.ones((3,3), bool)) # larger pixel values will be replaced by adjacent smaller pixel values
                 
                 for i in range(1, max_objects+1):
                     object_bounds = (object_slices[i-1][0],object_slices[i-1][1])
@@ -327,9 +327,9 @@ class ReassignObjectNumbers(cpm.CPModule):
 
                     for neighbor_list in [lower_neighbors, higher_neighbors]:
                         for j in range(0, len(neighbor_list)):
-                            neighbors[i,j] = True
+                            neighbors[i,neighbor_list[j]] = True
                     neighbors[i,i] = False
-
+                
                 # Generate window dimensions for each location
                 dim1_window = np.ones(output_labels.shape, int) * half_window_size
                 dim2_window = np.ones(output_labels.shape, int) * half_window_size

@@ -411,14 +411,18 @@ class CalculateMath(cpm.CPModule):
         result += self.final_addend.value
 
         if self.constrain_lower_bound:
-            for i in range(0, len(result)):
-                if result[i] < self.lower_bound.value:
-                    result[i] = self.lower_bound.value
+            if np.isscalar(result):
+                if result < self.lower_bound.value:
+                    result = self.lower_bound.value
+            else:
+                result[result < self.lower_bound.value] = self.lower_bound.value
 
         if self.constrain_upper_bound:
-            for i in range(0, len(result)):
-                if result[i] < self.upper_bound.value:
-                    result[i] = self.upper_bound.value
+            if np.isscalar(result):
+                if result > self.upper_bound.value:
+                    result = self.upper_bound.value
+            else:
+                result[result > self.upper_bound.value] = self.upper_bound.value
         
         return result
         

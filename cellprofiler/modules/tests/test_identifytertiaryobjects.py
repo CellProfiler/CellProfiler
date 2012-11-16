@@ -338,3 +338,22 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         for column in columns:
             self.assertTrue(any([all([cv==ev for cv,ev in zip(column, ec)])
                                  for ec in expected]))
+
+    def test_04_01_do_not_shrink(self):
+        '''Test the option to not shrink the smaller objects'''
+        primary_labels = np.zeros((10,10),int)
+        secondary_labels = np.zeros((10,10),int)
+        primary_labels[3:6,4:7] = 1
+        secondary_labels[2:7,3:8] = 1
+        expected_labels = np.zeros((10,10),int)
+        expected_labels[2:7,3:8] = 1
+        expected_labels[3:6,4:7] = 0
+        
+        workspace = self.make_workspace(primary_labels, secondary_labels)
+        module = workspace.module
+        module.shrink_primary.value = False
+        module.run(workspace)
+        measurements = workspace.measurements
+
+        output_objects = workspace.object_set.get_objects(TERTIARY)
+        self.assertTrue(np.all(output_objects.segmented == expected_labels))

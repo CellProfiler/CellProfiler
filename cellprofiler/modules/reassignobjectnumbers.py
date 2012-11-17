@@ -57,12 +57,14 @@ from cellprofiler.modules.identify import FF_CHILDREN_COUNT, FF_PARENT
 import cellprofiler.cpmath.cpmorphology as morph
 from cellprofiler.cpmath.filter import stretch
 import cellprofiler.cpmath.outline
+from scipy.ndimage import grey_dilation, grey_erosion
 
 OPTION_UNIFY = "Unify"
 OPTION_SPLIT = "Split"
 
 UNIFY_DISTANCE = "Distance"
 UNIFY_PARENT = "Per-parent"
+UNIFY_SHAPE = "Shape"
 
 CA_CENTROIDS = "Centroids"
 CA_CLOSEST_POINT = "Closest point"
@@ -70,7 +72,7 @@ CA_CLOSEST_POINT = "Closest point"
 class ReassignObjectNumbers(cpm.CPModule):
     module_name = "ReassignObjectNumbers"
     category = "Object Processing"
-    variable_revision_number = 3
+    variable_revision_number = 4
     
     def create_settings(self):
         self.objects_name = cps.ObjectNameSubscriber(
@@ -93,7 +95,7 @@ class ReassignObjectNumbers(cpm.CPModule):
             that currently share the same object number.""")
         
         self.unify_option = cps.Choice(
-            "Unification to perform",[UNIFY_DISTANCE, UNIFY_PARENT],
+            "Unification to perform",[UNIFY_DISTANCE, UNIFY_PARENT, UNIFY_SHAPE],
             doc="""
             <i>(Used only with the Unify option)</i><br>
             You can unify objects in one of two ways:
@@ -104,6 +106,17 @@ class ReassignObjectNumbers(cpm.CPModule):
             relationship to another object will be unified. This is not be confused
             with using the <b>RelateObjects</b> module, in which the related objects
             remain as individual objects. See <b>RelateObjects</b> for more details.</li>
+            <li><i>%(UNIFY_SHAPE)s:</i> This method finds the vertices of a pair of objects
+            (the location where the pair of objects and the background meet) and
+            calculates the fraction of contiguous non-object-pair-labeled pixels within a window around
+            the vertex. If at least one of the vertices is above the threshold, the objects are joined.
+            <ul>
+            <li>&lt;0.5: The objects curve away from the background (convex).</li>
+            <li>0.5: The object surface is flat with respect to the background.</li>
+            <li>&gt;0.5: The objects curve into from the background (concave).</li>
+            </ul>
+            This method works well for round cell objects which do not satisfy the conditions for the Centroids
+            method.</li>
             </ul>
             """%globals())
         
@@ -188,7 +201,17 @@ class ReassignObjectNumbers(cpm.CPModule):
             An example of a feature that satisfies the above constraints is a line of
             pixels that connect two neighboring objects and is roughly the same intensity 
             as the boundary pixels of both (such as an axon connecting two neurons).</li>
-            </ul>""")
+            </ul>
+            """)
+
+        self.shape_window_size = cps.Integer("Window size", 10,
+            doc = """<i>(Used only with the Shape method)</i><br>
+            Enter how big the search window should be. The window will be
+            a square of (2 * window size) + 1 on each side.""")
+
+        self.shape_threshold = cps.Float("Threshold", 0.5,
+            doc = """<i>Used only with the Shape method)</i><br>
+            Enter the threshold to be used. Generally this should remain at or near 0.5.""")
         
         self.wants_outlines = cps.Binary(
             "Retain outlines of the relabeled objects?", False,
@@ -223,9 +246,10 @@ class ReassignObjectNumbers(cpm.CPModule):
                 self.relabel_option, self.distance_threshold, 
                 self.wants_image, self.image_name, 
                 self.minimum_intensity_fraction,
-                self.where_algorithm, 
+                self.where_algorithm,
                 self.wants_outlines, self.outlines_name,
-                self.unify_option, self.parent_object]
+                self.unify_option, self.parent_object,
+                self.shape_window_size, self.shape_threshold]
     
     def visible_settings(self):
         result = [self.objects_name, self.output_objects_name,
@@ -239,6 +263,8 @@ class ReassignObjectNumbers(cpm.CPModule):
                                self.where_algorithm]
             elif self.unify_option == UNIFY_PARENT:
                 result += [self.parent_object]
+            elif self.unify_option == UNIFY_SHAPE:
+                result += [self.shape_window_size, self.shape_threshold]
         result += [self.wants_outlines]
         if self.wants_outlines:
             result += [self.outlines_name]
@@ -272,7 +298,259 @@ class ReassignObjectNumbers(cpm.CPModule):
                 parent_objects = workspace.object_set.get_objects(self.parent_object.value)
                 output_labels = parent_objects.segmented.copy()
                 output_labels[labels == 0] = 0
-            
+            elif self.unify_option == UNIFY_SHAPE:
+                half_window_size = self.shape_window_size.value
+                threshold = self.shape_threshold.value
+                output_labels = objects.segmented.copy()
+                max_objects = np.max(output_labels)
+                indices = np.arange(max_objects+1)
+
+                # Get object slices
+                object_slices = morph.fixup_scipy_ndimage_result(scind.measurements.find_objects(output_labels))
+
+                # Calculate perimeters
+                perimeters = morph.calculate_perimeters(output_labels, indices)
+
+                # It would be easier to start if I knew which objects were touching which other objects
+                neighbors = np.zeros((max_objects+1, max_objects+1), bool) # neighbors[i,j] = True when object j is a neighbor of object i.
+                lmax = grey_dilation(output_labels, footprint=np.ones((3,3), bool)) # lower pixel values will be replaced by adjacent larger pixel values
+                lbig = output_labels.copy()
+                lbig[lbig == 0] = np.iinfo(output_labels.dtype).max # set the background to be large so that it is ignored next
+                lmin = grey_erosion(lbig, footprint=np.ones((3,3), bool)) # larger pixel values will be replaced by adjacent smaller pixel values
+                
+                for i in range(1, max_objects+1):
+                    object_bounds = (object_slices[i-1][0],object_slices[i-1][1])
+                    object_map = output_labels[object_bounds] == i # The part of the slice that contains the object
+                    
+                    lower_neighbors = np.unique(lmin[object_bounds][object_map])
+                    higher_neighbors = np.unique(lmax[object_bounds][object_map])
+
+                    for neighbor_list in [lower_neighbors, higher_neighbors]:
+                        for j in range(0, len(neighbor_list)):
+                            neighbors[i,neighbor_list[j]] = True
+                    neighbors[i,i] = False
+                
+                # Generate window dimensions for each location
+                dim1_window = np.ones(output_labels.shape, int) * half_window_size
+                dim2_window = np.ones(output_labels.shape, int) * half_window_size
+                for i in range(0, half_window_size):
+                    dim1_window[i:output_labels.shape[0]-i,0:output_labels.shape[1]] += 1
+                    dim2_window[0:output_labels.shape[0],i:output_labels.shape[1]-i] += 1
+                
+                # Loop over all objects
+                for k in range(1, max_objects+1):
+                    if (perimeters[k] == 0) or not np.max(neighbors[k]): # Has been removed by a merge or has no neighbors
+                        continue
+
+                    k_bounds_array = object_slices[k-1]
+                    k_dim1_bounds = k_bounds_array[0].indices(output_labels.shape[0])
+                    k_dim2_bounds = k_bounds_array[1].indices(output_labels.shape[1])
+                    
+                    # Loop over all neighbors of object k
+                    l = 0
+                    while l < max_objects:
+                        l += 1
+                        
+                        if k == l or (perimeters[l] == 0) or not neighbors[k,l]: # Has been removed by a merge or is not a neighbor of object k
+                            continue
+
+                        l_bounds_array = object_slices[l-1]
+                        l_dim1_bounds = l_bounds_array[0].indices(output_labels.shape[0])
+                        l_dim2_bounds = l_bounds_array[1].indices(output_labels.shape[1])
+
+                        kl_dim1_min_bound = min(k_dim1_bounds[0], l_dim1_bounds[0])
+                        kl_dim1_max_bound = max(k_dim1_bounds[1], l_dim1_bounds[1])
+                        kl_dim2_min_bound = min(k_dim2_bounds[0], l_dim2_bounds[0])
+                        kl_dim2_max_bound = max(k_dim2_bounds[1], l_dim2_bounds[1])
+
+                        kl_bounds = (slice(kl_dim1_min_bound, kl_dim1_max_bound), slice(kl_dim2_min_bound, kl_dim2_max_bound))
+                        kl_shape = (kl_dim1_max_bound - kl_dim1_min_bound, kl_dim2_max_bound - kl_dim2_min_bound)
+                        
+                        #
+                        # Find the vertices
+                        #
+                        vertices = np.zeros(kl_shape, bool)
+                        isAdjacent = np.zeros(output_labels.shape, bool)
+                        isBorder = np.zeros(output_labels.shape, bool)
+                        
+                        for i in range(-1,2):
+                            ki_min = 0
+                            ki_max = 0
+                            li_min = 0
+                            li_max = 0
+                            if k_dim1_bounds[0] + i < 0:
+                                ki_min = -i
+                            else:
+                                ki_min = k_dim1_bounds[0]
+
+                            if l_dim1_bounds[0] + i < 0:
+                                li_min = -i
+                            else:
+                                li_min = l_dim1_bounds[0]
+
+                            if k_dim1_bounds[1] + i > output_labels.shape[0]:
+                                ki_max = output_labels.shape[0] - i
+                            else:
+                                ki_max = k_dim1_bounds[1]
+
+                            if l_dim1_bounds[1] + i > output_labels.shape[0]:
+                                li_max = output_labels.shape[0] - i
+                            else:
+                                li_max = l_dim1_bounds[1]
+
+                            ki_slice = slice(ki_min, ki_max)
+                            li_slice = slice(li_min, li_max)
+                            ki_test_slice = slice(ki_min+i, ki_max+i)
+                            li_test_slice = slice(li_min+i, li_max+i)
+                            
+                            for j in range(-1,2):
+                                if i == j == 0:
+                                    continue
+
+                                kj_min = 0
+                                kj_max = 0
+                                lj_min = 0
+                                lj_max = 0
+                                if k_dim2_bounds[0] + j < 0:
+                                    kj_min = -j
+                                else:
+                                    kj_min = k_dim2_bounds[0]
+
+                                if l_dim2_bounds[0] + j < 0:
+                                    lj_min = -j
+                                else:
+                                    lj_min = l_dim2_bounds[0]
+
+                                if k_dim2_bounds[1] + j > output_labels.shape[0]:
+                                    kj_max = output_labels.shape[0] - j
+                                else:
+                                    kj_max = k_dim2_bounds[1]
+
+                                if l_dim2_bounds[1] + j > output_labels.shape[0]:
+                                    lj_max = output_labels.shape[0] - j
+                                else:
+                                    lj_max = l_dim2_bounds[1]
+
+                                if (kj_min == kj_max or ki_min == ki_max) and (lj_min == lj_max or li_min == li_max):
+                                    continue
+
+                                kj_slice = slice(kj_min, kj_max)
+                                lj_slice = slice(lj_min, lj_max)
+                                kj_test_slice = slice(kj_min+j, kj_max+j)
+                                lj_test_slice = slice(lj_min+j, lj_max+j)
+
+                                k_bounds = (ki_slice, kj_slice)
+                                l_bounds = (li_slice, lj_slice)
+                                k_test_bounds = (ki_test_slice, kj_test_slice)
+                                l_test_bounds = (li_test_slice, lj_test_slice)
+                                kl_mod_bounds = (slice(min(ki_min, li_min), max(ki_max, li_max)), slice(min(kj_min, lj_min), max(kj_max, lj_max)))
+
+                                isAdjacentSlice = np.zeros(output_labels.shape, bool)
+                                isAdjacentSlice[k_bounds] = np.logical_and(output_labels[k_bounds] == k,
+                                                                           output_labels[k_test_bounds] == l)
+                                isAdjacentSlice[l_bounds] = np.logical_or(isAdjacentSlice[l_bounds],
+                                                                          np.logical_and(output_labels[l_bounds] == l,
+                                                                                         output_labels[l_test_bounds] == k))
+                                isAdjacent[kl_mod_bounds] = np.logical_or(isAdjacent[kl_mod_bounds],
+                                                                          isAdjacentSlice[kl_mod_bounds])
+
+                                isBorderSlice = np.zeros(output_labels.shape, bool)
+                                isBorderSlice[k_bounds] = np.logical_and(output_labels[k_bounds] == k,
+                                                                         np.logical_and(output_labels[k_test_bounds] != k,
+                                                                                        output_labels[k_test_bounds] != l))
+                                isBorderSlice[l_bounds] = np.logical_or(isBorderSlice[l_bounds],
+                                                                        np.logical_and(output_labels[l_bounds] == l,
+                                                                                       np.logical_and(output_labels[l_test_bounds] != k,
+                                                                                                      output_labels[l_test_bounds] != l)))
+                                isBorder[kl_mod_bounds] = np.logical_or(isBorder[kl_mod_bounds],
+                                                                        isBorderSlice[kl_mod_bounds])
+                        
+                        vertices = np.logical_and(isAdjacent[kl_bounds], isBorder[kl_bounds])
+
+                        #
+                        # Calculate the maximum vertex score for the pair
+                        #
+                        '''+1 for every non-I/J labeled pixel in the window
+                        +1 more for every non-I/J labeled pixel adjacent to it
+
+                        Divided by the score that would result if the objects were flat
+
+                        e.g. (vertex is starred)
+
+                        0  0  0  0  0  0  0
+                        0  0  0  0  0  0  0
+                        1  1  0  0  0  0  0
+                        1  1  1 *1* 2  2  0
+                        1  1  1  1  2  2  2
+                        1  1  1  1  2  2  2
+                        1  1  1  2  2  2  2
+
+                        If it were flat, it would be 7 * 3 = 21, so the divisor 7 * 6 = 42.
+                        In the case that the window is rectangular (such as at the image edge),
+                        we split the difference.
+                        Generalized:
+
+                        Vertex Score = (Sum of NotIJ) / [A * B - 0.5 * (A + B)]
+                        '''
+                        
+                        sum_not_IJ = np.zeros(kl_shape, int)
+                        for i in range(0, kl_shape[0]):
+                            for j in range(0,kl_shape[1]):
+                                if not vertices[i,j]:
+                                    continue
+
+                                window_bounds = (slice(i - half_window_size + kl_dim1_min_bound, i + half_window_size + kl_dim1_min_bound),
+                                                 slice(j - half_window_size + kl_dim2_min_bound, j + half_window_size + kl_dim2_min_bound))
+
+                                window_slice = output_labels[window_bounds]
+
+                                sum_not_IJ[i,j] = np.count_nonzero(np.logical_and(window_slice != k,
+                                                                             window_slice != l))
+
+                        vertex_scores = sum_not_IJ / (dim1_window[kl_bounds] * dim2_window[kl_bounds] - 0.5 * (dim1_window[kl_bounds] + dim2_window[kl_bounds]))
+
+                        merged = np.zeros(kl_shape, int)
+                        merged[output_labels[kl_bounds] == k] = 1
+                        merged[output_labels[kl_bounds] == l] = 1
+
+                        merged_perimeter = morph.calculate_perimeters(merged, [1])
+
+                        seam_length = (perimeters[k] + perimeters[l] - merged_perimeter) / 2
+                        min_external_perimeter = min(perimeters[k], perimeters[l]) - seam_length
+                        adjusted_min_external_perimeter = min_external_perimeter / np.pi
+
+                        seam_fraction = seam_length / (adjusted_min_external_perimeter + seam_length)
+                        
+                        max_vertex_score = np.max(vertex_scores)
+
+                        score = (max_vertex_score + seam_fraction) / 2
+
+                        #
+                        # Join object pair with score above the threshold
+                        #
+                        if score >= threshold:
+                            output_labels[output_labels == l] = k
+                            
+                            # Calculate new perimeters
+                            perimeters[k] = merged_perimeter
+                            perimeters[l] = 0
+
+                            # Reconfigure neighbors
+                            neighbors[k] = np.logical_or(neighbors[k], neighbors[l])
+                            for x in range(1, max_objects+1): # Is there an array method to do this?
+                                if neighbors[x,l]:
+                                    neighbors[x,k] = True
+                            neighbors[0:max_objects,l] = False
+
+                            # Recalculate bounds
+                            k_dim1_bounds = kl_bounds[0].indices(output_labels.shape[0])
+                            k_dim2_bounds = kl_bounds[1].indices(output_labels.shape[1])
+                            
+                            # Reset l to 0 so that we check all the neighbors against this new object
+                            l = 0
+                        else:
+                            pass
+                        
         output_objects = cpo.Objects()
         output_objects.segmented = output_labels
         if objects.has_small_removed_segmented:
@@ -313,7 +591,7 @@ class ReassignObjectNumbers(cpm.CPModule):
                     
         if workspace.frame is not None:
             workspace.display_data.orig_labels = objects.segmented
-            workspace.display_data.output_labels = output_objects.segmented
+            workspace.display_data.output_labels = output_objects.segmented        
     
     def display(self, workspace):
         '''Display the results of relabeling
@@ -340,6 +618,11 @@ class ReassignObjectNumbers(cpm.CPModule):
             elif self.unify_option == UNIFY_PARENT:
                 parent_objects = workspace.object_set.get_objects(self.parent_object.value)
                 labels = parent_objects.segmented
+                image = labels.astype(float) / (1.0 if np.max(labels) == 0 else np.max(labels))
+                image = (stretch(image) * 255).astype(np.uint8)
+            elif self.unify_option == UNIFY_SHAPE:
+                objects = workspace.object_set.get_objects(self.objects_name.value)
+                labels = objects.segmented
                 image = labels.astype(float) / (1.0 if np.max(labels) == 0 else np.max(labels))
                 image = (stretch(image) * 255).astype(np.uint8)
             
@@ -536,10 +819,14 @@ class ReassignObjectNumbers(cpm.CPModule):
             setting_values += [cps.NO, "RelabeledNucleiOutlines"]
             variable_revision_number = 2
             
-        if (not from_matlab) and variable_revision_number == 1:
+        if (not from_matlab) and variable_revision_number == 2:
             # Added per-parent unification
             setting_values += [UNIFY_DISTANCE, cps.NONE]
             variable_revision_number = 3
+
+        if (not from_matlab) and variable_revision_number == 3:
+            # Added shape-based unification
+            setting_values += []
                        
         return setting_values, variable_revision_number, from_matlab
     

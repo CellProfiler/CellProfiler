@@ -545,11 +545,10 @@ class RunImageJ(cpm.CPModule):
         else:
             import imagej.ijbridge as ijbridge
             ijb = ijbridge.get_ij_bridge()
-            J.run_in_main_thread(lambda : ijb.show_imagej(), True)
+            ijb.show_imagej()
         
     def is_interactive(self):
-        # On Mac, run in main thread for stability
-        return sys.platform == 'darwin'
+        return False
     
     def prepare_group(self, workspace, grouping, image_numbers):
         '''Prepare to run a group

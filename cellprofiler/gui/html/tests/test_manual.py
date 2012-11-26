@@ -1,4 +1,17 @@
-'''Tests for cellprofiler.gui.html.manual'''
+'''Tests for cellprofiler.gui.html.manual
+
+CellProfiler is distributed under the GNU General Public License,
+but this file is licensed under the more permissive BSD license.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2012 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org'
+'''
 
 import os
 import re
@@ -6,7 +19,8 @@ import unittest
 import tempfile
 import traceback
 import cellprofiler.gui.html.manual as M
-from cellprofiler.modules import get_module_names
+from cellprofiler.modules import get_module_names, instantiate_module
+import cellprofiler.preferences as cpprefs
 
 class TestManual(unittest.TestCase):
     def setUp(self):
@@ -27,6 +41,11 @@ class TestManual(unittest.TestCase):
             try:
                 fd = open(os.path.join(self.temp_dir, module_name + ".html"))
             except:
+                module = instantiate_module(module_name)
+                location = os.path.split(
+                    module.create_settings.im_func.func_code.co_filename)[0]
+                if location == cpprefs.get_plugin_directory():
+                    continue
                 traceback.print_exc()
                 self.assert_("Failed to open %s.html" %module_name)
             data = fd.read()

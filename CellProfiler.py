@@ -389,7 +389,6 @@ try:
                     style = wx.OK | wx.ICON_ERROR)
                 logging.root.error("Unable to load pipeline", exc_info=True)
         App.MainLoop()
-        del App  # to allow GC to clean up Measurements, etc.
     elif options.run_pipeline: # this includes distributed workers
         if (options.pipeline_filename is not None) and (not options.pipeline_filename.lower().startswith('http')):
             options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
@@ -504,24 +503,10 @@ except Exception, e:
     logging.root.fatal("Uncaught exception in CellProfiler.py", exc_info=True)
     raise
 finally:
-    import gc
-    gc.collect()  # This will clean up any remaining objects, calling their __del__ methods.
-
-    # Smokey, my friend, you are entering a world of pain.
-    # No $#!+ sherlock.
     try:
-        import imagej.ijbridge as ijbridge
-        if ijbridge.inter_proc_ij_bridge._isInstantiated():
-            ijbridge.get_ij_bridge().quit()
-    except:
-        logging.root.warning("Caught exception while killing ijbridge.", exc_info=True)
-
-    try:
-        if hasattr(sys, 'flags'):
-            if sys.flags.interactive:
-                assert False, "Don't kill JVM in interactive mode, because it calls exit()"
-        import cellprofiler.utilities.jutil as jutil
-        jutil.kill_vm()
-    except:
-        logging.root.warning("Caught exception while killing VM.", exc_info=True)
-os._exit(0)
+        import cellprofiler.utilities.jutil as J
+        J.kill_vm()
+        if "App" in globals():
+            del App
+    finally:
+        os._exit(0)

@@ -87,6 +87,7 @@ if not hasattr(sys, 'frozen'):
             
                 libraries = ["jvm"]
             elif sys.platform == 'darwin':
+                javabridge_sources += [ "mac_javabridge_utils.c" ]
                 include_dirs += ['/System/Library/Frameworks/JavaVM.framework/Headers']
                 extra_link_args = ['-framework', 'JavaVM']
             elif sys.platform.startswith('linux'):

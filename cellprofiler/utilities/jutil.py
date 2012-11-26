@@ -38,15 +38,17 @@ Website: http://www.cellprofiler.org
 '''
 __version__ = "$Revision$"
 
-import atexit
 import codecs
 import gc
+import inspect
 import logging
 import numpy as np
 import os
 import threading
+import traceback
 import subprocess
 import sys
+import uuid
 
 logger = logging.getLogger(__name__)
 
@@ -200,8 +202,30 @@ __thread_local_env = threading.local()
 __kill = [False]
 __dead_objects = []
 __main_thread_closures = []
+__run_headless = False
 
-def start_vm(args):
+RQCLS = "org/cellprofiler/runnablequeue/RunnableQueue"
+
+class AtExit(object):
+    '''AtExit runs a function as the main thread exits from the __main__ function
+    
+    We bind a reference to self to the main frame's locals. When
+    the frame exits, "__del__" is called and the function runs. This is an
+    alternative to "atexit" which only runs when all threads die.
+    '''
+    def __init__(self, fn):
+        self.fn = fn
+        stack = inspect.stack()
+        for f, filename, lineno, module_name, code, index in stack:
+            if (module_name == '<module>' and
+                f.f_locals.get("__name__") == "__main__"):
+                f.f_locals["X" + uuid.uuid4().hex] = self
+                break
+                
+    def __del__(self):
+        self.fn()
+        
+def start_vm(args, run_headless = False):
     '''Start the Java VM'''
     global __vm
     
@@ -210,7 +234,7 @@ def start_vm(args):
     start_event = threading.Event()
     pt = [] # holds the thread... eventually
     
-    def start_thread():
+    def start_thread(args=args, run_headless=run_headless):
         global __vm
         global __wake_event
         global __dead_event
@@ -219,6 +243,12 @@ def start_vm(args):
         global __kill
         global __dead_objects
         global __main_thread_closures
+        global __run_headless
+        
+        args = list(args)
+        if run_headless:
+            __run_headless = True
+            args = args + [r"-Djava.awt.headless=true"]
 
         __thread_local_env.is_main_thread = True
         __vm = javabridge.JB_VM()
@@ -234,17 +264,42 @@ def start_vm(args):
         main_thread_closures = __main_thread_closures
         thread_local_env = __thread_local_env
         ptt = pt # needed to bind to pt inside exit_fn
-        def exit_fn():
-            if vm is not None:
-                if getattr(thread_local_env,"env",None) is not None:
-                    detach()
-                kill[0] = True
-                wake_event.set()
-                ptt[0].join()
-        atexit.register(exit_fn)
         try:
-            env = vm.create(args)
-            __thread_local_env.env = env
+            if hasattr(sys, 'frozen') and sys.platform != 'darwin':
+                utils_path = os.path.join(
+                    os.path.split(os.path.abspath(sys.argv[0]))[0],
+                    "cellprofiler",
+                    "utilities")
+            else:
+                utils_path = os.path.abspath(os.path.split(__file__)[0])
+            cp_args = [i for i, x in enumerate(args)
+                       if x.startswith('-Djava.class.path=')]
+            js_jar = os.path.join(utils_path, "js.jar")
+            if len(cp_args) > 0:
+                arg_idx = cp_args[0]
+                cp_arg = args[arg_idx]
+                cp_arg = cp_arg + os.pathsep + js_jar
+                args[arg_idx] = cp_arg
+            else:
+                cp_arg = "-Djava.class.path=" + js_jar
+                arg_idx = -1
+            if sys.platform == "darwin":
+                logger.debug("Loading runnablequeue from %s" % utils_path)
+                runnablequeue_jar = os.path.join(
+                    utils_path, "runnablequeue-1.0.0.jar")
+                assert os.path.exists(runnablequeue_jar)
+                args[arg_idx] = cp_arg + os.pathsep + runnablequeue_jar
+                
+                vm.create_mac(args, RQCLS)
+                env = vm.attach()
+                __thread_local_env.env = env
+            else:
+                env = vm.create(args)
+                __thread_local_env.env = env
+        except:
+            traceback.print_exc()
+            logger.error("Failed to create Java VM")
+            __vm = None
         finally:
             start_event.set()
         wake_event.clear()
@@ -263,17 +318,185 @@ def start_vm(args):
         def null_defer_fn(jbo):
             '''Install a "do nothing" defer function in our env'''
             pass
-        env.set_defer_fn(null_defer_fn)
-        vm.destroy()
+        if sys.platform == "darwin":
+            #
+            # Torpedo the main thread RunnableQueue
+            #
+            rqcls = env.find_class(RQCLS)
+            stop_id = env.get_static_method_id(rqcls, "stop", "()V")
+            env.call_static_method(rqcls, stop_id)
+            env.set_defer_fn(null_defer_fn)
+            vm.detach()
+        else:
+            env.set_defer_fn(null_defer_fn)
+            vm.destroy()
         __vm = None
         dead_event.set()
         
     t = threading.Thread(target=start_thread)
-    t.daemon = True
     pt.append(t)
     t.start()
     start_event.wait()
     attach()
+    AtExit(kill_vm)
+    
+def unwrap_javascript(o):
+    '''Unwrap an object such as NativeJavaObject
+    
+    o - an object, possibly implementing org.mozilla.javascript.Wrapper
+    
+    return nice version
+    '''
+    if is_instance_of(o, "org/mozilla/javascript/Wrapper"):
+        return call(o, "unwrap", "()Ljava/lang/Object;")
+    return o
+    
+def run_script(script, bindings_in = {}, bindings_out = {}, 
+               class_loader = None):
+    '''Run a scripting language script
+    
+    script - script to run
+    
+    bindings_in - key / value pair of global name to Java object. The
+                  engine scope is populated with variables given by the keys
+                  and the variables are assigned the keys' values.
+                  
+    bindings_out - a dictionary of keys to be populated with values after
+                   evaluation. For instance, bindings_out = dict(foo=None) to
+                   get the value for the "foo" variable on output.
+                   
+    class_loader - class loader for scripting context
+    
+    Returns the object that is the result of the evaluation.
+    '''
+    context = static_call("org/mozilla/javascript/Context", "enter",
+                          "()Lorg/mozilla/javascript/Context;")
+    try :
+        if class_loader is not None:
+            call(context, "setApplicationClassLoader",
+                 "(Ljava/lang/ClassLoader;)V",
+                 class_loader)
+        scope = make_instance("org/mozilla/javascript/ImporterTopLevel",
+                              "(Lorg/mozilla/javascript/Context;)V",
+                              context)
+        for k, v in bindings_in.iteritems():
+            call(scope, "put", 
+                 "(Ljava/lang/String;Lorg/mozilla/javascript/Scriptable;"
+                 "Ljava/lang/Object;)V", k, scope, v)
+        result = call(context, "evaluateString",
+             "(Lorg/mozilla/javascript/Scriptable;"
+             "Ljava/lang/String;"
+             "Ljava/lang/String;"
+             "I"
+             "Ljava/lang/Object;)"
+             "Ljava/lang/Object;", 
+             scope, script, "<java-python-bridge>", 0, None)
+        result = unwrap_javascript(result)
+        for k in list(bindings_out):
+            bindings_out[k] = unwrap_javascript(call(
+                scope, "get",
+                "(Ljava/lang/String;"
+                "Lorg/mozilla/javascript/Scriptable;)"
+                "Ljava/lang/Object;", k, scope))
+    finally:
+        static_call("org/mozilla/javascript/Context", "exit", "()V")
+    return result
+
+def execute_runnable_in_main_thread(runnable, synchronous=False):
+    '''Execute a runnable on the main thread
+    
+    runnable - a Java object implementing java.lang.Runnable
+    
+    synchronous - True if we should wait for the runnable to finish
+    
+    Hint: to make a runnable using scripting,
+    
+    return new java.lang.Runnable() {
+      run: function() {
+        <do something here>
+      }
+    };
+    '''
+    if sys.platform == "darwin":
+        # Assumes that RunnableQueue has been deployed on the main thread
+        if synchronous:
+            future = make_instance(
+                "java/util/concurrent/FutureTask",
+                "(Ljava/lang/Runnable;Ljava/lang/Object;)V",
+                runnable, None)
+            execute_future_in_main_thread(future)
+        else:
+            static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V",
+                        runnable)
+    else:
+        run_in_main_thread(
+            lambda: call(runnable, "run", "()V"), synchronous)
+            
+def execute_future_in_main_thread(jfuture):
+    '''Execute a class implementing Future in the main thread
+    
+    Synchronize with the return, running the event loop.
+    '''
+    from cellprofiler.preferences import get_headless
+    
+    # Portions of this were adapted from IPython/lib/inputhookwx.py
+    #-----------------------------------------------------------------------------
+    #  Copyright (C) 2008-2009  The IPython Development Team
+    #
+    #  Distributed under the terms of the BSD License.  The full license is in
+    #  the file COPYING, distributed as par t of this software.
+    #-----------------------------------------------------------------------------
+    
+    if sys.platform != "darwin":
+        run_in_main_thread(lambda: call(jfuture, "run", "()V"))
+        return call(jfuture, "get", "()Ljava/lang/Object;")
+        
+    import wx
+    import time
+    app = wx.GetApp()
+    static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", jfuture)
+    if (app is None) or (not wx.Thread_IsMain()):
+        return call(jfuture, "get", "()Ljava/lang/Object;")
+    else:
+        evtloop = wx.EventLoop()
+        while not call(jfuture, "isDone", "()Z"):
+            while evtloop.Pending():
+                evtloop.Dispatch()
+            time.sleep(.1)
+        
+        return call(jfuture, "get", "()Ljava/lang/Object;")
+        
+def execute_callable_in_main_thread(jcallable):
+    '''Execute a callable on the main thread, returning its value
+    
+    callable - a Java object implementing java.util.concurrent.Callable
+    
+    Returns the result of evaluating the callable's "call" method in the
+    main thread.
+    
+    Hint: to make a callable using scripting,
+    
+    var my_import_scope = new JavaImporter(java.util.concurrent.Callable);
+    with (my_import_scope) {
+        return new Callable() {
+            call: function {
+                <do something that produces result>
+                return result;
+            }
+        };
+    '''
+    if sys.platform == "darwin":
+        # Assumes that RunnableQueue has been deployed on the main thread
+        future = make_instance(
+            "java/util/concurrent/FutureTask",
+            "(Ljava/util/concurrent/Callable;)V",
+            jcallable)
+        return execute_future_in_main_thread(future)
+    else:
+        return run_in_main_thread(
+            lambda: call(jcallable, "call", "()Ljava/lang/Object;"), 
+            True)
+    
 
 def run_in_main_thread(closure, synchronous):
     '''Run a closure in the main Java thread
@@ -321,6 +544,39 @@ def print_all_stack_traces():
         stakes = get_env().get_object_array_elements(stak)
         for stake in stakes:
             print to_string(stake)
+            
+CLOSE_ALL_WINDOWS = """
+        new java.lang.Runnable() { 
+            run: function() {
+                var all_frames = java.awt.Frame.getFrames();
+                if (all_frames) {
+                    for (idx in all_frames) {
+                        java.lang.System.err.println("Disposing");
+                        all_frames[idx].dispose();
+                    }
+                }
+            }
+        };"""
+
+__awt_is_active = False
+def activate_awt():
+    '''Activate Java AWT by executing some trivial code'''
+    global __awt_is_active
+    if not __awt_is_active:
+        execute_runnable_in_main_thread(run_script(
+            """new java.lang.Runnable() {
+                   run: function() {
+                       java.awt.Color.BLACK.toString();
+                   }
+               };"""), True)
+        __awt_is_active = True
+        
+def deactivate_awt():
+    global __awt_is_active
+    if __awt_is_active:
+        r = run_script(CLOSE_ALL_WINDOWS)
+        execute_runnable_in_main_thread(r, True)
+        __awt_is_active = False
 #
 # We make kill_vm as a closure here to bind local copies of the global objects
 #
@@ -330,6 +586,8 @@ def make_kill_vm():
     global __dead_event
     global __kill
     global __thread_local_env
+    global __run_headless
+    
     wake_event = __wake_event
     dead_event = __dead_event
     kill = __kill
@@ -340,31 +598,19 @@ def make_kill_vm():
         global __vm
         if __vm is None:
             return
-        while thread_local_env.attach_count > 0:
+        deactivate_awt()
+        while getattr(thread_local_env, "attach_count", 0) > 0:
             detach()
-        if sys.platform != "linux2" and False:
-            def call_exit():
-                runtime = static_call("java/lang/Runtime","getRuntime",
-                                      "()Ljava/lang/Runtime;")
-                call(runtime, "exit", "(I)V", 0)
-            run_in_main_thread(call_exit, True)
-        def close_all_windows():
-            is_headless = static_call(
-                "java/lang/System", "getProperty",
-                "(Ljava/lang/String;)Ljava/lang/String;", 
-                "java.awt.headless")
-            if is_headless != "true":
-                frames = static_call("java/awt/Frame", "getFrames",
-                                     "()[Ljava/awt/Frame;")
-                frames = get_env().get_object_array_elements(frames)
-                for frame in frames:
-                    call(frame, "dispose", "()V")
-        run_in_main_thread(close_all_windows, True)
         kill[0] = True
         wake_event.set()
         dead_event.wait()
     return kill_vm
 
+'''Kill the currently-running Java environment
+
+fn_poll_ui - if present, use this function to run the UI's event loop
+             while waiting for the JVM to close AWT.
+'''
 kill_vm = make_kill_vm()
     
 def attach():
@@ -411,6 +657,27 @@ def detach():
     __thread_local_env.env = None
     __vm.detach()
 
+def is_instance_of(o, class_name):
+    '''Return True if object is instance of class
+    
+    o - object in question
+    class_name - class in question. Use slash form: java/lang/Object
+    
+    Note: returns False if o is not a java object (e.g. a string)
+    '''
+    if not isinstance(o, javabridge.JB_Object):
+        return False
+    env = get_env()
+    klass = env.find_class(class_name)
+    jexception = get_env().exception_occurred()
+    if jexception is not None:
+        raise JavaException(jexception)
+    result = env.is_instance_of(o, klass)
+    jexception = get_env().exception_occurred()
+    if jexception is not None:
+        raise JavaException(jexception)
+    return result
+    
 def call(o, method_name, sig, *args):
     '''Call a method on an object
     
@@ -438,7 +705,7 @@ def call(o, method_name, sig, *args):
     x = env.exception_occurred()
     if x is not None:
         raise JavaException(x)
-    return get_nice_result(result,ret_sig)
+    return get_nice_result(result, ret_sig)
 
 def static_call(class_name, method_name, sig, *args):
     '''Call a static method on a class
@@ -611,10 +878,24 @@ def get_nice_arg(arg, sig):
         #
         if hasattr(arg, "o"):
             return arg.o
+    #
+    # If asking for an object, try converting basic types into Java-wraps
+    # of Java basic types
+    #
+    if sig == 'Ljava/lang/Object;' and isinstance(arg, bool):
+        return make_instance('java/lang/Boolean', '(Z)V', arg)
+    if sig == 'Ljava/lang/Object;' and isinstance(arg, int):
+        return make_instance('java/lang/Integer', '(I)V', arg)
+    if sig == 'Ljava/lang/Object;' and isinstance(arg, long):
+        return make_instance('java/lang/Long', '(J)V', arg)
+    if sig == 'Ljava/lang/Object;' and isinstance(arg, float):
+        return make_instance('java/lang/Double', '(D)V', arg)
     if (sig in ('Ljava/lang/String;','Ljava/lang/Object;') and not
          isinstance(arg, javabridge.JB_Object)):
         if isinstance(arg, unicode):
             arg, _ = codecs.utf_8_encode(arg)
+        elif arg is None:
+            return None
         else:
             arg = str(arg)
         return env.new_string_utf(arg)
@@ -624,6 +905,7 @@ def get_nice_arg(arg, sig):
         return make_instance('java/lang/Long', '(J)V', long(arg))
     if sig == 'Ljava/lang/Boolean;' and type(arg) in [int, long, bool]:
         return make_instance('java/lang/Boolean', '(Z)V', bool(arg))
+    
     if isinstance(arg, np.ndarray):
         if sig == '[Z':
             return env.make_boolean_array(np.ascontiguousarray(arg.flatten(), np.bool8))
@@ -661,7 +943,9 @@ def get_nice_result(result, sig):
     if result is None:
         return None
     env = get_env()
-    if sig == 'Ljava/lang/String;':
+    if (sig == 'Ljava/lang/String;' or
+        (sig == 'Ljava/lang/Object;' and 
+         is_instance_of(result, "java/lang/String"))):
         return codecs.utf_8_decode(env.get_string_utf(result), 'replace')[0]
     if sig == 'Ljava/lang/Integer;':
         return call(result, 'intValue', '()I')
@@ -1018,3 +1302,43 @@ def make_run_dictionary(jobject_address):
     for key in keys:
         result[key] = d.get(key)
     return result
+
+if __name__=="__main__":
+    import wx
+    app = wx.PySimpleApp(False)
+    frame = wx.Frame(None)
+    frame.Sizer = wx.BoxSizer(wx.HORIZONTAL)
+    start_button = wx.Button(frame, label="Start VM")
+    frame.Sizer.Add(start_button, 1, wx.ALIGN_CENTER_HORIZONTAL)
+    def fn_start(event):
+        start_vm([])
+        start_button.Enable(False)
+    start_button.Bind(wx.EVT_BUTTON, fn_start)
+    
+    launch_button = wx.Button(frame, label="Launch AWT frame")
+    frame.Sizer.Add(launch_button, 1, wx.ALIGN_CENTER_HORIZONTAL)
+    
+    def fn_launch_frame(event):
+        execute_runnable_in_main_thread(run_script("""
+        new java.lang.Runnable() {
+            run: function() {
+                with(JavaImporter(java.awt.Frame)) Frame().setVisible(true);
+            }
+        };"""))
+    launch_button.Bind(wx.EVT_BUTTON, fn_launch_frame)
+    
+    stop_button = wx.Button(frame, label="Stop VM")
+    frame.Sizer.Add(stop_button, 1, wx.ALIGN_CENTER_HORIZONTAL)
+    def fn_stop(event):
+        def do_kill_vm():
+            attach()
+            kill_vm()
+            wx.CallAfter(stop_button.Enable, False)
+        thread = threading.Thread(target=do_kill_vm)
+        thread.start()
+    stop_button.Bind(wx.EVT_BUTTON, fn_stop)
+    frame.Layout()
+    frame.Show()
+    app.MainLoop()
+        
+    

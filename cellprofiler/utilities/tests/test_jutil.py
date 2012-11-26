@@ -20,6 +20,7 @@ import os
 import numpy as np
 import threading
 import unittest
+import sys
 
 import cellprofiler.utilities.jutil as J
 import bioformats # to start the VM
@@ -290,6 +291,33 @@ class TestJutil(unittest.TestCase):
         t = f.getType()
         self.assertEqual(J.to_string(t), 'byte')
         
-    
+    def test_05_01_run_script(self):
+        result = J.call(J.run_script("2+2"), "intValue", "()I")
+        self.assertEqual(result, 4)
+        
+    def test_05_02_run_script_with_inputs(self):
+        result = J.run_script("a+b", bindings_in={"a":2, "b":3})
+        self.assertEqual(J.call(result, "intValue", "()I"), 5)
+        
+    def test_05_03_run_script_with_outputs(self):
+        outputs = { "result": None}
+        J.run_script("var result = 2+2;", bindings_out=outputs)
+        self.assertEqual(J.call(outputs["result"], "intValue", "()I"), 4)
+        
+    def test_06_01_execute_asynch_main(self):
+        J.execute_runnable_in_main_thread(J.run_script(
+            "new java.lang.Runnable() { run:function() {}};"))
+        
+    def test_06_02_execute_synch_main(self):
+        J.execute_runnable_in_main_thread(J.run_script(
+            "new java.lang.Runnable() { run:function() {}};"), True)
+        
+    def test_06_03_call_main(self):
+        c = J.run_script("""
+        new java.util.concurrent.Callable() {
+           call: function() { return 2+2; }};""")
+        result = J.execute_callable_in_main_thread(c)
+        self.assertEqual(J.call(result, "intValue", "()I"), 4)
+        
 if __name__=="__main__":
     unittest.main()

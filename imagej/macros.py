@@ -16,63 +16,95 @@ import sys
 import bioformats
 import cellprofiler.utilities.jutil as J
 
-from cellprofiler.preferences import get_headless
-
 def get_commands():
     '''Return a list of the available command strings'''
-    def fn():
-        hashtable = J.static_call('ij/Menus', 'getCommands',
-                                  '()Ljava/util/Hashtable;')
-        if hashtable is None:
-            #
-            # This is a little bogus, but works - trick IJ into initializing
-            #
-            execute_command("pleaseignorethis")
-            hashtable = J.static_call('ij/Menus', 'getCommands',
-                                      '()Ljava/util/Hashtable;')
-            if hashtable is None:
-                return []
-        keys = J.call(hashtable, "keys", "()Ljava/util/Enumeration;")
-        keys = J.jenumeration_to_string_list(keys)
-        values = J.call(hashtable, "values", "()Ljava/util/Collection;")
-        values = [J.to_string(x) for x in J.iterate_java(
-            J.call(values, 'iterator', "()Ljava/util/Iterator;"))]
-        class CommandList(list):
-            def __init__(self):
-                super(CommandList, self).__init__(keys)
-                self.values = values
-        return CommandList()
-    return J.run_in_main_thread(fn, True)
+    script = """
+    new java.util.concurrent.Callable() {
+        call: function() {
+           importClass(Packages.ij.Menus, Packages.ij.IJ);
+           var hashtable=Menus.getCommands();
+           if (hashtable==null) {
+               IJ.run("pleaseignorethis");
+               hashtable = Menus.getCommands();
+           }
+           return hashtable;
+        }
+    };
+    """
+    c = J.run_script(script, class_loader = get_user_loader())
+    hashtable = J.execute_callable_in_main_thread(c)
+    keys = J.call(hashtable, "keys", "()Ljava/util/Enumeration;")
+    keys = J.jenumeration_to_string_list(keys)
+    values = J.call(hashtable, "values", "()Ljava/util/Collection;")
+    values = [J.to_string(x) for x in J.iterate_java(
+        J.call(values, 'iterator', "()Ljava/util/Iterator;"))]
+    class CommandList(list):
+        def __init__(self):
+            super(CommandList, self).__init__(keys)
+            self.values = values
+    return CommandList()
         
 def execute_command(command, options = None):
     '''Execute the named command within ImageJ'''
-    def fn(command=command, options=options):
-        if options is None:
-            J.static_call("ij/IJ", "run", "(Ljava/lang/String;)V", command)
-        else:
-            J.static_call("ij/IJ", "run", 
-                          "(Ljava/lang/String;Ljava/lang/String;)V",
-                          command, options)
-    J.run_in_main_thread(fn, True)
+    r = J.run_script("""
+    new java.lang.Runnable() {
+        run: function() { 
+            importClass(Packages.ij.IJ, Packages.ij.ImageJ);
+            var imagej = IJ.getInstance();
+            if (imagej == null) {
+                imagej = ImageJ();
+            }
+            imagej.setVisible(true);
+            if (options==null) {
+                IJ.run(command);
+            } else {
+                IJ.run(command, options);
+            }
+        }
+    };""", 
+         bindings_in = { 
+             "command":command, 
+             "options":options },
+         class_loader=get_user_loader())
+    J.execute_runnable_in_main_thread(r, True)
     
 def execute_macro(macro_text):
     '''Execute a macro in ImageJ
     
     macro_text - the macro program to be run
     '''
-    def fn(macro_text = macro_text):
-        show_imagej()
-        interp = J.make_instance("ij/macro/Interpreter","()V")
-        J.call(interp, "run","(Ljava/lang/String;)V", macro_text)
-    J.run_in_main_thread(fn, True)
+    script = """
+    new java.lang.Runnable() {
+        run: function() {
+            importClass(Packages.ij.IJ, Packages.ij.ImageJ);
+            importClass(Packages.ij.macro.Interpreter);
+            var imagej = IJ.getInstance();
+            var interpreter = Interpreter();
+            if (imagej == null) {
+                imagej = ImageJ();
+            }
+            imagej.setVisible(true);
+            interpreter.run(macro);
+        }
+    };"""
+    runnable = J.run_script(script, 
+                            bindings_in = { "macro":macro_text },
+                            class_loader = get_user_loader())
+    J.execute_runnable_in_main_thread(runnable, True)
     
 def show_imagej():
     '''Show the ImageJ user interface'''
-    ij_obj = J.static_call("ij/IJ", "getInstance", "()Lij/ImageJ;")
-    if ij_obj is None:
-        ij_obj = J.make_instance("ij/ImageJ", "()V")
-    J.call(ij_obj, "setVisible", "(Z)V", True)
-    J.call(ij_obj, "toFront", "()V")
+    r = J.run_script("""new java.lang.Runnable() {
+        run: function() {
+            var imageJ = Packages.ij.IJ.getInstance();
+            if (imageJ == null) {
+                imageJ = Packages.ij.ImageJ();
+            }
+            imageJ.setVisible(true);
+            imageJ.toFront();
+        }
+    };""", class_loader=get_user_loader())
+    J.execute_runnable_in_main_thread(r, True)
     
 def get_user_loader():
     '''The class loader used to load user plugins'''

@@ -53,7 +53,7 @@ cdef extern from "numpy/arrayobject.h":
         cdef Py_intptr_t *strides
     cdef void import_array()
     cdef int  PyArray_ITEMSIZE(np.ndarray)
-
+    
 import_array()
 
 cdef extern from "jni.h":
@@ -134,6 +134,7 @@ cdef extern from "jni.h":
         jint (* GetVersion)(JNIEnv *env)
         jclass (* FindClass)(JNIEnv *env, char *name)
         jclass (* GetObjectClass)(JNIEnv *env, jobject obj)
+        jboolean (* IsInstanceOf)(JNIEnv *env, jobject obj, jclass klass)
         jclass (* NewGlobalRef)(JNIEnv *env, jobject lobj)
         void (* DeleteGlobalRef)(JNIEnv *env, jobject gref)
         void (* DeleteLocalRef)(JNIEnv *env, jobject obj)
@@ -302,6 +303,36 @@ cdef extern from "jni.h":
     jint JNI_CreateJavaVM(JavaVM **pvm, void **penv, void *args)
     jint JNI_GetDefaultJavaVMInitArgs(void *args)
     
+IF UNAME_SYSNAME == "Darwin":
+    cdef extern from "mac_javabridge_utils.h":
+        int MacStartVM(JavaVM **, JavaVMInitArgs *pVMArgs, char *class_name)
+        int EnterJVM()
+        void ExitJVM()
+ELSE:
+    cdef int MacStartVM(JavaVM **pvm, JavaVMInitArgs *pVMArgs, char *class_name):
+        return -1
+
+    import threading
+    jvm_mutex = threading.Lock()
+    jvm_condition = threading.Condition()
+    running = False
+    enter_count = 0
+    def EnterJVM():
+        jvm_mutex.acquire()
+        was_running = running
+        if was_running:
+            enter_count += 1
+        jvm_mutex.release()
+        return 0 if was_running else -1
+    
+    def ExitJVM():
+        jvm_mutex.acquire()
+        enter_count -= 1
+        if enter_count == 0:
+            jvm_condition.notify_all()
+        jvm_mutex.release()
+        
+    
 def get_default_java_vm_init_args():
     '''Return the version and default option strings as a tuple'''
     cdef:
@@ -462,6 +493,44 @@ cdef class JB_VM:
         jenv = JB_Env()
         jenv.env = env
         return jenv
+
+    def create_mac(self, options, class_name):
+        '''Create the Java VM on OS/X in a different thread
+        
+        On the Mac, (assuming this works), you need to start a PThread 
+        and do so in a very particular manner if you ever want to run UI
+        code in Java and Python. This creates that thread and it then runs
+        a runnable.
+        
+        org.cellprofiler.runnablequeue.RunnableQueue is a class that uses
+        a queue to ferry runnables to this main thread. You can use that
+        and then call RunnableQueue's static methods to run things on the
+        main thread.
+        
+        You should run this on its own thread since it will not return until
+        after the JVM exits.
+        
+        options - the option strings
+        
+        class_name - the name of the Runnable to run on the Java main thread
+        '''
+        cdef:
+            JavaVMInitArgs args
+            JNIEnv *env
+            JB_Env jenv
+
+        args.version = JNI_VERSION_1_4
+        args.nOptions = len(options)
+        args.options = <JavaVMOption *>malloc(sizeof(JavaVMOption)*args.nOptions)
+        if args.options == NULL:
+            raise MemoryError("Failed to allocate JavaVMInitArgs")
+        options = [str(option) for option in options]
+        for i, option in enumerate(options):
+            args.options[i].optionString = option
+        result = MacStartVM(&self.vm, &args, class_name)
+        free(args.options)
+        if result != 0:
+            raise RuntimeError("Failed to create Java VM. Return code = %d"%result)
             
     def attach(self):
         '''Attach this thread to the VM returning an environment'''
@@ -581,6 +650,15 @@ cdef class JB_Env:
         result = JB_Class()
         result.c = c
         return result
+        
+    def is_instance_of(self, JB_Object o, JB_Class c):
+        '''Return True if object is instance of class
+        
+        o - a Java object
+        c - a Java class
+        '''
+        result = self.env[0].IsInstanceOf(self.env, o.o, c.c)
+        return result != 0
 
     def exception_occurred(self):
         '''Return a throwable if an exception occurred or None'''
@@ -677,6 +755,8 @@ cdef class JB_Env:
         cdef:
             jvalue *values
             jobject oresult
+            JNIEnv *jnienv = self.env
+            
         
         if m is None:
             raise ValueError("Method ID is None - check your method ID call")
@@ -714,7 +794,7 @@ cdef class JB_Env:
         elif sig == 'D':
             result = self.env[0].CallDoubleMethodA(self.env, o.o, m.id, values)
         elif sig[0] == 'L' or sig[0] == '[':
-            oresult = self.env[0].CallObjectMethodA(self.env, o.o, m.id, values)
+            oresult = jnienv[0].CallObjectMethodA(jnienv, o.o, m.id, values)
             if oresult == NULL:
                 result = None
             else:
@@ -1046,7 +1126,7 @@ cdef class JB_Env:
         value - should be convertible to unicode and at least 1 char long
         '''
         cdef:
-            jchar jvalue = PyUnicode_AS_UNICODE(unicode(jvalue))[0]
+            jchar jvalue = PyUnicode_AS_UNICODE(unicode(value))[0]
         self.env[0].SetStaticCharField(self.env, c.c, field.id, jvalue)
         
     def set_static_short_field(self, JB_Class c, __JB_FieldID field, value):

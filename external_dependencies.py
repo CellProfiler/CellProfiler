@@ -11,6 +11,8 @@ import sys
 # The list of files (relative path) to fetch, their SHA1, and their source URL.
 files = [
     [['bioformats', 'loci_tools.jar'], 'a1d08a9dfb648eb86290a036fe0b5a4e47f2c44a', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11312/trunk/CellProfiler/bioformats/loci_tools.jar'],
+    [['cellprofiler', 'utilities', 'runnablequeue-1.0.0.jar'], '25df9c1f986cc2b9384c9d2d8053cea0863b28ef', 'http://www.cellprofiler.org/linked_files/runnablequeue/builds/runnablequeue-ad0369388502018b519c943d92206fed94347817.jar'],
+    [['cellprofiler', 'utilities', 'js.jar'], 'b95d5212ff4cea92cee1c3c6fa50aa82c9d4905b', 'http://repo1.maven.org/maven2/rhino/js/1.7R2/js-1.7R2.jar'],
     [['imagej', 'ij.jar'], 'f675dc28e38a9a2612e55db049f4d4bb47d774b1', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/ij.jar'],
     [['imagej', 'imglib.jar'], '7e0e68aa371706012e224df0b31925317a3dc284', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/imglib.jar'],
     [['imagej', 'javacl-1.0-beta-4-shaded.jar'], '62b3b41c4759652595070534d79d1294eeba8139', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/javacl-1.0-beta-4-shaded.jar'],

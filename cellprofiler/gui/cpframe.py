@@ -157,6 +157,8 @@ class CPFrame(wx.Frame):
         self.__directory_view.close()
         self.__preferences_view.close()
         self.pipeline_controller.on_close()
+        import cellprofiler.utilities.jutil as J
+        J.deactivate_awt()
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):

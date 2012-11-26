@@ -68,6 +68,20 @@ class TestJavabridge(unittest.TestCase):
         method_id = self.env.get_method_id(klass, '<init>','(Ljava/lang/String;)V')
         jbyte = self.env.new_object(klass, method_id, self.env.new_string_utf("55"))
         self.assertTrue(jbyte is not None)
+        
+    def test_01_11_01_is_instance_of(self):
+        klassByte = self.env.find_class("java/lang/Byte")
+        method_id = self.env.get_method_id(klassByte, '<init>','(Ljava/lang/String;)V')
+        jbyte = self.env.new_object(klassByte, method_id, self.env.new_string_utf("55"))
+        klassNumber = self.env.find_class("java/lang/Number")
+        self.assertTrue(self.env.is_instance_of(jbyte, klassNumber))
+        
+    def test_01_11_02_isnt_instance_of(self):
+        klassByte = self.env.find_class("java/lang/Byte")
+        method_id = self.env.get_method_id(klassByte, '<init>','(Ljava/lang/String;)V')
+        jbyte = self.env.new_object(klassByte, method_id, self.env.new_string_utf("55"))
+        klassString = self.env.find_class("java/lang/String")
+        self.assertFalse(self.env.is_instance_of(jbyte, klassString))
     
     def test_01_12_get_static_field_id(self):
         klass = self.env.find_class("java/lang/Boolean")

@@ -56,7 +56,7 @@ def get_ij_bridge():
     '''
     if USE_IJ2:
         return ij2_bridge.getInstance()
-    if sys.platform != 'darwin':
+    if True or sys.platform != 'darwin':
         return in_proc_ij_bridge.getInstance()
     else: # sys.platform == 'darwin':
         return inter_proc_ij_bridge.getInstance()
@@ -109,12 +109,19 @@ class in_proc_ij_bridge(ij_bridge, Singleton):
 
     def inject_image(self, pixels, name=''):
         '''inject an image into ImageJ for processing'''
-        ij_processor = ijiproc.make_image_processor((pixels * 255.0).astype('float32'))
-        image_plus = ijip.make_imageplus_from_processor(name, ij_processor)
-        if sys.platform == "darwin":
-            ijwm.set_temp_current_image(image_plus)
-        else:
-            ijwm.set_current_image(image_plus)
+        ij_processor = ijiproc.make_image_processor(
+            (pixels * 255.0).astype('float32'))
+        script = """
+        new java.lang.Runnable() {
+            run: function() {
+                var imp = Packages.ij.ImagePlus(name, ij_processor);
+                imp.show();
+                Packages.ij.WindowManager.setCurrentWindow(imp.getWindow());
+            }};"""
+        r = J.run_script(script, bindings_in = {
+            "name":name,
+            "ij_processor": ij_processor})
+        J.execute_runnable_in_main_thread(r, True)
 
     def get_current_image(self):
         '''returns the WindowManager's current image as a numpy float array'''

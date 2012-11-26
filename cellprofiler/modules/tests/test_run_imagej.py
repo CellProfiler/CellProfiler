@@ -467,7 +467,7 @@ RunImageJ:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_
             workspace, module = self.make_workspace()
             self.assertTrue(isinstance(module, R.RunImageJ))
             module.command_or_macro.value = R.CM_COMMAND
-            module.command.value = "Select None"
+            module.command.value = "Show All"
             module.run(workspace)
             
         def test_02_02_run_input_command(self):

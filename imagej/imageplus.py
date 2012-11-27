@@ -63,13 +63,30 @@ def get_imageplus_wrapper(imageplus_obj):
         setSlice = J.make_method('setSlice', '(I)V')
         setTitle = J.make_method('setTitle', '(Ljava/lang/String;)V')
         
-        show = J.make_method('show', '()V', 
-                             'Show the image in an ImageWindow.')
-        show_with_message = J.make_method(
-            'show', '(Ljava/lang/String;)V',
-            'Show the image in an ImageWindow. Display the message in the status bar')
-        hide = J.make_method('hide', '()V',
-                             'Hide the ImageWindow associated with this image')
+        def show(self, message = None):
+            '''Show the window associated with this image
+            
+            message - optional message to display
+            '''
+            if message is None:
+                script, bindings_in = """
+                new java.lang.Runnable() {
+                    run: function() { o.show(); }
+                };""", dict(o=self.o)
+            else:
+                script, bindings_in = """
+                new java.lang.Runnable() {
+                    run: function() { o.show(message); }
+                };""", dict(o=self.o, message=message)
+            J.execute_runnable_in_main_thread(J.run_script(
+                script, bindings_in = bindings_in), True)
+            
+        def hide(self):
+            '''Hide the ImageWindow associated with this image'''
+            J.execute_runnable_in_main_thread(J.run_script(
+                """new java.lang.Runnable() { run: function() { o.hide(); }};""",
+                dict(o=self.o)), True)
+            
         getWindow = J.make_method('getWindow', '()Lij/gui/ImageWindow;',
                                   'Get the ImageWindow associated with this image. getWindow() will return null unless you have previously called show()')
     return ImagePlus()

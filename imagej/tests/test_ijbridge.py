@@ -38,10 +38,7 @@ class TestIJBridge(unittest.TestCase):
    
    def test_00_00_get_ij_bridge(self):
       ijb = get_ij_bridge()
-      if sys.platform == 'darwin':
-         assert ijb == inter_proc_ij_bridge.getInstance()
-      else:
-         assert ijb == in_proc_ij_bridge.getInstance()
+      assert ijb == in_proc_ij_bridge.getInstance()
 
    #
    # in-proc (JNI) tests

@@ -448,8 +448,6 @@ def execute_future_in_main_thread(jfuture):
     
     Synchronize with the return, running the event loop.
     '''
-    from cellprofiler.preferences import get_headless
-    
     # Portions of this were adapted from IPython/lib/inputhookwx.py
     #-----------------------------------------------------------------------------
     #  Copyright (C) 2008-2009  The IPython Development Team
@@ -465,17 +463,55 @@ def execute_future_in_main_thread(jfuture):
     import wx
     import time
     app = wx.GetApp()
+    logger.debug("Enqueueing future on runnable queue")
     static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", jfuture)
     if (app is None) or (not wx.Thread_IsMain()):
+        logger.debug("Synchronizing without event loop")
         return call(jfuture, "get", "()Ljava/lang/Object;")
-    else:
+    elif app.IsMainLoopRunning():
         evtloop = wx.EventLoop()
+        logger.debug("Polling for future done within main loop")
         while not call(jfuture, "isDone", "()Z"):
+            logger.debug("Future is not done")
             while evtloop.Pending():
+                logger.debug("Processing pending event")
                 evtloop.Dispatch()
+            logger.debug("Sleeping")
             time.sleep(.1)
         
+        logger.debug("Fetching future value")
         return call(jfuture, "get", "()Ljava/lang/Object;")
+    else:
+        logger.debug("Polling for future while running main loop")
+        class EventLoopTimer(wx.Timer):
+        
+            def __init__(self, func):
+                self.func = func
+                wx.Timer.__init__(self)
+        
+            def Notify(self):
+                self.func()
+        
+        class EventLoopRunner(object):
+        
+            def __init__(self, fn):
+                self.fn = fn
+                
+            def Run(self, time):
+                self.evtloop = wx.EventLoop()
+                self.timer = EventLoopTimer(self.check_fn)
+                self.timer.Start(time)
+                self.evtloop.Run()
+        
+            def check_fn(self):
+                if self.fn():
+                    self.timer.Stop()
+                    self.evtloop.Exit()
+        event_loop_runner = EventLoopRunner(
+            lambda: call(jfuture, "isDone", "()Z"))
+        event_loop_runner.Run(time=10)
+        return call(jfuture, "get", "()Ljava/lang/Object;")
+        
         
 def execute_callable_in_main_thread(jcallable):
     '''Execute a callable on the main thread, returning its value

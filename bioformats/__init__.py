@@ -142,3 +142,10 @@ def start_cellprofiler_jvm():
         jutil.activate_awt()
 start_cellprofiler_jvm()
 from formatreader import load_using_bioformats
+
+if __name__ == "__main__":
+    # Handy-dandy PyShell for exploring BioFormats / Rhino / ImageJ
+    import wx.py.PyCrust
+    
+    wx.py.PyCrust.main()
+    J.kill_vm()

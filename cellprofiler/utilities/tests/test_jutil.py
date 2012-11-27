@@ -292,17 +292,15 @@ class TestJutil(unittest.TestCase):
         self.assertEqual(J.to_string(t), 'byte')
         
     def test_05_01_run_script(self):
-        result = J.call(J.run_script("2+2"), "intValue", "()I")
-        self.assertEqual(result, 4)
+        self.assertEqual(J.run_script("2+2"), 4)
         
     def test_05_02_run_script_with_inputs(self):
-        result = J.run_script("a+b", bindings_in={"a":2, "b":3})
-        self.assertEqual(J.call(result, "intValue", "()I"), 5)
+        self.assertEqual(J.run_script("a+b", bindings_in={"a":2, "b":3}), 5)
         
     def test_05_03_run_script_with_outputs(self):
         outputs = { "result": None}
         J.run_script("var result = 2+2;", bindings_out=outputs)
-        self.assertEqual(J.call(outputs["result"], "intValue", "()I"), 4)
+        self.assertEqual(outputs["result"], 4)
         
     def test_06_01_execute_asynch_main(self):
         J.execute_runnable_in_main_thread(J.run_script(
@@ -317,7 +315,7 @@ class TestJutil(unittest.TestCase):
         new java.util.concurrent.Callable() {
            call: function() { return 2+2; }};""")
         result = J.execute_callable_in_main_thread(c)
-        self.assertEqual(J.call(result, "intValue", "()I"), 4)
+        self.assertEqual(J.unwrap_javascript(result), 4)
         
 if __name__=="__main__":
     unittest.main()

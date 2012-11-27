@@ -11,6 +11,12 @@ np.seterr(all='ignore')
 import sys
 
 class KillVMPlugin(Plugin):
+    '''CellProfiler Javabridge nose test plugin
+    
+    This plugin is meant to be run with the CellProfiler unit tests using
+    Nose. Its purpose is to control the Javabridge environment during tests,
+    starting and stopping it as necessary.
+    '''
     enabled = False
     name = "kill-vm"
 
@@ -24,21 +30,11 @@ class KillVMPlugin(Plugin):
             self.enabled = True
     
     def begin(self):
-        self.ran_jvm_hook = False
-        self.has_jvm = False
-        
-    def beforeImport(self, filename, module):
-        if module == "bioformats" and not self.ran_jvm_hook:
-            sys.stderr.write("Preparing to import bioformats.\n")
+        if self.enabled:
             import wx
             self.app = wx.GetApp()
             if self.app is None:
                 self.app = wx.PySimpleApp(False)
-            self.ran_jvm_hook = True
-        
-    def afterImport(self, filename, module):
-        if module == "bioformats":
-            self.has_jvm = True
         
     def prepareTestRunner(self, testRunner):
         '''Need to make the test runner call finalize if in Wing
@@ -71,11 +67,8 @@ class KillVMPlugin(Plugin):
             pass
         
     def finalize(self, result):
-        if self.has_jvm:
+        import wx
+        if self.enabled:
             from cellprofiler.utilities.jutil import kill_vm
-            import sys
             kill_vm()
-            import wx
-            self.app.Exit()
-            self.app.Destroy()
-            del self.app
+            os._exit(0)

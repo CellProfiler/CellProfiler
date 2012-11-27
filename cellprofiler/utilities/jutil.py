@@ -348,7 +348,18 @@ def unwrap_javascript(o):
     return nice version
     '''
     if is_instance_of(o, "org/mozilla/javascript/Wrapper"):
-        return call(o, "unwrap", "()Ljava/lang/Object;")
+        o = call(o, "unwrap", "()Ljava/lang/Object;")
+    if not isinstance(o, javabridge.JB_Object):
+        return o
+    for class_name, method, signature in (
+        ("java/lang/Boolean", "booleanValue", "()Z"),
+        ("java/lang/Byte", "byteValue", "()B"),
+        ("java/lang/Integer",  "intValue", "()I"),
+        ("java/lang/Long", "longValue", "()L"),
+        ("java/lang/Float", "floatValue", "()F"),
+        ("java/lang/Double", "doubleValue", "()D")):
+        if is_instance_of(o, class_name):
+            return call(o, method, signature)
     return o
     
 def run_script(script, bindings_in = {}, bindings_out = {}, 

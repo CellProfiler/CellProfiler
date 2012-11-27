@@ -49,18 +49,12 @@ class TestIJBridge(unittest.TestCase):
    #
    
    def test_01_01_jni_inject_and_get(self):
-      if sys.platform == 'darwin':
-         print >> sys.stderr, 'Skipping JNI test (system is OSX).'
-         return
       ijb = in_proc_ij_bridge.getInstance()
       ijb.inject_image(PIXELS, 'name ignored')
       im = ijb.get_current_image()
       np.testing.assert_array_almost_equal(im, PIXELS)
 
    def test_01_02_jni_invert_macro(self):
-      if sys.platform == 'darwin':
-         print >> sys.stderr, 'Skipping JNI test (system is OSX).'
-         return
       ijb = in_proc_ij_bridge.getInstance()
       ijb.inject_image(PIXELS, 'name ignored')
       ijb.execute_macro('run("Invert");')
@@ -70,9 +64,6 @@ class TestIJBridge(unittest.TestCase):
       np.testing.assert_array_almost_equal(im, INVERTED)
 
    def test_01_03_jni_command(self):
-      if sys.platform == 'darwin':
-         print >> sys.stderr, 'Skipping JNI test (system is OSX).'
-         return
       ijb = in_proc_ij_bridge.getInstance()
       ijb.inject_image(PIXELS, 'name ignored')
       ijb.execute_command('Smooth')
@@ -82,46 +73,6 @@ class TestIJBridge(unittest.TestCase):
       assert im.max() <= 1.0
 
    def test_01_04_jni_get_commands(self):
-      if sys.platform == 'darwin':
-         print >> sys.stderr, 'Skipping JNI test (system is OSX).'
-         return
       ijb =  in_proc_ij_bridge.getInstance()
       cmds = ijb.get_commands()
       assert set(cmds).issuperset(set(IJ_CMDS))
-   #
-   # inter-proc (TCP) tests - Mac only
-   #
-   if sys.platform == 'darwin':
-      def test_02_01_ipc_inject_and_get(self):
-         ijb = inter_proc_ij_bridge.getInstance()
-         ijb.inject_image(PIXELS, 'name ignored')
-         im = ijb.get_current_image()
-         np.testing.assert_array_almost_equal(im, PIXELS)
-      
-      def test_02_02_ipc_invert_macro(self):
-         ijb = inter_proc_ij_bridge.getInstance()
-         ijb.inject_image(PIXELS, 'name ignored')
-         ijb.execute_macro('run("Invert");')
-         im = ijb.get_current_image()
-         assert im.min() >= 0.0
-         assert im.max() <= 1.0
-         np.testing.assert_array_almost_equal(im, INVERTED)
-      
-      def test_02_03_ipc_command(self):
-         ijb = inter_proc_ij_bridge.getInstance()
-         ijb.inject_image(PIXELS, 'name ignored')
-         ijb.execute_command('Smooth')
-         im = ijb.get_current_image()
-         assert (im != PIXELS).any()
-         assert im.min() >= 0.0
-         assert im.max() <= 1.0
-      
-      def test_02_04_ipc_get_commands(self):
-         ijb =  inter_proc_ij_bridge.getInstance()
-         cmds = ijb.get_commands()
-         assert set(cmds).issuperset(set(IJ_CMDS))
-   
-      def test_02_05_quit_ij(self):
-         ijb = inter_proc_ij_bridge.getInstance()
-         ijb.quit()
-      

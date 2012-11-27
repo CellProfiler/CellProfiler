@@ -306,31 +306,9 @@ cdef extern from "jni.h":
 IF UNAME_SYSNAME == "Darwin":
     cdef extern from "mac_javabridge_utils.h":
         int MacStartVM(JavaVM **, JavaVMInitArgs *pVMArgs, char *class_name)
-        int EnterJVM()
-        void ExitJVM()
 ELSE:
     cdef int MacStartVM(JavaVM **pvm, JavaVMInitArgs *pVMArgs, char *class_name):
         return -1
-
-    import threading
-    jvm_mutex = threading.Lock()
-    jvm_condition = threading.Condition()
-    running = False
-    enter_count = 0
-    def EnterJVM():
-        jvm_mutex.acquire()
-        was_running = running
-        if was_running:
-            enter_count += 1
-        jvm_mutex.release()
-        return 0 if was_running else -1
-    
-    def ExitJVM():
-        jvm_mutex.acquire()
-        enter_count -= 1
-        if enter_count == 0:
-            jvm_condition.notify_all()
-        jvm_mutex.release()
         
     
 def get_default_java_vm_init_args():

@@ -25,6 +25,7 @@ class KillVMPlugin(Plugin):
     
     def begin(self):
         self.ran_jvm_hook = False
+        self.has_jvm = False
         
     def beforeImport(self, filename, module):
         if module == "bioformats" and not self.ran_jvm_hook:
@@ -33,7 +34,6 @@ class KillVMPlugin(Plugin):
             self.app = wx.GetApp()
             if self.app is None:
                 self.app = wx.PySimpleApp(False)
-            self.has_jvm = False
             self.ran_jvm_hook = True
         
     def afterImport(self, filename, module):
@@ -72,13 +72,10 @@ class KillVMPlugin(Plugin):
         
     def finalize(self, result):
         if self.has_jvm:
-            try:
-                from cellprofiler.utilities.jutil import kill_vm
-                import sys
-                kill_vm()
-                import wx
-                self.app.Exit()
-                self.app.Destroy()
-                del self.app
-            except:
-                pass
+            from cellprofiler.utilities.jutil import kill_vm
+            import sys
+            kill_vm()
+            import wx
+            self.app.Exit()
+            self.app.Destroy()
+            del self.app

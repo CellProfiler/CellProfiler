@@ -768,10 +768,13 @@ class RunImageJ(cpm.CPModule):
             # * Interactive - use PlugInFunctions.runInteractively
             #
             if self.pause_before_proceeding:
-                J.static_call('imagej/plugin/PlugInFunctions', 'runInteractively',
-                       '(Ljava/lang/Runnable)V', plugin)
+                J.execute_runnable_in_main_thread(J.run_script(
+                    """new java.lang.Runnable() { run:function() {
+                        importClass(Packages.imagej.plugin.PlugInFunctions);
+                        PlugInFunctions.runInteractively(plugin);
+                    }};""", dict(plugin=plugin)), True)
             else:
-                J.call(plugin, 'run', '()V')
+                J.execute_runnable_in_main_thread(plugin, True)
             setting_idx = len(fp_in)
             fp_out = P.get_output_fields_and_parameters(plugin)
             for field, parameter in fp_out:

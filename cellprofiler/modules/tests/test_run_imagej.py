@@ -18,7 +18,6 @@ import sys
 import unittest
 
 import cellprofiler.preferences as cpprefs
-cpprefs.set_headless()
 cpprefs.set_ij_plugin_directory(os.path.split(__file__)[0])
 cpprefs.set_ij_version(cpprefs.IJ_1)
 
@@ -32,7 +31,6 @@ import cellprofiler.workspace as cpw
 import cellprofiler.modules.run_imagej as R
 from bioformats import USE_IJ2
 
-run_tests = (sys.platform.startswith("win") and not USE_IJ2)
 
 INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
@@ -460,149 +458,146 @@ RunImageJ:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:3|show_
                              list(range(1,len(input_images)+1)));
         return workspaces, module
     
-    if run_tests:
-        def test_02_01_run_null_command(self):
-            if not run_tests:
-                return
-            workspace, module = self.make_workspace()
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.command_or_macro.value = R.CM_COMMAND
-            module.command.value = "Show All"
-            module.run(workspace)
-            
-        def test_02_02_run_input_command(self):
-            image = np.zeros((20,10))
-            image[10:15,5:8] = 1
-            workspace, module = self.make_workspace(image)
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.command_or_macro.value = R.CM_COMMAND
-            module.command.value = "Invert"
-            module.run(workspace)
+    def test_02_01_run_null_command(self):
+        workspace, module = self.make_workspace()
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.command_or_macro.value = R.CM_COMMAND
+        module.command.value = "Show All"
+        module.run(workspace)
         
-        def test_02_03_run_io_command(self):
-            image = np.zeros((20,10))
-            image[10:15,5:8] = 1
-            workspace, module = self.make_workspace(image, True)
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.command_or_macro.value = R.CM_COMMAND
-            module.command.value = "Invert"
-            module.run(workspace)
-            img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+    def test_02_02_run_input_command(self):
+        image = np.zeros((20,10))
+        image[10:15,5:8] = 1
+        workspace, module = self.make_workspace(image)
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.command_or_macro.value = R.CM_COMMAND
+        module.command.value = "Invert"
+        module.run(workspace)
+    
+    def test_02_03_run_io_command(self):
+        image = np.zeros((20,10))
+        image[10:15,5:8] = 1
+        workspace, module = self.make_workspace(image, True)
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.command_or_macro.value = R.CM_COMMAND
+        module.command.value = "Invert"
+        module.run(workspace)
+        img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        np.testing.assert_almost_equal(image, 1-img.pixel_data, 4)
+        
+    def test_02_04_parameterized_command(self):
+        image = np.zeros((20,10))
+        image[10:15,5:8] = 1
+        workspace, module = self.make_workspace(image, True)
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.command_or_macro.value = R.CM_COMMAND
+        module.command.value = "Divide..."
+        module.options.value = "value=2"
+        module.run(workspace)
+        img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        np.testing.assert_almost_equal(image, img.pixel_data*2, 4)
+        
+        
+    def test_02_05_run_i_then_o(self):
+        '''Run two modules, checking to see if the ImageJ image stayed in place'''
+        image = np.zeros((20,10))
+        image[10:15,5:8] = 1
+        workspace, module = self.make_workspace(image, False)
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.command_or_macro.value = R.CM_COMMAND
+        module.command.value = "Invert"
+        module.run(workspace)
+        workspace, module = self.make_workspace(wants_output_image=True)
+        module.command_or_macro.value = R.CM_COMMAND
+        module.command.value = "Divide..."
+        module.options.value = "value=2"
+        module.run(workspace)
+        img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        np.testing.assert_almost_equal((1-image) / 2, img.pixel_data, 4)
+        
+    def test_03_01_null_macro(self):
+        '''Run a macro that does something innocuous'''
+        workspace, module = self.make_workspace()
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.command_or_macro.value = R.CM_MACRO
+        module.macro.value = 'print("Hello, world");\n'
+        module.run(workspace)
+        
+    def test_03_02_input_macro(self):
+        '''Run a macro that supplies an image input'''
+        image = np.zeros((20,10))
+        image[10:15,5:8] = 1
+        workspace, module = self.make_workspace(image)
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.command_or_macro.value = R.CM_MACRO
+        module.macro.value = 'run("Invert");\n'
+        module.run(workspace)
+        
+    def test_03_03_run_io_macro(self):
+        image = np.zeros((20,10))
+        image[10:15,5:8] = 1
+        workspace, module = self.make_workspace(image, True)
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.command_or_macro.value = R.CM_MACRO
+        module.command.value = 'run("Invert");\n'
+        module.run(workspace)
+        img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        if False:
             np.testing.assert_almost_equal(image, 1-img.pixel_data, 4)
-            
-        def test_02_04_parameterized_command(self):
-            image = np.zeros((20,10))
-            image[10:15,5:8] = 1
-            workspace, module = self.make_workspace(image, True)
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.command_or_macro.value = R.CM_COMMAND
-            module.command.value = "Divide..."
-            module.options.value = "value=2"
-            module.run(workspace)
+    
+    def test_04_01_begin_macro(self):
+        '''Run a macro on only the first image in the group'''
+        np.random.seed(41)
+        images = [(np.random.uniform(size=(10,10)) > .5).astype(np.float32)
+                  for i in range(3)]
+        workspaces, module = self.make_workspaces(images)
+        self.assertTrue(isinstance(module, R.RunImageJ))
+        module.prepare_group_choice.value = R.CM_MACRO
+        module.prepare_group_macro.value = 'newImage("test","8-bit White",20,10,1);\n'
+        module.command_or_macro.value = R.CM_MACRO
+        module.macro.value = 'selectImage("test");\n'
+        module.wants_to_get_current_image.value = True
+        module.current_output_image_name.value = OUTPUT_IMAGE_NAME
+        module.post_group_choice.value = R.CM_MACRO
+        module.post_group_macro.value = 'selectImage("test");\nclose();\n'
+        for workspace in workspaces:
+            module.run(workspace);
             img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            np.testing.assert_almost_equal(image, img.pixel_data*2, 4)
-            
-            
-        def test_02_05_run_i_then_o(self):
-            '''Run two modules, checking to see if the ImageJ image stayed in place'''
-            image = np.zeros((20,10))
-            image[10:15,5:8] = 1
-            workspace, module = self.make_workspace(image, False)
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.command_or_macro.value = R.CM_COMMAND
-            module.command.value = "Invert"
-            module.run(workspace)
-            workspace, module = self.make_workspace(wants_output_image=True)
-            module.command_or_macro.value = R.CM_COMMAND
-            module.command.value = "Divide..."
-            module.options.value = "value=2"
-            module.run(workspace)
-            img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            np.testing.assert_almost_equal((1-image) / 2, img.pixel_data, 4)
-            
-        def test_03_01_null_macro(self):
-            '''Run a macro that does something innocuous'''
-            workspace, module = self.make_workspace()
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.command_or_macro.value = R.CM_MACRO
-            module.macro.value = 'print("Hello, world");\n'
-            module.run(workspace)
-            
-        def test_03_02_input_macro(self):
-            '''Run a macro that supplies an image input'''
-            image = np.zeros((20,10))
-            image[10:15,5:8] = 1
+            pixel_data = img.pixel_data
+            self.assertTrue(tuple(pixel_data.shape), (10, 20))
+            self.assertTrue(np.all(pixel_data == 1))
+    
+    if has_tubeness:
+        def test_05_01_advanced(self):
+            image = np.zeros((20,36))
+            image[8:13, 4:20] = .5
+            image[2:18, 24:34] = .5
             workspace, module = self.make_workspace(image)
             self.assertTrue(isinstance(module, R.RunImageJ))
-            module.command_or_macro.value = R.CM_MACRO
-            module.macro.value = 'run("Invert");\n'
+            module.command_or_macro.value = R.CM_COMMAND
+            module.command.value = "Tubeness2 0"
+            module.wants_to_set_current_image.value = False
+            module.wants_to_get_current_image.value = False
+            settings = module.visible_settings()
+            settings = module.settings()
+            #
+            # The tubeness settings should be the last four.
+            #
+            tubeness_settings = settings[-4:]
+            s = tubeness_settings[0]
+            self.assertTrue(isinstance(s, cps.ImageNameSubscriber))
+            self.assertEqual(s.text, "Input image")
+            s.value = INPUT_IMAGE_NAME
+            s = tubeness_settings[1]
+            self.assertTrue(isinstance(s, cps.Float))
+            self.assertEqual(s.text, "Sigma")
+            self.assertEqual(s, 1.0)
+            s = tubeness_settings[2]
+            self.assertTrue(isinstance(s, cps.Binary))
+            s = tubeness_settings[3]
+            self.assertTrue(isinstance(s, cps.ImageNameProvider))
+            s.value = OUTPUT_IMAGE_NAME
             module.run(workspace)
-            
-        def test_03_03_run_io_macro(self):
-            image = np.zeros((20,10))
-            image[10:15,5:8] = 1
-            workspace, module = self.make_workspace(image, True)
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.command_or_macro.value = R.CM_MACRO
-            module.command.value = 'run("Invert");\n'
-            module.run(workspace)
-            img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-            if False:
-                np.testing.assert_almost_equal(image, 1-img.pixel_data, 4)
-        
-        def test_04_01_begin_macro(self):
-            '''Run a macro on only the first image in the group'''
-            np.random.seed(41)
-            images = [(np.random.uniform(size=(10,10)) > .5).astype(np.float32)
-                      for i in range(3)]
-            workspaces, module = self.make_workspaces(images)
-            self.assertTrue(isinstance(module, R.RunImageJ))
-            module.prepare_group_choice.value = R.CM_MACRO
-            module.prepare_group_macro.value = 'newImage("test","8-bit White",20,10,1);\n'
-            module.command_or_macro.value = R.CM_MACRO
-            module.macro.value = 'selectImage("test");\n'
-            module.wants_to_get_current_image.value = True
-            module.current_output_image_name.value = OUTPUT_IMAGE_NAME
-            module.post_group_choice.value = R.CM_MACRO
-            module.post_group_macro.value = 'selectImage("test");\nclose();\n'
-            for workspace in workspaces:
-                module.run(workspace);
-                img = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-                pixel_data = img.pixel_data
-                self.assertTrue(tuple(pixel_data.shape), (10, 20))
-                self.assertTrue(np.all(pixel_data == 1))
-        
-        if has_tubeness:
-            def test_05_01_advanced(self):
-                image = np.zeros((20,36))
-                image[8:13, 4:20] = .5
-                image[2:18, 24:34] = .5
-                workspace, module = self.make_workspace(image)
-                self.assertTrue(isinstance(module, R.RunImageJ))
-                module.command_or_macro.value = R.CM_COMMAND
-                module.command.value = "Tubeness2 0"
-                module.wants_to_set_current_image.value = False
-                module.wants_to_get_current_image.value = False
-                settings = module.visible_settings()
-                settings = module.settings()
-                #
-                # The tubeness settings should be the last four.
-                #
-                tubeness_settings = settings[-4:]
-                s = tubeness_settings[0]
-                self.assertTrue(isinstance(s, cps.ImageNameSubscriber))
-                self.assertEqual(s.text, "Input image")
-                s.value = INPUT_IMAGE_NAME
-                s = tubeness_settings[1]
-                self.assertTrue(isinstance(s, cps.Float))
-                self.assertEqual(s.text, "Sigma")
-                self.assertEqual(s, 1.0)
-                s = tubeness_settings[2]
-                self.assertTrue(isinstance(s, cps.Binary))
-                s = tubeness_settings[3]
-                self.assertTrue(isinstance(s, cps.ImageNameProvider))
-                s.value = OUTPUT_IMAGE_NAME
-                module.run(workspace)
-                output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
-                self.assertTrue(output[10,10] > output[10,20])
+            output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+            self.assertTrue(output[10,10] > output[10,20])
                 

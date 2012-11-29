@@ -79,7 +79,7 @@ TM_METHODS =  [TM_OTSU_GLOBAL, TM_OTSU_ADAPTIVE, TM_OTSU_PER_OBJECT,
 
 TM_GLOBAL_METHODS = [TM_OTSU_GLOBAL, TM_MOG_GLOBAL, TM_BACKGROUND_GLOBAL,
                      TM_ROBUST_BACKGROUND_GLOBAL, TM_RIDLER_CALVARD_GLOBAL, 
-                     TM_KAPUR_GLOBAL ]
+                     TM_KAPUR_GLOBAL, TM_MCT_GLOBAL ]
 
 def get_threshold(threshold_method, threshold_modifier, image, 
                   mask=None, labels = None,

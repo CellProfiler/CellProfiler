@@ -1763,11 +1763,18 @@ class Measurement(Setting):
         image_names = self.get_image_name_choices(pipeline,
                                                   object_name, category,
                                                   feature_name)
-        for image_name in image_names:
-            head = '_'.join((category, feature_name, image_name))
-            if (self.value.startswith(head+'_') or
-                self.value == head):
-                return image_name
+        # 1st pass - accept only exact match
+        # 2nd pass - accept part match.
+        # This handles things like "OriginalBlue_Nuclei" vs "OriginalBlue" 
+        # in MeasureImageIntensity.
+        #
+        for full_match in True, False:
+            for image_name in image_names:
+                head = '_'.join((category, feature_name, image_name))
+                if (not full_match) and self.value.startswith(head+'_'):
+                    return image_name
+                if self.value == head:
+                    return image_name
         return None
     
     def get_scale_choices(self, pipeline, 

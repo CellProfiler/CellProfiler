@@ -173,7 +173,9 @@ class ClassifyPixels(cpm.CPModule):
         image = workspace.image_set.get_image(self.image_name.value, must_be_color=False) 
         
         # recover raw image domain
-        image_ = image.pixel_data * image.get_scale()
+        image_ = image.pixel_data
+        if image.get_scale() is not None:
+            image_ = image_ * image.get_scale()
         #
         # Apply a rescaling that's done similarly in ilastik's dataImpex
         #

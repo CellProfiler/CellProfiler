@@ -118,7 +118,7 @@ if has_ilastik:
             self.assertEqual(module.probability_maps[1].output_image, "WhiteColonies")
             self.assertEqual(module.probability_maps[1].class_sel, 2)
             
-        def make_workspace(self, classes):
+        def make_workspace(self, classes, scale=255):
             module = C.ClassifyPixels()
             module.module_num = 1
             module.image_name.value = INPUT_IMAGE_NAME
@@ -142,7 +142,7 @@ if has_ilastik:
             r = np.random.RandomState()
             r.seed(0)
             pixels = r.uniform(size=(64, 72))
-            image_set.add(INPUT_IMAGE_NAME, cpi.Image(pixels, scale=255))
+            image_set.add(INPUT_IMAGE_NAME, cpi.Image(pixels, scale=scale))
             workspace = cpw.Workspace(
                 pipeline,
                 module,
@@ -169,6 +169,17 @@ if has_ilastik:
                 self.assertEqual(pixels.shape[0], 64)
                 self.assertEqual(pixels.shape[1], 72)
         
+        def test_02_03_run_no_scale(self):
+            #
+            # Handle missing scale (e.g. derived image) gracefully
+            #
+            workspace, module = self.make_workspace([1, 2], None)
+            module.run(workspace)
+            for i in range(2):
+                image = workspace.image_set.get_image(get_output_image_name(i))
+                pixels = image.pixel_data
+                self.assertEqual(pixels.shape[0], 64)
+                self.assertEqual(pixels.shape[1], 72)
 
 classifier_data = (
                 'eJztfQt8XEX1/+0LlncKLQSodJtCCfwKLFAgKP64ImAUpJEfSOSVDW3KBtp0'

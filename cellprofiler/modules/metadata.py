@@ -54,10 +54,11 @@ IDX_EXTRACTION_METHOD_COUNT = 1
 '''Index of the first extraction method block in the settings'''
 IDX_EXTRACTION_METHOD = 2
 '''# of settings in an extraction method block'''
-LEN_EXTRACTION_METHOD = 6
+LEN_EXTRACTION_METHOD_V1 = 8
+LEN_EXTRACTION_METHOD = 9
 
 class Metadata(cpm.CPModule):
-    variable_revision_number = 1
+    variable_revision_number = 2
     module_name = "Metadata"
     category = "File Processing"
     
@@ -230,6 +231,16 @@ class Metadata(cpm.CPModule):
             metadata extractors in this module.
             """))
         
+        group.append("wants_case_insensitive", cps.Binary(
+            "Case insensitive matching", False,
+            doc = """This setting controls whether row matching takes the
+            metadata case into account when matching. If this setting is 
+            not checked, metadata entries that only differ by case 
+            (for instance, "A01" and "a01") will not match. If this setting
+            is checked, then metadata entries that only differ by case
+            will match. Check this setting if your CSV metadata is not being
+            applied because the case does not match."""))
+        
         group.append("update_metadata", cps.DoSomething(
             "Update", "Update metadata",
             lambda : self.do_update_metadata(group),
@@ -248,7 +259,8 @@ class Metadata(cpm.CPModule):
             result += [
                 group.extraction_method, group.source, group.file_regexp,
                 group.folder_regexp, group.filter_choice, group.filter,
-                group.csv_location, group.csv_joiner]
+                group.csv_location, group.csv_joiner, 
+                group.wants_case_insensitive]
         return result
     
     def visible_settings(self):
@@ -271,7 +283,7 @@ class Metadata(cpm.CPModule):
                     result += [group.csv_location, group.filter_choice]
                     if group.filter_choice == F_FILTERED_IMAGES:
                         result += [group.filter]
-                    result += [group.csv_joiner]
+                    result += [group.csv_joiner, group.wants_case_insensitive]
                 elif group.extraction_method == X_AUTOMATIC_EXTRACTION:
                     result += [group.filter_choice]
                     if group.filter_choice == F_FILTERED_IMAGES:
@@ -432,7 +444,8 @@ class Metadata(cpm.CPModule):
     def import_metadata(self, group, ipd, m):
         imported_metadata = self.get_imported_metadata_for_group(group)
         if imported_metadata is not None:
-            return imported_metadata.get_ipd_metadata(m)
+            return imported_metadata.get_ipd_metadata(
+                m, group.wants_case_insensitive.value)
         return {}
     
     def on_activated(self, workspace):
@@ -595,6 +608,21 @@ class Metadata(cpm.CPModule):
             return keys
         return []
     
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
+        if variable_revision_number == 1:
+            n_groups = int(setting_values[IDX_EXTRACTION_METHOD_COUNT])
+            new_setting_values = setting_values[:IDX_EXTRACTION_METHOD]
+            for i in range(n_groups):
+                new_setting_values += setting_values[
+                    (IDX_EXTRACTION_METHOD + LEN_EXTRACTION_METHOD_V1 * i):
+                    (IDX_EXTRACTION_METHOD + LEN_EXTRACTION_METHOD_V1 * (i+1))]
+                new_setting_values.append(cps.NO)
+            setting_values = new_setting_values
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab
+        
+    
     class ImportedMetadata(object):
         '''A holder for the metadata from a csv file'''
         def __init__(self, path):
@@ -638,13 +666,17 @@ class Metadata(cpm.CPModule):
             self.ipd_keys = [join[ipd_name] for join in joins]
             self.metadata_keys = set(self.columns.keys()).difference(self.csv_keys)
             self.d = {}
+            self.d_lower = {}
             columns = [self.columns[key] for key in self.csv_keys]
             for i in range(len(columns[0])):
                 key = tuple([column[i] for column in columns])
                 self.d[key] = i
+                key_lower = tuple([
+                    k.lower() if isinstance(k, basestring) else k for k in key])
+                self.d_lower[key_lower] = i
             self.joiner_initialized = True
             
-        def get_ipd_metadata(self, ipd_metadata):
+        def get_ipd_metadata(self, ipd_metadata, case_insensitive=False):
             '''Get the matching metadata from the .csv for a given ipd
             
             ipd_metadata - the metadata dictionary for an IPD, possibly
@@ -653,9 +685,15 @@ class Metadata(cpm.CPModule):
             if not self.joiner_initialized:
                 return {}
             key = tuple([ipd_metadata.get(k) for k in self.ipd_keys])
-            if not self.d.has_key(key):
+            if case_insensitive:
+                d = self.d_lower
+                key = tuple([
+                    k.lower() if isinstance(k, basestring) else k for k in key])
+            else:
+                d = self.d
+            if not d.has_key(key):
                 return {}
-            return dict([(k, self.columns[k][self.d[key]]) 
+            return dict([(k, self.columns[k][d[key]]) 
                          for k in self.metadata_keys])
         
         def is_match(self, csv_path, joiner, csv_join_name, ipd_join_name):

@@ -40,6 +40,7 @@ from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
 import cellprofiler.utilities.version as version
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
+from errordialog import display_error_message
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
 from cellprofiler.modules.loadimages import pathname2url
@@ -406,7 +407,9 @@ class PipelineController:
             self.__workspace.save_pipeline_to_measurements()
             
         except Exception,instance:
-            self.__frame.display_error('Failed during loading of %s'%(pathname),instance)
+            from cellprofiler.gui.errordialog import display_error_dialog
+            display_error_dialog(self.__frame, instance, self.__pipeline,
+                                 continue_only=True)
 
     def __clear_errors(self):
         for key,error in self.__setting_errors.iteritems():
@@ -724,9 +727,10 @@ class PipelineController:
                        "\t%s") % ( module_name,
                                    event.error.message,
                                    '\n\t'.join(event.settings))
-        if wx.MessageBox(message, "Pipeline error",
-                         wx.YES_NO | wx.ICON_ERROR, 
-                         self.__frame) == wx.NO:
+        if display_error_message(
+            self.__frame, message, 
+            "Pipeline error", 
+            buttons = [wx.ID_YES, wx.ID_NO]) == wx.NO:
             event.cancel_run = False
             
     def on_image_plane_details_added(self, event):

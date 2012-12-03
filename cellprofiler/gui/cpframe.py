@@ -34,6 +34,7 @@ from cellprofiler.gui.preferencesview import PreferencesView
 from cellprofiler.gui.directoryview import DirectoryView
 from cellprofiler.gui.datatoolframe import DataToolFrame
 from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
+from cellprofiler.gui.errordialog import display_error_message
 from cellprofiler.gui.pathlist import PathListCtrl
 import cellprofiler.gui.html
 import cellprofiler.gui.preferencesdlg
@@ -705,7 +706,7 @@ All rights reserved."""
         traceback.print_tb(tb)
         text = '\n'.join(traceback.format_list(traceback.extract_tb(tb)))
         text = error.message + '\n'+text
-        wx.MessageBox(text,"Caught exception during operation")
+        display_error_message(self, text, "Caught exception during operation")
 
     def add_error_listener(self,listener):
         """Add a listener for display errors"""

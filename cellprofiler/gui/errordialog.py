@@ -363,14 +363,16 @@ def display_error_message(parent, message, title, buttons = None,
     '''
     import wx
     if buttons is None:
-        buttons = wx.ID_OK
+        buttons = [wx.ID_OK]
+    else:
+        assert len(buttons) > 0
         
     with wx.Dialog(parent, title=title, size = size, 
                    style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER) as dlg:
         assert isinstance(dlg, wx.Dialog)
         dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        dlg.Sizer.AddSpacer(10)
+        dlg.Sizer.AddSpacer(20)
         dlg.Sizer.Add(sizer, 1, wx.EXPAND)
         
         sizer.AddSpacer(10)
@@ -381,8 +383,6 @@ def display_error_message(parent, message, title, buttons = None,
         message_ctrl = wx.TextCtrl(
             dlg, value = message,
             style = wx.TE_MULTILINE | wx.TE_READONLY | wx.NO_BORDER)
-        message_ctrl.SetFont(wx.SystemSettings.GetFont(
-            wx.SYS_SYSTEM_FONT))
         message_ctrl.SetBackgroundColour(dlg.BackgroundColour)
         line_sizes = [message_ctrl.GetTextExtent(line)
                       for line in message.split("\n")]
@@ -396,7 +396,7 @@ def display_error_message(parent, message, title, buttons = None,
         
         dlg.Sizer.AddSpacer(10)
         button_sizer = wx.StdDialogButtonSizer()
-        dlg.Sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 5)
+        dlg.Sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)
         
         def on_button(event):
             id2code = {
@@ -411,6 +411,7 @@ def display_error_message(parent, message, title, buttons = None,
             button_ctl = wx.Button(dlg, button)
             button_sizer.AddButton(button_ctl)
             button_ctl.Bind(wx.EVT_BUTTON, on_button)
+        button_ctl.SetFocus()
         button_sizer.Realize()
         dlg.Fit()
         return dlg.ShowModal()

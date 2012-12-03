@@ -1829,7 +1829,7 @@ class LoadImages(cpmodule.CPModule):
                 path, filename = os.path.split(pathname)
                 url = pathname2url(os.path.abspath(pathname))
                 metadata = self.get_filename_metadata(image_settings, filename, 
-                                                      file_pathname)
+                                                      path)
                 image_set_count = starting_image_index
                 rdr = ImageReader()
                 rdr.setGroupFiles(False)

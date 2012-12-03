@@ -467,14 +467,26 @@ def execute_future_in_main_thread(jfuture):
     static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", jfuture)
     if (app is None) or (not wx.Thread_IsMain()):
         logger.debug("Synchronizing without event loop")
+        #
+        # There could be a deadlock between the GIL being taken
+        # by the execution of Future.get() and AWT needing WX to
+        # run the event loop. Therefore, we poll before getting.
+        #
+        while not call(jfuture, "isDone", "()Z"):
+            logger.debug("Future is not done")
+            time.sleep(.1)
         return call(jfuture, "get", "()Ljava/lang/Object;")
     elif app.IsMainLoopRunning():
         evtloop = wx.EventLoop()
         logger.debug("Polling for future done within main loop")
         while not call(jfuture, "isDone", "()Z"):
             logger.debug("Future is not done")
-            while evtloop.Pending():
-                logger.debug("Processing pending event")
+            if evtloop.Pending():
+                while evtloop.Pending():
+                    logger.debug("Processing pending event")
+                    evtloop.Dispatch()
+            else:
+                logger.debug("No pending wx event, run Dispatch anyway")
                 evtloop.Dispatch()
             logger.debug("Sleeping")
             time.sleep(.1)

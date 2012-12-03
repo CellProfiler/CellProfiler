@@ -1845,7 +1845,7 @@ class LoadImages(cpmodule.CPModule):
                 path, filename = os.path.split(pathname)
                 url = pathname2url(os.path.abspath(pathname))
                 metadata = self.get_filename_metadata(image_settings, filename, 
-                                                      file_pathname)
+                                                      path)
                 image_set_count = starting_image_index
                 xml = subimager.client.get_metadata(url)
                 omemetadata = subimager.omexml.OMEXML(xml)

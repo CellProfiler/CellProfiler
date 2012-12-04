@@ -388,8 +388,8 @@ class MeasureImageQuality(cpm.CPModule):
             self.add_image_group(can_remove)
         for index, image_group in enumerate(self.image_groups):
             for count, group, fn in\
-                ((int(setting_values[IMAGE_GROUP_SETTING_OFFSET + index]), image_group.scale_groups, self.add_scale_group),
-                 (int(setting_values[IMAGE_GROUP_SETTING_OFFSET + index + image_group_count]), image_group.threshold_groups, self.add_threshold_group)):
+                ((int(setting_values[IMAGE_GROUP_SETTING_OFFSET + 2*index]), image_group.scale_groups, self.add_scale_group),
+                 (int(setting_values[IMAGE_GROUP_SETTING_OFFSET + 2*index + 1]), image_group.threshold_groups, self.add_threshold_group)):
                 del group[:]
                 for i in range(count):
                     can_remove = len(group) > 0

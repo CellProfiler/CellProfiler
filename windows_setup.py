@@ -252,6 +252,9 @@ data_files += [('cellprofiler\\icons',
                 for x in os.listdir('cellprofiler\\icons')
                 if x.endswith(".png") or x.endswith(".psd")]),
               ('bioformats', ['bioformats\\loci_tools.jar']),
+              ('cellprofiler\\utilities',
+               ['cellprofiler\\utilities\\js.jar',
+                'cellprofiler\\utilities\\runnablequeue-1.0.0.jar']),
               ('imagej', ['imagej\\'+jar_file
                           for jar_file in os.listdir('imagej')
                           if jar_file.endswith('.jar')])]

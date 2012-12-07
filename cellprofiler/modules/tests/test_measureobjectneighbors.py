@@ -741,3 +741,24 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         np.testing.assert_array_equal(np.unique(r.object_number1),
                                       np.array([1,3,4]))
         
+    def test_08_01_missing_object(self):
+        # Regression test of issue 434
+        #
+        # Catch case of no pixels for an object
+        #
+        labels = np.zeros((10,10),int)
+        labels[2,2] = 1
+        labels[2,3] = 3
+        workspace, module = self.make_workspace(labels,
+                                                M.D_ADJACENT, 5)
+        module.run(workspace)
+        m = workspace.measurements
+        neighbors = m.get_current_measurement(OBJECTS_NAME,
+                                              "Neighbors_NumberOfNeighbors_Adjacent")
+        np.testing.assert_array_equal(neighbors, [1, 0, 1])
+        pct = m.get_current_measurement(OBJECTS_NAME,
+                                        "Neighbors_PercentTouching_Adjacent")
+        np.testing.assert_array_almost_equal(pct, [100.0, 0, 100.0])
+        fo = m.get_current_measurement(OBJECTS_NAME,
+                                       "Neighbors_FirstClosestObjectNumber_Adjacent")
+        np.testing.assert_array_equal(fo, [3, 0, 1])

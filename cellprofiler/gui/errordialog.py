@@ -287,7 +287,73 @@ def show_warning(title, message, get_preference, set_preference):
     if dont_show.Value:
         set_preference(False)
 
+def display_error_message(parent, message, title, buttons = None,
+                          size = (300, 200)):
+    '''Display an error in a scrolling message box
     
+    parent - parent window to the error message
+    message - message to display in scrolling box
+    title - title to display in frame
+    buttons - a list of buttons to put at bottom of dialog. For instance, 
+              [wx.ID_YES, wx.ID_NO]. Defaults to OK button
+    size - size of frame. Defaults to 300 x 200 but will fit.
+    
+    returns the code from ShowModal.
+    '''
+    import wx
+    if buttons is None:
+        buttons = [wx.ID_OK]
+    else:
+        assert len(buttons) > 0
+        
+    with wx.Dialog(parent, title=title, size = size, 
+                   style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER) as dlg:
+        assert isinstance(dlg, wx.Dialog)
+        dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        dlg.Sizer.AddSpacer(20)
+        dlg.Sizer.Add(sizer, 1, wx.EXPAND)
+        
+        sizer.AddSpacer(10)
+        icon = wx.ArtProvider.GetBitmap(wx.ART_ERROR)
+        sizer.Add(wx.StaticBitmap(dlg, bitmap=icon), 0, 
+                  wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP | wx.ALL, 10)
+        sizer.AddSpacer(10)
+        message_ctrl = wx.TextCtrl(
+            dlg, value = message,
+            style = wx.TE_MULTILINE | wx.TE_READONLY | wx.NO_BORDER)
+        message_ctrl.SetBackgroundColour(dlg.BackgroundColour)
+        line_sizes = [message_ctrl.GetTextExtent(line)
+                      for line in message.split("\n")]
+        width = reduce(max, [x[0] for x in line_sizes])
+        width += wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
+        width += wx.SystemSettings.GetMetric(wx.SYS_BORDER_X) * 2
+        height = sum([x[1] for x in line_sizes])
+        message_ctrl.SetMinSize((width, min(height, size[1])))
+        sizer.Add(message_ctrl, 1, wx.EXPAND)
+        sizer.AddSpacer(10)
+        
+        dlg.Sizer.AddSpacer(10)
+        button_sizer = wx.StdDialogButtonSizer()
+        dlg.Sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 10)
+        
+        def on_button(event):
+            id2code = {
+                wx.ID_YES: wx.YES,
+                wx.ID_NO: wx.NO,
+                wx.ID_CANCEL: wx.CANCEL,
+                wx.ID_OK: wx.OK }
+            assert isinstance(event, wx.Event)
+            dlg.EndModal(id2code[event.Id])
+            
+        for button in buttons:
+            button_ctl = wx.Button(dlg, button)
+            button_sizer.AddButton(button_ctl)
+            button_ctl.Bind(wx.EVT_BUTTON, on_button)
+        button_ctl.SetFocus()
+        button_sizer.Realize()
+        dlg.Fit()
+        return dlg.ShowModal()
     
 if __name__ == "__main__":
     import wx

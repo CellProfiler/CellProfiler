@@ -50,6 +50,18 @@ def start_cellprofiler_jvm():
     else:
         root_path = os.path.abspath(os.path.split(__file__)[0])
         root_path = os.path.split(root_path)[0]
+        if not os.path.isdir(root_path):
+            # CPA's directory structure is this:
+            #
+            # CPAnalyst.app
+            #      Contents
+            #          MacOS
+            #              CPAnalyst
+            #          Resources
+            #
+            macos_path = os.path.abspath(os.path.split(sys.argv[0])[0])
+            contents_path = os.path.split(macos_path)[0]
+            root_path = os.path_join(contents_path, "Resources")
     path = os.path.join(root_path, 'bioformats')
     imagej_path = os.path.join(root_path, 'imagej')
     loci_jar = os.path.join(path, "loci_tools.jar")

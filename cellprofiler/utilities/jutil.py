@@ -250,6 +250,7 @@ def start_vm(args, run_headless = False):
             __run_headless = True
             args = args + [r"-Djava.awt.headless=true"]
 
+        logger.debug("Creating JVM object")
         __thread_local_env.is_main_thread = True
         __vm = javabridge.JB_VM()
         #
@@ -272,9 +273,24 @@ def start_vm(args, run_headless = False):
                     "utilities")
             else:
                 utils_path = os.path.abspath(os.path.split(__file__)[0])
+                if not os.path.isdir(utils_path):
+                    # CPA's directory structure is this:
+                    #
+                    # CPAnalyst.app
+                    #      Contents
+                    #          MacOS
+                    #              CPAnalyst
+                    #          Resources
+                    #
+                    macos_path = os.path.abspath(os.path.split(sys.argv[0])[0])
+                    contents_path = os.path.split(macos_path)[0]
+                    root_path = os.path.join(contents_path, "Resources")
+                    utils_path = os.path.join(root_path, "cellprofiler", "utilities")
             cp_args = [i for i, x in enumerate(args)
                        if x.startswith('-Djava.class.path=')]
             js_jar = os.path.join(utils_path, "js.jar")
+            logger.debug("Loading javascript from %s" %js_jar)
+            assert os.path.isfile(js_jar)
             if len(cp_args) > 0:
                 arg_idx = cp_args[0]
                 cp_arg = args[arg_idx]
@@ -290,7 +306,9 @@ def start_vm(args, run_headless = False):
                 assert os.path.exists(runnablequeue_jar)
                 args[arg_idx] = cp_arg + os.pathsep + runnablequeue_jar
                 
+                logger.debug("Launching VM in non-python thread")
                 vm.create_mac(args, RQCLS)
+                logger.debug("Attaching to VM in monitor thread")
                 env = vm.attach()
                 __thread_local_env.env = env
             else:
@@ -300,7 +318,9 @@ def start_vm(args, run_headless = False):
             traceback.print_exc()
             logger.error("Failed to create Java VM")
             __vm = None
+            return
         finally:
+            logger.debug("Signalling caller")
             start_event.set()
         wake_event.clear()
         while True:
@@ -337,6 +357,8 @@ def start_vm(args, run_headless = False):
     pt.append(t)
     t.start()
     start_event.wait()
+    if __vm is None:
+        raise RuntimeError("Failed to start Java VM")
     attach()
     AtExit(kill_vm)
     

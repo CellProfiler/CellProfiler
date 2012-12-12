@@ -17,7 +17,7 @@ import unittest
 import urllib
 import xml.dom
 
-import subimager.omexml as O
+import bioformats.omexml as O
 
 def read_fully(filename):
     path = os.path.join(os.path.split(__file__)[0], filename)

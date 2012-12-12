@@ -27,16 +27,16 @@ DEFAULT_NOW = xsd_now()
 #
 # The namespaces
 #
-NS_OME = "http://www.openmicroscopy.org/Schemas/OME/2011-06"
-NS_BINARY_FILE = "http://www.openmicroscopy.org/Schemas/BinaryFile/2011-06"
-NS_SA = "http://www.openmicroscopy.org/Schemas/SA/2011-06"
+NS_OME = "http://www.openmicroscopy.org/Schemas/OME/2012-06"
+NS_BINARY_FILE = "http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+NS_SA = "http://www.openmicroscopy.org/Schemas/SA/2012-06"
 NS_ORIGINAL_METADATA = "openmicroscopy.org/OriginalMetadata"
-NS_SPW = "http://www.openmicroscopy.org/Schemas/SPW/2011-06"
+NS_SPW = "http://www.openmicroscopy.org/Schemas/SPW/2012-06"
 
 default_xml = """<?xml version="1.0" encoding="UTF-8"?>
 <OME xmlns="%(NS_OME)s" 
      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-     xsi:schemaLocation="http://www.openmicroscopy.org/Schemas/OME/2011-06 http://www.openmicroscopy.org/Schemas/OME/2011-06/ome.xsd">
+     xsi:schemaLocation="http://www.openmicroscopy.org/Schemas/OME/2012-06 http://www.openmicroscopy.org/Schemas/OME/2012-06/ome.xsd">
   <Image ID="Image:0" Name="default.png">
     <AcquiredDate>%(DEFAULT_NOW)s</AcquiredDate>
     <Pixels DimensionOrder="XYCTZ" 

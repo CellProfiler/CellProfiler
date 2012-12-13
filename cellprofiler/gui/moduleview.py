@@ -978,8 +978,29 @@ class ModuleView:
         return control
         
     def make_tree_choice_control(self, v, control_name, control):
+        new_label = ">".join(v.get_path_parts())
+        def make_bitmap(control, flags):
+            assert isinstance(control, wx.BitmapButton)
+            text_width, text_height = control.GetTextExtent(new_label)
+            gap = 4
+            drop_width = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_ARROW_X)
+            drop_height = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_ARROW_Y)
+            width = text_width + 2*gap + drop_width
+            height = max(text_height, drop_height) + 4
+            bitmap = wx.EmptyBitmap(width, height)
+            dc = wx.MemoryDC(bitmap)
+            dc.Font = control.Font
+            brush = wx.Brush(control.BackgroundColour)
+            dc.Background = brush
+            dc.Clear()
+            wx.RendererNative.Get().DrawComboBox(
+                control, dc, wx.Rect(0, 0, width, height), flags)
+            dc.DrawText(new_label, 2, 2)
+            return bitmap
+                                                     
         if control is None:
-            control = wx.Button(self.module_panel)
+            control = wx.BitmapButton(self.module_panel,
+                                style = wx.BU_EXACTFIT)
             def on_press(event, v=v, control=control):
                 id_dict = {}
                 def make_menu(tree, id_dict = id_dict, path = []):
@@ -987,10 +1008,10 @@ class ModuleView:
                     for node in tree:
                         text, subtree = node[:2]
                         subpath = path + [text]
-                        if subtree is None:
+                        if v.fn_is_leaf(node):
                             item = menu.Append(-1, text)
                             id_dict[item.GetId()] = subpath
-                        else:
+                        if subtree is not None and len(subtree) > 0:
                             submenu = make_menu(subtree, path = subpath)
                             menu.AppendMenu(-1, text, submenu)
                     return menu
@@ -1005,7 +1026,19 @@ class ModuleView:
                 control.PopupMenuXY(menu, 0, control.GetSize()[1])
                 menu.Destroy()
             control.Bind(wx.EVT_BUTTON, on_press)
-        control.SetLabel(">".join(v.get_path_parts()))
+        old_label = control.GetLabel()
+        if old_label != new_label:
+            control.SetLabel(new_label)
+            for getter, setter, flags in (
+                (control.GetBitmapLabel, control.SetBitmapLabel, 0),
+                (control.GetBitmapFocus, control.SetBitmapFocus, 
+                 wx.CONTROL_FOCUSED),
+                (control.GetBitmapSelected, control.SetBitmapSelected,
+                 wx.CONTROL_SELECTED)):
+                old_bitmap = getter()
+                setter(make_bitmap(control, flags))
+                if old_bitmap is not None:
+                    old_bitmap.Destroy()
         return control
                 
     def make_callback_control(self,v,control_name,control):

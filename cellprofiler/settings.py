@@ -1552,10 +1552,27 @@ class TreeChoice(Setting):
     
     A good UI choice would be a hierarchical menu.
     '''
-    def __init__(self, text, value, tree, **kwargs):
+    def __init__(self, text, value, tree, fn_is_leaf = None, **kwargs):
+        '''Initializer
+        
+        text - informative label
+        
+        value - the text value, e.g. as encoded by encode_path_parts
+        
+        tree - the tree to chose from
+        
+        fn_is_leaf - if defined, a function that takes a tree node and
+                     returns True if that node is a leaf (a node might
+                     have subnodes, but also be a leaf)
+        '''
         super(TreeChoice, self).__init__(text, value, **kwargs)
         self.__tree = tree
+        self.fn_is_leaf = fn_is_leaf or self.default_fn_is_leaf
 
+    @staticmethod
+    def default_fn_is_leaf(node):
+        return node[1] is None or len(node[1]) == 0
+    
     def get_path_parts(self):
         '''Split at |, but || escapes to |'''
         result = re.split("(?<!\\|)\\|(?!\\|)",self.get_value_text())
@@ -1574,11 +1591,11 @@ class TreeChoice(Setting):
         current = self.get_tree()
         while len(path) > 0:
             idx = current.index(path[0])
-            if idx == -1 or current[idx][1] is None:
+            if idx == -1 or current[idx][1] is None or len(current[idx][1]) == 0:
                 return []
             current = current[idx][1]
             path = path[1:]
-        return [x[0] for x in current if x[1] is None]
+        return [x[0] for x in current if x[1] is None or len(x[1] == 0)]
     
     def get_subnodes(self, path = []):
         '''Get all child nodes that are not leaves for a  given parent

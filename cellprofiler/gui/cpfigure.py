@@ -1471,10 +1471,10 @@ def show_image(url, parent = None, needs_raise_after = True):
     url - url of the image
     parent - parent frame to this one.
     '''
-    from subimager.client import get_image
+    from bioformats.formatreader import load_using_bioformats_url
     filename = url[(url.rfind("/")+1):]
     try:
-        image = get_image(url)
+        image = load_using_bioformats_url(url)
     except Exception, e:
         from cellprofiler.gui.errordialog import display_error_dialog
         display_error_dialog(None, e, None, 

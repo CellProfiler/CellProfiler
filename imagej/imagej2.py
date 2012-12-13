@@ -62,55 +62,6 @@ def run_imagej(*args):
     J.static_call("imagej/Main", "main", "([Ljava/lang/String;)V",
                   *[unicode(arg) for arg in args])
 
-def create_planar_img(a):
-    '''Create a PlanarImg from a numpy array
-    
-    a - numpy array. The values should be scaled to be between 0 and 255
-    
-    returns a PlanarImg of double valueswith the same dimensions as the array.
-    '''
-    a = a.astype(np.float64)
-    creator = J.make_instance("net/imglib2/img/basictypeaccess/array/DoubleArray",
-                              "(I)V", 0)
-    planar_img = J.make_instance(
-        "net/imglib2/img/planar/PlanarImg",
-        "(Lnet/imglib2/img/basictypeaccess/array/ArrayDataAccess;[JI)V",
-        creator, np.array(a.shape), 1)
-    def copy_plane(index, src):
-        p = J.call(planar_img, "getPlane", "(I)Ljava/lang/Object;", index)
-        dest = J.call(p, "getCurrentStorageArray", "()Ljava/lang/Object;")
-        length = np.prod(src.shape)
-        src = J.get_nice_arg(src, "[D")
-        J.static_call("java/lang/System", "arraycopy",
-                      "(Ljava/lang/Object;ILjava/lang/Object;II)V",
-                      src, 0, dest, 0, length)
-    a.shape = (a.shape[0], a.shape[1], np.prod(a.shape[2:]))
-    for i in range(a.shape[2]):
-        copy_plane(i, a[:,:,i])
-    return planar_img
-
-def create_img_plus(a, name):
-    '''Create an ImagePlus from a numpy array
-    
-    a - numpy array. The values should be scaled to the range 0-255
-    
-    name - a user-visible name for the image
-    
-    returns an ImagePlus. The metadata axes will be Y, X and channel (if 3-d)
-    '''
-    x = J.get_static_field("net/imglib2/img/Axes", "X", 
-                           "Lnet/imglib2/img/Axes;")
-    y = J.get_static_field("net/imglib2/img/Axes", "Y", 
-                           "Lnet/imglib2/img/Axes;")
-    c = J.get_static_field("net/imglib2/img/Axes", "CHANNEL", 
-                           "Lnet/imglib2/img/Axes;")
-    img = create_planar_img(a)
-    
-    img_plus = J.make_instance(
-        "net/imglib2/img/ImgPlus",
-        "(Lnet/imglib2/img/Img;Ljava/lang/String;[Lnet/imglib2/img/Axis;)V",
-        img, name, [y, x] if a.ndim == 2 else [y, x, c])
-    
 def create_context(service_classes):
     '''Create an ImageJ context for getting services'''
     class Context(object):
@@ -155,8 +106,103 @@ def get_module_service(context):
     returns a module service
     '''
     o = context.getService('imagej.module.ModuleService')
+    class ModuleService(object):
+        def __init__(self):
+            self.o = o
+        def getModules(self):
+            modules = J.call(o, "getModules", "()Ljava/util/List;")
+            if modules is None:
+                return []
+            module_iterator = J.call(modules, "iterator", 
+                                     "()Ljava/util/Iterator;")
+            return [wrap_module_info(x) for x in J.iterate_java(module_iterator)]
+        
+        def run(self, module_info,
+                pre = None,
+                post = None,
+                **kwargs):
+            '''Run a module
+            
+            module_info - the module_info of the module to run
+            
+            pre - list of PreprocessorPlugins to run before running module
+            
+            post - list of PostprocessorPlugins to run after running module
+            
+            *kwargs - names and values for input parameters
+            '''
+            input_map = J.make_map(kwargs)
+            if pre is not None:
+                pre = J.static_call("java/util/Arrays", "asList",
+                                    "([Ljava/lang/Object;)Ljava/util/List;",
+                                    pre)
+            if post is not None:
+                post = J.static_call("java/util/Arrays", "asList",
+                                     "([Ljava/lang/Object;)Ljava/util/List;",
+                                     post)
+            future = J.call(
+                self.o, "run", 
+                "(Limagej/module/ModuleInfo;"
+                "Ljava/util/List;"
+                "Ljava/util/List;"
+                "Ljava/util/Map;)"
+                "Ljava/util/concurrent/Future;",
+                module_info, pre, post, input_map)
+            return J.call(
+                self.o, "waitFor", 
+                "(Ljava/util/concurrent/Future;)Limagej/module/Module;",
+                future)
+    return ModuleService()
+
+def wrap_module_info(instance):
+    '''Wrap a java object of class imagej/module/ModuleInfo'''
+    class ModuleInfo(object):
+        def __init__(self):
+            self.o = instance
+
+        getInput = J.make_method(
+            "getInput", 
+            "(Ljava/lang/String;)Limagej/module/ModuleItem;", 
+            doc = "Gets the input item with the given name.",
+            fn_post_process=wrap_module_item)
+
+        getOutput = J.make_method(
+            "getOutput", 
+            "(Ljava/lang/String;)Limagej/module/ModuleItem;",
+            doc = "Gets the output item with the given name.",
+            fn_post_process=wrap_module_item)
+
+        getInputs = J.make_method(
+            "inputs", "()Ljava/lang/Iterable;",
+            """Get the module info's input module items""",
+            fn_post_process=lambda iterator:
+            map(wrap_module_item, J.iterate_collection(iterator)))
+            
+        getOutputs = J.make_method(
+            "outputs", "()Ljava/lang/Iterable;",
+            """Get the module info's output module items""",
+            fn_post_process=lambda iterator:
+            map(wrap_module_item, J.iterate_collection(iterator)))
+        
+        getTitle = J.make_method(
+            "getTitle",
+            "()Ljava/lang/String;")
+        createModule = J.make_method(
+            "createModule",
+            "()Limagej/module/Module;",
+            fn_post_process=wrap_module)
+        getMenuPath = J.make_method(
+            "getMenuPath", "()Limagej/MenuPath;")
+        getMenuRoot = J.make_method(
+            "getMenuRoot", "()Ljava/lang/String;")
+        getName = J.make_method("getName", "()Ljava/lang/String;")
+        getClassName = J.make_method("getClassName", "()Ljava/lang/String;")
+    return ModuleInfo()
+
+def wrap_module_item(instance):
+    '''Wrap a Java object of class imagej.module.ModuleItem'''
     class ModuleItem(object):
-        def __init__(self, instance):
+        def __init__(self):
             self.o = instance
             
         IV_NORMAL = J.get_static_field("imagej/module/ItemVisibility",
@@ -206,101 +252,14 @@ def get_module_service(context):
         loadValue = J.make_method("loadValue", "()Ljava/lang/Object;")
         isInput = J.make_method("isInput", "()Z")
         isOutput = J.make_method("isOutput", "()Z")
-        
-    class ModuleInfo(object):
-        def __init__(self, instance):
-            self.o = instance
-
-        def getInput(self, name):
-            "Gets the input item with the given name."
-            return ModuleItem(J.call(
-                self.o, "getInput", 
-                "(Ljava/lang/String;)Limagej/module/ModuleItem;", name))
-
-        def getOutput(self, name):
-            "Gets the output item with the given name."
-            return ModuleItem(J.call(
-                self.o, "getOutput", 
-                "(Ljava/lang/String;)Limagej/module/ModuleItem;", name))
-
-        def getInputs(self):
-            inputs = J.call(self.o, "inputs", "()Ljava/lang/Iterable;")
-            input_iterator = J.call(inputs, "iterator", "()Ljava/util/Iterator;")
-            return [ModuleItem(o) for o in J.iterate_java(input_iterator)]
-            
-        def getOutputs(self):
-            outputs = J.call(self.o, "outputs", "()Ljava/lang/Iterable;")
-            output_iterator = J.call(outputs, "iterator", "()Ljava/util/Iterator;")
-            return [ModuleItem(o) for o in J.iterate_java(output_iterator)]
-        
-        getTitle = J.make_method(
-            "getTitle",
-            "()Ljava/lang/String;")
-        createModule = J.make_method(
-            "createModule",
-            "()Limagej/module/Module;")
-        getMenuPath = J.make_method(
-            "getMenuPath", "()Limagej/MenuPath;")
-        getMenuRoot = J.make_method(
-            "getMenuRoot", "()Ljava/lang/String;")
-        
-    class ModuleService(object):
-        def __init__(self):
-            self.o = o
-        def getModules(self):
-            modules = J.call(o, "getModules", "()Ljava/util/List;")
-            if modules is None:
-                return []
-            module_iterator = J.call(modules, "iterator", 
-                                     "()Ljava/util/Iterator;")
-            return [ModuleInfo(x) for x in J.iterate_java(module_iterator)]
-        
-        def run(self, module_info,
-                pre = None,
-                post = None,
-                **kwargs):
-            '''Run a module
-            
-            module_info - the module_info of the module to run
-            
-            pre - list of PreprocessorPlugins to run before running module
-            
-            post - list of PostprocessorPlugins to run after running module
-            
-            *kwargs - names and values for input parameters
-            '''
-            input_map = J.get_dictionary_wrapper(
-                J.make_instance('java/util/HashMap', '()V'))
-            for k,v in kwargs.iteritems():
-                input_map.put(k, v)
-            if pre is not None:
-                pre = J.static_call("java/util/Arrays", "asList",
-                                    "([Ljava/lang/Object;)Ljava/util/List;",
-                                    pre)
-            if post is not None:
-                post = J.static_call("java/util/Arrays", "asList",
-                                     "([Ljava/lang/Object;)Ljava/util/List;",
-                                     post)
-            future = J.call(
-                self.o, "run", 
-                "(Limagej/module/ModuleInfo;"
-                "Ljava/util/List;"
-                "Ljava/util/List;"
-                "Ljava/util/Map;)"
-                "Ljava/util/concurrent/Future;",
-                module_info, pre, post, input_map)
-            return J.call(
-                self.o, "waitFor", 
-                "(Ljava/util/concurrent/Future;)Limagej/module/Module;",
-                future)
-    return ModuleService()
-
+    return ModuleItem()
+    
 def wrap_module(module):
     class Module(object):
         def __init__(self, o = module):
             self.o = o
             
-        getInfo = J.make_method("getInfo", "()Limagej/ext/module/ModuleInfo;")
+        getInfo = J.make_method("getInfo", "()Limagej/module/ModuleInfo;")
         getInput = J.make_method("getInput", "(Ljava/lang/String;)Ljava/lang/Object;")
         getOutput = J.make_method("getOutput", "(Ljava/lang/String;)Ljava/lang/Object;")
         setInput = J.make_method("setInput", "(Ljava/lang/String;Ljava/lang/Object;)V")
@@ -316,12 +275,12 @@ def wrap_menu_entry(menu_entry):
             self.o = o
         setName = J.make_method("setName", "(Ljava/lang/String;)V")
         getName = J.make_method("getName", "()Ljava/lang/String;")
-        setWeight = J.make_method("setWeight", "(I)V")
+        setWeight = J.make_method("setWeight", "(D)V")
         getWeight = J.make_method("getWeight", "()D")
         setMnemonic = J.make_method("setMnemonic", "(C)V")
         getMnemonic = J.make_method("getMnemonic", "()C")
-        setAccelerator = J.make_method("setAccelerator", "(Ljava/lang/String;)V")
-        getAccelerator = J.make_method("getAccelerator","()Ljava/lang/String;")
+        setAccelerator = J.make_method("setAccelerator", "(Limagej/input/Accelerator;)V")
+        getAccelerator = J.make_method("getAccelerator","()Limagej/input/Accelerator;")
         setIconPath = J.make_method("setIconPath", "(Ljava/lang/String;)V")
         getIconPath = J.make_method("getIconPath", "()Ljava/lang/String;")
         assignProperties = J.make_method("assignProperties", 
@@ -342,7 +301,7 @@ def get_command_service(context):
             "run", 
             "(Limagej/module/ModuleInfo;Ljava/util/Map;)"
             "Ljava/util/concurrent/Future;",
-            """Run the command associated with a ModuleInfo
+            doc = """Run the command associated with a ModuleInfo
             
             Runs the command with pre and post processing plugins.
             
@@ -353,6 +312,14 @@ def get_command_service(context):
             returns a java.util.concurrent.Future that can be redeemed
             for the module after the module has been run.
             """)
+        getCommandS = J.make_method(
+            "getCommand", "(Ljava/lang/String;)Limagej/command/CommandInfo;",
+            doc = """Get command by class name
+            
+            className - dotted class name, e.g. imagej.core.commands.app.AboutImageJ
+            """,
+            fn_post_process=wrap_module_info)
+        
     return CommandService()
 
 def get_display_service(context):
@@ -397,22 +364,15 @@ def get_display_service(context):
         
         setActiveDisplay = J.make_method("setActiveDisplay",
                                          "(Limagej/display/Display;)V")
-        getGlobalActiveDatasetView = J.make_method(
-            "getActiveDatasetView",
-            "()Limagej/display/DatasetView;",
-            "Get the active display's active dataset view")
-        getActiveDatasetView = J.make_method(
-            "getActiveDatasetView",
-            "(Limagej/display/ImageDisplay;)Limagej/display/DatasetView;")
-        getDisplays = J.make_method("getDisplays", "()Ljava/util/List;")
-        getImageDisplays = J.make_method("getImageDisplays",
-                                         "()Ljava/util/List;")
+        getDisplays = J.make_method(
+            "getDisplays", 
+            "()Ljava/util/List;",
+            fn_post_process = lambda x: 
+            map(wrap_display, J.iterate_collection(x)))
         getDisplay = J.make_method(
             "getDisplay",
-            "(Ljava/lang/String;)Limagej/display/Display;")
-        getObjectDisplays = J.make_method(
-            "getDisplays", "(Limagej/data/DataObject;)Ljava/util/List;",
-            "Get all displays attached to a given data object")
+            "(Ljava/lang/String;)Limagej/display/Display;",
+            fn_post_process=wrap_display)
         isUniqueName = J.make_method("isUniqueName", "(Ljava/lang/String;)Z")
         
     return DisplayService()
@@ -445,9 +405,6 @@ def wrap_display(display):
         #
         # Display methods
         #
-        getDisplayPanel = J.make_method(
-            "getDisplayPanel",
-            "()Limagej/display/DisplayPanel;")
         canDisplay = J.make_method(
             "canDisplay", "(Ljava/lang/Object;)Z",
             "Return true if display can display dataset")
@@ -471,7 +428,6 @@ def wrap_display(display):
             "setActiveAxis", "(Lnet/imglib2/meta/AxisType;)V")
         getCanvas = J.make_method(
             "getCanvas", "()Limagej/data/display/ImageCanvas;")
-        getAxes = J.make_method("getAxes", "()Ljava/util/List;")
     return ImageDisplay()
                 
 def get_dataset_service(context):
@@ -609,14 +565,14 @@ def create_dataset(context, pixel_data, name = None, axes = None):
                   pixel_data.flatten(), 0, strides, imgplus)
     return dataset
 
-def create_overlay(mask):
+def create_overlay(context, mask):
     '''Create a bitmask overlay from a numpy boolean array
     
     mask - boolean numpy array organized as i,j = y,x
     '''
     assert mask.ndim == 2
     mask = mask.transpose()
-    strides = np.array([1, mask.shape[0]])
+    strides = np.array([mask.shape[1], 1], int)
     
     imgFactory = J.make_instance(
         "net/imglib2/img/planar/PlanarImgFactory", "()V")
@@ -634,7 +590,8 @@ def create_overlay(mask):
         "(Lnet/imglib2/img/Img;)V", img)
     overlay = J.make_instance(
         "imagej/data/overlay/BinaryMaskOverlay",
-        "(Lnet/imglib2/roi/BinaryMaskRegionOfInterest;)V", roi)
+        "(Limagej/ImageJ;Lnet/imglib2/roi/BinaryMaskRegionOfInterest;)V", 
+        context, roi)
     return overlay
 
 def wrap_data_view(view):
@@ -662,7 +619,7 @@ def wrap_dataset(dataset):
             self.o = o
         getImgPlus = J.make_method("getImgPlus", "()Lnet/imglib2/img/ImgPlus;")
         setImgPlus = J.make_method("setImgPlus","(Lnet/imglib2/img/ImgPlus;)V")
-        getAxes = J.make_method("getAxes","()[Lnet/imglib2/img/Axis;")
+        getAxes = J.make_method("getAxes","()[Lnet/imglib2/img/AxisType;")
         getType = J.make_method("getType", "()Lnet/imglib2/type/numeric/RealType;")
         isSigned = J.make_method("isSigned", "()Z")
         isInteger = J.make_method("isInteger", "()Z")
@@ -734,24 +691,6 @@ def wrap_interval(interval):
             return [self.dimension(i) for i in range(self.numDimensions())]
     return Interval()
 
-
-def make_color_rgb_from_html(s):
-    '''Make an imagej.util.ColorRGB from an HTML color
-    
-    HTML colors have the form, #rrggbb or are one of the names
-    from the CSS-3 colors.
-    '''
-    return J.static_call("fromHTMLColor", 
-                         "(Ljava/lang/String;)Limagej/util/ColorRGB;", s)
-    
-
-def color_rgb_to_html(color_rgb):
-    '''Return an HTML-encoded color value from an imagej.util.ColorRGB
-    
-    color_rgb - a Java imagej.util.ColorRGB object
-    '''
-    return J.call(color_rgb, "toHTMLColor()", "()Ljava/lang/String;")
-
 def get_script_service(context):
     '''Get the script service for a given context
     
@@ -812,7 +751,7 @@ def wrap_script_engine_factory(o):
             "getLanguageName", "()Ljava/lang/String;")
         getLanguageVersion = J.make_method(
             "getLanguageVersion", "()Ljava/lang/String;")
-        getParamter = J.make_method(
+        getParameter = J.make_method(
             "getParameter", "(Ljava/lang/String;)Ljava/lang/Object;")
         getMethodCallSyntax = J.make_method(
             "getMethodCallSyntax", 
@@ -944,7 +883,7 @@ def wrap_script_engine(o):
             "getContext", "()Ljavax/script/ScriptContext;",
             doc = """Return the default ScriptContext for this engine""")
         setContext = J.make_method(
-            "setContext", "()Ljavax/script/ScriptContext;",
+            "setContext", "(Ljavax/script/ScriptContext;)V",
             doc = """Set the default ScriptContext for this engine""")
         getFactory = J.make_method(
             "getFactory", "()Ljavax/script/ScriptEngineFactory;",

@@ -12,6 +12,7 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
+__version__="$Revision$"
 
 import logging
 import os
@@ -47,6 +48,61 @@ if not hasattr(sys, 'frozen'):
                                      sources=["get_proper_case_filename.c"],
                                      libraries=["shlwapi", "shell32", "ole32"],
                                      extra_link_args=extra_link_args)]
+        try:
+            #
+            # Find JAVA_HOME, possibly from Windows registry
+            #
+            java_home = find_javahome()
+            jdk_home = find_jdk()
+            logger.debug("Using jdk_home = %s"%jdk_home)
+            include_dirs = [get_include()]
+            libraries = None
+            library_dirs = None
+            javabridge_sources = [ "javabridge.pyx" ]
+            if is_win:
+                if jdk_home is not None:
+                    jdk_include = os.path.join(jdk_home, "include")
+                    jdk_include_plat = os.path.join(jdk_include, sys.platform)
+                    include_dirs += [jdk_include, jdk_include_plat]
+                if is_mingw:
+                    #
+                    # Build libjvm from jvm.dll on Windows.
+                    # This assumes that we're using mingw32 for build
+                    #
+                    cmd = ["dlltool", "--dllname", 
+                           os.path.join(jdk_home,"jre\\bin\\client\\jvm.dll"),
+                           "--output-lib","libjvm.a",
+                           "--input-def","jvm.def",
+                           "--kill-at"]
+                    p = subprocess.Popen(cmd)
+                    p.communicate()
+                    library_dirs = [os.path.abspath(".")]
+                else:
+                    #
+                    # Use the MSVC lib in the JDK
+                    #
+                    jdk_lib = os.path.join(jdk_home, "lib")
+                    library_dirs = [jdk_lib]
+                    javabridge_sources.append("strtoull.c")
+            
+                libraries = ["jvm"]
+            elif sys.platform == 'darwin':
+                javabridge_sources += [ "mac_javabridge_utils.c" ]
+                include_dirs += ['/System/Library/Frameworks/JavaVM.framework/Headers']
+                extra_link_args = ['-framework', 'JavaVM']
+            elif sys.platform.startswith('linux'):
+                include_dirs += [os.path.join(java_home,'include'),
+                                 os.path.join(java_home,'include','linux')]
+                library_dirs = [os.path.join(java_home,'jre','lib','amd64','server')]
+                libraries = ["jvm"]
+            extensions += [Extension(name="javabridge",
+                                     sources=javabridge_sources,
+                                     libraries=libraries,
+                                     library_dirs=library_dirs,
+                                     include_dirs=include_dirs,
+                                     extra_link_args=extra_link_args)]
+        except Exception, e:
+            print "WARNING: Java and JVM is not installed - Images will be loaded using PIL (%s)"%(str(e))
             
         dict = { "name":"utilities",
                  "description":"utility module for CellProfiler",

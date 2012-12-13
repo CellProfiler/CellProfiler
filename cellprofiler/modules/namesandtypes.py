@@ -36,8 +36,8 @@ from cellprofiler.modules.images import Images
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
 from cellprofiler.modules.loadimages import needs_allowopenfiles
-import subimager.client
-import subimager.omexml
+from bioformats.formatreader import get_omexml_metadata, load_using_bioformats
+import bioformats.omexml as OME
 
 ASSIGN_ALL = "Assign all images"
 ASSIGN_GUESS = "Try to guess image assignment"
@@ -1230,15 +1230,17 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
         properties = {}
         mproperties = {}
         if self.series is not None:
-            properties["series"] = str(self.series)
+            properties["series"] = self.series
         if needs_allowopenfiles(url):
-            properties["allowopenfiles"] = "yes"
-            mproperties["allowopenfiles"] = "yes"
+            properties["allowopenfiles"] = True
+            mproperties["allowopenfiles"] = True
         if self.index is not None:
             indexes = [self.index]
         else:
-            metadata = subimager.client.get_metadata(url, **mproperties)
-            ometadata = subimager.omexml.OMEXML(metadata)
+            metadata = get_omexml_metadata(self.get_full_name(), 
+                                           **mproperties)
+                                           
+            ometadata = OME.OMEXML(metadata)
             pixel_metadata = ometadata.image(0 if self.series is None
                                              else self.series).Pixels
             nplanes = (pixel_metadata.SizeC * pixel_metadata.SizeZ * 
@@ -1249,7 +1251,9 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
         offset = 0
         for index in indexes:
             properties["index"] = str(index)
-            img = subimager.client.get_image(url, **properties).astype(int)
+            img = load_using_bioformats(
+                self.get_full_name(), 
+                rescale=False, **properties).astype(int)
             img = convert_image_to_objects(img).astype(np.int32)
             img[img != 0] += offset
             offset += np.max(img)

@@ -20,5 +20,9 @@ cellprofiler/utilities/javabridge.c
 contrib/LAP.c
 cellprofiler/tests/test.db
 cellprofiler/frozen_version.py
+imagej/maven
+imagej/jars
+imagej/*.zip
+killjavabridge.egg-info
 output
 windows

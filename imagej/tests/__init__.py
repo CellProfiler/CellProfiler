@@ -1,4 +1,4 @@
-# imagej package
+# imagej.tests package
 #
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -9,11 +9,8 @@
 # Please see the AUTHORS file for credits.
 #
 # Website: http://www.cellprofiler.org
-"""ImageJ package
+"""ImageJ tests
 
-This package contains utilities for manipulating ImageJ and the
-ImagePlus object via the Java bridge.
+This package contains the tests for the imageJ classes
 """
-
-__version__ = "$Revision$"
 

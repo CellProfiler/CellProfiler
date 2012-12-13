@@ -55,9 +55,9 @@ from cellprofiler.modules.loadimages import \
      C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.cpmath.cpmorphology import distance_color_labels
-from subimager.client import post_image
-import subimager.omexml as ome
 from cellprofiler.utilities.version import get_version
+from bioformats.formatwriter import write_image
+import bioformats.omexml as ome
 
 IF_IMAGE       = "Image"
 IF_MASK        = "Mask"
@@ -506,7 +506,7 @@ class SaveImages(cpm.CPModule):
                 pixel_type = ome.PT_UINT8
             for i, l in enumerate(labels):
                 self.do_save_image(
-                    workspace, filename, l, pixel_type, c=i, size_c=len(labels))
+                    workspace, filename, l, pixel_type, t=i, size_t=len(labels))
         
         else:
             if self.colormap == cps.DEFAULT:
@@ -562,28 +562,10 @@ class SaveImages(cpm.CPModule):
         
         channel_names - names of the channels (make up names if not present
         '''
-        omexml = ome.OMEXML()
-        omexml.image(0).Name = os.path.split(filename)[1]
-        p = omexml.image(0).Pixels
-        assert isinstance(p, ome.OMEXML.Pixels)
-        p.SizeX = pixels.shape[1]
-        p.SizeY = pixels.shape[0]
-        p.SizeC = size_c
-        p.SizeT = size_t
-        p.SizeZ = size_t
-        p.DimensionOrder = ome.DO_XYCZT
-        p.PixelType = pixel_type
-        index = c + size_c * z + size_c * size_z * t
-        if pixels.ndim == 3:
-            p.SizeC = pixels.shape[2]
-            p.Channel(0).SamplesPerPixel = pixels.shape[2]
-            omexml.structured_annotations.add_original_metadata(
-                ome.OM_SAMPLES_PER_PIXEL, str(pixels.shape[2]))
-        elif size_c > 1:
-            p.channel_count = size_c
-        
-        url = pathname2url(filename)
-        post_image(url, pixels, omexml.to_xml(), index = str(index))
+        write_image(filename, pixels, pixel_type, 
+                    c = c, z = z, t = t,
+                    size_c = size_c, size_z = size_z, size_t = size_t,
+                    channel_names = channel_names)
 
     def save_image(self, workspace):
         workspace.display_data.wrote_image = False

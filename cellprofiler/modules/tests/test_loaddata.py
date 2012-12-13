@@ -405,7 +405,8 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             # This appears to be bistable, depending on whether PIL or
             # Bioformats loads it (???)
             #
-            self.assertTrue(hexdigest == 'f7d75e4ba3ca1385dfe09c111261359e')
+            self.assertTrue((hexdigest == 'f7d75e4ba3ca1385dfe09c111261359e') or
+                            (hexdigest == '1a37c43914c7ceb7d9cac503a5c1c767'))
             self.assertTrue('PathName_DNA' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('PathName_DNA'),
                              dir)
@@ -679,7 +680,8 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             # This appears to be tristable, depending on whether PIL or
             # Bioformats or Subimager loads it (???)
             #
-            self.assertTrue(hexdigest == u'f7d75e4ba3ca1385dfe09c111261359e')
+            self.assertTrue((hexdigest == u'f7d75e4ba3ca1385dfe09c111261359e') or
+                            (hexdigest == '1a37c43914c7ceb7d9cac503a5c1c767'))
             self.assertTrue('PathName_DAPI' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('PathName_DAPI'),
                              dir)

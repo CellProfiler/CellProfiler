@@ -64,8 +64,6 @@ cached_file_lists = {}
 import scipy.io.matlab.mio
 import uuid
 
-import subimager.client
-import subimager.omexml
 import cellprofiler.objects as cpo
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.cpimage as cpimage
@@ -1799,6 +1797,9 @@ class LoadImages(cpmodule.CPModule):
     
     def prepare_run_of_flex(self, workspace):
         '''Set up image providers for flex files'''
+        import bioformats.omexml
+        from bioformats.formatreader import get_omexml_metadata
+        
         pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
@@ -1847,8 +1848,8 @@ class LoadImages(cpmodule.CPModule):
                 metadata = self.get_filename_metadata(image_settings, filename, 
                                                       path)
                 image_set_count = starting_image_index
-                xml = subimager.client.get_metadata(url)
-                omemetadata = subimager.omexml.OMEXML(xml)
+                xml = get_omexml_metadata(pathname)
+                omemetadata = bioformats.omexml.OMEXML(xml)
                 image_count = omemetadata.image_count
                 if len(d) == 0:
                     d = [ {} for _ in range(image_count)]
@@ -2246,13 +2247,16 @@ class LoadImages(cpmodule.CPModule):
                     #
                     #  Interpret file as objects
                     #
-                    # Get the frame count from subimager's metadta
+                    # Get the frame count from the OME-XML metadta
                     #
-                    md = subimager.client.get_metadata(url, 
-                                                       series = provider.series,
-                                                       allowfileopen="yes",
-                                                       groupfiles="no")
-                    md = subimager.omexml.OMEXML(md)
+                    from bioformats.formatreader import get_omexml_metadata
+                    import bioformats.omexml
+                    
+                    md = get_omexml_metadata(provider.get_full_name(), 
+                                             series = provider.series,
+                                             allowopenfiles=True,
+                                             groupfiles=False)
+                    md = bioformats.omexml.OMEXML(md)
                     mdpixels = md.image().Pixels
                     if (mdpixels.channel_count == 1 and 
                         mdpixels.Channel().SamplesPerPixel == 3):
@@ -2266,12 +2270,9 @@ class LoadImages(cpmodule.CPModule):
                     ijv = np.zeros((0, 3), int)
                     offset = 0
                     for index in range(n_frames):
-                        kwparams = dict(groupfiles="no")
-                        if n_frames > 1:
-                            kwparams["index"] = index
-                        if series is not None:
-                            kwparams["series"] = series
-                        labels = subimager.client.get_image(url, **kwparams)
+                        provider.index = index
+                        provider.rescale = False
+                        labels = provider.provide_image(None).pixel_data
                         shape = labels.shape[:2]
                         labels = convert_image_to_objects(labels)
                         i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
@@ -2407,14 +2408,15 @@ class LoadImages(cpmodule.CPModule):
         
     def get_frame_count(self, pathname):
         """Return the # of frames in a movie"""
+        import bioformats.omexml
+        from bioformats.formatreader import get_omexml_metadata
         if self.file_types in (FF_AVI_MOVIES,FF_OTHER_MOVIES,FF_STK_MOVIES):
             url = pathname2url(pathname)
             if needs_allowopenfiles(pathname):
-                xml = subimager.client.get_metadata(
-                    url, allowopenfiles="yes")
+                xml = get_omexml_metadata(pathname, allowopenfiles=True)
             else:
-                xml = subimager.client.get_metadata(url)
-            omexml = subimager.omexml.OMEXML(xml)
+                xml = get_omexml_metadata(pathname)
+            omexml = bioformats.omexml.OMEXML(xml)
             frame_count = omexml.image(0).Pixels.SizeT
             if frame_count == 1:
                 frame_count = omexml.image(0).Pixels.SizeZ
@@ -3122,6 +3124,10 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
                 raise IOError("Test for access to directory failed. Directory: %s" %path)
         if parsed_path.scheme == 'file':
             self.__cached_file = url2pathname(path)
+        elif parsed_path.scheme.lower() == 'omero':
+            # Let bioformats open the URL directly
+            self.__is_cached = False
+            return True
         else:
             self.__cached_file, headers = urllib.urlretrieve(url)
         self.__is_cached = True
@@ -3171,6 +3177,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
     def provide_image(self, image_set):
         """Load an image from a pathname
         """
+        import bioformats
         self.cache_file()
         filename = self.get_filename()
         channel_names = []
@@ -3183,56 +3190,15 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             pixel_type_scale = 1.0
         else:
             url = self.get_url()
-            properties = {}
-            mproperties = {}
-            if self.series is not None:
-                properties["series"] = str(self.series)
-            if self.index is not None:
-                properties["index"] = str(self.index)
-            if self.channel is not None:
-                properties["channel"] = str(self.channel)
-            if needs_allowopenfiles(url):
-                properties["allowopenfiles"] = "yes"
-                mproperties["allowopenfiles"] = "yes"
-            img = subimager.client.get_image(url, **properties).astype(float)
-            metadata = subimager.client.get_metadata(url, **mproperties)
-            ometadata = subimager.omexml.OMEXML(metadata)
-            sa = ometadata.structured_annotations
-            max_sample_value = sa.get_original_metadata_value(
-                subimager.omexml.OM_MAX_SAMPLE_VALUE)
-            pixel_metadata = ometadata.image(0 if self.series is None
-                                             else self.series).Pixels
-            pixel_type = pixel_metadata.PixelType
-            if pixel_type in (subimager.omexml.PT_BIT,
-                              subimager.omexml.PT_FLOAT,
-                              subimager.omexml.PT_DOUBLE):
-                # Values between 0 and 1 for these types
-                pixel_type_scale = 1.0
-            elif pixel_type == subimager.omexml.PT_INT8:
-                pixel_type_scale = 127.0
-            elif pixel_type == subimager.omexml.PT_UINT8:
-                pixel_type_scale = 255.0
-            elif pixel_type == subimager.omexml.PT_INT16:
-                pixel_type_scale = 32767.0
-            elif pixel_type == subimager.omexml.PT_UINT16:
-                pixel_type_scale = 65535.
-            elif pixel_type == subimager.omexml.PT_INT32:
-                pixel_type_scale = 2147483648.0
-            elif pixel_type == subimager.omexml.PT_UINT32:
-                pixel_type_scale = 4294967296.0
-            else:
-                logger.warn("Unknown pixel type for %s: %s" % (
-                    self.get_full_name(), pixel_type))
-                pixel_type_scale = 1.0
-            if (isinstance(max_sample_value, basestring) and
-                max_sample_value.isdigit()):
-                self.scale = float(max_sample_value)
-            else:
-                self.scale = pixel_type_scale
-        if self.rescale:
-            img = img / self.scale
-        else:
-            img = img / pixel_type_scale
+            if not url.lower().startswith("omero:"):
+                url = self.get_full_name()
+            img, self.scale = bioformats.load_using_bioformats(
+                url,
+                c = self.channel,
+                index = self.index,
+                rescale = self.rescale,
+                wants_max_intensity=True,
+                channel_names=channel_names)
         image = cpimage.Image(img,
                               path_name = self.get_pathname(),
                               file_name = self.get_filename(),

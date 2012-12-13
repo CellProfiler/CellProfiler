@@ -41,7 +41,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.modules.createbatchfiles as cpm_c
 from cellprofiler.cpmath.filter import stretch
 from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
-from subimager.client import start_subimager, stop_subimager, get_image
+from bioformats.formatreader import load_using_bioformats_url, load_using_bioformats
 
 import cellprofiler.modules.tests as cpmt
 IMAGE_NAME = 'inputimage'
@@ -51,13 +51,6 @@ FILE_NAME = 'filenm'
 
 
 class TestSaveImages(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        start_subimager()
-        
-    @classmethod
-    def tearDownClass(cls):
-        stop_subimager()
         
     def setUp(self):
         # Change the default image directory to a temporary file
@@ -1271,8 +1264,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "%sC08.%s" %(FILE_NAME, cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = get_image(cpm_li.pathname2url(filename))
-        pixel_data = pixel_data.astype(float) / 255.0
+        pixel_data = load_using_bioformats(filename)
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(image - pixel_data) < .02))
         
@@ -1293,8 +1285,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "metadatatestC08.%s" %(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = get_image(cpm_li.pathname2url(filename))
-        pixel_data = pixel_data.astype(float) / 255.0
+        pixel_data = load_using_bioformats(filename)
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(image - pixel_data) < .02))
         
@@ -1316,8 +1307,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "foo.%s"%(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = get_image(cpm_li.pathname2url(filename))
-        pixel_data = pixel_data.astype(float) / 255.0
+        pixel_data = load_using_bioformats(filename)
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
         
@@ -1341,8 +1331,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "foo.%s"%(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = get_image(cpm_li.pathname2url(filename))
-        pixel_data = pixel_data.astype(float) / 255.0
+        pixel_data = load_using_bioformats(filename)
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
 
@@ -1363,8 +1352,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         filename = os.path.join(cpprefs.get_default_output_directory(),
                                 "foo.%s"%(cpm_si.FF_PNG))
         self.assertTrue(os.path.isfile(filename))
-        pixel_data = get_image(cpm_li.pathname2url(filename))
-        pixel_data = pixel_data.astype(float) / 255.0
+        pixel_data = load_using_bioformats(filename)
         self.assertEqual(pixel_data.shape, image.shape)
         self.assertTrue(np.all(np.abs(expected - pixel_data) < .02))
 
@@ -1436,8 +1424,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         frames = self.run_movie()
         for i, frame in enumerate(frames):
             path = os.path.join(self.custom_directory, FILE_NAME + ".avi")
-            frame_out = get_image(cpm_li.pathname2url(path), index=i, channel=0)
-            frame_out /= 255.0
+            frame_out = load_using_bioformats(path, index=i)
             self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
             
     def test_05_02_save_two_movies(self):
@@ -1455,8 +1442,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
             self.assertTrue(os.path.exists(path))
             for t,image_number in enumerate(group[1]):
                 frame = frames[image_number-1]
-                frame_out = get_image(cpm_li.pathname2url(path), index=t, channel=0)
-                frame_out /= 255.0
+                frame_out = load_using_bioformats(path, t=t)
                 self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
                 
     def test_05_03_save_color_movie(self):
@@ -1468,7 +1454,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         frames = self.run_movie(color=True)
         for i, frame in enumerate(frames):
             path = os.path.join(self.custom_directory, FILE_NAME + ".avi")
-            frame_out = get_image(cpm_li.pathname2url(path), index=i) / 255.0
+            frame_out = load_using_bioformats(path, t=i)
             self.assertTrue(np.all(np.abs(frame - frame_out) < .05))
                 
     def test_06_01_save_image(self):
@@ -1540,7 +1526,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
                 expected = expected.reshape(expected.shape[0], 
                                             expected.shape[1], 1)
             for index in range(expected.shape[2]):
-                im = get_image(cpm_li.pathname2url(filename), index=index)
+                im = load_using_bioformats(filename, rescale=False)
                 self.assertTrue(np.all(np.abs(im - expected[:,:,index]) <= 1))
             if os.path.isfile(filename):
                 try:
@@ -1575,7 +1561,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        im = get_image(cpm_li.pathname2url(filename))
+        im = load_using_bioformats(filename, rescale=False)
         self.assertTrue(np.all(labels == im))
         
     def test_07_02_save_objects_grayscale_16_tiff(self):
@@ -1603,7 +1589,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        im = get_image(cpm_li.pathname2url(filename))
+        im = load_using_bioformats(filename, rescale=False)
         self.assertTrue(np.all(labels == im))
         
     def test_07_03_save_objects_grayscale_png(self):
@@ -1631,7 +1617,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        im = get_image(cpm_li.pathname2url(filename))
+        im = load_using_bioformats(filename, rescale=False)
         self.assertTrue(np.all(labels == im))
         
     def test_07_04_save_objects_color_png(self):
@@ -1659,7 +1645,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         feature = cpm_si.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME
         m_pathname = m.get_current_image_measurement(feature)
         self.assertEqual(m_pathname, os.path.split(filename)[0])
-        im = get_image(cpm_li.pathname2url(filename))
+        im = load_using_bioformats(filename, rescale=False)
         im.shape = (im.shape[0] * im.shape[1], im.shape[2])
         order = np.lexsort(im.transpose())
         different = np.hstack(([False], np.any(im[order[:-1],:] != im[order[1:],:], 1)))
@@ -1708,7 +1694,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         m_url = m.get_current_image_measurement(feature)
         self.assertEqual(m_url, cpm_li.pathname2url(filename))
         for i in range(2):
-            im = get_image(m_url, index=i, groupfiles="no")
+            im = load_using_bioformats(filename, index=i, rescale=False)
             o = o1 if 1 in np.unique(im) else o2
             self.assertEqual(tuple(im.shape), tuple(o.shape))
             np.testing.assert_array_equal(

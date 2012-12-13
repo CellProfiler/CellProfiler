@@ -435,3 +435,8 @@ finally:
         join_to_the_boundary()
     except:
         logging.root.warn("Failed to stop zmq boundary")
+    try:
+        from cellprofiler.utilities.jutil import kill_vm
+        kill_vm()
+    except:
+        logging.root.warn("Failed to stop the JVM")

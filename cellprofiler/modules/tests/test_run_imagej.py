@@ -28,7 +28,6 @@ import cellprofiler.measurements as cpm
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
-import subimager.client as C
 
 import cellprofiler.modules.run_imagej as R
 
@@ -36,12 +35,6 @@ INPUT_IMAGE_NAME = "inputimage"
 OUTPUT_IMAGE_NAME = "outputimage"
 
 class TestRunImageJ(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        C.start_subimager()
-    @classmethod
-    def tearDownClass(cls):
-        C.stop_subimager()
         
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org

@@ -512,7 +512,7 @@ class PipelineListView(object):
             if ctrl.GetItemData(i) == data_value:
                 return ctrl, i
         raise IndexError("The module, %s, was not found in the list control" %
-                         module.name)
+                         module.module_name)
 
     def select_one_module(self, module_num):
         """Select only the given module number in the list box"""

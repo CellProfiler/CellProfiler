@@ -414,6 +414,49 @@ def run_script(script, bindings_in = {}, bindings_out = {},
         static_call("org/mozilla/javascript/Context", "exit", "()V")
     return result
 
+def get_future_wrapper(o, fn_post_process=None):
+    '''Wrap a java.util.concurrent.Future as a class
+    
+    o - the object implementing the Future interface
+    
+    fn_post_process - a post-processing function to run on the object returned
+                      from o.get(). If you have Future<T>, this can apply
+                      the appropriate wrapper for T so you get back a
+                      wrapped class of the appropriate type.
+    '''
+    class Future(object):
+        def __init__(self):
+            self.o = o
+        run = make_method("run", "()V")
+        cancel = make_method("cancel", "(Z)Z")
+        get = make_method(
+            "get", "()Ljava/lang/Object;",
+            "Waits if necessary for the computation to complete, and then retrieves its result.",
+            fn_post_process=fn_post_process)
+        isCancelled = make_method("isCancelled", "()Z")
+        isDone = make_method("isDone", "()Z")
+    return Future()
+
+def make_future_task(runnable_or_callable, 
+                     result=None, fn_post_process=None):
+    '''Make an instance of java.util.concurrent.FutureTask
+    
+    runnable_or_callable - either a java.util.concurrent.Callable or a
+                           java.lang.Runnable which is wrapped inside the Future
+    result - if a Runnable, this is the result that is returned by Future.get
+    
+    fn_post_process - a postprocessing function run on the result of Future.get
+    '''
+    if is_instance_of(runnable_or_callable, 'java/util/concurrent/Callable'):
+        o = make_instance('java/util/concurrent/FutureTask',
+                          '(Ljava/util/concurrent/Callable;)V',
+                          runnable_or_callable)
+    else:
+        o = make_instance('java/util/concurrent/FutureTask',
+                          '(Ljava/lang/Runnable;Ljava/lang/Object;)V',
+                          runnable_or_callable, result)
+    return get_future_wrapper(o, fn_post_process)
+    
 def execute_runnable_in_main_thread(runnable, synchronous=False):
     '''Execute a runnable on the main thread
     
@@ -432,10 +475,7 @@ def execute_runnable_in_main_thread(runnable, synchronous=False):
     if sys.platform == "darwin":
         # Assumes that RunnableQueue has been deployed on the main thread
         if synchronous:
-            future = make_instance(
-                "java/util/concurrent/FutureTask",
-                "(Ljava/lang/Runnable;Ljava/lang/Object;)V",
-                runnable, None)
+            future = make_future_task(runnable)
             execute_future_in_main_thread(future)
         else:
             static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V",
@@ -444,8 +484,10 @@ def execute_runnable_in_main_thread(runnable, synchronous=False):
         run_in_main_thread(
             lambda: call(runnable, "run", "()V"), synchronous)
             
-def execute_future_in_main_thread(jfuture):
-    '''Execute a class implementing Future in the main thread
+def execute_future_in_main_thread(future):
+    '''Execute a Future in the main thread
+    
+    future - a future, wrapped by get_future_wrapper
     
     Synchronize with the return, running the event loop.
     '''
@@ -458,14 +500,14 @@ def execute_future_in_main_thread(jfuture):
     #-----------------------------------------------------------------------------
     
     if sys.platform != "darwin":
-        run_in_main_thread(lambda: call(jfuture, "run", "()V"))
-        return call(jfuture, "get", "()Ljava/lang/Object;")
+        run_in_main_thread(future.run, True)
+        return future.get()
         
     import wx
     import time
     app = wx.GetApp()
     logger.debug("Enqueueing future on runnable queue")
-    static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", jfuture)
+    static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", future.o)
     if (app is None) or (not wx.Thread_IsMain()):
         logger.debug("Synchronizing without event loop")
         #
@@ -473,14 +515,14 @@ def execute_future_in_main_thread(jfuture):
         # by the execution of Future.get() and AWT needing WX to
         # run the event loop. Therefore, we poll before getting.
         #
-        while not call(jfuture, "isDone", "()Z"):
+        while not future.isDone():
             logger.debug("Future is not done")
             time.sleep(.1)
-        return call(jfuture, "get", "()Ljava/lang/Object;")
+        return future.get()
     elif app.IsMainLoopRunning():
         evtloop = wx.EventLoop()
         logger.debug("Polling for future done within main loop")
-        while not call(jfuture, "isDone", "()Z"):
+        while not future.isDone():
             logger.debug("Future is not done")
             if evtloop.Pending():
                 while evtloop.Pending():
@@ -491,9 +533,6 @@ def execute_future_in_main_thread(jfuture):
                 evtloop.Dispatch()
             logger.debug("Sleeping")
             time.sleep(.1)
-        
-        logger.debug("Fetching future value")
-        return call(jfuture, "get", "()Ljava/lang/Object;")
     else:
         logger.debug("Polling for future while running main loop")
         class EventLoopTimer(wx.Timer):
@@ -520,43 +559,10 @@ def execute_future_in_main_thread(jfuture):
                 if self.fn():
                     self.timer.Stop()
                     self.evtloop.Exit()
-        event_loop_runner = EventLoopRunner(
-            lambda: call(jfuture, "isDone", "()Z"))
+        event_loop_runner = EventLoopRunner(lambda: future.isDone())
         event_loop_runner.Run(time=10)
-        return call(jfuture, "get", "()Ljava/lang/Object;")
-        
-        
-def execute_callable_in_main_thread(jcallable):
-    '''Execute a callable on the main thread, returning its value
-    
-    callable - a Java object implementing java.util.concurrent.Callable
-    
-    Returns the result of evaluating the callable's "call" method in the
-    main thread.
-    
-    Hint: to make a callable using scripting,
-    
-    var my_import_scope = new JavaImporter(java.util.concurrent.Callable);
-    with (my_import_scope) {
-        return new Callable() {
-            call: function {
-                <do something that produces result>
-                return result;
-            }
-        };
-    '''
-    if sys.platform == "darwin":
-        # Assumes that RunnableQueue has been deployed on the main thread
-        future = make_instance(
-            "java/util/concurrent/FutureTask",
-            "(Ljava/util/concurrent/Callable;)V",
-            jcallable)
-        return execute_future_in_main_thread(future)
-    else:
-        return run_in_main_thread(
-            lambda: call(jcallable, "call", "()Ljava/lang/Object;"), 
-            True)
-    
+    logger.debug("Fetching future value")
+    return future.get()
 
 def run_in_main_thread(closure, synchronous):
     '''Run a closure in the main Java thread
@@ -1144,6 +1150,13 @@ def get_map_wrapper(o):
         def __iter__(self):
             return iterate_collection(self.keySet())
     return Map()
+
+def make_map(**kwargs):
+    '''Create a wrapped java.util.HashMap from arbitrary keyword arguments'''
+    hashmap = get_map_wrapper(make_instance('java/util/HashMap', "()V"))
+    for k, v in kwargs.iteritems():
+        hashmap[k] = v
+    return hashmap
 
 def jdictionary_to_string_dictionary(hashtable):
     '''Convert a Java dictionary to a Python dictionary

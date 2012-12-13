@@ -29,7 +29,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmm
 import cellprofiler.objects as cpo
-
+from cellprofiler.cpmath.outline import outline
 import cellprofiler.modules.measureimageareaoccupied as mia
 
 OBJECTS_NAME = "MyObjects"
@@ -94,6 +94,7 @@ class TestMeasureImageArea(unittest.TestCase):
         mask[1:9,1:9] = True
         image = cpi.Image(np.zeros((10,10)),mask=mask)
         area_occupied = np.sum(labels[mask])
+        perimeter = np.sum(outline(np.logical_and(labels,mask)))
         total_area = np.sum(mask)
         workspace = self.make_workspace(labels, image)
         module = workspace.module
@@ -104,6 +105,7 @@ class TestMeasureImageArea(unittest.TestCase):
             return "AreaOccupied_%s_%s"%(x, module.operands[0].operand_objects.value)
         
         self.assertEqual(m.get_current_measurement("Image",mn("AreaOccupied")), area_occupied)
+        self.assertEqual(m.get_current_measurement("Image",mn("Perimeter")), perimeter)
         self.assertEqual(m.get_current_measurement("Image",mn("TotalArea")), total_area)
         
     def test_02_01_get_measurement_columns(self):
@@ -112,6 +114,8 @@ class TestMeasureImageArea(unittest.TestCase):
         module.operands[0].operand_choice.value = "Objects"
         columns = module.get_measurement_columns(None)
         expected = ((cpmm.IMAGE, "AreaOccupied_AreaOccupied_%s"%OBJECTS_NAME,
+                     cpmm.COLTYPE_FLOAT),
+                    (cpmm.IMAGE, "AreaOccupied_Perimeter_%s"%OBJECTS_NAME,
                      cpmm.COLTYPE_FLOAT),
                     (cpmm.IMAGE, "AreaOccupied_TotalArea_%s"%OBJECTS_NAME,
                      cpmm.COLTYPE_FLOAT))

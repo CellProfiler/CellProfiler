@@ -1,10 +1,10 @@
 """<b> Measure Image Area Occupied</b> measures the total area in an image that is occupied by objects
 <hr>
 
-This module reports the sum of the areas of the objects defined by one
+This module reports the sum of the areas and perimeters of the objects defined by one
 of the <b>Identify</b> modules, or the area of the foreground in a binary
 image.
-Both the area occupied and the total image area will respect
+Both the area occupied, perimeter and the total image area will respect
 the masking, if any, of the primary image used by the Identify module.
 
 <p>You can use this module to measure the number of pixels above a given threshold 
@@ -13,7 +13,8 @@ output by <b>ApplyThreshold</b> to be measured by this module.</p>
 
 <h4>Available measurements</h4>
 <ul>
-<li><i>AreaOccupied:</i> The total area occupied by the input objects.</li>
+<li><i>AreaOccupied:</i> The total area occupied by the input objects or binary image.</li>
+<li><i>Perimeter:</i> The total length of the perimeter of the input objects/binary image.</li>
 <li><i>TotalImageArea:</i> The total pixel area of the image.</li>
 </ul>
 
@@ -37,9 +38,13 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
+from cellprofiler.cpmath.outline import outline
 
 '''Measurement feature name format for the AreaOccupied measurement'''
 F_AREA_OCCUPIED = "AreaOccupied_AreaOccupied_%s"
+
+'''Measure feature name format for the Perimeter measurement'''
+F_PERIMETER = "AreaOccupied_Perimeter_%s"
 
 '''Measure feature name format for the TotalArea measurement'''
 F_TOTAL_AREA = "AreaOccupied_TotalArea_%s"
@@ -192,7 +197,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
             
     def run(self, workspace):
         m = workspace.measurements
-        statistics = [["Objects or Image", "Area Occupied", "Total Area"]]
+        statistics = [["Objects or Image", "Area Occupied", "Perimeter", "Total Area"]]
         for op in self.operands:
             if op.operand_choice  == O_OBJECTS:
                 statistics += self.measure_objects(op,workspace) 
@@ -205,20 +210,24 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         figure = workspace.create_or_find_figure(title="MeasureImageAreaOccupied, image cycle #%d"%(
                 workspace.measurements.image_set_number),subplots=(1,1))
         figure.subplot_table(0, 0, workspace.display_data.statistics,
-                             ratio=(.25,.25,.25))
+                             ratio=(.25,.25,.25,.25))
         
     def measure_objects(self, operand, workspace):
         '''Performs the measurements on the requested objects'''
         objects = workspace.get_objects(operand.operand_objects.value)
         if objects.has_parent_image:
             area_occupied = np.sum(objects.segmented[objects.parent_image.mask]>0)
+            perimeter = np.sum(outline(np.logical_and(objects.segmented != 0,objects.parent_image.mask)))
             total_area = np.sum(objects.parent_image.mask)
         else:
             area_occupied = np.sum(objects.segmented > 0)
+            perimeter = np.sum(outline(objects.segmented) > 0)
             total_area = np.product(objects.segmented.shape)
         m = workspace.measurements
         m.add_image_measurement(F_AREA_OCCUPIED%(operand.operand_objects.value),
                                 np.array([area_occupied], dtype=float ))
+        m.add_image_measurement(F_PERIMETER%(operand.operand_objects.value),
+                                np.array([perimeter], dtype=float ))
         m.add_image_measurement(F_TOTAL_AREA%(operand.operand_objects.value),
                                 np.array([total_area], dtype=float))
         if operand.should_save_image.value:
@@ -228,19 +237,22 @@ class MeasureImageAreaOccupied(cpm.CPModule):
             workspace.image_set.add(operand.image_name.value,
                                     output_image)
         return[[operand.operand_objects.value,
-                str(area_occupied),str(total_area)]]
+                str(area_occupied),str(perimeter),str(total_area)]]
 
     def measure_images(self,operand,workspace):
         '''Performs measurements on the requested images'''
         image = workspace.image_set.get_image(operand.binary_name.value, must_be_binary = True)
         area_occupied = np.sum(image.pixel_data > 0)
+        perimeter = np.sum(outline(image.pixel_data) > 0)
         total_area = np.prod(np.shape(image.pixel_data))
         m = workspace.measurements
         m.add_image_measurement(F_AREA_OCCUPIED%(operand.binary_name.value),
                                 np.array([area_occupied], dtype=float))
+        m.add_image_measurement(F_PERIMETER%(operand.binary_name.value),
+                                np.array([perimeter], dtype=float))
         m.add_image_measurement(F_TOTAL_AREA%(operand.binary_name.value),
                                 np.array([total_area], dtype=float))
-        return [[operand.binary_name.value, str(area_occupied), str(total_area)]]
+        return [[operand.binary_name.value, str(area_occupied), str(perimeter), str(total_area)]]
 
 
     def get_measurement_columns(self, pipeline):
@@ -248,6 +260,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         columns = []
         for op in self.operands:
             for feature, coltype in ((F_AREA_OCCUPIED, cpmeas.COLTYPE_FLOAT),
+                                     (F_PERIMETER, cpmeas.COLTYPE_FLOAT),
                                      (F_TOTAL_AREA, cpmeas.COLTYPE_FLOAT)):
                 columns.append((cpmeas.IMAGE, 
                                 feature % (op.operand_objects.value if op.operand_choice == O_OBJECTS else op.binary_name.value), 

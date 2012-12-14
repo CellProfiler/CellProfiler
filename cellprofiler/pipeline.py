@@ -55,7 +55,7 @@ import cellprofiler.settings as cps
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
 from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
-from subimager.omexml import OMEXML
+from bioformats.omexml import OMEXML
 
 '''The measurement name of the image number'''
 IMAGE_NUMBER = cpmeas.IMAGE_NUMBER

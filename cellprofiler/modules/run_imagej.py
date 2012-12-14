@@ -531,8 +531,11 @@ class RunImageJ(cpm.CPModule):
         # Install the input image as the current image
         #
         if img is not None:
+            dataset = ij2.create_dataset(get_context(), 
+                                         img.pixel_data * IMAGEJ_SCALE,
+                                         input_image_name)
             display = display_service.createDisplay(
-                img.pixel_data * IMAGEJ_SCALE, input_image_name)
+                input_image_name, dataset)
             display_service.setActiveDisplay(display)
 
         self.do_imagej(workspace)
@@ -543,8 +546,7 @@ class RunImageJ(cpm.CPModule):
             output_image_name = self.current_output_image_name.value
             display = display_service.getActiveImageDisplay()
             display_view = display.getActiveView()
-            jdataset = J.call(display_view, "getData", "()Limagej/data/Dataset;")
-            dataset = ij2.wrap_dataset(jdataset)
+            dataset = ij2.wrap_dataset(display_view.getData())
             pixel_data = dataset.get_pixel_data() / IMAGEJ_SCALE
             image = cpi.Image(pixel_data)
             image_set.add(output_image_name, image)
@@ -646,7 +648,10 @@ class RunImageJ(cpm.CPModule):
                     overlay_name = "X" + uuid.uuid4().get_hex()
                     image_dictionary[overlay_name] = image.mask
                     overlay = ij2.create_overlay(context, image.mask)
-                    display.displayOverlay(overlay)
+                    overlay_service = ij2.get_overlay_service(context)
+                    overlay_service.addOverlays(
+                        display.o, J.make_list([overlay]))
+                    ij2.select_overlay(display.o, overlay)
                 input_dictionary.put(field_name, display.o)
                 if wants_display:
                     input_images.append((image_name, image.pixel_data))
@@ -656,7 +661,7 @@ class RunImageJ(cpm.CPModule):
                 input_dictionary.put(field_name, jfile)
         command_service = ij2.get_command_service(get_context())
         future = command_service.run(module_info.o, input_dictionary.o)
-        module = J.call(future, "get", "()Ljava/lang/Object;")
+        module = future.get()
         for setting, module_item in d[key]:
             if isinstance(setting, cps.ImageNameProvider):
                 name = module_item.getName()
@@ -667,7 +672,7 @@ class RunImageJ(cpm.CPModule):
                     display = IJ2.wrap_display(module.getOutput(name))
                 view = display.getActiveView()
                 ds = ij2.wrap_dataset(view.getData())
-                pixel_data = ds.get_pixel_data()
+                pixel_data = ds.get_pixel_data() / IMAGEJ_SCALE
                 image = cpi.Image(pixel_data)
                 workspace.image_set.add(output_name, image)
                 if wants_display:
@@ -818,7 +823,9 @@ def get_context():
     global the_imagej_context
     if the_imagej_context is None:
         if cpprefs.get_headless():
-            services = [ "imagej.console.ConsoleService"]
+            services = [ "imagej.console.ConsoleService",
+                         "imagej.script.ScriptService",
+                         "imagej.data.display.OverlayService"]
         else:
             services = None
         the_imagej_context = ij2.create_context(services)

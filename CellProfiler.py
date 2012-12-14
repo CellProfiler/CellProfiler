@@ -354,8 +354,6 @@ try:
 
     if options.show_gui:
         import cellprofiler.gui.cpframe as cpgframe
-        from subimager.client import start_subimager, stop_subimager
-        start_subimager(options.jvm_heap_size)
         if options.pipeline_filename:
             try:
                 App.frame.pipeline.load(os.path.expanduser(options.pipeline_filename))
@@ -371,8 +369,6 @@ try:
         App.MainLoop()
         del App  # to allow GC to clean up Measurements, etc.
     elif options.run_pipeline:
-        from subimager.client import start_subimager, stop_subimager
-        start_subimager(options.jvm_heap_size)
         if (options.pipeline_filename is not None) and (not options.pipeline_filename.lower().startswith('http')):
             options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
 
@@ -420,11 +416,6 @@ except Exception, e:
     raise
 
 finally:
-    try:
-        from subimager.client import stop_subimager
-        stop_subimager()
-    except:
-        logging.root.warn("Failed to stop subimager")
     try:
         from ilastik.core.jobMachine import GLOBAL_WM
         GLOBAL_WM.stopWorkers()

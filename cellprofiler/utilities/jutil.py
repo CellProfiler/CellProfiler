@@ -915,12 +915,74 @@ def set_static_field(klass, name, sig, value):
     elif sig == 'J':
         env.set_static_long_field(klass, field_id, value)
     elif sig == 'F':
-        env.get_static_float_field(klass, field_id, value)
+        env.set_static_float_field(klass, field_id, value)
     elif sig == 'D':
         env.set_static_double_field(klass, field_id, value)
     else:
         jobject = get_nice_arg(value, sig)
         env.set_static_object_field(klass, field_id, jobject)
+        
+def get_field(o, name, sig):
+    '''Get the value for a field on an object
+    
+    o - the object
+    name - the name of the field
+    sig - the signature, typically, 'I' or 'Ljava/lang/String;'
+    '''
+    env = get_env()
+    klass = env.get_object_class(o)
+    field_id = env.get_field_id(klass, name, sig)
+    if field_id is None:
+        raise JavaError('Could not find field name = %s '
+                        'with signature = %s' %(name, sig))
+    if sig == 'Z':
+        return env.get_boolean_field(o, field_id)
+    elif sig == 'B':
+        return env.get_byte_field(o, field_id)
+    elif sig == 'S':
+        return env.get_short_field(o, field_id)
+    elif sig == 'I':
+        return env.get_int_field(o, field_id)
+    elif sig == 'J':
+        return env.get_long_field(o, field_id)
+    elif sig == 'F':
+        return env.get_float_field(o, field_id)
+    elif sig == 'D':
+        return env.get_double_field(o, field_id)
+    else:
+        return get_nice_result(env.get_object_field(o, field_id), sig)
+        
+def set_field(o, name, sig, value):
+    '''Set the value for a field on an object
+    
+    o - the object
+    name - the name of the field
+    sig - the signature, typically, 'I' or 'Ljava/lang/String;'
+    value - the value to set
+    '''
+    env = get_env()
+    klass = env.get_object_class(o)
+    field_id = env.get_field_id(klass, name, sig)
+    if sig == 'Z':
+        env.set_boolean_field(o, field_id, value)
+    elif sig == 'B':
+        env.set_byte_field(o, field_id, value)
+    elif sig == 'C':
+        assert len(str(value)) > 0
+        env.set_char_field(o, field_id, value)
+    elif sig == 'S':
+        env.set_short_field(o, field_id, value)
+    elif sig == 'I':
+        env.set_int_field(o, field_id, value)
+    elif sig == 'J':
+        env.set_long_field(o, field_id, value)
+    elif sig == 'F':
+        env.set_float_field(o, field_id, value)
+    elif sig == 'D':
+        env.set_double_field(o, field_id, value)
+    else:
+        jobject = get_nice_arg(value, sig)
+        env.set_object_field(o, field_id, jobject)
         
 def split_sig(sig):
     '''Split a signature into its constituent arguments'''
@@ -1091,6 +1153,117 @@ def box(value, klass):
     sig = "L%s;" % wclass.getCanonicalName().replace(".", "/")
     return get_nice_arg(value, sig)
 
+def get_collection_wrapper(collection, fn_wrapper=None):
+    '''Return a wrapper of java.util.collection
+    
+    collection - an object that implements java.util.collection. If the
+                 object implements the list interface, that is wrapped as well
+    
+    fn_wrapper - if defined, a function that wraps a java object
+    '''
+    class Collection(object):
+        def __init__(self):
+            self.o = collection
+            
+        add = make_method("add", "(Ljava/lang/Object;)Z")
+        addAll = make_method("addAll", "(Ljava/util/Collection;)Z")
+        clear = make_method("clear", "()V")
+        contains = make_method("contains", "(Ljava/lang/Object;)Z")
+        containsAll = make_method("containsAll", "(Ljava/util/Collection;)Z")
+        isEmpty = make_method("isEmpty", "()Z")
+        iterator = make_method("iterator", "()Ljava/util/Iterator;")
+        remove = make_method("remove", "(Ljava/lang/Object;)Z")
+        removeAll = make_method("removeAll", "(Ljava/util/Collection;)Z")
+        retainAll = make_method("retainAll", "(Ljava/util/Collection;)Z")
+        size = make_method("size", "()I")
+        toArray = make_method(
+            "toArray", "()[Ljava/lang/Object;",
+            fn_post_process=get_env().get_object_array_elements)
+        toArrayC = make_method("toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;")
+        
+        def __len__(self):
+            return self.size()
+        
+        def __iter__(self):
+            return iterate_collection(self.o, fn_wrapper = fn_wrapper)
+        
+        def __contains__(self, item):
+            return self.contains(item)
+        
+        @staticmethod
+        def is_collection(x):
+            return (hasattr(x, "o") and 
+                    is_instance_of(x.o, "java/util/Collection"))
+            
+        def __add__(self, items):
+            klass = call(self.o, "getClass", "()Ljava/lang/Class;")
+            copy = get_collection_wrapper(
+                call(klass, "newInstance", "()Ljava/lang/Object;"),
+                fn_wrapper = fn_wrapper)
+            copy.addAll(self.o)
+            if self.is_collection(items):
+                copy.addAll(items.o)
+            else:
+                for item in items:
+                    copy.add(item)
+            return copy
+            
+        def __iadd__(self, items):
+            if self.is_collection(items):
+                self.addAll(items)
+            else:
+                for item in items:
+                    self.add(item)
+            return self
+        
+        if is_instance_of(collection, 'java/util/List'):
+            addI = make_method("add", "(ILjava/lang/Object;)V")
+            addAllI = make_method("addAll", "(ILjava/util/Collection;)Z")
+            indexOf = make_method("indexOf", "(Ljava/lang/Object;)I")
+            lastIndexOf = make_method("lastIndexOf", "(Ljava/lang/Object;)I")
+            removeI = make_method("remove", "(I)Ljava/lang/Object;", 
+                                  fn_post_process=fn_wrapper)
+            get = make_method("get", "(I)Ljava/lang/Object;", 
+                              fn_post_process=fn_wrapper)
+            set = make_method("set", "(ILjava/lang/Object;)Ljava/lang/Object;",
+                              fn_post_process=fn_wrapper)
+            subList = make_method(
+                "subList",
+                "(II)Ljava/util/List;",
+                fn_post_process=lambda x: get_collection_wrapper(x, fn_wrapper))
+            
+            def __normalize_idx(self, idx, none_value):
+                if idx is None:
+                    return none_value
+                elif idx < 0:
+                    return max(0, self.size()+idx)
+                elif idx > self.size():
+                    return self.size()
+                return idx
+            
+            def __getitem__(self, idx):
+                if isinstance(idx, slice):
+                    start = self.__normalize_idx(idx.start, 0)
+                    stop = self.__normalize_idx(idx.stop, self.size())
+                    if idx.step is None or idx.step == 1:
+                        return self.subList(start, stop)
+                    return [self[i] for i in range(start, stop, idx.step)]
+                return self.get(self.__normalize_idx(idx, 0))
+            
+            def __setitem__(self, idx, value):
+                self.set(idx, value)
+                
+            def __delitem__(self, idx):
+                self.removeI(idx)
+            
+    return Collection()
+
+def make_list(elements=[]):
+    '''Make a wrapped array list, optionally containing the given elements'''
+    a = get_collection_wrapper(make_instance("java/util/ArrayList", "()V"))
+    a += elements
+    return a
+
 def get_dictionary_wrapper(dictionary):
     '''Return a wrapper of java.util.Dictionary
     
@@ -1189,7 +1362,7 @@ def get_enumeration_wrapper(enumeration):
                                   '()Ljava/lang/Object;')
     return Enumeration()
 
-def iterate_java(iterator):
+def iterate_java(iterator, fn_wrapper = None):
     '''Make a Python iterator for a Java iterator
     
     usage:
@@ -1197,11 +1370,13 @@ def iterate_java(iterator):
         do_something_with(x)
     '''
     while(call(iterator, 'hasNext', '()Z')):
-        yield call(iterator, 'next', '()Ljava/lang/Object;')
+        item = call(iterator, 'next', '()Ljava/lang/Object;')
+        yield item if fn_wrapper is None else fn_wrapper(item)
         
-def iterate_collection(c):
+def iterate_collection(c, fn_wrapper=None):
     '''Make a Python iterator over the elements of a Java collection'''
-    return iterate_java(call(c, "iterator", "()Ljava/util/Iterator;"))
+    return iterate_java(call(c, "iterator", "()Ljava/util/Iterator;"),
+                        fn_wrapper = fn_wrapper)
         
 def jenumeration_to_string_list(enumeration):
     '''Convert a Java enumeration to a Python list of strings

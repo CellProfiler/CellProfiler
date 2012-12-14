@@ -2,7 +2,8 @@
 
 '''
 
-__version__ = "$Revision: 1 $"
+import logging
+logger = logging.getLogger(__name__)
 
 import numpy as np
 import os
@@ -116,6 +117,16 @@ def get_module_service(context):
             module_iterator = J.call(modules, "iterator", 
                                      "()Ljava/util/Iterator;")
             return [wrap_module_info(x) for x in J.iterate_java(module_iterator)]
+        
+        def getIndex(self):
+            index = J.call(self.o, "getIndex", "()Limagej/module/ModuleIndex;")
+            index = J.get_collection_wrapper(index, wrap_module_info)
+            index.getC = lambda c: J.get_collection_wrapper(
+                J.call(index.o, "get", "(Ljava/lang/Class;)Ljava/util/List;",c),
+                wrap_module_info)
+            index.getS = lambda class_name: \
+                index.getC(J.class_for_name(class_name))
+            return index
         
         def run(self, module_info,
                 pre = None,
@@ -311,7 +322,8 @@ def get_command_service(context):
             
             returns a java.util.concurrent.Future that can be redeemed
             for the module after the module has been run.
-            """)
+            """, 
+            fn_post_process=J.get_future_wrapper)
         getCommandS = J.make_method(
             "getCommand", "(Ljava/lang/String;)Limagej/command/CommandInfo;",
             doc = """Get command by class name
@@ -495,25 +507,41 @@ def get_dataset_service(context):
 
 def get_overlay_service(context):
     '''Get the context's overlay service'''
-    o = context.getService('imagej.display.OverlayService')
+    o = context.getService('imagej.data.display.OverlayService')
     class OverlayService(object):
         def __init__(self, o=o):
             self.o = o
             
-        getOverlays = J.make_method("getOverlays", "()Ljava/util/List;")
+        getOverlays = J.make_method("getOverlays", "()Ljava/util/List;",
+                                    fn_post_process=J.get_collection_wrapper)
         getDisplayOverlays = J.make_method(
             "getOverlays",
-            "(Limagej/display/ImageDisplay;)Ljava/util/List;")
+            "(Limagej/data/display/ImageDisplay;)Ljava/util/List;",
+            fn_post_process=J.get_collection_wrapper)
         addOverlays = J.make_method(
             "addOverlays", 
-            "(Limagej/display/ImageDisplay;Ljava/util/List;)V")
+            "(Limagej/data/display/ImageDisplay;Ljava/util/List;)V")
         removeOverlay = J.make_method(
             "removeOverlay",
-            "(Limagej/display/ImageDisplay;Limagej/data/roi/Overlay;)V")
+            "(Limagej/data/display/ImageDisplay;Limagej/data/overlay/Overlay;)V")
         getSelectionBounds = J.make_method(
             "getSelectionBounds",
-            "(Limagej/display/ImageDisplay;)Limagej/util/RealRect;")
+            "(Limagej/data/display/ImageDisplay;)Limagej/util/RealRect;")
     return OverlayService()
+
+def select_overlay(display, overlay, select=True):
+    '''Select or deselect an overlay
+    
+    display - the overlay's display
+    
+    overlay - the overlay to select
+    '''
+    for view in J.get_collection_wrapper(display, fn_wrapper = wrap_data_view):
+        if J.call(overlay, "equals", "(Ljava/lang/Object;)Z", view.getData()):
+            view.setSelected(select)
+            break
+    else:
+        logger.info("Failed to select overlay")
 
 class Axes(object):
     '''Represents the net.imglib2.img.Axes enum'''
@@ -559,7 +587,7 @@ def create_dataset(context, pixel_data, name = None, axes = None):
     #
     # Now use a copying utility to fill the imgplus with array data
     #
-    strides = np.cumprod([1] + list(pixel_data.shape[:-1]))
+    strides = np.cumprod([1]+ list(pixel_data.shape[:0:-1]))[::-1]
     J.static_call("net/imglib2/util/ImgUtil", "copy",
                   "([DI[ILnet/imglib2/img/Img;)V",
                   pixel_data.flatten(), 0, strides, imgplus)
@@ -660,7 +688,7 @@ def get_pixel_data(img):
     #
     a = np.zeros(np.prod(dims), np.float64)
     ja = J.get_env().make_double_array(np.ascontiguousarray(a))
-    strides = np.cumprod([1] + list(dims[:-1]))
+    strides = np.cumprod([1] + dims[:0:-1]).astype(int)[::-1]
     J.static_call("net/imglib2/util/ImgUtil", "copy", 
                   "(Lnet/imglib2/img/Img;[DI[I)V",
                   img, ja, 0, strides)

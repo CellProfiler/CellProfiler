@@ -299,10 +299,8 @@ class EditObjectsManually(I.Identify):
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         import wx
         from wx.lib.filebrowsebutton import FileBrowseButton
-        from subimager.client import get_image, post_image
-        import subimager.omexml as ome
         from cellprofiler.modules.namesandtypes import ObjectsImageProvider
-        from cellprofiler.modules.loadimages import pathname2url
+        from bioformats import load_using_bioformats
         
         with wx.Dialog(None) as dlg:
             dlg.Title = "Choose files for editing"
@@ -363,7 +361,7 @@ class EditObjectsManually(I.Identify):
         #
         # Load the guide image
         #
-        guide_image = get_image(pathname2url(guidename))
+        guide_image = load_using_bioformats(guidename)
         if np.min(guide_image) != np.max(guide_image):
             guide_image = ((guide_image - np.min(guide_image)) / 
                            (np.max(guide_image)  - np.min(guide_image)))

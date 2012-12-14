@@ -24,7 +24,6 @@ import sys
 ACTION_MAVEN = "Maven"
 
 # The list of files (relative path) to fetch, their SHA1, and their source URL.
-subimager_version = "953dd6e54a5ab3d199556a2002fbc20ffbbe020e"
 files = [
     [['cellprofiler', 'utilities', 'runnablequeue-1.0.0.jar'], 
      '25df9c1f986cc2b9384c9d2d8053cea0863b28ef', 

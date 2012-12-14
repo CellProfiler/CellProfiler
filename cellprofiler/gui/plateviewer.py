@@ -22,8 +22,7 @@ from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 import threading
 import multiprocessing
 
-from subimager.client import get_image
-from cellprofiler.modules.loadimages import pathname2url
+from bioformats import load_using_bioformats
 
 class PlateData(object):
     '''The plate data is the data store for the image files
@@ -438,7 +437,7 @@ class PlateViewer(object):
                         channel = fd[PlateData.D_CHANNEL]
                     else:
                         channel = str(c+1)
-                    img = get_image(fd[PlateData.D_FILENAME])
+                    img = load_using_bioformats(fd[PlateData.D_FILENAME])
                     with self.image_dict_lock:
                         if self.image_dict_generation > generation:
                             return
@@ -508,8 +507,7 @@ class PlateViewer(object):
 if __name__=="__main__":
     import os
     import re
-    from subimager.client import start_subimager, stop_subimager
-    start_subimager()
+    import bioformats
     app = wx.PySimpleApp(True)
     dlg = wx.Dialog(None, size=(1024, 768), 
                     style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.THICK_FRAME)
@@ -539,5 +537,7 @@ if __name__=="__main__":
     data.add_files(filenames, plates, wells, sites, channel_names = channels)
     viewer = PlateViewer(dlg, data)
     dlg.ShowModal()
-    stop_subimager()
+    from cellprofiler.utilities.jutil import kill_vm
+    kill_vm()
+    os._exit(0)
     

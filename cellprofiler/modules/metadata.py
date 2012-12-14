@@ -327,7 +327,7 @@ class Metadata(cpm.CPModule):
         if workspace.pipeline.in_batch_mode():
             return True
         
-        from subimager.omexml import OMEXML
+        from bioformats.omexml import OMEXML
         
         file_list = workspace.file_list
         pipeline = workspace.pipeline
@@ -356,8 +356,9 @@ class Metadata(cpm.CPModule):
         def msg(url):
             return "Processing %s" % url
         import wx
-        from subimager.client import get_metadata
-        from subimager.omexml import OMEXML
+        from bioformats.formatreader import get_omexml_metadata
+        from bioformats.omexml import OMEXML
+        from cellprofiler.modules.loadimages import url2pathname
         with wx.ProgressDialog("Updating metadata", 
                                msg(urls[0]),
                                len(urls),
@@ -378,7 +379,7 @@ class Metadata(cpm.CPModule):
                         continue
                 metadata = filelist.get_metadata(url)
                 if metadata is None:
-                    metadata = get_metadata(url)
+                    metadata = get_omexml_metadata(url2pathname(url))
                     filelist.add_metadata(url, metadata)
                 metadata = OMEXML(metadata)
                 exemplar = cpp.ImagePlaneDetails(url, None, None, None)

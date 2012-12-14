@@ -538,7 +538,7 @@ class SaveImages(cpm.CPModule):
                    c = 0, z = 0, t = 0,
                    size_c = 1, size_z = 1, size_t = 1,
                    channel_names = None):
-        '''Save image using subimager
+        '''Save image using bioformats
         
         workspace - the current workspace
         
@@ -1040,14 +1040,3 @@ class SaveImagesDirectoryPath(cps.DirectoryPath):
             return cps.DirectoryPath.upgrade_setting(value)
         return cps.DirectoryPath.static_join_string(dir_choice, custom_path)
                   
-if __name__=="__main__":
-    from subimager.client import start_subimager, stop_subimager
-    start_subimager()
-    i, j = np.mgrid[0:100, 0:100]
-    img = np.zeros((100,100,3))
-    img[np.sqrt((i - 50)**2 + (j-50)**2) < 25, 0] = 255
-    img[np.sqrt((i - 25)**2 + (j-25)**2) < 25, 1] = 255
-    img[np.sqrt((i - 25)**2 + (j-75)**2) < 25, 2] = 255
-    s = SaveImages()
-    s.do_save_image(None, "c:\\temp\\image.tif", img, "uint8")
-    stop_subimager()

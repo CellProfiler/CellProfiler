@@ -35,7 +35,6 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpimage
 import cellprofiler.preferences as cpprefs
-import subimager.client
 from cellprofiler.utilities.zmqrequest import AnalysisRequest, Request, Reply, UpstreamExit
 from cellprofiler.utilities.zmqrequest import register_analysis, cancel_analysis
 from cellprofiler.utilities.zmqrequest import get_announcer_address
@@ -638,13 +637,10 @@ class AnalysisRunner(object):
         cls.work_announce_address = get_announcer_address()
         if 'CP_DEBUG_WORKER' in os.environ:
             logger.info("Announcing work at %s" % cls.work_announce_address)
-            logger.info("Subimager port: %d" % subimager.client.port)
             logger.info("Please manually start a worker using the command-line:")
-            logger.info(("python -u %s --work-announce %s "
-                         "--subimager-port %d") % (
-                             find_analysis_worker_source(),
-                             cls.work_announce_address,
-                             subimager.client.port))
+            logger.info("python -u %s --work-announce %s " % (
+                find_analysis_worker_source(),
+                cls.work_announce_address))
             return
                 
         # start workers
@@ -656,9 +652,7 @@ class AnalysisRunner(object):
                 aw_path = os.path.join(root_path, "analysis_worker")
                 worker = subprocess.Popen([aw_path,
                                            '--work-announce',
-                                           cls.work_announce_address,
-                                           '--subimager-port',
-                                           '%d' % subimager.client.port],
+                                           cls.work_announce_address],
                                           env=find_worker_env(),
                                           stdin=subprocess.PIPE,
                                           stdout=subprocess.PIPE,
@@ -668,9 +662,7 @@ class AnalysisRunner(object):
                                            '-u',  # unbuffered
                                            find_analysis_worker_source(),
                                            '--work-announce',
-                                           cls.work_announce_address,
-                                           '--subimager-port',
-                                           '%d' % subimager.client.port],
+                                           cls.work_announce_address],
                                           env=find_worker_env(),
                                           stdin=subprocess.PIPE,
                                           stdout=subprocess.PIPE,
@@ -869,7 +861,6 @@ if __name__ == '__main__':
     import cellprofiler.pipeline
     import cellprofiler.preferences
     import cellprofiler.utilities.thread_excepthook
-    subimager.client.start_subimager()
 
     # This is an ugly hack, but it's necesary to unify the Request/Reply
     # classes above, so that regardless of whether this is the current module,
@@ -904,5 +895,4 @@ if __name__ == '__main__':
     while keep_going:
         time.sleep(0.25)
     del analysis
-    subimager.client.stop_subimager()
     gc.collect()

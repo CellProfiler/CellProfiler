@@ -47,7 +47,7 @@ from cellprofiler.analysis import \
      ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, \
      ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
      SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE
-import subimager.client
+import bioformats
 from cellprofiler.utilities.rpdb import Rpdb
 
 #
@@ -74,10 +74,6 @@ def main():
                       dest="work_announce_address",
                       help="ZMQ port where work announcements are published",
                       default=None)
-    parser.add_option("--subimager-port",
-                      dest="subimager_port",
-                      help="TCP port for subimager server",
-                      default=None)
     parser.add_option("--log-level",
                       dest="log_level",
                       help="Logging level for logger: DEBUG, INFO, WARNING, ERROR",
@@ -85,7 +81,7 @@ def main():
     options, args = parser.parse_args()
     logging.root.setLevel(options.log_level)
 
-    if not (options.work_announce_address and options.subimager_port):
+    if not options.work_announce_address:
         parser.print_help()
         sys.exit(1)
     # Start the deadman switch thread.
@@ -96,8 +92,6 @@ def main():
     with notify_started_cv:
         notify_started_cv.wait()
 
-    # set the subimager port
-    subimager.client.port = options.subimager_port
     try:
         with AnalysisWorker(options.work_announce_address) as worker:
             worker.run()

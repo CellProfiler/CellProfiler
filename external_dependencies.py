@@ -109,8 +109,8 @@ def install_maven(zipfile_path, install_path):
         import stat
         executeable_path = get_mvn_executable_path(install_path)
         os.chmod(executeable_path,
-                 stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR,
-                 stat.S_IRGRP | stat.S_IXGRP,
+                 stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR|
+                 stat.S_IRGRP | stat.S_IXGRP|
                  stat.S_IROTH | stat.S_IXOTH)
     
 def get_mvn_executable_path(maven_install_path):

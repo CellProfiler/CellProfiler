@@ -49,7 +49,6 @@ import traceback
 import subprocess
 import sys
 import uuid
-import zipfile
 
 logger = logging.getLogger(__name__)
 
@@ -1628,40 +1627,6 @@ def make_run_dictionary(jobject_address):
     for key in keys:
         result[key] = d.get(key)
     return result
-
-def install_maven(zipfile_path, install_path):
-    '''Install the Maven jars from a zipfile
-    
-    zipfile_path - path to the zipfile
-    zip_jar_path - path to the jar files within the zip file
-    jar_path - destination for the jar files
-    '''
-    zf = zipfile.ZipFile(zipfile_path)
-    zf.extractall(install_path)
-    
-def run_maven(pom_path, maven_install_path):
-    '''Run a Maven pom to install all of the needed jars
-    
-    pom_path - the directory hosting the Maven POM
-    maven_install_path - the path to the maven install
-    
-    Runs mvn package on the POM
-    '''
-    subdir = reduce(max, [x for x in os.listdir(maven_install_path)
-                          if x.startswith('apache-maven')])
-    
-    if sys.platform == 'win32':
-        executeable = 'mvn.bat'
-    else:
-        executeable = 'mvn'
-    executeable_path = os.path.join(maven_install_path, subdir, 'bin', 
-                                    executeable)
-    current_directory = os.path.abspath(os.getcwd())
-    os.chdir(pom_path)
-    try:
-        subprocess.check_call([executeable_path, '-U', 'package'])
-    finally:
-        os.chdir(current_directory)
 
 if __name__=="__main__":
     import wx

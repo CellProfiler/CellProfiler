@@ -19,7 +19,9 @@ import os.path
 import hashlib
 import urllib2
 import shutil
+import subprocess
 import sys
+import zipfile
 
 ACTION_MAVEN = "Maven"
 
@@ -79,7 +81,6 @@ def fetch_external_dependencies(overwrite=False):
                 assert os.path.isfile(path)
                 assert filehash(path) == hash, 'Hashes do not match!'
                 if action == ACTION_MAVEN:
-                    from cellprofiler.utilities.jutil import install_maven
                     install_maven(path,
                                   maven_install_path)
             except:
@@ -87,11 +88,45 @@ def fetch_external_dependencies(overwrite=False):
                 sys.stderr.write(traceback.format_exc())
                 sys.stderr.write("Could not fetch external binary dependency %s from %s.  Some functionality may be missing.  You might try installing it by hand.\n"%(path, url))
                 
-    if overwrite:
-        imagej_dir = os.path.join(root, 'imagej')
-        from cellprofiler.utilities.jutil import run_maven
+    imagej_dir = os.path.join(root, 'imagej')
+    if overwrite or not os.path.isdir(os.path.join(imagej_dir, "jars")):
         run_maven(imagej_dir, maven_install_path)
     
+def install_maven(zipfile_path, install_path):
+    '''Install the Maven jars from a zipfile
+    
+    zipfile_path - path to the zipfile
+    zip_jar_path - path to the jar files within the zip file
+    jar_path - destination for the jar files
+    '''
+    zf = zipfile.ZipFile(zipfile_path)
+    zf.extractall(install_path)
+    
+def run_maven(pom_path, maven_install_path):
+    '''Run a Maven pom to install all of the needed jars
+    
+    pom_path - the directory hosting the Maven POM
+    maven_install_path - the path to the maven install
+    
+    Runs mvn package on the POM
+    '''
+    subdir = reduce(max, [x for x in os.listdir(maven_install_path)
+                          if x.startswith('apache-maven')])
+    
+    if sys.platform == 'win32':
+        executeable = 'mvn.bat'
+    else:
+        executeable = 'mvn'
+    executeable_path = os.path.join(maven_install_path, subdir, 'bin', 
+                                    executeable)
+    current_directory = os.path.abspath(os.getcwd())
+    os.chdir(pom_path)
+    try:
+        subprocess.check_call([executeable_path, '-U', 'package'])
+    finally:
+        os.chdir(current_directory)
+
+
                 
 if __name__=="__main__":
     import optparse

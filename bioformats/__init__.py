@@ -46,7 +46,7 @@ def start_cellprofiler_jvm():
     
     if hasattr(sys, 'frozen') and sys.platform != 'darwin':
         root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-        bioformats_path = os.path.join(root_path, bioformats_path)
+        bioformats_path = os.path.join(root_path, 'bioformats')
     else:
         bioformats_path = os.path.abspath(os.path.split(__file__)[0])
         root_path = os.path.split(bioformats_path)[0]

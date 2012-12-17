@@ -292,7 +292,8 @@ data_files += [('cellprofiler\\icons',
                ['cellprofiler\\icons\\%s'%(x) 
                 for x in os.listdir('cellprofiler\\icons')
                 if x.endswith(".png") or x.endswith(".psd")]),
-              ('subimager', ['subimager\\subimager.jar'])]
+              ('imagej\\jars', 
+               ['imagej\\jars\\%s' % x for x in os.listdir('imagej\\jars')])]
 data_files += matplotlib.get_py2exe_datafiles()
 ################################
 #

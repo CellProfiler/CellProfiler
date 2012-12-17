@@ -60,7 +60,11 @@ def fetch_external_dependencies(overwrite=False):
     # look for each file, check its hash, download if missing, or out
     # of date if overwrite==True, complain if it fails.  If overwrite
     # is 'fail', die on mismatches hashes.
-    root = os.path.split(__file__)[0]
+    if __name__ == "__main__":
+        root = os.path.abspath(os.curdir)
+    else:
+        root = os.path.split(__file__)[0]
+
     maven_install_path = os.path.join(root, 'imagej', 'maven')
     for path, hash, url, action in files:
         path = os.path.join(root, *path)

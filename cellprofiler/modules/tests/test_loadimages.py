@@ -28,9 +28,6 @@ from StringIO import StringIO
 import traceback
 import PIL.Image
 
-from cellprofiler.preferences import set_headless
-set_headless()
-
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as CPM
 import cellprofiler.modules.loadimages as LI
@@ -41,7 +38,6 @@ import cellprofiler.measurements as measurements
 import cellprofiler.pipeline as P
 import cellprofiler.workspace as W
 from cellprofiler.modules.tests import example_images_directory
-from subimager.client import start_subimager, stop_subimager
 import cellprofiler.preferences as cpprefs
 
 IMAGE_NAME = "image"
@@ -122,14 +118,6 @@ class ConvtesterMixin:
                 np.testing.assert_array_equal(v1, v2)
 
 class testLoadImages(unittest.TestCase, ConvtesterMixin):
-    @classmethod
-    def setUpClass(cls):
-        start_subimager()
-    
-    @classmethod
-    def tearDownClass(cls):
-        stop_subimager()
-        
     def setUp(self):
         self.directory = None
         

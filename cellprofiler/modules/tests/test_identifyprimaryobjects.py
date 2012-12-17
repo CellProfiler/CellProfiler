@@ -16,14 +16,10 @@ import os
 import base64
 import unittest
 import numpy as np
-import PIL.Image as PILImage
 import scipy.ndimage
 import tempfile
 import StringIO
 import zlib
-
-from cellprofiler.preferences import set_headless
-set_headless()
 
 import cellprofiler.modules.identifyprimaryobjects as ID
 import cellprofiler.modules.identify as I
@@ -35,7 +31,7 @@ import cellprofiler.objects
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline
 from cellprofiler.workspace import Workspace
-import cellprofiler.modules.tests
+from cellprofiler.modules.tests import read_example_image
 
 class test_IdentifyPrimaryObjects(unittest.TestCase):
     def load_error_handler(self, caller, event):
@@ -955,9 +951,6 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
                     measurements = cpmeas.Measurements()
                     x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
     
-    def test_03_01_run_inside_pipeline(self):
-        pass # No longer supported
-
     def test_04_01_load_matlab_12(self):
         """Test loading a Matlab version 12 IdentifyPrimAutomatic pipeline
         
@@ -2162,11 +2155,7 @@ def two_cell_image():
     return add_noise(img,.01)
 
 def fly_image():
-    file = os.path.join(cellprofiler.modules.tests.example_images_directory(),
-                        'ExampleFlyImages','01_POS002_D.TIF')
-    img = np.asarray(PILImage.open(file))
-    img = img.astype(float) / 255.0
-    return img
+    return read_example_image('ExampleFlyImages','01_POS002_D.TIF')
     
 def draw_circle(img,center,radius,value):
     x,y=np.mgrid[0:img.shape[0],0:img.shape[1]]

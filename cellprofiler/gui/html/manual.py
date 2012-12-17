@@ -165,6 +165,8 @@ def output_module_html(webpage_path):
                 d[category] = {}
             d[category][module_name] = module
         result = module.get_help()
+        if result is None:
+            continue
         result = result.replace('<body><h1>','<body><h1>Module: ')
         
         # Check if a corresponding image exists for the module

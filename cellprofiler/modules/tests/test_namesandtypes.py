@@ -24,7 +24,6 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 from cellprofiler.modules.tests import example_images_directory, testimages_directory
 from cellprofiler.modules.loadimages import pathname2url, C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
-from subimager.client import start_subimager, stop_subimager
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]
@@ -52,14 +51,6 @@ def md(keys_and_counts):
                   
 
 class TestNamesAndTypes(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        start_subimager()
-        
-    @classmethod
-    def tearDownClass(cls):
-        stop_subimager()
-        
     def test_00_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3

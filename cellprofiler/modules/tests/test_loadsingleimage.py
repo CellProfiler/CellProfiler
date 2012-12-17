@@ -22,9 +22,6 @@ import tempfile
 import unittest
 import zlib
 
-from cellprofiler.preferences import set_headless
-set_headless()
-
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -33,7 +30,6 @@ import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
-from subimager.client import start_subimager, stop_subimager
 
 import cellprofiler.modules.loadsingleimage as L
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
@@ -45,13 +41,6 @@ OBJECTS_NAME = "myobjects"
 OUTLINES_NAME = "myoutlines"
 
 class TestLoadSingleImage(unittest.TestCase, ConvtesterMixin):
-    @classmethod
-    def setUpClass(cls):
-        start_subimager()
-        
-    @classmethod
-    def tearDownClass(cls):
-        stop_subimager()
         
     def test_01_00_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'

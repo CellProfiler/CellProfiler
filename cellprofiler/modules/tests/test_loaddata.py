@@ -34,19 +34,10 @@ import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 import cellprofiler.modules.loaddata as L
 from cellprofiler.modules.tests import example_images_directory
-from subimager.client import start_subimager, stop_subimager
 
 OBJECTS_NAME = "objects"
 
 class TestLoadData(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        start_subimager()
-        
-    @classmethod
-    def tearDownClass(cls):
-        stop_subimager()
-        
     def make_pipeline(self, csv_text, name = None):
         if name is None:
             handle, name = tempfile.mkstemp(".csv")

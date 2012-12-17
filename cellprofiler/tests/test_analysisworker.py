@@ -35,7 +35,6 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.modules.identify import C_COUNT, M_LOCATION_CENTER_X
 from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.modules.tests import example_images_directory
-from subimager.client import start_subimager, stop_subimager
 from cellprofiler.gui.errordialog import ED_CONTINUE, ED_SKIP, ED_STOP
 
 cpprefs.set_headless()
@@ -43,16 +42,20 @@ cpprefs.set_headless()
 class TestAnalysisWorker(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        start_subimager()
+        import bioformats
         cls.zmq_context = cpaw.the_zmq_context
         cls.notify_socket = cls.zmq_context.socket(zmq.PUB)
         cls.notify_socket.bind(cpaw.NOTIFY_ADDR)
         
     @classmethod
     def tearDownClass(cls):
+        try:
+            from ilastik.core.jobMachine import GLOBAL_WM
+            GLOBAL_WM.stopWorkers()
+        except:
+            pass
         cls.notify_socket.close()
-        
-        
+            
     def setUp(self):
         self.out_dir = tempfile.mkdtemp()
         cpprefs.set_default_output_directory(self.out_dir)
@@ -79,15 +82,6 @@ class TestAnalysisWorker(unittest.TestCase):
         self.assertEqual(len(h5_files), 0, 
                          msg = "Left the following files: " + str(h5_files))
         
-    @classmethod
-    def tearDownClass(cls):
-        stop_subimager()
-        try:
-            from ilastik.core.jobMachine import GLOBAL_WM
-            GLOBAL_WM.stopWorkers()
-        except:
-            pass
-            
     class AWThread(threading.Thread):
         
         def __init__(self, announce_addr, *args, **kwargs):

@@ -48,6 +48,7 @@ from cellprofiler.analysis import \
      ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
      SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE
 import bioformats
+import cellprofiler.utilities.jutil as J
 from cellprofiler.utilities.rpdb import Rpdb
 
 #
@@ -106,6 +107,10 @@ def main():
             GLOBAL_WM.stopWorkers()
         except:
             logger.warn("Failed to stop Ilastik")
+        try:
+            J.kill_vm()
+        except:
+            logger.warn("Failed to stop the Java VM")
             
         
 class AnalysisWorker(object):
@@ -119,6 +124,7 @@ class AnalysisWorker(object):
         self.current_analysis_id = False
         
     def __enter__(self):
+        J.attach()
         self.notify_socket = self.zmq_context.socket(zmq.SUB)
         self.notify_socket.setsockopt(zmq.SUBSCRIBE, "")
         self.notify_socket.connect(NOTIFY_ADDR)
@@ -140,6 +146,7 @@ class AnalysisWorker(object):
         for m in self.initial_measurements.values():
             m.close()
         self.initial_measurements = {}
+        J.detach()
         
     def run(self):
         # Loop until exit

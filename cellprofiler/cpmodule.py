@@ -225,7 +225,11 @@ class CPModule(object):
         The default help is taken from your modules docstring and from
         the settings.
         """
-        doc = self.__doc__.replace("\r","").replace("\n\n","<p>")
+        if self.__doc__ is None:
+            doc = "<i>No help available for module</i>\n"
+        else:
+            doc = self.__doc__
+        doc = doc.replace("\r","").replace("\n\n","<p>")
         doc = doc.replace("\n"," ")
         result = "<html style=""font-family:arial""><head><title>%s</title></head>" % self.module_name
         result += "<body><h1>%s</h1><div>" % self.module_name + doc

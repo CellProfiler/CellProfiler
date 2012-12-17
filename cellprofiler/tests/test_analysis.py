@@ -194,13 +194,6 @@ class TestAnalysis(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        #
-        # Subprocesses that get started inherit file handles by default
-        # and a lot of that is not under our control. So we get it out of
-        # the way so they won't get the file handles of things like HDF files
-        #
-        from subimager.client import start_subimager
-        start_subimager()
         cls.zmq_context = zmq.Context()
         from cellprofiler.modules import fill_modules
         fill_modules()
@@ -208,11 +201,6 @@ class TestAnalysis(unittest.TestCase):
     @classmethod
     def tearDownClass(cls):
         cpzmq.join_to_the_boundary()
-        try:
-            from subimager.client import stop_subimager
-            stop_subimager()
-        except:
-            pass
         try:
             from ilastik.core.jobMachine import GLOBAL_WM
             GLOBAL_WM.stopWorkers()

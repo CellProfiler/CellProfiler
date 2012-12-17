@@ -33,19 +33,9 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.exporttospreadsheet as E 
 from cellprofiler.modules.tests import example_images_directory
-from subimager.client import start_subimager, stop_subimager
 
 class TestExportToSpreadsheet(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(self):
-        cpprefs.set_headless()
-        start_subimager()
-        
-    @classmethod
-    def tearDownClass(self):
-        stop_subimager()
-        
     def setUp(self):
         self.output_dir = tempfile.mkdtemp()
 

@@ -498,6 +498,7 @@ class MeasureImageQuality(cpm.CPModule):
     def prepare_run(self, workspace):
         if cpprefs.get_headless():
             logger.warning("Experiment-wide values for mean threshold, etc calculated by MeasureImageQuality may be incorrect if the run is split into subsets of images.")
+        return True
                     
     def any_scaling(self):
         '''True if some image has its rescaling value calculated'''

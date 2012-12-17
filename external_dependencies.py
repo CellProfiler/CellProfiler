@@ -105,15 +105,15 @@ def install_maven(zipfile_path, install_path):
     '''
     zf = zipfile.ZipFile(zipfile_path)
     zf.extractall(install_path)
+    if sys.platform != 'win32':
+        import stat
+        executeable_path = get_mvn_executable_path(install_path)
+        os.chmod(executeable_path,
+                 stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR,
+                 stat.S_IRGRP | stat.S_IXGRP,
+                 stat.S_IROTH | stat.S_IXOTH)
     
-def run_maven(pom_path, maven_install_path):
-    '''Run a Maven pom to install all of the needed jars
-    
-    pom_path - the directory hosting the Maven POM
-    maven_install_path - the path to the maven install
-    
-    Runs mvn package on the POM
-    '''
+def get_mvn_executable_path(maven_install_path):
     subdir = reduce(max, [x for x in os.listdir(maven_install_path)
                           if x.startswith('apache-maven')])
     
@@ -123,6 +123,17 @@ def run_maven(pom_path, maven_install_path):
         executeable = 'mvn'
     executeable_path = os.path.join(maven_install_path, subdir, 'bin', 
                                     executeable)
+    return executeable_path
+
+def run_maven(pom_path, maven_install_path):
+    '''Run a Maven pom to install all of the needed jars
+    
+    pom_path - the directory hosting the Maven POM
+    maven_install_path - the path to the maven install
+    
+    Runs mvn package on the POM
+    '''
+    executeable_path = get_mvn_executable_path(maven_install_path)
     current_directory = os.path.abspath(os.getcwd())
     os.chdir(pom_path)
     try:

@@ -50,14 +50,13 @@ def start_cellprofiler_jvm():
     else:
         bioformats_path = os.path.abspath(os.path.split(__file__)[0])
         root_path = os.path.split(bioformats_path)[0]
-    bioformats_jars_path = os.path.join(bioformats_path, "jars")
     imagej_path = os.path.join(root_path, 'imagej','jars')
     class_path = os.pathsep.join(
         [os.pathsep.join(
             [os.path.join(jar_path, jar_filename)
              for jar_filename in os.listdir(jar_path)
              if jar_filename.lower().endswith(".jar")])
-         for jar_path in (bioformats_jars_path, imagej_path)])
+         for jar_path in (imagej_path,)])
     
     if os.environ.has_key("CLASSPATH"):
         class_path += os.pathsep + os.environ["CLASSPATH"]

@@ -951,7 +951,7 @@ class HDF5FileList(object):
         '''
         if self.__cache.has_key(path_tuple):
             return self.__cache[path_tuple].urls
-        a = tuple(VStringArray(g))
+        a = tuple([x.encode("utf-8") for x in VStringArray(g)])
         is_not_none = VStringArray(g.require_group("metadata")).is_not_none()
         self.__cache[path_tuple] = self.__CacheEntry(g, a, is_not_none)
         return a

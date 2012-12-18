@@ -164,6 +164,13 @@ class TestHDF5Dict(unittest.TestCase):
             if h5copy is not None:
                 h5copy.close()
             os.unlink(filename)
+            
+    def test_08_01_copy(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
+        h5copy = H5DICT.HDF5Dict(None, copy=self.hdf5_dict.top_group)
+        self.assertTrue(h5copy.has_object(OBJECT_NAME))
+        self.assertTrue(h5copy.has_feature(OBJECT_NAME, FEATURE_NAME))
+        self.assertEqual(h5copy[OBJECT_NAME, FEATURE_NAME, 1], "Hello")
         
         
 class TestHDF5FileList(unittest.TestCase):

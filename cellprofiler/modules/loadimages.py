@@ -2412,10 +2412,7 @@ class LoadImages(cpmodule.CPModule):
         from bioformats.formatreader import get_omexml_metadata
         if self.file_types in (FF_AVI_MOVIES,FF_OTHER_MOVIES,FF_STK_MOVIES):
             url = pathname2url(pathname)
-            if needs_allowopenfiles(pathname):
-                xml = get_omexml_metadata(pathname, allowopenfiles=True)
-            else:
-                xml = get_omexml_metadata(pathname)
+            xml = get_omexml_metadata(pathname)
             omexml = bioformats.omexml.OMEXML(xml)
             frame_count = omexml.image(0).Pixels.SizeT
             if frame_count == 1:
@@ -3048,20 +3045,6 @@ def is_image(filename):
 def is_movie(filename):
     ext = os.path.splitext(filename)[1].lower()
     return ext in SUPPORTED_MOVIE_EXTENSIONS
-
-def needs_allowopenfiles(pathname):
-    '''Some extensions need to allow bioformats to open files
-    
-    Sometimes Bio-formats needs to open a file to figure out which reader
-    should be used to read that file. We try to limit the cases because this
-    can take a long time since each reader will look at the file data.
-    
-    pathname - path to file
-    
-    returns true if we need to allow Bio-formats to open files.
-    '''
-    return any([pathname.lower().endswith(x)
-                for x in (".stk",)])
 
 class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
     '''Base for image providers: handle pathname and filename & URLs'''

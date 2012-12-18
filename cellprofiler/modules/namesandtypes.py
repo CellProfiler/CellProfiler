@@ -35,7 +35,6 @@ from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.images import Images
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
-from cellprofiler.modules.loadimages import needs_allowopenfiles
 from bioformats.formatreader import get_omexml_metadata, load_using_bioformats
 import bioformats.omexml as OME
 
@@ -1228,17 +1227,12 @@ class ObjectsImageProvider(LoadImagesImageProviderURL):
         channel_names = []
         url = self.get_url()
         properties = {}
-        mproperties = {}
         if self.series is not None:
             properties["series"] = self.series
-        if needs_allowopenfiles(url):
-            properties["allowopenfiles"] = True
-            mproperties["allowopenfiles"] = True
         if self.index is not None:
             indexes = [self.index]
         else:
-            metadata = get_omexml_metadata(self.get_full_name(), 
-                                           **mproperties)
+            metadata = get_omexml_metadata(self.get_full_name())
                                            
             ometadata = OME.OMEXML(metadata)
             pixel_metadata = ometadata.image(0 if self.series is None

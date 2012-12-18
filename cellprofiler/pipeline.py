@@ -2742,7 +2742,7 @@ class Pipeline(object):
     def wp_add_image_metadata(self, path, metadata):
         self.add_image_metadata("file:" + urllib.pathname2url(path), metadata)
         
-    def add_image_metadata(self, url, metadata):
+    def add_image_metadata(self, url, metadata, ipd = None):
         if (metadata.image_count == 1):
             m = {}
             pixels = metadata.image(0).Pixels
@@ -2766,7 +2766,8 @@ class Pipeline(object):
                 m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
                     ImagePlaneDetails.MD_PLANAR
             exemplar = ImagePlaneDetails(url, None, None, None)
-            ipd = self.find_image_plane_details(exemplar)
+            if ipd is None:
+                ipd = self.find_image_plane_details(exemplar)
             if ipd is not None:
                 ipd.metadata.update(m)
                 self.notify_listeners(ImagePlaneDetailsMetadataEvent(ipd))

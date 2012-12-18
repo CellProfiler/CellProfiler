@@ -360,6 +360,85 @@ def load_using_bioformats_url(url, c=None, z=0, t=0, series=None, index=None,
                                  c, z, t, series, index, 
                                  wants_max_intensity, channel_names)
     
+
+class GetImageReader(object):
+    '''Find the appropriate reader for a file
+    
+    This class is meant to be harnessed to a scope like this:
+    
+    with GetImageReader(path) as rdr:
+        ....
+        
+    It uses __enter__ and __exit__ to manage the random access stream
+    that can be used to cache the file contents in memory.
+    '''
+    def __init__(self, path):
+        self.rdr = None
+        self.stream = None
+        class_list = get_class_list()
+        find_rdr_script = """
+        var classes = class_list.getClasses();
+        var rdr = null;
+        var lc_filename = java.lang.String(filename.toLowerCase());
+        for (pass=0; pass < 3; pass++) {
+            for (class_idx in classes) {
+                var maybe_rdr = classes[class_idx].newInstance();
+                if (pass == 0) {
+                    if (maybe_rdr.isThisType(filename, false)) {
+                        rdr = maybe_rdr;
+                        break;
+                    }
+                    continue;
+                } else if (pass == 1) {
+                    var suffixes = maybe_rdr.getSuffixes();
+                    var suffix_found = false;
+                    for (suffix_idx in suffixes) {
+                        var suffix = java.lang.String(suffixes[suffix_idx]);
+                        suffix = suffix.toLowerCase();
+                        if (lc_filename.endsWith(suffix)) {
+                            suffix_found = true;
+                            break;
+                        }
+                    }
+                    if (! suffix_found) continue;
+                }
+                if (maybe_rdr.isThisType(stream)) {
+                    rdr = maybe_rdr;
+                    break;
+                }
+            }
+            if (rdr) break;
+        }
+        rdr;
+        """
+        self.stream = jutil.make_instance('loci/common/RandomAccessInputStream',
+                                          '(Ljava/lang/String;)V', path)
+        filename = os.path.split(path)[1]
+        IFormatReader = make_iformat_reader_class()
+        jrdr = jutil.run_script(find_rdr_script, dict(class_list = class_list,
+                                                      filename = filename,
+                                                      stream = self.stream))
+        if jrdr is None:
+            raise ValueError("Could not find a Bio-Formats reader for %s", path)
+        self.rdr = IFormatReader()
+        self.rdr.o = jrdr
+        
+    def __enter__(self):
+        return self.rdr
+        
+    def __exit__(self, type_class, value, traceback):
+        if self.rdr is not None:
+            self.rdr.close()
+            del self.rdr.o
+            del self.rdr
+        if  self.stream is not None:
+            jutil.call(self.stream, 'close', '()V')
+        del self.stream
+        #
+        # Run the Java garbage collector here.
+        #
+        jutil.static_call("java/lang/System", "gc","()V")
+    
     
 def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
                           rescale = True,
@@ -398,181 +477,126 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
     #
     
     env = jutil.get_env()
-    class_list = get_class_list()
-    find_rdr_script = """
-    var classes = class_list.getClasses();
-    var rdr = null;
-    var lc_filename = java.lang.String(filename.toLowerCase());
-    for (pass=0; pass < 3; pass++) {
-        for (class_idx in classes) {
-            var maybe_rdr = classes[class_idx].newInstance();
-            if (pass == 0) {
-                if (maybe_rdr.isThisType(filename, false)) {
-                    rdr = maybe_rdr;
-                    break;
-                }
-                continue;
-            } else if (pass == 1) {
-                var suffixes = maybe_rdr.getSuffixes();
-                var suffix_found = false;
-                for (suffix_idx in suffixes) {
-                    var suffix = java.lang.String(suffixes[suffix_idx]);
-                    suffix = suffix.toLowerCase();
-                    if (lc_filename.endsWith(suffix)) {
-                        suffix_found = true;
-                        break;
-                    }
-                }
-                if (! suffix_found) continue;
-            }
-            if (maybe_rdr.isThisType(stream)) {
-                rdr = maybe_rdr;
-                break;
-            }
-        }
-        if (rdr) break;
-    }
-    rdr;
-    """
-    stream = jutil.make_instance('loci/common/RandomAccessInputStream',
-                                 '(Ljava/lang/String;)V', path)
-    filename = os.path.split(path)[1]
-    IFormatReader = make_iformat_reader_class()
-    jrdr = jutil.run_script(find_rdr_script, dict(class_list = class_list,
-                                                  filename = filename,
-                                                  stream = stream))
-    if jrdr is None:
-        raise ValueError("Could not find a Bio-Formats reader for %s", path)
-    rdr = IFormatReader()
-    rdr.o = jrdr
-    mdoptions = metadatatools.get_metadata_options(metadatatools.ALL)
-    rdr.setMetadataOptions(mdoptions)
-    metadata = metadatatools.createOMEXMLMetadata()
-    rdr.setMetadataStore(metadata)
-    rdr.setId(path)
-    width = rdr.getSizeX()
-    height = rdr.getSizeY()
-    pixel_type = rdr.getPixelType()
-    little_endian = rdr.isLittleEndian()
-    if pixel_type == FormatTools.INT8:
-        dtype = np.char
-        scale = 255
-    elif pixel_type == FormatTools.UINT8:
-        dtype = np.uint8
-        scale = 255
-    elif pixel_type == FormatTools.UINT16:
-        dtype = '<u2' if little_endian else '>u2'
-        scale = 65535
-    elif pixel_type == FormatTools.INT16:
-        dtype = '<i2' if little_endian else '>i2'
-        scale = 65535
-    elif pixel_type == FormatTools.UINT32:
-        dtype = '<u4' if little_endian else '>u4'
-        scale = 2**32
-    elif pixel_type == FormatTools.INT32:
-        dtype = '<i4' if little_endian else '>i4'
-        scale = 2**32-1
-    elif pixel_type == FormatTools.FLOAT:
-        dtype = '<f4' if little_endian else '>f4'
-        scale = 1
-    elif pixel_type == FormatTools.DOUBLE:
-        dtype = '<f8' if little_endian else '>f8'
-        scale = 1
-    max_sample_value = rdr.getMetadataValue('MaxSampleValue')
-    if max_sample_value is not None:
-        try:
-            scale = jutil.call(max_sample_value, 'intValue', '()I')
-        except:
-            bioformats.logger.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
-    if series is not None:
-        rdr.setSeries(series)
-    if index is not None:
-        image = np.frombuffer(rdr.openBytes(index), dtype)
-        if len(image) / height / width in (3,4):
-            n_channels = int(len(image) / height / width)
-            if rdr.isInterleaved():
-                image.shape = (height, width, n_channels)
-            else:
-                image.shape = (n_channels, height, width)
-                image = image.transpose(1, 2, 0)
-        else:
-            image.shape = (height, width)
-    elif rdr.isRGB() and rdr.isInterleaved():
-        index = rdr.getIndex(z,0,t)
-        image = np.frombuffer(rdr.openBytes(index), dtype)
-        image.shape = (height, width, 3)
-    elif c is not None and rdr.getRGBChannelCount() == 1:
-        index = rdr.getIndex(z,c,t)
-        image = np.frombuffer(rdr.openBytes(index), dtype)
-        image.shape = (height, width)
-    elif rdr.getRGBChannelCount() > 1:
-        rdr.close()
-        rdr = ImageReader()
-        rdr.allowOpenToCheckType(False)
-        rdr = ChannelSeparator(rdr)
-        rdr.setGroupFiles(False)
+    with GetImageReader(path) as rdr:
+        mdoptions = metadatatools.get_metadata_options(metadatatools.ALL)
+        rdr.setMetadataOptions(mdoptions)
+        metadata = metadatatools.createOMEXMLMetadata()
+        rdr.setMetadataStore(metadata)
         rdr.setId(path)
-        red_image, green_image, blue_image = [
-            np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)),dtype)
-            for i in range(3)]
-        image = np.dstack((red_image, green_image, blue_image))
-        image.shape=(height,width,3)
-    elif rdr.getSizeC() > 1:
-        images = [np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)), dtype)
-                  for i in range(rdr.getSizeC())]
-        image = np.dstack(images)
-        image.shape = (height, width, rdr.getSizeC())
-        if not channel_names is None:
-            metadata = metadatatools.MetadataRetrieve(metadata)
-            for i in range(rdr.getSizeC()):
-                index = rdr.getIndex(z, 0, t)
-                channel_name = metadata.getChannelName(index, i)
-                if channel_name is None:
-                    channel_name = metadata.getChannelID(index, i)
-                channel_names.append(channel_name)
-    elif rdr.isIndexed():
-        #
-        # The image data is indexes into a color lookup-table
-        # But sometimes the table is the identity table and just generates
-        # a monochrome RGB image
-        #
-        index = rdr.getIndex(z,0,t)
-        image = np.frombuffer(rdr.openBytes(index),dtype)
-        if pixel_type in (FormatTools.INT16, FormatTools.UINT16):
-            lut = rdr.get16BitLookupTable()
-            lut = np.array(
-                [env.get_short_array_elements(d)
-                 for d in env.get_object_array_elements(lut)]).transpose()
+        width = rdr.getSizeX()
+        height = rdr.getSizeY()
+        pixel_type = rdr.getPixelType()
+        little_endian = rdr.isLittleEndian()
+        if pixel_type == FormatTools.INT8:
+            dtype = np.char
+            scale = 255
+        elif pixel_type == FormatTools.UINT8:
+            dtype = np.uint8
+            scale = 255
+        elif pixel_type == FormatTools.UINT16:
+            dtype = '<u2' if little_endian else '>u2'
+            scale = 65535
+        elif pixel_type == FormatTools.INT16:
+            dtype = '<i2' if little_endian else '>i2'
+            scale = 65535
+        elif pixel_type == FormatTools.UINT32:
+            dtype = '<u4' if little_endian else '>u4'
+            scale = 2**32
+        elif pixel_type == FormatTools.INT32:
+            dtype = '<i4' if little_endian else '>i4'
+            scale = 2**32-1
+        elif pixel_type == FormatTools.FLOAT:
+            dtype = '<f4' if little_endian else '>f4'
+            scale = 1
+        elif pixel_type == FormatTools.DOUBLE:
+            dtype = '<f8' if little_endian else '>f8'
+            scale = 1
+        max_sample_value = rdr.getMetadataValue('MaxSampleValue')
+        if max_sample_value is not None:
+            try:
+                scale = jutil.call(max_sample_value, 'intValue', '()I')
+            except:
+                bioformats.logger.warning("WARNING: failed to get MaxSampleValue for image. Intensities may be improperly scaled.")
+        if series is not None:
+            rdr.setSeries(series)
+        if index is not None:
+            image = np.frombuffer(rdr.openBytes(index), dtype)
+            if len(image) / height / width in (3,4):
+                n_channels = int(len(image) / height / width)
+                if rdr.isInterleaved():
+                    image.shape = (height, width, n_channels)
+                else:
+                    image.shape = (n_channels, height, width)
+                    image = image.transpose(1, 2, 0)
+            else:
+                image.shape = (height, width)
+        elif rdr.isRGB() and rdr.isInterleaved():
+            index = rdr.getIndex(z,0,t)
+            image = np.frombuffer(rdr.openBytes(index), dtype)
+            image.shape = (height, width, 3)
+        elif c is not None and rdr.getRGBChannelCount() == 1:
+            index = rdr.getIndex(z,c,t)
+            image = np.frombuffer(rdr.openBytes(index), dtype)
+            image.shape = (height, width)
+        elif rdr.getRGBChannelCount() > 1:
+            rdr.close()
+            rdr = ImageReader()
+            rdr.allowOpenToCheckType(False)
+            rdr = ChannelSeparator(rdr)
+            rdr.setGroupFiles(False)
+            rdr.setId(path)
+            red_image, green_image, blue_image = [
+                np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)),dtype)
+                for i in range(3)]
+            image = np.dstack((red_image, green_image, blue_image))
+            image.shape=(height,width,3)
+        elif rdr.getSizeC() > 1:
+            images = [np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)), dtype)
+                      for i in range(rdr.getSizeC())]
+            image = np.dstack(images)
+            image.shape = (height, width, rdr.getSizeC())
+            if not channel_names is None:
+                metadata = metadatatools.MetadataRetrieve(metadata)
+                for i in range(rdr.getSizeC()):
+                    index = rdr.getIndex(z, 0, t)
+                    channel_name = metadata.getChannelName(index, i)
+                    if channel_name is None:
+                        channel_name = metadata.getChannelID(index, i)
+                    channel_names.append(channel_name)
+        elif rdr.isIndexed():
+            #
+            # The image data is indexes into a color lookup-table
+            # But sometimes the table is the identity table and just generates
+            # a monochrome RGB image
+            #
+            index = rdr.getIndex(z,0,t)
+            image = np.frombuffer(rdr.openBytes(index),dtype)
+            if pixel_type in (FormatTools.INT16, FormatTools.UINT16):
+                lut = rdr.get16BitLookupTable()
+                lut = np.array(
+                    [env.get_short_array_elements(d)
+                     for d in env.get_object_array_elements(lut)]).transpose()
+            else:
+                lut = rdr.get8BitLookupTable()
+                lut = np.array(
+                    [env.get_byte_array_elements(d)
+                     for d in env.get_object_array_elements(lut)]).transpose()
+            image.shape = (height, width)
+            if not np.all(lut == np.arange(lut.shape[0])[:, np.newaxis]):
+                image = lut[image, :]
         else:
-            lut = rdr.get8BitLookupTable()
-            lut = np.array(
-                [env.get_byte_array_elements(d)
-                 for d in env.get_object_array_elements(lut)]).transpose()
-        image.shape = (height, width)
-        if not np.all(lut == np.arange(lut.shape[0])[:, np.newaxis]):
-            image = lut[image, :]
-    else:
-        index = rdr.getIndex(z,0,t)
-        image = np.frombuffer(rdr.openBytes(index),dtype)
-        image.shape = (height,width)
-        
-    rdr.close()
-    jutil.call(stream, 'close', '()V')
-    del rdr
-    #
-    # Run the Java garbage collector here.
-    #
-    jutil.static_call("java/lang/System", "gc","()V")
+            index = rdr.getIndex(z,0,t)
+            image = np.frombuffer(rdr.openBytes(index),dtype)
+            image.shape = (height,width)
+            
+        rdr.close()
     if rescale:
         image = image.astype(np.float32) / float(scale)
     if wants_max_intensity:
         return image, scale
     return image
 
-def get_omexml_metadata(path, 
-                        series=None, 
-                        allowopenfiles=False, 
-                        groupfiles=False):
+def get_omexml_metadata(path):
     '''Read the OME metadata from a file using Bio-formats
     
     path - path to the file
@@ -583,32 +607,26 @@ def get_omexml_metadata(path,
     groupfiles - utilize the groupfiles option to take the directory structure
                  into account.
     '''
-    #
-    # Below, "in" is a keyword and Rhino's parser is just a little wonky I fear.
-    #
-    script = """
-    importClass(Packages.loci.formats.ImageReader,
-                Packages.loci.common.services.ServiceFactory,
-                Packages.loci.formats.services.OMEXMLService,
-                Packages.loci.formats['in'].DefaultMetadataOptions,
-                Packages.loci.formats['in'].MetadataLevel);
-    var reader = ImageReader();
-    reader.setAllowOpenFiles(allowopenfiles);
-    reader.setGroupFiles(groupfiles);
-    reader.setOriginalMetadataPopulated(true);
-    var service = new ServiceFactory().getInstance(OMEXMLService);
-    var metadata = service.createOMEXMLMetadata();
-    reader.setMetadataStore(metadata);
-    reader.setMetadataOptions(new DefaultMetadataOptions(MetadataLevel.ALL));
-    reader.setId(path);
-    if (series != null) reader.setSeries(series);
-    var xml = service.getOMEXML(metadata);
-    reader.close();
-    xml;
-    """
-    xml = jutil.run_script(script, 
-                           dict(path=path, 
-                                series=series,
-                                allowopenfiles = allowopenfiles,
-                                groupfiles=groupfiles))
-    return xml
+    with GetImageReader(path) as rdr:
+        #
+        # Below, "in" is a keyword and Rhino's parser is just a little wonky I fear.
+        #
+        script = """
+        importClass(Packages.loci.common.services.ServiceFactory,
+                    Packages.loci.formats.services.OMEXMLService,
+                    Packages.loci.formats['in'].DefaultMetadataOptions,
+                    Packages.loci.formats['in'].MetadataLevel);
+        reader.setOriginalMetadataPopulated(true);
+        var service = new ServiceFactory().getInstance(OMEXMLService);
+        var metadata = service.createOMEXMLMetadata();
+        reader.setMetadataStore(metadata);
+        reader.setMetadataOptions(new DefaultMetadataOptions(MetadataLevel.ALL));
+        reader.setId(path);
+        var xml = service.getOMEXML(metadata);
+        reader.close();
+        xml;
+        """
+        xml = jutil.run_script(script, 
+                               dict(path=path,
+                                    reader = rdr))
+        return xml

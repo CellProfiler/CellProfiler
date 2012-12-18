@@ -339,7 +339,7 @@ class Metadata(cpm.CPModule):
             metadata = file_list.get_metadata(ipd.url)
             if metadata is not None:
                 try:
-                    pipeline.add_image_metadata(ipd.url, OMEXML(metadata))
+                    pipeline.add_image_metadata(ipd.url, OMEXML(metadata), ipd)
                 except:
                     logger.error("Failed to add metadata to %s" %ipd.url, 
                                  exc_info=True)

@@ -611,11 +611,15 @@ def get_omexml_metadata(path):
         #
         # Below, "in" is a keyword and Rhino's parser is just a little wonky I fear.
         #
+        # It is critical that setGroupFiles be set to false, goodness knows
+        # why, but if you don't the series count is wrong for flex files.
+        #
         script = """
         importClass(Packages.loci.common.services.ServiceFactory,
                     Packages.loci.formats.services.OMEXMLService,
                     Packages.loci.formats['in'].DefaultMetadataOptions,
                     Packages.loci.formats['in'].MetadataLevel);
+        reader.setGroupFiles(false);
         reader.setOriginalMetadataPopulated(true);
         var service = new ServiceFactory().getInstance(OMEXMLService);
         var metadata = service.createOMEXMLMetadata();
@@ -623,10 +627,10 @@ def get_omexml_metadata(path):
         reader.setMetadataOptions(new DefaultMetadataOptions(MetadataLevel.ALL));
         reader.setId(path);
         var xml = service.getOMEXML(metadata);
-        reader.close();
         xml;
         """
         xml = jutil.run_script(script, 
                                dict(path=path,
                                     reader = rdr))
+        rdr.close()
         return xml

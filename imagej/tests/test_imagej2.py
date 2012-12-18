@@ -342,7 +342,7 @@ class TestImagej2(unittest.TestCase):
         r.seed(92)
         image = r.randint(0, 256, (11,13))
         ds = ij2.create_dataset(self.context, image, "Foo")
-        display = svc.createDisplay("foo", ds)
+        display = svc.createDisplay("Foo", ds)
         self.assertEqual(display.size(), 1)
         self.assertFalse(display.isEmpty())
         self.assertFalse(display.contains(None))
@@ -365,7 +365,7 @@ class TestImagej2(unittest.TestCase):
         r.seed(92)
         image = r.randint(0, 256, (11,13))
         ds = ij2.create_dataset(self.context, image, "Foo")
-        display = svc.createDisplay("foo", ds)
+        display = svc.createDisplay("Foo", ds)
         svc.setActiveDisplay(display.o)
         
     def test_09_04_get_active_display(self):
@@ -374,9 +374,9 @@ class TestImagej2(unittest.TestCase):
         r.seed(92)
         image = r.randint(0, 256, (11,13))
         ds = ij2.create_dataset(self.context, image, "Foo")
-        display = svc.createDisplay("foo", ds)
+        display = svc.createDisplay("Foo", ds)
         ds = ij2.create_dataset(self.context, image, "Bar")
-        svc.createDisplay("bar", ds)
+        svc.createDisplay("Bar", ds)
         svc.setActiveDisplay(display.o)
         self.assertEqual(svc.getActiveDisplay().getName(), "Foo")
         
@@ -386,9 +386,9 @@ class TestImagej2(unittest.TestCase):
         r.seed(92)
         image = r.randint(0, 256, (11,13))
         ds = ij2.create_dataset(self.context, image, "Foo")
-        svc.createDisplay("foo", ds)
+        svc.createDisplay("Foo", ds)
         ds = ij2.create_dataset(self.context, image, "Bar")
-        display = svc.createDisplay("bar", ds)
+        display = svc.createDisplay("Bar", ds)
         svc.setActiveDisplay(display.o)
         self.assertEqual(svc.getActiveImageDisplay().getName(), "Bar")
         
@@ -398,10 +398,10 @@ class TestImagej2(unittest.TestCase):
         r.seed(92)
         image = r.randint(0, 256, (11,13))
         ds = ij2.create_dataset(self.context, image, "Foo")
-        svc.createDisplay("foo", ds)
+        svc.createDisplay("Foo", ds)
         image = r.randint(0, 256, (14,12))
         ds2 = ij2.create_dataset(self.context, image, "Bar")
-        display = svc.createDisplay("bar", ds)
+        display = svc.createDisplay("Bar", ds)
         svc.setActiveDisplay(display.o)
         display = svc.getDisplay("Foo")
         view = display.getActiveView()
@@ -414,7 +414,7 @@ class TestImagej2(unittest.TestCase):
         r.seed(92)
         image = r.randint(0, 256, (11,13))
         ds = ij2.create_dataset(self.context, image, "Foo")
-        svc.createDisplay("foo", ds)
+        svc.createDisplay("Foo", ds)
         self.assertTrue(svc.isUniqueName("Bar"))
         self.assertFalse(svc.isUniqueName("Foo"))
         
@@ -426,7 +426,7 @@ class TestImagej2(unittest.TestCase):
         i, j = np.mgrid[0:5, 0:70:10]
         image = i+j
         ds = ij2.create_dataset(self.context, image, "Foo")
-        display = svc.createDisplay("foo", ds)
+        display = svc.createDisplay("Foo", ds)
         outputs = dict(display=None)
         self.run_command("imagej.core.commands.rotate.Rotate90DegreesLeft",
                          dict(display=display),
@@ -443,7 +443,7 @@ class TestImagej2(unittest.TestCase):
         i, j = np.mgrid[0:11, 0:1300:100]
         image = i+j
         ds = ij2.create_dataset(self.context, image, "Foo")
-        display = svc.createDisplay("foo", ds)
+        display = svc.createDisplay("Foo", ds)
         mask = np.zeros(image.shape, bool)
         mask[2:-1, 3:-4] = 1
         overlay = ij2.create_overlay(self.context, mask)
@@ -545,7 +545,7 @@ class TestImagej2(unittest.TestCase):
         i, j = np.mgrid[0:15, 0:1900:100]
         image = i+j
         ds = ij2.create_dataset(self.context, image, "Foo")
-        display = display_svc.createDisplay("foo", ds)
+        display = display_svc.createDisplay("Foo", ds)
         self.assertEqual(len(overlay_svc.getDisplayOverlays(display.o)), 0)
         
     def test_11_04_add_overlays(self):
@@ -554,8 +554,9 @@ class TestImagej2(unittest.TestCase):
         i, j = np.mgrid[0:15, 0:1900:100]
         image = i+j
         ds = ij2.create_dataset(self.context, image, "Foo")
-        display = display_svc.createDisplay("foo", ds)
-        d2 = display_svc.createDisplay("bar", ij2.create_dataset(self.context, image, "Bar"))
+        display = display_svc.createDisplay("Foo", ds)
+        d2 = display_svc.createDisplay(
+            "Bar", ij2.create_dataset(self.context, image, "Bar"))
         mask = np.zeros(i.shape, bool)
         islice = slice(2,-3)
         jslice = slice(3,-4)
@@ -572,8 +573,8 @@ class TestImagej2(unittest.TestCase):
         i, j = np.mgrid[0:15, 0:1900:100]
         image = i+j
         ds = ij2.create_dataset(self.context, image, "Foo")
-        display = display_svc.createDisplay("foo", ds)
-        d2 = display_svc.createDisplay("bar", ij2.create_dataset(self.context, image, "Bar"))
+        display = display_svc.createDisplay("Foo", ds)
+        d2 = display_svc.createDisplay("Bar", ij2.create_dataset(self.context, image, "Bar"))
         mask = np.zeros(i.shape, bool)
         islice = slice(2,-3)
         jslice = slice(3,-4)
@@ -590,8 +591,8 @@ class TestImagej2(unittest.TestCase):
         i, j = np.mgrid[0:15, 0:1900:100]
         image = i+j
         ds = ij2.create_dataset(self.context, image, "Foo")
-        display = display_svc.createDisplay("foo", ds)
-        d2 = display_svc.createDisplay("bar", ij2.create_dataset(self.context, image, "Bar"))
+        display = display_svc.createDisplay("Foo", ds)
+        d2 = display_svc.createDisplay("Bar", ij2.create_dataset(self.context, image, "Bar"))
         mask = np.zeros(i.shape, bool)
         islice = slice(2,-3)
         jslice = slice(3,-4)
@@ -606,7 +607,7 @@ class TestImagej2(unittest.TestCase):
         i, j = np.mgrid[0:15, 0:1900:100]
         image = i+j
         ds = ij2.create_dataset(self.context, image, "Foo")
-        display = display_svc.createDisplay("foo", ds)
+        display = display_svc.createDisplay("Foo", ds)
         mask = np.zeros(i.shape, bool)
         islice = slice(2,-3)
         jslice = slice(3,-4)

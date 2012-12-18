@@ -69,12 +69,24 @@ def create_context(service_classes):
         def __init__(self):
             if service_classes is None:
                 classes = None
+                ctxt_fn = J.run_script(
+                    """new java.util.concurrent.Callable() {
+                        call: function() {
+                            return Packages.imagej.ImageJ.createContext();
+                        }
+                    }""")
             else:
                 classes = [ J.class_for_name(x) for x in service_classes]
-            self.o = J.run_in_main_thread(
-                lambda :J.static_call(
-                "imagej/ImageJ", "createContext", 
-                "([Ljava/lang/Class;)Limagej/ImageJ;", classes), True)
+                classes = J.make_list(classes).toArray()
+                ctxt_fn = J.run_script(
+                    """new java.util.concurrent.Callable() {
+                        call: function() {
+                            return Packages.imagej.ImageJ.createContext(classes);
+                        }
+                    }""", dict(classes = classes))
+            
+            self.o = J.execute_future_in_main_thread(
+                J.make_future_task(ctxt_fn))
         
         def loadService(self, class_name):
             '''Load the service class with the given class name

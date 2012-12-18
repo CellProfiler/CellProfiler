@@ -2253,9 +2253,7 @@ class LoadImages(cpmodule.CPModule):
                     import bioformats.omexml
                     
                     md = get_omexml_metadata(provider.get_full_name(), 
-                                             series = provider.series,
-                                             allowopenfiles=True,
-                                             groupfiles=False)
+                                             series = provider.series)
                     md = bioformats.omexml.OMEXML(md)
                     mdpixels = md.image().Pixels
                     if (mdpixels.channel_count == 1 and 

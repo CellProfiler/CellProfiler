@@ -16,14 +16,20 @@ its functionality is the same.
 
 The database is set up with two primary tables. These tables are the
 <i>Per_Image</i> table and the <i>Per_Object</i> table (which may have a prefix if you
-specify). The Per_Image table consists of all the per-image measurements made during the pipeline, plus
+specify):
+<ul>
+<li>The Per_Image table consists of all the per-image measurements made during the pipeline, plus
 per-image population statistics (such as mean, median, and standard deviation) of the object measurements. There is one
 per_image row for every "cycle" that CellProfiler processes (a cycle is usually a single field of view, and a single cycle 
-usually contains several image files, each representing a different channel of the same field of view). The Per_Object table contains all the
+usually contains several image files, each representing a different channel of the same field of view). </li>
+<li>The Per_Object table contains all the
 measurements for individual objects. There is one row of object
 measurements per object identified. The two tables are connected with the
 primary key column <i>ImageNumber</i>, which indicates the image to which each object belongs. The Per_Object table has another primary
-key called <i>ObjectNumber</i>, which is unique to each image. Typically, if multiple types of objects are identified and measured in a pipeline, 
+key called <i>ObjectNumber</i>, which is unique to each image. </li>
+</ul>
+
+Typically, if multiple types of objects are identified and measured in a pipeline, 
 the numbers of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row 
 of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this 
 one-to-one correspondence is <i>not</i> the case for all objects in the pipeline (for example, if dozens of speckles are identified and 
@@ -36,7 +42,7 @@ This option will output a SQL file (regardless of whether you choose to write di
 that can be used to create the Per_Well table. At the secure shell where you normally log in to MySQL, type
 the following, replacing the italics with references to your database and files:
 
-<tt>mysql -h <i>hostname</i> -u <i>username</i> -p <i>databasename</i> &lt<i>pathtoimages/perwellsetupfile.SQL</i></tt>
+<tt>mysql -h <i>hostname</i> -u <i>username</i> -p <i>databasename</i> &lt <i>pathtoimages/perwellsetupfile.SQL</i></tt>
 
 The commands written by CellProfiler to create the Per_Well table will be executed.
 
@@ -298,7 +304,7 @@ class ExportToDatabase(cpm.CPModule):
             "Experiment name", "Expt",
             doc = """Select a name for the experiment. This name will be
             registered in the database and linked to the tables that
-            ExportToDatabase creates. You will be able to select the experiment
+            <b>ExportToDatabase</b> creates. You will be able to select the experiment
             by name in CellProfiler Analyst and will be able to find the
             experiment's tables through database queries.""")
         
@@ -306,7 +312,7 @@ class ExportToDatabase(cpm.CPModule):
             "Add a prefix to table names?", False, doc = """
             Do you want to add a prefix to your table names?
             This option enables you to prepend text to your table names
-            (Per_Image and Per_Object).  CellProfiler will warn you before overwriting an existing table.""")
+            (<i>Per_Image</i> and <i>Per_Object</i>).  CellProfiler will warn you before overwriting an existing table.""")
         
         self.table_prefix = cps.Text(
             "Table prefix", "Expt_" , doc = """
@@ -602,7 +608,7 @@ class ExportToDatabase(cpm.CPModule):
             same time guaranteeing that no two columns have the same name.""")
         
         self.separate_object_tables = cps.Choice(
-            "Create one table per object or a single object table?",
+            "Create one table per object, a single object table or a single object view?",
             [OT_COMBINE, OT_PER_OBJECT, OT_VIEW],
             doc = """<b>ExportToDatabase</b> can create either one table
             for each type of object exported or a single
@@ -620,13 +626,27 @@ class ExportToDatabase(cpm.CPModule):
             or if you need to split columns among different
             tables and shorten column names because of database limitations.</li>
             <li><i>%(OT_COMBINE)s</i> creates a single
-            database table that records all object measurements. <b>
+            database table that records the object measurements. <b>
             ExportToDatabase</b> will prepend each column name with the
             name of the object associated with that column's measurement.
             Each row of the table will have measurements for all objects
             that have the same image and object number. Choose
             <i>%(OT_COMBINE)s</i> if parent objects have a single child,
-            or if you want a simple table structure in your database.</li>
+            or if you want a simple table structure in your database. You can
+            combine the measurements for all or selected objects in this way.</li>
+            <li><i>%(OT_VIEW)s</i> creates a single
+            database view to contain the object measurements. A <i>view</i> is a
+            virtual database table which can be used to package together multiple
+            per-object tables into a single structure that is accessed just like a
+            regular table. Choose <i>%(OT_VIEW)s</i> if you want to combine multiple
+            objects but using <i>%(OT_COMBINE)s</i> would produce a table that hits
+            the database size limitations. <br>
+            An important note is that only objects that are related as primary, secondary
+            or tertiary objects to each other should be combined in a view. This is
+            because the view expects a one-to-one relationship between the combined objects. If
+            you are selecting objects for the view, the module will warn you if they are
+            not related in this way.
+            </li>
             </ul>""" % globals())
         
         self.want_image_thumbnails = cps.Binary(

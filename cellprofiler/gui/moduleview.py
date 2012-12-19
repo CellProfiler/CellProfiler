@@ -1001,6 +1001,7 @@ class ModuleView:
         if control is None:
             control = wx.BitmapButton(self.module_panel,
                                 style = wx.BU_EXACTFIT)
+            control.label_text = None
             def on_press(event, v=v, control=control):
                 id_dict = {}
                 def make_menu(tree, id_dict = id_dict, path = []):
@@ -1026,9 +1027,9 @@ class ModuleView:
                 control.PopupMenuXY(menu, 0, control.GetSize()[1])
                 menu.Destroy()
             control.Bind(wx.EVT_BUTTON, on_press)
-        old_label = control.GetLabel()
+        old_label = control.label_text
         if old_label != new_label:
-            control.SetLabel(new_label)
+            control.label_text = new_label
             for getter, setter, flags in (
                 (control.GetBitmapLabel, control.SetBitmapLabel, 0),
                 (control.GetBitmapFocus, control.SetBitmapFocus, 

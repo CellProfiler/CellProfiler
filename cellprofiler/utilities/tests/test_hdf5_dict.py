@@ -167,11 +167,22 @@ class TestHDF5Dict(unittest.TestCase):
             
     def test_08_01_copy(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = "Hello"
-        h5copy = H5DICT.HDF5Dict(None, copy=self.hdf5_dict.top_group)
-        self.assertTrue(h5copy.has_object(OBJECT_NAME))
-        self.assertTrue(h5copy.has_feature(OBJECT_NAME, FEATURE_NAME))
-        self.assertEqual(h5copy[OBJECT_NAME, FEATURE_NAME, 1], "Hello")
-        
+        temp_fd, temp_filename = tempfile.mkstemp(".h5")
+        try:
+            h5copy = H5DICT.HDF5Dict(temp_filename,
+                                     copy = self.hdf5_dict.top_group)
+            
+            self.assertTrue(h5copy.has_object(OBJECT_NAME))
+            self.assertTrue(h5copy.has_feature(OBJECT_NAME, FEATURE_NAME))
+            self.assertEqual(h5copy[OBJECT_NAME, FEATURE_NAME, 1], "Hello")
+        finally:
+            h5copy.close()
+            os.close(temp_fd)
+            os.remove(temp_filename)
+            self.assertFalse(os.path.exists(temp_filename),
+                             "If the file can't be removed, it's a bug. "
+                             "Clean up your trash: %s" % temp_filename)
+            
         
 class TestHDF5FileList(unittest.TestCase):
     def setUp(self):

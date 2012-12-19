@@ -1072,7 +1072,17 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 traceback.print_exc()
                 print "Failed to drop table %s"%table_name
             
-
+    def drop_views(self, module, table_suffixes):
+        for table_suffix in table_suffixes:
+            table_name = module.table_prefix.value + table_suffix
+            try:
+                self.cursor.execute("drop view %s.%s" %
+                                    (module.db_name.value, table_name))
+            except SkipTestException:
+                raise
+            except Exception:
+                traceback.print_exc()
+                print "Failed to drop table %s"%table_name
 
     def test_02_01_write_mysql_db(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
@@ -3329,6 +3339,99 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         finally:
             self.drop_tables(module, ("Per_Image","Per_Object"))
 
+    def test_09_05_post_group_object_view(self):
+        '''Write out measurements post_group to single object view'''
+        count = 5
+        workspace, module = self.make_workspace(False, image_set_count = count,
+                                                group_measurement = True)
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertTrue(isinstance(workspace, cpw.Workspace))
+        measurements = workspace.measurements
+        self.assertTrue(isinstance(measurements, cpmeas.Measurements))
+        module.wants_agg_mean.value = False
+        module.wants_agg_median.value = False
+        module.wants_agg_std_dev.value = False
+        try:
+            module.separate_object_tables.value = E.OT_VIEW
+            module.prepare_run(workspace)
+            module.prepare_group(workspace, {}, np.arange(count)+1)
+            for i in range(count):
+                workspace.set_image_set_for_testing_only(i+1)
+                measurements.next_image_set(i + 1)
+                module.run(workspace)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Read the image data after the run but before group.
+            # It should be null.
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s from %s order by ImageNumber" %
+                         (GROUP_IMG_MEASUREMENT, image_table))
+            self.cursor.execute(statement)
+            for i in range(count):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 2)
+                self.assertEqual(row[0], i+1)
+                self.assertTrue(row[1] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Read the object data too
+            #
+            object_table = module.table_prefix.value + "Per_Object"
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                         (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, 
+                          module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i in range(count):
+                for j in range(len(OBJ_VALUE)):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], i+1)
+                    self.assertEqual(row[1], j+1)
+                    self.assertTrue(row[2] is None)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Run post_group and see that the values do show up
+            #
+            module.post_group(workspace, {})
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = ("select ImageNumber, Image_%s from %s" %
+                         (GROUP_IMG_MEASUREMENT, image_table))
+            self.cursor.execute(statement)
+            for i in range(count):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 2)
+                self.assertEqual(row[0], i+1)
+                self.assertEqual(row[1], INT_VALUE)
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Read the object data
+            #
+            object_table = module.table_prefix.value + "Per_Object"
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                         (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, 
+                          module.table_prefix.value))
+            self.cursor.execute(statement)
+            for i in range(count):
+                for j in range(len(OBJ_VALUE)):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], i+1)
+                    self.assertEqual(row[1], j+1)
+                    self.assertAlmostEqual(row[2], OBJ_VALUE[j])
+            self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Finally, confirm that the Per_Object item is a view
+            #
+            statement = ("SELECT * FROM information_schema.views WHERE TABLE_SCHEMA = '%s' AND TABLE_NAME = '%s'"%(module.db_name.value, object_table))
+            self.cursor.execute(statement)    
+            self.assertNotEqual(len(self.cursor.fetchall()),0)
+        finally:
+            self.drop_tables(module, ["Per_Image"])
+            self.drop_views(module, ["Per_Object"])
+            
     def test_10_01_properties_file(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(
             True, alt_object = True)

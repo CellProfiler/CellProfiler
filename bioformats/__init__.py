@@ -38,10 +38,8 @@ READABLE_FORMATS = ('al3d', 'am', 'amiramesh', 'apl', 'arf', 'avi', 'bmp',
 WRITABLE_FORMATS = ('avi', 'eps', 'epsi', 'ics', 'ids', 'jp2', 'jpeg', 'jpg', 
                     'mov', 'ome', 'ome.tiff', 'png', 'ps', 'tif', 'tiff')
 
-USE_IJ2 = None
 def start_cellprofiler_jvm():
     '''Start the Java VM with arguments appropriate for CellProfiler'''
-    global USE_IJ2
     global logger
     
     if hasattr(sys, 'frozen') and sys.platform != 'darwin':
@@ -60,6 +58,21 @@ def start_cellprofiler_jvm():
     
     if os.environ.has_key("CLASSPATH"):
         class_path += os.pathsep + os.environ["CLASSPATH"]
+        
+    if get_ij_plugin_directory() is not None:
+        plugin_directory = get_ij_plugin_directory()
+        #
+        # Add the plugin directory to pick up .class files in a directory
+        # hierarchy.
+        #
+        class_path += os.pathsep + plugin_directory
+        #
+        # Add any .jar files in the directory
+        #
+        class_path += os.pathsep + os.pathsep.join(
+            [os.path.join(plugin_directory, jarfile)
+             for jarfile in os.listdir(plugin_directory)
+             if jarfile.lower().endswith(".jar")])
         
     if sys.platform.startswith("win") and not hasattr(sys, 'frozen'):
         # Have to find tools.jar
@@ -84,9 +97,6 @@ def start_cellprofiler_jvm():
             #r"-verbose:class",
             #r"-verbose:jni",
             r"-Xmx%s" % jvm_arg]
-    if get_ij_plugin_directory() is not None:
-        args.append("-Dplugins.dir="+get_ij_plugin_directory())
-    
     #
     # Get the log4j logger setup from a file in the bioformats directory
     # if such a file exists.

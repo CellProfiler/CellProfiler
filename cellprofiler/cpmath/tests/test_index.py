@@ -127,8 +127,8 @@ class TestIndexes(unittest.TestCase):
         np.testing.assert_array_equal(ind.rev_idx, np.array([1, 2]))
         
     def test_02_05_none_at_start_and_one(self):
-        ind = I.Indexes(np.array([[0, 1]]))
-        np.testing.assert_array_equal(ind.rev_idx, np.array([1]))
+        ind = I.Indexes(np.array([[0, 2]]))
+        np.testing.assert_array_equal(ind.rev_idx, np.array([1, 1]))
         
         
         

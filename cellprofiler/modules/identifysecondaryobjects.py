@@ -736,6 +736,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
                 
         return segmented_labels_out
         
+    def is_object_identification_module(self):
+        '''IdentifySecondaryObjects makes secondary objects sets so it's a identification module'''
+        return True
+    
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         columns = cpmi.get_object_measurement_columns(self.objects_name.value)

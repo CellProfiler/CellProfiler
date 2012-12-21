@@ -280,6 +280,10 @@ class IdentifyTertiaryObjects(cpm.CPModule):
                                 parent_image = tertiary_image)
             workspace.image_set.add(self.outlines_name.value, out_img)
             
+    def is_object_identification_module(self):
+        '''IdentifyTertiaryObjects makes tertiary objects sets so it's a identification module'''
+        return True
+    
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''
         subregion_name = self.subregion_objects_name.value

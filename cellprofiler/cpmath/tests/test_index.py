@@ -120,6 +120,10 @@ class TestIndexes(unittest.TestCase):
     def test_02_03_one_at_end(self):
         ind = I.Indexes(np.array([[0,0,1]]))
         pass
+    
+    def test_02_04_none_at_start(self):
+        ind = I.Indexes(np.array([[0, 1, 1]]))
+        np.testing.assert_array_equal(ind.rev_idx, np.array([1, 2]))
         
         
         

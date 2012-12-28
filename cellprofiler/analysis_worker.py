@@ -186,22 +186,25 @@ class AnalysisWorker(object):
             if not current_pipeline:
                 rep = self.send(PipelinePreferencesRequest(
                     self.current_analysis_id))
+                preferences_dict = rep.preferences
+                # update preferences to match remote values
+                cpprefs.set_preferences_from_dict(preferences_dict)
+            
                 pipeline_blob = rep.pipeline_blob.tostring()
                 current_pipeline = cpp.Pipeline()
                 current_pipeline.loadtxt(StringIO.StringIO(pipeline_blob), 
                                          raise_on_error=True)
-                preferences_dict = rep.preferences
                 current_pipeline.add_listener(
                     self.pipeline_listener.handle_event)
                 current_preferences = rep.preferences
                 self.pipelines_and_preferences[self.current_analysis_id] = (
                     current_pipeline, current_preferences)
-       
+            else:
+                # update preferences to match remote values
+                cpprefs.set_preferences_from_dict(current_preferences)
+            
             # Reset the listener's state
             self.pipeline_listener.reset()
-        
-            # update preferences to match remote values
-            cpprefs.set_preferences_from_dict(current_preferences)
         
             # Fetch the path to the intial measurements if needed.
             current_measurements = self.initial_measurements.get(

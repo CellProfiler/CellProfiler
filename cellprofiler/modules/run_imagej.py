@@ -822,11 +822,5 @@ def get_context():
     '''Get the ImageJ context'''
     global the_imagej_context
     if the_imagej_context is None:
-        if cpprefs.get_headless():
-            services = [ "imagej.console.ConsoleService",
-                         "imagej.script.ScriptService",
-                         "imagej.data.display.OverlayService"]
-        else:
-            services = None
-        the_imagej_context = ij2.create_context(services)
+        the_imagej_context = ij2.create_context(None)
     return the_imagej_context

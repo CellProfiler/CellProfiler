@@ -576,6 +576,10 @@ class NamesAndTypes(cpm.CPModule):
     
     def add_objects(self, workspace, name):
         '''Add objects loaded from a file to the object set'''
+        from cellprofiler.modules.identify import add_object_count_measurements
+        from cellprofiler.modules.identify import add_object_location_measurements
+        from cellprofiler.modules.identify import add_object_location_measurements_ijv
+        
         def fetch_measurement_or_none(category):
             feature = category + "_" + name
             if workspace.measurements.has_feature(cpmeas.IMAGE, feature):
@@ -594,6 +598,10 @@ class NamesAndTypes(cpm.CPModule):
         o = cpo.Objects()
         if image.pixel_data.shape[2] == 1:
             o.segmented = image.pixel_data[:, :, 0]
+            add_object_location_measurements(workspace.measurements,
+                                             name,
+                                             o.segmented,
+                                             o.count)
         else:
             ijv = np.zeros((0, 3), int)
             for i in range(image.pixel_data.shape[2]):
@@ -604,6 +612,9 @@ class NamesAndTypes(cpm.CPModule):
                     (ijv, 
                      np.column_stack([x[plane != 0] for x in (i, j, plane)])))
             o.set_ijv(ijv, shape)
+            add_object_location_measurements_ijv(workspace.measurements,
+                                                 name, o.ijv, o.count)
+        add_object_count_measurements(workspace.measurements, name, o.count)
         workspace.object_set.add_objects(o, name)
                      
     def on_activated(self, workspace):
@@ -918,7 +929,7 @@ class NamesAndTypes(cpm.CPModule):
             if has_images:
                 result += [C_FILE_NAME, C_PATH_NAME, C_URL]
             if has_objects:
-                result += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME]
+                result += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_COUNT]
         elif object_name in self.get_object_names():
             result += [C_LOCATION, C_NUMBER]
         return result
@@ -933,9 +944,11 @@ class NamesAndTypes(cpm.CPModule):
         
         image_names = self.get_image_names()
         object_names = self.get_object_names()
-        if object_name == cpmeas.IMAGE and category in (
-            C_FILE_NAME, C_PATH_NAME, C_URL):
-            return image_names
+        if object_name == cpmeas.IMAGE:
+            if category in (C_FILE_NAME, C_PATH_NAME, C_URL):
+                return image_names
+            elif category == C_COUNT:
+                return object_names
         elif object_name in self.get_object_names():
             if category == C_NUMBER:
                 return [FTR_OBJECT_NUMBER]

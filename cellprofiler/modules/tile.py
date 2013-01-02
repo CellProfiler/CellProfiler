@@ -37,7 +37,15 @@ Other packages are referenced <a href="http://graphicssoft.about.com/od/panorama
 
 This module replaces the functionality of the obsolete module <b>PlaceAdjacent</b>.
 '''
-__version__ = "$Revision: 9034 $"
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2013 Broad Institute
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 
 import logging
 import numpy as np

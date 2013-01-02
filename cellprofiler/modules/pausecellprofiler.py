@@ -5,7 +5,15 @@ This module allows you to pause CellProfiler's processing at the point where the
 resides in the pipeline, which can be helpful if you want to examine the results before proceeding. 
 '''
 
-__version__="$Revision$"
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2013 Broad Institute
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 
 import numpy as np
 

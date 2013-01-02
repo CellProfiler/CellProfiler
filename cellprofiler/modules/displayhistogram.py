@@ -18,7 +18,7 @@ See also <b>DisplayDensityPlot</b>, <b>DisplayScatterPlot</b>.
 #See the accompanying file LICENSE for details.
 #
 # Copyright (c) 2003-2009 Massachusetts Institute of Technology
-# Copyright (c) 2009-2012 Broad Institute
+# Copyright (c) 2009-2013 Broad Institute
 #
 #Please see the AUTHORS file for credits.
 #

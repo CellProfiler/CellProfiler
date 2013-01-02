@@ -5,7 +5,10 @@
 # See the accompanying file LICENSE for details.
 # 
 # Developed by the Broad Institute
-# Copyright 2003-2011
+#
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2003-2013 Broad Institute
+# All rights reserved.
 # 
 # Please see the AUTHORS file for credits.
 # 

@@ -98,7 +98,11 @@ Proceedings from XV Brazilian Symposium on Computer Graphics and Image Processin
 <a href="http://www.scribd.com/doc/58004056/Principles-of-Digital-Image-Processing#page=49">Section 2.4.3 - Statistical shape properties</a>
 </li></ul>
 
-    
+Please note that the display window for this module shows per-image aggregates for the per-object 
+measurements. If you want to view the per-object measurements themselves, you will need to use 
+<b>ExportToSpreadsheet</b> to export them, or use <b>DisplayDataOnImage</b> to display the 
+object measurements of choice overlaid on an image of choice.
+
 <h3>Changes from CellProfiler 1.0</h3>
 The Zernike features are computed within a circle overlaid on each object
 in both CellProfiler 1.0 and 2.0. CellProfiler 1.0 first finds a square that

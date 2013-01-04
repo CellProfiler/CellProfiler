@@ -480,15 +480,20 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
             dict(image = np.zeros((20,10), bool)),
             dict(image = np.zeros((20,10), bool)))
         
-        columns = module.get_measurement_columns(workspace.pipeline)
-        # All columns should be unique
-        self.assertEqual(len(columns), len(set([x[1] for x in columns])))
-        # All columns should be floats and done on images
-        self.assertTrue(all([x[0] == cpmeas.IMAGE]))
-        self.assertTrue(all([x[2] == cpmeas.COLTYPE_FLOAT]))
-        for feature in C.FTR_ALL:
-            field = '_'.join((C.C_IMAGE_OVERLAP, feature, TEST_IMAGE_NAME))
-            self.assertTrue(field in [x[1] for x in columns])
+        assert isinstance(module, C.CalculateImageOverlap)
+        module.img_obj_found_in_GT.value = GROUND_TRUTH_OBJ
+        for obj_or_img, name in ((O_IMG, TEST_IMAGE_NAME),
+                                 (O_OBJ, GROUND_TRUTH_OBJ)):
+            module.obj_or_img.value = obj_or_img
+            columns = module.get_measurement_columns(workspace.pipeline)
+            # All columns should be unique
+            self.assertEqual(len(columns), len(set([x[1] for x in columns])))
+            # All columns should be floats and done on images
+            self.assertTrue(all([x[0] == cpmeas.IMAGE]))
+            self.assertTrue(all([x[2] == cpmeas.COLTYPE_FLOAT]))
+            for feature in C.FTR_ALL:
+                field = '_'.join((C.C_IMAGE_OVERLAP, feature, name))
+                self.assertTrue(field in [x[1] for x in columns])
 
     def test_04_02_get_categories(self):
         workspace, module = self.make_workspace(

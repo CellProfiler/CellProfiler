@@ -737,7 +737,7 @@ class CalculateImageOverlap(cpm.CPModule):
     def get_measurement_columns(self, pipeline):
         '''Return database column information for each measurement'''
         return [ (cpmeas.IMAGE,
-                  '_'.join((C_IMAGE_OVERLAP, feature, self.test_img.value)),
+                  self.measurement_name(feature),
                   cpmeas.COLTYPE_FLOAT)
                  for feature in FTR_ALL]
 

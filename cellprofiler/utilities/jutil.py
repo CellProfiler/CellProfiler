@@ -63,10 +63,12 @@ if sys.platform.startswith('win'):
     if java_home is not None:
         found_jvm = False
         for jre_home in (java_home, os.path.join(java_home, "jre")):
+            jre_bin = os.path.join(jre_home, 'bin')
             for place_to_look in ('client','server'):
-                jvm_dir = os.path.join(jre_home,'bin',place_to_look)
+                jvm_dir = os.path.join(jre_bin,place_to_look)
                 if os.path.isfile(os.path.join(jvm_dir, "jvm.dll")):
-                    os.environ['PATH'] = os.environ['PATH'] +';'+jvm_dir
+                    os.environ['PATH'] = ";".join(
+                        (os.environ['PATH'], jvm_dir, jre_bin))
                     found_jvm = True
                     break
             if found_jvm:
@@ -1321,6 +1323,7 @@ def get_map_wrapper(o):
             
         def __iter__(self):
             return iterate_collection(self.keySet())
+        
     return Map()
 
 def make_map(**kwargs):
@@ -1361,6 +1364,8 @@ def get_enumeration_wrapper(enumeration):
                                   '()Ljava/lang/Object;')
     return Enumeration()
 
+iterator_has_next_id = None
+iterator_next_id = None
 def iterate_java(iterator, fn_wrapper = None):
     '''Make a Python iterator for a Java iterator
     
@@ -1368,8 +1373,23 @@ def iterate_java(iterator, fn_wrapper = None):
     for x in iterate_java(foo):
         do_something_with(x)
     '''
-    while(call(iterator, 'hasNext', '()Z')):
-        item = call(iterator, 'next', '()Ljava/lang/Object;')
+    global iterator_has_next_id, iterator_next_id
+    env = get_env()
+    if iterator_has_next_id is None:
+        iterator_class = env.find_class("java/util/Iterator")
+        iterator_has_next_id = env.get_method_id(iterator_class, "hasNext", "()Z")
+        iterator_next_id = env.get_method_id(iterator_class, "next", "()Ljava/lang/Object;")
+    while(True):
+        result = env.call_method(iterator, iterator_has_next_id)
+        x = env.exception_occurred()
+        if x is not None:
+            raise JavaException(x)
+        if not result:
+            break;
+        item = env.call_method(iterator, iterator_next_id)
+        x = env.exception_occurred()
+        if x is not None:
+            raise JavaException(x)
         yield item if fn_wrapper is None else fn_wrapper(item)
         
 def iterate_collection(c, fn_wrapper=None):

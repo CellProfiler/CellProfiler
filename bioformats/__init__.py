@@ -59,7 +59,8 @@ def start_cellprofiler_jvm():
     if os.environ.has_key("CLASSPATH"):
         class_path += os.pathsep + os.environ["CLASSPATH"]
         
-    if get_ij_plugin_directory() is not None:
+    if (get_ij_plugin_directory() is not None and 
+        os.path.isdir(get_ij_plugin_directory())):
         plugin_directory = get_ij_plugin_directory()
         #
         # Add the plugin directory to pick up .class files in a directory

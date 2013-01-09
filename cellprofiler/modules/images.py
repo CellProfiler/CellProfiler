@@ -23,6 +23,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.utilities.walk_in_background as W
+import cellprofiler.utilities.jutil as J
 import os
 import sys
 import urllib
@@ -97,10 +98,8 @@ class Images(cpm.CPModule):
         '''Return True if a URL passes the module's filter'''
         if not self.wants_filter:
             return True
-        modpath = self.url_to_modpath(url)
-        match = self.filter.evaluate((
-            cps.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, self))
-        return match or match is None
+        
+        return evaluate_url(self.filter, url)
     
     def settings(self):
         return [self.path_list_display, self.wants_filter, self.filter]
@@ -341,3 +340,38 @@ class ImagePredicate(cps.Filter.FilterPredicate):
         self((cps.FileCollectionDisplay.NODE_FILE, 
               ["/imaging", "test.tif"], self.FakeModule()), *args)
 
+
+filter_class = None
+filter_method_id = None
+def evaluate_url(filtr, url):
+    '''Evaluate a URL using a setting's filter
+    
+    '''
+    global filter_class, filter_method_id
+    env = J.get_env()
+    if filter_class is None:
+        filter_class = env.find_class("org/cellprofiler/imageset/filter/Filter")
+        if filter_class is None:
+            jexception = get_env.exception_occurred()
+            raise J.JavaException(jexception)
+        filter_method_id = env.get_static_method_id(
+            filter_class,
+            "filter", 
+            "(Ljava/lang/String;Ljava/lang/String;)Z")
+        if filter_method_id is None:
+            raise JavaError("Could not find static method, org.cellprofiler.imageset.filter.Filter.filter(String, String)")
+    try:
+        expression = filtr.value_text
+        if isinstance(expression, unicode):
+            expression = expression.encode("utf-8")
+        if isinstance(url, unicode):
+            url = url.encode("utf-8")
+        return env.call_static_method(
+            filter_class, filter_method_id, 
+            env.new_string_utf(expression), env.new_string_utf(url))
+    except J.JavaException as e:
+        if J.is_instance_of(
+            e.throwable, "org/cellprofiler/imageset/filter/Filter$BadFilterExpressionException"):
+            raise
+        return False
+    

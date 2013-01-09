@@ -25,11 +25,12 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
+import cellprofiler.utilities.jutil as J
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
-from cellprofiler.modules.images import Images
+from cellprofiler.modules.images import Images, evaluate_url
 from cellprofiler.modules.loadimages import needs_well_metadata
 from cellprofiler.modules.loadimages import well_metadata_tokens
 
@@ -327,23 +328,104 @@ class Metadata(cpm.CPModule):
         if workspace.pipeline.in_batch_mode():
             return True
         
-        from bioformats.omexml import OMEXML
-        
         file_list = workspace.file_list
         pipeline = workspace.pipeline
         self.ipd_metadata_keys = []
-        self.update_imported_metadata()
+        extractor = self.build_extractor()
+        
+        env = J.get_env()
+        entry_set_class = env.find_class("java/util/Map$Entry")
+        get_key_id = env.get_method_id(entry_set_class, "getKey", "()Ljava/lang/Object;")
+        get_value_id = env.get_method_id(entry_set_class, "getValue", "()Ljava/lang/Object;")
+                
+        def wrap_entry_set(o):
+            return (env.get_string_utf(env.call_method(o, get_key_id)), 
+                    env.get_string_utf(env.call_method(o, get_value_id)))
+        extractor_class = env.find_class(
+            "org/cellprofiler/imageset/ImagePlaneMetadataExtractor")
+        extract_metadata_id = env.get_method_id(
+            extractor_class,
+            "extractMetadata",
+            "(Ljava/lang/String;IILjava/lang/String;)Ljava/util/Iterator;")
+        
         for ipd in pipeline.image_plane_details:
-            metadata = self.get_ipd_metadata(ipd)
-            ipd.metadata.update(metadata)
-            metadata = file_list.get_metadata(ipd.url)
-            if metadata is not None:
-                try:
-                    pipeline.add_image_metadata(ipd.url, OMEXML(metadata), ipd)
-                except:
-                    logger.error("Failed to add metadata to %s" %ipd.url, 
-                                 exc_info=True)
+            series, index = [x if x is not None else 0 
+                             for x in ipd.series, ipd.index]
+            xmlmetadata = file_list.get_metadata(ipd.url)
+            if xmlmetadata is not None:
+                xmlmetadata = env.new_string_utf(metadata)
+            metadata = env.call_method(extractor, extract_metadata_id,
+                                       env.new_string_utf(ipd.url),
+                                       int(series), int(index),
+                                       xmlmetadata)
+            ipd.metadata.update(J.iterate_java(metadata, wrap_entry_set))
         return True
+    
+    def build_extractor(self):
+        '''Build a Java metadata extractor using the module settings'''
+        #
+        # Build a metadata extractor
+        #
+        script = """
+        importPackage(Packages.org.cellprofiler.imageset);
+        importPackage(Packages.org.cellprofiler.imageset.filter);
+        extractor = new ImagePlaneMetadataExtractor();
+        extractor.addImagePlaneExtractor(new OMEMetadataExtractor());
+        extractor;
+        """
+        extractor = J.run_script(script)
+        for group in self.extraction_methods:
+            if group.filter_choice == F_FILTERED_IMAGES:
+                fltr = J.make_instance(
+                    "org/cellprofiler/imageset/filter/Filter",
+                    "(Ljava/lang/String;)V", group.filter.value_text)
+            else:
+                fltr = None
+            if group.extraction_method == X_MANUAL_EXTRACTION:
+                if group.source == XM_FILE_NAME:
+                    method = "addFileNameRegexp"
+                    pattern = group.file_regexp.value
+                elif group.source == XM_FOLDER_NAME:
+                    method = "addPathNameRegexp"
+                    pattern = group.folder_regexp.value
+                J.call(extractor,
+                       method,
+                       "(Ljava/lang/String;Lorg/cellprofiler/imageset/filter/Filter;)V",
+                       pattern, fltr)
+            elif group.extraction_method == X_IMPORTED_EXTRACTION:
+                #
+                # Create the array of key pairs for the join
+                #
+                key_pairs = []
+                for join_idx in group.csv_joiner.parse():
+                    key_pair = J.make_instance(
+                        'org/cellprofiler/imageset/ImportedMetadataExtractor$KeyPair',
+                        '(Ljava/lang/String;Ljava/lang/String;)V',
+                        join_idx[self.CSV_JOIN_NAME], 
+                        join_idx[self.IPD_JOIN_NAME])
+                    key_pairs.append(key_pair)
+                    key_pairs = J.get_nice_arg(
+                        key_pairs, 
+                        "[Lorg/cellprofiler/imageset/ImportedMetadataExtractor$KeyPair;")
+                    #
+                    # Open the CSV file for reading, make an ImportedMetadataExtractor
+                    # and install it in the big extractor
+                    #
+                    script = """
+                    importPackage(Packages.org.cellprofiler.imageset);
+                    var inputStream = new java.io.FileInputStream(csv_path);
+                    var rdr = new java.io.InputStreamReader(inputStream);
+                    var iextractor = new ImportedMetadataExtractor(rdr, key_pairs, case_insensitive);
+                    extractor.addImagePlaneDetailsExtractor(iextractor, fltr);
+                    """
+                    J.run_script(script, dict(
+                        csv_path=group.csv_location.value,
+                        key_pairs=key_pairs,
+                        case_insensitive = group.wants_case_insensitive.value,
+                        extractor = extractor,
+                        fltr = fltr))
+        return extractor
+                    
         
     def run(self, workspace):
         pass
@@ -395,10 +477,7 @@ class Metadata(cpm.CPModule):
         m = ipd.metadata.copy()
         for group in self.extraction_methods:
             if group.filter_choice == F_FILTERED_IMAGES:
-                match = group.filter.evaluate(
-                    (cps.FileCollectionDisplay.NODE_IMAGE_PLANE, 
-                     Images.url_to_modpath(ipd.url), self))
-                if (not match) and match is not None:
+                if not evaluate_url(group.filter, ipd.url):
                     continue
             if group.extraction_method == X_MANUAL_EXTRACTION:
                 m.update(self.manually_extract_metadata(group, ipd))

@@ -25,12 +25,9 @@ import zipfile
 
 ACTION_MAVEN = "Maven"
 
+CELLPROFILER_JAVA_JAR = "cellprofiler-java-0.0.1-SNAPSHOT.jar"
 # The list of files (relative path) to fetch, their SHA1, and their source URL.
 files = [
-    [['cellprofiler', 'utilities', 'runnablequeue-1.0.0.jar'], 
-     '25df9c1f986cc2b9384c9d2d8053cea0863b28ef', 
-     'http://www.cellprofiler.org/linked_files/runnablequeue/builds/'
-     'runnablequeue-ad0369388502018b519c943d92206fed94347817.jar', None],
     [['imagej', 'apache-maven-3.0.4-bin.zip'], 
      '29cfd351206016b67dd0d556098513d2b259c69b',
      'http://www.cellprofiler.org/linked_files/CellProfilerDependencies'
@@ -95,6 +92,9 @@ def fetch_external_dependencies(overwrite=False):
     imagej_dir = os.path.join(root, 'imagej')
     if overwrite or not os.path.isdir(os.path.join(imagej_dir, "jars")):
         run_maven(imagej_dir, maven_install_path)
+    if (overwrite or not 
+        os.path.isfile(os.path.join(imagej_dir, CELLPROFILER_JAVA_JAR))):
+        run_maven(os.path.join(root, "java"), maven_install_path)
     
 def install_maven(zipfile_path, install_path):
     '''Install the Maven jars from a zipfile
@@ -133,6 +133,14 @@ def run_maven(pom_path, maven_install_path):
     
     Runs mvn package on the POM
     '''
+    from cellprofiler.utilities.setup import find_jdk
+    
+    jdk_home = find_jdk()
+    old_java_home = None
+    if jdk_home is not None:
+        old_java_home = os.environ.get("JAVA_HOME", None)
+        os.environ["JAVA_HOME"] = jdk_home
+            
     executeable_path = get_mvn_executable_path(maven_install_path)
     current_directory = os.path.abspath(os.getcwd())
     os.chdir(pom_path)
@@ -140,6 +148,8 @@ def run_maven(pom_path, maven_install_path):
         subprocess.check_call([executeable_path, '-U', 'package'])
     finally:
         os.chdir(current_directory)
+        if old_java_home is not None:
+            os.environ["JAVA_HOME"] = old_java_home
 
 
                 

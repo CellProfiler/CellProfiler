@@ -362,7 +362,10 @@ class TestMeasureImageIntensity(unittest.TestCase):
                                      (M.F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (M.F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (M.F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER),
-                                     (M.F_PERCENT_MAXIMAL, cpmeas.COLTYPE_FLOAT)):
+                                     (M.F_PERCENT_MAXIMAL, cpmeas.COLTYPE_FLOAT),
+                                     (M.F_MAD_INTENSITY, cpmeas.COLTYPE_FLOAT),
+                                     (M.F_LOWER_QUARTILE, cpmeas.COLTYPE_FLOAT),
+                                     (M.F_UPPER_QUARTILE, cpmeas.COLTYPE_FLOAT)):
                 # feature names are now formatting strings
                 feature_name = feature % expected_suffix
                 self.assertTrue(any([(column[1] == feature_name and

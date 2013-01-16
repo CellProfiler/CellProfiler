@@ -745,6 +745,56 @@ def is_instance_of(o, class_name):
         raise JavaException(jexception)
     return result
     
+def make_call(o, method_name, sig):
+    '''Create a function that calls a method
+    
+    For repeated calls to a method on the same object, this method is faster
+    than "call". The function returned takes raw Java objects which is
+    significantly faster than "call" which parses the signature and
+    casts arguments and return values.
+    
+    o - the object on which to make the call or a class name in slash form
+    
+    method_name - the name of the method to call
+    
+    sig - the function signature
+    
+    returns a function that can be called with the object to execute the method
+    '''
+    assert o is not None
+    env = get_env()
+    if isinstance(o, basestring):
+        klass = env.find_class(o)
+        bind = False
+    else:
+        klass = env.get_object_class(o)
+        bind = True
+    jexception = env.exception_occurred()
+    if jexception is not None:
+        raise JavaException(jexception)
+    method_id = env.get_method_id(klass, method_name, sig)
+    jexception = env.exception_occurred()
+    if method_id is None:
+        if jexception is not None:
+            raise JavaException(jexception)
+        raise JavaError('Could not find method name = "%s" '
+                        'with signature = "%s"' % (method_name, sig))
+    if bind:
+        def fn(*args):
+            result = env.call_method(o, method_id, *args)
+            x = env.exception_occurred()
+            if x is not None:
+                raise JavaException(x)
+            return result
+    else:
+        def fn(o, *args):
+            result = env.call_method(o, method_id, *args)
+            x = env.exception_occurred()
+            if x is not None:
+                raise JavaException(x)
+            return result
+    return fn
+    
 def call(o, method_name, sig, *args):
     '''Call a method on an object
     
@@ -752,34 +802,26 @@ def call(o, method_name, sig, *args):
     method_name - name of method on object's class
     sig - calling signature
     '''
-    assert o is not None
     env = get_env()
-    klass = env.get_object_class(o)
-    jexception = get_env().exception_occurred()
-    if jexception is not None:
-        raise JavaException(jexception)
-    method_id = env.get_method_id(klass, method_name, sig)
-    jexception = get_env().exception_occurred()
-    if method_id is None:
-        if jexception is not None:
-            raise JavaException(jexception)
-        raise JavaError('Could not find method name = "%s" '
-                        'with signature = "%s"' % (method_name, sig))
+    fn = make_call(o, method_name, sig)
     args_sig = split_sig(sig[1:sig.find(')')])
     ret_sig = sig[sig.find(')')+1:]
     nice_args = get_nice_args(args, args_sig)
-    result = env.call_method(o, method_id, *nice_args)
+    result = fn(*nice_args)
     x = env.exception_occurred()
     if x is not None:
         raise JavaException(x)
     return get_nice_result(result, ret_sig)
 
-def static_call(class_name, method_name, sig, *args):
-    '''Call a static method on a class
+def make_static_call(class_name, method_name, sig):
+    '''Create a function that performs a call of a static method
     
-    class_name - name of the class, using slashes
-    method_name - name of the static method
-    sig - signature of the static method
+    make_static_call produces a function that is faster than static_call
+    but is missing the niceties of preparing the argument and result casting.
+    
+    class_name - name of the class using slashes
+    method_name - name of the method to call
+    sig - the signature of the method.
     '''
     env = get_env()
     klass = env.find_class(class_name)
@@ -791,13 +833,27 @@ def static_call(class_name, method_name, sig, *args):
     if method_id is None:
         raise JavaError('Could not find method name = %s '
                         'with signature = %s' %(method_name, sig))
+    def fn(*args):
+        result = env.call_static_method(klass, method_id, *args)
+        jexception = env.exception_occurred() 
+        if jexception is not None:
+            raise JavaException(jexception)
+        return result
+    return fn
+    
+def static_call(class_name, method_name, sig, *args):
+    '''Call a static method on a class
+    
+    class_name - name of the class, using slashes
+    method_name - name of the static method
+    sig - signature of the static method
+    '''
+    env = get_env()
+    fn = make_static_call(class_name, method_name, sig)
     args_sig = split_sig(sig[1:sig.find(')')])
     ret_sig = sig[sig.find(')')+1:]
     nice_args = get_nice_args(args, args_sig)
-    result = env.call_static_method(klass, method_id,*nice_args)
-    jexception = env.exception_occurred() 
-    if jexception is not None:
-        raise JavaException(jexception)
+    result = fn(*nice_args)
     return get_nice_result(result, ret_sig)
 
 def make_method(name, sig, doc='No documentation', fn_post_process = None):
@@ -1259,10 +1315,25 @@ def get_collection_wrapper(collection, fn_wrapper=None):
             
     return Collection()
 
+array_list_add_method_id = None
 def make_list(elements=[]):
     '''Make a wrapped array list, optionally containing the given elements'''
+    global array_list_add_method_id
+    
     a = get_collection_wrapper(make_instance("java/util/ArrayList", "()V"))
-    a += elements
+    env = get_env()
+    if len(elements) > 0:
+        if array_list_add_method_id is None:
+            array_list_class = env.find_class("java/util/ArrayList")
+            array_list_add_method_id = env.get_method_id(
+                array_list_class, "add", "(Ljava/lang/Object;)Z")
+        for element in elements:
+            if not isinstance(element, javabridge.JB_Object):
+                element = get_nice_arg(element, "Ljava/lang/Object;")
+            env.call_method(a.o, array_list_add_method_id, element)
+            x = env.exception_occurred()
+            if x is not None:
+                raise JavaException(x)
     return a
 
 def get_dictionary_wrapper(dictionary):

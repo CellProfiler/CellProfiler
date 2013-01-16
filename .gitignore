@@ -23,6 +23,7 @@ cellprofiler/frozen_version.py
 imagej/maven
 imagej/jars
 imagej/*.zip
+java/target
 killjavabridge.egg-info
 output
 windows

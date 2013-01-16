@@ -17,11 +17,13 @@ import os
 from cStringIO import StringIO
 import tempfile
 import unittest
+import urllib
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.modules.namesandtypes as N
 import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
+import cellprofiler.utilities.jutil as J
 from cellprofiler.modules.tests import example_images_directory, testimages_directory
 from cellprofiler.modules.loadimages import pathname2url, C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
 
@@ -43,7 +45,7 @@ def md(keys_and_counts):
     '''
     keys = [k for k, c in keys_and_counts]
     counts = np.array([c for k, c in keys_and_counts])
-    divisors = np.hstack([[1], np.prod(counts[:-1])])
+    divisors = np.hstack([[1], np.cumprod(counts[:-1])])
     
     return [dict([(k, "k" + str(int(i / d) % c))
                   for k, d, c in zip(keys, divisors, counts)])
@@ -136,279 +138,298 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
             self.assertEqual(assignment.object_name, objects_name)
             self.assertEqual(assignment.load_as_choice, load_as)
             
-    def test_01_00_00_nothing(self):
-        n = N.NamesAndTypes()
-        n.assignment_method.value = N.ASSIGN_RULES
-        n.ipd_columns = []
-        n.column_names = []
+    def do_teest(self, module, channels, expected_tags, expected_metadata, additional=None):
+        '''Ensure that NamesAndTypes recreates the column layout when run
         
-        n.make_image_sets()
-        self.assertEqual(len(n.image_sets), 0)
+        module - instance of NamesAndTypes, set up for the test
         
+        channels - a dictionary of channel name to list of "ipds" for that
+                   channel where "ipd" is a tuple of URL and metadata dictionary
+                   Entries may appear multiple times (e.g. illumination function)
+        expected_tags - the metadata tags that should have been generated
+                   by prepare_run.
+        expected_metadata - a sequence of two-tuples of metadata key and
+                            the channel from which the metadata is extracted.
+        additional - if present, these are added as ImagePlaneDetails in order
+                     to create errors. Format is same as a single channel of
+                     channels.
+        '''
+        ipds = []
+        urls = set()
+        url_root = "file:" + urllib.pathname2url(os.path.abspath(os.path.curdir))
+        channels = dict(channels)
+        if additional is not None:
+            channels["Additional"] = additional
+        for channel_name in list(channels):
+            channel_data = [(url_root + "/" + path, metadata)
+                             for path, metadata in channels[channel_name]]
+            channels[channel_name] = channel_data
+            for url, metadata in channel_data:
+                if url in urls:
+                    continue
+                urls.add(url)
+                ipd = cpp.ImagePlaneDetails(url, None, None, None, **metadata)
+                jmetadata = J.make_map(**metadata)
+                ipd.jipd = J.run_script("""
+                importPackage(Packages.org.cellprofiler.imageset);
+                importPackage(Packages.org.cellprofiler.imageset.filter);
+                var imageFile=new ImageFile(new java.net.URI(url).toURL());
+                var imagePlane=new ImagePlane(imageFile);
+                new ImagePlaneDetails(imagePlane, metadata);
+                """, dict(url=url, metadata=jmetadata))
+                ipds.append(ipd)
+        if additional is not None:
+            del channels["Additional"]
+        ipds.sort(key = lambda x: x.url)
+        pipeline = cpp.Pipeline()
+        del pipeline.image_plane_details[:]
+        pipeline.image_plane_details.extend(ipds)
+        module.module_num = 1
+        pipeline.add_module(module)
+        m = cpmeas.Measurements()
+        workspace = cpw.Workspace(pipeline, module, m, None, m, None)
+        self.assertTrue(module.prepare_run(workspace))
+        tags = m.get_metadata_tags()
+        self.assertEqual(len(tags), len(expected_tags))
+        for tag, expected_tag in zip(tags, expected_tags):
+            for et in expected_tag:
+                ftr = et if et == cpmeas.IMAGE_NUMBER else \
+                    "_".join((cpmeas.C_METADATA, et))
+                if ftr == tag:
+                    break
+            else:
+                self.fail("%s not in %s" % (tag, ",".join(expected_tag)))
+        iscds = m.get_channel_descriptors()
+        self.assertEqual(len(iscds), len(channels))
+        for channel_name in channels.keys():
+            iscd_match = filter(lambda x:x.name == channel_name, iscds)
+            self.assertEquals(len(iscd_match), 1)
+            iscd = iscd_match[0]
+            assert isinstance(iscd, cpp.Pipeline.ImageSetChannelDescriptor)
+            for i, (expected_url, metadata) in enumerate(channels[channel_name]):
+                image_number = i+1
+                if iscd.channel_type == iscd.CT_OBJECTS:
+                    url_ftr = "_".join((cpmeas.C_OBJECTS_URL, channel_name))
+                else:
+                    url_ftr = "_". join((cpmeas.C_URL, channel_name))
+                self.assertEqual(expected_url, m[cpmeas.IMAGE, url_ftr, image_number])
+                for key, channel in expected_metadata:
+                    if channel != channel_name:
+                        continue
+                    md_ftr = "_".join((cpmeas.C_METADATA, key))
+                    self.assertEqual(metadata[key], 
+                                     m[cpmeas.IMAGE, md_ftr, image_number])
+            
     def test_01_00_01_all(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_ALL
-        n.ipd_columns = \
-            [[cpp.ImagePlaneDetails("1", None, None, None, **{M0:"1"})]]
-        n.column_names = [C0]
-        n.make_image_sets()
-        self.assertEqual(len(n.image_sets), 1)
-        image_set = n.image_sets[0]
-        self.assertEqual(len(image_set), 2)
-        image_set_key, image_set_dictionary = image_set
-        self.assertEqual(len(image_set_key), 1)
-        self.assertEqual(image_set_key[0], 1)
-        self.assertEqual(len(image_set_dictionary), 1)
-        self.assertTrue(image_set_dictionary.has_key(C0))
-        self.assertEqual(len(image_set_dictionary[C0]), 1)
-        self.assertEqual(image_set_dictionary[C0][0].url, "1")
+        n.single_image_provider.value = C0
+        data = { C0: [("images/1.jpg", {M0:"1"})] }
+        self.do_teest(n, data, [(cpmeas.IMAGE_NUMBER,)], [(M0,C0)])
         
     def test_01_01_one(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
         n.matching_choice.value = N.MATCH_BY_METADATA
-        n.ipd_columns = \
-            [[cpp.ImagePlaneDetails("1", None, None, None, **{M0:"k1"})]]
-        n.column_names = [C0]
-        n.join.build("[{%s:%s}]" % (C0, M0))
-        n.make_image_sets()
-        self.assertEqual(len(n.image_sets), 1)
-        image_set = n.image_sets[0]
-        self.assertEqual(len(image_set), 2)
-        image_set_key, image_set_dictionary = image_set
-        self.assertEqual(len(image_set_key), 1)
-        self.assertEqual(image_set_key[0], "1")
-        self.assertEqual(len(image_set_dictionary), 1)
-        self.assertTrue(image_set_dictionary.has_key(C0))
-        self.assertEqual(len(image_set_dictionary[C0]), 1)
-        self.assertEqual(image_set_dictionary[C0][0].url, "1")
+        n.assignments[0].image_name.value = C0
+        n.join.build("[{\"%s\":\"%s\"}]" % (C0, M0))
+        data = { C0: [ ("images/1.jpg", {M0:"k1"}),
+                       ("images/3.jpg", {M0:"k2"}),
+                       ("images/2.jpg", {M0:"k3"})]}
+        self.do_teest(n, data, [ (M0,) ], [(M0, C0)])
         
     def test_01_02_match_one_same_key(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
         n.matching_choice.value = N.MATCH_BY_METADATA
-        n.ipd_columns = \
-            [[cpp.ImagePlaneDetails("1", None, None, None, **{M0:"k1"})],
-             [cpp.ImagePlaneDetails("2", None, None, None, **{M0:"k1"})]]
-        n.column_names = [C0, C1]
+        n.add_assignment()
+        n.assignments[0].image_name.value = C0
+        n.assignments[1].image_name.value = C1
+        n.assignments[0].rule_filter.value = 'file does contain "1"'
+        n.assignments[1].rule_filter.value = 'file doesnot contain "1"'
         n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M0))
-        n.make_image_sets()
-        self.assertEqual(len(n.image_sets), 1)
-        image_set = n.image_sets[0]
-        self.assertEqual(len(image_set), 2)
-        image_set_key, image_set_dictionary = image_set
-        self.assertEqual(len(image_set_key), 1)
-        self.assertEqual(image_set_key[0], "k1")
-        self.assertEqual(len(image_set_dictionary), 2)
-        self.assertTrue(image_set_dictionary.has_key(C0))
-        self.assertEqual(len(image_set_dictionary[C0]), 1)
-        self.assertEqual(image_set_dictionary[C0][0].url, "1")
-        self.assertTrue(image_set_dictionary.has_key(C1))
-        self.assertEqual(len(image_set_dictionary[C1]), 1)
-        self.assertEqual(image_set_dictionary[C1][0].url, "2")
+        data = { C0: [ ("images/1.jpg", {M0:"k1"})],
+                 C1: [ ("images/2.jpg", {M0:"k1"})]}
+        self.do_teest(n, data, [ (M0,) ], [(M0, C0)])
         
     def test_01_03_match_one_different_key(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
         n.matching_choice.value = N.MATCH_BY_METADATA
-        n.ipd_columns = \
-            [[cpp.ImagePlaneDetails("1", None, None, None, **{M0:"k1"})],
-             [cpp.ImagePlaneDetails("2", None, None, None, **{M1:"k1"})]]
-        n.column_names = [C0, C1]
+        n.add_assignment()
+        n.assignments[0].image_name.value = C0
+        n.assignments[1].image_name.value = C1
+        n.assignments[0].rule_filter.value = 'file does contain "1"'
+        n.assignments[1].rule_filter.value = 'file doesnot contain "1"'
         n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M1))
-        n.make_image_sets()
-        self.assertEqual(len(n.image_sets), 1)
-        image_set = n.image_sets[0]
-        self.assertEqual(len(image_set), 2)
-        image_set_key, image_set_dictionary = image_set
-        self.assertEqual(len(image_set_key), 1)
-        self.assertEqual(image_set_key[0], "k1")
-        self.assertEqual(len(image_set), 2)
-        self.assertTrue(image_set_dictionary.has_key(C0))
-        self.assertEqual(len(image_set_dictionary[C0]), 1)
-        self.assertEqual(image_set_dictionary[C0][0].url, "1")
-        self.assertTrue(image_set_dictionary.has_key(C1))
-        self.assertEqual(len(image_set_dictionary[C1]), 1)
-        self.assertEqual(image_set_dictionary[C1][0].url, "2")
+        data = { C0: [ ("images/1.jpg", {M0:"k1"})],
+                 C1: [ ("images/2.jpg", {M1:"k1"})]}
+        self.do_teest(n, data, [ (M0, M1) ], [(M0, C0), (M1, C1)])
         
     def test_01_04_match_two_one_key(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
         n.matching_choice.value = N.MATCH_BY_METADATA
-        n.ipd_columns = \
-            [[cpp.ImagePlaneDetails("%s%d" % (C0, i), None, None, None, **m)
-              for i, m in enumerate(md([(M0, 2)]))],
-             [cpp.ImagePlaneDetails("%s%d" % (C1, i), None, None, None, **m)
-                           for i, m in enumerate(md([(M1, 2)]))]]
-        n.column_names = [C0, C1]
+        n.add_assignment()
+        n.assignments[0].image_name.value = C0
+        n.assignments[1].image_name.value = C1
+        n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
+        n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M1))
-        n.make_image_sets()
-        self.assertEqual(len(n.image_sets), 2)
-        for i, (image_set_keys, image_set) in enumerate(n.image_sets):
-            self.assertEqual(len(image_set_keys), 1)
-            self.assertEqual("k"+str(i), image_set_keys[0])
-            for column_name in (C0, C1):
-                self.assertTrue(image_set.has_key(column_name))
-                self.assertEqual(len(image_set[column_name]), 1)
-                self.assertEqual(image_set[column_name][0].url,
-                                 "%s%d" % (column_name, i))
+        data = { 
+            C0:[("%s%d" % (C0, i), m)
+                for i, m in enumerate(md([(M0, 2)]))],
+            C1:[("%s%d" % (C1, i), m)
+                for i, m in enumerate(md([(M1, 2)]))]}
+        self.do_teest(n, data, [(M0,M1)], [(M0, C0), (M1, C1)])
                 
     def test_01_05_match_two_and_two(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
         n.matching_choice.value = N.MATCH_BY_METADATA
-        n.ipd_columns = \
-            [[cpp.ImagePlaneDetails("%s%s%s" % (C0, m[M0], m[M1]), None, None, None, **m)
-              for i, m in enumerate(md([(M0, 2), (M1, 3)]))],
-             [cpp.ImagePlaneDetails("%s%s%s" % (C1, m[M2], m[M3]), None, None, None, **m)
-                           for i, m in enumerate(md([(M2, 2), (M3, 3)]))]]
-        n.column_names = [C0, C1]
+        n.add_assignment()
+        n.assignments[0].image_name.value = C0
+        n.assignments[1].image_name.value = C1
+        n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
+        n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         n.join.build("[{'%s':'%s','%s':'%s'},{'%s':'%s','%s':'%s'}]" % 
                      (C0, M0, C1, M2, C0, M1, C1, M3))
-        n.make_image_sets()
-        self.assertEqual(len(n.image_sets), 6)
-        for i, (image_set_keys, image_set) in enumerate(n.image_sets):
-            self.assertEqual(len(image_set_keys), 2)
-            self.assertEqual("k"+str(i/3), image_set_keys[0])
-            self.assertEqual("k"+str(i%3), image_set_keys[1])
-            for column_name in (C0, C1):
-                self.assertTrue(image_set.has_key(column_name))
-                self.assertEqual(len(image_set[column_name]), 1)
-                self.assertEqual(image_set[column_name][0].url,
-                                 "%s%s%s" % (column_name, image_set_keys[0], image_set_keys[1]))
+        data = {
+            C0:[("%s%s%s" % (C0, m[M0], m[M1]), m) 
+                for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
+            C1:[("%s%s%s" % (C1, m[M2], m[M3]), m) 
+                for i, m in enumerate(md([(M3, 3), (M2, 2)]))] }
+        self.do_teest(n, data, [(M0,M2), (M1, M3)], 
+                      [(M0, C0), (M1, C0), (M2, C1), (M3, C1)])
                 
-    def test_01_06_two_with_same_metadata(self):
+    def test_01_06_01_two_with_same_metadata(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
         n.matching_choice.value = N.MATCH_BY_METADATA
-        n.ipd_columns = \
-            [[cpp.ImagePlaneDetails("%s%s%s" % (C0, m[M0], m[M1]), None, None, None, **m)
-              for i, m in enumerate(md([(M0, 2), (M1, 3)]))],
-             [cpp.ImagePlaneDetails("%s%s%s" % (C1, m[M2], m[M3]), None, None, None, **m)
-                           for i, m in enumerate(md([(M2, 2), (M3, 3)]))]]
-        n.ipd_columns[0].append(cpp.ImagePlaneDetails("Bad", None, None,None, **{M0:"k1",M1:"k1"}))
-        n.column_names = [C0, C1]
+        n.add_assignment()
+        n.assignments[0].image_name.value = C0
+        n.assignments[1].image_name.value = C1
+        n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
+        n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         n.join.build("[{'%s':'%s','%s':'%s'},{'%s':'%s','%s':'%s'}]" % 
                      (C0, M0, C1, M2, C0, M1, C1, M3))
-        n.make_image_sets()
-        self.assertEqual(len(n.image_sets), 6)
-        for i, (image_set_keys, image_set) in enumerate(n.image_sets):
-            self.assertEqual(len(image_set_keys), 2)
-            self.assertEqual("k"+str(i/3), image_set_keys[0])
-            self.assertEqual("k"+str(i%3), image_set_keys[1])
-            for column_name in (C0, C1):
-                self.assertTrue(image_set.has_key(column_name))
-                if image_set_keys == ("k1","k1") and column_name == C0:
-                    self.assertEqual(len(image_set[C0]), 2)
-                    self.assertTrue("Bad" in [ipd.url for ipd in image_set[C0]])
-                else:
-                    self.assertEqual(len(image_set[column_name]), 1)
-                    self.assertEqual(image_set[column_name][0].url,
-                                     "%s%s%s" % (column_name, image_set_keys[0], image_set_keys[1]))
+        data = {
+            C0:[("%s%s%s" % (C0, m[M0], m[M1]), m)
+              for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
+            C1:[("%s%s%s" % (C1, m[M2], m[M3]), m)
+                for i, m in enumerate(md([(M3, 3), (M2, 2)]))] }
+        bad_row = 5
+        # Steal the bad row's metadata
+        additional = [ ("%sBad" %C0, data[C0][bad_row][1]),
+                       data[C0][bad_row], data[C1][bad_row]]
+        del data[C0][bad_row]
+        del data[C1][bad_row]
+        self.do_teest(n, data, [(M0,M2), (M1, M3)], 
+                      [(M0, C0), (M1, C0), (M2, C1), (M3, C1)], additional)
         
+    def test_01_06_02_missing(self):
+        n = N.NamesAndTypes()
+        n.assignment_method.value = N.ASSIGN_RULES
+        n.matching_choice.value = N.MATCH_BY_METADATA
+        n.add_assignment()
+        n.assignments[0].image_name.value = C0
+        n.assignments[1].image_name.value = C1
+        n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
+        n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
+        n.join.build("[{'%s':'%s','%s':'%s'},{'%s':'%s','%s':'%s'}]" % 
+                     (C0, M0, C1, M2, C0, M1, C1, M3))
+        data = {
+            C0:[("%s%s%s" % (C0, m[M0], m[M1]), m)
+              for i, m in enumerate(md([(M1, 3), (M0, 2)]))],
+            C1:[("%s%s%s" % (C1, m[M2], m[M3]), m)
+                for i, m in enumerate(md([(M3, 3), (M2, 2)]))] }
+        bad_row = 3
+        # Steal the bad row's metadata
+        additional = [ data[C1][bad_row]]
+        del data[C0][bad_row]
+        del data[C1][bad_row]
+        self.do_teest(n, data, [(M0,M2), (M1, M3)], 
+                      [(M0, C0), (M1, C0), (M2, C1), (M3, C1)], additional)        
+
     def test_01_07_one_against_all(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
         n.matching_choice.value = N.MATCH_BY_METADATA
-        n.ipd_columns = \
-            [[cpp.ImagePlaneDetails("One", None, None, None)],
-             [cpp.ImagePlaneDetails("%s%d" % (C1, i), None, None, None, **m)
-              for i, m in enumerate(md([(M0, 3)]))]]
-        n.column_names = [C0, C1]
+        n.add_assignment()
+        n.assignments[0].image_name.value = C0
+        n.assignments[1].image_name.value = C1
+        n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
+        n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         n.join.build("[{'%s':None,'%s':'%s'}]" % (C0, C1, M0))
-        n.make_image_sets()
-        self.assertEqual(len(n.image_sets), 3)
-        for i, (image_set_keys, image_set) in enumerate(n.image_sets):
-            self.assertEqual(len(image_set_keys), 1)
-            self.assertEqual("k%d" % i, image_set_keys[0])
-            self.assertTrue(image_set.has_key(C0))
-            self.assertEqual(len(image_set[C0]), 1)
-            self.assertEqual(image_set[C0][0].url, "One")
-            self.assertTrue(image_set.has_key(C1))
-            self.assertTrue(len(image_set[C1]), 1)
-            self.assertEqual(image_set[C1][0].url, "%s%d" % (C1, i))
-            
+        data = {
+            C0:[(C0, {})] * 3,
+            C1:[("%s%d" % (C1, i), m) for i, m in enumerate(md([(M0, 3)]))] }
+        self.do_teest(n, data, [(M0, )], [(M0, C1)])
+        
     def test_01_08_some_against_all(self):
         #
         # Permute both the order of the columns and the order of joins
         #
-        columns = { C0: [cpp.ImagePlaneDetails("%s%s" % (C0, m[M0]), None, None, None, **m)
-                         for i, m in enumerate(md([(M0, 3)]))],
-                    C1: [cpp.ImagePlaneDetails("%s%s%s" % (C0, m[M1], m[M2]), None, None, None, **m)
-                         for i, m in enumerate(md([(M1, 3),(M2, 2)]))] }
+        
         joins = [{C0:M0, C1:M1},{C0:None, C1:M2}]
         for cA, cB in ((C0, C1), (C1, C0)):
             for j0, j1 in ((0,1),(1,0)):
                 n = N.NamesAndTypes()
                 n.assignment_method.value = N.ASSIGN_RULES
                 n.matching_choice.value = N.MATCH_BY_METADATA
-                n.ipd_columns = [columns[cA], columns[cB]]
-                n.column_names = [cA, cB]
+                n.add_assignment()
+                n.assignments[0].image_name.value = cA
+                n.assignments[1].image_name.value = cB
+                n.assignments[0].rule_filter.value = 'file does contain "%s"' % cA
+                n.assignments[1].rule_filter.value = 'file does contain "%s"' % cB
                 n.join.build(repr([joins[j0], joins[j1]]))
-                n.make_image_sets()
-                self.assertEqual(len(n.image_sets), 6)
-                for i, (image_set_keys, image_set) in enumerate(n.image_sets):
-                    if j0 == 0:
-                        k0 = "k%d" % (i / 2)
-                        k1 = "k%d" % (i % 2)
-                    else:
-                        k0 = "k%d" % (i % 3)
-                        k1 = "k%d" % (i / 3)
-                    k = [k0, k1]
-                    self.assertEqual(image_set_keys[0], k[j0])
-                    self.assertEqual(image_set_keys[1], k[j1])
-                    self.assertEqual(len(image_set[C0]), 1)
-                    self.assertEqual(image_set[C0][0].url, "%s%s" % (C0, k0))
-                    self.assertEqual(len(image_set[C1]), 1)
-                    self.assertEqual(image_set[C1][0].url, "%s%s%s" % (C0, k0, k1))
+                mA0 = [M0, M3][j0]
+                mB0 = [M0, M3][j1]
+                mA1 = joins[j0][C1]
+                mB1 = joins[j1][C1]
+                data = { 
+                    C0: [("%s%s" % (C0, m[M0]), m) 
+                         for i, m in enumerate(md([(mB0, 2), (mA0, 3)]))],
+                    C1: [("%s%s%s" % (C1, m[M1], m[M2]), m)
+                         for i, m in enumerate(md([(mB1, 2),(mA1, 3)]))] }
+                expected_keys = [[(M0, M1), (M2, )][i] for i in j0, j1]
+                self.do_teest(n, data, expected_keys, 
+                              [(C0, M0), (C0, M3), (C1, M1), (C1, M2)])
                     
     def test_01_10_by_order(self):
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
         n.matching_choice.value = N.MATCH_BY_ORDER
-        n.ipd_columns = \
-            [[cpp.ImagePlaneDetails("%s%d" % (C0, (2-i)), None, None, None, **m)
-              for i, m in enumerate(md([(M0, 2)]))],
-             [cpp.ImagePlaneDetails("%s%d" % (C1, i+1), None, None, None, **m)
-                           for i, m in enumerate(md([(M1, 2)]))]]
-        n.column_names = [C0, C1]
-        n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M1))
-        n.make_image_sets()
-        self.assertEqual(len(n.image_sets), 2)
-        for i, (image_set_keys, image_set) in enumerate(n.image_sets):
-            self.assertEqual(len(image_set_keys), 1)
-            self.assertEqual(str(i+1), image_set_keys[0])
-            for column_name in (C0, C1):
-                self.assertTrue(image_set.has_key(column_name))
-                self.assertEqual(len(image_set[column_name]), 1)
-                ipd = image_set[column_name][0]
-                self.assertEqual(ipd.url, "%s%d" % (column_name, i+1))
+        n.add_assignment()
+        n.assignments[0].image_name.value = C0
+        n.assignments[1].image_name.value = C1
+        n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
+        n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
+        data = {
+            C0:[("%s%d" % (C0, i+1), m) for i, m in enumerate(md([(M0, 2)]))],
+            C1:[("%s%d" % (C1, i+1), m) for i, m in enumerate(md([(M1, 2)]))] }
+        self.do_teest(n, data, [ (cpmeas.IMAGE_NUMBER,)], [(C0, M0), (C1, M1)])
                 
     def test_01_11_by_order_bad(self):
         # Regression test of issue #392: columns of different lengths
         n = N.NamesAndTypes()
         n.assignment_method.value = N.ASSIGN_RULES
         n.matching_choice.value = N.MATCH_BY_ORDER
+        n.add_assignment()
+        n.assignments[0].image_name.value = C0
+        n.assignments[1].image_name.value = C1
+        n.assignments[0].rule_filter.value = 'file does contain "%s"' % C0
+        n.assignments[1].rule_filter.value = 'file does contain "%s"' % C1
         n.ipd_columns = \
             [[cpp.ImagePlaneDetails("%s%d" % (C0, (3-i)), None, None, None, **m)
               for i, m in enumerate(md([(M0, 3)]))],
              [cpp.ImagePlaneDetails("%s%d" % (C1, i+1), None, None, None, **m)
                            for i, m in enumerate(md([(M1, 2)]))]]
-        n.column_names = [C0, C1]
-        n.join.build("[{'%s':'%s','%s':'%s'}]" % (C0, M0, C1, M1))
-        n.make_image_sets()
-        self.assertEqual(len(n.image_sets), 3)
-        for i, (image_set_keys, image_set) in enumerate(n.image_sets):
-            self.assertEqual(len(image_set_keys), 1)
-            self.assertEqual(str(i+1), image_set_keys[0])
-            for column_name in (C0, C1):
-                self.assertTrue(image_set.has_key(column_name))
-                if i < 2 or column_name != C1:
-                    self.assertEqual(len(image_set[column_name]), 1)
-                    ipd = image_set[column_name][0]
-                    self.assertEqual(ipd.url, "%s%d" % (column_name, i+1))
-                else:
-                    self.assertEqual(len(image_set[column_name]), 0)
+        data = {
+            C0:[("%s%d" % (C0, i+1), m) for i, m in enumerate(md([(M0, 2)]))],
+            C1:[("%s%d" % (C1, i+1), m) for i, m in enumerate(md([(M1, 2)]))] }
+        additional = [("%sBad" % C0, {})]
+        self.do_teest(n, data, [ (cpmeas.IMAGE_NUMBER,)], [(C0, M0), (C1, M1)])
                 
     def test_02_01_prepare_to_create_batch_single(self):
         n = N.NamesAndTypes()

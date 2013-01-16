@@ -2331,7 +2331,7 @@ class Filter(Setting):
             return tokens[0](x, *tokens[1:])
         except:
             return False
-    
+        
     def parse(self):
         '''Parse the value into filter predicates, literals and lists
         

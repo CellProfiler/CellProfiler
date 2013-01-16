@@ -2996,8 +2996,6 @@ class LoadImages(cpmodule.CPModule):
                 
             for i, field in enumerate(metadata_fields):
                 md_group = groups.grouping_metadata[i]
-                md_group.image_name.value = \
-                    self.images[0].channels[0].image_name.value
                 md_group.metadata_choice.value = \
                     field
                 

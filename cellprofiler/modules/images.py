@@ -23,6 +23,7 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.utilities.walk_in_background as W
+import cellprofiler.utilities.jutil as J
 import os
 import sys
 import urllib
@@ -97,10 +98,8 @@ class Images(cpm.CPModule):
         '''Return True if a URL passes the module's filter'''
         if not self.wants_filter:
             return True
-        modpath = self.url_to_modpath(url)
-        match = self.filter.evaluate((
-            cps.FileCollectionDisplay.NODE_IMAGE_PLANE, modpath, self))
-        return match or match is None
+        
+        return evaluate_url(self.filter, url)
     
     def settings(self):
         return [self.path_list_display, self.wants_filter, self.filter]
@@ -127,9 +126,19 @@ class Images(cpm.CPModule):
         '''Create an IPD for every url that passes the filter'''
         if workspace.pipeline.in_batch_mode():
             return True
-        urls = filter(self.filter_url, workspace.file_list.get_filelist())
-        ipds = [cpp.ImagePlaneDetails(url, None, None, None) for url in urls]
-        workspace.pipeline.add_image_plane_details(ipds, False)
+        workspace.pipeline.load_image_plane_details(workspace)
+        if self.wants_filter:
+            env = J.get_env()
+            jexpression = env.new_string_utf(self.filter.value_text)
+            filter_fn = J.make_static_call(
+                "org/cellprofiler/imageset/filter/Filter",
+                "filter", "(Ljava/lang/String;Ljava/lang/String;)Z")
+            ipds = filter(
+                lambda ipd:filter_fn(jexpression, env.new_string_utf(ipd.url)), 
+                workspace.pipeline.image_plane_details)
+        else:
+            ipds = workspace.pipeline.image_plane_details
+        workspace.pipeline.set_filtered_image_plane_details(ipds, self)
         return True
         
     def run(self, workspace):
@@ -341,3 +350,38 @@ class ImagePredicate(cps.Filter.FilterPredicate):
         self((cps.FileCollectionDisplay.NODE_FILE, 
               ["/imaging", "test.tif"], self.FakeModule()), *args)
 
+
+filter_class = None
+filter_method_id = None
+def evaluate_url(filtr, url):
+    '''Evaluate a URL using a setting's filter
+    
+    '''
+    global filter_class, filter_method_id
+    env = J.get_env()
+    if filter_class is None:
+        filter_class = env.find_class("org/cellprofiler/imageset/filter/Filter")
+        if filter_class is None:
+            jexception = get_env.exception_occurred()
+            raise J.JavaException(jexception)
+        filter_method_id = env.get_static_method_id(
+            filter_class,
+            "filter", 
+            "(Ljava/lang/String;Ljava/lang/String;)Z")
+        if filter_method_id is None:
+            raise JavaError("Could not find static method, org.cellprofiler.imageset.filter.Filter.filter(String, String)")
+    try:
+        expression = filtr.value_text
+        if isinstance(expression, unicode):
+            expression = expression.encode("utf-8")
+        if isinstance(url, unicode):
+            url = url.encode("utf-8")
+        return env.call_static_method(
+            filter_class, filter_method_id, 
+            env.new_string_utf(expression), env.new_string_utf(url))
+    except J.JavaException as e:
+        if J.is_instance_of(
+            e.throwable, "org/cellprofiler/imageset/filter/Filter$BadFilterExpressionException"):
+            raise
+        return False
+    

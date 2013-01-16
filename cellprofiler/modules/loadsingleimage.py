@@ -615,10 +615,11 @@ class LoadSingleImage(cpm.CPModule):
                 em.file_regexp.value = regexp
                 em.filter_choice.value = cpmetadata.F_FILTERED_IMAGES
                 em.filter.build(structure)
-                #
-                # If there was metadata to match, namesandtypes should
-                # have a metadata joiner.
-                #
+            #
+            # If there was metadata to match, namesandtypes should
+            # have a metadata joiner.
+            #
+            if namesandtypes.matching_choice == cpnamesandtypes.MATCH_BY_METADATA:
                 joins = namesandtypes.join.parse()
                 for d in joins:
                     for v in d.values():

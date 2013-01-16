@@ -422,6 +422,7 @@ class ImagePlaneDetails(object):
         self.index = index
         self.channel = channel
         self.metadata = dict(metadata)
+        self.jipd = None
         
     def __cmp__(self, other):
         '''A stable comparison method for sorting'''
@@ -1220,7 +1221,7 @@ class Pipeline(object):
         '''Write the pipeline experiment measurement to the measurements'''
         assert(isinstance(m, cpmeas.Measurements))
         fd = StringIO.StringIO()
-        self.savetxt(fd)
+        self.savetxt(fd, save_image_plane_details=False)
         m.add_measurement(cpmeas.EXPERIMENT, M_PIPELINE, fd.getvalue(), 
                           can_overwrite = True)
         
@@ -2364,7 +2365,7 @@ class Pipeline(object):
             return filter(images_module.filter_url, urls)
         return urls
     
-    def get_filtered_image_plane_details(self, with_metadata = False):
+    def get_filtered_image_plane_details(self, workspace, with_metadata = False):
         '''Return the image plane details that pass the Images filter
         
         with_metadata - if True, use the Metadata module to copy the
@@ -2376,18 +2377,12 @@ class Pipeline(object):
             images_module = images_modules[0]
             images_settings = tuple([
                 s.unicode_value for s in images_module.settings()])
-            if (self.__filtered_image_plane_details_images_settings ==
+            if (self.__filtered_image_plane_details_images_settings !=
                 images_settings):
-                ipds = self.__filtered_image_plane_details
-            else:
-                ipds = [
-                    ipd for ipd in self.image_plane_details
-                    if images_module.filter_url(ipd.url) is not False]
-                self.__filtered_image_plane_details = ipds
-                self.__filtered_image_plane_details_images_settings = images_settings
+                images_module.prepare_run(workspace)
                 self.__filtered_image_plane_details_metadata_settings = None
         else:
-            ipds = self.image_plane_details
+            self.__filtered_image_plane_details = self.image_plane_details
         if with_metadata:
             metadata_modules = [module for module in self.modules()
                                 if module.module_name == "Metadata"]
@@ -2395,22 +2390,18 @@ class Pipeline(object):
                 metadata_module = metadata_modules[0]
                 metadata_settings = tuple([
                     s.unicode_value for s in metadata_module.settings()])
-                if (metadata_settings == 
+                if (metadata_settings !=
                     self.__filtered_image_plane_details_metadata_settings):
-                    return self.__filtered_image_plane_details_with_metadata
-                metadata_module.update_imported_metadata() # update cache
-                ipds_with_metadata = []
-                for ipd in ipds:
-                    metadata = ipd.metadata.copy()
-                    metadata.update(metadata_module.get_ipd_metadata(ipd))
-                    ipds_with_metadata.append(
-                        ImagePlaneDetails(ipd.url, ipd.series, ipd.index, 
-                                          ipd.channel, **metadata))
-                ipds = ipds_with_metadata
-                self.__filtered_image_plane_details_with_metadata = ipds
+                    metadata_module.prepare_run(workspace)
                 self.__filtered_image_plane_details_metadata_settings = \
                     metadata_settings
-        return ipds
+        return self.__filtered_image_plane_details
+    
+    def set_filtered_image_plane_details(self, ipds, module):
+        '''The Images module calls this to report its list of filtered ipds'''
+        self.__filtered_image_plane_details = ipds
+        self.__filtered_image_plane_details_images_settings = tuple([
+            s.unicode_value for s in module.settings()])
     
     class ImageSetChannelDescriptor(object):
         '''This class represents the metadata for one image set channel
@@ -2517,50 +2508,6 @@ class Pipeline(object):
         finally:
             temp_measurements.close()
             
-    def get_grouped_image_sets(self, workspace):
-        '''Organize the image sets into groupings
-        
-        Returns the following things in this order:
-        
-        key_list - a list of two tuples. The first is the metadata key
-                   used to extract the grouping metadata and the second
-                   is the index of the column (see iscds) that holds
-                   the image plane descriptors whose metadata is extracted.
-                   
-        iscds - the ImageSetColumnDescriptor records that give the names of
-                the columns in the image set and that tell how to load them
-                (grayscale / color / mask / objects / function)
-                
-        metadata_key_names - the names of the keys that are used to join
-                the image sets. These are largely for display or informal use
-                
-        image_sets - this is a dictionary whose key is the metadata (or
-                image number if metadata was not used to perform the matching)
-                and whose value is an array (possibly of zero length = missing
-                image, possibly of > 1 length = ambiguous choice of images)
-                of ImagePlaneDescriptors.
-                
-        groupings - this is a dictionary whose key is the grouping metadata
-                values and whose value is a list of keys to the image set
-                dictionary for the image sets in that group.
-        
-        '''
-        iscds, metadata_key_names, image_sets = self.get_image_sets(workspace)
-        key_list = None
-        for module in self.modules():
-            if module.module_name == "Groups":
-                key_list, groupings = module.compute_groups(
-                    iscds, metadata_key_names, image_sets)
-                break
-        else:
-            # If there was no groups module, harvest groupings from legacy modules
-            key_list, groupings = self.get_groupings(workspace)
-        if key_list is None:
-            key_list = []
-            groupings = { ():sorted(image_sets.keys()) }
-        
-        return key_list, iscds, metadata_key_names, image_sets, groupings
-    
             
     def has_undo(self):
         '''True if an undo action can be performed'''

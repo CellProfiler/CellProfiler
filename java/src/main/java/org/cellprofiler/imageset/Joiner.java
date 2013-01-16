@@ -9,8 +9,10 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.cellprofiler.imageset.filter.Filter;
 import org.cellprofiler.imageset.filter.ImagePlaneDetails;
@@ -96,7 +98,7 @@ public class Joiner {
 			int [] nonNullTags = new int[keys.length];
 			int idx = 0;
 			for (int i=0; i<keys.length; i++) {
-				if (keys != null) {
+				if (keys[i] != null) {
 					nonNullTags[idx++] = i;
 				}
 			}
@@ -108,7 +110,7 @@ public class Joiner {
 	final private int anchorChannel;
 	final private int nKeys;
 	public Joiner(List<ChannelFilter> channels) throws JoinerException {
-		if (this.channels.size() == 0) {
+		if (channels.size() == 0) {
 			throw new JoinerException("The image set must have at least one channel");
 		}
 		this.channels = new ArrayList<ChannelFilter>(channels);
@@ -122,7 +124,6 @@ public class Joiner {
 			}
 			if (channel.getJoiningKeyIndices().length == nKeys) {
 				anchorChannel = i;
-				break;
 			}
 		}
 		if (anchorChannel == -1) {
@@ -131,6 +132,11 @@ public class Joiner {
 		this.anchorChannel = anchorChannel;
 	}
 
+	static private <T> List<T> getListOfNulls(int nElements) {
+		List<T> result = new ArrayList<T>(nElements);
+		for (int i=0; i<nElements; i++) result.add(null);
+		return result;
+	}
 	/**
 	 * Join the image plane descriptors to make an image set list
 	 * @param ipds image plane descriptors (= image planes + metadata)
@@ -139,7 +145,7 @@ public class Joiner {
 	 *        which had missing or duplicate images.
 	 * @return a list of image sets.
 	 */
-	public List<ImageSet> join(List<ImagePlaneDetails> ipds, Collection<ImageSetError> errors) {
+	public <T  extends ImagePlaneDetails> List<ImageSet> join(List<T> ipds, Collection<ImageSetError> errors) {
 		Map<List<String>, List<ImagePlaneDetails>> result = 
 			new HashMap<List<String>, List<ImagePlaneDetails>>();
 		/*
@@ -148,7 +154,7 @@ public class Joiner {
 		Map<List<String>, ImagePlaneDetails> channelResult = filterChannel(
 				channels.get(anchorChannel), ipds, errors);
 		for (Map.Entry<List<String>, ImagePlaneDetails> entry:channelResult.entrySet()) {
-			List<ImagePlaneDetails> imagesetIPDs = Collections.nCopies(channels.size(), null);
+			List<ImagePlaneDetails> imagesetIPDs = getListOfNulls(channels.size());
 			imagesetIPDs.set(anchorChannel, entry.getValue());
 			result.put(entry.getKey(), imagesetIPDs);
 		}
@@ -160,8 +166,8 @@ public class Joiner {
 			final ChannelFilter channelFilter = channels.get(i);
 			channelResult = filterChannel(channelFilter, ipds, errors);
 			int [] idxs = channelFilter.getJoiningKeyIndices(); 
-			List<String> key = Collections.nCopies(idxs.length, null);
-			for (int j=0; j<idxs.length; j++) key.add(null);
+			List<String> key = getListOfNulls(idxs.length);
+			Set<List<String>> channelResultKeys = new HashSet<List<String>>(channelResult.keySet());
 			for (Map.Entry<List<String>, List<ImagePlaneDetails>> entry:result.entrySet()) {
 				/*
 				 * Extract only the metadata values in the result that are specified
@@ -176,7 +182,30 @@ public class Joiner {
 					errors.add(error);
 				} else {
 					entry.getValue().set(i, channelResult.get(key));
+					channelResultKeys.remove(key);
 				}
+			}
+			for (List<String> missingKey:channelResultKeys) {
+				ImageSetMissingError error = new ImageSetMissingError(
+						channels.get(anchorChannel).getName(),
+						"No matching metadata", missingKey);
+				final List<ImagePlaneDetails> errantImageSet = new ArrayList<ImagePlaneDetails>(channels.size());
+				for (int ii=0; ii<channels.size(); ii++) {
+					errantImageSet.add((ii==i)?channelResult.get(missingKey):null);
+				}
+				error.setImageSet(errantImageSet);
+				errors.add(error);
+			}
+		}
+		/*
+		 * Remove any image sets with errors
+		 */
+		for (ImageSetError error: errors) {
+			final List<String> key = error.getKey();
+			if (result.containsKey(key)) {
+				List<ImagePlaneDetails> imageSet = result.get(key);
+				error.setImageSet(imageSet);
+				result.remove(key);
 			}
 		}
 		/*
@@ -203,9 +232,9 @@ public class Joiner {
 		return imageSet;
 	}
 	
-	private Map<List<String>, ImagePlaneDetails> filterChannel(
+	private <T extends ImagePlaneDetails> Map<List<String>, ImagePlaneDetails> filterChannel(
 			ChannelFilter channelFilter,
-			List<ImagePlaneDetails> ipds,
+			List<T> ipds,
 			Collection<ImageSetError> errors) {
 		Map<List<String>, ImageSetDuplicateError> localErrors = 
 			new HashMap<List<String>, ImageSetDuplicateError>();
@@ -235,7 +264,7 @@ public class Joiner {
 				result.put(keyValues, ipd);
 			}
 		}
-		
+		errors.addAll(localErrors.values());
 		return result;
 	}
 			

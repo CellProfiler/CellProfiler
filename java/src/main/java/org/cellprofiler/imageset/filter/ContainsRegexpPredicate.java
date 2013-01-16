@@ -5,6 +5,7 @@ package org.cellprofiler.imageset.filter;
 
 import java.util.regex.Pattern;
 
+import org.cellprofiler.imageset.MetadataUtils;
 import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
 
 /**
@@ -27,7 +28,7 @@ public class ContainsRegexpPredicate extends AbstractStringPredicate {
 	 */
 	@Override
 	public void setLiteral(String literal) throws BadFilterExpressionException {
-		pattern = Pattern.compile(literal);
+		pattern = MetadataUtils.compilePythonRegexp(literal, null);
 		super.setLiteral(literal);
 	}
 

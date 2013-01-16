@@ -117,9 +117,8 @@ public class Filter {
 	 * @throws BadFilterExpressionException if the expression cannot be parsed
 	 */
 	static public boolean filter(String expression, URL url) throws BadFilterExpressionException {
-		return getFilter(expression).eval(
-				new ImagePlaneDetails(new ImagePlane(new ImageFile(url)), 
-						MetadataExtractor.emptyMap));
+		return filter(expression, new ImagePlaneDetails(
+				new ImagePlane(new ImageFile(url)), MetadataExtractor.emptyMap));
 	}
 	/**
 	 * Filter a URL based on a filter expression
@@ -134,6 +133,7 @@ public class Filter {
 	throws MalformedURLException, BadFilterExpressionException {
 		return filter(expression, new URL(url));
 	}
+	
 	static private Filter getFilter(String expression) throws BadFilterExpressionException {
 		synchronized(filterCache) {
 			if (! filterCache.containsKey(expression)) {
@@ -165,17 +165,26 @@ public class Filter {
 	public boolean eval(ImagePlaneDetails ipd) {
 		return rootPredicate.eval(ipd);
 	}
-	/*
+	/**
      * (?:\\.|[^ )]) matches either backslash-anything or anything but
      * space and parentheses. So you can have variable names with spaces
      * and that's needed for arbitrary metadata names
 	 */
 	static private Pattern tokenPattern = Pattern.compile("((?:\\\\.|[^ )])+) ?");
-	/*
+	/**
 	 * A literal is a quote followed by a quote-escape encoded string. The pattern
 	 * consumes a single trailing space.
+	 * 
+	 * "[^\\\\\"]" = [^\\"] matches anything except for backslash and quote
+	 * "(?:\\\\.)" = (?:\.) matches backslash-anything without capturing it
+	 * (?:[^\\\\\"]|(?:\\\\.)) matches a single escape-encoded character without
+	 * capturing it.
 	 */
-	static private Pattern literalPattern = Pattern.compile("\"([^\"]+)\" ?");
+	static private Pattern literalPattern = Pattern.compile("\"((?:[^\\\\\"]|(?:\\\\.))*)\" ?");
+	/**
+	 * Find backslash-escaped characters in a quote-escaped string. 
+	 */
+	static private Pattern quoteEscapePattern = Pattern.compile("\\\\(.)");
 	/*
 	 * Parentheses expressions are separated by a space. A series of parentheses
 	 * expressions is terminated either by end of expression or the end parenthesis
@@ -273,7 +282,17 @@ public class Filter {
 			final Matcher literalMatch = literalPattern.matcher(rest[0]);
 			if (literalMatch.lookingAt()) {
 				final String literal = literalMatch.group(1);
-				p.setLiteral(literal);
+				final Matcher quoteEscapeMatch = quoteEscapePattern.matcher(literal);
+				String decodedLiteral = "";
+				int start = 0;
+				while(quoteEscapeMatch.find()) {
+					final int qeStart = quoteEscapeMatch.start();
+					final String qeChar = quoteEscapeMatch.group(1);
+					decodedLiteral += literal.substring(start, qeStart) + qeChar;
+					start = quoteEscapeMatch.end();
+				}
+				decodedLiteral += literal.substring(start);
+				p.setLiteral(decodedLiteral);
 				rest[0] = rest[0].substring(literalMatch.end());
 				if (rest[0].length() == 0) return p;
 			}

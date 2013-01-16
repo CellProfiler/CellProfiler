@@ -21,9 +21,6 @@ public class RegexpMetadataExtractor implements MetadataExtractor<String> {
 	 * of the form, "(?P<foo>...)". This pattern captures the name and
 	 * makes it possible to convert from Python to Java.
 	 */
-	final private static Pattern pythonGroupPattern = Pattern.compile(
-			"(?<!\\\\)(?<=\\()\\?P<([^>]+)>");
-	
 	final private Pattern pattern;
 	final private String [] keys;
 	
@@ -35,17 +32,8 @@ public class RegexpMetadataExtractor implements MetadataExtractor<String> {
 	 *       extract metadata from the string.
 	 */
 	public RegexpMetadataExtractor(String pattern) {
-		Matcher matcher = pythonGroupPattern.matcher(pattern);
-		String p = "";
-		int start = 0;
 		List<String> keys = new ArrayList<String>();
-		while (matcher.find()) {
-			p += pattern.substring(start, matcher.start());
-			keys.add(matcher.group(1));
-			start = matcher.end();
-		}
-		p += pattern.substring(start);
-		this.pattern = Pattern.compile(p);
+		this.pattern = MetadataUtils.compilePythonRegexp(pattern, keys);
 		this.keys = keys.toArray(new String [keys.size()]);
 	}
 

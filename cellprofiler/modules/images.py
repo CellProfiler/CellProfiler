@@ -126,9 +126,19 @@ class Images(cpm.CPModule):
         '''Create an IPD for every url that passes the filter'''
         if workspace.pipeline.in_batch_mode():
             return True
-        urls = filter(self.filter_url, workspace.file_list.get_filelist())
-        ipds = [cpp.ImagePlaneDetails(url, None, None, None) for url in urls]
-        workspace.pipeline.add_image_plane_details(ipds, False)
+        workspace.pipeline.load_image_plane_details(workspace)
+        if self.wants_filter:
+            env = J.get_env()
+            jexpression = env.new_string_utf(self.filter.value_text)
+            filter_fn = J.make_static_call(
+                "org/cellprofiler/imageset/filter/Filter",
+                "filter", "(Ljava/lang/String;Ljava/lang/String;)Z")
+            ipds = filter(
+                lambda ipd:filter_fn(jexpression, env.new_string_utf(ipd.url)), 
+                workspace.pipeline.image_plane_details)
+        else:
+            ipds = workspace.pipeline.image_plane_details
+        workspace.pipeline.set_filtered_image_plane_details(ipds, self)
         return True
         
     def run(self, workspace):

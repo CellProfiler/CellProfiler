@@ -744,7 +744,7 @@ class PipelineController:
             [ipd.url for ipd in event.image_plane_details])
         
     def on_update_pathlist(self, event):
-        ipds = self.__pipeline.get_filtered_image_plane_details()
+        ipds = self.__pipeline.get_filtered_image_plane_details(self.__workspace)
         enabled_urls = set([ipd.url for ipd in ipds])
         disabled_urls = set(self.__path_list_ctrl.get_paths())
         disabled_urls.difference_update(enabled_urls)

@@ -34,6 +34,10 @@ public class TestStringPredicate {
 	public void testContainsRegexpPredicate() {
 		testSomething(new ContainsRegexpPredicate(), "ffooo", "[fgh]o{2}", true);
 		testSomething(new ContainsRegexpPredicate(), "ffooo", "[bgh]o{2}", false);
+		testSomething(new ContainsRegexpPredicate(), "Channel2-01-A-01.tif", 
+				"^Channel2\\-(?P<ImageNumber>.+?)\\-(?P<Row>.+?)\\-(?P<Column>.+?)\\.tif$", true);
+		testSomething(new ContainsRegexpPredicate(), "Channel1-01-A-01.tif", 
+				"^Channel2\\-(?P<ImageNumber>.+?)\\-(?P<Row>.+?)\\-(?P<Column>.+?)\\.tif$", false);
 	}
 	@Test
 	public void testEndsWithPredicate() {

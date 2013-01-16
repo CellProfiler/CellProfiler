@@ -37,6 +37,7 @@ from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
 from bioformats.formatreader import get_omexml_metadata, load_using_bioformats
 import bioformats.omexml as OME
+import cellprofiler.utilities.jutil as J
 
 ASSIGN_ALL = "Assign all images"
 ASSIGN_GUESS = "Try to guess image assignment"
@@ -309,160 +310,233 @@ class NamesAndTypes(cpm.CPModule):
         '''Write the image set to the measurements'''
         if workspace.pipeline.in_batch_mode():
             return True
-        try:
-            old_pipeline = self.pipeline
-            self.pipeline = workspace.pipeline
-            self.ipds = self.pipeline.get_filtered_image_plane_details(True)
-            self.metadata_keys = set()
-            for ipd in self.ipds:
-                self.metadata_keys.update(ipd.metadata.keys())
-            self.update_all_columns()
-            self.make_image_sets()
-            self.pipeline = old_pipeline
+        column_names = self.get_column_names()
+        ipd_columns = self.java_make_image_sets(workspace)
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        
+        image_numbers = range(1, len(ipd_columns[0]) + 1)
+        if len(image_numbers) == 0:
+            return False
+        m.add_all_measurements(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, 
+                               image_numbers)
+        
+        if self.assignment_method == ASSIGN_ALL:
+            load_choices = [self.single_load_as_choice.value]
+        elif self.assignment_method == ASSIGN_RULES:
+            load_choices = [ group.load_as_choice.value
+                             for group in self.assignments]
+            if self.matching_choice == MATCH_BY_METADATA:
+                md_keys = self.join.parse()
+                for column_name in column_names:
+                    if all([k[column_name] is not None for k in md_keys]):
+                        metadata_feature_names = [
+                            '_'.join((cpmeas.C_METADATA, k[column_name]))
+                            for k in md_keys]
+                        m.set_metadata_tags(metadata_feature_names)
+                
+        ImageSetChannelDescriptor = workspace.pipeline.ImageSetChannelDescriptor
+        d = { 
+            LOAD_AS_COLOR_IMAGE: ImageSetChannelDescriptor.CT_COLOR,
+            LOAD_AS_GRAYSCALE_IMAGE: ImageSetChannelDescriptor.CT_GRAYSCALE,
+            LOAD_AS_ILLUMINATION_FUNCTION: ImageSetChannelDescriptor.CT_FUNCTION,
+            LOAD_AS_MASK: ImageSetChannelDescriptor.CT_MASK,
+            LOAD_AS_OBJECTS: ImageSetChannelDescriptor.CT_OBJECTS }
+        iscds = [ImageSetChannelDescriptor(column_name, d[load_choice])
+                 for column_name, load_choice in zip(column_names, load_choices)]
+        m.set_channel_descriptors(iscds)
+        
+        for iscd, ipds in zip(iscds, ipd_columns):
+            if iscd.channel_type == ImageSetChannelDescriptor.CT_OBJECTS:
+                url_category = cpmeas.C_OBJECTS_URL
+                path_name_category = cpmeas.C_OBJECTS_PATH_NAME
+                file_name_category = cpmeas.C_OBJECTS_FILE_NAME
+                series_category = cpmeas.C_OBJECTS_SERIES
+                frame_category = cpmeas.C_OBJECTS_FRAME
+                channel_category = cpmeas.C_OBJECTS_CHANNEL
+            else:
+                url_category = cpmeas.C_URL
+                path_name_category = cpmeas.C_PATH_NAME
+                file_name_category = cpmeas.C_FILE_NAME
+                series_category = cpmeas.C_SERIES
+                frame_category = cpmeas.C_FRAME
+                channel_category = cpmeas.C_CHANNEL
+            url_feature, path_name_feature, file_name_feature,\
+                series_feature, frame_feature, channel_feature = [
+                    "%s_%s" % (category, iscd.name) for category in (
+                        url_category, path_name_category, file_name_category,
+                        series_category, frame_category, channel_category)]
+            m.add_all_measurements(cpmeas.IMAGE, url_feature,
+                              [ipd.url for ipd in ipds])
+            m.add_all_measurements(
+                cpmeas.IMAGE, path_name_feature,
+                [os.path.split(ipd.path)[0] for ipd in ipds])
+            m.add_all_measurements(
+                cpmeas.IMAGE, file_name_feature,
+                [os.path.split(ipd.path)[1] for ipd in ipds])
+            all_series = [ipd.series for ipd in ipds]
+            if any([x is not None for x in all_series]):
+                m.add_all_measurements(
+                    cpmeas.IMAGE, series_feature, all_series)
+            all_frames = [ipd.index for ipd in ipds]
+            if any([x is not None for x in all_frames]):
+                m.add_all_measurements(
+                    cpmeas.IMAGE, frame_feature, all_frames)
+            all_channels = [ipd.channel for ipd in ipds]
+            if any([x is not None for x in all_channels]):
+                m.add_all_measurements(
+                    cpmeas.IMAGE, channel_feature, all_channels)
+        ipdsByChannel = J.make_list([
+            J.make_list([ipd.jipd for ipd in column]).o
+            for column in ipd_columns])
+        md_dict = J.get_map_wrapper(J.static_call(
+            "org/cellprofiler/imageset/MetadataUtils",
+            "getImageSetMetadata", "(Ljava/util/List;)Ljava/util/Map;",
+            ipdsByChannel.o))
+        #
+        # Populate the metadata measurements
+        #
+        env = J.get_env()
+        for name in J.iterate_collection(md_dict.keySet(), env.get_string_utf):
+            feature_name = "_".join((cpmeas.C_METADATA, name))
+            values = J.iterate_collection(md_dict[name], env.get_string_utf)
+            m.add_all_measurements(cpmeas.IMAGE,
+                                   feature_name,
+                                   values)
+        return True
             
-            m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
-            image_sets = []
-            column_names = self.column_names
-            for keys, ipds in self.image_sets:
-                if any([len(ipds.get(column_name, tuple())) != 1
-                        for column_name in column_names]):
-                    logger.info("Skipping image set %s - no or multiple matches for some image" % repr(keys))
-                    continue
-                image_sets.append((keys, ipds))
-            if len(image_sets) == 0:
-                return False
-            
-            image_numbers = range(1, len(image_sets) + 1)
-            m.add_all_measurements(cpmeas.IMAGE, cpmeas.IMAGE_NUMBER, 
-                                   image_numbers)
-            
-            metadata_key_names = self.get_metadata_column_names()
-            if self.assignment_method == ASSIGN_ALL:
-                load_choices = [self.single_load_as_choice.value]
-            elif self.assignment_method == ASSIGN_RULES:
-                load_choices = [ group.load_as_choice.value
-                                 for group in self.assignments]
-                if self.matching_choice == MATCH_BY_METADATA:
-                    metadata_feature_names = [
-                        '_'.join((cpmeas.C_METADATA, n))
-                        for n in metadata_key_names]
-                    m.set_metadata_tags(metadata_feature_names)
-                    key_columns = [[] for f in metadata_feature_names]
-                    for keys, ipds in image_sets:
-                        for key_column, key in zip(key_columns, keys):
-                            key_column.append(key)
-                    for metadata_feature_name, key_column in zip(
-                        metadata_feature_names, key_columns):
-                        m.add_all_measurements(
-                            cpmeas.IMAGE, metadata_feature_name,
-                            key_column)
-                    
-            ImageSetChannelDescriptor = workspace.pipeline.ImageSetChannelDescriptor
-            d = { 
-                LOAD_AS_COLOR_IMAGE: ImageSetChannelDescriptor.CT_COLOR,
-                LOAD_AS_GRAYSCALE_IMAGE: ImageSetChannelDescriptor.CT_GRAYSCALE,
-                LOAD_AS_ILLUMINATION_FUNCTION: ImageSetChannelDescriptor.CT_FUNCTION,
-                LOAD_AS_MASK: ImageSetChannelDescriptor.CT_MASK,
-                LOAD_AS_OBJECTS: ImageSetChannelDescriptor.CT_OBJECTS }
-            iscds = [ImageSetChannelDescriptor(column_name, d[load_choice])
-                     for column_name, load_choice in zip(column_names, load_choices)]
-            m.set_channel_descriptors(iscds)
-            
-            ipd_columns = [[] for column_name in column_names]
-            
-            for keys, ipds in image_sets:
-                for column, column_name in zip(ipd_columns, column_names):
-                    column.append(ipds[column_name][0])
-            for iscd, ipds in zip(iscds, ipd_columns):
-                if iscd.channel_type == ImageSetChannelDescriptor.CT_OBJECTS:
-                    url_category = cpmeas.C_OBJECTS_URL
-                    path_name_category = cpmeas.C_OBJECTS_PATH_NAME
-                    file_name_category = cpmeas.C_OBJECTS_FILE_NAME
-                    series_category = cpmeas.C_OBJECTS_SERIES
-                    frame_category = cpmeas.C_OBJECTS_FRAME
-                    channel_category = cpmeas.C_OBJECTS_CHANNEL
+    def java_make_image_sets(self, workspace):
+        '''Make image sets using the Java framework
+        
+        workspace - the current workspace
+        '''
+        pipeline = workspace.pipeline
+        env = J.get_env()
+        filter_class = env.find_class("org/cellprofiler/imageset/filter/Filter")
+        eval_method = env.get_method_id(
+            filter_class,
+            "eval",
+            "(Lorg/cellprofiler/imageset/filter/ImagePlaneDetails;)Z")
+        ipds = pipeline.get_filtered_image_plane_details(workspace, 
+                                                         with_metadata=True)
+        column_names = self.get_column_names()
+        if self.assignment_method == ASSIGN_ALL:
+            self.image_sets = [((i+1, ), { column_names[0]: (ipd, ) })
+                               for i, ipd in enumerate(ipds)]
+            return [ipds]
+        elif self.matching_choice == MATCH_BY_ORDER:
+            filters = []
+            columns = []
+            for assignment in self.assignments:
+                fltr = J.make_instance(
+                    "org/cellprofiler/imageset/filter/Filter",
+                    "(Ljava/lang/String;)V", assignment.rule_filter.value_text)
+                column = []
+                for ipd in pipeline.image_plane_details:
+                    keep = env.call_method(fltr, eval_method, ipd.jipd)
+                    jexception = env.exception_occurred()
+                    if jexception is not None:
+                        raise J.JavaException(jexception)
+                    if keep:
+                        column.append(ipd)
+                columns.append(column)
+            n_rows = np.max([len(column) for column in columns])
+            self.image_sets = [
+                ((i+1, ), 
+                 dict([(column_name, None if len(column) >= i else column[i])
+                       for column_name, column in zip(column_names, columns)]))
+                for i in range(n_rows)]
+            return columns
+        else:
+            channels = []
+            joins = self.join.parse()
+            columns = []
+            for assignment in self.assignments:
+                if assignment.load_as_choice == LOAD_AS_OBJECTS:
+                    channel_name = assignment.object_name.value
                 else:
-                    url_category = cpmeas.C_URL
-                    path_name_category = cpmeas.C_PATH_NAME
-                    file_name_category = cpmeas.C_FILE_NAME
-                    series_category = cpmeas.C_SERIES
-                    frame_category = cpmeas.C_FRAME
-                    channel_category = cpmeas.C_CHANNEL
-                url_feature, path_name_feature, file_name_feature,\
-                    series_feature, frame_feature, channel_feature = [
-                        "%s_%s" % (category, iscd.name) for category in (
-                            url_category, path_name_category, file_name_category,
-                            series_category, frame_category, channel_category)]
-                m.add_all_measurements(cpmeas.IMAGE, url_feature,
-                                  [ipd.url for ipd in ipds])
-                m.add_all_measurements(
-                    cpmeas.IMAGE, path_name_feature,
-                    [os.path.split(ipd.path)[0] for ipd in ipds])
-                m.add_all_measurements(
-                    cpmeas.IMAGE, file_name_feature,
-                    [os.path.split(ipd.path)[1] for ipd in ipds])
-                all_series = [ipd.series for ipd in ipds]
-                if any([x is not None for x in all_series]):
-                    m.add_all_measurements(
-                        cpmeas.IMAGE, series_feature, all_series)
-                all_frames = [ipd.index for ipd in ipds]
-                if any([x is not None for x in all_frames]):
-                    m.add_all_measurements(
-                        cpmeas.IMAGE, frame_feature, all_frames)
-                all_channels = [ipd.channel for ipd in ipds]
-                if any([x is not None for x in all_channels]):
-                    m.add_all_measurements(
-                        cpmeas.IMAGE, channel_feature, all_channels)
-            #
-            # Scan through each image set's metadata to get a set of metadata
-            # columns. Every image set will have values for each
-            # metadata column.
-            #
-            md_dict = {}
-            #
-            # Populate the dictionary using the first image set
-            #
-            for ipd_column in ipd_columns:
-                for key, value in ipd_column[0].metadata.iteritems():
-                    if not md_dict.has_key(key):
-                        md_dict[key] = set()
-                    md_dict[key].add(value)
-            #
-            # Find all metadata items that are singly valued.
-            # Recreate the dictionary as key: list of one value element
-            #
-            md_dict = dict([ (k, [v.pop()]) for k, v in md_dict.iteritems()
-                             if len(v) == 1])
-            for i in range(1, len(ipd_columns[0])):
-                image_set_metadata = {}
-                for ipd_column in ipd_columns:
-                    metadata = ipd_column[i].metadata
-                    for key in md_dict:
-                        if key in metadata:
-                            if key in image_set_metadata:
-                                if image_set_metadata[key] != metadata[key]:
-                                    image_set_metadata[key] = False
-                            else:
-                                image_set_metadata[key] = metadata[key]
-                for key in md_dict.keys():
-                    if ((key not in image_set_metadata) or 
-                        image_set_metadata is False):
-                        del md_dict[key]
-                    else:
-                        md_dict[key].append(image_set_metadata[key])
-            #
-            # Populate the metadata measurements
-            #
-            for name, values in md_dict.iteritems():
-                feature_name = "_".join((cpmeas.C_METADATA, name))
-                m.add_all_measurements(cpmeas.IMAGE,
-                                       feature_name,
-                                       values)
-            return True
-        finally:
-            self.on_deactivated()
+                    channel_name = assignment.image_name.value
+                keys = [d[channel_name] for d in joins]
+                keys = J.get_nice_arg(keys, "[Ljava/lang/String;")
+                channel = J.run_script("""
+                importPackage(Packages.org.cellprofiler.imageset);
+                importPackage(Packages.org.cellprofiler.imageset.filter);
+                var filter = new Filter(expression);
+                new Joiner.ChannelFilter(channelName, keys, filter);
+                """, dict(expression = assignment.rule_filter.value_text,
+                          keys = keys,
+                          channelName = channel_name))
+                channels.append(channel)
+            channels = J.make_list(channels)
+            joiner = J.make_instance(
+                "org/cellprofiler/imageset/Joiner",
+                "(Ljava/util/List;)V", channels.o)
+            errors = J.make_list()
+            jipds = J.make_list()
+            fn_add = J.make_call(jipds.o, "add", "(Ljava/lang/Object;)Z")
+            for ipd in ipds:
+                fn_add(ipd.jipd)
+            jipds = J.static_call(
+                "org/cellprofiler/imageset/filter/IndexedImagePlaneDetails",
+                "index", 
+                "(Ljava/util/List;)Ljava/util/List;", jipds.o)
+            result = J.call(joiner, "join",
+                            "(Ljava/util/List;Ljava/util/Collection;)"
+                            "Ljava/util/List;", jipds, errors.o)
             
+            indexes = env.make_int_array(np.array([-1] * len(channels), int))
+            getIndices = J.make_static_call(
+                "org/cellprofiler/imageset/filter/IndexedImagePlaneDetails",
+                "getIndices",
+                "(Ljava/util/List;[I)V")
+            def getIPDs(o):
+                getIndices(o, indexes)
+                idxs = env.get_int_array_elements(indexes)
+                return [None if idx == -1 else ipds[idx] for idx in idxs]
+                
+            getKey = J.make_call(
+                "org/cellprofiler/imageset/ImageSet",
+                "getKey", "()Ljava/util/List;")
+            columns = [[] for _ in range(len(self.assignments))]
+            image_sets = {}
+            d = {}
+            for image_set in J.iterate_collection(result):
+                image_set_ipds = getIPDs(image_set)
+                for column_name, column, ipd in zip(
+                    column_names, columns, image_set_ipds):
+                    column.append(ipd)
+                    d[column_name] = tuple() if ipd is None else (ipd, )
+                key = tuple(J.iterate_collection(getKey(image_set), 
+                                                 env.get_string_utf))
+                image_sets[key] = d
+            for error in J.iterate_collection(errors.o):
+                image_set_ipds = J.call(error, "getImageSet", "()Ljava/util/List;")
+                key = tuple(J.iterate_collection(J.call(
+                    error, "getKey", "()Ljava/util/List;"), env.get_string_utf))
+                if image_set_ipds is None:
+                    emetadata = []
+                    echannel = J.call(error, "getChannelName", "()Ljava/lang/String;")
+                    for k, j in zip(key, joins):
+                        if k is not None and j[echannel] is not None:
+                            emetadata.append("%s=%s" % (j[echannel], k))
+                    emetadata = ",".join(emetadata)
+                    logger.warning(
+                        ("Channel %s does not have a matching file for "
+                         "metadata: %s") % ( echannel, emetadata))
+                    continue
+                image_set_ipds = getIPDs(image_set_ipds)
+                if key not in image_sets:
+                    d = dict(zip(column_names, image_set_ipds))
+                    image_sets[key] = d
+                if J.is_instance_of(error, "org/cellprofiler/imageset/ImageSetDuplicateError"):
+                    errant_channel = J.call(error, "getChannelName",
+                                            "()Ljava/lang/String;")
+                    duplicates = getIPDs(J.call(error, "getImagePlaneDetails",
+                                                "()Ljava/util/List;"))
+                    image_sets[key][errant_channel] = tuple(duplicates)
+            self.image_sets = sorted(image_sets.iteritems())
+            return columns
+                
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Alter pathnames in preparation for batch processing
         
@@ -618,9 +692,10 @@ class NamesAndTypes(cpm.CPModule):
         workspace.object_set.add_objects(o, name)
                      
     def on_activated(self, workspace):
+        self.workspace = workspace
         self.pipeline = workspace.pipeline
-        self.pipeline.load_image_plane_details(workspace)
-        self.ipds = self.pipeline.get_filtered_image_plane_details(with_metadata=True)
+        self.ipds = self.pipeline.get_filtered_image_plane_details(
+            workspace, with_metadata=True)
         self.metadata_keys = set()
         for ipd in self.ipds:
             self.metadata_keys.update(ipd.metadata.keys())
@@ -716,135 +791,7 @@ class NamesAndTypes(cpm.CPModule):
         whose values are lists of ipds that match the metadata for the
         image set (hopefully a list with a single element).
         '''
-        if self.assignment_method == ASSIGN_ALL:
-            #
-            # The keys are the image set numbers, the image sets have
-            # the single column name
-            #
-            column_name = self.column_names[0]
-            self.image_sets = [((i+1, ), { column_name: (ipd,) })
-                               for i, ipd in enumerate(self.ipd_columns[0])]
-        elif self.assignment_method == ASSIGN_RULES:
-            #
-            # d is a nested dictionary. The key is either None (= match all)
-            # or the first metadata value. The value is either a subdictionary
-            # or the leaf which is an image_set dictionary.
-            #
-            def cmp_ipds(i1, i2):
-                '''Sort by path name lexical order, then by predefined order'''
-                r = cmp(i1.path, i2.path)
-                if r != 0:
-                    return r
-                return cmp(i1, i2)
-            for ipd_column in self.ipd_columns:
-                ipd_column.sort(cmp=cmp_ipds)
-              
-            if (len(self.column_names) == 1 or 
-                self.matching_choice == MATCH_BY_ORDER):
-                self.image_sets = []
-                n_image_sets = reduce(max, [len(x) for x in self.ipd_columns], 0)
-                for i in range(n_image_sets):
-                    d = {}
-                    for column_name, ipd_column \
-                        in zip(self.column_names, self.ipd_columns):
-                        if i < len(ipd_column):
-                            d[column_name] = (ipd_column[i],)
-                        else:
-                            d[column_name] = tuple()
-                            
-                    self.image_sets.append(((str(i+1), ), d))
-                return
-            try:
-                joins = self.join.parse()
-                if len(joins) == 0:
-                    raise ValueError("No joining criteria")
-            except Exception, e:
-                # Bad format for joiner
-                logger.warn("Bad join format: %s" % str(e))
-                self.image_sets = []
-                return
-            d = {}
-            dd = d
-            for join in joins:
-                ddd = {}
-                dd[None] = ddd
-                dd = ddd
-                
-            def deep_copy_dictionary(ddd):
-                '''Create a deep copy of a dictionary'''
-                if all([isinstance(v, dict) for v in ddd.values()]):
-                    return dict([(k, deep_copy_dictionary(v))
-                                 for k, v in ddd.iteritems()])
-                else:
-                    return dict([(k, list(v)) for k, v in ddd.iteritems()])
-                
-            def assign_ipd_to_dictionary(ipd, column_name, keys, ddd):
-                '''Peel off a key, find its metadata and apply to dictionaries
-                
-                '''
-                if len(keys) == 0:
-                    if not ddd.has_key(column_name):
-                        ddd[column_name] = []
-                    ddd[column_name].append(ipd)
-                else:
-                    k0 = keys[0]
-                    keys = keys[1:]
-                    if k0 is None:
-                        #
-                        # IPD is distributed to all image sets for
-                        # the join
-                        #
-                        for k in ddd.keys():
-                            assign_ipd_to_dictionary(ipd, column_name, keys,
-                                                     ddd[k])
-                    else:
-                        m0 = ipd.metadata[k0]
-                        if not ddd.has_key(m0):
-                            #
-                            # There is no match. Replicate the dictionary tree
-                            # in the "None" category and distribute to it.
-                            #
-                            dcopy = deep_copy_dictionary(ddd[None])
-                            ddd[m0] = dcopy
-                        assign_ipd_to_dictionary(ipd, column_name, keys, ddd[m0])
-                        
-            for ipds, column_name in zip(self.ipd_columns, self.column_names):
-                metadata_keys = [join.get(column_name) for join in joins]
-                for ipd in ipds:
-                    assign_ipd_to_dictionary(ipd, column_name,
-                                             metadata_keys, d)
-            #
-            # Flatten d
-            #
-            def flatten_dictionary(ddd):
-                '''Make a list of metadata values and image set dictionaries
-                
-                ddd: a dictionary of one of two types. If the values are all
-                     dictionaries, then the keys are metadata values and the
-                     values are either image set dictionaries or a sub-dictionary.
-                     Otherwise, the dictionary is an image set dictionary.
-                '''
-                if all([isinstance(v, dict) for v in ddd.values()]):
-                    flattened_subs = [
-                        (k, flatten_dictionary(v))
-                        for k, v in ddd.iteritems()
-                        if k is not None]
-                    combined_keys = [
-                        [ (tuple([k] + list(keys)), image_set)
-                          for keys, image_set in subs]
-                        for k, subs in flattened_subs]
-                    return sum(combined_keys, [])
-                else:
-                    #
-                    # The dictionary is an image set, so its keyset is empty
-                    #
-                    return [(tuple(), ddd)]
-            result = flatten_dictionary(d)
-            self.image_sets = sorted(result, lambda a, b: cmp(a[0], b[0]))
-        else:
-            logger.warn("Unimplemented assignment method: %s" %
-                        self.assignment_method.value)
-            self.image_sets = []
+        self.java_make_image_sets(self.workspace)
             
     def get_image_names(self):
         '''Return the names of all images produced by this module'''
@@ -863,7 +810,17 @@ class NamesAndTypes(cpm.CPModule):
                     for group in self.assignments
                     if group.load_as_choice == LOAD_AS_OBJECTS]
         return []
-        
+    
+    def get_column_names(self):
+        if self.assignment_method == ASSIGN_ALL:
+            return self.get_image_names()
+        column_names = []
+        for group in self.assignments:
+            if group.load_as_choice == LOAD_AS_OBJECTS:
+                column_names.append(group.object_name.value)
+            else:
+                column_names.append(group.image_name.value)
+        return column_names
             
     def get_measurement_columns(self, pipeline):
         '''Create a list of measurements produced by this module
@@ -967,13 +924,18 @@ class NamesAndTypes(cpm.CPModule):
             assert all([m1 == m2 for m1, m2 in zip(self.modpath, modpath)])
             return self.ipd
         
+    filter_fn = None
     def filter_ipd(self, ipd, group):
-        modpath = Images.url_to_modpath(ipd.url)
+        assert ipd.jipd is not None
+        if self.filter_fn is None:
+            self.filter_fn = J.make_static_call(
+                "org/cellprofiler/imageset/filter/Filter",
+                "filter",
+                "(Ljava/lang/String;"
+                "Lorg/cellprofiler/imageset/filter/ImagePlaneDetails;)Z")
         try:
-            match = group.rule_filter.evaluate(
-                (cps.FileCollectionDisplay.NODE_IMAGE_PLANE, 
-                 modpath, self.FakeModpathResolver(modpath, ipd)))
-            return match
+            jexpression = J.get_env().new_string_utf(group.rule_filter.value_text)
+            return self.filter_fn(jexpression, ipd.jipd)
         except:
             return False
         

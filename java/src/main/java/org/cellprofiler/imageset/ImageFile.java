@@ -142,6 +142,13 @@ public class ImageFile {
 	}
 	
 	/**
+	 * Remove the XML document object (e.g. to save space)
+	 */
+	public void clearXMLDocument() {
+		this.omexml = null;
+	}
+	
+	/**
 	 * @return the root of the OME document model.
 	 */
 	public OME getMetadata() {

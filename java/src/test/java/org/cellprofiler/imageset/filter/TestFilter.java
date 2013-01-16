@@ -116,6 +116,18 @@ public class TestFilter {
 				"foo.jpg", false);
 	}
 	@Test
+	public void testEmptyLiteral() {
+		testSomething("file does contain \"\"", "foo.jpg", true);
+	}
+	@Test
+	public void testQuoteEscapedLiteral() {
+		testSomething("file does contain \"\\\"\"", "foo\".jpg", true);
+		testSomething("file does contain \"\\\"\"", "foo.jpg", false);
+		testSomething("file does contain \"\\\"foo\\\".\"", "\"foo\".bar", true);
+		testSomething("file does contain \"\\\"foo\\\".\"", "\"foo.bar", false);
+		testSomething("file does contain \"\\\"foo\\\".\"", "\"foo\"bar", false);
+	}
+	@Test
 	public void testTokenParser() {
 		String [][] metadata = {{"foo", "bar"}};
 		testSomething("metadata does foo \"bar\"", metadata, true );
@@ -128,6 +140,8 @@ public class TestFilter {
 		testSomething("file does startwith \"f\"", "foo.jpg", true);
 		testSomething("file does endwith \".jpg\"", "foo.jpg", true);
 		testSomething("file does eq \"foo.jpg\"", "foo.jpg", true);
+		testSomething("file does containregexp \"oo\\\\.jp\"", "foo.jpg", true);
+		testSomething("file does containregexp \"oo\\\\.jp\"", "foo?jpg", false);
 		testSomething("file doesnot eq \"foo.jpg\"", "foo.jpg", false);
 		testSomething("directory does contain \"foo\"", "foo", "bar.jpg", true);
 		testSomething("metadata does foo \"bar\"", new String [][] {{"foo", "bar"}}, true);

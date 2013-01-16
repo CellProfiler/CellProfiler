@@ -330,7 +330,6 @@ class Metadata(cpm.CPModule):
         
         file_list = workspace.file_list
         pipeline = workspace.pipeline
-        self.ipd_metadata_keys = []
         extractor = self.build_extractor()
         
         env = J.get_env()
@@ -346,9 +345,13 @@ class Metadata(cpm.CPModule):
         extract_metadata_id = env.get_method_id(
             extractor_class,
             "extractMetadata",
-            "(Ljava/lang/String;IILjava/lang/String;)Ljava/util/Iterator;")
+            "(Ljava/lang/String;IILjava/lang/String;"
+            "[Lorg/cellprofiler/imageset/filter/ImagePlaneDetails;"
+            ")Ljava/util/Iterator;")
+        ipd_class = env.find_class("org/cellprofiler/imageset/filter/ImagePlaneDetails")
+        pIPD = env.make_object_array(1, ipd_class)
         
-        for ipd in pipeline.image_plane_details:
+        for ipd in pipeline.get_filtered_image_plane_details(workspace):
             series, index = [x if x is not None else 0 
                              for x in ipd.series, ipd.index]
             xmlmetadata = file_list.get_metadata(ipd.url)
@@ -357,8 +360,9 @@ class Metadata(cpm.CPModule):
             metadata = env.call_method(extractor, extract_metadata_id,
                                        env.new_string_utf(ipd.url),
                                        int(series), int(index),
-                                       xmlmetadata)
+                                       xmlmetadata, pIPD)
             ipd.metadata.update(J.iterate_java(metadata, wrap_entry_set))
+            ipd.jipd = env.get_object_array_elements(pIPD)[0]
         return True
     
     def build_extractor(self):
@@ -424,6 +428,16 @@ class Metadata(cpm.CPModule):
                         case_insensitive = group.wants_case_insensitive.value,
                         extractor = extractor,
                         fltr = fltr))
+        #
+        # Finally, we add the WellMetadataExtractor which has the inglorious
+        # job of making a well name from row and column, if present.
+        #
+        script = """
+        importPackage(Packages.org.cellprofiler.imageset);
+        extractor.addImagePlaneDetailsExtractor(new WellMetadataExtractor());
+        """
+        J.run_script(script, dict(extractor = extractor))
+        
         return extractor
                     
         
@@ -432,7 +446,7 @@ class Metadata(cpm.CPModule):
     
     def do_update_metadata(self, group):
         filelist = self.workspace.file_list
-        urls = self.pipeline.filter_urls(filelist.get_filelist())
+        urls = [ipd.url for ipd in self.pipeline.get_filtered_image_plane_details(self.workspace)]
         if len(urls) == 0:
             return
         def msg(url):
@@ -468,7 +482,7 @@ class Metadata(cpm.CPModule):
                 if not self.pipeline.find_image_plane_details(exemplar):
                     self.pipeline.add_image_plane_details([exemplar])
                 self.pipeline.add_image_metadata(url, metadata)
-            self.ipds = self.pipeline.get_filtered_image_plane_details()
+            self.ipds = self.pipeline.get_filtered_image_plane_details(self.workspace)
             self.update_metadata_keys()
                 
     def get_ipd_metadata(self, ipd):
@@ -531,8 +545,7 @@ class Metadata(cpm.CPModule):
     def on_activated(self, workspace):
         self.workspace = workspace
         self.pipeline = workspace.pipeline
-        self.pipeline.load_image_plane_details(workspace)
-        self.ipds = self.pipeline.get_filtered_image_plane_details()
+        self.ipds = self.pipeline.get_filtered_image_plane_details(workspace)
         self.ipd_metadata_keys = []
         self.update_metadata_keys()
         self.update_imported_metadata()

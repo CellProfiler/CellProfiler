@@ -549,10 +549,10 @@ class PathListCtrl(wx.PyScrolledWindow):
         assert isinstance(event, wx.MouseEvent)
         self.SetFocus()
         idx = self.get_mouse_idx(event)
+        if len(self.folder_items) == 0:
+            return
         item, path_idx = self[idx]
         if item is None:
-            if len(self.folder_items) == 0:
-                return
             item = self.folder_items[-1]
             path_idx = len(item.filenames)
         treeitem_x = wx.SystemSettings.GetMetric(wx.SYS_SMALLICON_X)

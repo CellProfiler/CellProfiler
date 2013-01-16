@@ -24,7 +24,7 @@ import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 
 class Groups(cpm.CPModule):
-    variable_revision_number = 1
+    variable_revision_number = 2
     module_name = "Groups"
     category = "File Processing"
     
@@ -61,8 +61,6 @@ class Groups(cpm.CPModule):
     def add_grouping_metadata(self, can_remove = True):
         group = cps.SettingsGroup()
         self.grouping_metadata.append(group)
-        group.append("image_name", cps.ImageNameSubscriber(
-            "Image name", "DNA"))
         def get_group_metadata_choices(pipeline):
             return self.get_metadata_choices(pipeline, group)
         group.append("metadata_choice", cps.Choice(
@@ -83,7 +81,7 @@ class Groups(cpm.CPModule):
         
     def get_metadata_choices(self, pipeline, group):
         if self.pipeline is not None:
-            return sorted(self.metadata_keys.get(group.image_name.value, ["None"]))
+            return sorted(self.metadata_keys)
         #
         # Unfortunate - an expensive operation to find the possible metadata
         #               keys from one of the columns in an image set.
@@ -94,7 +92,7 @@ class Groups(cpm.CPModule):
     def settings(self):
         result = [self.wants_groups, self.grouping_metadata_count]
         for group in self.grouping_metadata:
-            result += [group.image_name, group.metadata_choice]
+            result += [group.metadata_choice]
         return result
             
     def visible_settings(self):
@@ -102,7 +100,7 @@ class Groups(cpm.CPModule):
         if self.wants_groups:
             result += [self.grouping_text]
             for group in self.grouping_metadata:
-                result += [ group.image_name, group.metadata_choice]
+                result += [ group.metadata_choice]
                 if group.can_remove:
                     result += [group.remover]
                 result += [ group.divider ]
@@ -124,27 +122,22 @@ class Groups(cpm.CPModule):
         assert isinstance(self.pipeline, cpp.Pipeline)
         if self.wants_groups:
             self.image_sets_initialized = True
-            self.image_set_channel_descriptors, \
-                self.image_set_key_names, \
-                self.image_sets = self.pipeline.get_image_sets(workspace, self)
-            for i, iscd in enumerate(self.image_set_channel_descriptors):
-                column_name = iscd.name
-                metadata_keys = set()
-                first = True
-                for ipds in self.image_sets.values():
-                    ipd = ipds[i]
-                    if first:
-                        metadata_keys = set(ipd.metadata.keys())
-                        first = False
-                    else:
-                        metadata_keys.intersection_update(ipd.metadata.keys())
-                self.metadata_keys[column_name] = list(metadata_keys)
-            self.update_tables()
+            workspace.refresh_image_set()
+            self.metadata_keys = []
+            m = workspace.measurements
+            assert isinstance(m, cpmeas.Measurements)
+            for feature_name in m.get_feature_names(cpmeas.IMAGE):
+                if feature_name.startswith(cpmeas.C_METADATA):
+                    self.metadata_keys.append(
+                        feature_name[(len(cpmeas.C_METADATA)+1):])
+            is_valid = True
             for group in self.grouping_metadata:
                 try:
                     group.metadata_choice.test_valid(self.pipeline)
                 except:
-                    pass # bad pipeline
+                    is_valid = False
+            if is_valid:
+                self.update_tables()
         else:
             self.image_sets_initialized = False
         
@@ -162,96 +155,93 @@ class Groups(cpm.CPModule):
         # Unfortunately, test_valid has the side effect of getting
         # the choices set which is why it's called here
         #
+        is_valid = True
         for group in self.grouping_metadata:
             try:
                 group.metadata_choice.test_valid(pipeline)
             except:
-                pass
-        self.update_tables()
+                is_valid = False
+        if is_valid:
+            self.update_tables()
         
     def update_tables(self):
         if self.wants_groups:
-            for group in self.grouping_metadata:
-                image_name = group.image_name.value
-                metadata_key = group.metadata_choice.value
-                if image_name not in [
-                    iscd.name for iscd in self.image_set_channel_descriptors]:
-                    return # invalid image name
-                if not self.metadata_keys.has_key(image_name):
-                    return
-                if metadata_key not in self.metadata_keys[image_name]:
-                    return
-            self.key_list,self.image_set_groupings = self.compute_groups(
-                self.image_set_channel_descriptors, 
-                self.image_set_key_names,
-                self.image_sets)
+            try:
+                self.workspace.refresh_image_set()
+            except:
+                return
+            m = self.workspace.measurements
+            assert isinstance(m, cpmeas.Measurements)
+            channel_descriptors = m.get_channel_descriptors()
+            
             self.grouping_list.clear_columns()
             self.grouping_list.clear_rows()
             self.image_set_list.clear_columns()
             self.image_set_list.clear_rows()
-            for i, (idx, key) in enumerate(self.key_list):
-                image_name = self.image_set_channel_descriptors[idx].name
-                for l in (self.grouping_list, self.image_set_list):
-                    l.insert_column(i, "Group: %s:%s" % (image_name, key))
+            metadata_key_names = [group.metadata_choice.value
+                                  for group in self.grouping_metadata]
+            metadata_feature_names = ["_".join((cpmeas.C_METADATA, key))
+                                      for key in metadata_key_names]
+            metadata_key_names =  [
+                x[(len(cpmeas.C_METADATA)+1):]
+                for x in metadata_feature_names]
+            image_set_feature_names = [
+                cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX] + metadata_feature_names
+            self.image_set_list.insert_column(0, "Group number")
+            self.image_set_list.insert_column(1, "Group index")
+            
+            for i, key in enumerate(metadata_key_names):
+                for l, offset in ((self.grouping_list, 0),
+                                  (self.image_set_list, 2)):
+                    l.insert_column(i+offset, "Group: %s" % key)
                 
-            self.grouping_list.insert_column(len(self.key_list), "Count")
-            for i, iscd in enumerate(self.image_set_channel_descriptors):
+            self.grouping_list.insert_column(len(metadata_key_names), "Count")
+            
+            image_numbers = m.get_image_numbers()
+            group_indexes = m[cpmeas.IMAGE, 
+                              cpmeas.GROUP_INDEX, 
+                              image_numbers][:]
+            group_numbers = m[cpmeas.IMAGE, 
+                              cpmeas.GROUP_NUMBER, 
+                              image_numbers][:]
+            counts = np.bincount(group_numbers)
+            first_indexes = np.argwhere(group_indexes == 1).flatten()
+            group_keys = [
+                m[cpmeas.IMAGE, feature, image_numbers]
+                for feature in metadata_feature_names]
+            k_count = sorted([(group_numbers[i], 
+                               [x[i] for x in group_keys], 
+                               counts[group_numbers[i]])
+                              for i in first_indexes])
+            for group_number, group_key_values, c in k_count:
+                row = group_key_values + [c]
+                self.grouping_list.data.append(row)
+
+            for i, iscd in enumerate(channel_descriptors):
+                assert isinstance(iscd, cpp.Pipeline.ImageSetChannelDescriptor)
                 image_name = iscd.name
-                idx = len(self.key_list) + i*2
+                idx = len(image_set_feature_names)
                 self.image_set_list.insert_column(idx, "Path: %s" % image_name)
                 self.image_set_list.insert_column(idx+1, "File: %s" % image_name)
-                
-            for i, key_name in enumerate(self.image_set_key_names):
-                idx = (len(self.key_list) + 
-                       2 * len(self.image_set_channel_descriptors) + i)
-                self.image_set_list.insert_column(idx, key_name)
-            
-            for j, grouping_keys in enumerate(
-                sorted(self.image_set_groupings.keys())):
-                count = len(self.image_set_groupings[grouping_keys])
-                row = list(grouping_keys) + [str(count)]
-                self.grouping_list.data.append(row)
-                for image_set_keys in \
-                    sorted(self.image_set_groupings[grouping_keys]):
-                    ipds = self.image_sets[image_set_keys]
-                    row = (list(grouping_keys) + 
-                           sum([list(os.path.split(ipd.path)) 
-                                for ipd in ipds], []) +
-                           list(image_set_keys))
-                    self.image_set_list.data.append(row)
-            
-    def compute_groups(self, image_set_channel_descriptors,
-                       image_set_key_names, image_sets):
-        '''Return the grouped image sets for the pipeline
-        
-        Returns a two-tuple. The first entry is a key list giving
-        the metadata key and column index in the image set used to fetch
-        the grouping metadata. If the entry has a length of zero, there
-        is no grouping.
-        
-        The second entry is a dictionary of grouping key to list of
-        image set keys.
-        '''
-        if not self.wants_groups:
-            return [], { ():sorted(image_sets.keys()) }
-        
-        key_list = []
-        image_set_groupings = {}
-        column_dict = dict([(iscd.name, i) for i, iscd in 
-                            enumerate(image_set_channel_descriptors)])
-        for group in self.grouping_metadata:
-            key_list.append((column_dict[group.image_name.value],
-                             group.metadata_choice.value))
-        for keys, ipds in image_sets.iteritems():
-            grouping_keys = tuple([ipds[idx].metadata[k]
-                                   for idx, k in key_list])
-            if not image_set_groupings.has_key(grouping_keys):
-                image_set_groupings[grouping_keys] = []
-            image_set_groupings[grouping_keys].append(keys)
-        for v in image_set_groupings.values():
-            v.sort()
-        return key_list, image_set_groupings
+                if iscd.channel_type == iscd.CT_OBJECTS:
+                    image_set_feature_names.append(
+                        cpmeas.C_OBJECTS_PATH_NAME + "_" + iscd.name)
+                    image_set_feature_names.append(
+                        cpmeas.C_OBJECTS_FILE_NAME + "_" + iscd.name)
+                else:
+                    image_set_feature_names.append(
+                        cpmeas.C_PATH_NAME + "_" + iscd.name)
+                    image_set_feature_names.append(
+                        cpmeas.C_FILE_NAME + "_" + iscd.name)
 
+            all_features = [m[cpmeas.IMAGE, ftr, image_numbers]
+                            for ftr in image_set_feature_names]
+            order = np.lexsort((group_indexes, group_numbers))
+                
+            for idx in order:
+                row = [unicode(x[idx]) for x in all_features]
+                self.image_set_list.data.append(row)
+            
     def get_groupings(self, workspace):
         '''Return the image groupings of the image sets in an image set list
         
@@ -303,7 +293,10 @@ class Groups(cpm.CPModule):
         if not self.wants_groups:
             return True
         
-        key_list, groupings = self.get_groupings(workspace)
+        result = self.get_groupings(workspace)
+        if result is None:
+            return False
+        key_list, groupings = result
         #
         # Sort the groupings by key
         #
@@ -319,14 +312,12 @@ class Groups(cpm.CPModule):
             for keys, image_numbers in groupings])
         image_numbers = np.hstack([
             image_numbers for keys, image_numbers in groupings])
-        order = np.lexsort((image_numbers, ))
+        order = np.lexsort((group_indexes, group_numbers ))
         group_numbers = group_numbers[order]
         group_indexes = group_indexes[order]
         
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
-        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
-        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
         #
         # Downstream processing requires that image sets be ordered by
         # increasing group number, then increasing group index.
@@ -334,8 +325,24 @@ class Groups(cpm.CPModule):
         new_image_numbers = np.zeros(np.max(image_numbers) + 1, int)
         new_image_numbers[image_numbers[order]] = np.arange(len(image_numbers))+1
         m.reorder_image_measurements(new_image_numbers)
+        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
+        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
         return True
         
     def run(self, workspace):
         pass
     
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
+        if variable_revision_number == 1:
+            #
+            # Remove the image name from the settings
+            #
+            new_setting_values = \
+                setting_values[:(self.IDX_GROUPING_METADATA_COUNT+1)]
+            for i in range(int(setting_values[self.IDX_GROUPING_METADATA_COUNT])):
+                new_setting_values.append(
+                    setting_values[self.IDX_GROUPING_METADATA_COUNT + 2 + i*2])
+            setting_values = new_setting_values
+            variable_revision_number = 2
+        return setting_values, variable_revision_number, from_matlab

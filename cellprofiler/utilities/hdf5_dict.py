@@ -303,9 +303,16 @@ class HDF5Dict(object):
             with self.lock:
                 indices = self.indices[(object_name, feature_name)]
                 dataset = self.get_dataset(object_name, feature_name)
+                if dataset is None or dataset.shape[0] == 0:
+                    return [None for image_number in num_idx]
+                if (len(indices) / 2 < len(num_idx)):
+                    #
+                    # Optimize by fetching complete dataset
+                    # if fetching more than 1/2 of indices
+                    #
+                    dataset = dataset[:]
                 return [None 
-                        if ((dataset is None) or
-                            (isinstance(dest, slice) and 
+                        if ((isinstance(dest, slice) and 
                              dest.start is not None and 
                              dest.start == dest.stop))
                         else dataset[dest]

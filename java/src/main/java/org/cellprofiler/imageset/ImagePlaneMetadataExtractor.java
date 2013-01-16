@@ -156,18 +156,23 @@ public class ImagePlaneMetadataExtractor  {
 	 * @param series series # of image plane
 	 * @param index index # of image plane
 	 * @param metadata OME xml metadata if present
+	 * @param pIPD an array of length 1 that's used to return the Java
+	 *        ImagePlaneDetails built by this method, populated with metadata.
 	 * @return an iterator over the metadata entries.
 	 * @throws IOException 
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
 	 */
 	public Iterator<Map.Entry<String, String>> extractMetadata(
-			String sURL, int series, int index, String metadata) 
+			String sURL, int series, int index, String metadata, ImagePlaneDetails [] pIPD) 
 			throws ParserConfigurationException, SAXException, IOException {
 		ImageFile imageFile = new ImageFile(new URL(sURL));
 		if (metadata != null)
 			imageFile.setXMLDocument(metadata);
 		ImagePlane imagePlane = new ImagePlane(imageFile, series, index);
-		return extract(imagePlane).metadata.entrySet().iterator();
+		ImagePlaneDetails result = extract(imagePlane);
+		pIPD[0] = result;
+		result.imagePlane.getImageFile().clearXMLDocument();
+		return result.metadata.entrySet().iterator();
 	}
 }

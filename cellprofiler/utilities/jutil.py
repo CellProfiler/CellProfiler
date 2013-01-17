@@ -286,12 +286,6 @@ def start_vm(args, run_headless = False):
                 cp_arg = "-Djava.class.path=" + js_jar
                 arg_idx = -1
             if sys.platform == "darwin":
-                logger.debug("Loading runnablequeue from %s" % utils_path)
-                runnablequeue_jar = os.path.join(
-                    utils_path, "runnablequeue-1.0.0.jar")
-                assert os.path.exists(runnablequeue_jar)
-                args[arg_idx] = cp_arg + os.pathsep + runnablequeue_jar
-                
                 vm.create_mac(args, RQCLS)
                 env = vm.attach()
                 __thread_local_env.env = env

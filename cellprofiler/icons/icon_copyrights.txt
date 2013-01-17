@@ -10,3 +10,20 @@ Creative Commons Attribution 3.0
 movie_16.png
 Free for use with attribution to:
     http://pixel-mixer.com
+    
+color.png
+Image from the Silk icon theme by Mark James. Free for use with attribution to:
+    http://www.famfamfam.com/lab/icons/silk/
+    
+filter.png
+Free for use with attribution to Oxygen Team:
+    http://www.oxygen-icons.org/
+    
+illumination_function.png
+mask.png
+Free for use with attribution to Yusuke Kamiyamane
+    http://p.yusukekamiyamane.com/
+    
+objects.png
+GPL licensed: Gnome project
+http://www.gnome.org/

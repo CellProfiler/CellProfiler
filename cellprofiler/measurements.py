@@ -1314,6 +1314,13 @@ class Measurements(object):
                 iscds.append(ImageSetChannelDescriptor(channel_name, channel_type))
         return iscds
     
+    def get_channel_descriptor(self, name):
+        '''Return the channel descriptor with the given name'''
+        for iscd in self.get_channel_descriptors():
+            if iscd.name == name:
+                return iscd
+        return None
+    
     def set_metadata_tags(self, metadata_tags):
         '''Write the metadata tags that are used to make an image set
         

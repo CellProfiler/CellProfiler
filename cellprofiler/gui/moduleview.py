@@ -33,7 +33,6 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.icons import get_builtin_image
-from cellprofiler.gui.html import HtmlClickableWindow
 from regexp_editor import edit_regexp
 from htmldialog import HTMLDialog
 from treecheckboxdialog import TreeCheckboxDialog
@@ -233,18 +232,17 @@ class ModuleView:
     gives the ui for editing the setting.
     """
     
-    def __init__(self, module_panel, workspace, 
-                 as_datatool=False, 
-                 path_list_ctrl = None,
-                 path_list_filter_checkbox = None,
-                 path_list_update_button = None):
+    def __init__(self, top_panel, 
+                 workspace, 
+                 as_datatool=False,
+                 frame = None,
+                 notes_panel = None):
         '''Constructor
         
         module_panel - the top-level panel used by the view
         workspace - the current workspace
-        path_list_ctrl - the path_list_ctrl displays the current list of files
-        path_list_filter_checkbox - check this to show/hide filtered files
-        path_list_update_button - click this to update the filter status of files
+        as_datatool - True if module is being run as a data tool
+        notes_panel - panel in which to construct the notes GUI
         '''
         pipeline = workspace.pipeline
         self.__workspace = workspace
@@ -254,36 +252,14 @@ class ModuleView:
         # Build the top-level GUI windows
         #
         #############################################
-        self.top_panel = module_panel
-        self.path_list_ctrl = path_list_ctrl
-        self.path_list_filter_checkbox = path_list_filter_checkbox
-        self.path_list_display_setting = None
-        self.notes_panel = wx.Panel(self.top_panel)
-        self.__module_panel = wx.Panel(self.top_panel)
+        self.notes_panel = notes_panel
+        self.__frame = frame
+        self.__module_panel = top_panel
         self.__sizer = ModuleSizer(0, 3)
         self.module_panel.Bind(wx.EVT_CHILD_FOCUS, self.skip_event)
         self.module_panel.SetSizer(self.__sizer)
-        self.top_level_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.top_panel.SetSizer(self.top_level_sizer)
-        self.make_notes_gui()
-        self.module_panel.Hide()
-        self.notes_panel.Hide()
-        if not as_datatool:
-            self.top_level_sizer.Add(self.notes_panel, 0, wx.EXPAND | wx.ALL, 4)
-        if path_list_ctrl is not None:
-            self.path_list_sizer = wx.BoxSizer(wx.VERTICAL)
-            self.top_level_sizer.Add(self.path_list_sizer, 1, wx.EXPAND | wx.ALL, 4)
-            self.path_list_sizer.Add(path_list_ctrl, 1, wx.EXPAND)
-            self.path_list_sizer.AddSpacer(2)
-            subsizer = wx.BoxSizer(wx.HORIZONTAL)
-            subsizer.Add(self.path_list_filter_checkbox)
-            subsizer.AddSpacer(5)
-            subsizer.Add(path_list_update_button)
-            self.path_list_sizer.Add(subsizer)
-            self.top_level_sizer.Hide(self.path_list_sizer)
-            self.path_list_filter_checkbox.Bind(
-                wx.EVT_CHECKBOX, self.on_path_list_filter_checkbox_event)
-        self.top_level_sizer.Add(self.module_panel, 1, wx.EXPAND | wx.ALL, 4)
+        if notes_panel is not None:
+            self.make_notes_gui()
 
         self.__pipeline = pipeline
         self.__as_datatool = as_datatool
@@ -293,14 +269,7 @@ class ModuleView:
         self.__inside_notify = False
         self.__handle_change = True
         self.__notes_text = None
-        if cpprefs.get_startup_blurb():
-            self.__startup_blurb = HtmlClickableWindow(self.top_panel, wx.ID_ANY, style=wx.NO_BORDER)
-            self.__startup_blurb.load_startup_blurb()
-            self.top_level_sizer.Add(self.__startup_blurb, 1, wx.EXPAND)
-        else:
-            self.__startup_blurb = None
-        wx.EVT_SIZE(self.top_panel, self.on_size)
-        wx.EVT_IDLE(self.top_panel, self.on_idle)
+        wx.EVT_IDLE(self.__module_panel, self.on_idle)
         
     def start(self):
         '''Start the module view
@@ -360,13 +329,7 @@ class ModuleView:
 
     def set_selection(self, module_num):
         """Initialize the controls in the view to the settings of the module"""
-        self.top_panel.Freeze()
-        if self.__startup_blurb:
-            self.__startup_blurb.Destroy()
-            self.__startup_blurb = None
-        self.module_panel.Show()
-        self.__module_panel.SetVirtualSizeWH(0, 0)
-        self.top_panel.SetupScrolling(scrollToTop=False)
+        self.module_panel.Freeze()
         self.__handle_change = False
         try:
             new_module          = self.__pipeline.module(module_num)
@@ -381,15 +344,12 @@ class ModuleView:
                     new_module.test_valid(self.__pipeline)
                 except:
                     pass
-            if not self.__as_datatool:
-                self.notes_panel.Show()
             self.__module       = new_module
             self.__controls     = []
             self.__static_texts = []
             data                = []
-            if self.path_list_ctrl is not None:
-                self.top_level_sizer.Hide(self.path_list_sizer)
-                self.path_list_display_setting = None
+            imageset_control    = None
+            path_control        = None
             if reselecting:
                 self.hide_settings()
             else:
@@ -413,13 +373,11 @@ class ModuleView:
             #################################
             for i, v in enumerate(settings):
                 if isinstance(v, cps.PathListDisplay):
-                    if self.path_list_ctrl is not None:
-                        should_show = v.should_show_filter()
-                        self.top_level_sizer.Show(self.path_list_sizer)
-                        self.path_list_filter_checkbox.SetValue(should_show)
-                        self.path_list_display_setting = v
-                        self.path_list_ctrl.set_show_disabled(should_show)
+                    path_control = v
                     continue
+                if isinstance(v, cps.ImageSetDisplay):
+                    v.on_event_fired = self.__frame.reset_imageset_ctrl
+                    imageset_control = v
                 flag = wx.EXPAND
                 border = 0
                 control_name = edit_control_name(v)
@@ -559,23 +517,17 @@ class ModuleView:
                 else:
                     help_control.Show()
                 sizer.Add(help_control, 0, wx.LEFT, 2)
-            self.module_panel.Fit()
-            self.top_panel.FitInside()
         finally:
-            self.top_panel.Thaw()
-            self.top_panel.Refresh()
+            self.module_panel.Thaw()
             self.__handle_change = True
-
-    def on_path_list_filter_checkbox_event(self, event):
-        '''Called when user checks checkbox to show filtered files'''
-        if self.path_list_display_setting is not None:
-            is_checked = self.path_list_filter_checkbox.IsChecked()
-            text = self.path_list_display_setting.get_proposed_text(
-                show_filtered=is_checked)
-            self.on_value_change(self.path_list_display_setting,
-                                 self.path_list_filter_checkbox,
-                                 text, event)
+            if self.__frame is not None:
+                self.__frame.show_module_ui(True)
+                self.__frame.show_imageset_ctrl(imageset_control is not None)
+                if imageset_control is not None:
+                    self.__frame.reset_imageset_ctrl(refresh_image_set=False)
+                self.__frame.show_path_list_ctrl(path_control is not None)
             
+
     def make_notes_gui(self):
         '''Make the GUI elements that contain the module notes'''
         #
@@ -1996,12 +1948,6 @@ class ModuleView:
         self.notify(setting_edited_event)
         self.reset_view()
     
-
-    def on_size(self, evt):
-        if self.__startup_blurb:
-            self.__startup_blurb.Size = self.__module_panel.ClientSize
-        evt.Skip()
-
     def on_idle(self,event):
         """Check to see if the selected module is valid"""
         last_idle_time = getattr(self, "last_idle_time", 0)
@@ -3498,6 +3444,7 @@ class ModuleSizer(wx.PySizer):
         self.__rows = rows
         self.__cols = cols
         self.__min_text_width = 150
+        self.__height_padding = 5
         self.__printed_exception = False
         self.__items = []
     
@@ -3545,7 +3492,7 @@ class ModuleSizer(wx.PySizer):
                 self.Children is None or
                 len(self.Children) == 0):
                 return wx.Size(0,0)
-            height = 0
+            height = self.__height_padding
             for j in range(0,self.__rows):
                 borders = [self.get_item(col,j).GetBorder() 
                            for col in range(2)
@@ -3555,6 +3502,7 @@ class ModuleSizer(wx.PySizer):
                 else:
                     height_border = max(borders)
                     height += self.get_row_height(j) + 2*height_border
+            height += self.__height_padding
             self.__printed_exception = False
             return wx.Size(self.calc_edit_size()[0] + self.__min_text_width + 
                            self.calc_help_size()[0],
@@ -3637,7 +3585,7 @@ class ModuleSizer(wx.PySizer):
             # Change all static text controls to wrap at the text width. Then
             # ask the items how high they are and do the layout of the line.
             #
-            height = 0
+            height = self.__height_padding
             panel = self.GetContainingWindow()
             for i in range(self.__rows):
                 text_item = self.get_item(0, i)
@@ -3664,7 +3612,7 @@ class ModuleSizer(wx.PySizer):
                     item_location = wx.Point(text_width - third_width / 2, 
                                              height + border + item_height / 2)
                     item_size = wx.Size(third_width, edit_item.Size[1])
-                    #item_location = panel.CalcScrolledPosition(item_location)
+                    item_location = panel.CalcScrolledPosition(item_location)
                     edit_item.SetDimension(item_location, item_size)
                 else:
                     text_item.Show(True)
@@ -3681,10 +3629,9 @@ class ModuleSizer(wx.PySizer):
                         else:
                             item_size = wx.Size(widths[j], item.CalcMin()[1])
                         item_location = wx.Point(sum(widths[0:j]), height)
-                        #item_location = panel.CalcScrolledPosition(item_location)
+                        item_location = panel.CalcScrolledPosition(item_location)
                         item.SetDimension(item_location, item_size)
                 height += self.get_row_height(i) + 2*height_border
-            panel.SetVirtualSizeWH(width, height+20)
         except:
             # This happens, hopefully transiently, on the Mac
             if not self.__printed_exception:

@@ -138,9 +138,7 @@ class NamesAndTypes(cpm.CPModule):
             errors, but harder to use than <i>Match by order</i>.
             """)
         self.join = cps.Joiner("")
-        self.update_table_button = cps.DoSomething(
-            "","Update the table below", self.make_image_sets_and_update_table)
-        self.table = cps.Table("")
+        self.imageset_setting = cps.ImageSetDisplay("", "Update table")
         
     def add_assignment(self, can_remove = True):
         '''Add a rules assignment'''
@@ -240,12 +238,7 @@ class NamesAndTypes(cpm.CPModule):
                 result += [self.matching_choice]
                 if self.matching_choice == MATCH_BY_METADATA:
                     result += [self.join]
-        result += [self.update_table_button]
-        if len(self.table.data) > 0:
-            self.update_table_button.label = "Update table"
-            result += [self.table]
-        else:
-            self.update_table_button.label = "Show table"
+        result += [self.imageset_setting]
         return result
     
     def prepare_settings(self, setting_values):
@@ -531,8 +524,11 @@ class NamesAndTypes(cpm.CPModule):
                 if J.is_instance_of(error, "org/cellprofiler/imageset/ImageSetDuplicateError"):
                     errant_channel = J.call(error, "getChannelName",
                                             "()Ljava/lang/String;")
-                    duplicates = getIPDs(J.call(error, "getImagePlaneDetails",
-                                                "()Ljava/util/List;"))
+                    iduplicates = J.iterate_collection(
+                        J.call(error, "getImagePlaneDetails",
+                               "()Ljava/util/List;"))
+                    duplicates = [ipds[J.call(duplicate, "getIndex", "()I")]
+                                  for duplicate in iduplicates]
                     image_sets[key][errant_channel] = tuple(duplicates)
             self.image_sets = sorted(image_sets.iteritems())
             return columns
@@ -704,7 +700,6 @@ class NamesAndTypes(cpm.CPModule):
             self.update_all_columns()
         else:
             self.ipd_columns = []
-        self.table.clear_rows()
         
     def on_deactivated(self):
         self.pipeline = None
@@ -778,11 +773,6 @@ class NamesAndTypes(cpm.CPModule):
                 self.update_column_metadata(i)
         self.update_all_metadata_predicates()
         self.update_joiner()
-        
-    def make_image_sets_and_update_table(self):
-        self.update_all_columns()
-        self.make_image_sets()
-        self.update_table()
         
     def make_image_sets(self):
         '''Create image sets from the ipd columns and joining rules

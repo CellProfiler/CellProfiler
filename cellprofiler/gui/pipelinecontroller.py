@@ -27,6 +27,7 @@ import random
 import string
 import hashlib
 from cStringIO import StringIO
+import threading
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
@@ -788,21 +789,74 @@ class PipelineController:
         self.__workspace.file_list.remove_files_from_filelist(paths)
             
     def on_pathlist_drop_files(self, x, y, filenames):
-        urls = []
-        for pathname in filenames:
-            # Hack - convert drive names to lower case in
-            #        Windows to normalize them.
-            if (sys.platform == 'win32' and pathname[0].isalpha()
-                and pathname[1] == ":"):
-                pathname = os.path.normpath(pathname[:2]) + pathname[2:]
-            
-            if os.path.isfile(pathname):
-                urls.append(pathname2url(pathname))
-            elif os.path.isdir(pathname):
-                W.walk_in_background(pathname,
-                                     self.on_walk_callback,
-                                     self.on_walk_completed)
-        self.add_urls(urls)
+        with wx.ProgressDialog("Processing files",
+                               "Initializing",
+                               parent = self.__frame,
+                               style = wx.PD_APP_MODAL | wx.PD_CAN_ABORT) as dlg:
+            assert isinstance(dlg, wx.ProgressDialog)
+            queue = Queue.Queue()
+            interrupt = [False]
+            message = ["Initializing"]
+            def fn(filenames=filenames, 
+                   interrupt=interrupt, 
+                   message=message,
+                   queue = queue):
+                urls = []
+                for pathname in filenames:
+                    if interrupt[0]:
+                        break
+                    # Hack - convert drive names to lower case in
+                    #        Windows to normalize them.
+                    if (sys.platform == 'win32' and pathname[0].isalpha()
+                        and pathname[1] == ":"):
+                        pathname = os.path.normpath(pathname[:2]) + pathname[2:]
+                    message[0] = "Processing " + pathname
+                    
+                    if os.path.isfile(pathname):
+                        urls.append(pathname2url(pathname))
+                        if len(urls) > 100:
+                            queue.put(urls)
+                            urls = []
+                    elif os.path.isdir(pathname):
+                        for dirpath, dirnames, filenames in os.walk(pathname):
+                            for filename in filenames:
+                                if interrupt[0]:
+                                    break
+                                path = os.path.join(dirpath, filename)
+                                urls.append(pathname2url(path))
+                                message[0] = "Processing " + path
+                                if len(urls) > 100:
+                                    queue.put(urls)
+                                    urls = []
+                            else:
+                                continue
+                            break
+                queue.put(urls)
+                
+            thread = threading.Thread(target=fn)
+            thread.setDaemon(True)
+            thread.start()
+            while not interrupt[0]:
+                try:
+                    urls = queue.get(block=True, timeout=0.1)
+                    try:
+                        while True:
+                            urls += queue.get(block=False)
+                    except:
+                        keep_going, skip = dlg.UpdatePulse(
+                            "Adding %d files to file list" %len(urls))
+                        self.add_urls(urls)
+                except:
+                    if not thread.is_alive():
+                        try:
+                            self.add_urls(queue.get(block=False))
+                        except:
+                            pass
+                        break
+                    keep_going, skip = dlg.UpdatePulse(message[0])
+                dlg.Fit()
+                interrupt[0] = not keep_going
+            interrupt[0] = True
     
     def on_pathlist_drop_text(self, x, y, text):
         pathnames = [p.strip() for p in text.split("\n")]

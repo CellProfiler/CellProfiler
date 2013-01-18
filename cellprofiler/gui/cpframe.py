@@ -18,7 +18,7 @@ import pdb
 import wx
 import wx.html
 import wx.lib.scrolledpanel
-import cellprofiler.preferences
+import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 
@@ -36,6 +36,7 @@ from cellprofiler.gui.datatoolframe import DataToolFrame
 from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
 from cellprofiler.gui.errordialog import display_error_message
 from cellprofiler.gui.pathlist import PathListCtrl
+from cellprofiler.gui.imagesetctrl import ImageSetCtrl
 import cellprofiler.gui.html
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.utilities.version as version
@@ -107,7 +108,10 @@ class CPFrame(wx.Frame):
         """
         kwds["style"] = wx.DEFAULT_FRAME_STYLE
         wx.Frame.__init__(self, *args, **kwds)
-        background_color = cellprofiler.preferences.get_background_color()
+        self.__pipeline = Pipeline()
+        self.__workspace = cpw.Workspace(
+            self.__pipeline, None, None, None, None, None)
+        background_color = cpprefs.get_background_color()
         self.BackgroundColour = background_color
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
         
@@ -123,36 +127,111 @@ class CPFrame(wx.Frame):
         # bottom left will be the file browser
 
         self.__logo_panel = wx.Panel(self.__left_win,-1,style=wx.SIMPLE_BORDER)
-        self.__logo_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
+        self.__logo_panel.BackgroundColour = cpprefs.get_background_color()
         self.__module_list_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__left_win, -1)
         self.__module_list_panel.SetBackgroundColour(background_color)
         self.__module_list_panel.SetToolTipString("The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
         self.__pipeline_test_panel = wx.Panel(self.__left_win,-1)
         self.__pipeline_test_panel.SetToolTipString("The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")
         self.__pipeline_test_panel.Hide()
-        self.__pipeline_test_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
+        self.__pipeline_test_panel.BackgroundColour = cpprefs.get_background_color()
         self.__module_controls_panel = wx.Panel(self.__left_win,-1, style=wx.BORDER_NONE)
-        self.__module_controls_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
+        self.__module_controls_panel.BackgroundColour = cpprefs.get_background_color()
         self.__module_controls_panel.SetToolTipString("The module controls add, remove, move and get help for modules. Click on the '+' button to begin adding modules.")
-        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__right_win,-1,style=wx.SUNKEN_BORDER | wx.TAB_TRAVERSAL)
-        self.__module_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
-        self.__module_panel.SetToolTipString("The settings panel contains the available options for each module.")
+        #
+        # The right window has the following structure:
+        #
+        #  right_win
+        #    startup_blurb
+        #    Notes window
+        #    path_module_imageset_panel
+        #        path_list_sash
+        #            path_list_ctrl
+        #            path_list_filter_checkbox
+        #            path_list_button
+        #        module_panel
+        #        image_set_list_sash
+        #            image_set_list_ctrl
+        #
+        self.__right_win.Sizer = wx.BoxSizer(wx.VERTICAL)
+        self.__startup_blurb = HtmlClickableWindow(
+            self.__right_win, wx.ID_ANY, style=wx.NO_BORDER)
+        self.__right_win.Sizer.Add(self.__startup_blurb, 1, wx.EXPAND)
+        self.__notes_panel = wx.Panel(self.__right_win)
+        self.__right_win.Sizer.Add(self.__notes_panel, 0, wx.EXPAND | wx.ALL)
+        self.__right_win.Sizer.AddSpacer(4)
+        self.__path_module_imageset_panel = wx.Panel(self.__right_win)
+        self.__right_win.Sizer.Add(self.__path_module_imageset_panel, 1,
+                                   wx.EXPAND | wx.ALL)
+        self.__path_module_imageset_panel.Bind(
+            wx.EVT_SIZE, self.__on_path_module_imageset_panel_size)
+                                               
         #
         # The path list control that holds all of the files being dealt with
         # by the pipeline
         #
-        self.__path_list_ctrl = PathListCtrl(self.__module_panel)
+        self.__path_list_sash = wx.SashLayoutWindow(
+            self.__path_module_imageset_panel, style=wx.NO_BORDER)
+        self.__path_list_sash.Bind(wx.EVT_SASH_DRAGGED,
+                                   self.__on_sash_drag)
+        self.__path_list_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
+        self.__path_list_sash.SetAlignment(wx.LAYOUT_TOP)
+        self.__path_list_sash.SetDefaultSize((1000,  100))
+        self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
+        self.__path_list_sash.BackgroundColour = cpprefs.get_background_color()
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        self.__path_list_sash.Sizer = sizer
+        self.__path_list_ctrl = PathListCtrl(self.__path_list_sash)
+        sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
+        sizer.AddSpacer(2)
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(hsizer, 0, wx.EXPAND |wx.BOTTOM, 3)
         self.__path_list_filter_checkbox = wx.CheckBox(
-            self.__module_panel,
+            self.__path_list_sash,
             label = "Show filtered files")
-        self.__path_list_button = wx.Button(self.__module_panel,
+        hsizer.Add(self.__path_list_filter_checkbox, 0, wx.EXPAND)
+        def show_disabled(event):
+            self.__path_list_ctrl.set_show_disabled(
+                self.__path_list_filter_checkbox.Value)
+        self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
+            
+        hsizer.AddSpacer(5)
+        self.__path_list_button = wx.Button(self.__path_list_sash,
                                             label = "Update filter")
+        hsizer.Add(self.__path_list_button, 0, wx.ALIGN_LEFT)
+        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(
+            self.__path_module_imageset_panel,
+            style=wx.SUNKEN_BORDER | wx.TAB_TRAVERSAL)
+        self.__module_panel.BackgroundColour = cpprefs.get_background_color()
+        self.__module_panel.SetToolTipString("The settings panel contains the available options for each module.")
+        self.__module_panel.SetupScrolling(True, True)
+        
+        self.__imageset_sash = wx.SashLayoutWindow(
+            self.__path_module_imageset_panel, style=wx.NO_BORDER)
+        self.__imageset_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
+        self.__imageset_sash.SetAlignment(wx.LAYOUT_BOTTOM)
+        self.__imageset_sash.SetDefaultSize((1000, 100))
+        self.__imageset_sash.SetSashVisible(wx.SASH_TOP, True)
+        self.__imageset_sash.Bind(wx.EVT_SASH_DRAGGED,
+                                  self.__on_sash_drag)
+        self.__imageset_ctrl = ImageSetCtrl(
+            self.__workspace, self.__imageset_sash, read_only=True)
+        #
+        # If the user wants to see the blurb on startup, show it and
+        # hide the module UI
+        #
+        if cpprefs.get_startup_blurb():
+            self.__startup_blurb.load_startup_blurb()
+            self.__notes_panel.Hide()
+            self.__path_module_imageset_panel.Hide()
+        else:
+            self.__startup_blurb.Hide()
+            
+        self.__right_win.Sizer.AddSpacer(4)
         self.__preferences_panel = wx.Panel(self.__right_win,-1)
-        self.__preferences_panel.BackgroundColour = cellprofiler.preferences.get_background_color()
+        self.__right_win.Sizer.Add(self.__preferences_panel, 0, wx.EXPAND)
+        self.__preferences_panel.BackgroundColour = cpprefs.get_background_color()
         self.__preferences_panel.SetToolTipString("The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
-        self.__pipeline = Pipeline()
-        self.__workspace = cpw.Workspace(
-            self.__pipeline, None, None, None, None, None)
         self.__add_menu()
         self.__attach_views()
         self.__set_properties()
@@ -165,6 +244,66 @@ class CPFrame(wx.Frame):
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
 
+    def show_path_list_ctrl(self, show):
+        '''Show or hide the path list control
+        
+        show - true to show, false to hide
+        '''
+        if bool(show) == bool(self.__path_list_sash.IsShown()):
+            return
+        self.__path_list_sash.Show(show)
+        wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
+                                          self.__module_panel)
+        self.__path_list_sash.Layout()
+    
+    def show_imageset_ctrl(self, show):
+        '''Show or hide the imageset control
+        
+        show - true to show, false to hide
+        '''
+        if bool(show) == bool(self.__imageset_sash.IsShown()):
+            return
+        self.__imageset_sash.Show(show)
+        wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
+                                          self.__module_panel)
+        self.__imageset_sash.Layout()
+        
+    def reset_imageset_ctrl(self, refresh_image_set=True):
+        if refresh_image_set:
+            self.__workspace.refresh_image_set()
+        self.__imageset_ctrl.recompute()
+        
+    def show_module_ui(self, show):
+        '''Show or hide the module and notes panel'''
+        if show and self.__startup_blurb is not None:
+            self.__startup_blurb.Hide()
+            self.__startup_blurb.Destroy()
+            self.__startup_blurb = None
+        self.__notes_panel.Show(show)
+        self.__path_module_imageset_panel.Show(show)
+        wx.LayoutAlgorithm().LayoutWindow(
+            self.__path_module_imageset_panel,
+            self.__module_panel)
+        self.__right_win.Layout()
+        self.__path_list_sash.Layout()
+        self.__module_panel.Layout()
+        self.__module_panel.SetupScrolling(scroll_x=True,
+                                           scroll_y=True,
+                                           scrollToTop=False)
+        self.__imageset_sash.Layout()
+        
+    def __on_sash_drag(self, event):
+        sash = event.GetEventObject()
+        width, _ = sash.GetSize()
+        sash.SetDefaultSize((width, event.GetDragRect().height))
+        wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
+                                          self.__module_panel)
+        sash.Layout()
+        
+    def __on_path_module_imageset_panel_size(self, event):
+        wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
+                                          self.__module_panel)
+        
     def OnClose(self, event):
         if event.CanVeto() and not self.pipeline_controller.check_close():
             event.Veto()
@@ -264,7 +403,7 @@ class CPFrame(wx.Frame):
         self.__menu_bar.Append(self.__menu_file,'&File')
         self.__menu_bar.Append(self.menu_edit, '&Edit')
         self.__menu_bar.Append(self.__menu_debug,'&Test')
-        if cellprofiler.preferences.get_show_sampling():
+        if cpprefs.get_show_sampling():
             self.__menu_sample = wx.Menu()
             self.__menu_sample.Append(ID_SAMPLE_INIT, 'Initialize Sampling', 'Initialize sampling up to current module')
             self.__menu_bar.Append(self.__menu_sample, '&Sample')
@@ -445,7 +584,7 @@ All rights reserved."""
             numpyobj = [(o, objgraph.numpy_size(o)) for o in objgraph.by_instanceof(objgraph.numpyarray)]
             numpyobj = [o for o, sz in numpyobj if (sz is None) or (sz > 1024)]
             objgraph.show_backrefs(numpyobj, max_depth=4,
-                                   filename=os.path.join(cellprofiler.preferences.get_default_output_directory(),
+                                   filename=os.path.join(cpprefs.get_default_output_directory(),
                                                          'cellprofiler_numpy.dot'))
         except Exception, e:
             print "Couldn't generate objgraph: %s"%(e)
@@ -588,7 +727,7 @@ All rights reserved."""
                             message = "Open an image file",
                             wildcard = "Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
                             style = wx.FD_OPEN)
-        dlg.Directory = cellprofiler.preferences.get_default_image_directory()
+        dlg.Directory = cpprefs.get_default_image_directory()
         if dlg.ShowModal() == wx.ID_OK:
             from cellprofiler.modules.loadimages import LoadImagesImageProvider
             from cellprofiler.gui.cpfigure import CPFigureFrame
@@ -614,9 +753,8 @@ All rights reserved."""
         self.__module_view = ModuleView(
             self.__module_panel,
             self.__workspace,
-            path_list_ctrl = self.__path_list_ctrl,
-            path_list_filter_checkbox = self.__path_list_filter_checkbox,
-            path_list_update_button = self.__path_list_button)
+            frame = self,
+            notes_panel = self.__notes_panel)
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view((self.__module_view))
         self.__preferences_view = PreferencesView(self.__preferences_panel)
@@ -645,11 +783,6 @@ All rights reserved."""
         top_left_sizer.Add(self.__pipeline_test_panel, 0, wx.EXPAND|wx.ALL,2)
         top_left_sizer.Add(self.__module_controls_panel,0,wx.EXPAND|wx.ALL,2)
         top_left_win.SetSizer(top_left_sizer)
-
-        right_sizer = wx.BoxSizer(wx.VERTICAL)
-        right_sizer.Add(self.__module_panel, 1, wx.EXPAND|wx.ALL, 1)
-        right_sizer.Add(self.__preferences_panel, 0, wx.EXPAND|wx.ALL, 1)
-        right_win.SetSizer(right_sizer)
 
         border = wx.BoxSizer()
         border.Add(splitter, 1, wx.EXPAND|wx.ALL,1)

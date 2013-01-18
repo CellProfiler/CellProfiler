@@ -21,5 +21,5 @@ public class ImageSetDuplicateError extends ImageSetError {
 		super(channelName, message, key);
 		this.ipds = ipds;
 	}
-	List<ImagePlaneDetails> getImagePlaneDetails() { return ipds; }
+	public List<ImagePlaneDetails> getImagePlaneDetails() { return ipds; }
 }

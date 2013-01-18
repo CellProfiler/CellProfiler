@@ -61,7 +61,8 @@ class ImageSetCache(object):
         max_size - maximum # of cached chunks (pages * features)
         '''
         self.m = m
-        assert isinstance(self.m, cpmeas.Measurements)
+        if m is None:
+            return
         self.page_size = page_size
         self.max_size = max_size
         self.cache = {}
@@ -70,25 +71,39 @@ class ImageSetCache(object):
         # Break the image set into pages
         #
         image_set_numbers = m.get_image_numbers()
-        self.pages = [image_set_numbers[i:(i+page_size)] 
-                      for i in range(0, len(image_set_numbers), page_size)]
-        self.image_set_page = np.zeros(np.max(image_set_numbers) + 1, int)
-        self.image_set_index = np.zeros(np.max(image_set_numbers) + 1, int)
-        for i, page in enumerate(self.pages):
-            self.image_set_page[page] = i
-            self.image_set_index[page] = np.arange(len(page))
+        if len(image_set_numbers) == 0:
+            self.pages = []
+            self.image_set_page = np.zeros(0, int)
+            self.image_set_index = np.zeros(0, int)
+        else:
+            self.pages = [image_set_numbers[i:(i+page_size)] 
+                          for i in range(0, len(image_set_numbers), page_size)]
+            self.image_set_page = np.zeros(np.max(image_set_numbers) + 1, int)
+            self.image_set_index = np.zeros(np.max(image_set_numbers) + 1, int)
+            for i, page in enumerate(self.pages):
+                self.image_set_page[page] = i
+                self.image_set_index[page] = np.arange(len(page))
+            
+    def __len__(self):
+        if self.m is None:
+            return 0
+        else:
+            return len(self.image_set_index)
         
     def __getitem__(self, idx):
         '''Get a feature for an image number'''
         feature, image_number = idx
+        if image_number > len(self.image_set_index):
+            return ''
         page = self.image_set_page[image_number]
         index = self.image_set_index[image_number]
         key = (feature, page)
         if not key in self.cache:
             if len(self.cache) >= self.max_size:
                 self.decimate()
-            entry = self.m[cpmeas.IMAGE, feature, self.pages[page]]
-            self.cache[key] = [entry, self.access_time]
+            entry = [self.m[cpmeas.IMAGE, feature, self.pages[page]],
+                     self.access_time]
+            self.cache[key] = entry
         else:
             entry = self.cache[key]
             entry[1] = self.access_time
@@ -145,27 +160,29 @@ class ImageSetCtrl(wx.grid.Grid):
 
             returns the number of rows and columns added or removed
             '''
+            self.cache = ImageSetCache(self.measurements)
             old_row_count = self.n_rows
             old_column_count = len(self.columns)
             self.columns = self.get_columns()
-            self.n_rows = self.measurements.image_set_count
-            self.image_numbers = self.measurements.get_image_numbers().copy()
-            self.metadata_tags = self.measurements.get_metadata_tags()
-            self.cache = ImageSetCache(self.measurements)
+            self.n_rows = len(self.cache)
+            if self.n_rows > 0:
+                self.image_numbers = self.measurements.get_image_numbers().copy()
+                self.metadata_tags = self.measurements.get_metadata_tags()
             return (self.n_rows - old_row_count,
                     len(self.columns) - old_column_count)
             
         @property
         def measurements(self):
             m = self.workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
             return m
 
         def get_columns(self):
+            columns = []
             m = self.measurements
+            if m is None or len(self.cache) == 0:
+                return columns
             assert isinstance(m, cpmeas.Measurements)
             metadata_tags = m.get_metadata_tags()
-            columns = []
             for feature in m.get_feature_names(cpmeas.IMAGE):
                 is_key = False
                 channel = None
@@ -264,7 +281,8 @@ class ImageSetCtrl(wx.grid.Grid):
             return row >= self.GetNumberRows() or col >= self.GetNumberCols()
         
         def GetValue(self, row, col):
-            if row > self.n_rows or col > len(self.columns):
+            if (row >= self.n_rows or col >= len(self.columns) or 
+                row >= len(self.image_numbers)):
                 return u""
             image_set = self.image_numbers[row]
             column = self.columns[col]
@@ -288,17 +306,20 @@ class ImageSetCtrl(wx.grid.Grid):
                 return value.encode("utf-8")
         
         def GetRowLabelValue(self, row):
-            m = self.measurements
+            if row >= len(self.image_numbers):
+                return ""
             image_number = self.image_numbers[row]
             metadata_tags = self.metadata_tags
             if len(metadata_tags) > 0:
-                key = [unicode(m[cpmeas.IMAGE, tag, image_number])
+                key = [unicode(self.cache[tag, image_number])
                        for tag in metadata_tags]
                 return " : ".join(key)
             
             return str(image_number)
             
         def GetColLabelValue(self, col):
+            if col >= len(self.columns):
+                return ""
             return self.columns[col].name
         
         def AppendCols(self, numCols):
@@ -352,7 +373,7 @@ class ImageSetCtrl(wx.grid.Grid):
             kwargs = dict(kwargs)
             del kwargs["display_mode"]
         else:
-            display_modes = DISPLAY_MODE_SIMPLE
+            display_mode = DISPLAY_MODE_SIMPLE
             
         wx.grid.Grid.__init__(self, *args, **kwargs)
         gclw = self.GetGridColLabelWindow()
@@ -429,9 +450,12 @@ class ImageSetCtrl(wx.grid.Grid):
     
     CORNER_HIT_NONE = None
     CORNER_HIT_DELETE = 0
+    CORNER_HIT_UPDATE = 0
     CORNER_HIT_UNDO = 1
     CORNER_HIT_REDO = 2
     CORNER_ICON_COUNT = 3
+    UPDATE = "Update"
+    BUTTON_PADDING = 4
 
     CORNER_ICON_PADDING = 2
     CORNER_ICON_SIZE = 16
@@ -447,8 +471,20 @@ class ImageSetCtrl(wx.grid.Grid):
         y = (crect.Height - self.CORNER_ICON_SIZE) / 2
         return wx.Rect(x, y, self.CORNER_ICON_SIZE, self.CORNER_ICON_SIZE)
     
+    def get_corner_update_button_rect(self):
+        crect = self.GridCornerLabelWindow.GetRect()
+        w, h = self.GridCornerLabelWindow.GetTextExtent(self.UPDATE)
+        w += 2 * self.BUTTON_PADDING
+        h += 2 * self.BUTTON_PADDING
+        x = crect.X + (crect.width - w) / 2
+        y = crect.Y + (crect.height - h) / 2
+        return wx.Rect(x, y, w, h)
+    
     def corner_hit_test(self, x, y):
         if self.read_only:
+            r = self.get_corner_update_button_rect()
+            if r.ContainsXY(x, y):
+                return self.CORNER_HIT_UPDATE
             return self.CORNER_HIT_NONE
         for i in range(self.CORNER_ICON_COUNT):
             r = self.get_corner_button_rect(i)
@@ -459,6 +495,7 @@ class ImageSetCtrl(wx.grid.Grid):
     def on_paint_corner(self, event):
         corner = self.GridCornerLabelWindow
         dc = wx.BufferedPaintDC(corner)
+        dc.SetFont(self.GridCornerLabelWindow.Font)
         old_brush = dc.Background
         new_brush = wx.Brush(self.GridCornerLabelWindow.BackgroundColour)
         dc.Background = new_brush
@@ -485,6 +522,18 @@ class ImageSetCtrl(wx.grid.Grid):
                         (self.CORNER_ICON_SIZE, self.CORNER_ICON_SIZE))
                     dc.DrawBitmap(bmp, r_icon.X, r_icon.Y, useMask=True)
                     bmp.Destroy()
+            else:
+                r = self.get_corner_update_button_rect()
+                if self.corner_hitcode == self.CORNER_HIT_UPDATE:
+                    flags = wx.CONTROL_PRESSED
+                else:
+                    flags = 0
+                rn.DrawPushButton(corner, dc, r, flags)
+                w, h = self.GridCornerLabelWindow.GetTextExtent(self.UPDATE)
+                x = r.X + (r.width - w) / 2
+                y = r.Y + (r.height - h) / 2
+                dc.DrawText(self.UPDATE, x, y)
+                    
         finally:
             dc.Background = old_brush
             new_brush.Destroy()
@@ -503,7 +552,11 @@ class ImageSetCtrl(wx.grid.Grid):
         if self.corner_hitcode != self.CORNER_HIT_NONE:
             hit_code = self.corner_hit_test(event.X, event.Y)
             if hit_code == self.corner_hitcode:
-                if hit_code == self.CORNER_HIT_DELETE:
+                if self.read_only:
+                    if hit_code == self.CORNER_HIT_UPDATE:
+                        self.Table.workspace.refresh_image_set()
+                        self.recompute()
+                elif hit_code == self.CORNER_HIT_DELETE:
                     self.remove_selection()
                 elif hit_code == self.CORNER_HIT_UNDO:
                     pass
@@ -518,6 +571,8 @@ class ImageSetCtrl(wx.grid.Grid):
         if self.corner_hitcode == self.CORNER_HIT_NONE:
             if hit_code == self.CORNER_HIT_NONE:
                 corner.SetToolTipString("")
+            elif self.read_only and hit_code == self.CORNER_HIT_UPDATE:
+                corner.SetToolTipString("Update and display the image set")
             elif hit_code == self.CORNER_HIT_DELETE:
                 corner.SetToolTipString("Delete selected item")
             elif hit_code == self.CORNER_HIT_REDO:
@@ -565,7 +620,8 @@ class ImageSetCtrl(wx.grid.Grid):
         dc.Clear()
         dc.Background = wx.NullBrush
         bkgnd_brush.Destroy()
-        
+        if self.Table.GetNumberCols() == 0:
+            return
         selected_col, hit_code, pressed = self.pressed_button
         cols = self.CalcColLabelsExposed(
             self.GridColLabelWindow.GetUpdateRegion())
@@ -589,11 +645,13 @@ class ImageSetCtrl(wx.grid.Grid):
         assert isinstance(event, wx.MouseEvent)
         
         x, y = self.CalcUnscrolledPosition(event.X, event.Y)
-        r = self.get_add_button_rect()
-        assert isinstance(r, wx.Rect)
-        if r.Contains(event.Position):
-            return self.Table.GetNumberCols()-1, self.HIT_PLUS
-        
+        if not self.read_only:
+            r = self.get_add_button_rect()
+            assert isinstance(r, wx.Rect)
+            if r.Contains(event.Position):
+                return self.Table.GetNumberCols()-1, self.HIT_PLUS
+        if self.Table.GetNumberCols() == 0:
+            return (None, None)
         only = self.Table.GetNumberCols() == 1
         for i in range(self.Table.GetNumberCols()):
             last = i == self.Table.GetNumberCols() - 1
@@ -1017,6 +1075,7 @@ class ImageSetCtrl(wx.grid.Grid):
         
         n_rows_added, n_columns_added = self.Table.recompute()
 
+        need_column_layout = False
         if n_columns_added < 0:
             tm = wx.grid.GridTableMessage(
                 self.Table,

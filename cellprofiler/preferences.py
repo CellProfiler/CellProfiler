@@ -362,7 +362,8 @@ def remove_image_directory_listener(listener):
     """Remove a previously-added image directory listener
     
     """
-    __image_directory_listeners.remove(listener)
+    if listener in __image_directory_listeners:
+        __image_directory_listeners.remove(listener)
 
 class PreferenceChangedEvent:
     def __init__(self, new_value):
@@ -412,7 +413,8 @@ def remove_output_directory_listener(listener):
     """Remove a previously-added image directory listener
     
     """
-    __output_directory_listeners.remove(listener)
+    if listener in __output_directory_listeners:
+        __output_directory_listeners.remove(listener)
 
 def get_title_font_size():
     if not config_exists(TITLE_FONT_SIZE):

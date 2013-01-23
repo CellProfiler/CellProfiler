@@ -195,9 +195,8 @@ class FlagImage(cpm.CPModule):
                     for the negative category for images whose power log slope is less than -2.5
                     pixels and will score the opposite for images whose slope is larger.
                     The filter adds positive and negative and flags the images whose
-                    positive score is higher than the negative score.
-                    <p>Note that if the rules are obtained from CellProfiler Analyst, the images
-                    that are fail are those represented by the second number between the brackets.</p>"""))
+                    positive score is higher than the negative score."""))
+        
         def get_rules_class_choices(group=group):
             '''Get the available choices from the rules file'''
             try:
@@ -206,6 +205,7 @@ class FlagImage(cpm.CPModule):
                 return [str(i) for i in range(1, nclasses+1)]
             except:
                 return [str(i) for i in range(1, 3)]
+        
         group.append("rules_class", cps.MultiChoice(
             "Class number",
             choices = ["1", "2"],
@@ -215,7 +215,14 @@ class FlagImage(cpm.CPModule):
             CellProfiler Analyst classifier user interface lists the names of 
             the classes in order. By default, these are the positive (class 1)
             and negative (class 2) classes. <b>FlagImage</b> uses the
-            first class from CellProfiler Analyst if you choose "1", etc."""))
+            first class from CellProfiler Analyst if you choose "1", etc. 
+            Please note the following:
+            <ul>
+            <li>The flag is set if the image falls into the selected class.</li>
+            <li>You can make multiple class selections. If you do so, the module
+            will set the flag if the image falls into any of the selected classes.</li>
+            </ul>"""))
+        
         group.rules_class.get_choices = get_rules_class_choices
 
         group.append("measurement", cps.Measurement("Which measurement?",

@@ -17,6 +17,7 @@ import cellprofiler.icons
 from glob import glob
 from shutil import copy
 from cellprofiler.modules import get_module_names, instantiate_module
+import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.help import MAIN_HELP
 from cellprofiler.utilities.relpath import relpath
 import cellprofiler.utilities.version as version
@@ -158,6 +159,10 @@ def output_module_html(webpage_path):
         
     for module_name in sorted(get_module_names()):
         module = instantiate_module(module_name)
+        location = os.path.split(
+            module.create_settings.im_func.func_code.co_filename)[0]
+        if location == cpprefs.get_plugin_directory():
+            continue
         if isinstance(module.category, (str,unicode)):
             module.category = [module.category]
         for category in module.category:

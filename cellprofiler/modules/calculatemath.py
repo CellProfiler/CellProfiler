@@ -249,20 +249,14 @@ class CalculateMath(cpm.CPModule):
         values = []
         input_values = []
         has_image_measurement = any([operand.object == cpmeas.IMAGE
-                                     for operand in self.operands])
+                                     for operand in self.get_operands()])
         all_image_measurements = all([operand.object == cpmeas.IMAGE
-                                     for operand in self.operands])
+                                     for operand in self.get_operands()])
         all_object_names = list(set([operand.operand_objects.value
-                                     for operand in self.operands
+                                     for operand in self.get_operands()
                                      if operand.object != cpmeas.IMAGE]))
         all_operands = self.operands
         
-        if self.operation.value in (O_NONE):
-            # Only operate on the first image/object
-            all_operands  = all_operands[:1]
-            if operand.object != cpmeas.IMAGE:
-                all_object_names = all_object_names[:1]
-            
         for operand in all_operands:
             value = m.get_current_measurement(operand.object,operand.operand_measurement.value)
             # Copy the measurement (if it's right type) or else it gets altered by the operation
@@ -409,10 +403,21 @@ class CalculateMath(cpm.CPModule):
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0, workspace.display_data.statistics,
                              ratio=(.25,.5,.25))
+     
+    def get_operands(self):
+        '''Return the operand structures that participate in the calculation
         
+        Return just the first operand for unary operations, return both
+        for binary.
+        '''
+        if self.operation == O_NONE:
+            return (self.operands[0], )
+        else:
+            return self.operands
+         
     def get_measurement_columns(self, pipeline):
         all_object_names = list(set([operand.operand_objects.value
-                                     for operand in self.operands
+                                     for operand in self.get_operands()
                                      if operand.object != cpmeas.IMAGE]))
         if len(all_object_names):
             return [(name, self.measurement_name(), cpmeas.COLTYPE_FLOAT)
@@ -424,7 +429,7 @@ class CalculateMath(cpm.CPModule):
 
     def get_categories(self, pipeline, object_name):
         all_object_names = [operand.operand_objects.value
-                            for operand in self.operands
+                            for operand in self.get_operands()
                             if operand.object != cpmeas.IMAGE]
         if len(all_object_names):
             if object_name in all_object_names:

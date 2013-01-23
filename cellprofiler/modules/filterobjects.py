@@ -19,6 +19,10 @@ object.</li>
 mass of the remaining objects.</li>
 </ul>
 
+Please note that the objects that pass the filtering step comprise a new object set, and hence do
+not inherit the measurements associated with the original objects. Any measurements on the new object
+set will need to be made post-filtering by the desired measurement modules.
+
 See also any of the <b>MeasureObject</b> modules, <b>MeasureTexture</b>,
 <b>MeasureCorrelation</b>, and <b>CalculateRatios</b>.
 '''

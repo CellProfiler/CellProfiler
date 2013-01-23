@@ -225,10 +225,10 @@ class SaveImages(cpm.CPModule):
                 Enter the text that should be appended to the filename specified above.""")
         
         self.file_format = cps.Choice("Select file format to use",
-                                      [FF_TIF,FF_BMP,FF_HDF,FF_JPG,FF_JPEG,
+                                      [FF_BMP,FF_HDF,FF_JPG,FF_JPEG,
                                        FF_PBM,FF_PCX,FF_PGM,FF_PNG,FF_PNM,
                                        FF_PPM,FF_RAS,FF_TIF,FF_TIFF,FF_XWD,
-                                       FF_MAT],FF_BMP,doc="""
+                                       FF_MAT],FF_TIF,doc="""
                 <i>(Used only when saving non-movie files)</i><br>
                 Select the image or movie format to save the image(s). Most common
                 image formats are available; MAT-files are readable by MATLAB.""")

@@ -177,8 +177,16 @@ class TestCPFigure(unittest.TestCase):
         f.subplot_imshow(2, 1, img, "rgb5")
         f.subplot_histogram(3, 1, [1,1,1,2], 2, title="hist")
     
-        for i, item in enumerate(f.menu_subplots.MenuItems):
-            assert item.Label == 'rgb%s'%(i+1)
+        def test_01_01_imshow_raw(self):
+            '''Make sure the image drawn by imshow matches the input image.'''
+            image = np.zeros((100, 100))
+            for y in range(image.shape[0]):
+                image[y,:] = y / 200.0
+            my_frame = cpfig.create_or_find(self.frame, -1, subplots=(1,1), 
+                                            name="test_01_01_imshow_raw")
+            ax = my_frame.subplot_imshow(0, 0, image, normalize=False)
+            # assert (((ax.get_array()-image) < 0.000001).all()), 'Monochrome input image did not match subplot image.'
+            my_frame.Destroy()
             
         f.clf()
 

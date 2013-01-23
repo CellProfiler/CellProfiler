@@ -61,8 +61,10 @@ from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.propagate import propagate
 
 C_SELF = 'These objects'
-C_OTHER = 'Other objects'
-C_ALL = [C_SELF, C_OTHER]
+C_CENTERS_OF_OTHER_V2 = 'Other objects'
+C_CENTERS_OF_OTHER = 'Centers of other objects'
+C_EDGES_OF_OTHER = 'Edges of other objects'
+C_ALL = [C_SELF, C_CENTERS_OF_OTHER, C_EDGES_OF_OTHER]
 
 M_CATEGORY = 'RadialDistribution'
 F_FRAC_AT_D = 'FracAtD'
@@ -95,12 +97,14 @@ SETTINGS_BIN_GROUP_COUNT_V1 = 1
 '''# of settings in bin group, v2'''
 SETTINGS_BIN_GROUP_COUNT_V2 = 3
 SETTINGS_BIN_GROUP_COUNT = 3
+'''Offset of center choice in object group'''
+SETTINGS_CENTER_CHOICE_OFFSET = 1
 
 class MeasureObjectRadialDistribution(cpm.CPModule):
  
     module_name = "MeasureObjectRadialDistribution"
     category = "Measurement"
-    variable_revision_number = 2
+    variable_revision_number = 3
     
     def create_settings(self):
         self.images = []
@@ -142,12 +146,16 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 What did you call the objects you want to measure?"""))
         group.append("center_choice", cps.Choice(
                 "Object to use as center?", C_ALL,doc="""
-                There are two ways to specify the center of the radial measurement:
+                There are three ways to specify the center of the radial measurement:
                 <ul>
                 <li><i>These objects</i>: Use the centers of these objects for the 
                 radial measurement.</li> 
-                <li><i>Other objects</i>: Use the centers of other objects
+                <li><i>Centers of other objects</i>: Use the centers of other objects
                 for the radial measurement.</li>
+                <li><i>Edges of other objects</i>: Measure distances from the
+                edge of the other object to each pixel outside of the
+                centering object. Do not include pixels within the centering
+                object in the radial measurement calculations.</li>
                 </ul>
                 For example, if measuring the radial distribution in a Cell
                 object, you can use the center of the Cell objects (<i>These
@@ -285,8 +293,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                                          image.image_name.value,
                                          o.object_name.value,
                                          o.center_object_name.value
-                                         if o.center_choice == C_OTHER
+                                         if o.center_choice != C_SELF
                                          else None,
+                                         o.center_choice.value,
                                          bin_count_settings,
                                          d)
         if self.show_window:
@@ -323,8 +332,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         table.set_fontsize(cpprefs.get_table_font_size())
 
     def do_measurements(self, workspace, image_name, object_name, 
-                        center_object_name, bin_count_settings,
-                        dd):
+                        center_object_name, center_choice,
+                        bin_count_settings, dd):
         '''Perform the radial measurements on the image set
         
         workspace - workspace that holds images / objects
@@ -333,6 +342,8 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         center_object_name - use the centers of these related objects as
                       the centers for radial measurements. None to use the
                       objects themselves.
+        center_choice - the user's center choice for this object:
+                      C_SELF, C_CENTERS_OF_OBJECTS or C_EDGES_OF_OBJECTS.
         bin_count_settings - the bin count settings group
         d - a dictionary for saving reusable partial results
         
@@ -380,16 +391,22 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 center_objects=workspace.object_set.get_objects(center_object_name)
                 center_labels, cmask = cpo.size_similarly(
                     labels, center_objects.segmented)
-                pixel_counts = fix(scind.sum(np.ones(center_labels.shape),
-                                             center_labels,
-                                             np.arange(1, np.max(center_labels)+1,dtype=np.int32)))
+                pixel_counts = fix(scind.sum(
+                    np.ones(center_labels.shape),
+                    center_labels,
+                    np.arange(1, np.max(center_labels)+1,dtype=np.int32)))
                 good = pixel_counts > 0
                 i,j = (centers_of_labels(center_labels) + .5).astype(int)
-                ig = i[good]
-                jg = j[good]
-                lg = np.arange(1, len(i)+1)[good]
-                center_labels = np.zeros(center_labels.shape, int)
-                center_labels[ig,jg] = lg
+                if center_choice == C_CENTERS_OF_OTHER:
+                    #
+                    # Reduce the propagation labels to the centers of
+                    # the centering objects
+                    #
+                    ig = i[good]
+                    jg = j[good]
+                    lg = np.arange(1, len(i)+1)[good]
+                    center_labels = np.zeros(center_labels.shape, int)
+                    center_labels[ig,jg] = lg
                 cl,d_from_center = propagate(np.zeros(center_labels.shape),
                                              center_labels,
                                              labels != 0, 1)
@@ -450,6 +467,10 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                     d_from_center[mask] = d[mask]
                     cl[mask] = l[mask]
             good_mask = cl > 0
+            if center_choice == C_EDGES_OF_OTHER:
+                # Exclude pixels within the centering objects
+                # when performing calculations from the centers
+                good_mask = good_mask & (center_labels == 0)
             i_center = np.zeros(cl.shape)
             i_center[good_mask] = i[cl[good_mask]-1]
             j_center = np.zeros(cl.shape)
@@ -592,7 +613,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             if center_name == cps.DO_NOT_USE:
                 center_choice = C_SELF
             else:
-                center_choice = C_OTHER
+                center_choice = C_CENTERS_OF_OTHER
             setting_values = ["1","1","1",image_name, 
                               object_name, center_choice, center_name,
                               bin_count]
@@ -609,5 +630,18 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 new_setting_values += [ cps.YES, bin_count, "100"]
             setting_values = new_setting_values
             variable_revision_number = 2
+        if variable_revision_number == 2:
+            n_images, n_objects = [
+                int(setting) for setting in setting_values[:2]]
+            off_objects = (SETTINGS_STATIC_COUNT +
+                           n_images * SETTINGS_IMAGE_GROUP_COUNT)
+            setting_values = list(setting_values)
+            for i in range(n_objects):
+                offset = (off_objects + i * SETTINGS_OBJECT_GROUP_COUNT +
+                          SETTINGS_CENTER_CHOICE_OFFSET)
+                if setting_values[offset] == C_CENTERS_OF_OTHER_V2:
+                    setting_values[offset] = C_CENTERS_OF_OTHER
+            variable_revision_number = 3
+            
         return setting_values, variable_revision_number, from_matlab
     

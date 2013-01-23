@@ -27,7 +27,10 @@ the pixel belongs to the chosen class; this image is similar to
 an intensity image that would be produced by fluorescence imaging.
 Provided that the classifier is sufficiently accruate, the image is
 well-suited for input into one of the <b>Identify</b> modules for
-object detection.
+object detection. More instructions on using the interface may be found 
+<a href="http://ilastik.org/index.php?cat=20_Documentation&page=03_Cellprofiler">here</a>.
+Please note that you must use the same image format for classification
+as for the intial learning phase.
 
 Currently, ilastik is only avilable for Windows, and is accessible from
 in the CellProfiler folder under the Start Menu. A 64-bit system is 
@@ -189,7 +192,12 @@ class ClassifyPixels(cpm.CPModule):
         image = workspace.image_set.get_image(self.image_name.value, must_be_color=False) 
         
         # recover raw image domain
-        image_ = image.pixel_data * image.get_scale()
+        image_ = image.pixel_data
+        if image.get_scale() is not None:
+            image_ = image_ * image.get_scale()
+        else:
+            # Best guess for derived images
+            image_ = image_ * 255.0
         #
         # Apply a rescaling that's done similarly in ilastik's dataImpex
         #

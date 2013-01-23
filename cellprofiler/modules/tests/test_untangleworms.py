@@ -2738,3 +2738,28 @@ UntangleWorms:[module_num:5|svn_version:\'10598\'|variable_revision_number:2|sho
         self.assertEqual(len(result.segment_order), 0)
         self.assertEqual(len(result.segments), 0)
         
+    def test_13_01_recalculate_single_worm_control_points(self):
+        i, j = np.mgrid[0:10, 0:10]
+        l0 = ((i == 3) & (j >= 2) & (j <= 6)).astype(int)
+        l0[(i == 7) & (j >= 3) & (j <= 7)] = 3
+        
+        l1 = ((j == 3) & (i >= 2) & (i <= 6)).astype(int) * 2
+        l1[(j == 7) & (i >= 3) & (i <= 7)] = 4
+        
+        expected = np.array((
+            ((3, 2), (3, 4), (3, 6)),
+            ((2, 3), (4, 3), (6, 3)),
+            ((7, 3), (7, 5), (7, 7)),
+            ((3, 7), (5, 7), (7, 7))))
+        
+        result, lengths = U.recalculate_single_worm_control_points([l0, l1], 3)
+        self.assertEqual(tuple(result.shape), (4, 3, 2))
+        self.assertEqual(len(lengths), 4)
+        # Flip any worms that aren't ordered canonically
+        for i in range(4):
+            if tuple(result[i, -1, :]) < tuple(result[i, 0, :]):
+                result[i, :, :] = result[i, ::-1, :]
+            
+        self.assertTrue(np.all(lengths== 4))
+        np.testing.assert_array_equal(expected, result)
+        

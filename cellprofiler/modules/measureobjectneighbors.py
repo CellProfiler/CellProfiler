@@ -217,6 +217,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
         assert isinstance(objects, cpo.Objects)
+        has_pixels = objects.areas > 0
         labels = objects.small_removed_segmented
         kept_labels = objects.segmented
         neighbor_objects = workspace.object_set.get_objects(self.neighbors_name.value)
@@ -340,6 +341,12 @@ class MeasureObjectNeighbors(cpm.CPModule):
             # Calculate how much overlap there is of others to "index"
             #
             for object_number in object_numbers:
+                if object_number == 0:
+                    #
+                    # No corresponding object in small-removed. This means
+                    # that the object has no pixels, e.g. not renumbered.
+                    #
+                    continue
                 index = object_number - 1
                 patch = labels[min_i[index]:max_i[index],
                                min_j[index]:max_j[index]]
@@ -408,20 +415,23 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 dj = (ocenters[object_indexes[:, np.newaxis], 1] - 
                       ncenters[neighbor_indexes[np.newaxis, :], 1])
                 distance_matrix = np.sqrt(di*di + dj*dj)
+                distance_matrix[~ has_pixels, :] = np.inf
+                distance_matrix[:, ~has_pixels] = np.inf
                 #
                 # order[:,0] should be arange(nobjects)
                 # order[:,1] should be the nearest neighbor
                 # order[:,2] should be the next nearest neighbor
                 #
-                order = np.lexsort([distance_matrix])
+                order = np.lexsort([distance_matrix]).astype(
+                    first_object_number.dtype)
                 if self.neighbors_are_objects:
-                    first_object_number = order[:,1] + 1
+                    first_object_number[has_pixels] = order[has_pixels,1] + 1
                     if nkept_objects > 2:
-                        second_object_number = order[:,2] + 1
+                        second_object_number[has_pixels] = order[has_pixels,2] + 1
                 else:
-                    first_object_number = order[:,0] + 1
+                    first_object_number[has_pixels] = order[has_pixels,0] + 1
                     if nneighbors > 1:
-                        second_object_number = order[:,1] + 1
+                        second_object_number[has_pixels] = order[has_pixels,1] + 1
         else:
             object_indexes = object_numbers - 1
             neighbor_indexes = neighbor_numbers - 1
@@ -432,7 +442,9 @@ class MeasureObjectNeighbors(cpm.CPModule):
         # the final number set.
         #
         neighbor_count = neighbor_count[object_indexes]
+        neighbor_count[~ has_pixels] = 0
         percent_touching = percent_touching[object_indexes]
+        percent_touching[~ has_pixels] = 0
         first_x_vector = first_x_vector[object_indexes]
         second_x_vector = second_x_vector[object_indexes]
         first_y_vector = first_y_vector[object_indexes]

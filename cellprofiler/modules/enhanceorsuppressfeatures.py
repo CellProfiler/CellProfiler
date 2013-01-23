@@ -49,12 +49,12 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber('Select the input image',
-                                                'None',doc="""
+            'None',doc="""
             What did you call the image with features to be enhanced or suppressed?""")
         
         self.filtered_image_name = cps.ImageNameProvider('Name the output image',
-                                        'FilteredBlue',doc="""
-                                        What do you want to call the feature-enhanced or suppressed image?""")
+            'FilteredBlue',doc="""
+            What do you want to call the feature-enhanced or suppressed image?""")
         
         self.method = cps.Choice(
             'Select the operation',
@@ -67,69 +67,69 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             removed.</li></ul>""")
         
         self.enhance_method = cps.Choice('Feature type',
-                                        [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],
-                                        doc="""<i>(Used only if Enhance is selected)</i><br>
-                                        This module can enhance three kinds of image intensity features:
-                                        <ul><li><i>Speckles</i>: A speckle is an area of enhanced intensity
-                                        relative to its immediate neighborhood. The module enhances
-                                        speckles using a white tophat filter, which is the image minus the
-                                        morphological grayscale opening of the image. The opening operation
-                                        first suppresses the speckles by applying a grayscale erosion to reduce everything
-                                        within a given radius to the lowest value within that radius, then uses
-                                        a grayscale dilation to restore objects larger than the radius to an
-                                        approximation of their former shape. The white tophat filter enhances 
-                                        speckles by subtracting the effects of opening from the original image.
-                                        </li>
-                                        <li><i>Neurites</i>: Neurites are taken to be long, thin features
-                                        of enhanced intensity. Choose this option to enhance the intensity
-                                        of the neurites using the %(N_GRADIENT)s or %(N_TUBENESS)s methods
-                                        described below.</li>
-                                        <li><i>Dark holes</i>: The module uses morphological reconstruction 
-                                        (the rolling-ball algorithm) to identify dark holes within brighter
-                                        areas, or brighter ring shapes. The image is inverted so that the dark holes turn into
-                                        bright peaks. The image is successively eroded and the eroded image
-                                        is reconstructed at each step, resulting in an image which is
-                                        missing the peaks. Finally, the reconstructed image is subtracted
-                                        from the previous reconstructed image. This leaves circular bright
-                                        spots with a radius equal to the number of iterations performed.
-                                        </li>
-                                        <li><i>Circles</i>: The module calculates the circular Hough transform of
-                                        the image at the diameter given by the feature size. The Hough transform
-                                        will have the highest intensity at points that are centered within a ring
-                                        of high intensity pixels where the ring diameter is the feature size. You
-                                        may want to use the <b>EnhanceEdges</b> module to find the edges of your
-                                        circular object and then process the output by enhancing circles. You can
-                                        use <b>IdentifyPrimaryObjects</b> to find the circle centers and then use
-                                        these centers as seeds in <b>IdentifySecondaryObjects</b> to find whole,
-                                        circular objects using a watershed.</li>
-                                        <li><i>Texture</i>: <b>EnanceOrSuppressFeatures</b> produces an image
-                                        whose intensity is the variance among nearby pixels. This method weights
-                                        pixel contributions by distance using a Gaussian to calculate the weighting.
-                                        You can use this method to separate foreground from background if the foreground
-                                        is textured and the background is not.
-                                        </li>
-                                        <li><i>DIC</i>: This method recovers the optical density of a DIC image by
-                                        integrating in a direction perpendicular to the shear direction of the image.
-                                        </li>
-                                        </ul>
-                                        In addition, this module enables you to suppress certain features (such as speckles)
-                                        by specifying the feature size.""" % globals())
+            [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],
+            doc="""<i>(Used only if Enhance is selected)</i><br>
+            This module can enhance three kinds of image intensity features:
+            <ul><li><i>Speckles</i>: A speckle is an area of enhanced intensity
+            relative to its immediate neighborhood. The module enhances
+            speckles using a white tophat filter, which is the image minus the
+            morphological grayscale opening of the image. The opening operation
+            first suppresses the speckles by applying a grayscale erosion to reduce everything
+            within a given radius to the lowest value within that radius, then uses
+            a grayscale dilation to restore objects larger than the radius to an
+            approximation of their former shape. The white tophat filter enhances 
+            speckles by subtracting the effects of opening from the original image.
+            </li>
+            <li><i>Neurites</i>: Neurites are taken to be long, thin features
+            of enhanced intensity. Choose this option to enhance the intensity
+            of the neurites using the %(N_GRADIENT)s or %(N_TUBENESS)s methods
+            described below.</li>
+            <li><i>Dark holes</i>: The module uses morphological reconstruction 
+            (the rolling-ball algorithm) to identify dark holes within brighter
+            areas, or brighter ring shapes. The image is inverted so that the dark holes turn into
+            bright peaks. The image is successively eroded and the eroded image
+            is reconstructed at each step, resulting in an image which is
+            missing the peaks. Finally, the reconstructed image is subtracted
+            from the previous reconstructed image. This leaves circular bright
+            spots with a radius equal to the number of iterations performed.
+            </li>
+            <li><i>Circles</i>: The module calculates the circular Hough transform of
+            the image at the diameter given by the feature size. The Hough transform
+            will have the highest intensity at points that are centered within a ring
+            of high intensity pixels where the ring diameter is the feature size. You
+            may want to use the <b>EnhanceEdges</b> module to find the edges of your
+            circular object and then process the output by enhancing circles. You can
+            use <b>IdentifyPrimaryObjects</b> to find the circle centers and then use
+            these centers as seeds in <b>IdentifySecondaryObjects</b> to find whole,
+            circular objects using a watershed.</li>
+            <li><i>Texture</i>: <b>EnanceOrSuppressFeatures</b> produces an image
+            whose intensity is the variance among nearby pixels. This method weights
+            pixel contributions by distance using a Gaussian to calculate the weighting.
+            You can use this method to separate foreground from background if the foreground
+            is textured and the background is not.
+            </li>
+            <li><i>DIC</i>: This method recovers the optical density of a DIC image by
+            integrating in a direction perpendicular to the shear direction of the image.
+            </li>
+            </ul>
+            In addition, this module enables you to suppress certain features (such as speckles)
+            by specifying the feature size.""" % globals())
         
         self.object_size = cps.Integer('Feature size',
-                                        10,2,doc="""
-                                        <i>(Used only if circles, speckles or neurites are selected, or if suppressing features)</i><br>
-                                        What is the feature size? 
-                                        The diameter of the largest speckle, the width of the circle
-                                        or the width of the neurites to be enhanced or suppressed, which
-                                        will be used to calculate an adequate filter size. %(HELP_ON_PIXEL_INTENSITIES)s"""%globals())
-        
+            10,2,doc="""
+            <i>(Used only if circles, speckles or neurites are selected, or if suppressing features)</i><br>
+            What is the feature size? 
+            The diameter of the largest speckle, the width of the circle
+            or the width of the neurites to be enhanced or suppressed, which
+            will be used to calculate an adequate filter size. %(HELP_ON_PIXEL_INTENSITIES)s"""%globals())
+
         self.hole_size = cps.IntegerRange('Range of hole sizes',
-                                        value=(1,10),minval=1, doc="""
-                                        <i>(Used only if dark hole detection is selected)</i><br>
-                                        The range of hole sizes to be enhanced. The algorithm will
-                                        identify only holes whose diameters fall between these two 
-                                        values""")
-        
+            value=(1,10),minval=1, doc="""
+            <i>(Used only if dark hole detection is selected)</i><br>
+            The range of hole sizes to be enhanced. The algorithm will
+            identify only holes whose diameters fall between these two 
+            values""")
+
         self.smoothing = cps.Float(
             'Smoothing scale', value = 2.0, minval = 0.1,
             doc = """<i>(Used only for the texture, DIC or neurite methods)</i><br>
@@ -148,6 +148,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             The %(N_TUBENESS)s option of the neurite method uses this scale
             as the sigma of the Gaussian used to smooth the image prior to
             gradient detection.""" % globals())
+        
         self.angle = cps.Float(
             'Shear angle', value = 0,
             doc = """<i>(Used only for the DIC method)</i><br>
@@ -159,6 +160,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             the shear angle is 45 degrees. If the shadows appear on top,
             the shear angle is 180 + 45 = 225 degrees.
             """)
+        
         self.decay = cps.Float(
             'Decay', value = .95, minval = 0.1, maxval = 1,
             doc = """<i>(Used only for the DIC method)</i><br>
@@ -171,14 +173,14 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             of your objects if the intensities decrease toward the middle.
             Set the decay to a small value if there appears to be a bias
             in the integration direction.""")
+        
         self.neurite_choice = cps.Choice(
             "Enhancement method", [N_TUBENESS, N_GRADIENT],
             doc = """<i>(Used only for the neurites method)</i><br>
             Two methods can be used to enhance neurites:<br>
-            <ul><li><i>%(N_TUBENESS)s</i>This method is an adaptation of
-            the metod used by the ImageJ Tubeness plugin
-            (<a href="http://www.longair.net/edinburgh/imagej/tubeness/">
-            http://www.longair.net/edinburgh/imagej/tubeness/</a>). The image
+            <ul><li><i>%(N_TUBENESS)s</i>: This method is an adaptation of
+            the method used by the <a href="http://www.longair.net/edinburgh/imagej/tubeness/">
+            ImageJ Tubeness plugin</a>. The image
             is smoothed with a Gaussian. The Hessian is then computed at every
             point to measure the intensity gradient and the eigenvalues of the
             Hessian are computed to determine the magnitude of the intensity.
@@ -188,12 +190,13 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             output image is the absolute magnitude of the highest eigenvalue
             if that eigenvalue is negative (white neurite on dark background),
             otherwise, zero.</li>
-            <li><i>%(N_GRADIENT)s</i>The module takes the difference of the
-            white and black tophat filters (a black tophat filter is the 
-            morphological grayscale opening of the image minus the image itself). 
+            <li><i>%(N_GRADIENT)s</i>: The module takes the difference of the
+            white and black tophat filters (a white tophat filtering is the image minus 
+            the morphological grayscale opening of the image; a black tophat filtering is the 
+            morphological grayscale closing of the image minus the image). 
             The effect is to enhance lines whose width is the "feature size".
-            </li></ul>""")
-
+            </li></ul>"""%globals())
+        
     def settings(self):
         return [ self.image_name, self.filtered_image_name,
                 self.method, self.object_size, self.enhance_method,

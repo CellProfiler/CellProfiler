@@ -22,17 +22,28 @@ background of the image. This is done by thresholding the image stained
 for secondary objects, except when using the <i>Distance - N</i> option.</li>
 </ol>
 
+After processing, the module display window for this module will
+show panels with objects outlined in two colors:
+<ul>
+<li>Green: Primary objects</li>
+<li>Red: Secondary objects</li>
+</ul>
+If you need to change the outline colors (e.g., due to color-blindness), you can 
+make adjustments in <i>File > Preferences</i>.
+
+The module window will also show another image where the identified 
+objects are displayed with arbitrary colors: the colors themselves do not mean 
+anything but simply help you distingush the various objects. 
+
 <h3>Technical notes</h3>
-The <i>Propagation</i> algorithm labels from LABELS_IN to LABELS_OUT, steered by
-IMAGE and limited to MASK. MASK should be a logical array. &lambda; is a
-regularization parameter, larger being closer to Euclidean distance in
-the image plane, and zero being entirely controlled by IMAGE. Propagation
-of labels is by shortest path to a nonzero label in LABELS_IN. Distance
-is the sum of absolute differences in the image in a 3x3 neighborhood, combined 
-with &lambda; via sqrt(differences<sup>2</sup> + &lambda;<sup>2</sup>). Note that 
-there is no separation between adjacent areas with different labels (as there
-would be using, e.g., watershed). Such boundaries must be added in a
-postprocess.
+The <i>Propagation</i> algorithm creates a set of secondary object labels using 
+each primary object as a "seed", guided by the input image and limited to the 
+foreground region as determined by the chosen thresholding method. &lambda; is 
+a regularization parameter; see the help for the setting for more details. Propagation
+of secondary object labels is by the shortest path to an adjacent primary object 
+from the starting ("seeding") primary object. The seed-to-pixel distances are
+calculated as the sum of absolute differences in a 3x3 (8-connected) image 
+neighborhood, combined with &lambda; via sqrt(differences<sup>2</sup> + &lambda;<sup>2</sup>).
                            
 <h4>Available measurements</h4>
 <ul>

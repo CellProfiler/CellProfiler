@@ -1,12 +1,12 @@
 '''<b>Calculate Image Overlap </b> calculates how much overlap occurs between the white portions of two black and white images
 <hr>
 
-This module calculates overlap by determining precision, recall, F-factor, false positive rate, and false 
-negative rate.  One image is considered the "ground truth" (possibly the result of hand-segmentation) and the other
-is the "test image"; the images are determined to overlap most completely when the test image matches the ground
-truth perfectly.  The module requires binary (black and white) input, where the objects that have been segmented 
-are white and the background is black.  If you segment your images in CellProfiler using <b>IdentifyPrimaryObjects</b>, 
-you can create such an image using <b>ConvertObjectsToImage</b> by selecting <i>Binary</i> as the color type.  
+This module calculates overlap by determining a set of statistics that measure the closeness of an image or object 
+to its' true value.  One image/object is considered the "ground truth" (possibly the result of hand-segmentation) and the other
+is the "test" image/object; the images are determined to overlap most completely when the test image matches the ground
+truth perfectly.  If using images, the module requires binary (black and white) input, where the foreground is white and 
+the background is black.  If you segment your images in CellProfiler using <b>IdentifyPrimaryObjects</b>, 
+you can create such an image using <b>ConvertObjectsToImage</b> by selecting <i>Binary</i> as the color type.
 
 If your images have been segmented using other image processing software, or you have hand-segmented them in software 
 such as Photoshop, you may need to use one or more of the following to prepare the images for this module:
@@ -26,13 +26,24 @@ while a background pixel in the test image that overlaps with foreground in the 
 
 <h4>Available measurements</h4>
 <ul>
+<li><i>For images and objects:</i>
+<ul>
 <li><i>False positive rate:</i> Total number of false positive pixels / total number of actual negative pixels </li>
 <li><i>False negative rate:</i> Total number of false negative pixels / total number of actual postive pixels </li>
 <li><i>Precision:</i> Number of true positive pixels / (number of true positive pixels + number of false positive pixels) </li>
 <li><i>Recall:</i> Number of true positive pixels/ (number of true positive pixels + number of false negative pixels) </li>
 <li><i>F-factor:</i> 2 x (precision x recall)/(precision + recall). Also known as F<sub>1</sub> score, F-score or F-measure.</li>
 </ul>
-
+</li>
+<li><i>For objects:</i>
+<ul>
+<li><i>Rand index:</i> A measure of the similarity between two data clusterings. Perfectly random clustering returns the minimum 
+score of 0, perfect clustering returns the maximum score of 1.</li>
+<li><i>Adjusted Rand index:</i> A variation of the Rand index which takes into account the fact that random chance will cause some 
+objects to occupy the same clusters, so the Rand Index will never actually be zero. Can return a value between -1 and +1.</li>
+</ul>
+</li>
+</ul>
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -84,17 +95,48 @@ class CalculateImageOverlap(cpm.CPModule):
     module_name = "CalculateImageOverlap"
 
     def create_settings(self):
-        self.obj_or_img = cps.Choice("Compare segmented objects, or foreground/background?", O_ALL)
-        self.ground_truth = cps.ImageNameSubscriber("Select the image to be used as the ground truth basis for calculating the amount of overlap", "None", doc = 
-                                                    '''This binary (black and white) image is known as the "ground truth" image.  It can be the product of segmentation performed by hand, or
-                                                   the result of another segmentation algorithm whose results you would like to compare.''')
-        self.test_img = cps.ImageNameSubscriber("Select the image to be used to test for overlap", "None", doc = ''' This 
-                                                binary (black and white) image is what you will compare with the ground truth image. It is known as the "test image".''')
-        self.object_name_GT = cps.ObjectNameSubscriber("Select the objects to be used as the ground truth basis for calculating the amount of overlap", "None")
-        self.img_obj_found_in_GT = cps.ImageNameSubscriber("Which image did you find these objects in?","None")
-        self.object_name_ID = cps.ObjectNameSubscriber("Select the objects to be tested for overlap against the ground truth", "None")
-        self.img_obj_found_in_ID = cps.ImageNameSubscriber("Which image did you find these objects in?","None")
-
+        self.obj_or_img = cps.Choice(
+            "Compare segmented objects, or foreground/background?", O_ALL)
+        
+        self.ground_truth = cps.ImageNameSubscriber(
+            "Select the image to be used as the ground truth basis for calculating the amount of overlap", 
+            "None", doc = """
+            <i>(Used only when comparing foreground/background)</i> <br>
+            This binary (black and white) image is known as the "ground truth" image.  It can be the product of segmentation performed by hand, or
+                                                   the result of another segmentation algorithm whose results you would like to compare.""")
+        self.test_img = cps.ImageNameSubscriber(
+            "Select the image to be used to test for overlap", 
+            "None", doc = """
+            <i>(Used only when comparing foreground/background)</i> <br>
+            This binary (black and white) image is what you will compare with the ground truth image. It is known as the "test image".""")
+        
+        self.object_name_GT = cps.ObjectNameSubscriber(
+            "Select the objects to be used as the ground truth basis for calculating the amount of overlap", 
+            "None", doc ="""
+            <i>(Used only when comparing segmented objects)</i> <br>
+            Specify which set of objects will used as the "ground truth" objects. It can be the product of segmentation performed by hand, or
+            the result of another segmentation algorithm whose results you would like to compare. See the <b>Load</b> modules for more details
+            on loading objects.""")
+        
+        self.img_obj_found_in_GT = cps.ImageNameSubscriber(
+            "Which image did you find these objects in?",
+            "None", doc ="""
+            <i>(Used only when comparing segmented objects)</i> <br>
+            Select which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,
+            select "None." """)
+        
+        self.object_name_ID = cps.ObjectNameSubscriber(
+            "Select the objects to be tested for overlap against the ground truth", 
+            "None", doc ="""
+            <i>(Used only when comparing segmented objects)</i> <br>
+            This set of objects is what you will compare with the ground truth objects. It is known as the "test object". """)
+        
+        self.img_obj_found_in_ID = cps.ImageNameSubscriber(
+            "Which image did you find these objects in?",
+            "None", doc ="""
+            <i>(Used only when comparing segmented objects)</i> <br>
+            Select which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,
+            select "None." """)
 
     def settings(self):
         result = [self.obj_or_img, self.ground_truth, self.test_img, self.object_name_GT, self.img_obj_found_in_GT,self.object_name_ID, self.img_obj_found_in_ID]

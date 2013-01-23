@@ -169,7 +169,7 @@ parser.add_option("--image-set-file",
                   
 parser.add_option("-L", "--log-level",
                   dest = "log_level",
-                  default = "INFO",
+                  default = str(logging.INFO),
                   help = ("Set the verbosity for logging messages: " +
                           ("%d or %s for debugging, " % (logging.DEBUG, "DEBUG")) +
                           ("%d or %s for informational, " % (logging.INFO, "INFO")) +
@@ -338,11 +338,16 @@ try:
     else:
         image_set_start = None
     
+    image_set_numbers = None
     if not options.last_image_set is None:
         if not options.last_image_set.isdigit():
             raise ValueError("The --last-image-set option takes a numeric argument")
         else:
             image_set_end = int(options.last_image_set)
+            if image_set_start is None:
+                image_set_numbers = np.arange(1, image_set_end+1)
+            else:
+                image_set_numbers = np.arange(image_set_start, image_set_end+1)
     else:
         image_set_end = None
     
@@ -371,38 +376,33 @@ try:
     elif options.run_pipeline:
         if (options.pipeline_filename is not None) and (not options.pipeline_filename.lower().startswith('http')):
             options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
-
-        from cellprofiler.pipeline import Pipeline, EXIT_STATUS
-        import cellprofiler.measurements as cpmeas
-        continue_looping = False # distributed workers reset this, below
-        pipeline = Pipeline()
-        initial_measurements = None
-        try:
-            import h5py
-            if h5py.is_hdf5(options.pipeline_filename):
-                initial_measurements = cpmeas.load_measurements(options.pipeline_filename)
-        except:
-            logging.root.info("Failed to load measurements from pipeline")
-        pipeline.load(options.pipeline_filename)
-
-        if options.groups is not None:
-            kvs = [x.split('=') for x in options.groups.split(',')]
-            groups = dict(kvs)
-        else:
-            groups = None
-        use_hdf5 = len(args) > 0 and not args[0].lower().endswith(".mat")
-        measurements = pipeline.run(
-            image_set_start=image_set_start, 
-            image_set_end=image_set_end,
-            grouping=groups,
-            measurements_filename = None if not use_hdf5 else args[0],
-            initial_measurements = initial_measurements)
-        if len(args) > 0 and not use_hdf5:
-            pipeline.save_measurements(args[0], measurements)
-        if options.done_file is not None:
-            if (measurements is not None and 
-                measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
-                done_text = measurements.get_experiment_measurement(EXIT_STATUS)
+        if options.worker_mode_URL is not None:
+            last_success = time.time() # timeout checking for distributed workers.
+        continue_looping = True # for distributed workers
+        while continue_looping:
+            from cellprofiler.pipeline import Pipeline, EXIT_STATUS, M_PIPELINE
+            import cellprofiler.measurements as cpmeas
+            continue_looping = False # distributed workers reset this, below
+            pipeline = Pipeline()
+            initial_measurements = None
+            try:
+                import h5py
+                if h5py.is_hdf5(options.pipeline_filename):
+                    initial_measurements = cpmeas.load_measurements(
+                        options.pipeline_filename,
+                        image_numbers=image_set_numbers)
+            except:
+                logging.root.info("Failed to load measurements from pipeline")
+            if options.worker_mode_URL is None:
+                # normal behavior
+                if initial_measurements is not None:
+                    pipeline_text = \
+                        initial_measurements.get_experiment_measurement(
+                            M_PIPELINE)
+                    pipeline_text = pipeline_text.encode('us-ascii')
+                    pipeline.load(StringIO(pipeline_text))
+                else:
+                    pipeline.load(options.pipeline_filename)
             else:
                 done_text = "Failure"
             fd = open(options.done_file, "wt")

@@ -54,9 +54,10 @@ thresholding method of choice.</li>
 
 
 import numpy as np
+import logging
+logger = logging.getLogger(__name__)
 import scipy.ndimage as scind
 from scipy.linalg.basic import lstsq
-
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -69,6 +70,7 @@ from identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
 from identify import O_FOREGROUND, O_BACKGROUND
 from cellprofiler.cpmath.threshold import TM_MOG_GLOBAL
 from loadimages import C_FILE_NAME, C_SCALING
+import cellprofiler.preferences as cpprefs
 from cellprofiler.preferences import \
      DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
@@ -314,7 +316,7 @@ class MeasureImageQuality(cpm.CPModule):
             image blur whereas smaller numbers measure more localized patterns of 
             blur. We suggest selecting a window size that is on the order of the feature of interest 
             (e.g., the object diameter). You can measure these metrics for multiple window sizes 
-            by selecting adiditonal scales for each image. """))
+            by selecting additional scales for each image. """))
         
         group.can_remove = can_remove
         if can_remove:
@@ -492,6 +494,11 @@ class MeasureImageQuality(cpm.CPModule):
                 raise cps.ValidationError("Measurement %s for image %s made twice."%(m[1], s[1]), s[0])
             d[m] = True
 
+    def prepare_run(self, workspace):
+        if cpprefs.get_headless():
+            logger.warning("Experiment-wide values for mean threshold, etc calculated by MeasureImageQuality may be incorrect if the run is split into subsets of images.")
+        return True
+                    
     def any_scaling(self):
         '''True if some image has its rescaling value calculated'''
         return any([image_group.include_image_scalings.value 

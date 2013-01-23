@@ -49,6 +49,10 @@ def feature_radial_cv(bin, bin_count, image_name = IMAGE_NAME):
     return M.M_CATEGORY + "_"+M.FF_RADIAL_CV % (image_name, bin, bin_count)
 
 class TestMeasureObjectRadialDistribution(unittest.TestCase):
+    def test_01_00_please_implement_a_test_of_the_new_version(self):
+        self.assertEqual(
+            M.MeasureObjectRadialDistribution.variable_revision_number, 3)
+        
     def test_01_01_load_matlab(self):
         data = ('eJwBhAR7+01BVExBQiA1LjAgTUFULWZpbGUsIFBsYXRmb3JtOiBQQ1dJTiwg'
                 'Q3JlYXRlZCBvbjogVHVlIEF1ZyAxOCAxNTozODowMiAyMDA5ICAgICAgICAg'
@@ -96,7 +100,8 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
             if center_name is None:
                 self.assertEqual(module.objects[0].center_choice, M.C_SELF)
             else:
-                self.assertEqual(module.objects[0].center_choice, M.C_OTHER)
+                self.assertEqual(module.objects[0].center_choice, 
+                                 M.C_CENTERS_OF_OTHER)
                 self.assertEqual(module.objects[0].center_object_name, center_name)
             self.assertEqual(module.bin_counts[0].bin_count, 4)
 
@@ -149,7 +154,7 @@ class TestMeasureObjectRadialDistribution(unittest.TestCase):
             if center_name is None:
                 self.assertEqual(o.center_choice, M.C_SELF)
             else:
-                self.assertEqual(o.center_choice, M.C_OTHER)
+                self.assertEqual(o.center_choice, M.C_CENTERS_OF_OTHER)
                 self.assertEqual(o.center_object_name, center_name)
         self.assertEqual(module.bin_counts[0].bin_count, 4)
         
@@ -160,12 +165,15 @@ DateRevision:20120126174947
 
 MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
     Hidden:2
-    Hidden:1
+    Hidden:2
     Hidden:2
     Select an image to measure:EnhancedGreen
     Select an image to measure:OrigBlue
     Select objects to measure:Nuclei
     Object to use as center?:These objects
+    Select objects to use as centers:Cells
+    Select objects to measure:Nuclei
+    Object to use as center?:Other objects
     Select objects to use as centers:Cells
     Scale bins?:No
     Number of bins:4
@@ -183,13 +191,69 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, M.MeasureObjectRadialDistribution))
         self.assertEqual(module.image_count.value, 2)
-        self.assertEqual(module.object_count.value, 1)
+        self.assertEqual(module.object_count.value, 2)
         self.assertEqual(module.bin_counts_count.value, 2)
         self.assertEqual(module.images[0].image_name, "EnhancedGreen")
         self.assertEqual(module.images[1].image_name, "OrigBlue")
         self.assertEqual(module.objects[0].object_name, "Nuclei")
         self.assertEqual(module.objects[0].center_choice, M.C_SELF)
         self.assertEqual(module.objects[0].center_object_name, "Cells")
+        self.assertEqual(module.objects[1].center_choice, M.C_CENTERS_OF_OTHER)
+        self.assertEqual(module.objects[1].center_object_name, "Cells")
+        self.assertEqual(module.bin_counts[0].bin_count, 4)
+        self.assertFalse(module.bin_counts[0].wants_scaled)
+        self.assertEqual(module.bin_counts[0].maximum_radius, 200)
+        self.assertEqual(module.bin_counts[1].bin_count, 5)
+        self.assertTrue(module.bin_counts[1].wants_scaled)
+        self.assertEqual(module.bin_counts[1].maximum_radius, 50)
+    
+    def test_01_04_load_v3(self):
+        data = """CellProfiler Pipeline: http://www.cellprofiler.org
+Version:2
+DateRevision:20120126174947
+
+MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Hidden:2
+    Hidden:3
+    Hidden:2
+    Select an image to measure:EnhancedGreen
+    Select an image to measure:OrigBlue
+    Select objects to measure:Nuclei
+    Object to use as center?:These objects
+    Select objects to use as centers:Cells
+    Select objects to measure:Nuclei
+    Object to use as center?:Centers of other objects
+    Select objects to use as centers:Cells
+    Select objects to measure:Nuclei
+    Object to use as center?:Edges of other objects
+    Select objects to use as centers:Cells
+    Scale bins?:No
+    Number of bins:4
+    Maximum radius:200
+    Scale bins?:Yes
+    Number of bins:5
+    Maximum radius:50
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, M.MeasureObjectRadialDistribution))
+        self.assertEqual(module.image_count.value, 2)
+        self.assertEqual(module.object_count.value, 3)
+        self.assertEqual(module.bin_counts_count.value, 2)
+        self.assertEqual(module.images[0].image_name, "EnhancedGreen")
+        self.assertEqual(module.images[1].image_name, "OrigBlue")
+        self.assertEqual(module.objects[0].object_name, "Nuclei")
+        self.assertEqual(module.objects[0].center_choice, M.C_SELF)
+        self.assertEqual(module.objects[0].center_object_name, "Cells")
+        self.assertEqual(module.objects[1].center_choice, M.C_CENTERS_OF_OTHER)
+        self.assertEqual(module.objects[1].center_object_name, "Cells")
+        self.assertEqual(module.objects[2].center_choice, M.C_EDGES_OF_OTHER)
+        self.assertEqual(module.objects[2].center_object_name, "Cells")
         self.assertEqual(module.bin_counts[0].bin_count, 4)
         self.assertFalse(module.bin_counts[0].wants_scaled)
         self.assertEqual(module.bin_counts[0].maximum_radius, 200)
@@ -212,7 +276,7 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
             if center_name is None:
                 module.objects[i].center_choice.value = M.C_SELF
             else:
-                module.objects[i].center_choice.value = M.C_OTHER
+                module.objects[i].center_choice.value = M.C_CENTERS_OF_OTHER
                 module.objects[i].center_object_name.value = center_name
         for i,bin_count in enumerate((4, 5, 6)):
             if i:
@@ -258,7 +322,7 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
             if center_name is None:
                 module.objects[i].center_choice.value = M.C_SELF
             else:
-                module.objects[i].center_choice.value = M.C_OTHER
+                module.objects[i].center_choice.value = M.C_CENTERS_OF_OTHER
                 module.objects[i].center_object_name.value = center_name
         for i,bin_count in ((0,4),(0,5),(0,6)):
             if i:
@@ -287,7 +351,9 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
                                                 M.M_CATEGORY, feature,
                                                 image_name))
 
-    def run_module(self, image, labels, center_labels = None, bin_count = 4,
+    def run_module(self, image, labels, center_labels = None, 
+                   center_choice = M.C_CENTERS_OF_OTHER,
+                   bin_count = 4,
                    maximum_radius = 100, wants_scaled = True):
         '''Run the module, returning the measurements
         
@@ -307,7 +373,7 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
         if center_labels is None:
             module.objects[0].center_choice.value = M.C_SELF
         else:
-            module.objects[0].center_choice.value = M.C_OTHER
+            module.objects[0].center_choice.value = center_choice
             module.objects[0].center_object_name.value = CENTER_NAME
             center_objects = cpo.Objects()
             center_objects.segmented = center_labels
@@ -476,6 +542,37 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
                                              feature_radial_cv(bin, 4))
             self.assertEqual(len(data), 1)
             
+    def test_03_06_edges_of_objects(self):
+        r = np.random.RandomState()
+        r.seed(36)
+        i, j = np.mgrid[-20:21, -20:21]
+        labels = ((i > -19) & (i < 19) & (j > -19) & (j < 19)).astype(int)
+        centers = np.zeros(labels.shape, int)
+        centers[(i > -5) * (i < 5) & (j > -5) & (j < 5)] = 1
+        image = r.uniform(size=labels.shape)
+        m = self.run_module(image, labels, 
+                            center_labels=centers,
+                            center_choice = M.C_EDGES_OF_OTHER,
+                            bin_count = 4,
+                            maximum_radius = 8,
+                            wants_scaled=False)
+        
+        _, d_from_center = M.propagate(np.zeros(labels.shape),
+                                       centers,
+                                       (labels > 0), 1)
+        good_mask = (labels > 0) & (centers == 0)
+        d_from_center = d_from_center[good_mask]
+        bins = (d_from_center / 2).astype(int)
+        bins[bins > 4] = 4
+        bin_counts = np.bincount(bins)
+        image_sums = np.bincount(bins, image[good_mask])
+        frac_at_d = image_sums / np.sum(image_sums)
+        for i in range(1,6):
+            data = m.get_current_measurement(OBJECT_NAME,
+                                             feature_frac_at_d(i, 4))
+            self.assertEqual(len(data), 1)
+            self.assertAlmostEqual(data[0], frac_at_d[i-1])
+            
     def test_04_01_img_607(self):
         '''Regression test of bug IMG-607
         
@@ -491,7 +588,9 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
         
         image = np.random.uniform(size=labels.shape)
         for center_labels in (labels, None):
-            m = self.run_module(image, labels, center_labels, 4)
+            m = self.run_module(image, labels, 
+                                center_labels = center_labels, 
+                                bin_count = 4)
             for bin in range(1,5):
                 data = m.get_current_measurement(OBJECT_NAME, 
                                                  feature_frac_at_d(bin, 4))
@@ -515,13 +614,15 @@ MeasureObjectRadialDistribution:[module_num:8|svn_version:\'Unknown\'|variable_r
                       int(center_labels.shape[1]/2)] = 1
         
         image = np.random.uniform(size=labels.shape)
-        m = self.run_module(image, labels, center_labels, 4)
+        m = self.run_module(image, labels, 
+                            center_labels = center_labels, 
+                            bin_count = 4)
         for bin in range(1,5):
             data = m.get_current_measurement(OBJECT_NAME, 
                                              feature_frac_at_d(bin, 4))
             self.assertEqual(len(data), 1)
 
-        m = self.run_module(image, labels, None, 4)
+        m = self.run_module(image, labels, bin_count = 4)
         for bin in range(1,5):
             data = m.get_current_measurement(OBJECT_NAME, 
                                              feature_frac_at_d(bin, 4))

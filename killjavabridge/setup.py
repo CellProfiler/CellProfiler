@@ -14,8 +14,15 @@ This module creates a Nose plugin that can kill the Java VM
 started by cellprofiler.utilities.jutil. It should be installed using easy_install
 
 """
-
-__version__="$Revision$"
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2013 Broad Institute
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 
 import os
 

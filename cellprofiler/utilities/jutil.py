@@ -310,6 +310,7 @@ def start_vm(args, run_headless = False):
             traceback.print_exc()
             logger.error("Failed to create Java VM")
             __vm = None
+            return
         finally:
             logger.debug("Signalling caller")
             start_event.set()

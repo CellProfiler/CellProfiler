@@ -1,16 +1,3 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2013 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
 '''<b>Align</b> aligns images relative to each other, for example, to correct 
 shifts in the optical path of a microscope in each channel of a multi-channel 
 set of images
@@ -33,6 +20,16 @@ aligned image with respect to the original image.</li>
 </ul>
 
 '''
+
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2013 Broad Institute
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 
 import numpy as np
 from scipy.fftpack import fft2, ifft2

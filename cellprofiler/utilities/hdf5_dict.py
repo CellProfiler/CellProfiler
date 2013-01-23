@@ -238,8 +238,8 @@ class HDF5Dict(object):
                         for feature_name in object_group.keys():
                             # some measurement objects are written at a higher level, and don't
                             # have an index (e.g. Relationship).
+                            d = self.indices[object_name, feature_name] = {}
                             if 'index' in object_group[feature_name].keys():
-                                d = self.indices[object_name, feature_name] = {}
                                 hdf5_index = object_group[feature_name]['index'][:]
                                 for num_idx, start, stop in hdf5_index:
                                     d[num_idx] = slice(start, stop)

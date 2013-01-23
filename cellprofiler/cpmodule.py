@@ -530,6 +530,10 @@ class CPModule(object):
         '''
         pass
 
+    def is_object_identification_module(self):
+        """If true, the module will identify primary, secondary or tertiary objects"""
+        return False
+    
     def run(self,workspace):
         """Run the module (abstract method)
         

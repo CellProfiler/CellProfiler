@@ -1,16 +1,3 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2013 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
 '''<b>SendEmail</b> send emails to a specified address at desired stages
 of processing
 <hr>
@@ -23,6 +10,15 @@ the point in the pipeline when you want the emails to be sent. If email
 sending fails for any reason, a warning message will appear but
 processing will continue regardless.'''
 
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2013 Broad Institute
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 
 import logging
 import email.message

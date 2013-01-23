@@ -55,7 +55,15 @@ Caenorhabditis elegans images</i>, Hanchuan Peng, Fuhui Long, Xiao Liu,
 Stuart Kim, Eugene Myers, Bioinformatics Vol 24 # 2, 2008, pp 234-242.
 '''
 
-__version__="$Revision: 10717 %"
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2013 Broad Institute
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 
 import numpy as np
 import os

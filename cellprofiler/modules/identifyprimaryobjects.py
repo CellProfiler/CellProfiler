@@ -1225,6 +1225,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         else:
             return self.smoothing_filter_size.value
     
+    def is_object_identification_module(self):
+        '''IdentifyPrimaryObjects makes primary objects sets so it's a identification module'''
+        return True
+    
     def get_measurement_columns(self, pipeline):
         '''Column definitions for measurements made by IdentifyPrimAutomatic'''
         columns = cpmi.get_object_measurement_columns(self.object_name.value)

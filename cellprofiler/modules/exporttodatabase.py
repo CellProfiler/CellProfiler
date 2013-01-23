@@ -16,14 +16,20 @@ its functionality is the same.
 
 The database is set up with two primary tables. These tables are the
 <i>Per_Image</i> table and the <i>Per_Object</i> table (which may have a prefix if you
-specify). The Per_Image table consists of all the per-image measurements made during the pipeline, plus
+specify):
+<ul>
+<li>The Per_Image table consists of all the per-image measurements made during the pipeline, plus
 per-image population statistics (such as mean, median, and standard deviation) of the object measurements. There is one
 per_image row for every "cycle" that CellProfiler processes (a cycle is usually a single field of view, and a single cycle 
-usually contains several image files, each representing a different channel of the same field of view). The Per_Object table contains all the
+usually contains several image files, each representing a different channel of the same field of view). </li>
+<li>The Per_Object table contains all the
 measurements for individual objects. There is one row of object
 measurements per object identified. The two tables are connected with the
 primary key column <i>ImageNumber</i>, which indicates the image to which each object belongs. The Per_Object table has another primary
-key called <i>ObjectNumber</i>, which is unique to each image. Typically, if multiple types of objects are identified and measured in a pipeline, 
+key called <i>ObjectNumber</i>, which is unique to each image. </li>
+</ul>
+
+Typically, if multiple types of objects are identified and measured in a pipeline, 
 the numbers of those objects are equal to each other. For example, in most pipelines, each nucleus has exactly one cytoplasm, so the first row 
 of the Per-Object table contains all of the information about object #1, including both nucleus- and cytoplasm-related measurements. If this 
 one-to-one correspondence is <i>not</i> the case for all objects in the pipeline (for example, if dozens of speckles are identified and 
@@ -36,7 +42,7 @@ This option will output a SQL file (regardless of whether you choose to write di
 that can be used to create the Per_Well table. At the secure shell where you normally log in to MySQL, type
 the following, replacing the italics with references to your database and files:
 
-<tt>mysql -h <i>hostname</i> -u <i>username</i> -p <i>databasename</i> &lt<i>pathtoimages/perwellsetupfile.SQL</i></tt>
+<tt>mysql -h <i>hostname</i> -u <i>username</i> -p <i>databasename</i> &lt <i>pathtoimages/perwellsetupfile.SQL</i></tt>
 
 The commands written by CellProfiler to create the Per_Well table will be executed.
 
@@ -192,6 +198,7 @@ DIR_CUSTOM_WITH_METADATA = "Custom folder with metadata"
 
 OT_PER_OBJECT = "One table per object type"
 OT_COMBINE = "Single object table"
+OT_VIEW = "Single object view"
 
 '''Index of the object table format choice in the settings'''
 OT_IDX = 17
@@ -199,8 +206,10 @@ OT_IDX = 17
 '''Use this dictionary to keep track of rewording of above if it happens'''
 OT_DICTIONARY = {
     "One table per object type": OT_PER_OBJECT,
-    "Single object table": OT_COMBINE
+    "Single object table": OT_COMBINE,
+    "Single object view": OT_VIEW
     }
+from identify import C_PARENT
 
 T_EXPERIMENT = "Experiment"
 T_EXPERIMENT_PROPERTIES = "Experiment_Properties"
@@ -294,7 +303,7 @@ class ExportToDatabase(cpm.CPModule):
             "Experiment name", "Expt",
             doc = """Select a name for the experiment. This name will be
             registered in the database and linked to the tables that
-            ExportToDatabase creates. You will be able to select the experiment
+            <b>ExportToDatabase</b> creates. You will be able to select the experiment
             by name in CellProfiler Analyst and will be able to find the
             experiment's tables through database queries.""")
         
@@ -302,7 +311,7 @@ class ExportToDatabase(cpm.CPModule):
             "Add a prefix to table names?", False, doc = """
             Do you want to add a prefix to your table names?
             This option enables you to prepend text to your table names
-            (Per_Image and Per_Object).  CellProfiler will warn you before overwriting an existing table.""")
+            (<i>Per_Image</i> and <i>Per_Object</i>).  CellProfiler will warn you before overwriting an existing table.""")
         
         self.table_prefix = cps.Text(
             "Table prefix", "Expt_" , doc = """
@@ -598,8 +607,8 @@ class ExportToDatabase(cpm.CPModule):
             same time guaranteeing that no two columns have the same name.""")
         
         self.separate_object_tables = cps.Choice(
-            "Create one table per object or a single object table?",
-            [OT_COMBINE, OT_PER_OBJECT],
+            "Create one table per object, a single object table or a single object view?",
+            [OT_COMBINE, OT_PER_OBJECT, OT_VIEW],
             doc = """<b>ExportToDatabase</b> can create either one table
             for each type of object exported or a single
             object table.<br><ul>
@@ -616,13 +625,27 @@ class ExportToDatabase(cpm.CPModule):
             or if you need to split columns among different
             tables and shorten column names because of database limitations.</li>
             <li><i>%(OT_COMBINE)s</i> creates a single
-            database table that records all object measurements. <b>
+            database table that records the object measurements. <b>
             ExportToDatabase</b> will prepend each column name with the
             name of the object associated with that column's measurement.
             Each row of the table will have measurements for all objects
             that have the same image and object number. Choose
             <i>%(OT_COMBINE)s</i> if parent objects have a single child,
-            or if you want a simple table structure in your database.</li>
+            or if you want a simple table structure in your database. You can
+            combine the measurements for all or selected objects in this way.</li>
+            <li><i>%(OT_VIEW)s</i> creates a single
+            database view to contain the object measurements. A <i>view</i> is a
+            virtual database table which can be used to package together multiple
+            per-object tables into a single structure that is accessed just like a
+            regular table. Choose <i>%(OT_VIEW)s</i> if you want to combine multiple
+            objects but using <i>%(OT_COMBINE)s</i> would produce a table that hits
+            the database size limitations. <br>
+            An important note is that only objects that are related as primary, secondary
+            or tertiary objects to each other should be combined in a view. This is
+            because the view expects a one-to-one relationship between the combined objects. If
+            you are selecting objects for the view, the module will warn you if they are
+            not related in this way.
+            </li>
             </ul>""" % globals())
         
         self.want_image_thumbnails = cps.Binary(
@@ -933,7 +956,7 @@ class ExportToDatabase(cpm.CPModule):
         result += [self.save_cpa_properties]
         if self.save_cpa_properties.value:
             if (self.objects_choice != O_NONE and 
-                self.separate_object_tables == OT_COMBINE):
+                (self.separate_object_tables == OT_COMBINE or self.separate_object_tables == OT_VIEW)):
                 result += [self.location_object]
             result += [self.properties_image_url_prepend, self.properties_plate_type, 
                        self.properties_plate_metadata, self.properties_well_metadata,
@@ -1144,7 +1167,7 @@ class ExportToDatabase(cpm.CPModule):
                 ("You will have to merge the separate object tables in order\n"
                  "to use CellProfiler Analyst fully, or you will be restricted \n"
                  "to only one object's data at a time in CPA. Choose %s to write a single\n"
-                 "object table.") % OT_COMBINE, self.separate_object_tables)
+                 "object table.") % ("'%s' or '%s'"%(OT_COMBINE,OT_VIEW)), self.separate_object_tables)
                 
         '''Warn user re: bad characters in object used for center, filter/group names and class_table name'''
         if self.save_cpa_properties:
@@ -1167,6 +1190,20 @@ class ExportToDatabase(cpm.CPModule):
             if self.properties_class_table_name:
                 if not re.match("^[\w]*$",self.properties_class_table_name.value):
                     raise cps.ValidationError(warning_string%"class table name",self.properties_class_table_name)
+            
+        '''Warn user re: objects that are not 1:1 (i.e., primary/secondary/tertiary) if creating a view'''
+        if self.objects_choice != O_NONE and self.separate_object_tables == OT_VIEW:
+            d = {}
+            selected_objs = self.objects_list.value.rsplit(',')
+            for obj in selected_objs:
+                for module in pipeline.modules(): 
+                    if module.is_object_identification_module() and module.get_measurements(pipeline,obj,C_PARENT):
+                        d[obj] = module.get_measurements(pipeline,obj,C_PARENT)[0]
+        
+            candidate_objs = set(d.keys() + d.values())
+            mismatched_objs = set(selected_objs).difference(candidate_objs)
+            if mismatched_objs:
+                raise cps.ValidationError("%s is not in a 1:1 relationship with the other selected objects. Either de-select the object or choose another object container."%",".join(mismatched_objs),self.separate_object_tables)
             
     def make_full_filename(self, file_name, 
                            workspace = None, image_set_index = None):
@@ -1633,9 +1670,13 @@ class ExportToDatabase(cpm.CPModule):
                                                         image_set_list)
             
         if self.objects_choice != O_NONE:
-            # Object table
+            # Object table/view
             if self.separate_object_tables == OT_COMBINE:
                 execute(cursor, 'DROP TABLE IF EXISTS %s' %
+                        self.get_table_name(cpmeas.OBJECT), 
+                        return_result = False)
+                # Dropping a per-object table may fail because a view exists with the same name
+                execute(cursor, 'DROP VIEW IF EXISTS %s' %
                         self.get_table_name(cpmeas.OBJECT), 
                         return_result = False)
                 statement = self.get_create_object_table_statement(
@@ -1650,8 +1691,19 @@ class ExportToDatabase(cpm.CPModule):
                     statement = self.get_create_object_table_statement(
                         object_name, pipeline, image_set_list)
                     execute(cursor, statement)
+                if self.separate_object_tables == OT_VIEW:
+                    execute(cursor, 'DROP TABLE IF EXISTS %s' %
+                            self.get_table_name(cpmeas.OBJECT), 
+                            return_result = False)
+                    # Dropping a per-object table may fail because a view exists with the same name
+                    execute(cursor, 'DROP VIEW IF EXISTS %s' %
+                            self.get_table_name(cpmeas.OBJECT), 
+                            return_result = False)
+                    statement = self.get_create_object_view_statement(
+                        self.get_object_names(pipeline, image_set_list), pipeline, image_set_list)
+                    execute(cursor, statement)
+        
         # Image table
-
         execute(cursor, 'DROP TABLE IF EXISTS %s' % 
                 self.get_table_name(cpmeas.IMAGE), return_result = False)
         statement = self.get_create_image_table_statement(pipeline, 
@@ -1670,43 +1722,40 @@ class ExportToDatabase(cpm.CPModule):
             autoincrement = "AUTOINCREMENT"
             need_text_size = False
         create_experiment_table_statement = """
-        CREATE TABLE IF NOT EXISTS %s (
-            experiment_id integer primary key %s,
-            name text)
-            """ % (T_EXPERIMENT, autoincrement)
+CREATE TABLE IF NOT EXISTS %s (
+    experiment_id integer primary key %s,
+    name text)""" % (T_EXPERIMENT, autoincrement)
         statements.append(create_experiment_table_statement)
         if need_text_size:
             create_experiment_properties = """
-            CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
-                experiment_id integer not null,
-                object_name text not null,
-                field text not null,
-                value longtext,
-                constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name(255), field(255)))
-                """ % globals()
+CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
+    experiment_id integer not null,
+    object_name text not null,
+    field text not null,
+    value longtext,
+    constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name(255), field(255)))""" % globals()
         else:
             create_experiment_properties = """
-            CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
-                experiment_id integer not null,
-                object_name text not null,
-                field text not null,
-                value longtext,
-                constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name, field))
-                """ % globals()
+CREATE TABLE IF NOT EXISTS %(T_EXPERIMENT_PROPERTIES)s (
+    experiment_id integer not null,
+    object_name text not null,
+    field text not null,
+    value longtext,
+    constraint %(T_EXPERIMENT_PROPERTIES)s_pk primary key (experiment_id, object_name, field))""" % globals()
             
         statements.append(create_experiment_properties)
         insert_into_experiment_statement = """
-        INSERT INTO %s (name) values ('%s')
-        """ % ( T_EXPERIMENT, MySQLdb.escape_string(self.experiment_name.value))
+INSERT INTO %s (name) values ('%s')""" % ( 
+              T_EXPERIMENT, MySQLdb.escape_string(self.experiment_name.value))
         statements.append(insert_into_experiment_statement)
         
         properties = self.get_property_file_text(workspace)
         for p in properties:
             for k, v in p.properties.iteritems():
                 statement = """
-                INSERT INTO %s (experiment_id, object_name, field, value)
-                SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s
-                """ % (T_EXPERIMENT_PROPERTIES, p.object_name, 
+INSERT INTO %s (experiment_id, object_name, field, value)
+SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
+                       T_EXPERIMENT_PROPERTIES, p.object_name, 
                        MySQLdb.escape_string(k),
                        MySQLdb.escape_string(v), T_EXPERIMENT)
                 statements.append(statement)
@@ -1767,6 +1816,45 @@ class ExportToDatabase(cpm.CPModule):
         return statement
 
         
+    def get_create_object_view_statement(self, object_names, pipeline, 
+                                          image_set_list):
+        '''Get the "CREATE VIEW" statement for the given object view
+        
+        object_names is the list of objects to be included into the view
+        '''
+        object_table = self.get_table_name(cpmeas.OBJECT)
+                
+        # Produce a list of columns from each of the separate tables
+        list_of_columns = []
+        all_objects = dict(zip(object_names,[self.get_table_name(object_name) for object_name in object_names]))
+        
+        column_defs = self.get_pipeline_measurement_columns(pipeline,image_set_list)
+        mappings = self.get_column_name_mappings(pipeline, image_set_list)
+        for (current_object,current_table) in all_objects.iteritems():
+            list_of_columns.append([])
+            for column_def in column_defs:
+                obname, feature, ftype = column_def[:3]
+                if obname == current_object and not self.ignore_feature(obname, feature):
+                    feature_name = '%s_%s'%(obname, feature)
+                    list_of_columns[-1] += [mappings[feature_name]]
+        all_columns = sum(list_of_columns,[])
+        
+        selected_object = object_names[0]
+        all_columns = ["%s.%s"%(all_objects[selected_object],C_IMAGE_NUMBER),"%s_%s AS %s"%(selected_object, M_NUMBER_OBJECT_NUMBER, C_OBJECT_NUMBER)] + all_columns
+        
+        # Create the new view
+        statement = "CREATE OR REPLACE VIEW " if self.db_type==DB_MYSQL else "CREATE VIEW "
+        statement += "%s AS SELECT %s FROM %s"%(object_table,",".join(all_columns), all_objects[selected_object])
+
+        object_table_pairs = all_objects.items()
+        object_table_pairs = [x for x in object_table_pairs if x[0] != selected_object]
+        for (current_object,current_table) in object_table_pairs:
+            statement = " ".join((statement,"INNER JOIN %s ON"%current_table,\
+                                  " AND ".join(("%s.%s = %s.%s"%(all_objects[selected_object], C_IMAGE_NUMBER, current_table, C_IMAGE_NUMBER),
+                                                "%s.%s_%s = %s.%s_%s"%(all_objects[selected_object], selected_object, M_NUMBER_OBJECT_NUMBER, 
+                                                                       current_table, current_object, M_NUMBER_OBJECT_NUMBER)))))
+        return statement
+    
     def write_mysql_table_defs(self, workspace):
         """Write the table definitions to the SETUP.SQL file
         
@@ -1822,6 +1910,11 @@ FIELDS TERMINATED BY ','
 OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
 """ % (self.base_name(workspace), object_name,
        self.get_table_name(object_name)))
+            
+        if self.objects_choice != O_NONE and self.separate_object_tables == OT_VIEW:
+            fid.write("\n" + self.get_create_object_view_statement(
+                    [object_name for gcot_name, object_name in data], pipeline, image_set_list) + ";\n")
+        
         if self.wants_well_tables:
             self.write_mysql_table_per_well(
                 workspace.pipeline, workspace.image_set_list, fid)
@@ -2297,18 +2390,22 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         #
         # Get appropriate object names
         #
-        if self.objects_choice == O_SELECT:
-            object_names = (self.objects_list.value).split(',')
-        elif self.objects_choice == O_NONE:
-            object_names = [""]
-        elif self.separate_object_tables == OT_COMBINE:
-            object_names = [ self.location_object.value ]
+        if self.objects_choice != O_NONE:
+            if self.separate_object_tables == OT_COMBINE:
+                object_names = [ self.location_object.value ]
+            elif self.separate_object_tables == OT_PER_OBJECT:
+                if self.objects_choice == O_SELECT:
+                    object_names = (self.objects_list.value).split(',')
+                else:
+                    object_names = [
+                        object_name 
+                        for object_name in workspace.measurements.get_object_names() 
+                        if (object_name != cpmeas.IMAGE) and 
+                        (not self.ignore_object(object_name))]
+            elif self.separate_object_tables == OT_VIEW:
+                object_names = [None]
         else:
-            object_names = [
-                object_name 
-                for object_name in workspace.measurements.get_object_names() 
-                if (object_name != cpmeas.IMAGE) and 
-                (not self.ignore_object(object_name))]
+            object_names = [None]
                 
         default_image_names = []
         # Find all images that have FileName and PathName
@@ -2364,24 +2461,45 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
         
         for object_name in object_names:
         
-            if self.objects_choice != O_NONE and self.separate_object_tables == OT_COMBINE:
-                cell_tables = '%sPer_Object'%(self.get_table_prefix())
-                object_id = C_OBJECT_NUMBER
-                filename = '%s.properties'%(tblname)
-                ## Defaults to the first object in the list, which is the last one defined in the pipeline
-                ## object_names = [object_names[0]] if len(object_names) > 0 else ""
-                properties_object_name = "Object"
+            if object_name:
+                if self.objects_choice != O_NONE:
+                    if self.separate_object_tables == OT_COMBINE :
+                        cell_tables = '%sPer_Object'%(self.get_table_prefix())
+                        object_id = C_OBJECT_NUMBER
+                        filename = '%s.properties'%(tblname)
+                        properties_object_name = "Object"
+                        object_count = 'Image_Count_%s'%(self.location_object.value)
+                        cell_x_loc = '%s_Location_Center_X'%(self.location_object.value)
+                        cell_y_loc = '%s_Location_Center_Y'%(self.location_object.value)
+                    elif self.separate_object_tables == OT_PER_OBJECT:
+                        cell_tables = '%sPer_%s'%(self.get_table_prefix(),object_name)
+                        object_id = '%s_Number_Object_Number'%(object_name)
+                        filename = '%s_%s.properties'%(tblname,object_name)
+                        properties_object_name = object_name
+                        object_count = 'Image_Count_%s'%(object_name)
+                        cell_x_loc = '%s_Location_Center_X'%(object_name)
+                        cell_y_loc = '%s_Location_Center_Y'%(object_name)
             else:
-                cell_tables = '%sPer_%s'%(self.get_table_prefix(),object_name) if object_name else ''
-                object_id = '%s_Number_Object_Number'%(object_name) if object_name else ''
-                filename = '%s_%s.properties'%(tblname,object_name) if object_name else '%s.properties'%(tblname)
-                properties_object_name = object_name
+                '''If object_name = None, it's either per_image only or a view '''
+                if self.objects_choice == O_NONE:
+                    cell_tables =  ''
+                    object_id =  ''
+                    filename = '%s.properties'%(tblname)
+                    properties_object_name = object_name
+                    object_count = ''
+                    cell_x_loc = ''
+                    cell_y_loc = ''
+                elif self.separate_object_tables == OT_VIEW:
+                    cell_tables = '%sPer_Object'%(self.get_table_prefix())
+                    object_id = C_OBJECT_NUMBER
+                    filename = '%s.properties'%(tblname)
+                    properties_object_name = "Object"
+                    object_count = 'Image_Count_%s'%(self.location_object.value)
+                    cell_x_loc = '%s_Location_Center_X'%(self.location_object.value)
+                    cell_y_loc = '%s_Location_Center_Y'%(self.location_object.value)
                 
             file_name = self.make_full_filename(filename, workspace)
             unique_id = C_IMAGE_NUMBER
-            object_count = 'Image_Count_%s'%(object_name) if object_name else ''
-            cell_x_loc = '%s_Location_Center_X'%(object_name) if object_name else ''
-            cell_y_loc = '%s_Location_Center_Y'%(object_name) if object_name else ''
             image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in self.thumbnail_image_names.get_selections()]) if self.want_image_thumbnails else ''
             
             if self.properties_export_all_image_defaults:
@@ -3051,6 +3169,10 @@ CP version : %d\n""" % version_number
                 [ "" ] + 
                 setting_values[SETTING_FIXED_SETTING_COUNT_V22:])
             variable_revision_number = 23
+            
+        # Added view creation to object table settings
+        setting_values[OT_IDX] = OT_DICTIONARY.get(setting_values[OT_IDX],
+                                                   setting_values[OT_IDX])
             
         return setting_values, variable_revision_number, from_matlab
     

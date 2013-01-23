@@ -547,6 +547,7 @@ class PipelineEventListener(object):
                 event.cancel_run = True
             elif disposition == ED_SKIP:
                 self.should_skip = True
+                event.cancel_run = False
                 event.skip_thisset = True
 
 

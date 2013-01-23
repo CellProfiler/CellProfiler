@@ -1,16 +1,3 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2013 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
 '''<b>IdentifyDeadWorms</b> identifies dead worms by their shape.
 <hr>
 Dead C. elegans worms most often have a straight shape in an image whereas
@@ -34,6 +21,15 @@ in pixels along the short axis of the diamond and should be less than
 the width of the worm.
 '''
 
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2013 Broad Institute
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 
 import numpy as np
 from scipy.ndimage import binary_erosion, binary_fill_holes

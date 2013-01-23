@@ -39,7 +39,11 @@
       <url>http://maven.imagej.net/content/repositories/releases</url>
   	</repository>
   </repositories>
- <build>
+  <organization>
+  	<name>Broad Institute Imaging Platform</name>
+  	<url>http://www.broadinstitute.org/science/platforms/imaging/imaging-platform</url>
+  </organization>
+  <build>
   <plugins>
     <plugin>
         <groupId>org.apache.maven.plugins</groupId>

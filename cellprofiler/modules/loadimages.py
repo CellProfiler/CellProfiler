@@ -3284,10 +3284,11 @@ def bad_sizes_warning(first_size, first_filename,
     return warning
 
 FILE_SCHEME = "file:"
+PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero")
 def pathname2url(path):
     '''Convert the unicode path to a file: url'''
     utf8_path = path.encode('utf-8')
-    if any([utf8_path.lower().startswith(x) for x in ("http", "https")]):
+    if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return utf8_path
     return FILE_SCHEME + urllib.pathname2url(utf8_path)
 
@@ -3295,7 +3296,7 @@ def is_file_url(url):
     return url.lower().startswith(FILE_SCHEME)
 
 def url2pathname(url):
-    if any([url.lower().startswith(x) for x in ("http", "https")]):
+    if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return url
     assert is_file_url(url)
     utf8_url = urllib.url2pathname(url[len(FILE_SCHEME):])

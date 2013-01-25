@@ -136,6 +136,9 @@ class OmeroLoginDlg(wx.Dialog):
             self.server = server
             self.port = port
             self.user = user
+            cpprefs.set_omero_server(server)
+            cpprefs.set_omero_port(port)
+            cpprefs.set_omero_user(user)
             self.ok_button.Enable(True)
             return True
         except:

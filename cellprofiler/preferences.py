@@ -119,7 +119,8 @@ def set_preferences_from_dict(d):
         "__show_exiting_test_mode_dlg", "__show_report_bad_sizes_dlg",
         "__show_sampling", "__use_more_figure_space",
         "__warn_about_old_pipeline", "__write_MAT_files",
-        "__workspace_file"):
+        "__workspace_file", "__omero_server", "__omero_port",
+        "__omero_user", "__omero_session_id"):
         globals()[cache_var] = None
 
 __cached_values = {}
@@ -276,6 +277,10 @@ WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
 USE_MORE_FIGURE_SPACE = "UseMoreFigureSpace"
 WRITE_HDF5 = "WriteHDF5"
 WORKSPACE_FILE = "WorkspaceFile"
+OMERO_SERVER = "OmeroServer"
+OMERO_PORT = "OmeroPort"
+OMERO_USER = "OmeroUser"
+OMERO_SESSION_ID = "OmeroSessionId"
 
 '''The preference key for selecting the correct version of ImageJ'''
 IJ_VERSION = "ImageJVersion"
@@ -296,7 +301,8 @@ ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
              SHOW_EXITING_TEST_MODE_DLG, SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
              TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
              TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
-             WRITE_MAT, USE_MORE_FIGURE_SPACE, WORKSPACE_FILE] + 
+             WRITE_MAT, USE_MORE_FIGURE_SPACE, WORKSPACE_FILE,
+             OMERO_SERVER, OMERO_PORT, OMERO_USER] + 
             [recent_file(n, category) for n in range(RECENT_FILE_COUNT)
              for category in ("", 
                               DEFAULT_IMAGE_DIRECTORY, 
@@ -988,9 +994,84 @@ def set_workspace_file(path, permanently = True):
         add_recent_file(path, WORKSPACE_FILE)
         config_write(WORKSPACE_FILE, path)
 
+###########################################
+#
+# OMERO logon credentials
+#
+###########################################
+
+__omero_server = None
+__omero_port = None
+__omero_user = None
+__omero_session_id = None
+
+def get_omero_server():
+    '''Get the DNS name of the Omero server'''
+    global __omero_server
+    if __omero_server is None:
+        if not config_exists(OMERO_SERVER):
+            return None
+        __omero_server = config_read(OMERO_SERVER)
+    return __omero_server
+
+def set_omero_server(omero_server):
+    '''Set the DNS name of the Omero server'''
+    global __omero_server
+    __omero_server = omero_server
+    config_write(OMERO_SERVER, omero_server)
+    
+def get_omero_port():
+    '''Get the port used to connect to the Omero server'''
+    global __omero_port
+    if __omero_port is None:
+        if not config_exists(OMERO_PORT):
+            return 4064
+        try:
+            __omero_port = int(config_read(OMERO_PORT))
+        except:
+            return 4064
+    return __omero_port
+
+def set_omero_port(omero_port):
+    '''Set the port used to connect to the Omero server'''
+    global __omero_port
+    __omero_port = omero_port
+    config_write(OMERO_PORT, str(omero_port))
+    
+def get_omero_user():
+    '''Get the Omero user name'''
+    global __omero_user
+    if __omero_user is None:
+        if not config_exists(OMERO_USER):
+            return None
+        __omero_user = config_read(OMERO_USER)
+    return __omero_user
+
+def set_omero_user(omero_user):
+    '''Set the Omero user name'''
+    global __omero_user
+    __omero_user = omero_user
+    config_write(OMERO_USER, omero_user)
+    
+def get_omero_session_id():
+    '''Get the session ID to use to communicate to Omero'''
+    global __omero_session_id
+    if __omero_session_id is None:
+        if not config_exists(OMERO_SESSION_ID):
+            return None
+        __omero_session_id = config_read(OMERO_SESSION_ID)
+    return __omero_session_id
+
+def set_omero_session_id(omero_session_id):
+    '''Set the Omero session ID'''
+    global __omero_session_id
+    __omero_session_id = omero_session_id
+    config_write(OMERO_SESSION_ID, omero_session_id)
+    
 __progress_data = threading.local()
 __progress_data.last_report = time.time()
 __progress_data.callbacks = None
+
 
 def add_progress_callback(callback):
     '''Add a callback function that listens to progress calls

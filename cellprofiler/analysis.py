@@ -577,7 +577,8 @@ class AnalysisRunner(object):
                                                  req.buf)
                 req.reply(Ack())
             elif isinstance(req, (InteractionRequest, DisplayRequest, 
-                                  ExceptionReport, DebugWaiting, DebugComplete)):
+                                  ExceptionReport, DebugWaiting, DebugComplete,
+                                  OmeroLoginRequest)):
                 # bump upward
                 self.post_event(req)
             else:
@@ -849,6 +850,13 @@ class NoWorkReply(Reply):
 
 class ServerExited(UpstreamExit):
     pass
+
+class OmeroLoginRequest(AnalysisRequest):
+    pass
+
+class OmeroLoginReply(Reply):
+    def __init__(self, credentials):
+        Reply.__init__(self, credentials = credentials)
 
 
 class Ack(Reply):

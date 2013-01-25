@@ -46,10 +46,12 @@ from cellprofiler.analysis import \
      NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
      ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, \
      ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
-     SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE
+     SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE,  \
+     OmeroLoginRequest, OmeroLoginReply
 import bioformats
 import cellprofiler.utilities.jutil as J
 from cellprofiler.utilities.rpdb import Rpdb
+from bioformats.formatreader import set_omero_login_hook
 
 #
 # CellProfiler expects NaN as a result during calculation
@@ -122,6 +124,7 @@ class AnalysisWorker(object):
         self.zmq_context = the_zmq_context
         self.cancelled = False
         self.current_analysis_id = False
+        set_omero_login_hook(self.omero_login_handler)
         
     def __enter__(self):
         J.attach()
@@ -375,6 +378,13 @@ class AnalysisWorker(object):
                              display_data_dict=display_data.__dict__,
                              image_set_number=image_set_number)
         rep = self.send(req)
+        
+    def omero_login_handler(self):
+        '''Handle requests for an Omero login'''
+        from bioformats.formatreader import use_omero_credentials
+        req = OmeroLoginRequest(self.current_analysis_id)
+        rep = self.send(req)
+        use_omero_credentials(rep.credentials)
         
     def send(self, req, work_socket = None):
         '''Send a request and receive a reply

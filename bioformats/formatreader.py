@@ -330,6 +330,100 @@ def make_reader_wrapper_class(class_name):
                                   'Set the name of the data file')
     return ReaderWrapper
 
+__omero_server = None
+__omero_username = None
+__omero_session_id = None
+__omero_port = None
+
+def set_omero_credentials(omero_server, omero_port, omero_username, omero_password):
+    '''Set the credentials to be used to connect to the Omero server
+    
+    omero_server - DNS name of the server
+
+    omero_port - use this port to connect to the server
+
+    omero_username - log on as this user
+
+    omero_password - log on using this password
+    
+    The session ID is valid after this is called. An exception is thrown
+    if the login fails. omero_logout() can be called to log out.
+    '''
+    global __omero_server
+    global __omero_username
+    global __omero_session_id
+    global __omero_port
+    __omero_server = omero_server
+    __omero_port = omero_port
+    __omero_username = omero_username
+    script = """
+    var client = Packages.omero.client(server, port);
+    var serverFactory = client.createSession(user, password);
+    client.getSessionId();
+    """
+    __omero_session_id = jutil.run_script(script, dict(
+        server = __omero_server,
+        port = __omero_port,
+        user = __omero_username,
+        password = omero_password))
+    return __omero_session_id
+    
+def get_omero_credentials():
+    '''Return a pickleable dictionary representing the Omero credentials
+    
+    Call use_omero_credentials in some other process to use this.
+    '''
+    if __omero_session_id is None:
+        __omero_login_fn()
+        
+    return dict(omero_server = __omero_server,
+                omero_port = __omero_port,
+                omero_user = __omero_username,
+                omero_session_id = __omero_session_id)
+
+def use_omero_credentials(credentials):
+    '''Use the session ID from an extant login as credentials
+    
+    credentials - credentials from get_omero_credentials
+    '''
+    global __omero_server
+    global __omero_username
+    global __omero_session_id
+    global __omero_port
+    __omero_server = credentials["omero_server"]
+    __omero_port = credentials["omero_port"]
+    __omero_username = credentials["omero_user"]
+    __omero_session_id = credentials["omero_session_id"]
+    
+__omero_login_fn = None
+def set_omero_login_hook(fn):
+    '''Set the function to be called when a login to Omero is needed'''
+    global __omero_login_fn
+    __omero_login_fn = fn
+    
+def get_omero_reader():
+    '''Return an loci.ome.io.OMEROReader instance, wrapped as a FormatReader'''
+    script = """
+    var rdr = new Packages.loci.ome.io.OmeroReader();
+    rdr.setServer(server);
+    rdr.setPort(port);
+    rdr.setUsername(username);
+    rdr.setSessionID(sessionID);
+    rdr;
+    """
+    if __omero_session_id is None:
+        __omero_login_fn()
+        
+    jrdr = jutil.run_script(script, dict(
+        server = __omero_server,
+        port = __omero_port,
+        username = __omero_username,
+        sessionID = __omero_session_id))
+        
+    rdr = make_iformat_reader_class()()
+    rdr.o = jrdr
+    return rdr
+
 
 def load_using_bioformats_url(url, c=None, z=0, t=0, series=None, index=None,
                           rescale = True,
@@ -339,6 +433,9 @@ def load_using_bioformats_url(url, c=None, z=0, t=0, series=None, index=None,
     
     '''
     file_scheme = "file:"
+    if url.lower().startswith("omero:"):
+        return load_using_bioformats(url, c, z, t, series, index,
+                                     wants_max_intensity, channel_names)
     if not url.lower().startswith(file_scheme):
         ext = url[url.rfind("."):]
         src = urllib2.urlopen(url)
@@ -373,8 +470,11 @@ class GetImageReader(object):
     that can be used to cache the file contents in memory.
     '''
     def __init__(self, path):
-        self.rdr = None
         self.stream = None
+        if path.lower().startswith("omero:"):
+            self.rdr = get_omero_reader()
+            return
+        self.rdr = None
         class_list = get_class_list()
         find_rdr_script = """
         var classes = class_list.getClasses();

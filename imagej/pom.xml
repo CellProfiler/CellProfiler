@@ -11,21 +11,21 @@
       <groupId>loci</groupId>
       <artifactId>bio-formats</artifactId>
       <version>4.4.5</version>
-      <type>pom</type>
+      <type>jar</type>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>loci</groupId>
       <artifactId>ome_tools</artifactId>
       <version>4.4.5</version>
-      <type>pom</type>
+      <type>jar</type>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-	<groupId>net.imagej</groupId>
-	<artifactId>ij-app</artifactId>
-	<version>2.0.0-beta5</version>
-	<scope>runtime</scope>
+	  <groupId>net.imagej</groupId>
+	  <artifactId>ij-app</artifactId>
+	  <version>2.0.0-beta5</version>
+	  <scope>runtime</scope>
     </dependency>
     <dependency>
     	<groupId>org.mozilla</groupId>

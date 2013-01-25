@@ -50,6 +50,7 @@ import cellprofiler.analysis as cpanalysis
 import cellprofiler.cpmodule as cpmodule
 import cellprofiler.gui.loadsavedlg as cplsdlg
 import cellprofiler.utilities.walk_in_background as W
+from cellprofiler.gui.omerologin import OmeroLoginDlg
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -137,6 +138,8 @@ class PipelineController:
         wx.EVT_MENU_OPEN(frame, self.on_frame_menu_open)
         
         cpp.evt_modulerunner_done(frame, self.on_module_runner_done)
+        from bioformats.formatreader import set_omero_login_hook
+        set_omero_login_hook(self.omero_login)
         
     def start(self):
         '''Do initialization after GUI hookup
@@ -249,6 +252,10 @@ class PipelineController:
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_step, self.__tcp_step)
         self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set, self.__tcp_next_imageset)
 
+    def omero_login(self):
+        with OmeroLoginDlg(self.__frame, title = "Log into Omero") as dlg:
+            dlg.ShowModal()
+            
     def on_open_workspace(self, load_pipeline):
         '''Handle the Open Workspace menu command'''
         with wx.FileDialog(
@@ -1270,6 +1277,9 @@ class PipelineController:
         elif isinstance(evt, cpanalysis.InteractionRequest):
             self.interaction_request_queue.put((PRI_INTERACTION, self.module_interaction_request, evt))
             wx.CallAfter(self.handle_analysis_feedback)
+        elif isinstance(evt, cpanalysis.OmeroLoginRequest):
+            self.interaction_request_queue.put((PRI_INTERACTION, self.omero_login_request, evt))
+            wx.CallAfter(self.handle_analysis_feedback)
         elif isinstance(evt, cpanalysis.ExceptionReport):
             self.interaction_request_queue.put((PRI_EXCEPTION, self.analysis_exception, evt))
             wx.CallAfter(self.handle_analysis_feedback)
@@ -1366,6 +1376,11 @@ class PipelineController:
             # we need to ensure that the reply_cb gets a reply (even if it
             # being empty causes futher exceptions).
             evt.reply(cpanalysis.InteractionReply(result=result))
+            
+    def omero_login_request(self, evt):
+        '''Handle retrieval of the Omero credentials'''
+        from bioformats.formatreader import get_omero_credentials
+        evt.reply(cpanalysis.OmeroLoginReply(get_omero_credentials()))
 
     def analysis_exception(self, evt):
         '''Report an error in analysis to the user, giving options for

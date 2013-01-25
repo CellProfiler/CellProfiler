@@ -213,6 +213,9 @@ def is_file_name_feature(feature):
     '''Return true if the feature name is a file name'''
     return feature.startswith(C_FILE_NAME+'_')
 
+def is_url_name_feature(feature):
+    return feature.startswith(C_URL + "_")
+
 def is_objects_path_name_feature(feature):
     '''Return true if the feature name is the path to a labels file'''
     return feature.startswith(C_OBJECTS_PATH_NAME+"_")
@@ -221,12 +224,17 @@ def is_objects_file_name_feature(feature):
     '''Return true if the feature name is a labels file name'''
     return feature.startswith(C_OBJECTS_FILE_NAME+"_")
 
+def is_objects_url_name_feature(feature):
+    return feature.startswith(C_OBJECTS_URL + "_")
+
 def get_image_name(feature):
     '''Extract the image name from a feature name'''
     if is_path_name_feature(feature):
         return feature[len(C_PATH_NAME+'_'):]
     if is_file_name_feature(feature):
         return feature[len(C_FILE_NAME+'_'):]
+    if is_url_name_feature(feature):
+        return feature[len(C_URL+'_'):]
     raise ValueError('"%s" is not a path feature or file name feature'%feature)
 
 def get_objects_name(feature):
@@ -235,6 +243,8 @@ def get_objects_name(feature):
         return feature[len(C_OBJECTS_PATH_NAME+"_"):]
     if is_objects_file_name_feature(feature):
         return feature[len(C_OBJECTS_FILE_NAME+"_"):]
+    if is_objects_url_name_feature(feature):
+        return feature[len(C_OBJECTS_URL+"_"):]
     raise ValueError('"%s" is not a objects path feature or file name feature'%feature)
 
 def make_path_name_feature(image):
@@ -268,11 +278,6 @@ def make_objects_file_name_feature(objects_name):
     the objects file name.
     '''
     return C_OBJECTS_FILE_NAME+'_'+objects_name
-
-def get_object_names(features):
-    '''Get the object names represented by the header features in the data file'''
-    return [ get_objects_name(feature) for feature in features
-             if is_objects_file_name_feature(feature)]
 
 class LoadData(cpm.CPModule):
     
@@ -673,15 +678,20 @@ class LoadData(cpm.CPModule):
         
     def get_image_names(self, do_not_cache = False):
         header = self.get_header(do_not_cache=do_not_cache)
-        return [get_image_name(field)
-                for field in header
-                if is_file_name_feature(field)]
+        image_names = set([
+            get_image_name(field)
+            for field in header
+            if is_file_name_feature(field) or is_url_name_feature(field)])
+        return list(image_names)
     
     def get_object_names(self, do_not_cache = False):
         header = self.get_header(do_not_cache=do_not_cache)
-        return [get_objects_name(field)
+        object_names = set([get_objects_name(field)
                 for field in header
-                if is_objects_file_name_feature(field)]
+                if is_objects_file_name_feature(field) or 
+                is_objects_url_name_feature(field)])
+        return list(object_names)
+                    
         
         
     def other_providers(self, group):
@@ -1153,7 +1163,7 @@ class LoadData(cpm.CPModule):
             #
             # Add the object features
             #
-            for object_name in get_object_names(header):
+            for object_name in self.get_object_names():
                 result += I.get_object_measurement_columns(object_name)
                 url_feature = C_OBJECTS_URL + "_" + object_name
                 result.append((cpmeas.IMAGE, url_feature, 

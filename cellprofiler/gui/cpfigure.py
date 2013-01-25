@@ -1484,7 +1484,7 @@ def show_image(url, parent = None, needs_raise_after = True):
         frame.subplot_imshow_grayscale(0, 0, image, title = filename)
     else:
         frame.subplot_imshow_color(0, 0, image, title = filename)
-    frame.Refresh()
+    frame.panel.draw()
     if needs_raise_after:
         #%$@ hack hack hack
         import wx

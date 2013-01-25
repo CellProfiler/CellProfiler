@@ -738,9 +738,7 @@ All rights reserved."""
                 frame.subplot_imshow(0, 0, image, title = dlg.Path)
             else:
                 frame.subplot_imshow_grayscale(0, 0, image, title=dlg.Path)
-            frame.Refresh()
-            
-                                  
+            frame.panel.draw()    
             
     def __attach_views(self):
         self.__pipeline_list_view = PipelineListView(self.__module_list_panel, self)

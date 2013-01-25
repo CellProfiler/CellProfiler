@@ -246,7 +246,7 @@ class CPFigureFrame(wx.Frame):
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
         sizer.Add(self.panel, 1, wx.EXPAND) 
         self.status_bar = self.CreateStatusBar()
-        wx.EVT_PAINT(self, self.on_paint)
+        #wx.EVT_PAINT(self, self.on_paint)
         wx.EVT_CLOSE(self, self.on_close)
         if subplots:
             self.subplots = np.zeros(subplots,dtype=object)

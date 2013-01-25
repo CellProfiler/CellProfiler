@@ -84,13 +84,13 @@ public class OMEMetadataExtractor implements MetadataExtractor<ImagePlane> {
 			 * Assume it's a movie if there's no plane data and there is more than one frame. The index gives the T.
 			 */
 			if (pixels.getSizeT().getValue().intValue() > 1) 
-				map.put(MD_T, Integer.toString(source.getIndex()));
+				map.put(MD_T, StringCache.intern(Integer.toString(source.getIndex())));
 			else if (pixels.getSizeZ().getValue().intValue() > 1)
-				map.put(MD_Z, Integer.toString(source.getIndex()));
+				map.put(MD_Z, StringCache.intern(Integer.toString(source.getIndex())));
 		}
 		return map;
 	}
 	static private void putIfNotNull(Map<String, String> map, String key, String value) {
-		if (value != null) map.put(key, value);
+		if (value != null) map.put(key, StringCache.intern(value));
 	}
 }

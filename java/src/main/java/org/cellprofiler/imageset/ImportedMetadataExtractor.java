@@ -113,7 +113,7 @@ public class ImportedMetadataExtractor implements MetadataExtractor<ImagePlaneDe
 				 */
 				break;
 			}
-			otherKeys[otherIdx] = key;
+			otherKeys[otherIdx] = StringCache.intern(key);
 			otherPositions[otherIdx++] = kidx;
 		}
 		for (int i=0; i<matchingPositions.length; i++) {
@@ -132,14 +132,14 @@ public class ImportedMetadataExtractor implements MetadataExtractor<ImagePlaneDe
 			final ArrayList<String> key = new ArrayList<String>(matchingKeys.length);
 			for (int i=0; i<matchingPositions.length; i++) {
 				if (caseInsensitive) {
-					key.add(fields[matchingPositions[i]].toLowerCase());
+					key.add(StringCache.intern(fields[matchingPositions[i]].toLowerCase()));
 				} else {
-					key.add(fields[matchingPositions[i]]);
+					key.add(StringCache.intern(fields[matchingPositions[i]]));
 				}
 			}
 			final Map<String, String> values = new HashMap<String, String>();
 			for (int i=0; i<otherPositions.length; i++) {
-				values.put(otherKeys[i], fields[otherPositions[i]]);
+				values.put(otherKeys[i], StringCache.intern(fields[otherPositions[i]]));
 			}
 			importedMetadata.put(key, values);
 		}

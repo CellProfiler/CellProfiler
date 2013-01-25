@@ -43,7 +43,8 @@ public class RegexpMetadataExtractor implements MetadataExtractor<String> {
 	public RegexpMetadataExtractor(String pattern) {
 		List<String> keys = new ArrayList<String>();
 		this.pattern = MetadataUtils.compilePythonRegexp(pattern, keys);
-		this.keys = keys.toArray(new String [keys.size()]);
+		this.keys = new String [keys.size()];
+		for (int i=0; i<keys.size(); i++) this.keys[i] = StringCache.intern(keys.get(i));
 	}
 
 	/* (non-Javadoc)
@@ -56,7 +57,7 @@ public class RegexpMetadataExtractor implements MetadataExtractor<String> {
 			for (int i=0; i<matcher.groupCount(); i++) {
 				String value = matcher.group(i+1);
 				if (value != null) {
-					map.put(keys[i], value);
+					map.put(keys[i], StringCache.intern(value));
 				}
 			}
 		}

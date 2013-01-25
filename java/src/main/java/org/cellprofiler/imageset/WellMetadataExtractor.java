@@ -34,6 +34,7 @@ import org.cellprofiler.imageset.filter.ImagePlaneDetails;
  */
 public class WellMetadataExtractor implements
 		MetadataExtractor<ImagePlaneDetails> {
+	final static public String WELL = "Well";
 	final static private List<String> rowKeys = Arrays.asList("wellrow", "well_row", "row");
 	final static private List<String> columnKeys = Arrays.asList("wellcol", "well_col", "wellcolumn", "well_column", "column", "col");
 	/* (non-Javadoc)
@@ -53,7 +54,7 @@ public class WellMetadataExtractor implements
 			}
 		}
 		if ((wellRow != null) && (wellColumn != null)) {
-			return Collections.singletonMap("Well", wellRow + wellColumn);
+			return Collections.singletonMap(WELL, StringCache.intern(wellRow + wellColumn));
 		}
 		return emptyMap;
 	}

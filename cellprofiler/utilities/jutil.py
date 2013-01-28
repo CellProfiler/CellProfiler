@@ -423,6 +423,9 @@ def run_script(script, bindings_in = {}, bindings_out = {},
                 "(Ljava/lang/String;"
                 "Lorg/mozilla/javascript/Scriptable;)"
                 "Ljava/lang/Object;", k, scope))
+    except JavaException, e:
+        if jutil.is_instance_of(e.throwable, "org/mozilla/javascript/WrappedException"):
+            raise JavaException(call(e.throwable, "unwrap", "()Ljava/lang/Object;"))
     finally:
         static_call("org/mozilla/javascript/Context", "exit", "()V")
     return result

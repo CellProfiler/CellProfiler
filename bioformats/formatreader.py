@@ -171,8 +171,12 @@ def make_iformat_reader_class():
             
             Note that both isThisTypeS and isThisTypeStream must return true
             for the type to truly be handled.''')
-        setId = jutil.make_method('setId', '(Ljava/lang/String;)V',
-                                  'Set the name of the data file')
+        def setId(self, path):
+            '''Set the name of the file'''
+            jutil.call(self.o, 'setId', 
+                       '(Ljava/lang/String;)V',
+                       path)
+                                            
         getMetadataStore = jutil.make_method('getMetadataStore', '()Lloci/formats/meta/MetadataStore;',
                                              'Retrieves the current metadata store for this reader.')
         get8BitLookupTable = jutil.make_method(
@@ -374,12 +378,21 @@ def get_omero_credentials():
     Call use_omero_credentials in some other process to use this.
     '''
     if __omero_session_id is None:
-        __omero_login_fn()
+        omero_login()
         
     return dict(omero_server = __omero_server,
                 omero_port = __omero_port,
                 omero_user = __omero_username,
                 omero_session_id = __omero_session_id)
+
+def omero_login():
+    __omero_login_fn()
+    return __omero_session_id
+    
+def omero_logout():
+    '''Abandon any current Omero session'''
+    global __omero_session_id
+    __omero_session_id = None
 
 def use_omero_credentials(credentials):
     '''Use the session ID from an extant login as credentials
@@ -412,7 +425,7 @@ def get_omero_reader():
     rdr;
     """
     if __omero_session_id is None:
-        __omero_login_fn()
+        omero_login()
         
     jrdr = jutil.run_script(script, dict(
         server = __omero_server,
@@ -553,6 +566,30 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
     
     Returns either a 2-d (grayscale) or 3-d (2-d + 3 RGB planes) image
     '''
+    #
+    # We loop as long as the user is willing to try logging
+    # in after timeout.
+    #
+    while True:
+        try:
+            return __load_using_bioformats(
+                path, c, z, t, series, index, rescale, wants_max_intensity,
+                channel_names)
+        except jutil.JavaException, e:
+            je = e.throwable
+            if jutil.is_instance_of(
+                je, "loci/formats/FormatException"):
+                je = jutil.call(je, "getCause", 
+                                "()Ljava/lang/Throwable;")
+            if jutil.is_instance_of(
+                je, "Glacier2/PermissionDeniedException"):
+                omero_logout()
+                omero_login()
+            else:
+                raise
+    
+def __load_using_bioformats(path, c, z, t, series, index, rescale,
+                            wants_max_intensity, channel_names):
     FormatTools = make_format_tools_class()
     ImageReader = make_image_reader_class()
     ChannelSeparator = make_reader_wrapper_class(

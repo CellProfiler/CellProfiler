@@ -173,8 +173,15 @@ class FlipAndRotate(cpm.CPModule):
                     raise NotImplementedError("Unknown axis: %s" %
                                               self.horiz_or_vert.value)
             elif self.rotate_choice == ROTATE_MOUSE:
-                assert False, "Needs to use handle_interaction"
-                angle = self.angle_from_mouse(workspace, pixel_data)
+                d = self.get_dictionary()
+                if (self.how_often == IO_ONCE and d.has_key(D_ANGLE) and 
+                    d[D_ANGLE] is not None):
+                        angle = d[D_ANGLE]
+                else:
+                    angle = workspace.interaction_request(
+                        self, pixel_data)
+                if self.how_often == IO_ONCE:
+                    d[D_ANGLE] = angle
             else:
                 raise NotImplementedError("Unknown rotation method: %s" %
                                           self.rotate_choice.value)
@@ -234,15 +241,14 @@ class FlipAndRotate(cpm.CPModule):
         workspace.measurements.add_image_measurement(
             M_ROTATION_F % self.output_name.value, angle)
 
-        if self.show_window:
-            vmin = min(np.min(image.pixel_data),
-                       np.min(output_image.pixel_data[output_image.mask]))
-            vmax = max(np.max(image.pixel_data),
-                       np.max(output_image.pixel_data[output_image.mask]))
-            workspace.display_data.image_pixel_data = image.pixel_data
-            workspace.display_data.output_image_pixel_data = output_image.pixel_data
-            workspace.display_data.vmin = vmin
-            workspace.display_data.vmax = vmax
+        vmin = min(np.min(image.pixel_data),
+                   np.min(output_image.pixel_data[output_image.mask]))
+        vmax = max(np.max(image.pixel_data),
+                   np.max(output_image.pixel_data[output_image.mask]))
+        workspace.display_data.image_pixel_data = image.pixel_data
+        workspace.display_data.output_image_pixel_data = output_image.pixel_data
+        workspace.display_data.vmin = vmin
+        workspace.display_data.vmax = vmax
 
     def display(self, workspace, figure):
         image_pixel_data = workspace.display_data.image_pixel_data
@@ -274,15 +280,10 @@ class FlipAndRotate(cpm.CPModule):
                                   vmax=vmax,
                                   sharexy = figure.subplot(0, 0))
 
-    def angle_from_mouse(self, workspace, pixel_data):
+    def handle_interaction(self, pixel_data):
         '''Run a UI that gets an angle from the user'''
         import wx
 
-        if self.how_often == IO_ONCE:
-            d = self.get_dictionary(workspace.image_set_list)
-            if d.has_key(D_ANGLE):
-                return d[D_ANGLE]
-        
         if pixel_data.ndim == 2:
             # make a color matrix for consistency
             pixel_data = np.dstack((pixel_data,pixel_data,pixel_data))
@@ -305,7 +306,7 @@ class FlipAndRotate(cpm.CPModule):
         #
         # Make a dialog box that contains the image
         #
-        dialog = wx.Dialog(workspace.frame,
+        dialog = wx.Dialog(None,
                            title = "Rotate image")
         sizer = wx.BoxSizer(wx.VERTICAL)
         dialog.SetSizer(sizer)

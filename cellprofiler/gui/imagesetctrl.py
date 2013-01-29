@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 """
 import numpy as np
 import re
+import urllib
 import wx
 import wx.grid
 from wx.lib.mixins.gridlabelrenderer import GridLabelRenderer
@@ -217,7 +218,8 @@ class ImageSetCtrl(wx.grid.Grid):
                         name = "%s Frame" % channel
                     else:
                         continue
-                elif feature.startswith(cpmeas.C_URL):
+                elif (feature.startswith(cpmeas.C_URL) or
+                      feature.startswith(cpmeas.C_OBJECTS_URL)):
                     column_type = COL_URL
                     channel = feature.split("_", 1)[1]
                     name = channel
@@ -290,7 +292,7 @@ class ImageSetCtrl(wx.grid.Grid):
             if (column.column_type == COL_URL and 
                 self.display_mode == DISPLAY_MODE_SIMPLE):
                 last_slash = value.rfind("/")
-                return value[(last_slash+1):]
+                return urllib.unquote(value[(last_slash+1):])
             return value
         
         def get_url(self, row, col):

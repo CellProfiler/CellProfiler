@@ -408,26 +408,26 @@ class Metadata(cpm.CPModule):
                         join_idx[self.CSV_JOIN_NAME], 
                         join_idx[self.IPD_JOIN_NAME])
                     key_pairs.append(key_pair)
-                    key_pairs = J.get_nice_arg(
-                        key_pairs, 
-                        "[Lorg/cellprofiler/imageset/ImportedMetadataExtractor$KeyPair;")
-                    #
-                    # Open the CSV file for reading, make an ImportedMetadataExtractor
-                    # and install it in the big extractor
-                    #
-                    script = """
-                    importPackage(Packages.org.cellprofiler.imageset);
-                    var inputStream = new java.io.FileInputStream(csv_path);
-                    var rdr = new java.io.InputStreamReader(inputStream);
-                    var iextractor = new ImportedMetadataExtractor(rdr, key_pairs, case_insensitive);
-                    extractor.addImagePlaneDetailsExtractor(iextractor, fltr);
-                    """
-                    J.run_script(script, dict(
-                        csv_path=group.csv_location.value,
-                        key_pairs=key_pairs,
-                        case_insensitive = group.wants_case_insensitive.value,
-                        extractor = extractor,
-                        fltr = fltr))
+                key_pairs = J.get_nice_arg(
+                    key_pairs, 
+                    "[Lorg/cellprofiler/imageset/ImportedMetadataExtractor$KeyPair;")
+                #
+                # Open the CSV file for reading, make an ImportedMetadataExtractor
+                # and install it in the big extractor
+                #
+                script = """
+                importPackage(Packages.org.cellprofiler.imageset);
+                var inputStream = new java.io.FileInputStream(csv_path);
+                var rdr = new java.io.InputStreamReader(inputStream);
+                var iextractor = new ImportedMetadataExtractor(rdr, key_pairs, case_insensitive);
+                extractor.addImagePlaneDetailsExtractor(iextractor, fltr);
+                """
+                J.run_script(script, dict(
+                    csv_path=group.csv_location.value,
+                    key_pairs=key_pairs,
+                    case_insensitive = group.wants_case_insensitive.value,
+                    extractor = extractor,
+                    fltr = fltr))
         #
         # Finally, we add the WellMetadataExtractor which has the inglorious
         # job of making a well name from row and column, if present.

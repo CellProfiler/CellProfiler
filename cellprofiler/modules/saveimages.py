@@ -432,6 +432,10 @@ class SaveImages(cpm.CPModule):
         workspace.display_data.filename = self.get_filename(
             workspace, make_dirs = False, check_overwrite = False)
         
+    def is_aggregation_module(self):
+        '''SaveImages is an aggregation module when it writes movies'''
+        return self.save_image_or_figure == IF_MOVIE
+    
     def display(self, workspace, figure):
         if self.show_window:
             if self.save_image_or_figure == IF_MOVIE:

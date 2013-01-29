@@ -26,14 +26,27 @@ import zipfile
 ACTION_MAVEN = "Maven"
 
 CELLPROFILER_JAVA_JAR = "cellprofiler-java-0.0.1-SNAPSHOT.jar"
+CELLPROFILER_DEPENDENCIES_URL = \
+    'http://www.cellprofiler.org/linked_files/CellProfilerDependencies'
+OMERO_CLIENTS_URL = CELLPROFILER_DEPENDENCIES_URL + '/OMERO.clients-4.4.5'
 # The list of files (relative path) to fetch, their SHA1, and their source URL.
 files = [
     [['imagej', 'apache-maven-3.0.4-bin.zip'], 
      '29cfd351206016b67dd0d556098513d2b259c69b',
-     'http://www.cellprofiler.org/linked_files/CellProfilerDependencies'
-     '/apache-maven-3.0.4-bin.zip',
-     ACTION_MAVEN]
-]
+     CELLPROFILER_DEPENDENCIES_URL + '/apache-maven-3.0.4-bin.zip',
+     ACTION_MAVEN],
+    [['imagej', 'jars', 'blitz.jar'], 
+     '106111c58509a05035e8b26b49d214d0ee1e6442',
+     OMERO_CLIENTS_URL + '/blitz.jar', None],
+    [['imagej', 'jars', 'common.jar'], 
+     '83733cd16a498bb6d30c829de5daead061fb7769',
+     OMERO_CLIENTS_URL + '/common.jar', None],
+    [['imagej', 'jars', 'model-psql.jar'], 
+     '7774ffcd7fb0b76a075b39601208a254915a7c49',
+     OMERO_CLIENTS_URL + '/model-psql.jar', None],
+    [['imagej', 'jars', 'ice.jar'], 
+     '017c5f3960be550673ff491bbcc7184c6d6388f1',
+     OMERO_CLIENTS_URL + '/ice.jar', None]]
 
 
 def filehash(filename):

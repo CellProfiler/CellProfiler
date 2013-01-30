@@ -106,7 +106,7 @@ def fetch_external_dependencies(overwrite=False):
     if overwrite or not os.path.isdir(os.path.join(imagej_dir, "jars")):
         run_maven(imagej_dir, maven_install_path)
     if (overwrite or not 
-        os.path.isfile(os.path.join(imagej_dir, CELLPROFILER_JAVA_JAR))):
+        os.path.isfile(os.path.join(imagej_dir, "jars", CELLPROFILER_JAVA_JAR))):
         run_maven(os.path.join(root, "java"), maven_install_path)
     
 def install_maven(zipfile_path, install_path):

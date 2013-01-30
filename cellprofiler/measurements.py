@@ -707,11 +707,15 @@ class Measurements(object):
                   for value in values]
         if ((not self.hdf5_dict.has_feature(IMAGE, IMAGE_NUMBER)) or
             (np.max(self.get_image_numbers()) < len(values))):
+            image_numbers = [
+                i+1 if value is not None else None 
+                for i, value in enumerate(values)]
             self.hdf5_dict.add_all(
-                IMAGE, IMAGE_NUMBER, 
-                [i+1 if value is not None else None 
-                 for i, value in enumerate(values)])
-        self.hdf5_dict.add_all(object_name, feature_name, values, self.get_image_numbers())
+                IMAGE, IMAGE_NUMBER, image_numbers)
+        else:
+            image_numbers = self.get_image_numbers()
+        self.hdf5_dict.add_all(object_name, feature_name, values, 
+                               image_numbers)
 
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement

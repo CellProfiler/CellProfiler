@@ -15,6 +15,7 @@ color.png
 Image from the Silk icon theme by Mark James. Free for use with attribution to:
     http://www.famfamfam.com/lab/icons/silk/
     
+IMG_ANALYZE_16.png
 filter.png
 Free for use with attribution to Oxygen Team:
     http://www.oxygen-icons.org/
@@ -27,3 +28,7 @@ Free for use with attribution to Yusuke Kamiyamane
 objects.png
 GPL licensed: Gnome project
 http://www.gnome.org/
+
+IMG_STOP.png
+LGPL licensed: David Vignoni 
+http://www.icon-king.com/

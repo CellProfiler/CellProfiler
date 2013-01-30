@@ -17,7 +17,9 @@ import string
 import time
 import numpy as np
 import wx
+from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
 import cellprofiler.preferences as cpprefs
+from cellprofiler.icons import get_builtin_image
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.help import \
      DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, OUTPUT_FILENAME_HELP
@@ -27,6 +29,8 @@ WELCOME_MESSAGE = 'Welcome to CellProfiler'
 
 
 ANALYZE_IMAGES = 'Analyze Images'
+ENTER_TEST_MODE = "Enter test mode"
+EXIT_TEST_MODE = "Exit test mode"
 
 WRITE_MAT_FILE = "MATLAB"
 WRITE_HDF_FILE = "HDF5"
@@ -193,8 +197,22 @@ class PreferencesView:
         self.__write_measurements_combo_box.Bind(
             wx.EVT_CHOICE, on_write_MAT_files_combo_box)
         output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
-        self.__analyze_images_button = wx.Button(panel, -1, ANALYZE_IMAGES)
-        self.__stop_analysis_button = wx.Button(panel,-1,'Stop analysis')
+        analyze_img = get_builtin_image("IMG_ANALYZE_16")
+        self.__analyze_images_button = \
+            BitmapLabelButton(panel, 
+                                bitmap = wx.BitmapFromImage(analyze_img),
+                                label = ANALYZE_IMAGES)
+        self.__test_bmp = wx.BitmapFromImage(get_builtin_image("IMG_TEST"))
+        self.__exit_test_mode_bmp = wx.BitmapFromImage(
+            get_builtin_image("IMG_STOP"))
+        self.__test_mode_button = \
+            BitmapLabelButton(panel,
+                              bitmap = self.__test_bmp,
+                              label = ENTER_TEST_MODE)
+        stop_img = get_builtin_image("IMG_STOP")
+        self.__stop_analysis_button = BitmapLabelButton(
+            panel, bitmap = wx.BitmapFromImage(stop_img),
+            label = 'Stop analysis')
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([(output_filename_help_button,0,wx.ALIGN_CENTER|wx.ALL,1),
                        (self.__output_filename_text,0,wx.ALIGN_CENTER,1),
@@ -204,6 +222,7 @@ class PreferencesView:
                        (wx.StaticText(panel, label = "Measurements file format:"), 0, wx.ALIGN_CENTER | wx.ALL, 1),
                        (self.__write_measurements_combo_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
                        (self.__analyze_images_button,0,wx.ALL,1),
+                       (self.__test_mode_button, 0, wx.ALL, 1),
                        (self.__stop_analysis_button, 0, wx.ALL,1)])
         sizer.Hide(self.__stop_analysis_button)
         panel.SetSizer(sizer)
@@ -224,7 +243,11 @@ class PreferencesView:
         self.__progress_bar = wx.Gauge(panel, -1, size=(100, -1))
         self.__progress_bar.Value = 25
         self.__timer = wx.StaticText(panel, -1, label="1:45/3:50")
-        self.pause_button = wx.Button(panel, -1, 'Pause')
+        pause_img = get_builtin_image("IMG_PAUSE")
+        self.pause_button = BitmapLabelButton(
+            panel, 
+            bitmap = wx.BitmapFromImage(pause_img),
+            label = 'Pause')
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([((1,1), 1),
                        (self.__current_status, 0, wx.ALIGN_BOTTOM),
@@ -330,6 +353,9 @@ class PreferencesView:
         self.__panel.Bind(wx.EVT_BUTTON,
                           pipeline_controller.on_pause,
                           self.pause_button)
+        self.__panel.Bind(wx.EVT_BUTTON,
+                          pipeline_controller.on_debug_toggle,
+                          self.__test_mode_button)
     
     def attach_to_pipeline_list_view(self, pipeline_list_view):
         self.__pipeline_list_view = pipeline_list_view
@@ -337,14 +363,19 @@ class PreferencesView:
     def start_debugging(self):
         self.__analyze_images_button.Disable()
         self.__stop_analysis_button.Disable()
+        self.__test_mode_button.SetLabel(EXIT_TEST_MODE)
+        self.__test_mode_button.SetBitmapLabel(self.__exit_test_mode_bmp)
         
     def stop_debugging(self):
         self.__analyze_images_button.Enable()
         self.__stop_analysis_button.Enable()
+        self.__test_mode_button.SetLabel(ENTER_TEST_MODE)
+        self.__test_mode_button.SetBitmapLabel(self.__test_bmp)
         
     def on_analyze_images(self):
         self.__odds_and_ends_panel.Sizer.Hide(self.__analyze_images_button)
         self.__odds_and_ends_panel.Sizer.Show(self.__stop_analysis_button)
+        self.__odds_and_ends_panel.Sizer.Hide(self.__test_mode_button)
         self.__odds_and_ends_panel.Layout()
         self.pause_button.SetLabel('Pause')
         self.__panel.Sizer.Hide(self.__status_text)
@@ -379,6 +410,7 @@ class PreferencesView:
             self.__progress_watcher.stop()
         self.__progress_watcher = None
         self.__odds_and_ends_panel.Sizer.Show(self.__analyze_images_button)
+        self.__odds_and_ends_panel.Sizer.Show(self.__test_mode_button)
         self.__odds_and_ends_panel.Sizer.Hide(self.__stop_analysis_button)
         self.__odds_and_ends_panel.Layout()
         self.__panel.Sizer.Hide(self.__progress_panel)

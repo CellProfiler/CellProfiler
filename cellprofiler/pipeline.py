@@ -1952,10 +1952,11 @@ class Pipeline(object):
             # We reorder here.
             #
             order = np.lexsort((group_indexes, group_numbers))
-            new_image_numbers = np.zeros(max(image_numbers)+1, int)
-            new_image_numbers[image_numbers[order]] = \
-                np.arange(len(image_numbers))+1
-            m.reorder_image_measurements(new_image_numbers)
+            if np.any(order[1:] != order[:-1]+1):
+                new_image_numbers = np.zeros(max(image_numbers)+1, int)
+                new_image_numbers[image_numbers[order]] = \
+                    np.arange(len(image_numbers))+1
+                m.reorder_image_measurements(new_image_numbers)
         m.flush()
         
         return True

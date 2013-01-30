@@ -711,7 +711,7 @@ class Measurements(object):
                 IMAGE, IMAGE_NUMBER, 
                 [i+1 if value is not None else None 
                  for i, value in enumerate(values)])
-        self.hdf5_dict.add_all(object_name, feature_name, values)
+        self.hdf5_dict.add_all(object_name, feature_name, values, self.get_image_numbers())
 
     def get_experiment_measurement(self, feature_name):
         """Retrieve an experiment-wide measurement

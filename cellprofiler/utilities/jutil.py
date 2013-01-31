@@ -426,6 +426,7 @@ def run_script(script, bindings_in = {}, bindings_out = {},
     except JavaException, e:
         if is_instance_of(e.throwable, "org/mozilla/javascript/WrappedException"):
             raise JavaException(call(e.throwable, "unwrap", "()Ljava/lang/Object;"))
+        raise
     finally:
         static_call("org/mozilla/javascript/Context", "exit", "()V")
     return result

@@ -20,7 +20,6 @@
       <groupId>loci</groupId>
       <artifactId>bio-formats</artifactId>
       <version>4.4.5</version>
-      <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>

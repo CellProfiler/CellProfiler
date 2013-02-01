@@ -133,7 +133,6 @@ class CPFrame(wx.Frame):
         self.__module_list_panel.SetToolTipString("The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
         self.__pipeline_test_panel = wx.Panel(self.__left_win,-1)
         self.__pipeline_test_panel.SetToolTipString("The test mode panel is used for previewing the module settings prior to an analysis run. Click the buttons or use the 'Test' menu item to begin testing your module settings.")
-        self.__pipeline_test_panel.Hide()
         self.__pipeline_test_panel.BackgroundColour = cpprefs.get_background_color()
         self.__module_controls_panel = wx.Panel(self.__left_win,-1, style=wx.BORDER_NONE)
         self.__module_controls_panel.BackgroundColour = cpprefs.get_background_color()
@@ -440,6 +439,7 @@ class CPFrame(wx.Frame):
              (wx.ACCEL_NORMAL,wx.WXK_F8,ID_DEBUG_NEXT_GROUP),
              (wx.ACCEL_CMD,ord('Z'),ID_EDIT_UNDO) ])
         self.SetAcceleratorTable(accelerator_table)
+        self.enable_launch_commands()
 
     def data_tools_help(self):
         '''Create a help menu for the data tools'''
@@ -470,19 +470,45 @@ class CPFrame(wx.Frame):
         
         return self.__data_tools_menu
 
-    def enable_debug_commands(self, enable=True):
+    debug_commands = (ID_DEBUG_STEP, ID_DEBUG_NEXT_IMAGE_SET,
+                      ID_DEBUG_NEXT_GROUP, ID_DEBUG_CHOOSE_GROUP,
+                      ID_DEBUG_CHOOSE_IMAGE_SET, 
+                      ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET)
+    def enable_debug_commands(self):
         """Enable or disable the debug commands (like ID_DEBUG_STEP)"""
         startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
+        self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, False)
+        self.__menu_file.Enable(ID_FILE_RESTART, False)
+        self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, False)
+        
         assert isinstance(startstop, wx.MenuItem)
-        startstop.Text = '&Stop test run\tF5' if enable else '&Start test run\tF5'
-        startstop.Help = ('Stop the pipeline debugger' if enable 
-                          else 'Start the pipeline debugger')
-        self.__menu_debug.Enable(ID_DEBUG_STEP,enable)
-        self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,enable)
-        self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, enable)
-        self.__menu_debug.Enable(ID_DEBUG_CHOOSE_GROUP, enable)
-        self.__menu_debug.Enable(ID_DEBUG_CHOOSE_IMAGE_SET, enable)
-        self.__menu_debug.Enable(ID_DEBUG_CHOOSE_RANDOM_IMAGE_SET,enable)
+        startstop.Text = '&Stop test run\tF5'
+        startstop.Help = 'Stop the pipeline debugger'
+        for cmd in self.debug_commands:
+            self.__menu_debug.Enable(cmd, True)
+        
+    def enable_launch_commands(self):
+        '''Enable commands to start analysis or test mode'''
+        startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
+        startstop.Text =  '&Start test run\tF5'
+        startstop.Help =  'Start the pipeline debugger'
+        for cmd in self.debug_commands:
+            self.__menu_debug.Enable(cmd, False)
+        self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, True)
+        self.__menu_file.Enable(ID_FILE_RESTART, True)
+        self.__menu_debug.Enable(ID_DEBUG_TOGGLE, True)
+        self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, True)
+        
+        self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, False)
+        
+    def enable_analysis_commands(self):
+        '''Enable commands to pause or stop analysis'''
+        self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, False)
+        self.__menu_file.Enable(ID_FILE_RESTART, False)
+        self.__menu_debug.Enable(ID_DEBUG_TOGGLE, False)
+        self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, False)
+        
+        self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, True)
 
     def __on_widget_inspector(self, evt):
         try:
@@ -756,7 +782,6 @@ All rights reserved."""
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view((self.__module_view))
         self.__preferences_view = PreferencesView(self.__preferences_panel)
-        self.__preferences_view.attach_to_pipeline_controller(self.__pipeline_controller)
         self.__preferences_view.attach_to_pipeline_list_view(self.__pipeline_list_view)
         self.__pipeline_controller.start()
         self.__module_view.start()
@@ -778,8 +803,8 @@ All rights reserved."""
         top_left_sizer = wx.BoxSizer(wx.VERTICAL)
         top_left_sizer.Add(self.__logo_panel,0,wx.EXPAND|wx.ALL,1)
         top_left_sizer.Add(self.__module_list_panel,1,wx.EXPAND|wx.ALL,1)
-        top_left_sizer.Add(self.__pipeline_test_panel, 0, wx.EXPAND|wx.ALL,2)
         top_left_sizer.Add(self.__module_controls_panel,0,wx.EXPAND|wx.ALL,2)
+        top_left_sizer.Add(self.__pipeline_test_panel, 0, wx.EXPAND|wx.ALL,2)
         top_left_win.SetSizer(top_left_sizer)
 
         border = wx.BoxSizer()

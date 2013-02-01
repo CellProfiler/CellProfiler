@@ -39,6 +39,7 @@ from cellprofiler.gui.addmoduleframe import AddModuleFrame
 import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
+from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
 import cellprofiler.utilities.version as version
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
 from errordialog import display_error_message
@@ -51,6 +52,7 @@ import cellprofiler.cpmodule as cpmodule
 import cellprofiler.gui.loadsavedlg as cplsdlg
 import cellprofiler.utilities.walk_in_background as W
 from cellprofiler.gui.omerologin import OmeroLoginDlg
+from cellprofiler.icons import get_builtin_image
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -73,11 +75,7 @@ class PipelineController:
         self.__parameter_sample_frame = None
         # ~^~
         self.__setting_errors = {}
-        self.__running_pipeline = None
         self.__dirty_pipeline = False
-        self.__inside_running_pipeline = False 
-        self.__pause_pipeline = False
-        self.__pipeline_measurements = None
         self.__debug_image_set_list = None
         self.__debug_measurements = None
         self.__debug_grids = None
@@ -137,7 +135,6 @@ class PipelineController:
         
         wx.EVT_MENU_OPEN(frame, self.on_frame_menu_open)
         
-        cpp.evt_modulerunner_done(frame, self.on_module_runner_done)
         from bioformats.formatreader import set_omero_login_hook
         set_omero_login_hook(self.omero_login)
         
@@ -227,31 +224,164 @@ class PipelineController:
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_up,self.__mcp_module_up_button)
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_down,self.__mcp_module_down_button)
 
-    def attach_to_test_controls_panel(self, test_controls_panel):
+            
+    ANALYZE_IMAGES = 'Analyze Images'
+    ENTER_TEST_MODE = "Enter test mode"
+    EXIT_TEST_MODE = "Exit test mode"
+    PAUSE = "Pause"
+    PAUSE_HELP = "Pause the analysis run"
+    RESUME = "Resume"
+    RESUME_HELP = "Resume the analysis run"
+
+    def attach_to_test_controls_panel(self, panel):
         """Attach the pipeline controller to the test controls panel
         
         Attach the pipeline controller to the test controls panel.
         In addition, the PipelineController gets to add whatever buttons it wants to the
         panel.
         """
-        self.__test_controls_panel = test_controls_panel
-        self.__tcp_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.__tcp_continue = wx.Button(test_controls_panel, -1, "Run", (0,0))
-        self.__tcp_step = wx.Button(test_controls_panel, -1, "Step", (0,0))
-        self.__tcp_next_imageset = wx.Button(test_controls_panel, -1, "Next Image", (0,0))
-        self.__tcp_sizer.AddMany([(self.__tcp_continue, 0, wx.ALL | wx.EXPAND, 2),
-                                  ((1, 1), 1),
-                                  (self.__tcp_step, 0, wx.ALL | wx.EXPAND, 2),
-                                  ((1, 1), 1),
-                                  (self.__tcp_next_imageset, 0, wx.ALL | wx.EXPAND, 2)])
-        self.__test_controls_panel.SetSizer(self.__tcp_sizer)
-        self.__tcp_continue.SetToolTip(wx.ToolTip("Run to next pause"))
-        self.__tcp_step.SetToolTip(wx.ToolTip("Step to next module"))
-        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image cycle"))
-        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_continue, self.__tcp_continue)
-        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_step, self.__tcp_step)
-        self.__test_controls_panel.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set, self.__tcp_next_imageset)
+        bkgnd_color = cpprefs.get_background_color()
+        assert isinstance(panel, wx.Window)
+        self.__test_controls_panel = panel
+        panel.SetBackgroundColour(bkgnd_color)
+        #
+        # There are three sizers, one for each mode:
+        # * tcp_launch_sizer - when idle, for launching analysis or test mode
+        # * tcp_analysis_sizer - when in analysis mode
+        # * tcp_test_sizer - when in test mode
+        #
+        tcp_sizer = wx.BoxSizer(wx.VERTICAL)
+        self.__test_controls_panel.Sizer = tcp_sizer
+        self.__tcp_launch_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.__tcp_analysis_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.__tcp_test_sizer = wx.BoxSizer(wx.VERTICAL)
+        tcp_sizer.Add(self.__tcp_launch_sizer, 0, wx.EXPAND)
+        tcp_sizer.Add(self.__tcp_analysis_sizer, 0, wx.EXPAND)
+        tcp_sizer.Add(self.__tcp_test_sizer, 0, wx.EXPAND)
+        #
+        # Launch sizer
+        #
+        analyze_bmp = wx.BitmapFromImage(
+            get_builtin_image("IMG_ANALYZE_16"))
+        self.__analyze_images_button = BitmapLabelButton(
+            panel, bitmap = analyze_bmp, label = self.ANALYZE_IMAGES)
+        self.__analyze_images_button.Bind(wx.EVT_BUTTON, self.on_analyze_images)
+        self.__analyze_images_button.SetToolTipString(
+            "Start a CellProfiler analysis run")
+        self.__tcp_launch_sizer.Add(self.__analyze_images_button, 1, wx.EXPAND)
+        
+        self.__test_bmp = wx.BitmapFromImage(get_builtin_image("IMG_TEST"))
+        self.__test_mode_button = \
+            BitmapLabelButton(
+                panel, bitmap = self.__test_bmp, label = self.ENTER_TEST_MODE)
+        self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
+        self.__tcp_launch_sizer.Add(self.__test_mode_button, 1, wx.EXPAND)
+        #
+        # Analysis sizer
+        #
+        stop_bmp = wx.BitmapFromImage(get_builtin_image("IMG_STOP"))
+        pause_bmp = wx.BitmapFromImage(get_builtin_image("IMG_PAUSE"))
+        self.__pause_button = BitmapLabelButton(
+            panel, bitmap = pause_bmp, label = self.PAUSE)
+        self.__pause_button.Bind(wx.EVT_BUTTON, self.on_pause)
+        self.__pause_button.SetToolTipString(self.PAUSE_HELP)
+        self.__tcp_analysis_sizer.Add(self.__pause_button, 1, wx.EXPAND)
+        
+        self.__resume_button = BitmapLabelButton(
+            panel, bitmap = analyze_bmp, label = self.RESUME)
+        self.__resume_button.Bind(wx.EVT_BUTTON, self.on_resume)
+        self.__resume_button.SetToolTipString(self.RESUME_HELP)
+        self.__tcp_analysis_sizer.Add(self.__resume_button, 1, wx.EXPAND)
+        
+        self.__stop_analysis_button = BitmapLabelButton(
+            panel, bitmap = stop_bmp, label = 'Stop analysis')
+        self.__stop_analysis_button.Bind(wx.EVT_BUTTON, self.on_stop_running)
+        self.__stop_analysis_button.SetToolTipString(
+            "Cancel the analysis run")
+        self.__tcp_analysis_sizer.Add(self.__stop_analysis_button, 1, wx.EXPAND)
+        #
+        # Test mode sizer
+        #
+        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)
+        self.__tcp_test_sizer.AddSpacer(2)
 
+        run_bmp = wx.BitmapFromImage(get_builtin_image("IMG_RUN"))
+        self.__tcp_continue = BitmapLabelButton(
+            panel, label="Run", bitmap = run_bmp)
+        self.__tcp_continue.SetToolTip(wx.ToolTip("Run to next pause"))
+        self.__tcp_continue.Bind(
+            wx.EVT_BUTTON, self.on_debug_continue)
+        sub_sizer.Add(self.__tcp_continue, 1, wx.EXPAND)
+        
+        self.__tcp_step = BitmapLabelButton(
+            panel, label = "Step", bitmap = analyze_bmp)
+        self.__tcp_step.SetToolTip(wx.ToolTip("Step to next module"))
+        self.__tcp_step.Bind(wx.EVT_BUTTON, self.on_debug_step)
+        sub_sizer.Add(self.__tcp_step, 1, wx.EXPAND)
+
+        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)
+        self.__tcp_stop_testmode = BitmapLabelButton(
+            panel, label = "Exit test mode", bitmap = stop_bmp)
+        sub_sizer.Add(self.__tcp_stop_testmode, 1, wx.EXPAND)
+        self.__tcp_stop_testmode.Bind(wx.EVT_BUTTON, self.on_debug_stop)
+        
+        
+        next_image_bmp = wx.BitmapFromImage(get_builtin_image("IMG_IMAGE"))
+        self.__tcp_next_imageset = BitmapLabelButton(
+            panel, label = "Next Image", bitmap = next_image_bmp)
+        self.__tcp_next_imageset.Bind(
+            wx.EVT_BUTTON, self.on_debug_next_image_set)
+        sub_sizer.Add(self.__tcp_next_imageset, 1, wx.EXPAND)
+        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image cycle"))
+        
+        for child in panel.GetChildren():
+            child.SetBackgroundColour(bkgnd_color)
+
+        self.show_launch_controls()
+        
+    def show_launch_controls(self):
+        '''Show the "Analyze images" and "Enter test mode" buttons'''
+        self.__test_controls_panel.Sizer.Hide(self.__tcp_test_sizer)
+        self.__test_controls_panel.Sizer.Hide(self.__tcp_analysis_sizer)
+        self.__test_controls_panel.Sizer.Show(self.__tcp_launch_sizer)
+        self.__test_controls_panel.Layout()
+        self.__test_controls_panel.Parent.Layout()
+        self.__frame.enable_launch_commands()
+
+    def show_analysis_controls(self):
+        '''Show the controls that stop and pause analysis'''
+        self.__test_controls_panel.Sizer.Hide(self.__tcp_test_sizer)
+        self.__test_controls_panel.Sizer.Hide(self.__tcp_launch_sizer)
+        self.__test_controls_panel.Sizer.Show(self.__tcp_analysis_sizer)
+        self.__stop_analysis_button.Enable(True)
+        self.show_pause_button()
+        self.__test_controls_panel.Layout()
+        self.__test_controls_panel.Parent.Layout()
+        self.__frame.enable_analysis_commands()
+        
+    def show_pause_button(self):
+        self.__pause_button.Enable(True)
+        self.__tcp_analysis_sizer.Show(self.__pause_button)
+        self.__tcp_analysis_sizer.Hide(self.__resume_button)
+        self.__test_controls_panel.Layout()
+        
+    def show_resume_button(self):
+        self.__resume_button.Enable(True)
+        self.__tcp_analysis_sizer.Hide(self.__pause_button)
+        self.__tcp_analysis_sizer.Show(self.__resume_button)
+        self.__test_controls_panel.Layout()
+        
+    def show_test_controls(self):
+        '''Show the controls for dealing with test mode'''
+        self.__test_controls_panel.Sizer.Show(self.__tcp_test_sizer)
+        self.__test_controls_panel.Sizer.Hide(self.__tcp_launch_sizer)
+        self.__test_controls_panel.Sizer.Hide(self.__tcp_analysis_sizer)
+        self.__test_controls_panel.Layout()
+        self.__test_controls_panel.Parent.Layout()
+        self.__frame.enable_debug_commands()
+        
     def omero_login(self):
         with OmeroLoginDlg(self.__frame, title = "Log into Omero") as dlg:
             dlg.ShowModal()
@@ -385,14 +515,15 @@ class PipelineController:
                          'Load path', wx.YES_NO|wx.ICON_QUESTION ,self.__frame) & wx.YES:
             self.do_load_pipeline(event.Path)
     
+    def is_running(self):
+        return self.__analysis is not None
+    
     def do_load_pipeline(self,pathname):
         try:
             if self.__pipeline.test_mode:
                 self.stop_debugging()
-            if self.__running_pipeline:
+            if self.is_running():
                 self.stop_running()
-                self.__pipeline_measurements.close()
-                self.__pipeline_measurements = None
 
             self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
@@ -584,10 +715,8 @@ class PipelineController:
                          "Clearing pipeline",
                          wx.YES_NO | wx.ICON_QUESTION, self.__frame) == wx.YES:
             self.stop_debugging()
-            if self.__running_pipeline:
+            if self.is_running():
                 self.stop_running()            
-                del self.__pipeline_measurements
-                self.__pipeline_measurements = None
             self.__pipeline.clear()
             self.__clear_errors()
             cpprefs.set_current_pipeline_path(None)
@@ -658,10 +787,8 @@ class PipelineController:
     
     def on_close(self):
         self.close_debug_measurements()
-        if self.__running_pipeline is not None:
+        if self.is_running():
             self.stop_running()
-            del self.__pipeline_measurements
-            self.__pipeline_measurements = None
     
     def __on_pipeline_event(self,caller,event):
         if isinstance(event,cpp.RunExceptionEvent):
@@ -1257,12 +1384,13 @@ class PipelineController:
         PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = range(3)
 
         if isinstance(evt, cpanalysis.AnalysisStarted):
-            print "Analysis started"
+            wx.CallAfter(self.show_analysis_controls)
         elif isinstance(evt, cpanalysis.AnalysisProgress):
             print "Progress", evt.counts
             total_jobs = sum(evt.counts.values())
             completed = evt.counts.get(cpanalysis.AnalysisRunner.STATUS_DONE, 0)
-            wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress, total_jobs, completed)
+            wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress, 
+                         total_jobs, completed)
         elif isinstance(evt, cpanalysis.AnalysisFinished):
             print ("Cancelled!" if evt.cancelled else "Finished!")
             # drop any interaction/display requests or exceptions
@@ -1271,6 +1399,9 @@ class PipelineController:
                     self.interaction_request_queue.get_nowait()  # in case the queue's been emptied
                 except Queue.Empty:
                     break
+            if evt.cancelled:
+                self.pipeline_list = []
+                
             wx.CallAfter(self.on_stop_analysis, evt)
         elif isinstance(evt, cpanalysis.DisplayRequest):
             wx.CallAfter(self.module_display_request, evt)
@@ -1294,9 +1425,9 @@ class PipelineController:
             else:
                 self.debug_request_queue.put(evt)
         elif isinstance(evt, cpanalysis.AnalysisPaused):
-            print "Paused"
+            wx.CallAfter(self.show_resume_button)
         elif isinstance(evt, cpanalysis.AnalysisResumed):
-            print "Resumed"
+            wx.CallAfter(self.show_pause_button)
         elif isinstance(evt, cellprofiler.pipeline.RunExceptionEvent):
             # exception in (prepare/post)_(run/group)
             import pdb
@@ -1497,40 +1628,29 @@ class PipelineController:
             self.stop_running()
                 
     def on_pause(self, event):
-        if not self.__pause_pipeline:
-            self.__frame.preferences_view.pause(True)
-            self.__pause_pipeline = True
-            if cpanalysis.use_analysis:
-                self.__analysis.pause()
-            # This is necessary for the case where the user hits pause
-            # then resume during the time a module is executing, which
-            # results in two calls to __running_pipeline.next() trying
-            # to execute simultaneously if the resume causes a
-            # ModuleRunnerDoneEvent.
-            self.__need_unpause_event = False 
-        else:
-            self.__frame.preferences_view.pause(False)
-            self.__pause_pipeline = False
-            if cpanalysis.use_analysis:
-                self.__analysis.resume()
-            if self.__need_unpause_event:
-                # see note above
-                cpp.post_module_runner_done_event(self.__frame)
+        self.__frame.preferences_view.pause(True)
+        self.__pause_pipeline = True
+        self.__analysis.pause()
+        self.__pause_button.Enable(False)
+        
+    def on_resume(self, event):
+        self.__frame.preferences_view.pause(False)
+        self.__pause_pipeline = False
+        self.__analysis.resume()
+        self.__resume_button.Enable(False)
         
     def on_frame_menu_open(self, event):
         pass
     
     def on_stop_running(self,event):
+        '''Handle a user interface request to stop running'''
+        self.__stop_analysis_button.Enable(False)
         self.pipeline_list = []
         if (self.__analysis is not None) and self.__analysis.check_running():
             self.__analysis.cancel()
             return  # self.stop_running() will be called when we receive the
                     # AnalysisCancelled event in self.analysis_event_handler.
         self.stop_running()
-        if self.__pipeline_measurements is not None:
-            self.save_measurements()
-        del self.__pipeline_measurements
-        self.__pipeline_measurements = None
     
     def on_stop_analysis(self, event):
         '''Stop an analysis run.
@@ -1562,34 +1682,17 @@ class PipelineController:
         finally:
             event.measurements.close()
             self.stop_running()
-        
-    def on_save_measurements(self, event):
-        if self.__pipeline_measurements is not None:
-            self.save_measurements()
-        
-    def save_measurements(self):
-        if cpprefs.get_write_MAT_files() is not True:
-            return
-        dlg = wx.FileDialog(self.__frame,
-                            "Save measurements to a file",
-                            wildcard="CellProfiler measurements (*.mat)|*.mat",
-                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-        try:
-            if dlg.ShowModal() == wx.ID_OK:
-                pathname = os.path.join(dlg.GetDirectory(), dlg.GetFilename())
-                self.__pipeline.save_measurements(pathname, 
-                                                  self.__pipeline_measurements)
-        finally:
-            dlg.Destroy()
+            if cpprefs.get_show_analysis_complete_dlg():
+                self.show_analysis_complete()
+            self.run_next_pipeline(None)
         
     def stop_running(self):
-        self.__analysis = None
-        if self.__running_pipeline is not None:
-            self.__running_pipeline.close()
-            self.__running_pipeline = None
-        self.__pause_pipeline = False
+        if self.is_running():
+            self.__analysis.cancel()
+            self.__analysis = None
         self.__frame.preferences_view.on_stop_analysis()
         self.__module_view.enable()
+        self.show_launch_controls()
     
     def is_in_debug_mode(self):
         """True if there's some sort of debugging in progress"""
@@ -1614,10 +1717,9 @@ class PipelineController:
     
     def start_debugging(self):
         self.__pipeline_list_view.set_debug_mode(True)
-        self.__frame.preferences_view.start_debugging()
-        self.__test_controls_panel.Show()
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.__pipeline.test_mode = True
+        self.show_test_controls()
         try:
             if not self.__workspace.refresh_image_set():
                 raise ValueError("Failed to get image sets")
@@ -1668,10 +1770,8 @@ class PipelineController:
 
     def stop_debugging(self):
         self.__pipeline_list_view.set_debug_mode(False)
-        self.__frame.preferences_view.stop_debugging()
-        self.__test_controls_panel.Hide()
         self.__test_controls_panel.GetParent().GetSizer().Layout()
-        self.__frame.enable_debug_commands(False)
+        self.__frame.enable_launch_commands()
         self.__debug_image_set_list = None
         self.close_debug_measurements()
         self.__debug_object_set = None
@@ -1680,7 +1780,8 @@ class PipelineController:
         self.__pipeline_list_view.on_stop_debugging()
         self.__pipeline.test_mode = False
         self.__pipeline.end_run()
-    
+        self.show_launch_controls()
+
     def do_step(self, module, select_next_module=True):
         """Do a debugging step by running a module
         """
@@ -1995,65 +2096,6 @@ class PipelineController:
         self.__parameter_sample_frame = None
 
     # ~^~
-    def on_module_runner_done(self,event):
-        '''Run one iteration of the pipeline
-        
-        Called in response to a
-        cpp.ModuleRunnerDoneEvent whenever a module
-        is done running.
-        '''
-        if self.__pause_pipeline:
-            # see note in self.on_pause()
-            self.__need_unpause_event = True
-        elif self.__running_pipeline:
-            try:
-                wx.Yield()
-                # if the user hits "Stop", self.__running_pipeline can go away
-                if self.__running_pipeline:
-                    self.__pipeline_measurements = self.__running_pipeline.next()
-                    event.RequestMore()
-            except StopIteration:
-                self.stop_running()
-                if (self.__pipeline_measurements != None and 
-                    cpprefs.get_write_MAT_files() is True):
-                    self.__frame.preferences_view.set_message_text(
-                        WRITING_MAT_FILE)
-                    try:
-                        self.__pipeline.save_measurements(self.__output_path,
-                                                          self.__pipeline_measurements)
-                        self.__frame.preferences_view.set_message_text(WROTE_MAT_FILE)
-                    except IOError, err:
-                        while True:
-                            result = wx.MessageBox(
-                                ("CellProfiler could not save your measurements. "
-                                 "Do you want to try saving it using a different name?\n"
-                                 "The error was:\n%s") % (err), 
-                                "Error saving measurements.", 
-                                wx.ICON_ERROR|wx.YES_NO)
-                            if result == wx.YES:
-                                try:
-                                    self.save_measurements()
-                                    self.__frame.preferences_view.set_message_text(WROTE_MAT_FILE)
-                                    break
-                                except IOError, err:
-                                    self.__frame.preferences_view.set_message_text("")
-                                    pass
-                            else:
-                                self.__frame.preferences_view.set_message_text("")
-                                break
-                    self.__output_path = None
-                self.__running_pipeline = None
-                del self.__pipeline_measurements
-                self.__pipeline_measurements = None
-                if len(self.pipeline_list) > 0:
-                    self.run_next_pipeline(event)
-                    return
-                #
-                # A little dialog with a "save pipeline" button in addition
-                # to the "OK" button.
-                #
-                if cpprefs.get_show_analysis_complete_dlg():
-                    self.show_analysis_complete()
                     
     def show_analysis_complete(self):
         '''Show the "Analysis complete" dialog'''

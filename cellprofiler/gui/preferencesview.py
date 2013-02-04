@@ -37,7 +37,11 @@ class PreferencesView:
     """
     def __init__(self,panel):
         self.__panel = panel
-        self.__sizer = wx.BoxSizer(wx.VERTICAL)
+        static_box = wx.StaticBox(panel, label="Folders")
+        panel.SetSizer(wx.BoxSizer(wx.VERTICAL))
+        static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        panel.Sizer.Add(static_box_sizer, 1, wx.EXPAND)
+        self.__sizer = static_box_sizer
         self.__image_folder_panel = wx.Panel(panel,-1)
         self.__image_edit_box = self.__make_folder_panel(
             self.__image_folder_panel,
@@ -64,14 +68,26 @@ class PreferencesView:
         self.__make_progress_panel()
         self.__sizer.AddMany([(self.__image_folder_panel,0,wx.EXPAND|wx.ALL,1),
                               (self.__output_folder_panel,0,wx.EXPAND|wx.ALL,1),
-                              (self.__odds_and_ends_panel,0,wx.EXPAND|wx.ALL,1),
-                              (self.__status_text,0,wx.EXPAND|wx.ALL, 4),
-                              (self.__progress_panel, 0, wx.EXPAND | wx.BOTTOM, 2)])
-        panel.SetSizer(self.__sizer)
-        self.__sizer.Hide(self.__progress_panel)
+                              (self.__odds_and_ends_panel,0,wx.EXPAND|wx.ALL,1)])
+        self.__sizer.AddSpacer(2)
+        self.__panel.Sizer.AddSpacer(2)
+        self.__panel.Sizer.Add(self.__status_text, 0, wx.EXPAND|wx.ALL, 4)
+        self.__panel.Sizer.Add(self.__progress_panel, 0, 
+                               wx.EXPAND | wx.BOTTOM, 2)
+        self.show_status_text()
         self.__errors = set()
         self.__pipeline_list_view = None
         self.__progress_watcher = None
+        
+    def show_progress_panel(self):
+        '''Show the pipeline progress panel and hide the status text'''
+        self.__panel.Sizer.Hide(self.__status_text)
+        self.__panel.Sizer.Show(self.__progress_panel)
+        
+    def show_status_text(self):
+        '''Show the status text and hide the pipeline progress panel'''
+        self.__panel.Sizer.Show(self.__status_text)
+        self.__panel.Sizer.Hide(self.__progress_panel)
         
     def close(self):
         cpprefs.remove_output_file_name_listener(self.__on_preferences_output_filename_event)

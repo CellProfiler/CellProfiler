@@ -477,3 +477,4 @@ finally:
         kill_vm()
     except:
         logging.root.warn("Failed to stop the JVM")
+    os._exit(0)

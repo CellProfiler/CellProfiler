@@ -226,15 +226,16 @@ class AtExit(object):
                 
     def __del__(self):
         self.fn()
-        
+
+__start_thread = None        
 def start_vm(args, run_headless = False):
     '''Start the Java VM'''
     global __vm
+    global __start_thread
     
     if __vm is not None:
         return
     start_event = threading.Event()
-    pt = [] # holds the thread... eventually
     
     def start_thread(args=args, run_headless=run_headless):
         global __vm
@@ -266,7 +267,6 @@ def start_vm(args, run_headless = False):
         dead_objects = __dead_objects
         main_thread_closures = __main_thread_closures
         thread_local_env = __thread_local_env
-        ptt = pt # needed to bind to pt inside exit_fn
         try:
             if hasattr(sys, 'frozen') and sys.platform != 'darwin':
                 utils_path = os.path.join(
@@ -329,6 +329,7 @@ def start_vm(args, run_headless = False):
                 break
         def null_defer_fn(jbo):
             '''Install a "do nothing" defer function in our env'''
+            logger.info("Attempt to deallocate after vm shutdown")
             pass
         if sys.platform == "darwin":
             #
@@ -345,14 +346,13 @@ def start_vm(args, run_headless = False):
         __vm = None
         dead_event.set()
         
-    t = threading.Thread(target=start_thread)
-    pt.append(t)
-    t.start()
+    __start_thread = threading.Thread(target=start_thread)
+    __start_thread.setName("JVMMonitor")
+    __start_thread.start()
     start_event.wait()
     if __vm is None:
         raise RuntimeError("Failed to start Java VM")
     attach()
-    AtExit(kill_vm)
     
 def unwrap_javascript(o):
     '''Unwrap an object such as NativeJavaObject
@@ -670,6 +670,7 @@ def make_kill_vm():
     global __kill
     global __thread_local_env
     global __run_headless
+    global __start_thread
     
     wake_event = __wake_event
     dead_event = __dead_event
@@ -682,11 +683,13 @@ def make_kill_vm():
         if __vm is None:
             return
         deactivate_awt()
+        gc.collect()
         while getattr(thread_local_env, "attach_count", 0) > 0:
-            detach()
+            detach()            
         kill[0] = True
         wake_event.set()
         dead_event.wait()
+        __start_thread.join()
     return kill_vm
 
 '''Kill the currently-running Java environment

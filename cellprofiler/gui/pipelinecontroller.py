@@ -68,6 +68,7 @@ class PipelineController:
         self.__workspace = workspace
         pipeline = self.__pipeline = workspace.pipeline
         pipeline.add_listener(self.__on_pipeline_event)
+        self.__analysis = None
         self.__frame = frame
         self.__add_module_frame = AddModuleFrame(frame,-1,"Add modules")
         self.__add_module_frame.add_listener(self.on_add_to_pipeline)

@@ -26,6 +26,7 @@ import wx
 import wx.grid
 import wx.lib.rcsizer
 import wx.lib.resizewidget
+import wx.lib.scrolledpanel
 import sys
 
 logger = logging.getLogger(__name__)
@@ -247,17 +248,41 @@ class ModuleView:
         pipeline = workspace.pipeline
         self.__workspace = workspace
         self.refresh_pending = False
+        self.notes_panel = notes_panel
+        self.__frame = frame
+        self.top_panel = top_panel
+        background_color = cpprefs.get_background_color()
         #############################################
         #
         # Build the top-level GUI windows
         #
+        #
+        # Module panel structure:
+        #
+        # top_panel
+        #   box sizer
+        #     "Module settings" box
+        #        static box sizer
+        #          module_panel
+        #            custom module sizer
+        #              module setting controls
+        #
         #############################################
-        self.notes_panel = notes_panel
-        self.__frame = frame
-        self.__module_panel = top_panel
+        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(
+            top_panel,
+            style=wx.TAB_TRAVERSAL)
+        self.__module_panel.SetToolTipString("The settings panel contains the available options for each module.")
+        self.__module_panel.SetupScrolling(True, True)
+        self.__module_panel.BackgroundColour = background_color
+        top_panel.Sizer = wx.BoxSizer()
+        module_settings_box = wx.StaticBox(top_panel,
+                                           label = "Module settings")
+        module_settings_box_sizer = wx.StaticBoxSizer(module_settings_box)
+        top_panel.Sizer.Add(module_settings_box_sizer, 1, wx.EXPAND)
+        module_settings_box_sizer.Add(self.__module_panel, 1, wx.EXPAND)
         self.__sizer = ModuleSizer(0, 3)
+        self.module_panel.Sizer = self.__sizer
         self.module_panel.Bind(wx.EVT_CHILD_FOCUS, self.skip_event)
-        self.module_panel.SetSizer(self.__sizer)
         if notes_panel is not None:
             self.make_notes_gui()
 
@@ -518,15 +543,16 @@ class ModuleView:
                     help_control.Show()
                 sizer.Add(help_control, 0, wx.LEFT, 2)
         finally:
-            self.module_panel.Thaw()
             self.__handle_change = True
             if self.__frame is not None:
                 self.__frame.show_module_ui(True)
+                self.module_panel.Thaw()
                 self.__frame.show_imageset_ctrl(imageset_control is not None)
                 if imageset_control is not None:
                     self.__frame.reset_imageset_ctrl(refresh_image_set=False)
                 self.__frame.show_path_list_ctrl(path_control is not None)
-            
+            else:
+                self.module_panel.Thaw()
 
     def make_notes_gui(self):
         '''Make the GUI elements that contain the module notes'''

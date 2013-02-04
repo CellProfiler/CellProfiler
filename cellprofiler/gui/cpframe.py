@@ -148,6 +148,7 @@ class CPFrame(wx.Frame):
         #            path_list_ctrl
         #            path_list_filter_checkbox
         #            path_list_button
+        #        
         #        module_panel
         #        image_set_list_sash
         #            image_set_list_ctrl
@@ -198,12 +199,8 @@ class CPFrame(wx.Frame):
         self.__path_list_button = wx.Button(self.__path_list_sash,
                                             label = "Update filter")
         hsizer.Add(self.__path_list_button, 0, wx.ALIGN_LEFT)
-        self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(
-            self.__path_module_imageset_panel,
-            style=wx.SUNKEN_BORDER | wx.TAB_TRAVERSAL)
+        self.__module_panel = wx.Panel(self.__path_module_imageset_panel)
         self.__module_panel.BackgroundColour = cpprefs.get_background_color()
-        self.__module_panel.SetToolTipString("The settings panel contains the available options for each module.")
-        self.__module_panel.SetupScrolling(True, True)
         
         self.__imageset_sash = wx.SashLayoutWindow(
             self.__path_module_imageset_panel, style=wx.NO_BORDER)
@@ -251,8 +248,7 @@ class CPFrame(wx.Frame):
         if bool(show) == bool(self.__path_list_sash.IsShown()):
             return
         self.__path_list_sash.Show(show)
-        wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
-                                          self.__module_panel)
+        self.layout_pmi_panel()
         self.__path_list_sash.Layout()
     
     def show_imageset_ctrl(self, show):
@@ -263,8 +259,7 @@ class CPFrame(wx.Frame):
         if bool(show) == bool(self.__imageset_sash.IsShown()):
             return
         self.__imageset_sash.Show(show)
-        wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
-                                          self.__module_panel)
+        self.layout_pmi_panel()
         self.__imageset_sash.Layout()
         
     def reset_imageset_ctrl(self, refresh_image_set=True):
@@ -280,28 +275,31 @@ class CPFrame(wx.Frame):
             self.__startup_blurb = None
         self.__notes_panel.Show(show)
         self.__path_module_imageset_panel.Show(show)
-        wx.LayoutAlgorithm().LayoutWindow(
-            self.__path_module_imageset_panel,
-            self.__module_panel)
+        self.layout_pmi_panel()
         self.__right_win.Layout()
         self.__path_list_sash.Layout()
         self.__module_panel.Layout()
-        self.__module_panel.SetupScrolling(scroll_x=True,
-                                           scroll_y=True,
-                                           scrollToTop=False)
+        self.__module_view.module_panel.SetupScrolling(
+            scroll_x=True,
+            scroll_y=True,
+            scrollToTop=False)
         self.__imageset_sash.Layout()
         
     def __on_sash_drag(self, event):
         sash = event.GetEventObject()
         width, _ = sash.GetSize()
         sash.SetDefaultSize((width, event.GetDragRect().height))
-        wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
-                                          self.__module_panel)
+        self.layout_pmi_panel()
         sash.Layout()
         
     def __on_path_module_imageset_panel_size(self, event):
+        self.layout_pmi_panel()
+        
+    def layout_pmi_panel(self):
+        '''Run the sash layout algorithm on the path/module/imageset panel'''
         wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
                                           self.__module_panel)
+        
         
     def OnClose(self, event):
         if event.CanVeto() and not self.pipeline_controller.check_close():

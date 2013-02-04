@@ -180,6 +180,13 @@ parser.add_option("-L", "--log-level",
                           ("%d or %s for critical, " % (logging.CRITICAL, "CRITICAL")) +
                           ("%d or %s for fatal." % (logging.FATAL, "FATAL")) +
                           " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"))
+
+if not hasattr(sys, 'frozen'):
+    parser.add_option("--code-statistics", 
+                      dest = "code_statistics",
+                      action = "store_true",
+                      default = False,
+                      help = "Print the number of modules, settings and lines of code")
                               
 options, args = parser.parse_args()
 
@@ -193,7 +200,31 @@ except ValueError:
     import logging.config
     logging.config.fileConfig(options.log_level)
     
-
+if options.code_statistics:
+    from cellprofiler.modules import builtin_modules, all_modules, instantiate_module
+    import subprocess
+    print "\n\n\n**** CellProfiler code statistics ****"
+    print "# of built-in modules: %d" % len(builtin_modules)
+    setting_count = 0
+    for module in all_modules.values():
+        if module.__module__.find(".") < 0:
+            continue
+        mn = module.__module__.rsplit(".", 1)[1]
+        if mn not in builtin_modules:
+            continue
+        module_instance = instantiate_module(module.module_name)
+        setting_count += len(module_instance.help_settings())
+    print "# of settings: %d" % setting_count
+    filelist = subprocess.Popen(["git", "ls-files"], stdout=subprocess.PIPE).communicate()[0].split("\n")
+    linecount = 0
+    for filename in filelist:
+        if (os.path.exists(filename) and 
+            any([filename.endswith(x) for x in ".py", ".c", ".pyx", ".java"])):
+            with open(filename, "r") as fd:
+                linecount += len(fd.readlines())
+    print "# of lines of code: %d" % linecount
+    os._exit(0)
+    
 if options.run_ilastik:
     #
     # Fake ilastik into thinking it is __main__

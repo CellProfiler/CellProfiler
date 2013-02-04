@@ -294,7 +294,6 @@ class ModuleView:
         self.__inside_notify = False
         self.__handle_change = True
         self.__notes_text = None
-        wx.EVT_IDLE(self.__module_panel, self.on_idle)
         
     def start(self):
         '''Start the module view
@@ -305,6 +304,7 @@ class ModuleView:
         self.__pipeline.add_listener(self.__on_pipeline_event)
         self.__workspace.add_notification_callback(
             self.__on_workspace_event)
+        wx.EVT_IDLE(self.__module_panel, self.on_idle)
 
     def skip_event(self, event):
         event.Skip(False)

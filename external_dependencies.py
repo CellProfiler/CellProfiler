@@ -62,6 +62,9 @@ def filehash(filename):
 def fetchfile(filename, url):
     print "fetching %s to %s"%(url, filename)
     # no try/except, it's wrapped below, and we just fail and whine to the user.
+    path = os.path.split(filename)[0]
+    if not os.path.isdir(path):
+        os.makedirs(path)
     src = urllib2.urlopen(url)
     dest = open(filename, 'wb')
     shutil.copyfileobj(src, dest)

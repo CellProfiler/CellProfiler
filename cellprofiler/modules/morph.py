@@ -300,6 +300,18 @@ See <a href="http://homepages.inf.ed.ac.uk/rbf/HIPR2/skeleton.htm">here</a> for 
 <td>Binary</td>
 </tr>
 <tr>
+<td><i>SkelPE</i></td>
+<td>Performs a skeletonizing operation using the metric, PE * D to
+control the erosion order. PE is the Poisson Equation (see Gorelick, 
+"Shape representation and classification using the Poisson Equation", 
+IEEE Transactions on Pattern Analysis and Machine Intelligence V28, # 12, 2006)
+evaluated within the foreground with the boundary condition that the background
+is zero. D is the distance transform (distance of a pixel to the nearest edge).
+The resulting skeleton has fewer spurs but some bit of erosion at the endpoints 
+in the binary image.</td>
+<td>Binary</td>
+</tr>
+<tr>
 <td><i>Spur</i></td>
 <td>Removes spur pixels, i.e., pixels that have exactly one 8-connected neighbor. This
 operation essentially removes the endpoints of lines.<br>
@@ -388,6 +400,7 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi
 import cellprofiler.cpmath.cpmorphology as morph
+from cellprofiler.cpmath.filter import poisson_equation
 
 F_BOTHAT = 'bothat'
 F_BRANCHPOINTS = 'branchpoints'
@@ -410,6 +423,7 @@ F_OPEN   = 'open'
 F_REMOVE = 'remove'
 F_SHRINK = 'shrink'
 F_SKEL   = 'skel'
+F_SKELPE = 'skelpe'
 F_SPUR   = 'spur'
 F_THICKEN = 'thicken'
 F_THIN   = 'thin'
@@ -418,7 +432,7 @@ F_VBREAK = 'vbreak'
 F_ALL = [F_BOTHAT, F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_CLOSE, F_CONVEX_HULL,
          F_DIAG, F_DILATE, F_DISTANCE, F_ENDPOINTS, F_ERODE, F_FILL, 
          F_FILL_SMALL, F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_OPEN, F_REMOVE, 
-         F_SHRINK, F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
+         F_SHRINK, F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, F_TOPHAT, F_VBREAK]
 
 R_ONCE = 'Once'
 R_FOREVER = 'Forever'
@@ -577,8 +591,8 @@ class Morph(cpm.CPModule):
         if (function_name in (F_BRANCHPOINTS, F_BRIDGE, F_CLEAN, F_DIAG, 
                               F_CONVEX_HULL, F_DISTANCE, F_ENDPOINTS, F_FILL,
                               F_FILL_SMALL, F_HBREAK, F_LIFE, F_MAJORITY, 
-                              F_REMOVE, F_SHRINK, F_SKEL, F_SPUR, F_THICKEN, 
-                              F_THIN, F_VBREAK) 
+                              F_REMOVE, F_SHRINK, F_SKEL, F_SKELPE, F_SPUR, 
+                              F_THICKEN, F_THIN, F_VBREAK) 
             and not is_binary):
             # Apply a very crude threshold to the image for binary algorithms
             logger.warning("Warning: converting image to binary for %s\n"%
@@ -590,7 +604,8 @@ class Morph(cpm.CPModule):
                               F_FILL_SMALL,
                               F_HBREAK, F_INVERT, F_LIFE, F_MAJORITY, F_REMOVE,
                               F_SHRINK,
-                              F_SKEL, F_SPUR, F_THICKEN, F_THIN, F_VBREAK) or
+                              F_SKEL, F_SKELPE, F_SPUR, F_THICKEN, F_THIN, 
+                              F_VBREAK) or
             (is_binary and
              function_name in (F_CLOSE, F_DILATE, F_ERODE, F_OPEN))):
             # All of these have an iterations argument or it makes no
@@ -676,6 +691,11 @@ class Morph(cpm.CPModule):
                 return morph.binary_shrink(pixel_data, count)
             elif function_name == F_SKEL:
                 return morph.skeletonize(pixel_data, mask)
+            elif function_name == F_SKELPE:
+                return morph.skeletonize(
+                    pixel_data, mask,
+                    scind.distance_transform_edt(pixel_data) *
+                    poisson_equation(pixel_data))
             elif function_name == F_SPUR:
                 return morph.spur(pixel_data, mask, count)
             elif function_name == F_THICKEN:

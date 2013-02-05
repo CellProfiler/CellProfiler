@@ -30,6 +30,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.morph as morph
 import cellprofiler.cpmath.cpmorphology as cpmorph
+import cellprofiler.cpmath.filter as cpfilter
 
 class TestMorph(unittest.TestCase):
     def test_01_01_load_matlab(self):
@@ -217,6 +218,10 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
     Repeat operation:Once
     Custom # of repeats:2
     Scale\x3A:3
+    Select the operation to perform:skelpe
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
     Select the operation to perform:spur
     Repeat operation:Once
     Custom # of repeats:2
@@ -249,8 +254,8 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
                morph.F_ENDPOINTS, morph.F_ERODE, morph.F_FILL,
                morph.F_FILL_SMALL, morph.F_HBREAK, morph.F_INVERT,
                morph.F_MAJORITY, morph.F_OPEN, morph.F_REMOVE, 
-               morph.F_SHRINK, morph.F_SKEL, morph.F_SPUR, morph.F_THICKEN,
-               morph.F_THIN, morph.F_TOPHAT, morph.F_VBREAK]
+               morph.F_SHRINK, morph.F_SKEL, morph.F_SKELPE, morph.F_SPUR, 
+               morph.F_THICKEN, morph.F_THIN, morph.F_TOPHAT, morph.F_VBREAK]
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, morph.Morph))
@@ -434,6 +439,13 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
         image = np.random.uniform(size=(20,15)).astype(np.float32)
         result = self.execute(image, 'close', mask=np.ones(image.shape, np.bool))
         self.assertTrue(np.all(result >= image))
+        
+    def test_02_26_binary_skelpe(self):
+        def fn(x):
+            d = scind.distance_transform_edt(x)
+            pe = cpfilter.poisson_equation(x)
+            return cpmorph.skeletonize(x, ordering = pe * d)
+        self.binary_tteesstt('skelpe', fn)
         
     def test_03_01_color(self):
         # Regression test for issue # 324

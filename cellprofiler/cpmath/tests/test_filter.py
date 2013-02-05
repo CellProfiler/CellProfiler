@@ -1862,3 +1862,66 @@ class TestVarianceTransform(unittest.TestCase):
         var = np.sum(norm * norm * weight)
         self.assertAlmostEqual(var, result[center_i, center_j], 5)
         
+class TestPoissonEquation(unittest.TestCase):
+    def test_00_00_nothing(self):
+        image = np.zeros((11, 14), bool)
+        p = F.poisson_equation(image)
+        np.testing.assert_array_equal(p, 0)
+        
+    def test_00_01_single(self):
+        image = np.zeros((11, 14), bool)
+        image[7, 3] = True
+        p = F.poisson_equation(image)
+        np.testing.assert_array_equal(p[image], 1)
+        np.testing.assert_array_equal(p[~image], 0)
+        
+    def test_01_01_simple(self):
+        image = np.array(
+            [ [ 0, 0, 0, 0, 0 ],
+              [ 0, 0, 1, 0, 0 ],
+              [ 0, 1, 1, 1, 0 ],
+              [ 0, 0, 1, 0, 0 ],
+              [ 0, 0, 0, 0, 0 ] ], bool)
+        a = 5. / 3.
+        b = a + 1
+        self.assertAlmostEqual(b / 4 + 1, a)
+        expected = np.array(
+            [ [ 0, 0, 0, 0, 0 ],
+              [ 0, 0, a, 0, 0 ],
+              [ 0, a, b, a, 0 ],
+              [ 0, 0, a, 0, 0 ],
+              [ 0, 0, 0, 0, 0 ]])
+        p = F.poisson_equation(image, convergence=.00001)
+        np.testing.assert_almost_equal(p, expected, 4)
+        
+    def test_01_02_boundary(self):
+        # Test an image with pixels at the boundaries.
+        image = np.array(
+            [ [ 0, 1, 0],
+              [ 1, 1, 1],
+              [ 0, 1, 0 ]], bool)
+        a = 5. / 3.
+        b = a + 1
+        self.assertAlmostEqual(b / 4 + 1, a)
+        expected = np.array(
+            [ [ 0, a, 0 ],
+              [ a, b, a ],
+              [ 0, a, 0 ]])
+        p = F.poisson_equation(image, convergence=.00001)
+        np.testing.assert_almost_equal(p, expected, 4)
+        
+    def test_01_03_subsampling(self):
+        # Test an image that is large enough to undergo some subsampling
+        #
+        r = np.random.RandomState()
+        r.seed(13)
+        image = r.uniform(size=(300, 300)) < .001
+        i, j = np.mgrid[-8:9, -8:9]
+        kernel = i*i + j*j <=64
+        image = binary_dilation(image, kernel)
+        p = F.poisson_equation(image, convergence=.001)
+        i, j = np.mgrid[0:p.shape[0], 0:p.shape[1]]
+        mask = image & (i > 0) & (i < p.shape[0]-1) & (j > 0) & (j < p.shape[1]-1)
+        i, j = i[mask], j[mask]
+        expected = (p[i+1, j] + p[i-1, j] + p[i, j+1] + p[i, j-1]) / 4 + 1
+        np.testing.assert_almost_equal(p[mask], expected, 0)

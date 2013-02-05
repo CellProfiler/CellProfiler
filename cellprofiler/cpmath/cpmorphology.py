@@ -3446,13 +3446,21 @@ def color_labels(labels, distance_transform = False):
         v_color[v_label[i]] = color
     return v_color[labels]
 
-def skeletonize(image, mask=None):
+def skeletonize(image, mask=None, ordering = None):
     '''Skeletonize the image
     
     Take the distance transform.
     Order the 1 points by the distance transform.
     Remove a point if it has more than 1 neighbor and if removing it
     does not change the Euler number.
+    
+    image - the binary image to be skeletonized
+    
+    mask - only skeletonize pixels within the mask
+    
+    ordering - a matrix of the same dimensions as the image. The matrix
+               provides the ordering of the erosion with the lowest values
+               being eroded first. The default is to use the distance transform.
     '''
     global eight_connect
     if mask is None:
@@ -3473,7 +3481,10 @@ def skeletonize(image, mask=None):
                         for index in range(512) ]) |
               np.array([np.sum(pattern_of(index))<3 for index in range(512)])))
     
-    distance = scind.distance_transform_edt(masked_image)
+    if ordering is None:
+        distance = scind.distance_transform_edt(masked_image)
+    else:
+        distance = ordering
     #
     # The processing order along the edge is critical to the shape of the
     # resulting skeleton: if you process a corner first, that corner will

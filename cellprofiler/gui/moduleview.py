@@ -330,7 +330,8 @@ class ModuleView:
             self.__value_listeners = []
             self.__module = None
         self.__sizer.Reset(0,3)
-        self.notes_panel.Hide()
+        if self.notes_panel is not None:
+            self.notes_panel.Hide()
     
     def hide_settings(self):
         for child in self.__module_panel.Children:
@@ -389,7 +390,8 @@ class ModuleView:
             # Set the module's notes
             #
             #################################
-            self.module_notes_control.Value = "\n".join(self.__module.notes)
+            if self.notes_panel is not None:
+                self.module_notes_control.Value = "\n".join(self.__module.notes)
             
             #################################
             #
@@ -544,7 +546,10 @@ class ModuleView:
                 sizer.Add(help_control, 0, wx.LEFT, 2)
         finally:
             self.__handle_change = True
-            if self.__frame is not None:
+            if self.__as_datatool:
+                self.module_panel.Layout()
+                self.module_panel.Thaw()
+            elif self.__frame is not None:
                 self.__frame.show_module_ui(True)
                 self.module_panel.Thaw()
                 self.__frame.show_imageset_ctrl(imageset_control is not None)

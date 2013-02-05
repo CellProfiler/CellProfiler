@@ -81,7 +81,7 @@ class DataToolFrame(wx.Frame):
             setting = event.get_setting()
             proposed_value = event.get_proposed_value()
             setting.value = proposed_value
-            self.pipeline.edit_module(event.get_module().module_num)
+            self.pipeline.edit_module(event.get_module().module_num, False)
             self.module_view.reset_view()
         self.module_view.add_listener(on_change)
 
@@ -141,12 +141,12 @@ class DataToolFrame(wx.Frame):
             self.load_measurements(dlg.GetPath())
     
     def on_save_measurements(self, event):
-        dlg = wx.FileDialog(self, "Save measurements file",
-                            wildcard = "Measurements file (*.mat)|*.mat",
-                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-        if dlg.ShowModal() == wx.ID_OK:
-            self.pipeline.save_measurements(dlg.GetPath(),
-                                            self.measurements)
+        with wx.FileDialog(self, "Save measurements file", wildcard = 
+                           "Matlab measurements file (*.mat)|*.mat",
+                           style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                self.pipeline.save_measurements(dlg.GetPath(),
+                                                self.measurements)
     
     def on_exit(self, event):
         self.Close()
@@ -215,6 +215,7 @@ class DataToolFrame(wx.Frame):
                                   frame=self)
         self.module.show_window = True  # to make sure it saves display data
         self.module.run_as_data_tool(workspace)
+        self.measurements.flush()
         fig = cpf.create_or_find(parent=self,
                                  title="%s Output" % (self.module.module_name),
                                  name="CellProfiler:DataTool:%s" % (self.module.module_name))

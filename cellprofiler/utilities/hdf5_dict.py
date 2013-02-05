@@ -224,7 +224,7 @@ class HDF5Dict(object):
                             self.indices[object_name, feature_name] = dict([
                                 (object_number, slice(start, end))
                                 for object_number, start, end 
-                                in feature_group["index"]])
+                                in feature_group["index"][:]])
                     
             self.lock = HDF5Lock()
                     

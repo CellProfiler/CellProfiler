@@ -21,6 +21,7 @@ import urllib2
 import shutil
 import subprocess
 import sys
+import traceback
 import zipfile
 
 ACTION_MAVEN = "Maven"
@@ -101,13 +102,19 @@ def fetch_external_dependencies(overwrite=False):
                     install_maven(path,
                                   maven_install_path)
             except:
-                import traceback
                 sys.stderr.write(traceback.format_exc())
                 sys.stderr.write("Could not fetch external binary dependency %s from %s.  Some functionality may be missing.  You might try installing it by hand.\n"%(path, url))
                 
     imagej_dir = os.path.join(root, 'imagej')
-    if overwrite or not os.path.isdir(os.path.join(imagej_dir, "jars")):
-        run_maven(imagej_dir, maven_install_path)
+    try:
+        print "Updating Java dependencies using Maven."
+        run_maven(imagej_dir, maven_install_path, quiet = not overwrite)
+    except:
+        sys.stderr.write(traceback.format_exc())
+        sys.stderr.write("Maven failed to update Java dependencies.\n")
+        if not overwrite:
+            sys.stderr.write("Run external_dependencies with the -o switch to get full output.\n")
+        
     if (overwrite or not 
         os.path.isfile(os.path.join(imagej_dir, "jars", CELLPROFILER_JAVA_JAR))):
         run_maven(os.path.join(root, "java"), maven_install_path)
@@ -141,11 +148,14 @@ def get_mvn_executable_path(maven_install_path):
                                     executeable)
     return executeable_path
 
-def run_maven(pom_path, maven_install_path):
+def run_maven(pom_path, maven_install_path, quiet=False):
     '''Run a Maven pom to install all of the needed jars
     
     pom_path - the directory hosting the Maven POM
+    
     maven_install_path - the path to the maven install
+    
+    quiet - feed Maven the -q switch if true to make it run in quiet mode
     
     Runs mvn package on the POM
     '''
@@ -160,8 +170,12 @@ def run_maven(pom_path, maven_install_path):
     executeable_path = get_mvn_executable_path(maven_install_path)
     current_directory = os.path.abspath(os.getcwd())
     os.chdir(pom_path)
+    args = [executeable_path, "-U"]
+    if quiet:
+        args.append("-q")
+    args.append("package")
     try:
-        subprocess.check_call([executeable_path, '-U', 'package'])
+        subprocess.check_call(args)
     finally:
         os.chdir(current_directory)
         if old_java_home is not None:

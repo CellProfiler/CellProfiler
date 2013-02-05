@@ -162,7 +162,6 @@ class ConvertObjectsToImage(cpm.CPModule):
             workspace.display_data.pixel_data = pixel_data
 
     def display(self, workspace, figure):
-        labels = workspace.display_data.labels
         pixel_data = workspace.display_data.pixel_data
         figure.set_subplots((2, 1))
         figure.subplot_imshow_ijv(

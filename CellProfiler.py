@@ -195,7 +195,8 @@ try:
         logging.root.setLevel(int(options.log_level))
     else:
         logging.root.setLevel(options.log_level)
-    logging.root.addHandler(logging.StreamHandler())
+    if len(logging.root.handlers) == 0:
+        logging.root.addHandler(logging.StreamHandler())
 except ValueError:
     import logging.config
     logging.config.fileConfig(options.log_level)
@@ -476,3 +477,4 @@ finally:
         kill_vm()
     except:
         logging.root.warn("Failed to stop the JVM")
+    os._exit(0)

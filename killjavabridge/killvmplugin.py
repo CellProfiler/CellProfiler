@@ -66,7 +66,14 @@ class KillVMPlugin(Plugin):
             import wx
             self.app = wx.GetApp()
             if self.app is None:
-                self.app = wx.PySimpleApp(False)
+                class KVMApp(wx.PySimpleApp):
+                    def __init__(self):
+                        super(self.__class__, self).__init__(False)
+                        
+                    def OnExit(self):
+                        from cellprofiler.utilities.jutil import deactivate_awt
+                        deactivate_awt()
+                self.app = KVMApp()
         
     def prepareTestRunner(self, testRunner):
         '''Need to make the test runner call finalize if in Wing

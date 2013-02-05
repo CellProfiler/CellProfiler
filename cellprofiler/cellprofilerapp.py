@@ -81,6 +81,8 @@ class CellProfilerApp(wx.App):
         return 1
 
     def OnExit(self):
+        from cellprofiler.utilities.jutil import deactivate_awt
+        deactivate_awt()
         # restore previous exception hook
         sys.excepthook = self.orig_excepthook
 

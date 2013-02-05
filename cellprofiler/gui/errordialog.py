@@ -326,27 +326,27 @@ def show_warning(title, message, get_preference, set_preference):
         print message
         return
     
-    dlg = wx.Dialog(wx.GetApp().GetTopWindow(), title = title)
-    dlg.Sizer = sizer = wx.BoxSizer(wx.VERTICAL)
-    subsizer = wx.BoxSizer(wx.HORIZONTAL)
-    sizer.Add(subsizer, 0, wx.EXPAND | wx.ALL, 5)
-    subsizer.Add(wx.StaticBitmap(dlg, wx.ID_ANY,
-                                 wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
-                                                          wx.ART_CMN_DIALOG)),
-                 0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.RIGHT, 5)
-    text = wx.StaticText(dlg, wx.ID_ANY, message)
-    subsizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL, 5)
-    dont_show = wx.CheckBox(dlg, 
-                            label = "Don't show this message again.")
-    sizer.Add(dont_show, 0, wx.ALIGN_LEFT | wx.ALL, 5)
-    buttons_sizer = wx.StdDialogButtonSizer()
-    buttons_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
-    buttons_sizer.Realize()
-    sizer.Add(buttons_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
-    dlg.Fit()
-    dlg.ShowModal()
-    if dont_show.Value:
-        set_preference(False)
+    with wx.Dialog(None, title = title) as dlg:
+        dlg.Sizer = sizer = wx.BoxSizer(wx.VERTICAL)
+        subsizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(subsizer, 0, wx.EXPAND | wx.ALL, 5)
+        subsizer.Add(wx.StaticBitmap(dlg, wx.ID_ANY,
+                                     wx.ArtProvider.GetBitmap(wx.ART_INFORMATION,
+                                                              wx.ART_CMN_DIALOG)),
+                     0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.RIGHT, 5)
+        text = wx.StaticText(dlg, wx.ID_ANY, message)
+        subsizer.Add(text, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP | wx.ALL, 5)
+        dont_show = wx.CheckBox(dlg, 
+                                label = "Don't show this message again.")
+        sizer.Add(dont_show, 0, wx.ALIGN_LEFT | wx.ALL, 5)
+        buttons_sizer = wx.StdDialogButtonSizer()
+        buttons_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+        buttons_sizer.Realize()
+        sizer.Add(buttons_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+        dlg.Fit()
+        dlg.ShowModal()
+        if dont_show.Value:
+            set_preference(False)
 
 def display_error_message(parent, message, title, buttons = None,
                           size = (300, 200)):

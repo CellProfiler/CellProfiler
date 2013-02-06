@@ -50,5 +50,3 @@ def check_for_updates(url, current_version, callback, user_agent='CellProfiler_c
     vc = VersionChecker(url, current_version, callback, user_agent)
     vc.start()
 
-
-# XXX - needs a test case written

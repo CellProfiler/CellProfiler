@@ -623,6 +623,9 @@ class CPFigureFrame(wx.Frame):
         MENU_CONTRAST_RAW = wx.NewId()
         MENU_CONTRAST_NORMALIZED = wx.NewId()
         MENU_CONTRAST_LOG = wx.NewId()
+        MENU_INTERPOLATION_NEAREST = wx.NewId()
+        MENU_INTERPOLATION_BILINEAR = wx.NewId()
+        MENU_INTERPOLATION_BICUBIC = wx.NewId()
         popup = wx.Menu()
         self.popup_menus[(x,y)] = popup
         open_in_new_figure_item = wx.MenuItem(popup, -1, 
@@ -652,6 +655,36 @@ class CPFigureFrame(wx.Frame):
         else:
             item_raw.Check()
         popup.AppendMenu(-1, 'Image contrast', submenu)
+        
+        submenu = wx.Menu()
+        item_nearest = submenu.Append(
+            MENU_INTERPOLATION_NEAREST,
+            "Nearest neighbor",
+            "Use the intensity of the nearest image pixel when displaying "
+            "screen pixels at sub-pixel resolution. This produces a blocky "
+            "image, but the image accurately reflects the data",
+            wx.ITEM_RADIO)
+        item_bilinear = submenu.Append(
+            MENU_INTERPOLATION_BILINEAR,
+            "Linear",
+            "Use the weighted average of the four nearest image pixels when "
+            "displaying screen pixels at sub-pixel resolution. This produces "
+            "a smoother, more visually appealing image, but makes it more "
+            "difficult to find pixel borders", wx.ITEM_RADIO)
+        item_bicubic = submenu.Append(
+            MENU_INTERPOLATION_BICUBIC,
+            "Cubic",
+            "Perform a bicubic interpolation of the nearby image pixels when "
+            "displaying screen pixels at sub-pixel resolution. This produces "
+            "the most visually appealing image but is the least faithful to "
+            "the image pixel values.", wx.ITEM_RADIO)
+        popup.AppendMenu(-1, "Interpolation", submenu)
+        if params['interpolation'] == matplotlib.image.BILINEAR:
+            item_bilinear.Check()
+        elif params['interpolation'] == matplotlib.image.BICUBIC:
+            item_bicubic.Check()
+        else:
+            item_nearest.Check()
         
         def open_image_in_new_figure(evt):
             '''Callback for "Open image in new window" popup menu item '''
@@ -697,6 +730,26 @@ class CPFigureFrame(wx.Frame):
             self.subplot(x,y).set_ylim(ylims[0], ylims[1])                
             self.figure.canvas.draw()
             
+        def change_interpolation(evt):
+            if evt.Id == MENU_INTERPOLATION_NEAREST:
+                params['interpolation'] = matplotlib.image.NEAREST
+            elif evt.Id == MENU_INTERPOLATION_BILINEAR:
+                params['interpolation'] = matplotlib.image.BILINEAR
+            elif evt.Id == MENU_INTERPOLATION_BICUBIC:
+                params['interpolation'] = matplotlib.image.BICUBIC
+            axes = self.subplot(x, y)
+            for artist in axes.artists:
+                if isinstance(artist, CPImageArtist):
+                    artist.interpolation = params['interpolation']
+                    self.figure.canvas.draw()
+                    return
+            else:
+                self.subplot_imshow(x, y, self.images[(x,y)], **params)
+                # Restore plot zoom
+                self.subplot(x,y).set_xlim(xlims[0], xlims[1])
+                self.subplot(x,y).set_ylim(ylims[0], ylims[1])                
+                self.figure.canvas.draw()
+                
         if is_color_image(self.images[x,y]):
             submenu = wx.Menu()
             rgb_mask = match_rgbmask_to_image(params['rgb_mask'], self.images[x,y])
@@ -734,13 +787,16 @@ class CPFigureFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_LOG)
+        self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_NEAREST)
+        self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BICUBIC)
+        self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BILINEAR)
         return popup
 
     @allow_sharexy
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=True, vmin=0, vmax=1, 
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
-                       use_imshow = False):
+                       use_imshow = False, interpolation=matplotlib.image.NEAREST):
         '''Show an image in a subplot
         
         x, y  - show image in this subplot
@@ -777,7 +833,8 @@ class CPFigureFrame(wx.Frame):
                   'vmin' : vmin,
                   'vmax' : vmax,
                   'rgb_mask' : rgb_mask,
-                  'use_imshow' : use_imshow}
+                  'use_imshow' : use_imshow,
+                  'interpolation': interpolation}
         if (x,y) not in self.subplot_user_params:
             self.subplot_user_params[(x,y)] = {}
         if (x,y) not in self.subplot_params:
@@ -797,6 +854,7 @@ class CPFigureFrame(wx.Frame):
         vmin = kwargs['vmin']
         vmax = kwargs['vmax']
         rgb_mask = kwargs['rgb_mask']
+        interpolation = kwargs['interpolation']
         
         # Note: if we do not do this, then passing in vmin,vmax without setting
         # normalize=False will cause the normalized image to be stretched 
@@ -874,90 +932,6 @@ class CPFigureFrame(wx.Frame):
             image = self.images[(x, y)]
             subplot.imshow(self.normalize_image(image, **kwargs))
         else:
-            class CPImageArtist(matplotlib.artist.Artist):
-                def __init__(self, image, frame, kwargs):
-                    super(CPImageArtist, self).__init__()
-                    self.image = image
-                    self.frame = frame
-                    self.kwargs = kwargs
-                    #
-                    # The radius for the gaussian blur of 1 pixel sd
-                    #
-                    self.filterrad = 4.0
-                    
-                def draw(self, renderer):
-                    image = self.frame.normalize_image(self.image, 
-                                                       **self.kwargs)
-                    magnification = renderer.get_image_magnification()
-                    numrows, numcols = self.image.shape[:2]
-                    if numrows == 0 or numcols == 0:
-                        return
-                    #
-                    # Limit the viewports to the image extents
-                    #
-                    view_x0 = int(min(numcols-1, max(0, self.axes.viewLim.x0 - self.filterrad)))
-                    view_x1 = int(min(numcols,   max(0, self.axes.viewLim.x1 + self.filterrad)))
-                    view_y0 = int(min(numrows-1, 
-                                      max(0, min(self.axes.viewLim.y0, 
-                                                 self.axes.viewLim.y1) - self.filterrad)))
-                    view_y1 = int(min(numrows, 
-                                      max(0, max(self.axes.viewLim.y0,
-                                                 self.axes.viewLim.y1) + self.filterrad)))
-                    xslice = slice(view_x0, view_x1)
-                    yslice = slice(view_y0, view_y1)
-                    image = image[yslice, xslice, :]
-                    
-                    #
-                    # Flip image upside-down if height is negative
-                    #
-                    flip_ud = self.axes.viewLim.height < 0
-                    if flip_ud:
-                        image = np.flipud(image)
-            
-                    im = matplotlib.image.fromarray(image, 0)
-                    im.is_grayscale = False
-                    im.set_interpolation(matplotlib.image.NEAREST)
-                    fc = self.axes.patch.get_facecolor()
-                    bg = matplotlib.colors.colorConverter.to_rgba(fc, 0)
-                    im.set_bg( *bg)
-            
-                    # image input dimensions
-                    im.reset_matrix()
-            
-                    # the viewport translation in the X direction
-                    tx = view_x0 - self.axes.viewLim.x0
-                    #
-                    # the viewport translation in the Y direction
-                    # which is from the bottom of the screen
-                    #
-                    if self.axes.viewLim.height < 0:
-                        ty = (self.axes.viewLim.y0 - view_y1)
-                    else:
-                        ty = view_y0 - self.axes.viewLim.y0
-                    im.apply_translation(tx, ty)
-            
-                    l, b, r, t = self.axes.bbox.extents
-                    widthDisplay = (round(r) + 0.5) - (round(l) - 0.5)
-                    heightDisplay = (round(t) + 0.5) - (round(b) - 0.5)
-                    widthDisplay = int(widthDisplay * magnification)
-                    heightDisplay = int(heightDisplay * magnification)
-            
-                    # resize viewport to display
-                    sx = widthDisplay / self.axes.viewLim.width
-                    sy = abs(heightDisplay  / self.axes.viewLim.height)
-                    im.apply_scaling(sx, sy)
-                    im.resize(widthDisplay, heightDisplay,
-                              norm=1, radius = self.filterrad)
-                    bbox = self.axes.bbox.frozen()
-                    im._url = self.frame.Title
-                    
-                    # Two ways to do this, try by version
-                    mplib_version = matplotlib.__version__.split(".")
-                    if mplib_version[0] == '0':
-                        renderer.draw_image(l, b, im, bbox)
-                    else:
-                        gc = renderer.new_gc()
-                        renderer.draw_image(gc, l, b, im)
             subplot.add_artist(CPImageArtist(self.images[(x,y)], self, kwargs))
         
         # Also add this menu to the main menu
@@ -1491,6 +1465,92 @@ def show_image(url, parent = None, needs_raise_after = True):
         wx.CallAfter(lambda: frame.Raise())
     return True
     
+class CPImageArtist(matplotlib.artist.Artist):
+    def __init__(self, image, frame, kwargs):
+        super(CPImageArtist, self).__init__()
+        self.image = image
+        self.frame = frame
+        self.kwargs = kwargs
+        #
+        # The radius for the gaussian blur of 1 pixel sd
+        #
+        self.filterrad = 4.0
+        self.interpolation = matplotlib.image.NEAREST
+        
+    def draw(self, renderer):
+        image = self.frame.normalize_image(self.image, 
+                                           **self.kwargs)
+        magnification = renderer.get_image_magnification()
+        numrows, numcols = self.image.shape[:2]
+        if numrows == 0 or numcols == 0:
+            return
+        #
+        # Limit the viewports to the image extents
+        #
+        view_x0 = int(min(numcols-1, max(0, self.axes.viewLim.x0 - self.filterrad)))
+        view_x1 = int(min(numcols,   max(0, self.axes.viewLim.x1 + self.filterrad)))
+        view_y0 = int(min(numrows-1, 
+                          max(0, min(self.axes.viewLim.y0, 
+                                     self.axes.viewLim.y1) - self.filterrad)))
+        view_y1 = int(min(numrows, 
+                          max(0, max(self.axes.viewLim.y0,
+                                     self.axes.viewLim.y1) + self.filterrad)))
+        xslice = slice(view_x0, view_x1)
+        yslice = slice(view_y0, view_y1)
+        image = image[yslice, xslice, :]
+        
+        #
+        # Flip image upside-down if height is negative
+        #
+        flip_ud = self.axes.viewLim.height < 0
+        if flip_ud:
+            image = np.flipud(image)
+
+        im = matplotlib.image.fromarray(image, 0)
+        im.is_grayscale = False
+        im.set_interpolation(self.interpolation)
+        fc = self.axes.patch.get_facecolor()
+        bg = matplotlib.colors.colorConverter.to_rgba(fc, 0)
+        im.set_bg( *bg)
+
+        # image input dimensions
+        im.reset_matrix()
+
+        # the viewport translation in the X direction
+        tx = view_x0 - self.axes.viewLim.x0
+        #
+        # the viewport translation in the Y direction
+        # which is from the bottom of the screen
+        #
+        if self.axes.viewLim.height < 0:
+            ty = (self.axes.viewLim.y0 - view_y1)
+        else:
+            ty = view_y0 - self.axes.viewLim.y0
+        im.apply_translation(tx, ty)
+
+        l, b, r, t = self.axes.bbox.extents
+        widthDisplay = (round(r) + 0.5) - (round(l) - 0.5)
+        heightDisplay = (round(t) + 0.5) - (round(b) - 0.5)
+        widthDisplay = int(widthDisplay * magnification)
+        heightDisplay = int(heightDisplay * magnification)
+
+        # resize viewport to display
+        sx = widthDisplay / self.axes.viewLim.width
+        sy = abs(heightDisplay  / self.axes.viewLim.height)
+        im.apply_scaling(sx, sy)
+        im.resize(widthDisplay, heightDisplay,
+                  norm=1, radius = self.filterrad)
+        bbox = self.axes.bbox.frozen()
+        im._url = self.frame.Title
+        
+        # Two ways to do this, try by version
+        mplib_version = matplotlib.__version__.split(".")
+        if mplib_version[0] == '0':
+            renderer.draw_image(l, b, im, bbox)
+        else:
+            gc = renderer.new_gc()
+            renderer.draw_image(gc, l, b, im)
+
 if __name__ == "__main__":
     import numpy as np
 

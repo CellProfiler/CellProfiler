@@ -543,24 +543,21 @@ class Measurements(object):
         if feature_name in (IMAGE_NUMBER, OBJECT_NUMBER):
             return
 
-        def wrap_string(v):
-            if isinstance(v, basestring):
-                return unicode(v).encode('unicode_escape')
-            return v
-
         if object_name == EXPERIMENT:
             if not np.isscalar(data) and data is not None:
                 data = data[0]
             if data is None:
                 data = []
-            self.hdf5_dict[EXPERIMENT, feature_name, 0] = wrap_string(data)
+            self.hdf5_dict[EXPERIMENT, feature_name, 0] = \
+                Measurements.wrap_string(data)
         elif object_name == IMAGE:
             if not np.isscalar(data) and data is not None:
                 data = data[0]
             if ((data is None) or 
                 ((not isinstance(data, basestring)) and np.isnan(data))):
                 data = []
-            self.hdf5_dict[IMAGE, feature_name, image_set_number] = wrap_string(data)
+            self.hdf5_dict[IMAGE, feature_name, image_set_number] = \
+                Measurements.wrap_string(data)
             if not self.hdf5_dict.has_data(object_name, IMAGE_NUMBER, image_set_number):
                 self.hdf5_dict[IMAGE, IMAGE_NUMBER, image_set_number] = image_set_number
         else:
@@ -643,6 +640,27 @@ class Measurements(object):
         """
         return self.get_measurement(object_name, feature_name, self.image_set_number)
 
+    @staticmethod
+    def wrap_string(v):
+        if isinstance(v, basestring):
+            if getattr(v, "__class__") == str:
+                v = v.decode("utf-8")
+            return v.encode('unicode_escape')
+        return v
+
+        
+    @staticmethod
+    def unwrap_string(v):
+        # hdf5 returns string columns as a wrapped type
+        # Strings are (sometimes?) returned as numpy.object_ and bizarrely,
+        # type(v) == numpy.object_, but v.__class__==str. Additionally,
+        # builtin type like number has a __class__ attribute but that can't be
+        # referenced with the dot syntax.
+        #
+        if getattr(v, "__class__") == str:
+            return v.decode('unicode_escape')
+        return v
+    
     def get_measurement(self, object_name, feature_name, image_set_number=None):
         """Return the value for the named measurement and indicated image set
         
@@ -657,13 +675,9 @@ class Measurements(object):
                            return measurements for each of the image sets
                            listed.
         """
-        def unwrap_string(v):
-            # hdf5 returns string columns as a wrapped type
-            if isinstance(v, str):
-                return unicode(str(v)).decode('unicode_escape')
-            return v
         if object_name == EXPERIMENT:
-            return unwrap_string(self.hdf5_dict[EXPERIMENT, feature_name, 0][0])
+            return Measurements.unwrap_string(
+                self.hdf5_dict[EXPERIMENT, feature_name, 0][0])
         if image_set_number is None:
             image_set_number = self.image_set_number
         vals = self.hdf5_dict[object_name, feature_name, image_set_number]
@@ -671,11 +685,17 @@ class Measurements(object):
             return None
         if object_name == IMAGE:
             if np.isscalar(image_set_number):
-                return np.NAN if len(vals) == 0 else unwrap_string(vals[0])
+                return np.NAN if len(vals) == 0 \
+                       else Measurements.unwrap_string(vals[0])
             else:
-                return np.array(
-                    [unwrap_string(v[0]) if v is not None else np.NaN
-                     for v in vals])
+                result = [ Measurements.unwrap_string(v[0]) 
+                           if v is not None else np.NaN
+                           for v in vals]
+                # numeric expect as numpy array, text as list (or possibly
+                # array of object in order to handle np.NaN
+                if not any([isinstance(x, basestring) for x in result]):
+                    result = np.array(result)
+                return result
         if np.isscalar(image_set_number):
             return np.array([]) if vals is None else vals.flatten()
         return [np.array([]) if v is None else v.flatten() for v in vals]
@@ -702,8 +722,7 @@ class Measurements(object):
         feature_name - feature to add
         values - list of either values or arrays of values
         '''
-        values = [unicode(value).encode('unicode_escape') 
-                  if isinstance(value, (str, unicode)) else value
+        values = [Measurements.wrap_string(value)
                   for value in values]
         if ((not self.hdf5_dict.has_feature(IMAGE, IMAGE_NUMBER)) or
             (np.max(self.get_image_numbers()) < len(values))):
@@ -965,11 +984,12 @@ class Measurements(object):
                 return self.load_image_sets(fd, start, stop)
         import csv
         reader = csv.reader(fd_or_file)
-        header = reader.next()
+        header = [x.decode('utf-8') for x in reader.next()]
         columns = [[] for _ in range(len(header))]
         column_is_all_none = np.ones(len(header), bool)
         last_image_number = 0
         for i, fields in enumerate(reader):
+            fields = [x.decode('utf-8') for x in fields]
             image_number = i + 1
             if start is not None and start < image_number:
                 continue
@@ -1000,7 +1020,9 @@ class Measurements(object):
                     try:
                         column = column.astype(float)
                     except:
-                        pass
+                        column = np.array(
+                            [Measurements.wrap_string(x) for x in column], 
+                            object)
                 self.hdf5_dict.add_all(IMAGE, feature, column, image_numbers)
                 
     def write_image_sets(self, fd_or_file, start = None, stop = None):
@@ -1043,14 +1065,12 @@ class Measurements(object):
         for i, image_number in enumerate(image_numbers):
             for j, column in enumerate(columns):
                 field = column[i]
-                if field is None:
+                if field is np.NaN or field is None:
                     field = ""
-                elif isinstance(field, unicode):
-                    field = field.encode("unicode-escape")
                 if isinstance(field, basestring):
-                    # The unicode character for double quote
-                    field = field.replace('"', "\\u0022")
-                    field = "\"" + field + "\""
+                    if isinstance(field, unicode):
+                        field = field.encode("utf-8")
+                    field = "\"" + field.replace("\"", "\"\"") + "\""
                 else:
                     field = str(field)
                 if j > 0:

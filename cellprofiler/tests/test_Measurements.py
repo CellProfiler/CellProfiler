@@ -32,6 +32,18 @@ FEATURE_NAME = "feature"
 class TestMeasurements(unittest.TestCase):
     def test_00_00_init(self):
         x = cpmeas.Measurements()
+        
+    def test_00_01_wrap_unwrap(self):
+        test0 = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
+        test = test0 + [x.encode("utf-8") for x in test0]
+        # numpy.object_
+        test += np.array(test0, object).tolist()
+        for case in test:
+            result = cpmeas.Measurements.unwrap_string(
+                cpmeas.Measurements.wrap_string(case))
+            if not isinstance(case, unicode):
+                case = case.decode("utf-8")
+            self.assertEqual(result, case)
     
     def test_01_01_image_number_is_zero(self):
         x = cpmeas.Measurements()
@@ -251,6 +263,26 @@ class TestMeasurements(unittest.TestCase):
         result = m[OBJECT_NAME, "Feature", :]
         self.assertTrue(all([np.all(r == v) and len(r) == len(v)
                              for r, v in zip(result, vals)]))
+        
+    def test_04_05_get_many_string_measurements(self):
+        #
+        # Add string measurements that are likely to break things, then
+        # read them back in one shot
+        #
+        test = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
+        test = test + [x.encode('utf-8') for x in test]
+        test.append(None)
+        expected = [x if isinstance(x, unicode) 
+                    else np.NaN if x is None
+                    else x.decode('utf-8')
+                    for x in test]
+        m = cpmeas.Measurements()
+        for i, v in enumerate(test):
+            m[cpmeas.IMAGE, "Feature", i+1] = v
+        
+        result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
+        self.assertSequenceEqual(expected, result)
+        
     
     def test_05_01_test_has_current_measurements(self):
         x = cpmeas.Measurements()
@@ -932,7 +964,7 @@ class TestMeasurements(unittest.TestCase):
         for feature_name in expected_features:
             src = m.get_measurement(cpmeas.IMAGE, feature_name, image_numbers)
             dest = mdest.get_measurement(cpmeas.IMAGE, feature_name, image_numbers)
-            self.assertSequenceEqual(src.tolist(), dest.tolist())
+            self.assertSequenceEqual(list(src), list(dest))
 
     def test_19_03_delete_tempfile(self):
         m = cpmeas.Measurements()

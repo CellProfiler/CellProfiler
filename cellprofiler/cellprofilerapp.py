@@ -95,6 +95,7 @@ class CellProfilerApp(wx.App):
             version_string = cellprofiler.utilities.version.version_string
             dotted_version = cellprofiler.utilities.version.dotted_version
             version_number = cellprofiler.utilities.version.version_number
+            self.version = version_number
             cfu.check_for_updates('http://cellprofiler.org/CPupdate.html',
                                   0 if force else max(version_number, cpp.get_skip_version()),
                                   self.new_version_cb,

@@ -36,6 +36,7 @@ class VersionChecker(threading.Thread):
             req = urllib2.Request(self.url, None, {'User-Agent' : self.user_agent})
             response = urllib2.urlopen(req)
             html = response.read()
+            response.close()
             # format should be version number in first line followed by html
             new_version, info = html.split('\n', 1)
             new_version = int(new_version)

@@ -405,6 +405,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
             'Zfactor_ThresholdedCells_Texture_Variance_CorrGreen_1':0.481393
         }            
         temp_dir = tempfile.mkdtemp()
+        m = None
         try:
             cpprefs.set_headless()
             cpprefs.set_default_output_directory(temp_dir)
@@ -429,7 +430,7 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                 for object_name in measurements.dtype.fields:
                     omeasurements = measurements[object_name][0,0]
                     for feature_name in omeasurements.dtype.fields:
-                        data = omeasurements[feature_name][0,0][0,i]
+                        data = omeasurements[feature_name][0,0][0,i].flatten()
                         m.add_measurement(object_name, feature_name, data)
                 if i < len(doses)-1:
                     m.next_image_set()
@@ -465,7 +466,8 @@ CalculateStatistics:[module_num:1|svn_version:\'9495\'|variable_revision_number:
                     self.assertTrue(os.path.isfile(os.path.join(temp_dir, filename)))
         finally:
             try:
-                workspace.measurements.hdf5_dict.hdf5_file.close()
+                if m is not None:
+                    m.close()
             except:
                 pass
             for filename in os.listdir(temp_dir):

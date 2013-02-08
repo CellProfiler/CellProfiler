@@ -280,8 +280,8 @@ def add_all_measurements(handles, measurements):
             object_measurements[field][0,0] = feature_measurements
             for i in np.argwhere(~ has_image_number[1:]).flatten():
                 feature_measurements[0, i] = np.zeros(0)
-            for i in measurements.get_image_numbers():
-                ddata = measurements.get_measurement(object_name, feature_name, i)
+            dddata = measurements[object_name, feature_name, image_numbers]
+            for i, ddata in zip(image_numbers, dddata):
                 if np.isscalar(ddata) and np.isreal(ddata):
                     feature_measurements[0, i-1] = np.array([ddata])
                 elif ddata is not None:

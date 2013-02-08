@@ -27,6 +27,7 @@ D = H5DICT.HDF5FileList.decode
 
 OBJECT_NAME = "objectname"
 FEATURE_NAME = "featurename"
+ALT_FEATURE_NAME = "featurename2"
 
 class TestHDF5Dict(unittest.TestCase):
     def setUp(self):
@@ -79,6 +80,56 @@ class TestHDF5Dict(unittest.TestCase):
     def test_02_02_read_none(self):
         self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = "Hello"
         self.assertIsNone(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1])
+        
+    def test_02_03_write_numeric_imagesets(self):
+        for dtype, code, ftr in ((int, 'i', FEATURE_NAME), 
+                                 (float, 'f', ALT_FEATURE_NAME)):
+            data = [
+                np.zeros(0, dtype),
+                np.array([1, 10, 100], dtype), 
+                np.array([2, 20], dtype),
+                np.array([3, 30, 300, 3000], dtype)]
+            self.hdf5_dict[OBJECT_NAME, ftr, [1, 3]] = data[::2]
+            self.hdf5_dict[OBJECT_NAME, ftr, [2, 4]] = data[1::2]
+            d2 = self.hdf5_dict[OBJECT_NAME, ftr, [1, 2, 3, 4]]
+            self.assertEqual(len(d2), 4)
+            self.assertIsNone(d2[0])
+            self.assertTrue(all([d.dtype.kind == code for d in d2[1:]]))
+            self.assertTrue(all([np.all(d == e) for d, e in zip(d2[1:], data[1:])]))
+        
+    def test_02_04_write_string_imagesets(self):
+        data = [ None, "foo", "bar", None, "baz"]
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, [1, 2] ] = data[:2]
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, [3, 4, 5] ] = data[2:]
+        d2 = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, [1,2,3,4,5]]
+        self.assertIsNone(d2[0])
+        self.assertIsNone(d2[3])
+        for i in (1, 2, 4):
+            self.assertEqual(data[i], d2[i][0])
+            
+    def test_02_05_upgrade_none(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = np.zeros(0)
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = np.arange(5)
+        self.assertSequenceEqual(
+            self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(), range(5))
+        
+    def test_02_06_upgrade_int_to_float(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = np.arange(5)
+        self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].dtype.kind, "i")
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = np.arange(5).astype(float) / 2.0
+        
+        self.assertEqual(self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].dtype.kind, "f")
+        self.assertSequenceEqual(
+            self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1].tolist(), range(5))
+        self.assertSequenceEqual(
+            self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2].tolist(),
+            map(lambda x: float(x)/2, range(5)))
+        
+    def test_02_07_upgrade_float_to_string(self):
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1] = [2.5]
+        self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 2] = ["alfalfa"]
+        data = self.hdf5_dict[OBJECT_NAME, FEATURE_NAME, 1]
+        self.assertIsInstance(data[0], basestring)
         
     def test_03_01_add_all(self):
         r = np.random.RandomState()

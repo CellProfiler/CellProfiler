@@ -273,7 +273,7 @@ class TestMeasurements(unittest.TestCase):
         test = test + [x.encode('utf-8') for x in test]
         test.append(None)
         expected = [x if isinstance(x, unicode) 
-                    else np.NaN if x is None
+                    or x is None
                     else x.decode('utf-8')
                     for x in test]
         m = cpmeas.Measurements()
@@ -283,6 +283,30 @@ class TestMeasurements(unittest.TestCase):
         result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
         self.assertSequenceEqual(expected, result)
         
+    def test_04_06_set_many_string_measurements(self):
+        #
+        # Add string measurements all at once
+        #
+        test = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
+        test = test + [x.encode('utf-8') for x in test]
+        test.append(None)
+        expected = [x if isinstance(x, unicode) 
+                    or x is None
+                    else x.decode('utf-8')
+                    for x in test]
+        m = cpmeas.Measurements()
+        m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)] = test
+        
+        result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
+        self.assertSequenceEqual(expected, result)
+        
+    def test_04_07_set_many_numeric_measurements(self):
+        test = [1.5, np.NaN, 3.0]
+        m = cpmeas.Measurements()
+        m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)] = test
+        
+        result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
+        np.testing.assert_array_equal(test, result)
     
     def test_05_01_test_has_current_measurements(self):
         x = cpmeas.Measurements()
@@ -494,7 +518,7 @@ class TestMeasurements(unittest.TestCase):
         m.add_measurement(OBJECT_NAME, "M", np.arange(5), image_set_number = 1)
         m.add_measurement(OBJECT_NAME, "M", np.arange(7), image_set_number = 2)
         m.remove_measurement(OBJECT_NAME, "M", 1)
-        self.assertTrue(m.get_measurement(OBJECT_NAME, "M", 1) is None)
+        self.assertEqual(len(m.get_measurement(OBJECT_NAME, "M", 1)), 0)
         np.testing.assert_equal(m.get_measurement(OBJECT_NAME, "M", 2), 
                                 np.arange(7))
         
@@ -898,7 +922,7 @@ class TestMeasurements(unittest.TestCase):
                 value = m.get_measurement(OBJECT_NAME, FEATURE_NAME,
                                           image_set_number = i+1)
                 if expected is None:
-                    self.assertTrue(value is None)
+                    self.assertEqual(len(value), 0)
                 else:
                     np.testing.assert_almost_equal(expected, value)
         finally:

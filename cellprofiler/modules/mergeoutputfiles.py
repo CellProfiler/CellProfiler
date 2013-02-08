@@ -51,6 +51,7 @@ See also <b>CreateBatchFiles</b>, <b>ExportToDatabase</b>.
 # Website: http://www.cellprofiler.org
 #
 
+import h5py
 import numpy as np
 import os
 import sys
@@ -168,7 +169,9 @@ class MergeOutputFiles(cpm.CPModule):
         dlg = wx.FileDialog(list_control.Parent, 
                             message = "Select data files to merge",
                             style = wx.FD_OPEN | wx.FD_MULTIPLE | wx.FD_FILE_MUST_EXIST)
-        dlg.Wildcard = "CellProfiler data (*.mat)|*.mat|All files (*.*)|*.*"
+        dlg.Wildcard = (
+            "CellProfiler data (*.h5,*.mat)|*.h5;*.mat|"
+            "All files (*.*)|*.*")
         if dlg.ShowModal() == wx.ID_OK:
             for path in sorted(dlg.Paths):
                 folder, filename = os.path.split(path)
@@ -212,7 +215,9 @@ class MergeOutputFiles(cpm.CPModule):
         dlg = wx.FileDialog(ctrl.Parent,
                             message = "Merged output file name",
                             style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-        dlg.Wildcard = "CellProfiler data (*.mat)|*.mat"
+        dlg.Wildcard = (
+            "HDF5 CellProfiler data (*.h5)|*.h5|"
+            "Matlab CellProfiler data (*.mat)|*.mat")
         if len(ctrl.Value) > 0:
             dlg.Path = ctrl.Value
         if dlg.ShowModal() == wx.ID_OK:
@@ -308,21 +313,34 @@ class MergeOutputFiles(cpm.CPModule):
             pipeline.load(sources[0])
             if has_error[0]:
                 return
-            mdest = cpmeas.Measurements()
+            if destination.lower().endswith(".h5"):
+                mdest = cpmeas.Measurements(filename=destination,
+                                            multithread=False)
+                h5_dest = True
+            else:
+                mdest = cpmeas.Measurements(multithread=False)
+                h5_dest = False
             for source in sources:
                 if not is_headless:
                     count += 1
                     keep_going, skip = progress.Update(count, "Loading " + source)
                     if not keep_going:
                         return
-                msource = cpmeas.load_measurements(source)
+                if h5py.is_hdf5(source):
+                    msource = cpmeas.Measurements(filename=source, 
+                                                  mode="r",
+                                                  multithread=False)
+                else:
+                    msource = cpmeas.load_measurements(source)
                 dest_image_numbers = mdest.get_image_numbers()
                 source_image_numbers = msource.get_image_numbers()
-                if len(dest_image_numbers) == 0:
+                if (len(dest_image_numbers) == 0 or 
+                    len(source_image_numbers) == 0):
                     offset_source_image_numbers =  source_image_numbers
                 else:
                     offset_source_image_numbers = (
-                        np.max(dest_image_numbers) + source_image_numbers)
+                        np.max(dest_image_numbers) -
+                        np.min(source_image_numbers) + source_image_numbers + 1)
                 for object_name in msource.get_object_names():
                     if object_name in mdest.get_object_names():
                         destfeatures = mdest.get_feature_names(object_name)
@@ -340,17 +358,16 @@ class MergeOutputFiles(cpm.CPModule):
                             object_name,
                             feature,
                             image_set_number = source_image_numbers)
-                        for image_number, value in zip(
-                            offset_source_image_numbers, src_values):
-                            mdest.add_measurement(
-                                object_name, feature, value,
-                                image_set_number = image_number)
+                        mdest[object_name, 
+                              feature, 
+                              offset_source_image_numbers] = src_values
                     destset = set(destfeatures)
             if not is_headless:
                 keep_going, skip = progress.Update(count+1, "Saving to "+destination)
                 if not keep_going:
                     return
-            pipeline.save_measurements(destination, mdest)
+            if not h5_dest:
+                pipeline.save_measurements(destination, mdest)
         finally:
             if not is_headless:
                 progress.Destroy()

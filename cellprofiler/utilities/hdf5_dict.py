@@ -103,9 +103,6 @@ class HDF5Dict(object):
     del measurements['Experiment', 'feature1', 0]  # ok
     del measurements['Image', 'imfeature1', 2]  # ok
 
-    If the 'must_exist' flag is set, it is an error to add a new
-    object or feature that does not exist.
-    
     The measurements data is stored in groups corresponding to object names
     (with special objects, "Image" = image set measurements and "Experiment" = 
     experiment measurements. Each object feature has its own group under
@@ -228,7 +225,6 @@ class HDF5Dict(object):
                     
             self.lock = HDF5Lock()
                     
-            self.must_exist = False
             self.chunksize = 1024
             if copy is not None:
                 if image_numbers is None:
@@ -367,97 +363,197 @@ class HDF5Dict(object):
     def __getitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name[, integer])"
         assert isinstance(idxs[0], basestring) and isinstance(idxs[1], basestring), "First two indices must be of type str."
-        assert ((not np.isscalar(idxs[2]) and np.all(idxs[2] >= 0))
-                or self.__is_positive_int(idxs[2])),\
-               "Third index must be a non-negative integer or integer array"
 
         object_name, feature_name, num_idx = idxs
+        if np.isscalar(num_idx):
+            result = self[object_name, feature_name, [num_idx]]
+            return result if result is None else result[0]
+        
         feature_exists = self.has_feature(object_name, feature_name)
         assert feature_exists
-        if not np.isscalar(num_idx):
-            with self.lock:
-                indices = self.indices[(object_name, feature_name)]
-                dataset = self.get_dataset(object_name, feature_name)
-                if dataset is None or dataset.shape[0] == 0:
-                    return [None for image_number in num_idx]
-                if (len(indices) / 2 < len(num_idx)):
-                    #
-                    # Optimize by fetching complete dataset
-                    # if fetching more than 1/2 of indices
-                    #
-                    dataset = dataset[:]
-                return [None 
-                        if ((isinstance(dest, slice) and 
-                             dest.start is not None and 
-                             dest.start == dest.stop))
-                        else dataset[dest]
-                        for dest in [ indices.get(image_number, slice(0,0))
-                                      for image_number in num_idx]]
-
-        if not self.has_data(*idxs):
-            return None
-
         with self.lock:
-            dest = self.find_index_or_slice(idxs)
-            # it's possible we're fetching data from an image without
-            # any objects, in which case we probably weren't able to
-            # infer a type in __setitem__(), which means there may be
-            # no dataset, yet.
-            if isinstance(dest, slice) and dest.start is not None and dest.start == dest.stop:
-                return np.array([])
+            indices = self.indices[(object_name, feature_name)]
             dataset = self.get_dataset(object_name, feature_name)
-            return dataset[dest]
+            if dataset is None or dataset.shape[0] == 0:
+                return [np.array([]) for image_number in num_idx]
+            if (len(indices) / 2 < len(num_idx)):
+                #
+                # Optimize by fetching complete dataset
+                # if fetching more than 1/2 of indices
+                #
+                dataset = dataset[:]
+            return [None 
+                    if ((isinstance(dest, slice) and 
+                         dest.start is not None and 
+                         dest.start == dest.stop))
+                    else dataset[dest]
+                    for dest in [ indices.get(image_number, slice(0,0))
+                                  for image_number in num_idx]]
 
-    def __setitem__(self, idxs, val):
-        assert isinstance(idxs, tuple), "Assigning to HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
-        assert isinstance(idxs[0], basestring) and isinstance(idxs[1], basestring), "First two indices must be of type str."
-        assert self.__is_positive_int(idxs[2]), "Third index must be a non-negative integer"
+    @staticmethod
+    def __all_null(vals):
+        if np.isscalar(vals):
+            return vals is None
+        return all([x is None or (not np.isscalar(x) and HDF5Dict.__all_null(x))
+                    for x in vals])
+    
+    def __make_empty_feature(self, object_name, feature_name, 
+                             image_numbers = None):
+        '''Create a feature that has only nulls
+        
+        lock must be taken prior to call
+        
+        object_name - name of feature's object
+        
+        feature_name - name of feature within object
+        
+        image_numbers - image numbers of the image sets with no values for
+                        the feature.
+        '''
+        feature_group = self.top_group.require_group(object_name).\
+            require_group(feature_name)
+        if image_numbers is None:
+            index_slices = np.zeros((0, 3), int)
+        else:
+            index_slices = np.column_stack(
+                [image_numbers, np.zeros((len(image_numbers), 2), int)])
+        self.__create_index(feature_group, index_slices)
+        feature_group.create_dataset(
+            'data', (0, ), dtype = int, 
+            compression='gzip', shuffle=True, chunks=(self.chunksize,), 
+            maxshape=(None,))
+        
+    def __create_index(self, feature_group, index_slices):
+        '''Create an index for a feature group
+
+        lock must be taken prior to call
+        
+        feature_group - create the dataset in this group
+        
+        index_slices - an N x 3 numpy array of the image number, start and stop
+                       for the initial indexes
+        '''
+        assert isinstance(feature_group, h5py.Group)
+        _, object_name, feature_name = feature_group.name.rsplit("/", 2)
+        feature_group.create_dataset(
+            'index', data = index_slices,
+            dtype = int,
+            compression=None,
+            chunks=(self.chunksize, 3), maxshape=(None, 3))
+        self.indices[object_name, feature_name] = \
+            dict([(image_number, slice(start, stop))
+                  for image_number, start, stop in index_slices])
+    
+    def __setitem__(self, idxs, vals):
+        assert isinstance(idxs, tuple), \
+               "Assigning to HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
+        assert isinstance(idxs[0], basestring) and isinstance(idxs[1], basestring), \
+               "First two indices must be of type str."
+        assert (not np.isscalar(idxs[2]) or self.__is_positive_int(idxs[2])),\
+               "Third index must be a non-negative integer"
 
         object_name, feature_name, num_idx = idxs
-        full_name = '%s.%s' % (idxs[0], idxs[1])
-        feature_exists = self.has_feature(object_name, feature_name)
-        assert (not self.must_exist) or feature_exists, \
-            "Attempted storing new feature %s, but must_exist=True" % (full_name)
-
-        if not feature_exists:
-            if not self.has_object(object_name):
-                self.add_object(object_name)
-            self.add_feature(object_name, feature_name)
-            
-        # find the destination for the data, and check that its
-        # the right size for the values.  This may extend the
-        # _index and data arrays. It may also overwrite the old value.
-        dest = self.find_index_or_slice(idxs, val)
-        if dest is None:
-            # No dataset + val is None: can't create the dataset
-            # without knowing the data type
-            return
-
+        if np.isscalar(num_idx):
+            # An image or experiment feature, typically
+            if vals is None:
+                vals = []
+            elif np.isscalar(vals):
+                vals = [vals]
+            return self.__setitem__(
+                (object_name, feature_name, [num_idx]), [vals])
+        
+        num_idx = np.atleast_1d(num_idx)
+        if len(num_idx) > 0 and (np.isscalar(vals[0]) or vals[0] is None):
+            # Convert imageset-style to lists per imageset
+            vals = [[v] if v is not None else [] for v in vals]
+        all_null = True
+        
+        hdf5_type = None
+        for vector in vals:
+            if len(vector) > 0:
+                all_null = False
+                new_dtype = infer_hdf5_type(vector)
+                if hdf5_type is None or hdf5_type == int:
+                    hdf5_type = new_dtype
+                elif hdf5_type == float:
+                    if new_dtype != int:
+                        hdf5_type = new_dtype
+                else:
+                    break
+        hdf5_type_is_int = (
+            np.issubdtype(hdf5_type, int) or
+            (isinstance(hdf5_type, np.dtype) and hdf5_type.kind == 'u'))
+        hdf5_type_is_float = np.issubdtype(hdf5_type, float)
+        hdf5_type_is_string = not (hdf5_type_is_int or hdf5_type_is_float)
         with self.lock:
-            dataset = self.get_dataset(object_name, feature_name)
-            if dataset.dtype.kind == 'i':
-                if np.asanyarray(val).dtype.kind == 'f':
-                    # it's possible we have only stored integers and now need to promote to float
-                    if dataset.shape[0] > 0:
-                        vals = dataset[:].astype(float)
-                    else:
-                        vals = np.array([])
-                    del self.top_group[object_name][feature_name]['data']
-                    dataset = self.top_group[object_name][feature_name].create_dataset('data', (vals.size,), dtype=float,
-                                                                                       compression='gzip', shuffle=True, chunks=(self.chunksize,), maxshape=(None,))
-                    if vals.size > 0:
-                        dataset[:] = vals
-                elif np.asanyarray(val).dtype.kind in ('S', 'a', 'U'):
-                    # we created the dataset without any data, so didn't know the type before
-                    sz = dataset.shape[0]
-                    del self.top_group[object_name][feature_name]['data']
-                    dataset = self.top_group[object_name][feature_name].create_dataset('data', (sz,), dtype=h5py.special_dtype(vlen=str),
-                                                                                       compression='gzip', shuffle=True, chunks=(self.chunksize,), maxshape=(None,))
-
-            if np.isscalar(val):
-                dataset[dest] = val
+            if not self.has_feature(object_name, feature_name):
+                if all_null:
+                    self.__make_empty_feature(object_name, feature_name, num_idx)
+                else:
+                    self.add_all(object_name, feature_name, vals, num_idx)
+                return
+            
+            feature_group = self.top_group[object_name][feature_name]
+            dataset = feature_group['data']
+            index_set = feature_group['index']
+            indices = self.indices[object_name, feature_name]
+            assert isinstance(dataset, h5py.Dataset)
+            assert isinstance(index_set, h5py.Dataset)
+            if all_null:
+                old_length = index_set.shape[0]
+                index_set.resize(old_length + len(num_idx), 0)
+                index_set[old_length:, 0] = num_idx
+                index_set[old_length:, 1:] = 0
+                indices.update([(image_number, slice(0,0))
+                                for image_number in num_idx])
+                return
+            if dataset.shape[0] == 0:
+                recast_dataset = True
+                hdf5_type = infer_hdf5_type(vals)
             else:
-                dataset[dest] = np.asanyarray(val).ravel()
+                recast_dataset = False
+                ds_type = dataset.dtype.kind
+                ds_type_is_string = ds_type in ("S", "U", "O")
+
+                if hdf5_type_is_float and ds_type in ("i", "u"):
+                    recast_dataset = True
+                elif hdf5_type_is_string and not ds_type_is_string:
+                    recast_dataset = True
+            if recast_dataset:
+                kwds = dict(
+                    dtype = hdf5_type,
+                    compression = 'gzip', shuffle = True,
+                    chunks = (self.chunksize,),
+                    maxshape = (None, ))
+                if dataset.shape[0] > 0:
+                    if hdf5_type_is_string:
+                        kwds['data'] = np.array(
+                            [str(v) for v in dataset[:]], object)
+                    else:
+                        kwds['data'] = dataset[:]
+                else:
+                    kwds['shape'] = (0,)
+                del feature_group['data']
+                
+                dataset = feature_group.create_dataset('data', **kwds)
+            data_lengths = np.array([len(v) for v in vals], int)
+            if dataset.dtype.kind in ("S", "U", "O"):
+                vals = sum([[str(v) for v in vector] for vector in vals], [])
+                vals = np.array(vals, object).flatten()
+            else:
+                vals = np.hstack(vals).astype(dataset.dtype)
+            old_dataset_len = dataset.shape[0]
+            data_offsets = np.cumsum(data_lengths)
+            dataset.resize(old_dataset_len + len(vals), 0)
+            dataset[old_dataset_len:] = vals
+            index_slices = np.column_stack(
+                [num_idx, old_dataset_len + data_offsets - data_lengths,
+                 old_dataset_len + data_offsets])
+            old_index_slice_len = index_set.shape[0]
+            index_set.resize(old_index_slice_len + len(num_idx), 0)
+            index_set[old_index_slice_len:, :] = index_slices
+            indices.update([(index_number, slice(start, stop))
+                            for index_number, start, stop in index_slices])
 
     def __delitem__(self, idxs):
         assert isinstance(idxs, tuple), "Accessing HDF5_Dict requires a tuple of (object_name, feature_name, integer)"
@@ -472,11 +568,6 @@ class HDF5Dict(object):
             return
 
         with self.lock:
-            dest = self.find_index_or_slice(idxs)
-            # it's possible we're fetching data from an image without
-            # any objects, in which case we probably weren't able to
-            # infer a type in __setitem__(), which means there may be
-            # no dataset, yet.
             del self.indices[object_name, feature_name][num_idx]
             # reserved value of -1 means deleted
             idx = self.top_group[object_name][feature_name]['index']
@@ -505,54 +596,6 @@ class HDF5Dict(object):
             feature_group = self.top_group[object_name].require_group(feature_name)
             self.indices.setdefault((object_name, feature_name), {})
             
-    def find_index_or_slice(self, idxs, values=None):
-        '''Find the linear indexes or slice for a particular set of
-        indexes "idxs", and check that values could be stored in that
-        linear index or slice.  If the linear index does not exist for
-        the given idxs, then it will be created with sufficient size
-        to store values (which must not be None, in this case).  If
-        the dataset does not exist, it will be created by this method.
-        '''
-        with self.lock:
-            object_name, feature_name, num_idx = idxs
-            assert self.__is_positive_int(num_idx)
-            index = self.indices[object_name, feature_name]
-            if (num_idx not in index) and (values is None):
-                return None  # no data
-            if values is not None:
-                data_size = np.asanyarray(values).ravel().size
-                feature_group = self.top_group.require_group(object_name).require_group(feature_name)
-                if num_idx in index:
-                    sl = index[num_idx]
-                    if data_size > (sl.stop - sl.start):
-                        hdf5_index = feature_group['index']
-                        hdf5_index[np.flatnonzero(hdf5_index[:, 0] == num_idx), 0] = -1
-                        del index[num_idx]
-                    elif data_size < (sl.stop - sl.start):
-                        hdf5_index = feature_group['index']
-                        loc = np.flatnonzero(hdf5_index[:, 0] == num_idx)
-                        hdf5_index[loc, 2] = hdf5_index[loc, 1] + data_size
-                        index[num_idx] = slice(sl.start, sl.start + data_size)
-                if num_idx not in index:
-                    grow_by = data_size
-                    # create the measurements if needed
-
-                    if not 'data' in feature_group:
-                        feature_group.create_dataset('data', (0,), dtype=infer_hdf5_type(values),
-                                                     compression='gzip', shuffle=True, chunks=(self.chunksize,), maxshape=(None,))
-                        feature_group.create_dataset('index', (0, 3), dtype=int, compression=None,
-                                                     chunks=(self.chunksize, 3), maxshape=(None, 3))
-                    # grow data and index
-                    ds = feature_group['data']
-                    hdf5_index = feature_group['index']
-                    cur_size = ds.shape[0]
-                    ds.resize((cur_size + grow_by,))
-                    hdf5_index.resize((hdf5_index.shape[0] + 1, 3))
-                    # store locations for new data
-                    hdf5_index[-1, :] = (num_idx, cur_size, cur_size + grow_by)
-                    index[num_idx] = slice(cur_size, cur_size + grow_by)
-            return index[num_idx]
-
     def clear(self):
         with self.lock:
             for object_name in self.top_level_names():
@@ -601,47 +644,50 @@ class HDF5Dict(object):
                 del self.top_group[object_name][feature_name]
                 del self.indices[object_name, feature_name]
             self.add_feature(object_name, feature_name)
+            if len(values) > 0 and (
+                np.isscalar(values[0]) or values[0] is None):
+                # Convert "images"-style value per imageset to a list
+                values = [[v] if v is not None else [] for v in values]
             if idxs is None:
-                idxs = [i+1 for i, value in enumerate(values)
-                        if value is not None]
-                values = [value for value in values if value is not None]
-            else:
-                idxs = [i for i, value in zip(idxs, values) if value is not None]
-                values = [value for value in values if value is not None]
-            if len(values) > 0:
-                if np.isscalar(values[0]):
-                    idx = np.column_stack((idxs,
-                                           np.arange(len(idxs)),
-                                           np.arange(len(idxs))+1))
-                    assert not isinstance(values[0], unicode), "Unicode must be string encoded prior to call"
-                    if isinstance(values[0], str):
-                        dataset = np.array(
-                            [value for value in values if value is not None],
-                            object)
-                        dtype = h5py.special_dtype(vlen=str)
+                idxs = np.arange(1, len(values)+1)
+            dtype = None
+            for vector in values:
+                if len(vector) > 0:
+                    new_dtype = infer_hdf5_type(vector)
+                    if dtype is None or dtype == int:
+                        dtype = new_dtype
+                    elif dtype == float:
+                        if new_dtype != int:
+                            dtype = new_dtype
                     else:
-                        dataset = np.array(values)
-                        dtype = dataset.dtype
-                else:
-                    counts = np.array([len(x) for x in values])
-                    offsets = np.hstack([[0], np.cumsum(counts)])
-                    idx = np.column_stack((idxs, offsets[:-1], offsets[1:]))
-                    dataset = np.hstack(values)
-                    dtype = dataset.dtype
-                
-                self.indices[object_name, feature_name] = dict([
-                    (i, slice(start, end)) 
-                    for i, start, end in idx])
-                feature_group = self.top_group[object_name][feature_name]
-                feature_group.create_dataset(
-                    'data', data = dataset, 
-                    dtype = dtype, compression = 'gzip', shuffle=True,
-                    chunks = (self.chunksize, ), 
-                    maxshape = (None, ))
-                feature_group.create_dataset(
-                    'index', data = idx, dtype=int,
-                    compression = None, chunks = (self.chunksize, 3),
-                    maxshape = (None,3))
+                        break
+            if dtype is None:
+                # empty set
+                self.__make_empty_feature(object_name, feature_name, idxs)
+                return
+            elif not np.issubdtype(dtype, np.number):
+                values = [np.array([str(v) for v in vector], object)
+                          for vector in values]
+            else:
+                values = [np.atleast_1d(vector) for vector in values]
+            counts = np.array([len(x) for x in values])
+            offsets = np.hstack([[0], np.cumsum(counts)])
+            idx = np.column_stack((idxs, offsets[:-1], offsets[1:]))
+            dataset = np.hstack(values)
+        
+            self.indices[object_name, feature_name] = dict([
+                (i, slice(start, end)) 
+                for i, start, end in idx])
+            feature_group = self.top_group[object_name][feature_name]
+            feature_group.create_dataset(
+                'data', data = dataset, 
+                dtype = dtype, compression = 'gzip', shuffle=True,
+                chunks = (self.chunksize, ), 
+                maxshape = (None, ))
+            feature_group.create_dataset(
+                'index', data = idx, dtype=int,
+                compression = None, chunks = (self.chunksize, 3),
+                maxshape = (None,3))
                 
     def reorder(self, object_name, feature_name, image_numbers):
         '''Change the image set order for a feature

@@ -791,7 +791,7 @@ class TestAnalysisWorker(unittest.TestCase):
                 # The count for the skipped image should be None
                 #
                 count = m[cpmeas.IMAGE, C_COUNT + "_Nuclei", 2]
-                self.assertTrue(np.isnan(count))
+                self.assertIsNone(count)
             else:
                 count = m[cpmeas.IMAGE, C_COUNT + "_Nuclei", 3]
                 center_x = m["Nuclei", M_LOCATION_CENTER_X, 3]

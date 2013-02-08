@@ -25,6 +25,7 @@ from itertools import repeat
 import cellprofiler.preferences as cpprefs
 from cellprofiler.utilities.hdf5_dict import HDF5Dict, get_top_level_group
 from cellprofiler.utilities.hdf5_dict import VERSION, HDFCSV, VStringArray
+from cellprofiler.utilities.hdf5_dict import NullLock
 import tempfile
 import numpy as np
 import warnings
@@ -169,7 +170,8 @@ class Measurements(object):
                  filename = None,
                  copy = None,
                  mode = "w",
-                 image_numbers = None):
+                 image_numbers = None,
+                 multithread = True):
         """Create a new measurements collection
 
         can_overwrite - DEPRECATED and has no effect
@@ -186,6 +188,8 @@ class Measurements(object):
                "a" to create a new file or open an existing file as read/write
                "r+" to open an existing file as read/write
                "memory" to create an HDF5 memory-backed File
+        multithread - True if this measurements structure is used in a
+               multithreading context, False to disable locking.
         """
         # XXX - allow saving of partial results
         if mode == "memory" and sys.platform == "darwin":
@@ -224,6 +228,8 @@ class Measurements(object):
                 copy = copy,
                 mode = mode,
                 image_numbers=image_numbers)
+            if not multithread:
+                self.hdf5_dict.lock = NullLock
         elif copy is not None:
             raise ValueError('Copy source for measurments is neither a Measurements or HDF5 group.')
         else:
@@ -551,26 +557,29 @@ class Measurements(object):
             self.hdf5_dict[EXPERIMENT, feature_name, 0] = \
                 Measurements.wrap_string(data)
         elif object_name == IMAGE:
-            if not np.isscalar(data) and data is not None:
-                data = data[0]
-            if ((data is None) or 
-                ((not isinstance(data, basestring)) and np.isnan(data))):
-                data = []
-            self.hdf5_dict[IMAGE, feature_name, image_set_number] = \
-                Measurements.wrap_string(data)
-            if not self.hdf5_dict.has_data(object_name, IMAGE_NUMBER, image_set_number):
-                self.hdf5_dict[IMAGE, IMAGE_NUMBER, image_set_number] = image_set_number
+            if np.isscalar(image_set_number):
+                image_set_number = [image_set_number]
+                data = [data]
+            data = [d if d is None or d is np.NaN
+                    else Measurements.wrap_string(d) if np.isscalar(d)
+                    else Measurements.wrap_string(d[0])
+                    for d in data]
+            self.hdf5_dict[IMAGE, feature_name, image_set_number] = data
+            for n in image_set_number:
+                if not self.hdf5_dict.has_data(object_name, IMAGE_NUMBER, n):
+                    self.hdf5_dict[IMAGE, IMAGE_NUMBER, n] = n
         else:
             self.hdf5_dict[object_name, feature_name, image_set_number] = data
-            if not self.hdf5_dict.has_data(IMAGE, IMAGE_NUMBER, image_set_number):
-                self.hdf5_dict[IMAGE, IMAGE_NUMBER, image_set_number] = image_set_number
-            if ((not self.hdf5_dict.has_data(
-                object_name, OBJECT_NUMBER, image_set_number)) and 
-                (data is not None)):
-                self.hdf5_dict[object_name, IMAGE_NUMBER, image_set_number] =\
-                    [image_set_number] * len(data)
-                self.hdf5_dict[object_name, OBJECT_NUMBER, image_set_number] =\
-                    np.arange(1, len(data) + 1)
+            for n, d in (((image_set_number,data), ) if np.isscalar(image_set_number)
+                         else zip(image_set_number, data)):
+                if not self.hdf5_dict.has_data(IMAGE, IMAGE_NUMBER, n):
+                    self.hdf5_dict[IMAGE, IMAGE_NUMBER, n] = n
+                if ((not self.hdf5_dict.has_data(
+                    object_name, OBJECT_NUMBER, n)) and 
+                    (d is not None)):
+                    self.hdf5_dict[object_name, IMAGE_NUMBER, n] = [n] * len(d)
+                self.hdf5_dict[object_name, OBJECT_NUMBER, n] =\
+                    np.arange(1, len(d) + 1)
                 
     def remove_measurement(self, object_name, feature_name, image_number):
         '''Remove the measurement for the given image number
@@ -681,20 +690,25 @@ class Measurements(object):
         if image_set_number is None:
             image_set_number = self.image_set_number
         vals = self.hdf5_dict[object_name, feature_name, image_set_number]
-        if vals is None:
-            return None
         if object_name == IMAGE:
             if np.isscalar(image_set_number):
-                return np.NAN if len(vals) == 0 \
+                return None if vals is None or len(vals) == 0 \
                        else Measurements.unwrap_string(vals[0])
             else:
-                result = [ Measurements.unwrap_string(v[0]) 
-                           if v is not None else np.NaN
-                           for v in vals]
-                # numeric expect as numpy array, text as list (or possibly
-                # array of object in order to handle np.NaN
-                if not any([isinstance(x, basestring) for x in result]):
-                    result = np.array(result)
+                if any([isinstance(x[0], basestring) for x in vals 
+                        if x is not None]):
+                    result = [ Measurements.unwrap_string(v[0]) 
+                               if v is not None else None
+                               for v in vals]
+                else:
+                    # numeric expect as numpy array, text as list (or possibly
+                    # array of object in order to handle np.NaN
+                    #
+                    # A missing result is assumed to be "unable to calculate
+                    # in this case and we substitute NaN for it.
+                    #
+                    result = np.array(
+                        [np.NaN if v is None else v[0] for v in vals])
                 return result
         if np.isscalar(image_set_number):
             return np.array([]) if vals is None else vals.flatten()
@@ -722,13 +736,13 @@ class Measurements(object):
         feature_name - feature to add
         values - list of either values or arrays of values
         '''
-        values = [Measurements.wrap_string(value)
+        values = [[] if value is None
+                  else [Measurements.wrap_string(value)] if np.isscalar(value)
+                  else value
                   for value in values]
         if ((not self.hdf5_dict.has_feature(IMAGE, IMAGE_NUMBER)) or
             (np.max(self.get_image_numbers()) < len(values))):
-            image_numbers = [
-                i+1 if value is not None else None 
-                for i, value in enumerate(values)]
+            image_numbers = np.arange(1, len(values)+1)
             self.hdf5_dict.add_all(
                 IMAGE, IMAGE_NUMBER, image_numbers)
         else:
@@ -740,7 +754,7 @@ class Measurements(object):
         """Retrieve an experiment-wide measurement
         """
         return self.get_measurement(EXPERIMENT, feature_name) or 'N/A'
-
+    
     def apply_metadata(self, pattern, image_set_number=None):
         """Apply metadata from the current measurements to a pattern
 

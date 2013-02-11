@@ -337,7 +337,7 @@ parent.location = url+"#input_"+key
     </div>
     '''%(globals())
 
-print '''<form action='%(url)s'>
+print '''<form action='%(url)s' method='POST'>
 <input type='hidden' name='submit_batch' value='yes'/>
 <table style='white-space=nowrap'>
 <tr><th>E-mail:</th>

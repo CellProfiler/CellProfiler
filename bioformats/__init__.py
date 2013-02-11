@@ -52,7 +52,7 @@ def start_cellprofiler_jvm():
     #
     # Need to put some Jar files with patches first...
     #
-    preferred_version = "4.4.4"
+    preferred_version = "4.4.6"
     def jf_cmp(a, b):
         for kwd in ("cellprofiler", preferred_version):
             a_preferred = a.find(kwd) >=0

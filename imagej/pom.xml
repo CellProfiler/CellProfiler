@@ -10,14 +10,14 @@
     <dependency>
       <groupId>loci</groupId>
       <artifactId>bio-formats</artifactId>
-      <version>4.4.5</version>
+      <version>4.4.6</version>
       <type>jar</type>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>loci</groupId>
       <artifactId>ome_tools</artifactId>
-      <version>4.4.5</version>
+      <version>4.4.6</version>
       <type>jar</type>
       <scope>runtime</scope>
     </dependency>

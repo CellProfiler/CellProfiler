@@ -872,7 +872,7 @@ class Pipeline(object):
             #
             handles=handles["handles"][0,0]
         self.create_from_handles(handles)
-        self.__settings = [self.__capture_module_settings(module)
+        self.__settings = [self.capture_module_settings(module)
                            for module in self.modules(False)]
         self.__undo_stack = []
     
@@ -1071,7 +1071,7 @@ class Pipeline(object):
             self.__image_plane_details = read_image_plane_details(fd)
             
         self.__modules = new_modules
-        self.__settings = [self.__capture_module_settings(module)
+        self.__settings = [self.capture_module_settings(module)
                            for module in self.modules(False)]
         for module in self.modules(False):
             module.post_pipeline_load(self)
@@ -2587,7 +2587,7 @@ class Pipeline(object):
         return module
     
     @staticmethod
-    def __capture_module_settings(module):
+    def capture_module_settings(module):
         '''Capture a module's settings for later undo
         
         module - module in question
@@ -2612,7 +2612,7 @@ class Pipeline(object):
             module.module_num = mn
         self.notify_listeners(ModuleAddedPipelineEvent(
             module_num, is_image_set_modification=is_image_set_modification))
-        self.__settings.insert(idx, self.__capture_module_settings(new_module))
+        self.__settings.insert(idx, self.capture_module_settings(new_module))
         def undo():
             self.remove_module(new_module.module_num)
         self.__undo_stack.append((undo, 
@@ -2645,7 +2645,7 @@ class Pipeline(object):
         idx = module_num - 1
         old_settings = self.__settings[idx]
         module = self.__modules[idx]
-        new_settings = self.__capture_module_settings(module)
+        new_settings = self.capture_module_settings(module)
         self.notify_listeners(ModuleEditedPipelineEvent(
             module_num, is_image_set_modification=is_image_set_modification))
         self.__settings[idx] = new_settings

@@ -12,6 +12,10 @@ unmasked pixels will be measured.
 <li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
 <li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation (MAD) of pixel intensity values.</li>
 <li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
+<li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25%
+ of the pixels in the object have lower values.</li>
+<li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
+ of the pixels in the object have lower values.</li>
 <li><i>TotalArea:</i> Number of pixels measured.</li>
 </ul>
 
@@ -79,8 +83,13 @@ F_TOTAL_AREA = 'Intensity_TotalArea_%s'
 '''Measurement feature name format for the PercentMaximal measurement'''
 F_PERCENT_MAXIMAL = 'Intensity_PercentMaximal_%s'
 
+'''Measurement feature name format for the Quartile measurements'''
+F_UPPER_QUARTILE = 'Intensity_UpperQuartileIntensity_%s'
+F_LOWER_QUARTILE = 'Intensity_LowerQuartileIntensity_%s'
+
 ALL_MEASUREMENTS = ["TotalIntensity", "MeanIntensity", "StdIntensity", "MADIntensity", "MedianIntensity",
-                    "MinIntensity",  "MaxIntensity", "TotalArea", "PercentMaximal"]
+                    "MinIntensity",  "MaxIntensity", "TotalArea", "PercentMaximal", 
+                    "LowerQuartileIntensity","UpperQuartileIntensity"]
 
 class MeasureImageIntensity(cpm.CPModule):
 
@@ -218,6 +227,8 @@ class MeasureImageIntensity(cpm.CPModule):
             pixel_min = 0
             pixel_max = 0
             pixel_pct_max = 0
+            pixel_lower_qrt = 0
+            pixel_upper_qrt = 0
         else:
             pixels = pixels.flatten()
             pixels = pixels[np.nonzero(np.isfinite(pixels))[0]] # Ignore NaNs, Infs
@@ -232,6 +243,10 @@ class MeasureImageIntensity(cpm.CPModule):
             pixel_max = np.max(pixels)
             pixel_pct_max = (100.0 * float(np.sum(pixels == pixel_max)) /
                              float(pixel_count))
+            sorted_pixel_data = sorted(pixels)
+            pixel_lower_qrt = sorted_pixel_data[int(len(sorted_pixel_data)* 0.25)]
+            pixel_upper_qrt = sorted_pixel_data[int(len(sorted_pixel_data)* 0.75)]
+            
         m = workspace.measurements
         m.add_image_measurement(F_TOTAL_INTENSITY%(measurement_name), pixel_sum)
         m.add_image_measurement(F_MEAN_INTENSITY%(measurement_name), pixel_mean)
@@ -242,6 +257,8 @@ class MeasureImageIntensity(cpm.CPModule):
         m.add_image_measurement(F_MIN_INTENSITY%(measurement_name), pixel_min)
         m.add_image_measurement(F_TOTAL_AREA%(measurement_name), pixel_count)
         m.add_image_measurement(F_PERCENT_MAXIMAL % (measurement_name), pixel_pct_max)
+        m.add_image_measurement(F_LOWER_QUARTILE % (measurement_name), pixel_lower_qrt)
+        m.add_image_measurement(F_UPPER_QUARTILE % (measurement_name), pixel_upper_qrt)
         return [[im.image_name.value, 
                  im.object_name.value if im.wants_objects.value else "",
                  feature_name, str(value)]
@@ -253,6 +270,8 @@ class MeasureImageIntensity(cpm.CPModule):
                                             ('Min intensity', pixel_min),
                                             ('Max intensity', pixel_max),
                                             ('Pct maximal', pixel_pct_max),
+                                            ('Lower quartile', pixel_lower_qrt),
+                                            ('Upper quartile', pixel_upper_qrt),
                                             ('Total area', pixel_count))]
     
     def get_measurement_columns(self, pipeline):
@@ -267,7 +286,9 @@ class MeasureImageIntensity(cpm.CPModule):
                                      (F_MIN_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_MAX_INTENSITY, cpmeas.COLTYPE_FLOAT),
                                      (F_TOTAL_AREA, cpmeas.COLTYPE_INTEGER),
-                                     (F_PERCENT_MAXIMAL, cpmeas.COLTYPE_FLOAT)):
+                                     (F_PERCENT_MAXIMAL, cpmeas.COLTYPE_FLOAT),
+                                     (F_LOWER_QUARTILE, cpmeas.COLTYPE_FLOAT),
+                                     (F_UPPER_QUARTILE, cpmeas.COLTYPE_FLOAT)):
                 measurement_name = im.image_name.value + (("_" + im.object_name.value) if im.wants_objects.value else "")
                 columns.append((cpmeas.IMAGE, feature % measurement_name, coltype))
         return columns

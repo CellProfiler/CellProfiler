@@ -1,4 +1,13 @@
 #!/bin/bash
+TGTUSER=imageweb
+TGTHOME=/home/unix/imageweb
+if [ $USER == $TGTUSER ]
+then
+if [ $HOME == $TGTHOME ]
+then
+export HOME=/broad/hptmp/imageweb
+fi
+fi
 
 . /broad/tools/scripts/useuse
 reuse .toolbox-0.11.0

@@ -20,7 +20,8 @@ only processing a single movie in each analysis
 run, you do not need to set up image grouping.
 
 
-For an example pipeline using TrackObjects, see the CellProfiler <a href="http://www.cellprofiler.org/examples.htm">Examples</a> webpage.
+For an example pipeline using TrackObjects, see the CellProfiler 
+<a href="http://www.cellprofiler.org/examples.htm">Examples</a> webpage.
 
 <h4>Available measurements</h4>
 <ul>
@@ -316,8 +317,8 @@ class TrackObjects(cpm.CPModule):
         
         self.radius_limit = cps.FloatRange(
             'Search radius limit, in pixel units (Min,Max)', (2, 10), minval = 0,
-            doc = """<i>(Used only if the LAP tracking method is applied)</i>
-            <br>
+            doc = """<i>(Used only if the LAP tracking method is applied)</i><br>
+            <b>Care must be taken to adjust the upper limit appropriate to the data.</b><br>
             <b>TrackObjects</b> derives a search radius based on the error
             estimation. Potentially, the module can make an erroneous assignment
             with a large error, leading to a large estimated error for
@@ -433,10 +434,13 @@ class TrackObjects(cpm.CPModule):
         self.max_frame_distance = cps.Integer(
             'Maximum gap', 5, minval=1, doc = '''
             <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
+            <b>Care must be taken to adjust this setting appropriate to the data.</b><br>
             This setting controls the maximum number of frames that can
             be skipped when merging a gap caused by an unsegmented object.
             These gaps occur when an image is mis-segmented and identification
-            fails to find an object in one or more frames.''')
+            fails to find an object in one or more frames. The adjustment of
+            this setting depends on image signal-to-noise and the object
+            detection efficacy.''')
         
         self.wants_lifetime_filtering = cps.Binary(
             'Do you want to filter objects by lifetime?', False, doc = '''

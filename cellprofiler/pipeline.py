@@ -601,7 +601,7 @@ class Pipeline(object):
             #
             handles=handles["handles"][0,0]
         self.create_from_handles(handles)
-        self.__settings = [[str(setting) for setting in module.settings()]
+        self.__settings = [self.__capture_module_settings(module)
                            for module in self.modules()]
         self.__undo_stack = []
     
@@ -791,7 +791,7 @@ class Pipeline(object):
                 module_number += 1
 
         self.__modules = new_modules
-        self.__settings = [[str(setting) for setting in module.settings()]
+        self.__settings = [self.__capture_module_settings(module)
                            for module in self.modules()]
         for module in self.modules():
             module.post_pipeline_load(self)
@@ -1842,7 +1842,7 @@ class Pipeline(object):
         idx = module_num - 1
         old_settings = self.__settings[idx]
         module = self.modules()[idx]
-        new_settings = [str(setting) for setting in module.settings()]
+        new_settings = self.__capture_module_settings(module)
         self.notify_listeners(ModuleEditedPipelineEvent(module_num))
         self.__settings[idx] = new_settings
         variable_revision_number = module.variable_revision_number

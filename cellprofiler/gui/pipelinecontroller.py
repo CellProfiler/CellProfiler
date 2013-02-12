@@ -1365,11 +1365,15 @@ class PipelineController:
             if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
                 measurements_file_path = self.get_output_file_path()
                 
+            num_workers = min(
+                len(self.__workspace.measurements.get_image_numbers()),
+                cpprefs.get_max_workers())
             self.__analysis = cpanalysis.Analysis(
                 self.__pipeline, 
                 measurements_file_path,
                 initial_measurements=self.__workspace.measurements)
-            self.__analysis.start(self.analysis_event_handler)
+            self.__analysis.start(self.analysis_event_handler,
+                                  num_workers)
 
         except Exception, e:
             # Catastrophic failure

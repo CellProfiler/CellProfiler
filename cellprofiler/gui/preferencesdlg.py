@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 
 import wx
 import matplotlib.cm
+import sys
 
 import cellprofiler.preferences as cpprefs
 import cellprofiler.gui.help as cphelp
@@ -24,6 +25,16 @@ FILEBROWSE = "FileBrowse"
 FONT = "Font"
 COLOR = "Color"
 CHOICE = "Choice"
+
+class IntegerPreference(object):
+    '''User interface info for an integer preference
+    
+    This signals that a preference should be displayed and edited as
+    an integer, optionally limited by a range.
+    '''
+    def __init__(self, minval = None, maxval = None):
+        self.minval = minval
+        self.maxval = maxval
 
 class PreferencesDlg(wx.Dialog):
     '''Display a dialog for setting preferences
@@ -58,7 +69,8 @@ class PreferencesDlg(wx.Dialog):
         for text, getter, setter, ui_info, help_text in p:
             text_ctl = wx.StaticText(scrollpanel, label=text)
             sizer.Add(text_ctl,(index,0))
-            if getattr(ui_info,"__getitem__",False) and not isinstance(ui_info,str):
+            if (getattr(ui_info, "__getitem__", False) and not 
+                isinstance(ui_info, str)):
                 ctl = wx.ComboBox(scrollpanel, -1, 
                                   choices=ui_info, style=wx.CB_READONLY)
                 ctl.SetStringSelection(getter())
@@ -68,6 +80,15 @@ class PreferencesDlg(wx.Dialog):
             elif ui_info == CHOICE:
                 ctl = wx.CheckBox(scrollpanel, -1)
                 ctl.Value = getter()
+            elif isinstance(ui_info, IntegerPreference):
+                minval = (-sys.maxint if ui_info.minval is None 
+                          else ui_info.minval)
+                maxval = (sys.maxint if ui_info.maxval is None 
+                          else ui_info.maxval)
+                ctl = wx.SpinCtrl(scrollpanel, 
+                                  min = minval,
+                                  max = maxval,
+                                  initial = getter())
             else:
                 ctl = wx.TextCtrl(scrollpanel, -1, getter())
                 min_height = ctl.GetMinHeight()
@@ -205,11 +226,6 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_ij_plugin_directory,
                  cpprefs.set_ij_plugin_directory,
                  DIRBROWSE, cphelp.IJ_PLUGINS_DIRECTORY_HELP],
-                ["ImageJ version",
-                 cpprefs.get_ij_version,
-                 cpprefs.set_ij_version,
-                 (cpprefs.IJ_1, cpprefs.IJ_2),
-                 cphelp.IJ_VERSION_HELP],
                 ["Check for updates", 
                  cpprefs.get_check_new_versions, 
                  cpprefs.set_check_new_versions, 
@@ -248,7 +264,12 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.set_use_more_figure_space,
                  CHOICE,
                  cphelp.USE_MORE_FIGURE_SPACE_HELP
-                ]]
+                ],
+                ['Maximum number of workers',
+                 cpprefs.get_max_workers,
+                 cpprefs.set_max_workers,
+                 IntegerPreference(1, cpprefs.default_max_workers() * 4),
+                 cphelp.MAX_WORKERS_HELP]]
     
     def get_title_font(self):
         return "%s,%f"%(cpprefs.get_title_font_name(),

@@ -19,6 +19,7 @@ Website: http://www.cellprofiler.org
 import logging
 import random
 import cellprofiler
+import multiprocessing
 import os
 import os.path
 import re
@@ -49,8 +50,17 @@ class HeadlessConfig(object):
     def Read(self, kwd):
         return self.__preferences[kwd]
     
+    def ReadInt(self, kwd, default=0):
+        return int(self.__preferences.get(kwd, default))
+    
+    def ReadBool(self, kwd, default=False):
+        return bool(self.__preferences.get(kwd, default))
+    
     def Write(self, kwd, value):
         self.__preferences[kwd] = value
+        
+    WriteInt = Write
+    WriteBool = Write
     
     def Exists(self, kwd):
         return self.__preferences.has_key(kwd)
@@ -281,6 +291,7 @@ OMERO_SERVER = "OmeroServer"
 OMERO_PORT = "OmeroPort"
 OMERO_USER = "OmeroUser"
 OMERO_SESSION_ID = "OmeroSessionId"
+MAX_WORKERS = "MaxWorkers"
 
 '''The preference key for selecting the correct version of ImageJ'''
 IJ_VERSION = "ImageJVersion"
@@ -1067,6 +1078,30 @@ def set_omero_session_id(omero_session_id):
     global __omero_session_id
     __omero_session_id = omero_session_id
     config_write(OMERO_SESSION_ID, omero_session_id)
+
+def default_max_workers():
+    try:
+        return multiprocessing.cpu_count()
+    except:
+        return 4
+    
+__max_workers = None
+def get_max_workers():
+    '''Get the maximum number of worker processes allowed during analysis'''
+    global __max_workers
+    if __max_workers is not None:
+        return __max_workers
+    default = default_max_workers()
+    if config_exists(MAX_WORKERS):
+        __max_workers = get_config().ReadInt(MAX_WORKERS, default)
+        return __max_workers
+    return default
+
+def set_max_workers(value):
+    '''Set the maximum number of worker processes allowed during analysis'''
+    global __max_workers
+    get_config().WriteInt(MAX_WORKERS, value)
+    __max_workers = value
     
 __progress_data = threading.local()
 __progress_data.last_report = time.time()

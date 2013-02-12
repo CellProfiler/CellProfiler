@@ -1267,6 +1267,15 @@ IMAGE_SET_FILE_HELP = """The <i>Image Set File</i> preference is the path
 and file name of the image set file. This file holds the files and metadata
 for each image set in a CellProfiler pipeline iteration."""
 
+MAX_WORKERS_HELP = """The <i>Maximum number of workers</i> preference controls
+the maximum number of copies of CellProfiler that will be started at the outset
+of an analysis run. CellProfiler uses these copies to process multiple image
+sets in parallel, utilizing the computer's CPUs and memory fully. The default
+value is the number of CPUs detected on your computer. Use fewer workers for
+pipelines that require a large amount of memory. Use more workers for
+pipelines that are accessing image data over a slow connection.
+"""
+
 EACH_PREFERENCE_HELP = (
     ( "Title font", TITLE_FONT_HELP ),
     ( "Table font", TABLE_FONT_HELP ),

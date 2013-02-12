@@ -550,4 +550,33 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
         self.assertEqual(
             len(module.get_measurements(None, OBJECT[0], C.C_MATH)), 1)
         self.assertEqual(
-            len(module.get_measurements(None, OBJECT[1], C.C_MATH)), 0)        
+            len(module.get_measurements(None, OBJECT[1], C.C_MATH)), 0)
+
+    def test_11_01_postadd(self):
+        '''Test whether the addend is added to the result'''
+        def fn(module, workspace):
+            module.final_addend.value = 1.5
+        measurements = self.run_workspace(C.O_ADD, True, 5, True, 7, fn)
+        expected = (5 + 7) + 1.5
+        data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
+        self.assertAlmostEqual(data, expected)
+
+    def test_11_02_constrain_lower(self):
+        '''Test whether the lower bound option works'''
+        def fn(module, workspace):
+            module.constrain_lower_bound.value = True
+            module.lower_bound.value = 0
+        measurements = self.run_workspace(C.O_SUBTRACT, True, 5, True, 7, fn)
+        expected = 0
+        data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
+        self.assertAlmostEqual(data, expected)
+        
+    def test_11_03_constrain_upper(self):
+        '''Test whether the upper bound option works'''
+        def fn(module, workspace):
+            module.constrain_upper_bound.value = True
+            module.upper_bound.value = 10
+        measurements = self.run_workspace(C.O_ADD, True, 5, True, 7, fn)
+        expected = 10
+        data = measurements.get_current_measurement(cpmeas.IMAGE, MATH_OUTPUT_MEASUREMENTS)
+        self.assertAlmostEqual(data, expected)

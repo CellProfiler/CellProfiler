@@ -68,7 +68,7 @@ class CalculateMath(cpm.CPModule):
 
     module_name = "CalculateMath"
     category="Data Tools"
-    variable_revision_number = 1
+    variable_revision_number = 2
     
     def create_settings(self):
         #XXX needs to use cps.SettingsGroup
@@ -205,11 +205,24 @@ class CalculateMath(cpm.CPModule):
         self.final_exponent = cps.Float("Raise the power of result by",1,doc="""
                                     <i>(Used only for operations other than None)</i><br>
                                     To what power would you like to raise the result?""")
-            
+
+        self.final_addend = cps.Float("Add to the result",0,doc=""" """)
+
+        self.constrain_lower_bound = cps.Binary("Constrain the result to a lower bound?",False,doc="""
+                                            Check this if you want the result to be constrained to a lower bound.""")
+
+        self.lower_bound = cps.Float("Set values less than this to this value?",0,doc="""""")
+
+        self.constrain_upper_bound = cps.Binary("Constrain the result to an upper bound?",False,doc="""
+                                            Check this if you want the result to be constrained to an upper bound.""")
+
+        self.upper_bound = cps.Float("Set values greater than this to this value?",1,doc="""""")
+        
     def settings(self):
         result = [self.output_feature_name, self.operation] 
         result += self.operands[0].settings() + self.operands[1].settings()
-        result += [self.wants_log, self.final_multiplicand, self.final_exponent]
+        result += [self.wants_log, self.final_multiplicand, self.final_exponent, self.final_addend]
+        result += [self.constrain_lower_bound, self.lower_bound, self.constrain_upper_bound, self.upper_bound]
         
         return (result)
 
@@ -241,6 +254,13 @@ class CalculateMath(cpm.CPModule):
         result += [self.wants_log]
         if self.operation != O_NONE:
             result += [self.final_multiplicand, self.final_exponent]
+        result += [self.final_addend]
+        result += [self.constrain_lower_bound]
+        if self.constrain_lower_bound:
+            result += [self.lower_bound]
+        result += [self.constrain_upper_bound]
+        if self.constrain_upper_bound:
+            result += [self.upper_bound]
 
         return (result)
         
@@ -256,7 +276,7 @@ class CalculateMath(cpm.CPModule):
         all_object_names = list(set([operand.operand_objects.value
                                      for operand in self.get_operands()
                                      if operand.object != cpmeas.IMAGE]))
-        all_operands = self.operands
+        all_operands = self.get_operands()
         
         for operand in all_operands:
             value = m.get_current_measurement(operand.object,operand.operand_measurement.value)
@@ -340,15 +360,16 @@ class CalculateMath(cpm.CPModule):
                                             else None)
             if not all_image_measurements:
                 result = [result] * len(all_object_names)
-        
+       
         feature = self.measurement_name()
         if all_image_measurements:
             m.add_image_measurement(feature, result)
         else:
             for object_name, r in zip(all_object_names, result):
                 m.add_measurement(object_name, feature, r)
-            result = result[0]
                 
+            result = result[0]
+            
         if workspace.frame is not None:
             workspace.display_data.statistics = [("Measurement name","Measurement type","Result")]
             workspace.display_data.statistics += [(self.output_feature_name.value, 
@@ -387,6 +408,22 @@ class CalculateMath(cpm.CPModule):
             result *= self.final_multiplicand.value
             # Handle NaNs with np.power instead of **
             result = np.power(result, self.final_exponent.value)
+        result += self.final_addend.value
+
+        if self.constrain_lower_bound:
+            if np.isscalar(result):
+                if result < self.lower_bound.value:
+                    result = self.lower_bound.value
+            else:
+                result[result < self.lower_bound.value] = self.lower_bound.value
+
+        if self.constrain_upper_bound:
+            if np.isscalar(result):
+                if result > self.upper_bound.value:
+                    result = self.upper_bound.value
+            else:
+                result[result > self.upper_bound.value] = self.upper_bound.value
+        
         return result
         
     def run_as_data_tool(self, workspace):
@@ -512,5 +549,10 @@ class CalculateMath(cpm.CPModule):
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
+        if (not from_matlab and variable_revision_number == 1):
+            # Added a final addition number as well as options to constrain
+            # the result to an upper and/or lower bound.
+            setting_values += ["0", cps.NO, "0", cps.NO, "1"]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 

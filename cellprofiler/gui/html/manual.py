@@ -195,3 +195,94 @@ def output_module_html(webpage_path):
     help_text += "</ul>\n"
     return help_text
         
+def search_module_help(text):
+    '''Search the help for a string
+    
+    text - find text in the module help using case-insensitive matching
+    
+    returns an html document of all the module help pages that matched or
+            None if no match found.
+    '''
+    matching_help = []
+    count = 0
+    for module_name in get_module_names():
+        module = instantiate_module(module_name)
+        location = os.path.split(
+            module.create_settings.im_func.func_code.co_filename)[0]
+        if location == cpprefs.get_plugin_directory():
+            continue
+        help_text = module.get_help()
+        find_count = 0
+        pos = 0
+        while True:
+            pos = help_text.lower().find(text.lower(), pos)
+            if pos < 0:
+                break
+            find_count += 1
+            pos = pos + len(text)
+        if find_count > 0:
+            matching_help.append((module_name,  help_text))
+            count += find_count
+    if len(matching_help) == 0:
+        return None
+    top = """<html style="font-family:arial">
+    <head><title>%s found</title></head>
+    <body><h1>Matches found</h1><br><ul>
+    """ % ("1 match" if len(matching_help) == 1 else "%d matches" % len(matching_help))
+    body = "<br>"
+    match_num = 1
+    for module_name, help_text in matching_help:
+        top += """<li><a href="#match%d">%s</a></li>\n""" % (
+            match_num, module_name)
+        start = help_text.find("<body>") + len("<body>")
+        end = help_text.find("</body>")
+        help_text = help_text[start:end]
+        lc_help_text = help_text.lower()
+        start = 0
+        while True:
+            pos = lc_help_text.find(text.lower(), start)
+            if pos < 0:
+                break
+            next_start = pos + len(text)
+            body += help_text[start:pos]
+            if match_num > 1:
+                body += """<a href="#match%d" title="Previous match">&lt;</a>""" % (match_num - 1)
+            body += """<a name="match%d"><u>%s</u></a>""" % (
+                match_num, help_text[pos:next_start])
+            if match_num != count:
+                body += """<a href="#match%d" title="Next match">&gt;</a>""" % (match_num + 1)
+            start = next_start
+            match_num += 1
+        body += help_text[start:] + "<br>"
+    result = "%s</ul><br>\n%s</body></html>" % (top, body)
+    return result
+
+if __name__ == "__main__":
+    import wx
+    import wx.html
+    app = wx.PySimpleApp(True)
+    frame = wx.Frame(None, title="Search the help")
+    frame.Sizer = wx.BoxSizer(wx.VERTICAL)
+    search_sizer = wx.BoxSizer(wx.HORIZONTAL)
+    frame.Sizer.Add(search_sizer, 0, wx.EXPAND | wx.ALL, 5)
+    search_sizer.Add(wx.StaticText(frame, label="Search:"), 0, wx.ALIGN_LEFT)
+    search_sizer.AddSpacer(2)
+    text = wx.TextCtrl(frame)
+    search_sizer.Add(text, 1, wx.EXPAND)
+    search_sizer.AddSpacer(2)
+    button = wx.Button(frame, label="Search")
+    search_sizer.Add(button, 0, wx.EXPAND)
+    
+    htmlwindow = wx.html.HtmlWindow(frame)
+    frame.Sizer.Add(htmlwindow, 1, wx.EXPAND)
+    
+    def do_search(event):
+        search_text = text.Value
+        html = search_module_help(search_text)
+        if html is None:
+            html = "<html><header><title>%s not found</title><header><body>So sorry, %s not found</body></html>" % (search_text, search_text)
+        htmlwindow.SetPage(html)
+    button.Bind(wx.EVT_BUTTON, do_search)
+    frame.Layout()
+    frame.Show()
+    app.MainLoop()

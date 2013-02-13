@@ -11,6 +11,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
+import re
 import sys
 import os
 import cellprofiler.icons
@@ -204,7 +205,11 @@ def search_module_help(text):
             None if no match found.
     '''
     matching_help = []
-    count = 0
+    for item in MAIN_HELP:
+        matching_help += __search_menu_helper(
+            item, lambda x:__search_fn(x, text))
+    count = sum([len(x[2]) for x in matching_help])
+    
     for module_name in get_module_names():
         module = instantiate_module(module_name)
         location = os.path.split(
@@ -212,17 +217,10 @@ def search_module_help(text):
         if location == cpprefs.get_plugin_directory():
             continue
         help_text = module.get_help()
-        find_count = 0
-        pos = 0
-        while True:
-            pos = help_text.lower().find(text.lower(), pos)
-            if pos < 0:
-                break
-            find_count += 1
-            pos = pos + len(text)
-        if find_count > 0:
-            matching_help.append((module_name,  help_text))
-            count += find_count
+        matches = __search_fn(help_text, text)
+        if len(matches) > 0:
+            matching_help.append((module_name, help_text, matches))
+            count += len(matches)
     if len(matching_help) == 0:
         return None
     top = """<html style="font-family:arial">
@@ -231,31 +229,81 @@ def search_module_help(text):
     """ % ("1 match" if len(matching_help) == 1 else "%d matches" % len(matching_help))
     body = "<br>"
     match_num = 1
-    for module_name, help_text in matching_help:
+    prev_link = '<a href="#match%d" title="Previous match">&lt;</a>'
+    anchor = '<a name="match%d"><u>%s</u></a>'
+    next_link = '<a href="#match%d" title="Next match">&gt;</a>'
+    for title, help_text, pairs in matching_help:
         top += """<li><a href="#match%d">%s</a></li>\n""" % (
-            match_num, module_name)
-        start = help_text.find("<body>") + len("<body>")
-        end = help_text.find("</body>")
-        help_text = help_text[start:end]
-        lc_help_text = help_text.lower()
-        start = 0
-        while True:
-            pos = lc_help_text.find(text.lower(), start)
-            if pos < 0:
-                break
-            next_start = pos + len(text)
-            body += help_text[start:pos]
+            match_num, title)
+        start_match = re.search(r"<\s*body[^>]*?>", help_text, re.IGNORECASE)
+        if start_match is None:
+            start = 0
+        else:
+            start = start_match.end()
+        end_match = re.search(r"<\\\s*body", help_text, re.IGNORECASE)
+        if end_match is None:
+            end = len(help_text)
+        else:
+            end = end_match.start()
+            
+        for begin_pos, end_pos in pairs:
+            body += help_text[start:begin_pos]
             if match_num > 1:
-                body += """<a href="#match%d" title="Previous match">&lt;</a>""" % (match_num - 1)
-            body += """<a name="match%d"><u>%s</u></a>""" % (
-                match_num, help_text[pos:next_start])
+                body += prev_link % (match_num - 1)
+            body += anchor % (match_num, help_text[begin_pos:end_pos])
             if match_num != count:
-                body += """<a href="#match%d" title="Next match">&gt;</a>""" % (match_num + 1)
-            start = next_start
+                body += next_link % (match_num + 1)
+            start = end_pos
             match_num += 1
-        body += help_text[start:] + "<br>"
+        body += help_text[start:end] + "<br>"
     result = "%s</ul><br>\n%s</body></html>" % (top, body)
     return result
+
+def __search_fn(html, text):
+    '''Find begin-end coordinates of case-insensitive matches in html
+    
+    html - an HTML document
+    
+    text - a search string
+    
+    Find the begin and end indices of case insensitive matches of "text"
+    within the text-data of the HTML, searching only in its body and excluding
+    text in the HTML tags.
+    '''
+    start_match = re.search(r"<\s*body[^>]*?>", html, re.IGNORECASE)
+    if start_match is None:
+        start = 0
+    else:
+        start = start_match.end()
+    end_match = re.search(r"<\\\s*body", html, re.IGNORECASE)
+    if end_match is None:
+        end = len(html)
+    else:
+        end = end_match.start()
+    pattern = "(<[^>]*?>|%s)" % re.escape(text)
+    return [(x.start()+start, x.end()+start)
+            for x in re.finditer(pattern, html[start:end], re.IGNORECASE)
+            if x.group(1)[0] != '<']
+    
+def __search_menu_helper(menu, search_fn):
+    '''Search a help menu for text
+    
+    menu - a menu in the style of MAIN_HELP. A leaf is a two-tuple composed
+           of a title string and its HTML help. Non-leaf branches are two-tuples
+           of titles and tuples of leaves and branches.
+           
+    search_fn - given a string, returns a list of begin-end tuples of search
+                matches within that string.
+                
+    returns a list of three-tuples. The first item is the title. The second is
+    the html help. The third is a list of begin-end tuples of matches found.
+    '''
+    if len(menu) == 2 and all([isinstance(x, basestring) for x in menu]):
+        matches = search_fn(menu[1])
+        if len(matches) > 0:
+            return [(menu[0], menu[1], matches)]
+        return []
+    return sum(map(lambda x:__search_menu_helper(x, search_fn), menu[1]), [])
 
 if __name__ == "__main__":
     import wx

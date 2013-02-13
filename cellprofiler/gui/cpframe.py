@@ -96,6 +96,7 @@ ID_WINDOW_ALL = (ID_WINDOW_CLOSE_ALL, ID_WINDOW_SHOW_ALL_WINDOWS,
 window_ids = []
 
 ID_HELP_MODULE = wx.NewId()
+ID_HELP_SEARCH = wx.NewId()
 ID_HELP_DATATOOLS = wx.NewId()
 ID_HELP_ONLINE_MANUAL = wx.NewId()
 ID_HELP_DEVELOPERS_GUIDE = wx.NewId()
@@ -234,6 +235,7 @@ class CPFrame(wx.Frame):
         self.__set_icon()
         self.__layout_logo()
         self.__do_layout()
+        self.__make_search_frame()
         self.__error_listeners = []
         self.Bind(wx.EVT_SIZE,self.__on_size,self)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
@@ -308,6 +310,8 @@ class CPFrame(wx.Frame):
         self.__workspace.measurements.flush()
         self.__preferences_view.close()
         self.pipeline_controller.on_close()
+	self.search_frame.Destroy()
+	self.search_frame = None
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
@@ -390,6 +394,8 @@ class CPFrame(wx.Frame):
         make_help_menu(MAIN_HELP, self, self.__menu_help)
         self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data Tool Help','Display documentation for available data tools')
         self.__menu_help.Append(ID_HELP_MODULE,'Module Help','Display Documentation for the Current Module')
+	self.__menu_help.Append(ID_HELP_SEARCH, "Search help",
+	                        "Search for help pages that match a search term.")
         self.__menu_help.AppendSeparator()
         self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's Guide",
                                 "Launch the developer's guide webpage")
@@ -418,6 +424,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_HELP_ONLINE_MANUAL,self.__on_help_online_manual)
         wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
+	wx.EVT_MENU(self, ID_HELP_SEARCH, self.__on_search_help)
         wx.EVT_MENU(self, ID_HELP_ABOUT, self.__on_help_about)
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self,ID_CHECK_NEW_VERSION, self.__on_check_new_version)
@@ -824,6 +831,73 @@ All rights reserved."""
 
     def __set_icon(self):
         self.SetIcon(get_cp_icon())
+        
+    def __make_search_frame(self):
+        '''Make and hide the "search the help" frame'''
+        background_color = cpprefs.get_background_color()
+	size = (wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
+	        wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2)
+        self.search_frame = wx.Frame(
+            self, title = "Search CellProfiler help",
+	    size = size,
+            style = wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
+	self.search_frame.AutoLayout = True
+        self.search_frame.SetIcon(get_cp_icon())
+        self.search_frame.Sizer = wx.BoxSizer(wx.VERTICAL)
+        self.search_frame.BackgroundColour = background_color
+        sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.search_frame.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 4)
+        sizer.Add(wx.StaticText(self.search_frame, label = "Search:"), 0,
+                  wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+        sizer.AddSpacer(2)
+        search_text_ctrl = wx.TextCtrl(self.search_frame)
+        sizer.Add(search_text_ctrl, 1, wx.EXPAND)
+        search_button = wx.Button(self.search_frame, label = "Search")
+	search_button.SetDefault()
+        sizer.AddSpacer(2)
+        sizer.Add(search_button, 0, wx.EXPAND)
+        
+        html_window = wx.html.HtmlWindow(self.search_frame)
+        self.search_frame.Sizer.Add(html_window, 1, wx.EXPAND | wx.ALL, 4)
+        def on_search(event):
+            from cellprofiler.gui.html.manual import search_module_help
+	    search_text = search_text_ctrl.Value
+            html = search_module_help(search_text)
+            if html is None:
+		so_sorry = """<html>
+		<header><title>"%s" not found in help</title></header>
+		<body>Could not find "%s" in CellProfiler's help documentation</body>
+		</html>""" % (search_text, search_text)
+                html_window.SetPage(so_sorry)
+	    else:
+		html_window.SetPage(html)
+	search_button.Bind(wx.EVT_BUTTON, on_search)
+	def on_link_clicked(event):
+	    '''Handle anchor clicks manually
+	    
+	    The HTML window (on Windows at least) jams the anchor to the
+	    top of the window which obscures it.
+	    '''
+	    linkinfo = event.GetLinkInfo()
+	    if linkinfo.GetHref()[0] != "#":
+		event.Skip()
+		return
+	    html_window.ScrollToAnchor(linkinfo.GetHref()[1:])
+	    html_window.ScrollLines(-1)
+	    
+	html_window.Bind(wx.html.EVT_HTML_LINK_CLICKED, on_link_clicked)
+	def on_close(event):
+	    assert isinstance(event, wx.CloseEvent)
+	    self.search_frame.Hide()
+	    event.Veto()
+	    
+	self.search_frame.Bind(wx.EVT_CLOSE, on_close)
+	self.search_frame.Layout()
+	
+    def __on_search_help(self, event):
+	if self.search_frame is not None:
+	    self.search_frame.Show()
+	    self.search_frame.Raise()
 
     def __on_size(self, event):
         self.Layout()

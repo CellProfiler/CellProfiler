@@ -202,26 +202,7 @@ class HDF5Dict(object):
                 self.indices = {}  # nested indices for data slices, indexed by (object, feature) then by numerical index
             else:
                 self.version = self.hdf5_file[VERSION][0]
-                #
-                # Populate self.indices
-                #
                 self.indices = {}
-                for object_name in self.top_group.keys():
-                    object_group = self.top_group[object_name]
-                    if not isinstance(object_group, h5py.Group):
-                        continue
-                    for feature_name in object_group.keys():
-                        feature_group = object_group[feature_name]
-                        if not isinstance(feature_group, h5py.Group):
-                            continue
-                        if "index" not in feature_group:
-                            # All entries for feature are None
-                            self.indices[object_name, feature_name] = {}
-                        else:
-                            self.indices[object_name, feature_name] = dict([
-                                (object_number, slice(start, end))
-                                for object_number, start, end 
-                                in feature_group["index"][:]])
                     
             self.lock = HDF5Lock()
                     
@@ -372,7 +353,7 @@ class HDF5Dict(object):
         feature_exists = self.has_feature(object_name, feature_name)
         assert feature_exists
         with self.lock:
-            indices = self.indices[(object_name, feature_name)]
+            indices = self.get_indices(object_name, feature_name)
             dataset = self.get_dataset(object_name, feature_name)
             if dataset is None or dataset.shape[0] == 0:
                 return [np.array([]) for image_number in num_idx]
@@ -496,7 +477,7 @@ class HDF5Dict(object):
             feature_group = self.top_group[object_name][feature_name]
             dataset = feature_group['data']
             index_set = feature_group['index']
-            indices = self.indices[object_name, feature_name]
+            indices = self.get_indices(object_name, feature_name)
             assert isinstance(dataset, h5py.Dataset)
             assert isinstance(index_set, h5py.Dataset)
             if all_null:
@@ -568,13 +549,13 @@ class HDF5Dict(object):
             return
 
         with self.lock:
-            del self.indices[object_name, feature_name][num_idx]
+            del self.get_indices(object_name, feature_name)[num_idx]
             # reserved value of -1 means deleted
             idx = self.top_group[object_name][feature_name]['index']
             idx[np.flatnonzero(idx[:, 0] == num_idx), 0] = -1
             
     def has_data(self, object_name, feature_name, num_idx):
-        return num_idx in self.indices.get((object_name, feature_name), [])
+        return num_idx in self.get_indices(object_name, feature_name)
 
     def get_dataset(self, object_name, feature_name):
         with self.lock:
@@ -589,7 +570,10 @@ class HDF5Dict(object):
             object_group = self.top_group.require_group(object_name)
 
     def has_feature(self, object_name, feature_name):
-        return (object_name, feature_name) in self.indices
+        if (object_name, feature_name) in self.indices:
+            return True
+        return (self.has_object(object_name) and 
+                feature_name in self.top_group[object_name])
 
     def add_feature(self, object_name, feature_name):
         with self.lock:
@@ -608,17 +592,17 @@ class HDF5Dict(object):
             self.level1_indices[object_name].pop(first_idx, None)
 
     def get_indices(self, object_name, feature_name):
-        # CellProfiler expects these in write order
-        if not (self.has_object(object_name) and 
-                self.has_feature(object_name, feature_name)):
-            return []
-        with self.lock:
-            if 'index' in self.top_group[object_name][feature_name]:
-                idxs = self.top_group[object_name][feature_name]['index'][:, 0][:]
-                return idxs[idxs != -1]
-            else:
-                return []
-
+        result = self.indices.get((object_name, feature_name), None)
+        if result is None:
+            if not self.has_feature(object_name, feature_name):
+                return {}
+            result = dict(
+                [(index_number, slice(start, stop))
+                 for index_number, start, stop
+                 in self.top_group[object_name][feature_name]['index'][:, :]])
+            self.indices[object_name, feature_name] = result
+        return result
+            
     def top_level_names(self):
         with self.lock:
             return self.top_group.keys()
@@ -642,7 +626,8 @@ class HDF5Dict(object):
             self.add_object(object_name)
             if self.has_feature(object_name, feature_name):
                 del self.top_group[object_name][feature_name]
-                del self.indices[object_name, feature_name]
+                if self.indices.has_key((object_name, feature_name)):
+                    del self.indices[object_name, feature_name]
             self.add_feature(object_name, feature_name)
             if len(values) > 0 and (
                 np.isscalar(values[0]) or values[0] is None):

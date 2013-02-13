@@ -611,7 +611,7 @@ class Measurements(object):
     def get_image_numbers(self):
         '''Return the image numbers from the Image table'''
         image_numbers = np.array(
-            self.hdf5_dict.get_indices(IMAGE, IMAGE_NUMBER), int)
+            self.hdf5_dict.get_indices(IMAGE, IMAGE_NUMBER).keys(), int)
         image_numbers.sort()
         return image_numbers
     

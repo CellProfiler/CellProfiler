@@ -1,16 +1,4 @@
 #!/usr/bin/env ./python-2.6.sh
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2013 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
 #
 # Start a batch operation from a web page
 #
@@ -21,23 +9,21 @@ print "\r"
 import sys
 import cgi
 import os
+import numpy as np
 import traceback
 import urllib
 import cellprofiler.preferences
 cellprofiler.preferences.set_headless()
-import cellprofiler.modules
-import cellprofiler.pipeline as cpp
-import cellprofiler.cpimage as cpi
-import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
-from cellprofiler.modules.createbatchfiles import F_BATCH_DATA, CreateBatchFiles
+from cellprofiler.modules.createbatchfiles import F_BATCH_DATA_H5
 import RunBatch
 import email.message
 import email.mime.text
 import socket
+from cStringIO import StringIO
 
 SENDMAIL="/usr/sbin/sendmail"
-batch_url = "http://%s/batchprofiler/cgi-bin/development/CellProfiler_2.0/ViewBatch.py"%(socket.gethostname())
+batch_url = "http://%s/batchprofiler/cgi-bin/FileUI/CellProfiler/BatchProfiler/ViewBatch.py"%(socket.gethostname())
 
 form_data = cgi.FieldStorage()
 myself = os.path.split(__file__)[1]
@@ -144,37 +130,22 @@ keys = { 'data_dir':lookup('data_dir', '/imaging/analysis'),
          'url':myself
          }
 
-batch_file = os.path.join(keys['data_dir'], F_BATCH_DATA)
-grouping_keys = None
+batch_file = os.path.join(keys['data_dir'], F_BATCH_DATA_H5)
+has_image_sets = False
 error_message = None
 if os.path.exists(batch_file):
-    pipeline = cpp.Pipeline()
+    print "<div>Found %s</div>" % batch_file
     print "<span style='visibility:hidden'>"
     try:
-        had_problem = [False]
-        def error_callback(event, caller):
-            if (isinstance(event, cpp.LoadExceptionEvent) or
-                isinstance(event, cpp.RunExceptionEvent)):
-                sys.stderr.write("Handling exception: %s\n"%str(event))
-                sys.stderr.write(traceback.format_exc())
-                had_problem = [True]
-        pipeline.add_listener(error_callback)
-        pipeline.load(batch_file)
-        if had_problem[0]:
-            raise RuntimeError("Failed to load batch file")
-        image_set_list = cpi.ImageSetList()
-        measurements = cpmeas.Measurements()
-        workspace = cpw.Workspace(pipeline, None, None, None, measurements,
-                                  image_set_list)
-        pipeline.prepare_run(workspace)
-        if had_problem[0]:
-            raise RuntimeError("Failed to prepare batch file")
-        grouping_keys, groups = pipeline.get_groupings(image_set_list)
-        svn_revision = None
-        for module in pipeline.modules():
-            if isinstance(module,CreateBatchFiles):
-                svn_revision = module.revision.value
-                break
+        measurements = cpmeas.Measurements(filename=batch_file, mode="r")
+        image_numbers = measurements.get_image_numbers()
+        if measurements.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
+            group_numbers = measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_numbers]
+            group_indexes = measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_numbers]
+            has_groups = len(np.unique(group_numbers)) > 1
+        else:
+            has_groups = False
+        has_image_sets = True
     except:
         error_message = "Failed to open %s\n%s" % (batch_file, traceback.format_exc())
         error_message = error_message.replace("\n","<br/>")
@@ -182,7 +153,7 @@ if os.path.exists(batch_file):
     
 if (form_data.has_key('submit_batch') and 
     form_data['submit_batch'].value == 'yes' and
-    grouping_keys is not None):
+    has_image_sets):
     #
     # Submit the batch according to the directions
     #
@@ -200,24 +171,27 @@ if (form_data.has_key('submit_batch') and
         "batch_file":    batch_file,
         "runs":          []
     }
-    if len(grouping_keys):
-        for grouping, image_numbers in groups:
-            start = min(image_numbers)
-            end = max(image_numbers)
+    if has_groups:
+        # Has grouping
+        first_last = np.hstack([[True], group_numbers[1:] != group_numbers[:-1], [True]])
+        gn = group_numbers[first_last[:-1]]
+        first = image_numbers[first_last[:-1]]
+        last = image_numbers[first_last[1:]]
+        for g, start, end in zip(gn, first, last):
             status_file_name = ("%s/status/Batch_%d_to_%d_DONE.mat"%
                                 (batch["data_dir"], start, end))
             run = { "start": start,
                     "end": end,
-                    "group": grouping,
+                    "group": None,
                     "status_file_name":status_file_name}
             batch["runs"].append(run)
     else:
         batch_size = 10
         if form_data.has_key("batch_size"):
             batch_size = int(form_data["batch_size"].value)
-        for i in range(1,image_set_list.count()+1,batch_size):
+        for i in image_numbers[::batch_size]:
             start = i
-            end = min(start + batch_size -1,image_set_list.count())
+            end = min(start + batch_size -1, max(image_numbers))
             status_file_name = ("%s/status/Batch_%d_to_%d_DONE.mat"%
                                 (batch["data_dir"], start, end))
             run = { "start": start,
@@ -287,15 +261,10 @@ td {
 <h1>Results for batch # <a href='ViewBatch.py?batch_id=%(batch_id)d'>%(batch_id)d</a></h1>
 <table>
 <thead><tr><th>First image set</th><th>Last image set</th>'''%(locals())
-    for key in grouping_keys:
-        print '<th>%s</th>'%key
-        
     print '<th>job #</th></tr></thead>'
     
     for i,result in enumerate(results):
         print "<tr><td>%(start)d</td><td>%(end)d</td>"%(result)
-        for key in grouping_keys:
-            print "<td>%s</td>"% groups[i][0][key]
         print "<td>%(job)d</td></tr>"%(result)
     print "</table></body></html>"
     sys.exit()
@@ -330,9 +299,24 @@ parent.location = url+"#input_"+key
     <body>
     <H1>CellProfiler 2.0 Batch submission</H1>
     <div>
-    Submit a %(F_BATCH_DATA)s file created by CellProfiler 2.0. You need to
+    <p>There are several different types of batch files that CellProfiler can 
+    generate, depending on the version of CellProfiler used: 
+    <ul>
+    <li>MAT file produced by CellProfiler svn revision 11310 or lower <b>OR</b> release 11710 and earlier: Use the 
+    website, <a href="http://imagingweb.broadinstitute.org/batchprofiler/cgi-bin/development/CellProfiler_2.0/NewBatch.py">
+    http://imagingweb.broadinstitute.org/batchprofiler/cgi-bin/development/CellProfiler_2.0/NewBatch.py</a>.</li>
+    <li>HDF5 file produced CellProfiler svn revision 11311 or above (e.g., trunk builds): Use the 
+    website, <a href="http://imagingweb.broadinstitute.org/batchprofiler/cgi-bin/CellProfiler2.0/CellProfiler/BatchProfiler/NewBatch.py">
+    http://imagingweb.broadinstitute.org/batchprofiler/cgi-bin/CellProfiler2.0/CellProfiler/BatchProfiler/NewBatch.py</a>.</li>
+    <li>HDF5 file produced by the CellProfiler FileUI branch: Use the
+    website, <a href="http://imagingweb.broadinstitute.org/batchprofiler/cgi-bin/FileUI/CellProfiler/BatchProfiler/NewBatch.py">
+    http://imagingweb.broadinstitute.org/batchprofiler/cgi-bin/FileUI/CellProfiler/BatchProfiler/NewBatch.py</a></li>
+    </ul></p>
+    <p>For details on the settings below and for general help on submitting a CellProfiler job to the LSF, please see this
+    <a href="http://dev.broadinstitute.org/imaging/privatewiki/index.php/How_To_Use_BatchProfiler">page</a>.</p>
+    Submit a %(F_BATCH_DATA_H5)s file created by CellProfiler 2.0. You need to
     specify the default output folder, which should contain your
-    Batch_data file and the default input folder for the pipeline. In
+    Batch_data file for the pipeline. In
     addition, there are some parameters that tailor how the batch is run.
     </div>
     '''%(globals())
@@ -378,33 +362,24 @@ for filename in vdirs:
 print '''</select> (at /imaging/analysis/CPCluster/CellProfiler-2.0/)</td></tr></table>'''
 show_directory('data_dir','Data output directory',keys['data_dir'], 
                minus_key(keys,'data_dir'))
-if grouping_keys is not None:
+if has_image_sets:
     print '''<div><input type='submit' value='Submit batch'/></div>'''
-    if len(grouping_keys):
+    if has_groups:
+        group_counts = np.bincount(group_numbers)
         print '<h2>Groups</h2>'
         print '<table><tr>'
-        for key in grouping_keys:
-            print '<th>%s</th>'%key
+        print '<th>Group #</th>'
         print '<th># of image sets</th></tr>'
-        for group in groups:
+        for group_number in sorted(np.unique(group_numbers)):
             print '<tr>'
-            for key in grouping_keys:
-                print '<td>%s</td>'%group[0][key]
-            print '<td>%d</td></tr>'%len(group[1])
+            print '<td>%d</td><td>%d</td></tr>'%(group_number, group_counts[group_number])
         print '</table>'
-    else:
-        print '<div>Batch_data.mat has %d image sets</div>'%image_set_list.count()
-        if svn_revision is not None:
-            print '<div>It was saved using CellProfiler SVN revision # %d</div>'%(svn_revision)
+    else:    
+        print '<div>%s has %d image sets</div>'%(F_BATCH_DATA_H5, len(image_numbers))
 elif error_message is not None:
     print error_message
 else:
-    print 'Directory does not contain a Batch_data.mat file'
+    print 'Directory does not contain a %s file' % F_BATCH_DATA_H5
 print '</form>'
 print '</body></html>'
-try:
-    import cellprofiler.utilities.jutil as jutil
-    jutil.kill_vm()
-except:
-    import traceback
-    traceback.print_exc()
+

@@ -480,10 +480,14 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 output_image_provider.serialize(d)
 
             # fetch images for display
-            avg_image = output_image_provider.provide_avg_image()
-            dilated_image = output_image_provider.provide_dilated_image()
-            workspace.image_set.providers.append(output_image_provider)
-            output_image = output_image_provider.provide_image(workspace.image_set)
+            if (workspace.display or self.save_average_image or 
+                self.save_dilated_image):
+                avg_image = output_image_provider.provide_avg_image()
+                dilated_image = output_image_provider.provide_dilated_image()
+                workspace.image_set.providers.append(output_image_provider)
+                output_image = output_image_provider.provide_image(workspace.image_set)
+            else:
+                workspace.image_set.providers.append(output_image_provider)
         else:
             orig_image = workspace.image_set.get_image(self.image_name.value)
             pixels = orig_image.pixel_data

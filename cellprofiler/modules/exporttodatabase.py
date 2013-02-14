@@ -296,6 +296,12 @@ class ExportToDatabase(cpm.CPModule):
             <a href="http://www.sqlite.org/">here</a>. </li>
             </ul>""")
         
+        self.test_connection_button = cps.DoSomething(
+            "Press this button to test the connection to the remote server using the current settings",
+            "Test connection", self.test_connection,
+            doc = """This button test the connection to MySQL server specified using
+            the settings entered by the user.""")
+        
         self.db_name = cps.Text(
             "Database name", "DefaultDB",doc = """
             Select a name for the database you want to use""")
@@ -942,6 +948,7 @@ class ExportToDatabase(cpm.CPModule):
                 result += [self.db_host]
                 result += [self.db_user]
                 result += [self.db_passwd]
+                result += [self.test_connection_button]
         elif self.db_type == DB_MYSQL_CSV:
             result += [self.sql_file_prefix]
             result += [self.db_name]
@@ -1206,6 +1213,29 @@ class ExportToDatabase(cpm.CPModule):
             if mismatched_objs:
                 raise cps.ValidationError("%s is not in a 1:1 relationship with the other selected objects. Either de-select the object or choose another object container."%",".join(mismatched_objs),self.separate_object_tables)
             
+    def test_connection(self):
+        '''Check to make sure the MySQL server is remotely accessible'''
+        import wx
+        
+        error = None
+        try:
+            connection = connect_mysql(self.db_host.value, 
+                                        self.db_user.value, 
+                                        self.db_passwd.value,
+                                        self.db_name.value)
+        except MySQLdb.Error, error:
+            if error.args[0] == 1045:
+                msg = "Incorrect username or password"
+            elif error.args[0] == 1049:
+                msg = "The database does not exist."
+            else:
+                msg = "A connection error to the database host was returned: %s"%error.args[1]         
+        
+        if not error:
+            wx.MessageBox("Connection to database host successful.")
+        else:
+            wx.MessageBox("%s. Please check your settings."%msg)
+    
     def make_full_filename(self, file_name, 
                            workspace = None, image_set_index = None):
         """Convert a file name into an absolute path

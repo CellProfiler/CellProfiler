@@ -504,10 +504,11 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         if self.save_dilated_image.value:
             workspace.image_set.add(self.dilated_image_name.value, 
                                     dilated_image)
-        # store images for potential display
-        workspace.display_data.avg_image = avg_image
-        workspace.display_data.dilated_image = dilated_image
-        workspace.display_data.output_image = output_image
+        if workspace.display:
+            # store images for potential display
+            workspace.display_data.avg_image = avg_image
+            workspace.display_data.dilated_image = dilated_image
+            workspace.display_data.output_image = output_image
         
     def post_group(self, workspace, grouping):
         '''Handle tasks to be performed after a group has been processed

@@ -577,6 +577,14 @@ class HDF5Dict(object):
             feature_group = self.top_group[object_name].require_group(feature_name)
             self.indices.setdefault((object_name, feature_name), {})
             
+    def get_feature_dtype(self, object_name, feature_name):
+        '''Return the dtype of a feature as represented in the HDF dataset
+        
+        object_name - name of object
+        feature_name - name of feature
+        '''
+        return self.top_group[object_name][feature_name]['data'].dtype
+            
     def clear(self):
         with self.lock:
             for object_name in self.top_level_names():

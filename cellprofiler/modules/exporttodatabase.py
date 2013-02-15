@@ -116,6 +116,9 @@ C_IMAGE_NUMBER = "ImageNumber"
 C_OBJECT_NUMBER = "ObjectNumber"
 D_IMAGE_SET_INDEX = "ImageSetIndex"
 
+'''The thumbnail category'''
+C_THUMBNAIL = "Thumbnail"
+
 ##############################################
 #
 # Database options for the db_type setting
@@ -1228,11 +1231,12 @@ class ExportToDatabase(cpm.CPModule):
             os.makedirs(path)
         return os.path.join(path,file)
     
-    def prepare_run(self, workspace):
+    def prepare_run(self, workspace, as_data_tool = False):
         '''Prepare to run the pipeline
         Establish a connection to the database.'''
 
-        self.get_dictionary().clear()
+        if not as_data_tool:
+            self.get_dictionary().clear()
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
         
@@ -1327,7 +1331,8 @@ class ExportToDatabase(cpm.CPModule):
         if self.want_image_thumbnails:
             cols = []
             for name in self.thumbnail_image_names.get_selections():
-                cols += [(cpmeas.IMAGE, "Thumbnail_%s"%(name), cpmeas.COLTYPE_LONGBLOB)]
+                cols += [(cpmeas.IMAGE, C_THUMBNAIL + "_" +name, 
+                          cpmeas.COLTYPE_LONGBLOB)]
             return cols
         return []
             
@@ -1337,20 +1342,26 @@ class ExportToDatabase(cpm.CPModule):
         ExportToDatabase has two modes - writing CSVs and writing directly.
         We write CSVs in post_run. We write directly in run.
         '''
-        if not self.prepare_run(workspace):
+        #
+        # The measurements may have been created by an old copy of CP. We
+        # have to hack our measurement column cache to circumvent this.
+        #
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        d = self.get_dictionary()
+        columns = m.get_measurement_columns()
+        for i, (object_name, feature_name, coltype) in enumerate(columns):
+            if (object_name == cpmeas.IMAGE and 
+                feature_name.startswith(C_THUMBNAIL)):
+                columns[i] = (object_name, feature_name, cpmeas.COLTYPE_LONGBLOB)
+        columns = self.filter_measurement_columns(columns)
+        d[D_MEASUREMENT_COLUMNS] = columns
+        
+        if not self.prepare_run(workspace, as_data_tool=True):
             return
         self.prepare_group(workspace, None, None)
         if self.db_type != DB_MYSQL_CSV:
             workspace.measurements.is_first_image = True
-            #
-            # Modify the columns so that none get written post_group
-            #
-            columns = self.get_pipeline_measurement_columns(
-                workspace.pipeline, workspace.image_set_list)
-            for i in range(len(columns)):
-                column = columns[i]
-                if self.should_write(column, True):
-                    column[3][cpmeas.MCA_AVAILABLE_POST_GROUP] = False
                     
             for i in range(workspace.measurements.image_set_count):
                 if i > 0:
@@ -1398,7 +1409,8 @@ class ExportToDatabase(cpm.CPModule):
                 im.save(fd, 'PNG')
                 blob = fd.getvalue()
                 fd.close()
-                measurements.add_image_measurement('Thumbnail_%s'%(name), blob.encode('base64'))
+                measurements.add_image_measurement(
+                    C_THUMBNAIL + "_" + name, blob.encode('base64'))
         if workspace.pipeline.test_mode:
             return
         if self.db_type == DB_MYSQL and not workspace.pipeline.test_mode:
@@ -2318,9 +2330,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             image_table = self.get_table_name(cpmeas.IMAGE)
             replacement = '%s' if self.db_type == DB_MYSQL else "?"
             image_row_values = [
-                None 
-                if ((field[1] == cpmeas.COLTYPE_FLOAT) and 
-                    (np.isnan(field[0]) or np.isinf(field[0])))
+                None if field[0] is None
+                else None if ((field[1] == cpmeas.COLTYPE_FLOAT) and 
+                              (np.isnan(field[0]) or np.isinf(field[0])))
                 else float(field[0]) if (field[1] == cpmeas.COLTYPE_FLOAT)
                 else int(field[0]) if (field[1] == cpmeas.COLTYPE_INTEGER)
                 else buffer(field[0]) 
@@ -2500,7 +2512,10 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 
             file_name = self.make_full_filename(filename, workspace)
             unique_id = C_IMAGE_NUMBER
-            image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in self.thumbnail_image_names.get_selections()]) if self.want_image_thumbnails else ''
+            image_thumbnail_cols = ','.join(
+                ['%s_%s_%s'%(cpmeas.IMAGE, C_THUMBNAIL, name) 
+                 for name in self.thumbnail_image_names.get_selections()]) \
+                if self.want_image_thumbnails else ''
             
             if self.properties_export_all_image_defaults:
                 image_file_cols = ','.join(['%s_%s_%s'%(cpmeas.IMAGE,C_FILE_NAME,name) for name in default_image_names])
@@ -2518,7 +2533,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if self.want_image_thumbnails:
                     selected_thumbs = [name for name in self.thumbnail_image_names.get_selections()]
                     thumb_names = [name for name in default_image_names if name in selected_thumbs] + [name for name in selected_thumbs if name not in default_image_names]
-                    image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in thumb_names])
+                    image_thumbnail_cols = ','.join(
+                        ['%s_%s_%s'%(cpmeas.IMAGE, C_THUMBNAIL, name) 
+                         for name in thumb_names])
                 else:
                     image_thumbnail_cols = ''
 
@@ -2542,7 +2559,9 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                 if self.want_image_thumbnails:
                     selected_thumbs = [name for name in self.thumbnail_image_names.get_selections()]
                     thumb_names = [name for name in selected_image_names if name in selected_thumbs] + [name for name in selected_thumbs if name not in selected_image_names]
-                    image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in thumb_names])
+                    image_thumbnail_cols = ','.join(
+                        ['%s_%s_%s'%(cpmeas.IMAGE, C_THUMBNAIL, name) 
+                         for name in thumb_names])
                 else:
                     image_thumbnail_cols = ''
                 
@@ -2838,41 +2857,45 @@ CP version : %d\n""" % version_number
         d = self.get_dictionary(image_set_list)
         if not d.has_key(D_MEASUREMENT_COLUMNS):
             d[D_MEASUREMENT_COLUMNS] = pipeline.get_measurement_columns()
-            d[D_MEASUREMENT_COLUMNS] = \
-             [x for x in d[D_MEASUREMENT_COLUMNS]
-              if not self.ignore_feature(x[0], x[1], True)]
-            #
-            # put Image ahead of any other object
-            # put Number_ObjectNumber ahead of any other column
-            #
-            def cmpfn(x, y):
-                if x[0] != y[0]:
-                    if x[0] == cpmeas.IMAGE:
-                        return -1
-                    elif y[0] == cpmeas.IMAGE:
-                        return 1
-                    else:
-                        return cmp(x[0], y[0])
-                if x[1] == M_NUMBER_OBJECT_NUMBER:
-                    return -1
-                if y[1] == M_NUMBER_OBJECT_NUMBER:
-                    return 1
-                return cmp(x[1], y[1])
-            d[D_MEASUREMENT_COLUMNS].sort(cmp=cmpfn)
-            #
-            # Remove all but the last duplicate
-            #
-            duplicate = [ 
-                c0[0] == c1[0] and c0[1] == c1[1]
-                for c0, c1 in zip(d[D_MEASUREMENT_COLUMNS][:-1], 
-                                  d[D_MEASUREMENT_COLUMNS][1:])] + [ False ]
-            d[D_MEASUREMENT_COLUMNS] = [
-                x for x, y in zip(d[D_MEASUREMENT_COLUMNS], duplicate)
-                if not y]
+            d[D_MEASUREMENT_COLUMNS] = self.filter_measurement_columns(
+                d[D_MEASUREMENT_COLUMNS])
+            
         if remove_postgroup_key:
             d[D_MEASUREMENT_COLUMNS] = [x[:3] for x in d[D_MEASUREMENT_COLUMNS]]
         return d[D_MEASUREMENT_COLUMNS]
 
+    def filter_measurement_columns(self, columns):
+        '''Filter out and properly sort measurement columns'''
+        columns = [x for x in columns
+                   if not self.ignore_feature(x[0], x[1], True)]
+        #
+        # put Image ahead of any other object
+        # put Number_ObjectNumber ahead of any other column
+        #
+        def cmpfn(x, y):
+            if x[0] != y[0]:
+                if x[0] == cpmeas.IMAGE:
+                    return -1
+                elif y[0] == cpmeas.IMAGE:
+                    return 1
+                else:
+                    return cmp(x[0], y[0])
+            if x[1] == M_NUMBER_OBJECT_NUMBER:
+                return -1
+            if y[1] == M_NUMBER_OBJECT_NUMBER:
+                return 1
+            return cmp(x[1], y[1])
+        columns.sort(cmp=cmpfn)
+        #
+        # Remove all but the last duplicate
+        #
+        duplicate = [ 
+            c0[0] == c1[0] and c0[1] == c1[1]
+            for c0, c1 in zip(columns[:-1], 
+                              columns[1:])] + [ False ]
+        columns = [x for x, y in zip(columns, duplicate) if not y]
+        return columns
+        
     def obfuscate(self):
         '''Erase sensitive information about the database
         

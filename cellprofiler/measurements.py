@@ -713,6 +713,29 @@ class Measurements(object):
         if np.isscalar(image_set_number):
             return np.array([]) if vals is None else vals.flatten()
         return [np.array([]) if v is None else v.flatten() for v in vals]
+    
+    def get_measurement_columns(self):
+        '''Return the measurement columns for the current measurements
+        
+        This returns the measurement columns in the style of
+        pipeline.get_measurement_columns. It can be used for cases where
+        the measurements are loaded from a file and do not reflect
+        current module functionality.
+        
+        Note that this doesn't correctly differentiate string data and blob
+        data.
+        '''
+        result = []
+        for object_name in self.get_object_names():
+            for feature_name in self.get_feature_names(object_name):
+                dtype = self.hdf5_dict.get_feature_dtype(object_name, feature_name)
+                if dtype.kind in ['O', 'S', 'U']:
+                    result.append((object_name, feature_name, COLTYPE_VARCHAR))
+                elif np.issubdtype(dtype, float):
+                    result.append((object_name, feature_name, COLTYPE_FLOAT))
+                else:
+                    result.append((object_name, feature_name, COLTYPE_INTEGER))
+        return result
 
     def has_measurements(self, object_name, feature_name, image_set_number):
         if object_name == EXPERIMENT:

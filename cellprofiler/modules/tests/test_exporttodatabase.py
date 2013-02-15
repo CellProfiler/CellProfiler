@@ -56,6 +56,8 @@ WIERD_IMG_FEATURE = 'image_measurement_with_"!@%*\n~!\t\ra\+=''and other &*^% in
 WIERD_OBJ_FEATURE = 'measurement w"!@%*\n~!\t\ra\+=''and other &*^% in it'
 GROUP_IMG_FEATURE = "group_imagemeasurement"
 GROUP_OBJ_FEATURE = "group_objmeasurement"
+MISSING_FROM_MEASUREMENTS = "Missing from measurements"
+MISSING_FROM_MODULE = "Missing from module"
 
 OBJ_MEASUREMENT, INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT, \
     STRING_IMG_MEASUREMENT, LONG_IMG_MEASUREMENT, LONG_OBJ_MEASUREMENT, \
@@ -892,6 +894,15 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 return [self.image_name, self.objects_name] + (
                     [self.altobjects_name] if alt_object else [])
             
+            @staticmethod
+            def in_module(flag):
+                '''Return True to add the measurement to module's get_measurement_columns'''
+                return flag and flag != MISSING_FROM_MODULE
+            
+            @staticmethod
+            def in_measurements(flag):
+                return flag and flag != MISSING_FROM_MEASUREMENTS
+                
             def get_measurement_columns(self, pipeline):
                 columns = [(cpmeas.IMAGE, INT_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
                            (cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT, cpmeas.COLTYPE_FLOAT),
@@ -900,21 +911,21 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                            (cpmeas.IMAGE, OBJECT_COUNT_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
                            (OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
                            (OBJECT_NAME, OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
-                if alt_object:
+                if self.in_module(alt_object):
                     columns += [(cpmeas.IMAGE, ALTOBJECT_COUNT_MEASUREMENT, cpmeas.COLTYPE_INTEGER),
                                 (ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, cpmeas.COLTYPE_INTEGER),
                                 (ALTOBJECT_NAME, OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
-                if long_measurement:
+                if self.in_module(long_measurement):
                     columns += [(cpmeas.IMAGE,LONG_IMG_MEASUREMENT,cpmeas.COLTYPE_INTEGER),
                                 (OBJECT_NAME, LONG_OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
-                if wierd_measurement:
+                if self.in_module(wierd_measurement):
                     columns += [(cpmeas.IMAGE,WIERD_IMG_MEASUREMENT,cpmeas.COLTYPE_INTEGER),
                                 (OBJECT_NAME, WIERD_OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT)]
-                if well_metadata:
+                if self.in_module(well_metadata):
                     columns += [
                         (cpmeas.IMAGE, "Metadata_Plate", cpmeas.COLTYPE_VARCHAR_FORMAT % 20),
                         (cpmeas.IMAGE, "Metadata_Well", cpmeas.COLTYPE_VARCHAR_FORMAT % 3)]
-                if group_measurement:
+                if self.in_module(group_measurement):
                     d = { cpmeas.MCA_AVAILABLE_POST_GROUP: True }
                     columns += [
                         (cpmeas.IMAGE, GROUP_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER, d),
@@ -924,7 +935,8 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             def get_categories(self, pipeline, object_name):
                 return ([M_CATEGORY, I.C_NUMBER] 
                         if (object_name == OBJECT_NAME or 
-                            ((object_name == ALTOBJECT_NAME) and alt_object))
+                            ((object_name == ALTOBJECT_NAME) and 
+                             self.in_module(alt_object)))
                         else [M_CATEGORY, "Count", "Metadata"] 
                         if object_name == cpmeas.IMAGE
                         else [])
@@ -932,22 +944,22 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             def get_measurements(self, pipeline, object_name, category):
                 if category == M_CATEGORY:
                     if object_name == OBJECT_NAME:
-                        if long_measurement:
+                        if self.in_module(long_measurement):
                             return [OBJ_FEATURE, LONG_OBJ_FEATURE]
                         else:
                             return [OBJ_FEATURE]
-                    elif (object_name == ALTOBJECT_NAME) and alt_object:
+                    elif (object_name == ALTOBJECT_NAME) and self.in_module(alt_object):
                         return [OBJ_FEATURE]
                     else:
                         return ([INT_IMG_FEATURE, FLOAT_IMG_FEATURE, STRING_IMG_FEATURE] +
-                                [ LONG_IMG_FEATURE] if long_measurement 
-                                else [WIERD_IMG_FEATURE] if wierd_measurement
+                                [ LONG_IMG_FEATURE] if self.in_module(long_measurement) 
+                                else [WIERD_IMG_FEATURE] if self.in_module(wierd_measurement)
                                 else [])
                 elif category == I.C_NUMBER and object_name in (OBJECT_NAME, ALTOBJECT_NAME):
                     return I.FTR_OBJECT_NUMBER
                 elif category == "Count" and object_name == cpmeas.IMAGE:
                     result = [OBJECT_NAME]
-                    if alt_object:
+                    if self.in_module(alt_object):
                         result += [ALTOBJECT_NAME]
                     return result
                 elif category == "Metadata" and object_name == cpmeas.IMAGE:
@@ -967,21 +979,21 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             m.add_measurement(OBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, 
                               np.arange(len(OBJ_VALUE)) + 1)
             m.add_measurement(OBJECT_NAME, OBJ_MEASUREMENT, OBJ_VALUE.copy())
-            if alt_object:
+            if TestModule.in_measurements(alt_object):
                 m.add_measurement(ALTOBJECT_NAME, I.M_NUMBER_OBJECT_NUMBER, 
                                   np.arange(100) + 1)
                 m.add_image_measurement(ALTOBJECT_COUNT_MEASUREMENT, 100)
                 m.add_measurement(ALTOBJECT_NAME, OBJ_MEASUREMENT, ALTOBJ_VALUE)
-            if long_measurement:
+            if TestModule.in_measurements(long_measurement):
                 m.add_image_measurement(LONG_IMG_MEASUREMENT, 100)
                 m.add_measurement(OBJECT_NAME, LONG_OBJ_MEASUREMENT, OBJ_VALUE.copy())
-            if wierd_measurement:
+            if TestModule.in_measurements(wierd_measurement):
                 m.add_image_measurement(WIERD_IMG_MEASUREMENT, 100)
                 m.add_measurement(OBJECT_NAME, WIERD_OBJ_MEASUREMENT, OBJ_VALUE.copy())
-            if well_metadata:
+            if TestModule.in_measurements(well_metadata):
                 m.add_image_measurement("Metadata_Plate", PLATE)
                 m.add_image_measurement("Metadata_Well", WELL)
-            if group_measurement:
+            if TestModule.in_measurements(group_measurement):
                 m.add_image_measurement(GROUP_IMG_MEASUREMENT, INT_VALUE)
                 m.add_measurement(OBJECT_NAME, GROUP_OBJ_MEASUREMENT, OBJ_VALUE.copy())
         r = np.random.RandomState()
@@ -2741,6 +2753,127 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             os.chdir(output_dir)
             finally_fn()
             self.drop_tables(module, ("Per_Image","Per_%s" % OBJECT_NAME))
+            
+    def test_05_10_data_tool_and_get_measurement_columns(self):
+        # Regression test of issue #444
+        #
+        # Old measurements might not conform to get_measurement_columns
+        # if a new measurement has been added.
+        #
+        workspace, module = self.make_workspace(
+            False, image_set_count = 2, 
+            long_measurement=MISSING_FROM_MEASUREMENTS)
+        try:
+            module.db_type.value = E.DB_MYSQL
+            module.wants_agg_mean.value = True
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.run_as_data_tool(workspace)
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = """
+            select ImageNumber, Image_Group_Number, Image_Group_Index, 
+                   Image_%s, Image_%s, Image_%s, Image_Count_%s
+                   from %s""" % (
+                INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                STRING_IMG_MEASUREMENT, OBJECT_NAME, 
+                image_table)
+            self.cursor.execute(statement)
+            for i in range(2):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 7)
+                self.assertEqual(row[0], i+1)
+                self.assertEqual(row[1], 1)
+                self.assertEqual(row[2], i+1)
+                self.assertAlmostEqual(row[3], INT_VALUE)
+                self.assertAlmostEqual(row[4], FLOAT_VALUE)
+                self.assertEqual(row[5], STRING_VALUE)
+                self.assertEqual(row[6], len(OBJ_VALUE))
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s "
+                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, module.table_prefix.value))
+            self.cursor.execute(statement)
+            for j in range(2):
+                for i, value in enumerate(OBJ_VALUE):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 3)
+                    self.assertEqual(row[0], j+1)
+                    self.assertEqual(row[1], i+1)
+                    self.assertAlmostEqual(row[2], value)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            self.drop_tables(module, ("Per_Image","Per_Object"))
+    
+    def test_05_11_data_tool_and_get_measurement_columns(self):
+        # Regression test of issue #444
+        #
+        # Old measurements might not conform to get_measurement_columns
+        # if an old measurement has been removed
+        #
+        workspace, module = self.make_workspace(
+            False, image_set_count = 2, 
+            long_measurement=MISSING_FROM_MODULE)
+        try:
+            module.db_type.value = E.DB_MYSQL
+            module.wants_agg_mean.value = True
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.run_as_data_tool(workspace)
+            mappings = module.get_column_name_mappings(
+                workspace.pipeline, workspace.image_set_list)
+            long_mean_col = mappings["Mean_%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
+            long_obj_col = mappings["%s_%s" % (OBJECT_NAME, LONG_OBJ_MEASUREMENT)]
+            self.cursor.execute("use CPUnitTest")
+            #
+            # Now read the image file from the database
+            #
+            image_table = module.table_prefix.value + "Per_Image"
+            statement = """
+            select ImageNumber, Image_Group_Number, Image_Group_Index, 
+                   Image_%s, Image_%s, Image_%s, Image_Count_%s, %s
+                   from %s""" % (
+                INT_IMG_MEASUREMENT, FLOAT_IMG_MEASUREMENT,
+                STRING_IMG_MEASUREMENT, OBJECT_NAME, 
+                long_mean_col,
+                image_table)
+            self.cursor.execute(statement)
+            for i in range(2):
+                row = self.cursor.fetchone()
+                self.assertEqual(len(row), 8)
+                self.assertEqual(row[0], i+1)
+                self.assertEqual(row[1], 1)
+                self.assertEqual(row[2], i+1)
+                self.assertAlmostEqual(row[3], INT_VALUE)
+                self.assertAlmostEqual(row[4], FLOAT_VALUE)
+                self.assertEqual(row[5], STRING_VALUE)
+                self.assertEqual(row[6], len(OBJ_VALUE))
+                self.assertAlmostEqual(row[7], np.mean(OBJ_VALUE), delta=.0001)
+            self.assertRaises(StopIteration, self.cursor.next)
+            statement = ("select ImageNumber, ObjectNumber, %s_%s, %s "
+                         "from %sPer_Object order by ImageNumber, ObjectNumber"%
+                         (OBJECT_NAME, OBJ_MEASUREMENT, 
+                          long_obj_col,
+                          module.table_prefix.value))
+            self.cursor.execute(statement)
+            for j in range(2):
+                for i, value in enumerate(OBJ_VALUE):
+                    row = self.cursor.fetchone()
+                    self.assertEqual(len(row), 4)
+                    self.assertEqual(row[0], j+1)
+                    self.assertEqual(row[1], i+1)
+                    self.assertAlmostEqual(row[2], value)
+                    self.assertAlmostEqual(row[3], value)
+            self.assertRaises(StopIteration, self.cursor.next)
+        finally:
+            self.drop_tables(module, ("Per_Image","Per_Object"))
     
     def test_06_01_write_sqlite_direct(self):
         '''Write directly to a SQLite database'''

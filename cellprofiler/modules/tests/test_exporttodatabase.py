@@ -884,6 +884,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         class TestModule(cpm.CPModule):
             module_name = "TestModule"
             module_num = 1
+            variable_revision_number = 1
             def create_settings(self):
                 self.image_name = cps.ImageNameProvider("Foo", IMAGE_NAME)
                 self.objects_name = cps.ObjectNameProvider("Bar", OBJECT_NAME)
@@ -1026,6 +1027,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         module.db_passwd.value = 'cPus3r'
         module.db_name.value ='CPUnitTest'
         pipeline.add_module(module)
+        pipeline.write_experiment_measurements(m)
         workspace = cpw.Workspace(pipeline, module, image_set,
                                   object_set, m, image_set_list)
         for column in pipeline.get_measurement_columns():
@@ -1902,6 +1904,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 self.assertEqual(with_interaction_handler, 
                                  ran_interaction_handler[0])
                 cursor, connection = self.get_sqlite_cursor(module)
+                self.check_experiment_table(cursor, module, workspace.measurements)
                 #
                 # Now read the image file from the database
                 #
@@ -2148,6 +2151,21 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                           I.M_NUMBER_OBJECT_NUMBER))
         return statement
         
+    def check_experiment_table(self, cursor, module, m):
+        '''Check the per_experiment table values against measurements'''
+        statement = "select %s, %s, %s from %s" % (
+            cpp.M_PIPELINE, cpp.M_VERSION, cpp.M_TIMESTAMP,
+            module.get_table_name(cpmeas.EXPERIMENT))
+        cursor.execute(statement)
+        row = cursor.fetchone()
+        self.assertRaises(StopIteration, cursor.next)
+        self.assertEqual(len(row), 3)
+        for feature, value in zip(
+            (cpp.M_PIPELINE, cpp.M_VERSION, cpp.M_TIMESTAMP), row):
+            self.assertEqual(
+                value, 
+                m.get_experiment_measurement(feature))
+        
     def test_05_01_write_mysql_db(self):
         '''Multiple objects / write - per-object tables'''
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
@@ -2163,6 +2181,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.separate_object_tables.value = E.OT_PER_OBJECT
             module.post_run(workspace)
             self.load_database(output_dir, module)
+            self.check_experiment_table(self.cursor, module, workspace.measurements)
             #
             # Now read the image file from the database
             #
@@ -2271,6 +2290,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.prepare_group(workspace, {}, [1])
             module.run(workspace)
             self.cursor.execute("use CPUnitTest")
+            self.check_experiment_table(self.cursor, module, workspace.measurements)
             #
             # Now read the image file from the database
             #

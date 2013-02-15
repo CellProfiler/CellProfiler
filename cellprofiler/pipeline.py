@@ -56,6 +56,7 @@ from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 from cellprofiler.matlab.cputils import make_cell_struct_dtype, new_string_cell_array, encapsulate_strings_in_arrays
 from cellprofiler.utilities.walk_in_background import WalkCollection, THREAD_STOP
 from bioformats.omexml import OMEXML
+import cellprofiler.utilities.version as cpversion
 
 '''The measurement name of the image number'''
 IMAGE_NUMBER = cpmeas.IMAGE_NUMBER
@@ -177,8 +178,14 @@ see http://www.hdfgroup.org/HDF5/doc/H5.format.html#FileMetaData
 HDF5_HEADER = (chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) +
                chr (26) + chr(10))
 C_PIPELINE = "Pipeline"
+C_CELLPROFILER = "CellProfiler"
 F_PIPELINE = "Pipeline"
 M_PIPELINE = "_".join((C_PIPELINE,F_PIPELINE))
+F_VERSION = "Version"
+M_VERSION = "_".join((C_CELLPROFILER, F_VERSION))
+C_RUN = "Run"
+F_TIMESTAMP = "Timestamp"
+M_TIMESTAMP = "_".join((C_RUN, F_TIMESTAMP))
 
 def add_all_images(handles,image_set, object_set):
     """ Add all images to the handles structure passed
@@ -1885,6 +1892,18 @@ class Pipeline(object):
                 progress_dialog.Destroy()
             m.image_set_number = orig_image_number
         
+    def write_experiment_measurements(self, m):
+        '''Write the standard experiment measurments to the measurements file
+        
+        Write the pipeline, version # and timestamp.
+        '''
+        assert isinstance(m, cpmeas.Measurements)
+        self.write_pipeline_measurement(m)
+        m.add_experiment_measurement(M_VERSION, cpversion.version_string)
+        m.add_experiment_measurement(M_TIMESTAMP, 
+                                     datetime.datetime.now().isoformat())
+        m.flush()
+        
     def prepare_run(self, workspace, end_module = None):
         """Do "prepare_run" on each module to initialize the image_set_list
         
@@ -1911,8 +1930,7 @@ class Pipeline(object):
         """
         assert(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
-        self.write_pipeline_measurement(m)
-        m.flush()
+        self.write_experiment_measurements(m)
 
         for module in self.modules():
             if module == end_module:
@@ -2879,6 +2897,8 @@ class Pipeline(object):
             return self.__measurement_columns[terminating_module_num]
         columns = [
             (cpmeas.EXPERIMENT, M_PIPELINE, cpmeas.COLTYPE_LONGBLOB),
+            (cpmeas.EXPERIMENT, M_VERSION, cpmeas.COLTYPE_VARCHAR),
+            (cpmeas.EXPERIMENT, M_TIMESTAMP, cpmeas.COLTYPE_VARCHAR),
             (cpmeas.IMAGE, GROUP_NUMBER, cpmeas.COLTYPE_INTEGER),
             (cpmeas.IMAGE, GROUP_INDEX, cpmeas.COLTYPE_INTEGER)]
         should_write_columns = True

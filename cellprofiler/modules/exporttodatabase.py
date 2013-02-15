@@ -1721,6 +1721,9 @@ class ExportToDatabase(cpm.CPModule):
         statement = self.get_create_image_table_statement(pipeline, 
                                                           image_set_list)
         execute(cursor, statement)
+        
+        execute(cursor, 'DROP TABLE IF EXISTS %s' % 
+                self.get_table_name(cpmeas.EXPERIMENT) )
         for statement in self.get_experiment_table_statements(workspace):
             execute(cursor, statement)
         cursor.connection.commit()
@@ -1771,6 +1774,44 @@ SELECT MAX(experiment_id), '%s', '%s', '%s' FROM %s""" % (
                        MySQLdb.escape_string(k),
                        MySQLdb.escape_string(v), T_EXPERIMENT)
                 statements.append(statement)
+        
+        experiment_columns = filter(
+            lambda x:x[0] == cpmeas.EXPERIMENT,
+            workspace.pipeline.get_measurement_columns())
+        experiment_coldefs = [
+            "%s %s" % (x[1],
+                       "TEXT" if x[2].startswith(cpmeas.COLTYPE_VARCHAR)
+                       else x[2]) for x in experiment_columns]
+        create_per_experiment = """
+CREATE TABLE %s (
+%s)
+""" % (self.get_table_name(cpmeas.EXPERIMENT), ",\n".join(experiment_coldefs))
+        statements.append(create_per_experiment)
+        column_names = []
+        values = []
+        for column in experiment_columns:
+            ftr = column[1]
+            value = workspace.measurements.get_experiment_measurement(ftr)
+            column_names.append(ftr)
+            if column[2].startswith(cpmeas.COLTYPE_VARCHAR):
+                if isinstance(value, unicode):
+                    value = value.encode('utf-8')
+                if self.db_type != DB_SQLITE:
+                    value = MySQLdb.escape_string(value)
+                else:
+                    value = value.replace("'", "''")
+                value = "'"+value+"'"
+            else:
+                # Both MySQL and SQLite support blob literals of the style:
+                # X'0123456789ABCDEF'
+                #
+                value = "X'" + "".join(["%02X" % ord(x) for x in value]) + "'"
+            values.append(value)
+        experiment_insert_statement = "INSERT INTO %s (%s) VALUES (%s)" % (
+            self.get_table_name(cpmeas.EXPERIMENT),
+            ",".join(column_names),
+            ",".join(values))
+        statements.append(experiment_insert_statement)
         return statements
     
     def get_create_image_table_statement(self, pipeline, image_set_list):

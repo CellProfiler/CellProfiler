@@ -37,17 +37,10 @@ JNIEXPORT int MacStartVM(JavaVM **pVM, JavaVMInitArgs *pVMArgs, const char *clas
 
 /**********************************************************
  *
- * EnterJVM - enter the JVM and prevent JVM exit
+ * Stop the JVM
  *
- * Returns 0 if JVM is running, otherwise -1
  *
  **********************************************************/
-JNIEXPORT int EnterJVM();
 
-/**********************************************************
- *
- * ExitJVM() - exit the JVM, decreasing the enter-count
- *
- *
- **********************************************************/
-JNIEXPORT void ExitJVM();
+JNIEXPORT void MacStopVM();
+

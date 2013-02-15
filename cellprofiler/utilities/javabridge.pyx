@@ -306,9 +306,14 @@ cdef extern from "jni.h":
 IF UNAME_SYSNAME == "Darwin":
     cdef extern from "mac_javabridge_utils.h":
         int MacStartVM(JavaVM **, JavaVMInitArgs *pVMArgs, char *class_name) nogil
+        void MacStopVM() nogil
+    cdef void StopVM(JavaVM *vm) nogil:
+        MacStopVM()
 ELSE:
     cdef int MacStartVM(JavaVM **pvm, JavaVMInitArgs *pVMArgs, char *class_name) nogil:
         return -1
+    cdef void StopVM(JavaVM *vm) nogil:
+        vm[0].DestroyJavaVM(vm)
         
     
 def get_default_java_vm_init_args():
@@ -544,7 +549,7 @@ cdef class JB_VM:
     
     def destroy(self):
         if self.vm != NULL:
-            self.vm[0].DestroyJavaVM(self.vm)
+            StopVM(self.vm)
             self.vm = NULL
     
 cdef class JB_Env:

@@ -310,18 +310,18 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         self.assertTrue(any([column[1] == "foo" for column in columns]))
         module.my_variable.value = "bar"
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 6)
+        self.assertEqual(len(columns), 8)
         self.assertTrue(any([column[1] == "bar" for column in columns]))
         module = MyClassForTest0801()
         module.module_num = 2
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 9)
+        self.assertEqual(len(columns), 11)
         self.assertTrue(any([column[1] == "foo" for column in columns]))
         self.assertTrue(any([column[1] == "bar" for column in columns]))
         columns = x.get_measurement_columns(module)
-        self.assertEqual(len(columns), 6)
+        self.assertEqual(len(columns), 8)
         self.assertTrue(any([column[1] == "bar" for column in columns]))
     
     def test_10_01_all_groups(self):

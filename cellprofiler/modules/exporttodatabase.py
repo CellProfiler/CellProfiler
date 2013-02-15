@@ -2509,6 +2509,7 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                     image_thumbnail_cols = ','.join(['%s_Thumbnail_%s'%(cpmeas.IMAGE,name) for name in thumb_names])
                 else:
                     image_thumbnail_cols = ''
+                    selected_thumbs = []
                 
                 # Convert to comma-separated list
                 image_channel_colors = ','.join(image_channel_colors + ['none']*len(set(selected_thumbs).difference(selected_image_names)))

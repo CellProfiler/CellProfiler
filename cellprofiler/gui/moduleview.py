@@ -3675,15 +3675,17 @@ pipeline_queue_thread = None  # global, protected by above lock
 validation_queue_semaphore = threading.Semaphore(0)
 request_pipeline_cache = threading.local()  # used to cache the last requested pipeline
 
-def validate_module(pipeline, module_num, callback):
+def validate_module(pipeline, module_num, test_mode, callback):
     '''Validate a module and execute the callback on error on the main thread
     
     pipeline - a pipeline to be validated
     module_num - the module number of the module to be validated
+    test_mode - whether pipeline is in test mode
     callback - a callback with the signature, "fn(setting, message, pipeline_data)"
     where setting is the setting that is in error and message is the message to
     display.
     '''
+    pipeline.test_mode = test_mode
     modules = [m for m in pipeline.modules() if m.module_num == module_num]
     if len(modules) != 1:
         return
@@ -3709,9 +3711,10 @@ def validation_queue_handler():
         with validation_queue_lock:
             if len(validation_queue) == 0:
                 continue
-            priority, module_num, pipeline, callback = heapq.heappop(validation_queue)
+            priority, module_num, pipeline, test_mode, callback = \
+                heapq.heappop(validation_queue)
         try:
-            validate_module(pipeline, module_num, callback)
+            validate_module(pipeline, module_num, test_mode, callback)
         except:
             pass
 
@@ -3765,7 +3768,9 @@ def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_
                                 if ((req[0] >= priority) and (req[1] == mnum))]
         heapq.heapify(validation_queue)
         # order heap by priority, then module_number.
-        heapq.heappush(validation_queue, (priority, module.module_num, pipeline_copy, callback))
+        heapq.heappush(validation_queue, 
+                       (priority, module.module_num, pipeline_copy, 
+                        pipeline.test_mode, callback))
     validation_queue_semaphore.release()  # notify handler of work
 
 def clear_validation_cache():

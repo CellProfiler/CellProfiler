@@ -282,7 +282,7 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         module.my_variable.value = "foo"
         x.add_module(module)
         columns = x.get_measurement_columns()
-        self.assertEqual(len(columns), 6)
+        self.assertEqual(len(columns), 8)
         self.assertTrue(any([column[0] == 'Image' and 
                              column[1] == 'Group_Number' and
                              column[2] == cpmeas.COLTYPE_INTEGER
@@ -299,6 +299,12 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
                              for column in columns]))
         self.assertTrue(any([column[0] == cpmeas.EXPERIMENT and
                              column[1] == cpp.M_PIPELINE
+                             for column in columns]))
+        self.assertTrue(any([column[0] == cpmeas.EXPERIMENT and
+                             column[1] == cpp.M_VERSION
+                             for column in columns]))
+        self.assertTrue(any([column[0] == cpmeas.EXPERIMENT and
+                             column[1] == cpp.M_TIMESTAMP
                              for column in columns]))
 
         self.assertTrue(any([column[1] == "foo" for column in columns]))

@@ -39,44 +39,31 @@ typedef struct {
     char message[256];
 } ThreadFunctionArgs;
 
-pthread_mutex_t start_mutex;
-pthread_cond_t start_cv;
-int started = 0;
-int enter_count = 0;
+/**********************************************************
+ *
+ * The JVM thread
+ *
+ **********************************************************/
+static pthread_t thread;
+ 
+/**********************************************************
+ *
+ * JVM start communication
+ *
+ ***********************************************************/
+static pthread_mutex_t start_mutex;
+static pthread_cond_t start_cv;
+static int started = 0;
 
 /**********************************************************
  *
- * EnterJVM - enter the JVM and prevent JVM exit
- *
- * Returns 0 if JVM is running, otherwise -1
+ * JVM stop communication
  *
  **********************************************************/
-int EnterJVM()
-{
-    int was_started;
-    pthread_mutex_lock(&start_mutex);
-    was_started = started;
-    if (started) {
-        enter_count++;
-    }
-    pthread_mutex_unlock(&start_mutex);
-    return was_started? 0:-1;
-}
+static pthread_mutex_t stop_mutex;
+static pthread_cond_t stop_cv;
+static int stopped = 0;
 
-/**********************************************************
- *
- * ExitJVM() - exit the JVM, decreasing the enter-count
- *
- *
- **********************************************************/
-void ExitJVM()
-{
-    pthread_mutex_lock(&start_mutex);
-    if (--enter_count == 0) {
-        pthread_cond_signal(&start_cv);
-    }
-    pthread_mutex_unlock(&start_mutex);
-}
 /**********************************************************
  *
  * MacStartVM
@@ -94,7 +81,6 @@ void ExitJVM()
 int MacStartVM(JavaVM **pVM, JavaVMInitArgs *pVMArgs, const char *class_name)
 {
     ThreadFunctionArgs threadArgs;
-    pthread_t thread;
     pthread_attr_t attr;
     void *retval;
     int result;
@@ -103,6 +89,9 @@ int MacStartVM(JavaVM **pVM, JavaVMInitArgs *pVMArgs, const char *class_name)
     
     pthread_mutex_init(&start_mutex, NULL);
     pthread_cond_init(&start_cv, NULL);
+    
+    pthread_mutex_init(&stop_mutex, NULL);
+    pthread_cond_init(&stop_cv, NULL)
     
     pthread_attr_init(&attr);
     pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
@@ -125,6 +114,20 @@ int MacStartVM(JavaVM **pVM, JavaVMInitArgs *pVMArgs, const char *class_name)
         printf(threadArgs.message);
     }
     return threadArgs.result;
+}
+
+/************************************************************
+ *
+ * Stop the JVM
+ *
+ ************************************************************/
+void MacStopVM()
+{
+    pthread_mutex_lock(&stop_mutex);
+    stopped = 1;
+    pthread_cond_signal(&stop_cv);
+    pthread_mutex_unlock(&stop_mutex);
+    pthread_join(&thread, NULL);
 }
 
 static void signal_start()
@@ -198,12 +201,12 @@ static void *thread_function(void *arg)
     }
     
 STOP_VM:
-    pthread_mutex_lock(&start_mutex);
-    while (enter_count > 0) {
-        pthread_cond_wait(&start_cv, &start_mutex);
+    pthread_mutex_lock(&stop_mutex);
+    while (stopped == 0) {
+        pthread_cond_wait(&stop_cv, &stop_mutex);
     }
     started = 0;
-    pthread_mutex_unlock(&start_mutex);
+    pthread_mutex_unlock(&stop_mutex);
     (*vm)->DestroyJavaVM(vm);
     return NULL;
 }

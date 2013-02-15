@@ -91,7 +91,7 @@ int MacStartVM(JavaVM **pVM, JavaVMInitArgs *pVMArgs, const char *class_name)
     pthread_cond_init(&start_cv, NULL);
     
     pthread_mutex_init(&stop_mutex, NULL);
-    pthread_cond_init(&stop_cv, NULL)
+    pthread_cond_init(&stop_cv, NULL);
     
     pthread_attr_init(&attr);
     pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);

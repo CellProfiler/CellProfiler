@@ -271,9 +271,6 @@ class HDF5Dict(object):
                                 src_stop = src_index_dataset[-1, 2]
                                 dest_index_dataset = src_index_dataset.copy()
                                 dest_index_dataset[:, 1:] -= src_off
-                                d = dict([(num_idx, slice(start-src_off, stop-src_off))
-                                          for num_idx, start, stop in src_index_dataset])
-                                self.indices[object_name, feature_name] = d
                                 dest_feature_group = dest_object_group.require_group(feature_name)
                                 dest_feature_group.create_dataset(
                                     'index', data = dest_index_dataset.astype(int),

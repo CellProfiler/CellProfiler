@@ -245,14 +245,23 @@ class TestHDF5FileList(unittest.TestCase):
         self.hdf_file_nocache = h5py.File(self.temp_filename_nocache)
         self.filelist_nocache = H5DICT.HDF5FileList(self.hdf_file_nocache)
         
+        self.temp_fd_empty, self.temp_filename_empty = tempfile.mkstemp(".h5")
+        self.hdf_file_empty = h5py.File(self.temp_filename_empty)
+        
         
     def tearDown(self):
-        self.hdf_file.close()
+        if isinstance(self.hdf_file, h5py.File):
+            self.hdf_file.close()
         os.close(self.temp_fd)
         os.remove(self.temp_filename)
-        self.hdf_file_nocache.close()
+        if isinstance(self.hdf_file_nocache, h5py.File):
+            self.hdf_file_nocache.close()
         os.close(self.temp_fd_nocache)
         os.remove(self.temp_filename_nocache)
+        if isinstance(self.hdf_file_empty, h5py.File):
+            self.hdf_file_empty.close()
+        os.close(self.temp_fd_empty)
+        os.remove(self.temp_filename_empty)
         
     def test_01_01_encode_alphanumeric(self):
         r = np.random.RandomState()
@@ -282,6 +291,23 @@ class TestHDF5FileList(unittest.TestCase):
         g1 = self.filelist.get_filelist_group()
         g2 = self.filelist.get_filelist_group()
         self.assertEqual(g1, g2)
+        
+    def test_02_03_has_file_list(self):
+        self.assertTrue(H5DICT.HDF5FileList.has_file_list(self.hdf_file))
+        
+    def test_02_04_no_file_list(self):
+        self.assertFalse(H5DICT.HDF5FileList.has_file_list(self.hdf_file_empty))
+        
+    def test_02_05_copy(self):
+        url = "file://foo/bar.jpg"
+        metadata = "fakemetadata"
+        self.filelist.add_files_to_filelist([url])
+        self.filelist.add_metadata(url, metadata)
+        H5DICT.HDF5FileList.copy(self.hdf_file, self.hdf_file_empty)
+        
+        dest_filelist = H5DICT.HDF5FileList(self.hdf_file_empty)
+        self.assertSequenceEqual([url], dest_filelist.get_filelist())
+        self.assertEqual(metadata, dest_filelist.get_metadata(url))
         
     def test_03_00_add_no_file(self):
         self.filelist.add_files_to_filelist([])

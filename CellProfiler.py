@@ -12,6 +12,7 @@ Website: http://www.cellprofiler.org
 """
 
 import logging
+import logging.config
 import sys
 import os
 import numpy as np
@@ -48,160 +49,293 @@ site_packages = os.path.join(root, 'site-packages')
 if os.path.exists(site_packages) and os.path.isdir(site_packages):
     import site
     site.addsitedir(site_packages)
-
-import optparse
-usage = """usage: %prog [options] [<output-file>])
-     where <output-file> is the optional filename for the output file of measurements
-           when running headless"""
-
-parser = optparse.OptionParser(usage=usage)
-parser.add_option("-p", "--pipeline",
-                  dest="pipeline_filename",
-                  help="Load this pipeline file on startup",
-                  default=None)
-parser.add_option("-c", "--run-headless",
-                  action="store_false",
-                  dest="show_gui",
-                  default=True,
-                  help="Run headless (without the GUI)")
-parser.add_option("-r", "--run",
-                  action="store_true",
-                  dest="run_pipeline",
-                  default=False,
-                  help="Run the given pipeline on startup")
-
-
-parser.add_option("-o", "--output-directory",
-                  dest="output_directory",
-                  default=None,
-                  help="Make this directory the default output folder")
-parser.add_option("-i", "--image-directory",
-                  dest="image_directory",
-                  default=None,
-                  help="Make this directory the default input folder")
-parser.add_option("-f", "--first-image-set",
-                  dest="first_image_set",
-                  default=None,
-                  help="The one-based index of the first image set to process")
-parser.add_option("-l", "--last-image-set",
-                  dest="last_image_set",
-                  default=None,
-                  help="The one-based index of the last image set to process")
-parser.add_option("-g", "--group",
-                  dest="groups",
-                  default=None,
-                  help=('Restrict processing to one grouping in a grouped '
-                        'pipeline. For instance, "-g ROW=H,COL=01", will '
-                        'process only the group of image sets that match '
-                        'the keys.'))
-parser.add_option("--html",
-                  action="store_true",
-                  dest="output_html",
-                  default = False,
-                  help = ('Output HTML help for all modules. Use with the -o '
-                          'option to specify the output directory for the '
-                          'files. Assumes -b.'))
-
-parser.add_option("--plugins-directory",
-                  dest="plugins_directory",
-                  help=("CellProfiler will look for plugin modules in this "
-                        "directory."))
-
-parser.add_option("--ij-plugins-directory",
-                  dest="ij_plugins_directory",
-                  help=("CellProfiler will look for ImageJ plugin modules "
-                        "in this directory."))
-
-parser.add_option("--jvm-heap-size",
-                  dest="jvm_heap_size",
-                  default="512m",
-                  help=("This is the amount of memory reserved for the "
-                        "Java Virtual Machine (similar to the java -Xmx switch)."
-                        "Example formats: 512000k, 512m, 1g"))
-
-if not hasattr(sys, 'frozen'):
-    parser.add_option("-b", "--do-not-build", "--do-not_build",
-                      dest="build_extensions",
-                      default=True,
-                      action="store_false",
-                      help="Do not build C and Cython extensions")
-    parser.add_option("--build-and-exit",
-                      dest="build_and_exit",
-                      default=False,
-                      action="store_true",
-                      help="Build extensions, then exit CellProfiler")
-    parser.add_option("--do-not-fetch",
-                      dest="fetch_external_dependencies",
-                      default=True,
-                      action="store_false",
-                      help="Do not fetch external binary dependencies")
-    parser.add_option("--fetch-and-overwrite",
-                      dest="overwrite_external_dependencies",
-                      default=False,
-                      action="store_true",
-                      help="Overwrite external binary depencies if hash does not match")
-parser.add_option("--ilastik",
-                  dest = "run_ilastik",
-                  default=False,
-                  action="store_true",
-                  help = ("Run Ilastik instead of CellProfiler. "
-                          "Ilastik is a pixel-based classifier. See "
-                          "www.ilastik.org for more details."))
-parser.add_option("-d", "--done-file",
-                  dest="done_file",
-                  default=None,
-                  help=('The path to the "Done" file, written by CellProfiler'
-                        ' shortly before exiting'))
-parser.add_option("--measurements",
-                  dest="print_measurements",
-                  default=False,
-                  action="store_true",
-                  help="Open the pipeline file specified by the -p switch "
-                  "and print the measurements made by that pipeline")
-parser.add_option("--data-file",
-                  dest="data_file",
-                  default = None,
-                  help = "Specify a data file for LoadData modules that "
-                  'use the "From command-line" option')
-parser.add_option("--image-set-file",
-                  dest = "image_set_file",
-                  default = None,
-                  help = "Specify the image set file that controls the input "
-                  "images for the pipeline")
-                  
-parser.add_option("-L", "--log-level",
-                  dest = "log_level",
-                  default = str(logging.INFO),
-                  help = ("Set the verbosity for logging messages: " +
-                          ("%d or %s for debugging, " % (logging.DEBUG, "DEBUG")) +
-                          ("%d or %s for informational, " % (logging.INFO, "INFO")) +
-                          ("%d or %s for warning, " % (logging.WARNING, "WARNING")) +
-                          ("%d or %s for error, " % (logging.ERROR, "ERROR")) +
-                          ("%d or %s for critical, " % (logging.CRITICAL, "CRITICAL")) +
-                          ("%d or %s for fatal." % (logging.FATAL, "FATAL")) +
-                          " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"))
-
-if not hasattr(sys, 'frozen'):
-    parser.add_option("--code-statistics", 
-                      dest = "code_statistics",
-                      action = "store_true",
-                      default = False,
-                      help = "Print the number of modules, settings and lines of code")
-                              
-options, args = parser.parse_args()
-
-try:
-    if options.log_level.isdigit():
-        logging.root.setLevel(int(options.log_level))
-    else:
-        logging.root.setLevel(options.log_level)
-    if len(logging.root.handlers) == 0:
-        logging.root.addHandler(logging.StreamHandler())
-except ValueError:
-    import logging.config
-    logging.config.fileConfig(options.log_level)
     
-if options.code_statistics:
+def main(args):
+    '''Run CellProfiler
+
+    args - command-line arguments, e.g. sys.argv
+    '''
+    options, args = parse_args(args)
+    set_log_level(options)
+    
+    if options.code_statistics:
+        print_code_statistics()
+        return
+        
+    if options.run_ilastik:
+        run_ilastik()
+        return
+    
+    # necessary to prevent matplotlib trying to use Tkinter as its backend.
+    # has to be done before CellProfilerApp is imported
+    from matplotlib import use as mpluse
+    mpluse('WXAgg')
+    
+    if (not hasattr(sys, 'frozen')) and options.fetch_external_dependencies:
+        import external_dependencies
+        external_dependencies.fetch_external_dependencies(options.overwrite_external_dependencies)
+    
+    if (not hasattr(sys, 'frozen')) and options.build_extensions:
+        build_extensions()
+        if options.build_and_exit:
+            return
+    
+    if options.output_html:
+        from cellprofiler.gui.html.manual import generate_html
+        webpage_path = options.output_directory if options.output_directory else None
+        generate_html(webpage_path)
+        return
+    if options.print_measurements:
+        print_measurements(options)
+        return
+    
+    if options.show_gui:
+        import wx
+        wx.Log.EnableLogging(False)
+        from cellprofiler.cellprofilerapp import CellProfilerApp
+        App = CellProfilerApp(
+            0, 
+            check_for_new_version = (options.pipeline_filename is None),
+            show_splashbox = (options.pipeline_filename is None))
+        # ... loading a pipeline from the filename can bring up a modal
+        # dialog, which causes a crash on Mac if the splashbox is open or
+        # a second modal dialog is opened.
+    
+    try:
+        #
+        # Important to go headless ASAP
+        #
+        import cellprofiler.preferences as cpprefs
+        if not options.show_gui:
+            cpprefs.set_headless()
+            # What's there to do but run if you're running headless?
+            # Might want to change later if there's some headless setup 
+            options.run_pipeline = True
+    
+            
+        if options.plugins_directory is not None:
+            cpprefs.set_plugin_directory(options.plugins_directory)
+        if options.ij_plugins_directory is not None:
+            cpprefs.set_ij_plugin_directory(options.ij_plugins_directory)
+        if options.data_file is not None:
+            cpprefs.set_data_file(os.path.abspath(options.data_file))
+        if options.image_set_file is not None:
+            cpprefs.set_image_set_file(options.image_set_file, False)
+            
+        from cellprofiler.utilities.version import version_string, version_number
+        logging.root.info("Version: %s / %d" % (version_string, version_number))
+    
+        if options.run_pipeline and not options.pipeline_filename:
+            raise ValueError("You must specify a pipeline filename to run")
+    
+        if options.output_directory:
+            cpprefs.set_default_output_directory(options.output_directory)
+        
+        if options.image_directory:
+            cpprefs.set_default_image_directory(options.image_directory)
+    
+        if options.show_gui:
+            import cellprofiler.gui.cpframe as cpgframe
+            if options.pipeline_filename:
+                try:
+                    App.frame.pipeline.load(os.path.expanduser(options.pipeline_filename))
+                    if options.run_pipeline:
+                        App.frame.Command(cpgframe.ID_FILE_ANALYZE_IMAGES)
+                except:
+                    import wx
+                    wx.MessageBox(
+                        'CellProfiler was unable to load the pipeline file, "%s"' %
+                        options.pipeline_filename, "Error loading pipeline",
+                        style = wx.OK | wx.ICON_ERROR)
+                    logging.root.error("Unable to load pipeline", exc_info=True)
+            App.MainLoop()
+            return
+        
+        elif options.run_pipeline:
+            run_pipeline_headless(options, args)
+    except Exception, e:
+        logging.root.fatal("Uncaught exception in CellProfiler.py", exc_info=True)
+        raise
+    
+    finally:
+        if __name__ == "__main__":
+            try:
+                from ilastik.core.jobMachine import GLOBAL_WM
+                GLOBAL_WM.stopWorkers()
+            except:
+                logging.root.warn("Failed to stop Ilastik")
+            try:
+                from cellprofiler.utilities.zmqrequest import join_to_the_boundary
+                join_to_the_boundary()
+            except:
+                logging.root.warn("Failed to stop zmq boundary")
+            try:
+                from cellprofiler.utilities.jutil import kill_vm
+                kill_vm()
+            except:
+                logging.root.warn("Failed to stop the JVM")
+            os._exit(0)
+
+def parse_args(args):
+    '''Parse the CellProfiler command-line arguments'''
+    import optparse
+    usage = """usage: %prog [options] [<output-file>])
+         where <output-file> is the optional filename for the output file of measurements
+               when running headless"""
+    
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option("-p", "--pipeline",
+                      dest="pipeline_filename",
+                      help="Load this pipeline file on startup",
+                      default=None)
+    parser.add_option("-c", "--run-headless",
+                      action="store_false",
+                      dest="show_gui",
+                      default=True,
+                      help="Run headless (without the GUI)")
+    parser.add_option("-r", "--run",
+                      action="store_true",
+                      dest="run_pipeline",
+                      default=False,
+                      help="Run the given pipeline on startup")
+    
+    
+    parser.add_option("-o", "--output-directory",
+                      dest="output_directory",
+                      default=None,
+                      help="Make this directory the default output folder")
+    parser.add_option("-i", "--image-directory",
+                      dest="image_directory",
+                      default=None,
+                      help="Make this directory the default input folder")
+    parser.add_option("-f", "--first-image-set",
+                      dest="first_image_set",
+                      default=None,
+                      help="The one-based index of the first image set to process")
+    parser.add_option("-l", "--last-image-set",
+                      dest="last_image_set",
+                      default=None,
+                      help="The one-based index of the last image set to process")
+    parser.add_option("-g", "--group",
+                      dest="groups",
+                      default=None,
+                      help=('Restrict processing to one grouping in a grouped '
+                            'pipeline. For instance, "-g ROW=H,COL=01", will '
+                            'process only the group of image sets that match '
+                            'the keys.'))
+    parser.add_option("--html",
+                      action="store_true",
+                      dest="output_html",
+                      default = False,
+                      help = ('Output HTML help for all modules. Use with the -o '
+                              'option to specify the output directory for the '
+                              'files. Assumes -b.'))
+    
+    parser.add_option("--plugins-directory",
+                      dest="plugins_directory",
+                      help=("CellProfiler will look for plugin modules in this "
+                            "directory."))
+    
+    parser.add_option("--ij-plugins-directory",
+                      dest="ij_plugins_directory",
+                      help=("CellProfiler will look for ImageJ plugin modules "
+                            "in this directory."))
+    
+    parser.add_option("--jvm-heap-size",
+                      dest="jvm_heap_size",
+                      default="512m",
+                      help=("This is the amount of memory reserved for the "
+                            "Java Virtual Machine (similar to the java -Xmx switch)."
+                            "Example formats: 512000k, 512m, 1g"))
+    
+    if not hasattr(sys, 'frozen'):
+        parser.add_option("-b", "--do-not-build", "--do-not_build",
+                          dest="build_extensions",
+                          default=True,
+                          action="store_false",
+                          help="Do not build C and Cython extensions")
+        parser.add_option("--build-and-exit",
+                          dest="build_and_exit",
+                          default=False,
+                          action="store_true",
+                          help="Build extensions, then exit CellProfiler")
+        parser.add_option("--do-not-fetch",
+                          dest="fetch_external_dependencies",
+                          default=True,
+                          action="store_false",
+                          help="Do not fetch external binary dependencies")
+        parser.add_option("--fetch-and-overwrite",
+                          dest="overwrite_external_dependencies",
+                          default=False,
+                          action="store_true",
+                          help="Overwrite external binary depencies if hash does not match")
+    parser.add_option("--ilastik",
+                      dest = "run_ilastik",
+                      default=False,
+                      action="store_true",
+                      help = ("Run Ilastik instead of CellProfiler. "
+                              "Ilastik is a pixel-based classifier. See "
+                              "www.ilastik.org for more details."))
+    parser.add_option("-d", "--done-file",
+                      dest="done_file",
+                      default=None,
+                      help=('The path to the "Done" file, written by CellProfiler'
+                            ' shortly before exiting'))
+    parser.add_option("--measurements",
+                      dest="print_measurements",
+                      default=False,
+                      action="store_true",
+                      help="Open the pipeline file specified by the -p switch "
+                      "and print the measurements made by that pipeline")
+    parser.add_option("--data-file",
+                      dest="data_file",
+                      default = None,
+                      help = "Specify a data file for LoadData modules that "
+                      'use the "From command-line" option')
+    parser.add_option("--image-set-file",
+                      dest = "image_set_file",
+                      default = None,
+                      help = "Specify the image set file that controls the input "
+                      "images for the pipeline")
+                      
+    parser.add_option("-L", "--log-level",
+                      dest = "log_level",
+                      default = str(logging.INFO),
+                      help = ("Set the verbosity for logging messages: " +
+                              ("%d or %s for debugging, " % (logging.DEBUG, "DEBUG")) +
+                              ("%d or %s for informational, " % (logging.INFO, "INFO")) +
+                              ("%d or %s for warning, " % (logging.WARNING, "WARNING")) +
+                              ("%d or %s for error, " % (logging.ERROR, "ERROR")) +
+                              ("%d or %s for critical, " % (logging.CRITICAL, "CRITICAL")) +
+                              ("%d or %s for fatal." % (logging.FATAL, "FATAL")) +
+                              " Otherwise, the argument is interpreted as the file name of a log configuration file (see http://docs.python.org/library/logging.config.html for file format)"))
+    
+    if not hasattr(sys, 'frozen'):
+        parser.add_option("--code-statistics", 
+                          dest = "code_statistics",
+                          action = "store_true",
+                          default = False,
+                          help = "Print the number of modules, settings and lines of code")
+                                  
+    return parser.parse_args(args[1:])
+
+def set_log_level(options):
+    '''Set the logging package's log level based on command-line options'''
+    try:
+        if options.log_level.isdigit():
+            logging.root.setLevel(int(options.log_level))
+        else:
+            logging.root.setLevel(options.log_level)
+        if len(logging.root.handlers) == 0:
+            logging.root.addHandler(logging.StreamHandler())
+    except ValueError:
+        logging.config.fileConfig(options.log_level)
+
+def print_code_statistics():
+    '''Print # lines of code, # modules, etc to console
+    
+    This is the official source of code statistics for things like grants.
+    '''
     from cellprofiler.modules import builtin_modules, all_modules, instantiate_module
     import subprocess
     print "\n\n\n**** CellProfiler code statistics ****"
@@ -224,9 +358,37 @@ if options.code_statistics:
             with open(filename, "r") as fd:
                 linecount += len(fd.readlines())
     print "# of lines of code: %d" % linecount
-    os._exit(0)
+
+def print_measurements(options):
+    '''Print the measurements that would be output by a pipeline
     
-if options.run_ilastik:
+    This function calls Pipeline.get_measurement_columns() to get the
+    measurements that would be output by a pipeline. This can be used in
+    a workflow tool or LIMS to find the outputs of a pipeline without
+    running it. For instance, someone might want to integrate CellProfiler
+    with Knime and write a Knime node that let the user specify a pipeline
+    file. The node could then execute CellProfiler with the --measurements
+    switch and display the measurements as node outputs.
+    '''
+    
+    if options.pipeline_filename is None:
+        raise ValueError("Can't print measurements, no pipeline file")
+    import cellprofiler.pipeline as cpp
+    pipeline = cpp.Pipeline()
+    def callback(pipeline, event):
+        if isinstance(event, cpp.LoadExceptionEvent):
+            raise ValueError("Failed to load %s" % options.pipeline_filename)
+    pipeline.add_listener(callback)
+    pipeline.load(os.path.expanduser(options.pipeline_filename))
+    columns = pipeline.get_measurement_columns()
+    print "--- begin measurements ---"
+    print "Object,Feature,Type"
+    for column in columns:
+        object_name, feature, data_type = column[:3]
+        print "%s,%s,%s" % (object_name, feature, data_type)
+    print "--- end measurements ---"
+    
+def run_ilastik():
     #
     # Fake ilastik into thinking it is __main__
     #
@@ -236,18 +398,9 @@ if options.run_ilastik:
     il_path = ilastik.__path__
     il_file, il_path, il_description = imp.find_module('ilastikMain', il_path)
     imp.load_module('__main__', il_file, il_path, il_description)
-    sys.exit()
 
-# necessary to prevent matplotlib trying to use Tkinter as its backend.
-# has to be done before CellProfilerApp is imported
-from matplotlib import use as mpluse
-mpluse('WXAgg')
-
-if (not hasattr(sys, 'frozen')) and options.fetch_external_dependencies:
-    import external_dependencies
-    external_dependencies.fetch_external_dependencies(options.overwrite_external_dependencies)
-
-if (not hasattr(sys, 'frozen')) and options.build_extensions:
+def build_extensions():
+    '''Compile C and Cython files as needed'''
     import subprocess
     import cellprofiler.cpmath.setup
     import cellprofiler.utilities.setup
@@ -297,73 +450,10 @@ if (not hasattr(sys, 'frozen')) and options.build_extensions:
         os.environ['PYTHONPATH'] = old_pythonpath
     else:
         del os.environ['PYTHONPATH']
-    if options.build_and_exit:
-        exit()
 
-if options.show_gui and not options.output_html:
-    import wx
-    wx.Log.EnableLogging(False)
-    from cellprofiler.cellprofilerapp import CellProfilerApp
-    App = CellProfilerApp(0, 
-                          check_for_new_version = (options.pipeline_filename is None),
-                          show_splashbox = (options.pipeline_filename is None))
-    # ... loading a pipeline from the filename can bring up a modal
-    # dialog, which causes a crash on Mac if the splashbox is open or
-    # a second modal dialog is opened.
-
-try:
-    #
-    # Important to go headless ASAP
-    #
-    import cellprofiler.preferences as cpprefs
-    if (not options.show_gui) or options.output_html:
-        cpprefs.set_headless()
-        # What's there to do but run if you're running headless?
-        # Might want to change later if there's some headless setup 
-        if (not options.output_html) and (not options.print_measurements):
-            options.run_pipeline = True
-
-    if options.output_html:
-        from cellprofiler.gui.html.manual import generate_html
-        webpage_path = options.output_directory if options.output_directory else None
-        generate_html(webpage_path)
-        
-    if options.print_measurements:
-        if options.pipeline_filename is None:
-            raise ValueError("Can't print measurements, no pipeline file")
-        import cellprofiler.pipeline as cpp
-        pipeline = cpp.Pipeline()
-        def callback(pipeline, event):
-            if isinstance(event, cpp.LoadExceptionEvent):
-                raise ValueError("Failed to load %s" % options.pipeline_filename)
-        pipeline.add_listener(callback)
-        pipeline.load(os.path.expanduser(options.pipeline_filename))
-        columns = pipeline.get_measurement_columns()
-        print "--- begin measurements ---"
-        print "Object,Feature,Type"
-        for column in columns:
-            object_name, feature, data_type = column[:3]
-            print "%s,%s,%s" % (object_name, feature, data_type)
-        print "--- end measurements ---"
+def run_pipeline_headless(options, args):
+    '''Run a CellProfiler pipeline in headless mode'''
     
-    if options.plugins_directory is not None:
-        cpprefs.set_plugin_directory(options.plugins_directory)
-    if options.ij_plugins_directory is not None:
-        cpprefs.set_ij_plugin_directory(options.ij_plugins_directory)
-    if options.data_file is not None:
-        cpprefs.set_data_file(os.path.abspath(options.data_file))
-    if options.image_set_file is not None:
-        cpprefs.set_image_set_file(options.image_set_file, False)
-        
-    from cellprofiler.utilities.version import version_string, version_number
-    logging.root.info("Version: %s / %d" % (version_string, version_number))
-
-    if options.output_html:
-        sys.exit(0) 
-
-    if options.run_pipeline and not options.pipeline_filename:
-        raise ValueError("You must specify a pipeline filename to run")
-
     if not options.first_image_set is None:
         if not options.first_image_set.isdigit():
             raise ValueError("The --first-image-set option takes a numeric argument")
@@ -385,96 +475,65 @@ try:
     else:
         image_set_end = None
     
-    if options.output_directory:
-        cpprefs.set_default_output_directory(options.output_directory)
-    
-    if options.image_directory:
-        cpprefs.set_default_image_directory(options.image_directory)
-
-    if options.show_gui:
-        import cellprofiler.gui.cpframe as cpgframe
-        if options.pipeline_filename:
-            try:
-                App.frame.pipeline.load(os.path.expanduser(options.pipeline_filename))
-                if options.run_pipeline:
-                    App.frame.Command(cpgframe.ID_FILE_ANALYZE_IMAGES)
-            except:
-                import wx
-                wx.MessageBox(
-                    'CellProfiler was unable to load the pipeline file, "%s"' %
-                    options.pipeline_filename, "Error loading pipeline",
-                    style = wx.OK | wx.ICON_ERROR)
-                logging.root.error("Unable to load pipeline", exc_info=True)
-        App.MainLoop()
-        del App  # to allow GC to clean up Measurements, etc.
-    elif options.run_pipeline:
-        if ((options.pipeline_filename is not None) and 
-            (not options.pipeline_filename.lower().startswith('http'))):
-            options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
-        from cellprofiler.pipeline import Pipeline, EXIT_STATUS, M_PIPELINE
-        import cellprofiler.measurements as cpmeas
-        continue_looping = False # distributed workers reset this, below
-        pipeline = Pipeline()
-        initial_measurements = None
-        try:
+    if ((options.pipeline_filename is not None) and 
+        (not options.pipeline_filename.lower().startswith('http'))):
+        options.pipeline_filename = os.path.expanduser(options.pipeline_filename)
+    from cellprofiler.pipeline import Pipeline, EXIT_STATUS, M_PIPELINE
+    import cellprofiler.measurements as cpmeas
+    pipeline = Pipeline()
+    initial_measurements = None
+    try:
+        import h5py
+        if h5py.is_hdf5(options.pipeline_filename):
+            initial_measurements = cpmeas.load_measurements(
+                options.pipeline_filename,
+                image_numbers=image_set_numbers)
+    except:
+        logging.root.info("Failed to load measurements from pipeline")
+    if initial_measurements is not None:
+        pipeline_text = \
+            initial_measurements.get_experiment_measurement(
+                M_PIPELINE)
+        pipeline_text = pipeline_text.encode('us-ascii')
+        pipeline.load(StringIO(pipeline_text))
+        if not pipeline.in_batch_mode():
+            #
+            # Need file list in order to call prepare_run
+            #
             import h5py
-            if h5py.is_hdf5(options.pipeline_filename):
-                initial_measurements = cpmeas.load_measurements(
-                    options.pipeline_filename,
-                    image_numbers=image_set_numbers)
-        except:
-            logging.root.info("Failed to load measurements from pipeline")
-        if initial_measurements is not None:
-            pipeline_text = \
-                initial_measurements.get_experiment_measurement(
-                    M_PIPELINE)
-            pipeline_text = pipeline_text.encode('us-ascii')
-            pipeline.load(StringIO(pipeline_text))
+            from cellprofiler.utilities.hdf5_dict import HDF5FileList
+            with h5py.File(options.pipeline_filename, "r") as src:
+                if HDF5FileList.has_file_list(src):
+                    HDF5FileList.copy(
+                        src, initial_measurements.hdf5_dict.hdf5_file)
+    else:
+        pipeline.load(options.pipeline_filename)
+    if options.groups is not None:
+        kvs = [x.split('=') for x in options.groups.split(',')]
+        groups = dict(kvs)
+    else:
+        groups = None
+    use_hdf5 = len(args) > 0 and not args[0].lower().endswith(".mat")
+    measurements = pipeline.run(
+        image_set_start=image_set_start, 
+        image_set_end=image_set_end,
+        grouping=groups,
+        measurements_filename = None if not use_hdf5 else args[0],
+        initial_measurements = initial_measurements)
+    if len(args) > 0 and not use_hdf5:
+        pipeline.save_measurements(args[0], measurements)
+    if options.done_file is not None:
+        if (measurements is not None and 
+            measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
+            done_text = measurements.get_experiment_measurement(EXIT_STATUS)
         else:
-            pipeline.load(options.pipeline_filename)
-        if options.groups is not None:
-            kvs = [x.split('=') for x in options.groups.split(',')]
-            groups = dict(kvs)
-        else:
-            groups = None
-        use_hdf5 = len(args) > 0 and not args[0].lower().endswith(".mat")
-        measurements = pipeline.run(
-            image_set_start=image_set_start, 
-            image_set_end=image_set_end,
-            grouping=groups,
-            measurements_filename = None if not use_hdf5 else args[0],
-            initial_measurements = initial_measurements)
-        if len(args) > 0 and not use_hdf5:
-            pipeline.save_measurements(args[0], measurements)
-        if options.done_file is not None:
-            if (measurements is not None and 
-                measurements.has_feature(cpmeas.EXPERIMENT, EXIT_STATUS)):
-                done_text = measurements.get_experiment_measurement(EXIT_STATUS)
-            else:
-                done_text = "Failure"
-            fd = open(options.done_file, "wt")
-            fd.write("%s\n"%done_text)
-            fd.close()
-        if measurements is not None:
-            del measurements  # clean up
-except Exception, e:
-    logging.root.fatal("Uncaught exception in CellProfiler.py", exc_info=True)
-    raise
-
-finally:
-    try:
-        from ilastik.core.jobMachine import GLOBAL_WM
-        GLOBAL_WM.stopWorkers()
-    except:
-        logging.root.warn("Failed to stop Ilastik")
-    try:
-        from cellprofiler.utilities.zmqrequest import join_to_the_boundary
-        join_to_the_boundary()
-    except:
-        logging.root.warn("Failed to stop zmq boundary")
-    try:
-        from cellprofiler.utilities.jutil import kill_vm
-        kill_vm()
-    except:
-        logging.root.warn("Failed to stop the JVM")
+            done_text = "Failure"
+        fd = open(options.done_file, "wt")
+        fd.write("%s\n"%done_text)
+        fd.close()
+    if measurements is not None:
+        measurements.close()
+    
+if __name__ == "__main__":
+    main(sys.argv)
     os._exit(0)

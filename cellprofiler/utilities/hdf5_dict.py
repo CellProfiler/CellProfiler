@@ -751,6 +751,50 @@ class HDF5FileList(object):
     "c:\foo\bar" becomes "file:///C:/foo/bar" as a URL and becomes
     "file", "\2F\2FC\58". SORRY!
     '''
+    @classmethod
+    def has_file_list(cls, hdf5_file):
+        '''Return True if the hdf5 file has a file list
+        
+        hdf5_file - an h5py.File
+        '''
+        assert isinstance(hdf5_file, h5py.File)
+        if not FILE_LIST_GROUP in hdf5_file.keys():
+            return False
+        flg = hdf5_file[FILE_LIST_GROUP]
+        for key in flg.keys():
+            g = flg[key]
+            if g.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
+                return True
+        else:
+            return False
+        
+    @classmethod
+    def copy(cls, src, dest):
+        '''Copy the file list from one HDF5 file to another
+        
+        src - a h5py.File with a file list
+        
+        dest - destination for file list
+        
+        Any file list in dest will be erased.
+        '''
+        assert isinstance(src, h5py.File)
+        assert isinstance(dest, h5py.File)
+        if not cls.has_file_list(src):
+            return
+        
+        flg = src[FILE_LIST_GROUP]
+        for key in flg.keys():
+            src_g = flg[key]
+            if src_g.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
+                break
+        dest_flg = dest.require_group(FILE_LIST_GROUP)
+        for key in list(dest_flg.keys()):
+            g = dest_flg[key]
+            if g.attrs.get(A_CLASS, None) == CLASS_FILELIST_GROUP:
+                del dest_flg[key]
+        dest.copy(src_g, dest_flg)
+        
     def __init__(self, 
                  hdf5_file, 
                  lock = None,

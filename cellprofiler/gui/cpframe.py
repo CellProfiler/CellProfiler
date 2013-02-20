@@ -115,12 +115,12 @@ class CPFrame(wx.Frame):
         background_color = cpprefs.get_background_color()
         self.BackgroundColour = background_color
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
-        
+
         # Crappy splitters leave crud on the screen because they want custom
         # background painting but fail to do it. Here, we have a fight with
         # them and beat them.
         self.__splitter.BackgroundStyle = 0
-        
+
         self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
         self.__right_win.BackgroundColour = background_color
 
@@ -166,7 +166,7 @@ class CPFrame(wx.Frame):
                                    wx.EXPAND | wx.ALL)
         self.__path_module_imageset_panel.Bind(
             wx.EVT_SIZE, self.__on_path_module_imageset_panel_size)
-                                               
+
         #
         # The path list control that holds all of the files being dealt with
         # by the pipeline
@@ -195,14 +195,14 @@ class CPFrame(wx.Frame):
             self.__path_list_ctrl.set_show_disabled(
                 self.__path_list_filter_checkbox.Value)
         self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
-            
+
         hsizer.AddSpacer(5)
         self.__path_list_button = wx.Button(self.__path_list_sash,
                                             label = "Update filter")
         hsizer.Add(self.__path_list_button, 0, wx.ALIGN_LEFT)
         self.__module_panel = wx.Panel(self.__path_module_imageset_panel)
         self.__module_panel.BackgroundColour = cpprefs.get_background_color()
-        
+
         self.__imageset_sash = wx.SashLayoutWindow(
             self.__path_module_imageset_panel, style=wx.NO_BORDER)
         self.__imageset_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
@@ -223,7 +223,7 @@ class CPFrame(wx.Frame):
             self.__path_module_imageset_panel.Hide()
         else:
             self.__startup_blurb.Hide()
-            
+
         self.__right_win.Sizer.AddSpacer(4)
         self.__preferences_panel = wx.Panel(self.__right_win,-1)
         self.__right_win.Sizer.Add(self.__preferences_panel, 0, wx.EXPAND)
@@ -244,7 +244,7 @@ class CPFrame(wx.Frame):
 
     def show_path_list_ctrl(self, show):
         '''Show or hide the path list control
-        
+
         show - true to show, false to hide
         '''
         if bool(show) == bool(self.__path_list_sash.IsShown()):
@@ -252,10 +252,10 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.Show(show)
         self.layout_pmi_panel()
         self.__path_list_sash.Layout()
-    
+
     def show_imageset_ctrl(self, show):
         '''Show or hide the imageset control
-        
+
         show - true to show, false to hide
         '''
         if bool(show) == bool(self.__imageset_sash.IsShown()):
@@ -263,12 +263,12 @@ class CPFrame(wx.Frame):
         self.__imageset_sash.Show(show)
         self.layout_pmi_panel()
         self.__imageset_sash.Layout()
-        
+
     def reset_imageset_ctrl(self, refresh_image_set=True):
         if refresh_image_set:
             self.__workspace.refresh_image_set()
         self.__imageset_ctrl.recompute()
-        
+
     def show_module_ui(self, show):
         '''Show or hide the module and notes panel'''
         if show and self.__startup_blurb is not None:
@@ -286,23 +286,23 @@ class CPFrame(wx.Frame):
             scroll_y=True,
             scrollToTop=False)
         self.__imageset_sash.Layout()
-        
+
     def __on_sash_drag(self, event):
         sash = event.GetEventObject()
         width, _ = sash.GetSize()
         sash.SetDefaultSize((width, event.GetDragRect().height))
         self.layout_pmi_panel()
         sash.Layout()
-        
+
     def __on_path_module_imageset_panel_size(self, event):
         self.layout_pmi_panel()
-        
+
     def layout_pmi_panel(self):
         '''Run the sash layout algorithm on the path/module/imageset panel'''
         wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
                                           self.__module_panel)
-        
-        
+
+
     def OnClose(self, event):
         if event.CanVeto() and not self.pipeline_controller.check_close():
             event.Veto()
@@ -310,8 +310,6 @@ class CPFrame(wx.Frame):
         self.__workspace.measurements.flush()
         self.__preferences_view.close()
         self.pipeline_controller.on_close()
-	self.search_frame.Destroy()
-	self.search_frame = None
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):
@@ -394,8 +392,8 @@ class CPFrame(wx.Frame):
         make_help_menu(MAIN_HELP, self, self.__menu_help)
         self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data Tool Help','Display documentation for available data tools')
         self.__menu_help.Append(ID_HELP_MODULE,'Module Help','Display Documentation for the Current Module')
-	self.__menu_help.Append(ID_HELP_SEARCH, "Search help",
-	                        "Search for help pages that match a search term.")
+        self.__menu_help.Append(ID_HELP_SEARCH, "Search help",
+                                "Search for help pages that match a search term.")
         self.__menu_help.AppendSeparator()
         self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's Guide",
                                 "Launch the developer's guide webpage")
@@ -424,7 +422,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_HELP_ONLINE_MANUAL,self.__on_help_online_manual)
         wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
-	wx.EVT_MENU(self, ID_HELP_SEARCH, self.__on_search_help)
+        wx.EVT_MENU(self, ID_HELP_SEARCH, self.__on_search_help)
         wx.EVT_MENU(self, ID_HELP_ABOUT, self.__on_help_about)
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
         wx.EVT_MENU(self,ID_CHECK_NEW_VERSION, self.__on_check_new_version)
@@ -453,15 +451,15 @@ class CPFrame(wx.Frame):
             for data_tool_name in get_data_tool_names():
                 new_id = wx.NewId()
                 self.__menu_data_tools_help_menu.Append(new_id, data_tool_name)
-                
+
                 def on_data_tool_help(event, data_tool_name=data_tool_name):
                     self.__on_data_tool_help(event, data_tool_name)
                 wx.EVT_MENU(self, new_id, on_data_tool_help)
         return self.__menu_data_tools_help_menu
-                    
+
     def data_tools_menu(self):
         '''Create a menu of data tools'''
-        
+
         if not hasattr(self, "__data_tools_menu"):
             self.__data_tools_menu = wx.Menu()
             for data_tool_name in get_data_tool_names():
@@ -470,9 +468,9 @@ class CPFrame(wx.Frame):
                 def on_data_tool(event, data_tool_name=data_tool_name):
                     self.__on_data_tool(event, data_tool_name)
                 wx.EVT_MENU(self, new_id, on_data_tool)
-                
+
             self.__data_tools_menu.AppendSubMenu(self.data_tools_help(), '&Help')
-        
+
         return self.__data_tools_menu
 
     debug_commands = (ID_DEBUG_STEP, ID_DEBUG_NEXT_IMAGE_SET,
@@ -485,13 +483,13 @@ class CPFrame(wx.Frame):
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, False)
         self.__menu_file.Enable(ID_FILE_RESTART, False)
         self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, False)
-        
+
         assert isinstance(startstop, wx.MenuItem)
         startstop.Text = '&Stop test run\tF5'
         startstop.Help = 'Stop the pipeline debugger'
         for cmd in self.debug_commands:
             self.__menu_debug.Enable(cmd, True)
-        
+
     def enable_launch_commands(self):
         '''Enable commands to start analysis or test mode'''
         startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
@@ -503,16 +501,16 @@ class CPFrame(wx.Frame):
         self.__menu_file.Enable(ID_FILE_RESTART, True)
         self.__menu_debug.Enable(ID_DEBUG_TOGGLE, True)
         self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, True)
-        
+
         self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, False)
-        
+
     def enable_analysis_commands(self):
         '''Enable commands to pause or stop analysis'''
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, False)
         self.__menu_file.Enable(ID_FILE_RESTART, False)
         self.__menu_debug.Enable(ID_DEBUG_TOGGLE, False)
         self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, False)
-        
+
         self.__menu_file.Enable(ID_FILE_STOP_ANALYSIS, True)
 
     def __on_widget_inspector(self, evt):
@@ -532,7 +530,7 @@ class CPFrame(wx.Frame):
 
     def __on_close_all(self, event):
         close_all(self)
-    
+
     def __on_new_cp(self, event):
         import os
         if not hasattr(sys, 'frozen'):
@@ -543,22 +541,22 @@ class CPFrame(wx.Frame):
     def __on_help_online_manual(self, event):
         import webbrowser
         webbrowser.open("http://cellprofiler.org/CPmanual/")
-        
+
     def __on_help_developers_guide(self, event):
         import webbrowser
         webbrowser.open("http://www.cellprofiler.org/wiki/index.php/Main_Page")
-        
+
     def __on_help_about(self, event):
         from cellprofiler.icons import get_builtin_image
         CellProfilerSplash = get_builtin_image('CellProfilerSplash')
         splashbitmap = wx.BitmapFromImage(CellProfilerSplash)
-        
+
         dlg = wx.Dialog(self)
         dlg.Title = "About CellProfiler"
         sizer = wx.BoxSizer(wx.VERTICAL)
         dlg.SetSizer(sizer)
         sizer.Add(wx.StaticBitmap(dlg, -1, splashbitmap), 0, wx.EXPAND | wx.ALL, 5)
-        
+
         cellprofiler_copyright = """Copyright (c) 2003-2009 Massachusetts Institute of Technology
 Copyright (c) 2009-2013 Broad Institute
 All rights reserved."""
@@ -567,7 +565,7 @@ All rights reserved."""
 
         license_ctl = wx.StaticText(dlg, -1, cellprofiler_license)
         sizer.Add(license_ctl, 0, wx.ALIGN_LEFT | wx.ALL, 5)
-        
+
         for button_text, license_text in (("GPL License", gpl_license),
                                           ("BSD License", bsd_license)):
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -575,7 +573,7 @@ All rights reserved."""
             license_button = wx.Button(dlg, -1, button_text + " >>")
             sub_sizer.Add(license_button, 0, wx.ALIGN_LEFT | wx.RIGHT, 3)
             sub_sizer.Add(wx.StaticLine(dlg), 0, wx.ALIGN_CENTER_VERTICAL | wx.EXPAND)
-            
+
             panel = wx.lib.scrolledpanel.ScrolledPanel(dlg)
             panel.Sizer = wx.BoxSizer(wx.VERTICAL)
             license_ctl = wx.StaticText(panel, -1, license_text)
@@ -585,7 +583,7 @@ All rights reserved."""
             sizer.Add(panel, 0, wx.EXPAND | wx.ALL, 5)
             panel.SetupScrolling()
             panel.Hide()
-            
+
             def on_license(event, panel=panel):
                 if panel.IsShown():
                     panel.Hide()
@@ -594,12 +592,12 @@ All rights reserved."""
                 dlg.Fit()
                 dlg.Refresh()
             license_button.Bind(wx.EVT_BUTTON, on_license)
-                
+
         sizer.Add(dlg.CreateStdDialogButtonSizer(wx.OK), 0, 
                   wx.ALIGN_RIGHT | wx.ALL, 5)
         dlg.Fit()
         dlg.ShowModal()
-        
+
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()
         if len(modules) > 0:
@@ -770,7 +768,7 @@ All rights reserved."""
             else:
                 frame.subplot_imshow_grayscale(0, 0, image, title=dlg.Path)
             frame.panel.draw()    
-            
+
     def __attach_views(self):
         self.__pipeline_list_view = PipelineListView(self.__module_list_panel, self)
         self.__pipeline_controller = PipelineController(self.__workspace, self)
@@ -798,7 +796,7 @@ All rights reserved."""
         splitter = self.__splitter
         right_win = self.__right_win
         top_left_win = self.__left_win
-        
+
         self.__splitter.SetMinimumPaneSize(self.__logopic.GetBestSize()[0] + 5)
         self.__splitter.SplitVertically(self.__left_win, self.__right_win, 300)
         self.__splitter.BorderSize = 0
@@ -831,17 +829,17 @@ All rights reserved."""
 
     def __set_icon(self):
         self.SetIcon(get_cp_icon())
-        
+
     def __make_search_frame(self):
         '''Make and hide the "search the help" frame'''
         background_color = cpprefs.get_background_color()
-	size = (wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
-	        wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2)
+        size = (wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X) / 2,
+                wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y) / 2)
         self.search_frame = wx.Frame(
             self, title = "Search CellProfiler help",
-	    size = size,
+            size = size,
             style = wx.DEFAULT_FRAME_STYLE | wx.TAB_TRAVERSAL)
-	self.search_frame.AutoLayout = True
+        self.search_frame.AutoLayout = True
         self.search_frame.SetIcon(get_cp_icon())
         self.search_frame.Sizer = wx.BoxSizer(wx.VERTICAL)
         self.search_frame.BackgroundColour = background_color
@@ -853,55 +851,55 @@ All rights reserved."""
         search_text_ctrl = wx.TextCtrl(self.search_frame)
         sizer.Add(search_text_ctrl, 1, wx.EXPAND)
         search_button = wx.Button(self.search_frame, label = "Search")
-	search_button.SetDefault()
+        search_button.SetDefault()
         sizer.AddSpacer(2)
         sizer.Add(search_button, 0, wx.EXPAND)
-        
+
         html_window = wx.html.HtmlWindow(self.search_frame)
         self.search_frame.Sizer.Add(html_window, 1, wx.EXPAND | wx.ALL, 4)
         def on_search(event):
             from cellprofiler.gui.html.manual import search_module_help
-	    search_text = search_text_ctrl.Value
+            search_text = search_text_ctrl.Value
             html = search_module_help(search_text)
             if html is None:
-		so_sorry = """<html>
+                so_sorry = """<html>
 		<header><title>"%s" not found in help</title></header>
 		<body>Could not find "%s" in CellProfiler's help documentation</body>
 		</html>""" % (search_text, search_text)
                 html_window.SetPage(so_sorry)
-	    else:
-		html_window.SetPage(html)
-	search_button.Bind(wx.EVT_BUTTON, on_search)
-	def on_link_clicked(event):
-	    '''Handle anchor clicks manually
-	    
-	    The HTML window (on Windows at least) jams the anchor to the
-	    top of the window which obscures it.
-	    '''
-	    linkinfo = event.GetLinkInfo()
-	    if linkinfo.GetHref()[0] != "#":
-		event.Skip()
-		return
-	    html_window.ScrollToAnchor(linkinfo.GetHref()[1:])
-	    html_window.ScrollLines(-1)
-	    
-	html_window.Bind(wx.html.EVT_HTML_LINK_CLICKED, on_link_clicked)
-	def on_close(event):
-	    assert isinstance(event, wx.CloseEvent)
-	    self.search_frame.Hide()
-	    event.Veto()
-	    
-	self.search_frame.Bind(wx.EVT_CLOSE, on_close)
-	self.search_frame.Layout()
-	
+            else:
+                html_window.SetPage(html)
+        search_button.Bind(wx.EVT_BUTTON, on_search)
+        def on_link_clicked(event):
+            '''Handle anchor clicks manually
+
+            The HTML window (on Windows at least) jams the anchor to the
+            top of the window which obscures it.
+            '''
+            linkinfo = event.GetLinkInfo()
+            if linkinfo.GetHref()[0] != "#":
+                event.Skip()
+                return
+            html_window.ScrollToAnchor(linkinfo.GetHref()[1:])
+            html_window.ScrollLines(-1)
+
+        html_window.Bind(wx.html.EVT_HTML_LINK_CLICKED, on_link_clicked)
+        def on_close(event):
+            assert isinstance(event, wx.CloseEvent)
+            self.search_frame.Hide()
+            event.Veto()
+
+        self.search_frame.Bind(wx.EVT_CLOSE, on_close)
+        self.search_frame.Layout()
+
     def __on_search_help(self, event):
-	if self.search_frame is not None:
-	    self.search_frame.Show()
-	    self.search_frame.Raise()
+        if self.search_frame is not None:
+            self.search_frame.Show()
+            self.search_frame.Raise()
 
     def __on_size(self, event):
         self.Layout()
-        
+
     def __on_data_tool(self, event, tool_name):
         module = instantiate_module(tool_name)
         args, varargs, varkw, vardef = inspect.getargspec(module.run_as_data_tool)
@@ -919,11 +917,11 @@ All rights reserved."""
             DataToolFrame(self, 
                           module_name=tool_name,
                           measurements_file_name = dlg.Path)
-    
+
     def __on_data_tool_help(self, event, tool_name):
         module = instantiate_module(tool_name)
         self.do_help_module(tool_name, module.get_help())
-        
+
     def display_error(self,message,error):
         """Displays an exception in a standardized way
 
@@ -1431,4 +1429,3 @@ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
 IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
 ADVISED OF THE POSSIBILITY OF SUCH DAMAGE."""
-

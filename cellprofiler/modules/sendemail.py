@@ -60,12 +60,10 @@ S_DICTIONARY = {
     "After cycle #": S_CYCLE_N
     }
 
-K_EMAIL = "Email"
-K_CYCLE = "Cycle"
-K_RESULT = "Result"
-
 '''Number of settings in an event'''
 EVENT_SETTING_COUNT = 4
+
+K_LAST_IN_GROUP = "Last in group"
 
 class SendEmail(cpm.CPModule):
     
@@ -248,47 +246,49 @@ class SendEmail(cpm.CPModule):
         result += [self.add_when_button]
         return result
     
-    def prepare_run(self, workspace):
-        '''Prepare to run the first image in the image set'''
-        email_me = [ group.message.value for group in self.when
-                     if group.choice == S_FIRST ]
-        
-        d = self.get_dictionary(workspace.image_set_list)
-        d[K_EMAIL] = email_me
-        d[K_CYCLE] = 0
-        d[K_RESULT] = "No email sent"
-        return True
-    
     def prepare_group(self, workspace, grouping, image_numbers):
-        '''Prepare to run the first image in the group'''
-        email_me = [group.message.value for group in self.when
-                    if group.choice == S_GROUP_START ]
-        if email_me:
-            self.get_dictionary(workspace.image_set_list)[K_EMAIL] += email_me
-            
+        d = self.get_dictionary()
+        d[K_LAST_IN_GROUP] = image_numbers[-1]
+    
     def run(self, workspace):
         '''Run every image set'''
-        #
-        # This is the module's dictionary for the run
-        #
-        d = self.get_dictionary(workspace.image_set_list)
-        email_me = d[K_EMAIL]
-        d[K_EMAIL] = []
-        cycle = d[K_CYCLE]
-        d[K_CYCLE] += 1
-        
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        d = self.get_dictionary()
+        image_number = m.image_set_number
+        if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
+            group_number = m[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, image_number]
+        else:
+            group_number = None
+        if m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_INDEX):
+            group_index = m[cpmeas.IMAGE, cpmeas.GROUP_INDEX, image_number]
+            is_first = group_number == 1 and group_index == 1
+            is_first_in_group = group_index == 1
+            is_last_in_group = d.get(K_LAST_IN_GROUP) == image_number
+        else:
+            group_index = None
+            is_first = image_number == 1
+            is_first_in_group = image_number == 1
+            is_last_in_group = False
+        email_me = []
         for group in self.when:
-            if (group.choice == S_CYCLE_N and 
-                cycle == group.image_set_number.value - 1):
-                email_me.append(group.message.value)
-            if (group.choice == S_EVERY_N and
-                cycle % group.image_set_count.value == 
-                group.image_set_count.value - 1):
-                email_me.append(group.message.value)
+            message = group.message.value
+            if group.choice == S_FIRST and is_first:
+                email_me.append(message)
+            elif group.choice == S_GROUP_START and is_first_in_group:
+                email_me.append(message)
+            elif group.choice == S_GROUP_END and is_last_in_group:
+                email_me.append(message)
+            elif (group.choice == S_CYCLE_N and 
+                  group.image_set_number == image_number):
+                email_me.append(message)
+            elif (group.choice == S_EVERY_N and
+                  image_number % group.image_set_count.value == 0):
+                email_me.append(message)
         if len(email_me) > 0:
-            d[K_RESULT] = self.send_email(workspace, email_me)
-        if self.show_window:
-            workspace.display_data.result = d[K_RESULT]
+            workspace.display_data.result = self.send_email(workspace, email_me)
+        else:
+            workspace.display_data.result = "Nothing sent"
             
     def display(self, workspace, figure):
         import matplotlib
@@ -299,21 +299,12 @@ class SendEmail(cpm.CPModule):
         mfigure.clf()
         mfigure.text(.1, .1, workspace.display_data.result)
     
-    def post_group(self, workspace, grouping):
-        '''Possibly send an email after finishing a group'''
-        email_me = [group.message.value for group in self.when
-                    if group.choice == S_GROUP_END ]
-        if len(email_me) > 0:
-            d = self.get_dictionary(workspace.image_set_list)
-            d[K_RESULT] = self.send_email(workspace, email_me)
-            
     def post_run(self, workspace):
         '''Possibly send an email as we finish the run'''
         email_me = [group.message.value for group in self.when
                     if group.choice == S_LAST ]
         if len(email_me) > 0:
-            d = self.get_dictionary(workspace.image_set_list)
-            d[K_RESULT] = self.send_email(workspace, email_me)
+            self.send_email(workspace, email_me)
 
     def send_email(self, workspace, messages):
         '''Send an email according to the settings'''

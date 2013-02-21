@@ -2974,7 +2974,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         
     def test_07_01_well_single_objtable(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(
-            False, well_metadata = True)
+            False, well_metadata = True, image_set_count=3)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type.value = E.DB_MYSQL
@@ -2995,6 +2995,8 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             meas = ((cpmeas.IMAGE, FLOAT_IMG_MEASUREMENT),
                     (cpmeas.IMAGE, INT_IMG_MEASUREMENT),
                     (OBJECT_NAME, OBJ_MEASUREMENT))
+            m = workspace.measurements
+            image_numbers = m.get_image_numbers()
             for aggname, aggfn in (("avg", np.mean),
                                    ("median", np.median),
                                    ("std", np.std)):
@@ -3009,7 +3011,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 self.assertEqual(row[1], WELL)
                 for i, (object_name, feature) in enumerate(meas):
                     value = row[i+2]
-                    values = workspace.measurements.get_current_measurement(object_name, feature)
+                    values = m[object_name, feature, image_numbers]
                     expected = aggfn(values)
                     if np.isnan(expected):
                         self.assertTrue(value is None)
@@ -3024,7 +3026,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             
     def test_07_02_well_two_objtables(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(
-            False, well_metadata = True, alt_object = True)
+            False, well_metadata = True, alt_object = True, image_set_count=3)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type.value = E.DB_MYSQL
@@ -3038,7 +3040,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             module.wants_agg_median_well.value = True
             module.wants_agg_std_dev_well.value = True
             module.prepare_run(workspace)
-            module.prepare_group(workspace, {}, [1])
+            module.prepare_group(workspace, {}, [1, 2, 3])
             module.run(workspace)
             module.post_run(workspace)
             self.execute_well_sql(output_dir, module)
@@ -3046,6 +3048,8 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                     (cpmeas.IMAGE, INT_IMG_MEASUREMENT),
                     (OBJECT_NAME, OBJ_MEASUREMENT),
                     (ALTOBJECT_NAME, OBJ_MEASUREMENT))
+            m = workspace.measurements
+            image_numbers = m.get_image_numbers()
             for aggname, aggfn in (("avg", np.mean),
                                    ("median", np.median),
                                    ("std", np.std)):
@@ -3060,7 +3064,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 self.assertEqual(row[1], WELL)
                 for i, (object_name, feature) in enumerate(meas):
                     value = row[i+2]
-                    values = workspace.measurements.get_current_measurement(object_name, feature)
+                    values = m[object_name, feature, image_numbers]
                     expected = aggfn(values)
                     if np.isnan(expected):
                         self.assertTrue(value is None)

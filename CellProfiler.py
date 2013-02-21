@@ -11,6 +11,7 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
+import h5py
 import logging
 import logging.config
 import sys
@@ -60,6 +61,14 @@ def main(args):
     
     if options.code_statistics:
         print_code_statistics()
+        return
+    
+    if options.print_groups_file is not None:
+        print_groups(options.print_groups_file)
+        return
+    
+    if options.batch_commands_file is not None:
+        get_batch_commands(options.batch_commands_file)
         return
         
     if options.run_ilastik:
@@ -287,6 +296,30 @@ def parse_args(args):
                       action="store_true",
                       help="Open the pipeline file specified by the -p switch "
                       "and print the measurements made by that pipeline")
+    
+    parser.add_option("--print-groups",
+                      dest="print_groups_file",
+                      default=None,
+                      help = "Open the measurements file following the "
+                      "--print-groups switch and print the groups in its image "
+                      "sets. The measurements file should be generated using "
+                      "CreateBatchFiles. The output is a JSON-encoded data "
+                      "structure containing the group keys and values and the "
+                      "image sets in each group.")
+    parser.add_option("--get-batch-commands",
+                      dest = "batch_commands_file",
+                      default = None,
+                      help = "Open the measurements file following the "
+                      "--get-batch-commands switch and print one line to the "
+                      "console per group. The measurements file should be "
+                      "generated using CreateBatchFiles and the image sets "
+                      "should be grouped into the units to be run. Each line "
+                      "is a command to invoke CellProfiler. You can use this "
+                      "option to generate a shell script that will invoke "
+                      'CellProfiler on a cluster by substituting "CellProfiler" '
+                      "with your invocation command in the script's text, for "
+                      "instance: CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_jobs.sh")
+    
     parser.add_option("--data-file",
                       dest="data_file",
                       default = None,
@@ -388,6 +421,48 @@ def print_measurements(options):
         print "%s,%s,%s" % (object_name, feature, data_type)
     print "--- end measurements ---"
     
+def print_groups(filename):
+    '''Print the image set groups for this pipeline
+    
+    This function outputs a JSON string to the console composed of a list
+    of the groups in the pipeline image set. Each element of the list is
+    a two-tuple whose first element is a key/value dictionary of the
+    group's key and the second is a tuple of the image numbers in the group.
+    '''
+    import json
+    
+    import cellprofiler.measurements as cpmeas
+    
+    path = os.path.expanduser(filename)
+    m = cpmeas.Measurements(filename = path, mode="r")
+    metadata_tags = m.get_grouping_tags()
+    groupings = m.get_groupings(metadata_tags)
+    json.dump(groupings, sys.stdout)
+    
+def get_batch_commands(filename):
+    '''Print the commands needed to run the given batch data file headless
+    
+    filename - the name of a Batch_data.h5 file. The file should group image sets.
+    
+    The output assumes that the executable, "CellProfiler", can be used
+    to run the command from the shell. Alternatively, the output could be
+    run through a utility such as "sed":
+    
+    CellProfiler --get-batch-commands Batch_data.h5 | sed s/CellProfiler/farm_job.sh/
+    '''
+
+    import cellprofiler.measurements as cpmeas
+    
+    path = os.path.expanduser(filename)
+    m = cpmeas.Measurements(filename = path, mode="r")
+    metadata_tags = m.get_grouping_tags()
+    groupings = m.get_groupings(metadata_tags)
+    for grouping in groupings:
+        group_string = ",".join(
+            ["%s=%s" % (k,v) for k, v in grouping[0].iteritems()])
+        print "CellProfiler -c -r -b -p %s -g %s" % (
+            filename, group_string)
+    
 def run_ilastik():
     #
     # Fake ilastik into thinking it is __main__
@@ -483,7 +558,6 @@ def run_pipeline_headless(options, args):
     pipeline = Pipeline()
     initial_measurements = None
     try:
-        import h5py
         if h5py.is_hdf5(options.pipeline_filename):
             initial_measurements = cpmeas.load_measurements(
                 options.pipeline_filename,
@@ -500,7 +574,6 @@ def run_pipeline_headless(options, args):
             #
             # Need file list in order to call prepare_run
             #
-            import h5py
             from cellprofiler.utilities.hdf5_dict import HDF5FileList
             with h5py.File(options.pipeline_filename, "r") as src:
                 if HDF5FileList.has_file_list(src):

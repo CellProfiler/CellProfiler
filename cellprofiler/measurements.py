@@ -154,6 +154,9 @@ C_CHANNEL_TYPE = "ChannelType"
 '''The experiment feature name used to store the image set's metadata tags'''
 M_METADATA_TAGS = "_".join((C_METADATA, "Tags"))
 
+'''The experiment feature name used to store the image set's grouping tags'''
+M_GROUPING_TAGS = "_".join((C_METADATA, "GroupingTags"))
+
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''
     m = re.match(r'^varchar\(([0-9]+)\)$', x)
@@ -1403,6 +1406,24 @@ class Measurements(object):
         if M_METADATA_TAGS not in self.get_feature_names(EXPERIMENT):
             return [ IMAGE_NUMBER ]
         return json.loads(self.get_experiment_measurement(M_METADATA_TAGS))
+    
+    def set_grouping_tags(self, grouping_tags):
+        '''Write the metadata tags that are used to group an image set
+        
+        grouping_tags - image feature names of the metadata tags that
+                        uniquely define a group.
+        '''
+        data = json.dumps(grouping_tags)
+        self.add_experiment_measurement(M_GROUPING_TAGS, data)
+        
+    def get_grouping_tags(self):
+        '''Get the metadata tags that were used to group the image set
+        
+        '''
+        if not self.has_feature(EXPERIMENT, M_GROUPING_TAGS):
+            return self.get_metadata_tags()
+        
+        return json.loads(self.get_experiment_measurement(M_GROUPING_TAGS))
 
 def load_measurements_from_buffer(buf):
     dir = cpprefs.get_default_output_directory()

@@ -259,13 +259,19 @@ class Groups(cpm.CPModule):
         '''
         if not self.wants_groups:
             return
-        key_list = ["_".join((cpmeas.C_METADATA, g.metadata_choice.value))
-                    for g in self.grouping_metadata]
+        key_list = self.get_grouping_tags()
         m = workspace.measurements
         if any([key not in m.get_feature_names(cpmeas.IMAGE) for key in key_list]):
             # Premature execution of get_groupings if module is mis-configured
             return None
         return key_list, m.get_groupings(key_list)
+    
+    def get_grouping_tags(self):
+        '''Return the metadata keys used for grouping'''
+        if not self.wants_groups:
+            return None
+        return ["_".join((cpmeas.C_METADATA, g.metadata_choice.value))
+                for g in self.grouping_metadata]
     
     def change_causes_prepare_run(self, setting):
         '''Return True if changing the setting passed changes the image sets
@@ -327,10 +333,18 @@ class Groups(cpm.CPModule):
         m.reorder_image_measurements(new_image_numbers)
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, group_numbers)
         m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, group_indexes)
+        m.set_grouping_tags(self.get_grouping_tags())
         return True
         
     def run(self, workspace):
         pass
+    
+    def get_measurement_columns(self, pipeline):
+        '''Return the measurments recorded by this module
+        
+        GroupNumber and GroupIndex are accounted for by the pipeline itself.
+        '''
+        return [(cpmeas.EXPERIMENT, cpmeas.M_GROUPING_TAGS, cpmeas.COLTYPE_VARCHAR)]
     
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

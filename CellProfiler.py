@@ -109,12 +109,12 @@ parser.add_option("--html",
 parser.add_option("--plugins-directory",
                   dest="plugins_directory",
                   help=("CellProfiler will look for plugin modules in this "
-                        "directory."))
+                        "directory (headless-only)."))
 
 parser.add_option("--ij-plugins-directory",
                   dest="ij_plugins_directory",
                   help=("CellProfiler will look for ImageJ plugin modules "
-                        "in this directory."))
+                        "in this directory (headless-only)."))
 
 parser.add_option("--jvm-heap-size",
                   dest="jvm_heap_size",

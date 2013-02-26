@@ -22,6 +22,9 @@ import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import loci.common.services.DependencyException;
+import loci.common.services.ServiceException;
+
 import org.apache.log4j.Logger;
 import org.cellprofiler.imageset.filter.Filter;
 import org.cellprofiler.imageset.filter.ImagePlaneDetails;
@@ -167,21 +170,45 @@ public class ImagePlaneMetadataExtractor  {
 	 * @param metadata OME xml metadata if present
 	 * @param pIPD an array of length 1 that's used to return the Java
 	 *        ImagePlaneDetails built by this method, populated with metadata.
+	 * @param pIF an array of length 1 that's used to return the image file.
 	 * @return an iterator over the metadata entries.
 	 * @throws IOException 
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
+	 * @throws ServiceException 
+	 * @throws DependencyException 
 	 */
 	public Iterator<Map.Entry<String, String>> extractMetadata(
-			String sURL, int series, int index, String metadata, ImagePlaneDetails [] pIPD) 
-			throws ParserConfigurationException, SAXException, IOException {
+			String sURL, int series, int index, String metadata, ImagePlaneDetails [] pIPD, ImageFile [] pIF) 
+			throws ParserConfigurationException, SAXException, IOException, DependencyException, ServiceException {
 		ImageFile imageFile = new ImageFile(new URL(sURL));
 		if (metadata != null)
 			imageFile.setXMLDocument(metadata);
 		ImagePlane imagePlane = new ImagePlane(imageFile, series, index);
 		ImagePlaneDetails result = extract(imagePlane);
 		pIPD[0] = result;
-		result.imagePlane.getImageFile().clearXMLDocument();
+		pIF[0] = result.imagePlane.getImageFile();
+		return result.metadata.entrySet().iterator();
+	}
+	/**
+	 * Helper to extract plane metadata, given an ImageFile, series and index
+	 * @param imageFile the ImageFile for the image plane with metadata initialized
+	 * @param series the series # of the plane
+	 * @param index the index within the series
+	 * @param pIPD return the generated image plane descriptor here
+	 * @return an iterator over the metadata.
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws IOException
+	 * @throws DependencyException
+	 * @throws ServiceException
+	 */
+	public Iterator<Map.Entry<String, String>> extractMetadata(
+			ImageFile imageFile, int series, int index, ImagePlaneDetails [] pIPD) 
+			throws ParserConfigurationException, SAXException, IOException, DependencyException, ServiceException {
+		ImagePlane imagePlane = new ImagePlane(imageFile, series, index);
+		ImagePlaneDetails result = extract(imagePlane);
+		pIPD[0] = result;
 		return result.metadata.entrySet().iterator();
 	}
 }

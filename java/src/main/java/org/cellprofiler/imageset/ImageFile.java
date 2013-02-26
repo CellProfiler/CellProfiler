@@ -12,9 +12,11 @@
  */
 package org.cellprofiler.imageset;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -22,12 +24,14 @@ import java.net.URL;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import ome.xml.OMEXMLFactory;
+import loci.common.services.DependencyException;
+import loci.common.services.ServiceException;
+import loci.common.services.ServiceFactory;
+import loci.formats.services.OMEXMLService;
+
 import ome.xml.model.OME;
 
 import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 /**
@@ -41,7 +45,7 @@ public class ImageFile {
 	private final URL url;
 	private String fileName = null;
 	private String pathName = null;
-	private Document omexml;
+	private OME omexml = null;
 	
 	/**
 	 * Construct an image file from a URL
@@ -132,9 +136,15 @@ public class ImageFile {
 	 * @throws IOException 
 	 * @throws SAXException 
 	 * @throws ParserConfigurationException 
+	 * @throws DependencyException 
+	 * @throws ServiceException 
 	 */
-	public void setXMLDocument(String omexml) throws ParserConfigurationException, SAXException, IOException {
-		this.omexml = OMEXMLFactory.parseOME(omexml);
+	public void setXMLDocument(String omexml) throws ParserConfigurationException, SAXException, IOException, DependencyException, ServiceException {
+		OMEXMLService svc = new ServiceFactory().getInstance(OMEXMLService.class);
+		Object root = svc.createOMEXMLRoot(omexml);
+		if (! (root instanceof OME))
+			throw new ServiceException("Root of XML document wasn't OME");
+		this.omexml = (OME)root;
 	}
 
 	/**
@@ -145,9 +155,19 @@ public class ImageFile {
 	 * @throws ParserConfigurationException
 	 * @throws SAXException
 	 * @throws IOException
+	 * @throws ServiceException 
+	 * @throws DependencyException 
 	 */
-	public void setXMLDocument(InputStream isOMEXML) throws ParserConfigurationException, SAXException, IOException {
-		this.omexml = OMEXMLFactory.parseOME(isOMEXML);
+	public void setXMLDocument(InputStream isOMEXML) throws ParserConfigurationException, SAXException, IOException, DependencyException, ServiceException {
+		BufferedReader rdr = new BufferedReader(new InputStreamReader(isOMEXML));
+		StringBuilder result = new StringBuilder();
+		String sep = System.getProperty("line.separator");
+		String line;
+		while((line=rdr.readLine())!=null) {
+			result.append(line);
+			result.append(sep);
+		}
+		setXMLDocument(result.toString());
 	}
 	
 	/**
@@ -161,12 +181,7 @@ public class ImageFile {
 	 * @return the root of the OME document model.
 	 */
 	public OME getMetadata() {
-		if (omexml == null) return null;
-		Element documentElement = omexml.getDocumentElement(); 
-		if (! (documentElement instanceof OME)) {
-			throw new AssertionError("Expected an OME document element");
-		}
-		return (OME)documentElement;
+		return omexml;
 	}
 	@Override
 	public String toString() {

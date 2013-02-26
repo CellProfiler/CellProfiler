@@ -340,6 +340,12 @@ class Metadata(cpm.CPModule):
         def wrap_entry_set(o):
             return (env.get_string_utf(env.call_method(o, get_key_id)), 
                     env.get_string_utf(env.call_method(o, get_value_id)))
+        #
+        # Much of what appears below is optimized to avoid the cost of
+        # "getting nice arguments" for the Java bridge. The IPDs should be
+        # in alphabetical order which means that, for stacks, we can
+        # save the results of OME-XML parsing in the Java ImageFile object.
+        #
         extractor_class = env.find_class(
             "org/cellprofiler/imageset/ImagePlaneMetadataExtractor")
         extract_metadata_id = env.get_method_id(
@@ -347,22 +353,63 @@ class Metadata(cpm.CPModule):
             "extractMetadata",
             "(Ljava/lang/String;IILjava/lang/String;"
             "[Lorg/cellprofiler/imageset/filter/ImagePlaneDetails;"
+            "[Lorg/cellprofiler/imageset/ImageFile;"
+            ")Ljava/util/Iterator;")
+        extract_metadata_if_id = env.get_method_id(
+            extractor_class,
+            "extractMetadata",
+            "(Lorg/cellprofiler/imageset/ImageFile;II"
+            "[Lorg/cellprofiler/imageset/filter/ImagePlaneDetails;"
             ")Ljava/util/Iterator;")
         ipd_class = env.find_class("org/cellprofiler/imageset/filter/ImagePlaneDetails")
+        if_class = env.find_class("org/cellprofiler/imageset/ImageFile")
+        clear_xml_document_id = env.get_method_id(
+            if_class,
+            "clearXMLDocument", "()V")
         pIPD = env.make_object_array(1, ipd_class)
+        pIF = env.make_object_array(1, if_class)
         
+        last_url = None
+        last_if = None
+        if_has_metadata = False
         for ipd in pipeline.get_filtered_image_plane_details(workspace):
             series, index = [x if x is not None else 0 
                              for x in ipd.series, ipd.index]
-            xmlmetadata = file_list.get_metadata(ipd.url)
-            if xmlmetadata is not None:
-                xmlmetadata = env.new_string_utf(metadata)
-            metadata = env.call_method(extractor, extract_metadata_id,
-                                       env.new_string_utf(ipd.url),
-                                       int(series), int(index),
-                                       xmlmetadata, pIPD)
+            if ipd.url != last_url:
+                if if_has_metadata:
+                    env.call_method(last_if, clear_xml_document_id)
+                    x = env.exception_occurred()
+                    if x is not None:
+                        raise JavaException(x)
+                    if_has_metadata = False
+                xmlmetadata = file_list.get_metadata(ipd.url)
+                if xmlmetadata is not None:
+                    xmlmetadata = env.new_string_utf(xmlmetadata)
+                    if_has_metadata = True
+                metadata = env.call_method(extractor, extract_metadata_id,
+                                           env.new_string_utf(ipd.url),
+                                           int(series), int(index),
+                                           xmlmetadata, pIPD, pIF)
+                x = env.exception_occurred()
+                if x is not None:
+                    raise JavaException(x)
+                last_url = ipd.url
+                last_if = env.get_object_array_elements(pIF)[0]
+            else:
+                metadata = env.call_method(
+                    extractor, extract_metadata_if_id,
+                    last_if, int(series), int(index), pIPD)
+                x = env.exception_occurred()
+                if x is not None:
+                    raise JavaException(x)
+            
             ipd.metadata.update(J.iterate_java(metadata, wrap_entry_set))
             ipd.jipd = env.get_object_array_elements(pIPD)[0]
+        if if_has_metadata:
+            env.call_method(last_if, clear_xml_document_id)
+            x = env.exception_occurred()
+            if x is not None:
+                raise JavaException(x)
         return True
     
     def build_extractor(self):
@@ -673,6 +720,10 @@ class Metadata(cpm.CPModule):
                     logger.warn("Unable to import metadata from %s" %
                                 group.csv_location.value)
                 keys.update(imported_metadata.metadata_keys)
+            elif group.extraction_method == X_AUTOMATIC_EXTRACTION:
+                # Assume that automatic extraction will populate T and Z
+                keys.add(cpp.ImagePlaneDetails.MD_T)
+                keys.add(cpp.ImagePlaneDetails.MD_Z)
         return list(keys)
     
     def get_measurement_columns(self, pipeline):

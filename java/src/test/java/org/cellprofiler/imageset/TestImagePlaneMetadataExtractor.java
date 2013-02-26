@@ -17,8 +17,14 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
+
+import loci.common.services.DependencyException;
+import loci.common.services.ServiceException;
 
 import org.cellprofiler.imageset.filter.Filter;
 import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
@@ -44,6 +50,10 @@ public class TestImagePlaneMetadataExtractor {
 		} catch (SAXException e) {
 			fail();
 		} catch (IOException e) {
+			fail();
+		} catch (DependencyException e) {
+			fail();
+		} catch (ServiceException e) {
 			fail();
 		}
 		return null;
@@ -125,6 +135,58 @@ public class TestImagePlaneMetadataExtractor {
 			ipd = x.extract(makeImagePlane("Plate1", "A02.tif"));
 			assertFalse(ipd.metadata.containsKey("Plate"));
 		} catch (BadFilterExpressionException e) {
+			fail();
+		}
+	}
+	
+	@Test
+	public void testExtractMetadata() {
+		/*
+		 * Test the extractMetadata method
+		 */
+		String xml = TestOMEMetadataExtractor.getTestXMLAsString();
+		try {
+			ImagePlaneMetadataExtractor x = new ImagePlaneMetadataExtractor();
+			Filter filter = new Filter("metadata does Z \"2\"");
+			x.addImagePlaneExtractor(new OMEMetadataExtractor());
+			x.addFileNameRegexp("(?P<WellName>[A-H][0-9]{2})", filter);
+			File file = new File(System.getProperty("user.home"), "Image_A02.tif");
+			ImagePlaneDetails [] pIPD = new ImagePlaneDetails[1];
+			ImageFile [] pIF = new ImageFile [1];
+			Iterator<Map.Entry<String, String>>  result = x.extractMetadata(file.toURI().toString(), 1, 0, xml, pIPD, pIF);
+			Map<String, String> dest = new HashMap<String, String>();
+			while(result.hasNext()) {
+				Map.Entry<String, String> entry = result.next();
+				dest.put(entry.getKey(), entry.getValue());
+			}
+			assertEquals("0", dest.get("T"));
+			assertEquals("0", dest.get("Z"));
+			assertEquals("Exp1Cam1", dest.get("ChannelName"));
+			assertFalse(dest.containsKey("WellName"));
+			assertNotNull(pIPD[0]);
+			
+			result = x.extractMetadata(pIF[0], 1, 2, pIPD);
+			dest = new HashMap<String, String>();
+			while(result.hasNext()) {
+				Map.Entry<String, String> entry = result.next();
+				dest.put(entry.getKey(), entry.getValue());
+			}
+			assertEquals("0", dest.get("T"));
+			assertEquals("2", dest.get("Z"));
+			assertEquals("Exp1Cam1", dest.get("ChannelName"));
+			assertEquals("A02", dest.get("WellName"));
+			
+		} catch (BadFilterExpressionException e) {
+			fail();
+		} catch (ParserConfigurationException e) {
+			fail();
+		} catch (SAXException e) {
+			fail();
+		} catch (IOException e) {
+			fail();
+		} catch (DependencyException e) {
+			fail();
+		} catch (ServiceException e) {
 			fail();
 		}
 	}

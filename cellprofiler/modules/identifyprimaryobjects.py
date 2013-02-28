@@ -151,12 +151,16 @@ import cellprofiler.cpmath.outline
 import cellprofiler.objects
 from cellprofiler.settings import AUTOMATIC
 import cellprofiler.cpmath.threshold as cpthresh
-from identify import FF_FINAL_THRESHOLD, FF_ORIG_THRESHOLD
-from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
+from identify import TSM_AUTOMATIC
 from identify import draw_outline
 from identify import FI_IMAGE_SIZE
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
 
+#################################################
+#
+# Ancient offsets into the settings for Matlab pipelines
+#
+#################################################
 IMAGE_NAME_VAR                  = 0
 OBJECT_NAME_VAR                 = 1
 SIZE_RANGE_VAR                  = 2
@@ -168,15 +172,7 @@ THRESHOLD_CORRECTION_VAR        = 7
 THRESHOLD_RANGE_VAR             = 8
 OBJECT_FRACTION_VAR             = 9
 UNCLUMP_METHOD_VAR              = 10
-UN_INTENSITY                    = "Intensity"
-UN_SHAPE                        = "Shape"
-UN_LOG                          = "Laplacian of Gaussian"
-UN_NONE                         = "None"
 WATERSHED_VAR                   = 11
-WA_INTENSITY                    = "Intensity"
-WA_SHAPE                        = "Shape"
-WA_PROPAGATE                    = "Propagate"
-WA_NONE                         = "None"
 SMOOTHING_SIZE_VAR              = 12
 MAXIMA_SUPPRESSION_SIZE_VAR     = 13
 LOW_RES_MAXIMA_VAR              = 14
@@ -189,13 +185,45 @@ MANUAL_THRESHOLD_VAR            = 20
 BINARY_IMAGE_VAR                = 21
 MEASUREMENT_THRESHOLD_VAR       = 22
 
+#################################################
+#
+# V10 introduced a more unified handling of
+#     threshold settings.
+#
+#################################################
+OFF_THRESHOLD_METHOD_V9            = 6
+OFF_THRESHOLD_CORRECTION_V9        = 7
+OFF_THRESHOLD_RANGE_V9             = 8
+OFF_OBJECT_FRACTION_V9             = 9
+OFF_MANUAL_THRESHOLD_V9            = 19
+OFF_BINARY_IMAGE_V9                = 20
+OFF_TWO_CLASS_OTSU_V9              = 24
+OFF_USE_WEIGHTED_VARIANCE_V9       = 25
+OFF_ASSIGN_MIDDLE_TO_FOREGROUND_V9 = 26
+OFF_THRESHOLDING_MEASUREMENT_V9    = 31
+OFF_ADAPTIVE_WINDOW_METHOD_V9      = 32
+OFF_ADAPTIVE_WINDOW_SIZE_V9        = 33
+
+'''The number of settings, exclusive of threshold settings in V10'''
+N_SETTINGS_V10 = 22
+
+UN_INTENSITY                    = "Intensity"
+UN_SHAPE                        = "Shape"
+UN_LOG                          = "Laplacian of Gaussian"
+UN_NONE                         = "None"
+
+WA_INTENSITY                    = "Intensity"
+WA_SHAPE                        = "Shape"
+WA_PROPAGATE                    = "Propagate"
+WA_NONE                         = "None"
+
 LIMIT_NONE = "Continue"
 LIMIT_TRUNCATE = "Truncate"
 LIMIT_ERASE = "Erase"
 
 class IdentifyPrimaryObjects(cpmi.Identify):
             
-    variable_revision_number = 9
+    variable_revision_number = 10
     category =  "Object Processing"
     module_name = "IdentifyPrimaryObjects"
     
@@ -414,9 +442,6 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             Checking this box will cause holes interior to identified objects
             to be filled.""")
         
-        self.test_mode = cps.Binary(
-            'Run in test mode where each method for distinguishing clumped objects is compared?', False)
-        
         self.wants_automatic_log_threshold = cps.Binary(
             'Automatically calculate the threshold using the Otsu method?', True)
         
@@ -472,25 +497,19 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             for details.""")
 
     def settings(self):
-        return [self.image_name,self.object_name,self.size_range,
+        return [self.image_name, self.object_name, self.size_range,
                 self.exclude_size, self.merge_objects,
-                self.exclude_border_objects, self.threshold_method,
-                self.threshold_correction_factor, self.threshold_range,
-                self.object_fraction, self.unclump_method,
+                self.exclude_border_objects, self.unclump_method,
                 self.watershed_method, self.smoothing_filter_size,
                 self.maxima_suppression_size, self.low_res_maxima,
                 self.save_outlines, self.fill_holes, 
                 self.automatic_smoothing, self.automatic_suppression,
-                self.manual_threshold, self.binary_image,
                 self.should_save_outlines,
                 self.wants_automatic_log_threshold,
                 self.manual_log_threshold,
-                self.two_class_otsu, self.use_weighted_variance,
-                self.assign_middle_to_foreground,
                 self.wants_automatic_log_diameter, self.log_diameter,
-                self.limit_choice, self.maximum_object_count,
-                self.thresholding_measurement,
-                self.adaptive_window_method, self.adaptive_window_size]
+                self.limit_choice, self.maximum_object_count] + \
+               self.get_threshold_settings()
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
@@ -613,6 +632,43 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             setting_values += [FI_IMAGE_SIZE, "10"]
             variable_revision_number = 9
             
+        if (not from_matlab) and variable_revision_number == 9:
+            #
+            # Unified threshold measurements.
+            #
+            threshold_method = setting_values[OFF_THRESHOLD_METHOD_V9]
+            threshold_correction = setting_values[OFF_THRESHOLD_CORRECTION_V9]
+            threshold_range = setting_values[OFF_THRESHOLD_RANGE_V9]
+            object_fraction = setting_values[OFF_OBJECT_FRACTION_V9]
+            manual_threshold = setting_values[OFF_MANUAL_THRESHOLD_V9]
+            binary_image = setting_values[OFF_BINARY_IMAGE_V9]
+            two_class_otsu = setting_values[OFF_TWO_CLASS_OTSU_V9]
+            use_weighted_variance = setting_values[OFF_USE_WEIGHTED_VARIANCE_V9]
+            assign_middle_to_foreground = setting_values[OFF_ASSIGN_MIDDLE_TO_FOREGROUND_V9]
+            thresholding_measurement = setting_values[OFF_THRESHOLDING_MEASUREMENT_V9]
+            adaptive_window_method = setting_values[OFF_ADAPTIVE_WINDOW_METHOD_V9]
+            adaptive_window_size = setting_values[OFF_ADAPTIVE_WINDOW_SIZE_V9]
+            
+            threshold_settings = self.upgrade_legacy_threshold_settings(
+                threshold_method, TSM_AUTOMATIC, threshold_correction,
+                threshold_range, object_fraction, manual_threshold,
+                thresholding_measurement, binary_image, two_class_otsu,
+                use_weighted_variance, assign_middle_to_foreground,
+                adaptive_window_method, adaptive_window_size)
+            
+            setting_values = \
+                setting_values[:OFF_THRESHOLD_METHOD_V9] + \
+                setting_values[(OFF_OBJECT_FRACTION_V9+1):
+                               OFF_MANUAL_THRESHOLD_V9] + \
+                setting_values[(OFF_BINARY_IMAGE_V9+1):
+                               OFF_TWO_CLASS_OTSU_V9] + \
+                setting_values[(OFF_ASSIGN_MIDDLE_TO_FOREGROUND_V9+1):
+                               OFF_THRESHOLDING_MEASUREMENT_V9] + \
+                threshold_settings
+            variable_revision_number = 10
+        # upgrade threshold settings
+        setting_values = setting_values[:N_SETTINGS_V10] + \
+            self.upgrade_threshold_settings(setting_values[N_SETTINGS_V10:])
         return setting_values, variable_revision_number, from_matlab
             
     def help_settings(self):
@@ -621,23 +677,12 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 self.size_range,
                 self.exclude_size, 
                 self.merge_objects,
-                self.exclude_border_objects, 
-                self.threshold_method,
-                self.binary_image,
-                self.manual_threshold,
-                self.thresholding_measurement, 
-                self.two_class_otsu, 
-                self.use_weighted_variance,
-                self.assign_middle_to_foreground,
-                self.object_fraction, 
-                self.adaptive_window_method,
-                self.adaptive_window_size,
+                self.exclude_border_objects
+                ] +  self.get_threshold_help_settings() + [
                 self.wants_automatic_log_diameter,
                 self.log_diameter,
                 self.wants_automatic_log_threshold,
                 self.manual_log_threshold,
-                self.threshold_correction_factor, 
-                self.threshold_range,
                 self.unclump_method,
                 self.watershed_method, 
                 self.automatic_smoothing, 
@@ -688,34 +733,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             object_set   - the objects (labeled masks) in this image set
             measurements - the measurements for this run
         """
-        #
-        # Retrieve the relevant image and mask
-        #
-        image = workspace.image_set.get_image(self.image_name.value,
-                                              must_be_grayscale = True)
-        img = image.pixel_data
-        mask = image.mask
-        #
-        # Get a threshold to use for labeling
-        #
-        if self.threshold_modifier == cpthresh.TM_PER_OBJECT:
-            masking_objects = image.labels
-        else:
-            masking_objects = None
-        if self.threshold_method == cpthresh.TM_BINARY_IMAGE:
-            binary_image = workspace.image_set.get_image(self.binary_image.value,
-                                                         must_be_binary = True)
-            local_threshold = np.ones(img.shape)
-            local_threshold[binary_image.pixel_data] = 0
-            global_threshold = otsu(img[mask],
-                        self.threshold_range.min,
-                        self.threshold_range.max)
-        else:
-            local_threshold,global_threshold = self.get_threshold(img, mask,
-                                                              masking_objects, workspace)
-        blurred_image = self.smooth_image(img,mask,1) if not (self.threshold_method == cpthresh.TM_BINARY_IMAGE 
-                                                              or (self.threshold_method == cpthresh.TM_MANUAL and len(np.unique(img)) == 2)) else img
-        binary_image = np.logical_and((blurred_image >= local_threshold),mask)
+        image_name = self.image_name.value
+        image = workspace.image_set.get_image(image_name)
+        workspace.display_data.statistics = []
+        binary_image = self.threshold_image(image_name, workspace)
         #
         # Fill background holes inside foreground objects
         #
@@ -724,11 +745,11 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         labeled_image,object_count = scipy.ndimage.label(binary_image,
                                                          np.ones((3,3),bool))
-        labeled_image,object_count,maxima_suppression_size,LoG_threshold,LoG_filter_diameter = \
-            self.separate_neighboring_objects(img, mask, 
+        labeled_image, object_count, maxima_suppression_size, \
+            LoG_threshold, LoG_filter_diameter = \
+            self.separate_neighboring_objects(workspace,
                                               labeled_image,
-                                              object_count,
-                                              local_threshold)
+                                              object_count)
         unedited_labels = labeled_image.copy()
         # Filter out objects touching the border or mask
         border_excluded_labeled_image = labeled_image.copy()
@@ -768,8 +789,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         outline_border_excluded_image = cellprofiler.cpmath.outline.outline(border_excluded_labeled_image)
         
         if self.show_window:
-            statistics = []
-            statistics.append(["Threshold","%0.3f"%(global_threshold)])
+            statistics = workspace.display_data.statistics
             statistics.append(["# of accepted objects",
                                "%d"%(object_count)])
             if object_count > 0:
@@ -804,16 +824,12 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             workspace.display_data.outline_image = outline_image
             workspace.display_data.outline_size_excluded_image = outline_size_excluded_image
             workspace.display_data.outline_border_excluded_image = outline_border_excluded_image
-            workspace.display_data.statistics = statistics
 
         # Add image measurements
         objname = self.object_name.value
         measurements = workspace.measurements
         cpmi.add_object_count_measurements(measurements,
                                            objname, object_count)
-        self.add_threshold_measurements(measurements, img, mask,
-                                        local_threshold, global_threshold,
-                                        self.object_name.value)
         # Add label matrices to the object set
         objects = cellprofiler.objects.Objects()
         objects.segmented = labeled_image
@@ -869,12 +885,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 object_count = len(index)
         return labeled_image, object_count
         
-    def smooth_image(self, image, mask,sigma):
+    def smooth_image(self, image, mask):
         """Apply the smoothing filter to the image"""
         
         filter_size = self.calc_smoothing_filter_size()
         if filter_size == 0:
             return image
+        sigma = filter_size / 2.35
         #
         # We not only want to smooth using a Gaussian, but we want to limit
         # the spread of the smoothing to 2 SD, partly to make things happen
@@ -903,23 +920,30 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         masked_image[mask] = smoothed_image[mask] / edge_array[mask]
         return masked_image
     
-    def separate_neighboring_objects(self, image, mask, 
-                                     labeled_image,object_count,threshold):
+    def separate_neighboring_objects(self, workspace, labeled_image,
+                                     object_count):
         """Separate objects based on local maxima or distance transform
         
-        image         - the original grayscale image
+        workspace - get the image from here
+        
         labeled_image - image labeled by scipy.ndimage.label
+        
         object_count  - # of objects in image
         
-        returns revised labeled_image, object count, maxima_suppression_size, LoG threshold and filter diameter
+        returns revised labeled_image, object count, maxima_suppression_size, 
+        LoG threshold and filter diameter
         """
         if self.unclump_method == UN_NONE or self.watershed_method == WA_NONE:
             return labeled_image, object_count, 7, 0.5, 5
         
+        cpimage = workspace.image_set.get_image(
+            self.image_name.value, must_be_grayscale=True)
+        image = cpimage.pixel_data
+        mask = cpimage.mask
+        
         reported_LoG_filter_diameter = 5
         reported_LoG_threshold = 0.5
-        sigma = self.calc_smoothing_filter_size() / 2.35
-        blurred_image = self.smooth_image(image, mask, sigma)
+        blurred_image = self.smooth_image(image, mask)
         if self.low_res_maxima.value and self.size_range.min > 10:
             image_resize_factor = 10.0 / float(self.size_range.min)
             if self.automatic_suppression.value:
@@ -987,8 +1011,6 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                                            maxima_mask, image_resize_factor)
         elif self.unclump_method == UN_INTENSITY:
             # Remove dim maxima
-            maxima_image = blurred_image.copy()
-            maxima_image[maxima_image < threshold] = 0
             maxima_image = self.get_maxima(blurred_image, 
                                            labeled_image,
                                            maxima_mask,
@@ -1229,14 +1251,15 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         '''IdentifyPrimaryObjects makes primary objects sets so it's a identification module'''
         return True
     
+    def get_measurement_objects_name(self):
+        '''Return the name to be appended to image measurements made by module
+        '''
+        return self.object_name.value
+    
     def get_measurement_columns(self, pipeline):
         '''Column definitions for measurements made by IdentifyPrimAutomatic'''
         columns = cpmi.get_object_measurement_columns(self.object_name.value)
-        columns += [(cpmeas.IMAGE, 
-                     format%self.object_name.value,
-                     cpmeas.COLTYPE_FLOAT)
-                    for format in (FF_FINAL_THRESHOLD, FF_ORIG_THRESHOLD,
-                                   FF_WEIGHTED_VARIANCE, FF_SUM_OF_ENTROPIES)]
+        columns += self.get_threshold_measurement_columns(pipeline)
         return columns
              
     def get_categories(self,pipeline, object_name):
@@ -1267,6 +1290,5 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         """
         return self.get_threshold_measurement_objects(pipeline, object_name,
-                                                      category, measurement,
-                                                      self.object_name.value)
+                                                      category, measurement)
 IdentifyPrimAutomatic = IdentifyPrimaryObjects

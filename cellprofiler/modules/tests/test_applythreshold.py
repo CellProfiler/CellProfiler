@@ -57,6 +57,9 @@ class TestApplyThreshold(unittest.TestCase):
                       else cpi.Image(image,mask))
         return workspace, module
 
+    def test_01_00_write_a_test_for_the_new_variable_revision_please(self):
+        self.assertEqual(A.ApplyThreshold.variable_revision_number, 7)
+        
     def test_01_01_load_matlab(self):
         '''Load a matlab pipeline containing ApplyThreshold'''
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUX'
@@ -92,8 +95,9 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.thresholded_image_name.value, "ThreshBlue")
         self.assertEqual(module.binary.value, A.GRAYSCALE)
         self.assertEqual(module.low_or_high, A.TH_BELOW_THRESHOLD)
-        self.assertEqual(module.threshold_method, T.TM_MANUAL)
+        self.assertEqual(module.threshold_scope, T.TM_MANUAL)
         self.assertAlmostEqual(module.manual_threshold.value, .1)
+        self.assertEqual(module.threshold_smoothing_choice, A.TSM_NONE)
     
     def test_01_02_load_v2(self):
         '''Load a variable_revision_number = 2 pipeline'''
@@ -134,7 +138,8 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.image_name.value, "DNA")
         self.assertEqual(module.thresholded_image_name.value, "ThreshDNA")
         self.assertEqual(module.binary.value, A.BINARY)
-        self.assertEqual(module.threshold_method.value, T.TM_OTSU_GLOBAL)
+        self.assertEqual(module.threshold_scope.value, I.TS_GLOBAL)
+        self.assertEqual(module.threshold_method.value, T.TM_OTSU)
         self.assertEqual(module.threshold_range.min,0)
         self.assertEqual(module.threshold_range.max,1)
         self.assertEqual(module.threshold_correction_factor.value, 1)
@@ -176,7 +181,8 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.image_name.value, "DNA")
         self.assertEqual(module.thresholded_image_name.value, "ThreshBlue")
         self.assertEqual(module.binary.value, A.BINARY)
-        self.assertEqual(module.threshold_method.value, T.TM_OTSU_GLOBAL)
+        self.assertEqual(module.threshold_scope.value, I.TS_GLOBAL)
+        self.assertEqual(module.threshold_method.value, T.TM_OTSU)
         self.assertEqual(module.threshold_range.min,0)
         self.assertEqual(module.threshold_range.max,1)
         self.assertEqual(module.threshold_correction_factor.value, 1)
@@ -184,6 +190,106 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.use_weighted_variance.value, A.O_ENTROPY)
         self.assertEqual(module.assign_middle_to_foreground.value, A.O_BACKGROUND)
     
+    def test_01_07_load_v7(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+        Version:3
+        DateRevision:20130226215424
+        ModuleCount:5
+        HasImagePlaneDetails:False
+        
+        Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+            :
+            Filter based on rules:No
+            Filter:or (file does contain "")
+        
+        Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+            Extract metadata?:Yes
+            Extraction method count:1
+            Extraction method:Manual
+            Source:From file name
+            Regular expression:Channel(?P<Wavelength>\x5B12\x5D)-\x5B0-9\x5D{2}-(?P<WellRow>\x5BA-Z\x5D)-(?P<WellColumn>\x5B0-9\x5D{2}).tif
+            Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+            Filter images:All images
+            :or (file does contain "")
+            Metadata file location\x3A:
+            Match file and image metadata:\x5B\x5D
+            Case insensitive matching:No
+        
+        NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+            Assignment method:Assign images matching rules
+            Load as:Grayscale image
+            Image name:DNA
+            :\x5B\x5D
+            Assign channels by:Order
+            Assignments count:2
+            Match this rule:or (metadata does Wavelength "1")
+            Image name:GFP
+            Objects name:Cell
+            Load as:Grayscale image
+            Match this rule:or (metadata does Wavelength "2")
+            Image name:DNA
+            Objects name:Nucleus
+            Load as:Grayscale image
+        
+        Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+            Do you want to group your images?:No
+            grouping metadata count:1
+            Metadata category:None
+        
+        ApplyThreshold:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+            Select the input image:RainbowPony
+            Name the output image:GrayscalePony
+            Select the output image type:Grayscale
+            Set pixels below or above the threshold to zero?:Below threshold
+            Subtract the threshold value from the remaining pixel intensities?:Yes
+            Number of pixels by which to expand the thresholding around those excluded bright pixels:2.0
+            Threshold setting version:1
+            Threshold strategy:Adaptive
+            Threshold method:MCT
+            Smoothing for threshold:Automatic
+            Threshold smoothing scale:1.5
+            Threshold correction factor:1.1
+            Lower and upper bounds on threshold:0.07,1.01
+            Approximate fraction of image covered by objects?:0.02
+            Manual threshold:0.1
+            Select the measurement to threshold with:Pony_Perimeter
+            Select binary image:Pony_yes_or_no
+            Masking objects:PonyMask
+            Two-class or three-class thresholding?:Two classes
+            Minimize the weighted variance or the entropy?:Weighted variance
+            Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+            Method to calculate adaptive window size:Image size
+            Size of adaptive window:13
+"""
+        fd = StringIO(data)
+        pipeline = cpp.Pipeline()
+        pipeline.loadtxt(fd)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, A.ApplyThreshold))
+        self.assertEqual(module.image_name, "RainbowPony")
+        self.assertEqual(module.thresholded_image_name, "GrayscalePony")
+        self.assertEqual(module.binary, A.GRAYSCALE)
+        self.assertEqual(module.low_or_high, A.TH_BELOW_THRESHOLD)
+        self.assertTrue(module.shift)
+        self.assertEqual(module.dilation, 2)
+        self.assertEqual(module.threshold_scope, I.TS_ADAPTIVE)
+        self.assertEqual(module.threshold_method, T.TM_MCT)
+        self.assertEqual(module.threshold_smoothing_choice, I.TSM_AUTOMATIC)
+        self.assertEqual(module.threshold_smoothing_scale, 1.5)
+        self.assertEqual(module.threshold_correction_factor, 1.1)
+        self.assertEqual(module.threshold_range.min, .07)
+        self.assertEqual(module.threshold_range.max, 1.01)
+        self.assertEqual(module.object_fraction, 0.02)
+        self.assertEqual(module.manual_threshold, 0.1)
+        self.assertEqual(module.thresholding_measurement, "Pony_Perimeter")
+        self.assertEqual(module.binary_image, "Pony_yes_or_no")
+        self.assertEqual(module.masking_objects, "PonyMask")
+        self.assertEqual(module.two_class_otsu, I.O_TWO_CLASS)
+        self.assertEqual(module.use_weighted_variance, I.O_WEIGHTED_VARIANCE)
+        self.assertEqual(module.assign_middle_to_foreground, I.O_FOREGROUND)
+        self.assertEqual(module.adaptive_window_method, I.FI_IMAGE_SIZE)
+        self.assertEqual(module.adaptive_window_size, 13)
+        
     def test_02_01_grayscale_low_threshold(self):
         '''Apply a low threshold, no shift'''
         np.random.seed(0)
@@ -194,7 +300,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertTrue(isinstance(module, A.ApplyThreshold))
         module.binary.value = A.GRAYSCALE
         module.low_or_high.value = A.TH_BELOW_THRESHOLD
-        module.threshold_method.value = T.TM_MANUAL
+        module.threshold_scope.value = T.TM_MANUAL
         module.manual_threshold.value = .5
         module.shift.value = False
         module.run(workspace)
@@ -255,7 +361,7 @@ class TestApplyThreshold(unittest.TestCase):
         workspace, module = self.make_workspace(image)
         module.binary.value = A.GRAYSCALE
         module.low_or_high.value = A.TH_BELOW_THRESHOLD
-        module.threshold_method.value = T.TM_MANUAL
+        module.threshold_scope.value = T.TM_MANUAL
         module.manual_threshold.value = .5
         module.shift.value = True
         module.run(workspace)
@@ -271,7 +377,7 @@ class TestApplyThreshold(unittest.TestCase):
         expected[thresholded_pixels] = 0
         workspace, module = self.make_workspace(image)
         module.low_or_high.value = A.TH_ABOVE_THRESHOLD
-        module.threshold_method.value = T.TM_MANUAL
+        module.threshold_scope.value = T.TM_MANUAL
         module.manual_threshold.value = .5
         module.dilation.value = 0
         module.run(workspace)
@@ -288,7 +394,7 @@ class TestApplyThreshold(unittest.TestCase):
         expected[thresholded_pixels] = 0
         workspace, module = self.make_workspace(image)
         module.low_or_high.value = A.TH_ABOVE_THRESHOLD
-        module.threshold_method.value = T.TM_MANUAL
+        module.threshold_scope.value = T.TM_MANUAL
         module.manual_threshold.value = .5
         module.dilation.value = 2
         module.run(workspace)
@@ -302,7 +408,7 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image > .5
         workspace, module = self.make_workspace(image)
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_MANUAL
+        module.threshold_scope.value = T.TM_MANUAL
         module.manual_threshold.value = .5
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -316,7 +422,8 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image > threshold
         workspace, module = self.make_workspace(image)
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_OTSU_GLOBAL
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_OTSU
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
@@ -329,7 +436,8 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image > threshold
         workspace, module = self.make_workspace(image)
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_OTSU_GLOBAL
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_OTSU
         module.threshold_correction_factor.value = .5
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -344,7 +452,8 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image > .7
         workspace, module = self.make_workspace(image)
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_OTSU_GLOBAL
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_OTSU
         module.threshold_range.min = .7
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -358,7 +467,8 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image > .1
         workspace, module = self.make_workspace(image)
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_OTSU_GLOBAL
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_OTSU
         module.threshold_range.max = .1
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
@@ -378,8 +488,9 @@ class TestApplyThreshold(unittest.TestCase):
         objects.segmented = labels
         workspace.object_set.add_objects(objects,"HelloKitty")
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_OTSU_PER_OBJECT
-        module.enclosing_objects_name.value = "HelloKitty"
+        module.threshold_scope.value = I.TS_PER_OBJECT
+        module.threshold_method.value = T.TM_OTSU
+        module.masking_objects.value = "HelloKitty"
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
         self.assertTrue(np.all(output.pixel_data == expected))
@@ -398,7 +509,7 @@ class TestApplyThreshold(unittest.TestCase):
         module2.image_name.value = OUTPUT_IMAGE_NAME
         module2.thresholded_image_name.value = OUTPUT_IMAGE_NAME + 'new'
         module2.binary.value = A.BINARY
-        module2.threshold_method.value = T.TM_MEASUREMENT
+        module2.threshold_scope.value = T.TM_MEASUREMENT
         module2.thresholding_measurement.value = 'Threshold_FinalThreshold_' + OUTPUT_IMAGE_NAME
         module2.run(workspace)
     
@@ -415,7 +526,8 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image > threshold
         workspace, module = self.make_workspace(image)
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_OTSU_GLOBAL
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_OTSU
         module.use_weighted_variance.value = I.O_WEIGHTED_VARIANCE
         module.two_class_otsu.value = I.O_TWO_CLASS
         module.run(workspace)
@@ -435,7 +547,8 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image > threshold
         workspace, module = self.make_workspace(image)
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_OTSU_GLOBAL
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_OTSU
         module.use_weighted_variance.value = I.O_ENTROPY
         module.two_class_otsu.value = I.O_TWO_CLASS
         module.run(workspace)
@@ -453,16 +566,17 @@ class TestApplyThreshold(unittest.TestCase):
         limage, d = T.log_transform(image)
         t1,t2 = otsu3(limage)
         threshold = T.inverse_log_transform(t2, d)
-        expected = image > threshold
         workspace, module = self.make_workspace(image)
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_OTSU_GLOBAL
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_OTSU
         module.use_weighted_variance.value = I.O_WEIGHTED_VARIANCE
         module.two_class_otsu.value = I.O_THREE_CLASS
         module.assign_middle_to_foreground.value = I.O_BACKGROUND
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        m = workspace.measurements
+        m_threshold = m[cpmeas.IMAGE, I.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
+        self.assertAlmostEqual(m_threshold, threshold)
         
     def test_05_04_otsu3_wv_high(self):
         '''Test the three-class otsu, weighted variance middle = foreground'''
@@ -476,16 +590,16 @@ class TestApplyThreshold(unittest.TestCase):
         t1,t2 = otsu3(limage)
         threshold = T.inverse_log_transform(t1, d)
         workspace, module = self.make_workspace(image)
-        image = workspace.image_set.get_image(INPUT_IMAGE_NAME).pixel_data
-        expected = image > threshold
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_OTSU_GLOBAL
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_OTSU
         module.use_weighted_variance.value = I.O_WEIGHTED_VARIANCE
         module.two_class_otsu.value = I.O_THREE_CLASS
         module.assign_middle_to_foreground.value = I.O_FOREGROUND
         module.run(workspace)
-        output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        m = workspace.measurements
+        m_threshold = m[cpmeas.IMAGE, I.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
+        self.assertAlmostEqual(m_threshold, threshold)
         
     def test_05_05_otsu3_entropy_low(self):
         '''Test the three-class otsu, entropy, middle = background'''
@@ -498,16 +612,18 @@ class TestApplyThreshold(unittest.TestCase):
         limage, d = T.log_transform(image)
         t1,t2 = entropy3(limage)
         threshold = T.inverse_log_transform(t2, d)
-        expected = image > threshold
         workspace, module = self.make_workspace(image)
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_OTSU_GLOBAL
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_OTSU
         module.use_weighted_variance.value = I.O_ENTROPY
         module.two_class_otsu.value = I.O_THREE_CLASS
         module.assign_middle_to_foreground.value = I.O_BACKGROUND
         module.run(workspace)
         output = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertTrue(np.all(output.pixel_data == expected))
+        m = workspace.measurements
+        m_threshold = m[cpmeas.IMAGE, I.FF_ORIG_THRESHOLD % module.get_measurement_objects_name()]
+        self.assertAlmostEqual(m_threshold, threshold)
         
     def test_05_06_otsu3_entropy_high(self):
         '''Test the three-class otsu, entropy, middle = background'''
@@ -523,7 +639,8 @@ class TestApplyThreshold(unittest.TestCase):
         expected = image > threshold
         workspace, module = self.make_workspace(image)
         module.binary.value = A.BINARY
-        module.threshold_method.value = T.TM_OTSU_GLOBAL
+        module.threshold_scope.value = I.TS_GLOBAL
+        module.threshold_method.value = T.TM_OTSU
         module.use_weighted_variance.value = I.O_ENTROPY
         module.two_class_otsu.value = I.O_THREE_CLASS
         module.assign_middle_to_foreground.value = I.O_FOREGROUND

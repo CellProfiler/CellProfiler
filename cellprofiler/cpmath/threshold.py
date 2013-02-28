@@ -67,14 +67,8 @@ TM_ADAPTIVE                     = "Adaptive"
 '''Compute a threshold for each labeled object in the image'''
 TM_PER_OBJECT                   = "PerObject"
 
-TM_METHODS =  [TM_OTSU_GLOBAL, TM_OTSU_ADAPTIVE, TM_OTSU_PER_OBJECT,
-               TM_MOG_GLOBAL, TM_MOG_ADAPTIVE, TM_MOG_PER_OBJECT,
-               TM_BACKGROUND_GLOBAL, TM_BACKGROUND_ADAPTIVE, TM_BACKGROUND_PER_OBJECT,
-               TM_ROBUST_BACKGROUND_GLOBAL, TM_ROBUST_BACKGROUND_ADAPTIVE, TM_ROBUST_BACKGROUND_PER_OBJECT,
-               TM_RIDLER_CALVARD_GLOBAL, TM_RIDLER_CALVARD_ADAPTIVE, TM_RIDLER_CALVARD_PER_OBJECT,
-               TM_KAPUR_GLOBAL, TM_KAPUR_ADAPTIVE, TM_KAPUR_PER_OBJECT,
-               TM_MCT_GLOBAL, TM_MCT_ADAPTIVE, TM_MCT_PER_OBJECT,
-               TM_MANUAL, TM_BINARY_IMAGE, TM_MEASUREMENT]
+TM_METHODS =  [TM_OTSU, TM_MOG, TM_BACKGROUND, TM_ROBUST_BACKGROUND, 
+               TM_RIDLER_CALVARD, TM_KAPUR, TM_MCT]
 
 TM_GLOBAL_METHODS = [TM_OTSU_GLOBAL, TM_MOG_GLOBAL, TM_BACKGROUND_GLOBAL,
                      TM_ROBUST_BACKGROUND_GLOBAL, TM_RIDLER_CALVARD_GLOBAL, 
@@ -531,7 +525,7 @@ def get_robust_background_threshold(image, mask = None):
     
     cropped_image.sort()
     chop = int(round(np.product(cropped_image.shape) * .05))
-    im   = cropped_image[chop:-chop]
+    im   = cropped_image if chop == 0 else cropped_image[chop:-chop]
     mean = im.mean()
     sd   = im.std()
     return mean+sd*2
@@ -671,8 +665,15 @@ def get_maximum_correlation_threshold(image, mask = None, bins = 256):
     my_bin = np.argmax(mct)-1
     return min_value + my_bin * (max_value - min_value) / (bins - 1)
     
-def weighted_variance(image,mask,threshold):
-    """Compute the log-transformed variance of foreground and background"""
+def weighted_variance(image, mask, binary_image):
+    """Compute the log-transformed variance of foreground and background
+    
+    image - intensity image used for thresholding
+    
+    mask - mask of ignored pixels
+    
+    binary_image - binary image marking foreground and background
+    """
     if not np.any(mask):
         return 0
     #
@@ -681,13 +682,9 @@ def weighted_variance(image,mask,threshold):
     minval = np.max(image[mask])/256
     if minval == 0:
         return 0
-    clamped_image = image[mask]
-    clamped_image[clamped_image < minval] = minval
     
-    if isinstance(threshold,np.ndarray):
-        threshold = threshold[mask]
-    fg = np.log2(clamped_image[clamped_image >=threshold])
-    bg = np.log2(clamped_image[clamped_image < threshold])
+    fg = np.log2(np.maximum(image[binary_image & mask], minval))
+    bg = np.log2(np.maximum(image[(~ binary_image) & mask], minval))
     nfg = np.product(fg.shape)
     nbg = np.product(bg.shape)
     if nfg == 0:
@@ -697,7 +694,7 @@ def weighted_variance(image,mask,threshold):
     else:
         return (np.var(fg) * nfg + np.var(bg)*nbg) / (nfg+nbg)
 
-def sum_of_entropies(image, mask, threshold):
+def sum_of_entropies(image, mask, binary_image):
     """Bin the foreground and background pixels and compute the entropy 
     of the distribution of points among the bins
     """
@@ -730,8 +727,8 @@ def sum_of_entropies(image, mask, threshold):
     #
     # Create log-transformed lists of points in the foreground and background
     # 
-    fg = image[np.logical_and(mask, image >= threshold)]
-    bg = image[np.logical_and(mask, image < threshold)]
+    fg = image[binary_image & mask]
+    bg = image[(~ binary_image) & mask]
     if len(fg) == 0 or len(bg) == 0:
         return 0
     log_fg = np.log2(fg)

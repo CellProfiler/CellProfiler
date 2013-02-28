@@ -50,12 +50,14 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
         self.assertEqual(module.objects_name.value,"Cells")
         self.assertEqual(module.method.value,cpmi2.M_PROPAGATION)
         self.assertEqual(module.image_name.value,"OrigBlue")
-        self.assertEqual(module.threshold_method.value,"Otsu Global")
+        self.assertEqual(module.threshold_method.value, cpmi.TM_OTSU)
+        self.assertEqual(module.threshold_scope, cpmi.TM_GLOBAL)
         self.assertEqual(module.threshold_correction_factor.value, 1)
         self.assertEqual(module.threshold_range.min, 0)
         self.assertEqual(module.threshold_range.max, 1)
         self.assertEqual(module.distance_to_dilate.value, 10)
         self.assertEqual(module.regularization_factor.value, 0.05)
+        self.assertEqual(module.threshold_smoothing_choice, cpmi.TSM_NONE)
     
     def test_01_02_load_v2(self):
         data = ('eJztWt1u2zYUlh0nSFZ0a9OLDugNL5suNiQ3xtJgSO3G/fEWu0bjtS'
@@ -90,7 +92,8 @@ class TestIdentifySecondaryObjects(unittest.TestCase):
         p.load(fd)
         self.assertTrue(len(p.modules())==3)
         module = p.modules()[2]
-        self.assertEqual(module.threshold_method.value, "Otsu Global")
+        self.assertEqual(module.threshold_method.value, cpmi.TM_OTSU)
+        self.assertEqual(module.threshold_scope, cpmi.TM_GLOBAL)
         self.assertEqual(module.two_class_otsu.value, cpmi.O_TWO_CLASS)
         self.assertEqual(module.use_weighted_variance.value,
                          cpmi.O_WEIGHTED_VARIANCE)
@@ -181,7 +184,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'9194\'|variable_revision_nu
         self.assertEqual(module.objects_name, "Secondary")
         self.assertEqual(module.method, cpmi2.M_WATERSHED_I)
         self.assertEqual(module.image_name, "Cytoplasm")
-        self.assertEqual(module.threshold_method, cpmi2.cpthresh.TM_OTSU_ADAPTIVE)
+        self.assertEqual(module.threshold_method, cpmi2.cpthresh.TM_OTSU)
+        self.assertEqual(module.threshold_scope, cpmi.TS_ADAPTIVE)
         self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
         self.assertAlmostEqual(module.threshold_range.min, 0.05)
         self.assertAlmostEqual(module.threshold_range.max, 0.95)
@@ -245,7 +249,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertEqual(module.objects_name, "PropCells")
         self.assertEqual(module.method, cpmi2.M_PROPAGATION)
         self.assertEqual(module.image_name, "CorrGreen")
-        self.assertEqual(module.threshold_method, cpmi2.cpthresh.TM_OTSU_GLOBAL)
+        self.assertEqual(module.threshold_method, cpmi2.cpthresh.TM_OTSU)
+        self.assertEqual(module.threshold_scope, cpmi.TS_GLOBAL)
         self.assertAlmostEqual(module.threshold_correction_factor.value, 1)
         self.assertAlmostEqual(module.threshold_range.min, 0.02)
         self.assertAlmostEqual(module.threshold_range.max, 1)
@@ -265,6 +270,120 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         self.assertFalse(module.wants_primary_outlines)
         self.assertEqual(module.new_primary_outlines_name, "FilteredNucleiOutlines")        
         self.assertFalse(module.fill_holes)
+        
+    def test_01_09_load_v9(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20130226215424
+ModuleCount:5
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    :
+    Filter based on rules:No
+    Filter:or (file does contain "")
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Extract metadata?:No
+    Extraction method count:1
+    Extraction method:Automatic
+    Source:From file name
+    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Filter images:All images
+    :or (file does contain "")
+    Metadata file location\x3A:
+    Match file and image metadata:\x5B\x5D
+    Case insensitive matching:No
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Assignment method:Assign all images
+    Load as:Grayscale image
+    Image name:DNA
+    :\x5B\x5D
+    Assign channels by:Order
+    Assignments count:1
+    Match this rule:or (file does contain "")
+    Image name:DNA
+    Objects name:Cell
+    Load as:Grayscale image
+
+Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Do you want to group your images?:No
+    grouping metadata count:1
+    Metadata category:None
+
+IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the input objects:ChocolateChips
+    Name the objects to be identified:Cookies
+    Select the method to identify the secondary objects:Propagation
+    Select the input image:BakingSheet
+    Number of pixels by which to expand the primary objects:11
+    Regularization factor:0.125
+    Name the outline image:CookieEdges
+    Retain outlines of the identified secondary objects?:No
+    Discard secondary objects touching the border of the image?:Yes
+    Discard the associated primary objects?:No
+    Name the new primary objects:FilteredChocolateChips
+    Retain outlines of the new primary objects?:No
+    Name the new primary object outlines:FilteredChocolateChipOutlines
+    Fill holes in identified objects?:Yes
+    Threshold setting version:1
+    Threshold strategy:Automatic
+    Threshold method:Otsu
+    Smoothing for threshold:Automatic
+    Threshold smoothing scale:1.5
+    Threshold correction factor:.95
+    Lower and upper bounds on threshold:0.01,.95
+    Approximate fraction of image covered by objects?:0.02
+    Manual threshold:0.3
+    Select the measurement to threshold with:Count_Cookies
+    Select binary image:CookieMask
+    Masking objects:CookieMonsters
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Method to calculate adaptive window size:Image size
+    Size of adaptive window:9
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
+        self.assertEqual(module.primary_objects, "ChocolateChips")
+        self.assertEqual(module.objects_name, "Cookies")
+        self.assertEqual(module.image_name, "BakingSheet")
+        self.assertEqual(module.method, cpmi2.M_PROPAGATION)
+        self.assertEqual(module.distance_to_dilate, 11)
+        self.assertEqual(module.regularization_factor, .125)
+        self.assertEqual(module.outlines_name, "CookieEdges")
+        self.assertFalse(module.use_outlines)
+        self.assertTrue(module.wants_discard_edge)
+        self.assertFalse(module.wants_discard_primary)
+        self.assertEqual(module.new_primary_objects_name, "FilteredChocolateChips")
+        self.assertFalse(module.wants_primary_outlines)
+        self.assertEqual(module.new_primary_outlines_name, "FilteredChocolateChipOutlines")
+        self.assertTrue(module.fill_holes)
+        self.assertEqual(module.threshold_scope, cpmi.TS_AUTOMATIC)
+        self.assertEqual(module.threshold_method, cpmi.TM_OTSU)
+        self.assertEqual(module.threshold_smoothing_choice, cpmi.TSM_AUTOMATIC)
+        self.assertEqual(module.threshold_smoothing_scale, 1.5)
+        self.assertEqual(module.threshold_correction_factor, .95)
+        self.assertEqual(module.threshold_range.min, .01)
+        self.assertEqual(module.threshold_range.max, .95)
+        self.assertEqual(module.object_fraction, .02)
+        self.assertEqual(module.manual_threshold, .3)
+        self.assertEqual(module.thresholding_measurement, "Count_Cookies")
+        self.assertEqual(module.binary_image, "CookieMask")
+        self.assertEqual(module.masking_objects, "CookieMonsters")
+        self.assertEqual(module.two_class_otsu, cpmi.O_TWO_CLASS)
+        self.assertEqual(module.use_weighted_variance, cpmi.O_WEIGHTED_VARIANCE)
+        self.assertEqual(module.assign_middle_to_foreground, cpmi.O_FOREGROUND)
+        self.assertEqual(module.adaptive_window_method, cpmi.FI_IMAGE_SIZE)
+        self.assertEqual(module.adaptive_window_size, 9)
         
     def make_workspace(self, image, segmented, unedited_segmented = None,
                        small_removed_segmented = None):
@@ -321,6 +440,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         labels[3:6,3:6] = 1
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cpmi2.M_PROPAGATION
+        module.threshold_scope.value = cpmi.TS_MANUAL
+        module.manual_threshold.value = .25
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -351,7 +472,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cpmi2.M_PROPAGATION
         module.regularization_factor.value = 0 # propagate by image
-        module.threshold_method.value = cpmi.TM_MANUAL
+        module.threshold_scope.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .2
         module.run(workspace)
         m = workspace.measurements
@@ -394,7 +515,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_PROPAGATION
         module.regularization_factor.value = 1000 # propagate by distance
-        module.threshold_method.value = cpmi.TM_MANUAL
+        module.threshold_scope.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .2
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
@@ -420,6 +541,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         labels[3:6,3:6] = 1
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cpmi2.M_PROPAGATION
+        module.threshold_scope.value = cpmi.TS_GLOBAL
+        module.threshold_method.value = cpmi.TM_OTSU
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -489,6 +612,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_WATERSHED_G
+        module.threshold_scope.value = cpmi.TS_GLOBAL
+        module.threshold_method.value = cpmi.TM_OTSU
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -536,7 +661,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_WATERSHED_G
-        module.threshold_method.value = cpmi.TM_MANUAL
+        module.threshold_scope.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .2
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
@@ -561,6 +686,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         labels[3:6,3:6] = 1
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cpmi2.M_WATERSHED_G
+        module.threshold_scope.value = cpmi.TS_GLOBAL
+        module.threshold_method.value = cpmi.TM_OTSU
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -632,6 +759,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_WATERSHED_I
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
+        module.threshold_scope.value = cpmi.TS_GLOBAL
+        module.threshold_method.value = cpmi.TM_OTSU
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
@@ -671,7 +800,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_WATERSHED_I
-        module.threshold_method.value = cpmi.TM_MANUAL
+        module.threshold_scope.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .01
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
@@ -696,6 +825,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         labels[3:6,3:6] = 1
         workspace, module = self.make_workspace(img, labels)
         module.method.value = cpmi2.M_WATERSHED_I
+        module.threshold_scope.value = cpmi.TS_GLOBAL
+        module.threshold_method.value = cpmi.TM_OTSU
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -859,6 +990,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.use_outlines.value = True
         module.outlines_name.value = "my_outlines"
         module.method.value = cpmi2.M_WATERSHED_I
+        module.threshold_scope.value = cpmi.TS_GLOBAL
+        module.threshold_method.value = cpmi.TM_OTSU
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -907,6 +1040,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.new_primary_objects_name.value = NEW_OBJECTS_NAME
         module.new_primary_outlines_name.value = "newprimaryoutlines"
         module.method.value = cpmi2.M_WATERSHED_I
+        module.threshold_scope.value = cpmi.TS_GLOBAL
+        module.threshold_method.value = cpmi.TM_OTSU
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -1127,6 +1262,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.wants_discard_primary.value = True
         module.new_primary_objects_name.value = NEW_OBJECTS_NAME
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
+        module.threshold_scope.value = cpmi.TS_GLOBAL
+        module.threshold_method.value = cpmi.TM_OTSU
         module.run(workspace)
         object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
         self.assertTrue(np.all(object_out.segmented == 0))
@@ -1184,6 +1321,8 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.wants_discard_edge.value = True
         module.wants_discard_primary.value = True
         module.new_primary_objects_name.value = NEW_OBJECTS_NAME
+        module.threshold_scope.value = cpmi.TS_GLOBAL
+        module.threshold_method.value = cpmi.TM_OTSU
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
@@ -1240,7 +1379,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_PROPAGATION
-        module.threshold_method.value = cpmi.TM_MANUAL
+        module.threshold_scope.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .5
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
@@ -1292,7 +1431,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_PROPAGATION
-        module.threshold_method.value = cpmi.TM_MANUAL
+        module.threshold_scope.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .5
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
@@ -1318,7 +1457,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
         
         workspace, module = self.make_workspace(image, labels)
         self.assertTrue(isinstance(module, cpmi2.IdentifySecondaryObjects))
-        module.threshold_method.value = cpmi.TM_BINARY_IMAGE
+        module.threshold_scope.value = cpmi.TS_BINARY_IMAGE
         module.binary_image.value = "threshold"
         image_set = workspace.image_set
         self.assertTrue(isinstance(image_set, cpi.ImageSet))
@@ -1355,7 +1494,7 @@ IdentifySecondaryObjects:[module_num:1|svn_version:\'10220\'|variable_revision_n
                     expected[2, 5] = 0
                 workspace, module = self.make_workspace(image, labels)
                 self.assertTrue(isinstance(module, cpmi2.IdentifySecondaryObjects))
-                module.threshold_method.value = cpmi.TM_BINARY_IMAGE
+                module.threshold_scope.value = cpmi.TM_BINARY_IMAGE
                 module.binary_image.value = "threshold"
                 module.method.value = method
                 module.fill_holes.value = wants_fill_holes

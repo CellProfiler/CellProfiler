@@ -104,10 +104,13 @@ M_WATERSHED_I = "Watershed - Image"
 M_DISTANCE_N = "Distance - N"
 M_DISTANCE_B = "Distance - B"
 
+'''# of setting values other than thresholding ones'''
+N_SETTING_VALUES = 14
+
 class IdentifySecondaryObjects(cpmi.Identify):
 
     module_name = "IdentifySecondaryObjects"
-    variable_revision_number = 8
+    variable_revision_number = 9
     category = "Object Processing"
     
     def create_settings(self):
@@ -180,6 +183,8 @@ class IdentifySecondaryObjects(cpmi.Identify):
             For <i>Distance - N</i> this will not affect object identification, only the final display.""")
         
         self.create_threshold_settings()
+        # default smoothing choice is different for idprimary and idsecondary
+        self.threshold_smoothing_choice.value = cpmi.TSM_NONE
         
         self.distance_to_dilate = cps.Integer("Number of pixels by which to expand the primary objects",10,minval=1)
         
@@ -261,20 +266,13 @@ class IdentifySecondaryObjects(cpmi.Identify):
             using this name in subsequent modules such as <b>SaveImages</b>.""")
     
     def settings(self):
-        return [ self.primary_objects, self.objects_name,   
-                 self.method, self.image_name, self.threshold_method, 
-                 self.threshold_correction_factor, self.threshold_range,
-                 self.object_fraction, self.distance_to_dilate, 
-                 self.regularization_factor, self.outlines_name,
-                 self.manual_threshold,  
-                 self.binary_image, self.use_outlines,
-                 self.two_class_otsu, self.use_weighted_variance,
-                 self.assign_middle_to_foreground,
-                 self.wants_discard_edge, self.wants_discard_primary,
-                 self.new_primary_objects_name, self.wants_primary_outlines,
-                 self.new_primary_outlines_name, self.thresholding_measurement,
-                 self.fill_holes,
-                 self.adaptive_window_method, self.adaptive_window_size]
+        return [
+            self.primary_objects, self.objects_name, self.method, self.image_name, 
+            self.distance_to_dilate, self.regularization_factor, self.outlines_name, 
+            self.use_outlines, self.wants_discard_edge, self.wants_discard_primary, 
+            self.new_primary_objects_name, self.wants_primary_outlines,
+            self.new_primary_outlines_name, self.fill_holes] + \
+               self.get_threshold_settings()
     
     def visible_settings(self):
         result = [self.image_name, self.primary_objects, self.objects_name,  
@@ -300,14 +298,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
     
     def help_settings(self):
         return [ self.primary_objects, self.objects_name,   
-                 self.method, self.image_name, self.threshold_method, 
-                 self.two_class_otsu, self.use_weighted_variance,
-                 self.assign_middle_to_foreground, self.object_fraction, 
-                 self.adaptive_window_method, self.adaptive_window_size, 
-                 self.manual_threshold,  
-                 self.binary_image, self.thresholding_measurement,
-                 self.threshold_correction_factor, self.threshold_range,
-                 self.distance_to_dilate, 
+                 self.method, self.image_name] +\
+               self.get_threshold_visible_settings() + \
+               [ self.distance_to_dilate, 
                  self.regularization_factor,
                  self.fill_holes, self.wants_discard_edge, self.wants_discard_primary,
                  self.new_primary_objects_name, self.wants_primary_outlines,
@@ -405,11 +398,40 @@ class IdentifySecondaryObjects(cpmi.Identify):
             setting_values += [FI_IMAGE_SIZE, "10"]
             variable_revision_number = 8
             
+        if (not from_matlab) and variable_revision_number == 8:
+            primary_objects, objects_name, method, image_name, \
+                threshold_method, threshold_correction_factor, \
+                threshold_range, object_fraction, distance_to_dilate, \
+                regularization_factor, outlines_name, manual_threshold,  \
+                binary_image, use_outlines, two_class_otsu, \
+                use_weighted_variance, assign_middle_to_foreground, \
+                wants_discard_edge, wants_discard_primary, \
+                new_primary_objects_name, wants_primary_outlines, \
+                new_primary_outlines_name, thresholding_measurement, \
+                fill_holes, adaptive_window_method, \
+                adaptive_window_size = setting_values
+            setting_values = [
+                primary_objects, objects_name, method, image_name, 
+                distance_to_dilate, regularization_factor, outlines_name, 
+                use_outlines, wants_discard_edge, wants_discard_primary, 
+                new_primary_objects_name, wants_primary_outlines,
+                new_primary_outlines_name, fill_holes] + \
+                self.upgrade_legacy_threshold_settings(
+                    threshold_method, cpmi.TSM_NONE, 
+                    threshold_correction_factor, threshold_range,
+                    object_fraction, manual_threshold, thresholding_measurement,
+                    binary_image, two_class_otsu, use_weighted_variance,
+                    assign_middle_to_foreground, adaptive_window_method,
+                    adaptive_window_size)
+            variable_revision_number = 9
+        setting_values = setting_values[:N_SETTING_VALUES] + \
+            self.upgrade_threshold_settings(setting_values[N_SETTING_VALUES:])
         return setting_values, variable_revision_number, from_matlab
 
     def run(self, workspace):
         assert isinstance(workspace, cpw.Workspace)
-        image = workspace.image_set.get_image(self.image_name.value,
+        image_name = self.image_name.value
+        image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale = True)
         img = image.pixel_data
         mask = image.mask
@@ -417,21 +439,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
         global_threshold = None
         if self.method == M_DISTANCE_N:
             has_threshold = False
-        elif self.threshold_method == cpthresh.TM_BINARY_IMAGE:
-            binary_image = workspace.image_set.get_image(self.binary_image.value,
-                                                         must_be_binary = True)
-            local_threshold = np.ones(img.shape) * np.max(img) + np.finfo(float).eps
-            local_threshold[binary_image.pixel_data] = np.min(img) - np.finfo(float).eps
-            global_threshold = cellprofiler.cpmath.otsu.otsu(img[mask],
-                        self.threshold_range.min,
-                        self.threshold_range.max)
-            has_threshold = True
         else:
-            local_threshold,global_threshold = self.get_threshold(img, mask, None, workspace)
+            thresholded_image = self.threshold_image(image_name, workspace)
             has_threshold = True
-        
-        if has_threshold:
-            thresholded_image = img > local_threshold
         
         #
         # Get the following labels:
@@ -587,31 +597,9 @@ class IdentifySecondaryObjects(cpmi.Identify):
             workspace.image_set.add(self.outlines_name.value, out_img)
         object_count = np.max(segmented_out)
         #
-        # Add the background measurements if made
+        # Add measurements
         #
         measurements = workspace.measurements
-        if has_threshold:
-            if isinstance(local_threshold,np.ndarray):
-                ave_threshold = np.mean(local_threshold)
-            else:
-                ave_threshold = local_threshold
-            
-            measurements.add_measurement(cpmeas.IMAGE,
-                                         cpmi.FF_FINAL_THRESHOLD%(objname),
-                                         np.array([ave_threshold],
-                                                     dtype=float))
-            measurements.add_measurement(cpmeas.IMAGE,
-                                         cpmi.FF_ORIG_THRESHOLD%(objname),
-                                         np.array([global_threshold],
-                                                      dtype=float))
-            wv = cpthresh.weighted_variance(img, mask, local_threshold)
-            measurements.add_measurement(cpmeas.IMAGE,
-                                         cpmi.FF_WEIGHTED_VARIANCE%(objname),
-                                         np.array([wv],dtype=float))
-            entropies = cpthresh.sum_of_entropies(img, mask, local_threshold)
-            measurements.add_measurement(cpmeas.IMAGE,
-                                         cpmi.FF_SUM_OF_ENTROPIES%(objname),
-                                         np.array([entropies],dtype=float))
         cpmi.add_object_count_measurements(measurements, objname, object_count)
         cpmi.add_object_location_measurements(measurements, objname,
                                               segmented_out)
@@ -824,9 +812,11 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
     def get_measurement_objects(self, pipeline, object_name, category, measurement):
         if self.method != M_DISTANCE_N:
-            return self.get_threshold_measurement_objects(pipeline, object_name,
-                                                          category, measurement,
-                                                          self.objects_name.value)
+            return self.get_threshold_measurement_objects(
+                pipeline, object_name, category, measurement)
         return []
+    
+    def get_measurement_objects_name(self):
+        return self.objects_name.value
                                                       
 IdentifySecondary = IdentifySecondaryObjects

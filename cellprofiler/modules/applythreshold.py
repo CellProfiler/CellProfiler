@@ -25,7 +25,7 @@ from identify import O_FOREGROUND, O_THREE_CLASS
 from identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
 from identify import FF_ORIG_THRESHOLD, FF_FINAL_THRESHOLD
 from identify import FF_SUM_OF_ENTROPIES, FF_WEIGHTED_VARIANCE
-from identify import FI_IMAGE_SIZE
+from identify import FI_IMAGE_SIZE, TSM_NONE
 from cellprofiler.modules.identify import get_threshold_measurement_columns
 from cellprofiler.cpmath.threshold import TM_METHODS, TM_MANUAL, TM_MOG, TM_OTSU
 from cellprofiler.cpmath.threshold import TM_GLOBAL, TM_ADAPTIVE, TM_PER_OBJECT, TM_BINARY_IMAGE
@@ -41,10 +41,13 @@ BINARY = "Binary (black and white)"
 TH_BELOW_THRESHOLD = "Below threshold"
 TH_ABOVE_THRESHOLD = "Above threshold"
 
+'''# of non-threshold settings in current revision'''
+N_SETTINGS = 6
+
 class ApplyThreshold(Identify):
 
     module_name = "ApplyThreshold"
-    variable_revision_number = 6
+    variable_revision_number = 7
     category = "Image Processing"
 
     def create_settings(self):
@@ -91,9 +94,8 @@ class ApplyThreshold(Identify):
                                 thresholded region around those bright objects by a certain distance so as to avoid a "halo" effect.''')
 
         self.create_threshold_settings(threshold_methods)
+        self.threshold_smoothing_choice.value = TSM_NONE
         
-        self.enclosing_objects_name = cpsetting.ObjectNameSubscriber("Select the input objects","None", doc = '''<i>(Used only if a per-object thresholding method is selected)</i><br> Select the objects
-                               you identified previously and would like to now further identify sub-objects within.''')
         
     def visible_settings(self):
         vv = [self.image_name, self.thresholded_image_name, self.binary]
@@ -111,27 +113,14 @@ class ApplyThreshold(Identify):
     def settings(self):
         return [self.image_name, self.thresholded_image_name,
                 self.binary, self.low_or_high, 
-                self.shift, self.dilation,
-                self.threshold_method, self.manual_threshold,
-                self.threshold_range, self.threshold_correction_factor,
-                self.object_fraction, self.enclosing_objects_name,
-                self.two_class_otsu, self.use_weighted_variance,
-                self.assign_middle_to_foreground,
-                self.thresholding_measurement]
+                self.shift, self.dilation] + self.get_threshold_settings()
     
     def help_settings(self):
         """Return all settings in a consistent order"""
         return [self.image_name, self.thresholded_image_name,
                 self.binary, self.low_or_high, 
-                self.shift, self.dilation,
-                self.threshold_method, self.two_class_otsu, self.use_weighted_variance,
-                self.assign_middle_to_foreground,
-                self.object_fraction,  
-                self.adaptive_window_method,
-                self.adaptive_window_size,
-                self.manual_threshold, self.thresholding_measurement, 
-                self.threshold_range, self.threshold_correction_factor,
-                self.enclosing_objects_name]
+                self.shift, self.dilation] +\
+               self.get_threshold_help_settings()
     
     def run(self,workspace):
         """Run the module
@@ -146,22 +135,19 @@ class ApplyThreshold(Identify):
         input = workspace.image_set.get_image(self.image_name.value,
                                               must_be_grayscale=True)
         pixels = input.pixel_data.copy()
-        if self.threshold_modifier == TM_PER_OBJECT:
-            objects = workspace.object_set.get_objects(self.enclosing_objects_name.value)
-            labels = objects.segmented
-        else:
-            labels = None
-        local_thresh,global_thresh = self.get_threshold(pixels,input.mask,labels, workspace)
+        binary_image, local_thresh = self.threshold_image(
+            self.image_name.value, workspace, wants_local_threshold=True)
         if self.binary != 'Grayscale':
-            pixels = (pixels > local_thresh) & input.mask
+            pixels = binary_image & input.mask
         else:
             if self.low_or_high == TH_BELOW_THRESHOLD:
-                thresholded_pixels = pixels < local_thresh
-                pixels[input.mask & thresholded_pixels] = 0
+                pixels[input.mask & ~ binary_image] = 0
                 if self.shift.value:
-                    pixels[input.mask & ~ thresholded_pixels] -= local_thresh if self.threshold_modifier == TM_GLOBAL else local_thresh[input.mask & ~ thresholded_pixels]
+                    pixels[input.mask & binary_image] -= \
+                        local_thresh if self.threshold_modifier == TM_GLOBAL \
+                        else local_thresh[input.mask & binary_image]
             elif self.low_or_high == TH_ABOVE_THRESHOLD:
-                undilated = input.mask & (pixels >= local_thresh)
+                undilated = input.mask & binary_image
                 dilated = binary_dilation(undilated, 
                                           strel_disk(self.dilation.value), 
                                           mask=input.mask)
@@ -173,10 +159,6 @@ class ApplyThreshold(Identify):
                      TH_ABOVE_THRESHOLD))
         output = cpimage.Image(pixels, parent_image=input)
         workspace.image_set.add(self.thresholded_image_name.value, output)
-        self.add_threshold_measurements(workspace.measurements, 
-                                        input.pixel_data, input.mask, 
-                                        local_thresh, global_thresh,
-                                        self.thresholded_image_name.value)
         if self.show_window:
             workspace.display_data.input_pixel_data = input.pixel_data
             workspace.display_data.output_pixel_data = output.pixel_data
@@ -200,6 +182,14 @@ class ApplyThreshold(Identify):
                               sharexy = figure.subplot(0,0))
         figure.subplot_table(0,2, workspace.display_data.statistics)
         
+    def get_measurement_objects_name(self):
+        '''Return the name of the "objects" used to name thresholding measurements
+        
+        In the case of ApplyThreshold, we use the image name to name the
+        measurements, so the code here works, but is misnamed.
+        '''
+        return self.thresholded_image_name.value
+    
     def get_measurement_columns(self, pipeline):
         return get_threshold_measurement_columns(self.thresholded_image_name.value)
     
@@ -210,9 +200,8 @@ class ApplyThreshold(Identify):
         return self.get_threshold_measurements(pipeline, object_name, category)
     
     def get_measurement_images(self, pipeline, object_name, category, measurement):
-        return self.get_threshold_measurement_images(pipeline, object_name,
-                                                     category, measurement,
-                                                     self.thresholded_image_name.value)
+        return self.get_threshold_measurement_objects(
+            pipeline, object_name, category, measurement)
     def upgrade_settings(self, setting_values,
                          variable_revision_number, module_name,
                          from_matlab):
@@ -291,5 +280,27 @@ class ApplyThreshold(Identify):
             setting_values += [FI_IMAGE_SIZE, "10"]
             variable_revision_number = 6
             
+        if (not from_matlab) and variable_revision_number == 6:
+            image_name, thresholded_image_name, binary, low_or_high, \
+                shift, dilation, threshold_method, manual_threshold, \
+                threshold_range, threshold_correction_factor, \
+                object_fraction, enclosing_objects_name, \
+                two_class_otsu, use_weighted_variance, \
+                assign_middle_to_foreground, thresholding_measurement = \
+                setting_values[:16]
+            setting_values = [
+                image_name, thresholded_image_name, binary, low_or_high, 
+                shift, dilation ] + self.upgrade_legacy_threshold_settings(
+                    threshold_method, TSM_NONE, threshold_correction_factor, 
+                    threshold_range, object_fraction, manual_threshold,
+                    thresholding_measurement, "None", two_class_otsu,
+                    use_weighted_variance, assign_middle_to_foreground,
+                    FI_IMAGE_SIZE, "10", masking_objects=enclosing_objects_name)
+            variable_revision_number = 7
+        #
+        # Upgrade the threshold settings
+        #
+        setting_values = setting_values[:N_SETTINGS] + \
+            self.upgrade_threshold_settings(setting_values[N_SETTINGS:])
         return setting_values, variable_revision_number, from_matlab
         

@@ -545,7 +545,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
         apply_threshold.low_or_high.value = cpm_a.TH_ABOVE_THRESHOLD
-        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.threshold_scope.value = cpm_a.TM_MANUAL
         apply_threshold.manual_threshold.value = 1.0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
@@ -601,7 +601,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
         apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
-        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.threshold_scope.value = cpm_a.TM_MANUAL
         apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
@@ -658,7 +658,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
         apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
-        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.threshold_scope.value = cpm_a.TM_MANUAL
         apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
@@ -707,7 +707,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
         apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
-        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.threshold_scope.value = cpm_a.TM_MANUAL
         apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
@@ -764,7 +764,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
         apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
-        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.threshold_scope.value = cpm_a.TM_MANUAL
         apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
@@ -822,7 +822,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
         apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
-        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.threshold_scope.value = cpm_a.TM_MANUAL
         apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
@@ -884,7 +884,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
         apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
-        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.threshold_scope.value = cpm_a.TM_MANUAL
         apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
@@ -945,7 +945,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
         apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
-        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.threshold_scope.value = cpm_a.TM_MANUAL
         apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2
@@ -994,7 +994,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         apply_threshold.image_name.value = 'Orig'
         apply_threshold.thresholded_image_name.value = 'Derived'
         apply_threshold.low_or_high.value = cpm_a.TH_BELOW_THRESHOLD
-        apply_threshold.threshold_method.value = cpm_a.TM_MANUAL
+        apply_threshold.threshold_scope.value = cpm_a.TM_MANUAL
         apply_threshold.manual_threshold.value = 0
         apply_threshold.binary.value = cpm_a.GRAYSCALE
         apply_threshold.module_num = 2

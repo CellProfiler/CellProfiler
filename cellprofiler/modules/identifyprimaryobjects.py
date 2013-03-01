@@ -361,19 +361,25 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             question.</li></ul>""")
         
         self.automatic_smoothing = cps.Binary(
-            'Automatically calculate size of smoothing filter?', 
+            'Automatically calculate size of smoothing filter for declumping?', 
             True, doc="""\
-            <i>(Used only when distinguishing between clumped objects)</i> <br>
-            This setting,
-            along with the <i>Minimum allowed distance between local maxima</i> setting, affects whether objects
+            <p><i>(Used only when distinguishing between clumped objects)</i> <br>
+            This setting, along with the <i>Minimum allowed distance between local maxima</i> 
+            setting, affects whether objects
             close to each other are considered a single object or multiple objects.
             It does not affect the dividing lines between an object and the
-            background. The size of the smoothing filter is automatically 
+            background.</p>
+            
+            <p>Please note that this smoothing setting is applied after thresholding,
+            and is therefore distinct from the threshold smoothing method setting above, 
+            which is applied <i>before</i> thresholding.</p>
+            
+            <p>The size of the smoothing filter is automatically 
             calculated based on the specified minimum object diameter
             that you have entered. If you see too many objects merged that ought to be separate
             or too many objects split up that
             ought to be merged, you may want to override the automatically
-            calculated value.""")
+            calculated value.</p>""")
         
         self.smoothing_filter_size = cps.Integer(
             'Size of smoothing filter', 10, doc="""\

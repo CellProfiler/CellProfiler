@@ -162,76 +162,98 @@ class Identify(cellprofiler.cpmodule.CPModule):
             'Threshold strategy',
             TS_ALL,
             doc = """
-            The thresholding strategy determines whether the module calculates
-            a threshold from the input image's intensity or whether it
-            uses a threshold taken from user input, from a previous measurement
-            or from a binary mask. If a threshold is calculated, the threshold
-            algorithm can be performed on the whole image or can be performed
-            on tiles or objects supplied by a prior module.
+            The thresholding strategy determines the type of input that the
+            module calculates the threshold from. Thresholds can be obtained from:
+            <ul>
+            <li>The pixel intensities of the input image (most common), </li>
+            <li>A value manually input by the user,</li>
+            <li>A value based on an prior module measurement,</li>
+            <li>A binary mask created upstream in the pipeline. </li>
+            </ul>
+            These options allow you to calculate a threshold based on the whole 
+            image or based on image sub-regions such as user-defined masks or
+            objects supplied by a prior module.
             <br>
             The choices for the threshold strategy are:
             <br><ul>
-            <li><i>%(TS_AUTOMATIC)s:</i> use the default settings for
-            thresholding. This strategy calculates the threshold using MCT
+            <li><i>%(TS_AUTOMATIC)s:</i> Use the default settings for
+            thresholding. This strategy calculates the threshold using the MCT method
             on the whole image and applies the threshold to the image, smoothed
-            with a Gaussian with sigma of 1. This is
-            fairly robust, but does not allow you to select the threshold
-            algorithm and does not allow you to apply corrections to the
-            threshold.
-            </li>
-            <li><i>%(TS_GLOBAL)s:</i> calculate a single threshold based on
-            the unmasked pixels of the input image and use the single value
+            with a Gaussian with sigma of 1. <br>
+            This approach is fairly robust, but does not allow you to select the threshold
+            algorithm and does not allow you to apply additional corrections to the
+            threshold.</li>
+            
+            <li><i>%(TS_GLOBAL)s:</i> Calculate a single threshold value based on
+            the unmasked pixels of the input image and use that value
             to classify pixels above the threshold as foreground and below
-            as background. This strategy is fast and robust, especially if
-            the background is uniformly illuminated.
-            </li>
-            <li><i>%(TS_ADAPTIVE)s:</i> partition the input image into tiles
-            and calculate thresholds for each tile. Apply the threshold for
-            a tile to the pixels within that tile. This method is slower but
-            can produce better results for non-uniform backgrounds.</li>
-            <li><i>%(TS_PER_OBJECT)s:</i> use objects from a prior module
-            such as <i>IdentifyPrimaryObjects</i> to partition the input image.
-            Calculate a separate threshold per object and apply that threshold
-            to pixels within the object. Pixels outside of objects will be
-            classified as background. This method can be useful for identifying
-            particles or single-molecule probes within cells if the cells
-            contribute varying amounts of signal to the background through
-            autofluorescence or other mechanisms.</li>
+            as background.<br>
+            This strategy is fast and robust, especially if
+            the background is uniformly illuminated.</li>
+            
+            <li><i>%(TS_ADAPTIVE)s:</i> Partition the input image into tiles
+            and calculate thresholds for each tile. For each tile, the calculated
+            threshold is applied only to the pixels within that tile. <br>
+            This method is slower but can produce better results for non-uniform backgrounds.
+            However, for signifcant illumination variation, using the <b>CorrectIllumination</b>
+            modules is preferable.</li>
+            
+            <li><i>%(TS_PER_OBJECT)s:</i> Use objects from a prior module
+            such as <b>IdentifyPrimaryObjects</b> to define the region of interest
+            to be thresholded. Calculate a separate threshold for each object and 
+            then apply that threshold to pixels within the object. The pixels outside 
+            the objects are classified as background. <br>
+            This method can be useful for identifying sub-cellular particles or 
+            single-molecule probes if the background intensity varies from cell to cell
+            (e.g., autofluorescence or other mechanisms). </li>
+            
             <li><i>%(TS_MANUAL)s:</i> Enter a single value between zero and
             one that applies to all cycles and is independent of the input
-            image. This is useful if the input image has a stable or
-            negligible background or if the input image is the probability
-            map output of the <i>ClassifyPixels</i> module (in which case, .5
-            is an appropriate value).</li>
-            <li><i>%(TS_BINARY_IMAGE)s:</i> use a binary image to classify
+            image. <br>
+            This approach is useful if the input image has a stable or
+            negligible background, or if the input image is the probability
+            map output of the <i>ClassifyPixels</i> module (in which case, a value
+            of 0.5 should be chosen). If you are using this module to find objects 
+            in an image that is already binary (where the foreground is 1 and 
+            the background is 0), a manual value of 0.5 will identify the objects.</li>
+            
+            <li><i>%(TS_BINARY_IMAGE)s:</i> Use a binary image to classify
             pixels as foreground or background. Pixel values other than zero
             will be foreground and pixel values that are zero will be
-            background. This method can be used to import a ground-truth
-            segmentation into CellProfiler or to import a segmentation from
-            another program. It can also be used to create objects from
-            a mask produced by other CellProfiler modules such as <i>Morph</i></li>
-            <li><i>%(TS_MEASUREMENT)s:</i> use an image measurement as the
-            threshold. The measurement should have values between zero and one.
-            This strategy can be used to apply a pre-calculated threshold
-            imported as image metadata via <i>LoadData</i> or <i>Metadata</i>.
-            The threshold measurement from a prior <i>ApplyThreshold</i>,
-            <i>IdentifyPrimaryObjects</i> or <i>IdentifySecondaryObjects</i>
-            module can be used to apply the same threshold to subsequent
-            alternate segmentations.</li>
+            background. <br>
+            This method can be used to import a ground-truth segmentation created 
+            by CellProfiler or another program. The most typical approach to produce a 
+            binary image is to use the <b>ApplyThreshold</b> module (image as input, 
+            image as output) or the <b>ConvertObjectsToImage</b> module (objects as input, 
+            image as output); both have options to produce a binary image. It can also be 
+            used to create objects from an image mask produced by other CellProfiler 
+            modules, such as <b>Morph</b>. Note that even though no algorithm is actually 
+            used to find the threshold in this case, the final threshold value is reported 
+            as the Otsu threshold calculated for the foreground region.</li>
+            
+            <li><i>%(TS_MEASUREMENT)s:</i> Use a prior image measurement as the
+            threshold. The measurement should have values between zero and one.<br>
+            This strategy can be used to apply a pre-calculated threshold imported 
+            as per-image metadata via the <b>LoadData</b> or <b>Metadata</b> modules.
+            Like manual thresholding, this approach can be useful when you are certain what 
+            the cutoff should be. The difference in this case is that the desired threshold does 
+            vary from image to image in the experiment but can be measured using another module,
+            such as one of the <b>Measure</b> modules, <b>ApplyThreshold</b> or
+            an <b>Identify</b> module.</li>
             </ul>
 	    """ % globals())
-	    
+        
         self.threshold_method = cps.Choice(
-            'Threshold method',
+            'Thresholding method',
             methods, doc="""
-            The intensity threshold affects the decision of whether each pixel
-            will be considered foreground (regions of interest) or background.
-            A stringent threshold will result in only 
-            bright regions being identified, with tight lines around them, whereas 
-            a lenient threshold will include dim regions and the lines between regions 
-            and background will be more loose. You can have the threshold automatically calculated 
-            using several methods, or you can enter an absolute number between 0 
-            and 1 for the threshold. To help determine the choice of threshold manually, you
+            <p>The intensity threshold affects the decision of whether each pixel
+            will be considered foreground (region(s) of interest) or background.
+            A stringent threshold will result in only the brightest regions being identified, 
+            whereas a lenient threshold will include dim regions. You can have the threshold 
+            automatically calculated using several methods, or you can enter an absolute number between 0 
+            and 1 for the threshold. </p>
+            
+            <p>To help determine the choice of threshold manually, you
             can inspect the pixel intensities in an image of your choice. 
             %(HELP_ON_PIXEL_INTENSITIES)s"""%globals() + """ Both options have advantages. 
             An absolute number treats every image identically, but is not robust 
@@ -239,27 +261,31 @@ class Identify(cellprofiler.cpmodule.CPModule):
             automatically calculated threshold adapts to changes in
             lighting/staining conditions between images and is usually more
             robust/accurate, but it can occasionally produce a poor threshold for
-            unusual/artifactual images. It also takes a small amount of time to
-            calculate.
+            unusual or artifactual images. It also takes a small amount of time to
+            calculate, which can add to processing time for analysis runs on a large
+            number of images.</p>
             
-            <p>The threshold that is used for each image is recorded as a
+            <p>The threshold that is used for each image is recorded as a per-image 
             measurement in the output file, so if you are surprised by unusual measurements from
             one of your images, you might check whether the automatically calculated
-            threshold was unusually high or low compared to the other images.
+            threshold was unusually high or low compared to the other images. See the
+            <b>FlagImage</b> module if you would like to flag an image based on the threshold
+            value.</p>
             
-            <p>There are seven methods for finding thresholds automatically:
-            <ul><li><i>Otsu:</i> This method is probably best if you are not able 
+            <p>There are a number of methods for finding thresholds automatically:
+            <ul>
+            <li><i>Otsu:</i> This method is probably best if you are not able 
             to make certain assumptions about every images in your experiment, 
             especially if the percentage of the image covered by regions 
             of interest varies substantially from image to image. Our implementation 
             takes into account the maximum and minimum values in the image and log-transforming the
             image prior to calculating the threshold. For this reason, please note
             that negative-valued pixels are ignored in this computation, so caution should be
-            used in using image offsets (such as by using <b>ImageMath</b>).
-            <p>If you know that the percentage of 
-            each image that is foreground does not vary much from image
-            to image, the MoG method can be better, especially if the foreground percentage is
-            not near 50%.</li>
+            used applying offsets to the pixel values (via the <b>ImageMath</b> module or similar).
+            <p>If you know that the percentage of each image that is foreground does not 
+            vary much from image to image, the MoG method can be better, especially if the 
+            foreground percentage is not near 50%.</p></li>
+            
             <li><i>Mixture of Gaussian (MoG):</i>This function assumes that the 
             pixels in the image belong to either a background class or a foreground
             class, using an initial guess of the fraction of the image that is 
@@ -275,6 +301,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <li>When the three Gaussian distributions have been fitted, a decision 
             is made whether the intermediate class more closely models the background pixels 
             or foreground pixels, based on the estimated fraction provided by the user.</li></ol></li>
+            
             <li><i>Background:</i> This method is simple and appropriate for images in 
             which most of the image is background. It finds the mode of the 
             histogram of the image, which is assumed to be the background of the 
@@ -291,6 +318,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             the standard deviation. This thresholding method can be helpful if the majority
 	    of the image is background, and the results are often comparable or better than the
 	    Background method.</li>
+            
             <li><i>Ridler-Calvard:</i> This method is simple and its results are
             often very similar to Otsu's. According to
             Sezgin and Sankur's paper (<i>Journal of Electronic Imaging</i>, 2004), Otsu's 
@@ -300,60 +328,19 @@ class Identify(cellprofiler.cpmodule.CPModule):
             one by taking the mean of the average intensities of the background and 
             foreground pixels determined by the first threshold, repeating this until 
             the threshold converges.</li>
+            
             <li><i>Kapur:</i> This method computes the threshold of an image by
             log-transforming its values, then searching for the threshold that
             maximizes the sum of entropies of the foreground and background
             pixel values, when treated as separate distributions.</li>
-            <li><i>Maximum correlation:</i>This is an implementation of the
-            method described in Padmanabhan et al, 2010. It computes the maximum
+            
+            <li><i>Maximum correlation thresholding (MCT):</i> This is an implementation of the
+            method described in Padmanabhan <i>et al</i>, 2010. It computes the maximum
             correlation between the binary mask created by thresholding and
             the thresholded image and is somewhat similar mathematically to
             Otsu. The authors claim superior results when thresholding images
             of neurites and other images that have sparse foreground densities.</li>
             </ul>
-            
-            <p>You can also choose between <i>Global</i>, <i>Adaptive</i>, and 
-            <i>Per-object</i> thresholding for the automatic methods:
-            <ul>
-            <li><i>Global:</i> One threshold is calculated for the entire image (fast)</li>
-            <li><i>Adaptive:</i> The calculated threshold varies across the image. This method 
-            is a bit slower but may be more accurate near edges of regions of interest, 
-            or where illumination variation is significant (though in the latter case, 
-            using the <b>CorrectIllumination</b> modules is preferable).</li>
-            <li><i>Per-object:</i> If you are using this module to find child objects located
-            <i>within</i> parent objects, the per-object method will calculate a distinct
-            threshold for each parent object. This is especially helpful, for
-            example, when the background brightness varies substantially among the
-            parent objects. 
-            <br><i>Important:</i> the per-object method requires that you run an
-            <b>IdentifyPrimaryObjects</b> module to identify the parent objects upstream in the
-            pipeline. After the parent objects are identified in the pipeline, you
-            must then also run a <b>Crop</b> module with the following inputs: 
-            <ul>
-            <li>The input image is the image containing the sub-objects to be identified.</li>
-            <li>Select <i>Objects</i> as the shape to crop into.</li>
-            <li>Select the parent objects (e.g., <i>Nuclei</i>) as the objects to use as a cropping mask.</li>
-            </ul>
-            Finally, in the <b>IdentifyPrimaryObjects</b> module, select the cropped image as input image.</li></ul>
-            
-            <p>Selecting <i>manual thresholding</i> allows you to enter a single value between 0 and 1
-            as the threshold value. This setting can be useful when you are certain what the
-            cutoff should be and it does not vary from image to image in the experiment. If you are 
-            using this module to find objects in an image that is already binary (where the foreground is 1 and 
-            the background is 0), a manual value of 0.5 will identify the objects.
-            
-            <p>Selecting thresholding via a <i>binary image</i> will use a selected binary image as a mask for the
-            input image. The most typical approach to produce a binary image is to use the <b>ApplyThreshold</b> module 
-            (image as input, image as output) or the <b>ConvertObjectsToImage</b> module (objects as input, image 
-            as output); both have options to produce a binary image. Note that unlike <b>MaskImage</b>, the binary 
-            image will not be stored permanently as a mask. Also, even though no algorithm is actually used to 
-            find the threshold in this case, the final threshold value is reported as the Otsu threshold 
-            calculated for the foreground region.
-            
-            <p>Selecting thresholding via <i>measurement</i> will use an image measurement previously calculated
-            in order to threshold the image. Like manual thresholding, this setting can be useful when you are 
-            certain what the cutoff should be. The difference in this case is that the desired threshold does 
-            vary from image to image in the experiment but can be measured using a Measurement module.</p>
             
             <p>References
             <ul>
@@ -366,28 +353,31 @@ class Identify(cellprofiler.cpmodule.CPModule):
             """)
         
         self.threshold_smoothing_choice = cps.Choice(
-            "Smoothing for threshold", [TSM_AUTOMATIC, TSM_MANUAL, TSM_NONE],
+            "Select the smoothing method for thresholding", [TSM_AUTOMATIC, TSM_MANUAL, TSM_NONE],
             doc = 
-            """<i>(Only for strategies other than %(TS_AUTOMATIC)s and
+            """<i>(Only used for strategies other than %(TS_AUTOMATIC)s and
             %(TS_BINARY_IMAGE)s)</i><br>
             The input image can be optionally smoothed before being thresholded.
-            Smoothing can regularize the objects, removing holes and jagged
-            edges caused by noise in the acquired image. Smoothing is most
-            likely not appropriate if the input image is binary, if it
-            has already been smoothed or if it is an output of the
-            <i>ClassifyPixels</i> module. The choices are:
-            <br><ul>
+            Smoothing can improve the uniformity of the resulting objects, by 
+            removing holes and jagged edges caused by noise in the acquired image. 
+            Smoothing is most likely <i>not</i> appropriate if the input image is 
+            binary, if it has already been smoothed or if it is an output of the
+            <i>ClassifyPixels</i> module.<br>
+            The choices are:
+            <ul>
             <li><i>%(TSM_AUTOMATIC)s</i>: Smooth the image with a Gaussian
-            with a sigma of one pixel before thresholding.</li>
+            with a sigma of one pixel before thresholding. This is suitable
+            for most analysis applications.</li>
             <li><i>%(TSM_MANUAL)s</i>: Smooth the image with a Gaussian with
-            user-controlled scale</li>
-            <li><i>%(TSM_NONE)s</i>: apply the threshold to the unsmoothed
-            image</li>
+            user-controlled scale.</li>
+            <li><i>%(TSM_NONE)s</i>: Do not apply any smoothing prior to 
+            thresholding.</li>
             </ul>""" % globals())
+        
         self.threshold_smoothing_scale = cps.Float(
             "Threshold smoothing scale", 1.0, minval = 0,
             doc =
-            """<i>(Only if smoothing for threshold is %(TSM_MANUAL)s)</i>
+            """<i>(Only used if smoothing for threshold is %(TSM_MANUAL)s)</i>
             <br>This setting controls the scale used to smooth the input image
             before the threshold is applied. The scale should be approximately
             the size of the artifacts to be eliminated by smoothing. A Gaussian
@@ -395,9 +385,9 @@ class Identify(cellprofiler.cpmodule.CPModule):
             distribution falls within the diameter given by the scale
             (sigma = scale / .674)""")
 
-        self.threshold_correction_factor = cps.Float('Threshold correction factor', 1,
-                                                doc="""\
-            When the threshold is calculated automatically, it may consistently be
+        self.threshold_correction_factor = cps.Float(
+            "Threshold correction factor", 1, doc =
+            """When the threshold is calculated automatically, it may consistently be
             too stringent or too lenient. You may need to enter an adjustment factor
             that you empirically determine is suitable for your images. The number 1
             means no adjustment, 0 to 1 makes the threshold more lenient and greater
@@ -407,8 +397,9 @@ class Identify(cellprofiler.cpmodule.CPModule):
             Otsu method will give a slightly biased threshold that may have to be
             corrected using this setting.""")
         
-        self.threshold_range = cps.FloatRange('Lower and upper bounds on threshold', (0,1), minval=0,
-                                         maxval=1, doc="""\
+        self.threshold_range = cps.FloatRange(
+            'Lower and upper bounds on threshold', (0,1), minval=0,
+            maxval=1, doc="""\
             Enter the minimum and maximum allowable threshold, in the range [0,1].  
             This is helpful as a safety precaution when the threshold is calculated
             automatically. For example, if there are no objects in the field of view,

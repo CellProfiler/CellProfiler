@@ -200,8 +200,13 @@ class CPFrame(wx.Frame):
         self.__path_list_button = wx.Button(self.__path_list_sash,
                                             label = "Update filter")
         hsizer.Add(self.__path_list_button, 0, wx.ALIGN_LEFT)
+        hsizer.AddSpacer(5)
+        self.__path_list_browse_button = wx.Button(self.__path_list_sash,
+                                                   label = "Browse...")
+        hsizer.Add(self.__path_list_browse_button, 0, wx.ALIGN_LEFT)
         self.__module_panel = wx.Panel(self.__path_module_imageset_panel)
         self.__module_panel.BackgroundColour = cpprefs.get_background_color()
+        
 
         self.__imageset_sash = wx.SashLayoutWindow(
             self.__path_module_imageset_panel, style=wx.NO_BORDER)
@@ -776,7 +781,9 @@ All rights reserved."""
         self.__pipeline_controller.attach_to_test_controls_panel(self.__pipeline_test_panel)
         self.__pipeline_controller.attach_to_module_controls_panel(self.__module_controls_panel)
         self.__pipeline_controller.attach_to_path_list_ctrl(
-            self.__path_list_ctrl, self.__path_list_button)
+            self.__path_list_ctrl, 
+            self.__path_list_button,
+            self.__path_list_browse_button)
         self.__module_view = ModuleView(
             self.__module_panel,
             self.__workspace,

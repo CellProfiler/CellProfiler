@@ -28,6 +28,7 @@ import string
 import hashlib
 from cStringIO import StringIO
 import threading
+import urllib
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.preferences as cpprefs
@@ -165,7 +166,10 @@ class PipelineController:
         """
         self.__pipeline_list_view = pipeline_list_view
         
-    def attach_to_path_list_ctrl(self, path_list_ctrl, path_list_update_button):
+    def attach_to_path_list_ctrl(self, 
+                                 path_list_ctrl, 
+                                 path_list_update_button,
+                                 path_list_browse_button):
         '''Attach the pipeline controller to the path_list_ctrl
         
         This lets the pipeline controller populate the path list as
@@ -173,6 +177,8 @@ class PipelineController:
         '''
         self.__path_list_ctrl = path_list_ctrl
         path_list_update_button.Bind(wx.EVT_BUTTON, self.on_update_pathlist)
+        path_list_browse_button.Bind(wx.EVT_BUTTON, self.on_pathlist_browse)
+        
         path_list_ctrl.set_context_menu_fn(
             self.get_pathlist_file_context_menu,
             self.get_pathlist_folder_context_menu,
@@ -887,12 +893,30 @@ class PipelineController:
         self.__path_list_ctrl.enable_paths(enabled_urls, True)
         self.__path_list_ctrl.enable_paths(disabled_urls, False)
         
+    def on_pathlist_browse(self, event, default_dir = wx.EmptyString):
+        '''Handle request for browsing for pathlist files'''
+        with wx.FileDialog(
+            self.__path_list_ctrl,
+            "Select image files",
+            defaultDir = default_dir,
+            wildcard = ("Image files (*.tif,*.tiff,*.png,*.jpg,*.gif,*.jpg)|"
+                        "*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|"
+                        "All files (*.*)|*.*"),
+            style = wx.FD_DEFAULT_STYLE | wx.FD_MULTIPLE | wx.FD_OPEN) as dlg:
+            assert isinstance(dlg, wx.FileDialog)
+            if dlg.ShowModal() == wx.ID_OK:
+                paths = dlg.GetPaths()
+                self.add_paths_to_pathlist(paths)
+        
+        
     PATHLIST_CMD_SHOW = "Show image"
+    PATHLIST_CMD_BROWSE = "Browse for files"
     PATHLIST_CMD_REMOVE = "Remove from list"
     PATHLIST_CMD_REFRESH = "Refresh"
     def get_pathlist_file_context_menu(self, paths):
         return ((self.PATHLIST_CMD_SHOW, self.PATHLIST_CMD_SHOW),
-                (self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE))
+                (self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
+                (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE))
     
     def on_pathlist_file_command(self, paths, cmd):
         if cmd == self.PATHLIST_CMD_SHOW or cmd is None:
@@ -902,10 +926,20 @@ class PipelineController:
             show_image(paths[0], self.__frame)
         elif cmd == self.PATHLIST_CMD_REMOVE:
             self.on_pathlist_file_delete(paths)
+        elif cmd == self.PATHLIST_CMD_BROWSE:
+            if len(paths) == 0 or not paths[0].startswith("file:"):
+                self.on_pathlist_browse(None)
+            else:
+                path = urllib.url2pathname(paths[0][5:])
+                path = os.path.split(path)[0]
+                self.on_pathlist_browse(
+                    None,
+                    default_dir=path)
 
     def get_pathlist_folder_context_menu(self, path):
         return ((self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
-                (self.PATHLIST_CMD_REFRESH, self.PATHLIST_CMD_REFRESH))
+                (self.PATHLIST_CMD_REFRESH, self.PATHLIST_CMD_REFRESH),
+                (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE))
     
     def on_pathlist_folder_command(self, path, cmd):
         if cmd == self.PATHLIST_CMD_REMOVE:
@@ -916,7 +950,13 @@ class PipelineController:
             W.walk_in_background(path, 
                                  self.on_walk_callback, 
                                  self.on_walk_completed)
-    
+        elif cmd == self.PATHLIST_CMD_BROWSE:
+            if path.startswith("file:"):
+                path = urllib.url2pathname(path[5:])
+                self.on_pathlist_browse(None, default_dir=path)
+            else:
+                self.on_pathlist_browse(None)
+                
     def on_pathlist_file_delete(self, paths):
         self.__pipeline.remove_image_plane_details(
             [ cpp.ImagePlaneDetails(url, None, None, None)
@@ -924,6 +964,9 @@ class PipelineController:
         self.__workspace.file_list.remove_files_from_filelist(paths)
             
     def on_pathlist_drop_files(self, x, y, filenames):
+        self.add_paths_to_pathlist(filenames)
+        
+    def add_paths_to_pathlist(self, filenames):
         with wx.ProgressDialog("Processing files",
                                "Initializing",
                                parent = self.__frame,

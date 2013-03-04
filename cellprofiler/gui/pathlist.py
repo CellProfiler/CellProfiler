@@ -640,7 +640,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         if self.mouse_down_idx == self.mouse_idx:
             if self.mouse_down_idx in self.selections:
                 self.selections.remove(self.mouse_down_idx)
-            else:
+            elif self[self.mouse_down_idx][1] is not None:
                 self.selections.add(self.mouse_down_idx)
         else:
             start = min(self.mouse_down_idx, self.mouse_idx)

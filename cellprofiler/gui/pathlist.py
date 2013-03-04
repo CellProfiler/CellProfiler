@@ -577,6 +577,8 @@ class PathListCtrl(wx.PyScrolledWindow):
     def on_double_click(self, event):
         '''Handle double click event'''
         idx = self.get_mouse_idx(event)
+        if idx == -1:
+            return
         item, path_idx = self[idx]
         if item is None:
             return
@@ -599,7 +601,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         assert isinstance(event, wx.MouseEvent)
         self.SetFocus()
         idx = self.get_mouse_idx(event)
-        if idx == -1:
+        if idx == -1 or len(self.folder_items) == 0:
             return
         
         self.focus_item = idx

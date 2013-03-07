@@ -473,7 +473,7 @@ class PipelineController:
             
     def on_open_workspace(self, load_pipeline):
         '''Handle the Open Workspace menu command'''
-        path = self.do_open_workspace()
+        path = self.do_open_workspace_dlg()
         if path is not None:
             self.do_open_workspace(path, load_pipeline)
         

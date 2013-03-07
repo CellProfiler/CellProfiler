@@ -31,6 +31,7 @@ class CellProfilerApp(wx.App):
         # allow suppression of version checking (primarily for nosetests). 
         self.check_for_new_version = kwargs.pop('check_for_new_version', False)
         self.show_splashbox = kwargs.pop('show_splashbox', False)
+        self.abort_initialization = False
         super(CellProfilerApp, self).__init__(*args, **kwargs)
 
     def OnInit(self):
@@ -55,14 +56,22 @@ class CellProfilerApp(wx.App):
             dc = wx.MemoryDC()
             dc.SelectObject(splashbitmap)
             dc.DrawBitmap(wx.BitmapFromImage(CellProfilerSplash), 0, 0)
+            dc.SelectObject(wx.NullBitmap)
             dc.Destroy() # necessary to avoid a crash in splashscreen
-            self.splash = wx.SplashScreen(splashbitmap, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT, 2000, None, -1)
+            self.splash = wx.SplashScreen(
+                splashbitmap, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT, 
+                2000, None, -1)
+        else:
+            self.splash = None
 
         if self.check_for_new_version:
             self.new_version_check()
 
         from cellprofiler.gui.cpframe import CPFrame
         self.frame = CPFrame(None, -1, "Cell Profiler")
+        self.destroy_splash_screen()
+        if self.abort_initialization:
+            return 0
 
         # set up error dialog for uncaught exceptions
         def show_errordialog(type, exc, tb):
@@ -80,6 +89,11 @@ class CellProfilerApp(wx.App):
         self.frame.Show()
         return 1
 
+    def destroy_splash_screen(self):
+        if self.splash is not None:
+            self.splash.Destroy()
+            self.splash = None
+        
     def OnExit(self):
         from cellprofiler.utilities.jutil import deactivate_awt
         deactivate_awt()
@@ -110,9 +124,7 @@ class CellProfilerApp(wx.App):
             def skip_this_version():
                 cpp.set_skip_version(new_version)
 
-            # showing a modal dialog while the splashscreen is up causes a hang
-            try: self.splash.Destroy()
-            except: pass
+            self.destroy_splash_screen()
 
             if new_version <= self.version:
                 # special case: force must have been set in new_version_check, so give feedback to the user.

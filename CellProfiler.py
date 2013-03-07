@@ -98,21 +98,21 @@ def main(args):
         print_measurements(options)
         return
     
-    if options.show_gui:
-        import wx
-        wx.Log.EnableLogging(False)
-        from cellprofiler.cellprofilerapp import CellProfilerApp
-        App = CellProfilerApp(
-            0, 
-            check_for_new_version = (options.pipeline_filename is None),
-            show_splashbox = (options.pipeline_filename is None))
-        # ... loading a pipeline from the filename can bring up a modal
-        # dialog, which causes a crash on Mac if the splashbox is open or
-        # a second modal dialog is opened.
-    
     try:
+        if options.show_gui:
+            import wx
+            wx.Log.EnableLogging(False)
+            from cellprofiler.cellprofilerapp import CellProfilerApp
+            App = CellProfilerApp(
+                0, 
+                check_for_new_version = (options.pipeline_filename is None),
+                show_splashbox = (options.pipeline_filename is None))
+    
         #
         # Important to go headless ASAP
+        #
+        # cellprofiler.preferences can't be imported before we have a chance
+        # to initialize the wx app.
         #
         import cellprofiler.preferences as cpprefs
         if not options.show_gui:

@@ -155,11 +155,89 @@ class PipelineController:
                 except:
                     pass
         else:
-            self.do_create_workspace(workspace_file)
-            self.__pipeline.clear()
+            wx.GetApp().destroy_splash_screen()
+            message = (
+                "CellProfiler could not open your current workspace\n"
+                "file, ""%s"".") % workspace_file
+            caption = "Could not open " + workspace_file
+            while True:
+                ans = self.display_open_or_create_new_dlg(caption, message)
+                if ans == self.OOCN_CREATE_NEW:
+                    workspace_file = self.get_new_workspace_filename()
+                    if workspace_file == None:
+                        message = ""
+                        caption = "Open or create workspace or exit"
+                        continue
+                    try:
+                        self.do_create_workspace(workspace_file)
+                        self.__pipeline.clear()
+                        break
+                    except:
+                        message = (
+                            "CellProfiler could not create the workspace\n"
+                            "file, ""%s""." % workspace_file)
+                        caption = "Could not create " + workspace_file
+                elif ans == self.OOCN_OPEN_OLD:
+                    try:
+                        workspace_file = self.do_open_workspace_dlg()
+                        if workspace_file is not None:
+                            self.do_open_workspace(workspace_file, True)
+                            break
+                    except:
+                        message = (
+                            "CellProfiler could not open the workspace\n"
+                            "file, ""%s""." % workspace_file)
+                        caption = "Could not open " + workspace_file
+                else:
+                    wx.GetApp().abort_initialization=True
+                    return
         self.__workspace.add_notification_callback(
             self.on_workspace_event)
     
+    OOCN_OPEN_OLD = wx.NewId()
+    OOCN_CREATE_NEW = wx.NewId()
+    OOCN_EXIT_CP = wx.NewId()
+    def display_open_or_create_new_dlg(self, caption, message):
+        '''Ask user what to do after initial workspace failed to open
+        
+        returns one of OOCN_OPEN_OLD, OOCN_CREATE_NEW, OOCN_EXIT_CP
+        '''
+        message = message + (
+            "\n\nDo you want to open an existing workspace (Open),\n"
+            "create a new workspace (New) or exit CellProfiler (Exit)?")
+        with wx.Dialog(self.__frame, title=caption) as dlg:
+            dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 20)
+            bmp_question = wx.ArtProvider.GetBitmap(
+                wx.ART_QUESTION, wx.ART_CMN_DIALOG)
+            sizer.Add(wx.StaticBitmap(dlg, bitmap=bmp_question), 0,
+                      wx.ALIGN_TOP | wx.ALIGN_LEFT)
+            sizer.AddSpacer(20)
+            text = wx.StaticText(dlg, label=message)
+            sizer.Add(text, 1, wx.ALIGN_TOP | wx.ALIGN_LEFT)
+            btnsizer = wx.StdDialogButtonSizer()
+            dlg.Sizer.Add(btnsizer, 0, wx.CENTER | wx.ALL, 10)
+            for button_id, label, fn in (
+                (self.OOCN_CREATE_NEW, "New", btnsizer.SetAffirmativeButton),
+                (self.OOCN_OPEN_OLD, "Open", btnsizer.SetNegativeButton),
+                (self.OOCN_EXIT_CP, "Exit", btnsizer.SetCancelButton)):
+                button = wx.Button(dlg, id=button_id, label = label)
+                fn(button)
+                button.Bind(wx.EVT_BUTTON, 
+                            lambda event, button_id=button_id:
+                            dlg.EndModal(button_id))
+            btnsizer.Realize()
+            dlg.Fit()
+            result = dlg.ShowModal()
+            if result == wx.YES:
+                result = self.OOCN_CREATE_NEW
+            elif result == wx.NO:
+                result = self.OOCN_OPEN_OLD
+            elif result == wx.CANCEL:
+                result = self.OOCN_EXIT_CP
+            return result
+            
     def attach_to_pipeline_list_view(self, pipeline_list_view):
         """Glom onto events from the list box with all of the module names in it
         
@@ -395,13 +473,23 @@ class PipelineController:
             
     def on_open_workspace(self, load_pipeline):
         '''Handle the Open Workspace menu command'''
+        path = self.do_open_workspace()
+        if path is not None:
+            self.do_open_workspace(path, load_pipeline)
+        
+    def do_open_workspace_dlg(self):
+        '''Display the open workspace dialog, returning the chosen file
+        
+        returns a path or None if the user canceled.
+        '''
         with wx.FileDialog(
             self.__frame,
             "Choose a workspace file to open",
             wildcard = "CellProfiler workspace (*.cpi)|*.cpi") as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
-                self.do_open_workspace(dlg.Path, load_pipeline)
+                return dlg.Path
+        return None
         
     def do_open_workspace(self, filename, load_pipeline=True):
         '''Open the given workspace file'''
@@ -414,6 +502,11 @@ class PipelineController:
             
     def __on_new_workspace(self, event):
         '''Handle the New Workspace menu command'''
+        path = self.get_new_workspace_filename()
+        if path is not None:
+            self.do_create_workspace(path)
+        
+    def get_new_workspace_filename(self):
         with wx.FileDialog(
             self.__frame,
             "Choose the name for the new workspace file",
@@ -421,7 +514,8 @@ class PipelineController:
             style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
-                self.do_create_workspace(dlg.Path)
+                return dlg.Path
+        return None
         
     def do_create_workspace(self, filename):
         '''Create a new workspace file with the given name'''

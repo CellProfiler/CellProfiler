@@ -516,16 +516,19 @@ def read_image_plane_details(file_or_fd):
         plane_count = int(properties[H_PLANE_COUNT])
         header = read_fields(fd.next())
         result = []
+        pattern = r'(?:"((?:[^\\]|\\.)+?)")?(?:,|\s+)'
         for i in range(plane_count):
-            fields = read_fields(fd.next())
-            # series, index and channel are either integer or null
-            for j in range(1,4):
-                if fields[j] is not None:
-                    fields[j] = int(fields[j])
-            result.append(ImagePlaneDetails(
-                fields[0], fields[1], fields[2], fields[3],
-                **dict([(k, v) for k,v in zip(header[4:], fields[4:])
-                        if v is not None])))
+            fields = [x.groups()[0] for x in re.finditer(pattern, fd.next())]
+            fields = [None if x is None else x.decode('string-escape')
+                      for x in fields]
+            url = fields[0]
+            series, index, channel = [None if x is None else int(x) 
+                                      for x in fields[1:4]]
+            metadata = dict([(k, v.decode("utf-8"))
+                             for k,v in zip(header[4:], fields[4:])
+                             if v is not None])
+            result.append(
+                ImagePlaneDetails(url, series, index, channel, **metadata))
         return result
     finally:
         if needs_close:
@@ -1083,6 +1086,9 @@ class Pipeline(object):
         for module in self.modules(False):
             module.post_pipeline_load(self)
         self.notify_listeners(PipelineLoadedEvent())
+        if has_image_plane_details:
+            self.notify_listeners(ImagePlaneDetailsAddedEvent(
+                self.__image_plane_details))
         self.__undo_stack = []
         
     def save(self, fd_or_filename, 

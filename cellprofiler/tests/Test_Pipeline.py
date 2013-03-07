@@ -1041,9 +1041,9 @@ LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|sho
              (("foo", 1, 2, None, {"Well":"A01", "Plate":"P-12345"}),
               ("bar", 4, None, 6, {"Plate":"P-67890"}),
               ("baz", 7, 8, None, {"Well":"A03"}))),
-            ([],
-             ['"\\xce\\xb1\\xce\\xb2","1","2","3"'],
-             [(u"\u03b1\u03b2", 1,2,3,{})]),
+            (["Well"],
+             ['"foo","1","2","3","\\xce\\xb1\\xce\\xb2"'],
+             [("foo", 1,2,3,{"Well":u"\u03b1\u03b2"})]),
             ([],
              [r'"\\foo\"bar","4","5","6"'],
              [(r'\foo"bar', 4, 5, 6)]))

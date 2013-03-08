@@ -330,7 +330,7 @@ def RunOne_2_0(x, run):
          "CellProfiler.py",
          "-p",'"%(data_dir)s/Batch_data.mat"'%(x),
          "-c",
-         "-r","-b",
+         "-r","-b","--do-not-fetch",
          "-f","%(start)d"%(x),
          "-l","%(end)d"%(x),
          "-d",'"%(done_file)s"'%(x)]

@@ -1510,6 +1510,16 @@ class Pipeline(object):
             image_set_start = image_set_start,
             filename = measurements_filename,
             copy = initial_measurements)
+        if not self.in_batch_mode() and initial_measurements is not None:
+            #
+            # Need file list in order to call prepare_run
+            #
+            from cellprofiler.utilities.hdf5_dict import HDF5FileList
+            src = initial_measurements.hdf5_dict.hdf5_file
+            dest = measurements.hdf5_dict.hdf5_file
+            if HDF5FileList.has_file_list(src):
+                    HDF5FileList.copy(src, dest)
+        
         measurements.is_first_image = True
         for m in self.run_with_yield(frame, image_set_start, image_set_end,
                                      grouping, 

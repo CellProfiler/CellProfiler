@@ -15,6 +15,7 @@ Website: http://www.cellprofiler.org
 # binary files from SVN (or other site) so that the git repository
 # doesn't have to track large files.
 
+import re
 import os.path
 import hashlib
 import urllib2
@@ -108,16 +109,31 @@ def fetch_external_dependencies(overwrite=False):
     imagej_dir = os.path.join(root, 'imagej')
     try:
         print "Updating Java dependencies using Maven."
-        run_maven(imagej_dir, maven_install_path, quiet = not overwrite)
+        
+        if check_maven_repositories(imagej_dir, maven_install_path):
+            aggressive_update = overwrite
+        else:
+            aggressive_update = None
+
+        run_maven(imagej_dir, maven_install_path, 
+                  quiet = not overwrite, 
+                  aggressive_update = aggressive_update)
     except:
         sys.stderr.write(traceback.format_exc())
         sys.stderr.write("Maven failed to update Java dependencies.\n")
         if not overwrite:
             sys.stderr.write("Run external_dependencies with the -o switch to get full output.\n")
         
-    if (overwrite or not 
-        os.path.isfile(os.path.join(imagej_dir, "jars", CELLPROFILER_JAVA_JAR))):
-        run_maven(os.path.join(root, "java"), maven_install_path)
+    cp_pom_path = os.path.join(root, "java")
+    if check_maven_repositories(cp_pom_path, maven_install_path):
+        aggressive_update = overwrite
+    else:
+        aggressive_update = None
+
+    run_maven(cp_pom_path, maven_install_path, 
+              run_tests=overwrite,
+              quiet = not overwrite,
+              aggressive_update=aggressive_update)
     
 def install_maven(zipfile_path, install_path):
     '''Install the Maven jars from a zipfile
@@ -148,14 +164,30 @@ def get_mvn_executable_path(maven_install_path):
                                     executeable)
     return executeable_path
 
-def run_maven(pom_path, maven_install_path, quiet=False):
+def run_maven(pom_path, maven_install_path, goal="package",
+              quiet=False, run_tests=True, aggressive_update = True,
+              return_stdout = False):
     '''Run a Maven pom to install all of the needed jars
     
     pom_path - the directory hosting the Maven POM
     
     maven_install_path - the path to the maven install
     
+    goal - the maven goal. "package" is the default which is pretty much
+           "do whatever the POM was built to do"
+    
     quiet - feed Maven the -q switch if true to make it run in quiet mode
+    
+    run_tests - if False, set the "skip tests" maven flag. This is appropriate
+                if you're silently building a known-good downloaded source.
+    
+    aggressive_update - if True, use the -U switch to make Maven go to the
+                internet and check for updates. If False, default behavior.
+                If None, use the -o switch to prevent Maven from any online
+                updates.
+                
+    return_stdout - redirect stdout to capture a string and return it if True,
+                    dump Maven output to console if False
     
     Runs mvn package on the POM
     '''
@@ -170,19 +202,56 @@ def run_maven(pom_path, maven_install_path, quiet=False):
     executeable_path = get_mvn_executable_path(maven_install_path)
     current_directory = os.path.abspath(os.getcwd())
     os.chdir(pom_path)
-    args = [executeable_path, "-U"]
+    args = [executeable_path]
+    if aggressive_update:
+        args.append("-U")
+    elif aggressive_update is None:
+        args.append("-o")
     if quiet:
         args.append("-q")
-    args.append("package")
+    if not run_tests:
+        args.append("-Dmaven.test.skip=true")
+    args.append(goal)
     try:
-        subprocess.check_call(args)
+        if return_stdout:
+            return subprocess.check_output(args)
+        else:
+            subprocess.check_call(args)
     finally:
         os.chdir(current_directory)
         if old_java_home is not None:
             os.environ["JAVA_HOME"] = old_java_home
+            
+def check_maven_repositories(pom_path, maven_install_path):
+    '''Check the repositories used by the POM for internet connectivity
+    
+    pom_path - location of the pom.xml file
+    maven_install_path - location of maven install
+    
+    returns True if we can reach all repositories in a reasonable amount of time,
+            False if the ping failed.
+    Throws an exception if Maven failed, possibly because, given the -o switch
+    it didn't have what it needed to run the POM.
+    
+    the goal, "dependency-list-repositories", lists the repositories needed
+    by a POM.
+    '''
+    output = run_maven(pom_path, maven_install_path, 
+                       goal="dependency:list-repositories",
+                       aggressive_update = None,
+                       return_stdout=True)
+    pattern = r"\s*url:\s+((?:http|ftp|https):.+)"
+    for line in output.split("\n"):
+        line = line.strip()
+        match = re.match(pattern, line)
+        if match is not None:
+            url = match.groups()[0]
+            try:
+                urllib2.urlopen(url, timeout=1)
+            except urllib2.URLError, e:
+                return False
+    return True
 
-
-                
 if __name__=="__main__":
     import optparse
     usage = """Fetch external dependencies from internet

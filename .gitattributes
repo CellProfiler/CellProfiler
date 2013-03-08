@@ -1,1 +1,2 @@
+*.pptx -crlf -diff
 * text=auto

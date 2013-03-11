@@ -1276,6 +1276,15 @@ pipelines that require a large amount of memory. Use more workers for
 pipelines that are accessing image data over a slow connection.
 """
 
+TEMP_DIR_HELP = """The <i>Temporary folder</i> preference determines the
+folder that CellProfiler uses when storing temporary files. CellProfiler will
+create a temporary measurements file for analyses when the user specifies that
+a Matlab measurements file should be created or when the user asks that no
+measurements file should be permanently saved. CellProfiler will also save
+images accessed by http URL temporarily to disk (but will efficiently access
+OMERO image planes directly from the server).
+"""
+
 EACH_PREFERENCE_HELP = (
     ( "Title font", TITLE_FONT_HELP ),
     ( "Table font", TABLE_FONT_HELP ),
@@ -1289,7 +1298,10 @@ EACH_PREFERENCE_HELP = (
     ( "Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
     ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
     ( "Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
-    ( "Warn if Java runtime not present", REPORT_JVM_ERROR_HELP)
+    ( "Warn if Java runtime not present", REPORT_JVM_ERROR_HELP),
+    ( "Use more figure space", USE_MORE_FIGURE_SPACE_HELP),
+    ( "Maximum number of workers", MAX_WORKERS_HELP),
+    ( "Temporary folder", TEMP_DIR_HELP)
     )
 PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler
 <ul>"""

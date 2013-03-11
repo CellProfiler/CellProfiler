@@ -269,7 +269,12 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_max_workers,
                  cpprefs.set_max_workers,
                  IntegerPreference(1, cpprefs.default_max_workers() * 4),
-                 cphelp.MAX_WORKERS_HELP]]
+                 cphelp.MAX_WORKERS_HELP],
+                ['Temporary folder',
+                 cpprefs.get_temporary_directory,
+                 cpprefs.set_temporary_directory,
+                 DIRBROWSE,
+                 cphelp.TEMP_DIR_HELP]]
     
     def get_title_font(self):
         return "%s,%f"%(cpprefs.get_title_font_name(),

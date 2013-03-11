@@ -24,6 +24,7 @@ import os
 import os.path
 import re
 import sys
+import tempfile
 import threading
 import time
 import traceback
@@ -292,6 +293,7 @@ OMERO_PORT = "OmeroPort"
 OMERO_USER = "OmeroUser"
 OMERO_SESSION_ID = "OmeroSessionId"
 MAX_WORKERS = "MaxWorkers"
+TEMP_DIR = "TempDir"
 
 '''The preference key for selecting the correct version of ImageJ'''
 IJ_VERSION = "ImageJVersion"
@@ -1102,7 +1104,32 @@ def set_max_workers(value):
     global __max_workers
     get_config().WriteInt(MAX_WORKERS, value)
     __max_workers = value
+
+__temp_dir = None
+def get_temporary_directory():
+    '''Get the directory to be used for temporary files
     
+    The default is whatever is returned by tempfile.gettempdir()
+    (see http://docs.python.org/2/library/tempfile.html#tempfile.gettempdir)
+    '''
+    global __temp_dir
+    if __temp_dir is not None:
+        pass
+    elif config_exists(TEMP_DIR):
+        __temp_dir = config_read(TEMP_DIR)
+    else:
+        __temp_dir = tempfile.gettempdir()
+    return __temp_dir
+
+def set_temporary_directory(tempdir):
+    '''Set the directory to be used for temporary files
+    
+    tempdir - pathname of the directory
+    '''
+    global __temp_dir
+    config_write(TEMP_DIR, tempdir)
+    __temp_dir = tempdir
+
 __progress_data = threading.local()
 __progress_data.last_report = time.time()
 __progress_data.callbacks = None

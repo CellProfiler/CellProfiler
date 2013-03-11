@@ -205,7 +205,7 @@ class Measurements(object):
             mode = "w"
             is_temporary = False
         elif filename is None:
-            dir = cpprefs.get_default_output_directory()
+            dir = cpprefs.get_temporary_directory()
             if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
                 dir = None
             fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)

@@ -3107,7 +3107,25 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             self.__is_cached = False
             return True
         else:
-            self.__cached_file, headers = urllib.urlretrieve(url)
+            #
+            # urlretrieve uses the suffix of the path component of the URL
+            # to name the temporary file, so we replicate that behavior
+            #
+            temp_dir = preferences.get_temporary_directory()
+            filename = self.get_filename()
+            suffix_idx = filename.rfind(".")
+            if suffix_idx > 0:
+                suffix = filename[suffix_idx:]
+                tempfd, temppath = tempfile.mkstemp(suffix=suffix,
+                                                    dir = temp_dir)
+            else:
+                tempfd, temppath = tempfile.mkstemp(dir = temp_dir)
+            self.__cached_file = temppath
+            try:
+                self.__cached_file, headers = urllib.urlretrieve(
+                    url, filename=temppath)
+            finally:
+                os.close(tempfd)
         self.__is_cached = True
         return True
             

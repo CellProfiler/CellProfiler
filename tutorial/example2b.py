@@ -1,8 +1,31 @@
-'''<b>Example2</b> - an image processing module
+'''<b>Example2b</b> - An example of an image processing function.
 <hr>
-This is the boilerplate for an image processing module.
+This example deconvolves the image with a Gaussian. Given a point spread
+function that is an accurate representation of how optics aberations map
+a point to pixels in an image, the deconvolution with that point spread
+function uses the information in the blurred image to reconstruct the
+true intensity.
+
+Here, we implement the Richardson/Lucy algorithm. The choice of a Gaussian
+as the point-spread function is an arbitrary one; in reality, a PSF could
+be determined from an image with true point sources, such as a well-localized
+fluorophore.
+
+References:
+http://en.wikipedia.org/wiki/Deconvolution#Optics_and_other_imaging
+
+The code is taken from the following page:
+http://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution
 '''
 import numpy as np
+#
+# We use scipy.stats.norm to make the Gaussian
+#
+from scipy.stats import norm
+#
+# We use scipy.signal.convolve2d to perform the convolution
+#
+from scipy.signal import convolve2d
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -24,14 +47,27 @@ class Example2b(cpm.CPModule):
         #
         self.input_image_name = cps.ImageNameSubscriber("Input image")
         self.output_image_name = cps.ImageNameProvider("Output image", 
-                                                       "SmileyFace")
+                                                       "Sharpened")
+        self.scale = cps.Float(
+            "Scale", .5, 0,
+        doc="""This is the sigma of the Gaussian used as the point spread function""")
+        #
+        # We use a number of iterations to perform. An alternative or adjunct
+        # would be to have the loop exit based on the estimated error reaching
+        # a certain value
+        #
+        self.iterations = cps.Integer(
+            "Iterations", 10, 1,
+            doc = """The number of times to iterate toward maximum likelihood
+            estimate.""")
     
     def settings(self):
         #
         # Add your ImageNameProvider and ImageNameSubscriber to the
         # settings that are returned.
         #
-        return [self.input_image_name, self.output_image_name]
+        return [self.input_image_name, self.output_image_name,
+                self.scale, self.iterations]
     
     def run(self, workspace):
         image_set = workspace.image_set
@@ -50,102 +86,97 @@ class Example2b(cpm.CPModule):
         #
         input_image = image_set.get_image(self.input_image_name.value)
         #
-        # Remember to *copy* the image, otherwise you'll change the original!
+        # Get the observed image from the pixel_data
         #
-        pixel_data = input_image.pixel_data.copy()
-        if pixel_data.ndim == 3:
+        observed = input_image.pixel_data
+        if observed.ndim == 3:
             #
-            # This converts a color image to grayscale.
+            # This converts a color image to grayscale. A hint: you
+            # can do
+            # image_set.get_Image(self.input_image_name.value,
+            #                     must_be_grayscale=True)
             #
-            pixel_data = np.mean(pixel_data, 2)
+            # instead.
+            #
+            observed = np.mean(observed, 2)
         #
-        # I'm going to try and draw a smiley face on the image
+        ###################
         #
-        # First, find a center that will work.
+        # Compute the Gaussian
         #
-        min_dim = np.min(pixel_data.shape)
+        scale = self.scale.value
         #
-        # If the image is woefully small, don't do anything
+        # We pick a radius of 6x scale or at least 4 for the kernel.
         #
-        if min_dim < 20:
-            pass
-        else:
-            center = min_dim / 2
-            #
-            # Pick a radius for the face
-            #
-            face_radius = center * 2 / 3
-            #
-            # Pick a radius for the smile
-            #
-            smile_radius = face_radius * 3 / 4
-            #
-            # Pick eye points
-            #
-            eye_i_center = center * 2 / 3
-            eye_j_centers = np.array([ center * 3 / 4, center * 5 / 4])
-            eye_radius = face_radius / 8
-            #
-            # Now I grid the image. i is the row # per pixel and j is the column
-            #
-            i, j = np.mgrid[-center:(pixel_data.shape[0] - center),
-                            -center:(pixel_data.shape[1] - center)]
-            #
-            # The face is a circle at the face_radius + / 2
-            #
-            # What I do is find the distance, subtract from the face radius
-            # to get the distance from the ideal and create a binary mask
-            # on the image for the points within the criteria
-            #
-            d = np.sqrt(i * i + j * j)
-            mask = np.abs(d - face_radius) <= 2
-            #
-            # OK, add the smile. I could use a bigger radius and a higher
-            # center to make it look better, but I've only budgeted myself
-            # 15 minutes to write this thing.
-            #
-            # I restrict the smile circle to the bottom half of the image
-            #
-            smile_mask = (np.abs(d - smile_radius) <= 2) & (i > center / 4)
-            mask = mask | smile_mask
-            #
-            # The eyes... let's just make one and blit it
-            #
-            ii, jj = np.mgrid[-eye_radius:(eye_radius+1),
-                              -eye_radius:(eye_radius+1)]
-            eye_mask = ii*ii + jj*jj < eye_radius*eye_radius
-            for eye_j_center in eye_j_centers:
-                mask[(eye_i_center - eye_radius):
-                     (eye_i_center + eye_radius + 1),
-                     (eye_j_center - eye_radius):
-                     (eye_j_center + eye_radius + 1)] = eye_mask
-            #######################################
-            #
-            # Respect the image's mask
-            #
-            #######################################
-            if input_image.has_mask:
-                #
-                # Only invert stuff that's in the input mask
-                #
-                mask = mask & input_image.mask
-            #
-            # Now invert everything in the mask
-            #
-            pixel_data[mask] = np.max(pixel_data) - pixel_data[mask]
+        r = max(scale * 6, 4)
+        #
+        # Make a grid going from -r to r inclusive
+        #
+        ig, jg = np.mgrid[-r:(r+1), -r:(r+1)].astype(float)
+        #
+        # The kernel is the pdf of the normal random variable evaluated
+        # at the distance from the center.
+        #
+        rv = norm(scale = scale)
+        psf = rv.pdf(np.sqrt(ig*ig + jg*jg))
+        #
+        # Normalize the probabilities to sum to 1
+        #
+        psf = psf / np.sum(psf)
+        #
+        # number of times to execute the refinement loop
+        #
+        iterations = self.iterations.value
+        #
+        # This is the code borrowed from 
+        # http://en.wikipedia.org/wiki/Richardson%E2%80%93Lucy_deconvolution
+        #
+        #function latent_est = RL_deconvolution(observed, psf, iterations)
+        #   % to utilise the conv2 function we must make sure the inputs are double
+        #   observed = double(observed);
+        #   psf      = double(psf);
+        #   % initial estimate is arbitrary - uniform 50% grey works fine
+        #   latent_est = 0.5*ones(size(observed));
+        latent_est = 0.5 * np.ones(observed.shape)
+        #   % create an inverse psf
+        #   psf_hat = psf(end:-1:1,end:-1:1);
+        psf_hat = psf[::-1, ::-1] # Technically not necessary since symmetric
+        #   % iterate towards ML estimate for the latent image
+        #   for i= 1:iterations
+        for _ in range(iterations):
+            #   est_conv      = conv2(latent_est,psf,'same');
+            est_conv = convolve2d(latent_est, psf, 
+                                  mode='same', # return an array of the same size
+                                  boundary='symm') # reflect the image at boundary
+            #   relative_blur = observed./est_conv;
+            relative_blur = observed / est_conv
+            #   error_est     = conv2(relative_blur,psf_hat,'same'); 
+            error_est = convolve2d(relative_blur, psf_hat, 'same', 'symm')
+            #   latent_est    = latent_est.* error_est;
+            latent_est = latent_est * error_est
+            #end
+        #
+        # In some ways, it doesn't make sense to mask an image for
+        # deconvolution. You want to use the masked-out pixels in the loop
+        # above to help with the deblurring. Nevertheless, the convention
+        # is to not change the pixels in the masked-out region.
+        #
+        # ~mask is the pixels that are masked out - ~ takes the inverse
+        mask = input_image.mask
+        latent_est[~mask] = observed[~mask]
         #
         # Save it in the image set
         #
-        output_image = cpi.Image(pixel_data, parent_image=input_image)
+        output_image = cpi.Image(latent_est, parent_image=input_image)
         image_set.add(self.output_image_name.value,
                       output_image)
         #
-        # oooo gotta see it, right?
+        # Display the image
         #
         if workspace.show_frame:
             # Put the original image and the final one into display_data
             workspace.display_data.input_image = input_image.pixel_data
-            workspace.display_data.output_image = pixel_data
+            workspace.display_data.output_image = latent_est
             
     #
     # The display interface is changing / has changed.
@@ -161,4 +192,4 @@ class Example2b(cpm.CPModule):
             title = self.input_image_name.value)
         figure.subplot_imshow_grayscale(
             1, 0, workspace.display_data.output_image,
-            title = "CellProfiler image modules are fun")        
+            title = "Sharpened image")        

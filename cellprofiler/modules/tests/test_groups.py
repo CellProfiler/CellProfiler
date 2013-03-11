@@ -254,5 +254,25 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
                     self.assertEqual(p, plate)
                     self.assertEqual(s, site)
                 
+    def test_03_01_get_measurement_columns_nogroups(self):
+        #
+        # Don't return the metadata grouping tags measurement if no groups
+        #
+        groups = G.Groups()
+        groups.wants_groups.value = False
+        columns = groups.get_measurement_columns(None)
+        self.assertEqual(len(columns), 0)
         
+    def test_03_02_get_measurement_columns_groups(self):
+        #
+        # Return the metadata grouping tags measurement if groups
+        #
+        groups = G.Groups()
+        groups.wants_groups.value = True
+        columns = groups.get_measurement_columns(None)
+        self.assertEqual(len(columns), 1)
+        column = columns[0]
+        self.assertEqual(column[0], cpmeas.EXPERIMENT)
+        self.assertEqual(column[1], cpmeas.M_GROUPING_TAGS)
+        self.assertTrue(column[2].startswith(cpmeas.COLTYPE_VARCHAR))
         

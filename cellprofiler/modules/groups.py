@@ -344,7 +344,12 @@ class Groups(cpm.CPModule):
         
         GroupNumber and GroupIndex are accounted for by the pipeline itself.
         '''
-        return [(cpmeas.EXPERIMENT, cpmeas.M_GROUPING_TAGS, cpmeas.COLTYPE_VARCHAR)]
+        result = []
+        if self.wants_groups:
+            result.append((cpmeas.EXPERIMENT, 
+                           cpmeas.M_GROUPING_TAGS, 
+                           cpmeas.COLTYPE_VARCHAR))
+        return result
     
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

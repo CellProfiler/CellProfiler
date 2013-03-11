@@ -238,7 +238,7 @@ def check_maven_repositories(pom_path, maven_install_path):
     '''
     output = run_maven(pom_path, maven_install_path, 
                        goal="dependency:list-repositories",
-                       aggressive_update = None,
+                       aggressive_update = False,
                        return_stdout=True)
     pattern = r"\s*url:\s+((?:http|ftp|https):.+)"
     for line in output.split("\n"):

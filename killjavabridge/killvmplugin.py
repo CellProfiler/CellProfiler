@@ -74,6 +74,12 @@ class KillVMPlugin(Plugin):
                         from cellprofiler.utilities.jutil import deactivate_awt
                         deactivate_awt()
                 self.app = KVMApp()
+            #
+            # At least one H5PY build has had debug mode on
+            #
+            import h5py
+            import logging
+            logging.getLogger("h5py").setLevel(logging.WARNING)
         
     def prepareTestRunner(self, testRunner):
         '''Need to make the test runner call finalize if in Wing

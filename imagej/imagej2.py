@@ -21,6 +21,20 @@ import time
 
 import cellprofiler.utilities.jutil as J
 
+REQUIRED_SERVICES = [
+    "imagej.script.ScriptService",
+    "imagej.event.EventService",
+    "imagej.object.ObjectService",
+    "imagej.platform.PlatformService",
+    "imagej.plugin.PluginService",
+    "imagej.module.ModuleService",
+    'imagej.display.DisplayService',
+    "imagej.command.CommandService",
+    'imagej.data.DatasetService',
+    'imagej.data.display.OverlayService',
+    'imagej.ui.UIService'    
+]
+
 '''Field type = integer'''
 FT_INTEGER = "INTEGER"
 '''Field type = floating point'''
@@ -81,18 +95,20 @@ def create_context(service_classes):
                 ctxt_fn = J.run_script(
                     """new java.util.concurrent.Callable() {
                         call: function() {
-                            return Packages.imagej.ImageJ.createContext();
+                            return new Packages.imagej.ImageJ(false);
                         }
                     }""")
             else:
-                classes = [ J.class_for_name(x) for x in service_classes]
-                classes = J.make_list(classes).toArray()
+                classes = [ 
+                    J.class_for_name(x) 
+                    for x in service_classes or REQUIRED_SERVICES]
+                classes = J.make_list(classes)
                 ctxt_fn = J.run_script(
                     """new java.util.concurrent.Callable() {
                         call: function() {
-                            return Packages.imagej.ImageJ.createContext(classes);
+                            return new Packages.imagej.ImageJ(classes);
                         }
-                    }""", dict(classes = classes))
+                    }""", dict(classes = classes.o))
             
             self.o = J.execute_future_in_main_thread(
                 J.make_future_task(ctxt_fn))
@@ -264,7 +280,7 @@ def wrap_module_item(instance):
             
             
         getWidgetStyle = J.make_method("getWidgetStyle",
-                                       "()Limagej/widget/WidgetStyle;")
+                                       "()Ljava/lang/String;")
         getMinimumValue = J.make_method("getMinimumValue",
                                         "()Ljava/lang/Object;")
         getMaximumValue = J.make_method("getMaximumValue",
@@ -947,8 +963,8 @@ def get_ui_service(context):
     class UIService(object):
         def __init__(self):
             self.o = ui_service
-        createUI = J.make_method("createUI", "()V")
-        createUIS = J.make_method("createUI", "(Ljava/lang/String;)V")
+        createUI = J.make_method("showUI", "()V")
+        createUIS = J.make_method("showUI", "(Ljava/lang/String;)V")
         isVisible = J.make_method("isVisible", "()Z")
         getDefaultUI = J.make_method(
             "getDefaultUI", 
@@ -971,15 +987,12 @@ def wrap_user_interface(o):
     return UserInterface()
 
 if __name__=="__main__":
-    classpath = os.path.join(os.path.split(__file__)[0], "imagej-2.0-SNAPSHOT-all.jar")
+    jar_dir = os.path.join(os.path.split(__file__)[0], "jars")
+    classpath = os.pathsep.join([
+        os.path.join(jar_dir, filename) for filename in os.listdir(jar_dir)
+        if filename.endswith(".jar")])
     J.start_vm(["-Djava.class.path="+classpath])
-    my_context = create_context([
-            "imagej.event.EventService",
-            "imagej.object.ObjectService",
-            "imagej.platform.PlatformService",
-            "imagej.ext.plugin.PluginService",
-            "imagej.ext.module.ModuleService"
-        ])
+    my_context = create_context(REQUIRED_SERVICES)
     module_service = get_module_service(my_context)
     module_infos = module_service.getModules()
     for module_info in module_infos:

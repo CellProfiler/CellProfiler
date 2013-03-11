@@ -30,7 +30,7 @@ ACTION_MAVEN = "Maven"
 CELLPROFILER_JAVA_JAR = "cellprofiler-java-0.0.1-SNAPSHOT.jar"
 CELLPROFILER_DEPENDENCIES_URL = \
     'http://www.cellprofiler.org/linked_files/CellProfilerDependencies'
-OMERO_CLIENTS_URL = CELLPROFILER_DEPENDENCIES_URL + '/OMERO.clients-4.4.5'
+OMERO_CLIENTS_URL = CELLPROFILER_DEPENDENCIES_URL + '/OMERO.clients-4.4.6'
 # The list of files (relative path) to fetch, their SHA1, and their source URL.
 files = [
     [['imagej', 'apache-maven-3.0.4-bin.zip'], 
@@ -38,13 +38,13 @@ files = [
      CELLPROFILER_DEPENDENCIES_URL + '/apache-maven-3.0.4-bin.zip',
      ACTION_MAVEN],
     [['imagej', 'jars', 'blitz.jar'], 
-     '106111c58509a05035e8b26b49d214d0ee1e6442',
+     '187b6ba235b248b9e0bbbdbce030b677c43e0ca6',
      OMERO_CLIENTS_URL + '/blitz.jar', None],
     [['imagej', 'jars', 'common.jar'], 
-     '83733cd16a498bb6d30c829de5daead061fb7769',
+     'b5e71c170ec44e532a42a21c3d4f0114b36a8a0a',
      OMERO_CLIENTS_URL + '/common.jar', None],
     [['imagej', 'jars', 'model-psql.jar'], 
-     '7774ffcd7fb0b76a075b39601208a254915a7c49',
+     'f0dfd921e0569e5eb78a0842c595904e0b059fd9',
      OMERO_CLIENTS_URL + '/model-psql.jar', None],
     [['imagej', 'jars', 'ice.jar'], 
      '017c5f3960be550673ff491bbcc7184c6d6388f1',

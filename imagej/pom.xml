@@ -10,21 +10,21 @@
     <dependency>
       <groupId>loci</groupId>
       <artifactId>bio-formats</artifactId>
-      <version>4.4.6</version>
+      <version>4.5-imagej-2.0.0-beta6</version>
       <type>jar</type>
       <scope>runtime</scope>
     </dependency>
     <dependency>
       <groupId>loci</groupId>
       <artifactId>ome_tools</artifactId>
-      <version>4.4.6</version>
+      <version>4.5-imagej-2.0.0-beta6</version>
       <type>jar</type>
       <scope>runtime</scope>
     </dependency>
     <dependency>
 	  <groupId>net.imagej</groupId>
 	  <artifactId>ij-app</artifactId>
-	  <version>2.0.0-beta5</version>
+	  <version>2.0.0-beta6</version>
 	  <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -56,19 +56,19 @@
               <artifactItem>
                 <groupId>net.imagej</groupId>
                 <artifactId>ij.app</artifactId>
-                <version>2.0.0-beta4</version>
+                <version>2.0.0-beta6</version>
                 <overWrite>false</overWrite>
               </artifactItem>
               <artifactItem>
 			      <groupId>loci</groupId>
 			      <artifactId>bio-formats</artifactId>
-			      <version>4.4.5</version>
+			      <version>4.5-imagej-2.0.0-beta6</version>
                 <overWrite>false</overWrite>
               </artifactItem>
               <artifactItem>
 			      <groupId>loci</groupId>
 			      <artifactId>ome_tools</artifactId>
-			      <version>4.4.5</version>
+			      <version>4.5-imagej-2.0.0-beta6</version>
                 <overWrite>false</overWrite>
               </artifactItem>
               <artifactItem>

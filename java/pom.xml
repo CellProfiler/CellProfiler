@@ -19,7 +19,7 @@
     <dependency>
       <groupId>loci</groupId>
       <artifactId>bio-formats</artifactId>
-      <version>4.4.6</version>
+      <version>4.5-imagej-2.0.0-beta6</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
@@ -68,7 +68,7 @@
               <artifactItem>
 			      <groupId>loci</groupId>
 			      <artifactId>bio-formats</artifactId>
-			      <version>4.4.5</version>
+			      <version>4.5-imagej-2.0.0-beta6</version>
                 <overWrite>false</overWrite>
               </artifactItem>
             </artifactItems>

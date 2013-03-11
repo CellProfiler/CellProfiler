@@ -425,7 +425,7 @@ class NamesAndTypes(cpm.CPModule):
                     "org/cellprofiler/imageset/filter/Filter",
                     "(Ljava/lang/String;)V", assignment.rule_filter.value_text)
                 column = []
-                for ipd in pipeline.image_plane_details:
+                for ipd in ipds:
                     keep = env.call_method(fltr, eval_method, ipd.jipd)
                     jexception = env.exception_occurred()
                     if jexception is not None:

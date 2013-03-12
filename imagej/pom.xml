@@ -16,7 +16,7 @@
     </dependency>
     <dependency>
       <groupId>loci</groupId>
-      <artifactId>ome_tools</artifactId>
+      <artifactId>ome_plugins</artifactId>
       <version>4.5-imagej-2.0.0-beta6</version>
       <type>jar</type>
       <scope>runtime</scope>
@@ -67,7 +67,7 @@
               </artifactItem>
               <artifactItem>
 			      <groupId>loci</groupId>
-			      <artifactId>ome_tools</artifactId>
+			      <artifactId>ome_plugins</artifactId>
 			      <version>4.5-imagej-2.0.0-beta6</version>
                 <overWrite>false</overWrite>
               </artifactItem>

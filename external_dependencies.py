@@ -109,11 +109,19 @@ def fetch_external_dependencies(overwrite=False):
     imagej_dir = os.path.join(root, 'imagej')
     try:
         print "Updating Java dependencies using Maven."
-        
-        if check_maven_repositories(imagej_dir, maven_install_path):
-            aggressive_update = overwrite
-        else:
-            aggressive_update = None
+        try:
+            if check_maven_repositories(imagej_dir, maven_install_path):
+                aggressive_update = overwrite
+            else:
+                aggressive_update = None
+        except:
+            # check_maven_repositories runs with the -o switch to prevent it
+            # from going to the Internet. If the local repository doesn't
+            # have all the necessary pieces, mvn returns an error code
+            # and check_output throws to here.
+            #
+            # Tell run_maven to update aggressively
+            aggressive_update = True
 
         run_maven(imagej_dir, maven_install_path, 
                   quiet = not overwrite, 
@@ -125,10 +133,13 @@ def fetch_external_dependencies(overwrite=False):
             sys.stderr.write("Run external_dependencies with the -o switch to get full output.\n")
         
     cp_pom_path = os.path.join(root, "java")
-    if check_maven_repositories(cp_pom_path, maven_install_path):
-        aggressive_update = overwrite
-    else:
-        aggressive_update = None
+    try:
+        if check_maven_repositories(cp_pom_path, maven_install_path):
+            aggressive_update = overwrite
+        else:
+            aggressive_update = None
+    except:
+        aggressive_update = True
 
     run_maven(cp_pom_path, maven_install_path, 
               run_tests=overwrite,
@@ -238,7 +249,7 @@ def check_maven_repositories(pom_path, maven_install_path):
     '''
     output = run_maven(pom_path, maven_install_path, 
                        goal="dependency:list-repositories",
-                       aggressive_update = False,
+                       aggressive_update = None,
                        return_stdout=True)
     pattern = r"\s*url:\s+((?:http|ftp|https):.+)"
     for line in output.split("\n"):

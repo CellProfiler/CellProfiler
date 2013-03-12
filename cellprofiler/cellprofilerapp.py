@@ -59,8 +59,12 @@ class CellProfilerApp(wx.App):
             dc.SelectObject(wx.NullBitmap)
             dc.Destroy() # necessary to avoid a crash in splashscreen
             self.splash = wx.SplashScreen(
-                splashbitmap, wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_TIMEOUT, 
+                splashbitmap, 
+                wx.SPLASH_CENTRE_ON_SCREEN | wx.SPLASH_NO_TIMEOUT, 
                 2000, None, -1)
+            self.splash_timer = wx.Timer()
+            self.splash_timer.Bind(wx.EVT_TIMER, self.destroy_splash_screen)
+            self.splash_timer.Start(milliseconds = 2000, oneShot=True)
         else:
             self.splash = None
 
@@ -89,7 +93,7 @@ class CellProfilerApp(wx.App):
         self.frame.Show()
         return 1
 
-    def destroy_splash_screen(self):
+    def destroy_splash_screen(self, event = None):
         if self.splash is not None:
             self.splash.Destroy()
             self.splash = None

@@ -269,10 +269,24 @@ Groups:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_win
         #
         groups = G.Groups()
         groups.wants_groups.value = True
+        choices = [ "Plate", "Well", "Site"]
+        for i, choice in enumerate(choices):
+            if i > 0:
+                groups.add_grouping_metadata()
+            del groups.grouping_metadata[i].metadata_choice.choices[:]
+            groups.grouping_metadata[i].metadata_choice.choices.extend(choices)
+            groups.grouping_metadata[i].metadata_choice.value = choice
         columns = groups.get_measurement_columns(None)
-        self.assertEqual(len(columns), 1)
+        self.assertEqual(len(columns), 4)
         column = columns[0]
         self.assertEqual(column[0], cpmeas.EXPERIMENT)
         self.assertEqual(column[1], cpmeas.M_GROUPING_TAGS)
         self.assertTrue(column[2].startswith(cpmeas.COLTYPE_VARCHAR))
+        column_metadata = []
+        for column in columns[1:]:
+            self.assertEqual(column[0], cpmeas.IMAGE)
+            self.assertEqual(column[2], cpmeas.COLTYPE_VARCHAR)
+            column_metadata.append(column[1])
+        for choice in choices:
+            self.assertTrue(cpmeas.C_METADATA + "_" + choice in column_metadata)
         

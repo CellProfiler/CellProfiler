@@ -337,7 +337,11 @@ class NamesAndTypes(cpm.CPModule):
         elif self.assignment_method == ASSIGN_RULES:
             load_choices = [ group.load_as_choice.value
                              for group in self.assignments]
-            m.set_metadata_tags(self.get_metadata_features())
+            if (self.matching_choice == MATCH_BY_METADATA and 
+                len(column_names) > 1):
+                m.set_metadata_tags(self.get_metadata_features())
+            else:
+                m.set_metadata_tags([cpmeas.IMAGE_NUMBER])
                 
         ImageSetChannelDescriptor = workspace.pipeline.ImageSetChannelDescriptor
         d = { 

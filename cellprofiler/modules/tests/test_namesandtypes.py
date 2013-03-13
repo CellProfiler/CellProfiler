@@ -236,7 +236,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
         data = { C0: [ ("images/1.jpg", {M0:"k1"}),
                        ("images/3.jpg", {M0:"k2"}),
                        ("images/2.jpg", {M0:"k3"})]}
-        self.do_teest(n, data, [ (M0,) ], [(M0, C0)])
+        self.do_teest(n, data, [ (cpmeas.IMAGE_NUMBER,) ], [(M0, C0)])
         
     def test_01_02_match_one_same_key(self):
         n = N.NamesAndTypes()

@@ -401,7 +401,7 @@ class Metadata(cpm.CPModule):
                     env.call_method(last_if, clear_xml_document_id)
                     x = env.exception_occurred()
                     if x is not None:
-                        raise JavaException(x)
+                        raise J.JavaException(x)
                     if_has_metadata = False
                 xmlmetadata = file_list.get_metadata(ipd.url)
                 if xmlmetadata is not None:

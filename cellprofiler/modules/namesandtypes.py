@@ -308,7 +308,7 @@ class NamesAndTypes(cpm.CPModule):
         column_names = self.get_column_names()
         if (self.assignment_method == ASSIGN_RULES and 
             self.matching_choice == MATCH_BY_METADATA and
-            len(self.column_names) > 1):
+            len(column_names) > 1):
             md_keys = self.join.parse()
             for column_name in column_names:
                 if all([k[column_name] is not None for k in md_keys]):

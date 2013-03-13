@@ -637,11 +637,31 @@ class AnalysisRunner(object):
         
         cls.work_announce_address = get_announcer_address()
         if 'CP_DEBUG_WORKER' in os.environ:
-            logger.info("Announcing work at %s" % cls.work_announce_address)
-            logger.info("Please manually start a worker using the command-line:")
-            logger.info("python -u %s --work-announce %s " % (
-                find_analysis_worker_source(),
-                cls.work_announce_address))
+            from cellprofiler.analysis_worker import \
+                 AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP, CancelledException
+            
+            class WorkerRunner(threading.Thread):
+                def __init__(self, work_announce_address):
+                    threading.Thread.__init__(self)
+                    self.work_announce_address = work_announce_address
+                    self.notify_socket = zmq.Context.instance().socket(zmq.PUB)
+                    self.notify_socket.bind(NOTIFY_ADDR)
+                
+                def run(self):
+                    with AnalysisWorker(self.work_announce_address) as aw:
+                        try:
+                            aw.run()
+                        except CancelledException:
+                            logger.info("Exiting debug worker thread")
+                
+                def wait(self):
+                    self.notify_socket.send(NOTIFY_STOP)
+                    self.join()
+                
+            thread = WorkerRunner(cls.work_announce_address)
+            thread.setDaemon(True)
+            thread.start()
+            cls.workers.append(thread)
             return
                 
         # start workers

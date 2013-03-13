@@ -68,7 +68,7 @@ all_measurements = WeakSet()
 NOTIFY_ADDR = "inproc://notify"
 NOTIFY_STOP = "STOP"
 
-the_zmq_context = zmq.Context()
+the_zmq_context = zmq.Context.instance()
 
 def main():
     # XXX - move all this to a class

@@ -108,8 +108,7 @@ def fetch_external_dependencies(overwrite=False):
                 assert os.path.isfile(path)
                 assert filehash(path) == hash, 'Hashes do not match!'
                 if action == ACTION_MAVEN:
-                    install_maven(path,
-                                  maven_install_path)
+                    install_maven(path)
             except:
                 sys.stderr.write(traceback.format_exc())
                 sys.stderr.write("Could not fetch external binary dependency %s from %s.  Some functionality may be missing.  You might try installing it by hand.\n"%(path, url))
@@ -143,13 +142,14 @@ def fetch_external_dependencies(overwrite=False):
                 sys.stderr.write("Run external_dependencies with the -o switch to get full output.\n")
         
     
-def install_maven(zipfile_path, install_path):
+def install_maven(zipfile_path):
     '''Install the Maven jars from a zipfile
     
     zipfile_path - path to the zipfile
     zip_jar_path - path to the jar files within the zip file
     jar_path - destination for the jar files
     '''
+    install_path = get_maven_install_path()
     zf = zipfile.ZipFile(zipfile_path)
     zf.extractall(install_path)
     if sys.platform != 'win32':

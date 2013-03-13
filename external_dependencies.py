@@ -275,7 +275,7 @@ def get_cellprofiler_jars():
         output = run_maven(
             pom_dir,
             goal = "help:evaluate",
-            aggressive_update=None,
+            aggressive_update=False,
             return_stdout=True,
             additional_args = ["-Dexpression=project.build.finalName"])
         lines = filter(lambda x: not x.startswith("["), output.split("\n"))

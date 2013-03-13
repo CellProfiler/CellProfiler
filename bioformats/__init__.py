@@ -20,6 +20,7 @@ import re
 import cellprofiler.utilities.jutil as jutil
 from cellprofiler.preferences import get_headless, get_ij_plugin_directory
 import sys
+from external_dependencies import get_cellprofiler_jars
 
 logger = logging.getLogger("bioformats")
 
@@ -45,29 +46,16 @@ def start_cellprofiler_jvm():
     if hasattr(sys, 'frozen') and sys.platform != 'darwin':
         root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
         bioformats_path = os.path.join(root_path, 'bioformats')
+        imagej_path = os.path.join(root_path, 'imagej','jars')
+        jar_files = [
+            jar_filename
+            for jar_filename in os.listdir(imagej_path)
+            if jar_filename.lower().endswith(".jar")]
     else:
         bioformats_path = os.path.abspath(os.path.split(__file__)[0])
         root_path = os.path.split(bioformats_path)[0]
-    imagej_path = os.path.join(root_path, 'imagej','jars')
-    #
-    # Need to put some Jar files with patches first...
-    #
-    preferred_version = "4.4.6"
-    def jf_cmp(a, b):
-        for kwd in ("cellprofiler", preferred_version):
-            a_preferred = a.find(kwd) >=0
-            b_preferred = b.find(kwd) >=0
-            if a_preferred and not b_preferred:
-                return -1
-            elif b_preferred and not a_preferred:
-                return 1
-        return cmp(a, b)
-    
-    jar_files = [
-        jar_filename
-        for jar_filename in os.listdir(imagej_path)
-        if jar_filename.lower().endswith(".jar")]
-    jar_files.sort(cmp = jf_cmp)
+        jar_files = get_cellprofiler_jars()
+        imagej_path = os.path.join(root_path, 'imagej','jars')
     
     class_path = os.pathsep.join(
         [os.path.join(imagej_path, jar_file) for jar_file in jar_files])

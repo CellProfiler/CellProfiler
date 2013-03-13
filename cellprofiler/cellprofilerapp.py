@@ -39,15 +39,6 @@ class CellProfilerApp(wx.App):
         self.SetAppName('CellProfiler2.0')
 
         wx.InitAllImageHandlers()
-        result = wx.MessageBox(
-            "WARNING!\n\n"
-            "This is a TESTING build of the file_ui development branch of CellProfiler.  "
-            "It should not be used for actual scientific work.  "
-            "In addition, pipelines from this version will NOT work in the future.\n\n"
-            "Are you absolutely sure you want to proceed?",
-            style = wx.YES_NO)
-        if result != wx.YES:
-            raise ValueError("User wants to exit")
 
         if self.show_splashbox:
             # If the splash image has alpha, it shows up transparently on

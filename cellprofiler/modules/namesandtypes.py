@@ -299,6 +299,24 @@ class NamesAndTypes(cpm.CPModule):
         '''
         return setting in self.settings()
     
+    def get_metadata_features(self):
+        '''Get the names of the metadata features used during metadata matching
+        
+        Unfortunately, these are the only predictable metadata keys that
+        we can harvest in a reasonable amount of time.
+        '''
+        column_names = self.get_column_names()
+        if (self.assignment_method == ASSIGN_RULES and 
+            self.matching_choice == MATCH_BY_METADATA and
+            len(self.column_names) > 1):
+            md_keys = self.join.parse()
+            for column_name in column_names:
+                if all([k[column_name] is not None for k in md_keys]):
+                    return [
+                        '_'.join((cpmeas.C_METADATA, k[column_name]))
+                        for k in md_keys]
+        return []
+    
     def prepare_run(self, workspace):
         '''Write the image set to the measurements'''
         if workspace.pipeline.in_batch_mode():
@@ -319,14 +337,7 @@ class NamesAndTypes(cpm.CPModule):
         elif self.assignment_method == ASSIGN_RULES:
             load_choices = [ group.load_as_choice.value
                              for group in self.assignments]
-            if self.matching_choice == MATCH_BY_METADATA:
-                md_keys = self.join.parse()
-                for column_name in column_names:
-                    if all([k[column_name] is not None for k in md_keys]):
-                        metadata_feature_names = [
-                            '_'.join((cpmeas.C_METADATA, k[column_name]))
-                            for k in md_keys]
-                        m.set_metadata_tags(metadata_feature_names)
+            m.set_metadata_tags(self.get_metadata_features())
                 
         ImageSetChannelDescriptor = workspace.pipeline.ImageSetChannelDescriptor
         d = { 
@@ -860,6 +871,8 @@ class NamesAndTypes(cpm.CPModule):
                             (C_FRAME, cpmeas.COLTYPE_INTEGER)
                             )]
             result += get_object_measurement_columns(object_name)
+        result += [(cpmeas.IMAGE, ftr, cpmeas.COLTYPE_VARCHAR)
+                   for ftr in self.get_metadata_features()]
                             
         return result
         

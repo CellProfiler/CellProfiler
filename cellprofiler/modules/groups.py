@@ -63,8 +63,12 @@ class Groups(cpm.CPModule):
         self.grouping_metadata.append(group)
         def get_group_metadata_choices(pipeline):
             return self.get_metadata_choices(pipeline, group)
+        if self.pipeline is not None:
+            choices = get_group_metadata_choices(self.pipeline)
+        else:
+            choices = ["None"]
         group.append("metadata_choice", cps.Choice(
-            "Metadata category", ["None"],
+            "Metadata category", choices,
             choices_fn = get_group_metadata_choices))
         
         group.append("divider", cps.Divider())
@@ -73,12 +77,7 @@ class Groups(cpm.CPModule):
             group.append("remover", cps.RemoveSettingButton(
                 "Remove the above metadata item", "Remove", 
                 self.grouping_metadata, group))
-        #
-        # Has side effect of updating the metadata choices if the pipeline
-        # is defined.
-        #
-        group.metadata_choice.test_valid(self.pipeline)
-        
+
     def get_metadata_choices(self, pipeline, group):
         if self.pipeline is not None:
             return sorted(self.metadata_keys)
@@ -349,6 +348,13 @@ class Groups(cpm.CPModule):
             result.append((cpmeas.EXPERIMENT, 
                            cpmeas.M_GROUPING_TAGS, 
                            cpmeas.COLTYPE_VARCHAR))
+            #
+            # These are bound to be produced elsewhere, but it is quite 
+            # computationally expensive to find that out. If they are
+            # duplicated by another module, no big deal.
+            #
+            for ftr in self.get_grouping_tags():
+                result.append((cpmeas.IMAGE, ftr, cpmeas.COLTYPE_VARCHAR))
         return result
     
     def upgrade_settings(self, setting_values, variable_revision_number,

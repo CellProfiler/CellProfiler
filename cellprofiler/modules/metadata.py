@@ -15,6 +15,7 @@ Website: http://www.cellprofiler.org
 <hr>
 TO-DO: document module
 '''
+import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 import csv
@@ -330,8 +331,28 @@ class Metadata(cpm.CPModule):
         
         file_list = workspace.file_list
         pipeline = workspace.pipeline
+        ipds = pipeline.get_filtered_image_plane_details(workspace)
         extractor = self.build_extractor()
-        
+        max_series = 0
+        max_index = 0
+        for ipd in ipds:
+            if ipd.series is not None:
+                max_series = max(max_series, ipd.series)
+            if ipd.index is not None:
+                max_index = max(max_index, ipd.index)
+        if max_series > 0:
+            series_digits = int(np.log10(max_series)) + 1
+        if max_index > 0:
+            index_digits = int(np.log10(max_index)) + 1
+        if max_series > 0 or max_index > 0:
+            script = """
+            importPackage(Packages.org.cellprofiler.imageset);
+            extractor.addImagePlaneExtractor(new SeriesIndexMetadataExtractor(
+                seriesDigits, indexDigits));
+            """
+            J.run_script(script, dict(extractor = extractor,
+                                      seriesDigits = series_digits,
+                                      indexDigits = index_digits))
         env = J.get_env()
         entry_set_class = env.find_class("java/util/Map$Entry")
         get_key_id = env.get_method_id(entry_set_class, "getKey", "()Ljava/lang/Object;")
@@ -372,7 +393,7 @@ class Metadata(cpm.CPModule):
         last_url = None
         last_if = None
         if_has_metadata = False
-        for ipd in pipeline.get_filtered_image_plane_details(workspace):
+        for ipd in ipds:
             series, index = [x if x is not None else 0 
                              for x in ipd.series, ipd.index]
             if ipd.url != last_url:
@@ -392,7 +413,7 @@ class Metadata(cpm.CPModule):
                                            xmlmetadata, pIPD, pIF)
                 x = env.exception_occurred()
                 if x is not None:
-                    raise JavaException(x)
+                    raise J.JavaException(x)
                 last_url = ipd.url
                 last_if = env.get_object_array_elements(pIF)[0]
             else:
@@ -401,7 +422,7 @@ class Metadata(cpm.CPModule):
                     last_if, int(series), int(index), pIPD)
                 x = env.exception_occurred()
                 if x is not None:
-                    raise JavaException(x)
+                    raise J.JavaException(x)
             
             ipd.metadata.update(J.iterate_java(metadata, wrap_entry_set))
             ipd.jipd = env.get_object_array_elements(pIPD)[0]
@@ -409,7 +430,7 @@ class Metadata(cpm.CPModule):
             env.call_method(last_if, clear_xml_document_id)
             x = env.exception_occurred()
             if x is not None:
-                raise JavaException(x)
+                raise J.JavaException(x)
         return True
     
     def build_extractor(self):

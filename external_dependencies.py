@@ -76,7 +76,7 @@ def get_cellprofiler_root_dir():
     if __name__ == "__main__":
         root = os.path.abspath(os.curdir)
     else:
-        root = os.path.split(__file__)[0]
+        root = os.path.abspath(os.path.split(__file__)[0])
     return root
     
 def get_maven_install_path():
@@ -118,7 +118,7 @@ def fetch_external_dependencies(overwrite=False):
         pom_dir = os.path.join(root, pom_folder)
         try:
             try:
-                if check_maven_repositories(pom_dir, maven_install_path):
+                if check_maven_repositories(pom_dir):
                     aggressive_update = overwrite
                 else:
                     aggressive_update = None
@@ -232,11 +232,10 @@ def run_maven(pom_path, goal="package",
         if old_java_home is not None:
             os.environ["JAVA_HOME"] = old_java_home
             
-def check_maven_repositories(pom_path, maven_install_path):
+def check_maven_repositories(pom_path):
     '''Check the repositories used by the POM for internet connectivity
     
     pom_path - location of the pom.xml file
-    maven_install_path - location of maven install
     
     returns True if we can reach all repositories in a reasonable amount of time,
             False if the ping failed.
@@ -246,7 +245,7 @@ def check_maven_repositories(pom_path, maven_install_path):
     the goal, "dependency-list-repositories", lists the repositories needed
     by a POM.
     '''
-    output = run_maven(pom_path, maven_install_path, 
+    output = run_maven(pom_path, 
                        goal="dependency:list-repositories",
                        aggressive_update = None,
                        return_stdout=True)

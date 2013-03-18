@@ -483,9 +483,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             if (workspace.display or self.save_average_image or 
                 self.save_dilated_image or self.each_or_all == EA_ALL_FIRST):
                 avg_image = output_image_provider.provide_avg_image()
-                avg_image = cpi.Image(avg_image)
                 dilated_image = output_image_provider.provide_dilated_image()
-                dilated_image = cpi.Image(dilated_image)
                 workspace.image_set.providers.append(output_image_provider)
                 output_image = output_image_provider.provide_image(workspace.image_set)
             else:

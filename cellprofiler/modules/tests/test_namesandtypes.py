@@ -233,9 +233,11 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
         n.matching_choice.value = N.MATCH_BY_METADATA
         n.assignments[0].image_name.value = C0
         n.join.build("[{\"%s\":\"%s\"}]" % (C0, M0))
+        # It should match by order, even if match by metadata and the joiner
+        # are set up.
         data = { C0: [ ("images/1.jpg", {M0:"k1"}),
-                       ("images/3.jpg", {M0:"k2"}),
-                       ("images/2.jpg", {M0:"k3"})]}
+                       ("images/2.jpg", {M0:"k3"}),
+                       ("images/3.jpg", {M0:"k2"})]}
         self.do_teest(n, data, [ (cpmeas.IMAGE_NUMBER,) ], [(M0, C0)])
         
     def test_01_02_match_one_same_key(self):

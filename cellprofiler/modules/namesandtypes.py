@@ -236,7 +236,7 @@ class NamesAndTypes(cpm.CPModule):
             result += [self.add_assignment_button]
             if len(self.assignments) > 1:
                 result += [self.matching_choice]
-                if self.matching_choice == MATCH_BY_METADATA:
+                if self.matching_method == MATCH_BY_METADATA:
                     result += [self.join]
         result += [self.imageset_setting]
         return result
@@ -306,9 +306,7 @@ class NamesAndTypes(cpm.CPModule):
         we can harvest in a reasonable amount of time.
         '''
         column_names = self.get_column_names()
-        if (self.assignment_method == ASSIGN_RULES and 
-            self.matching_choice == MATCH_BY_METADATA and
-            len(column_names) > 1):
+        if (self.matching_method == MATCH_BY_METADATA):
             md_keys = self.join.parse()
             for column_name in column_names:
                 if all([k[column_name] is not None for k in md_keys]):
@@ -337,8 +335,7 @@ class NamesAndTypes(cpm.CPModule):
         elif self.assignment_method == ASSIGN_RULES:
             load_choices = [ group.load_as_choice.value
                              for group in self.assignments]
-            if (self.matching_choice == MATCH_BY_METADATA and 
-                len(column_names) > 1):
+            if (self.matching_method == MATCH_BY_METADATA):
                 m.set_metadata_tags(self.get_metadata_features())
             else:
                 m.set_metadata_tags([cpmeas.IMAGE_NUMBER])
@@ -412,6 +409,19 @@ class NamesAndTypes(cpm.CPModule):
                                    feature_name,
                                    values)
         return True
+    
+    @property
+    def matching_method(self):
+        '''Get the method used to match the the files in different channels together
+        
+        returns either MATCH_BY_ORDER or MATCH_BY_METADATA
+        '''
+        if self.assignment_method == ASSIGN_ALL:
+            # A single column, match in the simplest way
+            return MATCH_BY_ORDER
+        elif len(self.assignments) == 1:
+            return MATCH_BY_ORDER
+        return self.matching_choice.value
             
     def java_make_image_sets(self, workspace):
         '''Make image sets using the Java framework
@@ -432,7 +442,7 @@ class NamesAndTypes(cpm.CPModule):
             self.image_sets = [((i+1, ), { column_names[0]: (ipd, ) })
                                for i, ipd in enumerate(ipds)]
             return [ipds]
-        elif self.matching_choice == MATCH_BY_ORDER:
+        elif self.matching_method == MATCH_BY_ORDER:
             filters = []
             columns = []
             for assignment in self.assignments:
@@ -999,9 +1009,7 @@ class NamesAndTypes(cpm.CPModule):
                 pass # bad field value
     
     def get_metadata_column_names(self):
-        if (self.assignment_method == ASSIGN_RULES and 
-            self.matching_choice == MATCH_BY_METADATA and
-            len(self.column_names) > 1):
+        if (self.matching_method == MATCH_BY_METADATA):
             joins = self.join.parse()
             metadata_columns = [
                 " / ".join(set([k for k in join.values() if k is not None]))

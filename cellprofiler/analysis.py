@@ -624,17 +624,6 @@ class AnalysisRunner(object):
         except NotImplementedError:
             num = 4
 
-        root_dir = os.path.abspath(
-            os.path.join(os.path.dirname(cellprofiler.__file__), '..'))
-        if 'PYTHONPATH' in os.environ:
-            old_path = os.environ['PYTHONPATH']
-            if not any([root_dir == path 
-                        for path in old_path.split(os.pathsep)]):
-                os.environ['PYTHONPATH'] =  root_dir + os.pathsep + old_path
-        else:
-            os.environ['PYTHONPATH'] = os.path.join(os.path.dirname(cellprofiler.__file__), '..')
-
-        
         cls.work_announce_address = get_announcer_address()
         if 'CP_DEBUG_WORKER' in os.environ:
             from cellprofiler.analysis_worker import \
@@ -722,13 +711,27 @@ def find_python():
 
 
 def find_worker_env():
+    newenv = os.environ.copy()
+    root_dir = os.path.abspath(
+        os.path.join(os.path.dirname(cellprofiler.__file__), '..'))
+    added_paths = []
+    if 'PYTHONPATH' in newenv:
+        old_path = newenv['PYTHONPATH']
+        if not any([root_dir == path 
+                    for path in old_path.split(os.pathsep)]):
+            added_paths.append(root_dir)
+    else:
+        added_paths.append(root_dir)
+    
     if hasattr(sys, 'frozen'):
         if sys.platform == "darwin":
-            newenv = os.environ.copy()
             # http://mail.python.org/pipermail/pythonmac-sig/2005-April/013852.html
-            newenv['PYTHONPATH'] = ':'.join([p for p in sys.path if isinstance(p, basestring)])
-            return newenv
-    return os.environ
+            added_paths += [p for p in sys.path if isinstance(p, basestring)]
+    if 'PYTHONPATH' in newenv:
+        added_paths.insert(0, newenv['PYTHONPATH'])
+    newenv['PYTHONPATH'] = os.pathsep.join(
+        [x.encode('utf-8') for x in added_paths])
+    return newenv
 
 
 def find_analysis_worker_source():

@@ -63,9 +63,9 @@ if sys.platform.startswith('win'):
     if java_home is not None:
         found_jvm = False
         for jre_home in (java_home, os.path.join(java_home, "jre")):
-            jre_bin = os.path.join(jre_home, 'bin')
+            jre_bin = os.path.join(jre_home, 'bin').encode('utf-8')
             for place_to_look in ('client','server'):
-                jvm_dir = os.path.join(jre_bin,place_to_look)
+                jvm_dir = os.path.join(jre_bin,place_to_look).encode('utf-8')
                 if os.path.isfile(os.path.join(jvm_dir, "jvm.dll")):
                     os.environ['PATH'] = ";".join(
                         (os.environ['PATH'], jvm_dir, jre_bin))

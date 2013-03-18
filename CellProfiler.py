@@ -46,7 +46,7 @@ else:
 if len(root) == 0:
     root = os.curdir
 root = os.path.abspath(root)
-site_packages = os.path.join(root, 'site-packages')
+site_packages = os.path.join(root, 'site-packages').encode('utf-8')
 if os.path.exists(site_packages) and os.path.isdir(site_packages):
     import site
     site.addsitedir(site_packages)
@@ -497,21 +497,22 @@ def build_extensions():
                         cellprofiler.cpmath.setup),
                        (os.path.join('cellprofiler', 'utilities', 'setup.py'),
                         cellprofiler.utilities.setup)]
-    current_directory = os.path.abspath(os.curdir)
+    env = os.environ.copy()
     old_pythonpath = os.getenv('PYTHONPATH', None)
 
     # if we're using a local site_packages, the subprocesses will need
     # to be able to find it.
+    
     if old_pythonpath:
-        os.environ['PYTHONPATH'] = site_packages + ':' + old_pythonpath
+        env['PYTHONPATH'] = site_packages + os.pathsep + old_pythonpath
     else:
-        os.environ['PYTHONPATH'] = site_packages
+        env['PYTHONPATH'] = site_packages
 
     use_mingw = (sys.platform == 'win32' and sys.version_info[0] <= 2 and
                  sys.version_info[1] <= 5)
     for compile_script, my_module in compile_scripts:
         script_path, script_file = os.path.split(compile_script)
-        os.chdir(os.path.join(root, script_path))
+        script_path = os.path.join(root, script_path)
         configuration = my_module.configuration()
         needs_build = False
         for extension in configuration['ext_modules']:
@@ -524,17 +525,16 @@ def build_extensions():
             p = subprocess.Popen(["python",
                                   script_file,
                                   "build_ext", "-i",
-                                  "--compiler=mingw32"])
+                                  "--compiler=mingw32"],
+                                 cwd=script_path,
+                                 env=env)
         else:
             p = subprocess.Popen(["python",
                                   script_file,
-                                  "build_ext", "-i"])
+                                  "build_ext", "-i"],
+                                 cwd=script_path,
+                                 env=env)
         p.communicate()
-    os.chdir(current_directory)
-    if old_pythonpath:
-        os.environ['PYTHONPATH'] = old_pythonpath
-    else:
-        del os.environ['PYTHONPATH']
 
 def run_pipeline_headless(options, args):
     '''Run a CellProfiler pipeline in headless mode'''

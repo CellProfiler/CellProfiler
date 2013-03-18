@@ -1200,9 +1200,12 @@ class ExportToDatabase(cpm.CPModule):
                     raise cps.ValidationError(warning_string%"class table name",self.properties_class_table_name)
             
         '''Warn user re: objects that are not 1:1 (i.e., primary/secondary/tertiary) if creating a view'''
-        if self.objects_choice != O_NONE and self.separate_object_tables == OT_VIEW:
+        if self.objects_choice != O_NONE and self.separate_object_tables in (OT_VIEW,OT_COMBINE):
             d = {}
-            selected_objs = self.objects_list.value.rsplit(',')
+            if self.objects_choice == O_SELECT:
+                selected_objs = self.objects_list.value.rsplit(',')
+            elif self.objects_choice == O_ALL:
+                selected_objs = pipeline.get_provider_dictionary(cps.OBJECT_GROUP).keys()
             for obj in selected_objs:
                 for module in pipeline.modules(): 
                     if module.is_object_identification_module() and module.get_measurements(pipeline,obj,C_PARENT):
@@ -1211,7 +1214,10 @@ class ExportToDatabase(cpm.CPModule):
             candidate_objs = set(d.keys() + d.values())
             mismatched_objs = set(selected_objs).difference(candidate_objs)
             if mismatched_objs:
-                raise cps.ValidationError("%s is not in a 1:1 relationship with the other selected objects. Either de-select the object or choose another object container."%",".join(mismatched_objs),self.separate_object_tables)
+                msg = "%s is not in a 1:1 relationship with the other objects, whcih may cause downstream problems.\n "%",".join(mismatched_objs)
+                msg += "You may want to choose another object container"
+                msg += "." if self.objects_choice == O_ALL else " or de-select the object(s)."
+                raise cps.ValidationError(msg,self.separate_object_tables)
             
     def test_connection(self):
         '''Check to make sure the MySQL server is remotely accessible'''

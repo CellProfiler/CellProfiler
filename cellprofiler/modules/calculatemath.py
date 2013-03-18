@@ -369,10 +369,12 @@ class CalculateMath(cpm.CPModule):
             result = result[0]
                 
         if self.show_window:
-            workspace.display_data.statistics = [("Measurement name","Measurement type","Result")]
-            workspace.display_data.statistics += [(self.output_feature_name.value, 
-                                                   "Image" if all_image_measurements else "Object", 
-                                                   "%.2f"%np.mean(result))]
+            workspace.display_data.col_labels = (
+                "Measurement name", "Measurement type", "Result")
+            workspace.display_data.statistics = [
+                (self.output_feature_name.value, 
+                 "Image" if all_image_measurements else "Object", 
+                 "%.2f"%np.mean(result))]
 
     def compute_operation(self, numerator, denominator):
         if self.operation == O_NONE:
@@ -438,7 +440,7 @@ class CalculateMath(cpm.CPModule):
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
         figure.subplot_table(0, 0, workspace.display_data.statistics,
-                             ratio=(.25,.5,.25))
+                             col_labels = workspace.display_data.col_labels)
      
     def get_operands(self):
         '''Return the operand structures that participate in the calculation

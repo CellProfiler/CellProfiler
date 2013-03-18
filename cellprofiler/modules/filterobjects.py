@@ -530,10 +530,13 @@ class FilterObjects(cpm.CPModule):
             figure.subplot_imshow(1, 0, picture, "Filtered Outlines",
                                   sharexy = figure.subplot(0,0))
             
-            statistics = [  ["Number of objects pre-filtering",  np.max(src_objects_segmented)],
-                            ["Number of objects post-filtering", np.max(target_objects_segmented)]]
-            figure.subplot_table(1, 1, statistics, ratio=[.8,.2])
-    
+            statistics = [  [np.max(src_objects_segmented)],
+                            [np.max(target_objects_segmented)]]
+            figure.subplot_table(
+                1, 1, statistics, 
+                row_labels = ("Number of objects pre-filtering",  
+                              "Number of objects post-filtering"))
+                                               
     def keep_one(self, workspace, src_objects):
         '''Return an array containing the single object to keep
         

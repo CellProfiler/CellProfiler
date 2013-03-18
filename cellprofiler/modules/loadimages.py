@@ -2165,7 +2165,7 @@ class LoadImages(cpmodule.CPModule):
         ratio += [1.0 for tag in tags]
         ratio = [x / sum(ratio) for x in ratio]
         header += tags 
-        statistics = [header]
+        statistics = []
         m = workspace.measurements
         image_set = workspace.image_set
         image_set_metadata = {}
@@ -2307,7 +2307,7 @@ class LoadImages(cpmodule.CPModule):
                         row.append("")
                 statistics.append(row)
         workspace.display_data.statistics = statistics
-        workspace.display_data.ratio = ratio
+        workspace.display_data.col_labels = header
 
     def display(self, workspace, figure):
         if self.show_window:
@@ -2318,8 +2318,9 @@ class LoadImages(cpmodule.CPModule):
                              set_show_report_bad_sizes_dlg)
 
             figure.set_subplots((1, 1))
-            figure.subplot_table(0,0,workspace.display_data.statistics,
-                             ratio=workspace.display_data.ratio)
+            figure.subplot_table(0, 0, 
+                                 workspace.display_data.statistics,
+                                 col_labels = workspace.display_data.col_labels)
 
     def get_filename_metadata(self, fd, filename, path):
         """Get the filename and path metadata for a given image

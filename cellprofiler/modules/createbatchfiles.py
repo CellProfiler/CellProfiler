@@ -198,21 +198,18 @@ class CreateBatchFiles(cpm.CPModule):
             self.enter_batch_mode(workspace)
             return True
         else:
-            self.save_pipeline(workspace)
+            path = self.save_pipeline(workspace)
+            if not cpprefs.get_headless():
+                import wx
+                wx.MessageBox(
+                    "CreateBatchFiles saved pipeline to %s" % path,
+                    caption = "CreateBatchFiles: Batch file saved",
+                    style = wx.OK | wx.ICON_INFORMATION)
             return False
     
     def run(self, workspace):
         # all the actual work is done in prepare_run
         pass
-
-    def display(self, workspace, figure):
-        if self.show_window:
-            if workspace.pipeline.test_mode:
-                message = 'In test mode: no batch files created'
-            else:
-                message = 'Batch files created.'
-            figure.set_subplots((1, 1))
-            figure.subplot_table(0, 0, [[message]])
 
     def clear_old_matlab(self):
         self.from_old_matlab.value = cps.NO
@@ -279,6 +276,7 @@ class CreateBatchFiles(cpm.CPModule):
                         self.alter_path(cpprefs.get_default_image_directory())
             bizarro_self.batch_mode.value = True
             pipeline.write_pipeline_measurement(m)
+            return h5_path
         finally:
             m.close()
 

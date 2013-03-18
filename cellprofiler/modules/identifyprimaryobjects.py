@@ -1200,7 +1200,6 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             orig_axes     = figure.subplot(0,0)
             label_axes    = figure.subplot(1,0, sharexy = orig_axes)
             outlined_axes = figure.subplot(0,1, sharexy = orig_axes)
-            table_axes    = figure.subplot(1,1, sharexy = orig_axes)
     
             title = "Input image, cycle #%d"%(workspace.measurements.image_number,)
             figure.subplot_imshow_grayscale(0, 0,
@@ -1236,15 +1235,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             title = "%s outlines"%(self.object_name.value) 
             figure.subplot_imshow(0, 1, outline_img, title, normalize=False)
             
-            table_axes.clear()
-            table = table_axes.table(cellText=workspace.display_data.statistics,
-                                     colWidths=[.7,.3],
-                                     loc='center',
-                                     cellLoc='left')
-            table_axes.set_frame_on(False)
-            table_axes.set_axis_off()
-            table.auto_set_font_size(False)
-            table.set_fontsize(cpp.get_table_font_size())
+            figure.subplot_table(
+                1, 1, 
+                [[x[1]] for x in workspace.display_data.statistics],
+                row_labels = [x[0] for x in workspace.display_data.statistics])
     
     def calc_smoothing_filter_size(self):
         """Return the size of the smoothing filter, calculating it if in automatic mode"""

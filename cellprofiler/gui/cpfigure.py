@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 
 import logging
 logger = logging.getLogger(__name__)
+import csv
 import numpy as np
 import os
 import sys
@@ -182,6 +183,7 @@ def allow_sharexy(fn):
     return wrapper
 
 MENU_FILE_SAVE = wx.NewId()
+MENU_FILE_SAVE_TABLE = wx.NewId()
 MENU_CLOSE_WINDOW = wx.NewId()
 MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
 MENU_CLOSE_ALL = wx.NewId()
@@ -219,6 +221,7 @@ class CPFigureFrame(wx.Frame):
         self.BackgroundColour = cpprefs.get_background_color()
         self.mouse_mode = MODE_NONE
         self.length_arrow = None
+        self.table = None
         self.images = {}
         self.colorbar = {}
         self.subplot_params = {}
@@ -226,6 +229,7 @@ class CPFigureFrame(wx.Frame):
         self.event_bindings = {}
         self.popup_menus = {}
         self.subplot_menus = {}
+        self.widgets = []
         self.mouse_down = None
         self.remove_menu = []
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -246,7 +250,6 @@ class CPFigureFrame(wx.Frame):
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
         sizer.Add(self.panel, 1, wx.EXPAND) 
         self.status_bar = self.CreateStatusBar()
-        #wx.EVT_PAINT(self, self.on_paint)
         wx.EVT_CLOSE(self, self.on_close)
         if subplots:
             self.subplots = np.zeros(subplots,dtype=object)
@@ -255,6 +258,7 @@ class CPFigureFrame(wx.Frame):
         self.figure.canvas.mpl_connect('button_press_event', self.on_button_press)
         self.figure.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
         self.figure.canvas.mpl_connect('button_release_event', self.on_button_release)
+        self.figure.canvas.mpl_connect('resize_event', self.on_resize)
         try:
             self.SetIcon(get_cp_icon())
         except:
@@ -290,7 +294,10 @@ class CPFigureFrame(wx.Frame):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE,"&Save")
+        self.__menu_file.Append(MENU_FILE_SAVE_TABLE, "&Save table")
+        self.__menu_file.Enable(MENU_FILE_SAVE_TABLE, False)
         wx.EVT_MENU(self, MENU_FILE_SAVE, self.on_file_save)
+        wx.EVT_MENU(self, MENU_FILE_SAVE_TABLE, self.on_file_save_table)
         self.MenuBar.Append(self.__menu_file,"&File")
                 
         self.__menu_tools = wx.Menu()
@@ -346,13 +353,67 @@ class CPFigureFrame(wx.Frame):
         self.subplot_user_params = {}
         self.colorbar = {}
         self.images = {}
+        for x, y, width, height, halign, valign, ctrl in self.widgets:
+            ctrl.Destroy()
+        self.widgets = []
         
-    def on_paint(self, event):
-        dc = wx.PaintDC(self)
-        self.panel.gui_repaint(dc)
-        event.Skip()
-        dc.Destroy()
-    
+    def on_resize(self, event):
+        '''Handle mpl_connect('resize_event')'''
+        assert isinstance(event, matplotlib.backend_bases.ResizeEvent)
+        for x, y, width, height, halign, valign, ctrl in self.widgets:
+            self.align_widget(ctrl, x, y, width, height, halign, valign,
+                              event.width, event.height)
+            
+    def align_widget(self, ctrl, x, y, width, height, 
+                     halign, valign, canvas_width, canvas_height):
+        '''Align a widget within the canvas
+        
+        ctrl - the widget to be aligned
+        
+        x, y - the fractional position (0 <= {x,y} <= 1) of the top-left of the 
+               allotted space for the widget
+               
+        width, height - the fractional width and height of the allotted space
+        
+        halign, valign - alignment of the widget if its best size is smaller
+                         than the space (wx.ALIGN_xx or wx.EXPAND)
+        
+        canvas_width, canvas_height - the width and height of the canvas parent
+        '''
+        assert isinstance(ctrl, wx.Window)
+        x = x * canvas_width
+        y = y * canvas_height
+        width = width * canvas_width
+        height = height * canvas_height
+        
+        best_width, best_height = ctrl.GetBestSizeTuple()
+        vscroll_x = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
+        hscroll_y = wx.SystemSettings.GetMetric(wx.SYS_HSCROLL_Y)
+        if height < best_height:
+            #
+            # If the control's ideal height is less than what's allowed
+            # then we have to account for the scroll bars
+            #
+            best_width += vscroll_x
+        if width < best_width:
+            best_height += hscroll_y
+            
+        if height > best_height and valign != wx.EXPAND:
+            if valign == wx.ALIGN_BOTTOM:
+                y = y + height - best_height
+                height = best_height
+            elif valign in (wx.ALIGN_CENTER, wx.ALIGN_CENTER_VERTICAL):
+                y = y + (height - best_height) / 2
+            height = best_height
+        if width > best_width:
+            if halign == wx.ALIGN_RIGHT:
+                x = x + width - best_width
+            elif halign in (wx.ALIGN_CENTER, wx.ALIGN_CENTER_VERTICAL):
+                x = x + (width - best_width) / 2
+            width = best_width
+        ctrl.SetPosition(wx.Point(x, y))
+        ctrl.SetSize(wx.Size(width, height))
+            
     def on_close(self, event):
         if self.close_fn is not None:
             self.close_fn(event)
@@ -534,22 +595,33 @@ class CPFigureFrame(wx.Frame):
         self.Refresh()
     
     def on_file_save(self, event):
-        dlg = wx.FileDialog(self, "Save figure", 
-                            wildcard = ("PDF file (*.pdf)|*.pdf|"
-                                        "Png image (*.png)|*.png|"
-                                        "Postscript file (*.ps)|*.ps"),
-                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-        if dlg.ShowModal() == wx.ID_OK:
-            path = os.path.join(dlg.GetPath())
-            if dlg.FilterIndex == 1:
-                format = "png"
-            elif dlg.FilterIndex == 0:
-                format = "pdf"
-            elif dlg.FilterIndex == 2:
-                format = "ps"
-            else:
-                format = "pdf"
-            self.figure.savefig(path, format = format)
+        with wx.FileDialog(self, "Save figure", 
+                           wildcard = ("PDF file (*.pdf)|*.pdf|"
+                                       "Png image (*.png)|*.png|"
+                                       "Postscript file (*.ps)|*.ps"),
+                           style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                if dlg.FilterIndex == 1:
+                    format = "png"
+                elif dlg.FilterIndex == 0:
+                    format = "pdf"
+                elif dlg.FilterIndex == 2:
+                    format = "ps"
+                else:
+                    format = "pdf"
+                self.figure.savefig(path, format = format)
+            
+    def on_file_save_table(self, event):
+        if self.table is None:
+            return
+        with wx.FileDialog(self, "Save table",
+                           wildcard = "Excel file (*.csv)|*.csv",
+                           style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                with open(path, "wb") as fd:
+                    csv.writer(fd).writerows(self.table)
 
     def set_subplots(self, subplots):
         self.clf()  # get rid of any existing subplots, menus, etc.
@@ -1134,32 +1206,73 @@ class CPFigureFrame(wx.Frame):
         return image
     
     def subplot_table(self, x, y, statistics, 
-                      ratio = (.6, .4),
-                      loc = 'center',
-                      cellLoc = 'left',
-                      clear = True):
+                      col_labels=None, 
+                      row_labels = None, 
+                      n_cols = 1,
+                      n_rows = 1, **kwargs):
         """Put a table into a subplot
         
         x,y - subplot's column and row
         statistics - a sequence of sequences that form the values to
                      go into the table
-        ratio - the ratio of column widths
-        loc   - placement of the table within the axes
-        cellLoc - alignment of text within cells
+        col_labels - labels for the column header
+        
+        row_labels - labels for the row header
+        
+        **kwargs - for backwards compatibility, old argument values
         """
-        if clear:
-            self.clear_subplot(x, y)
+        
+        nx, ny = self.subplots.shape
+        xstart = float(x) / float(nx)
+        ystart = float(y) / float(ny)
+        width = float(n_cols) / float(nx)
+        height = float(n_rows) / float(ny)
+        cw, ch = self.figure.canvas.GetSizeTuple()
+        ctrl = wx.grid.Grid(self.figure.canvas)
+        self.widgets.append(
+            (xstart, ystart, width, height, 
+             wx.ALIGN_CENTER, wx.ALIGN_CENTER, ctrl))
+        nrows = len(statistics)
+        ncols = len(statistics[0])
+        ctrl.CreateGrid(nrows, ncols)
+        if col_labels is not None:
+            for i, value in enumerate(col_labels):
+                ctrl.SetColLabelValue(i, unicode(value))
+        else:
+            ctrl.SetColLabelSize(0)
+        if row_labels is not None:
+            ctrl.GridRowLabelWindow.Font = ctrl.GetLabelFont()
+            ctrl.SetRowLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+            max_width = 0
+            for i, value in enumerate(row_labels):
+                value = unicode(value)
+                ctrl.SetRowLabelValue(i, value)
+                max_width = max(
+                    max_width, 
+                    ctrl.GridRowLabelWindow.GetTextExtent(value+"M")[0])
+            ctrl.SetRowLabelSize(max_width)
+        else:
+            ctrl.SetRowLabelSize(0)
             
-        table_axes = self.subplot(x, y)
-        table = table_axes.table(cellText=statistics,
-                                 colWidths=ratio,
-                                 loc=loc,
-                                 cellLoc=cellLoc)
-        table_axes.set_frame_on(False)
-        table_axes.set_axis_off()
-        table.auto_set_font_size(False)
-        table.set_fontsize(cpprefs.get_table_font_size())
-        # table.set_fontfamily(cpprefs.get_table_font_name())
+        for i, row in enumerate(statistics):
+            for j, value in enumerate(row):
+                ctrl.SetCellValue(i, j, unicode(value))
+                ctrl.SetReadOnly(i, j, True)
+        ctrl.AutoSize()
+        ctrl.Show()
+        self.align_widget(ctrl, xstart, ystart, width, height,
+                          wx.ALIGN_CENTER, wx.ALIGN_CENTER, cw, ch)
+        self.table = []
+        if col_labels is not None:
+            if row_labels is not None:
+                # Need a blank corner header if both col and row labels
+                col_labels = [""] + col_labels
+            self.table.append(col_labels)
+        if row_labels is not None:
+            self.table += [[a] + b for a, b in zip(row_labels, statistics)]
+        else:
+            self.table += statistics
+        self.__menu_file.Enable(MENU_FILE_SAVE_TABLE, True)
         
     def subplot_scatter(self, x , y,
                         xvals, yvals, 

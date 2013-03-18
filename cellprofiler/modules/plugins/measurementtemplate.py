@@ -251,7 +251,7 @@ class MeasurementTemplate(cpm.CPModule):
     def display(self, workspace):
         statistics = workspace.display_data.statistics
         figure = workspace.create_or_find_figure(subplots=(1,1,))
-        figure.subplot_table(0,0, statistics, ratio = (.25, .25, .25, .25))
+        figure.subplot_table(0,0, statistics)
     
     ################################
     #

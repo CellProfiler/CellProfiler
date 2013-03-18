@@ -341,16 +341,18 @@ class FlagImage(cpm.CPModule):
                                                     measurement_setting.rules_file_name)
 
     def run(self, workspace):
-        statistics = [ ("Flag", "Source", "Measurement", "Value","Pass/Fail")]
+        col_labels = ("Flag", "Source", "Measurement", "Value","Pass/Fail")
+        statistics = []
         for flag in self.flags:
             statistics += self.run_flag(workspace, flag)
         if self.show_window:
             workspace.display_data.statistics = statistics
+            workspace.display_data.col_labels = col_labels
         
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
-        figure.subplot_table(0,0, workspace.display_data.statistics,
-                             (.25,.25,.25,.125,.125))
+        figure.subplot_table(0, 0, workspace.display_data.statistics,
+                             col_labels = workspace.display_data.col_labels)
 
     def run_as_data_tool(self, workspace):
         m = workspace.measurements

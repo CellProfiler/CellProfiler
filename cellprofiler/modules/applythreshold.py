@@ -162,25 +162,27 @@ class ApplyThreshold(Identify):
         if self.show_window:
             workspace.display_data.input_pixel_data = input.pixel_data
             workspace.display_data.output_pixel_data = output.pixel_data
-            statistics = workspace.display_data.statistics = [
-                ("Feature","Value")]
+            statistics = workspace.display_data.statistics = []
+            workspace.display_data.col_labels = ("Feature", "Value")
             
             for column in self.get_measurement_columns(workspace.pipeline):
                 value = workspace.measurements.get_current_image_measurement(column[1])
                 statistics += [(column[1].split('_')[1], str(value))]
                 
     def display(self, workspace, figure):
-        figure.set_subplots((1, 3))
+        figure.set_subplots((3, 1))
 
         figure.subplot_imshow_grayscale(0,0, workspace.display_data.input_pixel_data,
                               title = "Original image: %s" % 
                               self.image_name.value)
 
-        figure.subplot_imshow_grayscale(0,1, workspace.display_data.output_pixel_data,
+        figure.subplot_imshow_grayscale(1,0, workspace.display_data.output_pixel_data,
                               title = "Thresholded image: %s" %
                               self.thresholded_image_name.value, 
                               sharexy = figure.subplot(0,0))
-        figure.subplot_table(0,2, workspace.display_data.statistics)
+        figure.subplot_table(
+            2, 0, workspace.display_data.statistics,
+            workspace.display_data.col_labels)
         
     def get_measurement_objects_name(self):
         '''Return the name of the "objects" used to name thresholding measurements

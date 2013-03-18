@@ -189,22 +189,22 @@ class MeasureGranularity(cpm.CPModule):
     def run(self, workspace):
         max_scale = np.max([image.granular_spectrum_length.value
                             for image in self.images])
-        statistics = [[ "Image name" ] + 
-                      [ "GS%d"%n for n in range(1,max_scale+1)]]
-        
+        col_labels = ([ "Image name" ] + 
+                      [ "GS%d"%n for n in range(1,max_scale+1)])
+        statistics = []
         for image in self.images:
             statistic = self.run_on_image_setting(workspace, image)
             statistic += ["-"] * (max_scale - image.granular_spectrum_length.value)
             statistics.append(statistic)
         if self.show_window:
             workspace.display_data.statistics = statistics
-            workspace.display_data.ratio = [1.0 / float(max_scale+1)] * (max_scale+1)
+            workspace.display_data.col_labels = col_labels
 
     def display(self, workspace, figure):
         statistics = workspace.display_data.statistics
-        ratio = workspace.display_data.ratio
+        col_labels = workspace.display_data.col_labels
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0, statistics, ratio = ratio)
+        figure.subplot_table(0, 0, statistics, col_labels = col_labels)
 
     def run_on_image_setting(self, workspace, image):
         assert isinstance(workspace, cpw.Workspace)

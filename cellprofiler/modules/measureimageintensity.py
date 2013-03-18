@@ -179,15 +179,18 @@ class MeasureImageIntensity(cpm.CPModule):
         #
         # Then measure each
         #
-        statistics = [["Image","Masking object","Feature","Value"]]
+        col_labels = ["Image","Masking object","Feature","Value"]
+        statistics = []
         for im in self.get_non_redundant_image_measurements():
             statistics += self.measure(im, workspace)
         workspace.display_data.statistics = statistics
+        workspace.display_data.col_labels = col_labels
 
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0, workspace.display_data.statistics, 
-                             ratio=(.25,.25,.25,.25))
+        figure.subplot_table(0, 0, 
+                             workspace.display_data.statistics, 
+                             col_labels = workspace.display_data.col_labels)
     
     def measure(self, im, workspace):
         '''Perform measurements according to the image measurement in im

@@ -191,7 +191,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
    
     def run(self, workspace):
         m = workspace.measurements
-        statistics = [["Objects or Image", "Area Occupied", "Perimeter", "Total Area"]]
+        statistics = []
         for op in self.operands:
             if op.operand_choice  == O_OBJECTS:
                 statistics += self.measure_objects(op,workspace) 
@@ -199,11 +199,14 @@ class MeasureImageAreaOccupied(cpm.CPModule):
                 statistics += self.measure_images(op,workspace)
         if self.show_window:
             workspace.display_data.statistics = statistics
+            workspace.display_data.col_labels = [
+                "Objects or Image", "Area Occupied", "Perimeter", "Total Area"]
     
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
-        figure.subplot_table(0, 0, workspace.display_data.statistics,
-                             ratio=(.25,.25,.25,.25))
+        figure.subplot_table(0, 0, 
+                             workspace.display_data.statistics,
+                             col_labels = workspace.display_data.col_labels)
         
     def measure_objects(self, operand, workspace):
         '''Performs the measurements on the requested objects'''

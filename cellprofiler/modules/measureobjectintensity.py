@@ -308,8 +308,9 @@ class MeasureObjectIntensity(cpm.CPModule):
     
     def run(self, workspace):
         if self.show_window:
-            statistics = [("Image","Object","Feature","Mean","Median","STD")]
-            workspace.display_data.statistics = statistics
+            workspace.display_data.col_labels = (
+                "Image","Object","Feature","Mean","Median","STD")
+            workspace.display_data.statistics = statistics = []
         for image_name in [img.name for img in self.images]:
             image = workspace.image_set.get_image(image_name.value,
                                                   must_be_grayscale=True)
@@ -492,5 +493,6 @@ class MeasureObjectIntensity(cpm.CPModule):
         
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
-        figure.subplot_table(0,0,workspace.display_data.statistics,
-                             ratio=(.2,.2,.3,.1,.1,.1))
+        figure.subplot_table(0, 0,
+                             workspace.display_data.statistics,
+                             col_labels = workspace.display_data.col_labels)

@@ -304,8 +304,9 @@ class MeasureObjectSizeShape(cpm.CPModule):
         """Run, computing the area measurements for the objects"""
         
         if self.show_window:
-            workspace.display_data.statistics = \
-                     [("Object","Feature","Mean","Median","STD")]
+            workspace.display_data.col_labels = \
+                     ("Object", "Feature", "Mean", "Median", "STD")
+            workspace.display_data.statistics = []
         for object_group in self.object_groups:
             self.run_on_objects(object_group.name.value, workspace)
     
@@ -420,8 +421,9 @@ class MeasureObjectSizeShape(cpm.CPModule):
             
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))
-        figure.subplot_table(0,0,workspace.display_data.statistics,
-                             ratio=(.25,.45,.1,.1,.1))
+        figure.subplot_table(0, 0,
+                             workspace.display_data.statistics,
+                             col_labels = workspace.display_data.col_labels)
         
     def perform_measurement(self, workspace, function,
                             object_name, feature_name):

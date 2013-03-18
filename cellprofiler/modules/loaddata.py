@@ -1048,7 +1048,7 @@ class LoadData(cpm.CPModule):
                          cpprefs.get_show_report_bad_sizes_dlg,
                          cpprefs.set_show_report_bad_sizes_dlg)
         figure.set_subplots((1, 1))
-        figure.subplot_table(0,0, workspace.display_data.statistics, ratio=None)
+        figure.subplot_table(0,0, workspace.display_data.statistics)
     
     def get_groupings(self, workspace):
         '''Return the image groupings of the image sets

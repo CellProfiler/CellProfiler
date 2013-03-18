@@ -483,7 +483,9 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             if (workspace.display or self.save_average_image or 
                 self.save_dilated_image or self.each_or_all == EA_ALL_FIRST):
                 avg_image = output_image_provider.provide_avg_image()
+                avg_image = cpi.Image(avg_image)
                 dilated_image = output_image_provider.provide_dilated_image()
+                dilated_image = cpi.Image(dilated_image)
                 workspace.image_set.providers.append(output_image_provider)
                 output_image = output_image_provider.provide_image(workspace.image_set)
             else:
@@ -508,9 +510,9 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                                     dilated_image)
         if workspace.display:
             # store images for potential display
-            workspace.display_data.avg_image = avg_image
-            workspace.display_data.dilated_image = dilated_image
-            workspace.display_data.output_image = output_image
+            workspace.display_data.avg_image = avg_image.pixel_data
+            workspace.display_data.dilated_image = dilated_image.pixel_data
+            workspace.display_data.output_image = output_image.pixel_data
 
     def is_aggregation_module(self):
         '''Return True if aggregation is performed within a group'''
@@ -576,7 +578,9 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         statistics.append(["Smoothing method", self.smoothing_method.value])
         statistics.append(["Smoothing filter size",
                            round(self.smoothing_filter_size(output_image.size),2)])
-        figure.subplot_table(1, 1, statistics, ratio=[.6,.4])
+        figure.subplot_table(1, 1, 
+                             [[x[1]] for x in statistics],
+                             row_labels = [x[0] for x in statistics])
 
     def apply_dilation(self, image, orig_image=None):
         """Return an image that is dilated according to the settings

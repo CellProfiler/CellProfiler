@@ -251,11 +251,11 @@ class RenameOrRenumberFiles(cpm.CPModule):
         
     def display(self, workspace, figure):
         '''Display the pathname conversion'''
-        statistics = [('Old file name','New file name'),
-                      (workspace.display_data.old_file_name,
+        statistics = [(workspace.display_data.old_file_name,
                        workspace.display_data.new_file_name)]
         figure.set_subplots((1, 1))
-        figure.subplot_table(0,0,statistics, ratio = (.5, .5))
+        figure.subplot_table(
+            0, 0, statistics, col_labels = ('Old file name','New file name'))
 
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

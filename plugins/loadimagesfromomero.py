@@ -584,8 +584,9 @@ class OmeroLoadImages(cpm.CPModule):
 												vmin = 0, vmax = 1,
 												sharex = figure.subplot(0,0),
 												sharey = figure.subplot(0,0))
-				figure.subplot_table(1, int(channel_number), workspace.display_data.statistics[channel_number],
-									ratio=workspace.display_data.ratio[channel_number])
+				figure.subplot_table(
+				        1, int(channel_number), 
+				        workspace.display_data.statistics[channel_number])
 	
 	def get_categories(self, pipeline, object_name):
 		'''Return the categories that this module produces'''

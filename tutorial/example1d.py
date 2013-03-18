@@ -120,24 +120,25 @@ class Example1d(cpm.CPModule):
     # The signature for display will change in the next release of CellProfiler
     # Uncomment the following if you're using that version
     #
-    def display(self, workspace, figure):
-        #
-        # A subplot is a matplotlib Axes. set_subplots sets up the arrangement
-        # of them. The first number in the tuple is the number of columns
-        # and the second is the number of rows.
-        #
-        figure.set_subplots(workspace.display_data.subplots)
-    #
-    # This is the signature for the current CP release
-    #
-    #def display(self, workspace):
-        ##
-        ## create_or_find_figure will either create a new figure and window
-        ## for the module or reuse a previously-created one. See above
-        ## for discussion of subplots
-        ##
-        #figure = workspace.create_or_find_figure(
-            #subplots = workspace.display_data.subplots)
+    def display(self, workspace, figure=None):
+        if figure is not None:
+            # Code for next release:
+            #
+            # A subplot is a matplotlib Axes. set_subplots sets up the arrangement
+            # of them. The first number in the tuple is the number of columns
+            # and the second is the number of rows.
+            #
+            figure.set_subplots(workspace.display_data.subplots)
+            next_release = True
+        else:
+            #
+            # create_or_find_figure will either create a new figure and window
+            # for the module or reuse a previously-created one. See above
+            # for discussion of subplots
+            #
+            figure = workspace.create_or_find_figure(
+                subplots = workspace.display_data.subplots)
+            next_release = False
         if self.display_choice == D_GRAYSCALE_IMAGE:
             figure.subplot_imshow_grayscale(
                 0, 0,                             # the subplot coordinates
@@ -188,14 +189,24 @@ class Example1d(cpm.CPModule):
             ax10.hist(b, label = "B")
             ax10.legend()
             #
-            # A table - boy is it ugly, can you make it better?
+            # A table - Ugly in latest released, improved in next release.
             #
-            figure.subplot_table(
-                3, 0, 
-                [("","A", "B"),
-                 ("mean", str(a.mean()), str(b.mean())),
-                 ("min", str(a.min()), str(b.min())),
-                 ("max", str(a.max()), str(b.max())),
-                 ("st dev", str(np.std(a)), str(np.std(b)))],
-                ratio = (.2, .4, .4))
-                                  
+            if next_release:
+                figure.subplot_table(
+                    3, 0, 
+                    [(str(a.mean()), str(b.mean())),
+                     (str(a.min()), str(b.min())),
+                     (str(a.max()), str(b.max())),
+                     (str(np.std(a)), str(np.std(b)))],
+                    col_labels = ("A", "B"),
+                    row_labels = ("mean", "min", "max", "st dev"))
+            else:
+                figure.subplot_table(
+                    3, 0, 
+                    [("","A", "B"),
+                     ("mean", str(a.mean()), str(b.mean())),
+                     ("min", str(a.min()), str(b.min())),
+                     ("max", str(a.max()), str(b.max())),
+                     ("st dev", str(np.std(a)), str(np.std(b)))],
+                    ratio = (.2, .4, .4))
+                                      

@@ -415,10 +415,10 @@ class CalculateStatistics(cpm.CPModule):
             for ii, key in enumerate(("Zfactor","Vfactor")):
                 a = expt_measurements[key]
                 indexes = np.lexsort((-a,))
-                stats = [["Object","Feature",key]]
-                stats += [[feature_set[i][0], feature_set[i][1], a[i]]
+                col_labels = ["Object","Feature",key]
+                stats = [[feature_set[i][0], feature_set[i][1], a[i]]
                            for i in indexes[:10]]
-                figure.subplot_table(ii,0, stats, (.3,.5,.2))
+                figure.subplot_table(ii,0, stats, col_labels=col_labels)
                 figure.set_subplot_title("Top 10 by %s"%key, ii,0)
                 
     def include_feature(self, measurements, object_name, feature_name, 

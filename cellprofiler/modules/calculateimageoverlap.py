@@ -255,7 +255,6 @@ class CalculateImageOverlap(cpm.CPModule):
             workspace.display_data.rand_index = rand_index
             workspace.display_data.adjusted_rand_index = adjusted_rand_index
             workspace.display_data.statistics = [
-                ("Measurement", "Value"),
                 (FTR_F_FACTOR, f_factor),
                 (FTR_PRECISION, precision),
                 (FTR_RECALL, recall),
@@ -436,7 +435,6 @@ class CalculateImageOverlap(cpm.CPModule):
             workspace.display_data.false_positives = FP_pixels
             workspace.display_data.false_negatives = TN_pixels
             workspace.display_data.statistics = [
-                ("Measurement", "Value"),
                 (FTR_F_FACTOR, F_factor),
                 (FTR_PRECISION, precision),
                 (FTR_RECALL, recall),
@@ -686,7 +684,7 @@ class CalculateImageOverlap(cpm.CPModule):
         
     def display(self, workspace, figure):
         '''Display the image confusion matrix & statistics'''
-        figure.set_subplots((2, 3))
+        figure.set_subplots((3, 2))
         for x, y, image, label in (
             (0, 0, workspace.display_data.true_positives, "True positives"),
             (0, 1, workspace.display_data.false_positives, "False positives"),
@@ -695,8 +693,10 @@ class CalculateImageOverlap(cpm.CPModule):
             figure.subplot_imshow_bw(x, y, image, title=label,
                                      sharexy = figure.subplot(0,0))
             
-        figure.subplot_table(1, 2, workspace.display_data.statistics,
-                             ratio = (.5, .5))
+        figure.subplot_table(2, 0, 
+                             workspace.display_data.statistics,
+                             col_labels = ("Measurement", "Value"),
+                             n_rows = 2)
 
     def measurement_name(self, feature):
         if self.obj_or_img == O_IMG:

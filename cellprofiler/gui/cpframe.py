@@ -373,6 +373,11 @@ class CPFrame(wx.Frame):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
             self.__menu_debug.Append(ID_DEBUG_NUMPY, "Numpy Memory Usage...")
             self.__menu_debug.Append(ID_DEBUG_PDB, "Break into debugger")
+            #
+            # Lee wants the wx debugger
+            #
+            if os.environ.get("USERNAME", "").lower() == "leek":
+                self.__menu_debug.Append(ID_FILE_WIDGET_INSPECTOR, "Widget inspector")
         self.__menu_debug.Enable(ID_DEBUG_STEP,False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_IMAGE_SET,False)
         self.__menu_debug.Enable(ID_DEBUG_NEXT_GROUP, False)

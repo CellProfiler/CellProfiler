@@ -203,14 +203,10 @@ def run_maven(pom_path, goal="package",
     
     maven_install_path = get_maven_install_path()
     jdk_home = find_jdk()
-    old_java_home = None
-    if jdk_home is not None:
-        old_java_home = os.environ.get("JAVA_HOME", None)
-        os.environ["JAVA_HOME"] = jdk_home
+    env = os.environ.copy()
+    env["JAVA_HOME"] = jdk_home.encode("utf-8")
             
     executeable_path = get_mvn_executable_path(maven_install_path)
-    current_directory = os.path.abspath(os.getcwd())
-    os.chdir(pom_path)
     args = [executeable_path]
     if aggressive_update:
         args.append("-U")
@@ -222,15 +218,10 @@ def run_maven(pom_path, goal="package",
         args.append("-Dmaven.test.skip=true")
     args += additional_args
     args.append(goal)
-    try:
-        if return_stdout:
-            return subprocess.check_output(args)
-        else:
-            subprocess.check_call(args)
-    finally:
-        os.chdir(current_directory)
-        if old_java_home is not None:
-            os.environ["JAVA_HOME"] = old_java_home
+    if return_stdout:
+        return subprocess.check_output(args, cwd = pom_path, env=env)
+    else:
+        subprocess.check_call(args, cwd = pom_path, env=env)
             
 def check_maven_repositories(pom_path):
     '''Check the repositories used by the POM for internet connectivity

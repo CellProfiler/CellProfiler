@@ -775,6 +775,8 @@ class SaveImages(cpm.CPModule):
         if check_overwrite and not self.check_overwrite(result, workspace):
             return
         
+        if check_overwrite and os.path.isfile(result):
+            os.remove(result)
         return result
     
     def get_file_format(self):

@@ -571,6 +571,15 @@ class CPModule(object):
         """
         figure.Close()  # modules that don't override display() shouldn't
                         # display anything
+                        
+    def display_post_run(self, workspace, figure):
+        """Display results after post_run completes
+        
+        workspace - a workspace with pipeline, module and measurements valid
+        
+        figure - display results in this CPFigure
+        """
+        pass
 
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Prepare to create a batch file

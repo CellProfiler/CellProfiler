@@ -315,6 +315,7 @@ class CalculateStatistics(cpm.CPModule):
 
     def run_as_data_tool(self, workspace):
         self.post_run(workspace)
+        workspace.post_run_display(self)
         
     def get_image_measurements(self, measurements, feature_name):
         assert isinstance(measurements, cpmeas.Measurements)
@@ -406,20 +407,21 @@ class CalculateStatistics(cpm.CPModule):
             for statistic, value in expt_measurements.iteritems():
                 sfeature_name = '_'.join((statistic, object_name, feature_name))
                 measurements.add_experiment_measurement(sfeature_name, value[i])
-        if self.show_window and (workspace.frame is not None):
-            #
-            # Create tables for the top 10 Z and V
-            #
-            figure = workspace.get_module_figure(self, max(image_numbers))
-            figure.set_subplots((2, 1))
-            for ii, key in enumerate(("Zfactor","Vfactor")):
-                a = expt_measurements[key]
-                indexes = np.lexsort((-a,))
-                col_labels = ["Object","Feature",key]
-                stats = [[feature_set[i][0], feature_set[i][1], a[i]]
-                           for i in indexes[:10]]
-                figure.subplot_table(ii,0, stats, col_labels=col_labels)
-                figure.set_subplot_title("Top 10 by %s"%key, ii,0)
+        if self.show_window:
+            workspace.display_data.expt_measurements = expt_measurements
+            workspace.display_data.feature_set = feature_set
+            
+    def display_post_run(self, workspace, figure):
+        expt_measurements = workspace.display_data.expt_measurements
+        feature_set = workspace.display_data.feature_set
+        figure.set_subplots((2, 1))
+        for ii, key in enumerate(("Zfactor","Vfactor")):
+            a = expt_measurements[key]
+            indexes = np.lexsort((-a,))
+            col_labels = ["Object","Feature",key]
+            stats = [[feature_set[i][0], feature_set[i][1], a[i]]
+                       for i in indexes[:10]]
+            figure.subplot_table(ii,0, stats, col_labels=col_labels)
                 
     def include_feature(self, measurements, object_name, feature_name, 
                         image_numbers):

@@ -88,6 +88,7 @@ class Workspace(object):
         self.__notification_callbacks = []
 
         self.interaction_handler = None
+        self.post_run_display_handler = None
 
         class DisplayData(object):
             pass
@@ -320,7 +321,21 @@ class Workspace(object):
                 return module.handle_interaction(*args, **kwargs)
         else:
             return self.interaction_handler(module, *args, **kwargs)
-
+        
+    def post_run_display(self, module):
+        '''Perform whatever post-run module display is necessary
+        
+        module - module being run
+        '''
+        if self.post_run_display_handler is not None:
+            self.post_run_display_handler(self, module)
+        elif self.frame is not None:
+            figure = self.get_module_figure(
+                module,
+                self.measurements.image_set_count+1,
+                self.frame)
+            module.display_post_run(self, figure)
+            
     @property
     def is_last_image_set(self):
         return (self.measurements.image_set_number ==

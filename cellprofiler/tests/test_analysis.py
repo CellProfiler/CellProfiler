@@ -279,6 +279,16 @@ class TestAnalysis(unittest.TestCase):
         self.assertIsInstance(analysis_started, cpanalysis.AnalysisStarted)
         return pipeline, m
     
+    def check_display_post_run_requests(self, pipeline):
+        '''Read the DisplayPostRunRequest messages during the post_run phase'''
+        for module in pipeline.modules():
+            if module.show_window:
+                result = self.event_queue.get()
+                self.assertIsInstance(
+                    result, cpanalysis.DisplayPostRunRequest)
+                self.assertEqual(result.module_num, module.module_num)
+        
+    
     def test_01_01_start_and_stop(self):
         
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
@@ -611,6 +621,8 @@ class TestAnalysis(unittest.TestCase):
                 image_set_numbers = [1])
             client_measurements.close()
             response_fn = worker.send(req)
+            
+            self.check_display_post_run_requests(pipeline)
             #####################################################
             #
             # The server should receive the measurements report.
@@ -707,6 +719,7 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
             
+            self.check_display_post_run_requests(pipeline)
             result = self.event_queue.get()
             self.assertIsInstance(result, cpanalysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
@@ -786,6 +799,7 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
             
+            self.check_display_post_run_requests(pipeline)
             result = self.event_queue.get()
             self.assertIsInstance(result, cpanalysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
@@ -875,6 +889,7 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
             
+            self.check_display_post_run_requests(pipeline)
             result = self.event_queue.get()
             self.assertIsInstance(result, cpanalysis.AnalysisFinished)
             self.assertFalse(result.cancelled)
@@ -950,6 +965,7 @@ class TestAnalysis(unittest.TestCase):
             #
             #####################################################
             
+            self.check_display_post_run_requests(pipeline)
             result = self.event_queue.get()
             self.assertIsInstance(result, cpanalysis.AnalysisFinished)
             self.assertFalse(result.cancelled)

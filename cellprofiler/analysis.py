@@ -291,6 +291,11 @@ class AnalysisRunner(object):
     # event posting
     def post_event(self, evt):
         self.event_listener(evt)
+        
+    def post_run_display_handler(self, workspace, module):
+        event = DisplayPostRunRequest(module.module_num,
+                                      workspace.display_data)
+        self.event_listener(event)
 
     # XXX - catch and deal with exceptions in interface() and jobserver() threads
     def interface(self, 
@@ -484,8 +489,13 @@ class AnalysisRunner(object):
                     measurements.image_set_number = last_image_number
                     if not worker_runs_post_group:
                         self.pipeline.post_group(workspace, {})
-                    # XXX - revise pipeline.post_run to use the workspace
-                    self.pipeline.post_run(measurements, None, None)
+                    
+                    workspace = cpw.Workspace(self.pipeline,
+                                              None, None, None,
+                                              measurements, None, None)
+                    workspace.post_run_display_handler = \
+                        self.post_run_display_handler
+                    self.pipeline.post_run(workspace)
                     break
 
                 measurements.flush()
@@ -813,6 +823,14 @@ class InteractionRequest(AnalysisRequest):
 
 class DisplayRequest(AnalysisRequest):
     pass
+
+class DisplayPostRunRequest(object):
+    '''Request a post-run display
+    
+    This is a message sent to the UI from the analysis worker'''
+    def __init__(self, module_num, display_data):
+        self.module_num = module_num
+        self.display_data = display_data
 
 class SharedDictionaryRequest(AnalysisRequest):
     def __init__(self, analysis_id, module_num=-1):

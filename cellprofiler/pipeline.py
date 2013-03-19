@@ -1422,31 +1422,6 @@ class Pipeline(object):
         for module in self.modules(False):
             module.obfuscate()
         
-    def restart_with_yield(self, file_name, frame=None, status_callback = None):
-        '''Restart a pipeline from where we left off
-        
-        file_name - the name of a measurements .MAT file
-        '''
-        handles=scipy.io.matlab.mio.loadmat(file_name, 
-                                            struct_as_record=True)
-        measurements = cpmeas.Measurements()
-        measurements.create_from_handles(handles)
-        if handles.has_key("handles"):
-            handles=handles["handles"][0,0]
-        self.create_from_handles(handles)
-        #
-        # Redo the last image set
-        #
-        image_set_start = measurements.image_set_count
-        #
-        # Rewind the measurements to the previous image set
-        #
-        measurements.set_image_set_number(image_set_start)
-        return self.run_with_yield(frame, 
-                                   image_set_start = image_set_start, 
-                                   status_callback = status_callback,
-                                   initial_measurements = measurements)
-        
     def run_external(self, image_dict):
         """Runs a single iteration of the pipeline with the images provided in
         image_dict and returns a dictionary mapping from image names to images 
@@ -1757,7 +1732,9 @@ class Pipeline(object):
                         return
 
             if measurements is not None:
-                exit_status = self.post_run(measurements, image_set_list, frame)
+                workspace = cpw.Workspace(
+                    self, None, None, None, measurements, image_set_list, frame)
+                exit_status = self.post_run(workspace)
                 #
                 # Record the status after post_run
                 #
@@ -1995,24 +1972,35 @@ class Pipeline(object):
         
         return True
     
-    def post_run(self, measurements, image_set_list, frame):
+    def post_run(self, *args):
         """Do "post_run" on each module to perform aggregation tasks
+        
+        New interface:
+        workspace - workspace with pipeline, module and measurements valid
+        
+        Old interface: 
         
         measurements - the measurements for the run
         image_set_list - the image set list for the run
         frame - the topmost frame window or None if no GUI
         """
-        for module in self.modules():
+        if len(args) == 3:
+            measurements, image_set_list, frame  = args
             workspace = cpw.Workspace(self,
                                       module,
                                       None,
                                       None,
                                       measurements,
                                       image_set_list,
-                                      frame if module.show_window else None)
+                                      frame)
+        else:
+            workspace = args[0]
+        for module in self.modules():
             workspace.refresh()
             try:
                 module.post_run(workspace)
+                if module.show_window:
+                    workspace.post_run_display(module)
             except Exception, instance:
                 logging.error(
                     "Failed to complete post_run processing for module %s.",

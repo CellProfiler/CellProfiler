@@ -363,6 +363,7 @@ class CPFigureFrame(wx.Frame):
         for x, y, width, height, halign, valign, ctrl in self.widgets:
             self.align_widget(ctrl, x, y, width, height, halign, valign,
                               event.width, event.height)
+            ctrl.ForceRefresh() # I don't know why, but it seems to be needed.
             
     def align_widget(self, ctrl, x, y, width, height, 
                      halign, valign, canvas_width, canvas_height):

@@ -1201,23 +1201,33 @@ class ExportToDatabase(cpm.CPModule):
             
         '''Warn user re: objects that are not 1:1 (i.e., primary/secondary/tertiary) if creating a view'''
         if self.objects_choice != O_NONE and self.separate_object_tables in (OT_VIEW,OT_COMBINE):
-            d = {}
             if self.objects_choice == O_SELECT:
                 selected_objs = self.objects_list.value.rsplit(',')
             elif self.objects_choice == O_ALL:
                 selected_objs = pipeline.get_provider_dictionary(cps.OBJECT_GROUP).keys()
-            for obj in selected_objs:
-                for module in pipeline.modules(): 
-                    if module.is_object_identification_module() and module.get_measurements(pipeline,obj,C_PARENT):
-                        d[obj] = module.get_measurements(pipeline,obj,C_PARENT)[0]
-        
-            candidate_objs = set(d.keys() + d.values())
-            mismatched_objs = set(selected_objs).difference(candidate_objs)
-            if mismatched_objs:
-                msg = "%s is not in a 1:1 relationship with the other objects, whcih may cause downstream problems.\n "%",".join(mismatched_objs)
-                msg += "You may want to choose another object container"
-                msg += "." if self.objects_choice == O_ALL else " or de-select the object(s)."
-                raise cps.ValidationError(msg,self.separate_object_tables)
+            
+            if len(selected_objs) > 1:
+                # Check whether each selected object comes from an Identify module. If it does, look for its parent.
+                d = dict.fromkeys(selected_objs,None)
+                for obj in selected_objs:
+                    for module in pipeline.modules(): 
+                        if module.is_object_identification_module():# and module.get_measurements(pipeline,obj,C_PARENT):
+                            parent = module.get_measurements(pipeline,obj,C_PARENT)
+                            if len(parent) > 0:
+                                d[obj] = parent[0] 
+                # For objects with no parents (primary), use the object itself
+                d = dict(zip(d.keys(),[key if value is None else value for (key,value) in d.items()]))
+                
+                # Only those objects which have parents in common should be written together
+                if len(set(d.values())) > 1:
+                    # Pick out the parent with the lowest representation in the selected object list
+                    mismatched_parent = sorted(zip([d.values().count(item) for item in set(d.values())],set(d.values())))[0][1]
+                    # Find the objects that this parent goes with
+                    mismatched_objs = [key for (key,value) in d.items() if value == mismatched_parent]
+                    msg = "%s is not in a 1:1 relationship with the other objects, which may cause downstream problems.\n "%",".join(mismatched_objs)
+                    msg += "You may want to choose another object container"
+                    msg += "." if self.objects_choice == O_ALL else " or de-select the object(s)."
+                    raise cps.ValidationError(msg,self.separate_object_tables)
             
     def test_connection(self):
         '''Check to make sure the MySQL server is remotely accessible'''

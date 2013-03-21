@@ -305,30 +305,33 @@ class CalculateMath(cpm.CPModule):
             operand_object1 = self.operands[0].operand_objects.value
             operand_object2 = self.operands[1].operand_objects.value
             g = m.get_relationship_groups()
-            rk = None
             
             for gg in g:
                 if gg.relationship == R_PARENT:
-                    rk = gg
-                    r = m.get_relationships(rk.module_number,
-                                            rk.relationship,
-                                            rk.object_name1,
-                                            rk.object_name2,
-                                            rk.group_number)
                     #
                     # first is parent of second
                     #
                     if (gg.object_name1 == operand_object1 and
                         gg.object_name2 == operand_object2):
-                        i0 = r['object_number1'] - 1
-                        i1 = r['object_number2'] - 1
-                        break
+                        f0 = cpmeas.R_FIRST_OBJECT_NUMBER
+                        f1 = cpmeas.R_SECOND_OBJECT_NUMBER
                     elif (gg.object_name1 == operand_object2 and
                           gg.object_name2 == operand_object1):
-                        i0 = r['object_number2'] - 1
-                        i1 = r['object_number1'] - 1
-                        break
-            if rk is None:
+                        f1 = cpmeas.R_FIRST_OBJECT_NUMBER
+                        f0 = cpmeas.R_SECOND_OBJECT_NUMBER
+                    else:
+                        continue
+                    r = m.get_relationships(gg.module_number,
+                                            gg.relationship,
+                                            gg.object_name1,
+                                            gg.object_name2)
+                    mask = (
+                        (r[cpmeas.R_FIRST_IMAGE_NUMBER] == m.image_set_number) &
+                        (r[cpmeas.R_SECOND_IMAGE_NUMBER] == m.image_set_number))
+                    i0 = r[f0][mask] - 1
+                    i1 = r[f1][mask] - 1
+                    break
+            else:
                 raise ValueError("Incompatable objects: %s has %d objects and %s has %d objects"%
                                  (operand_object1, len(values[0]),
                                   operand_object2, len(values[1])))

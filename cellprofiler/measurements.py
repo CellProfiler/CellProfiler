@@ -112,6 +112,18 @@ OBJECT_NUMBER = "ObjectNumber"
 GROUP_NUMBER = "Group_Number"  # 1-based group index
 GROUP_INDEX = "Group_Index"  # 1-based index within group
 
+"""The image number of the first object in the relationship"""
+R_FIRST_IMAGE_NUMBER = IMAGE_NUMBER + "_" + "First"
+
+"""The object number of the first object in the relationship"""
+R_FIRST_OBJECT_NUMBER = OBJECT_NUMBER + "_" + "First"
+
+"""The image number of the second object in the relationship"""
+R_SECOND_IMAGE_NUMBER = IMAGE_NUMBER + "_" + "Second"
+
+"""The object number of the first object in the relationship"""
+R_SECOND_OBJECT_NUMBER = OBJECT_NUMBER + "_" + "Second"
+
 '''The FileName measurement category'''
 C_FILE_NAME = "FileName"
 
@@ -248,11 +260,33 @@ class Measurements(object):
         self.__is_first_image = True
         self.__initialized_explicitly = False
         self.__relationships = set()
-        self.__relationship_names = set()
         self.__images = {}
         self.__image_providers = []
         self.__images = {}
         self.__image_providers = []
+        if RELATIONSHIP in self.hdf5_dict.top_group:
+            rgroup = self.hdf5_dict.top_group[RELATIONSHIP]
+            for module_number in rgroup:
+                try:
+                    mnum = int(module_number)
+                except:
+                    continue
+                mrgroup = rgroup[module_number]
+                if not isinstance(mrgroup, h5py.Group):
+                    continue
+                for rname in mrgroup:
+                    rmrgroup = mrgroup[rname]
+                    if not isinstance(rmrgroup, h5py.Group):
+                        continue
+                    for o1_name in rmrgroup:
+                        rmro1group = rmrgroup[o1_name]
+                        if not isinstance(rmro1group, h5py.Group):
+                            continue
+                        for o2_name in rmro1group:
+                            if not isinstance(rmro1group[o2_name], h5py.Group):
+                                continue
+                            self.__relationships.add(
+                                (mnum, rname, o1_name, o2_name))
 
     def __del__(self):
         if hasattr(self, "hdf5_dict"):
@@ -451,12 +485,22 @@ class Measurements(object):
         return [ (dict(k), d[k]) for k in sorted(d.keys()) ]
             
 
+    def get_relationship_hdf5_group(self, module_number, relationship,
+                                    object_name1, object_name2):
+        '''Return the HDF5 group for a relationship'''
+        return self.hdf5_dict.top_group \
+                .require_group(RELATIONSHIP)\
+                .require_group(str(module_number)) \
+                .require_group(relationship) \
+                .require_group(object_name1) \
+                .require_group(object_name2)
+    
     def add_relate_measurement(
         self, module_number,
         relationship,
         object_name1, object_name2,
-        group_indexes1, object_numbers1,
-        group_indexes2, object_numbers2):
+        image_numbers1, object_numbers1,
+        image_numbers2, object_numbers2):
         '''Add object relationships to the measurements
 
         module_number - the module that generated the relationship
@@ -466,9 +510,7 @@ class Measurements(object):
 
         object_name1, object_name2 - the name of the segmentation for the first and second objects
 
-        group_indexes1, group_indexes2 - for each object, the group index of
-                                         that object's image set.
-                                         (MUST NOT BE A SCALAR)
+        image_numbers1, image_numbers2 - the image number of each object
 
         object_numbers1, object_numbers2 - for each object, the object number
                                            in the object's object set
@@ -479,28 +521,35 @@ class Measurements(object):
         object name for object_name1 and object_name2 and the same group
         index - that of the current image. Relating would have different object
         names and TrackObjects would have different group indices.
+        
+        The structure in the HDF file:
+        Measurements / <date> / Relationship / <module #> /
+           <relationship-name> / <object-name-1> / <object-name-2> /
+           [ImageNumber_First, ObjectNumber_First, 
+            ImageNumber_Second, ObjectNumber_Second]
+        
+        The leaves are vector datasets.
         '''
 
-        # XXX - check overwrite?
-        # XXX - Should group number be moved out of the measurement name?
-        group_number = self.group_number
         with self.hdf5_dict.lock:
-            self.hdf5_dict.top_group.require_group(RELATIONSHIP)
-            relationship_group = self.hdf5_dict.top_group.require_group('%s/%02d_%d_%s_%s_%s' % (RELATIONSHIP, module_number, group_number, relationship, object_name1, object_name2))
-            features = ["group_number", "group_index1", "group_index2", "object_number1", "object_number2"]
-            if "group_number" not in relationship_group:
-                for name in features:
-                    relationship_group.create_dataset(name, (0,), dtype='int32', chunks=(1024,), maxshape=(None,))
-            current_size = relationship_group['group_number'].shape[0]
-            for name in features:
-                relationship_group[name].resize((current_size + len(group_indexes1),))
-            relationship_group['group_number'][current_size:] = group_number
-            relationship_group['group_index1'][current_size:] = group_indexes1
-            relationship_group['group_index2'][current_size:] = group_indexes2
-            relationship_group['object_number1'][current_size:] = object_numbers1
-            relationship_group['object_number2'][current_size:] = object_numbers2
-            self.__relationships.add((module_number, group_number, relationship, object_name1, object_name2))
-            self.__relationship_names.add(relationship_group.name)
+            rgroup = self.get_relationship_hdf5_group(
+                module_number, relationship, object_name1, object_name2)
+            
+            for name, values in ((R_FIRST_IMAGE_NUMBER, image_numbers1),
+                                 (R_FIRST_OBJECT_NUMBER, object_numbers1),
+                                 (R_SECOND_IMAGE_NUMBER, image_numbers2),
+                                 (R_SECOND_OBJECT_NUMBER, object_numbers2)):
+                if name not in rgroup:
+                    rgroup.create_dataset(name, data=values, 
+                                          dtype='int32', chunks=(1024,), 
+                                          maxshape=(None,))
+                else:
+                    dset = rgroup[name]
+                    current_size = dset.shape[0]
+                    dset.resize((current_size + len(values),))
+                    dset[current_size:] = values
+            self.__relationships.add((module_number, relationship, 
+                                      object_name1, object_name2))
 
     def get_relationship_groups(self):
         '''Return the keys of each of the relationship groupings.
@@ -508,33 +557,57 @@ class Measurements(object):
         The value returned is a list composed of objects with the following
         attributes:
         module_number - the module number of the module used to generate the relationship
-        group_number - the group number of the relationship
         relationship - the relationship of the two objects
         object_name1 - the object name of the first object in the relationship
         object_name2 - the object name of the second object in the relationship
         '''
 
-        return [RelationshipKey(module_number, group_number, relationship, obj1, obj2) for
-                (module_number, group_number, relationship, obj1, obj2) in self.__relationships]
+        return [RelationshipKey(module_number, relationship, obj1, obj2) for
+                (module_number, relationship, obj1, obj2) in self.__relationships]
 
-    def get_relationships(self, module_number, relationship, object_name1, object_name2, group_number):
-        if not (module_number, group_number, relationship, object_name1, object_name2) in self.__relationships:
-            return np.zeros(0, [("group_index1", int, 1),
-                                ("object_number1", int, 1),
-                                ("group_index2", int, 1),
-                                ("object_number2", int, 1)]).view(np.recarray)
+    def get_relationships(self, module_number, relationship, 
+                          object_name1, object_name2):
+        '''Get the relationships recorded by a particular module
+        
+        module_number - # of module recording the relationship
+        
+        relationship - the name of the relationship, e.g. "Parent" for
+                       object # 1 is parent of object # 2
+                       
+        object_name1, object_name2 - the names of the two objects
+        
+        returns a recarray with the following fields:
+        R_FIRST_IMAGE_NUMBER, R_SECOND_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER,
+        R_SECOND_OBJECT_NUMBER
+        '''
+        features = (R_FIRST_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER,
+                            R_SECOND_IMAGE_NUMBER, R_SECOND_OBJECT_NUMBER)
+        dt = np.dtype([(feature, np.int32, 1) for feature in features])
+        if not (module_number, relationship, object_name1, object_name2) \
+           in self.__relationships:
+            return np.zeros(0, dt).view(np.recarray)
         with self.hdf5_dict.lock:
-            grp = self.hdf5_dict.top_group['%s/%02d_%d_%s_%s_%s' % (RELATIONSHIP, module_number, group_number, relationship, object_name1, object_name2)]
-            dt = np.dtype([("group_index1", np.int, 1),
-                           ("object_number1", np.int, 1),
-                           ("group_index2", np.int, 1),
-                           ("object_number2", np.int, 1)])
-            temp = np.zeros(grp['group_index1'].shape, dt)
-            temp['group_index1'] = grp['group_index1']
-            temp['object_number1'] = grp['object_number1']
-            temp['group_index2'] = grp['group_index2']
-            temp['object_number2'] = grp['object_number2']
+            grp = self.get_relationship_hdf5_group(
+                module_number, relationship, object_name1, object_name2)
+            temp = np.zeros(grp[R_FIRST_IMAGE_NUMBER].shape, dt)
+            for feature in features:
+                temp[feature] = grp[feature]
             return temp.view(np.recarray)
+        
+    def copy_relationships(self, src):
+        '''Copy the relationships from another measurements file
+        
+        src - a Measurements possibly having relationships.
+        '''
+        for rk in src.get_relationship_groups():
+            r = src.get_relationships(
+                rk.module_number, rk.relationship, 
+                rk.object_name1, rk.object_name2)
+            self.add_relate_measurement(
+                rk.module_number, rk.relationship, 
+                rk.object_name1, rk.object_name2,
+                r[R_FIRST_IMAGE_NUMBER], r[R_FIRST_OBJECT_NUMBER],
+                r[R_SECOND_IMAGE_NUMBER], r[R_SECOND_OBJECT_NUMBER])
 
     def add_measurement(self, object_name, feature_name, data, 
                         can_overwrite=False, image_set_number=None):
@@ -1588,10 +1661,9 @@ def agg_ignore_feature(feature_name):
     return False
 
 class RelationshipKey:
-    def __init__(self, module_number, group_number, relationship,
+    def __init__(self, module_number,  relationship,
                  object_name1, object_name2):
         self.module_number = module_number
-        self.group_number = group_number
         self.relationship = relationship
         self.object_name1 = object_name1
         self.object_name2 = object_name2

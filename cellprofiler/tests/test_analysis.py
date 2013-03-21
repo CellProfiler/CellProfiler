@@ -977,6 +977,94 @@ class TestAnalysis(unittest.TestCase):
                     measurements[OBJECTS_NAME, OBJECTS_FEATURE, i],
                     objects_measurements[i-1])
                 
+    def test_06_06_relationships(self):
+        #
+        # Test a transfer of the relationships table.
+        #
+        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
+        self.wants_analysis_finished = True
+        pipeline, m = self.make_pipeline_and_measurements_and_start()
+        r = np.random.RandomState()
+        r.seed(61)
+        with self.FakeWorker() as worker:
+            #####################################################
+            #
+            # Connect the worker to the analysis server and get
+            # the initial measurements.
+            #
+            #####################################################
+            worker.connect(self.analysis.runner.work_announce_address)
+            response = worker.request_work()
+            response = worker.send(cpanalysis.InitialMeasurementsRequest(
+                worker.analysis_id))()
+            client_measurements = cpmeas.load_measurements_from_buffer(
+                response.buf)
+            #####################################################
+            #
+            # Report the dictionary, add some measurements and
+            # report the results of the first job
+            #
+            #####################################################
+            dictionaries = [ dict([(uuid.uuid4().hex, r.uniform(size=(10,15)))
+                                   for _ in range(10)])
+                             for module in pipeline.modules()]
+            response = worker.send(cpanalysis.ImageSetSuccessWithDictionary(
+                worker.analysis_id, 1, dictionaries))()
+            n_objects = 10
+            objects_measurements = r.uniform(size=n_objects)
+            objects_relationship = r.permutation(n_objects) + 1
+            client_measurements[cpmeas.IMAGE, IMAGE_FEATURE, 1] = "Hello"
+            client_measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1] = \
+                objects_measurements
+            client_measurements.add_relate_measurement(
+                1, "Foo", OBJECTS_NAME, OBJECTS_NAME,
+                np.ones(n_objects, int), np.arange(1, n_objects+1),
+                np.ones(n_objects, int), objects_relationship)
+            req = cpanalysis.MeasurementsReport(
+                worker.analysis_id,
+                client_measurements.file_contents(),
+                image_set_numbers = [1])
+            client_measurements.close()
+            response_fn = worker.send(req)
+            
+            self.check_display_post_run_requests(pipeline)
+            #####################################################
+            #
+            # The server should receive the measurements report.
+            # It should merge the measurements and post an
+            # AnalysisFinished event.
+            #
+            #####################################################
+            
+            result = self.event_queue.get()
+            self.assertIsInstance(result, cpanalysis.AnalysisFinished)
+            self.assertFalse(result.cancelled)
+            measurements = result.measurements
+            assert isinstance(measurements, cpmeas.Measurements)
+            self.assertSequenceEqual(measurements.get_image_numbers(), [1])
+            self.assertEqual(measurements[cpmeas.IMAGE, IMAGE_FEATURE, 1], 
+                             "Hello")
+            np.testing.assert_almost_equal(
+                measurements[OBJECTS_NAME, OBJECTS_FEATURE, 1],
+                objects_measurements)
+            rg = measurements.get_relationship_groups()
+            self.assertEqual(len(rg), 1)
+            rk = rg[0]
+            assert isinstance(rk, cpmeas.RelationshipKey)
+            self.assertEqual(rk.module_number, 1)
+            self.assertEqual(rk.object_name1, OBJECTS_NAME)
+            self.assertEqual(rk.object_name2, OBJECTS_NAME)
+            self.assertEqual(rk.relationship, "Foo")
+            r = measurements.get_relationships(
+                1, "Foo", OBJECTS_NAME, OBJECTS_NAME)
+            self.assertEqual(len(r), n_objects)
+            np.testing.assert_array_equal(r[cpmeas.R_FIRST_IMAGE_NUMBER], 1)
+            np.testing.assert_array_equal(r[cpmeas.R_SECOND_IMAGE_NUMBER], 1)
+            np.testing.assert_array_equal(r[cpmeas.R_FIRST_OBJECT_NUMBER],
+                                          np.arange(1, n_objects+1))
+            np.testing.assert_array_equal(r[cpmeas.R_SECOND_OBJECT_NUMBER],
+                                          objects_relationship)
+                
 SBS_PIPELINE = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:3
 DateRevision:20120424205644

@@ -458,6 +458,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 0)
         self.assertEqual(m(T.F_SPLIT_COUNT), 0)
         self.assertEqual(m(T.F_MERGE_COUNT), 0)
+        self.check_relationships(measurements, [1], [1], [2], [1])
     
     def test_02_03_track_one_moving(self):
         '''Track an object that moves'''
@@ -499,6 +500,11 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 0)
         self.assertEqual(m(T.F_SPLIT_COUNT), 0)
         self.assertEqual(m(T.F_MERGE_COUNT), 0)
+        image_numbers = np.arange(1, len(labels_list) + 1)
+        object_numbers = np.ones(len(image_numbers))
+        self.check_relationships(measurements, 
+                                 image_numbers[:-1], object_numbers[:-1],
+                                 image_numbers[1:], object_numbers[1:])
     
     def test_02_04_track_split(self):
         '''Track an object that splits'''
@@ -534,6 +540,9 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         self.assertEqual(m(T.F_LOST_OBJECT_COUNT), 0)
         self.assertEqual(m(T.F_SPLIT_COUNT), 1)
         self.assertEqual(m(T.F_MERGE_COUNT), 0)
+        self.check_relationships(measurements, 
+                                 [1, 1, 2, 2], [1, 1, 1, 2],
+                                 [2, 2, 3, 3], [1, 2, 1, 2])
     
     def test_02_05_track_negative(self):
         '''Track unrelated objects'''
@@ -702,7 +711,7 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         
         i,j = np.mgrid[0:10,0:20]
         labels = (i > 5) + (j > 10) * 2
-        pp = permutations([1,2,3,4])
+        pp = np.array(list(permutations([1,2,3,4])))
         def fn(module, workspace, idx):
             if idx == 0:
                 module.tracking_method.value = T.TM_LAP
@@ -710,18 +719,26 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
         measurements = self.runTrackObjects([np.array(p)[labels] for p in pp], fn)
         def m(feature, i):
             name = "_".join((T.F_PREFIX, feature))
-            values = measurements.get_all_measurements(OBJECT_NAME, name)[i]
+            values = measurements[OBJECT_NAME, name, i+1]
             self.assertEqual(len(values), 4)
             return values
         for i, p in enumerate(pp):
             l = m(T.F_LABEL, i)
-            self.assertTrue(np.all(l == np.array(p)))
-            if i < len(pp)-1:
-                po = m(T.F_PARENT_OBJECT_NUMBER, i+1)
-                self.assertTrue(np.all(po == np.array(p)))
-                pi = m(T.F_PARENT_IMAGE_NUMBER, i+2)
-                self.assertTrue(np.all(pi == i))
-
+            np.testing.assert_array_equal(np.arange(1, 5), p[l-1])
+            if i > 0:
+                p_prev = pp[i-1]
+                order = np.lexsort([p])
+                expected_po = p_prev[order]
+                po = m(T.F_PARENT_OBJECT_NUMBER, i)
+                np.testing.assert_array_equal(po, expected_po)
+                pi = m(T.F_PARENT_IMAGE_NUMBER, i)
+                np.testing.assert_array_equal(pi, i)
+        image_numbers, _ = np.mgrid[1:(len(pp)+1), 0:4]
+        self.check_relationships(
+            measurements, 
+            image_numbers[:-1, :].flatten(), pp[:-1, :].flatten(),
+            image_numbers[1:, :].flatten(), pp[1:, :].flatten())
+        
         
     def test_05_01_measurement_columns(self):
         '''Test get_measurement_columns function'''
@@ -982,6 +999,43 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
                                      "Expected # of objects (%d) != actual (%d) for %s:%d" %
                                      (len(e), len(v), feature, i))
                     np.testing.assert_almost_equal(v, e)
+                    
+    def check_relationships(self, m, 
+                            expected_parent_image_numbers, 
+                            expected_parent_object_numbers,
+                            expected_child_image_numbers, 
+                            expected_child_object_numbers):
+        '''Check the relationship measurements against expected'''
+        expected_parent_image_numbers = np.atleast_1d(expected_parent_image_numbers)
+        expected_child_image_numbers = np.atleast_1d(expected_child_image_numbers)
+        expected_parent_object_numbers = np.atleast_1d(expected_parent_object_numbers)
+        expected_child_object_numbers = np.atleast_1d(expected_child_object_numbers)
+        self.assertTrue(isinstance(m, cpmeas.Measurements))
+        r = m.get_relationships(
+            1, T.R_PARENT, OBJECT_NAME, OBJECT_NAME)
+        actual_parent_image_numbers = r[cpmeas.R_FIRST_IMAGE_NUMBER]
+        actual_parent_object_numbers = r[cpmeas.R_FIRST_OBJECT_NUMBER]
+        actual_child_image_numbers = r[cpmeas.R_SECOND_IMAGE_NUMBER]
+        actual_child_object_numbers = r[cpmeas.R_SECOND_OBJECT_NUMBER]
+        self.assertEqual(len(actual_parent_image_numbers),
+                         len(expected_parent_image_numbers))
+        #
+        # Sort similarly
+        #
+        for i1, o1, i2, o2 in (
+            (expected_parent_image_numbers, expected_parent_object_numbers,
+             expected_child_image_numbers, expected_child_object_numbers),
+            (actual_parent_image_numbers, actual_parent_object_numbers,
+             actual_child_image_numbers, actual_child_object_numbers)):
+            order = np.lexsort((i1, o1, i2, o2))
+            for x in (i1, o1, i2, o2):
+                x[:] = x[order]
+        for expected, actual in zip(
+            (expected_parent_image_numbers, expected_parent_object_numbers,
+             expected_child_image_numbers, expected_child_object_numbers),
+            (actual_parent_image_numbers, actual_parent_object_numbers,
+             actual_child_image_numbers, actual_child_object_numbers)):            
+            np.testing.assert_array_equal(expected, actual)
                 
     def test_07_01_lap_none(self):
         '''Run the second part of LAP on one image of nothing'''
@@ -1050,6 +1104,8 @@ TrackObjects:[module_num:1|svn_version:\'10373\'|variable_revision_number:4|show
             T.F_MERGE_COUNT: [ 0, 0, 0 ],
             T.F_SPLIT_COUNT: [ 0, 0, 0 ]
         })
+        self.check_relationships(workspace.measurements,
+                                 [1], [1], [3], [1])
         
     def test_07_04_maintain_gap(self):
         '''Maintain object identity across a large gap'''

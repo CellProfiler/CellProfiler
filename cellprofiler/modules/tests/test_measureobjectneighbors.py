@@ -670,7 +670,6 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         k = k[0]
         self.assertTrue(isinstance(k, cpmeas.RelationshipKey))
         self.assertEqual(k.module_number, 1)
-        self.assertEqual(k.group_number, 1)
         self.assertEqual(k.object_name1, OBJECTS_NAME)
         self.assertEqual(k.object_name2, OBJECTS_NAME)
         self.assertEqual(k.relationship, cpmeas.NEIGHBORS)
@@ -678,13 +677,13 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             k.module_number,
             k.relationship,
             k.object_name1,
-            k.object_name2,
-            k.group_number)
+            k.object_name2)
         self.assertEqual(len(r), 8)
-        r = r.view(np.recarray)
-        np.testing.assert_array_equal(np.unique(r.object_number1[r.object_number2==3]),
+        ro1 = r[cpmeas.R_FIRST_OBJECT_NUMBER]
+        ro2 = r[cpmeas.R_SECOND_OBJECT_NUMBER]
+        np.testing.assert_array_equal(np.unique(ro1[ro2==3]),
                                       np.array([1,2,4,5]))
-        np.testing.assert_array_equal(np.unique(r.object_number2[r.object_number1==3]),
+        np.testing.assert_array_equal(np.unique(ro2[ro1==3]),
                                       np.array([1,2,4,5]))
         
     def test_07_02_neighbors(self):
@@ -724,7 +723,6 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
         k = k[0]
         self.assertTrue(isinstance(k, cpmeas.RelationshipKey))
         self.assertEqual(k.module_number, 1)
-        self.assertEqual(k.group_number, 1)
         self.assertEqual(k.object_name1, OBJECTS_NAME)
         self.assertEqual(k.object_name2, NEIGHBORS_NAME)
         self.assertEqual(k.relationship, cpmeas.NEIGHBORS)
@@ -732,13 +730,12 @@ MeasureObjectNeighbors:[module_num:1|svn_version:\'Unknown\'|variable_revision_n
             k.module_number,
             k.relationship,
             k.object_name1,
-            k.object_name2,
-            k.group_number)
+            k.object_name2)
         self.assertEqual(len(r), 3)
-        r = r.view(np.recarray)
-        self.assertTrue(np.all(r.object_number2 == 1))
-        np.testing.assert_array_equal(np.unique(r.object_number1),
-                                      np.array([1,3,4]))
+        ro1 = r[cpmeas.R_FIRST_OBJECT_NUMBER]
+        ro2 = r[cpmeas.R_SECOND_OBJECT_NUMBER]
+        self.assertTrue(np.all(ro2 == 1))
+        np.testing.assert_array_equal(np.unique(ro1), np.array([1,3,4]))
         
     def test_08_01_missing_object(self):
         # Regression test of issue 434

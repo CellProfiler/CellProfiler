@@ -116,6 +116,8 @@ DT_COLOR_AND_NUMBER = 'Color and Number'
 DT_COLOR_ONLY = 'Color Only'
 DT_ALL = [DT_COLOR_AND_NUMBER, DT_COLOR_ONLY]
 
+R_PARENT = "Parent"
+
 F_PREFIX = "TrackObjects"
 F_LABEL = "Label"
 F_PARENT_OBJECT_NUMBER = "ParentObjectNumber"
@@ -1488,7 +1490,18 @@ class TrackObjects(cpm.CPModule):
         d = np.zeros(len(F)+1, dtype="int32")-1
         z = np.zeros(len(F)+1, dtype="int32")
         
+        # relationships is a list of parent-child relationships. Each element
+        # is a two-tuple of parent and child and each parent/child is a
+        # two-tuple of image index and object number:
+        #
+        # [((<parent-image-index>, <parent-object-number>),
+        #   (<child-image-index>, <child-object-number>))...]
+        #
+        relationships = []
         for i in range(len(F)):
+            my_image_index = int(F[i, IIDX])
+            my_object_index = int(F[i, OIIDX])
+            my_object_number = int(F[i, ONIDX])
             if(y[i] < len(F)):
                 #
                 # y[i] gives index of last hooked to first
@@ -1498,14 +1511,16 @@ class TrackObjects(cpm.CPModule):
                 #
                 # Hook our parent image/object number to found parent
                 #
-                my_image_index = int(F[i, IIDX])
-                my_object_index = int(F[i, OIIDX])
                 parent_image_index = int(L[y[i], IIDX])
                 parent_object_number = int(L[y[i], ONIDX])
+                parent_image_number = image_numbers[parent_image_index]
                 parent_image_numbers[my_image_index][my_object_index] = \
-                                    image_numbers[parent_image_index]
+                                    parent_image_number
                 parent_object_numbers[my_image_index][my_object_index] = \
                                      parent_object_number
+                relationships.append(
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
                 #
                 # One less new object
                 #
@@ -1520,16 +1535,18 @@ class TrackObjects(cpm.CPModule):
                 # Hook split objects to their parent
                 #
                 p2_idx = y[i] - ss_off
-                my_image_index = int(F[i, IIDX])
-                my_object_index = int(F[i, OIIDX])
                 parent_image_index = int(P2[p2_idx, IIDX])
+                parent_image_number = image_numbers[parent_image_index]
                 parent_object_number = int(P2[p2_idx, ONIDX])
                 b[i+1] = P2[p2_idx, LIDX]
                 c[b[i+1]] = i+1
                 parent_image_numbers[my_image_index][my_object_index] = \
-                                    image_numbers[parent_image_index]
+                                    parent_image_number
                 parent_object_numbers[my_image_index][my_object_index] = \
                                      parent_object_number
+                relationships.append(
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
                 #
                 # one less new object
                 #
@@ -1546,15 +1563,21 @@ class TrackObjects(cpm.CPModule):
                 d[a[i+1]] = i+1
             elif(x[i] >= me_off and x[i] < me_off+len(P1)):
                 #
-                # Handle merged objects
+                # Handle merged objects. A merge hooks the end (L) of
+                # a segment (the parent) to a gap alternative in P1 (the child)
                 # 
                 p1_idx = x[i]-me_off
-                my_image_index = int(P1[p1_idx, IIDX])
-                my_object_index = int(P1[p1_idx, OIIDX])
                 a[i+1] = P1[p1_idx, LIDX]
                 d[a[i+1]] = i+1
-                lost_object_count[my_image_index] -= 1
-                merge_count[my_image_index] += 1
+                parent_image_index = int(L[i, IIDX])
+                parent_object_number = int(L[i, ONIDX])
+                child_image_index = int(P1[p1_idx, IIDX])
+                child_object_number = int(P1[p1_idx, ONIDX])
+                relationships.append(
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
+                lost_object_count[child_image_index] -= 1
+                merge_count[child_image_index] += 1
             else:
                 a[i+1] = -1
 
@@ -1612,6 +1635,19 @@ class TrackObjects(cpm.CPModule):
             m.add_measurement(cpmeas.IMAGE,
                               self.image_measurement_name(F_SPLIT_COUNT),
                               split_count[i], True, image_number)
+        #
+        # Write the relationships.
+        #
+        if len(relationships) > 0:
+            relationships = np.array(relationships)
+            parent_image_numbers = image_numbers[relationships[:, 0, 0]]
+            child_image_numbers = image_numbers[relationships[:, 1, 0]]
+            parent_object_numbers = relationships[:, 0, 1]
+            child_object_numbers = relationships[:, 1, 1]
+            m.add_relate_measurement(
+                self.module_num, R_PARENT, object_name, object_name,
+                parent_image_numbers, parent_object_numbers,
+                child_image_numbers, child_object_numbers)
 
         self.recalculate_group(workspace, image_numbers)
         
@@ -1806,15 +1842,13 @@ class TrackObjects(cpm.CPModule):
         if self.wants_lifetime_filtering.value:
             m.add_experiment_measurement(F_EXPT_FILT_NUMTRACKS, nlabels-len(labels_to_filter))
 
-    def map_objects(self, workspace, new_of_old, old_of_new, i,j):
+    def map_objects(self, workspace, new_of_old, old_of_new, i, j):
         '''Record the mapping of old to new objects and vice-versa
 
         workspace - workspace for current image set
         new_to_old - an array of the new labels for every old label
         old_to_new - an array of the old labels for every new label
-        score - a score that is higher for better mappings: we use this
-                score to assign new label numbers so that the new objects
-                that are "better" inherit the old objects' label number
+        i, j - the coordinates for each new object.
         '''
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -1929,6 +1963,40 @@ class TrackObjects(cpm.CPModule):
         else:
             merge_count = 0
         self.add_image_measurement(workspace, F_MERGE_COUNT, merge_count)
+        #########################################
+        #
+        # Compile the relationships between children and parents
+        #
+        #########################################
+        last_object_numbers = np.arange(1, len(new_of_old) + 1)
+        new_object_numbers = np.arange(1, len(old_of_new)+1)
+        r_parent_object_numbers = np.hstack((
+            old_of_new[old_of_new != 0], 
+            last_object_numbers[new_of_old != 0]))
+        r_child_object_numbers = np.hstack((
+            new_object_numbers[parents != 0], new_of_old[new_of_old != 0]))
+        if len(r_child_object_numbers) > 0:
+            #
+            # Find unique pairs
+            #
+            order = np.lexsort((r_child_object_numbers, r_parent_object_numbers))
+            r_child_object_numbers = r_child_object_numbers[order]
+            r_parent_object_numbers = r_parent_object_numbers[order]
+            to_keep = np.hstack((
+                [True], 
+                (r_parent_object_numbers[1:] != r_parent_object_numbers[:-1]) |
+                (r_child_object_numbers[1:] != r_child_object_numbers[:-1])))
+            r_child_object_numbers = r_child_object_numbers[to_keep]
+            r_parent_object_numbers = r_parent_object_numbers[to_keep]
+            r_image_numbers = np.ones(
+                r_parent_object_numbers.shape[0],
+                r_parent_object_numbers.dtype) * image_number
+            if len(r_child_object_numbers) > 0:
+                m.add_relate_measurement(
+                    self.module_num, R_PARENT, 
+                    self.object_name.value, self.object_name.value,
+                    r_image_numbers - 1, r_parent_object_numbers,
+                    r_image_numbers, r_child_object_numbers)
 
     def get_kalman_feature_names(self):
         if self.tracking_method != TM_LAP:

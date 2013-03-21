@@ -477,9 +477,9 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 self.object_name.value,
                 self.object_name.value if self.neighbors_are_objects 
                 else self.neighbors_name.value,
-                m.group_index * np.ones(first_objects.shape, int),
+                m.image_set_number * np.ones(first_objects.shape, int),
                 first_objects,
-                m.group_index * np.ones(second_objects.shape, int),
+                m.image_set_number * np.ones(second_objects.shape, int),
                 second_objects)
                                  
         labels = kept_labels

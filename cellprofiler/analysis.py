@@ -444,6 +444,7 @@ class AnalysisRunner(object):
                 while not self.received_measurements_queue.empty():
                     job, buf = self.received_measurements_queue.get()
                     recd_measurements = cpmeas.load_measurements_from_buffer(buf)
+                    measurements.copy_relationships(recd_measurements)
                     for object in recd_measurements.get_object_names():
                         if object == cpmeas.EXPERIMENT:
                             continue  # Written during prepare_run / post_run

@@ -1778,21 +1778,21 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
         for i in range(0,10):
             image_set = image_set_list.get_image_set(i)
             m.add_image_measurement(cpp.IMAGE_NUMBER, i+1)
-            m.add_image_measurement(cpp.GROUP_NUMBER, 0)
-            m.add_image_measurement(cpp.GROUP_INDEX, i)
+            m.add_image_measurement(cpp.GROUP_NUMBER, 1)
+            m.add_image_measurement(cpp.GROUP_INDEX, i+1)
             if i < 9:
                 m.next_image_set()
         my_relationship = "BlahBlah"
         my_object_name1 = "ABC"
         my_object_name2 = "DEF"
-        my_group_indexes1 = r.randint(1,10, size=10)
+        my_image_numbers1 = r.randint(1,10, size=10)
         my_object_numbers1 = r.randint(1,10, size=10)
-        my_group_indexes2 = r.randint(1,10, size=10)
+        my_image_numbers2 = r.randint(1,10, size=10)
         my_object_numbers2 = r.randint(1,10, size=10)
         m.add_relate_measurement(1, my_relationship, 
                                  my_object_name1, my_object_name2,
-                                 my_group_indexes1, my_object_numbers1, 
-                                 my_group_indexes2, my_object_numbers2)
+                                 my_image_numbers1, my_object_numbers1, 
+                                 my_image_numbers2, my_object_numbers2)
         pipeline = cpp.Pipeline()
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set,
@@ -1810,7 +1810,7 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
                          "First Object Number", "Second Object Name",
                          "Second Image Number", "Second Object Number"]):
                 self.assertEqual(heading, expected)
-            for i in range(len(my_group_indexes1)):
+            for i in range(len(my_image_numbers1)):
                 (module_name, module_number, relationship, 
                  object_name_1, image_number_1, object_number_1, 
                  object_name_2, image_number_2, object_number_2) = rdr.next()
@@ -1818,10 +1818,10 @@ ExportToSpreadsheet:[module_num:5|svn_version:\'9434\'|variable_revision_number:
                 self.assertEqual(int(module_number), module.module_num)
                 self.assertEqual(relationship, my_relationship)
                 self.assertEqual(object_name_1, my_object_name1)
-                self.assertEqual(int(image_number_1), my_group_indexes1[i]+1)
+                self.assertEqual(int(image_number_1), my_image_numbers1[i])
                 self.assertEqual(int(object_number_1), my_object_numbers1[i])
                 self.assertEqual(object_name_2, my_object_name2)
-                self.assertEqual(int(image_number_2), my_group_indexes2[i]+1)
+                self.assertEqual(int(image_number_2), my_image_numbers2[i])
                 self.assertEqual(int(object_number_2), my_object_numbers2[i])
         finally:
             try:

@@ -790,14 +790,7 @@ Do you want to save it anyway?""" %
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         fd = open(file_name, "wb")
-        image_number_map = {}
         module_map = {}
-        group_numbers = set()
-        for img_number in image_set_numbers:
-            group_number = m.get_measurement(cpmeas.IMAGE, cpp.GROUP_NUMBER, img_number)
-            group_index = m.get_measurement(cpmeas.IMAGE, cpp.GROUP_INDEX, img_number)
-            image_number_map[(group_number, group_index)] = img_number
-            group_numbers.add(group_number)
         for module in workspace.pipeline.modules():
             module_map[module.module_num] = module.module_name
             
@@ -807,23 +800,27 @@ Do you want to save it anyway?""" %
                 "Module", "Module Number", "Relationship",
                 "First Object Name", "First Image Number", "First Object Number",
                 "Second Object Name", "Second Image Number", "Second Object Number"])
+            good_image_numbers = np.zeros(np.max(m.get_image_numbers())+1, bool)
+            good_image_numbers[np.atleast_1d(image_set_numbers)] = True
             for key in m.get_relationship_groups():
                 r = m.get_relationships(
                     key.module_number, key.relationship, 
-                    key.object_name1, key.object_name2,
-                    key.group_number).view(np.recarray)
-                if key.group_number not in group_numbers:
-                    continue
-                for i in range(len(r)):
-                    image_number_1 = image_number_map[
-                        (key.group_number, r.group_index1[i])]
-                    image_number_2 = image_number_map[
-                        (key.group_number, r.group_index2[i])]
+                    key.object_name1, key.object_name2)
+                good_mask = (
+                    good_image_numbers[r[cpmeas.R_FIRST_IMAGE_NUMBER]]|
+                    good_image_numbers[r[cpmeas.R_SECOND_IMAGE_NUMBER]])
+                r = r[good_mask]
+                for image_number_1, image_number_2, \
+                    object_number_1, object_number_2 in zip(
+                    r[cpmeas.R_FIRST_IMAGE_NUMBER],
+                    r[cpmeas.R_SECOND_IMAGE_NUMBER],
+                    r[cpmeas.R_FIRST_OBJECT_NUMBER],
+                    r[cpmeas.R_SECOND_OBJECT_NUMBER]):
                     module_name = module_map[key.module_number]
                     writer.writerow([
                         module_name, key.module_number, key.relationship,
-                        key.object_name1, image_number_1, r.object_number1[i],
-                        key.object_name2, image_number_2, r.object_number2[i]])
+                        key.object_name1, image_number_1, object_number_1,
+                        key.object_name2, image_number_2, object_number_2])
         finally:
             fd.close()
         

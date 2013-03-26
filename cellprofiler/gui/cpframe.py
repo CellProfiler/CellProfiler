@@ -100,6 +100,7 @@ ID_HELP_SEARCH = wx.NewId()
 ID_HELP_DATATOOLS = wx.NewId()
 ID_HELP_ONLINE_MANUAL = wx.NewId()
 ID_HELP_DEVELOPERS_GUIDE = wx.NewId()
+ID_HELP_SOURCE_CODE = wx.NewId()
 ID_HELP_ABOUT = wx.ID_ABOUT
 
 class CPFrame(wx.Frame):
@@ -407,6 +408,8 @@ class CPFrame(wx.Frame):
         self.__menu_help.AppendSeparator()
         self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's Guide",
                                 "Launch the developer's guide webpage")
+        self.__menu_help.Append(ID_HELP_SOURCE_CODE, "Source code",
+                                "Visit CellProfiler's Github repository")
         self.__menu_help.Append(ID_HELP_ABOUT, "&About",
                                 "About CellProfiler")
 
@@ -432,6 +435,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_HELP_ONLINE_MANUAL,self.__on_help_online_manual)
         wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
+        wx.EVT_MENU(self, ID_HELP_SOURCE_CODE, self.__on_help_source_code)
         wx.EVT_MENU(self, ID_HELP_SEARCH, self.__on_search_help)
         wx.EVT_MENU(self, ID_HELP_ABOUT, self.__on_help_about)
         wx.EVT_MENU(self,ID_OPTIONS_PREFERENCES, self.__on_preferences)
@@ -555,6 +559,10 @@ class CPFrame(wx.Frame):
     def __on_help_developers_guide(self, event):
         import webbrowser
         webbrowser.open("http://www.cellprofiler.org/wiki/index.php/Main_Page")
+        
+    def __on_help_source_code(self, event):
+        import webbrowser
+        webbrowser.open("https://github.com/CellProfiler/CellProfiler")
 
     def __on_help_about(self, event):
         from cellprofiler.icons import get_builtin_image

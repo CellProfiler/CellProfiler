@@ -668,8 +668,9 @@ class Measurements(object):
         for imgnums in (grp[R_FIRST_IMAGE_NUMBER], 
                         grp[R_SECOND_IMAGE_NUMBER]):
             for i in range(0, imgnums.shape[0], chunk_size):
+                limit = min(imgnums.shape[0], i+chunk_size)
                 Measurements.update_image_number_relationships(
-                    imgnums[i:(i+chunk_size)], i, d)
+                    imgnums[i:limit], i, d)
         return d
     
     @staticmethod

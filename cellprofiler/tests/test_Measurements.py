@@ -1190,8 +1190,43 @@ class TestMeasurements(unittest.TestCase):
         np.testing.assert_array_equal(image_numbers2, ri2[order])
         np.testing.assert_array_equal(object_numbers2, ro2[order])
         
-            
-            
+    def test_20_06_get_relationship_range(self):
+        #
+        # Test writing and reading relationships with a variety of ranges
+        # over the whole extent of the storage
+        #
+        m = cpmeas.Measurements()
+        r = np.random.RandomState()
+        r.seed(2005)
+        image_numbers1, image_numbers2 = r.randint(1, 1001, (2, 4000))
+        object_numbers1, object_numbers2 = r.randint(1, 10, (2, 4000))
+        for i in range(0, 4000, 500):
+            m.add_relate_measurement(
+                1, "Foo", "O1", "O2",
+                *[x[i:(i+500)] for x in image_numbers1, object_numbers1,
+                  image_numbers2, object_numbers2])
+        
+        for _ in range(50):
+            image_numbers = r.randint(1, 1001, 3)
+            result = m.get_relationships(1, "Foo", "O1", "O2", image_numbers)
+            ri1, ro1, ri2, ro2 = [
+                result[key] for key in 
+                cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+                cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+            rorder = np.lexsort((ro2, ri2, ro1, ri1))
+            i, j = [x.flatten() for x in np.mgrid[0:2, 0:3]]
+            mask = reduce(
+                np.logical_or,
+                [(image_numbers1 if ii==0 else image_numbers2)==image_numbers[jj]
+                for ii, jj in zip(i, j)])
+            ei1, eo1, ei2, eo2 = map(
+                lambda x:x[mask], (image_numbers1, object_numbers1,
+                                   image_numbers2, object_numbers2))
+            eorder = np.lexsort((eo2, ei2, eo1, ei1))
+            np.testing.assert_array_equal(ri1[rorder], ei1[eorder])
+            np.testing.assert_array_equal(ri2[rorder], ei2[eorder])
+            np.testing.assert_array_equal(ro1[rorder], eo1[eorder])
+            np.testing.assert_array_equal(ro2[rorder], eo2[eorder])
         
 IMAGE_NAME = "ImageName"
 ALT_IMAGE_NAME = "AltImageName"

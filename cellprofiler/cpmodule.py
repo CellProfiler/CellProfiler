@@ -672,6 +672,28 @@ class CPModule(object):
                      "float")
         '''
         return []
+    
+    def get_object_relationships(self, pipeline):
+        '''Return a sequence describing the relationships recorded in measurements
+        
+        This method reports the relationships recorded in the measurements
+        using add_relate_measurement. Modules that add relationships should
+        return one 4-tuple of 
+        (<relationship-name>, <object-name-1>, <object-name-2>, <when>)
+        for every combination of relationship and parent / child objects
+        that will be produced during the course of a run.
+        
+        <when> is one of cpmeas.MCA_AVAILABILE_EACH_CYCLE or 
+        cpmeas.MCA_AVAILABLE_POST_GROUP. cpmeas.MCA_AVAILABLE_EACH_CYCLE 
+        promises that the relationships will be available after each cycle.
+        Any relationship with that cycle's image number (as either the
+        parent or child) will be inserted if not already present in the database.
+        
+        MCA_AVAILABLE_POST_GROUP indicates that the relationship is not available
+        until the group has completed - all relationships with a group's
+        image number will be written in that case.
+        '''
+        return []
 
     def get_dictionary(self, ignore=None):
         '''Get the dictionary for this module

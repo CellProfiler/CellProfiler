@@ -623,6 +623,16 @@ class MeasureObjectNeighbors(cpm.CPModule):
                  self.get_measurement_name(feature_name),
                  coltypes[feature_name])
                  for feature_name in self.all_features]
+    
+    def get_object_relationships(self, pipeline):
+        '''Return column definitions for object relationships output by module'''
+        objects_name = self.objects_name.value
+        if self.neighbors_are_objects:
+            neighbors_name = objects_name
+        else:
+            neighbors_name = self.neighbors_name.value
+        return [(cpmeas.NEIGHBORS, objects_name, neighbors_name, 
+                 cpmeas.MCA_AVAILABLE_EACH_CYCLE)]
         
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name:

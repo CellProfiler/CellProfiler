@@ -800,16 +800,11 @@ Do you want to save it anyway?""" %
                 "Module", "Module Number", "Relationship",
                 "First Object Name", "First Image Number", "First Object Number",
                 "Second Object Name", "Second Image Number", "Second Object Number"])
-            good_image_numbers = np.zeros(np.max(m.get_image_numbers())+1, bool)
-            good_image_numbers[np.atleast_1d(image_set_numbers)] = True
             for key in m.get_relationship_groups():
                 r = m.get_relationships(
                     key.module_number, key.relationship, 
-                    key.object_name1, key.object_name2)
-                good_mask = (
-                    good_image_numbers[r[cpmeas.R_FIRST_IMAGE_NUMBER]]|
-                    good_image_numbers[r[cpmeas.R_SECOND_IMAGE_NUMBER]])
-                r = r[good_mask]
+                    key.object_name1, key.object_name2,
+                    image_numbers = image_set_numbers)
                 for image_number_1, image_number_2, \
                     object_number_1, object_number_2 in zip(
                     r[cpmeas.R_FIRST_IMAGE_NUMBER],

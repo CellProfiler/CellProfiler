@@ -2921,6 +2921,24 @@ class Pipeline(object):
         self.__measurement_columns[terminating_module_num] = columns
         return columns
     
+    def get_object_relationships(self):
+        '''Return a sequence of five-tuples describing all object relationships
+        
+        This returns all relationship categories produced by modules via
+        Measurements.add_relate_measurement. The format is:
+        [(<module-number>, # the module number of the module that wrote it
+          <relationship-name>, # the descriptive name of the relationship
+          <object-name-1>, # the subject of the relationship
+          <object-name-2>, # the object of the relationship
+          <when>)] # cpmeas.MCA_AVAILABLE_{EVERY_CYCLE, POST_GROUP}
+        '''
+        result = []
+        for module in self.modules():
+            result += [
+                (module.module_num, i1, o1, i2, o2)
+                for i1, o1, i2, o2 in module.get_object_relationships(self)]
+        return result
+    
     def get_provider_dictionary(self, groupname, module = None):
         '''Get a dictionary of all providers for a given category
         

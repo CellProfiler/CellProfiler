@@ -81,6 +81,9 @@ FILE_NAME_LENGTH = 128
 COLTYPE_VARCHAR_FILE_NAME = COLTYPE_VARCHAR_FORMAT % FILE_NAME_LENGTH
 COLTYPE_VARCHAR_PATH_NAME = COLTYPE_VARCHAR_FORMAT % PATH_NAME_LENGTH
 
+'''Column attribute: available after each cycle'''
+MCA_AVAILABLE_EACH_CYCLE = "AvailableEachCycle"
+
 '''Column attribute: only available after post_group is run (True / False)'''
 MCA_AVAILABLE_POST_GROUP  = "AvailablePostGroup"
 
@@ -123,6 +126,8 @@ R_SECOND_IMAGE_NUMBER = IMAGE_NUMBER + "_" + "Second"
 
 """The object number of the first object in the relationship"""
 R_SECOND_OBJECT_NUMBER = OBJECT_NUMBER + "_" + "Second"
+
+"""Indicates """
 
 '''The FileName measurement category'''
 C_FILE_NAME = "FileName"
@@ -264,6 +269,7 @@ class Measurements(object):
         self.__image_providers = []
         self.__images = {}
         self.__image_providers = []
+        self.__image_number_relationships = {}
         if RELATIONSHIP in self.hdf5_dict.top_group:
             rgroup = self.hdf5_dict.top_group[RELATIONSHIP]
             for module_number in rgroup:
@@ -540,6 +546,7 @@ class Measurements(object):
                                  (R_SECOND_IMAGE_NUMBER, image_numbers2),
                                  (R_SECOND_OBJECT_NUMBER, object_numbers2)):
                 if name not in rgroup:
+                    current_size = 0
                     rgroup.create_dataset(name, data=values, 
                                           dtype='int32', chunks=(1024,), 
                                           maxshape=(None,))
@@ -548,8 +555,17 @@ class Measurements(object):
                     current_size = dset.shape[0]
                     dset.resize((current_size + len(values),))
                     dset[current_size:] = values
-            self.__relationships.add((module_number, relationship, 
-                                      object_name1, object_name2))
+            key = (module_number, relationship, 
+                   object_name1, object_name2)
+            self.__relationships.add(key)
+            if key not in self.__image_number_relationships:
+                self.__image_number_relationships[key] = \
+                    self.init_image_number_relationships(rgroup)
+            else:
+                d = self.__image_number_relationships[key]
+                for image_numbers in (image_numbers1, image_numbers2):
+                    self.update_image_number_relationships(
+                        image_numbers, current_size, d)
 
     def get_relationship_groups(self):
         '''Return the keys of each of the relationship groupings.
@@ -566,7 +582,8 @@ class Measurements(object):
                 (module_number, relationship, obj1, obj2) in self.__relationships]
 
     def get_relationships(self, module_number, relationship, 
-                          object_name1, object_name2):
+                          object_name1, object_name2,
+                          image_numbers = None):
         '''Get the relationships recorded by a particular module
         
         module_number - # of module recording the relationship
@@ -575,6 +592,9 @@ class Measurements(object):
                        object # 1 is parent of object # 2
                        
         object_name1, object_name2 - the names of the two objects
+        
+        image_numbers - if defined, only return relationships with first or
+                        second objects in these image numbers.
         
         returns a recarray with the following fields:
         R_FIRST_IMAGE_NUMBER, R_SECOND_IMAGE_NUMBER, R_FIRST_OBJECT_NUMBER,
@@ -589,10 +609,90 @@ class Measurements(object):
         with self.hdf5_dict.lock:
             grp = self.get_relationship_hdf5_group(
                 module_number, relationship, object_name1, object_name2)
-            temp = np.zeros(grp[R_FIRST_IMAGE_NUMBER].shape, dt)
-            for feature in features:
-                temp[feature] = grp[feature]
+            n_records = grp[R_FIRST_IMAGE_NUMBER].shape[0]
+            if image_numbers is None:
+                temp = np.zeros(n_records, dt)
+                for feature in features:
+                    temp[feature] = grp[feature]
+            else:
+                image_numbers = np.atleast_1d(image_numbers)
+                k = (module_number, relationship, object_name1, object_name2)
+                d = self.__image_number_relationships.get(k, None)
+                if d is None:
+                    d = self.__image_number_relationships[k] = \
+                        self.init_image_number_relationships(grp)
+                #
+                # Find the slice of the hdf5 array that contains all records
+                # for the desired image numbers
+                #
+                t_min = sys.maxint
+                t_max = 0
+                for image_number in image_numbers:
+                    i_min, i_max = d.get(image_number, (t_min, t_max-1))
+                    t_min = min(i_min, t_min)
+                    t_max = max(i_max+1, t_max)
+                #
+                # Construct a mask, offset by the minimum index to be addressed
+                # of the image numbers to keep in the slice
+                #
+                in_min = np.min(image_numbers)
+                in_max = np.max(image_numbers)
+                to_keep = np.zeros(in_max - in_min + 1, bool)
+                to_keep[image_numbers - in_min] = True
+                mask = np.zeros(t_max - t_min, bool)
+                for a in grp[R_FIRST_IMAGE_NUMBER][t_min:t_max],\
+                    grp[R_SECOND_IMAGE_NUMBER][t_min:t_max]:
+                    m1 = (a >= in_min) & (a <= in_max)
+                    mask[m1] = mask[m1] | to_keep[a[m1] - in_min]
+                #
+                # Apply the mask to slices for all of the features
+                #
+                n_records = np.sum(mask)
+                temp = np.zeros(n_records, dt)
+                for feature in features:
+                    temp[feature] = grp[feature][t_min:t_max][mask]
             return temp.view(np.recarray)
+    
+    @staticmethod    
+    def init_image_number_relationships(grp):
+        '''Create a dictionary of where to find image numbers in a relationship
+        
+        grp - the HDF5 group of the relationship
+        
+        returns a dictionary whose key is image number and whose value
+        is a pair of the minimum and maximum position in the array of that
+        image number.
+        '''
+        d = {}
+        chunk_size = 1000000
+        for imgnums in (grp[R_FIRST_IMAGE_NUMBER], 
+                        grp[R_SECOND_IMAGE_NUMBER]):
+            for i in range(0, imgnums.shape[0], chunk_size):
+                Measurements.update_image_number_relationships(
+                    imgnums[i:(i+chunk_size)], i, d)
+        return d
+    
+    @staticmethod
+    def update_image_number_relationships(imgnums, offset, d):
+        '''Update an image number indexing dictionary with new image numbers
+        
+        imgnums - a vector of image numbers
+        
+        offset - the offset of this chunk within the relationships records
+        
+        d - the dictionary to update
+        '''
+    
+        offsets = offset+np.arange(len(imgnums))
+        order = np.lexsort((offsets, imgnums))
+        imgnums = imgnums[order]
+        offsets = offsets[order]
+        firsts = np.hstack(([True], imgnums[:-1] != imgnums[1:]))
+        lasts = np.hstack((firsts[1:], [True]))
+        for i, f, l in zip(
+            imgnums[firsts], offsets[firsts], offsets[lasts]):
+            old_f, old_l = d.get(i, (sys.maxint, 0))
+            d[i] = (min(old_f, f), max(old_l, l))
         
     def copy_relationships(self, src):
         '''Copy the relationships from another measurements file

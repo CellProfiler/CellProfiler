@@ -247,26 +247,25 @@ class RelateObjects(cpm.CPModule):
         m.add_measurement(self.parent_name.value,
                           FF_CHILDREN_COUNT%(self.sub_object_name.value),
                           child_count)
-        group_index = m.get_current_image_measurement(cpmeas.GROUP_INDEX)
-        group_indexes = np.ones(np.sum(parents_of != 0), int) * group_index
         good_parents = parents_of[parents_of != 0]
+        image_numbers = np.ones(len(good_parents), int) * m.image_set_number
         good_children = np.argwhere(parents_of != 0).flatten() + 1
         if np.any(good_parents):
             m.add_relate_measurement(self.module_num,
                                      R_PARENT, 
                                      self.parent_name.value,
                                      self.sub_object_name.value,
-                                     group_indexes,
+                                     image_numbers,
                                      good_parents,
-                                     group_indexes,
+                                     image_numbers,
                                      good_children)
             m.add_relate_measurement(self.module_num,
                                      R_CHILD, 
                                      self.sub_object_name.value,
                                      self.parent_name.value,
-                                     group_indexes,
+                                     image_numbers,
                                      good_children,
-                                     group_indexes,
+                                     image_numbers,
                                      good_parents)
         parent_names = self.get_parent_names()
         
@@ -559,6 +558,15 @@ class RelateObjects(cpm.CPModule):
                              FF_MINIMUM % parent_name,
                              cpmeas.COLTYPE_INTEGER)]
         return columns
+    
+    def get_object_relationships(self, pipeline):
+        '''Return the object relationships produced by this module'''
+        parent_name = self.parent_name.value
+        sub_object_name = self.sub_object_name.value
+        return [(R_PARENT, parent_name, sub_object_name, 
+                 cpmeas.MCA_AVAILABLE_EACH_CYCLE),
+                (R_CHILD, sub_object_name, parent_name,
+                 cpmeas.MCA_AVAILABLE_EACH_CYCLE)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.parent_name.value:

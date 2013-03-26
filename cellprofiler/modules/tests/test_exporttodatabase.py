@@ -75,6 +75,8 @@ OBJECT_COUNT_MEASUREMENT = 'Count_%s'%OBJECT_NAME
 ALTOBJECT_NAME = 'altobject'
 ALTOBJECT_COUNT_MEASUREMENT = 'Count_%s'%ALTOBJECT_NAME
 
+RELATIONSHIP_NAME = "cousin"
+
 INT_VALUE = 10
 FLOAT_VALUE = 15.5
 STRING_VALUE = "Hello, world"
@@ -876,10 +878,306 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         self.assertEqual(g.filter_name, "Site1Filter")
         self.assertEqual(g.filter_statement, "Image_Metadata_Plate = '1'")
         
+    def test_01_23_load_v23(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:2
+SVNRevision:11412
+
+ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:23|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Database type:MySQL
+    Database name:Gamma
+    Add a prefix to table names?:Yes
+    Table prefix:Delta_
+    SQL file prefix:Iota_
+    Output file location:Default Output Folder\x7CNone
+    Create a CellProfiler Analyst properties file?:Yes
+    Database host:Alpha
+    Username:Beta
+    Password:Gamma
+    Name the SQLite database file:DefaultDB.db
+    Calculate the per-image mean values of object measurements?:Yes
+    Calculate the per-image median values of object measurements?:No
+    Calculate the per-image standard deviation values of object measurements?:No
+    Calculate the per-well mean values of object measurements?:No
+    Calculate the per-well median values of object measurements?:No
+    Calculate the per-well standard deviation values of object measurements?:No
+    Export measurements for all objects to the database?:All
+    Select the objects:
+    Maximum # of characters in a column name:64
+    Create one table per object or a single object table?:Single object table
+    Enter an image url prepend if you plan to access your files via http:http\x3A//server.university.edu
+    Write image thumbnails directly to the database?:Yes
+    Select the images you want to save thumbnails of:Actin,DNA
+    Auto-scale thumbnail pixel intensities?:Yes
+    Select the plate type:384
+    Select the plate metadata:Plate
+    Select the well metadata:Well
+    Include information for all images, using default values?:No
+    Properties image group count:2
+    Properties group field count:1
+    Properties filter field count:1
+    Workspace measurement count:2
+    Experiment name:Sigma
+    Which objects should be used for locations?:Cells
+    Enter a phenotype class table name if using the classifier tool:Hoopla
+    Select an image to include:DNA
+    Use the image name for the display?:No
+    Image name:NucleicAcid
+    Channel color:green
+    Select an image to include:Actin
+    Use the image name for the display?:No
+    Image name:Protein
+    Channel color:blue
+    Do you want to add group fields?:Yes
+    Enter the name of the group:WellGroup
+    Enter the per-image columns which define the group, separated by commas:Image_Metadata_Plate, Image_Metadata_Well
+    Do you want to add filter fields?:Yes
+    Automatically create a filter for each plate?:Yes
+    Enter the name of the filter:Site1Filter
+    Enter the MySQL WHERE clause to define a filter:Image_Metadata_Plate = \'1\'
+    Create a CellProfiler Analyst workspace file?:Yes
+    Select the measurement display tool:ScatterPlot
+    Type of measurement to plot on the x-axis:Image
+    Enter the object name:Mitochondria
+    Select the x-axis measurement:Width_DNA
+    Select the x-axis index:ImageNumber
+    Type of measurement to plot on the y-axis:Image
+    Enter the object name:Nuclei
+    Select the y-axis measurement:Height_DNA
+    Select the x-axis index:ImageNumber
+    Select the measurement display tool:PlateViewer
+    Type of measurement to plot on the x-axis:Image
+    Enter the object name:Cells
+    Select the x-axis measurement:Height_Actin
+    Select the x-axis index:ImageNumber
+    Type of measurement to plot on the y-axis:Image
+    Enter the object name:Speckles
+    Select the y-axis measurement:Width_Actin
+    Select the x-axis index:ImageNumber
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertEqual(module.db_name, "Gamma")
+        self.assertTrue(module.want_table_prefix)
+        self.assertEqual(module.table_prefix, "Delta_")
+        self.assertEqual(module.sql_file_prefix, "Iota_")
+        self.assertEqual(module.experiment_name, "Sigma")
+        self.assertEqual(module.directory.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertTrue(module.save_cpa_properties)
+        self.assertEqual(module.location_object, "Cells")
+        self.assertEqual(module.properties_image_url_prepend, "http://server.university.edu")
+        self.assertEqual(module.properties_plate_type, "384")
+        self.assertEqual(module.properties_plate_metadata, "Plate")
+        self.assertEqual(module.properties_well_metadata, "Well")
+        self.assertFalse(module.properties_export_all_image_defaults)
+        self.assertTrue(module.properties_wants_groups)
+        self.assertTrue(module.properties_wants_filters)
+        self.assertTrue(module.create_filters_for_plates)
+        self.assertTrue(module.create_workspace_file)
+        self.assertEqual(module.properties_class_table_name, "Hoopla")
+        self.assertFalse(module.wants_relationship_table)
+        self.assertEqual(len(module.image_groups), 2)
+        for image_group, input_image_name, output_image_name, color in (
+            (module.image_groups[0], "DNA", "NucleicAcid", "green"),
+            (module.image_groups[1], "Actin", "Protein", "blue")):
+            self.assertFalse(image_group.wants_automatic_image_name)
+            self.assertEqual(image_group.image_cols, input_image_name)
+            self.assertEqual(image_group.image_name, output_image_name)
+            self.assertEqual(image_group.image_channel_colors, color)
+            
+        self.assertEqual(len(module.group_field_groups), 1)
+        g = module.group_field_groups[0]
+        self.assertEqual(g.group_name, "WellGroup")
+        self.assertEqual(g.group_statement, "Image_Metadata_Plate, Image_Metadata_Well")
+
+        self.assertEqual(len(module.workspace_measurement_groups), 2)
+        for (g, measurement_display, x_measurement_type, x_object_name,
+             x_measurement_name, x_index_name, 
+             y_measurement_type, y_object_name,
+             y_measurement_name, y_index_name) in (
+                 (module.workspace_measurement_groups[0], "ScatterPlot",
+                  cpmeas.IMAGE, "Mitochondria", "Width_DNA", "ImageNumber", 
+                  cpmeas.IMAGE, "Nuclei", "Height_DNA", "ImageNumber"),
+                 (module.workspace_measurement_groups[1], "PlateViewer",
+                  cpmeas.IMAGE, "Cells", "Height_Actin", "ImageNumber",
+                  cpmeas.IMAGE, "Speckles", "Width_Actin", "ImageNumber")):
+            self.assertEqual(g.measurement_display, measurement_display)
+            self.assertEqual(g.x_measurement_type, x_measurement_type)
+            self.assertEqual(g.x_object_name, x_object_name)
+            self.assertEqual(g.x_measurement_name, x_measurement_name)
+            self.assertEqual(g.x_index_name, x_index_name)
+            self.assertEqual(g.y_measurement_type, y_measurement_type)
+            self.assertEqual(g.y_object_name, y_object_name)
+            self.assertEqual(g.y_measurement_name, y_measurement_name)
+            self.assertEqual(g.y_index_name, y_index_name)
+                  
+        self.assertEqual(len(module.filter_field_groups), 1)
+        g = module.filter_field_groups[0]
+        self.assertEqual(g.filter_name, "Site1Filter")
+        self.assertEqual(g.filter_statement, "Image_Metadata_Plate = '1'")
+
+    def test_01_24_load_v24(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:2
+SVNRevision:11412
+
+ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:24|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Database type:MySQL
+    Database name:Gamma
+    Add a prefix to table names?:Yes
+    Table prefix:Delta_
+    SQL file prefix:Iota_
+    Output file location:Default Output Folder\x7CNone
+    Create a CellProfiler Analyst properties file?:Yes
+    Database host:Alpha
+    Username:Beta
+    Password:Gamma
+    Name the SQLite database file:DefaultDB.db
+    Calculate the per-image mean values of object measurements?:Yes
+    Calculate the per-image median values of object measurements?:No
+    Calculate the per-image standard deviation values of object measurements?:No
+    Calculate the per-well mean values of object measurements?:No
+    Calculate the per-well median values of object measurements?:No
+    Calculate the per-well standard deviation values of object measurements?:No
+    Export measurements for all objects to the database?:All
+    Select the objects:
+    Maximum # of characters in a column name:64
+    Create one table per object or a single object table?:Single object table
+    Enter an image url prepend if you plan to access your files via http:http\x3A//server.university.edu
+    Write image thumbnails directly to the database?:Yes
+    Select the images you want to save thumbnails of:Actin,DNA
+    Auto-scale thumbnail pixel intensities?:Yes
+    Select the plate type:384
+    Select the plate metadata:Plate
+    Select the well metadata:Well
+    Include information for all images, using default values?:No
+    Properties image group count:2
+    Properties group field count:1
+    Properties filter field count:1
+    Workspace measurement count:2
+    Experiment name:Sigma
+    Which objects should be used for locations?:Cells
+    Enter a phenotype class table name if using the classifier tool:Hoopla
+    Export object relationships?:Yes
+    Select an image to include:DNA
+    Use the image name for the display?:No
+    Image name:NucleicAcid
+    Channel color:green
+    Select an image to include:Actin
+    Use the image name for the display?:No
+    Image name:Protein
+    Channel color:blue
+    Do you want to add group fields?:Yes
+    Enter the name of the group:WellGroup
+    Enter the per-image columns which define the group, separated by commas:Image_Metadata_Plate, Image_Metadata_Well
+    Do you want to add filter fields?:Yes
+    Automatically create a filter for each plate?:Yes
+    Enter the name of the filter:Site1Filter
+    Enter the MySQL WHERE clause to define a filter:Image_Metadata_Plate = \'1\'
+    Create a CellProfiler Analyst workspace file?:Yes
+    Select the measurement display tool:ScatterPlot
+    Type of measurement to plot on the x-axis:Image
+    Enter the object name:Mitochondria
+    Select the x-axis measurement:Width_DNA
+    Select the x-axis index:ImageNumber
+    Type of measurement to plot on the y-axis:Image
+    Enter the object name:Nuclei
+    Select the y-axis measurement:Height_DNA
+    Select the x-axis index:ImageNumber
+    Select the measurement display tool:PlateViewer
+    Type of measurement to plot on the x-axis:Image
+    Enter the object name:Cells
+    Select the x-axis measurement:Height_Actin
+    Select the x-axis index:ImageNumber
+    Type of measurement to plot on the y-axis:Image
+    Enter the object name:Speckles
+    Select the y-axis measurement:Width_Actin
+    Select the x-axis index:ImageNumber
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[-1]
+        self.assertTrue(isinstance(module, E.ExportToDatabase))
+        self.assertEqual(module.db_type, E.DB_MYSQL)
+        self.assertEqual(module.db_name, "Gamma")
+        self.assertTrue(module.want_table_prefix)
+        self.assertEqual(module.table_prefix, "Delta_")
+        self.assertEqual(module.sql_file_prefix, "Iota_")
+        self.assertEqual(module.experiment_name, "Sigma")
+        self.assertEqual(module.directory.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertTrue(module.save_cpa_properties)
+        self.assertEqual(module.location_object, "Cells")
+        self.assertEqual(module.properties_image_url_prepend, "http://server.university.edu")
+        self.assertEqual(module.properties_plate_type, "384")
+        self.assertEqual(module.properties_plate_metadata, "Plate")
+        self.assertEqual(module.properties_well_metadata, "Well")
+        self.assertFalse(module.properties_export_all_image_defaults)
+        self.assertTrue(module.properties_wants_groups)
+        self.assertTrue(module.properties_wants_filters)
+        self.assertTrue(module.create_filters_for_plates)
+        self.assertTrue(module.create_workspace_file)
+        self.assertEqual(module.properties_class_table_name, "Hoopla")
+        self.assertTrue(module.wants_relationship_table)
+        self.assertEqual(len(module.image_groups), 2)
+        for image_group, input_image_name, output_image_name, color in (
+            (module.image_groups[0], "DNA", "NucleicAcid", "green"),
+            (module.image_groups[1], "Actin", "Protein", "blue")):
+            self.assertFalse(image_group.wants_automatic_image_name)
+            self.assertEqual(image_group.image_cols, input_image_name)
+            self.assertEqual(image_group.image_name, output_image_name)
+            self.assertEqual(image_group.image_channel_colors, color)
+            
+        self.assertEqual(len(module.group_field_groups), 1)
+        g = module.group_field_groups[0]
+        self.assertEqual(g.group_name, "WellGroup")
+        self.assertEqual(g.group_statement, "Image_Metadata_Plate, Image_Metadata_Well")
+
+        self.assertEqual(len(module.workspace_measurement_groups), 2)
+        for (g, measurement_display, x_measurement_type, x_object_name,
+             x_measurement_name, x_index_name, 
+             y_measurement_type, y_object_name,
+             y_measurement_name, y_index_name) in (
+                 (module.workspace_measurement_groups[0], "ScatterPlot",
+                  cpmeas.IMAGE, "Mitochondria", "Width_DNA", "ImageNumber", 
+                  cpmeas.IMAGE, "Nuclei", "Height_DNA", "ImageNumber"),
+                 (module.workspace_measurement_groups[1], "PlateViewer",
+                  cpmeas.IMAGE, "Cells", "Height_Actin", "ImageNumber",
+                  cpmeas.IMAGE, "Speckles", "Width_Actin", "ImageNumber")):
+            self.assertEqual(g.measurement_display, measurement_display)
+            self.assertEqual(g.x_measurement_type, x_measurement_type)
+            self.assertEqual(g.x_object_name, x_object_name)
+            self.assertEqual(g.x_measurement_name, x_measurement_name)
+            self.assertEqual(g.x_index_name, x_index_name)
+            self.assertEqual(g.y_measurement_type, y_measurement_type)
+            self.assertEqual(g.y_object_name, y_object_name)
+            self.assertEqual(g.y_measurement_name, y_measurement_name)
+            self.assertEqual(g.y_index_name, y_index_name)
+                  
+        self.assertEqual(len(module.filter_field_groups), 1)
+        g = module.filter_field_groups[0]
+        self.assertEqual(g.filter_name, "Site1Filter")
+        self.assertEqual(g.filter_statement, "Image_Metadata_Plate = '1'")
+
+    RTEST_NONE = 0
+    RTEST_SOME = 1
+    RTEST_DUPLICATE = 2
     def make_workspace(self, wants_files, alt_object=False, 
                        long_measurement=False, wierd_measurement=False,
                        well_metadata = False, image_set_count = 1,
-                       group_measurement = False):
+                       group_measurement = False,
+                       relationship_type = None,
+                       relationship_test_type = None):
         '''Make a measurements structure with image and object measurements'''
         class TestModule(cpm.CPModule):
             module_name = "TestModule"
@@ -932,6 +1230,14 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                         (cpmeas.IMAGE, GROUP_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER, d),
                         (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT, d)]
                 return columns
+            
+            def get_object_relationships(self, pipeline):
+                if relationship_type is not None:
+                    return [(RELATIONSHIP_NAME, OBJECT_NAME, ALTOBJECT_NAME, 
+                             relationship_type),
+                            (RELATIONSHIP_NAME, ALTOBJECT_NAME, OBJECT_NAME, 
+                             relationship_type)]
+                return []
             
             def get_categories(self, pipeline, object_name):
                 return ([M_CATEGORY, I.C_NUMBER] 
@@ -999,6 +1305,17 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 m.add_measurement(OBJECT_NAME, GROUP_OBJ_MEASUREMENT, OBJ_VALUE.copy())
         r = np.random.RandomState()
         r.seed(image_set_count)
+        if relationship_test_type == self.RTEST_SOME:
+            n = 10
+            i1, o1 = [x.flatten() for x in np.mgrid[1:(image_set_count+1), 1:(n+1)]]
+            for o1name, o2name in ((OBJECT_NAME, ALTOBJECT_NAME),
+                                   (ALTOBJECT_NAME, OBJECT_NAME)):
+                i2 = r.permutation(i1)
+                o2 = r.permutation(o1)
+            
+                m.add_relate_measurement(
+                    1, RELATIONSHIP_NAME, o1name, o2name, i1, o1, i2, o2)
+            
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add(IMAGE_NAME, cpi.Image(r.uniform(size=(512,512))))
@@ -1026,6 +1343,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         module.db_user.value = 'cpuser'
         module.db_passwd.value = 'cPus3r'
         module.db_name.value ='CPUnitTest'
+        module.wants_relationship_table_setting.value = (relationship_type != None)
         pipeline.add_module(module)
         pipeline.write_experiment_measurements(m)
         workspace = cpw.Workspace(pipeline, module, image_set,
@@ -1073,29 +1391,60 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             self.connection.commit()
             os.chdir(curdir)
             
-    def drop_tables(self, module, table_suffixes):
-        for table_suffix in table_suffixes:
-            table_name = module.table_prefix.value + table_suffix
-            try:
-                self.cursor.execute("drop table %s.%s" %
-                                    (module.db_name.value, table_name))
-            except SkipTestException:
-                raise
-            except Exception:
-                traceback.print_exc()
-                print "Failed to drop table %s"%table_name
+    def tteesstt_no_relationships(self, module, cursor):
+        if module.db_type in (E.DB_MYSQL, E.DB_MYSQL_CSV):
+            cursor.execute("use CPUnitTest")
+        for t in (E.T_RELATIONSHIPS, E.V_RELATIONSHIPS):
+            statement = "select count('x') from %s" % module.get_table_name(t)
+            cursor.execute(statement)
+            self.assertEqual(cursor.fetchall()[0][0], 0)
             
-    def drop_views(self, module, table_suffixes):
-        for table_suffix in table_suffixes:
-            table_name = module.table_prefix.value + table_suffix
-            try:
-                self.cursor.execute("drop view %s.%s" %
-                                    (module.db_name.value, table_name))
-            except SkipTestException:
-                raise
-            except Exception:
-                traceback.print_exc()
-                print "Failed to drop table %s"%table_name
+    def tteesstt_relate(self, measurements, module, cursor):
+        if module.db_type in (E.DB_MYSQL, E.DB_MYSQL_CSV):
+            self.cursor.execute("use CPUnitTest")
+        v_name = module.get_table_name(E.V_RELATIONSHIPS)
+        statement = ("select count('x') from %s " 
+            "where %s=%d and %s='%s' and %s='%%s' and %s='%%s' "
+            "and %s = %%d and %s = %%d and %s = %%d and %s = %%d") % (
+                v_name, E.COL_MODULE_NUMBER, 1,
+                E.COL_RELATIONSHIP, RELATIONSHIP_NAME,
+                E.COL_OBJECT_NAME1, E.COL_OBJECT_NAME2,
+                E.COL_IMAGE_NUMBER1, E.COL_OBJECT_NUMBER1,
+                E.COL_IMAGE_NUMBER2, E.COL_OBJECT_NUMBER2)
+        for rk in measurements.get_relationship_groups():
+            module_num = rk.module_number
+            relationship = rk.relationship
+            object_name1 = rk.object_name1
+            object_name2 = rk.object_name2
+            for i1, o1, i2, o2 in measurements.get_relationships(
+                module_num, relationship, object_name1, object_name2):
+                cursor.execute(
+                    statement % (object_name1, object_name2, i1, o1, i2, o2))
+                self.assertEqual(cursor.fetchall()[0][0], 1)
+                
+    def drop_tables(self, module, table_suffixes=None):
+        '''Drop all tables and views  that match the prefix'''
+        for info_table, thing in (("VIEWS", "view"), ("TABLES", "table")):
+            statement = (
+                "select table_name from INFORMATION_SCHEMA.%s "
+                "where table_schema='%s' "
+                "and table_name like '%s%%'") % (
+                    info_table, module.db_name.value, module.table_prefix.value)
+            self.cursor.execute(statement)
+            for (table_name, ) in self.cursor.fetchall():
+                self.assertTrue(table_name.startswith(module.table_prefix.value))
+                statement = "drop %s %s.%s" % (
+                    thing, module.db_name.value, table_name)
+                try:
+                    self.cursor.execute(statement)
+                except SkipTestException:
+                    raise
+                except Exception:
+                    traceback.print_exc()
+                    print "Failed to drop table %s"%table_name
+            
+    def drop_views(self, module, table_suffixes=None):
+        self.drop_tables(module)
 
     def test_02_01_write_mysql_db(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
@@ -1139,10 +1488,21 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 self.assertEqual(row[1], i+1)
                 self.assertAlmostEqual(row[2], value)
             self.assertRaises(StopIteration, self.cursor.next)
+            #
+            # Make sure no relationships tables were created.
+            #
+            self.assertFalse(module.wants_relationship_table)
+            for t in (E.T_RELATIONSHIPS, E.T_RELATIONSHIP_TYPES):
+                statement = "select count('x') from INFORMATION_SCHEMA.TABLES "
+                statement += "where table_schema=%s and table_name=%s"
+                self.cursor.execute(statement, 
+                                    (module.db_name.value,
+                                     module.get_table_name(t)))
+                self.assertEqual(self.cursor.fetchall()[0][0], 0)
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image","Per_Object"))
+            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiment"))
     
     def test_02_015_write_mysql_db_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
@@ -1208,7 +1568,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image","Per_Object"))
+            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiement"))
 
     def test_02_016_write_mysql_db_dont_filter_objs(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True, True)
@@ -1287,7 +1647,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image","Per_Object"))
+            self.drop_tables(module, ("Per_Image", "Per_Object", "Per_Experiement"))
 
     def test_02_02_mysql_direct(self):
         '''Write directly to the mysql DB, not to a file'''
@@ -1337,7 +1697,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 self.assertAlmostEqual(row[2], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            self.drop_tables(module, ("Per_Image","Per_Object"))
+            self.drop_tables(module, ("Per_Image","Per_Object", "Per_Experiment"))
     
     def test_02_03_00_write_direct_long_colname(self):
         '''Write to MySQL, ensuring some columns have long names'''
@@ -1397,7 +1757,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 self.assertAlmostEqual(row[3], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            self.drop_tables(module, ("Per_Image","Per_Object"))
+            self.drop_tables(module, ("Per_Image","Per_Object", "Per_Experiment"))
         
     def test_02_03_01_write_csv_long_colname(self):
         '''Write to MySQL, ensuring some columns have long names
@@ -1466,7 +1826,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image","Per_Object"))
+            self.drop_tables(module, ("Per_Image","Per_Object", "Per_Experiment"))
         
     def test_02_04_01_write_nulls(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(True)
@@ -1543,7 +1903,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image","Per_Object"))
+            self.drop_tables(module, ("Per_Image","Per_Object", "Per_Experiment"))
     
     def test_02_04_02_write_inf(self):
         '''regression test of img-1149'''
@@ -1622,7 +1982,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         finally:
             os.chdir(output_dir)
             finally_fn()
-            self.drop_tables(module, ("Per_Image","Per_Object"))
+            self.drop_tables(module, ("Per_Image","Per_Object", "Per_Experiment"))
 
     def test_02_05_mysql_direct_null(self):
         '''Write directly to the mysql DB, not to a file and write nulls'''
@@ -1681,7 +2041,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 self.assertTrue(row[2] is None or i != 0)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            self.drop_tables(module, ("Per_Image","Per_Object"))
+            self.drop_tables(module, ("Per_Image","Per_Object", "Per_Experiment"))
                     
     def test_02_06_write_direct_wierd_colname(self):
         '''Write to MySQL, even if illegal characters are in the column name'''
@@ -1737,7 +2097,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 self.assertAlmostEqual(row[3], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            self.drop_tables(module, ("Per_Image","Per_Object"))
+            self.drop_tables(module, ("Per_Image","Per_Object", "Per_Experiment"))
                     
     def test_02_06_write_direct_50_char_colname(self):
         '''Write to MySQL, ensuring some columns have long names'''
@@ -1795,7 +2155,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
                 self.assertAlmostEqual(row[3], value)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            self.drop_tables(module, ("Per_Image","Per_Object"))
+            self.drop_tables(module, ("Per_Image","Per_Object", "Per_Experiment"))
             
     def test_02_07_write_direct_backslash(self):
         '''Regression test for IMG-898
@@ -1823,7 +2183,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             self.assertEqual(row[0], backslash_string)
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
-            self.drop_tables(module, ("Per_Image",))
+            self.drop_tables(module, ("Per_Image", "Per_Experiment"))
                     
     def test_02_08_mysql_as_data_tool(self):
         '''Write directly to the mysql DB, not to a file'''
@@ -1874,7 +2234,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
             self.drop_tables(module, ("Per_Image","Per_Object"))
-    
+            
     def test_03_01_write_sqlite_direct(self):
         '''Write directly to a SQLite database'''
         for with_interaction_handler in (False, True):
@@ -3853,4 +4213,195 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:22
         finally:
             self.drop_tables(module, (
                 "Per_Image", "Per_%s" % OBJECT_NAME, "Per_%s" % ALTOBJECT_NAME))
-                    
+
+    def test_12_01_write_no_mysql_relationships(self):
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL_CSV
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.post_run(workspace)
+            self.load_database(output_dir, module)
+            self.tteesstt_no_relationships(module, self.cursor)
+        finally:
+            self.drop_tables(module)
+            os.chdir(output_dir)
+            finally_fn()
+    
+    def test_12_02_write_no_mysql_direct_relationships(self):
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
+            
+        workspace, module = self.make_workspace(
+            False, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace)
+            module.prepare_group(workspace, {}, [1])
+            module.run(workspace)
+            self.tteesstt_no_relationships(module, self.cursor)
+            
+        finally:
+            self.drop_tables(module)
+        
+    def test_12_03_write_sqlite_no_relationships(self):
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
+            
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_SQLITE
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace)
+            module.prepare_group(workspace, {}, [1])
+            module.run(workspace)
+            cursor, connection = self.get_sqlite_cursor(module)
+            self.tteesstt_no_relationships(module, cursor)
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if connection is not None:
+                connection.close()
+            if hasattr(module, "cursor") and module.cursor is not None:
+                module.cursor.close()
+            if hasattr(module, "connection") and module.connection is not None:
+                module.connection.close()
+            finally_fn()
+
+        
+    def test_12_04_write_mysql_relationships(self):
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
+            relationship_test_type=self.RTEST_SOME)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL_CSV
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.post_run(workspace)
+            self.load_database(output_dir, module)
+            self.tteesstt_relate(workspace.measurements, module, self.cursor)
+        finally:
+            self.drop_tables(module)
+            os.chdir(output_dir)
+            finally_fn()
+    
+    def test_12_05_write_mysql_direct_relationships(self):
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
+            
+        workspace, module = self.make_workspace(
+            False, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
+            relationship_test_type=self.RTEST_SOME)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace)
+            module.prepare_group(workspace, {}, [1])
+            module.run(workspace)
+            self.tteesstt_relate(workspace.measurements, module, self.cursor)
+        finally:
+            self.drop_tables(module)
+        
+    def test_12_07_write_sqlite_duplicates(self):
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
+            
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
+            relationship_test_type=self.RTEST_DUPLICATE)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_SQLITE
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace)
+            module.prepare_group(workspace, {}, [1])
+            module.run(workspace)
+            cursor, connection = self.get_sqlite_cursor(module)
+            self.tteesstt_relate(workspace.measurements, module, cursor)
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if connection is not None:
+                connection.close()
+            if hasattr(module, "cursor") and module.cursor is not None:
+                module.cursor.close()
+            if hasattr(module, "connection") and module.connection is not None:
+                module.connection.close()
+            finally_fn()
+
+    def test_12_06_write_sqlite_relationships(self):
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
+            
+        workspace, module, output_dir, finally_fn = self.make_workspace(
+            True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
+            relationship_test_type=self.RTEST_SOME)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_SQLITE
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace)
+            module.prepare_group(workspace, {}, [1])
+            module.run(workspace)
+            cursor, connection = self.get_sqlite_cursor(module)
+            self.tteesstt_relate(workspace.measurements, module, cursor)
+        finally:
+            if cursor is not None:
+                cursor.close()
+            if connection is not None:
+                connection.close()
+            if hasattr(module, "cursor") and module.cursor is not None:
+                module.cursor.close()
+            if hasattr(module, "connection") and module.connection is not None:
+                module.connection.close()
+            finally_fn()
+
+                

@@ -183,7 +183,11 @@ SETTING_FIXED_SETTING_COUNT_V21 = 33
 
 SETTING_FIXED_SETTING_COUNT_V22 = 35
 
-SETTING_FIXED_SETTING_COUNT = 35
+SETTING_FIXED_SETTING_COUNT_V23 = 36
+
+SETTING_FIXED_SETTING_COUNT_V24 = 37
+
+SETTING_FIXED_SETTING_COUNT = 37
 
 ##############################################
 #
@@ -216,6 +220,24 @@ from identify import C_PARENT
 
 T_EXPERIMENT = "Experiment"
 T_EXPERIMENT_PROPERTIES = "Experiment_Properties"
+
+T_RELATIONSHIPS = "Relationships"
+T_RELATIONSHIP_TYPES = "RelationshipTypes"
+CONSTRAINT_RT_UNIQUE = "RelationshipTypesUnique"
+FK_RELATIONSHIP_TYPE_ID = "RRTypeIdFK"
+CONSTRAINT_R_UNIQUE = "RelationshipUnique"
+V_RELATIONSHIPS = "RelationshipsView"
+I_RELATIONSHIPS1 = "IRelationships1"
+I_RELATIONSHIPS2 = "IRelationships2"
+COL_RELATIONSHIP_TYPE_ID = "relationship_type_id"
+COL_MODULE_NUMBER = "module_number"
+COL_RELATIONSHIP = "relationship"
+COL_OBJECT_NAME1 = "object_name1"
+COL_OBJECT_NAME2 = "object_name2"
+COL_IMAGE_NUMBER1 = "image_number1"
+COL_IMAGE_NUMBER2 = "image_number2"
+COL_OBJECT_NUMBER1 = "object_number1"
+COL_OBJECT_NUMBER2 = "object_number2"
 
 def execute(cursor, query, bindings = None, return_result=True):
     if bindings == None:
@@ -269,7 +291,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 23
+    variable_revision_number = 24
     category = ["File Processing","Data Tools"]
 
     def create_settings(self):
@@ -598,6 +620,28 @@ class ExportToDatabase(cpm.CPModule):
             the objects that were created by prior modules. If you choose an
             object, its measurements will be written out to the Per_Object and/or
             Per_Well(s) tables, otherwise, the object's measurements will be skipped.""")
+        
+        self.wants_relationship_table_setting = cps.Binary(
+            "Export object relationships?", True,
+            doc = """<i>(Used only for pipelines which relate objects: see
+            the <b>TrackObjects</b>, <b>RelateObjects</b> and
+            <b>MeasureObjectNeighbors</b> modules)</i>
+            Check this setting to export object relationships to the
+            RelationshipsView view. This view has the following columns:
+            <ul><li><i>%(COL_MODULE_NUMBER)s</i>: the module number of the
+            module that produced the relationship. The first module in the
+            pipeline is module #1, etc.</li>
+            <li><i>%(COL_RELATIONSHIP)s</i>: the relationship between the two 
+            objects, for instance, "Parent".</li>
+            <li><i>%(COL_OBJECT_NAME1)s, %(COL_OBJECT_NAME2)s</i>: 
+            the names of the two objects being related.</li>
+            <li><i>%(COL_IMAGE_NUMBER1)s, %(COL_OBJECT_NUMBER1)s</i>:
+            the image number and object number of the first object in the
+            relationship</li>
+            <li><i>%(COL_IMAGE_NUMBER2)s, %(COL_OBJECT_NUMBER2)s</i>:
+            the image number and object number of the second object in the
+            relationship</li>
+            </ul>""" % globals())
         
         self.max_column_size = cps.Integer(
             "Maximum # of characters in a column name", 64, 
@@ -936,6 +980,11 @@ class ExportToDatabase(cpm.CPModule):
             (self.db_type != DB_MYSQL or
              self.save_cpa_properties.value or
              self.create_workspace_file.value)
+        # # # # # # # # # # # # # # # # # #
+        #
+        # DB type and connection info
+        #
+        # # # # # # # # # # # # # # # # # #
         result = [self.db_type, self.experiment_name]
         if not HAS_MYSQL_DB:
             result += [self.mysql_not_available]
@@ -951,9 +1000,19 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.sqlite_file]
         elif self.db_type == DB_ORACLE:
             result += [self.sql_file_prefix]
+        # # # # # # # # # # # # # # # # # #
+        #
+        # Table names
+        #
+        # # # # # # # # # # # # # # # # # #
         result += [self.want_table_prefix]
         if self.want_table_prefix.value:
             result += [self.table_prefix]
+        # # # # # # # # # # # # # # # # # #
+        #
+        # CPA properties file
+        #
+        # # # # # # # # # # # # # # # # # #
         if self.save_cpa_properties.value:
             result += [self.divider_props] # Put divider here to make things easier to read
         result += [self.save_cpa_properties]
@@ -1013,17 +1072,35 @@ class ExportToDatabase(cpm.CPModule):
         if needs_default_output_directory:
             result += [self.directory]
             
+        # # # # # # # # # # # # # # # # # #
+        #
+        # Aggregations
+        #
+        # # # # # # # # # # # # # # # # # #
         result += [self.wants_agg_mean, self.wants_agg_median,
                    self.wants_agg_std_dev]
         if self.db_type != DB_SQLITE:
             # We don't write per-well tables to SQLite yet.
             result += [self.wants_agg_mean_well, self.wants_agg_median_well, 
                        self.wants_agg_std_dev_well]
+        # # # # # # # # # # # # # # # # # #
+        #
+        # Table choices (1 / separate object tables, etc)
+        #
+        # # # # # # # # # # # # # # # # # #
         result += [self.objects_choice]
         if self.objects_choice == O_SELECT:
             result += [self.objects_list]
+        result += [self.wants_relationship_table_setting]
         if self.objects_choice != O_NONE:
             result += [self.separate_object_tables]
+
+        # # # # # # # # # # # # # # # # # #
+        #
+        # Misc (column size + image thumbnails)
+        #
+        # # # # # # # # # # # # # # # # # #
+        
         result += [self.max_column_size]
         if self.db_type in (DB_MYSQL, DB_MYSQL_CSV, DB_SQLITE):
             result += [self.want_image_thumbnails]
@@ -1071,7 +1148,8 @@ class ExportToDatabase(cpm.CPModule):
                 self.properties_export_all_image_defaults,
                 self.image_group_count, self.group_field_count, self.filter_field_count,
                 self.workspace_measurement_count, self.experiment_name, 
-                self.location_object, self.properties_class_table_name]
+                self.location_object, self.properties_class_table_name,
+                self.wants_relationship_table_setting]
         
         # Properties: Image groups
         for group in self.image_groups:
@@ -1529,6 +1607,10 @@ class ExportToDatabase(cpm.CPModule):
             return (self.wants_agg_mean_well or self.wants_agg_median_well or
                     self.wants_agg_std_dev_well)
 
+    @property
+    def wants_relationship_table(self):
+        '''True to write relationships to the database'''
+        return self.wants_relationship_table_setting.value
     
     def should_stop_writing_measurements(self):
         '''All subsequent modules should not write measurements'''
@@ -1693,7 +1775,7 @@ class ExportToDatabase(cpm.CPModule):
                         return_result = False)
                 statement = self.get_create_object_table_statement(
                     None, pipeline, image_set_list)
-                execute(cursor, statement)
+                execute(cursor, statement, return_result = False)
             else:
                 for object_name in self.get_object_names(pipeline, 
                                                          image_set_list):
@@ -1702,7 +1784,7 @@ class ExportToDatabase(cpm.CPModule):
                             return_result = False)
                     statement = self.get_create_object_table_statement(
                         object_name, pipeline, image_set_list)
-                    execute(cursor, statement)
+                    execute(cursor, statement, return_result=False)
                 if self.separate_object_tables == OT_VIEW:
                     execute(cursor, 'DROP TABLE IF EXISTS %s' %
                             self.get_table_name(cpmeas.OBJECT), 
@@ -1713,19 +1795,22 @@ class ExportToDatabase(cpm.CPModule):
                             return_result = False)
                     statement = self.get_create_object_view_statement(
                         self.get_object_names(pipeline, image_set_list), pipeline, image_set_list)
-                    execute(cursor, statement)
+                    execute(cursor, statement, return_result=False)
         
         # Image table
         execute(cursor, 'DROP TABLE IF EXISTS %s' % 
                 self.get_table_name(cpmeas.IMAGE), return_result = False)
         statement = self.get_create_image_table_statement(pipeline, 
                                                           image_set_list)
-        execute(cursor, statement)
+        execute(cursor, statement, return_result=False)
         
         execute(cursor, 'DROP TABLE IF EXISTS %s' % 
                 self.get_table_name(cpmeas.EXPERIMENT) )
         for statement in self.get_experiment_table_statements(workspace):
-            execute(cursor, statement)
+            execute(cursor, statement, return_result=False)
+        if self.wants_relationship_table:
+            for statement in self.get_create_relationships_table_statements(pipeline):
+                execute(cursor, statement, return_result=False)
         cursor.connection.commit()
         
     def get_experiment_table_statements(self, workspace):
@@ -1834,7 +1919,7 @@ CREATE TABLE %s (
                                        cpmeas.COLTYPE_FLOAT)
         statement += ',\nPRIMARY KEY (%s) )'%C_IMAGE_NUMBER
         return statement
-        
+    
     def get_create_object_table_statement(self, object_name, pipeline, 
                                           image_set_list):
         '''Get the "CREATE TABLE" statement for the given object table
@@ -1867,7 +1952,6 @@ CREATE TABLE %s (
                     statement += ',\n%s %s'%(mappings[feature_name], ftype)
         statement += ',\nPRIMARY KEY (%s, %s) )' %(C_IMAGE_NUMBER, object_pk)
         return statement
-
         
     def get_create_object_view_statement(self, object_names, pipeline, 
                                           image_set_list):
@@ -1907,6 +1991,200 @@ CREATE TABLE %s (
                                                 "%s.%s_%s = %s.%s_%s"%(all_objects[selected_object], selected_object, M_NUMBER_OBJECT_NUMBER, 
                                                                        current_table, current_object, M_NUMBER_OBJECT_NUMBER)))))
         return statement
+    
+    def get_create_relationships_table_statements(self, pipeline):
+        """Get the statements to create the relationships table
+        
+        Returns a list of statements to execute.
+        """
+        statements = []
+        #
+        # View name + drop view if appropriate
+        #
+        relationship_view_name = self.get_table_name(V_RELATIONSHIPS)
+        if self.db_type == DB_MYSQL:
+            statements.append(
+                "DROP VIEW IF EXISTS %s" % relationship_view_name)
+        #
+        # Table names + drop table if appropriate
+        #
+        relationship_type_table_name = self.get_table_name(T_RELATIONSHIP_TYPES)
+        relationship_table_name = self.get_table_name(T_RELATIONSHIPS)
+        if self.db_type == DB_MYSQL:
+            statements += [
+                "DROP TABLE IF EXISTS %s" % x for x in 
+                relationship_table_name, relationship_type_table_name]
+        #
+        # The relationship type table has the module #, relationship name
+        # and object names of every relationship reported by
+        # pipeline.get_relationship_columns()
+        #
+        columns = [COL_RELATIONSHIP_TYPE_ID, COL_MODULE_NUMBER,
+                   COL_RELATIONSHIP, COL_OBJECT_NAME1, COL_OBJECT_NAME2]
+        types = ["integer primary key", "integer", "varchar(255)", 
+                 "varchar(255)", "varchar(255)"]
+        rtt_unique_name = self.get_table_name(CONSTRAINT_RT_UNIQUE)
+        statement = "CREATE TABLE %s " % relationship_type_table_name
+        statement += "(" + ", ".join(["%s %s" % (c, t)
+                                      for c, t in zip(columns, types)])
+        statement += ", CONSTRAINT %s UNIQUE ( " % rtt_unique_name
+        statement += ", ".join(columns) + " ))"
+        statements.append(statement)
+        #
+        # Create a row in this table for each relationship
+        #
+        d = self.get_dictionary()
+        if T_RELATIONSHIP_TYPES not in d:
+            d[T_RELATIONSHIP_TYPES] = {}
+        rd = d[T_RELATIONSHIP_TYPES]
+        
+        for i, (module_num, relationship, o1, o2, when) in \
+            enumerate(pipeline.get_object_relationships()):
+            relationship_type_id = i+1
+            statement = "INSERT INTO %s " % relationship_type_table_name
+            statement += "( "+", ".join(columns) + ") "
+            statement += "VALUES(%d, %d, '%s', '%s', '%s')" % (
+                relationship_type_id, module_num, relationship, o1, o2)
+            statements.append(statement)
+            rd[module_num, relationship, o1, o2] = relationship_type_id
+        #
+        # Create the relationships table
+        #
+        columns = [ COL_RELATIONSHIP_TYPE_ID, 
+                    COL_IMAGE_NUMBER1, COL_OBJECT_NUMBER1,
+                    COL_IMAGE_NUMBER2, COL_OBJECT_NUMBER2 ]
+        statement = "CREATE TABLE %s " % relationship_table_name
+        statement += "( " + ", ".join(["%s integer" % c for c in columns])
+        statement += " ,CONSTRAINT %s FOREIGN KEY ( %s ) " % (
+            self.get_table_name(FK_RELATIONSHIP_TYPE_ID), 
+            COL_RELATIONSHIP_TYPE_ID)
+        statement += " REFERENCES %s ( %s )" % ( 
+            relationship_type_table_name, COL_RELATIONSHIP_TYPE_ID)
+        statement += " ,CONSTRAINT %s UNIQUE" % self.get_table_name(
+            CONSTRAINT_R_UNIQUE)
+        statement += " ( " + ", ".join(columns) + " ))"
+        statements.append(statement)
+        #
+        # Create indexes for both the first and second objects
+        #
+        for index_name, image_column, object_column in (
+            (I_RELATIONSHIPS1, COL_IMAGE_NUMBER1, COL_OBJECT_NUMBER1),
+            (I_RELATIONSHIPS2, COL_IMAGE_NUMBER2, COL_OBJECT_NUMBER2)):
+            statement = "CREATE INDEX %s ON %s ( %s, %s, %s )" % (
+                self.get_table_name(index_name),
+                relationship_table_name, image_column, object_column,
+                COL_RELATIONSHIP_TYPE_ID)
+            statements.append(statement)
+        #
+        # Create the relationship view
+        #
+        statement = "CREATE VIEW %s AS SELECT " % relationship_view_name
+        statement += ", ".join([
+            "T.%s" % col for col in (
+                COL_MODULE_NUMBER, COL_RELATIONSHIP, 
+                COL_OBJECT_NAME1, COL_OBJECT_NAME2)]) + ", "
+        statement += ", ".join([
+            "R.%s" % col for col in (
+                COL_IMAGE_NUMBER1, COL_OBJECT_NUMBER1,
+                COL_IMAGE_NUMBER2, COL_OBJECT_NUMBER2)])
+        statement += " FROM %s T JOIN %s R ON " % (
+            relationship_type_table_name, relationship_table_name)
+        statement += " T.%s = R.%s" % (
+            COL_RELATIONSHIP_TYPE_ID, COL_RELATIONSHIP_TYPE_ID)
+        statements.append(statement)
+        return statements
+    
+    def get_relationship_type_id(self, pipeline, module_num, relationship, 
+                                 object_name1, object_name2, cursor):
+        '''Get the relationship_type_id for the given relationship
+        
+        pipeline - the analysis pipeline
+        
+        module_num - the module number of the module that generated the
+                     record
+        
+        relationship - the name of the relationship
+        
+        object_name1 - the name of the first object in the relationship
+        
+        object_name2 - the name of the second object in the relationship
+        
+        cursor - used to retrieve or insert entries in the table.
+        
+        Returns the relationship_type_id that joins to the relationship
+        type record in the relationship types table.
+        
+        NOTE: this should not be called for CSV databases.
+        '''
+        assert self.db_type != DB_MYSQL_CSV
+        
+        d = self.get_dictionary()
+        if T_RELATIONSHIP_TYPES not in d:
+            #
+            # Build the dictionary if it doesn't exists
+            #
+            relationship_type_table = self.get_table_name(T_RELATIONSHIP_TYPES)
+            statement = "SELECT %s, %s, %s, %s, %s FROM %s" % (
+                COL_RELATIONSHIP_TYPE_ID, COL_RELATIONSHIP, COL_MODULE_NUMBER,
+                COL_OBJECT_NAME1, COL_OBJECT_NAME2, relationship_type_table)
+            
+            d[T_RELATIONSHIP_TYPES] = dict(
+                [((mn, r, o1, o2), rt_id) for rt_id, mn, r, o1, o2 in
+                  execute(cursor, statement)])
+        rd = d[T_RELATIONSHIP_TYPES]
+        
+        key = (module_num, relationship, object_name1, object_name2)
+        if key not in rd:
+            #
+            # If the code reaches here, it's because:
+            # * some module has an absent or mis-coded get_relationship_columns
+            # * the user changed the pipeline after prepare_run was called.
+            #
+            relationship_type_table = self.get_table_name(T_RELATIONSHIP_TYPES)
+            #
+            # An insert guarantees that a record exists
+            #
+            # INSERT INTO <t> (...)
+            # SELECT MAX(relationship_type_id) + 1, <module #>... FROM <t>
+            # WHERE NOT EXISTS
+            # (SELECT 'x' FROM <t> WHERE MODULE_NUM=<module %>...)
+            #
+            statement = \
+                "INSERT INTO %s (%s, %s, %s, %s, %s) " % (
+                    relationship_type_table,
+                    COL_RELATIONSHIP_TYPE_ID, COL_MODULE_NUMBER,
+                    COL_RELATIONSHIP, COL_OBJECT_NAME1, COL_OBJECT_NAME2)
+            statement += \
+                "SELECT MAX(%s)+1, %d, '%s', '%s', '%s' FROM %s" % \
+                (COL_RELATIONSHIP_TYPE_ID, module_num, relationship,
+                 object_name1, object_name2)
+            statement += "WHERE NOT EXISTS (SELECT 'x' FROM %s WHERE " % \
+                relationship_type_table
+            statement += "%s = %d AND " % (COL_MODULE_NUMBER, module_num)
+            statement += "%s = '%s' AND " % (COL_RELATIONSHIP, relationship)
+            statement += "%s = '%s' AND " % (COL_OBJECT_NAME1, object_name1)
+            statement += "%s = '%s')" % (COL_OBJECT_NAME2, object_name2)
+            #
+            # Then we select and find it
+            #
+            statement = \
+                "SELECT min(%s) FROM %s WHERE %s = %d" % (
+                    COL_RELATIONSHIP_TYPE_ID, relationship_type_table,
+                    COL_MODULE_NUMBER, module_num)
+            for col, value in ((COL_RELATIONSHIP, relationship),
+                               (COL_OBJECT_NAME1, object_name1),
+                               (COL_OBJECT_NAME2, object_name2)):
+                statement += " AND %s = '%s'" % (col, value)
+            result = execute(cursor, statement)
+            if len(result == 0):
+                raise ValueError(
+                    "Failed to retrieve relationship_type_id for "
+                    "module # %d, %s %s %s" % 
+                    (module_num, relationship, object_name1, object_name2))
+            rd[key] = int(result[0][0])
+        return rd[key]
+                
+            
     
     def write_mysql_table_defs(self, workspace):
         """Write the table definitions to the SETUP.SQL file
@@ -1968,6 +2246,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             fid.write("\n" + self.get_create_object_view_statement(
                     [object_name for gcot_name, object_name in data], pipeline, image_set_list) + ";\n")
         
+        if self.wants_relationship_table:
+            for statement in self.get_create_relationships_table_statements(pipeline):
+                fid.write(statement + ";\n")
+            fid.write("""
+LOAD DATA LOCAL INFILE '%s_%s.CSV' REPLACE INTO TABLE %s
+FIELDS TERMINATED BY ','
+OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
+""" % (self.base_name(workspace), T_RELATIONSHIPS, 
+       self.get_table_name(T_RELATIONSHIPS)))
         if self.wants_well_tables:
             self.write_mysql_table_per_well(
                 workspace.pipeline, workspace.image_set_list, fid)
@@ -2174,6 +2461,28 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                             object_row.append(value)
                     csv_writer.writerow(object_row)
             fid.close()
+        #
+        # Relationships table
+        #
+        # Note that the code here assumes that pipeline.get_object_relationships
+        # returns the rows in the same order every time it's called.
+        #
+        if self.wants_relationship_table:
+            file_name = "%s_%s.CSV" % (
+                self.base_name(workspace), T_RELATIONSHIPS)
+            file_name = self.make_full_filename(file_name)
+            with open(file_name, "wb") as fid:
+                csv_writer = csv.writer(fid, lineterminator='\n')
+                for i, (module_num, relationship, 
+                        object_number1, object_number2, when) \
+                    in enumerate(pipeline.get_object_relationships()):
+                    relationship_type_id = i+1
+                    r = measurements.get_relationships(
+                        module_num, relationship, 
+                        object_number1, object_number2)
+                    for i1, o1, i2, o2 in r:
+                        csv_writer.writerow((
+                            relationship_type_id, i1, o1, i2, o2))
 
     @staticmethod
     def should_write(column, post_group):
@@ -2266,6 +2575,15 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                          C_IMAGE_NUMBER,
                          image_number))
                 execute(self.cursor, stmt, return_result=False)
+                #
+                # Delete relationships as well.
+                #
+                if self.wants_relationship_table:
+                    for col in (COL_IMAGE_NUMBER1, COL_IMAGE_NUMBER2):
+                        stmt = 'DELETE FROM %s WHERE %s=%d' % (
+                            self.get_table_name(T_RELATIONSHIPS), col, 
+                            image_number)
+                        execute(self.cursor, stmt, return_result=False)
             
             ########################################
             #
@@ -2394,6 +2712,47 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                                     for val, dtype, colname in image_row]) +
                         ('\nWHERE %s = %d' % (C_IMAGE_NUMBER, image_number)))
                 execute(self.cursor, stmt, image_row_values, return_result=False)
+            if self.wants_relationship_table:
+                #
+                # Relationships table - for SQLite, check for previous existence
+                # but for MySQL use REPLACE INTO to do the same
+                #
+                rtbl_name = self.get_table_name(T_RELATIONSHIPS)
+                columns = [COL_RELATIONSHIP_TYPE_ID, 
+                           COL_IMAGE_NUMBER1, COL_OBJECT_NUMBER1,
+                           COL_IMAGE_NUMBER2, COL_OBJECT_NUMBER2]
+                if self.db_type == DB_SQLITE:
+                    stmt = "INSERT INTO %s (%s, %s, %s, %s, %s) " % \
+                        tuple([rtbl_name]+columns)
+                    stmt += " SELECT %d, %d, %d, %d, %d WHERE NOT EXISTS "
+                    stmt += "(SELECT 'x' FROM %s WHERE " % rtbl_name
+                    stmt += " AND ".join(["%s = %%d" % col for col in columns]) + ")"
+                else:
+                    stmt = "REPLACE INTO %s (%s, %s, %s, %s, %s) " % \
+                        tuple([rtbl_name]+columns)
+                    stmt += "VALUES (%s, %s, %s, %s, %s)"
+                for module_num, relationship, object_name1, object_name2, when\
+                    in pipeline.get_object_relationships():
+                    if post_group != (when == cpmeas.MCA_AVAILABLE_POST_GROUP):
+                        continue
+                    r = measurements.get_relationships(
+                        module_num, relationship, object_name1, object_name2,
+                        image_numbers = [image_number])
+                    rt_id = self.get_relationship_type_id(
+                        pipeline, module_num, relationship, object_name1,
+                        object_name2, self.cursor)
+                    if self.db_type == DB_MYSQL:
+                        # max_allowed_packet is 16 MB by default
+                        # 8 x 10 = 80/row -> 200K rows
+                        row_values = [(rt_id, i1, o1, i2, o2)
+                                      for i1, o1, i2, o2 in r]
+                        self.cursor.executemany(stmt, row_values)
+                    else:
+                        for i1, o1, i2, o2 in r:
+                            row = (
+                                rt_id, i1, o1, i2, o2, rt_id, i1, o1, i2, o2)
+                            row_stmt = stmt % tuple(row)
+                            execute(self.cursor, row_stmt, return_result=False)
             self.connection.commit()
         except:
             logger.error("Failed to write measurements to database", exc_info=True)
@@ -3234,6 +3593,16 @@ CP version : %d\n""" % version_number
                 [ "" ] + 
                 setting_values[SETTING_FIXED_SETTING_COUNT_V22:])
             variable_revision_number = 23
+            
+        if (not from_matlab) and variable_revision_number == 23:
+            #
+            # Added wants_relationships_table
+            #
+            setting_values = (
+                setting_values[:SETTING_FIXED_SETTING_COUNT_V23] +
+                [ cps.NO ] + 
+                setting_values[SETTING_FIXED_SETTING_COUNT_V23:])
+            variable_revision_number = 24
             
         # Added view creation to object table settings
         setting_values[OT_IDX] = OT_DICTIONARY.get(setting_values[OT_IDX],

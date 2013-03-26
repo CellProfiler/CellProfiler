@@ -325,7 +325,7 @@ ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
 def module_directory():
     if not config_exists(MODULEDIRECTORY):
         return os.path.join(cell_profiler_root_directory(), 'Modules')
-    return str(get_config().Read(MODULEDIRECTORY))
+    return str(config_read(MODULEDIRECTORY))
 
 def set_module_directory(value):
     config_write(MODULEDIRECTORY, value)

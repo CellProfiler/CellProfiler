@@ -321,15 +321,12 @@ class CalculateMath(cpm.CPModule):
                         f0 = cpmeas.R_SECOND_OBJECT_NUMBER
                     else:
                         continue
-                    r = m.get_relationships(gg.module_number,
-                                            gg.relationship,
-                                            gg.object_name1,
-                                            gg.object_name2)
-                    mask = (
-                        (r[cpmeas.R_FIRST_IMAGE_NUMBER] == m.image_set_number) &
-                        (r[cpmeas.R_SECOND_IMAGE_NUMBER] == m.image_set_number))
-                    i0 = r[f0][mask] - 1
-                    i1 = r[f1][mask] - 1
+                    r = m.get_relationships(
+                        gg.module_number, gg.relationship,
+                        gg.object_name1, gg.object_name2,
+                        image_numbers = [m.image_set_number])
+                    i0 = r[f0] - 1
+                    i1 = r[f1] - 1
                     break
             else:
                 raise ValueError("Incompatable objects: %s has %d objects and %s has %d objects"%

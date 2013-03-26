@@ -2029,7 +2029,16 @@ class TrackObjects(cpm.CPModule):
                 attributes = { cpmeas.MCA_AVAILABLE_POST_GROUP: True }
                 result = [ ( c[0], c[1], c[2], attributes) for c in result]
         return result
-
+    
+    def get_object_relationships(self, pipeline):
+        '''Return the object relationships produced by this module'''
+        object_name = self.object_name.value
+        if self.wants_second_phase and self.tracking_method == TM_LAP:
+            when = cpmeas.MCA_AVAILABLE_POST_GROUP
+        else:
+            when = cpmeas.MCA_AVAILABLE_EACH_CYCLE
+        return [(R_PARENT, object_name, object_name, when)]
+    
     def get_categories(self, pipeline, object_name):
         if object_name in (self.object_name.value, cpmeas.IMAGE):
             return [F_PREFIX]

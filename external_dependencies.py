@@ -260,6 +260,7 @@ def get_cellprofiler_jars():
     '''
     root = get_cellprofiler_root_dir()
     jars = set(filter(lambda x:x.endswith(".jar"), [x[0][-1] for x in files]))
+    aggressive_update = None
     for pom_folder in pom_folders:
         pom_dir = os.path.join(root, pom_folder)
         # Get the name of the jar output by this pom
@@ -276,11 +277,21 @@ def get_cellprofiler_jars():
         #
         # Get the dependencies
         #
-        output = run_maven(
-            pom_dir,
-            goal = "dependency:build-classpath",
-            aggressive_update=None,
-            return_stdout=True)
+        if aggressive_update is None:
+            try:
+                output = run_maven(
+                    pom_dir,
+                    goal = "dependency:build-classpath",
+                    aggressive_update=aggressive_update,
+                    return_stdout=True)
+            except:
+                aggressive_update = True
+        if aggressive_update is not None:
+            output = run_maven(
+                pom_dir,
+                goal = "dependency:build-classpath",
+                aggressive_update=aggressive_update,
+                return_stdout=True)
         lines = filter(lambda x: not x.startswith("["), output.split("\n"))
         if len(lines) > 0:
             jars.update([os.path.split(x)[1] for x in

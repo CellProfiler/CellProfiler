@@ -458,7 +458,13 @@ class NamesAndTypes(cpm.CPModule):
                     if keep:
                         column.append(ipd)
                 columns.append(column)
-            n_rows = np.max([len(column) for column in columns])
+            column_lengths = [len(column) for column in columns]
+            if any([l != column_lengths[0] for l in column_lengths]):
+                # TO_DO - better display of channels of different lengths
+                logger.warning("Truncating image set: some channels have fewer images than others")
+            n_rows = np.min(column_lengths)
+            for column in columns:
+                del column[n_rows:]
             self.image_sets = [
                 ((i+1, ), 
                  dict([(column_name, None if len(column) >= i else column[i])

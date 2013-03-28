@@ -59,7 +59,7 @@ def main(args):
     options, args = parse_args(args)
     set_log_level(options)
     
-    if options.code_statistics:
+    if not hasattr(sys, "frozen") and options.code_statistics:
         print_code_statistics()
         return
     

@@ -51,10 +51,15 @@ def start_cellprofiler_jvm():
             bioformats_path = os.path.abspath(os.path.split(__file__)[0])
             root_path = os.path.split(bioformats_path)[0]
         imagej_path = os.path.join(root_path, 'imagej','jars')
+        def sort_fn(a, b):
+            aa,bb = [(0 if x.startswith("cellprofiler-java") else 1, x)
+                     for x in a, b]
+            return cmp(aa, bb)
         jar_files = [
             jar_filename
             for jar_filename in os.listdir(imagej_path)
             if jar_filename.lower().endswith(".jar")]
+        jar_files = sorted(jar_files, cmp = sort_fn)
     else:
         bioformats_path = os.path.abspath(os.path.split(__file__)[0])
         root_path = os.path.split(bioformats_path)[0]

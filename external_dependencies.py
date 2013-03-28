@@ -27,7 +27,6 @@ import zipfile
 
 ACTION_MAVEN = "Maven"
 
-CELLPROFILER_JAVA_JAR = "cellprofiler-java-0.0.1-SNAPSHOT.jar"
 CELLPROFILER_DEPENDENCIES_URL = \
     'http://www.cellprofiler.org/linked_files/CellProfilerDependencies'
 OMERO_CLIENTS_URL = CELLPROFILER_DEPENDENCIES_URL + '/OMERO.clients-4.4.6'
@@ -261,6 +260,10 @@ def get_cellprofiler_jars():
     root = get_cellprofiler_root_dir()
     jars = set(filter(lambda x:x.endswith(".jar"), [x[0][-1] for x in files]))
     aggressive_update = None
+    #
+    # Our jars come first because of patches
+    #
+    our_jars = []
     for pom_folder in pom_folders:
         pom_dir = os.path.join(root, pom_folder)
         # Get the name of the jar output by this pom
@@ -273,7 +276,7 @@ def get_cellprofiler_jars():
             additional_args = ["-Dexpression=project.build.finalName"])
         lines = filter(lambda x: not x.startswith("["), output.split("\n"))
         if len(lines) > 0:
-            jars.add(lines[0].strip() + ".jar")
+            our_jars.append(lines[0].strip() + ".jar")
         #
         # Get the dependencies
         #
@@ -296,7 +299,7 @@ def get_cellprofiler_jars():
         if len(lines) > 0:
             jars.update([os.path.split(x)[1] for x in
                          lines[0].strip().split(os.pathsep)])
-    return sorted(jars)
+    return our_jars + sorted(jars)
 
 if __name__=="__main__":
     import optparse

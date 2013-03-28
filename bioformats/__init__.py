@@ -117,7 +117,13 @@ def start_cellprofiler_jvm():
         init_logger = False
     else:
         init_logger = True
-        
+    
+    if get_headless():
+        # We're running silently, so don't change the Java preferences
+        # The following definition uses a process-scope preferences factory
+        args += [
+            "-Djava.util.prefs.PreferencesFactory="
+            "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
     run_headless = (get_headless() and 
                     not os.environ.has_key("CELLPROFILER_USE_XVFB"))
         

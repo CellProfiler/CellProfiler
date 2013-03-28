@@ -43,9 +43,13 @@ def start_cellprofiler_jvm():
     '''Start the Java VM with arguments appropriate for CellProfiler'''
     global logger
     
-    if hasattr(sys, 'frozen') and sys.platform != 'darwin':
-        root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-        bioformats_path = os.path.join(root_path, 'bioformats')
+    if hasattr(sys, 'frozen'):
+        if sys.platform != 'darwin':
+            root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+            bioformats_path = os.path.join(root_path, 'bioformats')
+        else:
+            bioformats_path = os.path.abspath(os.path.split(__file__)[0])
+            root_path = os.path.split(bioformats_path)[0]
         imagej_path = os.path.join(root_path, 'imagej','jars')
         jar_files = [
             jar_filename

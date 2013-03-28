@@ -243,10 +243,24 @@ class CPFrame(wx.Frame):
         self.__do_layout()
         self.__make_search_frame()
         self.__error_listeners = []
-        self.Bind(wx.EVT_SIZE,self.__on_size,self)
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
+        self.SetAutoLayout(True)
+        
+    def start(self, workspace_path, pipeline_path):
+        '''Handle resource loading after the GUI has been constructed
+        
+        workspace_path - one of the following: a pathname to the workspace
+                         to load, False to ask the user for a new workspace
+                         or None to leave the decision to the user's
+                         preference.
+                         
+        pipeline_path - the pipeline to load after the workspace has been
+                        loaded or None for the workspace's pipeline.
+        '''
+        self.__pipeline_controller.start(workspace_path, pipeline_path)
+        self.__module_view.start()
 
     def show_path_list_ctrl(self, show):
         '''Show or hide the path list control
@@ -806,8 +820,6 @@ All rights reserved."""
         self.__pipeline_list_view.attach_to_module_view((self.__module_view))
         self.__preferences_view = PreferencesView(self.__preferences_panel)
         self.__preferences_view.attach_to_pipeline_list_view(self.__pipeline_list_view)
-        self.__pipeline_controller.start()
-        self.__module_view.start()
 
     def __do_layout(self):
         width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
@@ -916,9 +928,6 @@ All rights reserved."""
         if self.search_frame is not None:
             self.search_frame.Show()
             self.search_frame.Raise()
-
-    def __on_size(self, event):
-        self.Layout()
 
     def __on_data_tool(self, event, tool_name):
         module = instantiate_module(tool_name)

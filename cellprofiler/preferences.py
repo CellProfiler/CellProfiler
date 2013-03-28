@@ -128,7 +128,8 @@ def set_preferences_from_dict(d):
         "__ij_plugin_directory", "__ij_version", "__output_filename",
         "__plugin_directory", "__show_analysis_complete_dlg",
         "__show_exiting_test_mode_dlg", "__show_report_bad_sizes_dlg",
-        "__show_sampling", "__use_more_figure_space",
+        "__show_sampling", "__show_workspace_choice_dlg",
+        "__use_more_figure_space",
         "__warn_about_old_pipeline", "__write_MAT_files",
         "__workspace_file", "__omero_server", "__omero_port",
         "__omero_user", "__omero_session_id"):
@@ -294,6 +295,12 @@ OMERO_USER = "OmeroUser"
 OMERO_SESSION_ID = "OmeroSessionId"
 MAX_WORKERS = "MaxWorkers"
 TEMP_DIR = "TempDir"
+WORKSPACE_CHOICE = "WorkspaceChoice"
+
+WC_SHOW_WORKSPACE_CHOICE_DIALOG = "ShowWorkspaceChoiceDlg"
+WC_OPEN_LAST_WORKSPACE = "OpenLastWorkspace"
+WC_CREATE_NEW_WORKSPACE = "CreateNewWorkspace"
+WC_OPEN_OLD_WORKSPACE = "OpenOldWorkspace"
 
 '''The preference key for selecting the correct version of ImageJ'''
 IJ_VERSION = "ImageJVersion"
@@ -311,7 +318,8 @@ ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
              IJ_PLUGIN_DIRECTORY, MODULEDIRECTORY, PLUGIN_DIRECTORY,
              PRIMARY_OUTLINE_COLOR, SECONDARY_OUTLINE_COLOR,
              SHOW_ANALYSIS_COMPLETE_DLG, SHOW_BAD_SIZES_DLG, 
-             SHOW_EXITING_TEST_MODE_DLG, SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
+             SHOW_EXITING_TEST_MODE_DLG, WORKSPACE_CHOICE,
+             SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
              TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
              TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
              WRITE_MAT, USE_MORE_FIGURE_SPACE, WORKSPACE_FILE,
@@ -988,7 +996,7 @@ def get_workspace_file():
     if __workspace_file is not None:
         return __workspace_file
     if not config_exists(WORKSPACE_FILE):
-        return os.path.expanduser("~/CellProfiler.cpi")
+        return None
     __workspace_file = config_read(WORKSPACE_FILE)
     return __workspace_file
 
@@ -1130,6 +1138,35 @@ def set_temporary_directory(tempdir):
     config_write(TEMP_DIR, tempdir)
     __temp_dir = tempdir
 
+__workspace_choice = None
+def get_workspace_choice():
+    '''Get the user's preference for the initial workspace
+    
+    Returns one of the following:
+    WC_SHOW_WORKSPACE_CHOICE_DIALOG - ask the user what to do
+    WC_OPEN_LAST_WORKSPACE - open the workspace stored in the preferences
+    WC_CREATE_NEW_WORKSPACE - ask the user for the name of a new workspace
+    WC_OPEN_OLD_WORKSPACE - ask the user for the name of an old workspace
+    '''
+    global __workspace_choice
+    if __workspace_choice is not None:
+        pass
+    elif config_exists(WORKSPACE_CHOICE):
+        __workspace_choice = config_read(WORKSPACE_CHOICE)
+        if __workspace_choice not in (
+            WC_SHOW_WORKSPACE_CHOICE_DIALOG, WC_OPEN_LAST_WORKSPACE,
+            WC_CREATE_NEW_WORKSPACE, WC_OPEN_OLD_WORKSPACE):
+            __workspace_choice = WC_SHOW_WORKSPACE_CHOICE_DIALOG
+    else:
+        __workspace_choice = WC_SHOW_WORKSPACE_CHOICE_DIALOG
+    return __workspace_choice
+
+def set_workspace_choice(value):
+    '''Set the user preference for showing the workspace choice dialog'''
+    global __workspace_choice
+    __workspace_choice = value
+    config_write(WORKSPACE_CHOICE, value)
+    
 __progress_data = threading.local()
 __progress_data.last_report = time.time()
 __progress_data.callbacks = None

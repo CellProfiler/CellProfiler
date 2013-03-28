@@ -1213,6 +1213,20 @@ CellProfiler looks for updates on startup."""
 SHOW_STARTUP_BLURB_HELP = """The <i>Display welcome text on startup</i> preference 
 controls whether CellProfiler displays an orientation message on startup."""
 
+WC_ASK = "Ask"
+WC_LAST = "Last"
+WC_OPEN = "Open"
+WC_NEW = "New"
+WORKSPACE_CHOICE_HELP = """The <i>Initial workspace choice</i> preference
+determines the workspace that's chosen when CellProfiler starts. The choices
+are<br><ul>
+<li><i>%(WC_ASK)s</i>: show a dialog box that lets you choose any of the options below.</li>
+<li><i>%(WC_LAST)s</i>: open the workspace that you used last.</li>
+<li><i>%(WC_OPEN)s</i>: choose an existing workspace to open.</li>
+<li><i>%(WC_NEW)s</i>: always open a new workspace on startup.</li>
+</ul>
+""" % globals()
+
 SHOW_ANALYSIS_COMPLETE_HELP = """The <i>Show "Analysis complete"</i>
 preference determines whether CellProfiler displays a message box at the
 end of a run. Check this preference to show the message box or uncheck it
@@ -1298,6 +1312,7 @@ EACH_PREFERENCE_HELP = (
     ( "Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
     ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
     ( "Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
+    ( "Initial workspace choice", WORKSPACE_CHOICE_HELP),
     ( "Warn if Java runtime not present", REPORT_JVM_ERROR_HELP),
     ( "Use more figure space", USE_MORE_FIGURE_SPACE_HELP),
     ( "Maximum number of workers", MAX_WORKERS_HELP),

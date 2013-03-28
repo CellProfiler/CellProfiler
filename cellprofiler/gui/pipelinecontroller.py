@@ -140,71 +140,119 @@ class PipelineController:
         from bioformats.formatreader import set_omero_login_hook
         set_omero_login_hook(self.omero_login)
         
-    def start(self):
+    def start(self, workspace_file, pipeline_path):
         '''Do initialization after GUI hookup
         
         Perform steps that need to happen after all of the user interface
         elements have been initialized.
         '''
-        workspace_file = cpprefs.get_workspace_file()
-        for attempt in range(1):
-            if os.path.exists(workspace_file):
+        if workspace_file is False:
+            ans = self.OOCN_CREATE_NEW
+        elif workspace_file is not None:
+            ans = self.OOCN_OPEN_FROM_COMMAND_LINE
+        else:
+            config_ans = cpprefs.get_workspace_choice()
+            if config_ans == cpprefs.WC_CREATE_NEW_WORKSPACE:
+                ans = self.OOCN_CREATE_NEW
+            elif config_ans == cpprefs.WC_OPEN_LAST_WORKSPACE:
+                ans = self.OOCN_OPEN_DEFAULT
+            elif config_ans == cpprefs.WC_OPEN_OLD_WORKSPACE:
+                ans = self.OOCN_OPEN_OLD
+            elif config_ans == cpprefs.WC_SHOW_WORKSPACE_CHOICE_DIALOG:
+                ans = self.OOCN_ASK
+        message = "Welcome to CellProfiler"
+        caption = "Welcome to CellProfiler"
+        first_time = True
+        while True:
+            if ans == self.OOCN_ASK:
+                ans = self.display_open_or_create_new_dlg(
+                    caption, message, first_time)
+            first_time = False
+            if ans == self.OOCN_CREATE_NEW:
+                workspace_file = self.get_new_workspace_filename()
+                if workspace_file == None:
+                    message = ""
+                    caption = "Open or create workspace or exit"
+                    ans = self.OOCN_ASK
+                    continue
                 try:
-                    self.do_open_workspace(workspace_file, True)
+                    self.do_create_workspace(workspace_file)
+                    self.__pipeline.clear()
                     break
                 except:
-                    pass
-        else:
-            wx.GetApp().destroy_splash_screen()
-            message = (
-                "CellProfiler could not open your current workspace\n"
-                "file, ""%s"".") % workspace_file
-            caption = "Could not open " + workspace_file
-            while True:
-                ans = self.display_open_or_create_new_dlg(caption, message)
-                if ans == self.OOCN_CREATE_NEW:
-                    workspace_file = self.get_new_workspace_filename()
-                    if workspace_file == None:
-                        message = ""
-                        caption = "Open or create workspace or exit"
-                        continue
-                    try:
-                        self.do_create_workspace(workspace_file)
-                        self.__pipeline.clear()
-                        break
-                    except:
-                        message = (
-                            "CellProfiler could not create the workspace\n"
-                            "file, ""%s""." % workspace_file)
-                        caption = "Could not create " + workspace_file
-                elif ans == self.OOCN_OPEN_OLD:
-                    try:
+                    message = (
+                        "CellProfiler could not create the workspace\n"
+                        "file, ""%s""." % workspace_file)
+                    caption = "Could not create " + workspace_file
+            elif ans in (self.OOCN_OPEN_OLD, self.OOCN_OPEN_DEFAULT):
+                try:
+                    if ans == self.OOCN_OPEN_DEFAULT:
+                        workspace_file = cpprefs.get_workspace_file()
+                        if workspace_file is None:
+                            workspace_file = os.path.expanduser(
+                                "~/CellProfiler.cpi")
+                    elif ans != self.OOCN_OPEN_FROM_COMMAND_LINE:
                         workspace_file = self.do_open_workspace_dlg()
-                        if workspace_file is not None:
-                            self.do_open_workspace(workspace_file, True)
-                            break
-                    except:
-                        message = (
-                            "CellProfiler could not open the workspace\n"
-                            "file, ""%s""." % workspace_file)
-                        caption = "Could not open " + workspace_file
-                else:
-                    wx.GetApp().abort_initialization=True
-                    return
+                    if workspace_file is not None:
+                        self.do_open_workspace(workspace_file, True)
+                        break
+                    else:
+                        ans = self.OOCN_ASK
+                except:
+                    message = (
+                        "CellProfiler could not open the workspace\n"
+                        "file, ""%s""." % workspace_file)
+                    caption = "Could not open " + workspace_file
+                    ans = self.OOCN_ASK
+            else:
+                wx.GetApp().abort_initialization=True
+                return
+        if pipeline_path is not None:
+            self.do_load_pipeline(pipeline_path)
         self.__workspace.add_notification_callback(
             self.on_workspace_event)
     
     OOCN_OPEN_OLD = wx.NewId()
     OOCN_CREATE_NEW = wx.NewId()
     OOCN_EXIT_CP = wx.NewId()
-    def display_open_or_create_new_dlg(self, caption, message):
+    OOCN_OPEN_DEFAULT = wx.NewId()
+    OOCN_OPEN_FROM_COMMAND_LINE = wx.NewId()
+    OOCN_ASK = wx.NewId()
+    
+    def display_open_or_create_new_dlg(self, caption, message, first_time):
         '''Ask user what to do after initial workspace failed to open
         
-        returns one of OOCN_OPEN_OLD, OOCN_CREATE_NEW, OOCN_EXIT_CP
+        caption - the dialog's caption
+        
+        message - a message indicating why the dialog is being displayed
+        
+        first_time - true if we're asking what to do for the first time. If
+                     so, let the user open the default and give the user
+                     a checkbox to remember the choice and turn off this option.
+                     
+        returns one of OOCN_OPEN_OLD, OOCN_CREATE_NEW, OOCN_OPEN_DEFAULT, or
+                       OOCN_EXIT_CP
         '''
-        message = message + (
-            "\n\nDo you want to open an existing workspace (Open),\n"
-            "create a new workspace (New) or exit CellProfiler (Exit)?")
+        if first_time:
+            message = message + (
+                "\n\nDo you want to open your last workspace (Last),\n"
+                "open another existing workspace (Open),\n"
+                "create a new workspace (New),\n"
+                "or exit CellProfiler (Exit)?\n"
+                'Your last workspace is "%s".' % cpprefs.get_workspace_file())
+            choices = (
+                (self.OOCN_OPEN_DEFAULT, "Last"),
+                (self.OOCN_CREATE_NEW, "New"),
+                (self.OOCN_OPEN_OLD, "Open"),
+                (self.OOCN_EXIT_CP, "Exit"))
+        else:
+            message = message + (
+                "\n\nDo you want to open an existing workspace (Open),\n"
+                "create a new workspace (New) or exit CellProfiler (Exit)?")
+            choices = (
+                (self.OOCN_CREATE_NEW, "New"),
+                (self.OOCN_OPEN_OLD, "Open"),
+                (self.OOCN_EXIT_CP, "Exit"))
         with wx.Dialog(self.__frame, title=caption) as dlg:
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
@@ -216,26 +264,40 @@ class PipelineController:
             sizer.AddSpacer(20)
             text = wx.StaticText(dlg, label=message)
             sizer.Add(text, 1, wx.ALIGN_TOP | wx.ALIGN_LEFT)
-            btnsizer = wx.StdDialogButtonSizer()
-            dlg.Sizer.Add(btnsizer, 0, wx.CENTER | wx.ALL, 10)
-            for button_id, label, fn in (
-                (self.OOCN_CREATE_NEW, "New", btnsizer.SetAffirmativeButton),
-                (self.OOCN_OPEN_OLD, "Open", btnsizer.SetNegativeButton),
-                (self.OOCN_EXIT_CP, "Exit", btnsizer.SetCancelButton)):
-                button = wx.Button(dlg, id=button_id, label = label)
-                fn(button)
-                button.Bind(wx.EVT_BUTTON, 
-                            lambda event, button_id=button_id:
-                            dlg.EndModal(button_id))
-            btnsizer.Realize()
+            if first_time:
+                remember_choice_checkbox = wx.CheckBox(
+                    dlg, label="Remember my choice and don't ask again")
+                remember_choice_checkbox.Value = False
+                dlg.Sizer.Add(remember_choice_checkbox, 0, 
+                              wx.ALIGN_LEFT | wx.LEFT, 20)
+                dlg.Sizer.AddSpacer(20)
+            
+            sizer = wx.BoxSizer(wx.HORIZONTAL)
+            dlg.Sizer.Add(sizer, 0, wx.ALIGN_RIGHT | wx.ALL, 2)
+            result = []
+            for i, (code, label) in enumerate(choices):
+                button = wx.Button(dlg, label = label)
+                if i == 0:
+                    dlg.SetAffirmativeId(button.Id)
+                elif i == len(choices) - 1:
+                    dlg.SetEscapeId(button.Id)
+                if i > 0:
+                    sizer.AddSpacer(2)
+                sizer.Add(button, 0, wx.CENTER)
+                def on_button(event, button_id = code):
+                    dlg.EndModal(button_id)
+                    result.append(button_id)
+                button.Bind(wx.EVT_BUTTON, on_button)
             dlg.Fit()
-            result = dlg.ShowModal()
-            if result == wx.YES:
-                result = self.OOCN_CREATE_NEW
-            elif result == wx.NO:
-                result = self.OOCN_OPEN_OLD
-            elif result == wx.CANCEL:
-                result = self.OOCN_EXIT_CP
+            dlg.ShowModal()
+            result = result[0]
+            if first_time and remember_choice_checkbox.Value:
+                if result == self.OOCN_CREATE_NEW:
+                    cpprefs.set_workspace_choice(cpprefs.WC_CREATE_NEW_WORKSPACE)
+                elif result == self.OOCN_OPEN_DEFAULT:
+                    cpprefs.set_workspace_choice(cpprefs.WC_OPEN_LAST_WORKSPACE)
+                elif result == self.OOCN_OPEN_OLD:
+                    cpprefs.set_workspace_choice(cpprefs.WC_OPEN_OLD_WORKSPACE)
             return result
             
     def attach_to_pipeline_list_view(self, pipeline_list_view):

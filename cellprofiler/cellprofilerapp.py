@@ -31,6 +31,8 @@ class CellProfilerApp(wx.App):
         # allow suppression of version checking (primarily for nosetests). 
         self.check_for_new_version = kwargs.pop('check_for_new_version', False)
         self.show_splashbox = kwargs.pop('show_splashbox', False)
+        self.workspace_path = kwargs.pop('workspace_path', None)
+        self.pipeline_path = kwargs.pop('pipeline_path', None)
         self.abort_initialization = False
         super(CellProfilerApp, self).__init__(*args, **kwargs)
 
@@ -65,6 +67,7 @@ class CellProfilerApp(wx.App):
         from cellprofiler.gui.cpframe import CPFrame
         self.frame = CPFrame(None, -1, "Cell Profiler")
         self.destroy_splash_screen()
+        self.frame.start(self.workspace_path, self.pipeline_path)
         if self.abort_initialization:
             return 0
 
@@ -79,7 +82,6 @@ class CellProfilerApp(wx.App):
         # replace default hook with error dialog
         self.orig_excepthook = sys.excepthook
         sys.excepthook = show_errordialog
-
         self.SetTopWindow(self.frame)
         self.frame.Show()
         return 1

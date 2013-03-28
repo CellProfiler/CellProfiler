@@ -103,10 +103,20 @@ def main(args):
             import wx
             wx.Log.EnableLogging(False)
             from cellprofiler.cellprofilerapp import CellProfilerApp
+            show_splashbox = (options.pipeline_filename is None and
+                              options.workspace_filename is None and
+                              not options.new_workspace)
+            if options.workspace_filename:
+                workspace_path = os.path.expanduser(options.workspace_filename)
+            elif options.new_workspace:
+                workspace_path = False
+            else:
+                workspace_path = None
             App = CellProfilerApp(
                 0, 
                 check_for_new_version = (options.pipeline_filename is None),
-                show_splashbox = (options.pipeline_filename is None))
+                show_splashbox = show_splashbox,
+                workspace_path = workspace_path)
     
         #
         # Important to go headless ASAP
@@ -148,8 +158,9 @@ def main(args):
         if options.show_gui:
             import cellprofiler.gui.cpframe as cpgframe
             if options.pipeline_filename:
+                pipeline_path = os.path.expanduser(options.pipeline_filename)
                 try:
-                    App.frame.pipeline.load(os.path.expanduser(options.pipeline_filename))
+                    App.frame.pipeline.load(pipeline_path)
                     if options.run_pipeline:
                         App.frame.Command(cpgframe.ID_FILE_ANALYZE_IMAGES)
                 except:
@@ -199,6 +210,15 @@ def parse_args(args):
                       dest="pipeline_filename",
                       help="Load this pipeline file on startup",
                       default=None)
+    parser.add_option("-w", "--workspace",
+                      dest="workspace_filename",
+                      help="Load this workspace on startup",
+                      default=None)
+    parser.add_option("-n", "--new-workspace",
+                      dest="new_workspace",
+                      help="Open a new workspace, prompting for its name using a file dialog",
+                      action="store_true",
+                      default=False)
     parser.add_option("-c", "--run-headless",
                       action="store_false",
                       dest="show_gui",

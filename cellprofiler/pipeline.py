@@ -23,6 +23,7 @@ import gc
 import numpy as np
 import scipy.io.matlab
 import scipy
+import uuid
 try:
     #implemented in scipy.io.matlab.miobase.py@5582
     from scipy.io.matlab.miobase import MatReadError
@@ -2362,14 +2363,20 @@ class Pipeline(object):
             ImagePlaneDetails(url.encode('utf-8'), None, None, None) 
             for url in urls], False)
         bypass_exceptions = False
-        for ipd in self.image_plane_details:
+        n_ipds = len(self.image_plane_details)
+        uid = uuid.uuid4()
+        for i, ipd in enumerate(self.image_plane_details):
+            if i % 100 == 0:
+                cpprefs.report_progress(
+                    uid, float(i) / n_ipds,
+                    "Importing %s " % ipd.path)
             try:
                 metadata = file_list.get_metadata(ipd.url)
                 if metadata is not None:
                     self.add_image_metadata(ipd.url, OMEXML(metadata))
             except Exception, instance:
                 message = "Failed to load metadata for %s" % ipd.path
-                logger.error(message,                              exc_info=True)
+                logger.error(message, exc_info=True)
                 if bypass_exceptions:
                     continue
                 x = IPDLoadExceptionEvent(message)

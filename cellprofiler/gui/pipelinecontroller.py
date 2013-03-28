@@ -555,12 +555,25 @@ class PipelineController:
         
     def do_open_workspace(self, filename, load_pipeline=True):
         '''Open the given workspace file'''
-        self.__workspace.load(filename, load_pipeline)
-        cpprefs.set_workspace_file(filename)
-        self.__pipeline.load_image_plane_details(self.__workspace)
-        if not load_pipeline:
-            self.__workspace.measurements.clear()
-            self.__workspace.save_pipeline_to_measurements()
+        with wx.ProgressDialog(
+            parent = self.__frame,
+            title = "Opening workspace",
+            message= "Loading %s" % filename,
+            style=wx.PD_CAN_ABORT) as dlg:
+            assert isinstance(dlg, wx.ProgressDialog)
+                
+            def progress_callback(operation_id, progress, message):
+                proceed, skip = dlg.Pulse(message)
+                if not proceed:
+                    raise Exception("User cancelled opening workspace")
+            cpprefs.add_progress_callback(progress_callback)
+                
+            self.__workspace.load(filename, load_pipeline)
+            cpprefs.set_workspace_file(filename)
+            self.__pipeline.load_image_plane_details(self.__workspace)
+            if not load_pipeline:
+                self.__workspace.measurements.clear()
+                self.__workspace.save_pipeline_to_measurements()
             
     def __on_new_workspace(self, event):
         '''Handle the New Workspace menu command'''

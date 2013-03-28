@@ -18,6 +18,9 @@ import wx.lib.scrolledpanel
 import os
 import urllib
 import urllib2
+import uuid
+
+import cellprofiler.preferences as cpprefs
 
 class PathListCtrl(wx.PyScrolledWindow):
     #
@@ -210,7 +213,13 @@ class PathListCtrl(wx.PyScrolledWindow):
         
         paths - a sequence of URLs
         '''
-        for path in paths:
+        uid = uuid.uuid4()
+        npaths = len(paths)
+        for i, path in enumerate(paths):
+            if i%100 == 0:
+                cpprefs.report_progress(
+                    uid, float(i) / npaths,
+                    "Loading %s into UI" % path)
             folder, filename = self.splitpath(path)
             display_name = urllib2.url2pathname(filename)
             width, _ = self.GetTextExtent(display_name)

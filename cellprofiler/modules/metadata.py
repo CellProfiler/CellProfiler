@@ -206,7 +206,7 @@ class Metadata(cpm.CPModule):
             </table></p>"""))
  
         group.append("filter_choice", cps.Choice(
-            "Filter images",
+            "Extract metadata from:",
             [F_ALL_IMAGES, F_FILTERED_IMAGES],
             doc = """Do you want to extract data from all of the images
             chosen by the <b>Images</b> module or on a subset of the images?"""))

@@ -11,9 +11,11 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
+import errno
 import logging
 logger = logging.getLogger(__name__)
 import json
+import os
 import sys
 import threading
 import zmq
@@ -188,6 +190,14 @@ class AnalysisRequest(Request):
         Request.__init__(self, **kwargs)
         self.analysis_id = analysis_id
 
+class LockStatusRequest(Request):
+    '''A request for the status on some locked file
+    
+    self.path - path to locked file
+    '''
+    def __init__(self, path, **kwargs):
+        self.path = path
+        Request.__init__(self, **kwargs)
 
 class Reply(Communicable):
     '''The counterpart to a Request.
@@ -207,6 +217,17 @@ class UpstreamExit(Reply):
 class BoundaryExited(UpstreamExit):
     pass
 
+class LockStatusReply(Reply):
+    '''A reply to the LockStatusRequest
+    
+    self.path - path to locked file
+    self.locked - true if locked, false if not
+    '''
+    def __init__(self, path, locked, **kwargs):
+        Reply.__init__(self, **kwargs)
+        self.path = path
+        self.locked = locked
+        
 the_boundary = None
 
 def start_boundary():
@@ -347,6 +368,11 @@ class Boundary(object):
         '''
         self.analysis_dictionary = {}
         self.analysis_dictionary_lock = threading.RLock()
+        #
+        # Dictionary of request dictionary to queue for handler
+        # (not including AnalysisRequest)
+        #
+        self.request_dictionary = {}
         self.zmq_context = zmq.Context()
         # The downward queue is used to feed replies to the socket thread
         self.downward_queue = Queue.Queue()
@@ -381,6 +407,8 @@ class Boundary(object):
         
     '''Notify the socket thread that an analysis was added'''
     NOTIFY_REGISTER_ANALYSIS = "register analysis"
+    '''Notify a request class handler of a request'''
+    NOTIFY_REQUEST = "request"
     '''Notify the socket thread that a reply is ready to be sent'''
     NOTIFY_REPLY_READY = "reply ready"
     '''Cancel an analysis. The analysis ID is the second part of the message'''
@@ -403,6 +431,16 @@ class Boundary(object):
         self.send_to_boundary_thread(self.NOTIFY_REGISTER_ANALYSIS,
                                      (analysis_id, response_queue))
         response_queue.get()
+        
+    def register_request_class(self, cls_request, upward_queue):
+        '''Register a queue to receive requests of the given class
+        
+        cls_request - requests that match isinstance(request, cls_request) will
+                      be routed to the upward_queue
+                    
+        upward_queue - queue that will receive the requests
+        '''
+        self.request_dictionary[cls_request] = upward_queue
         
     def enqueue_reply(self, req, rep):
         '''Enqueue a reply to be sent from the boundary thread
@@ -480,10 +518,16 @@ class Boundary(object):
                     req = Communicable.recv(request_socket, routed=True)
                     req.set_boundary(self)
                     if not isinstance(req, AnalysisRequest):
-                        logger.warn(
-                            "Received a request that wasn't an AnalysisRequest: %s"% 
-                            str(type(req)))
-                        req.reply(BoundaryExited())
+                        for request_class in self.request_dictionary:
+                            if isinstance(req, request_class):
+                                q = self.request_dictionary[request_class]
+                                q.put([self, self.NOTIFY_REQUEST, req])
+                                break
+                        else:
+                            logger.warn(
+                                "Received a request that wasn't an AnalysisRequest: %s"% 
+                                str(type(req)))
+                            req.reply(BoundaryExited())
                         continue
                     #
                     # Filter out requests for cancelled analyses.
@@ -507,6 +551,8 @@ class Boundary(object):
             with self.analysis_dictionary_lock:
                 for analysis_context in self.analysis_dictionary.values():
                     analysis_context.cancel()
+                for request_class_queue in self.request_dictionary.values():
+                    request_class_queue.put([self, self.NOTIFY_STOP])
     
             self.request_socket.close()  # will linger until messages are delivered
         except:
@@ -548,6 +594,11 @@ class Boundary(object):
             for analysis_id in valid_analysis_ids])
 
     def handle_reply(self, req, rep):
+        if not isinstance(req, AnalysisRequest):
+            assert isinstance(req, Request)
+            Communicable.reply(req, rep)
+            return
+        
         with self.analysis_dictionary_lock:
             analysis_context = self.analysis_dictionary.get(req.analysis_id)
             analysis_context.reply(req, rep)
@@ -563,6 +614,118 @@ class Boundary(object):
         self.announce_analyses()
         response_queue.put("OK")
 
+__lock_queue = Queue.Queue()
+__lock_thread = None
+
+LOCK_REQUEST = "Lock request"
+UNLOCK_REQUEST = "Unlock request"
+UNLOCK_OK = "OK"
+
+def start_lock_thread():
+    '''Start the thread that handles file locking'''
+    global __lock_thread
+    if __lock_thread is not None:
+        return
+    the_boundary.register_request_class(LockStatusRequest, __lock_queue)
+    def lock_thread_fn():
+        global __lock_thread
+        locked_files = []
+        while(True):
+            msg = __lock_queue.get()
+            boundary = msg[0]
+            if msg[1] == Boundary.NOTIFY_STOP:
+                break
+            elif msg[1] == Boundary.NOTIFY_REQUEST:
+                request = msg[2]
+                assert isinstance(request, LockStatusRequest)
+                assert isinstance(boundary, Boundary)
+                logger.info("Received lock status request for %s" % request.path)
+                reply = LockStatusReply(request.path,
+                                        request.path in locked_files)
+                boundary.enqueue_reply(request, reply)
+            elif msg[1] == LOCK_REQUEST:
+                locked_files.append(msg[2])
+                msg[3].put("OK")
+            elif msg[1] == UNLOCK_REQUEST:
+                try:
+                    locked_files.remove(msg[2])
+                    msg[3].put("OK")
+                except ValueError as e:
+                    msg[3].put(e)
+        for path in locked_files:
+            os.remove(path)
+        __lock_thread = None
+    __lock_thread = threading.Thread(target = lock_thread_fn)
+    __lock_thread.setDaemon(True)
+    __lock_thread.setName("FileLockThread")
+    __lock_thread.start()
+        
+def lock_file(path, timeout=3):
+    '''Lock a file
+    
+    path - path to the file
+              
+    timeout - timeout in seconds when waiting for announcement
+    
+    returns True if we obtained the lock, False if the file is already owned.
+    '''
+    lock_path = path + ".lock"
+    start_boundary()
+    try:
+        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_RDWR)
+        with os.fdopen(fd, "a") as f:
+            f.write(the_boundary.request_address)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise
+        logger.info("Lockfile for %s already exists - contacting owner")
+        with open(lock_path, "r") as f:
+            remote_address = f.read()
+        logger.info("Owner is %s" % remote_address)
+        request_socket = the_boundary.zmq_context.socket(zmq.REQ)
+        assert isinstance(request_socket, zmq.Socket)
+        request_socket.connect(remote_address)
+        
+        lock_request = LockStatusRequest(path)
+        lock_request.send_only(request_socket)
+        poller = zmq.Poller()
+        poller.register(request_socket, zmq.POLLIN)
+        keep_polling = True
+        while(keep_polling):
+            keep_polling = False
+            for socket, status in poller.poll(timeout * 1000):
+                keep_polling = True
+                if socket == request_socket and status == zmq.POLLIN:
+                    lock_response = lock_request.recv(socket)
+                    if isinstance(lock_response, LockStatusReply):
+                        if lock_response.locked:
+                            logger.info("%s is locked" % path)
+                            return False
+                        keep_polling = False
+        #
+        # Fall through if we believe that the other end is dead
+        #
+        with open(lock_path, "w") as f:
+            f.write(the_boundary.request_address)
+    #
+    # The coast is clear to lock
+    #
+    q = Queue.Queue()
+    start_lock_thread()
+    __lock_queue.put((None, LOCK_REQUEST, path, q))
+    q.get()
+    return True
+
+def unlock_file(path):
+    '''Unlock the file at the given path'''
+    q = Queue.Queue()
+    start_lock_thread()
+    __lock_queue.put((None, UNLOCK_REQUEST, path, q))
+    result = q.get()
+    if result != UNLOCK_OK:
+        raise result
+    lock_path = path + ".lock"
+    os.remove(lock_path)
 
 if __name__ == '__main__':
     context = zmq.Context()

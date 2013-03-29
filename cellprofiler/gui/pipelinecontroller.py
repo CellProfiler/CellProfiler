@@ -55,6 +55,7 @@ import cellprofiler.gui.loadsavedlg as cplsdlg
 import cellprofiler.utilities.walk_in_background as W
 from cellprofiler.gui.omerologin import OmeroLoginDlg
 from cellprofiler.icons import get_builtin_image
+from cellprofiler.utilities.zmqrequest import lock_file, unlock_file
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -87,6 +88,7 @@ class PipelineController:
         self.__grouping_index = None
         self.__within_group_index = None
         self.__plate_viewer = None
+        self.__locked_workspace_filename = None
         self.pipeline_list = []
         cpprefs.add_image_directory_listener(self.__on_image_directory_change)
         cpprefs.add_output_directory_listener(self.__on_output_directory_change)
@@ -147,15 +149,21 @@ class PipelineController:
         Perform steps that need to happen after all of the user interface
         elements have been initialized.
         '''
-        startup_workspace_file = os.path.expanduser("~/CellProfiler.cpi")
+        startup_workspace_file = os.path.expanduser(
+            os.path.join("~","CellProfiler.cpi"))
+        default_workspace_file = cpprefs.get_workspace_file()
         if workspace_file is False:
             ans = self.OOCN_CREATE_NEW
         elif workspace_file is not None:
             ans = self.OOCN_OPEN_FROM_COMMAND_LINE
-        elif cpprefs.get_workspace_file() is None:
+        elif default_workspace_file is None:
             # If user is starting CP for the first time, create a workspace
             # for them.
-            ans = self.OOCN_CREATE_FIRST
+            if lock_file(startup_workspace_file):
+                ans = self.OOCN_CREATE_FIRST
+            else:
+                ans = self.OOCN_ASK
+                first_time = False
         else:
             config_ans = cpprefs.get_workspace_choice()
             if config_ans == cpprefs.WC_CREATE_NEW_WORKSPACE:
@@ -166,13 +174,23 @@ class PipelineController:
                 ans = self.OOCN_OPEN_OLD
             elif config_ans == cpprefs.WC_SHOW_WORKSPACE_CHOICE_DIALOG:
                 ans = self.OOCN_ASK
+                first_time = True
         message = "Welcome to CellProfiler"
         caption = "Welcome to CellProfiler"
-        first_time = True
         while True:
             if ans == self.OOCN_ASK:
+                if first_time:
+                    try:
+                        if not lock_file(default_workspace_file):
+                            first_time = False
+                    except:
+                        # If we couldn't write the lock because of permissions
+                        # or invalid directory, best not to display the option
+                        first_time = False
                 ans = self.display_open_or_create_new_dlg(
                     caption, message, first_time)
+                if ans != self.OOCN_OPEN_DEFAULT and first_time:
+                    unlock_file(default_workspace_file)
             first_time = False
             if ans in (self.OOCN_CREATE_NEW, self.OOCN_CREATE_FIRST):
                 if ans == self.OOCN_CREATE_NEW:
@@ -197,9 +215,7 @@ class PipelineController:
             elif ans in (self.OOCN_OPEN_OLD, self.OOCN_OPEN_DEFAULT):
                 try:
                     if ans == self.OOCN_OPEN_DEFAULT:
-                        workspace_file = cpprefs.get_workspace_file()
-                        if workspace_file is None:
-                            workspace_file = startup_workspace_file
+                        workspace_file = default_workspace_file
                     elif ans != self.OOCN_OPEN_FROM_COMMAND_LINE:
                         workspace_file = self.do_open_workspace_dlg()
                     if workspace_file is not None:
@@ -544,7 +560,7 @@ class PipelineController:
     def omero_login(self):
         with OmeroLoginDlg(self.__frame, title = "Log into Omero") as dlg:
             dlg.ShowModal()
-            
+
     def on_open_workspace(self, load_pipeline):
         '''Handle the Open Workspace menu command'''
         path = self.do_open_workspace_dlg()
@@ -554,7 +570,8 @@ class PipelineController:
     def do_open_workspace_dlg(self):
         '''Display the open workspace dialog, returning the chosen file
         
-        returns a path or None if the user canceled.
+        returns a path or None if the user canceled. If it returns a path,
+        the workspace file is locked.
         '''
         with wx.FileDialog(
             self.__frame,
@@ -562,30 +579,62 @@ class PipelineController:
             wildcard = "CellProfiler workspace (*.cpi)|*.cpi") as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
-                return dlg.Path
-        return None
+                assert isinstance(dlg, wx.FileDialog)
+                if dlg.Path == self.__locked_workspace_filename:
+                    message = (
+                        'The workspace file, "%s", is your current '
+                        'workspace.\nPlease close and reopen CellProfiler '
+                        'to reload.') % dlg.Path
+                    wx.MessageBox(message=message,
+                                  caption="%s is your current workspace" %
+                                  dlg.Filename,
+                                  style = wx.OK | wx.ICON_ERROR,
+                                  parent = self.__frame)
+                elif lock_file(dlg.Path):
+                    return dlg.Path
+                else:
+                    message = (
+                        'The workspace file, "%s", is already open\nin '
+                        "another instance of CellProfiler and can't be "
+                        "shared.") % dlg.Path
+                    wx.MessageBox(message=message,
+                                  caption="%s is already open" %
+                                  dlg.Filename,
+                                  style = wx.OK | wx.ICON_ERROR,
+                                  parent = self.__frame)
+            return None
         
     def do_open_workspace(self, filename, load_pipeline=True):
-        '''Open the given workspace file'''
-        with wx.ProgressDialog(
-            parent = self.__frame,
-            title = "Opening workspace",
-            message= "Loading %s" % filename,
-            style=wx.PD_CAN_ABORT) as dlg:
-            assert isinstance(dlg, wx.ProgressDialog)
-                
-            def progress_callback(operation_id, progress, message):
-                proceed, skip = dlg.Pulse(message)
-                if not proceed:
-                    raise Exception("User cancelled opening workspace")
-            cpprefs.add_progress_callback(progress_callback)
-                
-            self.__workspace.load(filename, load_pipeline)
-            cpprefs.set_workspace_file(filename)
-            self.__pipeline.load_image_plane_details(self.__workspace)
-            if not load_pipeline:
-                self.__workspace.measurements.clear()
-                self.__workspace.save_pipeline_to_measurements()
+        '''Open the given workspace file
+        
+        filename - the path to the file to open. It should already be locked.
+        '''
+        try:
+            with wx.ProgressDialog(
+                parent = self.__frame,
+                title = "Opening workspace",
+                message= "Loading %s" % filename,
+                style=wx.PD_CAN_ABORT) as dlg:
+                assert isinstance(dlg, wx.ProgressDialog)
+                    
+                def progress_callback(operation_id, progress, message):
+                    proceed, skip = dlg.Pulse(message)
+                    if not proceed:
+                        raise Exception("User cancelled opening workspace")
+                cpprefs.add_progress_callback(progress_callback)
+                    
+                self.__workspace.load(filename, load_pipeline)
+                if self.__locked_workspace_filename is not None:
+                    unlock_file(self.__locked_workspace_filename)
+                self.__locked_workspace_filename = filename
+                cpprefs.set_workspace_file(filename)
+                self.__pipeline.load_image_plane_details(self.__workspace)
+                if not load_pipeline:
+                    self.__workspace.measurements.clear()
+                    self.__workspace.save_pipeline_to_measurements()
+        finally:
+            if filename != self.__locked_workspace_filename:
+                unlock_file(filename)
             
     def __on_new_workspace(self, event):
         '''Handle the New Workspace menu command'''
@@ -594,6 +643,11 @@ class PipelineController:
             self.do_create_workspace(path)
         
     def get_new_workspace_filename(self):
+        '''Get the name for a new workspace file
+        
+        If a workspace file is returned, it is already "locked" even if
+        it doesn't yet exist.
+        '''
         with wx.FileDialog(
             self.__frame,
             "Choose the name for the new workspace file",
@@ -601,16 +655,41 @@ class PipelineController:
             style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
-                return dlg.Path
+                if dlg.Path == self.__locked_workspace_filename:
+                    message = (
+                        'The workspace file, "%s", is your current workspace\n'
+                        "file and can't be overwritten.") % dlg.Path
+                    wx.MessageBox(message = message,
+                                  caption = "Can't overwrite %s" % dlg.Filename,
+                                  style = wx.OK | wx.ICON_ERROR,
+                                  parent = self.__frame)
+                elif lock_file(dlg.Path):
+                    return dlg.Path
+                else:
+                    message = (
+                        'The workspace file, "%s", is open in another\n'
+                        'instance of CellProfiler and cannot be overwritten') %\
+                        dlg.Path
+                    wx.MessageBox(message = message,
+                                  caption = "Can't overwrite %s" % dlg.Filename,
+                                  style = wx.OK | wx.ICON_ERROR,
+                                  parent = self.__frame)
         return None
         
     def do_create_workspace(self, filename):
         '''Create a new workspace file with the given name'''
-        self.__workspace.create(filename)
-        cpprefs.set_workspace_file(filename)
-        self.__pipeline.clear_image_plane_details()
-        self.__workspace.measurements.clear()
-        self.__workspace.save_pipeline_to_measurements()
+        try:
+            self.__workspace.create(filename)
+            if self.__locked_workspace_filename is not None:
+                unlock_file(self.__locked_workspace_filename)
+                self.__locked_workspace_filename = filename
+            cpprefs.set_workspace_file(filename)
+            self.__pipeline.clear_image_plane_details()
+            self.__workspace.measurements.clear()
+            self.__workspace.save_pipeline_to_measurements()
+        finally:
+            if filename != self.__locked_workspace_filename:
+                unlock_file(filename)
         
     def __on_save_as_workspace(self, event):
         '''Handle the Save Workspace As menu command'''
@@ -977,6 +1056,9 @@ class PipelineController:
         self.close_debug_measurements()
         if self.is_running():
             self.stop_running()
+        if self.__locked_workspace_filename is not None:
+            unlock_file(self.__locked_workspace_filename)
+            self.__locked_workspace_filename = None
     
     def __on_pipeline_event(self,caller,event):
         if isinstance(event,cpp.RunExceptionEvent):

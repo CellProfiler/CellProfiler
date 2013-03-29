@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 
 import Queue
 import threading
+import tempfile
 import zmq
 import unittest
 import uuid
@@ -199,6 +200,14 @@ class TestZMQRequest(unittest.TestCase):
         #
         obj = socket.recv_json()
         self.assertEqual(len(obj), 0)
+        
+    def test_03_03_test_lock_file(self):
+        t = tempfile.NamedTemporaryFile()
+        self.assertTrue(Z.lock_file(t.name))
+        self.assertFalse(Z.lock_file(t.name))
+        Z.unlock_file(t.name)
+        self.assertTrue(Z.lock_file(t.name))
+        Z.unlock_file(t.name)
         
             
             

@@ -16,8 +16,10 @@ import logging
 logger = logging.getLogger(__name__)
 import json
 import os
+import socket
 import sys
 import threading
+import uuid
 import zmq
 import Queue
 import numpy as np
@@ -193,10 +195,10 @@ class AnalysisRequest(Request):
 class LockStatusRequest(Request):
     '''A request for the status on some locked file
     
-    self.path - path to locked file
+    uid - the unique ID stored inside the file's lock
     '''
-    def __init__(self, path, **kwargs):
-        self.path = path
+    def __init__(self, uid, **kwargs):
+        self.uid = uid
         Request.__init__(self, **kwargs)
 
 class Reply(Communicable):
@@ -220,12 +222,12 @@ class BoundaryExited(UpstreamExit):
 class LockStatusReply(Reply):
     '''A reply to the LockStatusRequest
     
-    self.path - path to locked file
+    self.uid - the unique ID of the locked file
     self.locked - true if locked, false if not
     '''
-    def __init__(self, path, locked, **kwargs):
+    def __init__(self, uid, locked, **kwargs):
         Reply.__init__(self, **kwargs)
-        self.path = path
+        self.uid = uid
         self.locked = locked
         
 the_boundary = None
@@ -397,10 +399,26 @@ class Boundary(object):
         self.request_socket = self.zmq_context.socket(zmq.ROUTER)
         self.request_port = self.request_socket.bind_to_random_port(zmq_address)
         self.request_address = zmq_address + (':%d' % self.request_port)
+        #
+        # socket for requests outside of the loopback port
+        #
+        self.external_request_socket = self.zmq_context.socket(zmq.ROUTER)
+        try:
+            fqdn = socket.getfqdn()
+        except:
+            try:
+                fqdn = socket.gethostbyname(socket.gethostname())
+            except:
+                fqdn = "127.0.0.1"
+        self.external_request_port = \
+            self.external_request_socket.bind_to_random_port("tcp://*")
+        self.external_request_address = "tcp://%s:%d" % (
+            fqdn, self.external_request_port)
             
         self.thread = threading.Thread(
             target=self.spin,
-            args=(self.selfnotify_socket, self.request_socket),
+            args=(self.selfnotify_socket, self.request_socket, 
+                  self.external_request_socket),
             name="Boundary spin()")
         self.thread.daemon = True
         self.thread.start()
@@ -481,41 +499,44 @@ class Boundary(object):
         self.send_to_boundary_thread(self.NOTIFY_STOP, None)
         self.thread.join()
 
-    def spin(self, selfnotify_socket, request_socket):
+    def spin(self, selfnotify_socket, request_socket, external_request_socket):
         try:
             poller = zmq.Poller()
             poller.register(selfnotify_socket, zmq.POLLIN)
             poller.register(request_socket, zmq.POLLIN)
+            poller.register(external_request_socket, zmq.POLLIN)
             
             received_stop = False
     
             while not received_stop:
                 self.announce_analyses()
-                socks = dict(poller.poll(1000))  # milliseconds
-                if socks.get(selfnotify_socket, None) == zmq.POLLIN:
-                    # Discard the actual contents
-                    _ = selfnotify_socket.recv()
-                #
-                # Under all circumstances, read everything from the queue
-                #
-                try:
-                    while True:
-                        notification, arg = self.downward_queue.get_nowait()
-                        if notification == self.NOTIFY_REPLY_READY:
-                            req, rep = arg
-                            self.handle_reply(req, rep)
-                        elif notification == self.NOTIFY_CANCEL_ANALYSIS:
-                            analysis_id, response_queue = arg
-                            self.handle_cancel(analysis_id, response_queue)
-                        elif notification == self.NOTIFY_REGISTER_ANALYSIS:
-                            analysis_id, response_queue = arg
-                            self.handle_register_analysis(analysis_id, response_queue)
-                        elif notification == self.NOTIFY_STOP:
-                            received_stop = True
-                except Queue.Empty:
-                    pass
-                if socks.get(request_socket, None) == zmq.POLLIN:
-                    req = Communicable.recv(request_socket, routed=True)
+                for s, state in poller.poll(1000):
+                    if s == selfnotify_socket and state == zmq.POLLIN:
+                        # Discard the actual contents
+                        _ = selfnotify_socket.recv()
+                    #
+                    # Under all circumstances, read everything from the queue
+                    #
+                    try:
+                        while True:
+                            notification, arg = self.downward_queue.get_nowait()
+                            if notification == self.NOTIFY_REPLY_READY:
+                                req, rep = arg
+                                self.handle_reply(req, rep)
+                            elif notification == self.NOTIFY_CANCEL_ANALYSIS:
+                                analysis_id, response_queue = arg
+                                self.handle_cancel(analysis_id, response_queue)
+                            elif notification == self.NOTIFY_REGISTER_ANALYSIS:
+                                analysis_id, response_queue = arg
+                                self.handle_register_analysis(analysis_id, response_queue)
+                            elif notification == self.NOTIFY_STOP:
+                                received_stop = True
+                    except Queue.Empty:
+                        pass
+                    if (s not in (request_socket, external_request_socket) or
+                        state != zmq.POLLIN):
+                        continue
+                    req = Communicable.recv(s, routed=True)
                     req.set_boundary(self)
                     if not isinstance(req, AnalysisRequest):
                         for request_class in self.request_dictionary:
@@ -528,6 +549,11 @@ class Boundary(object):
                                 "Received a request that wasn't an AnalysisRequest: %s"% 
                                 str(type(req)))
                             req.reply(BoundaryExited())
+                        continue
+                    if s != request_socket:
+                        # Request is on the external socket
+                        logger.warn("Received a request on the external socket")
+                        req.reply(BoundaryExited())
                         continue
                     #
                     # Filter out requests for cancelled analyses.
@@ -629,7 +655,8 @@ def start_lock_thread():
     the_boundary.register_request_class(LockStatusRequest, __lock_queue)
     def lock_thread_fn():
         global __lock_thread
-        locked_files = []
+        locked_uids = {}
+        locked_files = {}
         while(True):
             msg = __lock_queue.get()
             boundary = msg[0]
@@ -639,21 +666,25 @@ def start_lock_thread():
                 request = msg[2]
                 assert isinstance(request, LockStatusRequest)
                 assert isinstance(boundary, Boundary)
-                logger.info("Received lock status request for %s" % request.path)
-                reply = LockStatusReply(request.path,
-                                        request.path in locked_files)
+                logger.info("Received lock status request for %s" % request.uid)
+                reply = LockStatusReply(request.uid,
+                                        request.uid in locked_uids)
+                if reply.locked:
+                    logger.info("Denied lock request for %s" % locked_uids[request.uid])
                 boundary.enqueue_reply(request, reply)
             elif msg[1] == LOCK_REQUEST:
-                locked_files.append(msg[2])
+                uid, path = msg[2]
+                locked_uids[uid] = path
+                locked_files[path] = uid
                 msg[3].put("OK")
             elif msg[1] == UNLOCK_REQUEST:
                 try:
-                    locked_files.remove(msg[2])
+                    uid = locked_files[msg[2]]
+                    del locked_uids[uid]
+                    del locked_files[msg[2]]
                     msg[3].put("OK")
                 except ValueError as e:
                     msg[3].put(e)
-        for path in locked_files:
-            os.remove(path)
         __lock_thread = None
     __lock_thread = threading.Thread(target = lock_thread_fn)
     __lock_thread.setDaemon(True)
@@ -671,22 +702,24 @@ def lock_file(path, timeout=3):
     '''
     lock_path = path + ".lock"
     start_boundary()
+    uid = uuid.uuid4().hex
     try:
         fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_RDWR)
         with os.fdopen(fd, "a") as f:
-            f.write(the_boundary.request_address)
+            f.write(the_boundary.external_request_address+"\n"+uid)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
         logger.info("Lockfile for %s already exists - contacting owner")
         with open(lock_path, "r") as f:
-            remote_address = f.read()
+            remote_address = f.readline().strip()
+            remote_uid = f.readline().strip()
         logger.info("Owner is %s" % remote_address)
         request_socket = the_boundary.zmq_context.socket(zmq.REQ)
         assert isinstance(request_socket, zmq.Socket)
         request_socket.connect(remote_address)
         
-        lock_request = LockStatusRequest(path)
+        lock_request = LockStatusRequest(remote_uid)
         lock_request.send_only(request_socket)
         poller = zmq.Poller()
         poller.register(request_socket, zmq.POLLIN)
@@ -706,13 +739,13 @@ def lock_file(path, timeout=3):
         # Fall through if we believe that the other end is dead
         #
         with open(lock_path, "w") as f:
-            f.write(the_boundary.request_address)
+            f.write(the_boundary.request_address + "\n"+uid)
     #
     # The coast is clear to lock
     #
     q = Queue.Queue()
     start_lock_thread()
-    __lock_queue.put((None, LOCK_REQUEST, path, q))
+    __lock_queue.put((None, LOCK_REQUEST, (uid, path), q))
     q.get()
     return True
 

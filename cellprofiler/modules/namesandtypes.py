@@ -32,7 +32,6 @@ from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
-from cellprofiler.modules.images import Images
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
 from bioformats.formatreader import get_omexml_metadata, load_using_bioformats

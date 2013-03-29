@@ -481,11 +481,6 @@ class PipelineController:
 
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)
-        self.__tcp_stop_testmode = BitmapLabelButton(
-            panel, label = "Exit test mode", bitmap = stop_bmp)
-        sub_sizer.Add(self.__tcp_stop_testmode, 1, wx.EXPAND)
-        self.__tcp_stop_testmode.Bind(wx.EVT_BUTTON, self.on_debug_stop)
-        
         
         next_image_bmp = wx.BitmapFromImage(get_builtin_image("IMG_IMAGE"))
         self.__tcp_next_imageset = BitmapLabelButton(
@@ -493,7 +488,12 @@ class PipelineController:
         self.__tcp_next_imageset.Bind(
             wx.EVT_BUTTON, self.on_debug_next_image_set)
         sub_sizer.Add(self.__tcp_next_imageset, 1, wx.EXPAND)
-        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image cycle"))
+        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image cycle"))        
+
+        self.__tcp_stop_testmode = BitmapLabelButton(
+            panel, label = "Exit test mode", bitmap = stop_bmp)
+        sub_sizer.Add(self.__tcp_stop_testmode, 1, wx.EXPAND)
+        self.__tcp_stop_testmode.Bind(wx.EVT_BUTTON, self.on_debug_stop)
         
         for child in panel.GetChildren():
             child.SetBackgroundColour(bkgnd_color)

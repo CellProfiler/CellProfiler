@@ -190,7 +190,7 @@ class CPFrame(wx.Frame):
         sizer.Add(hsizer, 0, wx.EXPAND |wx.BOTTOM, 3)
         self.__path_list_filter_checkbox = wx.CheckBox(
             self.__path_list_sash,
-            label = "Show filtered files")
+            label = "Show files excluded by filters")
         hsizer.Add(self.__path_list_filter_checkbox, 0, wx.EXPAND)
         def show_disabled(event):
             self.__path_list_ctrl.set_show_disabled(
@@ -199,7 +199,7 @@ class CPFrame(wx.Frame):
 
         hsizer.AddSpacer(5)
         self.__path_list_button = wx.Button(self.__path_list_sash,
-                                            label = "Update filter")
+                                            label = "Update filtering")
         hsizer.Add(self.__path_list_button, 0, wx.ALIGN_LEFT)
         hsizer.AddSpacer(5)
         self.__path_list_browse_button = wx.Button(self.__path_list_sash,

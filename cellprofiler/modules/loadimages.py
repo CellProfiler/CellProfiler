@@ -147,7 +147,7 @@ FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
 SUPPORTED_IMAGE_EXTENSIONS.update([
     ".1sc",".2fl",".afm", ".aim", ".avi", ".co1",".flex", ".fli", ".gel", 
     ".ics", ".ids", ".im", ".img", ".j2k", ".lif", ".lsm", ".mpeg", ".pic", 
-    ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi", ".c01"])
+    ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi", ".c01", ".xdce"])
 SUPPORTED_MOVIE_EXTENSIONS.update(['mng'] )
 
 # The metadata choices:

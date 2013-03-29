@@ -37,6 +37,7 @@ import cellprofiler.measurements as cpm
 import cellprofiler.workspace as cpw
 import cellprofiler.objects as cpo
 from cellprofiler.gui.addmoduleframe import AddModuleFrame
+from cellprofiler.gui import get_cp_bitmap
 import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
 from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
@@ -146,10 +147,15 @@ class PipelineController:
         Perform steps that need to happen after all of the user interface
         elements have been initialized.
         '''
+        startup_workspace_file = os.path.expanduser("~/CellProfiler.cpi")
         if workspace_file is False:
             ans = self.OOCN_CREATE_NEW
         elif workspace_file is not None:
             ans = self.OOCN_OPEN_FROM_COMMAND_LINE
+        elif cpprefs.get_workspace_file() is None:
+            # If user is starting CP for the first time, create a workspace
+            # for them.
+            ans = self.OOCN_CREATE_FIRST
         else:
             config_ans = cpprefs.get_workspace_choice()
             if config_ans == cpprefs.WC_CREATE_NEW_WORKSPACE:
@@ -168,16 +174,20 @@ class PipelineController:
                 ans = self.display_open_or_create_new_dlg(
                     caption, message, first_time)
             first_time = False
-            if ans == self.OOCN_CREATE_NEW:
-                workspace_file = self.get_new_workspace_filename()
-                if workspace_file == None:
-                    message = ""
-                    caption = "Open or create workspace or exit"
-                    ans = self.OOCN_ASK
-                    continue
+            if ans in (self.OOCN_CREATE_NEW, self.OOCN_CREATE_FIRST):
+                if ans == self.OOCN_CREATE_NEW:
+                    workspace_file = self.get_new_workspace_filename()
+                    if workspace_file == None:
+                        message = ""
+                        caption = "Open or create workspace or exit"
+                        ans = self.OOCN_ASK
+                        continue
+                else:
+                    workspace_file = startup_workspace_file
                 try:
                     self.do_create_workspace(workspace_file)
                     self.__pipeline.clear()
+                    self.__pipeline_list_view.select_one_module(1)
                     break
                 except:
                     message = (
@@ -189,8 +199,7 @@ class PipelineController:
                     if ans == self.OOCN_OPEN_DEFAULT:
                         workspace_file = cpprefs.get_workspace_file()
                         if workspace_file is None:
-                            workspace_file = os.path.expanduser(
-                                "~/CellProfiler.cpi")
+                            workspace_file = startup_workspace_file
                     elif ans != self.OOCN_OPEN_FROM_COMMAND_LINE:
                         workspace_file = self.do_open_workspace_dlg()
                     if workspace_file is not None:
@@ -214,6 +223,7 @@ class PipelineController:
     
     OOCN_OPEN_OLD = wx.NewId()
     OOCN_CREATE_NEW = wx.NewId()
+    OOCN_CREATE_FIRST = wx.NewId()
     OOCN_EXIT_CP = wx.NewId()
     OOCN_OPEN_DEFAULT = wx.NewId()
     OOCN_OPEN_FROM_COMMAND_LINE = wx.NewId()
@@ -253,13 +263,15 @@ class PipelineController:
                 (self.OOCN_CREATE_NEW, "New"),
                 (self.OOCN_OPEN_OLD, "Open"),
                 (self.OOCN_EXIT_CP, "Exit"))
+        bkgd_color = cpprefs.get_background_color()
         with wx.Dialog(self.__frame, title=caption) as dlg:
+            assert isinstance(dlg, wx.Dialog)
+            dlg.BackgroundColour = bkgd_color
             dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 20)
-            bmp_question = wx.ArtProvider.GetBitmap(
-                wx.ART_QUESTION, wx.ART_CMN_DIALOG)
-            sizer.Add(wx.StaticBitmap(dlg, bitmap=bmp_question), 0,
+            bmp_cp = get_cp_bitmap()
+            sizer.Add(wx.StaticBitmap(dlg, bitmap=bmp_cp), 0,
                       wx.ALIGN_TOP | wx.ALIGN_LEFT)
             sizer.AddSpacer(20)
             text = wx.StaticText(dlg, label=message)
@@ -273,7 +285,7 @@ class PipelineController:
                 dlg.Sizer.AddSpacer(20)
             
             sizer = wx.BoxSizer(wx.HORIZONTAL)
-            dlg.Sizer.Add(sizer, 0, wx.ALIGN_RIGHT | wx.ALL, 2)
+            dlg.Sizer.Add(sizer, 0, wx.ALIGN_RIGHT | wx.ALL, 5)
             result = []
             for i, (code, label) in enumerate(choices):
                 button = wx.Button(dlg, label = label)

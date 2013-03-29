@@ -294,6 +294,7 @@ class ModuleView:
         self.__inside_notify = False
         self.__handle_change = True
         self.__notes_text = None
+        self.__started = False
         
     def start(self):
         '''Start the module view
@@ -305,6 +306,7 @@ class ModuleView:
         self.__workspace.add_notification_callback(
             self.__on_workspace_event)
         wx.EVT_IDLE(self.__module_panel, self.on_idle)
+        self.__started = True
 
     def skip_event(self, event):
         event.Skip(False)
@@ -550,7 +552,8 @@ class ModuleView:
                 self.module_panel.Layout()
                 self.module_panel.Thaw()
             elif self.__frame is not None:
-                self.__frame.show_module_ui(True)
+                if self.__started:
+                    self.__frame.show_module_ui(True)
                 self.module_panel.Thaw()
                 self.__frame.show_imageset_ctrl(imageset_control is not None)
                 if imageset_control is not None:

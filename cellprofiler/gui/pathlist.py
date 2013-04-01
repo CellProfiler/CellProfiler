@@ -16,6 +16,7 @@ import numpy as np
 import wx
 import wx.lib.scrolledpanel
 import os
+import sys
 import urllib
 import urllib2
 import uuid
@@ -510,10 +511,20 @@ class PathListCtrl(wx.PyScrolledWindow):
                         flags += wx.CONTROL_SELECTED
                     if idx == self.focus_item:
                         flags += wx.CONTROL_CURRENT
-                    rn.DrawItemSelectionRect(
-                        self, paint_dc,
-                        wx.Rect(7-x, yy, self.max_width - 7, line_height),
-                        flags)
+                    # Bug in carbon DrawItemSelectionRect uses
+                    # uninitialized color for the rectangle
+                    # if it's not selected.
+                    #
+                    # Optimistically, I've coded it so that it
+                    # might work in Cocoa
+                    #
+                    if (sys.platform != 'darwin' or
+                        sys.maxsize > 0x7fffffff or
+                        (flags & wx.CONTROL_SELECTED) == wx.CONTROL_SELECTED):
+                        rn.DrawItemSelectionRect(
+                            self, paint_dc,
+                            wx.Rect(7-x, yy, self.max_width - 7, line_height),
+                            flags)
                     if selected:
                         paint_dc.SetTextForeground(selected_text)
                     else:

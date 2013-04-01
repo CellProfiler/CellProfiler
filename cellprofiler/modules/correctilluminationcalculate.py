@@ -120,7 +120,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
              <i>Rescale</i>. </li>
              </ul> 
              <p>Please note that if a mask was applied to the input image, the pixels outside of the
-             mask will be exlcuded from consideration. This is useful, for instance, in cases where
+             mask will be excluded from consideration. This is useful, for instance, in cases where
              you have masked out the well edge in an image from a multi-well plate; the dark well 
              edge would distort the illumination correction function along the interior well edge.
              Masking the image beforehand solves this problem.</p>''')
@@ -478,10 +478,14 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 output_image_provider.add_image(orig_image)
 
             # fetch images for display
-            avg_image = output_image_provider.provide_avg_image()
-            dilated_image = output_image_provider.provide_dilated_image()
-            workspace.image_set.providers.append(output_image_provider)
-            output_image = output_image_provider.provide_image(workspace.image_set)
+            if (workspace.display or self.save_average_image or 
+                self.save_dilated_image or self.each_or_all == EA_ALL_FIRST):
+                avg_image = output_image_provider.provide_avg_image()
+                dilated_image = output_image_provider.provide_dilated_image()
+                workspace.image_set.providers.append(output_image_provider)
+                output_image = output_image_provider.provide_image(workspace.image_set)
+            else:
+                workspace.image_set.providers.append(output_image_provider)
         else:
             orig_image = workspace.image_set.get_image(self.image_name.value)
             pixels = orig_image.pixel_data
@@ -500,10 +504,11 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         if self.save_dilated_image.value:
             workspace.image_set.add(self.dilated_image_name.value, 
                                     dilated_image)
-        # store images for potential display
-        workspace.display_data.avg_image = avg_image
-        workspace.display_data.dilated_image = dilated_image
-        workspace.display_data.output_image = output_image
+        if workspace.display:
+            # store images for potential display
+            workspace.display_data.avg_image = avg_image
+            workspace.display_data.dilated_image = dilated_image
+            workspace.display_data.output_image = output_image
         
     def post_group(self, workspace, grouping):
         '''Handle tasks to be performed after a group has been processed

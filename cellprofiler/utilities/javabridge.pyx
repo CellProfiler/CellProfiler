@@ -108,11 +108,11 @@ cdef extern from "jni.h":
     ctypedef JNIInvokeInterface_ *JavaVM
 
     ctypedef struct JNIInvokeInterface_:
-         jint (*DestroyJavaVM)(JavaVM *vm)
-         jint (*AttachCurrentThread)(JavaVM *vm, void **penv, void *args)
-         jint (*DetachCurrentThread)(JavaVM *vm)
-         jint (*GetEnv)(JavaVM *vm, void **penv, jint version)
-         jint (*AttachCurrentThreadAsDaemon)(JavaVM *vm, void *penv, void *args)
+         jint (*DestroyJavaVM)(JavaVM *vm) nogil
+         jint (*AttachCurrentThread)(JavaVM *vm, void **penv, void *args) nogil
+         jint (*DetachCurrentThread)(JavaVM *vm) nogil
+         jint (*GetEnv)(JavaVM *vm, void **penv, jint version) nogil
+         jint (*AttachCurrentThreadAsDaemon)(JavaVM *vm, void *penv, void *args) nogil
 
     struct JavaVMOption:
         char *optionString
@@ -131,184 +131,189 @@ cdef extern from "jni.h":
     ctypedef JNINativeInterface_ *JNIEnv
 
     struct JNINativeInterface_:
-        jint (* GetVersion)(JNIEnv *env)
-        jclass (* FindClass)(JNIEnv *env, char *name)
-        jclass (* GetObjectClass)(JNIEnv *env, jobject obj)
-        jboolean (* IsInstanceOf)(JNIEnv *env, jobject obj, jclass klass)
-        jclass (* NewGlobalRef)(JNIEnv *env, jobject lobj)
-        void (* DeleteGlobalRef)(JNIEnv *env, jobject gref)
-        void (* DeleteLocalRef)(JNIEnv *env, jobject obj)
+        jint (* GetVersion)(JNIEnv *env) nogil
+        jclass (* FindClass)(JNIEnv *env, char *name) nogil
+        jclass (* GetObjectClass)(JNIEnv *env, jobject obj) nogil
+        jboolean (* IsInstanceOf)(JNIEnv *env, jobject obj, jclass klass) nogil
+        jclass (* NewGlobalRef)(JNIEnv *env, jobject lobj) nogil
+        void (* DeleteGlobalRef)(JNIEnv *env, jobject gref) nogil
+        void (* DeleteLocalRef)(JNIEnv *env, jobject obj) nogil
         #
         # Exception handling
         #
-        jobject (* ExceptionOccurred)(JNIEnv *env)
-        void (* ExceptionDescribe)(JNIEnv *env)
-        void (* ExceptionClear)(JNIEnv *env)
+        jobject (* ExceptionOccurred)(JNIEnv *env) nogil
+        void (* ExceptionDescribe)(JNIEnv *env) nogil
+        void (* ExceptionClear)(JNIEnv *env) nogil
         #
         # Method IDs
         #
-        jmethodID (*GetMethodID)(JNIEnv *env, jclass clazz, char *name, char *sig)
-        jmethodID (*GetStaticMethodID)(JNIEnv *env, jclass clazz, char *name, char *sig)
-        jmethodID (*FromReflectedMethod)(JNIEnv *env, jobject method)
-        jmethodID (*FromReflectedField)(JNIEnv *env, jobject field)
+        jmethodID (*GetMethodID)(JNIEnv *env, jclass clazz, char *name, char *sig) nogil
+        jmethodID (*GetStaticMethodID)(JNIEnv *env, jclass clazz, char *name, char *sig) nogil
+        jmethodID (*FromReflectedMethod)(JNIEnv *env, jobject method) nogil
+        jmethodID (*FromReflectedField)(JNIEnv *env, jobject field) nogil
         #
         # New object
         #
-        jobject (* NewObjectA)(JNIEnv *env, jclass clazz, jmethodID id, jvalue *args)
+        jobject (* NewObjectA)(JNIEnv *env, jclass clazz, jmethodID id, jvalue *args) nogil
         #
         # Methods for object calls
         #
-        jboolean (* CallBooleanMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
-        jbyte (* CallByteMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
-        jchar (* CallCharMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
-        jshort (* CallShortMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
-        jint (* CallIntMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
-        jlong (* CallLongMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
-        jfloat (* CallFloatMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
-        jdouble (* CallDoubleMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
-        void (* CallVoidMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
-        jobject (* CallObjectMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args)
+        jboolean (* CallBooleanMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args) nogil
+        jbyte (* CallByteMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args) nogil
+        jchar (* CallCharMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args) nogil
+        jshort (* CallShortMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args) nogil
+        jint (* CallIntMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args) nogil
+        jlong (* CallLongMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args) nogil
+        jfloat (* CallFloatMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args) nogil
+        jdouble (* CallDoubleMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args) nogil
+        void (* CallVoidMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args) nogil
+        jobject (* CallObjectMethodA)(JNIEnv *env, jobject obj, jmethodID methodID, jvalue *args) nogil
         #
         # Methods for static class calls
         #
-        jboolean (* CallStaticBooleanMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
-        jbyte (* CallStaticByteMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
-        jchar (* CallStaticCharMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
-        jshort (* CallStaticShortMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
-        jint (* CallStaticIntMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
-        jlong (* CallStaticLongMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
-        jfloat (* CallStaticFloatMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
-        jdouble (* CallStaticDoubleMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
-        void (* CallStaticVoidMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
-        jobject (* CallStaticObjectMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args)
+        jboolean (* CallStaticBooleanMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args) nogil
+        jbyte (* CallStaticByteMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args) nogil
+        jchar (* CallStaticCharMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args) nogil
+        jshort (* CallStaticShortMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args) nogil
+        jint (* CallStaticIntMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args) nogil
+        jlong (* CallStaticLongMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args) nogil
+        jfloat (* CallStaticFloatMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args) nogil
+        jdouble (* CallStaticDoubleMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args) nogil
+        void (* CallStaticVoidMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args) nogil
+        jobject (* CallStaticObjectMethodA)(JNIEnv *env, jclass clazz, jmethodID methodID, jvalue *args) nogil
         #
         # Methods for fields
         #
-        jfieldID (* GetFieldID)(JNIEnv *env, jclass clazz, char *name, char *sig)
-        jobject (* GetObjectField)(JNIEnv *env, jobject obj, jfieldID fieldID)
-        jboolean (* GetBooleanField)(JNIEnv *env, jobject obj, jfieldID fieldID)
-        jbyte (* GetByteField)(JNIEnv *env, jobject obj, jfieldID fieldID)
-        jchar (* GetCharField)(JNIEnv *env, jobject obj, jfieldID fieldID)
-        jshort (* GetShortField)(JNIEnv *env, jobject obj, jfieldID fieldID)
-        jint (* GetIntField)(JNIEnv *env, jobject obj, jfieldID fieldID)
-        jlong (* GetLongField)(JNIEnv *env, jobject obj, jfieldID fieldID)
-        jfloat (*GetFloatField)(JNIEnv *env, jobject obj, jfieldID fieldID)
-        jdouble (*GetDoubleField)(JNIEnv *env, jobject obj, jfieldID fieldID)
+        jfieldID (* GetFieldID)(JNIEnv *env, jclass clazz, char *name, char *sig) nogil
+        jobject (* GetObjectField)(JNIEnv *env, jobject obj, jfieldID fieldID) nogil
+        jboolean (* GetBooleanField)(JNIEnv *env, jobject obj, jfieldID fieldID) nogil
+        jbyte (* GetByteField)(JNIEnv *env, jobject obj, jfieldID fieldID) nogil
+        jchar (* GetCharField)(JNIEnv *env, jobject obj, jfieldID fieldID) nogil
+        jshort (* GetShortField)(JNIEnv *env, jobject obj, jfieldID fieldID) nogil
+        jint (* GetIntField)(JNIEnv *env, jobject obj, jfieldID fieldID) nogil
+        jlong (* GetLongField)(JNIEnv *env, jobject obj, jfieldID fieldID) nogil
+        jfloat (*GetFloatField)(JNIEnv *env, jobject obj, jfieldID fieldID) nogil
+        jdouble (*GetDoubleField)(JNIEnv *env, jobject obj, jfieldID fieldID) nogil
 
-        void (* SetObjectField)(JNIEnv *env, jobject obj, jfieldID fieldID, jobject val)
-        void (* SetBooleanField)(JNIEnv *env, jobject obj, jfieldID fieldID, jboolean val)
-        void (* SetByteField)(JNIEnv *env, jobject obj, jfieldID fieldID, jbyte val)
-        void (* SetCharField)(JNIEnv *env, jobject obj, jfieldID fieldID, jchar val)
-        void (*SetShortField)(JNIEnv *env, jobject obj, jfieldID fieldID, jshort val)
-        void (*SetIntField)(JNIEnv *env, jobject obj, jfieldID fieldID, jint val)
-        void (*SetLongField)(JNIEnv *env, jobject obj, jfieldID fieldID, jlong val)
-        void (*SetFloatField)(JNIEnv *env, jobject obj, jfieldID fieldID, jfloat val)
-        void (*SetDoubleField)(JNIEnv *env, jobject obj, jfieldID fieldID, jdouble val)
+        void (* SetObjectField)(JNIEnv *env, jobject obj, jfieldID fieldID, jobject val) nogil
+        void (* SetBooleanField)(JNIEnv *env, jobject obj, jfieldID fieldID, jboolean val) nogil
+        void (* SetByteField)(JNIEnv *env, jobject obj, jfieldID fieldID, jbyte val) nogil
+        void (* SetCharField)(JNIEnv *env, jobject obj, jfieldID fieldID, jchar val) nogil
+        void (*SetShortField)(JNIEnv *env, jobject obj, jfieldID fieldID, jshort val) nogil
+        void (*SetIntField)(JNIEnv *env, jobject obj, jfieldID fieldID, jint val) nogil
+        void (*SetLongField)(JNIEnv *env, jobject obj, jfieldID fieldID, jlong val) nogil
+        void (*SetFloatField)(JNIEnv *env, jobject obj, jfieldID fieldID, jfloat val) nogil
+        void (*SetDoubleField)(JNIEnv *env, jobject obj, jfieldID fieldID, jdouble val) nogil
 
-        jfieldID (*GetStaticFieldID)(JNIEnv *env, jclass clazz, char *name, char *sig)
-        jobject (* GetStaticObjectField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
-        jboolean (* GetStaticBooleanField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
-        jbyte (* GetStaticByteField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
-        jchar (* GetStaticCharField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
-        jshort (* GetStaticShortField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
-        jint (* GetStaticIntField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
-        jlong (* GetStaticLongField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
-        jfloat (*GetStaticFloatField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
-        jdouble (* GetStaticDoubleField)(JNIEnv *env, jclass clazz, jfieldID fieldID)
+        jfieldID (*GetStaticFieldID)(JNIEnv *env, jclass clazz, char *name, char *sig) nogil
+        jobject (* GetStaticObjectField)(JNIEnv *env, jclass clazz, jfieldID fieldID) nogil
+        jboolean (* GetStaticBooleanField)(JNIEnv *env, jclass clazz, jfieldID fieldID) nogil
+        jbyte (* GetStaticByteField)(JNIEnv *env, jclass clazz, jfieldID fieldID) nogil
+        jchar (* GetStaticCharField)(JNIEnv *env, jclass clazz, jfieldID fieldID) nogil
+        jshort (* GetStaticShortField)(JNIEnv *env, jclass clazz, jfieldID fieldID) nogil
+        jint (* GetStaticIntField)(JNIEnv *env, jclass clazz, jfieldID fieldID) nogil
+        jlong (* GetStaticLongField)(JNIEnv *env, jclass clazz, jfieldID fieldID) nogil
+        jfloat (*GetStaticFloatField)(JNIEnv *env, jclass clazz, jfieldID fieldID) nogil
+        jdouble (* GetStaticDoubleField)(JNIEnv *env, jclass clazz, jfieldID fieldID) nogil
 
-        void (*SetStaticObjectField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jobject value)
-        void (*SetStaticBooleanField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jboolean value)
-        void (*SetStaticByteField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jbyte value)
-        void (*SetStaticCharField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jchar value)
-        void (*SetStaticShortField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jshort value)
-        void (*SetStaticIntField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jint value)
-        void (*SetStaticLongField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jlong value)
-        void (*SetStaticFloatField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jfloat value)
-        void (*SetStaticDoubleField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jdouble value)
+        void (*SetStaticObjectField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jobject value) nogil
+        void (*SetStaticBooleanField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jboolean value) nogil
+        void (*SetStaticByteField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jbyte value) nogil
+        void (*SetStaticCharField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jchar value) nogil
+        void (*SetStaticShortField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jshort value) nogil
+        void (*SetStaticIntField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jint value) nogil
+        void (*SetStaticLongField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jlong value) nogil
+        void (*SetStaticFloatField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jfloat value) nogil
+        void (*SetStaticDoubleField)(JNIEnv *env, jclass clazz, jfieldID fieldID, jdouble value) nogil
         #
         # Methods for handling strings
         #
-        jobject (* NewStringUTF)(JNIEnv *env, char *utf)
-        char *(* GetStringUTFChars)(JNIEnv *env, jobject str, jboolean *is_copy)
-        void (* ReleaseStringUTFChars)(JNIEnv *env, jobject str, char *chars)
+        jobject (* NewStringUTF)(JNIEnv *env, char *utf) nogil
+        char *(* GetStringUTFChars)(JNIEnv *env, jobject str, jboolean *is_copy) nogil
+        void (* ReleaseStringUTFChars)(JNIEnv *env, jobject str, char *chars) nogil
         #
-        # Methods for making arrays (which I am not distinguishing from jobjects here)
+        # Methods for making arrays (which I am not distinguishing from jobjects here) nogil
         #
-        jsize (* GetArrayLength)(JNIEnv *env, jobject array)
-        jobject (* NewObjectArray)(JNIEnv *env, jsize len, jclass clazz, jobject init)
-        jobject (* GetObjectArrayElement)(JNIEnv *env, jobject array, jsize index)
-        void (* SetObjectArrayElement)(JNIEnv *env, jobject array, jsize index, jobject val)
+        jsize (* GetArrayLength)(JNIEnv *env, jobject array) nogil
+        jobject (* NewObjectArray)(JNIEnv *env, jsize len, jclass clazz, jobject init) nogil
+        jobject (* GetObjectArrayElement)(JNIEnv *env, jobject array, jsize index) nogil
+        void (* SetObjectArrayElement)(JNIEnv *env, jobject array, jsize index, jobject val) nogil
 
-        jobject (* NewBooleanArray)(JNIEnv *env, jsize len)
-        jobject (* NewByteArray)(JNIEnv *env, jsize len)
-        jobject (* NewCharArray)(JNIEnv *env, jsize len)
-        jobject (* NewShortArray)(JNIEnv *env, jsize len)
-        jobject (* NewIntArray)(JNIEnv *env, jsize len)
-        jobject (*NewLongArray)(JNIEnv *env, jsize len)
-        jobject (* NewFloatArray)(JNIEnv *env, jsize len)
-        jobject (* NewDoubleArray)(JNIEnv *env, jsize len)
+        jobject (* NewBooleanArray)(JNIEnv *env, jsize len) nogil
+        jobject (* NewByteArray)(JNIEnv *env, jsize len) nogil
+        jobject (* NewCharArray)(JNIEnv *env, jsize len) nogil
+        jobject (* NewShortArray)(JNIEnv *env, jsize len) nogil
+        jobject (* NewIntArray)(JNIEnv *env, jsize len) nogil
+        jobject (*NewLongArray)(JNIEnv *env, jsize len) nogil
+        jobject (* NewFloatArray)(JNIEnv *env, jsize len) nogil
+        jobject (* NewDoubleArray)(JNIEnv *env, jsize len) nogil
 
-        jboolean * (* GetBooleanArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
-        jbyte * (* GetByteArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
-        jchar * (*GetCharArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
-        jshort * (*GetShortArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
-        jint * (* GetIntArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
-        jlong * (* GetLongArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
-        jfloat * (* GetFloatArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
-        jdouble * (* GetDoubleArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy)
+        jboolean * (* GetBooleanArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy) nogil
+        jbyte * (* GetByteArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy) nogil
+        jchar * (*GetCharArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy) nogil
+        jshort * (*GetShortArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy) nogil
+        jint * (* GetIntArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy) nogil
+        jlong * (* GetLongArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy) nogil
+        jfloat * (* GetFloatArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy) nogil
+        jdouble * (* GetDoubleArrayElements)(JNIEnv *env, jobject array, jboolean *isCopy) nogil
 
-        void (*ReleaseBooleanArrayElements)(JNIEnv *env, jobject array, jboolean *elems, jint mode)
-        void (*ReleaseByteArrayElements)(JNIEnv *env, jobject array, jbyte *elems, jint mode)
-        void (*ReleaseCharArrayElements)(JNIEnv *env, jobject array, jchar *elems, jint mode)
-        void (*ReleaseShortArrayElements)(JNIEnv *env, jobject array, jshort *elems, jint mode)
-        void (*ReleaseIntArrayElements)(JNIEnv *env, jobject array, jint *elems, jint mode)
-        void (*ReleaseLongArrayElements)(JNIEnv *env, jobject array, jlong *elems, jint mode)
-        void (*ReleaseFloatArrayElements)(JNIEnv *env, jobject array, jfloat *elems, jint mode)
-        void (*ReleaseDoubleArrayElements)(JNIEnv *env, jobject array, jdouble *elems, jint mode)
+        void (*ReleaseBooleanArrayElements)(JNIEnv *env, jobject array, jboolean *elems, jint mode) nogil
+        void (*ReleaseByteArrayElements)(JNIEnv *env, jobject array, jbyte *elems, jint mode) nogil
+        void (*ReleaseCharArrayElements)(JNIEnv *env, jobject array, jchar *elems, jint mode) nogil
+        void (*ReleaseShortArrayElements)(JNIEnv *env, jobject array, jshort *elems, jint mode) nogil
+        void (*ReleaseIntArrayElements)(JNIEnv *env, jobject array, jint *elems, jint mode) nogil
+        void (*ReleaseLongArrayElements)(JNIEnv *env, jobject array, jlong *elems, jint mode) nogil
+        void (*ReleaseFloatArrayElements)(JNIEnv *env, jobject array, jfloat *elems, jint mode) nogil
+        void (*ReleaseDoubleArrayElements)(JNIEnv *env, jobject array, jdouble *elems, jint mode) nogil
 
         void (* GetBooleanArrayRegion)(JNIEnv *env, jobject array, jsize start, 
-                                       jsize l, jboolean *buf)
+                                       jsize l, jboolean *buf) nogil
         void (* GetByteArrayRegion)(JNIEnv *env, jobject array, jsize start, 
-                                    jsize len, jbyte *buf)
+                                    jsize len, jbyte *buf) nogil
         void (*GetCharArrayRegion)(JNIEnv *env, jobject array, jsize start, 
-                                   jsize len, jchar *buf)
+                                   jsize len, jchar *buf) nogil
         void (* GetShortArrayRegion)(JNIEnv *env, jobject array, jsize start,
-                                     jsize len, jshort *buf)
+                                     jsize len, jshort *buf) nogil
         void (* GetIntArrayRegion)(JNIEnv *env, jobject array, jsize start,
-                                   jsize len, jint *buf)
+                                   jsize len, jint *buf) nogil
         void (* GetLongArrayRegion)(JNIEnv *env, jobject array, jsize start,
-                                    jsize len, jlong *buf)
+                                    jsize len, jlong *buf) nogil
         void (* GetFloatArrayRegion)(JNIEnv *env, jobject array, jsize start,
-                                     jsize len, jfloat *buf)
+                                     jsize len, jfloat *buf) nogil
         void (* GetDoubleArrayRegion)(JNIEnv *env, jobject array, jsize start,
-                                      jsize len, jdouble *buf)
+                                      jsize len, jdouble *buf) nogil
 
         void (*SetBooleanArrayRegion)(JNIEnv *env, jobject array, jsize start, 
-                                      jsize l, jboolean *buf)
+                                      jsize l, jboolean *buf) nogil
         void (*SetByteArrayRegion)(JNIEnv *env, jobject array, jsize start,
-                                   jsize len, jbyte *buf)
+                                   jsize len, jbyte *buf) nogil
         void (*SetCharArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
-                                   char *buf)
+                                   char *buf) nogil
         void (*SetShortArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
-                                    jshort *buf)
+                                    jshort *buf) nogil
         void (*SetIntArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
-                                  jint *buf)
+                                  jint *buf) nogil
         void (*SetLongArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
-                                   jlong *buf)
+                                   jlong *buf) nogil
         void (*SetFloatArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
-                                    jfloat *buf)
+                                    jfloat *buf) nogil
         void (*SetDoubleArrayRegion)(JNIEnv *env, jobject array, jsize start, jsize len,
-                                     jdouble *buf)
+                                     jdouble *buf) nogil
 
-    jint JNI_CreateJavaVM(JavaVM **pvm, void **penv, void *args)
-    jint JNI_GetDefaultJavaVMInitArgs(void *args)
+    jint JNI_CreateJavaVM(JavaVM **pvm, void **penv, void *args) nogil
+    jint JNI_GetDefaultJavaVMInitArgs(void *args) nogil
     
 IF UNAME_SYSNAME == "Darwin":
     cdef extern from "mac_javabridge_utils.h":
-        int MacStartVM(JavaVM **, JavaVMInitArgs *pVMArgs, char *class_name)
+        int MacStartVM(JavaVM **, JavaVMInitArgs *pVMArgs, char *class_name) nogil
+        void MacStopVM() nogil
+    cdef void StopVM(JavaVM *vm) nogil:
+        MacStopVM()
 ELSE:
-    cdef int MacStartVM(JavaVM **pvm, JavaVMInitArgs *pVMArgs, char *class_name):
+    cdef int MacStartVM(JavaVM **pvm, JavaVMInitArgs *pVMArgs, char *class_name) nogil:
         return -1
+    cdef void StopVM(JavaVM *vm) nogil:
+        vm[0].DestroyJavaVM(vm)
         
     
 def get_default_java_vm_init_args():
@@ -496,6 +501,9 @@ cdef class JB_VM:
             JavaVMInitArgs args
             JNIEnv *env
             JB_Env jenv
+            int result
+            char *pclass_name = class_name
+            JavaVM **pvm = &self.vm
 
         args.version = JNI_VERSION_1_4
         args.nOptions = len(options)
@@ -505,7 +513,8 @@ cdef class JB_VM:
         options = [str(option) for option in options]
         for i, option in enumerate(options):
             args.options[i].optionString = option
-        result = MacStartVM(&self.vm, &args, class_name)
+        with nogil:
+            result = MacStartVM(pvm, &args, pclass_name)
         free(args.options)
         if result != 0:
             raise RuntimeError("Failed to create Java VM. Return code = %d"%result)
@@ -540,7 +549,7 @@ cdef class JB_VM:
     
     def destroy(self):
         if self.vm != NULL:
-            self.vm[0].DestroyJavaVM(self.vm)
+            StopVM(self.vm)
             self.vm = NULL
     
 cdef class JB_Env:
@@ -732,9 +741,18 @@ cdef class JB_Env:
         '''
         cdef:
             jvalue *values
-            jobject oresult
+            jobject this = o.o
             JNIEnv *jnienv = self.env
-            
+            jboolean zresult
+            jbyte bresult
+            jchar cresult
+            jshort sresult
+            jint iresult
+            jlong jresult
+            jfloat fresult
+            jdouble dresult
+            jobject oresult
+            jmethodID m_id = m.id
         
         if m is None:
             raise ValueError("Method ID is None - check your method ID call")
@@ -755,24 +773,41 @@ cdef class JB_Env:
         # Dispatch based on return code at end of sig
         #
         if sig == 'Z':
-            result = self.env[0].CallBooleanMethodA(self.env, o.o, m.id, values) != 0
+            with nogil:
+                zresult = jnienv[0].CallBooleanMethodA(
+                    jnienv, this, m_id, values)
+            result = zresult != 0
         elif sig == 'B':
-            result = self.env[0].CallByteMethodA(self.env, o.o, m.id, values)
+            with nogil:
+                bresult = jnienv[0].CallByteMethodA(jnienv, this, m_id, values)
+            result = bresult
         elif sig == 'C':
-            result = self.env[0].CallCharMethodA(self.env, o.o, m.id, values)
-            result = str(unichr(result))
+            with nogil:
+                cresult = jnienv[0].CallCharMethodA(jnienv, this, m_id, values)
+            result = unichr(cresult)
         elif sig == 'S':
-            result = self.env[0].CallShortMethodA(self.env, o.o, m.id, values)
+            with nogil:
+                sresult = jnienv[0].CallShortMethodA(jnienv, this, m_id, values)
+            result = sresult
         elif sig == 'I':
-            result = self.env[0].CallIntMethodA(self.env, o.o, m.id, values)
+            with nogil:
+                iresult = jnienv[0].CallIntMethodA(jnienv, this, m_id, values)
+            result = iresult
         elif sig == 'J':
-            result = self.env[0].CallLongMethodA(self.env, o.o, m.id, values)
+            with nogil:
+                jresult = jnienv[0].CallLongMethodA(jnienv, this, m_id, values)
+            result = jresult
         elif sig == 'F':
-            result = self.env[0].CallFloatMethodA(self.env, o.o, m.id, values)
+            with nogil:
+                fresult = jnienv[0].CallFloatMethodA(jnienv, this, m_id, values)
+            result = fresult
         elif sig == 'D':
-            result = self.env[0].CallDoubleMethodA(self.env, o.o, m.id, values)
+            with nogil:
+                dresult = jnienv[0].CallDoubleMethodA(jnienv, this, m_id, values)
+            result = dresult
         elif sig[0] == 'L' or sig[0] == '[':
-            oresult = jnienv[0].CallObjectMethodA(jnienv, o.o, m.id, values)
+            with nogil:
+                oresult = jnienv[0].CallObjectMethodA(jnienv, this, m_id, values)
             if oresult == NULL:
                 result = None
             else:
@@ -780,7 +815,8 @@ cdef class JB_Env:
                 if e is not None:
                     raise e
         elif sig == 'V':
-            self.env[0].CallVoidMethodA(self.env, o.o, m.id, values)
+            with nogil:
+                jnienv[0].CallVoidMethodA(jnienv, this, m_id, values)
             result = None
         else:
             free(<void *>values)
@@ -799,7 +835,18 @@ cdef class JB_Env:
         '''
         cdef:
             jvalue *values
+            JNIEnv *jnienv = self.env
+            jclass klass = c.c
+            jboolean zresult
+            jbyte bresult
+            jchar cresult
+            jshort sresult
+            jint iresult
+            jlong jresult
+            jfloat fresult
+            jdouble dresult
             jobject oresult
+            jmethodID m_id = m.id
         
         if m is None:
             raise ValueError("Method ID is None - check your method ID call")
@@ -820,24 +867,43 @@ cdef class JB_Env:
         # Dispatch based on return code at end of sig
         #
         if sig == 'Z':
-            result = self.env[0].CallStaticBooleanMethodA(self.env, c.c, m.id, values) != 0
+            with nogil:
+                zresult = jnienv[0].CallStaticBooleanMethodA(
+                    jnienv, klass, m_id, values)
+            result = zresult != 0
         elif sig == 'B':
-            result = self.env[0].CallStaticByteMethodA(self.env, c.c, m.id, values)
+            with nogil:
+                bresult = jnienv[0].CallStaticByteMethodA(
+                    jnienv, klass, m_id, values)
+            result = bresult
         elif sig == 'C':
-            result = self.env[0].CallStaticCharMethodA(self.env, c.c, m.id, values)
-            result = str(unichr(result))
+            with nogil:
+                cresult = jnienv[0].CallStaticCharMethodA(
+                    jnienv, klass, m_id, values)
+            result = unichr(cresult)
         elif sig == 'S':
-            result = self.env[0].CallShortMethodA(self.env, c.c, m.id, values)
+            with nogil:
+                sresult = jnienv[0].CallShortMethodA(jnienv, klass, m_id, values)
+            result = sresult
         elif sig == 'I':
-            result = self.env[0].CallIntMethodA(self.env, c.c, m.id, values)
+            with nogil:
+                iresult = jnienv[0].CallIntMethodA(jnienv, klass, m_id, values)
+            result = iresult
         elif sig == 'J':
-            result = self.env[0].CallLongMethodA(self.env, c.c, m.id, values)
+            with nogil:
+                jresult = jnienv[0].CallLongMethodA(jnienv, klass, m_id, values)
+            result = jresult
         elif sig == 'F':
-            result = self.env[0].CallFloatMethodA(self.env, c.c, m.id, values)
+            with nogil:
+                fresult = jnienv[0].CallFloatMethodA(jnienv, klass, m_id, values)
+            result = fresult
         elif sig == 'D':
-            result = self.env[0].CallDoubleMethodA(self.env, c.c, m.id, values)
+            with nogil:
+                dresult = jnienv[0].CallDoubleMethodA(jnienv, klass, m_id, values)
+            result = dresult
         elif sig[0] == 'L' or sig[0] == '[':
-            oresult = self.env[0].CallObjectMethodA(self.env, c.c, m.id, values)
+            with nogil:
+                oresult = jnienv[0].CallObjectMethodA(jnienv, klass, m_id, values)
             if oresult == NULL:
                 result = None
             else:
@@ -1175,6 +1241,9 @@ cdef class JB_Env:
         cdef:
             jvalue *values
             jobject oresult
+            jclass klass = c.c
+            jmethodID m_id = m.id
+            JNIEnv *jnienv = self.env
 
         sig = m.sig
         if sig[0] != '(':
@@ -1186,7 +1255,8 @@ cdef class JB_Env:
         error = fill_values(arg_sig, args, &values)
         if error is not None:
             raise error
-        oresult = self.env[0].NewObjectA(self.env, c.c, m.id, values)
+        with nogil:
+            oresult = jnienv[0].NewObjectA(jnienv, klass, m_id, values)
         free(values)
         if oresult == NULL:
             return

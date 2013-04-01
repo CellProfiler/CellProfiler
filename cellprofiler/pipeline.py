@@ -601,7 +601,7 @@ class Pipeline(object):
             #
             handles=handles["handles"][0,0]
         self.create_from_handles(handles)
-        self.__settings = [[str(setting) for setting in module.settings()]
+        self.__settings = [self.capture_module_settings(module)
                            for module in self.modules()]
         self.__undo_stack = []
     
@@ -791,7 +791,7 @@ class Pipeline(object):
                 module_number += 1
 
         self.__modules = new_modules
-        self.__settings = [[str(setting) for setting in module.settings()]
+        self.__settings = [self.capture_module_settings(module)
                            for module in self.modules()]
         for module in self.modules():
             module.post_pipeline_load(self)
@@ -1797,6 +1797,17 @@ class Pipeline(object):
         assert module.module_num==module_num,'Misnumbered module. Expected %d, got %d'%(module_num,module.module_num)
         return module
     
+    @staticmethod
+    def capture_module_settings(module):
+        '''Capture a module's settings for later undo
+        
+        module - module in question
+        
+        Return a list of setting values that can be fed into the module's
+        set_settings_from_values method to reconstruct the module in its original form.
+        '''
+        return [setting.get_unicode_value() for setting in module.settings()]
+    
     def add_module(self,new_module):
         """Insert a module into the pipeline with the given module #
         
@@ -1810,8 +1821,7 @@ class Pipeline(object):
         for module,mn in zip(self.__modules[idx+1:],range(module_num+1,len(self.__modules)+1)):
             module.module_num = mn
         self.notify_listeners(ModuleAddedPipelineEvent(module_num))
-        self.__settings.insert(idx, [str(setting) 
-                                     for setting in new_module.settings()])
+        self.__settings.insert(idx, self.capture_module_settings(new_module))
         def undo():
             self.remove_module(new_module.module_num)
         self.__undo_stack.append((undo, 
@@ -1842,7 +1852,7 @@ class Pipeline(object):
         idx = module_num - 1
         old_settings = self.__settings[idx]
         module = self.modules()[idx]
-        new_settings = [str(setting) for setting in module.settings()]
+        new_settings = self.capture_module_settings(module)
         self.notify_listeners(ModuleEditedPipelineEvent(module_num))
         self.__settings[idx] = new_settings
         variable_revision_number = module.variable_revision_number

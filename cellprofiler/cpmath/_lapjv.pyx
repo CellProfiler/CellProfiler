@@ -359,9 +359,9 @@ def augment(
             #
             # Initialize d to "inf" for j that are not in the sparse list
             #
-            for jjj in range(n):
+            for jjj from 0 <= jjj < n:
                 p_d_base[jjj] = inf
-            for jjj in range(n_j):
+            for jjj from 0 <= jjj < n_j:
                 j = p_j[jjj]
                 p_d_base[j] = p_c[jjj] - p_v_base[j]
                 p_to_do[jjj] = j
@@ -383,7 +383,7 @@ def augment(
                     # minimum to the range, low to up, and the remaining
                     # starting at up.
                     #
-                    for jjj in range(n_to_do):
+                    for jjj from 0 <= jjj < n_to_do:
                         j = p_to_do[jjj]
                         if p_done[j] == i:
                             continue
@@ -395,7 +395,7 @@ def augment(
                             p_scan[up] = j
                             up += 1
                     j1 = n
-                    for jjj in range(low, up):
+                    for jjj from low <= jjj < up:
                         j = p_scan[jjj]
                         if p_y_base[j] == n:
                             # Augment if not assigned
@@ -421,7 +421,7 @@ def augment(
                 jidx = bsearch(p_j2, n_j2, j1)
                 u1 = p_c[jidx] - p_v_base[j1] - umin
                 j1 = n
-                for jjj in range(n_j2):
+                for jjj from 0 <= jjj < n_j2:
                     j = p_j2[jjj]
                     if p_done[j] != i:
                         h = p_c[jjj] - p_v_base[j] - u1
@@ -465,7 +465,7 @@ def augment(
     #
     # Re-establish slackness since we didn't pay attention to u
     #
-    for i in range(n):
+    for i from 0 <= i < n:
         j = x[i]
         p_j = p_j_base + p_idx_base[i]
         jidx = bsearch(p_j, p_count_base[i], j)

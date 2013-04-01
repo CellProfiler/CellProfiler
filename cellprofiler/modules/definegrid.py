@@ -404,6 +404,9 @@ class DefineGrid(cpm.CPModule):
         workspace.display_data.gridding = gridding
 
     def is_interactive(self):
+        if self.auto_or_manual == AM_MANUAL and self.manual_choice == MAN_MOUSE:
+            return True
+        
         # if the user wants an image, we have to have access to the
         # display to create it.
         return self.wants_image

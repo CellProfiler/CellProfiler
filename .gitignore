@@ -20,3 +20,4 @@ cellprofiler/utilities/javabridge.c
 contrib/LAP.c
 cellprofiler/tests/test.db
 cellprofiler/frozen_version.py
+plugins

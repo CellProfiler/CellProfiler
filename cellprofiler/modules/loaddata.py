@@ -1196,15 +1196,11 @@ class LoadData(cpm.CPModule):
             return []
 
     def get_measurements(self, pipeline, object_name, category):
-        try:
-            columns = self.get_measurement_columns(pipeline)
-            result = [feature for c, feature in
-                      [column[1].split('_',1) for column in columns
-                       if column[0] == object_name]
-                      if c == category]
-            return result
-        except:
-            return []
+        columns = self.get_measurement_columns(pipeline)
+        return [feature for c, feature in
+                [column[1].split('_',1) for column in columns
+                 if column[0] == object_name
+                 and column[1].startswith(category+"_")]]
         
     def change_causes_prepare_run(self, setting):
         '''Check to see if changing the given setting means you have to restart

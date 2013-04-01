@@ -1,9 +1,55 @@
 '''<b>UntangleWorms</b> untangles overlapping worms
 <hr>
 
-UntangleWorms takes a binary image and the results of worm training and
+This module either assembles a training set of sample worms in order to create a worm
+model, or takes a binary image and the results of worm training and
 labels the worms in the image, untangling them and associating all of a
 worm's pieces together.
+
+The results of untangling the input image will be an object set that can be used with
+downstream measurment modules. If using the <i>overlapping</i> style of objects, these
+can be saved as images using <b>SaveImages</b> to create a multi-page TIF file by 
+specifying "Objects" as the type of image to save.
+
+<h4>Available measurements</h4>
+<i>(For "Untangle" mode only)</i>
+<ul>
+<li><i>Object features:</i>
+<ul>
+<li><i>Length:</i> The length of the worm skeleton. </li>
+<li><i>Angle:</i> The angle at each of the control points</li>
+<li><i>ControlPointX_N, ControlPointY_N:</i> The X,Y coordinate of a control point <i>N</i>.
+A control point is a sampled location along the worm shape used to construct the model.</li>
+</ul>
+</ul>
+
+<h3>Technical notes</h3>
+
+<p><i>Training</i> involves extracting morphological information from the sample objects 
+provided from the previous steps. Using the default training set weights is recommended.
+Proper creation of the model is dependent on providing a binary image as input consisting
+of single, separated objects considered to be worms. You can the <b>Identify</b> modules
+to find the tentative objects and then filter these objects to get individual worms, whether
+by using <b>FilterObjects</b>, <b>EditObjectsManually</b> or the size criteria in 
+<b>IdentifyPrimaryObjects</b>. A binary image can be obtained from an object set by using
+<b>ConvertObjectsToImage</b>.</p>
+
+<p><i>Untangling</i> involves untangles the worms using a provided worm model, built
+from a large number of samples of single worms. If the result of the untangling is 
+not satisfactory (e.g., it is unable to detect long worms or is too stringent about 
+shape variation) and you do not wish to re-train, you can adjust the provided worm model 
+manually by opening the .xml file in a text editor 
+and changing the values for the fields defining worm length, area etc. You may also want to adjust the 
+"Maximum Complexity" module setting which controls how complex clusters the untangling will handle. 
+Large clusters (> 6 worms) may be slow to process.</p>
+
+References
+<ul>
+<li>W&auml;hlby C, KKamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ, 
+Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P, Ruvkun G,
+Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput 
+<i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716.</li>
+</ul>
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -42,7 +88,6 @@ import identify as I
 from cellprofiler.cpmath.propagate import propagate
 from cellprofiler.cpmath.outline import outline
 
-CAROLINAS_HACK = True
 
 from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
@@ -849,15 +894,6 @@ class UntangleWorms(cpm.CPModule):
                 outline_image = cpi.Image(outline_pixels, parent_image = image)
                 image_set.add(self.overlapping_outlines_name.value, 
                               outline_image)
-            #
-            # Hack for Carolina: write the ijv outlines to disk
-            #
-            if CAROLINAS_HACK:
-                path = cpprefs.get_default_output_directory()
-                name = "%d.mat" % measurements.image_set_number
-                from scipy.io import savemat
-                d = dict(i = ijv[:,0], j=ijv[:,1], label=ijv[:,2])
-                savemat(os.path.join(path, name), d)
                 
         if self.overlap in (OO_WITHOUT_OVERLAP, OO_BOTH):
             #

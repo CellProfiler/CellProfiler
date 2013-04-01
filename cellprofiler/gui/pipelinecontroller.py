@@ -607,7 +607,9 @@ class PipelineController:
         for m in modules:
             module = self.__pipeline.instantiate_module(m.module_name)
             module.module_num = module_num
-            module.set_settings_from_values([str(s) for s in m.settings()], m.variable_revision_number, m.module_name, False)
+            module.set_settings_from_values(
+                cellprofiler.pipeline.Pipeline.capture_module_settings(m),
+                m.variable_revision_number, m.module_name, False)
             self.__pipeline.add_module(module)
             module_num += 1
             

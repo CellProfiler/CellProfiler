@@ -710,7 +710,7 @@ def lock_file(path, timeout=3):
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
-        logger.info("Lockfile for %s already exists - contacting owner")
+        logger.info("Lockfile for %s already exists - contacting owner" % path)
         with open(lock_path, "r") as f:
             remote_address = f.readline().strip()
             remote_uid = f.readline().strip()

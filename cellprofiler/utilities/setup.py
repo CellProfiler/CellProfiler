@@ -93,7 +93,7 @@ if not hasattr(sys, 'frozen'):
             elif sys.platform.startswith('linux'):
                 include_dirs += [os.path.join(java_home,'include'),
                                  os.path.join(java_home,'include','linux')]
-                library_dirs = [os.path.join(java_home,'jre','lib','amd64','server')]
+                library_dirs = [os.path.join(java_home,'jre','lib',os.environ.get('HOSTTYPE','amd64'),'server')]
                 libraries = ["jvm"]
             extensions += [Extension(name="javabridge",
                                      sources=javabridge_sources,

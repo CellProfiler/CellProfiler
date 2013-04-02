@@ -268,8 +268,8 @@ class PipelineController:
                 'Your last workspace is "%s".' % cpprefs.get_workspace_file())
             choices = (
                 (self.OOCN_OPEN_DEFAULT, "Last"),
-                (self.OOCN_CREATE_NEW, "New"),
                 (self.OOCN_OPEN_OLD, "Open"),
+                (self.OOCN_CREATE_NEW, "New"),
                 (self.OOCN_EXIT_CP, "Exit"))
         else:
             message = message + (

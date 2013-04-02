@@ -316,6 +316,12 @@ class PipelineController:
                     dlg.EndModal(button_id)
                     result.append(button_id)
                 button.Bind(wx.EVT_BUTTON, on_button)
+            #
+            # Bring dialog to the top on init
+            #
+            def on_init_dialog(event):
+                dlg.Raise()
+            dlg.Bind(wx.EVT_INIT_DIALOG, on_init_dialog)
             dlg.Fit()
             dlg.ShowModal()
             result = result[0]

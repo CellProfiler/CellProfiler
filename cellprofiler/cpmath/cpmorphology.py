@@ -444,6 +444,123 @@ def strel_disk(radius):
     strel[x*x+y*y <= radius2] = 1
     return strel
 
+def strel_diamond(radius):
+    """Create a diamond structuring element for morphological operations
+    
+    radius - the offset of the corners of the diamond from the origin
+             rounded down (e.g. r=2: (0, 2), (2, 0), (0, -2), (-2, 0))
+             
+    returns a two-dimensional binary array
+    """
+    iradius = int(radius)
+    i, j = np.mgrid[-iradius:(iradius + 1), -iradius:(iradius+1)]
+    
+    strel = (((i+j) <= radius) & ((i+j) >= -radius) &
+             ((i-j) <= radius) & ((i-j) >= -radius))
+    return strel
+
+def strel_line(length, angle):
+    """Create a line structuring element for morphological operations
+    
+    length - distance between first and last pixels of the line, rounded down
+    
+    angle - angle from the horizontal, counter-clockwise in degrees.
+    
+    Note: uses draw_line's Bresenham algorithm to select points.
+    """
+    angle = float(angle) * np.pi / 180.
+    x_off = int(np.finfo(float).eps + np.cos(angle) * length / 2)
+    # Y is flipped here because "up" is negative
+    y_off = -int(np.finfo(float).eps + np.sin(angle) * length / 2)
+    x_center = abs(x_off)
+    y_center = abs(y_off)
+    strel = np.zeros((y_center * 2 + 1, 
+                      x_center * 2 + 1), bool)
+    draw_line(strel, 
+              (y_center - y_off, x_center - x_off), 
+              (y_center, x_center), True)
+    draw_line(strel,
+              (y_center + y_off, x_center + x_off), 
+              (y_center, x_center), True)
+
+    return strel
+    
+def strel_octagon(radius):
+    """Create an octagonal structuring element for morphological operations
+    
+    radius - the distance from the origin to each edge of the octagon
+    """
+    #
+    # Inscribe a diamond in a square to get an octagon.
+    #
+    iradius = int(radius)
+    i, j = np.mgrid[-iradius:(iradius + 1), -iradius:(iradius+1)]
+    #
+    # The distance to the diagonal side is also iradius:
+    #
+    # iradius ** 2 = i**2 + j**2 and i = j
+    # iradius ** 2 = 2 * i ** 2
+    # i = iradius / sqrt(2)
+    # i + j = iradius * sqrt(2)
+    #
+    dradius = float(iradius) * np.sqrt(2)
+    strel = (((i+j) <= dradius) & ((i+j) >= -dradius) &
+             ((i-j) <= dradius) & ((i-j) >= -dradius))
+    return strel
+    
+def strel_pair(x, y):
+    """Create a structing element composed of the origin and another pixel
+    
+    x, y - x and y offsets of the other pixel
+    
+    returns a structuring element
+    """
+    x_center = np.abs(x)
+    y_center = np.abs(y)
+    
+    result = np.zeros((y_center*2 + 1, x_center * 2 + 1), bool)
+    result[y_center, x_center] = True
+    result[y_center+y, x_center+x] = True
+    return result
+
+def strel_periodicline(xoff, yoff, n):
+    """Create a structuring element composed of a line of evenly-spaced points
+    
+    xoff, yoff - the line goes through the origin and this point
+    
+    n - the line is composed of the origin and n points on either side of the
+        origin for a total of 2*n + 1 points
+       
+    The structuring element is composed of the points,
+    (k * yoff, k * xoff)
+    for k in range(-n, n+1)
+    """
+    xoff, yoff, n = [int(t) for t in xoff, yoff, n]
+    center_x, center_y = abs(n * xoff), abs(n * yoff)
+    result = np.zeros((center_y * 2 + 1, center_x * 2 + 1), bool)
+    k = np.arange(-n, n+1)
+    result[center_y + yoff * k, center_x + xoff * k] = True
+    return result
+
+def strel_rectangle(width, height):
+    """Create a rectangular structuring element
+    
+    width - the width of the structuring element (in the j direction). The
+            width will be rounded down to the nearest multiple of 2*n+1
+            
+    height = the height of the structuring element (in the i direction). The
+            height will be rounded down to the nearest multiple of 2*n+1
+    """
+    return np.ones([int((hw - 1) / 2) * 2 + 1 for hw in height, width], bool)
+
+def strel_square(s):
+    """Create a square structuring element
+    
+    s - length of side - the length will be rounded down to the nearest multiple
+        of 2 * n + 1
+    """
+    return strel_rectangle(s, s)
+
 def cpmaximum(image, structure=np.ones((3,3),dtype=bool),offset=None):
     """Find the local maximum at each point in the image, using the given structuring element
     

@@ -250,7 +250,107 @@ class TestStrelDisk(unittest.TestCase):
              0,1,1,1,0]
         ya = np.array(y,dtype=float).reshape((5,5))
         self.assertTrue(np.all(x==ya))
+        
+class TestStrelDiamond(unittest.TestCase):
+    def test_01(self):
+        expected = [[ 0, 0, 1, 0, 0],
+                    [ 0, 1, 1, 1, 0],
+                    [ 1, 1, 1, 1, 1],
+                    [ 0, 1, 1, 1, 0],
+                    [ 0, 0, 1, 0, 0]]
+        np.testing.assert_array_equal(morph.strel_diamond(2), expected)
+        
+class TestStrelLine(unittest.TestCase):
+    def test_01(self):
+        test_cases = (
+            dict(angle=0, length=5, expected = [[1, 1, 1, 1, 1]]),
+            dict(angle=30, length=8, expected = [
+                [0, 0, 0, 0, 0, 0, 1],
+                [0, 0, 0, 0, 1, 1, 0],
+                [0, 0, 0, 1, 0, 0, 0],
+                [0, 1, 1, 0, 0, 0, 0],
+                [1, 0, 0, 0, 0, 0, 0]]),
+            dict(angle=60, length=8, expected = [
+                [0, 0, 0, 0, 1],
+                [0, 0, 0, 1, 0],
+                [0, 0, 0, 1, 0],
+                [0, 0, 1, 0, 0],
+                [0, 1, 0, 0, 0],
+                [0, 1, 0, 0, 0],
+                [1, 0, 0, 0, 0]
+            ]))
+        for test_case in test_cases:
+            angle = test_case['angle']
+            length = test_case['length']
+            expected = test_case['expected']
+            result = morph.strel_line(length, angle)
+            np.testing.assert_array_equal(result, expected)
+            
+class TestStrelOctagon(unittest.TestCase):
+    def test_01(self):
+        expected = [
+            [ 0, 0, 1, 1, 1, 0, 0 ],
+            [ 0, 1, 1, 1, 1, 1, 0 ],
+            [ 1, 1, 1, 1, 1, 1, 1 ],
+            [ 1, 1, 1, 1, 1, 1, 1 ],
+            [ 1, 1, 1, 1, 1, 1, 1 ],
+            [ 0, 1, 1, 1, 1, 1, 0 ],
+            [ 0, 0, 1, 1, 1, 0, 0 ]]
+        result = morph.strel_octagon(3)
+        np.testing.assert_array_equal(expected, result)
 
+class TestStrelPair(unittest.TestCase):
+    def test_01(self):
+        r = np.random.RandomState()
+        r.seed(1210)
+        for _ in range(20):
+            i, j = r.randint(-8, 9, 2)
+            strel = morph.strel_pair(j, i)
+            data = np.zeros((21, 21), bool)
+            data[10, 10] = True
+            result = scind.binary_dilation(data, strel)
+            expected = data.copy()
+            expected[i+10, j+10] = True
+            np.testing.assert_array_equal(result, expected)
+            
+class TestStrelPeriodicline(unittest.TestCase):
+    def test_01(self):
+        r = np.random.RandomState()
+        r.seed(1776)
+        for _ in range(20):
+            i, j = r.randint(-3, 4, 2)
+            n = r.randint(1, 3)
+            strel = morph.strel_periodicline(j, i, n)
+            data = np.zeros((41, 41), bool)
+            data[20, 20] = True
+            result = scind.binary_dilation(data, strel)
+            expected = np.zeros((41, 41), bool)
+            for k in range(-n, n+1):
+                expected[i*k+20, j*k+20] = True
+            np.testing.assert_array_equal(result, expected)
+            
+class TestStrelRectangle(unittest.TestCase):
+    def test_01(self):
+        for ih, iw, oh, ow in ((3, 3, 3, 3),
+                               (3, 5, 3, 5),
+                               (5, 3, 5, 3),
+                               (7.5, 6, 7, 5)):
+            strel = morph.strel_rectangle(iw, ih)
+            self.assertTrue(np.all(strel))
+            self.assertEqual(strel.shape[0], oh)
+            self.assertEqual(strel.shape[1], ow)
+            
+class TestStrelSquare(unittest.TestCase):
+    def test_01(self):
+        strel = morph.strel_square(5)
+        self.assertEqual(strel.shape[0], 5)
+        self.assertEqual(strel.shape[1], 5)
+        
+    def test_02(self):
+        strel = morph.strel_square(8.5)
+        self.assertEqual(strel.shape[0], 7)
+        self.assertEqual(strel.shape[1], 7)
+        
 class TestBinaryShrink(unittest.TestCase):
     def test_01_zeros(self):
         """Shrink an empty array to itself"""

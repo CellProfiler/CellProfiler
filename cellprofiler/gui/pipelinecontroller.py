@@ -614,7 +614,7 @@ class PipelineController:
                 parent = self.__frame,
                 title = "Opening workspace",
                 message= "Loading %s" % filename,
-                style=wx.PD_CAN_ABORT) as dlg:
+                style=wx.PD_CAN_ABORT|wx.PD_APP_MODAL) as dlg:
                 assert isinstance(dlg, wx.ProgressDialog)
                     
                 def progress_callback(operation_id, progress, message):

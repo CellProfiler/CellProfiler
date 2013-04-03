@@ -144,6 +144,8 @@ class AddModuleFrame(wx.Frame):
                 return module
             try:
                 module = cellprofiler.modules.instantiate_module(mn)
+                if module.is_input_module():
+                    continue
                 categories = ([module.category] 
                               if isinstance(module.category, str)
                               else list(module.category)) + ['All']

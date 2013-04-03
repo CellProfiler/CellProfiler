@@ -1019,7 +1019,7 @@ class PipelineController:
                                                      wx.ART_MESSAGE_BOX)
             icon = wx.StaticBitmap(dialog, -1, question_mark)
             sizer.Add(icon, 0, wx.EXPAND | wx.ALL, 5)
-            text = wx.StaticText(dialog, label = "Do you want to save the current pipeline?")
+            text = wx.StaticText(dialog, label = "Do you want to save your settings to a pipeline file?")
             sizer.Add(text, 0, wx.EXPAND | wx.ALL, 5)
             super_sizer.Add(wx.StaticLine(dialog), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 20)
             #

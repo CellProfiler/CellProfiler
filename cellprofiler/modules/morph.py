@@ -509,27 +509,29 @@ class Morph(cpm.CPModule):
                     </ul>"""))
         group.append("custom_repeats", cps.Integer(self.CUSTOM_REPEATS_TEXT,2,1,
                      doc=self.CUSTOM_REPEATS_DOC))
+        
         group.append("structuring_element", cps.Choice(
             "Structuring element", SE_ALL, SE_DISK,
-            doc = """<i>(Used only for %(SE_F_TEXT)s)</i> What structuring
-            element do you want to use to perform the operation? The structuring
-            element controls which neighboring pixels participate in the
-            operation. For instance, for the %(F_ERODE)s operation, all pixels
-            in the neighborhood of the pixel must be in the foreground for the
-            pixel to be in the foreground in the output image. If a circular
+            doc = """<i>(Used only for %(SE_F_TEXT)s)</i><br>
+            What structuring element do you want to use to perform the operation? 
+            The structuring element controls which neighboring pixels participate 
+            in the operation. For instance, for the %(F_ERODE)s operation, all 
+            pixels in the neighborhood of the pixel must be in the foreground for 
+            the pixel to be in the foreground in the output image. If a circular
             structuring element is used, then a pixel will be in the foreground
             only if all neighborhood pixels within a circle surrounding the
             pixel are in the foreground in the input image.<br>
-            The structuring elements are:<br><ul>
-            <li><i>%(SE_ARBITRARY)s</i>: a structuring element which lets
-            the user choose the exact neighborhood pixels to use.</li>
-            <li><i>%(SE_DISK)s</i>: a disk centered on the pixel. The scale
+            The structuring elements are:<br>
+            <ul>
+            <li><i>%(SE_DISK)s</i>: A disk centered on the pixel. The scale
             setting determines the circle's diameter and all pixels that are
             at or closer than that diameter will be in the neighborhood.</li>
-            <li><i>%(SE_DIAMOND)s</i>: a diamond centered on the pixel. The 
+            <li><i>%(SE_ARBITRARY)s</i>: A structuring element which lets
+            the user choose the exact neighborhood pixels to use.</li>
+            <li><i>%(SE_DIAMOND)s</i>: A diamond centered on the pixel. The 
             scale setting determines the distance between the top and bottom
             and left and right corners of the diamond.</li>
-            <li><i>%(SE_LINE)s</li>: a line centered on the pixel. The line
+            <li><i>%(SE_LINE)s</i>: A line centered on the pixel. The line
             has two settings. The angle setting gives the rotation of the line
             in the counter-clockwise direction in degrees, with a horizontal
             line having an angle of zero. The length of the line is determined
@@ -537,22 +539,22 @@ class Morph(cpm.CPModule):
             scale are included in the neighborhood. The line is drawn using
             the <a href="http://dx.doi.org/10.1147%%2Fsj.41.0025">
             Bresenham algorithm</a>.</li>
-            <li><i>%(SE_OCTAGON)s</i>: an octagon centered on the pixel. The
+            <li><i>%(SE_OCTAGON)s</i>: An octagon centered on the pixel. The
             octagon is inscribed inside a square. The scale setting controls
             the length of the square's side. The scale is rounded to the nearest
             integer in the series, n * 6 + 1 so a perfect octagon can be drawn.</li>
-            <li><i>%(SE_PAIR)s</li>: the neighborhood of the pixel is
+            <li><i>%(SE_PAIR)s</i>: The neighborhood of the pixel is
             composed of the pixel itself and the pixel at the x and y offsets
             given by the settings.</li>
-            <li><i>%(SE_PERIODIC_LINE)s</i>: the points along a line described
+            <li><i>%(SE_PERIODIC_LINE)s</i>: The points along a line described
             by an offset, centered on the pixel. The periodic line has three 
             settings. The neighborhood pixels are all within a circle whose
             diameter is the scale setting. Within the circle, pixels are
             chosen at N times the x and y offset from the center for positive
             and negative values of N.</li>
-            <li><i>%(SE_RECTANGLE)s</li>: a rectangle centered on the pixel.
+            <li><i>%(SE_RECTANGLE)s</i>: A rectangle centered on the pixel.
             The rectangle's height and width are given by two settings.</li>
-            <li><i>%(SE_SQUARE)s</li>: a square centered on the pixel. The
+            <li><i>%(SE_SQUARE)s</i>: a square centered on the pixel. The
             scale setting determines the length of the square's side.</li>
             </ul>""" % globals()))
         group.append("scale", cps.Float(

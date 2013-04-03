@@ -118,6 +118,11 @@ class CPFrame(wx.Frame):
         self.BackgroundColour = background_color
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
         sp_bind_to_evt_paint(self.__splitter)
+        #
+        # Screen size metrics might be used below
+        #
+        screen_width = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_X)
+        screen_height = wx.SystemSettings.GetMetric(wx.SYS_SCREEN_Y)
 
         # Crappy splitters leave crud on the screen because they want custom
         # background painting but fail to do it. Here, we have a fight with
@@ -181,10 +186,11 @@ class CPFrame(wx.Frame):
                                    self.__on_sash_drag)
         self.__path_list_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.__path_list_sash.SetAlignment(wx.LAYOUT_TOP)
-        self.__path_list_sash.SetDefaultSize((1000,  100))
+        self.__path_list_sash.SetDefaultSize((screen_width,  screen_height/4))
         self.__path_list_sash.SetDefaultBorderSize(4)
         self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
         self.__path_list_sash.BackgroundColour = cpprefs.get_background_color()
+        self.__path_list_sash.Hide()
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.__path_list_sash.Sizer = sizer
         self.__path_list_ctrl = PathListCtrl(self.__path_list_sash)
@@ -217,13 +223,14 @@ class CPFrame(wx.Frame):
             self.__path_module_imageset_panel, style=wx.NO_BORDER)
         self.__imageset_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.__imageset_sash.SetAlignment(wx.LAYOUT_BOTTOM)
-        self.__imageset_sash.SetDefaultSize((1000, 100))
+        self.__imageset_sash.SetDefaultSize((screen_width, screen_height/4))
         self.__imageset_sash.SetDefaultBorderSize(4)
         self.__imageset_sash.SetExtraBorderSize(2)
         self.__imageset_sash.SetSashVisible(wx.SASH_TOP, True)
         self.__imageset_sash.Bind(wx.EVT_SASH_DRAGGED,
                                   self.__on_sash_drag)
         sw_bind_to_evt_paint(self.__imageset_sash)
+        self.__imageset_sash.Hide()
         self.__imageset_ctrl = ImageSetCtrl(
             self.__workspace, self.__imageset_sash, read_only=True)
         #

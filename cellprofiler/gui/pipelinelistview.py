@@ -110,13 +110,13 @@ class PipelineListView(object):
         self.__module_dictionary = {}
         self.make_image_list()
         panel.Sizer = top_sizer = wx.BoxSizer(wx.VERTICAL)
-        static_box = wx.StaticBox(self.__panel, label = "Input")
+        static_box = wx.StaticBox(self.__panel, label = "Create workspace")
         self.__input_controls = [static_box]
         self.__input_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         top_sizer.Add(self.__input_sizer, 0, wx.EXPAND)
         self.make_input_panel()
         
-        modules_box = wx.StaticBox(panel, label = "Modules")
+        modules_box = wx.StaticBox(panel, label = "Analyze images")
         self.__sizer=wx.StaticBoxSizer(modules_box, wx.HORIZONTAL)
         top_sizer.Add(self.__sizer, 1, wx.EXPAND)
         self.__panel.SetAutoLayout(True)

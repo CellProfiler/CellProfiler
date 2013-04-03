@@ -37,6 +37,7 @@ from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
 from cellprofiler.gui.errordialog import display_error_message
 from cellprofiler.gui.pathlist import PathListCtrl
 from cellprofiler.gui.imagesetctrl import ImageSetCtrl
+from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint, sp_bind_to_evt_paint
 import cellprofiler.gui.html
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.utilities.version as version
@@ -116,6 +117,7 @@ class CPFrame(wx.Frame):
         background_color = cpprefs.get_background_color()
         self.BackgroundColour = background_color
         self.__splitter = wx.SplitterWindow(self, -1, style=wx.SP_BORDER)
+        sp_bind_to_evt_paint(self.__splitter)
 
         # Crappy splitters leave crud on the screen because they want custom
         # background painting but fail to do it. Here, we have a fight with
@@ -174,11 +176,13 @@ class CPFrame(wx.Frame):
         #
         self.__path_list_sash = wx.SashLayoutWindow(
             self.__path_module_imageset_panel, style=wx.NO_BORDER)
+        sw_bind_to_evt_paint(self.__path_list_sash)
         self.__path_list_sash.Bind(wx.EVT_SASH_DRAGGED,
                                    self.__on_sash_drag)
         self.__path_list_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.__path_list_sash.SetAlignment(wx.LAYOUT_TOP)
         self.__path_list_sash.SetDefaultSize((1000,  100))
+        self.__path_list_sash.SetDefaultBorderSize(4)
         self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
         self.__path_list_sash.BackgroundColour = cpprefs.get_background_color()
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -187,7 +191,7 @@ class CPFrame(wx.Frame):
         sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
         sizer.AddSpacer(2)
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(hsizer, 0, wx.EXPAND |wx.BOTTOM, 3)
+        sizer.Add(hsizer, 0, wx.EXPAND |wx.BOTTOM, 6)
         self.__path_list_filter_checkbox = wx.CheckBox(
             self.__path_list_sash,
             label = "Show files excluded by filters")
@@ -214,9 +218,12 @@ class CPFrame(wx.Frame):
         self.__imageset_sash.SetOrientation(wx.LAYOUT_HORIZONTAL)
         self.__imageset_sash.SetAlignment(wx.LAYOUT_BOTTOM)
         self.__imageset_sash.SetDefaultSize((1000, 100))
+        self.__imageset_sash.SetDefaultBorderSize(4)
+        self.__imageset_sash.SetExtraBorderSize(2)
         self.__imageset_sash.SetSashVisible(wx.SASH_TOP, True)
         self.__imageset_sash.Bind(wx.EVT_SASH_DRAGGED,
                                   self.__on_sash_drag)
+        sw_bind_to_evt_paint(self.__imageset_sash)
         self.__imageset_ctrl = ImageSetCtrl(
             self.__workspace, self.__imageset_sash, read_only=True)
         #

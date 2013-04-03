@@ -578,7 +578,17 @@ class Boundary(object):
                 for analysis_context in self.analysis_dictionary.values():
                     analysis_context.cancel()
                 for request_class_queue in self.request_dictionary.values():
-                    request_class_queue.put([self, self.NOTIFY_STOP])
+                    #
+                    # Tell each response class to stop. Wait for a reply
+                    # which may be a thread instance. If so, join to the
+                    # thread so there will be an orderly shutdown.
+                    #
+                    response_queue = Queue.Queue()
+                    request_class_queue.put(
+                        [self, self.NOTIFY_STOP, response_queue])
+                    thread = response_queue.get()
+                    if isinstance(thread, threading.Thread):
+                        thread.join()
     
             self.request_socket.close()  # will linger until messages are delivered
         except:
@@ -661,6 +671,7 @@ def start_lock_thread():
             msg = __lock_queue.get()
             boundary = msg[0]
             if msg[1] == Boundary.NOTIFY_STOP:
+                msg[2].put(__lock_thread)
                 break
             elif msg[1] == Boundary.NOTIFY_REQUEST:
                 request = msg[2]

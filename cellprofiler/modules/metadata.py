@@ -71,11 +71,13 @@ class Metadata(cpm.CPModule):
         self.pipeline = None
         self.ipds = []
         self.imported_metadata = []
-        self.metadata_explanation = cps.HTMLText(
-            "","""Do your file or path names or file headers contain information
-            (<a href="http://en.wikipedia.org/wiki/Metadata">metadata</a>) you
-            would like to extract and store along with your measurements?""",
+        self.module_explanation = cps.HTMLText("",content="""
+            The %s module optionally allows you to extract imformation 
+            describing your images (i.e, metadata) which will be stored along 
+            with your measurements. This information can be contained in the 
+            file name and/or location, or in an external file."""%self.module_name,
             size=(0, 2.3))
+        
         self.wants_metadata = cps.Binary(
             "Extract metadata?", False,
         doc = "Do your file or path names or file headers contain information\n"
@@ -266,7 +268,7 @@ class Metadata(cpm.CPModule):
         return result
     
     def visible_settings(self):
-        result = [self.metadata_explanation, self.wants_metadata]
+        result = [self.module_explanation, self.wants_metadata]
         if self.wants_metadata:
             for group in self.extraction_methods:
                 if group.can_remove:

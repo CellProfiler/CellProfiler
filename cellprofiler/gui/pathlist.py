@@ -238,6 +238,8 @@ class PathListCtrl(wx.PyScrolledWindow):
                 folder_item.widths.insert(pidx, width)
                 folder_item.file_display_names.insert(pidx, display_name)
                 folder_item.enabled.insert(pidx, True)
+        if len(paths) > 0:
+            cpprefs.report_progress(uid, 1, "Done")
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
         

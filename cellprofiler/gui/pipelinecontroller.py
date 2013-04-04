@@ -616,17 +616,24 @@ class PipelineController:
         filename - the path to the file to open. It should already be locked.
         '''
         try:
+            message = "Loading %s" % filename
             with wx.ProgressDialog(
                 parent = self.__frame,
                 title = "Opening workspace",
-                message= "Loading %s" % filename,
+                message= message,
                 style=wx.PD_CAN_ABORT|wx.PD_APP_MODAL) as dlg:
                 assert isinstance(dlg, wx.ProgressDialog)
+                dlg.longest_msg_len = dlg.GetTextExtent(message)[0]
                     
                 def progress_callback(operation_id, progress, message):
-                    proceed, skip = dlg.Pulse(message)
-                    if not proceed:
-                        raise Exception("User cancelled opening workspace")
+                    if progress != 1:
+                        proceed, skip = dlg.Pulse(message)
+                        if not proceed:
+                            raise Exception("User cancelled opening workspace")
+                        msg_len = dlg.GetTextExtent(message)[0]
+                        if msg_len > dlg.longest_msg_len:
+                            dlg.longest_msg_len = msg_len
+                            dlg.Fit()
                 cpprefs.add_progress_callback(progress_callback)
                     
                 self.__workspace.load(filename, load_pipeline)

@@ -28,6 +28,7 @@ import tempfile
 import threading
 import time
 import traceback
+import uuid
 import weakref
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 
@@ -1231,6 +1232,33 @@ def report_progress(operation_id, progress, message):
         for callback in __progress_data.callbacks:
             callback(operation_id, progress, message)
         __progress_data.last_report = time.time()
+        
+def map_report_progress(fn_map, fn_report, sequence, freq=None):
+    '''Apply a mapping function to a sequence, reporting progress
+    
+    fn_map - function that maps members of the sequence to members of the output
+    
+    fn_report - function that takes a sequence member and generates an
+                informative string
+                
+    freq - report on mapping every N items. Default is to report 100 or less
+           times.
+    '''
+    n_items = len(sequence)
+    if n_items == 0:
+        return []
+    if freq == None:
+        if n_items < 100:
+            freq = 1
+        else:
+            freq = (n_items + 99) / 100
+    output = []
+    uid = uuid.uuid4()
+    for i in range(0, n_items, freq):
+        report_progress(uuid, float(i) / n_items, fn_report(sequence[i]))
+        output += map(fn_map, sequence[i:i+freq])
+    report_progress(uuid, 1, "Done")
+    return output
         
 def cancel_progress():
     '''Cancel all progress indicators

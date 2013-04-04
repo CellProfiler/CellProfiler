@@ -2265,13 +2265,21 @@ class Pipeline(object):
         real_list = []
         details_list = sorted(details_list)
         start = 0
-        for details in details_list:
+        uid = uuid.uuid4()
+        n = len(details_list)
+        for i, details in enumerate(details_list):
+            if i % 100 == 0:
+                cpprefs.report_progress(
+                    uid, float(i) / n,
+                    "Adding %s" % details.path)
             pos = bisect.bisect_left(self.image_plane_details, details, start)
             if (pos == len(self.image_plane_details) or 
                 cmp(self.image_plane_details[pos], details)):
                 real_list.append(details)
                 self.image_plane_details.insert(pos, details)
             start = pos
+        if n > 0:
+            cpprefs.report_progress(uid, 1, "Done")
         # Invalidate caches
         self.__filtered_image_plane_details_images_settings = None
         self.__filtered_image_plane_details_metadata_settings = None
@@ -2359,9 +2367,10 @@ class Pipeline(object):
         self.__filtered_image_plane_details_images_settings = tuple()
         self.__filtered_image_plane_details_metadata_settings = tuple()
         self.__image_plane_details_generation = file_list.generation
-        self.add_image_plane_details([
-            ImagePlaneDetails(url.encode('utf-8'), None, None, None) 
-            for url in urls], False)
+        self.add_image_plane_details(cpprefs.map_report_progress(
+            lambda url: ImagePlaneDetails(url.encode('utf-8'), None, None, None),
+            lambda url: "Converting image URL: %s" % url,
+            urls), False)
         bypass_exceptions = False
         n_ipds = len(self.image_plane_details)
         uid = uuid.uuid4()
@@ -2385,6 +2394,8 @@ class Pipeline(object):
                     raise instance
                 else:
                     bypass_exceptions = True
+        if len(self.image_plane_details) > 0:
+            cpprefs.report_progress(uid, 1, "Done")
     
     def filter_urls(self, urls):
         '''Filter URLs using the Images module'''

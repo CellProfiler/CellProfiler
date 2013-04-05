@@ -181,8 +181,7 @@ opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
                               "matplotlib", "matplotlib.numerix.random_array",
                               "email.iterators",
-                              "cellprofiler.modules.*",
-                              "zmq.core.pysocket"],
+                              "cellprofiler.modules.*"],
                 'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],
                 'dll_excludes': ["jvm.dll"]
               },
@@ -271,6 +270,12 @@ try:
     import zmq
     zmq_loc = os.path.split(zmq.__file__)[0]
     os.environ["PATH"] = os.environ["PATH"] + ";"+zmq_loc
+    #
+    # 2.2 added this and distutils did not find it
+    # Not present prior to 2.2
+    #
+    if zmq.__version__ >= "2.2.0":
+        opts['py2exe']['includes'] += ["zmq.core.pysocket"]
 except:
     print "This installation will not include 0MQ"
 

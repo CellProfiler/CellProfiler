@@ -1400,7 +1400,7 @@ for the window lets you display or remove files and lets you remove folders.
 The buttons and checkbox along the bottom have the following functions:<br>
 <ul><li><i>Browse...</i>: Browse for files and folders to add.</li>
 <li><i>Clear</i>: Clear all entries from the file list</li>
-<li><i>Show files excluded by filters</i>: Check this to see all files in the
+<li><i>Show files excluded by filters</i>: <i>(Only shown if filtered based on rules is selected)</i> Check this to see all files in the
 list. Uncheck it to see only the files that pass the rules criteria in the
 <b>Images</b> module.</li>
 <li><i>Expand tree</i>: Expand all of the folders in the tree</li>

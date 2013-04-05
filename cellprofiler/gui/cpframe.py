@@ -22,11 +22,13 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 
+from cellprofiler.icons import get_builtin_image, get_icon_copyrights
 from cellprofiler.modules import get_data_tool_names, instantiate_module
 from cellprofiler.gui import get_cp_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
 from cellprofiler.gui.cpfigure import close_all
-from cellprofiler.gui.help import MAIN_HELP, make_help_menu, HELP_ON_MODULE_BUT_NONE_SELECTED
+from cellprofiler.gui.help import MAIN_HELP, make_help_menu, \
+     HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_PATH_LIST
 from cellprofiler.pipeline import Pipeline
 from cellprofiler.gui.pipelinecontroller import PipelineController
 from cellprofiler.gui.moduleview import ModuleView
@@ -38,6 +40,7 @@ from cellprofiler.gui.errordialog import display_error_message
 from cellprofiler.gui.pathlist import PathListCtrl
 from cellprofiler.gui.imagesetctrl import ImageSetCtrl
 from cellprofiler.gui.sashwindow_tools import sw_bind_to_evt_paint, sp_bind_to_evt_paint
+from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
 import cellprofiler.gui.html
 import cellprofiler.gui.preferencesdlg
 import cellprofiler.utilities.version as version
@@ -155,8 +158,12 @@ class CPFrame(wx.Frame):
         #    path_module_imageset_panel
         #        path_list_sash
         #            path_list_ctrl
+        #            path_list_browse_button
+        #            path_list_clear_button
         #            path_list_filter_checkbox
-        #            path_list_button
+        #            path_list_expand_all_button
+        #            path_list_collapse_all_button
+        #            path_list_help_button
         #        
         #        module_panel
         #        image_set_list_sash
@@ -174,10 +181,16 @@ class CPFrame(wx.Frame):
                                    wx.EXPAND | wx.ALL)
         self.__path_module_imageset_panel.Bind(
             wx.EVT_SIZE, self.__on_path_module_imageset_panel_size)
-
+        
+        ########################################################################
         #
         # The path list control that holds all of the files being dealt with
         # by the pipeline
+        #
+        ########################################################################
+        
+        #
+        # Path list sash controls path list sizing
         #
         self.__path_list_sash = wx.SashLayoutWindow(
             self.__path_module_imageset_panel, style=wx.NO_BORDER)
@@ -193,11 +206,36 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.Hide()
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.__path_list_sash.Sizer = sizer
+        #
+        # Path list control
+        #
         self.__path_list_ctrl = PathListCtrl(self.__path_list_sash)
         sizer.Add(self.__path_list_ctrl, 1, wx.EXPAND | wx.ALL)
+        #
+        # Path list tools horizontal sizer
+        #
         sizer.AddSpacer(2)
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(hsizer, 0, wx.EXPAND |wx.BOTTOM, 6)
+        #
+        # Path list browse button
+        #
+        bmp = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_BUTTON)
+        self.__path_list_browse_button = BitmapLabelButton(
+            self.__path_list_sash, bitmap = bmp, label = "Browse...")
+        hsizer.Add(self.__path_list_browse_button, 0, wx.ALIGN_LEFT)
+        #
+        # Path list clear button
+        #
+        hsizer.AddSpacer(5)
+        bmp = wx.BitmapFromImage(get_builtin_image("delete"))
+        self.__path_list_clear_button = BitmapLabelButton(
+            self.__path_list_sash, bitmap=bmp, label = "Clear")
+        hsizer.Add(self.__path_list_clear_button, 0, wx.ALIGN_LEFT)
+        #
+        # Path list show/hide filtered files checkbox
+        #
+        hsizer.AddSpacer(5)
         self.__path_list_filter_checkbox = wx.CheckBox(
             self.__path_list_sash,
             label = "Show files excluded by filters")
@@ -206,18 +244,50 @@ class CPFrame(wx.Frame):
             self.__path_list_ctrl.set_show_disabled(
                 self.__path_list_filter_checkbox.Value)
         self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
+        hsizer.AddStretchSpacer()
+        #
+        # Path list expand all / collapse all
+        #
+        bmp = wx.BitmapFromImage(
+            get_builtin_image("ExpandTree").Scale(16, 16, wx.IMAGE_QUALITY_HIGH))
+        self.__path_list_expand_button = BitmapLabelButton(
+            self.__path_list_sash, bitmap=bmp, label = "Expand tree")
+        hsizer.Add(self.__path_list_expand_button, 0, wx.ALIGN_RIGHT)
+        
+        hsizer.AddSpacer(5)
+        bmp = wx.BitmapFromImage(
+            get_builtin_image("CollapseTree").Scale(16, 16, wx.IMAGE_QUALITY_HIGH))
+        self.__path_list_collapse_button = BitmapLabelButton(
+            self.__path_list_sash, bitmap=bmp, label = "Collapse tree")
+        hsizer.Add(self.__path_list_collapse_button, 0, wx.ALIGN_RIGHT)
+        #
+        # Help
+        #
+        hsizer.AddSpacer(5)
+        self.__path_list_help_button = wx.Button(
+            self.__path_list_sash, label="?", style=wx.BU_EXACTFIT)
+        self.__path_list_help_button.Bind(wx.EVT_BUTTON, self.__on_help_path_list)
+        hsizer.Add(self.__path_list_help_button, 0, wx.EXPAND)
+        for button in (self.__path_list_browse_button, 
+                       self.__path_list_clear_button,
+                       self.__path_list_collapse_button,
+                       self.__path_list_expand_button):
+            button.BackgroundColour = background_color
+        
+        ######################################################################
+        #
+        # Module view panel
+        #
+        ######################################################################
 
-        hsizer.AddSpacer(5)
-        self.__path_list_button = wx.Button(self.__path_list_sash,
-                                            label = "Update filtering")
-        hsizer.Add(self.__path_list_button, 0, wx.ALIGN_LEFT)
-        hsizer.AddSpacer(5)
-        self.__path_list_browse_button = wx.Button(self.__path_list_sash,
-                                                   label = "Browse...")
-        hsizer.Add(self.__path_list_browse_button, 0, wx.ALIGN_LEFT)
         self.__module_panel = wx.Panel(self.__path_module_imageset_panel)
         self.__module_panel.BackgroundColour = cpprefs.get_background_color()
         
+        ######################################################################
+        #
+        # The imageset panel
+        #
+        ######################################################################
 
         self.__imageset_sash = wx.SashLayoutWindow(
             self.__path_module_imageset_panel, style=wx.NO_BORDER)
@@ -286,7 +356,7 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.Show(show)
         self.layout_pmi_panel()
         self.__path_list_sash.Layout()
-
+        
     def show_imageset_ctrl(self, show):
         '''Show or hide the imageset control
 
@@ -591,9 +661,13 @@ class CPFrame(wx.Frame):
     def __on_help_source_code(self, event):
         import webbrowser
         webbrowser.open("https://github.com/CellProfiler/CellProfiler")
+        
+    def __on_help_path_list(self, event):
+        import htmldialog
+        dlg = htmldialog.HTMLDialog(self, "Help on path list", HELP_ON_PATH_LIST)
+        dlg.Show()
 
     def __on_help_about(self, event):
-        from cellprofiler.icons import get_builtin_image
         CellProfilerSplash = get_builtin_image('CellProfilerSplash')
         splashbitmap = wx.BitmapFromImage(CellProfilerSplash)
 
@@ -611,9 +685,15 @@ All rights reserved."""
 
         license_ctl = wx.StaticText(dlg, -1, cellprofiler_license)
         sizer.Add(license_ctl, 0, wx.ALIGN_LEFT | wx.ALL, 5)
+        
+        button_list = [("GPL License", gpl_license),
+                       ("BSD License", bsd_license)]
+        
+        icon_copyrights = get_icon_copyrights()
+        if icon_copyrights is not None:
+            button_list.append(("Additional copyrights", icon_copyrights))
 
-        for button_text, license_text in (("GPL License", gpl_license),
-                                          ("BSD License", bsd_license)):
+        for button_text, license_text in button_list:
             sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
             sizer.Add(sub_sizer, 0, wx.EXPAND | wx.ALL, 5)
             license_button = wx.Button(dlg, -1, button_text + " >>")
@@ -823,8 +903,11 @@ All rights reserved."""
         self.__pipeline_controller.attach_to_module_controls_panel(self.__module_controls_panel)
         self.__pipeline_controller.attach_to_path_list_ctrl(
             self.__path_list_ctrl, 
-            self.__path_list_button,
-            self.__path_list_browse_button)
+            self.__path_list_browse_button,
+            self.__path_list_filter_checkbox,
+            self.__path_list_clear_button,
+            self.__path_list_expand_button,
+            self.__path_list_collapse_button)
         self.__module_view = ModuleView(
             self.__module_panel,
             self.__workspace,
@@ -867,7 +950,6 @@ All rights reserved."""
         import cStringIO
         sizer = wx.BoxSizer(wx.HORIZONTAL)
 
-        from cellprofiler.icons import get_builtin_image
         bitmap = wx.BitmapFromImage(get_builtin_image('CP_logo'))
         self.__logopic = wx.StaticBitmap(self.__logo_panel,-1,bitmap)
         sizer.Add(self.__logopic)

@@ -265,7 +265,21 @@ class PathListCtrl(wx.PyScrolledWindow):
             folder_item.enabled[pidx] = enabled
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
+        
+    def expand_all(self, event = None):
+        '''Expand all folders'''
+        for folder_item in self.folder_items:
+            folder_item.opened = True
+        self.schmutzy = True
+        self.Refresh(eraseBackground=False)
     
+    def collapse_all(self, event = None):
+        '''Collapse all folders'''
+        for folder_item in self.folder_items:
+            folder_item.opened = False
+        self.schmutzy = True
+        self.Refresh(eraseBackground=False)
+        
     @staticmethod
     def get_folder_display_name(folder):
         '''Return a path name for a URL

@@ -60,6 +60,12 @@ class Images(cpm.CPModule):
             
         self.filter = cps.Filter("Filter", predicates, 
                                  'or (file does contain "")')
+        self.update_button = cps.PathListRefreshButton(
+            "Update filter", "Update",
+            doc = """<i>(Only displayed if filtering based on rules)</i>
+            Redisplay the file list, removing or graying out the files
+            that do not pass the current filter.
+            """)
     
     @staticmethod
     def modpath_to_url(modpath):
@@ -113,7 +119,7 @@ class Images(cpm.CPModule):
     def visible_settings(self):
         result = [self.module_explanation,self.path_list_display, self.wants_filter]
         if self.wants_filter:
-            result += [self.filter]
+            result += [self.filter, self.update_button]
         return result
             
     def change_causes_prepare_run(self, setting):

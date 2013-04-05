@@ -2303,7 +2303,7 @@ class Pipeline(object):
         if len(real_list):
             self.notify_listeners(ImagePlaneDetailsRemovedEvent(real_list))
             def undo():
-                self.add_image_plane_details(real_list)
+                self.add_image_plane_details(real_list, False)
             self.__undo_stack.append((undo, "Remove images"))
             
     def clear_image_plane_details(self):
@@ -2314,7 +2314,7 @@ class Pipeline(object):
         if len(old_ipds):
             self.notify_listeners(ImagePlaneDetailsRemovedEvent(old_ipds))
             def undo():
-                self.add_image_plane_details(old_ipds)
+                self.add_image_plane_details(old_ipds, False)
             self.__undo_stack.append((undo, "Remove images"))
             
     def remove_image_plane_url(self, url):

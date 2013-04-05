@@ -997,6 +997,19 @@ class HDF5FileList(object):
     def clear_cache(self):
         self.__cache = {}
                     
+    def clear_filelist(self):
+        '''Remove all files from the filelist'''
+        self.__generation = uuid.uuid4()
+        group = self.get_filelist_group()
+        with self.lock:
+            schemas = [ k for k in group.keys()
+                        if group[k].attrs[A_CLASS] == CLASS_DIRECTORY]
+            for key in schemas:
+                del group[key]
+            self.hdf5_file.flush()
+        self.clear_cache()
+        self.notify()
+        
     def remove_files_from_filelist(self, urls):
         self.__generation = uuid.uuid4()
         group = self.get_filelist_group()

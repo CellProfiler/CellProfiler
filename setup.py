@@ -46,7 +46,10 @@ if sys.platform == "darwin":
 
 APPNAME = 'CellProfiler'
 APP = ['CellProfiler.py']
-DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler', 'icons', '*.png')))]
+icon_src_path = os.path.join('.', 'cellprofiler', 'icons')
+DATA_FILES = [('cellprofiler/icons', 
+               glob.glob(os.path.join(icon_src_path, '*.png'))+
+               [os.path.join(icon_src_path, "icon_copyrights.txt")])]
 OPTIONS = {'argv_emulation': True,
            'packages': ['bioformats', 'cellprofiler', 'contrib', 'imagej', 'zmq'],
            'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib',

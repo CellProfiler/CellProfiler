@@ -11,6 +11,8 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
+import logging
+logger = logging.getLogger(__package__)
 import os.path
 import glob
 import weakref
@@ -34,3 +36,12 @@ def get_builtin_image(name):
 
 def get_builtin_images_path():
     return os.path.join(path, '')
+
+def get_icon_copyrights():
+    icpath = os.path.join(path, "icon_copyrights.txt")
+    try:
+        with open(icpath, "r") as fd:
+            return fd.read()
+    except:
+        logger.warning('Could not find the icon copyrights file, "%s".' % icpath)
+        return None

@@ -466,6 +466,10 @@ class ModuleView:
                                                        control)
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, cps.DoSomething):
+                    if (isinstance(v, cps.PathListRefreshButton) and
+                        v.callback is None):
+                        v.callback = \
+                            self.__frame.pipeline_controller.on_update_pathlist
                     control = self.make_callback_control(v, control_name,
                                                          control)
                     flag = wx.ALIGN_LEFT

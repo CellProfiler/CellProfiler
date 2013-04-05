@@ -15,6 +15,10 @@ color.png
 Image from the Silk icon theme by Mark James. Free for use with attribution to:
     http://www.famfamfam.com/lab/icons/silk/
     
+delete.png
+Image from the Icons Land website:  http://www.icons-land.com
+    distributed under their demo license agreement.
+    
 IMG_ANALYZE_16.png
 filter.png
 Free for use with attribution to Oxygen Team:
@@ -32,3 +36,7 @@ http://www.gnome.org/
 IMG_STOP.png
 LGPL licensed: David Vignoni 
 http://www.icon-king.com/
+
+CollapseTree.png and ExpandTree.png
+Covered by the following license: https://wiki.trin.org.au/Mangroves/TermsOfUse
+Author: Emma Clifton, https://wiki.trin.org.au/Main/EmmaClifton

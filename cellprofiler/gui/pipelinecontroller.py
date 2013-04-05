@@ -342,16 +342,24 @@ class PipelineController:
         
     def attach_to_path_list_ctrl(self, 
                                  path_list_ctrl, 
-                                 path_list_update_button,
-                                 path_list_browse_button):
+                                 path_list_browse_button,
+                                 path_list_filtered_files_checkbox,
+                                 path_list_clear_button,
+                                 path_list_expand_button,
+                                 path_list_collapse_button):
         '''Attach the pipeline controller to the path_list_ctrl
         
         This lets the pipeline controller populate the path list as
         it changes.
         '''
         self.__path_list_ctrl = path_list_ctrl
-        path_list_update_button.Bind(wx.EVT_BUTTON, self.on_update_pathlist)
+        self.__path_list_filter_checkbox = path_list_filtered_files_checkbox
         path_list_browse_button.Bind(wx.EVT_BUTTON, self.on_pathlist_browse)
+        path_list_clear_button.Bind(wx.EVT_BUTTON, self.on_pathlist_clear)
+        path_list_expand_button.Bind(
+            wx.EVT_BUTTON, path_list_ctrl.expand_all)
+        path_list_collapse_button.Bind(
+            wx.EVT_BUTTON, path_list_ctrl.collapse_all)
         
         path_list_ctrl.set_context_menu_fn(
             self.get_pathlist_file_context_menu,
@@ -363,6 +371,11 @@ class PipelineController:
             self.on_pathlist_drop_files,
             self.on_pathlist_drop_text)
         path_list_ctrl.SetDropTarget(self.path_list_drop_target)
+        
+        def show_disabled(event):
+            self.__path_list_ctrl.set_show_disabled(
+                self.__path_list_filter_checkbox.Value)
+        self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
         
     def attach_to_module_view(self,module_view):
         """Listen for setting changes from the module view
@@ -1153,15 +1166,17 @@ class PipelineController:
             
     def on_image_plane_details_added(self, event):
         '''Callback from pipeline when paths are added to the pipeline'''
-        self.__path_list_ctrl.add_paths(
-            [ipd.url for ipd in event.image_plane_details])
+        urls = [ipd.url for ipd in event.image_plane_details]
+        self.__path_list_ctrl.add_paths(urls)
+        self.__workspace.file_list.add_files_to_filelist(urls)
         
     def on_image_plane_details_removed(self, event):
         '''Callback from pipeline when paths are removed from the pipeline'''
-        self.__path_list_ctrl.remove_paths(
-            [ipd.url for ipd in event.image_plane_details])
+        urls = [ipd.url for ipd in event.image_plane_details]
+        self.__path_list_ctrl.remove_paths(urls)
+        self.__workspace.file_list.remove_files_from_filelist(urls)
         
-    def on_update_pathlist(self, event):
+    def on_update_pathlist(self, event=None):
         ipds = self.__pipeline.get_filtered_image_plane_details(self.__workspace)
         enabled_urls = set([ipd.url for ipd in ipds])
         disabled_urls = set(self.__path_list_ctrl.get_paths())
@@ -1238,6 +1253,11 @@ class PipelineController:
             [ cpp.ImagePlaneDetails(url, None, None, None)
               for url in paths])
         self.__workspace.file_list.remove_files_from_filelist(paths)
+        
+    def on_pathlist_clear(self, event):
+        '''Remove all files from the path list'''
+        self.__pipeline.clear_image_plane_details()
+        self.__workspace.file_list.clear_filelist()
             
     def on_pathlist_drop_files(self, x, y, filenames):
         self.add_paths_to_pathlist(filenames)

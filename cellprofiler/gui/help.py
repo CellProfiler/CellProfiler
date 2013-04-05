@@ -1345,6 +1345,22 @@ HELP_ON_PIXEL_INTENSITIES = """To view pixel intensities in an open image, use t
 pixel intensity tool which is available in any open display window. When you move 
 your mouse over the image, the pixel intensities will appear in the bottom bar of the display window."""
 
+HELP_ON_PATH_LIST = """The image file path list displays the image files
+that are managed by the <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
+and <b>Groups</b> modules. You can drop files and directories into this window
+or use the <i>Browse...</i> button to add files to the list. The context menu
+for the window lets you display or remove files and lets you remove folders.
+<br>
+The buttons and checkbox along the bottom have the following functions:<br>
+<ul><li><i>Browse...</i>: Browse for files and folders to add.</li>
+<li><i>Clear</i>: Clear all entries from the file list</li>
+<li><i>Show files excluded by filters</i>: Check this to see all files in the
+list. Uncheck it to see only the files that pass the rules criteria in the
+<b>Images</b> module.</li>
+<li><i>Expand tree</i>: Expand all of the folders in the tree</li>
+<li><i>Collapse tree</i>: Collapse the folders in the tree</li></ul>
+"""
+
 #########################################################
 #
 # The top-level of help - used when building the HTML manual

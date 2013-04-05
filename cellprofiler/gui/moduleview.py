@@ -3680,7 +3680,6 @@ class ModuleSizer(wx.PySizer):
                 for i in range(self.__cols):
                     item = self.get_item(i,j)
                     if item is None:
-                        print "Missing item"
                         continue
                     if item.IsWindow():
                         window = item.GetWindow()

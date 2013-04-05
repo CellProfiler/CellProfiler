@@ -99,6 +99,7 @@ ID_WINDOW_ALL = (ID_WINDOW_CLOSE_ALL, ID_WINDOW_SHOW_ALL_WINDOWS,
 
 window_ids = []
 
+ID_HELP_WELCOME = wx.NewId()
 ID_HELP_MODULE = wx.NewId()
 ID_HELP_SEARCH = wx.NewId()
 ID_HELP_DATATOOLS = wx.NewId()
@@ -307,8 +308,8 @@ class CPFrame(wx.Frame):
         # If the user wants to see the blurb on startup, show it and
         # hide the module UI
         #
+        self.__startup_blurb.load_startup_blurb()
         if cpprefs.get_startup_blurb():
-            self.__startup_blurb.load_startup_blurb()
             self.__notes_panel.Hide()
             self.__path_module_imageset_panel.Hide()
         else:
@@ -375,21 +376,23 @@ class CPFrame(wx.Frame):
 
     def show_module_ui(self, show):
         '''Show or hide the module and notes panel'''
-        if show and self.__startup_blurb is not None:
-            self.__startup_blurb.Hide()
-            self.__startup_blurb.Destroy()
-            self.__startup_blurb = None
-        self.__notes_panel.Show(show)
-        self.__path_module_imageset_panel.Show(show)
-        self.layout_pmi_panel()
+        right_sizer = self.__right_win.Sizer
+        assert isinstance(right_sizer, wx.Sizer)
+        right_sizer.Show(self.__startup_blurb, not show)
+        right_sizer.Show(self.__notes_panel, show)
+        right_sizer.Show(self.__path_module_imageset_panel, show)
+        if show:
+            self.layout_pmi_panel()
+            self.__path_list_sash.Layout()
+            self.__module_panel.Layout()
+            self.__module_view.module_panel.SetupScrolling(
+                scroll_x=True,
+                scroll_y=True,
+                scrollToTop=False)
+            self.__imageset_sash.Layout()
+        else:
+            self.__startup_blurb.load_startup_blurb()
         self.__right_win.Layout()
-        self.__path_list_sash.Layout()
-        self.__module_panel.Layout()
-        self.__module_view.module_panel.SetupScrolling(
-            scroll_x=True,
-            scroll_y=True,
-            scrollToTop=False)
-        self.__imageset_sash.Layout()
 
     def __on_sash_drag(self, event):
         sash = event.GetEventObject()
@@ -496,6 +499,7 @@ class CPFrame(wx.Frame):
         # We must add a non-submenu menu item before
         # make_help_menu adds submenus, otherwise the submenus
         # will disappear on the Mac.
+        self.__menu_help.Append(ID_HELP_WELCOME, "Show welcome screen")
         self.__menu_help.Append(ID_HELP_ONLINE_MANUAL, "Online Manual",
                                 "Launch the HTML help in a browser")
         make_help_menu(MAIN_HELP, self, self.__menu_help)
@@ -530,6 +534,7 @@ class CPFrame(wx.Frame):
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
         wx.EVT_MENU(self, ID_FILE_NEW_CP,self.__on_new_cp)
+        wx.EVT_MENU(self, ID_HELP_WELCOME, self.__on_help_welcome)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_HELP_ONLINE_MANUAL,self.__on_help_online_manual)
         wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
@@ -724,6 +729,9 @@ All rights reserved."""
         dlg.Fit()
         dlg.ShowModal()
 
+    def __on_help_welcome(self, event):
+        self.show_module_ui(False)
+        
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()
         if len(modules) > 0:

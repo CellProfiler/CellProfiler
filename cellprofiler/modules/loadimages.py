@@ -344,8 +344,8 @@ class LoadImages(cpmodule.CPModule):
         self.location = cps.DirectoryPath(
             "Input image file location", 
             dir_choices = [
-                DEFAULT_INPUT_FOLDER_NAME,  DEFAULT_OUTPUT_FOLDER_NAME,
-                ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
+                ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME,  
+                DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
                 DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME],
             allow_metadata = False, support_urls = cps.SUPPORT_URLS_SHOW_DIR,
             doc ="""Select the folder containing the images to be loaded. 

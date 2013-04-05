@@ -316,6 +316,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
     def make_workspace(self, file_names):
         module = L.LoadSingleImage()
         module.module_num = 1
+        module.directory.set_dir_choice(L.DEFAULT_INPUT_FOLDER_NAME)
         for i, file_name in enumerate(file_names):
             if i > 0:
                 module.add_file()
@@ -487,6 +488,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         try:
             module = L.LoadSingleImage()
             module.module_num = 1
+            module.directory.set_dir_choice(L.DEFAULT_INPUT_FOLDER_NAME)
             fs = module.file_settings[0]
             fs.file_name.value = filename
             fs.image_objects_choice.value = L.IO_OBJECTS
@@ -537,6 +539,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         try:
             module = L.LoadSingleImage()
             module.module_num = 1
+            module.directory.set_dir_choice(L.DEFAULT_INPUT_FOLDER_NAME)
             fs = module.file_settings[0]
             fs.file_name.value = filename
             fs.image_objects_choice.value = L.IO_OBJECTS

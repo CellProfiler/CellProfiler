@@ -499,7 +499,7 @@ class CPFrame(wx.Frame):
         # We must add a non-submenu menu item before
         # make_help_menu adds submenus, otherwise the submenus
         # will disappear on the Mac.
-        self.__menu_help.Append(ID_HELP_WELCOME, "Show welcome screen")
+        self.__menu_help.Append(ID_HELP_WELCOME, "Show Welcome Screen")
         self.__menu_help.Append(ID_HELP_ONLINE_MANUAL, "Online Manual",
                                 "Launch the HTML help in a browser")
         make_help_menu(MAIN_HELP, self, self.__menu_help)

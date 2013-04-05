@@ -1578,7 +1578,8 @@ def show_image(url, parent = None, needs_raise_after = True):
         import wx
         wx.CallAfter(lambda: frame.Raise())
     return True
-    
+
+roundoff = True
 class CPImageArtist(matplotlib.artist.Artist):
     def __init__(self, image, frame, kwargs):
         super(CPImageArtist, self).__init__()
@@ -1592,6 +1593,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         self.interpolation = matplotlib.image.NEAREST
         
     def draw(self, renderer):
+        global roundoff
         image = self.frame.normalize_image(self.image, 
                                            **self.kwargs)
         magnification = renderer.get_image_magnification()
@@ -1631,22 +1633,20 @@ class CPImageArtist(matplotlib.artist.Artist):
         im.reset_matrix()
 
         # the viewport translation in the X direction
-        tx = view_x0 - self.axes.viewLim.x0
+        tx = view_x0 - self.axes.viewLim.x0 - .5
         #
         # the viewport translation in the Y direction
         # which is from the bottom of the screen
         #
         if self.axes.viewLim.height < 0:
-            ty = (self.axes.viewLim.y0 - view_y1)
+            ty = (self.axes.viewLim.y0 - view_y1) + .5
         else:
-            ty = view_y0 - self.axes.viewLim.y0
+            ty = view_y0 - self.axes.viewLim.y0 - .5
         im.apply_translation(tx, ty)
 
         l, b, r, t = self.axes.bbox.extents
-        widthDisplay = (round(r) + 0.5) - (round(l) - 0.5)
-        heightDisplay = (round(t) + 0.5) - (round(b) - 0.5)
-        widthDisplay = int(widthDisplay * magnification)
-        heightDisplay = int(heightDisplay * magnification)
+        widthDisplay = (r - l + 1) * magnification
+        heightDisplay = (t - b + 1) * magnification
 
         # resize viewport to display
         sx = widthDisplay / self.axes.viewLim.width
@@ -1663,6 +1663,7 @@ class CPImageArtist(matplotlib.artist.Artist):
             renderer.draw_image(l, b, im, bbox)
         else:
             gc = renderer.new_gc()
+            gc.set_clip_rectangle(bbox)
             renderer.draw_image(gc, l, b, im)
 
 if __name__ == "__main__":

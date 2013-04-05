@@ -79,6 +79,17 @@ class PreferencesView:
         self.__pipeline_list_view = None
         self.__progress_watcher = None
         
+    def show_default_image_folder(self, show):
+        if self.__sizer.IsShown(self.__image_folder_panel) == show:
+            return
+        self.__sizer.Show(self.__image_folder_panel, show)
+        parent = self.__image_folder_panel.GetParent()
+        while parent is not None:
+            parent.Layout()
+            if parent == self.__image_folder_panel.GetTopLevelParent():
+                break
+            parent = parent.GetParent()
+        
     def show_progress_panel(self):
         '''Show the pipeline progress panel and hide the status text'''
         self.__panel.Sizer.Hide(self.__status_text)

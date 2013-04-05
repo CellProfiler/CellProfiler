@@ -1213,6 +1213,12 @@ def add_progress_callback(callback):
         __progress_data.callbacks = weakref.WeakSet()
     __progress_data.callbacks.add(callback)
     
+def remove_progress_callback(callback):
+    global __progress_data
+    if (__progress_data.callbacks is not None and 
+        callback in __progress_data.callbacks):
+        __progress_data.callbacks.remove(callback)
+    
 def report_progress(operation_id, progress, message):
     '''Report progress to all callbacks registered on the caller's thread
     

@@ -1567,7 +1567,9 @@ def show_image(url, parent = None, needs_raise_after = True):
         from cellprofiler.gui.errordialog import display_error_dialog
         display_error_dialog(None, e, None, 
                              "Failed to load %s" % url)
-    frame = CPFigureFrame(parent = parent, subplots = (1,1))
+    frame = CPFigureFrame(parent = parent, 
+                          title = filename,
+                          subplots = (1,1))
     if image.ndim == 2:
         frame.subplot_imshow_grayscale(0, 0, image, title = filename)
     else:

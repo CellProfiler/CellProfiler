@@ -628,19 +628,45 @@ class PipelineController:
                                   style = wx.OK | wx.ICON_ERROR,
                                   parent = self.__frame)
             return None
+    
+    def do_lock_and_open_workspace(self, filename, load_pipeline=True):
+        '''Take the workspace file lock and open workspace
         
+        filename - path to workspace file
+        
+        load_pipeline - true to load the pipeline, false to just load the
+                        file list
+                        
+        Note - this version is needed if accessing via the recent workspace
+        menu items.
+        '''
+        if lock_file(filename):
+            self.do_open_workspace(filename, load_pipeline)
+        else:
+            message = (
+                'The workspace file, "%s", is already open\nin '
+                "another instance of CellProfiler and can't be "
+                "shared.") % filename
+            wx.MessageBox(message=message,
+                          caption="%s is already open" %
+                          os.path.split(filename)[1],
+                          style = wx.OK | wx.ICON_ERROR,
+                          parent = self.__frame)
+            
+    
     def do_open_workspace(self, filename, load_pipeline=True):
         '''Open the given workspace file
         
         filename - the path to the file to open. It should already be locked.
         '''
-        try:
-            message = "Loading %s" % filename
-            with wx.ProgressDialog(
+        progress_callback_fn = None
+        message = "Loading %s" % filename
+        with wx.ProgressDialog(
                 parent = self.__frame,
                 title = "Opening workspace",
                 message= message,
                 style=wx.PD_CAN_ABORT|wx.PD_APP_MODAL) as dlg:
+            try:
                 assert isinstance(dlg, wx.ProgressDialog)
                 dlg.longest_msg_len = dlg.GetTextExtent(message)[0]
                     
@@ -654,6 +680,7 @@ class PipelineController:
                             dlg.longest_msg_len = msg_len
                             dlg.Fit()
                 cpprefs.add_progress_callback(progress_callback)
+                progress_callback_fn = progress_callback
                     
                 self.__workspace.load(filename, load_pipeline)
                 if self.__locked_workspace_filename is not None:
@@ -664,9 +691,10 @@ class PipelineController:
                 if not load_pipeline:
                     self.__workspace.measurements.clear()
                     self.__workspace.save_pipeline_to_measurements()
-        finally:
-            if filename != self.__locked_workspace_filename:
-                unlock_file(filename)
+            finally:
+                cpprefs.remove_progress_callback(progress_callback_fn)
+                if filename != self.__locked_workspace_filename:
+                    unlock_file(filename)
             
     def __on_new_workspace(self, event):
         '''Handle the New Workspace menu command'''
@@ -989,7 +1017,7 @@ class PipelineController:
             (self.__frame.recent_workspace_files,
              RECENT_WORKSPACE_FILE_MENU_ID,
              cpprefs.get_recent_files(cpprefs.WORKSPACE_FILE),
-             self.do_open_workspace)):
+             self.do_lock_and_open_workspace)):
             assert isinstance(menu, wx.Menu)
             while len(menu.MenuItems) > 0:
                 self.__frame.Unbind(wx.EVT_MENU, id = menu.MenuItems[0].Id)
@@ -1132,7 +1160,10 @@ class PipelineController:
         elif event.is_pipeline_modification:
             self.__dirty_pipeline = True
             self.set_title()
-            m = self.__workspace.measurements
+            needs_default_image_folder = \
+                self.__pipeline.needs_default_image_folder()
+            self.__frame.get_preferences_view().show_default_image_folder(
+                needs_default_image_folder)
             if event.is_image_set_modification:
                 self.on_image_set_modification()
             self.__workspace.save_pipeline_to_measurements()

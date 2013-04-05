@@ -766,6 +766,19 @@ class CPModule(object):
         '''
         return False
     
+    def needs_default_image_folder(self, pipeline):
+        '''Returns True if the module needs the default image folder
+        
+        pipeline - pipeline being run
+        
+        Legacy modules might need the default image folder as does any module
+        that uses the DirectoryPath setting.
+        '''
+        for setting in self.visible_settings():
+            if isinstance(setting, cps.DirectoryPath):
+                return True
+        return False
+    
     def obfuscate(self):
         '''Erase any sensitive information in a module's settings
         

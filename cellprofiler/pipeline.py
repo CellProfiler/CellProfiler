@@ -2470,6 +2470,13 @@ class Pipeline(object):
 
     def has_legacy_loaders(self):
         return any(m.module_name in self.LEGACY_LOAD_MODULES for m in self.modules())
+    
+    def needs_default_image_folder(self):
+        '''Return True if this pipeline makes use of the default image folder'''
+        for module in self.modules():
+            if module.needs_default_image_folder(self):
+                return True
+        return False
 
     def get_image_sets(self, workspace, end_module = None):
         '''Return the pipeline's image sets

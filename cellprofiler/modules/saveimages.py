@@ -395,6 +395,16 @@ class SaveImages(cpm.CPModule):
             result.append(self.create_subdirectories)
         return result
     
+    def needs_default_image_folder(self, pipeline):
+        '''Return True if the module needs the default image folder.
+        
+        SaveImages uses the default image folder as the base directory
+        for relative directory paths when creating subdirectories.
+        '''
+        if self.create_subdirectories:
+            return True
+        return super(self.__class__, self).needs_default_image_folder(pipeline)
+    
     @property
     def module_key(self):
         return "%s_%d"%(self.module_name, self.module_num)

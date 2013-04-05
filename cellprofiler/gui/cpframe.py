@@ -890,7 +890,6 @@ All rights reserved."""
                             message = "Open an image file",
                             wildcard = "Image file (*.tif,*.tiff,*.jpg,*.jpeg,*.png,*.gif,*.bmp)|*.tif;*.tiff;*.jpg;*.jpeg;*.png;*.gif;*.bmp|*.* (all files)|*.*",
                             style = wx.FD_OPEN)
-        dlg.Directory = cpprefs.get_default_image_directory()
         if dlg.ShowModal() == wx.ID_OK:
             from cellprofiler.modules.loadimages import LoadImagesImageProvider
             from cellprofiler.gui.cpfigure import CPFigureFrame

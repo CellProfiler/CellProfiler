@@ -243,8 +243,9 @@ class RegexpText(Setting):
 class DirectoryPath(Text):
     """A setting that displays a filesystem path name
     """
-    DIR_ALL = [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME,
-               ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
+    DIR_ALL = [ABSOLUTE_FOLDER_NAME, 
+               DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME,
+               DEFAULT_INPUT_SUBFOLDER_NAME,
                DEFAULT_OUTPUT_SUBFOLDER_NAME]
     def __init__(self, text, value = None, dir_choices = None, 
                  allow_metadata = True, support_urls = False,

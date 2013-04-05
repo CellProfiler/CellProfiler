@@ -32,6 +32,7 @@ import uuid
 from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
 from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
 from cellprofiler.utilities.hdf5_dict import HDF5FileList
+from cellprofiler.gui.help import FILTER_RULES_HELP, FILTER_RULES_BUTTONS_HELP
 
 class Images(cpm.CPModule):
     variable_revision_number = 1
@@ -55,15 +56,19 @@ class Images(cpm.CPModule):
                       DirectoryPredicate(),
                       ExtensionPredicate()]
         self.wants_filter = cps.Binary(
-            "Filter based on rules", False,
-            doc = "Check this setting to display and use the rules filter")
+            "Filter based on rules", False, doc = """
+            Check this setting to display and use rules to filter files for processing. 
+            <p>%(FILTER_RULES_HELP)s</p>"""%globals())
             
         self.filter = cps.Filter("Filter", predicates, 
-                                 'or (file does contain "")')
+            'or (file does contain "")',doc = """
+            Specify filter to narrow down the files to be analyzed. 
+            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals())
+        
         self.update_button = cps.PathListRefreshButton(
             "Update filter", "Update",
-            doc = """<i>(Only displayed if filtering based on rules)</i>
-            Redisplay the file list, removing or graying out the files
+            doc = """<i>(Only displayed if filtering based on rules)</i><br>
+            Re-display the file list, removing or graying out the files
             that do not pass the current filter.
             """)
     

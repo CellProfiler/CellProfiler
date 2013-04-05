@@ -1323,6 +1323,52 @@ PREFERENCES_HELP = """The Preferences allow you to change many options in CellPr
 for key, value in enumerate(EACH_PREFERENCE_HELP):
     PREFERENCES_HELP += """<li><b>""" + value[0] + """:</b>""" + value[1] + """</li>"""
 PREFERENCES_HELP += """</ul>"""
+
+#########################################################
+#
+# Help re: workspaces
+#
+#########################################################
+INTRODUCTION_TO_WORKSPACES_HELP = """
+<h3>What is a workspace?</h3>
+<p></p>
+
+<h3>Why would I want to use workspaces?</h3>
+<p></p>
+
+<h3>What happened to LoadImages/LoadData?</h3>
+<p>The modules <b>LoadImages</b> and <b>LoadData</b> have traditionally been used for specifying
+the location and user-given names of images to be proceesed.
+They have not been fully superceded, and are remain accesible
+via the "Add module" and "+" buttons. </p>
+"""
+
+USING_THE_IMAGES_MODULE_HELP= """
+<p>The <b>Images</b> module allows the user to specify the location of any and all files to
+be analyzed by the pipeline. These files can be located on your hard drive or on a networked
+computer elsewhere. If it is easier to specify the folder containing the files rather than 
+the individual files theselves (because
+the number of files is too large, for example), you can provide rules to specify only those
+files that you want analyzed from the full set.</p>
+
+<p>The most straightforward way to provide files to the <b>Images</b> is to simply drag-and-drog
+them on the file list panel. Both individual files and entire folders can be dragged onto this panel.
+This avoids the process of navigating through file folders and 
+menu options to get the files you want.</p>
+"""
+
+USING_THE_METADATA_MODULE_HELP = """
+
+"""
+
+USING_THE_NAMESANDTYPES_MODULE_HELP = """
+
+"""
+
+USING_THE_GROUPS_MODULE_HELP = """
+
+"""
+             
 #########################################################
 #
 # Misc. help
@@ -1361,6 +1407,49 @@ list. Uncheck it to see only the files that pass the rules criteria in the
 <li><i>Collapse tree</i>: Collapse the folders in the tree</li></ul>
 """
 
+FILTER_RULES_HELP = """
+By default, this module will pass all the files specified in the <b>Images</b> file list
+panel downstream to have a meaningful name assigned to it (so other modules can access it) or optionally, to 
+define the relationships between images and associated metadata. Checking this box will allow you to specify
+a subset of the files from the <b>Images</b> file list panel by defining rules to filter the files. This 
+approach is useful if, for example, you drag-and-dropped a folder onto the <b>Images</b> file list panel 
+which contains a mixture of images that you want to analyze and other files that you want to ignore.
+"""
+
+FILTER_RULES_BUTTONS_HELP = """
+Clicking the rule menus shows you all the file <i>attributes</i>, <i>operators</i> and <i>conditions</i> you can specify to narrow down 
+the image list.
+<ol>
+<li>For each rule, first select the <i>attribute</i> that the rule is to be based on. For example, you can select <i>File</i> 
+among others.</li>
+<li>The <i>operator</i> menu is updated with operators applicable to the attribute you selected. For example, if you select 
+<i>File</i> as the attribute, the operator
+menu includes text operators such as <i>Contain</i> or <i>Starts with</i>. On the other hand, if you
+select <i>Extension</i> as the attribute, you can choose the logical operators <i>Is</i> or <i>Is not</i> from the menu.</li>
+<li>In the operator menu, select the operator you want to use. For example,
+if you want to match data exactly, you may want the <i>Exactly match</i> or the <il>Is</i> operator. If you want the
+condition to be more loose, select an operator such as <i>Contains</i>.</li>
+<li>Use the Condition box to type the condition you want to match. The more
+you type, the more specific the condition is. 
+<ul>
+<li>As an example, if you create a new filter and select
+<i>File</i> as the Attribute, select <i>Does</i> and <i>Contain</i> as the Operators, and type "Channel" as the condition,
+the filter finds all files that include the text "Channel", such as "Channel1.tif" "Channel2.jpg", "1-Channel-A01.BMP" and so on.</li>
+<li>If you select <i>Does</i> and <i>Start with</i> as the operators and <i>Channel1</i> in the Condition box, 
+the rule will includes such files as "Channel1.tif" "Channel1-A01.png", and so on.</li></ul>
+</li>
+</ol>
+<p>To add another rule, click the plus  buttons to the right of each rule. Subtract an existing rule by clicking the 
+minus button.</p>
+<p>You can also link a set of rules by choosing the logical expression <i>All</i> or <i>Any</i>. If you use  
+<i>All</i> logical expression, all the rules be true for a file to be included in the file list. If
+you use the <i>Any</i> option, only one of the conditions has to be met for a file to be included.</p>
+<p>If you want to create more complex rules (e.g, some criteria matching all rules and others matching any),
+you can create sets of rules, by clicking the ellipsis button (to the right of the plus button). 
+Repeat the above steps to add more rules to the filter until you have
+all the conditions you want to include.</p>
+"""
+
 #########################################################
 #
 # The top-level of help - used when building the HTML manual
@@ -1381,6 +1470,12 @@ MAIN_HELP = (
             ("Using The Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
         ("Using Module Display Windows", FIGURE_HELP ),
         ("Setting the Preferences", PREFERENCES_HELP),
+        ("Creating A Workspace",(
+            ("Introduction To Workspaces",INTRODUCTION_TO_WORKSPACES_HELP),
+            ("Using The Images Module",USING_THE_IMAGES_MODULE_HELP),
+            ("Using The Metadata Module",USING_THE_METADATA_MODULE_HELP),
+            ("Using The NamesAndTypes Module",USING_THE_NAMESANDTYPES_MODULE_HELP),
+            ("Using The Groups Module",USING_THE_GROUPS_MODULE_HELP))),
         ("How Data Is Handled",(
             ("Using Metadata In CellProfiler",USING_METADATA_HELP),
             ("How To Use Image Grouping",USING_METADATA_GROUPING_HELP),

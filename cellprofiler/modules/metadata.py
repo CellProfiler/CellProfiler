@@ -34,6 +34,7 @@ from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.images import Images, evaluate_url
 from cellprofiler.modules.loadimages import needs_well_metadata
 from cellprofiler.modules.loadimages import well_metadata_tokens
+from cellprofiler.gui.help import FILTER_RULES_HELP, FILTER_RULES_BUTTONS_HELP
 
 X_AUTOMATIC_EXTRACTION = "Automatic"
 X_MANUAL_EXTRACTION = "Manual"
@@ -209,16 +210,18 @@ class Metadata(cpm.CPModule):
  
         group.append("filter_choice", cps.Choice(
             "Extract metadata from:",
-            [F_ALL_IMAGES, F_FILTERED_IMAGES],
-            doc = """Do you want to extract data from all of the images
-            chosen by the <b>Images</b> module or on a subset of the images?"""))
+            [F_ALL_IMAGES, F_FILTERED_IMAGES],doc = """
+            Do you want to extract data from all of the images
+            chosen by the <b>Images</b> module or on a subset of the images?
+            <p>%(FILTER_RULES_HELP)s</p>"""%globals()))
         
         group.append("filter", cps.Filter(
             "", [FilePredicate(),
                  DirectoryPredicate(),
                  ExtensionPredicate()],
-            'or (file does contain "")',
-            doc = """Pick the files for metadata extraction."""))
+            'or (file does contain "")',doc = """
+            Check this setting to display and use rules to select files for metadata extraction.
+            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals()))
         
         group.append("csv_location", cps.Pathname(
             "Metadata file location:",

@@ -181,7 +181,8 @@ opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
                               "matplotlib", "matplotlib.numerix.random_array",
                               "email.iterators",
-                              "cellprofiler.modules.*"],
+                              "cellprofiler.modules.*",
+                              "zmq.core.pysocket"],
                 'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],
                 'dll_excludes': ["jvm.dll"]
               },

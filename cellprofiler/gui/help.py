@@ -1407,15 +1407,6 @@ list. Uncheck it to see only the files that pass the rules criteria in the
 <li><i>Collapse tree</i>: Collapse the folders in the tree</li></ul>
 """
 
-FILTER_RULES_HELP = """
-By default, this module will pass all the files specified in the <b>Images</b> file list
-panel downstream to have a meaningful name assigned to it (so other modules can access it) or optionally, to 
-define the relationships between images and associated metadata. Checking this box will allow you to specify
-a subset of the files from the <b>Images</b> file list panel by defining rules to filter the files. This 
-approach is useful if, for example, you drag-and-dropped a folder onto the <b>Images</b> file list panel 
-which contains a mixture of images that you want to analyze and other files that you want to ignore.
-"""
-
 FILTER_RULES_BUTTONS_HELP = """
 Clicking the rule menus shows you all the file <i>attributes</i>, <i>operators</i> and <i>conditions</i> you can specify to narrow down 
 the image list.

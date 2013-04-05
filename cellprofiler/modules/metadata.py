@@ -34,7 +34,7 @@ from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.images import Images, evaluate_url
 from cellprofiler.modules.loadimages import needs_well_metadata
 from cellprofiler.modules.loadimages import well_metadata_tokens
-from cellprofiler.gui.help import FILTER_RULES_HELP, FILTER_RULES_BUTTONS_HELP
+from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
 
 X_AUTOMATIC_EXTRACTION = "Automatic"
 X_MANUAL_EXTRACTION = "Manual"
@@ -211,9 +211,21 @@ class Metadata(cpm.CPModule):
         group.append("filter_choice", cps.Choice(
             "Extract metadata from:",
             [F_ALL_IMAGES, F_FILTERED_IMAGES],doc = """
-            Do you want to extract data from all of the images
+            Do you want to extract metadata from all of the images
             chosen by the <b>Images</b> module or on a subset of the images?
-            <p>%(FILTER_RULES_HELP)s</p>"""%globals()))
+            <p>This setting controls how different image types (e.g., an image
+            of the GFP stain and a brightfield image) have different metadata
+            extracted. There are two choices:<br>
+            <ul>
+            <li><i>%(F_ALL_IMAGES)s</i>: Extract metadata from all images specified in
+            <b>Images</b>. This is the simplest choice and the appropriate one if you have
+            only one kind of image (or only one image). CellProfiler will
+            extract metadata from all images using the same method per iteration.</li>
+            <li><i>%(F_FILTERED_IMAGES)s</i>: Extract metadata depending on specific file
+            attributes. This is the appropriate choice if more than one image was taken of each 
+            imaging site. You can specify distinctive criteria for each image subset with 
+            matching metadata.</li>
+            </ul></p>"""%globals()))
         
         group.append("filter", cps.Filter(
             "", [FilePredicate(),

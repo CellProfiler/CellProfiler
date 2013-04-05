@@ -830,9 +830,13 @@ class PipelineController:
             self.__clear_errors()
             if (self.__pipeline.can_convert_legacy_input_modules() and
                 (wx.MessageBox(
-                    "Your pipeline contains legacy modules such as LoadImages."
-                    "CellProfiler can convert this pipeline to use the new"
-                    " input modules (Images, Metadata, NamesAndTypes, Groups).\n\n"
+                    "Your pipeline contains legacy modules such as LoadImages. "
+                    "CellProfiler can convert this pipeline to use the new "
+                    "input modules (Images, Metadata, NamesAndTypes, Groups).\n\n"
+                    "If you choose to convert the pipeline, you should then make "
+                    "sure to provide your original images to the Images module "
+                    "as input, and confirm that your metadata (if any) is provided "
+                    "to the Metadata module.\n\n"
                     "Do you want to perform the conversion?",
                     "Convert legacy pipeline?",
                     wx.YES_NO | wx.ICON_QUESTION, self.__frame) & wx.YES)):

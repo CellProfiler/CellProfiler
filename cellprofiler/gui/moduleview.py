@@ -403,6 +403,8 @@ class ModuleView:
             for i, v in enumerate(settings):
                 if isinstance(v, cps.PathListDisplay):
                     path_control = v
+                    self.__frame.pipeline_controller.\
+                        show_path_list_filter_checkbox(v.using_filter)
                     continue
                 if isinstance(v, cps.ImageSetDisplay):
                     v.on_event_fired = self.__frame.reset_imageset_ctrl

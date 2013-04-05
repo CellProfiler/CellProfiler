@@ -120,6 +120,9 @@ class Images(cpm.CPModule):
         result = [self.module_explanation,self.path_list_display, self.wants_filter]
         if self.wants_filter:
             result += [self.filter, self.update_button]
+            self.path_list_display.using_filter = True
+        else:
+            self.path_list_display.using_filter = False
         return result
             
     def change_causes_prepare_run(self, setting):

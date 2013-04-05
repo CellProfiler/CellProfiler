@@ -377,6 +377,12 @@ class PipelineController:
                 self.__path_list_filter_checkbox.Value)
         self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
         
+    def show_path_list_filter_checkbox(self, show=True):
+        '''Show or hide the path list filter checkbox'''
+        sizer = self.__path_list_filter_checkbox.GetContainingSizer()
+        if sizer is not None:
+            sizer.Show(self.__path_list_filter_checkbox, show)
+        
     def attach_to_module_view(self,module_view):
         """Listen for setting changes from the module view
         

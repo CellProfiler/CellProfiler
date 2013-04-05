@@ -1400,20 +1400,11 @@ for the window lets you display or remove files and lets you remove folders.
 The buttons and checkbox along the bottom have the following functions:<br>
 <ul><li><i>Browse...</i>: Browse for files and folders to add.</li>
 <li><i>Clear</i>: Clear all entries from the file list</li>
-<li><i>Show files excluded by filters</i>: Check this to see all files in the
+<li><i>Show files excluded by filters</i>: <i>(Only shown if filtered based on rules is selected)</i> Check this to see all files in the
 list. Uncheck it to see only the files that pass the rules criteria in the
 <b>Images</b> module.</li>
 <li><i>Expand tree</i>: Expand all of the folders in the tree</li>
 <li><i>Collapse tree</i>: Collapse the folders in the tree</li></ul>
-"""
-
-FILTER_RULES_HELP = """
-By default, this module will pass all the files specified in the <b>Images</b> file list
-panel downstream to have a meaningful name assigned to it (so other modules can access it) or optionally, to 
-define the relationships between images and associated metadata. Checking this box will allow you to specify
-a subset of the files from the <b>Images</b> file list panel by defining rules to filter the files. This 
-approach is useful if, for example, you drag-and-dropped a folder onto the <b>Images</b> file list panel 
-which contains a mixture of images that you want to analyze and other files that you want to ignore.
 """
 
 FILTER_RULES_BUTTONS_HELP = """

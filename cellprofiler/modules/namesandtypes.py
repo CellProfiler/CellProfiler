@@ -34,6 +34,7 @@ from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
+from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
 from bioformats.formatreader import get_omexml_metadata, load_using_bioformats
 import bioformats.omexml as OME
 import cellprofiler.utilities.jutil as J
@@ -79,19 +80,19 @@ class NamesAndTypes(cpm.CPModule):
         self.assignment_method = cps.Choice(
             "Assignment method", [ASSIGN_ALL, ASSIGN_GUESS, ASSIGN_RULES],
             doc = """How do you want to assign images to channels?<br>
-            This setting controls how different types (e.g. an image
+            This setting controls how different image types (e.g., an image
             of the GFP stain and a brightfield image) are assigned different
             names so that each type can be treated differently by
             downstream modules. There are three choices:<br>
-            <ul><li><b>%(ASSIGN_ALL)s</b> - give every image the same name.
+            <ul><li><i>%(ASSIGN_ALL)s</i>: Give every image the same name.
             This is the simplest choice and the appropriate one if you have
             only one kind of image (or only one image). CellProfiler will
             give each image the same name and the pipeline will load only
             one of the images per iteration.</li>
-            <li><b>%(ASSIGN_GUESS)s</b> - CellProfiler will guess the image
+            <li><i>%(ASSIGN_GUESS)s</i>: CellProfiler will guess the image
             assignment and will display the results of the guess which
             you can accept if correct.</li>
-            <li><b>%(ASSIGN_RULES)s</b> - give images one of several names
+            <li><i>%(ASSIGN_RULES)s</i>: Give images one of several names
             depending on the file name, directory and metadata. This is the
             appropriate choice if more than one image was taken of each 
             imaging site. You will be asked for distinctive criteria for
@@ -154,6 +155,7 @@ class NamesAndTypes(cpm.CPModule):
         mp = MetadataPredicate("Metadata", "Have %s matching", 
                                doc="Has metadata matching the value you enter")
         mp.set_metadata_keys(self.metadata_keys)
+        
         group.append("rule_filter", cps.Filter(
             "Match this rule",
             [FilePredicate(),
@@ -161,7 +163,9 @@ class NamesAndTypes(cpm.CPModule):
              ExtensionPredicate(),
              ImagePredicate(),
              mp],
-            'or (file does contain "")'))
+            'or (file does contain "")',doc = """
+            Specify filter to narrow down the files to be analyzed. 
+            <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals()))
         
         unique_image_name = None
         all_image_names = [

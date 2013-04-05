@@ -32,7 +32,7 @@ import uuid
 from .loadimages import pathname2url, SUPPORTED_IMAGE_EXTENSIONS
 from .loadimages import SUPPORTED_MOVIE_EXTENSIONS
 from cellprofiler.utilities.hdf5_dict import HDF5FileList
-from cellprofiler.gui.help import FILTER_RULES_HELP, FILTER_RULES_BUTTONS_HELP
+from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
 
 class Images(cpm.CPModule):
     variable_revision_number = 1
@@ -58,7 +58,12 @@ class Images(cpm.CPModule):
         self.wants_filter = cps.Binary(
             "Filter based on rules", False, doc = """
             Check this setting to display and use rules to filter files for processing. 
-            <p>%(FILTER_RULES_HELP)s</p>"""%globals())
+            <p>By default, <b>Images</b> will pass all the files specified in the file list
+            panel downstream to have a meaningful name assigned to it (so other modules can access it) or optionally, to 
+            define the relationships between images and associated metadata. Selecting this option will allow you to specify
+            a subset of the files from the file list panel by defining rules to filter the files. This 
+            approach is useful if, for example, you drag-and-dropped a folder onto the file list panel 
+            which contains a mixture of images that you want to analyze and other files that you want to ignore.</p>""")
             
         self.filter = cps.Filter("Filter", predicates, 
             'or (file does contain "")',doc = """
@@ -66,7 +71,7 @@ class Images(cpm.CPModule):
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals())
         
         self.update_button = cps.PathListRefreshButton(
-            "Update filter", "Update",
+            "", "Update file listing",
             doc = """<i>(Only displayed if filtering based on rules)</i><br>
             Re-display the file list, removing or graying out the files
             that do not pass the current filter.

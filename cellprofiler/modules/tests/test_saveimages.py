@@ -536,6 +536,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
+        load_images.location.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
         load_images.images[0].channels[0].image_name.value = 'Orig'
@@ -591,6 +592,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
+        load_images.location.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
@@ -648,6 +650,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
+        load_images.location.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
@@ -697,6 +700,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
+        load_images.location.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
@@ -754,6 +758,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
+        load_images.location.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
@@ -812,6 +817,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
+        load_images.location.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
@@ -874,6 +880,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
+        load_images.location.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
@@ -935,6 +942,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
+        load_images.location.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
@@ -984,6 +992,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
+        load_images.location.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
         load_images.images[0].common_text.value = '.tif'
@@ -1126,6 +1135,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         pipeline = cpp.Pipeline()
         pipeline.add_listener(self.on_event)
         load_images = cpm_li.LoadImages()
+        load_images.location.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
         load_images.file_types.value = cpm_li.FF_INDIVIDUAL_IMAGES
         load_images.match_method.value = cpm_li.MS_EXACT_MATCH
         load_images.descend_subdirectories.value = cpm_li.SUB_ALL

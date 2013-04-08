@@ -1,7 +1,36 @@
-'''<b>NamesAndTypes</b> - assign images to channels
+__doc__ = """<b>NamesAndTypes</b> assigns a user-defined name to a particular images or channel.
 <hr>
-TO-DO: document module
-'''
+Once the relevant images have been identified using the <b>Images</b> module (and/or optionally has
+had metadata associated with the images using the <b>Metadata</b> module), <b>NamesAndTypes</b> module 
+gives each image a meaningful name by which modules in the analysis pipeline will refer to it. 
+
+<p>The most common usage for this module to define a collection of channels that represent a single
+field of view. For example, a fluorescent assay may have samples stained with DAPI and GFP to label
+separate cellular sub-compartments, and for each site imaged, one DAPI and one GFP image is acquired
+by the microscope. Furthermore, these images are named in such a way that it is apparent to the 
+researcher which is which, e.g., "DAPI" is contained in the file for the DAPI images, and "GFP" in 
+the file name for the GFP images. For the purposes of analysis, each DAPI and GFP for a given site 
+should be loaded and processed together.</p>
+
+<p>In this example, the <b>NamesAndTypes</b> allows you to assign each of these channels a unique name,
+provided by you. All files of a given channel will be referred to by the chosen name, and the output
+will also be labeled according to this name. This simplifies the book-keeping of your pipeline and 
+results by making the input and output data more inituitive: a large number of images are referred 
+to by a small collection of names which are readily memorable to the researcher.</p>
+
+<p>The most common way to perform this assignment is by specifying the pattern in the filename which
+the channel(s) of interest have in common. This is done using user-defined rules in a similar manner 
+to that of the <b>Images</b> module; other attributes of the file may also be used. If you have multiple
+channels, you then assign the relationship between channels. </p>
+
+<p>After this point, for any downstream module which requires an image as input, you can choose  
+any of the names you defined from a drop-down list.</p>
+
+<p>You can also use <b>NamesAndTypes</b> to define the relationships between images by using their 
+associated metadata. If you would like to use the metadata-specific settings, please see the <b>Metadata</b> module 
+or <i>Help > General help > Using Metadata in CellProfiler</i> for more details on metadata usage 
+and syntax. </p>
+"""
 
 #CellProfiler is distributed under the GNU General Public License.
 #See the accompanying file LICENSE for details.

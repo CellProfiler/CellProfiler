@@ -1,7 +1,42 @@
-"""<b>Groups</b> - organize image sets into groups
+__doc__ = """
+<b>Groups</b> organizes sets of images into groups.
 <hr>
-TO DO: document module
+Once the images have been identified with the <b>Images</b> module (and/or optionally has
+had metadata associated with the images using the <b>Metadata</b> module), and been given
+a name by the <b>NamesAndTypes</b> module, you have the option of further sub-dividing
+an image set into a <i>group</i> that is meant to be processed in a certain way.
+
+<p>The key to understanding why grouping may be necessary is that CellProfiler processes
+the input images sequentially and in the order given. If you have multiple collections of images
+that are meant to be conceptually distinct from each other, CellProfiler will simply 
+finish processing one collection and proceed to the next, ignoring any such distinctions unless 
+told otherwise.</p>
+
+<p>To illustrate this, below are two examples where the grouping concept can be useful or important:
+<ul>
+<li>If you are performing illumination correction for a screening experiment, we recommend 
+that the illumination function (an image which represents the overall background fluorescence) 
+be calculated on a per-plate basis. Since the illumination function is an aggregate of images from a
+plate, running a pipeline must yield a single illumination function for each plate. Naively running 
+a pipeline on all the images will create a single illumination function for <i>all</i> the images 
+across all plates. Running this pipeline multiple times, once for each plate, will give the desired
+result but would be tedious and time-consuming. In this case, CellProfiler can use image grouping 
+for this purpose; if plate metadata can be defined by the <b>Metadata</b> module, grouping will enable you to
+process images that have the same plate metadata together.</li>
+<li>If you have time-lapse movie data that is in the form of individual image files, and you
+are performing object tracking, it is important to indicate to CellProfiler that the end of a movie 
+indicates the end of a distinct data set. Without doing so, CellProfiler will simply take the first frame
+of the next movie as a continuation of the previous one. If each set of
+files that comprise a movie is defined using the <b>Metadata</b> module, the relevant metadata can 
+be used in this module to insure that object tracking only takes place within each movie.</li>
+</ul>
+</p>
+
+<p>A grouping may be defined as according to any or as many of the metadata categories as defined by 
+the <b>Metadata</b> module. Upon adding a metadata category, two tables will update in panels below
+showing the resultant oragnization of the image data for each group.</p>
 """
+
 #CellProfiler is distributed under the GNU General Public License.
 #See the accompanying file LICENSE for details.
 #
@@ -54,9 +89,18 @@ class Groups(cpm.CPModule):
         self.add_grouping_metadata_button = cps.DoSomething(
             "Add another metadata item", "Add", self.add_grouping_metadata)
 
-        self.grouping_list = cps.Table("Grouping list", min_size = (300, 100))
+        self.grouping_list = cps.Table("Grouping list", min_size = (300, 100),doc="""
+            This list shows the unique values of the selected metadata; each of the
+            unique values comprise a group. Also shown is the number of image sets that comprise that group; this
+            is useful as a "sanity check", to make sure that the expected number of images are present. For example,
+            if you are grouping by per-plate metadata from a 384-well assay with 2 sites per well consisting of 3 plates, 
+            you woulld expect to see 3 groups (from 3 plates), with 384 wells &times; 2 sites/well &times;
+            3 plates = 768 image sets in each.""")
         
-        self.image_set_list = cps.Table("Image sets")
+        self.image_set_list = cps.Table("Image sets",doc="""
+            This list displays the file name of location of each of the images that comprise the
+            group. For example, if you are grouping by per-plate metadata from a 384-well assay with 2 sites per well 
+            consisting of 3 plates, you would expect to see a table consisting of 768 rows.""")
         
     def add_grouping_metadata(self, can_remove = True):
         group = cps.SettingsGroup()
@@ -69,7 +113,9 @@ class Groups(cpm.CPModule):
             choices = ["None"]
         group.append("metadata_choice", cps.Choice(
             "Metadata category", choices,
-            choices_fn = get_group_metadata_choices))
+            choices_fn = get_group_metadata_choices,doc="""
+            Specify the metadata category with which to define a group. Once a selection
+            is made, the two listings below will display the updated values."""))
         
         group.append("divider", cps.Divider())
         group.can_remove = can_remove

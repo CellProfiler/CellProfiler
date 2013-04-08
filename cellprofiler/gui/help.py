@@ -549,12 +549,15 @@ information on how to use them in the context of the specific module.</p>
 
 USING_METADATA_GROUPING_HELP = """
 <p>In some instances, you may want to subdivide an image set into groups that share a common feature.
-For example, if you are performing illumination correction, we usually recommend that the illumination
-function be calculated on a per-plate basis, and hence each plate should be processed independently.
-Since running the same pipeline multiple times (one for each grop) would be time-consuming, CellProfiler
-is able to perform image grouping for this purpose. If the image subdivisions are distinguishable by some metadata
+For example, if you are performing illumination correction for a screening experiment, we recommend 
+that the illumination function (an image which represents the overall background fluorescence) 
+be calculated on a per-plate basis. Since the illumination function is an aggregate of images from a
+plate, each plate will required independent processing from the others. A pipeline can be made for 
+this purpose, but it would be time-consuming to run the same pipeline multiple times, once for each plate.
+In this case, CellProfiler can use image grouping for this purpose; if the image subdivisions are 
+distinguishable by some metadata
 (usually defined within the filename or folder location), grouping will enable you to
-process those images that have the metadata together.</p>
+process images that have the same plate metadata together.</p>
 
 <p>To use grouping, you must define the relevant metadata for each image. This can be done using regular
 expressions in <b>LoadImages</b> or having them pre-defined in a .csv for use in <b>LoadData</b>.</p>
@@ -1343,23 +1346,6 @@ They have not been fully superceded, and are remain accesible
 via the "Add module" and "+" buttons. </p>
 """
 
-USING_THE_IMAGES_MODULE_HELP= """
-<p>The <b>Images</b> module allows the user to specify the location of any and all files to
-be analyzed by the pipeline. These files can be located on your hard drive or on a networked
-computer elsewhere. If it is easier to specify the folder containing the files rather than 
-the individual files theselves (because
-the number of files is too large, for example), you can provide rules to specify only those
-files that you want analyzed from the full set.</p>
-
-<p>The most straightforward way to provide files to the <b>Images</b> is to simply drag-and-drog
-them on the file list panel. Both individual files and entire folders can be dragged onto this panel.
-This avoids the process of navigating through file folders and 
-menu options to get the files you want.</p>
-"""
-
-USING_THE_METADATA_MODULE_HELP = """
-
-"""
 
 USING_THE_NAMESANDTYPES_MODULE_HELP = """
 
@@ -1412,7 +1398,7 @@ Clicking the rule menus shows you all the file <i>attributes</i>, <i>operators</
 the image list.
 <ol>
 <li>For each rule, first select the <i>attribute</i> that the rule is to be based on. For example, you can select <i>File</i> 
-among others.</li>
+among others. </li>
 <li>The <i>operator</i> menu is updated with operators applicable to the attribute you selected. For example, if you select 
 <i>File</i> as the attribute, the operator
 menu includes text operators such as <i>Contain</i> or <i>Starts with</i>. On the other hand, if you
@@ -1429,6 +1415,7 @@ the filter finds all files that include the text "Channel", such as "Channel1.ti
 <li>If you select <i>Does</i> and <i>Start with</i> as the operators and <i>Channel1</i> in the Condition box, 
 the rule will includes such files as "Channel1.tif" "Channel1-A01.png", and so on.</li></ul>
 </li>
+You can also create regular expressions (an advanced syntax for pattern matching) in order to select particular files.
 </ol>
 <p>To add another rule, click the plus  buttons to the right of each rule. Subtract an existing rule by clicking the 
 minus button.</p>
@@ -1448,6 +1435,8 @@ all the conditions you want to include.</p>
 #########################################################
 
 '''The help menu for CP's main window'''
+from cellprofiler.modules import images, metadata, namesandtypes, groups
+
 MAIN_HELP = (
     ("Introduction",(
         ("Why Use CellProfiler", WHEN_CAN_I_USE_CELLPROFILER_HELP),
@@ -1463,10 +1452,10 @@ MAIN_HELP = (
         ("Setting the Preferences", PREFERENCES_HELP),
         ("Creating A Workspace",(
             ("Introduction To Workspaces",INTRODUCTION_TO_WORKSPACES_HELP),
-            ("Using The Images Module",USING_THE_IMAGES_MODULE_HELP),
-            ("Using The Metadata Module",USING_THE_METADATA_MODULE_HELP),
-            ("Using The NamesAndTypes Module",USING_THE_NAMESANDTYPES_MODULE_HELP),
-            ("Using The Groups Module",USING_THE_GROUPS_MODULE_HELP))),
+            ("Using The Images Module",images.__doc__),
+            ("Using The Metadata Module",metadata.__doc__),
+            ("Using The NamesAndTypes Module",namesandtypes.__doc__),
+            ("Using The Groups Module",groups.__doc__))),
         ("How Data Is Handled",(
             ("Using Metadata In CellProfiler",USING_METADATA_HELP),
             ("How To Use Image Grouping",USING_METADATA_GROUPING_HELP),

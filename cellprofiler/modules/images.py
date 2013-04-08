@@ -1,21 +1,36 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2013 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
-'''<b>Images</b> helps you collect the image files for your pipeline.
-
+__doc__ = """
+<b>Images</b> helps you specify which image are to be processed in your pipeline.
 <hr>
-TO DO: document this
-'''
+<p>The <b>Images</b> module allows you to specify the location of any and all files to
+be analyzed by the pipeline. These files can be located on your hard drive or on a networked
+computer elsewhere. If it is easier to specify the folder(s) containing the files rather than 
+the files theselves (for example, because
+the number of files to analyze is too large to deal with individually), you can provide rules to specify only those
+files that you want analyzed from a larger set.</p>
+
+<p>The most straightforward way to provide files to the <b>Images</b> module is to simply drag-and-drop
+them on the file list panel (the blank space indicated by the text "Drop files and folders here"). 
+Both individual files and entire folders can be dragged onto this panel, and as many folders and files can
+place onto this panel as needed. A "Browse" button is also available with this 
+functionality. However, drag-and-dropping is recommended since avoids the process of navigating through file folders and 
+menu options to get the files you want.</p>
+
+<p>If you have a subset of files that you want to analyze from the full listing shown in the 
+panel, you can filter the files according to a set of rules. This is useful when, for example, you
+have dragged a folder of images onto the file list panel, but the folder contains the images
+from one experiment that you want to process along with images from another experiment that you
+want to ignore for now. You may specify as many rules as neccesary to define the desired 
+list of images.</p>
+"""
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2013 Broad Institute
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.pipeline as cpp

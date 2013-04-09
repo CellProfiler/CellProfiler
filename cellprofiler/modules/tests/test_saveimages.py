@@ -448,7 +448,7 @@ SaveImages:[module_num:1|svn_version:\'10244\'|variable_revision_number:6|show_w
         self.assertFalse(module.create_subdirectories)
         
     def test_00_07_load_v7(self):
-        data = """CellProfiler Pipeline: http://www.cellprofiler.org
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1
 SVNRevision:10782
 
@@ -520,11 +520,74 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         self.assertEqual(module.colormap, "Default")
         self.assertFalse(module.update_file_names)
         self.assertFalse(module.create_subdirectories)
+        self.assertEqual(module.root_dir.dir_choice, 
+                         cpprefs.DEFAULT_INPUT_FOLDER_NAME)
 
         module = pipeline.modules()[1]
         self.assertTrue(isinstance(module, cpm_si.SaveImages))
         self.assertEqual(module.gray_or_color, cpm_si.GC_COLOR)
         
+    def test_00_07_load_v7(self):
+        pipeline = cpp.Pipeline()
+        image_folder_text = pipeline.encode_txt(
+            "%s|%s" % (cpprefs.ABSOLUTE_FOLDER_NAME, 
+                       cpmt.example_images_directory()))
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10782
+
+SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_window:True|notes:\x5B\x5D]
+    Select the type of image to save:Objects
+    Select the image to save:None
+    Select the objects to save:Nuclei
+    Select the module display window to save:None
+    Select method for constructing file names:Single name
+    Select image name for file prefix:None
+    Enter single file name:\\g<Well>_Nuclei
+    Do you want to add a suffix to the image file name?:No
+    Text to append to the image name:Whatever
+    Select file format to use:png
+    Output file location:Default Output Folder\x7CNone
+    Image bit depth:8
+    Overwrite existing files without warning?:No
+    Select how often to save:Every cycle
+    Rescale the images? :No
+    Save as grayscale or color image?:Grayscale
+    Select colormap:Default
+    Store file and path information to the saved image?:No
+    Create subfolders in the output folder?:Yes
+    Image folder:%s
+""" % image_folder_text
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))        
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        self.assertEqual(module.save_image_or_figure, cpm_si.IF_OBJECTS)
+        self.assertEqual(module.objects_name, "Nuclei")
+        self.assertEqual(module.file_name_method, cpm_si.FN_SINGLE_NAME)
+        self.assertEqual(module.file_image_name, "None")
+        self.assertEqual(module.single_file_name, r"\g<Well>_Nuclei")
+        self.assertFalse(module.wants_file_name_suffix)
+        self.assertEqual(module.file_name_suffix, "Whatever")
+        self.assertEqual(module.file_format, cpm_si.FF_PNG)
+        self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.pathname.custom_path, r"None")
+        self.assertEqual(module.bit_depth, 8)
+        self.assertFalse(module.overwrite)
+        self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
+        self.assertFalse(module.rescale)
+        self.assertEqual(module.gray_or_color, cpm_si.GC_GRAYSCALE)
+        self.assertEqual(module.colormap, "Default")
+        self.assertFalse(module.update_file_names)
+        self.assertTrue(module.create_subdirectories)
+        self.assertEqual(module.root_dir.dir_choice, 
+                         cpprefs.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.root_dir.custom_path,
+                         cpmt.example_images_directory())
+
     def test_01_01_save_first_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
         img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tiff')
@@ -1101,7 +1164,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         module.run(workspace)
         self.assertTrue(os.path.exists(img_filename))
         
-    def test_01_14_create_subdirectories(self):
+    def test_01_14_01_create_subdirectories(self):
         img_path = os.path.join(self.new_output_directory, "test")
         input_path = os.path.join(self.new_image_directory, "test")
         # Needed for relpath
@@ -1118,6 +1181,34 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         module.file_format.value = cpm_si.FF_TIFF
         module.pathname.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
         module.create_subdirectories.value = True
+        module.root_dir.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
+        module.run(workspace)
+        self.assertTrue(os.path.exists(img_filename))
+
+    def test_01_14_02_create_subdirectories_custom_path(self):
+        #
+        # Use something other than the default input directory for
+        # the root
+        #
+        root_path, subfolder = os.path.split(self.new_image_directory)
+        img_path = os.path.join(self.new_output_directory, subfolder, "test")
+        input_path = os.path.join(self.new_image_directory, "test")
+        # Needed for relpath
+        os.makedirs(input_path)
+        img_filename = os.path.join(img_path, 'img1.tiff')
+        workspace, module = self.make_workspace(np.zeros((10,10)))
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpm.Measurements))
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        m.add_image_measurement("FileName_"+FILE_IMAGE_NAME, "img1.tiff")
+        m.add_image_measurement("PathName_"+FILE_IMAGE_NAME, input_path)
+        module.file_name_method.value = cpm_si.FN_FROM_IMAGE
+        module.file_image_name.value = FILE_IMAGE_NAME
+        module.file_format.value = cpm_si.FF_TIFF
+        module.pathname.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
+        module.create_subdirectories.value = True
+        module.root_dir.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+        module.root_dir.custom_path = root_path
         module.run(workspace)
         self.assertTrue(os.path.exists(img_filename))
 
@@ -1161,6 +1252,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         save_images.file_format.value = cpm_si.FF_TIF
         save_images.pathname.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
         save_images.create_subdirectories.value = True
+        save_images.root_dir.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
         save_images.update_file_names.value = True
         save_images.module_num = 3
 

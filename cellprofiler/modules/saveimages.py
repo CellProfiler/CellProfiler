@@ -48,7 +48,8 @@ from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
      DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT, \
+     get_default_image_directory
 from cellprofiler.utilities.relpath import relpath
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
 from cellprofiler.modules.loadimages import \
@@ -113,7 +114,7 @@ OFFSET_DIRECTORY_PATH = 10
 class SaveImages(cpm.CPModule):
 
     module_name = "SaveImages"
-    variable_revision_number = 7
+    variable_revision_number = 8
     category = "File Processing"
     
     def create_settings(self):
@@ -333,8 +334,24 @@ class SaveImages(cpm.CPModule):
                 the newly saved files.</li>
                 </ul>""")
         
-        self.create_subdirectories = cps.Binary("Create subfolders in the output folder?",False,
-                                                doc = """Subfolders will be created to match the input image folder structure.""")
+        self.create_subdirectories = cps.Binary(
+            "Create subfolders in the output folder?",False,
+            doc = """Subfolders will be created to match the input image folder structure.""")
+        self.root_dir = cps.DirectoryPath(
+            "Image folder", 
+            doc = """<i>Used only if creating subfolders in the output folder</i>
+            In subfolder mode, <b>SaveImages</b> determines the folder for
+            an image file by examining the path of the matching input file.
+            The path that SaveImages uses is relative to the image folder
+            chosen using this setting. As an example, input images might be stored
+            in a folder structure of "images%(sep)s<i>experiment-name</i>%(sep)s
+            <i>date</i>%(sep)s<i>plate-name</i>". If the image folder is
+            "images", <b>SaveImages</b> will store images in the subfolder,
+            "<i>experiment-name</i>%(sep)s<i>date</i>%(sep)s<i>plate-name</i>".
+            If the image folder is "images%(sep)s<i>experiment-name</i>",
+            <b>SaveImages</b> will store images in the subfolder,
+            <i>date</i>%(sep)s<i>plate-name</i>".
+            """ % dict(sep=os.path.sep))
     
     def settings(self):
         """Return the settings in the order to use when saving"""
@@ -346,7 +363,8 @@ class SaveImages(cpm.CPModule):
                 self.pathname, self.bit_depth,
                 self.overwrite, self.when_to_save,
                 self.rescale, self.gray_or_color, self.colormap, 
-                self.update_file_names, self.create_subdirectories]
+                self.update_file_names, self.create_subdirectories,
+                self.root_dir]
     
     def visible_settings(self):
         """Return only the settings that should be shown"""
@@ -393,17 +411,9 @@ class SaveImages(cpm.CPModule):
         result.append(self.update_file_names)
         if self.file_name_method == FN_FROM_IMAGE:
             result.append(self.create_subdirectories)
+            if self.create_subdirectories:
+                result.append(self.root_dir)
         return result
-    
-    def needs_default_image_folder(self, pipeline):
-        '''Return True if the module needs the default image folder.
-        
-        SaveImages uses the default image folder as the base directory
-        for relative directory paths when creating subdirectories.
-        '''
-        if self.create_subdirectories:
-            return True
-        return super(self.__class__, self).needs_default_image_folder(pipeline)
     
     @property
     def module_key(self):
@@ -777,7 +787,7 @@ class SaveImages(cpm.CPModule):
         pathname = self.pathname.get_absolute_path(measurements)
         if self.create_subdirectories:
             image_path = self.source_path(workspace)
-            subdir = relpath(image_path, cpp.get_default_image_directory())
+            subdir = relpath(image_path, self.root_dir.get_absolute_path())
             pathname = os.path.join(pathname, subdir)
         if len(pathname) and not os.path.isdir(pathname) and make_dirs:
             os.makedirs(pathname)
@@ -878,7 +888,7 @@ class SaveImages(cpm.CPModule):
            
         ##########################
         #
-        # Version 1
+        # Version 2
         #
         ##########################
         if not from_matlab and variable_revision_number == 1:
@@ -891,7 +901,7 @@ class SaveImages(cpm.CPModule):
             
         #########################
         #
-        # Version 2
+        # Version 3
         #
         #########################
         if (not from_matlab) and variable_revision_number == 2:
@@ -906,7 +916,7 @@ class SaveImages(cpm.CPModule):
             
         #########################
         #
-        # Version 3
+        # Version 4
         #
         #########################
         if (not from_matlab) and variable_revision_number == 3:
@@ -918,7 +928,7 @@ class SaveImages(cpm.CPModule):
 
         #########################
         #
-        # Version 4
+        # Version 5
         #
         #########################
         if (not from_matlab) and variable_revision_number == 4:
@@ -944,7 +954,7 @@ class SaveImages(cpm.CPModule):
             
         #######################
         #
-        # Version 5
+        # Version 6
         #
         #######################
         if (not from_matlab) and variable_revision_number == 5:
@@ -966,7 +976,7 @@ class SaveImages(cpm.CPModule):
             
         ######################
         #
-        # Version 6 - added objects
+        # Version 7 - added objects
         #
         ######################
         if (not from_matlab) and (variable_revision_number == 6):
@@ -974,6 +984,14 @@ class SaveImages(cpm.CPModule):
                 setting_values[:2] + ["None"] + setting_values[2:14] +
                 [ GC_GRAYSCALE ] + setting_values[14:])
             variable_revision_number = 7
+        ######################
+        #
+        # Version 8 - added root_dir
+        #
+        ######################
+        if (not from_matlab) and (variable_revision_number == 7):
+            setting_values = setting_values + [DEFAULT_INPUT_FOLDER_NAME]
+            variable_revision_number = 8
         setting_values[OFFSET_DIRECTORY_PATH] = \
             SaveImagesDirectoryPath.upgrade_setting(setting_values[OFFSET_DIRECTORY_PATH])
         

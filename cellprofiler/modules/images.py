@@ -1,5 +1,5 @@
 __doc__ = """
-<b>Images</b> helps you specify which image are to be processed in your pipeline.
+The <b>Images</b> module helps you specify which image are to be processed in your pipeline.
 <hr>
 <p>The <b>Images</b> module allows you to specify the location of any and all files to
 be analyzed by the pipeline. These files can be located on your hard drive or on a networked

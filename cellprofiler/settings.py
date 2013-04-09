@@ -2913,13 +2913,19 @@ class Table(Setting):
     
     ATTR_ERROR = "Error"
     
-    def __init__(self, text, min_size = (400, 300), max_field_size=30, **kwargs):
+    def __init__(self, text,
+                 min_size = (400, 300), 
+                 max_field_size=30,
+                 use_sash = False,
+                 **kwargs):
         '''Constructor
         
         text - text label to display to the left of the table
         min_size - initial size of the table before user stretches it
         max_field_size - any field with more than this # of characters will
                          be truncated using an ellipsis.
+        use_sash - if True, place the table in the bottom resizable sash.
+                   if False, place the table inline
         '''
         super(self.__class__, self).__init__(text, "", **kwargs)
         self.column_names = []
@@ -2928,6 +2934,7 @@ class Table(Setting):
         self.cell_attributes = {}
         self.min_size = min_size
         self.max_field_size = max_field_size
+        self.use_sash = use_sash
         
     def insert_column(self, index, column_name):
         '''Insert a column at the given index

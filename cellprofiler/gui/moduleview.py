@@ -378,6 +378,7 @@ class ModuleView:
             data                = []
             imageset_control    = None
             path_control        = None
+            table_control       = None
             if reselecting:
                 self.hide_settings()
             else:
@@ -526,6 +527,18 @@ class ModuleView:
                         control = fcd.panel
                         fcd.panel.file_collection_display = fcd
                 elif isinstance(v, cps.Table):
+                    if v.use_sash:
+                        table_control = v
+                        grid = self.__frame.get_grid_ctrl()
+                        table = grid.GetTable()
+                        if isinstance(table, TableController) and table.v is v:
+                            table.update_grid()
+                            continue
+                        else:
+                            table = TableController(v)
+                            self.__frame.show_grid_ctrl(table)
+                            table.bind_to_grid(grid)
+                        continue
                     control = self.make_table_control(v, control)
                     flag = wx.EXPAND
                 elif isinstance(v, cps.HTMLText):
@@ -564,9 +577,11 @@ class ModuleView:
                 if self.__started:
                     self.__frame.show_module_ui(True)
                 self.module_panel.Thaw()
-                self.__frame.show_imageset_ctrl(imageset_control is not None)
                 if imageset_control is not None:
+                    self.__frame.show_imageset_ctrl()
                     self.__frame.reset_imageset_ctrl(refresh_image_set=False)
+                elif table_control is None:
+                    self.__frame.show_imageset_sash(False)
                 self.__frame.show_path_list_ctrl(path_control is not None)
             else:
                 self.module_panel.Thaw()
@@ -1713,151 +1728,16 @@ class ModuleView:
     
     def make_table_control(self, v, control):
         if control is None:
-            class TableController(wx.grid.PyGridTableBase):
-                DEFAULT_ATTR = wx.grid.GridCellAttr()
-                ERROR_ATTR = wx.grid.GridCellAttr()
-                ERROR_ATTR.TextColour = ERROR_COLOR
-                def __init__(self, v):
-                    super(self.__class__, self).__init__()
-                    assert isinstance(v, cps.Table)
-                    self.v = v
-                    self.column_size = [v.max_field_size] * len(v.column_names)
-                    
-                def GetAttr(self, row, col, kind):
-                    attrs = self.v.get_cell_attributes(
-                        row, self.v.column_names[col])
-                    attr = self.DEFAULT_ATTR
-                    if attrs is not None and self.v.ATTR_ERROR in attrs:
-                        attr = self.ERROR_ATTR
-                    attr.IncRef() # OH so bogus, don't refcount = bus error
-                    return attr
-                
-                def CanHaveAttributes(self):
-                    return True
-                
-                def GetNumberRows(self):
-                    return len(self.v.data)
-                
-                def GetNumberCols(self):
-                    return len(self.v.column_names)
-                
-                def IsEmptyCell(self, row, col):
-                    return (len(self.v.data) <= row or 
-                            len(self.v.data[row]) <= col or
-                            self.v.data[row][col] is None)
-                
-                def GetValue(self, row, col):
-                    if self.IsEmptyCell(row, col):
-                        return None
-                    s = unicode(self.v.data[row][col])
-                    if len(self.column_size) <= col:
-                        self.column_size += [self.v.max_field_size] * (col - len(self.column_size)+1) 
-                    field_size = self.column_size[col]
-                    if len(s) > field_size:
-                        half = int(field_size - 3) / 2
-                        s = s[:half] + "..." + s[-half:]
-                    return s
-                
-                def GetRowLabelValue(self, row):
-                    attrs = self.v.get_row_attributes(row)
-                    if attrs is not None and self.v.ATTR_ERROR in attrs:
-                        return "%d: Error" % (row+1)
-                    return str(row+1)
-                    
-                def GetColLabelValue(self, col):
-                    return self.v.column_names[col]
-                
-                def AppendCols(self, numCols):
-                    return True
-                
-                def AppendRows(self, numRows):
-                    return True
-                
-                def InsertCols(self, index, numCols):
-                    return True
-                
-                def InsertRows(self, index, numRows):
-                    return True
-                
-                def DeleteCols(self, index, numCols):
-                    return True
-                
-                def DeleteRows(self, index, numRows):
-                    return True
             control = wx.lib.resizewidget.ResizeWidget(
                 self.module_panel,
                 name = edit_control_name(v))
 
             grid = wx.grid.Grid(control, name = grid_control_name(v) )
             grid.SetTable(TableController(v))
-            #control.SetMinSize(v.min_size)
-            grid.AutoSize()
-            grid.EnableEditing(False)
-            grid.SetDefaultCellOverflow(False)
-            #
-            # Below largely taken from 
-            # http://wiki.wxpython.org/wxGrid%20ToolTips
-            #
-            last_pos = [None, None]
-            def on_mouse_motion(event, v=v):
-                x, y = grid.CalcUnscrolledPosition(event.GetPosition())
-                row = grid.YToRow(y)
-                col = grid.XToCol(x)
-                this_pos = (row, col)
-                if this_pos != tuple(last_pos) and row >= 0 and col >= 0:
-                    last_pos[:] = this_pos
-                    s = v.data[row][col]
-                    if s <= v.max_field_size:
-                        s = ''
-                    grid.GetGridWindow().SetToolTipString(s)
-                event.Skip()
-            def on_column_resize(event):
-                col = event.GetRowOrCol()
-                width = grid.GetColSize(col)
-                table = grid.GetTable()
-                table.column_size[col] = int(width * 1.1) / grid.CharWidth
-                tm = wx.grid.GridTableMessage(
-                    table,
-                    wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
-                grid.ProcessTableMessage(tm)
-                grid.ForceRefresh()
-                
-            grid.GetGridWindow().Bind(wx.EVT_MOTION, on_mouse_motion)
-            grid.Bind(wx.grid.EVT_GRID_COL_SIZE, on_column_resize)
+            grid.Table.bind_to_grid(grid)
         else:
-            #
-            # Have #s of rows or columns changed?
-            #
             grid = control.FindWindowByName(grid_control_name(v))
-            need_column_layout = False
-            if len(v.column_names) < grid.GetNumberCols():
-                tm = wx.grid.GridTableMessage(
-                    grid.Table,
-                    wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED,
-                    0, grid.GetNumberCols() - len(v.column_names))
-                grid.ProcessTableMessage(tm)
-                need_column_layout = True
-            elif grid.GetNumberCols() < len(v.column_names):
-                tm = wx.grid.GridTableMessage(
-                    grid.Table,
-                    wx.grid.GRIDTABLE_NOTIFY_COLS_INSERTED,
-                    0, len(v.column_names) - grid.GetNumberCols())
-                grid.ProcessTableMessage(tm)
-                need_column_layout = True
-            if len(v.data) < grid.GetNumberRows():
-                tm = wx.grid.GridTableMessage(
-                    grid.Table,
-                    wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED,
-                    0, grid.GetNumberRows() - len(v.data))
-                grid.ProcessTableMessage(tm)
-            elif grid.GetNumberRows() < len(v.data):
-                tm = wx.grid.GridTableMessage(
-                    grid.Table,
-                    wx.grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,
-                    0, len(v.data) - grid.GetNumberRows())
-                grid.ProcessTableMessage(tm)
-            if need_column_layout:
-                grid.AutoSizeColumns()
+            grid.Table.update_grid()
         grid.ForceRefresh()
         grid.SetBestFittingSize(v.min_size)
         control.AdjustToSize((v.min_size[0] + wx.lib.resizewidget.RW_THICKNESS,
@@ -3650,6 +3530,155 @@ class BinaryMatrixController(object):
             control.controller.update()
             return control
     
+class TableController(wx.grid.PyGridTableBase):
+    DEFAULT_ATTR = wx.grid.GridCellAttr()
+    ERROR_ATTR = wx.grid.GridCellAttr()
+    ERROR_ATTR.TextColour = ERROR_COLOR
+    def __init__(self, v):
+        super(self.__class__, self).__init__()
+        assert isinstance(v, cps.Table)
+        self.v = v
+        self.column_size = [v.max_field_size] * len(v.column_names)
+        
+    def bind_to_grid(self, grid):
+        '''Bind to intercept events on the grid
+        
+        Binds on_mouse_motion and on_column_resize in order to do tooltips.
+        Sets up editing / auto size and other to customize for table type.
+        '''
+        self.grid = grid
+        grid.AutoSize()
+        grid.EnableEditing(False)
+        grid.SetDefaultCellOverflow(False)
+        #
+        # Below largely taken from 
+        # http://wiki.wxpython.org/wxGrid%20ToolTips
+        #
+        self.last_pos = (None, None)
+        grid.GetGridWindow().Bind(wx.EVT_MOTION, self.on_mouse_motion)
+        grid.Bind(wx.grid.EVT_GRID_COL_SIZE, self.on_column_resize)
+        
+    def update_grid(self):
+        '''Update the grid after the table data has changed'''
+        need_column_layout = False
+        grid = self.grid
+        v = self.v
+        if len(v.column_names) < grid.GetNumberCols():
+            tm = wx.grid.GridTableMessage(
+                grid.Table,
+                wx.grid.GRIDTABLE_NOTIFY_COLS_DELETED,
+                0, grid.GetNumberCols() - len(v.column_names))
+            grid.ProcessTableMessage(tm)
+            need_column_layout = True
+        elif grid.GetNumberCols() < len(v.column_names):
+            tm = wx.grid.GridTableMessage(
+                grid.Table,
+                wx.grid.GRIDTABLE_NOTIFY_COLS_INSERTED,
+                0, len(v.column_names) - grid.GetNumberCols())
+            grid.ProcessTableMessage(tm)
+            need_column_layout = True
+        if len(v.data) < grid.GetNumberRows():
+            tm = wx.grid.GridTableMessage(
+                grid.Table,
+                wx.grid.GRIDTABLE_NOTIFY_ROWS_DELETED,
+                0, grid.GetNumberRows() - len(v.data))
+            grid.ProcessTableMessage(tm)
+        elif grid.GetNumberRows() < len(v.data):
+            tm = wx.grid.GridTableMessage(
+                grid.Table,
+                wx.grid.GRIDTABLE_NOTIFY_ROWS_INSERTED,
+                0, len(v.data) - grid.GetNumberRows())
+            grid.ProcessTableMessage(tm)
+        if need_column_layout:
+            grid.AutoSizeColumns()
+        
+        
+    def on_mouse_motion(self, event):
+        x, y = self.grid.CalcUnscrolledPosition(event.GetPosition())
+        row = self.grid.YToRow(y)
+        col = self.grid.XToCol(x)
+        this_pos = (row, col)
+        if this_pos != self.last_pos and row >= 0 and col >= 0:
+            self.last_pos = this_pos
+            s = self.v.data[row][col]
+            if s is None:
+                s = ''
+            self.grid.GetGridWindow().SetToolTipString(s)
+        event.Skip()
+        
+    def on_column_resize(self, event):
+        grid = self.grid
+        col = event.GetRowOrCol()
+        width = grid.GetColSize(col)
+        table = grid.GetTable()
+        self.column_size[col] = int(width * 1.1) / grid.CharWidth
+        tm = wx.grid.GridTableMessage(
+            self,
+            wx.grid.GRIDTABLE_REQUEST_VIEW_GET_VALUES)
+        grid.ProcessTableMessage(tm)
+        grid.ForceRefresh()
+            
+    def GetAttr(self, row, col, kind):
+        attrs = self.v.get_cell_attributes(
+            row, self.v.column_names[col])
+        attr = self.DEFAULT_ATTR
+        if attrs is not None and self.v.ATTR_ERROR in attrs:
+            attr = self.ERROR_ATTR
+        attr.IncRef() # OH so bogus, don't refcount = bus error
+        return attr
+    
+    def CanHaveAttributes(self):
+        return True
+    
+    def GetNumberRows(self):
+        return len(self.v.data)
+    
+    def GetNumberCols(self):
+        return len(self.v.column_names)
+    
+    def IsEmptyCell(self, row, col):
+        return (len(self.v.data) <= row or 
+                len(self.v.data[row]) <= col or
+                self.v.data[row][col] is None)
+    
+    def GetValue(self, row, col):
+        if self.IsEmptyCell(row, col):
+            return None
+        s = unicode(self.v.data[row][col])
+        if len(self.column_size) <= col:
+            self.column_size += [self.v.max_field_size] * (col - len(self.column_size)+1) 
+        field_size = self.column_size[col]
+        if len(s) > field_size:
+            half = int(field_size - 3) / 2
+            s = s[:half] + "..." + s[-half:]
+        return s
+    
+    def GetRowLabelValue(self, row):
+        attrs = self.v.get_row_attributes(row)
+        if attrs is not None and self.v.ATTR_ERROR in attrs:
+            return "%d: Error" % (row+1)
+        return str(row+1)
+        
+    def GetColLabelValue(self, col):
+        return self.v.column_names[col]
+    
+    def AppendCols(self, numCols):
+        return True
+    
+    def AppendRows(self, numRows):
+        return True
+    
+    def InsertCols(self, index, numCols):
+        return True
+    
+    def InsertRows(self, index, numRows):
+        return True
+    
+    def DeleteCols(self, index, numCols):
+        return True
+    
+    def DeleteRows(self, index, numRows):
+        return True
         
 
 class ModuleSizer(wx.PySizer):

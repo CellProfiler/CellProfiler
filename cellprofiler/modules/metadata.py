@@ -113,7 +113,7 @@ class Metadata(cpm.CPModule):
         self.add_extraction_method_button = cps.DoSomething(
             "Add another extraction method",
             "Add", self.add_extraction_method)
-        self.table = cps.Table("")
+        self.table = cps.Table("",use_sash=True)
         self.update_table_button = cps.DoSomething(
             "Update table", "Update", self.update_table)
         

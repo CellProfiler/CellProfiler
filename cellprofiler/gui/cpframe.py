@@ -302,8 +302,14 @@ class CPFrame(wx.Frame):
                                   self.__on_sash_drag)
         sw_bind_to_evt_paint(self.__imageset_sash)
         self.__imageset_sash.Hide()
+        self.__imageset_panel = wx.Panel(self.__imageset_sash)
+        self.__imageset_panel.Sizer = wx.BoxSizer()
+        self.__imageset_panel.SetAutoLayout(True)
         self.__imageset_ctrl = ImageSetCtrl(
-            self.__workspace, self.__imageset_sash, read_only=True)
+            self.__workspace, self.__imageset_panel, read_only=True)
+        self.__imageset_panel.Sizer.Add(self.__imageset_ctrl, 1, wx.EXPAND)
+        self.__grid_ctrl = wx.grid.Grid(self.__imageset_panel)
+        self.__imageset_panel.Sizer.Add(self.__grid_ctrl, 1, wx.EXPAND)
         #
         # If the user wants to see the blurb on startup, show it and
         # hide the module UI
@@ -358,7 +364,7 @@ class CPFrame(wx.Frame):
         self.layout_pmi_panel()
         self.__path_list_sash.Layout()
         
-    def show_imageset_ctrl(self, show):
+    def show_imageset_sash(self, show):
         '''Show or hide the imageset control
 
         show - true to show, false to hide
@@ -368,6 +374,30 @@ class CPFrame(wx.Frame):
         self.__imageset_sash.Show(show)
         self.layout_pmi_panel()
         self.__imageset_sash.Layout()
+        
+    def show_imageset_ctrl(self):
+        sizer = self.__imageset_panel.Sizer
+        assert isinstance(sizer, wx.Sizer)
+        if (sizer.IsShown(self.__imageset_ctrl) == False or
+            self.__imageset_sash.IsShown() == False):
+            sizer.Show(self.__imageset_ctrl, True)
+            sizer.Show(self.__grid_ctrl, False)
+            self.show_imageset_sash(True)
+            self.__imageset_panel.Layout()
+        
+    def show_grid_ctrl(self, table = None):
+        if table is not None:
+            self.__grid_ctrl.SetTable(table)
+        sizer = self.__imageset_panel.Sizer
+        if (sizer.IsShown(self.__imageset_ctrl) == False or
+            self.__imageset_sash.IsShown() == False):
+            sizer.Show(self.__imageset_ctrl, False)
+            sizer.Show(self.__grid_ctrl, True)
+            self.show_imageset_sash(True)
+            self.__imageset_panel.Layout()
+        
+    def get_grid_ctrl(self):
+        return self.__grid_ctrl
 
     def reset_imageset_ctrl(self, refresh_image_set=True):
         if refresh_image_set:

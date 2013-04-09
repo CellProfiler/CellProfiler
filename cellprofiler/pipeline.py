@@ -1403,6 +1403,22 @@ class Pipeline(object):
         finally:
             self.stop_undoable_action()
             
+    def convert_default_input_folder(self, path):
+        '''Convert all references to the default input folder to abolute paths
+        
+        path - the path to use in place of the default input folder
+        '''
+        for module in self.modules(False):
+            for setting in module.settings():
+                if isinstance(setting, cps.DirectoryPath):
+                    if setting.dir_choice == cpprefs.DEFAULT_INPUT_FOLDER_NAME:
+                        setting.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+                        setting.custom_path = path
+                    elif setting.dir_choice == cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME:
+                        subpath = os.path.join(path, setting.custom_path)
+                        setting.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+                        setting.custom_path = subpath
+            
     def requires_aggregation(self):
         '''Return True if the pipeline requires aggregation across image sets
         

@@ -856,19 +856,109 @@ class PipelineController:
             self.__pipeline.turn_off_batch_mode()
             self.__pipeline.load_image_plane_details(self.__workspace)
             self.__clear_errors()
-            if (self.__pipeline.can_convert_legacy_input_modules() and
-                (wx.MessageBox(
-                    "Your pipeline contains legacy modules such as LoadImages. "
-                    "CellProfiler can convert this pipeline to use the new "
-                    "input modules (Images, Metadata, NamesAndTypes, Groups).\n\n"
-                    "If you choose to convert the pipeline, you should then make "
-                    "sure to provide your original images to the Images module "
-                    "as input, and confirm that your metadata (if any) is provided "
-                    "to the Metadata module.\n\n"
-                    "Do you want to perform the conversion?",
-                    "Convert legacy pipeline?",
-                    wx.YES_NO | wx.ICON_QUESTION, self.__frame) & wx.YES)):
-                self.__pipeline.convert_legacy_input_modules()
+            if self.__pipeline.can_convert_legacy_input_modules():
+                # Note: the length of the longest line of text also
+                #       controls the size of the directory entry text box
+                text = (
+    "Your pipeline contains legacy modules such as LoadImages. CellProfiler can\n"
+    "convert this pipeline to use the new input modules (Images, Metadata,\n"
+    "NamesAndTypes, Groups).\n\n"
+    "If you choose to convert the pipeline, you should then make sure to provide\n"
+    "your original images to the Images module as input, and confirm that your\n"
+    "metadata (if any) is provided to the Metadata module.\n\n"
+    "You can also convert all references to the default input folder to\n"
+    "references to an existing folder.")
+                CANCEL = 0
+                CONVERT = 1
+                CONVERT_DEFAULT_INPUT_FOLDER = 2
+                DONT_CONVERT = 3
+                
+                with wx.Dialog(self.__frame,
+                               title = "Convert legacy pipeline?") as dlg:
+                    import wx.lib.filebrowsebutton as filebrowse
+                    #
+                    # Structure:
+                    # 
+                    # dialog sizer
+                    #    vsizer
+                    #       sizer (horizontal)
+                    #           static bitmap
+                    #           static text
+                    #       static box
+                    #       static box sizer (vertical)
+                    #           rb_convert
+                    #           rb_dif
+                    #           dir_ctrl
+                    #           rb_dont_convert
+                    #    standard dialog button sizer
+                    #       ID_OK button
+                    #       ID_CANCEL button
+                    #
+                    dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+                    vsizer = wx.BoxSizer(wx.VERTICAL)
+                    dlg.Sizer.Add(vsizer, 0, wx.EXPAND | wx.ALL, 10)
+                    sizer = wx.BoxSizer(wx.HORIZONTAL)
+                    vsizer.Add(sizer, 0, wx.EXPAND | wx.ALL)
+                    bmp = wx.ArtProvider.GetBitmap(wx.ART_QUESTION,
+                                                   wx.ART_CMN_DIALOG)
+                    sizer.Add(wx.StaticBitmap(dlg, bitmap = bmp), 0,
+                              wx.ALIGN_LEFT | wx.ALIGN_TOP)
+                    sizer.AddSpacer(8)
+                    sizer.Add(wx.StaticText(dlg, label=text), 
+                              0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
+                    vsizer.AddSpacer(8)
+                    lmargin = bmp.GetSize()[0] + 8
+                    group_ctrl = wx.StaticBox(dlg, label="Conversion choices")
+                    sizer = wx.StaticBoxSizer(group_ctrl, wx.VERTICAL)
+                    vsizer.Add(sizer, 0, wx.EXPAND | wx.LEFT, lmargin)
+                    rb_convert = wx.RadioButton(
+                        dlg, 
+                        label = "Convert legacy modules",
+                        style = wx.RB_GROUP)
+                    sizer.Add(rb_convert, 0, wx.ALIGN_LEFT)
+                    sizer.AddSpacer(4)
+                    rb_dif = wx.RadioButton(
+                        dlg,
+                        label = "Convert default input folder references")
+                    sizer.Add(rb_dif, 0, wx.ALIGN_LEFT)
+                    sizer.AddSpacer(4)
+                    dir_ctrl = filebrowse.DirBrowseButton(
+                        dlg, labelText = "Folder",
+                        dialogTitle = "Browse for default input folder",
+                        startDirectory = cpprefs.get_default_image_directory())
+                    dir_ctrl.SetValue(cpprefs.get_default_image_directory())
+                    sizer.Add(dir_ctrl, 1, wx.EXPAND | wx.LEFT, 10)
+                    sizer.AddSpacer(4)
+                    rb_dont_convert = wx.RadioButton(
+                        dlg, label = "Do not convert")
+                    sizer.Add(rb_dont_convert, 0, wx.ALIGN_LEFT)
+                    vsizer.AddSpacer(8)
+                    btn_sizer = wx.StdDialogButtonSizer()
+                    dlg.Sizer.Add(btn_sizer, 0, wx.ALIGN_RIGHT)
+                    btn_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+                    btn_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+                    btn_sizer.Realize()
+                    #
+                    dlg.action = CONVERT
+                    rb_convert.Value = True
+                    rb_dif.Value = False
+                    rb_dont_convert.Value = False
+                    dir_ctrl.Enable(False)
+                    for rb, action in ((rb_convert, CONVERT),
+                                       (rb_dif, CONVERT_DEFAULT_INPUT_FOLDER),
+                                       (rb_dont_convert, DONT_CONVERT)):
+                        def fn(event, action=action, dlg=dlg):
+                            dlg.action = action
+                            dir_ctrl.Enable(action == CONVERT_DEFAULT_INPUT_FOLDER)
+                        rb.Bind(wx.EVT_RADIOBUTTON, fn)
+                    dlg.Fit()
+                    result = dlg.ShowModal()
+                    if result == wx.ID_OK:
+                        if dlg.action == CONVERT:
+                            self.__pipeline.convert_legacy_input_modules()
+                        elif dlg.action == CONVERT_DEFAULT_INPUT_FOLDER:
+                            self.__pipeline.convert_default_input_folder(
+                                dir_ctrl.GetValue())
                 
             if isinstance(pathname, (str, unicode)):
                 self.set_current_pipeline_path(pathname)

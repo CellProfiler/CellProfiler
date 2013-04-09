@@ -1,5 +1,5 @@
 __doc__ = """
-<b>Metadata</b> associates information about the images (i.e., metadata)
+The <b>Metadata</b> module associates information about the images (i.e., metadata)
 with the images themselves. 
 <hr>
 <p>The general term <i>metadata</i> refers to "data about data." In this context,

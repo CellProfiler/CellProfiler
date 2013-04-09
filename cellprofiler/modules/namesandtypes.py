@@ -1,4 +1,5 @@
-__doc__ = """<b>NamesAndTypes</b> assigns a user-defined name to a particular images or channel.
+__doc__ = """
+The <b>NamesAndTypes</b> module assigns a user-defined name to a particular images or channel.
 <hr>
 Once the relevant images have been identified using the <b>Images</b> module (and/or optionally has
 had metadata associated with the images using the <b>Metadata</b> module), <b>NamesAndTypes</b> module 

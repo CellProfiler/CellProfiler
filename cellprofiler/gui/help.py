@@ -97,7 +97,7 @@ METADATA_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Using M
 IMAGE_TOOLS_HELP_REF = """"Help > How To Use The Image Tools"""
 METADATA_GROUPING_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Image Grouping """
 DATA_TOOL_HELP_REF = """Help > Data Tool Help """
-
+WORKSPACE_INTRO_HELP = """Help > Using CellProfiler > Creating a Workspace > Introduction to Workspaces"""
 USING_METADATA_HELP_REF = """ 
 Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>%(METADATA_HELP_REF)s</i> 
 for more details on obtaining, extracting, and using metadata tags from your images"""%globals()
@@ -1223,10 +1223,10 @@ WC_NEW = "New"
 WORKSPACE_CHOICE_HELP = """The <i>Initial workspace choice</i> preference
 determines the workspace that's chosen when CellProfiler starts. The choices
 are<br><ul>
-<li><i>%(WC_ASK)s</i>: show a dialog box that lets you choose any of the options below.</li>
-<li><i>%(WC_LAST)s</i>: open the workspace that you used last.</li>
-<li><i>%(WC_OPEN)s</i>: choose an existing workspace to open.</li>
-<li><i>%(WC_NEW)s</i>: always open a new workspace on startup.</li>
+<li><i>%(WC_ASK)s</i>: Show a dialog box that lets you choose any of the options below.</li>
+<li><i>%(WC_LAST)s</i>: Open the workspace that you used last.</li>
+<li><i>%(WC_OPEN)s</i>: Choose an existing workspace to open.</li>
+<li><i>%(WC_NEW)s</i>: Always open a new workspace on startup.</li>
 </ul>
 """ % globals()
 
@@ -1334,26 +1334,78 @@ PREFERENCES_HELP += """</ul>"""
 #########################################################
 INTRODUCTION_TO_WORKSPACES_HELP = """
 <h3>What is a workspace?</h3>
-<p></p>
+<p>In CellProfiler, a <i>workspace</i> comprises two elements:<br>
+<ul>
+<li>An <i>image file list</i> which is the list of files and their locations that are selected by the user as 
+candidates for analysis.</li>
+<li>Optionally, the associated information about the images (<i>metadata</i>). This 
+information may be part of the images themselves, or imported 
+externally by the user.</li>
+</ul>
+Note that this is distinct from the <i>pipeline</i>, which is a series of modules put together used to
+analyze a set of images.</li>
+</ul>
+</p>
 
 <h3>Why would I want to use workspaces?</h3>
-<p></p>
+<p>Workspaces are the container for image information associated with a CellProfiler analysis. It stores
+such details as: 
+<ul>
+<li>What type of image(s) are the input files?</li>
+<li>Where are the input images located?</li>
+<li>What distinguishes multiple image channels from each other? How are these relationships 
+represented?</li>
+<li>What information about the images and/or experiment is linked to the images, and how?</li>
+<li>Are certain groups of images to be processed differently from other groups?</li>
+</ul>
+You might consider the workspace to be a "project" file after a fashion. By using workspaces, 
+the above information is stored along with the analysis pipeline and is
+avilable on demand. </p>
 
-<h3>What happened to LoadImages/LoadData?</h3>
-<p>The modules <b>LoadImages</b> and <b>LoadData</b> have traditionally been used for specifying
-the location and user-given names of images to be proceesed.
-They have not been fully superceded, and are remain accesible
-via the "Add module" and "+" buttons. </p>
+<h3>Working with workspaces</h3>
+<h4>Creating a workspace</h4>
+<p>Upon starting CellProfiler, you will be prompted whether to create a new workspace, or open
+the workspace last used, or open another one entirely. If you request a new workspace, you will be
+asked to provide a filename and location for it. </p>
+<p>At this point, you may start building your workspace by using the modules located in "Create
+workspace" panel on the upper-left. The modules are:
+<ul>
+<li><b>Images</b>: Assemble the relevant images for analysis (required).</li>
+<li><b>Metadata</b>: Asociate metadata with the images (optional).</li>
+<li><b>NamesAndTypes</b>: Assign names to channels and define their relationship (required).</li>
+<li><b>Groups</b>: Define sub-divisions between groups of images for processing (optional).</li>
+</ul>
+Detailed help for each module is provided by selecting the module and clicking the "?" button on 
+the bottom of CellProfiler.</p>
+
+<h4>Saving a workspace</h4>
+<p>As you work in CellProfiler, the workspace is updated automatically, so there is no need to
+save it unless you are saving the workspace to a new name or location. You can always save your 
+current work to a new workspace file by selecting <i>File > New 
+workspace...</i> or <i>File > Save as...</i> and selecting "Save pipeline and workspace (.cpi)". 
+Selecting either option with save your workspace, along with the current pipeline, to a file with 
+with the extension <i>.cpi</i>.</p>
+<p>For those interested, some technical details:
+<ul>
+<li>The .cpi file stores collected information using the 
+<a href="http://en.wikipedia.org/wiki/Hierarchical_Data_Format">HDF5</a> format.</li>
+<li>All information is cached in the workspace file after it is computed. It is either
+re-computed or retrieved from the cache when an analysis run is started, when 
+entering Test mode, or when the user requests a refreshed view of the information
+(e.g., when a setting has been changed).</li>
+</ul>
+</p>
+
+<h4>Legacy workspace modules: LoadImages and LoadData</h4>
+<p>Historically, two modules were used for workspace creation: <b>LoadImages</b> and <b>LoadData</b>.
+While the approach described above supercedes these modules in part, old pipelines
+loaded into CellProfiler that contain these modules will provide the option of preserving them;
+these pipelines will operate exactly as before.</p>
+<p>Alternately, the user can choose to convert these 
+modules into the workspace equivalent as closely as possible. Both modules remain accesible
+via the "Add module" and "+" buttons at the bottom of the pipeline panel.</p>
 """
 
-
-USING_THE_NAMESANDTYPES_MODULE_HELP = """
-
-"""
-
-USING_THE_GROUPS_MODULE_HELP = """
-
-"""
              
 #########################################################
 #

@@ -1,5 +1,5 @@
 __doc__ = """
-<b>Groups</b> organizes sets of images into groups.
+The <b>Groups</b> module organizes sets of images into groups.
 <hr>
 Once the images have been identified with the <b>Images</b> module (and/or optionally has
 had metadata associated with the images using the <b>Metadata</b> module), and been given

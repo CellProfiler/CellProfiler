@@ -1348,7 +1348,7 @@ analyze a set of images.</li>
 </p>
 
 <h3>Why would I want to use workspaces?</h3>
-<p>Workspaces are the container for image information associated with a CellProfiler analysis. It stores
+<p>The workspace is the container for image information associated with a CellProfiler analysis. It stores
 such details as: 
 <ul>
 <li>What type of image(s) are the input files?</li>

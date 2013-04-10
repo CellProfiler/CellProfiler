@@ -28,6 +28,8 @@ Website: http://www.cellprofiler.org'
     
 __version__ = "$Revision$"
 
+import logging
+logger = logging.getLogger(__name__)
 import numpy as np
 import os
 import sys
@@ -586,7 +588,15 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
                 omero_logout()
                 omero_login()
             else:
-                raise
+                import errno
+                import exceptions
+                import traceback
+                logger.warn(e.message)
+                for line in traceback.format_exc().split("\n"):
+                    logger.warn(line)
+                e2 = exceptions.IOError(
+                    errno.EINVAL, "Could not load the file as an image (see log for details)", path.encode('utf-8'))
+                raise e2
     
 def __load_using_bioformats(path, c, z, t, series, index, rescale,
                             wants_max_intensity, channel_names):

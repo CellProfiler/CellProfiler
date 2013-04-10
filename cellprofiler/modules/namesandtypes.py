@@ -5,12 +5,12 @@ Once the relevant images have been identified using the <b>Images</b> module (an
 had metadata associated with the images using the <b>Metadata</b> module), <b>NamesAndTypes</b> module 
 gives each image a meaningful name by which modules in the analysis pipeline will refer to it. 
 
-<p>The most common usage for this module to define a collection of channels that represent a single
+<p>The most common usage for this module is to define a collection of channels that represent a single
 field of view. For example, a fluorescent assay may have samples stained with DAPI and GFP to label
 separate cellular sub-compartments, and for each site imaged, one DAPI and one GFP image is acquired
 by the microscope. Furthermore, these images are named in such a way that it is apparent to the 
-researcher which is which, e.g., "DAPI" is contained in the file for the DAPI images, and "GFP" in 
-the file name for the GFP images. For the purposes of analysis, each DAPI and GFP for a given site 
+researcher which is which, e.g., "_w1" is contained in the file for the DAPI images, and "_w1" in 
+the file name for the GFP images. For the purposes of analysis, each DAPI and GFP image for a given site 
 should be loaded and processed together.</p>
 
 <p>In this example, the <b>NamesAndTypes</b> allows you to assign each of these channels a unique name,
@@ -152,25 +152,47 @@ class NamesAndTypes(cpm.CPModule):
             the images from other channels?
             <p>This setting controls how CellProfiler picks which images
             should be matched together when analyzing all of the images
-            from one site. You can either match by order or match using
-            metadata.<p>
-            <i>Match by order</i>: CellProfiler will order the images in
+            from one site. </p>
+            <p>You can match corresponding channels to each other in one of two ways:
+            <ul>
+            <li><i>%(MATCH_BY_ORDER)s</i>: CellProfiler will order the images in
             each channel alphabetically by their file path name and, for movies
             or TIF stacks, will order the frames by their order in the file.
             CellProfiler will then match the first from one channel to the
-            first from another channel. This is simple when it works, but
-            will match the wrong files if files are missing or misnamed.<p>
-            <i>Match by metadata</i>: CellProfiler will match files with
-            the same metadata values. For instance, if both files have
-            well and site metadata, CellProfiler will match the file
-            in one channel with well A01 and site 1 with the file in the
-            other channel with well A01 and site 1 and so on. CellProfiler
-            can match a single file for one channel against many files from
-            another channel, for instance an illumination correction file
-            for an entire plate against every image file for that plate.
-            <i>Match by metadata</i> is powerful, less prone to inadvertent
-            errors, but harder to use than <i>Match by order</i>.
-            """)
+            first from another channel. <br>
+            This approach is sufficient for most applications, but
+            will match the wrong images if any of the files are missing or misnamed.</li>
+            
+            <li><i>%(MATCH_BY_METADATA)s</i>: CellProfiler will match files with
+            the same metadata values. This option is more complex to use than 
+            <i>%(MATCH_BY_ORDER)s</i> but is more flexible and less prone to inadvertent
+            errors.
+            <p>As an example, an experiment has two image channels ("w1" and "w2") containing
+            well and site metadata extracted using the <b>Metadata</b> module. A set of
+            images from two sites in well A01 might be described using the following:
+            <table border="1" align="center">
+            <tr><th>File name</th><th> Well</th><th>Site</th><th>Wavelength</th></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>A01</td><td>s1</td><td>w1</td></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w2</font>.tif</td><td>A01</td><td>s1</td><td>w2</td></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>A01</td><td>s2</td><td>w1</td></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w2</font>.tif</td><td>A01</td><td>s2</td><td>w2</td></tr>
+            </table>
+            </p>
+            <p>In order to match the w1 and w2 channels with their respective well and site metadata,
+            you would select the "Well" metadata for both channels, followed by the "Site" metadata
+            for both channels. If both files have the same well and site metadata, CellProfiler will 
+            match the file in one channel with well A01 and site 1 with the file in the
+            other channel with well A01 and site 1 and so on, to create an image set like the following:
+            <table border="1" align="center">
+            <tr><th>Image set key</th><th>Channel</th><th>Channel</th></tr>
+            <tr><td>Well</td><td>Site</td><td>w1</td><td>w2</td></tr>
+            <tr><td>A01</td><td>s1</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
+            <tr><td>A01</td><td>s2</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
+            </table>
+            </p>
+            <p>In addition, CellProfiler can match a single file for one channel against many files from
+            another channel. This is useful, for instance, for applying an illumination correction file
+            for an entire plate against every image file for that plate.</p>"""%globals())
         self.join = cps.Joiner("")
         self.imageset_setting = cps.ImageSetDisplay("", "Update table")
         

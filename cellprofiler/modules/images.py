@@ -10,10 +10,10 @@ files that you want analyzed from a larger set.</p>
 
 <p>The most straightforward way to provide files to the <b>Images</b> module is to simply drag-and-drop
 them on the file list panel (the blank space indicated by the text "Drop files and folders here"). 
-Both individual files and entire folders can be dragged onto this panel, and as many folders and files can
-place onto this panel as needed. A "Browse" button is also available with this 
-functionality. However, drag-and-dropping is recommended since avoids the process of navigating through file folders and 
-menu options to get the files you want.</p>
+Both individual files and entire folders can be dragged onto this panel, and as many folders and files can be 
+placed onto this panel as needed. A "Browse" button is also available with this 
+functionality. However, drag-and-dropping is recommended since it avoids the process of navigating through 
+file folders and menu options to get the files you want.</p>
 
 <p>If you have a subset of files that you want to analyze from the full listing shown in the 
 panel, you can filter the files according to a set of rules. This is useful when, for example, you

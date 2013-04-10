@@ -280,7 +280,17 @@ def __search_fn(html, text):
         end = len(html)
     else:
         end = end_match.start()
-    pattern = "(<[^>]*?>|%s)" % re.escape(text)
+    escaped_text = re.escape(text)
+    if " " in escaped_text:
+        #
+        # Many problems here:
+        # <b>Groups</b> module
+        # Some\ntext
+        #
+        # For now, just solve the multiple space problems
+        #
+        escaped_text = escaped_text.replace("\\ ", "\\s+")
+    pattern = "(<[^>]*?>|%s)" % escaped_text
     return [(x.start()+start, x.end()+start)
             for x in re.finditer(pattern, html[start:end], re.IGNORECASE)
             if x.group(1)[0] != '<']

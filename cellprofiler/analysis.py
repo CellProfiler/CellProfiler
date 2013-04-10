@@ -442,18 +442,18 @@ class AnalysisRunner(object):
 
                 # gather measurements
                 while not self.received_measurements_queue.empty():
-                    job, buf = self.received_measurements_queue.get()
+                    image_numbers, buf = self.received_measurements_queue.get()
+                    image_numbers = [int(i) for i in image_numbers]
                     recd_measurements = cpmeas.load_measurements_from_buffer(buf)
                     measurements.copy_relationships(recd_measurements)
-                    for object in recd_measurements.get_object_names():
-                        if object == cpmeas.EXPERIMENT:
+                    for o in recd_measurements.get_object_names():
+                        if o == cpmeas.EXPERIMENT:
                             continue  # Written during prepare_run / post_run
-                        for feature in recd_measurements.get_feature_names(object):
-                            for imagenumber in job:
-                                measurements[object, feature, imagenumber] \
-                                    = recd_measurements[object, feature, imagenumber]
-                    for image_set_number in job:
-                        measurements[cpmeas.IMAGE, self.STATUS, int(image_set_number)] = self.STATUS_DONE
+                        for feature in recd_measurements.get_feature_names(o):
+                            measurements[o, feature, image_numbers] \
+                                = recd_measurements[o, feature, image_numbers]
+                    for image_set_number in image_numbers:
+                        measurements[cpmeas.IMAGE, self.STATUS, image_set_number] = self.STATUS_DONE
                     recd_measurements.close()
                     del recd_measurements
 

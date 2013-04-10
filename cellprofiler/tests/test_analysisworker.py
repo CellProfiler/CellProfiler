@@ -603,20 +603,19 @@ class TestAnalysisWorker(unittest.TestCase):
             self.assertEqual(req.image_set_number, image_number)
             req.reply(cpanalysis.Ack())
         #
-        # The worker sends two measurement reports
+        # The worker sends a measurement report for image sets 2 and 3
         #
-        for image_number in (2, 3):
-            req = self.awthread.recv(self.work_socket)
-            self.assertIsInstance(req, cpanalysis.MeasurementsReport)
-            self.assertSequenceEqual(req.image_set_numbers, [image_number])
-            m = cpmeas.load_measurements_from_buffer(req.buf)
-            #
-            # Spot check for some expected stuff
-            #
-            self.assertTrue(m.has_feature(cpmeas.IMAGE, C_COUNT+"_Nuclei"))
-            self.assertTrue(m.has_feature("Nuclei", M_LOCATION_CENTER_X))
-            self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
-            req.reply(cpanalysis.Ack())
+        req = self.awthread.recv(self.work_socket)
+        self.assertIsInstance(req, cpanalysis.MeasurementsReport)
+        self.assertSequenceEqual(req.image_set_numbers, [2, 3])
+        m = cpmeas.load_measurements_from_buffer(req.buf)
+        #
+        # Spot check for some expected stuff
+        #
+        self.assertTrue(m.has_feature(cpmeas.IMAGE, C_COUNT+"_Nuclei"))
+        self.assertTrue(m.has_feature("Nuclei", M_LOCATION_CENTER_X))
+        self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
+        req.reply(cpanalysis.Ack())
         self.awthread.ecute()
         
     def test_03_07_a_sad_ending(self):
@@ -775,28 +774,25 @@ class TestAnalysisWorker(unittest.TestCase):
         #
         # The worker should then report the measurements for both 2 and 3
         #
-        for image_number in (2, 3):
-            req = self.awthread.recv(self.work_socket)
-            self.assertIsInstance(req, cpanalysis.MeasurementsReport)
-            self.assertSequenceEqual(req.image_set_numbers, [image_number])
-            m = cpmeas.load_measurements_from_buffer(req.buf)
-            #
-            # Spot check for some expected stuff
-            #
-            self.assertTrue(m.has_feature(cpmeas.IMAGE, C_COUNT+"_Nuclei"))
-            self.assertTrue(m.has_feature("Nuclei", M_LOCATION_CENTER_X))
-            self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
-            if image_number == 2:
-                #
-                # The count for the skipped image should be None
-                #
-                count = m[cpmeas.IMAGE, C_COUNT + "_Nuclei", 2]
-                self.assertIsNone(count)
-            else:
-                count = m[cpmeas.IMAGE, C_COUNT + "_Nuclei", 3]
-                center_x = m["Nuclei", M_LOCATION_CENTER_X, 3]
-                self.assertEqual(count, len(center_x))
-            req.reply(cpanalysis.Ack())
+        req = self.awthread.recv(self.work_socket)
+        self.assertIsInstance(req, cpanalysis.MeasurementsReport)
+        self.assertSequenceEqual(req.image_set_numbers, [2, 3])
+        m = cpmeas.load_measurements_from_buffer(req.buf)
+        #
+        # Spot check for some expected stuff
+        #
+        self.assertTrue(m.has_feature(cpmeas.IMAGE, C_COUNT+"_Nuclei"))
+        self.assertTrue(m.has_feature("Nuclei", M_LOCATION_CENTER_X))
+        self.assertTrue(m.has_feature("Nuclei", "AreaShape_Area"))
+        #
+        # The count for the skipped image should be None
+        #
+        count = m[cpmeas.IMAGE, C_COUNT + "_Nuclei", 2]
+        self.assertIsNone(count)
+        count = m[cpmeas.IMAGE, C_COUNT + "_Nuclei", 3]
+        center_x = m["Nuclei", M_LOCATION_CENTER_X, 3]
+        self.assertEqual(count, len(center_x))
+        req.reply(cpanalysis.Ack())
         self.awthread.ecute()
         
         

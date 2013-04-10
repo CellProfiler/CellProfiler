@@ -327,21 +327,11 @@ class AnalysisWorker(object):
                         workspace, 
                         current_measurements.get_grouping_keys())
         
-            # send measurements back to server, one at a time for each image
-            for image_set_number in image_set_numbers:
-                single_measurements = cpmeas.Measurements()
-                all_measurements.add(single_measurements)
-                for object in current_measurements.get_object_names():
-                    if object == cpmeas.EXPERIMENT:
-                        continue  # these are handled by the server
-                    for feature in current_measurements.get_feature_names(object):
-                        single_measurements[object, feature, image_set_number] \
-                            = current_measurements[object, feature, image_set_number]
-                req = MeasurementsReport(self.current_analysis_id,
-                                         buf=single_measurements.file_contents(),
-                                         image_set_numbers=[image_set_number])
-                single_measurements.close()
-                rep = self.send(req)
+            # send measurements back to server
+            req = MeasurementsReport(self.current_analysis_id,
+                                     buf=current_measurements.file_contents(),
+                                     image_set_numbers=image_set_numbers)
+            rep = self.send(req)
         
         except CancelledException:
             # Main thread received shutdown signal

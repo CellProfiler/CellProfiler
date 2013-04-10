@@ -236,14 +236,10 @@ class NamesAndTypes(cpm.CPModule):
         
         group.can_remove = can_remove
         if can_remove:
-            def do_remove():
-                self.assignments.remove(group)
-                self.update_all_columns()
-                
-            group.append("remover", cps.DoSomething(
-                'Remove above rule', "Remove", do_remove))
-        if self.pipeline is not None:
-            self.update_all_columns()
+            group.append(
+                "remover", 
+                cps.RemoveSettingButton(
+                'Remove above rule', "Remove", self.assignments, group))
             
     def settings(self):
         result = [self.assignment_method, self.single_load_as_choice,
@@ -334,6 +330,10 @@ class NamesAndTypes(cpm.CPModule):
         
         setting - the setting that was changed
         '''
+        if setting is self.add_assignment_button:
+            return True
+        if isinstance(setting, cps.RemoveSettingButton):
+            return True
         return setting in self.settings()
     
     def get_metadata_features(self):
@@ -768,6 +768,7 @@ class NamesAndTypes(cpm.CPModule):
             self.update_all_columns()
         else:
             self.ipd_columns = []
+            self.column_names = []
         
     def on_deactivated(self):
         self.pipeline = None

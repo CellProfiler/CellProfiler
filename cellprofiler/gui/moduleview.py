@@ -1869,6 +1869,7 @@ class ModuleView:
         setting_edited_event = SettingEditedEvent(setting,self.__module, 
                                                   None,event)
         self.notify(setting_edited_event)
+        self.__module.on_setting_changed(setting, self.__pipeline)
         self.reset_view()
     
     def on_idle(self,event):

@@ -1784,6 +1784,9 @@ class Pipeline(object):
         measurements.group_index = measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX]
         object_set = cpo.ObjectSet()
         image_set = measurements
+        measurements.clear_cache()
+        for provider in measurements.providers:
+            provider.release_memory()
         outlines = {}
         grids = None
         should_write_measurements = True

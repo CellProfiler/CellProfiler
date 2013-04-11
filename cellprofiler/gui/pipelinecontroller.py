@@ -760,6 +760,18 @@ class PipelineController:
             style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
+                if dlg.Path == self.__locked_workspace_filename:
+                    wx.MessageBox(message =
+                        ("%s is the current name of the workspace file.\n"
+                         "Your changes to the workspace are saved to this file\n"
+                         "as you make them, so it's unnecessary to save it\n"
+                         "periodically. Please choose another name for the file.")
+                         %
+                         dlg.Path,
+                         caption = "Can't save workspace to itself",
+                         style = wx.OK | wx.ICON_ERROR,
+                         parent = self.__frame)
+                    return
                 self.do_save_as_workspace(dlg.Path)
                 
     def do_save_as_workspace(self, filename):

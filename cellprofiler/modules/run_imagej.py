@@ -525,7 +525,7 @@ class RunImageJ(cpm.CPModule):
         #
         # Run a command or macro on the first image of the set
         #
-        if d[D_FIRST_IMAGE_SET] == image_set.image_number:
+        if d.get(D_FIRST_IMAGE_SET) == image_set.image_number:
             self.do_imagej(workspace, D_FIRST_IMAGE_SET)
         #
         # Install the input image as the current image
@@ -553,7 +553,7 @@ class RunImageJ(cpm.CPModule):
         #
         # Execute the post-group macro or command
         #
-        if d[D_LAST_IMAGE_SET] == image_set.image_number:
+        if d.get(D_LAST_IMAGE_SET) == image_set.image_number:
             self.do_imagej(workspace, D_LAST_IMAGE_SET)
             #
             # Save the current ImageJ image after executing the post-group
@@ -645,8 +645,8 @@ class RunImageJ(cpm.CPModule):
                 display = display_service.createDisplay(image_name, dataset)
                 display_dictionary[module_item.getName()] = display 
                 if image.has_mask:
-                    overlay_name = "X" + uuid.uuid4().get_hex()
-                    image_dictionary[overlay_name] = image.mask
+                    #overlay_name = "X" + uuid.uuid4().get_hex()
+                    #image_dictionary[overlay_name] = image.mask
                     overlay = ij2.create_overlay(context, image.mask)
                     overlay_service = ij2.get_overlay_service(context)
                     overlay_service.addOverlays(

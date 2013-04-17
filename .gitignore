@@ -26,6 +26,8 @@ imagej/*.zip
 imagej/.project
 imagej/.settings
 java/target
+java/.factorypath
+java/.settings
 killjavabridge.egg-info
 output
 windows

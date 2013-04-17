@@ -545,11 +545,7 @@ class RunImageJ(cpm.CPModule):
         if self.wants_to_get_current_image:
             output_image_name = self.current_output_image_name.value
             display = display_service.getActiveImageDisplay()
-            display_view = display.getActiveView()
-            dataset = ij2.wrap_dataset(display_view.getData())
-            pixel_data = dataset.get_pixel_data() / IMAGEJ_SCALE
-            image = cpi.Image(pixel_data)
-            image_set.add(output_image_name, image)
+            self.save_display_as_image(workspace, display, output_image_name)
         #
         # Execute the post-group macro or command
         #
@@ -562,9 +558,24 @@ class RunImageJ(cpm.CPModule):
             if (self.post_group_choice != CM_NOTHING and
                 self.wants_post_group_image):
                 output_image_name = self.post_group_output_image.value
-                pixel_data = ijb.get_current_image()
-                image = cpi.Image(pixel_data)
-                image_set.add(output_image_name, image)
+                output_image_name = self.current_output_image_name.value
+                display = display_service.getActiveImageDisplay()
+                self.save_display_as_image(workspace, display, output_image_name)
+                
+    def save_display_as_image(self, workspace, display, image_name):
+        '''Convert an ImageJ display to an image and save in the image set
+        
+        workspace - current workspace
+        display - an ImageJ Display
+        image_name - save the image in the image set using this name.
+        '''
+        display_view = display.getActiveView()
+        dataset = ij2.wrap_dataset(display_view.getData())
+        pixel_data = dataset.get_pixel_data() / IMAGEJ_SCALE
+        mask = ij2.create_mask(display)
+        image = cpi.Image(pixel_data, mask=mask)
+        workspace.image_set.add(image_name, image)
+        return pixel_data
 
     def do_imagej(self, workspace, when=None):
         if when == D_FIRST_IMAGE_SET:
@@ -670,11 +681,9 @@ class RunImageJ(cpm.CPModule):
                     display = display_dictionary[name]
                 else:
                     display = IJ2.wrap_display(module.getOutput(name))
-                view = display.getActiveView()
-                ds = ij2.wrap_dataset(view.getData())
-                pixel_data = ds.get_pixel_data() / IMAGEJ_SCALE
-                image = cpi.Image(pixel_data)
-                workspace.image_set.add(output_name, image)
+                pixel_data = self.save_display_as_image(
+                    workspace, display, output_name)
+                
                 if wants_display:
                     output_images.append((output_name, pixel_data))
         # Close any displays that we created.

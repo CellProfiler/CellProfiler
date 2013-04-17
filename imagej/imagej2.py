@@ -630,6 +630,20 @@ def create_dataset(context, pixel_data, name = None, axes = None):
                   pixel_data.flatten(), 0, strides, imgplus)
     return dataset
 
+def make_bit_img(shape):
+    '''Make an imglib img of BitType with the given shape
+    
+    shape - a sequence of image dimensions
+    '''
+    imgFactory = J.make_instance(
+        "net/imglib2/img/planar/PlanarImgFactory", "()V")
+    bit_type = J.make_instance("net/imglib2/type/logic/BitType", "()V")
+    img = J.call(
+        imgFactory, "create", 
+        "([JLnet/imglib2/type/NativeType;)Lnet/imglib2/img/planar/PlanarImg;",
+        np.array(shape), bit_type)
+    return img
+    
 def create_overlay(context, mask):
     '''Create a bitmask overlay from a numpy boolean array
     
@@ -638,14 +652,7 @@ def create_overlay(context, mask):
     assert mask.ndim == 2
     mask = mask.transpose()
     strides = np.array([mask.shape[1], 1], int)
-    
-    imgFactory = J.make_instance(
-        "net/imglib2/img/planar/PlanarImgFactory", "()V")
-    bit_type = J.make_instance("net/imglib2/type/logic/BitType", "()V")
-    img = J.call(
-        imgFactory, "create", 
-        "([JLnet/imglib2/type/NativeType;)Lnet/imglib2/img/planar/PlanarImg;",
-        np.array(mask.shape), bit_type)
+    img = make_bit_img(mask.shape)
     
     J.static_call("net/imglib2/util/ImgUtil", 
                   "copy", "([ZI[ILnet/imglib2/img/Img;)V",
@@ -658,6 +665,22 @@ def create_overlay(context, mask):
         "(Limagej/ImageJ;Lnet/imglib2/roi/BinaryMaskRegionOfInterest;)V", 
         context, roi)
     return overlay
+
+def create_mask(display):
+    '''Create a binary mask from a sequence of overlays
+    
+    display - an image display
+    
+    returns a binary mask
+    '''
+    jmask = J.static_call(
+        "org/cellprofiler/ijutils/OverlayUtils",
+        "extractMask",
+        "(Limagej/data/display/ImageDisplay;)Lnet/imglib2/img/Img;",
+        display.o)
+    if jmask is None:
+        return None
+    return get_bit_data(jmask)
 
 def wrap_data_view(view):
     class DataView(object):
@@ -676,6 +699,28 @@ def wrap_data_view(view):
         rebuild = J.make_method("rebuild", "()V")
         dispose = J.make_method("dispose", "()V")
     return DataView()
+
+def calculate_transpose(actual_axes, desired_axes=None):
+    '''Calculate the transpose tuple that converts the actual orientation to the desired
+    
+    actual_axes - a list of the AxisType arguments as fetched from
+                  a display, ImgPlus, view or overlay
+                  
+    desired_axes - the desired orientation. By default, this is i,j = Y, X
+    '''
+    if desired_axes is None:
+        desired_axes = [ Axes().Y, Axes().X]
+        if len(actual_axes) > 2:
+            desired_axes.append(Axes().CHANNEL)
+    transpose = []
+    for axis in desired_axes:
+        matches = [i for i, actual_axis in enumerate(actual_axes)
+                   if J.call(actual_axis, "equals", 
+                             "(Ljava/lang/Object;)Z", axis)]
+        if len(matches) != 1:
+            raise ValueError("No match for %s axis" % J.to_string(axis))
+        transpose.append(matches[0])
+    return transpose
 
 def wrap_dataset(dataset):
     
@@ -701,18 +746,7 @@ def wrap_dataset(dataset):
             result"""
             inv_axes = J.run_script(script, dict(imgplus=imgplus))
             inv_axes = list(J.iterate_collection(inv_axes))
-            if axes is None:
-                axes = [ Axes().Y, Axes().X]
-                if len(inv_axes) > 2:
-                    axes.append(Axes().CHANNEL)
-            transpose = []
-            for axis in axes:
-                matches = [i for i, inv_axis in enumerate(inv_axes)
-                           if J.call(inv_axis, "equals", 
-                                     "(Ljava/lang/Object;)Z", axis)]
-                if len(matches) != 1:
-                    raise ValueError("No match for %s axis" % J.to_string(axis))
-                transpose.append(matches[0])
+            transpose = calculate_transpose(inv_axes, axes)
             return pixel_data.transpose(transpose)
     return Dataset()
 
@@ -733,8 +767,31 @@ def get_pixel_data(img):
     a.shape = dims
     return a
         
+def get_bit_data(img):
+    '''Get the pixel data from a binary mask
+    
+    returns a Numpy array of boolean type
+    '''
+    interval = wrap_interval(img)
+    dims = interval.dimensions()
+    #
+    # Make a Java boolean array
+    #
+    a = np.zeros(np.prod(dims), np.float64)
+    ja = J.get_env().make_boolean_array(np.ascontiguousarray(a))
+    strides = np.cumprod([1] + dims[:0:-1]).astype(int)[::-1]
+    J.static_call("net/imglib2/util/ImgUtil", "copy", 
+                  "(Lnet/imglib2/img/Img;[ZI[I)V",
+                  img, ja, 0, strides)
+    a = J.get_env().get_boolean_array_elements(ja)
+    a.shape = dims
+    return a
+
 def wrap_interval(interval):
-    '''Return a class wrapper around a net.imglib2.Interval'''
+    '''Return a class wrapper around a net.imglib2.Interval
+    
+    Provides additional methods if it's a calibrated interval.
+    '''
     class Interval(object):
         def __init__(self, o = interval):
             self.o = o
@@ -754,6 +811,27 @@ def wrap_interval(interval):
         
         def dimensions(self):
             return [self.dimension(i) for i in range(self.numDimensions())]
+        #
+        # # # # # # # # # # # # # # #
+        #
+        # Calibrated interval methods
+        #
+        getAxes = J.make_method("getAxes", "()L[net.imglib2.meta.AxisType;")
+        #
+        # minimum and maximum by axis
+        #
+        def minAx(self, axis):
+            '''Get the minimum of the interval along the given axis'''
+            axes = self.getAxes()
+            idx = axes.index(axis)
+            return self.min1D(idx)
+        
+        def maxAx(self, axis):
+            '''Get the maximum of the interval along the given axis'''
+            axes = self.getAxes()
+            idx = axes.index(axis)
+            return self.max1D(idx)
+        
     return Interval()
 
 def get_script_service(context):

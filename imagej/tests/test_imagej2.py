@@ -307,6 +307,28 @@ class TestImagej2(unittest.TestCase):
         pixel_data = fn(j, i, c)
         np.testing.assert_array_equal(image, pixel_data)
         
+    def test_06_01_get_mask_data(self):
+        # Get the overlay data from a display
+        #
+        display_svc = ij2.get_display_service(self.context)
+        overlay_svc = ij2.get_overlay_service(self.context)
+        image = np.zeros((30, 30))
+        ds = ij2.create_dataset(self.context, image, "Foo")
+        display = display_svc.createDisplay("Foo", ds)
+        d2 = display_svc.createDisplay("Bar", ij2.create_dataset(self.context, image, "Bar"))
+        overlay = J.run_script(
+            """var o = new Packages.imagej.data.overlay.RectangleOverlay(context);
+               o.setOrigin(5, 0);
+               o.setOrigin(3, 1);
+               o.setExtent(6, 0);
+               o.setExtent(7, 1);
+               o;""", dict(context=self.context))
+        overlay_svc.addOverlays(display, J.make_list([overlay]))
+        ij2.select_overlay(display.o, overlay)
+        mask = ij2.create_mask(display)
+        i, j = np.mgrid[0:mask.shape[0], 0:mask.shape[1]]
+        np.testing.assert_equal(mask, (j >= 5) & (j < 11) & (i >= 3) & (i < 10))
+        
     def test_07_01_wrap_interval(self):
         svc = ij2.get_dataset_service(self.context)
         result = svc.create1(np.array([10, 15]), 

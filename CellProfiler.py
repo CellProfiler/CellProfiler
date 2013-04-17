@@ -105,7 +105,8 @@ def main(args):
             from cellprofiler.cellprofilerapp import CellProfilerApp
             show_splashbox = (options.pipeline_filename is None and
                               options.workspace_filename is None and
-                              not options.new_workspace)
+                              (not options.new_workspace) and
+                              options.show_splashbox)
             if options.workspace_filename:
                 workspace_path = os.path.expanduser(options.workspace_filename)
             elif options.new_workspace:
@@ -308,6 +309,12 @@ def parse_args(args):
                           default=False,
                           action="store_true",
                           help="Overwrite external binary depencies if hash does not match")
+    
+    parser.add_option("--no-splash-screen",
+                      dest="show_splashbox",
+                      action="store_false",
+                      default=True,
+                      help="Do not show the splash screen when starting CellProfiler")
     parser.add_option("--ilastik",
                       dest = "run_ilastik",
                       default=False,

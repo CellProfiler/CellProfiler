@@ -250,7 +250,7 @@ PYQTPREFIX				?= $(PREFIX)
 PYQTURL					= $(PACKAGEHOST)
 JPEGVERSION				= 8b
 JPEGPREFIX				?= $(PREFIX)
-ZLIBVERSION				= zlib-1.2.7
+ZLIBVERSION				= zlib-1.2.5
 ZLIBPREFIX				?= $(PREFIX)
 PNGVERSION				= libpng-1.4.5
 PNGPREFIX				?= $(PREFIX)
@@ -317,7 +317,7 @@ precheck-java:				$(SRCDIR)/findlibjvm.class
 							false ; \
 						else \
 							cd "$(SRCDIR)" && \
-							LIBJVMPATH=$$(java findlibjvm 2>/dev/zero) && \
+							LIBJVMPATH=$$($${JAVA_HOME}/bin/java findlibjvm 2>/dev/zero) && \
 							if ! test -r "$${LIBJVMPATH}/libjvm.so" ; then \
 								echo "Could not find 'libjvm.so' in the following path:" ; \
 								echo "  '$${LIBJVMPATH}'" ; \

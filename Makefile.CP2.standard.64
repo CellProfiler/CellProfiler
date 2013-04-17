@@ -317,7 +317,7 @@ precheck-java:				$(SRCDIR)/findlibjvm.class
 							false ; \
 						else \
 							cd "$(SRCDIR)" && \
-							LIBJVMPATH=$$(java findlibjvm 2>/dev/zero) && \
+							LIBJVMPATH=$$($${JAVA_HOME}/bin/java findlibjvm 2>/dev/zero) && \
 							if ! test -r "$${LIBJVMPATH}/libjvm.so" ; then \
 								echo "Could not find 'libjvm.so' in the following path:" ; \
 								echo "  '$${LIBJVMPATH}'" ; \

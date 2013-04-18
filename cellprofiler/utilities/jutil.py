@@ -345,6 +345,7 @@ def start_vm(args, run_headless = False):
             vm.destroy()
         __vm = None
         dead_event.set()
+        logger.info("Exiting the JVM monitor thread")
         
     __start_thread = threading.Thread(target=start_thread)
     __start_thread.setName("JVMMonitor")

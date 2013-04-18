@@ -31,7 +31,7 @@ from cellprofiler.gui.help import MAIN_HELP, make_help_menu, \
      HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_PATH_LIST
 from cellprofiler.pipeline import Pipeline
 from cellprofiler.gui.pipelinecontroller import PipelineController
-from cellprofiler.gui.moduleview import ModuleView
+from cellprofiler.gui.moduleview import ModuleView, stop_validation_queue_thread
 from cellprofiler.gui.preferencesview import PreferencesView
 from cellprofiler.gui.directoryview import DirectoryView
 from cellprofiler.gui.datatoolframe import DataToolFrame
@@ -447,6 +447,7 @@ class CPFrame(wx.Frame):
         self.__workspace.measurements.flush()
         self.__preferences_view.close()
         self.pipeline_controller.on_close()
+        stop_validation_queue_thread()
         wx.GetApp().ExitMainLoop()
 
     def __set_properties(self):

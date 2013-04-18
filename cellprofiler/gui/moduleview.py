@@ -3892,6 +3892,7 @@ validation_queue = []  # heapq, protected by above lock.  Can change to Queue.Pr
 pipeline_queue_thread = None  # global, protected by above lock
 validation_queue_semaphore = threading.Semaphore(0)
 request_pipeline_cache = threading.local()  # used to cache the last requested pipeline
+validation_queue_keep_running = True
 
 def validate_module(pipeline, module_num, test_mode, callback):
     '''Validate a module and execute the callback on error on the main thread
@@ -3924,7 +3925,7 @@ def validate_module(pipeline, module_num, test_mode, callback):
     wx.CallAfter(callback, setting_idx, message, level)
 
 def validation_queue_handler():
-    while True:
+    while validation_queue_keep_running:
         validation_queue_semaphore.acquire()  # wait for work
         with validation_queue_lock:
             if len(validation_queue) == 0:
@@ -3935,6 +3936,7 @@ def validation_queue_handler():
             validate_module(pipeline, module_num, test_mode, callback)
         except:
             pass
+    logger.info("Exiting the pipeline validation thread")
 
 def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_BACKGROUND):
     '''Request that a module be validated
@@ -3949,6 +3951,7 @@ def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_
     with validation_queue_lock:
         if pipeline_queue_thread is None:
             pipeline_queue_thread = threading.Thread(target=validation_queue_handler)
+            pipeline_queue_thread.setName("Pipeline vaidation thread")
             pipeline_queue_thread.setDaemon(True)
             pipeline_queue_thread.start()
 
@@ -3995,3 +3998,12 @@ def clear_validation_cache():
     '''clear the cache when a new pipeline is loaded.'''
     global request_pipeline_cache
     setattr(request_pipeline_cache, "pipeline_hash", None)
+
+def stop_validation_queue_thread():
+    '''Stop the thread that handles module validation'''
+    global validation_queue_keep_running
+    if pipeline_queue_thread is not None:
+        validation_queue_keep_running = False
+        validation_queue_semaphore.release()
+        pipeline_queue_thread.join()
+

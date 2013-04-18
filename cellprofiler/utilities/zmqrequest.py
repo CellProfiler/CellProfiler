@@ -420,7 +420,6 @@ class Boundary(object):
             args=(self.selfnotify_socket, self.request_socket, 
                   self.external_request_socket),
             name="Boundary spin()")
-        self.thread.daemon = True
         self.thread.start()
         
     '''Notify the socket thread that an analysis was added'''
@@ -591,6 +590,7 @@ class Boundary(object):
                         thread.join()
     
             self.request_socket.close()  # will linger until messages are delivered
+            logger.info("Exiting the boundary thread")
         except:
             #
             # Pretty bad - a logic error or something extremely unexpected
@@ -697,8 +697,8 @@ def start_lock_thread():
                 except ValueError as e:
                     msg[3].put(e)
         __lock_thread = None
+        logger.info("Exiting the lock thread")
     __lock_thread = threading.Thread(target = lock_thread_fn)
-    __lock_thread.setDaemon(True)
     __lock_thread.setName("FileLockThread")
     __lock_thread.start()
         

@@ -118,7 +118,9 @@ class Example1d(cpm.CPModule):
     
     #
     # The signature for display will change in the next release of CellProfiler
-    # Uncomment the following if you're using that version
+    # 
+    # The code below works with both - if figure is defined, then it's
+    # the new style.
     #
     def display(self, workspace, figure=None):
         if figure is not None:
@@ -140,11 +142,34 @@ class Example1d(cpm.CPModule):
                 subplots = workspace.display_data.subplots)
             next_release = False
         if self.display_choice == D_GRAYSCALE_IMAGE:
+            #
+            # "imshow" is the matplotlib method to show an image on a figure.
+            # CellProfiler has specialized versions of imshow to display
+            # grayscale and color images and to display object labels.
+            #
+            # Here, I use subplot_imshow_grayscale to display a grayscale image
+            #
             figure.subplot_imshow_grayscale(
                 0, 0,                             # the subplot coordinates
                 workspace.display_data.grayscale, # the image
                 title = "Grayscale")              # the subplot title
         elif self.display_choice == D_COLOR_IMAGE:
+            #
+            # If the image is in color, it has 3 color planes and the pixel
+            # data numpy array is structured like this:
+            #
+            # pixel_data[<row-index>, <column-index>, <color-index>]
+            #
+            # Note that this may be different than what you're used to - in
+            # terms of X / Y coordinates, it looks like things are reversed:
+            #
+            # pixel_data[ Y, X, color]
+            # 
+            # -----
+            #
+            # Here, I display within a 2 x 2 grid. The top-left image is
+            # the color one and the other images are the three color planes
+            #
             pixel_data = workspace.display_data.color
             ax11 = figure.subplot_imshow_color(1, 1, pixel_data,
                                                title = "Color")
@@ -210,3 +235,21 @@ class Example1d(cpm.CPModule):
                      ("st dev", str(np.std(a)), str(np.std(b)))],
                     ratio = (.2, .4, .4))
                                       
+    #
+    # Prior to the current release, a module had to tell CellProfiler whether
+    # it interacted with the user interface inside the "run" method and by
+    # default, a module was marked interactive just in case it did use the
+    # user interface.
+    # 
+    # CellProfiler would use the indicator to figure out whether "run" had
+    # to be run in the user interface thread (CellProfiler would crash under
+    # OS-X otherwise).
+    #
+    # In the upcoming release, "run" isn't allowed to interact with the user
+    # interface directly, so you will not need to override is_interactive
+    # in the future.
+    #
+    # We'll cover the new UI interaction mechanism in example2c.
+    #
+    def is_interactive(self):
+        return False

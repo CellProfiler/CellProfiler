@@ -170,7 +170,24 @@ class Example1e(cpm.CPModule):
         #
         axes.set_frame_on(False)
         axes.set_axis_off()
-        
+    #
+    # Prior to the current release, a module had to tell CellProfiler whether
+    # it interacted with the user interface inside the "run" method and by
+    # default, a module was marked interactive just in case it did use the
+    # user interface.
+    # 
+    # CellProfiler would use the indicator to figure out whether "run" had
+    # to be run in the user interface thread (CellProfiler would crash under
+    # OS-X otherwise).
+    #
+    # In the upcoming release, "run" isn't allowed to interact with the user
+    # interface directly, so you will not need to override is_interactive
+    # in the future.
+    #
+    # We'll cover the new UI interaction mechanism in example2c.
+    #
+    def is_interactive(self):
+        return False        
     #
     # Finally, there's prepare_settings. setting_values are stored as unicode
     # strings (after a fashion) in your pipeline. Your module gets to have

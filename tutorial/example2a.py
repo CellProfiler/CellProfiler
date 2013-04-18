@@ -1,4 +1,4 @@
-'''<b>Example2b</b> - An example of an image processing function.
+'''<b>Example2a</b> - An example of an image processing function.
 <hr>
 This example deconvolves the image with a Gaussian. Given a point spread
 function that is an accurate representation of how optics aberations map
@@ -31,9 +31,9 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.cpimage as cpi
 
-class Example2b(cpm.CPModule):
+class Example2a(cpm.CPModule):
     variable_revision_number = 1
-    module_name = "Example2b"
+    module_name = "Example2a"
     category = "Image Processing"
     
     def create_settings(self):

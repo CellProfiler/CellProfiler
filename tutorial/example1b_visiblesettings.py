@@ -93,13 +93,13 @@ class Example1b(cpm.CPModule):
     #                  to only show relevant settings, for instance when
     #                  one setting is a choice and one of the choices
     #                  requires a certain parameter
-    def visible_settings(self):
-        result = [self.text_setting,
-                  self.choice_setting,
-                  self.binary_setting]
-        if self.binary_setting:
-            result += [self.integer_setting, self.float_setting]
-        return result
+    ##def visible_settings(self):
+        ##result = [self.text_setting,
+        ##          self.choice_setting,
+        ##          self.binary_setting]
+        ##if self.binary_setting:
+        ##    result += [self.integer_setting, self.float_setting]
+        ##return result
     #
     # Finally, you need a run method. This is executed when your pipeline
     # is run by CellProfiler.
@@ -114,4 +114,55 @@ class Example1b(cpm.CPModule):
                                 float_value,
                                 integer_value + float_value)
     
-    
+    #
+    # We'll cover the display in Example # 1e, but here's a quick display
+    # to give you something to look at when you execute the module.
+    #
+    # We've changed the way the display method works for the upcoming release
+    # to separate the UI from the part of the program that executes the
+    # pipeline. That lets us run the pipeline in a separate thread, a separate
+    # process or even on a separate machine and still do the display.
+    #
+    def display(self, workspace, frame=None):
+        if frame is not None:
+            #
+            # New style: tell the figure frame that we want to break the frame
+            # into a 1 x 1 grid of axes.
+            #
+            # Use the *new* version of subplot table to make a table that's
+            # much prettier than the old one.
+            #
+            frame.set_subplots((1,1))
+            frame.subplot_table(
+                0, 0,
+                [[setting.text, setting.value_text] 
+                 for setting in self.visible_settings()],
+                col_labels=["Setting", "Value"])
+        else:
+            #
+            # The old version
+            #
+            frame = workspace.create_or_find_figure(subplots=(1,1))
+            frame.subplot_table(
+                0, 0,
+                [[setting.text, setting.value_text] 
+                 for setting in self.visible_settings()])
+                
+    #
+    # Prior to the current release, a module had to tell CellProfiler whether
+    # it interacted with the user interface inside the "run" method and by
+    # default, a module was marked interactive just in case it did use the
+    # user interface.
+    # 
+    # CellProfiler would use the indicator to figure out whether "run" had
+    # to be run in the user interface thread (CellProfiler would crash under
+    # OS-X otherwise).
+    #
+    # In the upcoming release, "run" isn't allowed to interact with the user
+    # interface directly, so you will not need to override is_interactive
+    # in the future.
+    #
+    # We'll cover the new UI interaction mechanism in example2c.
+    #
+    def is_interactive(self):
+        return False        

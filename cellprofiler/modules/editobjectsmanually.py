@@ -65,6 +65,7 @@ import cellprofiler.workspace as cpw
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.cpmath.cpmorphology import triangle_areas
 
+from cellprofiler.modules.loadimages import pathname2url
 import identify as I
 
 ###########################################

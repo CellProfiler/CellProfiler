@@ -23,12 +23,12 @@ for secondary objects, except when using the <i>Distance - N</i> option.</li>
 </ol>
 
 After processing, the module display window for this module will
-show panels with objects outlined in two colors:
+show panels with objects outlined in two colors (these are the defaults):
 <ul>
 <li>Green: Primary objects</li>
-<li>Red: Secondary objects</li>
+<li>Magenta: Secondary objects</li>
 </ul>
-If you need to change the outline colors (e.g., due to color-blindness), you can 
+If you need to change the outline colors, you can 
 make adjustments in <i>File > Preferences</i>.
 
 The module window will also show another image where the identified 

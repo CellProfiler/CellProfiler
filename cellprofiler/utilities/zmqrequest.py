@@ -509,29 +509,34 @@ class Boundary(object):
     
             while not received_stop:
                 self.announce_analyses()
-                for s, state in poller.poll(1000):
+                poll_result = poller.poll(1000)
+                #
+                # Under all circumstances, read everything from the queue
+                #
+                try:
+                    while True:
+                        notification, arg = self.downward_queue.get_nowait()
+                        if notification == self.NOTIFY_REPLY_READY:
+                            req, rep = arg
+                            self.handle_reply(req, rep)
+                        elif notification == self.NOTIFY_CANCEL_ANALYSIS:
+                            analysis_id, response_queue = arg
+                            self.handle_cancel(analysis_id, response_queue)
+                        elif notification == self.NOTIFY_REGISTER_ANALYSIS:
+                            analysis_id, response_queue = arg
+                            self.handle_register_analysis(
+                                analysis_id, response_queue)
+                        elif notification == self.NOTIFY_STOP:
+                            received_stop = True
+                except Queue.Empty:
+                    pass
+                #
+                # Then process the poll result
+                #
+                for s, state in poll_result:
                     if s == selfnotify_socket and state == zmq.POLLIN:
                         # Discard the actual contents
                         _ = selfnotify_socket.recv()
-                    #
-                    # Under all circumstances, read everything from the queue
-                    #
-                    try:
-                        while True:
-                            notification, arg = self.downward_queue.get_nowait()
-                            if notification == self.NOTIFY_REPLY_READY:
-                                req, rep = arg
-                                self.handle_reply(req, rep)
-                            elif notification == self.NOTIFY_CANCEL_ANALYSIS:
-                                analysis_id, response_queue = arg
-                                self.handle_cancel(analysis_id, response_queue)
-                            elif notification == self.NOTIFY_REGISTER_ANALYSIS:
-                                analysis_id, response_queue = arg
-                                self.handle_register_analysis(analysis_id, response_queue)
-                            elif notification == self.NOTIFY_STOP:
-                                received_stop = True
-                    except Queue.Empty:
-                        pass
                     if (s not in (request_socket, external_request_socket) or
                         state != zmq.POLLIN):
                         continue

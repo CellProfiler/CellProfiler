@@ -12,7 +12,7 @@ image.
 ClassifyPixels produces an "image" consisting of probabilities that
 the pixel belongs to the chosen class; this image is similar to
 an intensity image that would be produced by fluorescence imaging.
-Provided that the classifier is sufficiently accruate, the image is
+Provided that the classifier is sufficiently accurate, the image is
 well-suited for input into one of the <b>Identify</b> modules for
 object detection. More instructions on using the interface may be found 
 <a href="http://ilastik.org/index.php?cat=20_Documentation&page=03_Cellprofiler">here</a>.

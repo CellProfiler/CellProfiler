@@ -601,7 +601,7 @@ class PipelineController:
         with wx.FileDialog(
             self.__frame,
             "Choose a workspace file to open",
-            wildcard = "CellProfiler workspace (*.cpi)|*.cpi") as dlg:
+            wildcard = "CellProfiler workspace (*.cpi)|*.cpi|All files (*.*)|*.*") as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
                 assert isinstance(dlg, wx.FileDialog)
@@ -711,10 +711,12 @@ class PipelineController:
         with wx.FileDialog(
             self.__frame,
             "Choose the name for the new workspace file",
-            wildcard = "CellProfiler workspace (*.cpi)|*.cpi",
+            wildcard = "CellProfiler workspace (*.cpi)|*.cpi|All files (*.*)|*.*",
             style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
+                if os.path.splitext(dlg.Path)[1] == '':
+                    dlg.Path = dlg.Path + ".cpi"       # Macs don't always append extension         
                 if dlg.Path == self.__locked_workspace_filename:
                     message = (
                         'The workspace file, "%s", is your current workspace\n'

@@ -166,7 +166,6 @@ class Images(cpm.CPModule):
         '''Create an IPD for every url that passes the filter'''
         if workspace.pipeline.in_batch_mode():
             return True
-        workspace.pipeline.load_image_plane_details(workspace)
         if self.wants_filter:
             env = J.get_env()
             jexpression = env.new_string_utf(self.filter.value_text)

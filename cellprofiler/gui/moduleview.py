@@ -3604,6 +3604,8 @@ class TableController(wx.grid.PyGridTableBase):
             s = self.v.data[row][col]
             if s is None:
                 s = ''
+            elif not isinstance(s, basestring):
+                s = str(s)
             self.grid.GetGridWindow().SetToolTipString(s)
         event.Skip()
         

@@ -785,7 +785,7 @@ def set_primary_outline_color(color):
                        ','.join([str(x) for x in color.Get()]))
 
 def get_secondary_outline_color():
-    default = (255,0,0)
+    default = (255,0,255)
     if not config_exists(SECONDARY_OUTLINE_COLOR):
         return tuple_to_color(default)
     return tuple_to_color(config_read(SECONDARY_OUTLINE_COLOR).split(","))

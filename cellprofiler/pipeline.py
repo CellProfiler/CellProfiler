@@ -925,6 +925,8 @@ class Pipeline(object):
         while True:
             line = rl()
             if line is None:
+                if module_count == 0:
+                    break
                 raise ValueError("Pipeline file unexpectedly truncated before module section")
             elif len(line.strip()) == 0:
                 break

@@ -125,6 +125,14 @@ class TestPipeline(unittest.TestCase):
             module.notes[0],
             """Excluding "_E12f03d" since it has an incomplete set of channels (and is the only one as such).""")
 
+    def test_02_01_copy_nothing(self):
+        # Regression test of issue #565
+        #
+        # Can't copy an empty pipeline
+        #
+        pipeline = cpp.Pipeline()
+        p2 = pipeline.copy()
+        
     def test_06_01_run_pipeline(self):
         x = exploding_pipeline(self)
         module = InjectImage('OneCell',image_with_one_cell())

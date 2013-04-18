@@ -411,6 +411,7 @@ class CPFrame(wx.Frame):
         right_sizer.Show(self.__startup_blurb, not show)
         right_sizer.Show(self.__notes_panel, show)
         right_sizer.Show(self.__path_module_imageset_panel, show)
+        self.__right_win.Layout()
         if show:
             self.layout_pmi_panel()
             self.__path_list_sash.Layout()
@@ -422,7 +423,6 @@ class CPFrame(wx.Frame):
             self.__imageset_sash.Layout()
         else:
             self.__startup_blurb.load_startup_blurb()
-        self.__right_win.Layout()
 
     def __on_sash_drag(self, event):
         sash = event.GetEventObject()

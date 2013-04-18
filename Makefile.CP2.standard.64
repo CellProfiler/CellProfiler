@@ -103,7 +103,7 @@
 #   export PATH="${CP2DEST}/bin:${PATH}"
 #   export LD_LIBRARY_PATH="${CP2DEST}/lib:${CP2DEST}/lib64:${LD_LIBRARY_PATH}":${CP2DEST}/lib/mysql
 #   export PYTHONPATH="${CP2DEST}/lib/python2.5/site-packages:${PYTHONPATH}"
-#   export JAVA_HOME="<your path to JDK or JRE>"
+#  export JAVA_HOME="<your path to JDK or JRE>"
 #
 # To run CellProfiler:
 #   cd ${CP2DEST}
@@ -176,7 +176,7 @@ CYTHONPREFIX				?= $(PREFIX)
 CYTHONURL				= http://www.cython.org/#download
 #ATLASVERSION				= atlas3.9.33
 ATLASVERSION				= atlas3.11.8
-ATLASPREFIX				?= /usr/lib/atlas/ 
+ATLASPREFIX				?= /usr/lib64/atlas/ 
 ATLASURL				= http://sourceforge.net/projects/math-atlas/files/
 LAPACKVERSION				= lapack-3.3.0
 LAPACKFLAGS				= -fPIC -m64

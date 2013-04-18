@@ -77,6 +77,7 @@ class ConvtesterMixin:
                  if fn_filter(filename)]
         w2.file_list.add_files_to_filelist(urls)
         pipeline.convert_legacy_input_modules()
+        pipeline.load_image_plane_details(w2)
         pipeline.prepare_run(w2)
         
         ff1 = m1.get_feature_names(measurements.IMAGE)

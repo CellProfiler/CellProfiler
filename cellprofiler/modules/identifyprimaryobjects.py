@@ -5,13 +5,13 @@ This module identifies primary objects in grayscale images
 containing bright objects on a dark background. Primary objects (e.g., nuclei) are those that can be found in an image without using any corresponding reference image. By contrast, secondary objects are those that are found using previously-identified primary objects as a reference.
 
 After processing, the module display window for this module will
-show a panel with objects outlined in three colors:
+show a panel with objects outlined in three colors (these are the defaults):
 <ul>
 <li>Green: Acceptable; passed all criteria</li>
-<li>Red: Discarded based on size</li>
+<li>Magenta: Discarded based on size</li>
 <li>Yellow: Discarded due to touching the border</li>
 </ul>
-If you need to change the outline colors (e.g., due to color-blindness), you can 
+If you need to change the outline colors, you can 
 make adjustments in <i>File > Preferences</i>.
 
 The module window will also show another image where the identified 

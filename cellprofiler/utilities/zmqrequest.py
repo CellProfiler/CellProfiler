@@ -528,6 +528,7 @@ class Boundary(object):
                                 analysis_id, response_queue)
                         elif notification == self.NOTIFY_STOP:
                             received_stop = True
+                            response_queue.put("I should stop soon")
                 except Queue.Empty:
                     pass
                 #

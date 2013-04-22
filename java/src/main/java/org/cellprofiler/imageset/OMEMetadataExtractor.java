@@ -31,6 +31,7 @@ import ome.xml.model.primitives.PositiveInteger;
  *
  */
 public class OMEMetadataExtractor implements MetadataExtractor<ImagePlane> {
+	final static public String MD_C = "C";
 	final static public String MD_T = "T";
 	final static public String MD_Z = "Z";
 	final static public String MD_COLOR_FORMAT = "ColorFormat";
@@ -55,6 +56,7 @@ public class OMEMetadataExtractor implements MetadataExtractor<ImagePlane> {
 		Pixels pixels = imageMetadata.getPixels();
 		if (pixels.sizeOfPlaneList() > source.getIndex()) {
 			Plane plane = pixels.getPlane(source.getIndex());
+			putIfNotNull(map, MD_C, plane.getTheC().toString());
 			putIfNotNull(map, MD_T, plane.getTheT().toString());
 			putIfNotNull(map, MD_Z, plane.getTheZ().toString());
 			final NonNegativeInteger c = plane.getTheC();

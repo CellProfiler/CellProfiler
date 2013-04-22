@@ -420,6 +420,7 @@ class ImagePlaneDetails(object):
     MD_SIZE_C = "SizeC"
     MD_SIZE_Z = "SizeZ"
     MD_SIZE_T = "SizeT"
+    MD_C = "C"
     MD_Z = "Z"
     MD_T = "T"
     MD_CHANNEL_NAME = "ChannelName"
@@ -2322,6 +2323,8 @@ class Pipeline(object):
                 del self.image_plane_details[pos]
             start = pos
         if len(real_list):
+            self.__filtered_image_plane_details_images_settings = None
+            self.__filtered_image_plane_details_metadata_settings = None
             self.notify_listeners(ImagePlaneDetailsRemovedEvent(real_list))
             def undo():
                 self.add_image_plane_details(real_list, False)
@@ -2395,7 +2398,9 @@ class Pipeline(object):
         bypass_exceptions = False
         n_ipds = len(self.image_plane_details)
         uid = uuid.uuid4()
-        for i, ipd in enumerate(self.image_plane_details):
+        # Need to copy list - it gets changed if planes added
+        ipds = list(self.image_plane_details)
+        for i, ipd in enumerate(ipds):
             if i % 100 == 0:
                 cpprefs.report_progress(
                     uid, float(i) / n_ipds,
@@ -2811,6 +2816,7 @@ class Pipeline(object):
                     m = {}
                     plane = pixels.Plane(index)
                     c = plane.TheC
+                    m[ImagePlaneDetails.MD_C] = plane.TheC
                     m[ImagePlaneDetails.MD_T] = plane.TheT
                     m[ImagePlaneDetails.MD_Z] = plane.TheZ
                     if pixels.channel_count > c:

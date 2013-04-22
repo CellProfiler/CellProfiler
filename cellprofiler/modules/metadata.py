@@ -567,7 +567,7 @@ class Metadata(cpm.CPModule):
     
     def do_update_metadata(self, group):
         filelist = self.workspace.file_list
-        urls = [ipd.url for ipd in self.pipeline.get_filtered_image_plane_details(self.workspace)]
+        urls = set([ipd.url for ipd in self.pipeline.get_filtered_image_plane_details(self.workspace)])
         if len(urls) == 0:
             return
         def msg(url):

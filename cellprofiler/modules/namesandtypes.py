@@ -496,6 +496,16 @@ class NamesAndTypes(cpm.CPModule):
             "(Lorg/cellprofiler/imageset/filter/ImagePlaneDetails;)Z")
         ipds = pipeline.get_filtered_image_plane_details(workspace, 
                                                          with_metadata=True)
+        #
+        # Remove any ipd with series = None and index = None if followed
+        # by same URL and series = 0, index = 0
+        #
+        if len(ipds) > 1:
+            ipds = [ipd for ipd, next_ipd in zip(ipds[:-1], ipds[1:])
+                    if ipd.url != next_ipd.url
+                    or ipd.series is not None or ipd.index is not None] + [
+                        ipds[-1]]
+                
         column_names = self.get_column_names()
         if self.assignment_method == ASSIGN_ALL:
             self.image_sets = [((i+1, ), { column_names[0]: (ipd, ) })

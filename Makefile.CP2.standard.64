@@ -1344,7 +1344,7 @@ $(SRCDIR)/$(PYPIVERSION):
 
 $(SRCDIR)/$(DECORATORVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://pypi.python.org/packages/source/d/decorator/$(DECORATORVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(DECORATORVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz:

@@ -967,7 +967,7 @@ $(SITEPKGPREFIX)/ilastik-$(ILASTIKMAJVERSION)-py$(PYVERSION).egg:	ilastik-v$(ILA
 					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "ilastik-v$(ILASTIKVERSION)" && \
 					tar -xzf "$(SRCDIR)/ilastik-v$(ILASTIKVERSION).tar.gz" && \
-					cd "$(TMPDIR)/ilastik-ilastik-0_5_05a" && \
+					cd "$(TMPDIR)/ilastik-v$(ILASTIKVERSION)" && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
 					$(PYTHONPREFIX)/bin/python setup.py build && \

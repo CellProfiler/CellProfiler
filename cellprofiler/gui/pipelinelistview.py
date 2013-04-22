@@ -109,6 +109,8 @@ class PipelineListView(object):
         # Map of ListCtrl.GetItemData value to module.id
         self.__module_dictionary = {}
         self.make_image_list()
+        assert isinstance(panel, wx.Window)
+        panel.AutoLayout = True
         panel.Sizer = top_sizer = wx.BoxSizer(wx.VERTICAL)
         static_box = wx.StaticBox(self.__panel, label = "Create workspace")
         self.__input_controls = [static_box]
@@ -146,18 +148,6 @@ class PipelineListView(object):
         self.drag_start = None
         self.drag_time = None
         self.list_ctrl.SetDropTarget(PipelineDropTarget(self))
-        # panel.SetDropTarget(PanelDropTarget(self))
-        panel.SetupScrolling()
-        #
-        # The following code prevents the panel from scrolling every
-        # time it gets the focus - why would anyone ever want this!
-        # Remove the code to see something truly horrible.
-        #
-        # Thank you Mike Conley:
-        # http://groups.google.com/group/wxpython-users/browse_thread/thread/5fed262dc3d144bb/2dc29b45d452c8a0?lnk=raot&fwc=2
-        def defeat_its_purpose(event):
-            event.Skip(False)
-        panel.Bind(wx.EVT_CHILD_FOCUS, defeat_its_purpose)
 
     def make_image_list(self):
         '''Make the image list containing all of the graphic goodies like the eye
@@ -796,9 +786,11 @@ class PipelineListView(object):
             for i, module in enumerate(pipeline.modules(False)):
                 module.module_num = i + index + 1
                 self.__pipeline.add_module(module)
+            n_input_modules = self.input_list_ctrl.GetItemCount()
+            insert_point = index - n_input_modules
             for i in range(len(pipeline.modules(False))):
                 item = self.list_ctrl.SetItemState(
-                    i+index, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+                    i+insert_point, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
         finally:
             wx.EndBusyCursor()
                     
@@ -818,7 +810,6 @@ class PipelineListView(object):
         for module in pipeline.modules(False):
             self.__populate_row(module)
         self.__adjust_rows()
-        self.__panel.SetupScrolling()
         self.__controller.enable_module_controls_panel_buttons()
     
     def __adjust_rows(self):
@@ -872,7 +863,6 @@ class PipelineListView(object):
         min_height = y + max(1, input_list_ctrl.GetItemCount()) * height + 4
         input_list_ctrl.SetMinSize((min_width, min_height))
         self.__panel.Layout()
-        self.__panel.SetupScrolling(scroll_x=False, scroll_y=True, scrollToTop=False)
     
     def set_subitem_image(self, module, column, image_number):
         list_ctrl, index = self.get_ctrl_and_index(module)
@@ -942,7 +932,6 @@ class PipelineListView(object):
         self.__populate_row(module)
         self.__adjust_rows()
         self.select_one_module(event.module_num)
-        self.__panel.SetupScrolling(scrollToTop=False)
 
     def __on_module_removed(self, pipeline, event):
         all_module_ids = set([module.id for module in pipeline.modules(False)])
@@ -956,7 +945,6 @@ class PipelineListView(object):
             del self.__module_dictionary[data_value]
         self.__adjust_rows()
         self.__controller.enable_module_controls_panel_buttons()
-        self.__panel.SetupScrolling(scrollToTop=False)
         
     def __on_module_moved(self,pipeline,event):
         module = pipeline.modules(False)[event.module_num - 1]

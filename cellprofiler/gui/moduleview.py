@@ -533,6 +533,7 @@ class ModuleView:
                         table = grid.GetTable()
                         if isinstance(table, TableController) and table.v is v:
                             table.update_grid()
+                            self.__frame.show_grid_ctrl()
                             continue
                         else:
                             table = TableController(v)

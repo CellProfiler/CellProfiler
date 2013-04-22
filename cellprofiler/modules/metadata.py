@@ -391,8 +391,12 @@ class Metadata(cpm.CPModule):
                 max_index = max(max_index, ipd.index)
         if max_series > 0:
             series_digits = int(np.log10(max_series)) + 1
+        else:
+            series_digits = 1
         if max_index > 0:
             index_digits = int(np.log10(max_index)) + 1
+        else:
+            index_digits = 1
         if max_series > 0 or max_index > 0:
             script = """
             importPackage(Packages.org.cellprofiler.imageset);

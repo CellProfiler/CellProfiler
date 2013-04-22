@@ -227,6 +227,7 @@ AMDVERSION				= AMD-2.2.2
 AMDURL					= $(PACKAGEHOST)
 MATPLOTLIBVERSION			= matplotlib-1.0.1
 MATPLOTLIBURL				= http://sourceforge.net/projects/matplotlib/files/matplotlib/
+WXVERSION				= 2.8.11
 WXPYTHONTOOLKIT_no			= --without-gtk --disable-unicode --disable-gtktest --with-x11
 WXPYTHONTOOLKIT_yes			= --with-gtk --enable-unicode
 WXPYTHONVERSION				= 2.8.11.0
@@ -421,9 +422,9 @@ $(PYTHONPREFIX)/bin/python:		$(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SQLITEPREFIX)/
 					export C_INCLUDE_PATH="$(PYTHONPREFIX)/include:$(C_INCLUDE_PATH)" && \
 					./configure \
 						--prefix="$(PYTHONPREFIX)" \
-						--enable-shared && \
-					$(MAKE) $(MAKE_FLAGS) && \
-					$(MAKE) -j1 install
+						--enable-shared \
+				                --enable-unicode=ucs4 && \
+                                        make install prefix="$(PYTHONPREFIX)" exec-prefix="$(PYTHONPREFIX)"
 
 cython:					$(CYTHONPREFIX)/bin/cython
 $(CYTHONPREFIX)/bin/cython:		$(SRCDIR)/$(CYTHONVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(PYPIPREFIX)/bin/easy_install
@@ -617,7 +618,7 @@ $(SCIPYPREFIX)/lib/python$(PYVERSION)/site-packages/$(SCIPYVERSION)-py$(PYVERSIO
 					$(PYTHONPREFIX)/bin/python setup.py install
 
 matplotlib:				$(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py$(PYVERSION).egg-info
-$(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py$(PYVERSION).egg-info:	$(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(PNGPREFIX)/lib/libpng.la $(TIFFPREFIX)/lib/libtiff.la $(JPEGPREFIX)/lib/libjpeg.la $(PYTHONPREFIX)/bin/python $(NUMPYPREFIX)/lib/python$(PYVERSION)/site-packages/$(NUMPYVERSION)-py$(PYVERSION).egg-info $(WXPYTHONPREFIX)/bin/pywxrc $(SITEPKGPREFIX)/PyQt4/pyqtconfig.py
+$(SITEPKGPREFIX)/$(MATPLOTLIBVERSION)-py$(PYVERSION).egg-info:	$(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(PNGPREFIX)/lib/libpng.la $(TIFFPREFIX)/lib/libtiff.la $(JPEGPREFIX)/lib/libjpeg.la $(PYTHONPREFIX)/bin/python $(NUMPYPREFIX)/lib/python$(PYVERSION)/site-packages/$(NUMPYVERSION)-py$(PYVERSION).egg-info $(WXPYTHONPREFIX)/bin/pywxrc 
 					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(MATPLOTLIBVERSION)" && \
 					tar -zxf "$(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz" && \
@@ -741,30 +742,31 @@ $(SITEPKGPREFIX)/PyOpenGL_$(PYOPENGLACCELVERSION)-py$(PYVERSION).egg-info:	$(SRC
 					$(PYTHONPREFIX)/bin/python setup.py build && \
 					$(PYTHONPREFIX)/bin/python setup.py install
 
-qt:					qmake
-qmake:					$(QTPREFIX)/lib/libQtCore.la
-$(QTPREFIX)/lib/libQtCore.la:		$(SRCDIR)/$(QTVERSION).tar.gz $(PNGPREFIX)/lib/libpng.la $(JPEGPREFIX)/lib/libjpeg.la $(ZLIBPREFIX)/lib/libz.a $(TIFFPREFIX)/lib/libtiff.la
-					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
-					rm -fr "$(QTVERSION)" && \
-					tar -xzf "$(SRCDIR)/$(QTVERSION).tar.gz" && \
-					cd "$(QTVERSION)" && \
-					export LD_LIBRARY_PATH="$(PNGPREFIX)/lib:$(JPEGPREFIX)/lib:$(TIFFPREFIX)/lib:$(ZLIBPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-					echo "yes"|./configure -prefix "$(QTPREFIX)" \
-						-I"$(PNGPREFIX)/include" -I"$(JPEGPREFIX)/include" -I"$(TIFFPREFIX)/include" -I"$(ZLIBPREFIX)/include" -I"$(SQLITEPREFIX)/include" \
-						-L"$(PNGPREFIX)/lib" -L"$(JPEGPREFIX)/lib" -L"$(TIFFPREFIX)/lib" -L"$(ZLIBPREFIX)/lib" -L"$(SQLITEPREFIX)/lib -lsqlite3" \
-						$(QTFLAGS) && \
-					$(MAKE) $(MAKE_FLAGS) && \
-					$(MAKE) -j1 install
+#qt:					qmake
+#qmake:					$(QTPREFIX)/lib/libQtCore.la
+#$(QTPREFIX)/lib/libQtCore.la:		$(SRCDIR)/$(QTVERSION).tar.gz $(PNGPREFIX)/lib/libpng.la $(JPEGPREFIX)/lib/libjpeg.la $(ZLIBPREFIX)/lib/libz.a $(TIFFPREFIX)/lib/libtiff.la
+#					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+#					rm -fr "$(QTVERSION)" && \
+#					tar -xzf "$(SRCDIR)/$(QTVERSION).tar.gz" && \
+#					cd "$(QTVERSION)" && \
+#					export LD_LIBRARY_PATH="$(PNGPREFIX)/lib:$(JPEGPREFIX)/lib:$(TIFFPREFIX)/lib:$(ZLIBPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+#					echo "yes"|./configure -prefix "$(QTPREFIX)" \
+#						-I"$(PNGPREFIX)/include" -I"$(JPEGPREFIX)/include" -I"$(TIFFPREFIX)/include" -I"$(ZLIBPREFIX)/include" -I"$(SQLITEPREFIX)/include" \
+#						-L"$(PNGPREFIX)/lib" -L"$(JPEGPREFIX)/lib" -L"$(TIFFPREFIX)/lib" -L"$(ZLIBPREFIX)/lib" -L"$(SQLITEPREFIX)/lib -lsqlite3" \
+#						$(QTFLAGS) && \
+#					$(MAKE) $(MAKE_FLAGS) && \
+#					$(MAKE) -j1 install
 
 pyqt:					$(SITEPKGPREFIX)/PyQt4/pyqtconfig.py
-$(SITEPKGPREFIX)/PyQt4/pyqtconfig.py:	$(SRCDIR)/$(PYQTVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(QTPREFIX)/lib/libQtCore.la $(SITEPKGPREFIX)/sip.so $(SITEPKGPREFIX)/PyOpenGL_$(PYOPENGLACCELVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(PYOPENGLVERSION)-py$(PYVERSION).egg-info
+$(SITEPKGPREFIX)/PyQt4/pyqtconfig.py:	$(SRCDIR)/$(PYQTVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(SITEPKGPREFIX)/sip.so $(SITEPKGPREFIX)/PyOpenGL_$(PYOPENGLACCELVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(PYOPENGLVERSION)-py$(PYVERSION).egg-info
 					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(PYQTVERSION)" && \
 					tar -zxf "$(SRCDIR)/$(PYQTVERSION).tar.gz" && \
 					cd "$(PYQTVERSION)" && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-					$(PYTHONPREFIX)/bin/python configure.py --confirm-license && \
+					#$(PYTHONPREFIX)/bin/python configure.py --confirm-license && \
+					$(PYTHONPREFIX)/bin/python configure.py --confirm-license -g -q /usr/bin/qmake-qt4 && \
 					$(MAKE) $(MAKE_FLAGS) && \
 					$(MAKE) -j1 install
 
@@ -779,6 +781,17 @@ $(SITEPKGPREFIX)/sip.so:		$(SRCDIR)/$(SIPVERSION).tar.gz $(PYTHONPREFIX)/bin/pyt
 					$(PYTHONPREFIX)/bin/python configure.py && \
 					$(MAKE) $(MAKE_FLAGS) && \
 					$(MAKE) -j1 install
+
+wx:					$(PREFIX)/bin/wx
+$(PREFIX)/bin/wx:			$(SRCDIR)/wxX11-$(WXVERSION).tar.bz2
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -rf "wxX11-$(WXVERSION)" && \
+					tar xvf "$(SRCDIR)/wxX11-$(WXVERSION).tar.bz2" && \
+					cd "wxX11-$(WXVERSION).tar.bz2" && \
+					./configure && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
+                                        
 
 wxpython:				$(WXPYTHONPREFIX)/bin/pywxrc
 $(WXPYTHONPREFIX)/bin/pywxrc:		$(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(PYTHONPREFIX)/bin/python $(PNGPREFIX)/lib/libpng.la $(JPEGPREFIX)/lib/libjpeg.la $(ZLIBPREFIX)/lib/libz.a $(TIFFPREFIX)/lib/libtiff.la
@@ -1232,17 +1245,6 @@ $(SRCDIR)/findlibjvm.class:
 					wget $(WGETFLAGS) "https://svn.broadinstitute.org/CellProfiler/trunk/CellProfiler/cellprofiler/utilities/findlibjvm.class" && \
 					touch "$@"
 
-$(SRCDIR)/$(LAPACKVERSION).tgz:
-					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(LAPACKVERSION).tgz" && \
-					touch "$@"
-
-$(SRCDIR)/$(ATLASVERSION).tar.bz2:
-					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					ATLASVERSIONNR=$$(echo $(ATLASVERSION)|cut -d's' -f2) && \
-					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(ATLASVERSION).tar.bz2" && \
-					touch "$@"
-
 $(SRCDIR)/$(NUMPYVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					NUMPYVERSIONNR=$$(echo $(NUMPYVERSION)|cut -d'-' -f2) && \
@@ -1498,5 +1500,5 @@ $(SRCDIR)/$(GETTEXTVERSION).tar.gz:
 					wget $(WGETFLAGS) "http://ftp.gnu.org/pub/gnu/gettext/$(GETTEXTVERSION).tar.gz" && \
 					touch "$@"
 
-download:				$(SRCDIR)/findlibjvm.class $(SRCDIR)/$(LAPACKVERSION).tgz $(SRCDIR)/$(ATLASVERSION).tar.bz2 $(SRCDIR)/$(NUMPYVERSION).tar.gz $(SRCDIR)/$(SCIPYVERSION).tar.gz $(SRCDIR)/$(UMFPACKVERSION).tar.gz $(SRCDIR)/$(CAMDVERSION).tar.gz $(SRCDIR)/$(CCOLAMDVERSION).tar.gz $(SRCDIR)/$(COLAMDVERSION).tar.gz $(SRCDIR)/$(CHOLMODVERSION).tar.gz $(SRCDIR)/$(UFCONFIGVERSION).tar.gz $(SRCDIR)/$(AMDVERSION).tar.gz $(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(SRCDIR)/$(PYOPENGLVERSION).tar.gz $(SRCDIR)/PyOpenGL-$(PYOPENGLACCELVERSION).tar.gz $(SRCDIR)/$(SIPVERSION).tar.gz $(SRCDIR)/$(PYQTVERSION).tar.gz $(SRCDIR)/$(QTVERSION).tar.gz $(SRCDIR)/$(FFTWVERSION).tar.gz $(SRCDIR)/$(PYPIVERSION) $(SRCDIR)/$(DECORATORVERSION).tar.gz $(SRCDIR)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz $(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz $(SRCDIR)/$(PILVERSION).tar.gz $(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz $(SRCDIR)/$(ZLIBVERSION).tar.bz2 $(SRCDIR)/$(PNGVERSION).tar.bz2 $(SRCDIR)/$(TIFFVERSION).tar.gz $(SRCDIR)/$(CYTHONVERSION).tar.gz $(SRCDIR)/$(VIGRAVERSION)-src.tar.gz $(SRCDIR)/$(QIMGTOARRVERSION).tar.gz $(SRCDIR)/$(HDF5VERSION).tar.bz2 $(SRCDIR)/$(H5PYVERSION).tar.gz $(SRCDIR)/$(PCREVERSION).tar.bz2 $(SRCDIR)/$(SWIGVERSION).tar.gz $(SRCDIR)/$(ILASTIKVERSION).tar.gz $(SRCDIR)/$(GTKVERSION).tar.bz2 $(SRCDIR)/$(GLIBVERSION).tar.bz2 $(SRCDIR)/$(PANGOVERSION).tar.bz2 $(SRCDIR)/$(CAIROVERSION).tar.gz $(SRCDIR)/$(ATKVERSION).tar.bz2 $(SRCDIR)/$(PIXMANVERSION).tar.gz $(SRCDIR)/$(GDKPIXBUFVERSION).tar.bz2 $(SRCDIR)/$(FONTCFGVERSION).tar.gz $(SRCDIR)/$(PYSQLITEVERSION).tar.gz $(SRCDIR)/$(SQLITEVERSION).tar.gz $(SRCDIR)/$(MYSQLVERSION).tar.gz $(SRCDIR)/$(NCURSESVERSION).tar.gz $(SRCDIR)/$(BOOSTVERSION).tar.bz2 $(SRCDIR)/$(GETTEXTVERSION).tar.gz
+download:				$(SRCDIR)/findlibjvm.class $(SRCDIR)/$(NUMPYVERSION).tar.gz $(SRCDIR)/$(SCIPYVERSION).tar.gz $(SRCDIR)/$(UMFPACKVERSION).tar.gz $(SRCDIR)/$(CAMDVERSION).tar.gz $(SRCDIR)/$(CCOLAMDVERSION).tar.gz $(SRCDIR)/$(COLAMDVERSION).tar.gz $(SRCDIR)/$(CHOLMODVERSION).tar.gz $(SRCDIR)/$(UFCONFIGVERSION).tar.gz $(SRCDIR)/$(AMDVERSION).tar.gz $(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(SRCDIR)/$(PYOPENGLVERSION).tar.gz $(SRCDIR)/PyOpenGL-$(PYOPENGLACCELVERSION).tar.gz $(SRCDIR)/$(SIPVERSION).tar.gz $(SRCDIR)/$(PYQTVERSION).tar.gz $(SRCDIR)/$(QTVERSION).tar.gz $(SRCDIR)/$(FFTWVERSION).tar.gz $(SRCDIR)/$(PYPIVERSION) $(SRCDIR)/$(DECORATORVERSION).tar.gz $(SRCDIR)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz $(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz $(SRCDIR)/$(PILVERSION).tar.gz $(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz $(SRCDIR)/$(ZLIBVERSION).tar.bz2 $(SRCDIR)/$(PNGVERSION).tar.bz2 $(SRCDIR)/$(TIFFVERSION).tar.gz $(SRCDIR)/$(CYTHONVERSION).tar.gz $(SRCDIR)/$(VIGRAVERSION)-src.tar.gz $(SRCDIR)/$(QIMGTOARRVERSION).tar.gz $(SRCDIR)/$(HDF5VERSION).tar.bz2 $(SRCDIR)/$(H5PYVERSION).tar.gz $(SRCDIR)/$(PCREVERSION).tar.bz2 $(SRCDIR)/$(SWIGVERSION).tar.gz $(SRCDIR)/$(ILASTIKVERSION).tar.gz $(SRCDIR)/$(GTKVERSION).tar.bz2 $(SRCDIR)/$(GLIBVERSION).tar.bz2 $(SRCDIR)/$(PANGOVERSION).tar.bz2 $(SRCDIR)/$(CAIROVERSION).tar.gz $(SRCDIR)/$(ATKVERSION).tar.bz2 $(SRCDIR)/$(PIXMANVERSION).tar.gz $(SRCDIR)/$(GDKPIXBUFVERSION).tar.bz2 $(SRCDIR)/$(FONTCFGVERSION).tar.gz $(SRCDIR)/$(PYSQLITEVERSION).tar.gz $(SRCDIR)/$(SQLITEVERSION).tar.gz $(SRCDIR)/$(MYSQLVERSION).tar.gz $(SRCDIR)/$(NCURSESVERSION).tar.gz $(SRCDIR)/$(BOOSTVERSION).tar.bz2 $(SRCDIR)/$(GETTEXTVERSION).tar.gz
 

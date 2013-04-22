@@ -115,7 +115,53 @@ class Groups(cpm.CPModule):
             "Metadata category", choices,
             choices_fn = get_group_metadata_choices,doc="""
             Specify the metadata category with which to define a group. Once a selection
-            is made, the two listings below will display the updated values."""))
+            is made, the two listings below will display the updated values.
+            
+            <p>As an example, an experiment consists of a set of plates of images with 
+            two image channels ("w1" and "w2") containing
+            well and site metadata extracted using the <b>Metadata</b> module. A set of
+            images from two sites in well A01 might be described using the following:
+            <table border="1" align="center">
+            <tr><th>File name</th><th>Plate</th><th> Well</th><th>Site</th><th>Wavelength</th></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345</td><td>A01</td><td>s1</td><td>w1</td></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w2</font>.tif</td><td>P-12345</td><td>A01</td><td>s1</td><td>w2</td></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345</td><td>A01</td><td>s2</td><td>w1</td></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w2</font>.tif</td><td>P-12345</td><td>A01</td><td>s2</td><td>w2</td></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345</td><td>A01</td><td>s1</td><td>w1</td></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w2</font>.tif</td><td>P-12345</td><td>A01</td><td>s1</td><td>w2</td></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345</td><td>A01</td><td>s2</td><td>w1</td></tr>
+            <tr><td>P-12345_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w2</font>.tif</td><td>P-12345</td><td>A01</td><td>s2</td><td>w2</td></tr>
+            <tr><td>2-ABCDF_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>2-ABCDF_</td><td>A01</td><td>s1</td><td>w1</td></tr>
+            <tr><td>2-ABCDF_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w2</font>.tif</td><td>2-ABCDF_</td><td>A01</td><td>s1</td><td>w2</td></tr>
+            <tr><td>2-ABCDF_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>2-ABCDF_</td><td>A01</td><td>s2</td><td>w1</td></tr>
+            <tr><td>2-ABCDF_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w2</font>.tif</td><td>2-ABCDF_</td><td>A01</td><td>s2</td><td>w2</td></tr>
+            <tr><td>2-ABCDF_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>2-ABCDF_</td><td>A01</td><td>s1</td><td>w1</td></tr>
+            <tr><td>2-ABCDF_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w2</font>.tif</td><td>2-ABCDF_</td><td>A01</td><td>s1</td><td>w2</td></tr>
+            <tr><td>2-ABCDF_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>2-ABCDF_</td><td>A01</td><td>s2</td><td>w1</td></tr>
+            <tr><td>2-ABCDF_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w2</font>.tif</td><td>2-ABCDF_</td><td>A01</td><td>s2</td><td>w2</td></tr>
+            </table>
+            </p>
+            <p>Selecting the "Plate" metadata as the metadata category will create two groups based on the unique plate identifiers (P-12345 and 2-ABCDF):
+            <table border="1" align="center">
+            <tr><th>Group number</th><th>Plate</th><th>Well</td><td>Site</td><td>w1</td><td>w2</td></tr>
+            <tr><td>1</td><td>P-12345</td><td>A01</td><td>s1</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
+            <tr><td>1</td><td>P-12345</td><td>B01</td><td>s1</td><td>P-12345_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
+            <tr><td>2</td><td>2-ABCDF</td><td>A01</td><td>s2</td><td>2-ABCDF_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>2-ABCDF_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
+            <tr><td>2</td><td>2-ABCDF</td><td>A01</td><td>s2</td><td>2-ABCDF_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>2-ABCDF_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
+            </table>
+            Selecting "Plate" and "Well" metadata as the category will create 
+            In order to match the w1 and w2 channels with their respective well and site metadata,
+            you would select the "Well" metadata for both channels, followed by the "Site" metadata
+            for both channels. If both files have the same well and site metadata, CellProfiler will 
+            match the file in one channel with well A01 and site 1 with the file in the
+            other channel with well A01 and site 1 and so on, to create an image set like the following:
+            <table border="1" align="center">
+            <tr><th>Image set key</th><th>Channel</th><th>Channel</th></tr>
+            <tr><td>Well</td><td>Site</td><td>w1</td><td>w2</td></tr>
+            <tr><td>A01</td><td>s1</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
+            <tr><td>A01</td><td>s2</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
+            </table>
+            </p>"""))
         
         group.append("divider", cps.Divider())
         group.can_remove = can_remove

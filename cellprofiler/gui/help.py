@@ -1387,8 +1387,9 @@ Selecting either option with save your workspace, along with the current pipelin
 with the extension <i>.cpi</i>.</p>
 <p>For those interested, some technical details:
 <ul>
-<li>The .cpi file stores collected information using the 
-<a href="http://en.wikipedia.org/wiki/Hierarchical_Data_Format">HDF5</a> format.</li>
+<li>The .cpi file stores collected information using the HDF5 format. Documentation on
+how measurements are stored and handled in CellProfiler using this format can be found 
+<a href="https://github.com/CellProfiler/CellProfiler/wiki/Module-Structure-and-Data-Storage-Retrieval#hdf5-measurement-and-workspace-format">here</a>.</li>
 <li>All information is cached in the workspace file after it is computed. It is either
 re-computed or retrieved from the cache when an analysis run is started, when 
 entering Test mode, or when the user requests a refreshed view of the information

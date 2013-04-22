@@ -185,10 +185,10 @@ VIGRAVERSION				= vigra-1.7.1
 VIGRAPREFIX				?= $(PREFIX)
 VIGRAURL				= http://hci.iwr.uni-heidelberg.de/vigra/
 ILASTIKMAJVERSION			= 0.5
-ILASTIKMINVERSION			= 05a
+ILASTIKMINVERSION			= 05
 ILASTIKVERSION				= $(ILASTIKMAJVERSION).$(ILASTIKMINVERSION)
 ILASTIKPREFIX				?= $(PREFIX)
-ILASTIKURL				= http://gitorious.org/ilastik/ilastik-0_5_05a/archive-tarball/v0.5.05a
+ILASTIKURL				= $(PACKAGEHOST)
 QIMGTOARRVERSION			= qimage2ndarray-1.0
 QIMGTOARRPREFIX				?= $(PREFIX)
 QIMGTOARRURL				= http://kogs-www.informatik.uni-hamburg.de/~meine/software/qimage2ndarray/
@@ -958,7 +958,8 @@ $(SITEPKGPREFIX)/vigra/vigranumpycore.so:	$(PYTHONPREFIX)/bin/python $(SRCDIR)/$
 #
 
 ilastik-v$(ILASTIKVERSION).tar.gz:
-					wget $(WGETFLAGS) --output-document="$@" "$(ILASTIKURL)"
+					rm -f "ilastik-v$(ILASTIKVERSION).tar.gz"
+					wget $(WGETFLAGS) --output-document="$@" "$(ILASTIKURL)/ilastik-v$(ILASTIKVERSION).tar.gz"
 
 
 ilastik:				$(SITEPKGPREFIX)/ilastik-v$(ILASTIKMAJVERSION)-py$(PYVERSION).egg

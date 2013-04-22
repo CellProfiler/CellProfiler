@@ -577,7 +577,7 @@ class Metadata(cpm.CPModule):
         from bioformats.omexml import OMEXML
         from cellprofiler.modules.loadimages import url2pathname
         with wx.ProgressDialog("Updating metadata", 
-                               msg(urls[0]),
+                               msg(list(urls)[0]),
                                len(urls),
                                style = wx.PD_CAN_ABORT
                                | wx.PD_APP_MODAL

@@ -422,8 +422,7 @@ $(PYTHONPREFIX)/bin/python:		$(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SQLITEPREFIX)/
 					./configure \
 						--prefix="$(PYTHONPREFIX)" \
 						--enable-shared && \
-					$(MAKE) $(MAKE_FLAGS) && \
-					$(MAKE) -j1 install
+				        make altinstall prefix="$(PYTHONPREFIX)" exec-prefix="$(PYTHONPREFIX)"
 
 cython:					$(CYTHONPREFIX)/bin/cython
 $(CYTHONPREFIX)/bin/cython:		$(SRCDIR)/$(CYTHONVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(PYPIPREFIX)/bin/easy_install

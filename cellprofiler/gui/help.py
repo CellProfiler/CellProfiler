@@ -620,7 +620,7 @@ TEST_MODE_HELP = """
 the main menu. Test mode allows you to run the pipeline on a selected
 image, preview the results and adjust the module settings on the fly.</p>
 
-<p>To enter Test mode once you have built a pipeline, choose <i>Test > Start test run</i> in the
+<p>To enter Test mode once you have built a pipeline, choose <i>Test > Start test mode</i> in the
 menu bar in the main window. At this point, you will see the following features appear:
 <ul>
 <li>The module view will have a slider bar appearing on the far left.</li>
@@ -659,7 +659,7 @@ first module in the pipeline.</li>
 </p>
 <p>From the <i>Test</i> menu, you can choose additional options:
 <ul>
-<li><i>Stop test run:</i> Exit <i>Test</i> mode. Loading a new pipeline or adding/subtracting
+<li><i>Stop test mode:</i> Exit <i>Test</i> mode. Loading a new pipeline or adding/subtracting
 modules will also automatically exit test mode.</li>
 <li><i>Step to next module:</i> Execute the next module (as indicated by the slider location)</li>
 <li><i>Next image cycle:</i> Step to the next image cycle in the current group or the .</li>

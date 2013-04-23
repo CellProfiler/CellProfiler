@@ -495,7 +495,7 @@ class CPFrame(wx.Frame):
         self.menu_edit.AppendSubMenu(self.menu_edit_add_module, "&Add Module")
 
         self.__menu_debug = wx.Menu()
-        self.__menu_debug.Append(ID_DEBUG_TOGGLE,'&Start Test Run\tF5','Start the pipeline debugger')
+        self.__menu_debug.Append(ID_DEBUG_TOGGLE,'&Start Test Mode\tF5','Start the pipeline debugger')
         self.__menu_debug.Append(ID_DEBUG_STEP,'Ste&p to Next Module\tF6','Execute the currently selected module')
         self.__menu_debug.Append(ID_DEBUG_NEXT_IMAGE_SET,'&Next Image Cycle\tF7','Advance to the next image cycle in the image set')
         self.__menu_debug.Append(ID_DEBUG_NEXT_GROUP, 'Next &Group\tF8','Advance to the next group in the image set')
@@ -633,16 +633,16 @@ class CPFrame(wx.Frame):
         self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, False)
 
         assert isinstance(startstop, wx.MenuItem)
-        startstop.Text = '&Stop test run\tF5'
-        startstop.Help = 'Stop the pipeline debugger'
+        startstop.Text = '&Exit test mode\tF5'
+        startstop.Help = 'Stop testing your pipeline'
         for cmd in self.debug_commands:
             self.__menu_debug.Enable(cmd, True)
 
     def enable_launch_commands(self):
         '''Enable commands to start analysis or test mode'''
         startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
-        startstop.Text =  '&Start test run\tF5'
-        startstop.Help =  'Start the pipeline debugger'
+        startstop.Text =  '&Start test mode\tF5'
+        startstop.Help =  'Start testing your pipeline'
         for cmd in self.debug_commands:
             self.__menu_debug.Enable(cmd, False)
         self.__menu_file.Enable(ID_FILE_ANALYZE_IMAGES, True)

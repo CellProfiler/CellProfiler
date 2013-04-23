@@ -425,9 +425,12 @@ class PipelineController:
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_down,self.__mcp_module_down_button)
 
             
-    ANALYZE_IMAGES = 'Analyze Images'
-    ENTER_TEST_MODE = "Enter test mode"
+    ANALYZE_IMAGES = "Analyze Images"
+    ANALYZE_IMAGES_HELP = "Start a CellProfiler analysis run"
+    ENTER_TEST_MODE = "Start test mode"
+    ENTER_TEST_MODE_HELP = "Test your pipeline settings"
     EXIT_TEST_MODE = "Exit test mode"
+    EXIT_TEST_MODE_HELP = "Exit pipeline testing"
     PAUSE = "Pause"
     PAUSE_HELP = "Pause the analysis run"
     RESUME = "Resume"
@@ -466,8 +469,7 @@ class PipelineController:
         self.__analyze_images_button = BitmapLabelButton(
             panel, bitmap = analyze_bmp, label = self.ANALYZE_IMAGES)
         self.__analyze_images_button.Bind(wx.EVT_BUTTON, self.on_analyze_images)
-        self.__analyze_images_button.SetToolTipString(
-            "Start a CellProfiler analysis run")
+        self.__analyze_images_button.SetToolTipString(ANALYZE_IMAGES_HELP)
         self.__tcp_launch_sizer.Add(self.__analyze_images_button, 1, wx.EXPAND)
         
         self.__test_bmp = wx.BitmapFromImage(get_builtin_image("IMG_TEST"))
@@ -475,6 +477,7 @@ class PipelineController:
             BitmapLabelButton(
                 panel, bitmap = self.__test_bmp, label = self.ENTER_TEST_MODE)
         self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
+        self.__test_mode_button.SetToolTipString(ENTER_TEST_MODE_HELP)        
         self.__tcp_launch_sizer.Add(self.__test_mode_button, 1, wx.EXPAND)
         #
         # Analysis sizer

@@ -469,7 +469,7 @@ class PipelineController:
         self.__analyze_images_button = BitmapLabelButton(
             panel, bitmap = analyze_bmp, label = self.ANALYZE_IMAGES)
         self.__analyze_images_button.Bind(wx.EVT_BUTTON, self.on_analyze_images)
-        self.__analyze_images_button.SetToolTipString(ANALYZE_IMAGES_HELP)
+        self.__analyze_images_button.SetToolTipString(self.ANALYZE_IMAGES_HELP)
         self.__tcp_launch_sizer.Add(self.__analyze_images_button, 1, wx.EXPAND)
         
         self.__test_bmp = wx.BitmapFromImage(get_builtin_image("IMG_TEST"))
@@ -477,7 +477,7 @@ class PipelineController:
             BitmapLabelButton(
                 panel, bitmap = self.__test_bmp, label = self.ENTER_TEST_MODE)
         self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
-        self.__test_mode_button.SetToolTipString(ENTER_TEST_MODE_HELP)        
+        self.__test_mode_button.SetToolTipString(self.ENTER_TEST_MODE_HELP)        
         self.__tcp_launch_sizer.Add(self.__test_mode_button, 1, wx.EXPAND)
         #
         # Analysis sizer

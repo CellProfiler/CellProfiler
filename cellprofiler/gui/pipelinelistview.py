@@ -27,6 +27,8 @@ import math
 import zlib
 import wx
 import sys
+if __name__ == "__main__":
+    app = wx.PySimpleApp(False)
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.gui.movieslider as cpgmov
@@ -42,6 +44,8 @@ IMG_PAUSE = get_builtin_image('IMG_PAUSE')
 IMG_GO = get_builtin_image('IMG_GO')
 IMG_DISABLED = get_builtin_image('IMG_DISABLED')
 IMG_UNAVAILABLE = get_builtin_image('IMG_UNAVAILABLE')
+IMG_SLIDER = get_builtin_image('IMG_SLIDER')
+IMG_SLIDER_ACTIVE = get_builtin_image('IMG_SLIDER_ACTIVE')
 BMP_WARNING = wx.ArtProvider.GetBitmap(wx.ART_WARNING,size=(16,16))
 
 NO_PIPELINE_LOADED = 'No pipeline loaded'
@@ -69,6 +73,21 @@ PAUSE = "pause"
 GO = "go"
 NOTDEBUG = "notdebug"
 UNAVAILABLE = "unavailable"
+
+PLV_HITTEST_SLIDER = 4096
+'''Module has an associated warning'''
+PLV_STATE_WARNING = 1024
+'''Module has an associated error'''
+PLV_STATE_ERROR = 2048
+'''Mask of warning / error bits'''
+PLV_STATE_ERROR_MASK = PLV_STATE_ERROR + PLV_STATE_WARNING
+'''Bit is set if the module is unavailable = not in pipeline'''
+PLV_STATE_UNAVAILABLE = 4096
+'''Report that the slider has moved'''
+EVT_PLV_SLIDER_MOTION = wx.PyEventBinder(wx.NewEventType())
+EVT_PLV_PAUSE_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
+EVT_PLV_EYE_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
+EVT_PLV_ERROR_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
 
 ############################
 #
@@ -106,11 +125,7 @@ class PipelineListView(object):
         self.__panel=panel
         self.__frame = frame
         self.__module_controls_panel = None
-        # Map of ListCtrl.GetItemData value to module.id
-        self.__module_dictionary = {}
-        self.make_image_list()
         assert isinstance(panel, wx.Window)
-        panel.AutoLayout = True
         panel.Sizer = top_sizer = wx.BoxSizer(wx.VERTICAL)
         static_box = wx.StaticBox(self.__panel, label = "Create workspace")
         self.__input_controls = [static_box]
@@ -122,21 +137,7 @@ class PipelineListView(object):
         self.__sizer=wx.StaticBoxSizer(modules_box, wx.HORIZONTAL)
         top_sizer.Add(self.__sizer, 1, wx.EXPAND)
         self.__panel.SetAutoLayout(True)
-        self.__pipeline_slider = wx.Slider(self.__panel,
-                                           size=(20, -1),
-                                           style=wx.SL_VERTICAL,
-                                           value=0,
-                                           minValue=0,
-                                           maxValue=1)
-        self.__pipeline_slider.SetTickFreq(1, 0)
-        self.__pipeline_slider.SetBackgroundColour('white')
-        self.__pipeline_slider.Bind(wx.EVT_LEFT_DOWN, self.__on_slider_left_down)
-        self.__slider_sizer = wx.BoxSizer(wx.VERTICAL)
-        self.__sizer.Add(self.__slider_sizer)
-        self.__slider_sizer_item = self.__slider_sizer.Add(
-            self.__pipeline_slider, 0, 
-            wx.EXPAND|wx.RESERVE_SPACE_EVEN_IF_HIDDEN|wx.TOP, 10)
-        self.__slider_sizer.AddStretchSpacer()
+
         self.make_list()
         self.set_debug_mode(False)
         wx.EVT_IDLE(panel,self.on_idle)
@@ -149,52 +150,10 @@ class PipelineListView(object):
         self.drag_time = None
         self.list_ctrl.SetDropTarget(PipelineDropTarget(self))
 
-    def make_image_list(self):
-        '''Make the image list containing all of the graphic goodies like the eye
-        '''
-        #
-        # First, make all of the bitmaps for the image list. 
-        #
-        d = {}
-        width = 16
-        height = 16
-        for name, image in ((ERROR, IMG_ERROR),
-                            (OK, IMG_OK),
-                            (EYE, IMG_EYE),
-                            (CLOSED_EYE, IMG_CLOSED_EYE),
-                            (PAUSE, IMG_PAUSE),
-                            (GO, IMG_GO),
-                            (UNAVAILABLE, IMG_UNAVAILABLE),
-                            (DISABLED, IMG_DISABLED)):
-            bitmap = plv_get_bitmap(image)
-            idx = get_image_index(name)
-            d[idx] = bitmap
-        d[get_image_index(WARNING)] = BMP_WARNING
-        idx = get_image_index(NOTDEBUG)
-        bitmap = wx.EmptyBitmap(width, height)
-        dc = wx.MemoryDC()
-        dc.SelectObject(bitmap)
-        dc.Clear()
-        dc.SelectObject(wx.NullBitmap)
-        del dc
-        d[idx] = bitmap
-        self.image_list = wx.ImageList(width, height)
-        for i in range(len(d)):
-            index = self.image_list.Add(d[i])
-        
     def make_list(self):
         '''Make the list control with the pipeline items in it'''
-        self.list_ctrl = wx.ListCtrl(self.__panel, style = wx.LC_REPORT)
-        
-        self.list_ctrl.SetImageList(self.image_list, wx.IMAGE_LIST_SMALL)
+        self.list_ctrl = PipelineListCtrl(self.__panel)
         self.__sizer.Add(self.list_ctrl, 1, wx.EXPAND | wx.ALL, 2)
-        self.list_ctrl.InsertColumn(PAUSE_COLUMN, "")
-        self.list_ctrl.InsertColumn(EYE_COLUMN, "")
-        self.list_ctrl.InsertColumn(ERROR_COLUMN, "")
-        self.list_ctrl.InsertColumn(MODULE_NAME_COLUMN, "Module")
-        for column in (PAUSE_COLUMN, EYE_COLUMN, ERROR_COLUMN):
-            self.list_ctrl.SetColumnWidth(column, 20)
-        self.list_ctrl.SetColumnWidth(MODULE_NAME_COLUMN, -1)
         #
         # Bind events
         #
@@ -204,55 +163,39 @@ class PipelineListView(object):
         self.list_ctrl.Bind(wx.EVT_LIST_ITEM_DESELECTED, 
                             self.__on_item_deselected, 
                             self.list_ctrl)
+        self.list_ctrl.Bind(EVT_PLV_SLIDER_MOTION,
+                            self.__on_slider_motion)
         self.input_list_ctrl.Bind(wx.EVT_LIST_ITEM_SELECTED,
                                   self.__on_item_selected, 
                                   self.input_list_ctrl)
-        self.list_ctrl.Bind(wx.EVT_LEFT_DOWN, 
-                            self.__on_list_left_down, 
-                            self.list_ctrl)
-        self.list_ctrl.Bind(wx.EVT_LEFT_DCLICK, 
-                            self.__on_list_dclick, 
-                            self.list_ctrl)
-        self.list_ctrl.Bind(wx.EVT_RIGHT_DOWN, 
-                            self.__on_list_right_down, 
-                            self.list_ctrl)
+        self.list_ctrl.Bind(wx.EVT_LEFT_DCLICK, self.__on_list_dclick)
+        self.list_ctrl.Bind(wx.EVT_CONTEXT_MENU, self.__on_list_context_menu)
+        self.list_ctrl.Bind(EVT_PLV_ERROR_COLUMN_CLICKED, 
+                            self.__on_error_column_clicked)
+        self.list_ctrl.Bind(EVT_PLV_EYE_COLUMN_CLICKED,
+                            self.__on_eye_column_clicked)
+        self.list_ctrl.Bind(EVT_PLV_PAUSE_COLUMN_CLICKED,
+                            self.__on_pause_column_clicked)
+        self.list_ctrl.Bind(wx.EVT_LIST_BEGIN_DRAG,
+                            self.start_drag_operation)
+        self.list_ctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED,
+                            self.__on_item_activated)
+        self.input_list_ctrl.Bind(wx.EVT_LIST_ITEM_ACTIVATED,
+                                  self.__on_item_activated)
         #
         # Accelerators
         #
         from cellprofiler.gui.cpframe import ID_EDIT_DELETE
         accelerator_table = wx.AcceleratorTable([
-             (wx.ACCEL_NORMAL,wx.WXK_DELETE, ID_EDIT_DELETE)])
+             (wx.ACCEL_NORMAL, wx.WXK_DELETE, ID_EDIT_DELETE)])
         self.list_ctrl.SetAcceleratorTable(accelerator_table)
-        if sys.platform.startswith('linux'):
-            # Linux machines seem to have two subwindows (headers & list?)
-            # which need mouse button down event capture instead of the
-            # official window.
-            for child in self.list_ctrl.GetChildren():
-                child.Bind(wx.EVT_LEFT_DOWN, self.__on_list_left_down)
-                child.Bind(wx.EVT_RIGHT_DOWN, self.__on_list_right_down)
-                
+    
     def make_input_panel(self):
-        self.input_list_ctrl = wx.ListCtrl(
-            self.__panel, style = wx.LC_REPORT | wx.LC_SINGLE_SEL)
+        self.input_list_ctrl = PipelineListCtrl(self.__panel)
+        self.input_list_ctrl.set_show_go_pause(False)
+        self.input_list_ctrl.set_show_frame_column(False)
         self.__input_controls.append(self.input_list_ctrl)
-        self.input_list_ctrl.SetImageList(self.image_list, wx.IMAGE_LIST_SMALL)
         self.__input_sizer.Add(self.input_list_ctrl, 1, wx.EXPAND)
-        self.input_list_ctrl.InsertColumn(INPUT_ERROR_COLUMN, "")
-        self.input_list_ctrl.InsertColumn(INPUT_MODULE_NAME_COLUMN, "Module")
-        #
-        # The fake input list control is shown for legacy pipelines. It's
-        # disabled to make it tantalizingly unavailable.
-        #
-        self.fake_input_list_ctrl = wx.ListCtrl(
-            self.__panel, style = wx.LC_REPORT | wx.LC_SINGLE_SEL)
-        self.__input_controls.append(self.fake_input_list_ctrl)
-        self.fake_input_list_ctrl.SetImageList(self.image_list, wx.IMAGE_LIST_SMALL)
-        self.__input_sizer.Add(self.fake_input_list_ctrl, 1, wx.EXPAND)
-        self.fake_input_list_ctrl.InsertColumn(INPUT_ERROR_COLUMN, "")
-        self.fake_input_list_ctrl.InsertColumn(INPUT_MODULE_NAME_COLUMN, "Module")
-        self.fake_input_list_ctrl.Enable(False)
-        self.fake_input_list_ctrl.SetForegroundColour(
-            wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT))
         #
         # You can't display a tooltip over a disabled window. But you can
         # display a tooltip over a transparent window in front of the disabled
@@ -278,46 +221,30 @@ class PipelineListView(object):
             self.transparent_window.SetSize(event.Size)
             event.Skip()
             
-        self.fake_input_list_ctrl.Bind(wx.EVT_SIZE, on_fake_size)
+        self.input_list_ctrl.Bind(wx.EVT_SIZE, on_fake_size)
         def on_fake_move(event):
             assert isinstance(event, wx.MoveEvent)
             self.transparent_window.Move(event.Position)
             event.Skip()
             
-        self.fake_input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
+        self.input_list_ctrl.Bind(wx.EVT_MOVE, on_fake_move)
         self.transparent_window.SetToolTipString(
             "The current pipeline is a legacy pipeline that does not use these modules")
-        
-        from cellprofiler.modules.images import Images
-        from cellprofiler.modules.metadata import Metadata
-        from cellprofiler.modules.namesandtypes import NamesAndTypes
-        from cellprofiler.modules.groups import Groups
-        for row, module_class in enumerate((
-            Images, Metadata, NamesAndTypes, Groups)):
-            error_item = wx.ListItem()
-            error_item.Mask = wx.LIST_MASK_IMAGE
-            error_item.Id = row
-            error_item.Image = get_image_index(UNAVAILABLE)
-            error_item.Column = INPUT_ERROR_COLUMN
-            self.fake_input_list_ctrl.InsertItem(error_item)
-            
-            module_name_item = wx.ListItem()
-            module_name_item.Mask = wx.LIST_MASK_TEXT
-            module_name_item.Text = module_class.module_name
-            module_name_item.Column = INPUT_MODULE_NAME_COLUMN
-            module_name_item.Id = row
-            self.fake_input_list_ctrl.SetItem(module_name_item)
-        self.fake_input_list_ctrl.SetColumnWidth(INPUT_MODULE_NAME_COLUMN,
-                                                 wx.LIST_AUTOSIZE)
-        
         
     def show_input_panel(self, show):
         '''Show or hide the controls for input modules
         
         show - True to show the controls, False to hide
         '''
-        self.input_list_ctrl.Show(show)
-        self.fake_input_list_ctrl.Show(not show)
+        self.input_list_ctrl.Enable(show)
+        if not show:
+            self.input_list_ctrl.DeleteAllItems()
+            fake_pipeline = cpp.Pipeline()
+            fake_pipeline.init_modules()
+            for i, module in enumerate(fake_pipeline.modules(False)):
+                item = PipelineListCtrl.PipelineListCtrlItem(module)
+                item.set_state(PLV_STATE_UNAVAILABLE, PLV_STATE_UNAVAILABLE)
+                self.input_list_ctrl.InsertItem(i, item)
         self.transparent_window.Show(not show)
         
     def set_debug_mode(self, mode):
@@ -326,8 +253,8 @@ class PipelineListView(object):
                              self.__pipeline.modules())
             if len(modules) > 0:
                 self.select_one_module(modules[0].module_num)
+        self.list_ctrl.set_test_mode(mode)
         self.__debug_mode = mode
-        self.__pipeline_slider.Show(mode)
         self.__sizer.Layout()
         # force a re-check of all modules
         self.__first_dirty_module = 0
@@ -344,7 +271,8 @@ class PipelineListView(object):
     def set_current_debug_module(self, module):
         assert not module.is_input_module()
         list_ctrl, index = self.get_ctrl_and_index(module)
-        self.__pipeline_slider.Value = index
+        if list_ctrl is self.list_ctrl:
+            self.list_ctrl.set_running_item(index)
         self.select_one_module(module.module_num)
         
     def reset_debug_module(self):
@@ -361,14 +289,9 @@ class PipelineListView(object):
         
     def get_current_debug_module(self, ignore_disabled = True):
         '''Get the current debug module according to the slider'''
-        index = self.__pipeline_slider.Value
-        if index >= self.list_ctrl.GetItemCount():
-            return None
-        data_value = self.list_ctrl.GetItemData(index)
-        module_id = self.__module_dictionary[data_value]
-        for module in self.__pipeline.modules(ignore_disabled):
-            if module.id == module_id:
-                return module
+        index = self.list_ctrl.running_item
+        if index is not None:
+            return self.list_ctrl.items[index].module
         return None
     
     def advance_debug_module(self):
@@ -376,19 +299,15 @@ class PipelineListView(object):
         
         returns the module or None if we are at the end
         '''
-        index = self.__pipeline_slider.Value
+        index = self.list_ctrl.running_item
         while True:
             index += 1
             if index >= self.list_ctrl.GetItemCount():
                 return None
-            module = self.get_module_from_data_value(
-                self.list_ctrl.GetItemData(index))
-            if module is None:
-                return None
+            module = self.list_ctrl.items[index].module
             if module.enabled:
                 break
-        self.__pipeline_slider.Value = index
-        self.__pipeline_slider.Refresh()
+        self.list_ctrl.set_running_item(index)
         self.set_current_debug_module(module)
         return module
         
@@ -437,44 +356,6 @@ class PipelineListView(object):
         # we can't know which modules use this information
         self.__first_dirty_module = 0
         
-    def get_module_data_value(self, module):
-        '''Given a module, return the integer that represents it for GetItemData
-        
-        module - module in question
-        
-        ListCtrl.GetItemData / SetItemData takes an integer data item. This
-        routine returns the integer to use for a given module. Modules are
-        identified by module.id which is a GUID. The ID returned is an
-        integer suitable for SetItemData - a new one will be generated if
-        this is the first time a module has been seen.
-        '''
-        for data_value, module_id in self.__module_dictionary.iteritems():
-            if module_id == module.id:
-                break
-        else:
-            all_values = np.array(sorted(self.__module_dictionary.keys()))
-            if len(all_values) > 0 and all_values[0] != 1:
-                data_value = 1
-            else:
-                not_consecutive = np.argwhere(
-                    (all_values[:-1] + 1) != all_values[1:])
-                if len(not_consecutive) > 0:
-                    data_value = not_consecutive.flatten()[0] + 2
-                else:
-                    data_value = len(all_values) + 1
-            self.__module_dictionary[data_value] = module.id
-        return data_value
-    
-    def get_module_from_data_value(self, data_value):
-        '''Return the module associated with the value in ListCtrl.GetItemData
-        
-        data_value - the value from ListCtrl.GetItemData
-        '''
-        module_id = self.__module_dictionary[data_value]
-        modules = filter(lambda x: x.id == module_id,
-                         self.__pipeline.modules(False))
-        return None if len(modules) != 1 else modules[0]
-    
     def iter_list_items(self):
         '''Iterate over the list items in all list controls
         
@@ -494,12 +375,11 @@ class PipelineListView(object):
         
         raises an exception if module is not in proper list control
         '''
-        data_value = self.get_module_data_value(module)
         ctrl = (self.input_list_ctrl if module.is_input_module()
                 else self.list_ctrl)
-        assert isinstance(ctrl, wx.ListCtrl)
+        assert isinstance(ctrl, PipelineListCtrl)
         for i in range(ctrl.GetItemCount()):
-            if ctrl.GetItemData(i) == data_value:
+            if ctrl.items[i].module is module:
                 return ctrl, i
         raise IndexError("The module, %s, was not found in the list control" %
                          module.module_name)
@@ -515,10 +395,8 @@ class PipelineListView(object):
                 ctrl.Select(idx, False)
             self.__on_item_selected(None)
             return
-        data_value = self.get_module_data_value(module)
-        for ctrl, idx in self.iter_list_items():
-            ctrl.Select(idx, ctrl.GetItemData(idx) == data_value)
-        self.__on_item_selected(None)
+        ctrl, idx = self.get_ctrl_and_index(module)
+        ctrl.activate_item(idx, True, False)
         
     def select_module(self, module_num, selected=True):
         """Select the given one-based module number in the list
@@ -535,70 +413,39 @@ class PipelineListView(object):
         self.__on_item_selected(None)
         
     def get_selected_modules(self):
-        ids = set()
+        modules = []
         for ctrl, idx in self.iter_list_items():
             if ctrl.IsSelected(idx):
-                ids.add(self.__module_dictionary[ctrl.GetItemData(idx)])
+                modules.append(ctrl.items[idx].module)
                 
-        return [module for module in self.__pipeline.modules(False)
-                if module.id in ids]
+        return modules
     
-    def __on_slider_left_down(self, event):
-        '''Handle slider mouse interaction explicitly
+    def get_event_module(self, event):
+        '''Retrieve a module from an event's selection
         
-        Some modules can't be selected because they're disabled. We control
-        the slider explicitly so that we can keep the user from selecting
-        a disabled module.
+        event - an event from a PipelineListCtrl with an associated selection
         '''
-        self.__panel.CaptureMouse()
-        def unbind_all():
-            self.__panel.Unbind(wx.EVT_LEFT_UP)
-            self.__panel.Unbind(wx.EVT_MOTION)
-            self.__panel.Unbind(wx.EVT_MOUSE_CAPTURE_LOST)
+        return event.EventObject.items[event.GetInt()].module
+    
+    def __on_slider_motion(self, event):
+        '''Handle EVT_PLV_SLIDER_MOTION
         
-        def on_left_up(event):
-            self.__panel.ReleaseMouse()
-            unbind_all()
-            
-        def on_motion(event):
-            screen_coords = self.__panel.ClientToScreen(event.Position)
-            list_coords = self.list_ctrl.ScreenToClient(screen_coords)
-            list_coords.x = self.list_ctrl.GetSize()[0] / 2
-            item, hit_code = self.list_ctrl.HitTest(list_coords)
-            if (item >= 0 and item < self.list_ctrl.ItemCount and
-                (hit_code & wx.LIST_HITTEST_ONITEM)):
-                module = self.get_module_from_data_value(
-                    self.list_ctrl.GetItemData(item))
-                if (module is not None and module.enabled and
-                    self.__pipeline_slider.Value != item):
-                    self.__pipeline_slider.Value = item
-                    self.__pipeline_slider.Refresh()
-        
-        def on_lost_mouse(event):
-            unbind_all()
-        self.__panel.Bind(wx.EVT_LEFT_UP, on_left_up)
-        self.__panel.Bind(wx.EVT_MOTION, on_motion)
-        self.__panel.Bind(wx.EVT_MOUSE_CAPTURE_LOST, on_lost_mouse)
+        event - a NotifyEvent with the selection indicating
+                the new slider position. The event can be vetoed.
+                
+        '''
+        module = self.get_event_module(event)
+        if not module.enabled:
+            event.Veto()
         
     def __on_list_dclick(self, event):
         list_ctrl = event.GetEventObject()
-        if sys.platform.startswith("win"):
-            item, hit_code, subitem = list_ctrl.HitTestSubItem(event.Position)
-        else:
-            # Mac's HitTestSubItem does not work. Sorry.
-            #
-            item, hit_code = list_ctrl.HitTest(event.Position)
-            widths = [list_ctrl.GetColumnWidth(i) for i in range(4)]
-            start = 0
-            for subitem in range(4):
-                if event.Position[0] < start + widths[subitem]:
-                    break
-                start += widths[subitem]
+        item, hit_code, subitem = list_ctrl.HitTestSubItem(event.Position)
         
         if (item >= 0 and item < list_ctrl.ItemCount and
             (hit_code & wx.LIST_HITTEST_ONITEM) and 
             subitem == MODULE_NAME_COLUMN):
-            module = self.get_module_from_data_value(list_ctrl.GetItemData(item))
+            module = list_ctrl.items[item].module
             name = window_name(module)
             figure = self.__panel.TopLevelParent.FindWindowByName(name)
             if figure is not None:
@@ -606,58 +453,38 @@ class PipelineListView(object):
                 figure.Show(1)
                 figure.SetFocus()
     
-    def __on_list_left_down(self, event):
-        if sys.platform.startswith("win"):
-            item, hit_code, subitem = self.list_ctrl.HitTestSubItem(event.Position)
-        else:
-            # Mac's HitTestSubItem does not work. Sorry.
-            #
-            item, hit_code = self.list_ctrl.HitTest(event.Position)
-            widths = [self.list_ctrl.GetColumnWidth(i) for i in range(4)]
-            start = 0
-            for subitem in range(4):
-                if event.Position[0] < start + widths[subitem]:
-                    break
-                start += widths[subitem]
-        if (item >= 0 and item < self.list_ctrl.ItemCount and
-            (hit_code & wx.LIST_HITTEST_ONITEM)):
-            module = self.get_module_from_data_value(
-                self.list_ctrl.GetItemData(item))
-            if subitem == PAUSE_COLUMN and self.__debug_mode:
-                module.wants_pause = not module.wants_pause
-                pause_img = get_image_index(PAUSE if module.wants_pause
-                                            else GO)
-                self.list_ctrl.SetItemImage(item, pause_img)
-            elif subitem == EYE_COLUMN:
-                module.show_window = not module.show_window
-                eye_img = get_image_index(EYE if module.show_window
-                                          else CLOSED_EYE)
-                self.set_subitem_image(module, EYE_COLUMN, eye_img)
-                name = window_name(module)
-                figure = self.__panel.TopLevelParent.FindWindowByName(name)
-                if figure is not None:
-                    figure.Close()
-            elif subitem == ERROR_COLUMN and not module.is_input_module():
-                if module.enabled:
-                    self.__pipeline.disable_module(module)
-                else:
-                    self.__pipeline.enable_module(module)
-            else:
-                if self.list_ctrl.IsSelected(item):
-                    self.start_drag_operation(event)
-                else:
-                    event.Skip()
-        else:
-            event.Skip()
-            
-    def __on_list_right_down(self, event):
-        from cellprofiler.gui.cpframe import ID_EDIT_DELETE, ID_EDIT_DUPLICATE, ID_HELP_MODULE
+    def __on_pause_column_clicked(self, event):
+        module = self.get_event_module(event)
+        module.wants_pause = not module.wants_pause
+        self.list_ctrl.Refresh(eraseBackground=False)
         
-        item, hit_code = self.list_ctrl.HitTest(event.Position)
-        if hit_code & wx.LIST_HITTEST_ONITEM:
-            if not self.list_ctrl.IsSelected(item):
-                self.select_one_module(item+1)
-        if self.list_ctrl.SelectedItemCount > 0:
+    def __on_eye_column_clicked(self, event):
+        module = self.get_event_module(event)
+        module.show_window = not module.show_window
+        self.list_ctrl.Refresh(eraseBackground=False)
+        name = window_name(module)
+        figure = self.__panel.TopLevelParent.FindWindowByName(name)
+        if figure is not None:
+            figure.Close()
+            
+    def __on_error_column_clicked(self, event):
+        module = self.get_event_module(event)
+        if not module.is_input_module():
+            if module.enabled:
+                self.__pipeline.disable_module(module)
+            else:
+                self.__pipeline.enable_module(module)
+            
+    def __on_list_context_menu(self, event):
+        from cellprofiler.gui.cpframe import \
+             ID_EDIT_DELETE, ID_EDIT_DUPLICATE, ID_HELP_MODULE
+        
+        if event.EventObject is not self.list_ctrl:
+            return
+        
+        if self.list_ctrl.pressed_row is None:
+            self.__frame.PopupMenu(self.__frame.menu_edit_add_module)
+        else:
             menu = wx.Menu()
             sub_menu = wx.Menu()
             self.__controller.populate_edit_menu(sub_menu)
@@ -667,11 +494,12 @@ class PipelineListView(object):
             menu.Append(ID_HELP_MODULE, "&Help")
             self.__frame.PopupMenu(menu)
             menu.Destroy()
-        else:
-            self.__frame.PopupMenu(self.__frame.menu_edit_add_module)
 
     def start_drag_operation(self, event):
         '''Start dragging whatever is selected'''
+        if event.EventObject is not self.list_ctrl:
+            event.Veto()
+            return
         fd = StringIO()
         modules_to_save = [m.module_num for m in self.get_selected_modules()]
         self.__pipeline.savetxt(fd, modules_to_save, 
@@ -689,8 +517,8 @@ class PipelineListView(object):
         data_object.Add(text_data_object)
         drop_source = wx.DropSource(self.list_ctrl)
         drop_source.SetData(data_object)
-        self.drag_underway = True
-        self.drag_start = event.Position
+        self.drag_underway = False
+        self.drag_start = self.list_ctrl.ScreenToClient(wx.GetMousePosition())
         self.drag_time = time.time()
         selected_module_ids = [m.id for m in self.get_selected_modules()]
         self.__pipeline.start_undoable_action()
@@ -704,74 +532,51 @@ class PipelineListView(object):
                             self.__pipeline.remove_module(module.module_num)
                             break
         finally:
+            self.list_ctrl.end_drop()
             self.__pipeline.stop_undoable_action("Drag and drop")
         
     def provide_drag_feedback(self, x, y, data):
-        if self.where_to_drop(x,y)  is None:
+        index = self.where_to_drop(x,y)
+        if index is None:
+            self.list_ctrl.end_drop()
             return False
-        if self.drag_time is not None and time.time() - self.drag_time > 3:
-            return True
-        if self.drag_start is not None:
-            distance = math.sqrt((x-self.drag_start[0])**2 +
-                                 (y-self.drag_start[1])**2)
-            return distance > 10
+        if not self.drag_underway:
+            # Decide to commit to dragging
+            if self.drag_time is None or time.time() - self.drag_time > 3:
+                pass
+            elif self.drag_start is not None:
+                distance = math.sqrt((x-self.drag_start[0])**2 +
+                                     (y-self.drag_start[1])**2)
+                if distance < 10:
+                    return False
+            self.drag_underway = True
+        self.list_ctrl.update_drop_insert_point(index)
         return True
 
-    def provide_panel_drag_feedback(self, x, y, data):
-        return self.where_to_drop_panel(x, y) is not None
-    
     def on_drop(self, x, y):
         if self.where_to_drop(x,y)  is None:
             return False
         return True
 
-    def on_panel_drop(self, x, y):
-        if self.where_to_drop_panel(x, y) is None:
-            return False
-        return True
+    def get_input_item_count(self):
+        '''Return the number of input items in the pipeline'''
+        n_input_items = 0
+        for module in self.__pipeline.modules(False):
+            if module.is_input_module():
+                n_input_items += 1
+        return n_input_items
     
-    def where_to_drop_panel(self, x, y):
-        nmodules = self.list_ctrl.GetItemCount()
-        if nmodules == 0:
-            return 0
-        x_screen, y_screen = self.__panel.ClientToScreenXY(x,y)
-        x_lv, y_lv = self.list_ctrl.ScreenToClientXY(x_screen, y_screen)
-        if y_lv < 0:
-            return 0
-        elif y_lv >= self.list_ctrl.Rect.Height:
-            return nmodules + self.input_list_ctrl.GetItemCount()
-        else:
-            return None
-
     def where_to_drop(self, x, y):
-        nmodules = self.list_ctrl.GetItemCount()
-        if nmodules == 0:
-            return self.input_list_ctrl.GetItemCount()
-        else:
-            last_rect = self.list_ctrl.GetItemRect(nmodules-1)
-            last_rect_bottom = last_rect[1] + last_rect[3]
-            if last_rect_bottom < y:
-                # Below last item. Insert after last
-                return nmodules + self.input_list_ctrl.GetItemCount()
-            index, code = self.list_ctrl.HitTest(wx.Point(x,y))
-            if code & wx.LIST_HITTEST_ONITEM:
-                r = self.list_ctrl.GetItemRect(index)
-                #
-                # Put before or after depending on whether we are more or
-                # less than 1/2 of the way
-                #
-                if y > r[1]+ r[3]/2:
-                    index += 1
-                return self.input_list_ctrl.GetItemCount() + index
+        pt = wx.Point(x,y)
+        index, code = self.list_ctrl.HitTest(pt)
+        if code & wx.LIST_HITTEST_ONITEM:
+            return self.list_ctrl.get_insert_index(pt)
+        elif code & wx.LIST_HITTEST_BELOW:
+            return self.list_ctrl.GetItemCount()
         return None
     
     def on_data(self, x, y, action, data):
         index = self.where_to_drop(x,y)
-        if index is not None:
-            self.do_drop(index, action, data)
-
-    def on_panel_data(self, x, y, action, data):
-        index = self.where_to_drop_panel(x,y)
         if index is not None:
             self.do_drop(index, action, data)
 
@@ -783,14 +588,13 @@ class PipelineListView(object):
         try:
             pipeline = cpp.Pipeline()
             pipeline.load(StringIO(data))
+            n_input_modules = self.get_input_item_count()
             for i, module in enumerate(pipeline.modules(False)):
-                module.module_num = i + index + 1
+                module.module_num = i + index + n_input_modules + 1
                 self.__pipeline.add_module(module)
-            n_input_modules = self.input_list_ctrl.GetItemCount()
-            insert_point = index - n_input_modules
             for i in range(len(pipeline.modules(False))):
                 item = self.list_ctrl.SetItemState(
-                    i+insert_point, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
+                    i+index, wx.LIST_STATE_SELECTED, wx.LIST_STATE_SELECTED)
         finally:
             wx.EndBusyCursor()
                     
@@ -804,7 +608,6 @@ class PipelineListView(object):
         '''Reset the list view and repopulate the list items'''
         self.list_ctrl.DeleteAllItems()
         self.input_list_ctrl.DeleteAllItems()
-        self.__module_dictionary = {}
         assert isinstance(pipeline, cpp.Pipeline)
         
         for module in pipeline.modules(False):
@@ -821,108 +624,23 @@ class PipelineListView(object):
                     break
             else:
                 self.show_input_panel(False)
-        for list_ctrl, column in (
-            (self.list_ctrl, MODULE_NAME_COLUMN),
-            (self.input_list_ctrl, INPUT_MODULE_NAME_COLUMN)):
-            if list_ctrl.GetItemCount() > 0:
-                list_ctrl.SetColumnWidth(column, wx.LIST_AUTOSIZE)
-            else:
-                list_ctrl.SetColumnWidth(
-                    column, wx.LIST_AUTOSIZE_USEHEADER)
-        self.__pipeline_slider.Max = self.list_ctrl.ItemCount - 1
-        if self.list_ctrl.ItemCount > 0:
-            if self.__debug_mode:
-                self.__pipeline_slider.Show()
-            old_value = self.__pipeline_slider.Value
-            r = self.list_ctrl.GetItemRect(0, wx.LIST_RECT_BOUNDS)
-            height = r[3]
-            y = r[1]
-            self.__slider_sizer_item.SetBorder(int(y + height / 3))
-            self.__pipeline_slider.SetMinSize(
-                (20, height * self.list_ctrl.ItemCount))
-            self.__pipeline_slider.Value = old_value
-            #
-            # Make sure that the list control is internally as big as it
-            # needs to be.
-            #
-            r = self.list_ctrl.GetItemRect(self.list_ctrl.ItemCount -1, 
-                                           wx.LIST_RECT_BOUNDS)
-            min_width = self.list_ctrl.GetMinWidth()
-            self.list_ctrl.SetMinSize((min_width, r[1] + r[3] + 4))
-        else:
-            self.__pipeline_slider.Hide()
-            self.__pipeline_slider.SetMinSize((20, 10))
-        if self.input_list_ctrl.ItemCount > 0:
-            input_list_ctrl = self.input_list_ctrl
-        else:
-            input_list_ctrl = self.fake_input_list_ctrl
-        r = input_list_ctrl.GetItemRect(0, wx.LIST_RECT_BOUNDS)
-        height = r[3]
-        y = r[1]
-        min_width = input_list_ctrl.GetMinWidth()
-        min_height = y + max(1, input_list_ctrl.GetItemCount()) * height + 4
-        input_list_ctrl.SetMinSize((min_width, min_height))
         self.__panel.Layout()
     
-    def set_subitem_image(self, module, column, image_number):
-        list_ctrl, index = self.get_ctrl_and_index(module)
-        if column == 0:
-            list_ctrl.SetItemImage(index, image_number)
-        item = wx.ListItem()
-        item.Mask = wx.LIST_MASK_IMAGE
-        item.Image = image_number
-        item.Id = index
-        item.Column = column
-        list_ctrl.SetItem(item)
-        
     def __populate_row(self, module):
         """Populate a row in the grid with a module."""
         list_ctrl = (self.input_list_ctrl if module.is_input_module()
                      else self.list_ctrl)
         for row in range(list_ctrl.GetItemCount()):
-            other_module = self.get_module_from_data_value(
-                list_ctrl.GetItemData(row))
+            other_module = list_ctrl.items[row].module
             if other_module.module_num > module.module_num:
                 break
         else:
             row = list_ctrl.GetItemCount()
-        data_value = self.get_module_data_value(module)
+        item = PipelineListCtrl.PipelineListCtrlItem(module)
         if module.is_input_module():
-            error_item = wx.ListItem()
-            error_item.Mask = wx.LIST_MASK_IMAGE | wx.LIST_MASK_DATA
-            error_item.Column = INPUT_ERROR_COLUMN
-            error_item.Id = row
-            error_item.Data = data_value
-            self.input_list_ctrl.InsertItem(error_item)
-            
-            module_name_item = wx.ListItem()
-            module_name_item.Mask = wx.LIST_MASK_TEXT
-            module_name_item.Text = module.module_name
-            module_name_item.Column = INPUT_MODULE_NAME_COLUMN
-            module_name_item.Id = row
-            self.input_list_ctrl.SetItem(module_name_item)
+            self.input_list_ctrl.InsertItem(row, item)
         else:
-            pause_item = wx.ListItem()
-            pause_item.Mask = wx.LIST_MASK_IMAGE | wx.LIST_MASK_DATA
-            pause_item.Image = get_image_index(NOTDEBUG)
-            pause_item.Column = PAUSE_COLUMN
-            pause_item.Id = row
-            pause_item.Data = data_value
-            self.list_ctrl.InsertItem(pause_item)
-            
-            self.set_subitem_image(
-                module, EYE_COLUMN,
-                get_image_index(EYE if module.show_window else CLOSED_EYE))
-            self.set_subitem_image(
-                module, ERROR_COLUMN, 
-                get_image_index(OK if module.enabled else DISABLED))
-            
-            module_name_item = wx.ListItem()
-            module_name_item.Mask = wx.LIST_MASK_TEXT
-            module_name_item.Text = module.module_name
-            module_name_item.Column = MODULE_NAME_COLUMN
-            module_name_item.Id = row
-            self.list_ctrl.SetItem(module_name_item)
+            self.list_ctrl.InsertItem(row, item)
         
     def __on_pipeline_cleared(self, pipeline, event):
         self.resetItems(pipeline)
@@ -934,19 +652,18 @@ class PipelineListView(object):
         self.select_one_module(event.module_num)
 
     def __on_module_removed(self, pipeline, event):
-        all_module_ids = set([module.id for module in pipeline.modules(False)])
-        missing_modules = []
-        for list_ctrl, idx in self.iter_list_items():
-            data_value = list_ctrl.GetItemData(idx)
-            if self.__module_dictionary[data_value] not in all_module_ids:
-                missing_modules.append((list_ctrl, idx, data_value))
-        for list_ctrl, idx, data_value in reversed(missing_modules):
-            list_ctrl.DeleteItem(idx)
-            del self.__module_dictionary[data_value]
+        pipeline_module_ids = [module.id for module in pipeline.modules(False)]
+        for list_ctrl in (self.list_ctrl, self.input_list_ctrl):
+            idx = 0
+            while idx < list_ctrl.GetItemCount():
+                if list_ctrl.items[idx].module.id in pipeline_module_ids:
+                    idx += 1
+                else:
+                    list_ctrl.DeleteItem(idx)
         self.__adjust_rows()
         self.__controller.enable_module_controls_panel_buttons()
         
-    def __on_module_moved(self,pipeline,event):
+    def __on_module_moved(self, pipeline, event):
         module = pipeline.modules(False)[event.module_num - 1]
         list_ctrl, index = self.get_ctrl_and_index(module)
         if event.direction == cpp.DIRECTION_UP:
@@ -964,25 +681,20 @@ class PipelineListView(object):
         if other_list_ctrl != list_ctrl:
             # in different list controls, nothing changes
             return
-        start = min(index, other_index)
-        first_selected = list_ctrl.IsSelected(start)
-        second_selected = list_ctrl.IsSelected(start+1)
-        list_ctrl.DeleteItem(start)
-        list_ctrl.DeleteItem(start)
-        for m in modules:
-            self.__populate_row(m)
-        list_ctrl.Select(start, second_selected)
-        list_ctrl.Select(start+1, first_selected)
+        temp = list_ctrl.items[index]
+        list_ctrl.items[index] = list_ctrl.items[other_index]
+        list_ctrl.items[other_index] = temp
         self.__adjust_rows()
         self.__controller.enable_module_controls_panel_buttons()
-        list_ctrl.Refresh()
+        list_ctrl.Refresh(eraseBackground=False)
     
     def __on_module_enabled(self, event):
-        self.set_subitem_image(event.module, ERROR_COLUMN, get_image_index(OK))
-        if self.__debug_mode:
-            self.set_subitem_image(
-                event.module, PAUSE_COLUMN,
-                get_image_index(PAUSE if event.module.wants_pause else GO))
+        self.refresh_module_display(event.module)
+        
+    def refresh_module_display(self, module):
+        '''Refresh the display of a module'''
+        list_ctrl, index = self.get_ctrl_and_index(module)
+        list_ctrl.Refresh(eraseBackground=False)
     
     def __on_module_disabled(self, event):
         if event.module == self.get_current_debug_module(False):
@@ -998,10 +710,7 @@ class PipelineListView(object):
                         break
                 else:
                     self.__controller.stop_debugging()
-        self.set_subitem_image(event.module, ERROR_COLUMN, 
-                               get_image_index(DISABLED))
-        self.set_subitem_image(event.module, PAUSE_COLUMN,
-                               get_image_index(NOTDEBUG))
+        self.refresh_module_display(event.module)
     
     def __on_item_selected(self, event):
         if isinstance(event, wx.Event):
@@ -1012,11 +721,13 @@ class PipelineListView(object):
                 clear_all_selections(self.list_ctrl)
             else:
                 clear_all_selections(self.input_list_ctrl)
-        if self.__module_view:
-            selections = self.get_selected_modules()
-            if len(selections):
-                self.__module_view.set_selection(selections[0].module_num)
         self.__controller.enable_module_controls_panel_buttons()
+    
+    def __on_item_activated(self, event):
+        if self.__module_view:
+            module = self.get_event_module(event)
+            self.__module_view.set_selection(module.module_num)
+            self.__controller.enable_module_controls_panel_buttons()
 
     def __on_item_deselected(self,event):
         self.__controller.enable_module_controls_panel_buttons()
@@ -1032,12 +743,12 @@ class PipelineListView(object):
                 if setting is module_setting:
                     list_ctrl, index = self.get_ctrl_and_index(module)
                     if (not module.is_input_module() and
-                        self.__pipeline_slider.Value > index):
-                        self.__pipeline_slider.Value = index
+                        self.list_ctrl.running_item > index):
+                        self.list_ctrl.set_running_item(index)
                     return
                 
     def on_stop_debugging(self):
-        self.__pipeline_slider.Value = 0
+        self.list_ctrl.set_test_mode(False)
         
     def on_idle(self,event):
         last_idle_time = getattr(self, "last_idle_time", 0)
@@ -1063,32 +774,6 @@ class PipelineListView(object):
                 self.__submission_time = time.time()
                 request_module_validation(self.__pipeline, module, fn)
                 
-            if module.is_input_module():
-                continue
-
-            list_ctrl, idx = self.get_ctrl_and_index(module)
-            if module.show_window:
-                eye_value = get_image_index(EYE)
-            else:
-                eye_value = get_image_index(CLOSED_EYE)
-            target_item = list_ctrl.GetItem(idx, EYE_COLUMN)
-            if target_item.Image != eye_value:
-                self.set_subitem_image(module, EYE_COLUMN, eye_value)
-
-            if self.__debug_mode:
-                if not module.enabled:
-                    pause_value = get_image_index(NOTDEBUG)
-                elif module.wants_pause:
-                    pause_value = get_image_index(PAUSE)
-                else:
-                    pause_value = get_image_index(GO)
-            else:
-                pause_value = get_image_index(NOTDEBUG)
-            
-            target_item = list_ctrl.GetItem(idx)
-            if pause_value != target_item.Image:
-                list_ctrl.SetItemImage(idx, pause_value)
-
         event.RequestMore(False)
 
     def on_validate_module(self, setting_idx, message, level,
@@ -1098,19 +783,16 @@ class PipelineListView(object):
             return
             
         module = self.__pipeline.modules()[idx]
-        error_column = (INPUT_ERROR_COLUMN if module.is_input_module() 
-                        else ERROR_COLUMN)
         list_ctrl, index = self.get_ctrl_and_index(module)
-        target_item = list_ctrl.GetItem(index, error_column)
         if level == logging.WARNING:
-            ec_value = WARNING
+            flags = PLV_STATE_WARNING
         elif level == logging.ERROR:
-            ec_value = ERROR
+            flags = PLV_STATE_ERROR
         else:
-            ec_value = OK
-        ec_value = get_image_index(ec_value)
-        if ec_value != target_item.Image:
-            self.set_subitem_image(module, error_column, ec_value)
+            flags = 0
+        list_ctrl.SetItemErrorToolTipString(index, message)
+        list_ctrl.SetItemState(index, flags, PLV_STATE_ERROR_MASK)
+
         if self.__first_dirty_module == idx:
             self.__first_dirty_module = min(self.__first_dirty_module+1,
                                             len(self.__pipeline.modules()))
@@ -1147,25 +829,682 @@ class PipelineDropTarget(wx.PyDropTarget):
                 wx.CustomDataFormat(PIPELINE_DATA_FORMAT)))
         return action
 
-class PanelDropTarget(wx.PyDropTarget):
-    def __init__(self, window):
-        super(PanelDropTarget, self).__init__()
-        self.window = window
-        self.SetDataObject(PipelineDataObject())
+class PipelineListCtrl(wx.PyScrolledWindow):
+    '''A custom widget for the pipeline module list'''
+    class PipelineListCtrlItem(object):
+        '''An item in a pipeline list control'''
+        def __init__(self, module):
+            self.module = module
+            self.__state = 0
+            self.tooltip = ""
+            
+        @property
+        def module_name(self):
+            '''The module name of the item's module'''
+            return self.module.module_name
         
-    def OnDragOver(self, x, y, data):
-        if not self.window.provide_panel_drag_feedback(x, y, data):
-            return wx.DragNone
-        if wx.GetKeyState(wx.WXK_CONTROL) == 0:
-            return wx.DragMove
-        return wx.DragCopy
+        def set_state(self, state, state_mask):
+            '''Set the item's state
+            
+            state - the state bit values to set
+            
+            state_mask - the mask indicating which state bits to set.
+            '''
+            self.__state = (self.__state & ~ state_mask) | (state & state_mask)
+            
+        def is_selected(self):
+            '''Return True if item is selected'''
+            return bool(self.__state & wx.LIST_STATE_SELECTED)
+        
+        selected = property(is_selected)
+        
+        def select(self, value=True):
+            self.set_state(wx.LIST_STATE_SELECTED if value else 0,
+                           wx.LIST_STATE_SELECTED)
+            
+        def get_error_state(self):
+            '''Return the error state: ERROR, WARNING or OK'''
+            if self.__state & PLV_STATE_ERROR:
+                return ERROR
+            if self.__state & PLV_STATE_WARNING:
+                return WARNING
+            return OK
+        
+        error_state = property(get_error_state)
+        
+        def is_shown(self):
+            '''The module's frame should be shown if True'''
+            return self.module.show_window
+        
+        def is_enabled(self):
+            '''The module should not be executed'''
+            return self.module.enabled
+        
+        enabled = property(is_enabled)
+        
+        def is_paused(self):
+            '''The module is breakpointed in test mode'''
+            return self.module.wants_pause
+        
+        def is_unavailable(self):
+            '''The module is unavailable = not in pipeline'''
+            return bool(self.__state & PLV_STATE_UNAVAILABLE)
     
-    def OnDrop(self, x, y):
-        return self.window.on_panel_drop(x, y)
+    def __init__(self, *args, **kwargs):
+        super(PipelineListCtrl, self).__init__(*args, **kwargs)
+        self.bmp_ok = plv_get_bitmap(IMG_OK)
+        self.bmp_error = plv_get_bitmap(IMG_ERROR)
+        self.bmp_eye = plv_get_bitmap(IMG_EYE)
+        self.bmp_closed_eye = plv_get_bitmap(IMG_CLOSED_EYE)
+        self.bmp_go = plv_get_bitmap(IMG_GO)
+        self.bmp_pause = plv_get_bitmap(IMG_PAUSE)
+        self.bmp_unavailable = plv_get_bitmap(IMG_UNAVAILABLE)
+        self.bmp_disabled = plv_get_bitmap(IMG_DISABLED)
+        self.bmp_slider = plv_get_bitmap(IMG_SLIDER)
+        self.bmp_slider_active = plv_get_bitmap(IMG_SLIDER_ACTIVE)
+        # The items to display
+        self.items = []
+        # The current or active item (has wx.CONTROL_CURRENT display flag)
+        self.active_item = None
+        # The anchor of an extended selection
+        self.anchor = None
+        # The item highlighted by the test mode slider
+        self.running_item = 0
+        # True if in test mode
+        self.test_mode = False
+        # True to show the pause column, false to hide
+        self.show_go_pause = True
+        # True to show the eyeball column, false to hide it
+        self.show_show_frame_column = True
+        # Space reserved for test mode slider
+        self.slider_width = 20
+        # The index at which a drop would take place, if dropping.
+        self.drop_insert_point = None
+        # Shading border around buttons
+        self.border = 1
+        # Gap between buttons
+        self.gap = 1
+        # Gap before and after text
+        self.text_gap = 3
+        # The height of one row in the display
+        self.line_height = 16 + self.border + self.gap
+        # The width of a icon column
+        self.column_width = self.line_height
+        # The row # of the currently pressed icon button
+        self.pressed_row = None
+        # The column of the currently pressed icon button
+        self.pressed_column = None
+        # True if the currently pressed button will fire when the mouse button
+        # is released.
+        self.button_is_active = False
+        # True if the slider is currently being slid by a mouse capture action
+        self.active_slider = False
+        # A pen to use to draw shadow edges on buttons
+        self.shadow_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW))
+        # A pen to use to draw lighted edges on buttons
+        self.light_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DLIGHT))
+        self.SetScrollRate(self.line_height, self.line_height)
+        self.Bind(wx.EVT_PAINT, self.on_paint)
+        self.Bind(wx.EVT_LEFT_DOWN, self.on_left_down)
+        self.Bind(wx.EVT_LEFT_UP, self.on_left_up)
+        self.Bind(wx.EVT_MOTION, self.on_mouse_move)
+        self.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
+        self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.on_capture_lost)
+        self.Bind(wx.EVT_MOUSEWHEEL, self.on_mousewheel)
+        
+    def HitTestSubItem(self, position):
+        '''Mimic ListCtrl's HitTestSubItem
+        
+        position - x, y position of mouse click
+        
+        returns item hit, hit code (same as ListCtrl's) and column #
+        (None if no hit or hit the slider, or PAUSE_COLUMN, EYE_COLUMN, 
+         ERROR_COLUMN or MODULE_NAME_COLUMN)
+         
+         Hit codes:
+         wx.LIST_HITTEST_NOWHERE - in the slider column, but not on the slider
+         wx.LIST_HITTEST_BELOW - below any item (item #, column # not valid)
+         wx.LIST_HITTEST_ONITEMLABEL - on the module name of the item
+         wx.LIST_HITTEST_ONITEMICON - on one of the icons
+         PLV_HITTEST_SLIDER - on the slider handle.
+        '''
+        position = self.CalcUnscrolledPosition(position)
+        x = position[0]
+        y = position[1]
+        if self.test_mode:
+            x0 = self.slider_width
+            if x < x0:
+                r = self.get_slider_rect()
+                if r.ContainsXY(x, y):
+                    return None, PLV_HITTEST_SLIDER, None
+                return None, wx.LIST_HITTEST_NOWHERE, None
+        else:
+            x0 = 0
+        column = int((x - x0) / self.column_width)
+        if not (self.show_go_pause and self.test_mode):
+            column += 1
+        if not self.show_show_frame_column:
+            column += 1
+        row = int(y / self.line_height)
+        if row >= len(self.items):
+            return None, wx.LIST_HITTEST_BELOW, None
+        if column < 3:
+            return row, wx.LIST_HITTEST_ONITEMICON, column
+        return row, wx.LIST_HITTEST_ONITEMLABEL, MODULE_NAME_COLUMN
     
-    def OnData(self, x, y, action):
-        if self.GetData():
-            data_object = self.GetDataObject()
-            self.window.on_panel_data(x, y, action, data_object.GetDataHere(
-                wx.CustomDataFormat(PIPELINE_DATA_FORMAT)))
-        return action
+    def HitTest(self, position):
+        '''Mimic ListCtrl's HitTest
+        
+        position - x, y position of mouse click
+        
+        returns hit code (see HitTestSubItem)
+        '''
+        return self.HitTestSubItem(position)[:2]
+    
+    def GetSelectedItemCount(self):
+        '''Return the # of items selected'''
+        return len([True for item in self.items if item.selected])
+    
+    SelectedItemCount = property(GetSelectedItemCount)
+    
+    def GetItemCount(self):
+        '''Return the total # of items
+        
+        '''
+        return len(self.items)
+    
+    ItemCount = property(GetItemCount)
+    
+    def SetItemState(self, item, state, state_mask):
+        '''Set the state for the given item
+        
+        item - index of item
+        
+        state - one of the list states
+        
+        '''
+        self.items[item].set_state(state, state_mask)
+        self.Refresh(eraseBackground = False)
+        
+    def SetItemErrorToolTipString(self, item, text):
+        '''Set the string to display when hovering over the error indicator'''
+        self.items[item].tooltip = text
+        
+    def Select(self, index, state):
+        '''Mark the item as selected or not
+        
+        index - index of the item to mark as selected
+        
+        state - True to be selected, False for not
+        '''
+        self.items[index].select(state)
+        if state:
+            plv_event = self.make_event(wx.EVT_LIST_ITEM_SELECTED, index)
+        else:
+            plv_event = self.make_event(wx.EVT_LIST_ITEM_DESELECTED, index)
+        self.GetEventHandler().ProcessEvent(plv_event)
+        self.Refresh(eraseBackground = False)
+            
+    def IsSelected(self, index):
+        '''Return True if the item at the given index is selected'''
+        return bool(self.items[index].is_selected())
+            
+    def DeleteAllItems(self):
+        self.items = []
+        self.active_item = None
+        self.anchor = None
+        self.running_item = None
+        self.pressed_row = None
+        self.pressed_column = None
+        self.Refresh(eraseBackground=False)
+        
+    def DeleteItem(self, index):
+        '''Remove the item at the given index'''
+        del self.items[index]
+        if self.active_item == index:
+            self.active_item = None
+        elif self.active_item > index:
+            self.active_item -= 1
+        if self.anchor == index:
+            self.anchor = None
+        elif self.anchor > index:
+            self.anchor -= 1
+        if self.running_item > index:
+            self.running_item -= 1
+        self.AdjustScrollbars()
+        self.Refresh(eraseBackground=False)
+        
+    def InsertItem(self, index, item):
+        '''Insert an item at the given index
+        
+        index - the item will appear at this slot on the list.
+        
+        item - a PipelineListCtrlItem
+        '''
+        self.items.insert(index, item)
+        if self.active_item >= index:
+            self.active_item += 1
+        if self.anchor >= index:
+            self.anchor += 1
+        if self.running_item >= index:
+            self.running_item += 1
+        self.AdjustScrollbars()
+        self.Refresh(eraseBackground=False)
+    
+    def get_insert_index(self, position):
+        '''Return the index for an insert into the item list, based on position
+        
+        position - position of the mouse in the window
+        
+        returns the index that should be used when inserting a new item into
+        the list.
+        '''
+        position = self.CalcUnscrolledPosition(position)
+        y = position[1]
+        row = int((y + self.line_height / 2) / self.line_height)
+        return max(0, min(row, self.ItemCount))
+    
+    def update_drop_insert_point(self, index):
+        '''Change the visual drop indication
+        
+        index - the first dropped module would end up here.
+        '''
+        self.drop_insert_point = index
+        self.Refresh(eraseBackground = False)
+        
+    def end_drop(self):
+        '''Remove the visual drop indication'''
+        self.drop_insert_point = None
+        self.Refresh(eraseBackground = False)
+
+    def get_index(self, position):
+        '''Return the index of the item at the given position'''
+        position = self.CalcUnscrolledPosition(position)
+        y = position[1]
+        row = int(y / self.line_height)
+        return max(0, min(row, self.ItemCount-1))
+    
+    def set_test_mode(self, mode):
+        self.test_mode = mode
+        self.AdjustScrollbars()
+        self.Refresh(eraseBackground = False)
+        
+    def set_show_go_pause(self, state):
+        '''Show or hide the go / pause test-mode icons
+        
+        state - true to show them, false to hide them
+        '''
+        self.show_go_pause = state
+        self.AdjustScrollbars()
+        self.Refresh(eraseBackground = False)
+        
+    def set_show_frame_column(self, state):
+        '''Show or hide the show / hide frame column
+        
+        state - True to show, False to hide
+        '''
+        self.show_show_frame_column = state
+        self.AdjustScrollbars()
+        self.Refresh(eraseBackground = False)
+        
+    def set_running_item(self, idx):
+        '''The index of the next module to run in test mode'''
+        self.running_item = idx
+        self.Refresh(eraseBackground = False)
+
+    def DoGetBestSize(self):
+        x0 = self.column_width + self.text_gap
+        if self.show_go_pause and self.test_mode:
+            x0 += self.column_width
+        if self.show_show_frame_column:
+            x0 += self.column_width
+        if self.test_mode:
+            x0 += self.slider_width
+        max_width = 0
+        for i, item in enumerate(self.items):
+            width, height = self.GetTextExtent(item.module_name)
+            max_width = max(width, max_width)
+        total_width = x0 + max_width + self.border * 2 + self.gap + self.text_gap
+        height = len(self.items) * self.line_height
+        return total_width, height
+    
+    def DoGetVirtualSize(self):
+        return self.DoGetBestSize()
+    
+    def AcceptsFocus(self):
+        return True
+    
+    def get_button_rect(self, column, idx):
+        x0 =  column * self.column_width
+        if self.test_mode:
+            x0 += self.slider_width
+        if not (self.show_go_pause and self.test_mode):
+            assert column != 0
+            x0 -= self.column_width
+        if not self.show_show_frame_column:
+            x0 -= self.column_width
+        if self.pressed_column == column and self.pressed_row == idx:
+            x0 += 1
+            y0 = 1
+        else:
+            y0 = 0
+        return wx.Rect(x0 + self.gap,
+                       y0 + idx * self.line_height,
+                       16, 16)
+
+    def get_go_pause_rect(self, idx):
+        return self.get_button_rect(0, idx)
+    
+    def get_eye_rect(self, idx):
+        return self.get_button_rect(1, idx)
+    
+    def get_error_rect(self, idx):
+        return self.get_button_rect(2, idx)
+    
+    def get_text_rect(self, index):
+        if self.test_mode:
+            x0 = self.slider_width + self.column_width  + self.text_gap
+        else:
+            x0 = self.column_width
+        if self.show_go_pause and self.test_mode:
+            x0 += self.column_width
+        if self.show_show_frame_column:
+            x0 += self.column_width
+        return wx.Rect(x0 + self.gap,
+                       index * self.line_height,
+                       self.GetSizeTuple()[0] - x0 - self.gap, 18)
+    
+    def get_slider_rect(self):
+        '''Return the rectangle encompassing the slider bitmap
+
+        returns None if not displayed, otherwise the coordinates of the bitmap
+        '''
+        if not self.test_mode:
+            return None
+        top = (self.line_height - self.bmp_slider.Height) / 2 +\
+            self.line_height * self.running_item
+        return wx.Rect(1, top, self.bmp_slider.Width, self.bmp_slider.Height)
+    
+    def draw_shading(self, dc, col, row):
+        assert isinstance(dc, wx.DC)
+        r = self.get_button_rect(col, row)
+        dc.SetPen(self.shadow_pen)
+        if self.pressed_row == row and self.pressed_column == col and self.button_is_active:
+            dc.DrawLine(r.left-1, r.top-1, r.right-1, r.top-1)
+            dc.DrawLine(r.left-1, r.top-1, r.left-1, r.bottom-1)
+        else:
+            dc.DrawLine(r.left, r.bottom, r.right, r.bottom)
+            dc.DrawLine(r.right, r.top, r.right, r.bottom)
+        
+    def on_paint(self, event):
+        assert isinstance(event, wx.PaintEvent)
+        dc = wx.BufferedPaintDC(self)
+        self.PrepareDC(dc)
+        dc.BeginDrawing()
+        dc.Background = wx.Brush(wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOX))
+        dc.Clear()
+        dc.Font = self.Font
+        rn = wx.RendererNative.Get()
+        if self.test_mode:
+            #
+            # Draw the slider
+            #
+            top = self.line_height / 2
+            bottom = top + self.line_height * (len(self.items) - 1)
+            dc.Pen = self.shadow_pen
+            dc.DrawLine(9, top, 9, bottom)
+            dc.Pen = self.light_pen
+            dc.DrawLine(10, top, 10, bottom)
+            bmp = self.bmp_slider_active if self.active_slider else self.bmp_slider
+            assert isinstance(bmp, wx.Bitmap)
+            if self.running_item is not None:
+                r = self.get_slider_rect()
+                dc.DrawBitmap(bmp, r.Left, r.Top, True)
+            
+        clr_text = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOXTEXT)
+        clr_selected = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
+        for i, item in enumerate(self.items):
+            if self.show_go_pause and self.test_mode:
+                r = self.get_go_pause_rect(i)
+                bmp = self.bmp_pause if item.is_paused() else self.bmp_go
+                dc.DrawBitmap(bmp, r.left, r.top, True)
+                self.draw_shading(dc, 0 ,i)
+            
+            if self.show_show_frame_column:
+                r = self.get_eye_rect(i)
+                bmp = self.bmp_eye if item.is_shown() else self.bmp_closed_eye
+                dc.DrawBitmap(bmp, r.left, r.top, True)
+                self.draw_shading(dc, 1 ,i)
+            
+            r = self.get_error_rect(i)
+            bmp = (self.bmp_unavailable if item.is_unavailable() else
+                   self.bmp_disabled if not item.enabled else
+                   self.bmp_error if item.error_state == ERROR else
+                   BMP_WARNING if item.error_state == WARNING else
+                   self.bmp_ok)
+            dc.DrawBitmap(bmp, r.left, r.top, True)
+            self.draw_shading(dc, 2 ,i)
+            
+            r = self.get_text_rect(i)
+            if item.selected or i == self.active_item:
+                flags = wx.CONTROL_DISABLED if not self.Enabled else 0
+                if item.selected:
+                    flags += wx.CONTROL_SELECTED
+                if self.FindFocus() is self:
+                    flags += wx.CONTROL_FOCUSED
+                    if self.active_item == i:
+                        flags += wx.CONTROL_CURRENT
+                rn.DrawItemSelectionRect(self, dc, r, flags)
+            dc.SetBackgroundMode(wx.TRANSPARENT)
+            dc.SetTextForeground(clr_selected if item.selected else clr_text)
+            dc.DrawText(item.module_name, 
+                        r.left + self.text_gap, 
+                        r.top + self.border)
+        if self.drop_insert_point is not None:
+            y = self.line_height * self.drop_insert_point
+            dc.SetPen(wx.BLACK_PEN)
+            dc.DrawLine(0, y, self.GetSizeTuple()[0], y)
+        dc.EndDrawing()
+    
+    def make_event(self, py_event_binder, index = None):
+        event = wx.NotifyEvent(py_event_binder.evtType[0])
+        event.EventObject = self
+        event.Id = self.Id
+        if index is not None:
+            event.SetInt(index)
+        return event
+    
+    def on_left_down(self, event):
+        assert isinstance(event, wx.MouseEvent)
+        self.SetFocus()
+        index, hit_test, column = self.HitTestSubItem(event.Position)
+        if hit_test == PLV_HITTEST_SLIDER:
+            self.active_slider = True
+            self.CaptureMouse()
+            self.RefreshRect(self.get_slider_rect())
+        elif hit_test & wx.LIST_HITTEST_ONITEMLABEL:
+            if event.ShiftDown() and self.active_item is not None:
+                # Extend the selection
+                begin = min(self.active_item, index)
+                end = max(self.active_item, index) + 1
+                for i in range(begin, end):
+                    self.Select(i, True)
+                toggle_selection = False
+                multiple_selection = True
+            else:
+                toggle_selection = True
+                multiple_selection = event.ControlDown()
+            self.activate_item(index, toggle_selection, multiple_selection)
+            plv_event = self.make_event(wx.EVT_LIST_BEGIN_DRAG, index)
+            self.GetEventHandler().ProcessEvent(plv_event)
+        elif hit_test & wx.LIST_HITTEST_ONITEMICON:
+            self.pressed_row = index
+            self.pressed_column = column
+            self.button_is_active = True
+            self.Refresh(eraseBackground=False)
+    
+    def activate_item(self, index, toggle_selection, multiple_selection, 
+                      anchoring = True):
+        '''Move the active item
+        
+        event - event triggering the move
+        
+        index - index of item to activate
+        
+        toggle_selection - true to toggle the selection state, false to 
+                           always select.
+        
+        returns the selection state
+        '''
+        self.active_item = index
+        plv_event = self.make_event(wx.EVT_LIST_ITEM_ACTIVATED, index)
+        self.GetEventHandler().ProcessEvent(plv_event)
+        if self.IsSelected(index) and toggle_selection:
+            self.Select(index, False)
+            return False
+        if not multiple_selection:
+            for i, item in enumerate(self.items):
+                if self.IsSelected(i):
+                    self.Select(i, False)
+        self.Select(index, True)
+        if anchoring:
+            self.anchor = index
+        window_height = int(self.GetSizeTuple()[1] / self.line_height)
+        #
+        # Always keep the active item in view
+        #
+        sx = self.GetScrollPos(wx.HORIZONTAL)
+        sy = self.GetScrollPos(wx.VERTICAL)
+        if index < sy:
+            self.Scroll(sx, index)
+        elif index >= sy + window_height:
+            self.Scroll(sx, index + window_height - 1)
+        
+        self.Refresh(eraseBackground=False)
+        return True
+        
+    def on_left_up(self, event):
+        if self.active_slider:
+            self.active_slider = False
+            self.ReleaseMouse()
+            self.RefreshRect(self.get_slider_rect())
+        if self.button_is_active and self.pressed_column is not None:
+            if self.pressed_column == ERROR_COLUMN:
+                code = EVT_PLV_ERROR_COLUMN_CLICKED
+            elif self.pressed_column == PAUSE_COLUMN:
+                code = EVT_PLV_PAUSE_COLUMN_CLICKED
+            else:
+                code = EVT_PLV_EYE_COLUMN_CLICKED
+            self.button_is_active = False
+            self.pressed_column = None
+            plv_event = self.make_event(code, self.pressed_row)
+            self.GetEventHandler().ProcessEvent(plv_event)
+            self.ReleaseMouse()
+    
+    def on_mouse_move(self, event):
+        index, hit_test, column = self.HitTestSubItem(event.Position)
+        if self.active_slider:
+            index = self.get_index(event.Position)
+            if self.running_item != index:
+                plv_event = self.make_event(EVT_PLV_SLIDER_MOTION, index)
+                self.GetEventHandler().ProcessEvent(plv_event)
+                if plv_event.IsAllowed():
+                    self.running_item = index
+                    self.Refresh(eraseBackground=False)
+        elif self.HasCapture() and self.pressed_column is not None:
+            button_is_active = (index == self.pressed_row and
+                                column == self.pressed_column)
+            if button_is_active != self.button_is_active:
+                self.button_is_active = button_is_active
+                self.Refresh(eraseBackground=False)
+        else:
+            tooltip_text = None
+            item = None if (index is None or index >= self.GetItemCount) \
+                else self.items[index]
+            if hit_test & wx.LIST_HITTEST_ONITEM:
+                if column == EYE_COLUMN:
+                    if item.module.show_window:
+                        tooltip_text = "%s will show its display. Click icon to hide display" % item.module.module_name
+                    else:
+                        tooltip_text = "%s will not show its display. Click icon to show display" % item.module.module_name
+                elif column == PAUSE_COLUMN:
+                    if item.module.wants_pause:
+                        tooltip_text = "Test mode will stop before executing %s. Click icon to change" % item.module.module_name
+                    else:
+                        tooltip_text = "Test mode will not stop before executing %s. Click icon to change" % item.module.module_name
+                elif column == ERROR_COLUMN:
+                    if item.get_error_state() in (WARNING, ERROR):
+                        tooltip_text = item.tooltip
+                    elif item.module.enabled and not item.module.is_input_module():
+                        tooltip_text = "Click to disable the %s module" % item.module.module_name
+                    elif not item.module.is_input_module():
+                        tooltip_text = "Click to enable the %s module"  % item.module.module_name
+            if tooltip_text is not None:
+                self.SetToolTipString(tooltip_text)
+            else:
+                self.SetToolTip(None)
+
+    def cancel_capture(self):
+        if self.HasCapture() and self.pressed_column != None:
+            self.ReleaseMouse()
+            self.pressed_column = None
+            self.button_is_active = False
+                
+    def on_key_down(self, event):
+        assert isinstance(event, wx.KeyEvent)
+        if self.GetItemCount() > 0 and self.active_item is not None:
+            multiple_selection = event.ControlDown() or event.ShiftDown()
+            anchoring_selection = not event.ShiftDown()
+            if (event.KeyCode in (wx.WXK_DOWN, wx.WXK_NUMPAD_DOWN) and
+                self.active_item < self.GetItemCount() - 1):
+                self.cancel_capture()
+                # Retreating from a previous shift select
+                if not anchoring_selection and self.anchor > self.active_item:
+                        self.Select(self.active_item, False)
+                self.activate_item(
+                    self.active_item + 1, False, multiple_selection,
+                    anchoring=anchoring_selection)
+            elif (event.KeyCode in (wx.WXK_UP, wx.WXK_NUMPAD_UP) and
+                  self.active_item > 0):
+                self.cancel_capture()
+                if not anchoring_selection and self.anchor < self.active_item:
+                    self.Select(self.active_item, False)
+                self.activate_item(
+                    self.active_item - 1, False, multiple_selection,
+                    anchoring_selection)
+            elif event.KeyCode in (wx.WXK_HOME, wx.WXK_NUMPAD_HOME):
+                self.cancel_capture()
+                if not anchoring_selection:
+                    # Extend selection to anchor / remove selection beyond anchor
+                    for i in range(self.anchor+1, self.active_item+1):
+                        self.Select(i, False)
+                    for i in range(1, self.anchor):
+                        self.Select(i, True)
+                self.activate_item(
+                    0, False, multiple_selection, anchoring=anchoring_selection)
+            elif event.KeyCode in (wx.WXK_END, wx.WXK_NUMPAD_END):
+                self.cancel_capture()
+                if not anchoring_selection:
+                    # Extend selection from current to end / remove
+                    # selection before anchor
+                    for i in range(self.active_item, self.anchor):
+                        self.Select(i, False)
+                    for i in range(self.anchor + 1, self.GetItemCount()):
+                        self.Select(i, True)
+                self.activate_item(
+                    self.GetItemCount() - 1, False, multiple_selection,
+                    anchoring = anchoring_selection)
+            else:
+                event.Skip()
+        else:
+            event.Skip()
+    
+    def on_mousewheel(self, event):
+        pass
+    
+    def on_capture_lost(self, event):
+        self.active_slider = False
+        self.button_is_active = False
+        self.pressed_column = None
+        self.Refresh(eraseBackground = False)
+            

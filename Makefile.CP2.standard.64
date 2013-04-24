@@ -202,7 +202,7 @@ FFTWPREFIX				?= $(PREFIX)
 NUMPYVERSION				= numpy-1.5.1
 NUMPYPREFIX				?= $(PREFIX)
 NUMPYURL				= $(PACKAGEHOST)
-SCIPYVERSION				= scipy-0.8.0
+SCIPYVERSION				= scipy-0.10.1
 SCIPYPREFIX				?= $(PREFIX)
 SCIPYURL				= $(PACKAGEHOST)
 UMFPACKVERSION				= UMFPACK-5.5.1
@@ -422,14 +422,9 @@ $(PYTHONPREFIX)/bin/python:		$(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SQLITEPREFIX)/
 					export C_INCLUDE_PATH="$(PYTHONPREFIX)/include:$(C_INCLUDE_PATH)" && \
 					./configure \
 						--prefix="$(PYTHONPREFIX)" \
-<<<<<<< HEAD
 						--enable-shared \
 				                --enable-unicode=ucs4 && \
-                                        make install prefix="$(PYTHONPREFIX)" exec-prefix="$(PYTHONPREFIX)"
-=======
-						--enable-shared && \
 				        make altinstall prefix="$(PYTHONPREFIX)" exec-prefix="$(PYTHONPREFIX)"
->>>>>>> 01a7fd379becbefff83b137597bb15bcc4419ecf
 
 cython:					$(CYTHONPREFIX)/bin/cython
 $(CYTHONPREFIX)/bin/cython:		$(SRCDIR)/$(CYTHONVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(PYPIPREFIX)/bin/easy_install
@@ -1018,7 +1013,7 @@ $(CELLPROFILERPREFIX)/CellProfiler/CellProfiler.py:	$(CYTHONPREFIX)/bin/cython $
 					cd "$(CELLPROFILERPREFIX)" && \
 					if test -d "./CellProfiler" ; then \
 						cd ./CellProfiler && \
-						git clean -x -d . ; \
+						git clean -f -x -d . ; \
 					else \
 						rm -fr "./CellProfiler" && \
                                                 git clone "$(CELLPROFILER_CO_URL)" ./CellProfiler && \

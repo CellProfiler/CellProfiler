@@ -141,7 +141,7 @@ class CPFrame(wx.Frame):
 
         self.__logo_panel = wx.Panel(self.__left_win,-1,style=wx.SIMPLE_BORDER)
         self.__logo_panel.BackgroundColour = cpprefs.get_background_color()
-        self.__module_list_panel = wx.lib.scrolledpanel.ScrolledPanel(self.__left_win, -1)
+        self.__module_list_panel = wx.Panel(self.__left_win)
         self.__module_list_panel.SetBackgroundColour(background_color)
         self.__module_list_panel.SetToolTipString("The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
         self.__pipeline_test_panel = wx.Panel(self.__left_win,-1)

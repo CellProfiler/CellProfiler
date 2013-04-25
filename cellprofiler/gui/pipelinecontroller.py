@@ -747,14 +747,15 @@ class PipelineController:
             self.__workspace.create(filename)
             if self.__locked_workspace_filename is not None:
                 unlock_file(self.__locked_workspace_filename)
-                self.__locked_workspace_filename = filename
+            self.__locked_workspace_filename = filename
             cpprefs.set_workspace_file(filename)
             self.__pipeline.clear_image_plane_details()
             self.__workspace.measurements.clear()
             self.__workspace.save_pipeline_to_measurements()
-        finally:
-            if filename != self.__locked_workspace_filename:
-                unlock_file(filename)
+        except:
+            if filename == self.__locked_workspace_filename:
+                self.__locked_workspace_filename = None
+            unlock_file(filename)
         
     def __on_save_as_workspace(self, event):
         '''Handle the Save Workspace As menu command'''

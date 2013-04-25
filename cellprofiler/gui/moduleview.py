@@ -3935,10 +3935,15 @@ def validation_queue_handler():
                 continue
             priority, module_num, pipeline, test_mode, callback = \
                 heapq.heappop(validation_queue)
+        start = time.clock()
         try:
             validate_module(pipeline, module_num, test_mode, callback)
+            
         except:
             pass
+        # Make sure this thread utilizes less than 1/2 of GIL clock
+        wait_for = max(.25, time.clock() - start)
+        time.sleep(wait_for)
     logger.info("Exiting the pipeline validation thread")
 
 def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_BACKGROUND):

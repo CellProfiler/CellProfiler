@@ -526,9 +526,7 @@ class PipelineListView(object):
         selected_module_ids = [m.id for m in self.get_selected_modules()]
         self.__pipeline.start_undoable_action()
         try:
-            print "Entering drop state"
             result = drop_source.DoDragDrop(wx.Drag_AllowMove)
-            print "Exiting drop state"
             self.drag_underway = False
             if result == wx.DragMove:
                 for id in selected_module_ids:
@@ -615,7 +613,6 @@ class PipelineListView(object):
         #
         # Insert the new modules
         #
-        print "Dropping"
         wx.BeginBusyCursor()
         try:
             pipeline = cpp.Pipeline()

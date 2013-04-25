@@ -17,7 +17,7 @@ import numpy as np
 import os
 import stat
 import threading
-import heapq
+import Queue
 import time
 import traceback
 import uuid
@@ -28,6 +28,7 @@ import wx.lib.rcsizer
 import wx.lib.resizewidget
 import wx.lib.scrolledpanel
 import sys
+import weakref
 
 logger = logging.getLogger(__name__)
 import cellprofiler.pipeline as cpp
@@ -55,6 +56,8 @@ EDIT_TIMEOUT_SEC = 5
 # validation queue priorities, to allow faster updates for the displayed module
 PRI_VALIDATE_DISPLAY = 0
 PRI_VALIDATE_BACKGROUND = 1
+
+MODULE_SETTINGS_LABEL = "Module settings"
 
 class SettingEditedEvent:
     """Represents an attempt by the user to edit a setting
@@ -269,9 +272,9 @@ class ModuleView:
         #
         #############################################
         top_panel.Sizer = wx.BoxSizer()
-        module_settings_box = wx.StaticBox(top_panel,
-                                           label = "Module settings")
-        module_settings_box_sizer = wx.StaticBoxSizer(module_settings_box)
+        self.module_settings_box = wx.StaticBox(
+            top_panel, label = MODULE_SETTINGS_LABEL)
+        module_settings_box_sizer = wx.StaticBoxSizer(self.module_settings_box)
         top_panel.Sizer.Add(module_settings_box_sizer, 1, wx.EXPAND)
         self.__module_panel = wx.lib.scrolledpanel.ScrolledPanel(
             top_panel,
@@ -295,6 +298,7 @@ class ModuleView:
         self.__handle_change = True
         self.__notes_text = None
         self.__started = False
+        self.__validation_request = None
         
     def start(self):
         '''Start the module view
@@ -305,7 +309,6 @@ class ModuleView:
         self.__pipeline.add_listener(self.__on_pipeline_event)
         self.__workspace.add_notification_callback(
             self.__on_workspace_event)
-        wx.EVT_IDLE(self.__module_panel, self.on_idle)
         self.__started = True
 
     def skip_event(self, event):
@@ -366,7 +369,9 @@ class ModuleView:
             if not reselecting:
                 if self.__module is not None:
                     self.__module.on_deactivated()
+                self.module_settings_box.Label = MODULE_SETTINGS_LABEL
                 self.clear_selection()
+                self.request_validation(new_module)
                 try:
                     # Need to initialize some controls.
                     new_module.test_valid(self.__pipeline)
@@ -1837,18 +1842,29 @@ class ModuleView:
                                                   proposed_value,event)
         self.notify(setting_edited_event)
         self.fit_ctrl(control)
+    
+    def request_validation(self, module = None):
+        '''Request validation of the current module in its current state'''
+        if module is None:
+            module = self.__module
+        if self.__validation_request is not None:
+            self.__validation_request.cancel()
+        self.__validation_request = ValidationRequest(
+            self.__pipeline, module, self.on_validation)
+        request_module_validation(self.__validation_request)
         
     def __on_pipeline_event(self,pipeline,event):
         if (isinstance(event, cpp.PipelineClearedEvent) or
             isinstance(event, cpp.PipelineLoadedEvent)):
             # clear validation cache, since settings might not have changed,
             # but pipeline itself may have (due to a module source reload)
-            clear_validation_cache()
+            self.request_validation()
             self.clear_selection()
         elif isinstance(event, cpp.ModuleEditedPipelineEvent):
             if (not self.__inside_notify and self.__module is not None
                 and self.__module.module_num == event.module_num):
                 self.reset_view()
+            self.request_validation()
         elif isinstance(event, cpp.ModuleRemovedPipelineEvent):
             if (self.__module is not None and 
                 event.module_num == self.__module.module_num):
@@ -1873,21 +1889,7 @@ class ModuleView:
         self.__module.on_setting_changed(setting, self.__pipeline)
         self.reset_view()
     
-    def on_idle(self,event):
-        """Check to see if the selected module is valid"""
-        last_idle_time = getattr(self, "last_idle_time", 0)
-        running_time = getattr(self, "running_time", 0)
-        timeout = max(CHECK_TIMEOUT_SEC, running_time * 4)
-        if time.time() - last_idle_time > timeout:
-            self.last_idle_time = time.time()
-        else:
-            return
-        if self.__module:
-            request_module_validation(self.__pipeline, self.__module,
-                                      self.on_validation, PRI_VALIDATE_DISPLAY)
-
     def on_validation(self, setting_idx, message, level):
-        self.running_time = time.time() - self.last_idle_time
         default_fg_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT)
         default_bg_color = cpprefs.get_background_color()
         if not self.__module:  # defensive coding, in case the module was deleted
@@ -1911,7 +1913,18 @@ class ModuleView:
             except cps.ValidationError, instance:
                 message = instance.message
                 bad_setting = instance.get_setting()
-
+        #
+        # Update the group box
+        # TO_DO: choose which way looks better
+        #
+        if bad_setting is None:
+            self.module_settings_box.Label = MODULE_SETTINGS_LABEL
+        elif self.__module.module_num & 1:
+            self.module_settings_box.Label = "%s: %s" % (
+                MODULE_SETTINGS_LABEL, "Hover over error for more information")
+        else:
+            self.module_settings_box.Label = "%s: %s" % (
+                MODULE_SETTINGS_LABEL, message)
         # update settings' foreground/background
         try:
             for setting in visible_settings:
@@ -3890,12 +3903,40 @@ class ModuleSizer(wx.PySizer):
                 logger.warning("Detected WX error", exc_info=True)
                 self.__printed_exception = True
 
-validation_queue_lock = threading.RLock()
-validation_queue = []  # heapq, protected by above lock.  Can change to Queue.PriorityQueue() when we no longer support 2.5
+validation_queue = Queue.Queue()
 pipeline_queue_thread = None  # global, protected by above lock
-validation_queue_semaphore = threading.Semaphore(0)
 request_pipeline_cache = threading.local()  # used to cache the last requested pipeline
 validation_queue_keep_running = True
+
+class ValidationRequest(object):
+    '''A request for module validation'''
+    def __init__(self, pipeline, module, callback):
+        '''Initialize the validation request
+        
+        pipeline - pipeline in question
+        module - module in question
+        callback - call this callback if there is an error. Do it on the GUI thread
+        '''
+        self.pipeline = cache_pipeline(pipeline)
+        self.module_num = module.module_num
+        self.test_mode = pipeline.test_mode
+        self.callback = callback
+        self.cancelled = False
+        
+    def cancel(self):
+        self.cancelled = True
+        
+def cache_pipeline(pipeline):
+    '''Return a single cached copy of a pipeline to limit the # of copies'''
+    d = getattr(request_pipeline_cache, "d", None)
+    if d is None:
+        d = weakref.WeakValueDictionary()
+        setattr(request_pipeline_cache, "d", d)
+    settings_hash = pipeline.settings_hash()
+    result = d.get(settings_hash)
+    if result is None:
+        result = d[settings_hash] = pipeline.copy()
+    return result
 
 def validate_module(pipeline, module_num, test_mode, callback):
     '''Validate a module and execute the callback on error on the main thread
@@ -3929,16 +3970,13 @@ def validate_module(pipeline, module_num, test_mode, callback):
 
 def validation_queue_handler():
     while validation_queue_keep_running:
-        validation_queue_semaphore.acquire()  # wait for work
-        with validation_queue_lock:
-            if len(validation_queue) == 0:
-                continue
-            priority, module_num, pipeline, test_mode, callback = \
-                heapq.heappop(validation_queue)
+        request = validation_queue.get()
+        if not isinstance(request, ValidationRequest) or request.cancelled:
+            continue
         start = time.clock()
         try:
-            validate_module(pipeline, module_num, test_mode, callback)
-            
+            validate_module(request.pipeline, request.module_num, 
+                            request.test_mode, request.callback)
         except:
             pass
         # Make sure this thread utilizes less than 1/2 of GIL clock
@@ -3946,72 +3984,24 @@ def validation_queue_handler():
         time.sleep(wait_for)
     logger.info("Exiting the pipeline validation thread")
 
-def request_module_validation(pipeline, module, callback, priority=PRI_VALIDATE_BACKGROUND):
+def request_module_validation(validation_request):
     '''Request that a module be validated
 
-    pipeline - pipeline in question
-    module - module in question
-    callback - call this callback if there is an error. Do it on the GUI thread
     '''
     global pipeline_queue_thread, validation_queue
 
-    # start validation queue handler thread if not already started
-    with validation_queue_lock:
-        if pipeline_queue_thread is None:
-            pipeline_queue_thread = threading.Thread(target=validation_queue_handler)
-            pipeline_queue_thread.setName("Pipeline vaidation thread")
-            pipeline_queue_thread.setDaemon(True)
-            pipeline_queue_thread.start()
-
-    # minimize copies of pipelines
-    pipeline_hash = pipeline.settings_hash()
-    if pipeline_hash != getattr(request_pipeline_cache, "pipeline_hash", None):
-        request_pipeline_cache.pipeline = pipeline.copy(False)
-        request_pipeline_cache.pipeline_hash = pipeline_hash
-
-    pipeline_copy = request_pipeline_cache.pipeline
-    if pipeline_copy.settings_hash() != pipeline_hash:
-        logger.warning("Pipeline and pipeline.copy() have different values for settings_hash()")
-        # compare pipelines, try to find the changed setting
-        orig_modules = pipeline.modules()
-        copy_modules = pipeline_copy.modules()
-        # If module names are changed by the copy operation, that's too much to continue from.
-        assert [m.module_name for m in orig_modules] == [m.module_name for m in copy_modules], \
-            "Module names do not match from original and copy, giving up!\nOrig: %s\nCopy: %s" % \
-            ([m.module_name for m in orig_modules], [m.module_name for m in copy_modules])
-        for midx, (om, cm) in enumerate(zip(orig_modules, copy_modules)):
-            orig_settings = [s.unicode_value.encode('utf-8') for s in om.settings()]
-            copy_settings = [s.unicode_value.encode('utf-8') for s in cm.settings()]
-            differences = [oset != cset for oset, cset in zip(orig_settings, copy_settings)]
-            if True in differences:
-                logger.warning("  Differences in module #%d %s:" % (midx, om.module_name))
-                for sidx, (diff, oset, cset) in enumerate(zip(differences, orig_settings, copy_settings)):
-                    if diff:
-                        logger.warning("    Setting #%d: was %s now %s" % (sidx, repr(oset), repr(cset)))
-
-    with validation_queue_lock:
-        # walk heap (as a list) removing any same-or-lower priority occurrences
-        # of this module_num, to prevent the heap from growing indefinitely.
-        mnum = module.module_num
-        validation_queue = [req for req in validation_queue \
-                                if ((req[0] >= priority) and (req[1] == mnum))]
-        heapq.heapify(validation_queue)
-        # order heap by priority, then module_number.
-        heapq.heappush(validation_queue, 
-                       (priority, module.module_num, pipeline_copy, 
-                        pipeline.test_mode, callback))
-    validation_queue_semaphore.release()  # notify handler of work
-
-def clear_validation_cache():
-    '''clear the cache when a new pipeline is loaded.'''
-    global request_pipeline_cache
-    setattr(request_pipeline_cache, "pipeline_hash", None)
+    if pipeline_queue_thread is None:
+        pipeline_queue_thread = threading.Thread(target=validation_queue_handler)
+        pipeline_queue_thread.setName("Pipeline vaidation thread")
+        pipeline_queue_thread.setDaemon(True)
+        pipeline_queue_thread.start()
+    validation_queue.put(validation_request)
 
 def stop_validation_queue_thread():
     '''Stop the thread that handles module validation'''
     global validation_queue_keep_running
     if pipeline_queue_thread is not None:
         validation_queue_keep_running = False
-        validation_queue_semaphore.release()
+        validation_queue.put(None)
         pipeline_queue_thread.join()
 

@@ -34,7 +34,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.gui.movieslider as cpgmov
 from cellprofiler.gui.cpfigure import window_name, find_fig
 from cellprofiler.icons import get_builtin_image
-from cellprofiler.gui.moduleview import request_module_validation
+from cellprofiler.gui.moduleview import request_module_validation, ValidationRequest
 
 IMG_OK = get_builtin_image('IMG_OK')
 IMG_ERROR = get_builtin_image('IMG_ERROR')
@@ -46,6 +46,7 @@ IMG_DISABLED = get_builtin_image('IMG_DISABLED')
 IMG_UNAVAILABLE = get_builtin_image('IMG_UNAVAILABLE')
 IMG_SLIDER = get_builtin_image('IMG_SLIDER')
 IMG_SLIDER_ACTIVE = get_builtin_image('IMG_SLIDER_ACTIVE')
+IMG_DOWNARROW = get_builtin_image('downarrow')
 BMP_WARNING = wx.ArtProvider.GetBitmap(wx.ART_WARNING,size=(16,16))
 
 NO_PIPELINE_LOADED = 'No pipeline loaded'
@@ -140,15 +141,13 @@ class PipelineListView(object):
 
         self.make_list()
         self.set_debug_mode(False)
-        wx.EVT_IDLE(panel,self.on_idle)
         self.__adjust_rows()
-        self.__first_dirty_module = 0
-        self.__module_being_validated = 0
         self.__submission_time = 0
         self.drag_underway = False
         self.drag_start = None
         self.drag_time = None
         self.list_ctrl.SetDropTarget(PipelineDropTarget(self))
+        self.validation_requests = []
 
     def make_list(self):
         '''Make the list control with the pipeline items in it'''
@@ -194,6 +193,7 @@ class PipelineListView(object):
         self.input_list_ctrl = PipelineListCtrl(self.__panel)
         self.input_list_ctrl.set_show_go_pause(False)
         self.input_list_ctrl.set_show_frame_column(False)
+        self.input_list_ctrl.set_allow_disable(False)
         self.__input_controls.append(self.input_list_ctrl)
         self.__input_sizer.Add(self.input_list_ctrl, 1, wx.EXPAND)
         #
@@ -256,6 +256,34 @@ class PipelineListView(object):
                 
         self.transparent_window.Show(not show)
         
+    def request_validation(self, module = None):
+        '''Request validation of the pipeline, starting at the given module'''
+        if module is None:
+            if self.__pipeline is not None and len(self.__pipeline.modules()) > 0:
+                module = self.__pipeline.modules()[0]
+            else:
+                return
+            
+        earliest_module = module.module_num
+        for stale_validation_request in self.validation_requests:
+            if stale_validation_request.module_num < earliest_module:
+                earliest_module = stale_validation_request.module_num
+            stale_validation_request.cancel()
+        self.validation_requests = []
+        settings_hash = self.__pipeline.settings_hash()
+        for module in self.__pipeline.modules():
+            if module.module_num >= earliest_module:
+                def on_validate_module(setting_idx, message, level,
+                                       module_num = module.module_num,
+                                       settings_hash = settings_hash):
+                    self.on_validate_module(setting_idx, message, level,
+                                            module_num, settings_hash)
+                    
+                validation_request = ValidationRequest(
+                    self.__pipeline, module, on_validate_module)
+                self.validation_requests.append(validation_request)
+                request_module_validation(validation_request)
+        
     def set_debug_mode(self, mode):
         if (mode == True) and (self.__pipeline is not None):
             modules = filter((lambda m:not m.is_input_module()),
@@ -265,8 +293,7 @@ class PipelineListView(object):
         self.list_ctrl.set_test_mode(mode)
         self.__debug_mode = mode
         self.__sizer.Layout()
-        # force a re-check of all modules
-        self.__first_dirty_module = 0
+        self.request_validation()
 
     def attach_to_pipeline(self, pipeline, controller):
         """Attach the viewer to the pipeline to allow it to listen for changes
@@ -330,40 +357,26 @@ class PipelineListView(object):
         """
         if isinstance(event,cpp.PipelineLoadedEvent):
             self.__on_pipeline_loaded(pipeline,event)
-            self.__first_dirty_module = 0
         elif isinstance(event,cpp.ModuleAddedPipelineEvent):
             self.__on_module_added(pipeline,event)
-            self.__first_dirty_module = \
-                min(self.__first_dirty_module, event.module_num - 1)
         elif isinstance(event,cpp.ModuleMovedPipelineEvent):
             self.__on_module_moved(pipeline,event)
-            self.__first_dirty_module = \
-                max(0, min(self.__first_dirty_module, event.module_num - 2))
         elif isinstance(event,cpp.ModuleRemovedPipelineEvent):
             self.__on_module_removed(pipeline,event)
-            self.__first_dirty_module = \
-                min(self.__first_dirty_module, event.module_num - 1)
         elif isinstance(event,cpp.PipelineClearedEvent):
             self.__on_pipeline_cleared(pipeline, event)
-            self.__first_dirty_module = 0
         elif isinstance(event,cpp.ModuleEditedPipelineEvent):
             if event.module_num not in [
                 x.module_num for x in self.get_selected_modules()]:
                 self.select_one_module(event.module_num)
-            self.__first_dirty_module = \
-                min(self.__first_dirty_module, event.module_num - 1)
         elif isinstance(event, cpp.ModuleEnabledEvent):
             self.__on_module_enabled(event)
-            self.__first_dirty_module = min(self.__first_dirty_module, 
-                                            event.module.module_num - 1)
         elif isinstance(event, cpp.ModuleDisabledEvent):
             self.__on_module_disabled(event)
-            self.__first_dirty_module = min(self.__first_dirty_module, 
-                                            event.module.module_num - 1)
     
     def notify_directory_change(self):
         # we can't know which modules use this information
-        self.__first_dirty_module = 0
+        self.request_validation()
         
     def iter_list_items(self):
         '''Iterate over the list items in all list controls
@@ -641,6 +654,7 @@ class PipelineListView(object):
         
         """
         self.resetItems(pipeline)
+        self.request_validation()
         
     def resetItems(self, pipeline):
         '''Reset the list view and repopulate the list items'''
@@ -682,12 +696,14 @@ class PipelineListView(object):
         
     def __on_pipeline_cleared(self, pipeline, event):
         self.resetItems(pipeline)
+        self.request_validation()
         
     def __on_module_added(self,pipeline, event):
         module = pipeline.modules(False)[event.module_num - 1]
         self.__populate_row(module)
         self.__adjust_rows()
         self.select_one_module(event.module_num)
+        self.request_validation(module)
 
     def __on_module_removed(self, pipeline, event):
         pipeline_module_ids = [module.id for module in pipeline.modules(False)]
@@ -700,6 +716,7 @@ class PipelineListView(object):
                     list_ctrl.DeleteItem(idx)
         self.__adjust_rows()
         self.__controller.enable_module_controls_panel_buttons()
+        self.request_validation()
         
     def __on_module_moved(self, pipeline, event):
         module = pipeline.modules(False)[event.module_num - 1]
@@ -715,6 +732,7 @@ class PipelineListView(object):
             other_module = pipeline.modules(False)[event.module_num - 2]
             modules = [other_module, module]
             
+        self.request_validation(modules[0])
         other_list_ctrl, other_index = self.get_ctrl_and_index(other_module)
         if other_list_ctrl != list_ctrl:
             # in different list controls, nothing changes
@@ -728,6 +746,7 @@ class PipelineListView(object):
     
     def __on_module_enabled(self, event):
         self.refresh_module_display(event.module)
+        self.request_validation(event.module)
         
     def refresh_module_display(self, module):
         '''Refresh the display of a module'''
@@ -749,6 +768,7 @@ class PipelineListView(object):
                 else:
                     self.__controller.stop_debugging()
         self.refresh_module_display(event.module)
+        self.request_validation()
     
     def __on_item_selected(self, event):
         if isinstance(event, wx.Event):
@@ -787,44 +807,22 @@ class PipelineListView(object):
                     if (not module.is_input_module() and
                         self.list_ctrl.running_item > index):
                         self.list_ctrl.set_running_item(index)
+                    self.request_validation(module)
                     return
                 
     def on_stop_debugging(self):
         self.list_ctrl.set_test_mode(False)
         
-    def on_idle(self,event):
-        last_idle_time = getattr(self, "last_idle_time", 0)
-        if time.time() - last_idle_time > CHECK_TIMEOUT_SEC:
-            self.last_idle_time = time.time()
-        else:
-            return
-
-        if self.__pipeline is None:
-            event.RequestMore(False)
-            return
-        request_more = True
-        modules = self.__pipeline.modules()
-        for i, module in enumerate(modules):
-            # skip to first dirty module for validation
-            if (module.module_num > self.__first_dirty_module and
-                 self.__submission_time + CHECK_FAIL_SEC < time.time()):
-                pipeline_hash = self.__pipeline.settings_hash()
-                def fn(setting_idx, message, level,
-                       idx=i, settings_hash = pipeline_hash):
-                    self.on_validate_module(setting_idx, message, level, idx, settings_hash)
-                self.__module_being_validated = i
-                self.__submission_time = time.time()
-                request_module_validation(self.__pipeline, module, fn)
-                
-        event.RequestMore(False)
-
     def on_validate_module(self, setting_idx, message, level,
-                           idx, settings_hash):
+                           module_num, settings_hash):
         if settings_hash != self.__pipeline.settings_hash():
-            self.__submission_time = 0
             return
             
-        module = self.__pipeline.modules()[idx]
+        modules = [x for x in self.__pipeline.modules() 
+                   if x.module_num == module_num]
+        if len(modules) == 0:
+            return
+        module = modules[0]
         list_ctrl, index = self.get_ctrl_and_index(module)
         if level == logging.WARNING:
             flags = PLV_STATE_WARNING
@@ -834,13 +832,6 @@ class PipelineListView(object):
             flags = 0
         list_ctrl.SetItemErrorToolTipString(index, message)
         list_ctrl.SetItemState(index, flags, PLV_STATE_ERROR_MASK)
-
-        if self.__first_dirty_module == idx:
-            self.__first_dirty_module = min(self.__first_dirty_module+1,
-                                            len(self.__pipeline.modules()))
-            self.last_idle_time = 0
-            self.__submission_time = 0
-            wx.PostEvent(self.__panel, wx.IdleEvent())
 
 PIPELINE_DATA_FORMAT = "CellProfiler.Pipeline"
 class PipelineDataObject(wx.CustomDataObject):
@@ -944,6 +935,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.bmp_disabled = plv_get_bitmap(IMG_DISABLED)
         self.bmp_slider = plv_get_bitmap(IMG_SLIDER)
         self.bmp_slider_active = plv_get_bitmap(IMG_SLIDER_ACTIVE)
+        self.bmp_downarrow = plv_get_bitmap(IMG_DOWNARROW)
         # The items to display
         self.items = []
         # The current or active item (has wx.CONTROL_CURRENT display flag)
@@ -954,6 +946,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.running_item = 0
         # True if in test mode
         self.test_mode = False
+        # True if allowed to disable a module
+        self.allow_disable = True
         # True to show the pause column, false to hide
         self.show_go_pause = True
         # True to show the eyeball column, false to hide it
@@ -1012,20 +1006,18 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         position = self.CalcUnscrolledPosition(position)
         x = position[0]
         y = position[1]
+        x0 = self.slider_width
         if self.test_mode:
-            x0 = self.slider_width
             if x < x0:
                 r = self.get_slider_rect()
                 if r.ContainsXY(x, y):
                     return None, PLV_HITTEST_SLIDER, None
                 return None, wx.LIST_HITTEST_NOWHERE, None
-        else:
-            x0 = 0
         column = int((x - x0) / self.column_width)
-        if not (self.show_go_pause and self.test_mode):
-            column += 1
-        if not self.show_show_frame_column:
-            column += 1
+        if not (self.show_go_pause and self.test_mode) and column == PAUSE_COLUMN:
+            return None, wx.LIST_HITTEST_NOWHERE, None
+        if not self.show_show_frame_column and column == EYE_COLUMN:
+            return None, wx.LIST_HITTEST_NOWHERE, None
         row = int(y / self.line_height)
         if row >= len(self.items):
             return None, wx.LIST_HITTEST_BELOW, None
@@ -1188,19 +1180,18 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.AdjustScrollbars()
         self.Refresh(eraseBackground = False)
         
+    def set_allow_disable(self, state):
+        '''Allow disabling of modules / disallow disabling of modules'''
+        self.allow_disable = state
+        self.Refresh(eraseBackground = False)
+        
     def set_running_item(self, idx):
         '''The index of the next module to run in test mode'''
         self.running_item = idx
         self.Refresh(eraseBackground = False)
 
     def DoGetBestSize(self):
-        x0 = self.column_width + self.text_gap
-        if self.show_go_pause and self.test_mode:
-            x0 += self.column_width
-        if self.show_show_frame_column:
-            x0 += self.column_width
-        if self.test_mode:
-            x0 += self.slider_width
+        x0 = self.column_width*3 + self.slider_width + self.text_gap
         max_width = 0
         for i, item in enumerate(self.items):
             width, height = self.GetTextExtent(item.module_name)
@@ -1216,14 +1207,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         return True
     
     def get_button_rect(self, column, idx):
-        x0 =  column * self.column_width
-        if self.test_mode:
-            x0 += self.slider_width
-        if not (self.show_go_pause and self.test_mode):
-            assert column != 0
-            x0 -= self.column_width
-        if not self.show_show_frame_column:
-            x0 -= self.column_width
+        x0 =  column * self.column_width + self.slider_width
         if self.pressed_column == column and self.pressed_row == idx:
             x0 += 1
             y0 = 1
@@ -1243,14 +1227,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         return self.get_button_rect(2, idx)
     
     def get_text_rect(self, index):
-        if self.test_mode:
-            x0 = self.slider_width + self.column_width  + self.text_gap
-        else:
-            x0 = self.column_width
-        if self.show_go_pause and self.test_mode:
-            x0 += self.column_width
-        if self.show_show_frame_column:
-            x0 += self.column_width
+        x0 = self.slider_width + self.column_width * 3  + self.text_gap
         return wx.Rect(x0 + self.gap,
                        index * self.line_height,
                        self.GetSizeTuple()[0] - x0 - self.gap, 18)
@@ -1301,6 +1278,24 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             if self.running_item is not None:
                 r = self.get_slider_rect()
                 dc.DrawBitmap(bmp, r.Left, r.Top, True)
+        else:
+            #
+            # Draw a green arrow indicating how much of the pipeline is good
+            #
+            for i in range(len(self.items)):
+                if self.items[i].get_error_state() == ERROR:
+                    break
+            else:
+                i = len(self.items)
+            if i > 0:
+                green_pen = wx.Pen(wx.Colour(0, 160, 0), 3)
+                top = 0
+                bottom = i * self.line_height - 3
+                dc.Pen = green_pen
+                dc.DrawLine(9, top, 9, bottom-self.bmp_downarrow.Height)
+                dc.DrawBitmap(self.bmp_downarrow, 
+                              9 - self.bmp_downarrow.Width / 2,
+                              bottom - self.bmp_downarrow.Height, True)
             
         clr_text = wx.SystemSettings.GetColour(wx.SYS_COLOUR_LISTBOXTEXT)
         clr_selected = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
@@ -1324,7 +1319,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                    BMP_WARNING if item.error_state == WARNING else
                    self.bmp_ok)
             dc.DrawBitmap(bmp, r.left, r.top, True)
-            self.draw_shading(dc, 2 ,i)
+            if self.allow_disable:
+                self.draw_shading(dc, 2 ,i)
             
             r = self.get_text_rect(i)
             if item.selected or i == self.active_item:
@@ -1378,10 +1374,11 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             plv_event = self.make_event(wx.EVT_LIST_BEGIN_DRAG, index)
             self.GetEventHandler().ProcessEvent(plv_event)
         elif hit_test & wx.LIST_HITTEST_ONITEMICON:
-            self.pressed_row = index
-            self.pressed_column = column
-            self.button_is_active = True
-            self.Refresh(eraseBackground=False)
+            if column != ERROR_COLUMN or self.allow_disable:
+                self.pressed_row = index
+                self.pressed_column = column
+                self.button_is_active = True
+                self.Refresh(eraseBackground=False)
     
     def deactivate_active_item(self):
         '''Remove the activation UI indication from the current active item'''

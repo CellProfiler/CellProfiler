@@ -1486,6 +1486,8 @@ class PipelineController:
         pathnames = [p.strip() for p in text.split("\n")]
         urls = []
         for pathname in pathnames:
+            if len(pathname) == 0:
+                continue
             if (pathname.startswith("http:") or 
                 pathname.startswith("https:") or
                 pathname.startswith("ftp:")):

@@ -1234,7 +1234,7 @@ class CPFigureFrame(wx.Frame):
             (xstart, ystart, width, height, 
              wx.ALIGN_CENTER, wx.ALIGN_CENTER, ctrl))
         nrows = len(statistics)
-        ncols = len(statistics[0])
+        ncols = 0 if nrows == 0 else len(statistics[0])
         ctrl.CreateGrid(nrows, ncols)
         if col_labels is not None:
             for i, value in enumerate(col_labels):

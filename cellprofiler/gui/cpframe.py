@@ -139,8 +139,9 @@ class CPFrame(wx.Frame):
         self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
         # bottom left will be the file browser
 
-        self.__logo_panel = wx.Panel(self.__left_win,-1,style=wx.SIMPLE_BORDER)
-        self.__logo_panel.BackgroundColour = cpprefs.get_background_color()
+        self.__logo_panel = wx.Panel(self.__left_win)
+        self.__logo_panel.BackgroundColour = background_color
+        
         self.__module_list_panel = wx.Panel(self.__left_win)
         self.__module_list_panel.SetBackgroundColour(background_color)
         self.__module_list_panel.SetToolTipString("The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
@@ -985,13 +986,19 @@ All rights reserved."""
         top_left_win.Layout()
 
     def __layout_logo(self):
-        import cStringIO
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-
+        self.__logo_panel.Sizer = sizer
         bitmap = wx.BitmapFromImage(get_builtin_image('CP_logo'))
         self.__logopic = wx.StaticBitmap(self.__logo_panel,-1,bitmap)
         sizer.Add(self.__logopic)
-        self.__logo_panel.SetSizer(sizer)
+        self.__welcome_button = wx.Button(
+            self.__logo_panel, ID_HELP_WELCOME, 
+            label = "Welcome",
+            style = wx.BU_EXACTFIT)
+        sizer.AddStretchSpacer(1)
+        self.__logo_panel.Sizer.Add(self.__welcome_button, 0,
+                                    wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT)
+        self.__welcome_button.Bind(wx.EVT_BUTTON, self.__on_help_welcome)
 
     def __set_icon(self):
         self.SetIcon(get_cp_icon())

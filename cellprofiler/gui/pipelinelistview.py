@@ -500,8 +500,11 @@ class PipelineListView(object):
         if event.EventObject is not self.list_ctrl:
             event.Veto()
             return
-        fd = StringIO()
         modules_to_save = [m.module_num for m in self.get_selected_modules()]
+        if len(modules_to_save) == 0:
+            event.Veto()
+            return
+        fd = StringIO()
         self.__pipeline.savetxt(fd, modules_to_save, 
                                 save_image_plane_details = False)
         pipeline_data_object = PipelineDataObject()
@@ -523,7 +526,9 @@ class PipelineListView(object):
         selected_module_ids = [m.id for m in self.get_selected_modules()]
         self.__pipeline.start_undoable_action()
         try:
+            print "Entering drop state"
             result = drop_source.DoDragDrop(wx.Drag_AllowMove)
+            print "Exiting drop state"
             self.drag_underway = False
             if result == wx.DragMove:
                 for id in selected_module_ids:
@@ -536,25 +541,51 @@ class PipelineListView(object):
             self.__pipeline.stop_undoable_action("Drag and drop")
         
     def provide_drag_feedback(self, x, y, data):
+        '''Show the drop insert point and return True if allowed
+        
+        x, y - drag point in window coordinates
+        data - drop object
+        
+        return True if allowed
+        '''
+        index = self.where_to_drop(x,y)
+        if self.allow_drag(x, y):
+            self.list_ctrl.update_drop_insert_point(index)
+            return True
+        return False
+    
+    def allow_drag(self, x, y):
+        '''Return True if dragging is allowed
+        
+        If drag is within-window, three seconds must have
+        elapsed since dragging or the user must move
+        the cursor 10 pixels. Drop at drag site is not
+        allowed.
+        '''
         index = self.where_to_drop(x,y)
         if index is None:
             self.list_ctrl.end_drop()
             return False
         if not self.drag_underway:
             # Decide to commit to dragging
-            if self.drag_time is None or time.time() - self.drag_time > 3:
-                pass
-            elif self.drag_start is not None:
+            now = time.time()
+            while self.drag_time is not None and self.drag_start is not None:
+                if now - self.drag_time > 3:
+                    break
                 distance = math.sqrt((x-self.drag_start[0])**2 +
                                      (y-self.drag_start[1])**2)
-                if distance < 10:
-                    return False
+                if distance > 10:
+                    break
+                return False
             self.drag_underway = True
-        self.list_ctrl.update_drop_insert_point(index)
+        if self.drag_start is not None:
+            start_index = self.list_ctrl.HitTest(self.drag_start)
+            if start_index == index:
+                return False
         return True
 
     def on_drop(self, x, y):
-        if self.where_to_drop(x,y)  is None:
+        if not self.allow_drag(x, y):
             return False
         return True
 
@@ -584,6 +615,7 @@ class PipelineListView(object):
         #
         # Insert the new modules
         #
+        print "Dropping"
         wx.BeginBusyCursor()
         try:
             pipeline = cpp.Pipeline()
@@ -728,6 +760,10 @@ class PipelineListView(object):
             module = self.get_event_module(event)
             self.__module_view.set_selection(module.module_num)
             self.__controller.enable_module_controls_panel_buttons()
+            if event.EventObject is self.list_ctrl:
+                self.input_list_ctrl.deactivate_active_item()
+            else:
+                self.list_ctrl.deactivate_active_item()
 
     def __on_item_deselected(self,event):
         self.__controller.enable_module_controls_panel_buttons()
@@ -950,7 +986,6 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.Bind(wx.EVT_MOTION, self.on_mouse_move)
         self.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
         self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.on_capture_lost)
-        self.Bind(wx.EVT_MOUSEWHEEL, self.on_mousewheel)
         
     def HitTestSubItem(self, position):
         '''Mimic ListCtrl's HitTestSubItem
@@ -1309,7 +1344,6 @@ class PipelineListCtrl(wx.PyScrolledWindow):
     def make_event(self, py_event_binder, index = None):
         event = wx.NotifyEvent(py_event_binder.evtType[0])
         event.EventObject = self
-        event.Id = self.Id
         if index is not None:
             event.SetInt(index)
         return event
@@ -1343,17 +1377,26 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             self.button_is_active = True
             self.Refresh(eraseBackground=False)
     
+    def deactivate_active_item(self):
+        '''Remove the activation UI indication from the current active item'''
+        self.active_item = None
+        self.Refresh(eraseBackground=False)
+        
     def activate_item(self, index, toggle_selection, multiple_selection, 
                       anchoring = True):
         '''Move the active item
-        
-        event - event triggering the move
         
         index - index of item to activate
         
         toggle_selection - true to toggle the selection state, false to 
                            always select.
         
+        multiple_selection - true to allow multiple selections, false
+                           to deselect all but the activated.
+                           
+        anchoring - true to place the anchor for extended selection
+                    false if the anchor should be kept where it is
+                    
         returns the selection state
         '''
         self.active_item = index
@@ -1384,9 +1427,10 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         return True
         
     def on_left_up(self, event):
+        if self.GetCapture() == self:
+            self.ReleaseMouse()
         if self.active_slider:
             self.active_slider = False
-            self.ReleaseMouse()
             self.RefreshRect(self.get_slider_rect())
         if self.button_is_active and self.pressed_column is not None:
             if self.pressed_column == ERROR_COLUMN:
@@ -1399,7 +1443,6 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             self.pressed_column = None
             plv_event = self.make_event(code, self.pressed_row)
             self.GetEventHandler().ProcessEvent(plv_event)
-            self.ReleaseMouse()
     
     def on_mouse_move(self, event):
         index, hit_test, column = self.HitTestSubItem(event.Position)
@@ -1498,9 +1541,6 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 event.Skip()
         else:
             event.Skip()
-    
-    def on_mousewheel(self, event):
-        pass
     
     def on_capture_lost(self, event):
         self.active_slider = False

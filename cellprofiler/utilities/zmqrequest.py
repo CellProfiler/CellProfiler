@@ -386,8 +386,11 @@ class Boundary(object):
         self.threadlocal = threading.local()  # for connecting to notification socket, and receiving replies
 
         # announce socket
+        # zmq.PUB - publish half of publish / subscribe
+        # LINGER = 0 to not wait for transmission during shutdown
         
         self.announce_socket = self.zmq_context.socket(zmq.PUB)
+        self.announce_socket.setsockopt(zmq.LINGER, 0)
         if port is None:
             self.announce_port = self.announce_socket.bind_to_random_port(zmq_address)
             self.announce_address = "%s:%d" % (zmq_address, self.announce_port)
@@ -397,12 +400,14 @@ class Boundary(object):
             
         # socket where we receive Requests
         self.request_socket = self.zmq_context.socket(zmq.ROUTER)
+        self.request_socket.setsockopt(zmq.LINGER, 0)
         self.request_port = self.request_socket.bind_to_random_port(zmq_address)
         self.request_address = zmq_address + (':%d' % self.request_port)
         #
         # socket for requests outside of the loopback port
         #
         self.external_request_socket = self.zmq_context.socket(zmq.ROUTER)
+        self.external_request_socket.setsockopt(zmq.LINGER, 0)
         try:
             fqdn = socket.getfqdn()
         except:
@@ -594,7 +599,7 @@ class Boundary(object):
                     if isinstance(thread, threading.Thread):
                         thread.join()
     
-            self.request_socket.close()  # will linger until messages are delivered
+            self.request_socket.close()
             logger.info("Exiting the boundary thread")
         except:
             #
@@ -621,6 +626,7 @@ class Boundary(object):
         '''
         if not hasattr(self.threadlocal, 'notify_socket'):
             self.threadlocal.notify_socket = self.zmq_context.socket(zmq.PUB)
+            self.threadlocal.notify_socket.setsockopt(zmq.LINGER, 0)
             self.threadlocal.notify_socket.connect(NOTIFY_SOCKET_ADDR)
         self.downward_queue.put((msg, arg))
         self.threadlocal.notify_socket.send('WAKE UP!')
@@ -732,6 +738,7 @@ def lock_file(path, timeout=3):
             remote_uid = f.readline().strip()
         logger.info("Owner is %s" % remote_address)
         request_socket = the_boundary.zmq_context.socket(zmq.REQ)
+        request_socket.setsockopt(zmq.LINGER, 0)
         assert isinstance(request_socket, zmq.Socket)
         request_socket.connect(remote_address)
         

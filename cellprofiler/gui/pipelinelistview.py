@@ -245,6 +245,15 @@ class PipelineListView(object):
                 item = PipelineListCtrl.PipelineListCtrlItem(module)
                 item.set_state(PLV_STATE_UNAVAILABLE, PLV_STATE_UNAVAILABLE)
                 self.input_list_ctrl.InsertItem(i, item)
+        else:
+            # remove the fake modules if present
+            idx = 0
+            while idx < self.input_list_ctrl.ItemCount:
+                if self.input_list_ctrl.items[idx].is_unavailable():
+                    self.input_list_ctrl.DeleteItem(idx)
+                else:
+                    idx += 1
+                
         self.transparent_window.Show(not show)
         
     def set_debug_mode(self, mode):

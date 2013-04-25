@@ -1161,6 +1161,7 @@ class PipelineController:
             cpprefs.set_current_pipeline_path(None)
             self.__dirty_pipeline = False
             self.set_title()
+            self.__pipeline_list_view.select_one_module(1)
             self.enable_module_controls_panel_buttons()
     
     def check_close(self):

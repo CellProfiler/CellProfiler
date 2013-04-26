@@ -35,8 +35,9 @@ class PreferencesView:
     """View / controller for the preferences that get displayed in the main window
     
     """
-    def __init__(self, panel):
+    def __init__(self, parent_sizer, panel, progress_panel, status_panel):
         self.__panel = panel
+        self.__parent_sizer = parent_sizer
         panel.AutoLayout = True
         static_box = wx.StaticBox(panel, label="Folders")
         panel.SetSizer(wx.BoxSizer(wx.VERTICAL))
@@ -67,19 +68,17 @@ class PreferencesView:
         self.__odds_and_ends_panel = wx.Panel(panel)
         self.__odds_and_ends_panel.AutoLayout = True
         self.__make_odds_and_ends_panel()
+        self.__status_panel = status_panel
+        status_panel.Sizer = wx.BoxSizer()
         self.__status_text = wx.StaticText(
-            panel, style=wx.SUNKEN_BORDER, label=WELCOME_MESSAGE)
-        self.__progress_panel = wx.Panel(panel)
+            status_panel, style=wx.SUNKEN_BORDER, label=WELCOME_MESSAGE)
+        status_panel.Sizer.Add(self.__status_text, 1, wx.EXPAND)
+        self.__progress_panel = progress_panel
         self.__progress_panel.AutoLayout = True
         self.__make_progress_panel()
         self.__sizer.AddMany([(self.__image_folder_panel,0,wx.EXPAND|wx.ALL,1),
                               (self.__output_folder_panel,0,wx.EXPAND|wx.ALL,1),
                               (self.__odds_and_ends_panel,0,wx.EXPAND|wx.ALL,1)])
-        self.__sizer.AddSpacer(2)
-        self.__panel.Sizer.AddSpacer(2)
-        self.__panel.Sizer.Add(self.__status_text, 0, wx.EXPAND|wx.ALL, 4)
-        self.__panel.Sizer.Add(self.__progress_panel, 0, 
-                               wx.EXPAND | wx.BOTTOM, 2)
         self.show_status_text()
         self.__errors = set()
         self.__pipeline_list_view = None
@@ -98,13 +97,17 @@ class PreferencesView:
         
     def show_progress_panel(self):
         '''Show the pipeline progress panel and hide the status text'''
-        self.__panel.Sizer.Hide(self.__status_text)
-        self.__panel.Sizer.Show(self.__progress_panel)
+        self.__parent_sizer.Hide(self.__status_panel)
+        self.__parent_sizer.Show(self.__progress_panel)
+        self.__parent_sizer.Layout()
+        self.__progress_panel.Layout()
         
     def show_status_text(self):
         '''Show the status text and hide the pipeline progress panel'''
-        self.__panel.Sizer.Show(self.__status_text)
-        self.__panel.Sizer.Hide(self.__progress_panel)
+        self.__parent_sizer.Show(self.__status_panel)
+        self.__parent_sizer.Hide(self.__progress_panel)
+        self.__parent_sizer.Layout()
+        self.__status_panel.Layout()
         
     def close(self):
         cpprefs.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
@@ -366,9 +369,7 @@ class PreferencesView:
         self.__progress_watcher = ProgressWatcher(self.__progress_panel,
                                                   self.update_progress,
                                                   multiprocessing=cpanalysis.use_analysis)
-        self.__panel.Sizer.Show(self.__progress_panel)
-        self.__panel.Sizer.Hide(self.__status_text)
-        self.__panel.Layout()
+        self.show_progress_panel()
         
     def on_pipeline_progress(self, *args):
         self.__progress_watcher.on_pipeline_progress(*args)
@@ -386,11 +387,8 @@ class PreferencesView:
         if self.__progress_watcher is not None:
             self.__progress_watcher.stop()
         self.__progress_watcher = None
-        self.__panel.Sizer.Hide(self.__progress_panel)
-        self.__panel.Sizer.Show(self.__status_text)
-        self.__panel.Parent.Layout()
-        self.__panel.Layout()
-
+        self.show_status_text()
+        
     def set_message_text(self,text):
         saved_size = self.__status_text.GetSize()
         self.__status_text.SetLabel(text)

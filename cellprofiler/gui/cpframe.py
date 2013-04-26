@@ -326,7 +326,15 @@ class CPFrame(wx.Frame):
         self.__preferences_panel.BackgroundColour = cpprefs.get_background_color()
         self.__preferences_panel.SetToolTipString(
             "The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
-        
+        #
+        # Progress and status panels
+        #
+        self.__progress_panel = wx.Panel(self.__right_win)
+        self.__progress_panel.AutoLayout = True
+        self.__right_win.Sizer.Add(self.__progress_panel, 0, wx.EXPAND)
+        self.__status_panel = wx.Panel(self.__right_win)
+        self.__status_panel.AutoLayout = True
+        self.__right_win.Sizer.Add(self.__status_panel, 0, wx.EXPAND)
         self.__add_menu()
         self.__attach_views()
         self.__set_properties()
@@ -983,7 +991,11 @@ All rights reserved."""
             notes_panel = self.__notes_panel)
         self.__pipeline_controller.attach_to_module_view(self.__module_view)
         self.__pipeline_list_view.attach_to_module_view((self.__module_view))
-        self.__preferences_view = PreferencesView(self.__preferences_panel)
+        self.__preferences_view = PreferencesView(
+            self.__right_win.Sizer,
+            self.__preferences_panel, 
+            self.__progress_panel, 
+            self.__status_panel)
         self.__preferences_view.attach_to_pipeline_list_view(self.__pipeline_list_view)
 
     def __do_layout(self):

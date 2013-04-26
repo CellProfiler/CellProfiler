@@ -24,6 +24,9 @@ if __name__=="__main__" and "CP_DEBUG_WORKER" not in os.environ:
     except:
         maxfd = 256
     os.closerange(3, maxfd)
+if __name__=="__main__":
+    from cellprofiler.preferences import set_headless
+    set_headless()
 import time
 import optparse
 import threading

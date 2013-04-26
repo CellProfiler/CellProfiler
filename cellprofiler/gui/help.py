@@ -376,10 +376,10 @@ pop-up box that appears. You can learn more about each module by clicking
 <i>Module Help</i> in the "Add modules" window or the <i>?</i> button after the module has been placed and selected
 in the pipeline. Modules are added to the end of the pipeline, but you can
 adjust their order in the main window by dragging and dropping them, or by selecting a module (or
-modules, using the <i>Shift</i> key) and using the <i>Move up</i> 
-<img src="%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> and <i>Move down</i> 
+modules, using the <i>Shift</i> key) and using the <i>Move module up</i> 
+<img src="%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> and <i>Move module down</i> 
 <img src="%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> buttons. 
-The <i>Remove</i> <img src="%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button will delete the selected 
+The <i>Remove module</i> <img src="%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button will delete the selected 
 module(s) from the pipeline.</p> 
 <p>Typically, the first module you must run is 
  <b>LoadImages</b>, in which you specify the identity of the images 
@@ -998,17 +998,17 @@ MENU_BAR_EDIT_HELP = """
 The <i>Edit</i> menu provides options for modifying modules in your current pipeline.
 <ul>
 <li><b>Undo:</b> Undo your previous module modification.</li>
-<li><b>Move Up:</b> Move the currently selected module(s) up in the module list. You
+<li><b>Move Module Up:</b> Move the currently selected module(s) up in the module list. You
 can also use the <img src="%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> button located
 below the Pipeline panel.</li>
-<li><b>Move Down:</b> Move the currently selected module(s) down in the module list. You
+<li><b>Move Module Down:</b> Move the currently selected module(s) down in the module list. You
 can also use the <img src="%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> button located
 below the Pipeline panel.</li>
-<li><b>Delete:</b> Remove the currently selected module(s) from the module list. 
+<li><b>Delete Module:</b> Remove the currently selected module(s) from the module list. 
 Pressing the Delete key also removes the module(s). You
 can also use the <img src="%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button located
 under the Pipeline panel.</li>
-<li><b>Duplicate:</b> Duplicate the currently selected module(s) in the pipeline.
+<li><b>Duplicate Module:</b> Duplicate the currently selected module(s) in the pipeline.
 The current settings of the selected module(s) are retained in the duplicate.</li>
 <li><b>Add Module:</b> Select a module from the pop-up list to inster into the current
 pipeline. You can also use the <img src="%(LOCATION_MODULE_ADD_BUTTON)s"></img> button located

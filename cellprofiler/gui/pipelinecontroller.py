@@ -464,21 +464,23 @@ class PipelineController:
         #
         # Launch sizer
         #
-        analyze_bmp = wx.BitmapFromImage(
-            get_builtin_image("IMG_ANALYZE_16"))
+        self.__test_bmp = wx.BitmapFromImage(get_builtin_image("IMG_TEST"))
+        self.__test_mode_button = BitmapLabelButton(
+                panel, bitmap = self.__test_bmp, label = self.ENTER_TEST_MODE)
+        self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
+        self.__test_mode_button.SetToolTipString(self.ENTER_TEST_MODE_HELP)         
+        
+        self.__tcp_launch_sizer.Add(self.__test_mode_button, 1, wx.EXPAND)        
+
+        analyze_bmp = wx.BitmapFromImage(get_builtin_image("IMG_ANALYZE_16"))
         self.__analyze_images_button = BitmapLabelButton(
             panel, bitmap = analyze_bmp, label = self.ANALYZE_IMAGES)
         self.__analyze_images_button.Bind(wx.EVT_BUTTON, self.on_analyze_images)
         self.__analyze_images_button.SetToolTipString(self.ANALYZE_IMAGES_HELP)
+        
         self.__tcp_launch_sizer.Add(self.__analyze_images_button, 1, wx.EXPAND)
         
-        self.__test_bmp = wx.BitmapFromImage(get_builtin_image("IMG_TEST"))
-        self.__test_mode_button = \
-            BitmapLabelButton(
-                panel, bitmap = self.__test_bmp, label = self.ENTER_TEST_MODE)
-        self.__test_mode_button.Bind(wx.EVT_BUTTON, self.on_debug_toggle)
-        self.__test_mode_button.SetToolTipString(self.ENTER_TEST_MODE_HELP)        
-        self.__tcp_launch_sizer.Add(self.__test_mode_button, 1, wx.EXPAND)
+               
         #
         # Analysis sizer
         #
@@ -526,19 +528,19 @@ class PipelineController:
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)
         
+        self.__tcp_stop_testmode = BitmapLabelButton(
+            panel, label = "Exit test mode", bitmap = stop_bmp)
+        self.__tcp_stop_testmode.SetToolTip(wx.ToolTip("Exit test mode"))
+        self.__tcp_stop_testmode.Bind(wx.EVT_BUTTON, self.on_debug_stop)        
+        sub_sizer.Add(self.__tcp_stop_testmode, 1, wx.EXPAND)        
+
         next_image_bmp = wx.BitmapFromImage(get_builtin_image("IMG_IMAGE"))
         self.__tcp_next_imageset = BitmapLabelButton(
             panel, label = "Next Image", bitmap = next_image_bmp)
-        self.__tcp_next_imageset.Bind(
-            wx.EVT_BUTTON, self.on_debug_next_image_set)
-        sub_sizer.Add(self.__tcp_next_imageset, 1, wx.EXPAND)
         self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image cycle"))        
+        self.__tcp_next_imageset.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set)
+        sub_sizer.Add(self.__tcp_next_imageset, 1, wx.EXPAND)        
 
-        self.__tcp_stop_testmode = BitmapLabelButton(
-            panel, label = "Exit test mode", bitmap = stop_bmp)
-        sub_sizer.Add(self.__tcp_stop_testmode, 1, wx.EXPAND)
-        self.__tcp_stop_testmode.Bind(wx.EVT_BUTTON, self.on_debug_stop)
-        
         for child in panel.GetChildren():
             child.SetBackgroundColour(bkgnd_color)
 
@@ -1186,7 +1188,7 @@ class PipelineController:
                                                      wx.ART_MESSAGE_BOX)
             icon = wx.StaticBitmap(dialog, -1, question_mark)
             sizer.Add(icon, 0, wx.EXPAND | wx.ALL, 5)
-            text = wx.StaticText(dialog, label = "Do you want to save your settings to a pipeline file?")
+            text = wx.StaticText(dialog, label = "Do you want to save your settings to a project file?")
             sizer.Add(text, 0, wx.EXPAND | wx.ALL, 5)
             super_sizer.Add(wx.StaticLine(dialog), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 20)
             #

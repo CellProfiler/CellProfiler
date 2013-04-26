@@ -35,14 +35,16 @@ class PreferencesView:
     """View / controller for the preferences that get displayed in the main window
     
     """
-    def __init__(self,panel):
+    def __init__(self, panel):
         self.__panel = panel
+        panel.AutoLayout = True
         static_box = wx.StaticBox(panel, label="Folders")
         panel.SetSizer(wx.BoxSizer(wx.VERTICAL))
         static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         panel.Sizer.Add(static_box_sizer, 1, wx.EXPAND)
         self.__sizer = static_box_sizer
-        self.__image_folder_panel = wx.Panel(panel,-1)
+        self.__image_folder_panel = wx.Panel(panel)
+        self.__image_folder_panel.AutoLayout = True
         self.__image_edit_box = self.__make_folder_panel(
             self.__image_folder_panel,
             cpprefs.get_default_image_directory(),
@@ -52,7 +54,8 @@ class PreferencesView:
             [cpprefs.set_default_image_directory,
              self.__notify_pipeline_list_view_directory_change],
             refresh_action = self.refresh_input_directory)
-        self.__output_folder_panel = wx.Panel(panel,-1)
+        self.__output_folder_panel = wx.Panel(panel)
+        self.__output_folder_panel.AutoLayout =  True
         self.__output_edit_box = self.__make_folder_panel(
             self.__output_folder_panel,
             cpprefs.get_default_output_directory(),
@@ -61,10 +64,13 @@ class PreferencesView:
             DEFAULT_OUTPUT_FOLDER_HELP,
             [cpprefs.set_default_output_directory,
              self.__notify_pipeline_list_view_directory_change])
-        self.__odds_and_ends_panel = wx.Panel(panel,-1)
+        self.__odds_and_ends_panel = wx.Panel(panel)
+        self.__odds_and_ends_panel.AutoLayout = True
         self.__make_odds_and_ends_panel()
-        self.__status_text = wx.StaticText(panel,-1,style=wx.SUNKEN_BORDER,label=WELCOME_MESSAGE)
-        self.__progress_panel = wx.Panel(panel, -1)
+        self.__status_text = wx.StaticText(
+            panel, style=wx.SUNKEN_BORDER, label=WELCOME_MESSAGE)
+        self.__progress_panel = wx.Panel(panel)
+        self.__progress_panel.AutoLayout = True
         self.__make_progress_panel()
         self.__sizer.AddMany([(self.__image_folder_panel,0,wx.EXPAND|wx.ALL,1),
                               (self.__output_folder_panel,0,wx.EXPAND|wx.ALL,1),
@@ -109,13 +115,20 @@ class PreferencesView:
                             actions, refresh_action = None):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         help_button = wx.Button(panel,-1,'?',(0,0), (30,-1))
+        sizer.Add(help_button, 0, wx.ALIGN_CENTER)
+        sizer.AddSpacer(2)
         text_static = wx.StaticText(panel,-1,text+':')
+        sizer.Add(text_static, 0, wx.ALIGN_CENTER)
         edit_box = wx.ComboBox(panel, -1, value, choices=list_fn())
+        sizer.Add(edit_box, 1, wx.ALIGN_CENTER)
+        sizer.AddSpacer(2)
         browse_bmp = wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN,
                                               wx.ART_CMN_DIALOG,
                                               (16,16))
         browse_button = wx.BitmapButton(panel,-1,bitmap = browse_bmp)
         browse_button.SetToolTipString("Browse for %s folder" % text)
+        sizer.Add(browse_button, 0, wx.ALIGN_CENTER)
+        sizer.AddSpacer(2)
         
         new_bmp = wx.ArtProvider.GetBitmap(wx.ART_NEW_DIR,
                                            wx.ART_CMN_DIALOG,
@@ -124,21 +137,18 @@ class PreferencesView:
         new_button.SetToolTipString("Make a new sub-folder")
         if os.path.isdir(value):
             new_button.Disable()
-        sizer.AddMany([(help_button,0,wx.ALL | wx.ALIGN_CENTER, 1),
-                       (text_static,0,wx.ALIGN_CENTER, 1),
-                       (edit_box,3,wx.EXPAND|wx.ALL,1)])
+        sizer.Add(new_button, 0, wx.ALIGN_CENTER)
         if refresh_action is not None:
             refresh_bitmap = wx.ArtProvider.GetBitmap(wx.ART_REDO,
                                                       wx.ART_CMN_DIALOG,
                                                       (16,16))
             refresh_button = wx.BitmapButton(panel, -1, bitmap = refresh_bitmap)
+            sizer.AddSpacer(2)
             sizer.Add(refresh_button, 0, wx.ALIGN_CENTER, 1)
             refresh_button.SetToolTipString("Refresh the Default Input Folder list")
             def on_refresh(event):
                 refresh_action()
             refresh_button.Bind(wx.EVT_BUTTON, on_refresh)
-        sizer.AddMany([(browse_button,0,0|wx.ALL,1),
-                       (new_button,0,0|wx.ALL,1)])
         panel.SetSizer(sizer)
         def on_new_folder(event):
             if os.path.exists(edit_box.Value):
@@ -219,15 +229,24 @@ class PreferencesView:
         self.__write_measurements_combo_box.Bind(
             wx.EVT_CHOICE, on_write_MAT_files_combo_box)
         output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.AddMany([
-            (output_filename_help_button,0,wx.ALIGN_CENTER|wx.ALL,1),
-            (self.__output_filename_text,0,wx.ALIGN_CENTER,1),
-            (self.__output_filename_edit_box,5,wx.ALL,1),
-            (self.__allow_output_filename_overwrite_check_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
-            ((1, 1), 1),
-            (wx.StaticText(panel, label = "Measurements file format:"), 0, wx.ALIGN_CENTER | wx.ALL, 1),
-            (self.__write_measurements_combo_box, 0, wx.ALIGN_CENTER | wx.ALL, 1)])
+        sizer = wx.FlexGridSizer(2, 3, 2, 2)
+        sizer.SetFlexibleDirection(wx.HORIZONTAL)
+        sizer.AddGrowableCol(2)
+        sizer.Add(output_filename_help_button, 0, wx.ALIGN_CENTER)
+        sizer.Add(self.__output_filename_text, 0, wx.ALIGN_RIGHT)
+        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(sub_sizer, 1, wx.EXPAND)
+        sub_sizer.Add(self.__output_filename_edit_box,1 , wx.EXPAND)
+        sub_sizer.AddSpacer(2)
+        sub_sizer.Add(self.__allow_output_filename_overwrite_check_box, 0, 
+             wx.ALIGN_CENTER)
+        #
+        # One blank in second row (help button column)
+        #
+        sizer.Add(wx.BoxSizer(), 0, wx.EXPAND)
+        sizer.Add(wx.StaticText(
+            panel, label = "Measurements file format:"), 0, wx.ALIGN_RIGHT)
+        sizer.Add(self.__write_measurements_combo_box, 0, wx.ALIGN_LEFT)
         panel.SetSizer(sizer)
         panel.Bind(wx.EVT_BUTTON,
                    lambda event: self.__on_help(event, OUTPUT_FILENAME_HELP),

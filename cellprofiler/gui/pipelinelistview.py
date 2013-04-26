@@ -110,6 +110,7 @@ class PipelineListView(object):
     """View on a set of modules
     
     Here is the window hierarchy within the panel:
+    pipeline static box
     top_sizer
         input panel
              box sizer
@@ -120,6 +121,11 @@ class PipelineListView(object):
             self.__sizer
                 self.__pipeline_slider
                 self.list_ctrl
+        "Outputs" static box
+            static box sizer
+                self.outputs_panel
+                    box sizer
+                        show preferences button
     """
     def __init__(self, panel, frame):
         self.__pipeline = None
@@ -127,16 +133,38 @@ class PipelineListView(object):
         self.__frame = frame
         self.__module_controls_panel = None
         assert isinstance(panel, wx.Window)
-        panel.Sizer = top_sizer = wx.BoxSizer(wx.VERTICAL)
-        static_box = wx.StaticBox(self.__panel, label = "Create workspace")
+        static_box = wx.StaticBox(self.__panel, label = "Pipeline")
+        top_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        panel.Sizer = top_sizer
+        static_box = wx.StaticBox(self.__panel, label = "Input modules")
         self.__input_controls = [static_box]
         self.__input_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
         top_sizer.Add(self.__input_sizer, 0, wx.EXPAND)
         self.make_input_panel()
         
-        modules_box = wx.StaticBox(panel, label = "Analyze images")
+        modules_box = wx.StaticBox(panel, label = "Analysis modules")
         self.__sizer=wx.StaticBoxSizer(modules_box, wx.HORIZONTAL)
         top_sizer.Add(self.__sizer, 1, wx.EXPAND)
+        
+        outputs_box = wx.StaticBox(panel, label = "Output")
+        outputs_sizer = wx.StaticBoxSizer(outputs_box, wx.VERTICAL)
+        top_sizer.Add(outputs_sizer, 0, wx.EXPAND)
+        self.outputs_panel = wx.Panel(panel)
+        outputs_sizer.Add(self.outputs_panel, 1, wx.EXPAND)
+        self.outputs_panel.Sizer = wx.BoxSizer()
+        self.outputs_panel.BackgroundColour = wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOW)
+        self.outputs_panel.BackgroundStyle = wx.SOLID
+        self.outputs_button = wx.Button(self.outputs_panel, 
+                                        label = "View output settings",
+                                        style = wx.BU_EXACTFIT)
+        self.outputs_panel.Sizer.AddStretchSpacer(1)
+        self.outputs_panel.Sizer.Add(
+            self.outputs_button, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 2)
+        self.outputs_panel.Sizer.AddStretchSpacer(1)
+        self.outputs_button.Bind(wx.EVT_BUTTON, self.on_outputs_button)
+        self.outputs_panel.AutoLayout = True
+        self.__panel.Layout()
+        self.outputs_panel.Layout()
         self.__panel.SetAutoLayout(True)
 
         self.make_list()
@@ -157,16 +185,11 @@ class PipelineListView(object):
         # Bind events
         #
         self.list_ctrl.Bind(wx.EVT_LIST_ITEM_SELECTED, 
-                            self.__on_item_selected, 
-                            self.list_ctrl)
+                            self.__on_item_selected)
         self.list_ctrl.Bind(wx.EVT_LIST_ITEM_DESELECTED, 
-                            self.__on_item_deselected, 
-                            self.list_ctrl)
+                            self.__on_item_deselected)
         self.list_ctrl.Bind(EVT_PLV_SLIDER_MOTION,
                             self.__on_slider_motion)
-        self.input_list_ctrl.Bind(wx.EVT_LIST_ITEM_SELECTED,
-                                  self.__on_item_selected, 
-                                  self.input_list_ctrl)
         self.list_ctrl.Bind(wx.EVT_LEFT_DCLICK, self.__on_list_dclick)
         self.list_ctrl.Bind(wx.EVT_CONTEXT_MENU, self.__on_list_context_menu)
         self.list_ctrl.Bind(EVT_PLV_ERROR_COLUMN_CLICKED, 
@@ -255,6 +278,9 @@ class PipelineListView(object):
                     idx += 1
                 
         self.transparent_window.Show(not show)
+        
+    def on_outputs_button(self, event):
+        self.__frame.show_preferences(True)
         
     def request_validation(self, module = None):
         '''Request validation of the pipeline, starting at the given module'''
@@ -737,12 +763,21 @@ class PipelineListView(object):
         if other_list_ctrl != list_ctrl:
             # in different list controls, nothing changes
             return
+        if list_ctrl.active_item == index:
+            new_active_item = other_index
+        elif list_ctrl.active_item == other_index:
+            new_active_item = index
+        else:
+            new_active_item = None
         temp = list_ctrl.items[index]
         list_ctrl.items[index] = list_ctrl.items[other_index]
         list_ctrl.items[other_index] = temp
         self.__adjust_rows()
+        if new_active_item is not None:
+            list_ctrl.activate_item(new_active_item, False, True)
         self.__controller.enable_module_controls_panel_buttons()
-        list_ctrl.Refresh(eraseBackground=False)
+        list_ctrl.SetFocus()
+
     
     def __on_module_enabled(self, event):
         self.refresh_module_display(event.module)
@@ -752,6 +787,13 @@ class PipelineListView(object):
         '''Refresh the display of a module'''
         list_ctrl, index = self.get_ctrl_and_index(module)
         list_ctrl.Refresh(eraseBackground=False)
+        
+    def get_active_module(self):
+        '''Return the module that's currently active'''
+        for lc in (self.input_list_ctrl, self.list_ctrl):
+            if lc.active_item is not None:
+                return lc.items[lc.active_item].module
+        return None
     
     def __on_module_disabled(self, event):
         if event.module == self.get_current_debug_module(False):
@@ -771,25 +813,17 @@ class PipelineListView(object):
         self.request_validation()
     
     def __on_item_selected(self, event):
-        if isinstance(event, wx.Event):
-            def clear_all_selections(ctrl):
-                for i in range(ctrl.GetItemCount()):
-                    ctrl.Select(i, False)
-            if event.GetEventObject() == self.input_list_ctrl:
-                clear_all_selections(self.list_ctrl)
-            else:
-                clear_all_selections(self.input_list_ctrl)
         self.__controller.enable_module_controls_panel_buttons()
     
     def __on_item_activated(self, event):
         if self.__module_view:
             module = self.get_event_module(event)
             self.__module_view.set_selection(module.module_num)
-            self.__controller.enable_module_controls_panel_buttons()
             if event.EventObject is self.list_ctrl:
                 self.input_list_ctrl.deactivate_active_item()
             else:
                 self.list_ctrl.deactivate_active_item()
+        self.__controller.enable_module_controls_panel_buttons()
 
     def __on_item_deselected(self,event):
         self.__controller.enable_module_controls_panel_buttons()
@@ -1359,7 +1393,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             self.CaptureMouse()
             self.RefreshRect(self.get_slider_rect())
         elif hit_test & wx.LIST_HITTEST_ONITEMLABEL:
-            if event.ShiftDown() and self.active_item is not None:
+            if (event.ShiftDown() and self.active_item is not None
+                and self.allow_disable):
                 # Extend the selection
                 begin = min(self.active_item, index)
                 end = max(self.active_item, index) + 1
@@ -1405,16 +1440,17 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.active_item = index
         plv_event = self.make_event(wx.EVT_LIST_ITEM_ACTIVATED, index)
         self.GetEventHandler().ProcessEvent(plv_event)
-        if self.IsSelected(index) and toggle_selection:
-            self.Select(index, False)
-            return False
-        if not multiple_selection:
-            for i, item in enumerate(self.items):
-                if self.IsSelected(i):
-                    self.Select(i, False)
-        self.Select(index, True)
-        if anchoring:
-            self.anchor = index
+        if self.allow_disable:
+            if self.IsSelected(index) and toggle_selection:
+                self.Select(index, False)
+                return False
+            if not multiple_selection:
+                for i, item in enumerate(self.items):
+                    if self.IsSelected(i):
+                        self.Select(i, False)
+            self.Select(index, True)
+            if anchoring:
+                self.anchor = index
         window_height = int(self.GetSizeTuple()[1] / self.line_height)
         #
         # Always keep the active item in view

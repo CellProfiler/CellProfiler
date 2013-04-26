@@ -774,6 +774,8 @@ def lock_file(path, timeout=3):
 
 def unlock_file(path):
     '''Unlock the file at the given path'''
+    if the_boundary is None:
+        return
     q = Queue.Queue()
     start_lock_thread()
     __lock_queue.put((None, UNLOCK_REQUEST, path, q))

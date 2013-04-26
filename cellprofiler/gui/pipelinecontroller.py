@@ -1522,26 +1522,26 @@ class PipelineController:
         # Enable/disable the movement buttons
         #
         selected_modules = self.__get_selected_modules()
-        # The module_num of the first module that's not an input module
-        first_module_num, last_module_num = [
-            reduce(fn, 
-                   [module.module_num for module in self.__pipeline.modules()
-                    if not module.is_input_module()],
-                   initial)
-            for fn, initial in ((min, len(self.__pipeline.modules())),
-                                (max, -1))]
-        enable_up = True
-        enable_down = True
+        active_module = self.__pipeline_list_view.get_active_module()
+        if active_module is None or active_module.is_input_module():
+            enable_up = False
+            enable_down = False
+        else:
+            # The module_num of the first module that's not an input module
+            first_module_num, last_module_num = [
+                reduce(
+                    fn, 
+                    [module.module_num for module in self.__pipeline.modules()
+                     if not module.is_input_module()], initial)
+                for fn, initial in ((min, len(self.__pipeline.modules())),
+                                    (max, -1))]
+            enable_up = active_module.module_num > first_module_num
+            enable_down = active_module.module_num < last_module_num
         enable_delete = True
         enable_duplicate = True
         if len(selected_modules) == 0:
-            enable_up = enable_down = enable_delete = enable_duplicate = False
-        else:
-            if any([m.module_num == first_module_num for m in selected_modules]):
-                enable_up = False
-            if any([m.module_num == last_module_num
-                    for m in selected_modules]):
-                enable_down = False
+            enable_delete = enable_duplicate = False
+        
         for menu_id, control, state in (
             (cpframe.ID_EDIT_MOVE_DOWN, self.__mcp_module_down_button, enable_down),
             (cpframe.ID_EDIT_MOVE_UP, self.__mcp_module_up_button, enable_up),
@@ -1687,30 +1687,31 @@ class PipelineController:
             
     def on_module_up(self,event):
         """Move the currently selected modules up"""
-        selected_modules = self.__get_selected_modules()
-        for module in selected_modules:
-            self.__pipeline.move_module(module.module_num,cpp.DIRECTION_UP);
-        #
-        # Major event - restart from scratch
-        #
-        if self.is_in_debug_mode():
-            self.stop_debugging()
-            if cpprefs.get_show_exiting_test_mode_dlg():
-                self.show_exiting_test_mode()
+        active_module = self.__pipeline_list_view.get_active_module()
+        if active_module is not None:
+            self.__pipeline.move_module(
+                active_module.module_num, cpp.DIRECTION_UP)
+            #
+            # Major event - restart from scratch
+            #
+            if self.is_in_debug_mode():
+                self.stop_debugging()
+                if cpprefs.get_show_exiting_test_mode_dlg():
+                    self.show_exiting_test_mode()
         
     def on_module_down(self,event):
         """Move the currently selected modules down"""
-        selected_modules = self.__get_selected_modules()
-        selected_modules.reverse()
-        for module in selected_modules:
-            self.__pipeline.move_module(module.module_num,cpp.DIRECTION_DOWN);
-        #
-        # Major event - restart from scratch
-        #
-        if self.is_in_debug_mode():
-            self.stop_debugging()
-            if cpprefs.get_show_exiting_test_mode_dlg():
-                self.show_exiting_test_mode()
+        active_module = self.__pipeline_list_view.get_active_module()
+        if active_module is not None:
+            self.__pipeline.move_module(
+                active_module.module_num, cpp.DIRECTION_DOWN)
+            #
+            # Major event - restart from scratch
+            #
+            if self.is_in_debug_mode():
+                self.stop_debugging()
+                if cpprefs.get_show_exiting_test_mode_dlg():
+                    self.show_exiting_test_mode()
             
     def on_undo(self, event):
         wx.BeginBusyCursor()
@@ -1727,12 +1728,18 @@ class PipelineController:
         
         event - an AddToPipeline event
         """
-        selected_modules = self.__get_selected_modules()
-        if len(selected_modules):
-            module_num=selected_modules[-1].module_num+1
-        else:
+        active_module = self.__pipeline_list_view.get_active_module()
+        if active_module is None:
             # insert module last if nothing selected
             module_num = len(self.__pipeline.modules(False))+1 
+        else:
+            last_input_module_num = 0
+            for module in self.__pipeline.modules(False):
+                if module.is_input_module():
+                    last_input_module_num = module.module_num
+                else:
+                    break
+            module_num = max(active_module.module_num, last_module_num)+1
         module = event.module_loader(module_num)
         module.show_window = True  # default to show in GUI
         remove_input_modules = False

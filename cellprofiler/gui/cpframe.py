@@ -316,17 +316,17 @@ class CPFrame(wx.Frame):
         # hide the module UI
         #
         self.__startup_blurb.load_startup_blurb()
-        if cpprefs.get_startup_blurb():
-            self.__notes_panel.Hide()
-            self.__path_module_imageset_panel.Hide()
-        else:
-            self.__startup_blurb.Hide()
 
         self.__right_win.Sizer.AddSpacer(4)
+        #
+        # Preferences panel
+        #
         self.__preferences_panel = wx.Panel(self.__right_win,-1)
-        self.__right_win.Sizer.Add(self.__preferences_panel, 0, wx.EXPAND)
+        self.__right_win.Sizer.Add(self.__preferences_panel, 1, wx.EXPAND)
         self.__preferences_panel.BackgroundColour = cpprefs.get_background_color()
-        self.__preferences_panel.SetToolTipString("The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
+        self.__preferences_panel.SetToolTipString(
+            "The folder panel sets/creates the input and output folders and output filename. Once your pipeline is ready and your folders set, click 'Analyze Images' to begin the analysis run.")
+        
         self.__add_menu()
         self.__attach_views()
         self.__set_properties()
@@ -339,6 +339,10 @@ class CPFrame(wx.Frame):
         self.tbicon = wx.TaskBarIcon()
         self.tbicon.SetIcon(get_cp_icon(), "CellProfiler2.0")
         self.SetAutoLayout(True)
+        if cpprefs.get_startup_blurb():
+            self.show_welcome_screen(True)
+        else:
+            self.show_module_ui(True)
         
     def start(self, workspace_path, pipeline_path):
         '''Handle resource loading after the GUI has been constructed
@@ -414,6 +418,8 @@ class CPFrame(wx.Frame):
         right_sizer.Show(self.__path_module_imageset_panel, show)
         self.__right_win.Layout()
         if show:
+            self.show_welcome_screen(False)
+            self.show_preferences(False)
             self.layout_pmi_panel()
             self.__path_list_sash.Layout()
             self.__module_panel.Layout()
@@ -422,8 +428,31 @@ class CPFrame(wx.Frame):
                 scroll_y=True,
                 scrollToTop=False)
             self.__imageset_sash.Layout()
-        else:
-            self.__startup_blurb.load_startup_blurb()
+      
+    def show_welcome_screen(self, show):
+        '''Show or hide the welcome screen
+        
+        show - If True, show the welcome screen and hide the preferences 
+               and module UI, otherwise hide the welcome screen.
+        '''
+        self.__startup_blurb.Show(show)
+        if show:
+            self.show_module_ui(False)
+            self.show_preferences(False)
+            self.__startup_blurb.Parent.Layout()
+            
+    def show_preferences(self, show):
+        '''Show or hide the preferences panel
+        
+        show - if True, show the preferences panel and hide the welcome
+               and module UI. If false, just hide the preferences.
+        '''
+        self.__preferences_panel.Show(show)
+        if show:
+            self.show_module_ui(False)
+            self.show_welcome_screen(False)
+            self.__preferences_panel.Layout()
+            self.__preferences_panel.Parent.Layout()
 
     def __on_sash_drag(self, event):
         sash = event.GetEventObject()
@@ -999,6 +1028,7 @@ All rights reserved."""
         self.__logo_panel.Sizer.Add(self.__welcome_button, 0,
                                     wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT)
         self.__welcome_button.Bind(wx.EVT_BUTTON, self.__on_help_welcome)
+        self.__logo_panel.Hide()
 
     def __set_icon(self):
         self.SetIcon(get_cp_icon())

@@ -211,7 +211,15 @@ class PreferencesDlg(wx.Dialog):
         '''
         cmaps = list(matplotlib.cm.datad.keys())
         cmaps.sort()
-        return [[ "Title font", 
+        return [["Default Input Folder",
+                 cpprefs.get_default_image_directory,
+                 cpprefs.set_default_image_directory,
+                 DIRBROWSE, cphelp.DEFAULT_IMAGE_FOLDER_HELP],
+                ["Default Output Folder",
+                 cpprefs.get_default_output_directory,
+                 cpprefs.set_default_output_directory,
+                 DIRBROWSE, cphelp.DEFAULT_OUTPUT_FOLDER_HELP],
+                [ "Title font", 
                   self.get_title_font, 
                   self.set_title_font, 
                   FONT, cphelp.TITLE_FONT_HELP],

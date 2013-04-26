@@ -705,6 +705,9 @@ class PathListCtrl(wx.PyScrolledWindow):
                 self.Refresh(eraseBackground=False)
             self.selections = set()
         self.refresh_item(self.focus_item)
+        if (direction + self.focus_item < 0 or
+            direction + self.focus_item >= len(self)):
+            return
         self.focus_item += direction
         # There should never be an empty directory, therefore, item # 1
         # should be the only item that has no precedent and we

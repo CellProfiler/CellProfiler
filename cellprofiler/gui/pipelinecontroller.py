@@ -1212,7 +1212,7 @@ class PipelineController:
             try:
                 dialog.ShowModal()
                 if answer[0] == SAVE_ID:
-                    if not self.do_save_pipeline():
+                    if not self.__on_save_as_workspace(None):
                         '''Cancel the closing if the user fails to save'''
                         return False
                 elif answer[0] == RETURN_TO_CP_ID:

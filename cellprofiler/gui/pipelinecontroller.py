@@ -44,7 +44,7 @@ from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
 from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
 import cellprofiler.utilities.version as version
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
-from errordialog import display_error_message
+from errordialog import display_error_message, clear_old_errors
 from runmultiplepipelinesdialog import RunMultplePipelinesDialog
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_FRAME
 from cellprofiler.modules.loadimages import pathname2url
@@ -1880,6 +1880,7 @@ class PipelineController:
         try:
             self.__module_view.disable()
             self.__frame.preferences_view.on_analyze_images()
+            clear_old_errors()
             if not self.__pipeline.prepare_run(self.__workspace):
                 self.stop_running()
                 return

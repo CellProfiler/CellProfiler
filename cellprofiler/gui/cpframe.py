@@ -160,11 +160,7 @@ class CPFrame(wx.Frame):
         #    path_module_imageset_panel
         #        path_list_sash
         #            path_list_ctrl
-        #            path_list_browse_button
-        #            path_list_clear_button
         #            path_list_filter_checkbox
-        #            path_list_expand_all_button
-        #            path_list_collapse_all_button
         #            path_list_help_button
         #        
         #        module_panel
@@ -220,21 +216,6 @@ class CPFrame(wx.Frame):
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(hsizer, 0, wx.EXPAND |wx.BOTTOM, 6)
         #
-        # Path list browse button
-        #
-        bmp = wx.ArtProvider.GetBitmap(wx.ART_FILE_OPEN, wx.ART_BUTTON)
-        self.__path_list_browse_button = BitmapLabelButton(
-            self.__path_list_sash, bitmap = bmp, label = "Browse...")
-        hsizer.Add(self.__path_list_browse_button, 0, wx.ALIGN_LEFT)
-        #
-        # Path list clear button
-        #
-        hsizer.AddSpacer(5)
-        bmp = wx.BitmapFromImage(get_builtin_image("delete"))
-        self.__path_list_clear_button = BitmapLabelButton(
-            self.__path_list_sash, bitmap=bmp, label = "Clear")
-        hsizer.Add(self.__path_list_clear_button, 0, wx.ALIGN_LEFT)
-        #
         # Path list show/hide filtered files checkbox
         #
         hsizer.AddSpacer(5)
@@ -248,21 +229,6 @@ class CPFrame(wx.Frame):
         self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
         hsizer.AddStretchSpacer()
         #
-        # Path list expand all / collapse all
-        #
-        bmp = wx.BitmapFromImage(
-            get_builtin_image("ExpandTree").Scale(16, 16, wx.IMAGE_QUALITY_HIGH))
-        self.__path_list_expand_button = BitmapLabelButton(
-            self.__path_list_sash, bitmap=bmp, label = "Expand tree")
-        hsizer.Add(self.__path_list_expand_button, 0, wx.ALIGN_RIGHT)
-        
-        hsizer.AddSpacer(5)
-        bmp = wx.BitmapFromImage(
-            get_builtin_image("CollapseTree").Scale(16, 16, wx.IMAGE_QUALITY_HIGH))
-        self.__path_list_collapse_button = BitmapLabelButton(
-            self.__path_list_sash, bitmap=bmp, label = "Collapse tree")
-        hsizer.Add(self.__path_list_collapse_button, 0, wx.ALIGN_RIGHT)
-        #
         # Help
         #
         hsizer.AddSpacer(5)
@@ -270,11 +236,6 @@ class CPFrame(wx.Frame):
             self.__path_list_sash, label="?", style=wx.BU_EXACTFIT)
         self.__path_list_help_button.Bind(wx.EVT_BUTTON, self.__on_help_path_list)
         hsizer.Add(self.__path_list_help_button, 0, wx.EXPAND)
-        for button in (self.__path_list_browse_button, 
-                       self.__path_list_clear_button,
-                       self.__path_list_collapse_button,
-                       self.__path_list_expand_button):
-            button.BackgroundColour = background_color
         
         ######################################################################
         #
@@ -979,11 +940,7 @@ All rights reserved."""
         self.__pipeline_controller.attach_to_module_controls_panel(self.__module_controls_panel)
         self.__pipeline_controller.attach_to_path_list_ctrl(
             self.__path_list_ctrl, 
-            self.__path_list_browse_button,
-            self.__path_list_filter_checkbox,
-            self.__path_list_clear_button,
-            self.__path_list_expand_button,
-            self.__path_list_collapse_button)
+            self.__path_list_filter_checkbox)
         self.__module_view = ModuleView(
             self.__module_panel,
             self.__workspace,

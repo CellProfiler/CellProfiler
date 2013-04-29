@@ -342,11 +342,7 @@ class PipelineController:
         
     def attach_to_path_list_ctrl(self, 
                                  path_list_ctrl, 
-                                 path_list_browse_button,
-                                 path_list_filtered_files_checkbox,
-                                 path_list_clear_button,
-                                 path_list_expand_button,
-                                 path_list_collapse_button):
+                                 path_list_filtered_files_checkbox):
         '''Attach the pipeline controller to the path_list_ctrl
         
         This lets the pipeline controller populate the path list as
@@ -1756,7 +1752,7 @@ class PipelineController:
                     last_input_module_num = module.module_num
                 else:
                     break
-            module_num = max(active_module.module_num, last_module_num)+1
+            module_num = max(active_module.module_num, last_input_module_num)+1
         module = event.module_loader(module_num)
         module.show_window = True  # default to show in GUI
         remove_input_modules = False

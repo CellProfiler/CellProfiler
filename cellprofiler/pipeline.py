@@ -2266,7 +2266,7 @@ class Pipeline(object):
         module.enabled = True
         self.notify_listeners(ModuleEnabledEvent(module))
         def undo():
-            module.enabled = False
+            self.disable_module(module)
         message = "Enable %s" % (module.module_name)
         self.__undo_stack.append((undo, message))
         
@@ -2279,9 +2279,25 @@ class Pipeline(object):
         module.enabled = False
         self.notify_listeners(ModuleDisabledEvent(module))
         def undo():
-            module.enabled = True
+            self.enable_module(module)
         message = "Disable %s" % (module.module_name)
         self.__undo_stack.append((undo, message))
+        
+    def show_module_window(self, module, state=True):
+        '''Set the module's show_window state
+        
+        module - module to show or hide
+        
+        state - True to show, False to hide
+        '''
+        if state != module.show_window:
+            module.show_window = state
+            self.notify_listeners(ModuleShowWindowEvent(module))
+            def undo():
+                self.show_module_window(module, not state)
+            message = "%s %s window" % (
+                ("Show" if state else "Hide"), module.module_name)
+            self.__undo_stack.append((undo, message))
         
     def add_image_plane_details(self, details_list, add_undo = True):
         real_list = []
@@ -3334,7 +3350,7 @@ class ModuleEnabledEvent(AbstractPipelineEvent):
         
         module - the module that was enabled
         """
-        super(self.__class__, self).__init__()
+        super(self.__class__, self).__init__(is_pipeline_modification=True)
         self.module = module
         
     def event_type(self):
@@ -3350,11 +3366,23 @@ class ModuleDisabledEvent(AbstractPipelineEvent):
         
         module - the module that was enabled
         """
-        super(self.__class__, self).__init__()
+        super(self.__class__, self).__init__(is_pipeline_modification=True)
         self.module = module
         
     def event_type(self):
         return "Module disabled"
+    
+class ModuleShowWindowEvent(AbstractPipelineEvent):
+    """A module had its "show_window" state changed
+    
+    module - the module that had its state changed
+    """
+    def __init__(self, module):
+        super(self.__class__, self).__init__(is_pipeline_modification=True)
+        self.module = module
+        
+    def event_type(self):
+        return "Module show_window changed"
 
 class Dependency(object):
     '''This class documents the dependency of one module on another

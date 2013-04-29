@@ -2758,17 +2758,15 @@ class PipelineController:
     
     def on_show_all_windows(self, event):
         '''Turn "show_window" on for every module in the pipeline'''
-        for module in self.__pipeline.modules():
-            module.show_window = True
-        self.__dirty_pipeline = True
-        self.set_title()
+        with self.__pipeline.undoable_action("Show all windows"):
+            for module in self.__pipeline.modules():
+                self.__pipeline.show_module_window(module, True)
         
     def on_hide_all_windows(self, event):
         '''Turn "show_window" off for every module in the pipeline'''
-        for module in self.__pipeline.modules():
-            module.show_window = False
-        self.__dirty_pipeline = True
-        self.set_title()
+        with self.__pipeline.undoable_action("Hide all windows"):
+            for module in self.__pipeline.modules():
+                self.__pipeline.show_module_window(module, False)
             
     def run_pipeline(self):
         """Run the current pipeline, returning the measurements

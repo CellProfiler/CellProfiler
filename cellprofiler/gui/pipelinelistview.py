@@ -399,6 +399,8 @@ class PipelineListView(object):
             self.__on_module_enabled(event)
         elif isinstance(event, cpp.ModuleDisabledEvent):
             self.__on_module_disabled(event)
+        elif isinstance(event, cpp.ModuleShowWindowEvent):
+            self.__on_show_window(event)
     
     def notify_directory_change(self):
         # we can't know which modules use this information
@@ -508,9 +510,12 @@ class PipelineListView(object):
         
     def __on_eye_column_clicked(self, event):
         module = self.get_event_module(event)
-        module.show_window = not module.show_window
+        self.__pipeline.show_module_window(module, not module.show_window)
+        
+    def __on_show_window(self, event):
+        '''Handle a ModuleShowWindow pipeline event'''
         self.list_ctrl.Refresh(eraseBackground=False)
-        name = window_name(module)
+        name = window_name(event.module)
         figure = self.__panel.TopLevelParent.FindWindowByName(name)
         if figure is not None:
             figure.Close()

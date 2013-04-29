@@ -216,11 +216,12 @@ class Groups(cpm.CPModule):
             workspace.refresh_image_set()
             self.metadata_keys = []
             m = workspace.measurements
-            assert isinstance(m, cpmeas.Measurements)
-            for feature_name in m.get_feature_names(cpmeas.IMAGE):
-                if feature_name.startswith(cpmeas.C_METADATA):
-                    self.metadata_keys.append(
-                        feature_name[(len(cpmeas.C_METADATA)+1):])
+            if m.image_set_count > 0:
+                assert isinstance(m, cpmeas.Measurements)
+                for feature_name in m.get_feature_names(cpmeas.IMAGE):
+                    if feature_name.startswith(cpmeas.C_METADATA):
+                        self.metadata_keys.append(
+                            feature_name[(len(cpmeas.C_METADATA)+1):])
             is_valid = True
             for group in self.grouping_metadata:
                 try:

@@ -354,12 +354,6 @@ class PipelineController:
         '''
         self.__path_list_ctrl = path_list_ctrl
         self.__path_list_filter_checkbox = path_list_filtered_files_checkbox
-        path_list_browse_button.Bind(wx.EVT_BUTTON, self.on_pathlist_browse)
-        path_list_clear_button.Bind(wx.EVT_BUTTON, self.on_pathlist_clear)
-        path_list_expand_button.Bind(
-            wx.EVT_BUTTON, path_list_ctrl.expand_all)
-        path_list_collapse_button.Bind(
-            wx.EVT_BUTTON, path_list_ctrl.collapse_all)
         
         path_list_ctrl.set_context_menu_fn(
             self.get_pathlist_file_context_menu,
@@ -1356,10 +1350,17 @@ class PipelineController:
     PATHLIST_CMD_BROWSE = "Browse for files"
     PATHLIST_CMD_REMOVE = "Remove from list"
     PATHLIST_CMD_REFRESH = "Refresh"
+    PATHLIST_CMD_EXPAND_ALL = "Expand all"
+    PATHLIST_CMD_COLLAPSE_ALL = "Collapse all"
+    PATHLIST_CMD_CLEAR = "Clear list"
+    
     def get_pathlist_file_context_menu(self, paths):
         return ((self.PATHLIST_CMD_SHOW, self.PATHLIST_CMD_SHOW),
                 (self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
-                (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE))
+                (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
+                (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
+                (self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
+                (self.PATHLIST_CMD_CLEAR, self.PATHLIST_CMD_CLEAR))
     
     def on_pathlist_file_command(self, paths, cmd):
         if cmd == self.PATHLIST_CMD_SHOW or cmd is None:
@@ -1378,11 +1379,23 @@ class PipelineController:
                 self.on_pathlist_browse(
                     None,
                     default_dir=path)
+        else:
+            self.on_pathlist_command(cmd)
+    def on_pathlist_command(self, cmd):
+        if cmd == self.PATHLIST_CMD_EXPAND_ALL:
+            self.__path_list_ctrl.expand_all()
+        elif cmd == self.PATHLIST_CMD_COLLAPSE_ALL:
+            self.__path_list_ctrl.collapse_all()
+        elif cmd == self.PATHLIST_CMD_CLEAR:
+            self.on_pathlist_clear(None)
 
     def get_pathlist_folder_context_menu(self, path):
         return ((self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
                 (self.PATHLIST_CMD_REFRESH, self.PATHLIST_CMD_REFRESH),
-                (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE))
+                (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
+                (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
+                (self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
+                (self.PATHLIST_CMD_CLEAR, self.PATHLIST_CMD_CLEAR))
     
     def on_pathlist_folder_command(self, path, cmd):
         if cmd == self.PATHLIST_CMD_REMOVE:
@@ -1399,6 +1412,8 @@ class PipelineController:
                 self.on_pathlist_browse(None, default_dir=path)
             else:
                 self.on_pathlist_browse(None)
+        else:
+            self.on_pathlist_command(cmd)
                 
     def on_pathlist_file_delete(self, paths):
         self.__pipeline.remove_image_plane_details(

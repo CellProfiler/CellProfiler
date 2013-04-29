@@ -1856,9 +1856,6 @@ class ModuleView:
     def __on_pipeline_event(self,pipeline,event):
         if (isinstance(event, cpp.PipelineClearedEvent) or
             isinstance(event, cpp.PipelineLoadedEvent)):
-            # clear validation cache, since settings might not have changed,
-            # but pipeline itself may have (due to a module source reload)
-            self.request_validation()
             self.clear_selection()
         elif isinstance(event, cpp.ModuleEditedPipelineEvent):
             if (not self.__inside_notify and self.__module is not None

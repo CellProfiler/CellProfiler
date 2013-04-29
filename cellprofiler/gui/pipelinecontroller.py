@@ -349,7 +349,10 @@ class PipelineController:
         it changes.
         '''
         self.__path_list_ctrl = path_list_ctrl
+        self.__path_list_is_filtered = None
         self.__path_list_filter_checkbox = path_list_filtered_files_checkbox
+        self.__path_list_filter_checkbox.Value = \
+            self.__path_list_ctrl.get_show_disabled()
         
         path_list_ctrl.set_context_menu_fn(
             self.get_pathlist_file_context_menu,
@@ -367,11 +370,19 @@ class PipelineController:
                 self.__path_list_filter_checkbox.Value)
         self.__path_list_filter_checkbox.Bind(wx.EVT_CHECKBOX, show_disabled)
         
-    def show_path_list_filter_checkbox(self, show=True):
-        '''Show or hide the path list filter checkbox'''
-        sizer = self.__path_list_filter_checkbox.GetContainingSizer()
-        if sizer is not None:
-            sizer.Show(self.__path_list_filter_checkbox, show)
+    def set_path_list_filtering(self, use_filter):
+        '''Update the path list UI according to the filter on/off state
+        
+        use_filter - True if filtering, False if all files enabled.
+        '''
+        use_filter = bool(use_filter)
+        if self.__path_list_is_filtered is not use_filter:
+            sizer = self.__path_list_filter_checkbox.GetContainingSizer()
+            if sizer is not None:
+                sizer.Show(self.__path_list_filter_checkbox, use_filter)
+            if not use_filter:
+                self.__path_list_ctrl.enable_all_paths()
+            self.__path_list_is_filtered = use_filter
         
     def attach_to_module_view(self,module_view):
         """Listen for setting changes from the module view

@@ -266,6 +266,17 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.schmutzy = True
         self.Refresh(eraseBackground=False)
         
+    def enable_all_paths(self):
+        '''Mark all paths as enabled
+        
+        This puts the path list control in the appropriate state when
+        filtering is disabled.
+        '''
+        for folder_item in self.folder_items:
+            folder_item.enabled = [True] * len(folder_item.filenames)
+        self.schmutzy = True
+        self.Refresh(eraseBackground=False)
+        
     def expand_all(self, event = None):
         '''Expand all folders'''
         for folder_item in self.folder_items:

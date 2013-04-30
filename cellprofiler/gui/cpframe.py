@@ -159,6 +159,7 @@ class CPFrame(wx.Frame):
         #    Notes window
         #    path_module_imageset_panel
         #        path_list_sash
+        #            group_box
         #            path_list_ctrl
         #            path_list_filter_checkbox
         #            path_list_help_button
@@ -202,7 +203,10 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
         self.__path_list_sash.BackgroundColour = cpprefs.get_background_color()
         self.__path_list_sash.Hide()
-        sizer = wx.BoxSizer(wx.VERTICAL)
+        path_list_group_box = wx.StaticBox(
+            self.__path_list_sash,
+            label = "File list")
+        sizer = wx.StaticBoxSizer(path_list_group_box, wx.VERTICAL)
         self.__path_list_sash.Sizer = sizer
         #
         # Path list control

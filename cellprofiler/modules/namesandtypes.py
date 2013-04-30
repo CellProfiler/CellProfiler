@@ -99,10 +99,11 @@ class NamesAndTypes(cpm.CPModule):
     
     def create_settings(self):
         self.pipeline = None
-        self.module_explanation = cps.HTMLText("",content="""
-            The %s module allows you to assign a meaningful name to each image
-            by which other modules will refer to it."""%self.module_name,
-            size=(0, 2.3))                
+        module_explanation = [
+            "The %s module allows you to assign a meaningful name to each image" % 
+            self.module_name,
+            "by which other modules will refer to it."]
+        self.set_notes(module_explanation)
         self.ipds = []
         self.image_sets = []
         self.metadata_keys = []
@@ -273,7 +274,7 @@ class NamesAndTypes(cpm.CPModule):
         return result
     
     def visible_settings(self):
-        result = [self.module_explanation, self.assignment_method]
+        result = [self.assignment_method]
         if self.assignment_method == ASSIGN_ALL:
             result += [self.single_load_as_choice, self.single_image_provider]
         elif self.assignment_method == ASSIGN_RULES:

@@ -60,12 +60,12 @@ class Images(cpm.CPModule):
     
     def create_settings(self):
         self.workspace = None
-        self.module_explanation = cps.HTMLText("",content="""
-            To begin creating your workspace, use the %s module to compile 
-            a list of files and/or folders that you want to analyze. You can also specify a set of rules 
-            to include only the desired files in your selected folders."""%self.module_name,
-            size=(0, 2.3))      
-        
+        module_explanation = [
+            "To begin creating your workspace, use the %s module to compile" % 
+            self.module_name,
+            "a list of files and/or folders that you want to analyze. You can also specify a set of rules",
+            "to include only the desired files in your selected folders."]
+        self.set_notes(module_explanation)
         self.path_list_display = cps.PathListDisplay()
         predicates = [FilePredicate(),
                       DirectoryPredicate(),
@@ -142,7 +142,7 @@ class Images(cpm.CPModule):
         return [self.path_list_display, self.wants_filter, self.filter]
     
     def visible_settings(self):
-        result = [self.module_explanation,self.path_list_display, self.wants_filter]
+        result = [self.path_list_display, self.wants_filter]
         if self.wants_filter:
             result += [self.filter, self.update_button]
             self.path_list_display.using_filter = True

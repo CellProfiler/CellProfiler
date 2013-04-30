@@ -69,11 +69,12 @@ class Groups(cpm.CPModule):
         self.pipeline = None
         self.metadata_keys = {}
         
-        self.module_explanation = cps.HTMLText("",content="""
-            The %s module optionally allows you to split your list of images into image subsets
-            (groups) which will be processed independently of each other. Examples of
-            groupings include screening batches, microtiter plates, time-lapse movies, 
-            etc."""%self.module_name, size=(30, 3))
+        module_explanation = [
+            "The %s module optionally allows you to split your list of images into image subsets" %
+            self.module_name,
+            "(groups) which will be processed independently of each other. Examples of",
+            "groupings include screening batches, microtiter plates, time-lapse movies, etc."]
+        self.set_notes(module_explanation)
         
         self.wants_groups = cps.Binary(
             "Do you want to group your images?", False)
@@ -187,7 +188,7 @@ class Groups(cpm.CPModule):
         return result
             
     def visible_settings(self):
-        result = [self.module_explanation, self.wants_groups]
+        result = [self.wants_groups]
         if self.wants_groups:
             result += [self.grouping_text]
             for group in self.grouping_metadata:

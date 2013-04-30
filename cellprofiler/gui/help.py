@@ -33,6 +33,10 @@ import os
 import sys
 import cellprofiler.icons
 from cellprofiler.utilities.relpath import relpath
+#from cellprofiler.modules.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION
+X_AUTOMATIC_EXTRACTION = "Automatic"
+X_MANUAL_EXTRACTION = "Manual"
+X_IMPORTED_EXTRACTION = "Import metadata"
 
 logger = logging.getLogger(__name__)
 
@@ -302,7 +306,13 @@ assays (e.g., cell count, size, per-cell protein levels) as well as complex
 morphological assays (e.g., cell/organelle shape or subcellular patterns of DNA 
 or protein staining).</p>
 
-<p>The wide variety of measurements produced by CellProfiler serves as useful "raw material" for machine learning algorithms. CellProfiler's companion software, CellProfiler Analyst, has an interactive machine learning tool called Classifier which can learn to recognize a phenotype of interest based on your guidance. Once you complete the training phase, CellProfiler Analyst will score every object in your images based on CellProfiler's measurements.  CellProfiler Analyst also contains tools for the interactive visualization of the data produced by CellProfiler.</p>
+<p>The wide variety of measurements produced by CellProfiler serves as useful "raw material" 
+for machine learning algorithms. CellProfiler's companion software, CellProfiler Analyst, 
+has an interactive machine learning tool called Classifier which can learn to recognize a 
+phenotype of interest based on your guidance. Once you complete the training phase, 
+CellProfiler Analyst will score every object in your images based on CellProfiler's 
+measurements.  CellProfiler Analyst also contains tools for the interactive visualization 
+of the data produced by CellProfiler.</p>
 
 <p>In summary, CellProfiler contains:
 <ul>
@@ -330,16 +340,24 @@ phenotypes. <i>Genome Biology</i> 7:R100. PMID: 17076895</li>
 <li>Lamprecht MR, Sabatini DM, Carpenter AE (2007) CellProfiler: free, versatile 
 software for automated biological image analysis. <i>Biotechniques</i> 
 42(1):71-75. PMID: 17269487</li>
-<li>Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J, Root D, Golland P, Sabatini DM (2009) Scoring diverse cellular morphologies in image-based screens with iterative feedback and machine learning. PNAS 106(6):1826-1831/doi: 10.1073/pnas.0808843106. PMID: 19188593 PMCID: PMC2634799</li>
-<li>Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM, Golland P, Carpenter AE (2008) CellProfiler Analyst: data exploration and analysis software for complex image-based screens. BMC Bioinformatics 9(1):482/doi: 10.1186/1471-2105-9-482. PMID: 19014601 PMCID: PMC2614436</li>
+<li>Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J, Root D, 
+Golland P, Sabatini DM (2009) Scoring diverse cellular morphologies in image-based 
+screens with iterative feedback and machine learning. PNAS 106(6):1826-1831/doi: 
+10.1073/pnas.0808843106. PMID: 19188593 PMCID: PMC2634799</li>
+<li>Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM, Golland P, 
+Carpenter AE (2008) CellProfiler Analyst: data exploration and analysis software for 
+complex image-based screens. BMC Bioinformatics 9(1):482/doi: 10.1186/1471-2105-9-482. 
+PMID: 19014601 PMCID: PMC2614436</li>
 </ul>
 """
 
 BUILDING_A_PIPELINE_HELP = """
 <p>A <i>pipeline</i> is a sequential set of image analysis modules. The 
 best way to learn how to use CellProfiler is to load an example pipeline 
-from the CellProfiler website's Examples page and try it out, then adapt it for your own images. You can also build a 
-pipeline from scratch. Click the <i>Help</i> <img src="%(LOCATION_MODULE_HELP_BUTTON)s"></img> button in the main window to get
+from the CellProfiler website's Examples page and try it out, then adapt it for 
+your own images. You can also build a 
+pipeline from scratch. Click the <i>Help</i> <img src="%(LOCATION_MODULE_HELP_BUTTON)s">
+</img> button in the main window to get
 help for a specific module.</p>
 
 <p>To adjust the CellProfiler source code, see <i>Help > Developer's Guide</i>. 
@@ -373,14 +391,14 @@ Choose image analysis modules to add to your pipeline by clicking the <i>Add</i>
 (located underneath the pipeline panel) or right-clicking in the pipeline panel
 itself and selecting a module from the 
 pop-up box that appears. You can learn more about each module by clicking
-<i>Module Help</i> in the "Add modules" window or the <i>?</i> button after the module has been placed and selected
-in the pipeline. Modules are added to the end of the pipeline, but you can
+<i>Module Help</i> in the "Add modules" window or the <i>?</i> button after the module has 
+been placed and selected in the pipeline. Modules are added to the end of the pipeline, but you can
 adjust their order in the main window by dragging and dropping them, or by selecting a module (or
 modules, using the <i>Shift</i> key) and using the <i>Move module up</i> 
 <img src="%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> and <i>Move module down</i> 
 <img src="%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> buttons. 
-The <i>Remove module</i> <img src="%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button will delete the selected 
-module(s) from the pipeline.</p> 
+The <i>Remove module</i> <img src="%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button will 
+delete the selected module(s) from the pipeline.</p> 
 <p>Typically, the first module you must run is 
  <b>LoadImages</b>, in which you specify the identity of the images 
 you want to analyze. </p>
@@ -1407,7 +1425,161 @@ modules into the workspace equivalent as closely as possible. Both modules remai
 via the "Add module" and "+" buttons at the bottom of the pipeline panel.</p>
 """
 
-             
+LOADING_IMAGE_SEQUENCES_HELP = """
+<h3>Introdution</h3>
+In this context, the term <i>image sequence</i> is used to refer to a collection of images which can be from
+a time-lapse assay, a 3-D Z-stack assay, or both. This section will instruct you how to load these collections
+in order to properly represent your data for processing.
+
+<h3>Sequences of individual files</h3>
+<p>The simplest method of collecting image sequences is to simply acquire them as a series of individual
+images, where each image represents a single timepoint/z-slice. Typically, the image filename reflects
+the timepoint, such that the alphabetical image listing corresponds to timepoint sequence,
+e.g., <i>img000.png</i>, <i>img001.png</i>, <i>img002.png</i>, etc</p>. It is also not uncommon
+to store the movie such that one movie's worth of files is stored in a single folder.</p>
+<p><i>Example:</i>You have a time-lapse movie of individual files set up as follows:
+<ul>
+<li>Three folders, one for each image channel, named <i>fluo2</i>, <i>fluor</i> and <i>phase</i>.</li>
+<li>In each folder, the files are named as follows:
+<ul>
+<li><i>fluo2</i>: calibrate2-P01.001.TIF, calibrate2-P01.002.TIF,..., calibrate2-P01.287.TIF</li>
+<li><i>fluor</i>: calibrated-P01.001.TIF, calibrated-P01.002.TIF,..., calibrated-P01.287.TIF</li>
+<li><i>phase</i>: phase-P01.001.TIF, phase-P01.002.TIF,..., phase-P01.287.TIF</li>
+</ul>
+where the file names are in the format <i>&lt;Stain&gt;-&lt;Well&gt;.&lt;Timepoint&gt;.TIF</i>. </li>
+<li>There are 287 timepoints per movie, and a movie of the 3 channels above is acquired from each well.</li>
+</ul>
+</p>
+<p>In this case, the procedure to set up the input modules to handle these files is as follows:
+<ul>
+<li>In the <b>Images</b> module, drag-and-drop your folders of images into the file list panel. If 
+neccesary, set your rules accordingly in order to filter out any files that are not part of a movie 
+sequence.
+<p>In the above example, you would drag-and-drop the <i>fluo2</i>, <i>fluor</i> and <i>phase</i> folders
+into the file list panel.</p></li>
+<li>In the <b>Metadata</b> module, check the "Extract metadata?" box. The key step here is to
+obtain the identifiers neccesary to do two things:
+<ul>
+<li>Distinguish the movies from each other. This information may be encapsulated in the filename 
+and/or the folder name.</li>
+<li>For each movie, distinguish the timepoints from each other. This information is usually contained
+in the filename.</li>
+</ul>
+To accomplish this, do the following:
+<ul>
+<li>Select "%(X_MANUAL_EXTRACTION)s" or "%(X_IMPORTED_EXTRACTION)s" as the metadata extraction method. You 
+will use these to extract the movie and timepoint identifiers from the images. </li>
+<li>Use "%(X_MANUAL_EXTRACTION)s" to create a regular expression to extract the metadata from the
+filename and/or path name.</li>
+<li>Use "%(X_IMPORTED_EXTRACTION)s" if you have a comma-delimted list (.csv) of 
+metadata columns (including the movie and timepoint identifiers) for each image.</li>
+</ul>
+If there are multiple channels for each movies, this step may need to be performed for each channel.
+<p>In the above example, you could do the following:
+<ul>
+<li>Select "%(X_MANUAL_EXTRACTION)s" as the method, "From file name" as the source, and 
+<code>.*-(?P&lt;Well&gt;\w\d{2}).(?P&lt;Frame&gt;\d*)</code> as the regular expression.</li>
+<li>Click the "Add" button to add another extraaction method.</i>
+<li>In the new setting, Select "%(X_MANUAL_EXTRACTION)s" as the method, "From folder name" as the source, and 
+<code>.*[\\/](?P&lt;Stain>.*)[\\/].*$</code> as the regular expression.</li>
+<li>Click "Update table" to confirm the metadata extraction accuracy.</li>
+</ul></p>
+</li>
+<li>In the <b>NamesAndTypes</b> module, assign the channel(s) to a name of your choice. If there are 
+multiple channels, you will need to do this for each channel.<br>
+For the above example, you could do the following:
+<ul>
+<li>Select "Assign images matching rules".</li>
+<li>Make a new rule <code>[Metadata][Does][Have Stain matching][fluor]</code> and name it <i>OrigFluor</i>.
+<li>Click the "Add" button to add another rule.</li>
+<li>Make a new rule <code>[Metadata][Does][Have Stain matching][fluo2]</code> and name it <i>OrigFluo2</i>.
+<li>Click the "Add" button to add another rule.</li>
+<li>Make a new rule <code>[Metadata][Does][Have Stain matching][phase]</code> and name it <i>OrigPhase</i>.
+<li>In the "Assign channel by" setting, select "Metadata".</li>
+<li>Select "Well" for the <i>OrigFluor</i>, <i>OrigFluo2</i> and <i>OrigPhase</i> channels.</li>
+<li>Click the <img src="%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
+and select "Frame" for each channel.</li>
+<li>Click "Update table" to confirm the channel matching. The corresponding well and frame for each
+channel should be matched to each other.</li>
+</ul>
+</li>
+<li>In the <b>Groups</b> module, select the metadata that defines a distinct movie of data.</br>
+For the example above, do the following:
+<ul>
+<li>Select "Well" as the metadata category.</li>
+<li>The tables below this setting will update themselves, and you should be able to visually confirm that 
+each well is defined as a group, each with 287 frames' worth of images.</li>
+</ul>
+</li>
+</ul>
+</p>
+
+<h3>Image sequences consisting of a single file</h3>
+<p>Another common means of storing time-lapse/Z-stack data is as a single file containg the movie. Examples of this
+approach include image formats such as:
+<ul>
+<li>Multi-frame TIF</li>
+<li>Metamorph stack: STK</li>
+<li>Evotec/PerkinElmer Opera Flex</li>
+<li>Zeiss ZVI, LSM</li>
+<li>Standard movie formats: AVI, Quicktime MOV, etc
+</ul>
+CellProfiler uses the Bio-Formats library for reading various image formats. For more details on 
+supported files, see this <a href="http://loci.wisc.edu/bio-formats/formats">webpage</a>.
+</p>
+
+<p><i>Example:</i>You have a single Z-stack in Zeiss' LSM format, in the form of six slices
+with two channels (DAPI, GFP) at each slice.</p>
+<p>In this case, the procedure to set up the input modules to handle these this file is as follows
+(please note that this procedure is basically identical whether the file is for a time-lapse assay
+or a Z-stack assay):
+<ul>
+<li>In the <b>Images</b> module, drag-and-drop your folders of images into the file list panel. If 
+neccesary, set your rules accordingly in order to filter out any files that are not part of a movie 
+sequence.<br>
+In the above example, you would drag-and-drop the LSM files into the file list panel.</li>
+<li>In the <b>Metadata</b> module, check the "Extract metadata?" box. The key step here is to
+obtain the identifiers neccesary to do two things:
+<ul>
+<li>Distinguish the movies from each other. This information may be encapsulated in the filename 
+and/or the folder name.</li>
+<li>For each movie, distinguish the timepoints from each other. This information is usually contained
+in theimage's internal metadata, in contrast to the image sequences described above.</li>
+</ul> 
+To accomplish this, do the following:
+<ul>
+<li>Select "%(X_AUTOMATIC_EXTRACTION)s" as the metadata extraction method. In this case, CellProfiler will
+extract the requisite information from the metadata stored in the image headers.</li>
+<li>Click the "Update metadata" button.</li>
+<li>Click the "Show table" button.</li>
+<li>The resultant table should show the various metadata contained in the file. In this case, the 
+relevant information is contained in the <i>Z</i> and <i>C</i> columns. <i>C</i> shows values
+0 and 1, and <i>Z</i> shows values from 0 to 5.</li>
+</ul>
+</li>
+<li>In the <b>NamesAndTypes</b> module, assign the channel(s) to a name of your choice. If there are 
+multiple channels, you will need to do this for each channel. 
+<p>For the above example, you could do the following:
+<ul>
+<li>Select "Assign images matching rules".</li>
+<li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code> and name it <i>OrigDAPI</i>.
+<li>Click the "Add" button to add another rule.</li>
+<li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code> and name it <i>OrigGFP</i>.
+<li>Click the "Add" button to add another rule.</li>
+<li>In the "Assign channel by" setting, select "Metadata".</li>
+<li>Select "Z" for the <i>OrigDAPI</i> and <i>OrigGFP</i> channels.</li>
+<li>Click the <img src="%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
+and select "T" for each channel.</li>
+<li>Click "Update table" to confirm the channel matching. The corresponding <i>Z</i> and <i>T</i> for each
+channel should be matched to each other.</li>
+</ul></p>
+</li>
+<li>Unlike the individual file example above, the <b>Groups</b> module is not neeeded, since CellProfiler
+knows that each file is essentially its own group.</li>
+</ul>
+</p>
+"""%globals()
+     
 #########################################################
 #
 # Misc. help
@@ -1457,7 +1629,7 @@ among others. </li>
 menu includes text operators such as <i>Contain</i> or <i>Starts with</i>. On the other hand, if you
 select <i>Extension</i> as the attribute, you can choose the logical operators <i>Is</i> or <i>Is not</i> from the menu.</li>
 <li>In the operator menu, select the operator you want to use. For example,
-if you want to match data exactly, you may want the <i>Exactly match</i> or the <il>Is</i> operator. If you want the
+if you want to match data exactly, you may want the <i>Exactly match</i> or the <i>Is</i> operator. If you want the
 condition to be more loose, select an operator such as <i>Contains</i>.</li>
 <li>Use the Condition box to type the condition you want to match. The more
 you type, the more specific the condition is. 
@@ -1508,7 +1680,8 @@ MAIN_HELP = (
             ("Using The Images Module",images.__doc__),
             ("Using The Metadata Module",metadata.__doc__),
             ("Using The NamesAndTypes Module",namesandtypes.__doc__),
-            ("Using The Groups Module",groups.__doc__))),
+            ("Using The Groups Module",groups.__doc__),
+            ("Loading Image Stacks And Movies",LOADING_IMAGE_SEQUENCES_HELP))),
         ("How Data Is Handled",(
             ("Using Metadata In CellProfiler",USING_METADATA_HELP),
             ("How To Use Image Grouping",USING_METADATA_GROUPING_HELP),

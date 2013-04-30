@@ -25,6 +25,11 @@ import Queue
 import numpy as np
 import cellprofiler.cpgridinfo as cpg
 
+if sys.platform == "win32":
+    from cellprofiler.utilities.get_proper_case_filename \
+         import get_file_attributes, set_file_attributes, \
+         FILE_ATTRIBUTE_HIDDEN
+    
 NOTIFY_SOCKET_ADDR = 'inproc://BoundaryNotifications'
 def make_CP_encoder(buffers):
     '''create an encoder for CellProfiler data and numpy arrays (which will be
@@ -713,6 +718,11 @@ def start_lock_thread():
     __lock_thread.setName("FileLockThread")
     __lock_thread.start()
         
+def get_lock_path(path):
+    '''Return the path to the lockfile'''
+    pathpart, filepart = os.path.split(path)
+    return os.path.join(pathpart, u"." + filepart + u".lock")
+    
 def lock_file(path, timeout=3):
     '''Lock a file
     
@@ -722,13 +732,17 @@ def lock_file(path, timeout=3):
     
     returns True if we obtained the lock, False if the file is already owned.
     '''
-    lock_path = path + ".lock"
+    lock_path = get_lock_path(path)
     start_boundary()
     uid = uuid.uuid4().hex
     try:
         fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_RDWR)
         with os.fdopen(fd, "a") as f:
             f.write(the_boundary.external_request_address+"\n"+uid)
+        if sys.platform == "win32":
+            # Hide file in Windows.
+            attrs = get_file_attributes(lock_path)
+            set_file_attributes(lock_path, attrs | FILE_ATTRIBUTE_HIDDEN)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise
@@ -736,33 +750,46 @@ def lock_file(path, timeout=3):
         with open(lock_path, "r") as f:
             remote_address = f.readline().strip()
             remote_uid = f.readline().strip()
-        logger.info("Owner is %s" % remote_address)
-        request_socket = the_boundary.zmq_context.socket(zmq.REQ)
-        request_socket.setsockopt(zmq.LINGER, 0)
-        assert isinstance(request_socket, zmq.Socket)
-        request_socket.connect(remote_address)
-        
-        lock_request = LockStatusRequest(remote_uid)
-        lock_request.send_only(request_socket)
-        poller = zmq.Poller()
-        poller.register(request_socket, zmq.POLLIN)
-        keep_polling = True
-        while(keep_polling):
-            keep_polling = False
-            for socket, status in poller.poll(timeout * 1000):
-                keep_polling = True
-                if socket == request_socket and status == zmq.POLLIN:
-                    lock_response = lock_request.recv(socket)
-                    if isinstance(lock_response, LockStatusReply):
-                        if lock_response.locked:
-                            logger.info("%s is locked" % path)
-                            return False
-                        keep_polling = False
+        if len(remote_address) > 0 and len(remote_uid) > 0:
+            logger.info("Owner is %s" % remote_address)
+            request_socket = the_boundary.zmq_context.socket(zmq.REQ)
+            request_socket.setsockopt(zmq.LINGER, 0)
+            assert isinstance(request_socket, zmq.Socket)
+            request_socket.connect(remote_address)
+            
+            lock_request = LockStatusRequest(remote_uid)
+            lock_request.send_only(request_socket)
+            poller = zmq.Poller()
+            poller.register(request_socket, zmq.POLLIN)
+            keep_polling = True
+            while(keep_polling):
+                keep_polling = False
+                for socket, status in poller.poll(timeout * 1000):
+                    keep_polling = True
+                    if socket == request_socket and status == zmq.POLLIN:
+                        lock_response = lock_request.recv(socket)
+                        if isinstance(lock_response, LockStatusReply):
+                            if lock_response.locked:
+                                logger.info("%s is locked" % path)
+                                return False
+                            keep_polling = False
         #
         # Fall through if we believe that the other end is dead
         #
+        if sys.platform == "win32":
+            # I'm not a patient person. Python open apparently can't
+            # open hidden files - are you kidding? It's some screwed up
+            # who's on first scenario between Windows and Python "it's hidden
+            # so when I go to see if it's there, it's not but when I open it
+            # it is there!". Another 15 minutes of my life down the drain.
+            #
+            attrs = get_file_attributes(lock_path)
+            set_file_attributes(lock_path, attrs & ~ FILE_ATTRIBUTE_HIDDEN)
         with open(lock_path, "w") as f:
             f.write(the_boundary.request_address + "\n"+uid)
+        if sys.platform == "win32":
+            attrs = get_file_attributes(lock_path)
+            set_file_attributes(lock_path, attrs | FILE_ATTRIBUTE_HIDDEN)
     #
     # The coast is clear to lock
     #
@@ -782,7 +809,7 @@ def unlock_file(path):
     result = q.get()
     if result != UNLOCK_OK:
         raise result
-    lock_path = path + ".lock"
+    lock_path = get_lock_path(path)
     os.remove(lock_path)
 
 if __name__ == '__main__':

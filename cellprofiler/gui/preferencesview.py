@@ -518,7 +518,8 @@ class ProgressWatcher:
                              self.remaining_time())
 
     def update_multiprocessing(self, event=None):
-        status = 'Multiprocessing work: %d/%d completed'%(self.num_received, self.num_jobs)
+        status = 'Processing: %d of %d image sets completed' %\
+            (self.num_received, self.num_jobs)
         self.update_callback(status,
                              self.elapsed_time(),
                              self.remaining_time_multiprocessing())

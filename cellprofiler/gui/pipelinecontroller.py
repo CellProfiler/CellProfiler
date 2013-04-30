@@ -1430,8 +1430,17 @@ class PipelineController:
         
     def on_pathlist_clear(self, event):
         '''Remove all files from the path list'''
-        self.__pipeline.clear_image_plane_details()
-        self.__workspace.file_list.clear_filelist()
+        result = wx.MessageBox(
+            "Are you sure you want to clear all files from your project?\n\n"
+            "Clearing will remove the files from your project,\n"
+            "but will not delete or modify the files themselves.\n"
+            'Choose "Yes" to delete or "No" to cancel this operation.',
+            caption = "Confirm file list clear operation",
+            style = wx.YES_NO,
+            parent = self.__frame)
+        if result == wx.YES:
+            self.__pipeline.clear_image_plane_details()
+            self.__workspace.file_list.clear_filelist()
             
     def on_pathlist_drop_files(self, x, y, filenames):
         self.add_paths_to_pathlist(filenames)

@@ -1629,7 +1629,7 @@ among others. </li>
 menu includes text operators such as <i>Contain</i> or <i>Starts with</i>. On the other hand, if you
 select <i>Extension</i> as the attribute, you can choose the logical operators <i>Is</i> or <i>Is not</i> from the menu.</li>
 <li>In the operator menu, select the operator you want to use. For example,
-if you want to match data exactly, you may want the <i>Exactly match</i> or the <il>Is</i> operator. If you want the
+if you want to match data exactly, you may want the <i>Exactly match</i> or the <i>Is</i> operator. If you want the
 condition to be more loose, select an operator such as <i>Contains</i>.</li>
 <li>Use the Condition box to type the condition you want to match. The more
 you type, the more specific the condition is. 

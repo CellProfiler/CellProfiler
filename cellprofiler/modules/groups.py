@@ -144,7 +144,7 @@ class Groups(cpm.CPModule):
             </p>
             <p>Selecting the "Plate" metadata as the metadata category will create two groups based on the unique plate identifiers (P-12345 and 2-ABCDF):
             <table border="1" align="center">
-            <tr><th>Group number</th><th>Plate</th><th>Well</td><td>Site</td><td>w1</td><td>w2</td></tr>
+            <tr><th>Group number</th><th>Plate</th><th>Well</th><th>Site</th><th>w1</th><th>w2</th></tr>
             <tr><td>1</td><td>P-12345</td><td>A01</td><td>s1</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
             <tr><td>1</td><td>P-12345</td><td>B01</td><td>s1</td><td>P-12345_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">B01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
             <tr><td>2</td><td>2-ABCDF</td><td>A01</td><td>s2</td><td>2-ABCDF_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>2-ABCDF_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>

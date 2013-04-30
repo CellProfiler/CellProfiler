@@ -193,7 +193,8 @@ class NamesAndTypes(cpm.CPModule):
             </p>
             <p>In addition, CellProfiler can match a single file for one channel against many files from
             another channel. This is useful, for instance, for applying an illumination correction file
-            for an entire plate against every image file for that plate.</p>"""%globals())
+            for an entire plate against every image file for that plate.</p></li>
+            </ul>"""%globals())
         self.join = cps.Joiner("")
         self.imageset_setting = cps.ImageSetDisplay("", "Update table")
         

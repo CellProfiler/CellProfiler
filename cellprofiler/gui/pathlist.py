@@ -591,7 +591,21 @@ class PathListCtrl(wx.PyScrolledWindow):
             folder_idx = bisect.bisect_right(self.folder_idxs, idx)-1
             idx = self.folder_idxs[folder_idx]
         return idx
+
+    @staticmethod
+    def get_treeitem_x():
+        '''Return the width of the treeitem graphic
         
+        returns wx.SYS_SMALLICON_X if defined on the platform
+        or 16 for the Mac.
+        '''
+        treeitem_x = wx.SystemSettings.GetMetric(wx.SYS_SMALLICON_X)
+        if treeitem_x < 0:
+            # wx.SYS_SMALLICON_X not defined for this platform
+            # (which means Mac)
+            return 16
+        return treeitem_x
+    
     def on_mouse_down(self, event):
         '''Handle left mouse button down'''
         assert isinstance(event, wx.MouseEvent)
@@ -603,7 +617,9 @@ class PathListCtrl(wx.PyScrolledWindow):
         if item is None:
             item = self.folder_items[-1]
             path_idx = len(item.filenames)
-        treeitem_x = wx.SystemSettings.GetMetric(wx.SYS_SMALLICON_X)
+            
+        treeitem_x = self.get_treeitem_x()
+        
         if path_idx is None and event.GetX() < treeitem_x:
             self.selections = set()
             item.opened = not item.opened
@@ -630,7 +646,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         item, path_idx = self[idx]
         if item is None:
             return
-        treeitem_x = wx.SystemSettings.GetMetric(wx.SYS_SMALLICON_X)
+        treeitem_x = self.get_treeitem_x()
         if path_idx is None:
             if event.GetX() < treeitem_x:
                 # Handle second click on tree expand/contract as 

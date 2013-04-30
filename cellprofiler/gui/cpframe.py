@@ -135,13 +135,11 @@ class CPFrame(wx.Frame):
 
         self.__right_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
         self.__right_win.BackgroundColour = background_color
+        self.__right_win.AutoLayout = True
 
         self.__left_win = wx.Panel(self.__splitter, style=wx.BORDER_NONE)
         # bottom left will be the file browser
 
-        self.__logo_panel = wx.Panel(self.__left_win)
-        self.__logo_panel.BackgroundColour = background_color
-        
         self.__module_list_panel = wx.Panel(self.__left_win)
         self.__module_list_panel.SetBackgroundColour(background_color)
         self.__module_list_panel.SetToolTipString("The pipeline panel contains the modules in the pipeline. Click on the '+' button below or right-click in the panel to begin adding modules.")
@@ -202,12 +200,16 @@ class CPFrame(wx.Frame):
         self.__path_list_sash.SetDefaultBorderSize(4)
         self.__path_list_sash.SetSashVisible(wx.SASH_BOTTOM, True)
         self.__path_list_sash.BackgroundColour = cpprefs.get_background_color()
+        self.__path_list_sash.AutoLayout = True
         self.__path_list_sash.Hide()
         path_list_group_box = wx.StaticBox(
             self.__path_list_sash,
             label = "File list")
         sizer = wx.StaticBoxSizer(path_list_group_box, wx.VERTICAL)
-        self.__path_list_sash.Sizer = sizer
+        self.__path_list_sash.Sizer = wx.BoxSizer(wx.VERTICAL)
+        self.__path_list_sash.Sizer.Add(sizer, 1, wx.EXPAND)
+        # Add spacer so that group box doesn't cover sash's handle
+        self.__path_list_sash.Sizer.AddSpacer(6)
         #
         # Path list control
         #
@@ -218,7 +220,7 @@ class CPFrame(wx.Frame):
         #
         sizer.AddSpacer(2)
         hsizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(hsizer, 0, wx.EXPAND |wx.BOTTOM, 6)
+        sizer.Add(hsizer, 0, wx.EXPAND)
         #
         # Path list show/hide filtered files checkbox
         #
@@ -304,7 +306,6 @@ class CPFrame(wx.Frame):
         self.__attach_views()
         self.__set_properties()
         self.__set_icon()
-        self.__layout_logo()
         self.__do_layout()
         self.__make_search_frame()
         self.__error_listeners = []
@@ -436,6 +437,10 @@ class CPFrame(wx.Frame):
 
     def __on_path_module_imageset_panel_size(self, event):
         self.layout_pmi_panel()
+        if self.__path_list_sash.IsShown():
+            self.__path_list_sash.Layout()
+        if self.__imageset_sash.IsShown():
+            self.__imageset_sash.Layout()
 
     def layout_pmi_panel(self):
         '''Run the sash layout algorithm on the path/module/imageset panel'''
@@ -967,14 +972,13 @@ All rights reserved."""
         right_win = self.__right_win
         top_left_win = self.__left_win
 
-        self.__splitter.SetMinimumPaneSize(self.__logopic.GetBestSize()[0] + 5)
+        self.__splitter.SetMinimumPaneSize(120)
         self.__splitter.SplitVertically(self.__left_win, self.__right_win, 300)
         self.__splitter.BorderSize = 0
         self.__splitter.SashSize = 5
         self.__splitter.BackgroundColour = self.BackgroundColour
 
         top_left_sizer = wx.BoxSizer(wx.VERTICAL)
-        top_left_sizer.Add(self.__logo_panel,0,wx.EXPAND|wx.ALL,1)
         top_left_sizer.Add(self.__module_list_panel,1,wx.EXPAND|wx.ALL,1)
         top_left_sizer.Add(self.__module_controls_panel,0,wx.EXPAND|wx.ALL,2)
         top_left_sizer.Add(self.__pipeline_test_panel, 0, wx.EXPAND|wx.ALL,2)
@@ -986,22 +990,6 @@ All rights reserved."""
         self.Layout()
         right_win.Layout()
         top_left_win.Layout()
-
-    def __layout_logo(self):
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.__logo_panel.Sizer = sizer
-        bitmap = wx.BitmapFromImage(get_builtin_image('CP_logo'))
-        self.__logopic = wx.StaticBitmap(self.__logo_panel,-1,bitmap)
-        sizer.Add(self.__logopic)
-        self.__welcome_button = wx.Button(
-            self.__logo_panel, ID_HELP_WELCOME, 
-            label = "Welcome",
-            style = wx.BU_EXACTFIT)
-        sizer.AddStretchSpacer(1)
-        self.__logo_panel.Sizer.Add(self.__welcome_button, 0,
-                                    wx.ALIGN_BOTTOM | wx.ALIGN_RIGHT)
-        self.__welcome_button.Bind(wx.EVT_BUTTON, self.__on_help_welcome)
-        self.__logo_panel.Hide()
 
     def __set_icon(self):
         self.SetIcon(get_cp_icon())

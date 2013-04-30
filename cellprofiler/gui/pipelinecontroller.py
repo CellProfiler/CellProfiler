@@ -2424,9 +2424,9 @@ class PipelineController:
             return
         count = 1
         for module in self.__pipeline.modules()[first_module.module_num:]:
-            count += 1
             if module.wants_pause:
                 break
+            count += 1
         message_format = "Running module %d of %d: %s"
         index = 0
         with wx.ProgressDialog(

@@ -116,11 +116,33 @@ class PipelineController:
         wx.EVT_MENU(frame, cpframe.ID_FILE_RUN_MULTIPLE_PIPELINES, self.on_run_multiple_pipelines)
         wx.EVT_MENU(frame, cpframe.ID_FILE_RESTART, self.on_restart)
         
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_UNDO, self.on_undo)
+        frame.Bind(wx.EVT_UPDATE_UI, self.on_update_undo_ui, id=cpframe.ID_EDIT_UNDO)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_MOVE_UP, self.on_module_up)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_MOVE_DOWN, self.on_module_down)
-        wx.EVT_MENU(frame, cpframe.ID_EDIT_UNDO, self.on_undo)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_DELETE, self.on_remove_module)
         wx.EVT_MENU(frame, cpframe.ID_EDIT_DUPLICATE, self.on_duplicate_module)
+        
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_BROWSE_FOR_FILES, 
+                    self.on_pathlist_browse)
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_CLEAR_FILE_LIST,
+                    self.on_pathlist_clear)
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_COLLAPSE_ALL,
+                    self.on_pathlist_collapse_all)
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_EXPAND_ALL,
+                    self.on_pathlist_expand_all)
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST,
+                    self.on_pathlist_remove)
+        wx.EVT_MENU(frame, cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE,
+                    self.on_pathlist_show)
+        for menu_id in (cpframe.ID_EDIT_BROWSE_FOR_FILES, 
+                        cpframe.ID_EDIT_CLEAR_FILE_LIST,
+                        cpframe.ID_EDIT_COLLAPSE_ALL,
+                        cpframe.ID_EDIT_EXPAND_ALL,
+                        cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST,
+                        cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE):
+            frame.Bind(wx.EVT_UPDATE_UI, self.on_update_pathlist_ui,
+                       id = menu_id)
         
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_TOGGLE,self.on_debug_toggle)
         wx.EVT_MENU(frame,cpframe.ID_DEBUG_STEP,self.on_debug_step)
@@ -137,8 +159,6 @@ class PipelineController:
         
         wx.EVT_MENU(frame,cpframe.ID_WINDOW_SHOW_ALL_WINDOWS, self.on_show_all_windows)
         wx.EVT_MENU(frame,cpframe.ID_WINDOW_HIDE_ALL_WINDOWS, self.on_hide_all_windows)
-        
-        wx.EVT_MENU_OPEN(frame, self.on_frame_menu_open)
         
         from bioformats.formatreader import set_omero_login_hook
         set_omero_login_hook(self.omero_login)
@@ -405,11 +425,17 @@ class PipelineController:
         self.__mcp_text = wx.StaticText(self.__module_controls_panel,-1,"Adjust modules:")
         self.__mcp_add_module_button = wx.Button(self.__module_controls_panel,-1,"+",(0,0), (30, -1))
         self.__mcp_add_module_button.SetToolTipString("Add a module")
-        self.__mcp_remove_module_button = wx.Button(self.__module_controls_panel,-1,"-",(0,0), (30, -1))
+        self.__mcp_remove_module_button = wx.Button(
+            self.__module_controls_panel, cpframe.ID_EDIT_DELETE, 
+            "-",(0,0), (30, -1))
         self.__mcp_remove_module_button.SetToolTipString("Remove selected module")
-        self.__mcp_module_up_button = wx.Button(self.__module_controls_panel,-1,"^",(0,0), (30, -1))
+        self.__mcp_module_up_button = wx.Button(
+            self.__module_controls_panel, cpframe.ID_EDIT_MOVE_UP,
+            "^",(0,0), (30, -1))
         self.__mcp_module_up_button.SetToolTipString("Move selected module up")
-        self.__mcp_module_down_button = wx.Button(self.__module_controls_panel,-1,"v",(0,0), (30, -1))
+        self.__mcp_module_down_button = wx.Button(
+            self.__module_controls_panel, cpframe.ID_EDIT_MOVE_DOWN,
+            "v", (0,0), (30, -1))
         self.__mcp_module_down_button.SetToolTipString("Move selected module down")
         mcp_sizer.AddMany([(self.__help_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
                            ((1, 3), 3),
@@ -1337,6 +1363,19 @@ class PipelineController:
         self.__path_list_ctrl.enable_paths(enabled_urls, True)
         self.__path_list_ctrl.enable_paths(disabled_urls, False)
         
+    def on_update_pathlist_ui(self, event):
+        '''Called with an UpdateUIEvent for a pathlist command ID'''
+        assert isinstance(event, wx.UpdateUIEvent)
+        event.Enable(True)
+        if not self.__path_list_ctrl.IsShownOnScreen():
+            event.Enable(False)
+        elif event.Id == cpframe.ID_EDIT_REMOVE_FROM_FILE_LIST:
+            if not self.__path_list_ctrl.has_selections():
+                event.Enable(False)
+        elif event.Id == cpframe.ID_EDIT_SHOW_FILE_LIST_IMAGE:
+            if not self.__path_list_ctrl.has_focus_item():
+                event.Enable(False)
+        
     def on_pathlist_browse(self, event, default_dir = wx.EmptyString):
         '''Handle request for browsing for pathlist files'''
         with wx.FileDialog(
@@ -1373,8 +1412,7 @@ class PipelineController:
         if cmd == self.PATHLIST_CMD_SHOW or cmd is None:
             if len(paths) == 0:
                 return
-            from cellprofiler.gui.cpfigure import show_image
-            show_image(paths[0], self.__frame)
+            self.on_pathlist_show()
         elif cmd == self.PATHLIST_CMD_REMOVE:
             self.on_pathlist_file_delete(paths)
         elif cmd == self.PATHLIST_CMD_BROWSE:
@@ -1390,9 +1428,9 @@ class PipelineController:
             self.on_pathlist_command(cmd)
     def on_pathlist_command(self, cmd):
         if cmd == self.PATHLIST_CMD_EXPAND_ALL:
-            self.__path_list_ctrl.expand_all()
+            self.on_pathlist_expand_all()
         elif cmd == self.PATHLIST_CMD_COLLAPSE_ALL:
-            self.__path_list_ctrl.collapse_all()
+            self.on_pathlist_collapse_all()
         elif cmd == self.PATHLIST_CMD_CLEAR:
             self.on_pathlist_clear(None)
 
@@ -1421,6 +1459,25 @@ class PipelineController:
                 self.on_pathlist_browse(None)
         else:
             self.on_pathlist_command(cmd)
+            
+    def on_pathlist_expand_all(self, event=None):
+        self.__path_list_ctrl.expand_all()
+        
+    def on_pathlist_collapse_all(self, event=None):
+        self.__path_list_ctrl.collapse_all()
+        
+    def on_pathlist_remove(self, event=None):
+        '''Remove selected files from the path list'''
+        paths = self.__path_list_ctrl.get_paths(
+            self.__path_list_ctrl.FLAG_SELECTED_ONLY)
+        self.on_pathlist_file_delete(paths)
+        
+    def on_pathlist_show(self, event=None):
+        '''Show the focused item's image'''
+        from cellprofiler.gui.cpfigure import show_image
+        paths = self.__path_list_ctrl.get_paths(
+            self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY)
+        show_image(paths[0], self.__frame)
                 
     def on_pathlist_file_delete(self, paths):
         self.__pipeline.remove_image_plane_details(
@@ -1753,6 +1810,9 @@ class PipelineController:
                 self.__pipeline.undo()
         finally:
             wx.EndBusyCursor()
+            
+    def on_update_undo_ui(self, event):
+        event.Enable(self.__pipeline.has_undo())
     
     def on_add_to_pipeline(self, caller, event):
         """Add a module to the pipeline using the event's module loader
@@ -2225,9 +2285,6 @@ class PipelineController:
         self.__analysis.resume()
         self.__resume_button.Enable(False)
         
-    def on_frame_menu_open(self, event):
-        pass
-    
     def on_stop_running(self,event):
         '''Handle a user interface request to stop running'''
         self.__stop_analysis_button.Enable(False)

@@ -67,10 +67,17 @@ ID_FILE_NEW_CP=wx.NewId()
 ID_EDIT_SELECT_ALL = wx.NewId()
 ID_EDIT_COPY = wx.NewId()
 ID_EDIT_DUPLICATE = wx.NewId()
-ID_EDIT_UNDO = wx.NewId()
+ID_EDIT_UNDO = wx.ID_UNDO
 ID_EDIT_MOVE_UP = wx.NewId()
 ID_EDIT_MOVE_DOWN = wx.NewId()
 ID_EDIT_DELETE = wx.NewId()
+
+ID_EDIT_EXPAND_ALL = wx.NewId()
+ID_EDIT_COLLAPSE_ALL = wx.NewId()
+ID_EDIT_BROWSE_FOR_FILES = wx.NewId()
+ID_EDIT_CLEAR_FILE_LIST = wx.NewId()
+ID_EDIT_REMOVE_FROM_FILE_LIST = wx.NewId()
+ID_EDIT_SHOW_FILE_LIST_IMAGE = wx.NewId()
 
 ID_OPTIONS_PREFERENCES = wx.ID_PREFERENCES
 ID_CHECK_NEW_VERSION = wx.NewId()
@@ -462,6 +469,30 @@ class CPFrame(wx.Frame):
         self.SetTitle("CellProfiler %s"%(version.title_string))
         self.SetSize((1024, 600))
 
+    def enable_edit_commands(self, ids):
+        '''Enable the edit commands that are supported by the focused window
+        
+        ids - a list of the IDs supported by the window that has the focus.
+        
+        This should be called when a window receives an EVT_SET_FOCUS or
+        when its state has changed to the point where it needs to enable
+        different sets of commands.
+        
+        Commands that can be passed through here:
+        wx.ID_COPY
+        wx.ID_CUT
+        wx.ID_PASTE
+        wx.ID_DELETE
+        wx.ID_SELECTALL
+        '''
+        d = dict([(x, False) for x in
+                  (wx.ID_COPY, wx.ID_CUT, wx.ID_PASTE, wx.ID_DELETE, 
+                   wx.ID_SELECTALL)])
+        for eyedee in ids:
+            d[eyedee] = True
+        for k, v in d.iteritems():
+            self.menu_edit.Enable(k, v)
+        
     def __add_menu(self):
         """Add the menu to the frame
 
@@ -491,16 +522,41 @@ class CPFrame(wx.Frame):
         self.recent_files.AppendSubMenu(self.recent_pipeline_files, "&Pipelines")
         self.recent_workspace_files = wx.Menu()
         self.recent_files.AppendSubMenu(self.recent_workspace_files, "&Workspaces")
-        # self.__menu_file.Append(ID_FILE_WIDGET_INSPECTOR,'Widget inspector','Run the widget inspector for debugging the UI')
         self.__menu_file.Append(ID_FILE_EXIT,'E&xit\tctrl+Q','Quit the application')
+
         self.menu_edit = wx.Menu()
-        self.menu_edit.Append(ID_EDIT_UNDO, "&Undo\tctrl+Z", "Undo last action")
+        self.menu_edit.Append(wx.ID_UNDO, help="Undo last action")
+        self.menu_edit.AppendSeparator()
+        
+        self.menu_edit.Append(wx.ID_CUT)
+        self.menu_edit.Append(wx.ID_COPY)
+        self.menu_edit.Append(wx.ID_PASTE)
+        self.menu_edit.Append(wx.ID_SELECTALL)
+        
+        self.menu_edit.AppendSeparator()
         self.menu_edit.Append(ID_EDIT_MOVE_UP, "Move Module &Up", "Move module toward the start of the pipeline")
         self.menu_edit.Append(ID_EDIT_MOVE_DOWN, "Move Module &Down", "Move module toward the end of the pipeline")
         self.menu_edit.Append(ID_EDIT_DELETE, "&Delete Module", "Delete selected modules")
         self.menu_edit.Append(ID_EDIT_DUPLICATE, "Duplicate Module", "Duplicate selected modules")
         self.menu_edit_add_module = wx.Menu()
         self.menu_edit.AppendSubMenu(self.menu_edit_add_module, "&Add Module")
+
+        self.menu_edit.AppendSeparator()
+        self.menu_edit.Append(ID_EDIT_SHOW_FILE_LIST_IMAGE,
+                              "Show selected image",
+                              "Display the first selected image in the file list")
+        self.menu_edit.Append(ID_EDIT_REMOVE_FROM_FILE_LIST,
+                              "Remove from file list",
+                              "Remove the selected files from the file list")
+        self.menu_edit.Append(ID_EDIT_BROWSE_FOR_FILES,
+                              "Browse for images",
+                              "Select images to add to the file list using a file browser")
+        self.menu_edit.Append(ID_EDIT_CLEAR_FILE_LIST, "Clear file list",
+                              "Remove all files from the file list")
+        self.menu_edit.Append(ID_EDIT_EXPAND_ALL, "Expand all folders", 
+                              "Expand all folders in the file list and show all file names")
+        self.menu_edit.Append(ID_EDIT_COLLAPSE_ALL, "Collapse all folders",
+                              "Collapse all folders in the file list, hiding all file names")
 
         self.__menu_debug = wx.Menu()
         self.__menu_debug.Append(ID_DEBUG_TOGGLE,'&Start Test Mode\tF5','Start the pipeline debugger')
@@ -569,10 +625,22 @@ class CPFrame(wx.Frame):
         else:
             self.__menu_bar.Append(self.__menu_help, '&Help')
         self.SetMenuBar(self.__menu_bar)
+        self.enable_edit_commands([])
 
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
         wx.EVT_MENU(self, ID_FILE_NEW_CP,self.__on_new_cp)
+        
+        wx.EVT_MENU(self, wx.ID_CUT, self.on_cut)
+        self.Bind(wx.EVT_UPDATE_UI, self.on_update_cut_ui, id=wx.ID_CUT)
+        wx.EVT_MENU(self, wx.ID_COPY, self.on_copy)
+        self.Bind(wx.EVT_UPDATE_UI, self.on_update_copy_ui, id=wx.ID_COPY)
+        wx.EVT_MENU(self, wx.ID_PASTE, self.on_paste)
+        self.Bind(wx.EVT_UPDATE_UI, self.on_update_paste_ui, id=wx.ID_PASTE)
+        wx.EVT_MENU(self, wx.ID_SELECTALL, self.on_select_all)
+        self.Bind(wx.EVT_UPDATE_UI, self.on_update_select_all_ui, 
+                  id=wx.ID_SELECTALL)
+        
         wx.EVT_MENU(self, ID_HELP_WELCOME, self.__on_help_welcome)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_HELP_ONLINE_MANUAL,self.__on_help_online_manual)
@@ -592,6 +660,9 @@ class CPFrame(wx.Frame):
              (wx.ACCEL_CMD,ord('L'),ID_WINDOW_CLOSE_ALL),
              (wx.ACCEL_CMD,ord('Q'),ID_FILE_EXIT),
              (wx.ACCEL_CMD,ord('W'),ID_FILE_EXIT),
+             (wx.ACCEL_CMD, ord('A'), wx.ID_SELECTALL),
+             (wx.ACCEL_CMD, ord('C'), wx.ID_CUT),
+             (wx.ACCEL_CMD, ord('V'), wx.ID_PASTE),
              (wx.ACCEL_NORMAL,wx.WXK_F5,ID_DEBUG_TOGGLE),
              (wx.ACCEL_NORMAL,wx.WXK_F6,ID_DEBUG_STEP),
              (wx.ACCEL_NORMAL,wx.WXK_F7,ID_DEBUG_NEXT_IMAGE_SET),
@@ -628,6 +699,58 @@ class CPFrame(wx.Frame):
             self.__data_tools_menu.AppendSubMenu(self.data_tools_help(), '&Help')
 
         return self.__data_tools_menu
+
+    #########################################################
+    #
+    # Handlers for ID_CUT / ID_COPY / ID_DELETE / ID_PASTE
+    #
+    # Adapted from a post reply by Robin Dunn:
+    # http://wxpython-users.1045709.n5.nabble.com/how-to-implement-copy-paste-with-accelerators-td3337472.html
+    #########################################################
+    def on_cut(self, event):
+        '''Handle ID_CUT'''
+        focus = wx.Window.FindFocus()
+        if focus is not None and getattr(focus, "Cut"):
+            focus.Cut()
+            
+    def on_update_cut_ui(self, event):
+        focus = wx.Window.FindFocus() 
+        event.Enable(focus and 
+                     hasattr(focus, 'CanCut') and 
+                     focus.CanCut())
+       
+    def on_copy(self, event):
+        '''Handle ID_COPY'''
+        focus = wx.Window.FindFocus()
+        if focus is not None and getattr(focus, "Copy"):
+            focus.Copy()
+            
+    def on_update_copy_ui(self, event):
+        focus = wx.Window.FindFocus() 
+        event.Enable(focus and 
+                     hasattr(focus, 'CanCopy') and 
+                     focus.CanCopy())
+
+    def on_paste(self, event):
+        '''Handle ID_PASTE'''
+        focus = wx.Window.FindFocus()
+        if focus is not None and getattr(focus, "Paste"):
+            focus.Paste()
+            
+    def on_update_paste_ui(self, event):
+        focus = wx.Window.FindFocus() 
+        event.Enable(focus and 
+                     hasattr(focus, 'CanPaste') and 
+                     focus.CanPaste())
+        
+    def on_select_all(self, event):
+        focus = wx.Window.FindFocus()
+        if (focus and hasattr(focus, "SelectAll")):
+            focus.SelectAll()
+
+    def on_update_select_all_ui(self, event):
+        focus = wx.Window.FindFocus()
+        event.Enable(focus and hasattr(focus, "SelectAll"))
 
     debug_commands = (ID_DEBUG_STEP, ID_DEBUG_NEXT_IMAGE_SET,
                       ID_DEBUG_NEXT_GROUP, ID_DEBUG_CHOOSE_GROUP,

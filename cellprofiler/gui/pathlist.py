@@ -366,18 +366,24 @@ class PathListCtrl(wx.PyScrolledWindow):
     FLAG_SELECTED_ONLY = 2
     FLAG_FOLDERS = 4
     FLAG_RECURSE = 8
+    FLAG_FOCUS_ITEM_ONLY = 16
     
     def get_paths(self, flags = 0):
         '''Return paths
         
         flags - PathListCtrl.FLAG_ENABLED_ONLY to only return paths marked
                 as enabled, PathListCtrl.FLAG_SELECTED_ONLY to return only
-                selected paths.
+                selected paths, PathListCtrl.FLAG_FOCUS_ITEM_ONLY to return
+                either an empty list or the focus item's path.
         '''
         paths = []
         if self.schmutzy:
             self.recalc()
-        if flags & PathListCtrl.FLAG_SELECTED_ONLY:
+        if flags & PathListCtrl.FLAG_FOCUS_ITEM_ONLY:
+            def fn_iter():
+                if self.focus_item is not None:
+                    yield self[self.focus_item]
+        elif flags & PathListCtrl.FLAG_SELECTED_ONLY:
             def fn_iter():
                 for idx in self.selections:
                     yield self[idx]
@@ -392,6 +398,14 @@ class PathListCtrl(wx.PyScrolledWindow):
                     continue
             paths.append(item.get_full_path(idx))
         return paths
+    
+    def has_selections(self):
+        '''Return True if there are any selected items'''
+        return len(self.selections) > 0
+    
+    def has_focus_item(self):
+        '''Return True if an item is focused'''
+        return self.focus_item is not None
     
     def get_folder(self, path, flags = 0):
         '''Return the files or folders in the current folder.

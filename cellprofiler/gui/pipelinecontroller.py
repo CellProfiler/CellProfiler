@@ -1890,9 +1890,11 @@ class PipelineController:
             self.__module_view.disable()
             self.__frame.preferences_view.on_analyze_images()
             clear_old_errors()
-            if not self.__pipeline.prepare_run(self.__workspace):
-                self.stop_running()
-                return
+            with cpp.Pipeline.PipelineListener(
+                self.__pipeline, self.on_prepare_run_error_event):
+                if not self.__pipeline.prepare_run(self.__workspace):
+                    self.stop_running()
+                    return
             measurements_file_path = None
             if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
                 measurements_file_path = self.get_output_file_path()
@@ -1917,7 +1919,29 @@ class PipelineController:
                                  continue_only=True)
             self.stop_running()
         return
-
+    
+    def on_prepare_run_error_event(self, pipeline, event):
+        '''Display an error message box on error during prepare_run
+        
+        This is called if the pipeline is misconfigured - an unrecoverable
+        error that's the user's fault.
+        '''
+        if isinstance(event, cpp.PrepareRunErrorEvent):
+            if event.module is None:
+                caption = "Cannot run pipeline"
+                message = ("The pipeline cannot be started because of\n"
+                           "a configuration problem:\n\n%s") % event.message
+            else:
+                caption = "Cannot run pipeline: misconfiguration in %s" %\
+                    event.module.module_name
+                message = ("The pipeline cannot be started because of\n"
+                           "a configuration problem in the %s module:\n\n%s") %\
+                    (event.module.module_name, event.message)
+            wx.MessageBox(
+                message = message,
+                caption = caption,
+                parent = self.__frame,
+                style = wx.ICON_ERROR | wx.OK)
 
     def analysis_event_handler(self, evt):
         PRI_EXCEPTION, PRI_INTERACTION, PRI_DISPLAY = range(3)
@@ -2282,22 +2306,11 @@ class PipelineController:
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.__pipeline.test_mode = True
         self.show_test_controls()
-        try:
+        with cpp.Pipeline.PipelineListener(
+            self.__pipeline, self.on_prepare_run_error_event):
             if not self.__workspace.refresh_image_set():
-                raise ValueError("Failed to get image sets")
-            if self.__workspace.measurements.image_set_count == 0:
-                wx.MessageBox("The pipeline did not identify any image sets. "
-                              "Please check your settings for any modules that "
-                              "load images and try again.",
-                              "No image sets.",
-                              wx.OK | wx.ICON_ERROR, self.__frame)
                 self.stop_debugging()
                 return False
-        except ValueError, v:
-            message = "Error while preparing for run:\n%s"%(v)
-            wx.MessageBox(message, "Pipeline error", wx.OK | wx.ICON_ERROR, self.__frame)
-            self.stop_debugging()
-            return False
         
         self.close_debug_measurements()
         self.__debug_measurements = cellprofiler.measurements.Measurements(

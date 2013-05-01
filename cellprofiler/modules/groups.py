@@ -107,7 +107,10 @@ class Groups(cpm.CPModule):
         group = cps.SettingsGroup()
         self.grouping_metadata.append(group)
         def get_group_metadata_choices(pipeline):
-            return self.get_metadata_choices(pipeline, group)
+            choices = self.get_metadata_choices(pipeline, group)
+            if len(choices) == 0:
+                choices.append("None")
+            return choices
         if self.pipeline is not None:
             choices = get_group_metadata_choices(self.pipeline)
         else:
@@ -213,9 +216,10 @@ class Groups(cpm.CPModule):
         self.workspace = workspace
         assert isinstance(self.pipeline, cpp.Pipeline)
         if self.wants_groups:
-            self.image_sets_initialized = True
-            workspace.refresh_image_set()
             self.metadata_keys = []
+            self.image_sets_initialized = workspace.refresh_image_set()
+            if not self.image_sets_initialized:
+                return
             m = workspace.measurements
             if m.image_set_count > 0:
                 assert isinstance(m, cpmeas.Measurements)
@@ -260,7 +264,8 @@ class Groups(cpm.CPModule):
     def update_tables(self):
         if self.wants_groups:
             try:
-                self.workspace.refresh_image_set()
+                if not self.workspace.refresh_image_set():
+                    return
             except:
                 return
             m = self.workspace.measurements
@@ -354,9 +359,16 @@ class Groups(cpm.CPModule):
             return
         key_list = self.get_grouping_tags()
         m = workspace.measurements
-        if any([key not in m.get_feature_names(cpmeas.IMAGE) for key in key_list]):
-            # Premature execution of get_groupings if module is mis-configured
-            return None
+        for key in key_list:
+            if key not in m.get_feature_names(cpmeas.IMAGE):
+                if key.startswith(cpmeas.C_METADATA):
+                    key = key[len(cpmeas.C_METADATA)+1:]
+                workspace.pipeline.report_prepare_run_error(
+                    self,
+                    ('The groups module is misconfigured. "%s" was chosen as\n'
+                     'one of the metadata tags, but that metadata tag is not\n'
+                     'defined in the Metadata module.') % key)
+                return None
         return key_list, m.get_groupings(key_list)
     
     def get_grouping_tags(self):

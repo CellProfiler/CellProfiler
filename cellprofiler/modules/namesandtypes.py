@@ -109,7 +109,7 @@ class NamesAndTypes(cpm.CPModule):
         self.metadata_keys = []
         
         self.assignment_method = cps.Choice(
-            "Assignment method", [ASSIGN_ALL, ASSIGN_GUESS, ASSIGN_RULES],
+            "Assignment method", [ASSIGN_ALL, ASSIGN_RULES],
             doc = """How do you want to assign images to channels?<br>
             This setting controls how different image types (e.g., an image
             of the GFP stain and a brightfield image) are assigned different
@@ -120,9 +120,6 @@ class NamesAndTypes(cpm.CPModule):
             only one kind of image (or only one image). CellProfiler will
             give each image the same name and the pipeline will load only
             one of the images per iteration.</li>
-            <li><i>%(ASSIGN_GUESS)s</i>: CellProfiler will guess the image
-            assignment and will display the results of the guess which
-            you can accept if correct.</li>
             <li><i>%(ASSIGN_RULES)s</i>: Give images one of several names
             depending on the file name, directory and metadata. This is the
             appropriate choice if more than one image was taken of each 

@@ -1579,10 +1579,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
         image_set_list = I.ImageSetList()
-        self.assertRaises(ValueError, load_images.prepare_run, 
-                          W.Workspace(pipeline, load_images, None, None,
-                                      measurements.Measurements(), 
-                                      image_set_list))
+        self.assertFalse(load_images.prepare_run(
+            W.Workspace(pipeline, load_images, None, None,
+                        measurements.Measurements(), 
+                        image_set_list)))
             
     def test_06_04_conflict(self):
         """Test expected failure when two images have the same metadata"""
@@ -1619,10 +1619,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
             image_set_list = I.ImageSetList()
-            self.assertRaises(
-                ValueError, load_images.prepare_run, W.Workspace(
+            self.assertFalse(load_images.prepare_run(
+                W.Workspace(
                     pipeline, load_images, None, None, 
-                    measurements.Measurements(), image_set_list))
+                    measurements.Measurements(), image_set_list)))
         finally:
             for filename in filenames:
                 os.remove(os.path.join(directory,filename))

@@ -496,6 +496,32 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         pipeline.run()
         self.assertTrue(should_be_true[0])
         
+    def test_11_02_catch_prepare_run_error(self):
+        pipeline = exploding_pipeline(self)
+        module = GroupModule()
+        keys = ('foo','bar')
+        groupings = (({'foo':'foo-A','bar':'bar-A'},(1,2)),
+                     ({'foo':'foo-B','bar':'bar-B'},(3,4)),
+                     ({'foo':'foo-C','bar':'bar-C'},(5,6)))
+        def prepare_run(workspace):
+            m = workspace.measurements
+            for i in range(1, 7):
+                m[cpmeas.IMAGE, cpmeas.C_PATH_NAME+"_DNA", i] =\
+                    "/imaging/analysis"
+                m[cpmeas.IMAGE, cpmeas.C_FILE_NAME+"_DNA", i] = "img%d.tif" % i
+            workspace.pipeline.report_prepare_run_error(
+                module, "I am configured incorrectly")
+            return True
+        module.setup(groupings,
+                     prepare_run_callback = prepare_run)
+        module.module_num = 1
+        pipeline.add_module(module)
+        workspace = cpw.Workspace(
+            pipeline, None, None, None, cpmeas.Measurements(),
+            cpi.ImageSetList())
+        self.assertFalse(pipeline.prepare_run(workspace))
+        self.assertEqual(workspace.measurements.image_set_count, 0)
+        
     def test_12_01_img_286(self):
         '''Regression test for img-286: module name in class'''
         cellprofiler.modules.fill_modules()

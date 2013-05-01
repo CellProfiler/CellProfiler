@@ -1421,12 +1421,8 @@ class LoadImages(cpmodule.CPModule):
         pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
-        files = self.collect_files(pipeline.test_mode, frame)
+        files = self.collect_files(workspace)
         if len(files) == 0:
-            message = ("CellProfiler did not find any image files that "
-                       'matched your matching pattern: "%s"' %
-                       self.images[0].common_text.value)
-            self.report_no_matching_files(frame, message)
             return False
         
         if (self.do_group_by_metadata and len(self.get_metadata_tags())):
@@ -1455,6 +1451,9 @@ class LoadImages(cpmodule.CPModule):
         
         for x,name in zip(list_of_lists[1:],image_names[1:]):
             if len(x) != image_set_count:
+                message = "Image %s has %d files, but image %s has %d files" %\
+                    (image_names[0], image_set_count, name, len(x))
+                pipeline.report_prepare_run_error(self, message)
                 if frame is not None:
                     images = [ (tuple(),
                                 [os.path.split(list_of_lists[i][j])
@@ -1462,10 +1461,7 @@ class LoadImages(cpmodule.CPModule):
                                  for i in range(len(list_of_lists))])
                                for j in range(image_set_count)]
                     self.report_errors([], images, frame)
-                    return False
-                raise RuntimeError("Image %s has %d files, but image %s has %d files" %
-                                   (image_names[0], image_set_count,
-                                    name, len(x)))
+                return False
         list_of_lists = np.array(list_of_lists)
         root = self.image_directory()
         for i in range(image_set_count):
@@ -1579,7 +1575,8 @@ class LoadImages(cpmodule.CPModule):
                                 message += ("%s: path=%s, file=%s" %
                                             (fd.channels[0].image_name.value,
                                              mi[1][i][0],mi[1][i][1]))
-                raise ValueError(message)
+                pipeline.report_prepare_run_error(self, message)
+                return False
                 
         root = self.image_directory()
         features = {}
@@ -1595,7 +1592,9 @@ class LoadImages(cpmodule.CPModule):
         assert isinstance(measurements, cpmeas.Measurements)
         if measurements.image_set_count > 0:
             match_metadata = True
-            md_dict = self.get_image_numbers_by_tags(measurements, tags)
+            md_dict = self.get_image_numbers_by_tags(workspace, tags)
+            if md_dict is None:
+                return False
             n_image_sets = measurements.image_set_count
         else:
             match_metadata = False
@@ -1665,7 +1664,7 @@ class LoadImages(cpmodule.CPModule):
                 result.append(subset)
         return result
 
-    def get_image_numbers_by_tags(self, measurements, tags):
+    def get_image_numbers_by_tags(self, workspace, tags):
         '''Make a dictionary of tag values to image numbers
         
         Look up the metadata values for each of the tags in "tags" and
@@ -1673,20 +1672,23 @@ class LoadImages(cpmodule.CPModule):
         that have those tag values. This dictionary can then be used to
         populate all image sets with a particular tag value.
         
-        measurements - the measurements populated with metadata values for
-                       each tag
+        workspace.measurements - the measurements populated with metadata values
+                                 for each tag
                        
         tags - the metadata tags to be used for matching
         '''
+        measurements = workspace.measurements
         metadata_features = [
             x for x in measurements.get_feature_names(cpmeas.IMAGE)
             if x.startswith(cpmeas.C_METADATA)]
         for tag in tags:
             if "_".join((cpmeas.C_METADATA, tag)) not in metadata_features:
-                raise ValueError(
+                message = (
                     "LoadImages needs the prior Load modules to define "
                     'the metadata tag, "%s", in order to match metadata' %
                     tag)
+                workspace.pipeline.report_prepare_run_error(self, message)
+                return None
         md_dict = {}
         for i in measurements.get_image_numbers():
             keys = tuple([measurements.get_measurement(
@@ -1808,12 +1810,13 @@ class LoadImages(cpmodule.CPModule):
         if m.image_set_count > 0 and self.do_group_by_metadata:
             match_metadata = True
             tags = list(self.get_metadata_tags()) + [M_Z, M_T, C_SERIES]
-            md_dict = self.get_image_numbers_by_tags(m, tags)
+            md_dict = self.get_image_numbers_by_tags(workspace, tags)
+            if md_dict is None:
+                return False
         else:
             match_metadata = False
-        files = self.collect_files(pipeline.test_mode, frame)
+        files = self.collect_files(workspace)
         if len(files) == 0:
-            self.report_no_matching_files(frame)
             return False
         #
         # Organize the files into one column per image index.
@@ -1854,10 +1857,12 @@ class LoadImages(cpmodule.CPModule):
                 if len(d) == 0:
                     d = [ {} for _ in range(image_count)]
                 elif len(d) != image_count:
-                    raise RuntimeError(("File %s has %d series, "
-                                        "but file %s has %d series.") %
-                                       (image_set_files[0], len(d),
-                                        file_pathname, image_count))
+                    message = (
+                        "File %s has %d series, but file %s has %d series." %
+                        (image_set_files[0], len(d), 
+                         file_pathname, image_count))
+                    pipeline.report_prepare_run_error(self, message)
+                    return False
                 for i in range(image_count):
                     pixels = omemetadata.image(i).Pixels
                     channel_count = pixels.SizeC
@@ -1865,20 +1870,24 @@ class LoadImages(cpmodule.CPModule):
                     if not d[i].has_key("Z"):
                         d[i]["Z"] = stack_count
                     elif stack_count != d[i]["Z"]:
-                        raise RuntimeError(("File %s, series %d has %d "
-                                            "Z stacks, but file %s has %d") %
-                                           (image_set_files[0], i,
-                                            d[i]["Z"], file_pathname,
-                                            stack_count))
+                        message = (
+                            ("File %s, series %d has %d Z stacks, "
+                             "but file %s has %d") %
+                            (image_set_files[0], i,
+                             d[i]["Z"], file_pathname, stack_count))
+                        pipeline.report_prepare_run_error(self, message)
+                        return False
                     timepoint_count = pixels.SizeT
                     if not d[i].has_key("T"):
                         d[i]["T"] = timepoint_count
                     elif timepoint_count != d[i]["T"]:
-                        raise RuntimeError(("File %s, series %d has %d "
-                                            "timepoints, but file %s has %d") %
-                                           (image_set_files[0], i,
-                                            d[i]["T"], file_pathname,
-                                            timepoint_count))
+                        message = (
+                            ("File %s, series %d has %d "
+                             "timepoints, but file %s has %d") %
+                            (image_set_files[0], i,
+                             d[i]["T"], file_pathname, timepoint_count))
+                        pipeline.report_prepare_run_error(self, message)
+                        return False
                     if image_settings.wants_movie_frame_grouping:
                         #
                         # For movie frame grouping, assume that all of
@@ -1913,9 +1922,11 @@ class LoadImages(cpmodule.CPModule):
                                 key = dict([(k, str(v)) 
                                             for k,v in frame_metadata.items()])
                                 if not md_dict.has_key(key):
-                                    raise ValueError(
+                                    message = (
                                         "Could not find a matching image set for " %
                                         ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
+                                    pipeline.report_prepare_run_error(self, message)
+                                    return False
                                 image_numbers = md_dict[key]
                             for image_number in image_numbers:
                                 for channel_settings in image_settings.channels:
@@ -1981,9 +1992,12 @@ class LoadImages(cpmodule.CPModule):
                                     key = dict([(k, str(v)) 
                                                 for k,v in frame_metadata.items()])
                                     if not md_dict.has_key(key):
-                                        raise ValueError(
+                                        message = (
                                             "Could not find a matching image set for " %
                                             ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
+                                        pipeline.report_prepare_run_error(
+                                            self, message)
+                                        return False
                                     image_numbers = md_dict[key]
                                 for image_number in image_numbers:
                                     for channel_settings in image_settings.channels:
@@ -1994,7 +2008,8 @@ class LoadImages(cpmodule.CPModule):
              ("The flex file, ""%s"", series # %d, has only %d channels. "
               "%s is assigned to channel % d") % (file_pathname, i, channel_count, 
                                                   image_name, c+1)
-                                            self.report_no_matching_files(frame, message)
+                                            pipeline.report_prepare_run_error(
+                                                self, message)
                                             return False
                                         index = c * strideC + t * strideT + z * strideZ
                                         m.add_measurement(
@@ -2031,34 +2046,14 @@ class LoadImages(cpmodule.CPModule):
                                 
         return True
 
-    def report_no_matching_files(self, frame, message = None):
-        '''Handle a case of prepare_run when no files were found.
-        
-        Call this to report that no files matched the module's criteria.
-        frame - the app's frame or None if headless
-        message - a descriptive message if the condition is not quite
-                  "no matching files" and can be reported succinctly
-        
-        Throws an exception if headless, shows a message box if not.
-        '''
-        if message is None:
-            message = "there are no image files in the chosen folder (or subfolders, if you requested them to be analyzed as well)"
-        if frame is not None:
-            import wx
-            wx.MessageBox(message, caption = "No matching files", 
-                          style = wx.OK | wx.ICON_ERROR, parent = frame)
-            return False
-        raise ValueError(message)
-        
     def prepare_run_of_movies(self, workspace):
         """Set up image providers for movie files"""
         pipeline = workspace.pipeline
         # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
-        files = self.collect_files(pipeline.test_mode, frame)
+        files = self.collect_files(workspace)
         if len(files) == 0:
-            self.report_no_matching_files(frame)
             return False
         root = self.image_directory()
         image_names = self.image_name_vars()
@@ -2112,7 +2107,11 @@ class LoadImages(cpmodule.CPModule):
         image_set_count = len(list_of_lists[0])
         for x,name in zip(list_of_lists[1:], image_names):
             if len(x) != image_set_count:
-                raise RuntimeError("Image %s has %d frames, but image %s has %d frames"%(image_names[0],image_set_count,name,len(x)))
+                message = (
+                    "Image %s has %d frames, but image %s has %d frames" %
+                    (image_names[0],image_set_count,name,len(x)))
+                pipeline.report_prepare_run_error(self, message)
+                return False
         list_of_lists = np.array(list_of_lists,dtype=object)
         for i in range(0,image_set_count):
             for name, (file, frame, t, image_group_index) \
@@ -2530,7 +2529,7 @@ class LoadImages(cpmodule.CPModule):
         """
         return self.descend_subdirectories != SUB_NONE
     
-    def collect_files(self, can_cache = False, frame = None):
+    def collect_files(self, workspace):
         """Collect the files that match the filter criteria
         
         Collect the files that match the filter criteria, starting at the image directory
@@ -2541,6 +2540,8 @@ class LoadImages(cpmodule.CPModule):
         index within the image settings (e.g. ImageNameVars).
         """
         global cached_file_lists
+        can_cache = workspace.pipeline.test_mode
+        frame = workspace.frame
         root = self.image_directory()
         use_cached = False
         if can_cache and frame is not None and cached_file_lists.has_key(root):
@@ -2621,6 +2622,12 @@ class LoadImages(cpmodule.CPModule):
         files = [ (path, idx) for path, idx in files
                   if idx is not None]
         files.sort()
+        if len(files) == 0:
+            message = (
+                "CellProfiler did not find any image files that "
+                'matched your matching pattern: "%s"' %
+                self.images[0].common_text.value)
+            workspace.pipeline.report_prepare_run_error(self, message)
         return files
         
     def image_directory(self):

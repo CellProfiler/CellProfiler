@@ -1947,22 +1947,41 @@ class Pipeline(object):
         assert(isinstance(workspace, cpw.Workspace))
         m = workspace.measurements
         self.write_experiment_measurements(m)
+        
+        prepare_run_error_detected = [False]
+        def on_pipeline_event(
+            pipeline, event, 
+            prepare_run_error_detected = prepare_run_error_detected):
+            if isinstance(event, PrepareRunErrorEvent):
+                prepare_run_error_detected[0] = True
 
-        for module in self.modules():
-            if module == end_module:
-                break
-            try:
-                workspace.set_module(module)
-                workspace.show_frame(module.show_window)
-                if not module.prepare_run(workspace):
-                    return False
-            except Exception,instance:
-                logging.error("Failed to prepare run for module %s",
-                              module.module_name, exc_info=True)
-                event = RunExceptionEvent(instance, module, sys.exc_info()[2])
-                self.notify_listeners(event)
-                if event.cancel_run:
-                    return False
+        with self.PipelineListener(self, on_pipeline_event):
+            for module in self.modules():
+                if module == end_module:
+                    break
+                try:
+                    workspace.set_module(module)
+                    workspace.show_frame(module.show_window)
+                    if ((not module.prepare_run(workspace)) or
+                        prepare_run_error_detected[0]):
+                        workspace.measurements.clear()
+                        return False
+                except Exception, instance:
+                    logging.error("Failed to prepare run for module %s",
+                                  module.module_name, exc_info=True)
+                    event = RunExceptionEvent(instance, module, sys.exc_info()[2])
+                    self.notify_listeners(event)
+                    if event.cancel_run:
+                        workspace.measurements.clear()
+                        return False
+        if workspace.measurements.image_set_count == 0:
+            self.report_prepare_run_error(
+                None,
+                "The pipeline did not identify any image sets.\n"
+                "Please correct any problems in your input module settings\n"
+                "and try again.")
+            return False
+        
         if not m.has_feature(cpmeas.IMAGE, cpmeas.GROUP_NUMBER):
             # Legacy pipelines don't populate group # or index
             key_names, groupings = self.get_groupings(workspace)
@@ -2919,18 +2938,52 @@ class Pipeline(object):
         for module in self.__modules:
             module.test_valid(self)
     
-    def notify_listeners(self,event):
+    def notify_listeners(self, event):
         """Notify listeners of an event that happened to this pipeline
         
         """
         for listener in self.__listeners:
-            listener(self,event)
+            listener(self, event)
     
     def add_listener(self, listener):
         self.__listeners.append(listener)
         
     def remove_listener(self,listener):
         self.__listeners.remove(listener)
+        
+    class PipelineListener(object):
+        '''A class to wrap add/remove listener for use with "with"
+        
+        Usage:
+        def my_listener(pipeline, event):
+            .....
+        with pipeline.PipelineListener(pipeline, my_listener):
+            # listener has been added
+            .....
+        # listener has been removed
+        '''
+        def __init__(self, pipeline, listener):
+            self.pipeline = pipeline
+            self.listener = listener
+            
+        def __enter__(self):
+            self.pipeline.add_listener(self.listener)
+            return self
+            
+        def __exit__(self, exc_type, exc_value, tb):
+            self.pipeline.remove_listener(self.listener)
+        
+    def report_prepare_run_error(self, module, message):
+        '''Report an error during prepare_run that prevents image set construction
+        
+        module - the module that failed
+        
+        message - the message for the user
+        
+        Report errors due to misconfiguration, such as no files found.
+        '''
+        event = PrepareRunErrorEvent(module, message)
+        self.notify_listeners(event)
 
     def is_image_from_file(self, image_name):
         """Return True if any module in the pipeline claims to be
@@ -3305,6 +3358,18 @@ class RunExceptionEvent(AbstractPipelineEvent):
     
     def event_type(self):
         return "Pipeline run exception"
+    
+class PrepareRunErrorEvent(AbstractPipelineEvent):
+    """A user configuration error prevented CP from running the pipeline
+    
+    Modules use this class to report conditions that prevent construction
+    of the image set list. An example would be if the user misconfigured
+    LoadImages or NamesAndTypes and no images were matched.
+    """
+    def __init__(self, module, message):
+        super(self.__class__, self).__init__()
+        self.module = module
+        self.message = message
 
 class LoadExceptionEvent(AbstractPipelineEvent):
     """An exception was caught during pipeline loading

@@ -94,14 +94,11 @@ class Metadata(cpm.CPModule):
         self.ipds = []
         self.imported_metadata = []
         module_explanation = [
-            "The %s module optionally allows you to extract information" %
-            self.module_name,
+            "The %s module optionally allows you to extract information" %self.module_name,
             "describing your images (i.e, metadata) which will be stored along",
             "with your measurements. This information can be contained in the",
             "file name and/or location, or in an external file."]
-        self.set_notes(module_explanation)
-        #self.module_explanation = cps.HTMLText(
-        #    "",content="\n".join(module_explanation), size=(0, 2.3))
+        self.set_notes([" ".join(module_explanation)])
         
         self.wants_metadata = cps.Binary(
             "Extract metadata?", False,doc = """

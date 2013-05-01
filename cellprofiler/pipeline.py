@@ -1397,6 +1397,8 @@ class Pipeline(object):
             for i, module in enumerate((images, metadata, namesandtypes, groups)):
                 module.set_module_num(i + 1)
                 module.show_window = cpprefs.get_headless()
+                if module.notes:
+                    module.notes += ["---"]
                 module.notes += ["Settings converted from legacy pipeline."]
                 self.add_module(module)
             for module in list(self.__modules):

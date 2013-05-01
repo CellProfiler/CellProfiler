@@ -103,7 +103,8 @@ class NamesAndTypes(cpm.CPModule):
             "The %s module allows you to assign a meaningful name to each image" % 
             self.module_name,
             "by which other modules will refer to it."]
-        self.set_notes(module_explanation)
+        self.set_notes([" ".join(module_explanation)])
+        
         self.ipds = []
         self.image_sets = []
         self.metadata_keys = []

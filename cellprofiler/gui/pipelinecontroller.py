@@ -1215,7 +1215,7 @@ class PipelineController:
                                                      wx.ART_MESSAGE_BOX)
             icon = wx.StaticBitmap(dialog, -1, question_mark)
             sizer.Add(icon, 0, wx.EXPAND | wx.ALL, 5)
-            text = wx.StaticText(dialog, label = "Do you want to save your settings to a project file?")
+            text = wx.StaticText(dialog, label = "Do you want to save your settings to a pipeline file?")
             sizer.Add(text, 0, wx.EXPAND | wx.ALL, 5)
             super_sizer.Add(wx.StaticLine(dialog), 0, wx.EXPAND | wx.LEFT | wx.RIGHT, 20)
             #
@@ -1245,7 +1245,7 @@ class PipelineController:
             try:
                 dialog.ShowModal()
                 if answer[0] == SAVE_ID:
-                    if not self.__on_save_as_workspace(None):
+                    if not self.do_save_pipeline():
                         '''Cancel the closing if the user fails to save'''
                         return False
                 elif answer[0] == RETURN_TO_CP_ID:

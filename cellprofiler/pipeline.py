@@ -2488,6 +2488,7 @@ class Pipeline(object):
         else:
             self.__filtered_image_plane_details = self.image_plane_details
         if with_metadata:
+            self.__available_metadata_keys = set()
             metadata_modules = [module for module in self.modules()
                                 if module.module_name == "Metadata"]
             if len(metadata_modules) > 0:
@@ -2497,9 +2498,19 @@ class Pipeline(object):
                 if (metadata_settings !=
                     self.__filtered_image_plane_details_metadata_settings):
                     metadata_module.prepare_run(workspace)
+                for ipd in self.__filtered_image_plane_details:
+                    self.__available_metadata_keys.update(ipd.metadata.keys())
                 self.__filtered_image_plane_details_metadata_settings = \
                     metadata_settings
         return self.__filtered_image_plane_details
+    
+    def get_available_metadata_keys(self, workspace):
+        '''Get all keys from the current set of filtered IPDs'''
+        #
+        # Has the side-effect of updating self.__available_metadata_keys
+        #
+        self.get_filtered_image_plane_details(workspace, True)
+        return self.__available_metadata_keys
     
     def set_filtered_image_plane_details(self, ipds, module):
         '''The Images module calls this to report its list of filtered ipds'''

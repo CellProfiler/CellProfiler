@@ -217,15 +217,8 @@ class Groups(cpm.CPModule):
         if self.wants_groups:
             self.metadata_keys = []
             self.image_sets_initialized = workspace.refresh_image_set()
-            if not self.image_sets_initialized:
-                return
-            m = workspace.measurements
-            if m.image_set_count > 0:
-                assert isinstance(m, cpmeas.Measurements)
-                for feature_name in m.get_feature_names(cpmeas.IMAGE):
-                    if feature_name.startswith(cpmeas.C_METADATA):
-                        self.metadata_keys.append(
-                            feature_name[(len(cpmeas.C_METADATA)+1):])
+            self.metadata_keys = list(
+                self.pipeline.get_available_metadata_keys(workspace))
             is_valid = True
             for group in self.grouping_metadata:
                 try:

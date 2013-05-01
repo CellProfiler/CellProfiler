@@ -3610,7 +3610,8 @@ class TableController(wx.grid.PyGridTableBase):
         row = self.grid.YToRow(y)
         col = self.grid.XToCol(x)
         this_pos = (row, col)
-        if this_pos != self.last_pos and row >= 0 and col >= 0:
+        if (this_pos != self.last_pos and row >= 0 and col >= 0 and
+            row < len(self.v.data) and col < len(self.v.data[row])):
             self.last_pos = this_pos
             s = self.v.data[row][col]
             if s is None:

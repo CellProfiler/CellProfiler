@@ -70,11 +70,10 @@ class Groups(cpm.CPModule):
         self.metadata_keys = {}
         
         module_explanation = [
-            "The %s module optionally allows you to split your list of images into image subsets" %
-            self.module_name,
+            "The %s module optionally allows you to split your list of images into image subsets" %self.module_name,
             "(groups) which will be processed independently of each other. Examples of",
             "groupings include screening batches, microtiter plates, time-lapse movies, etc."]
-        self.set_notes(module_explanation)
+        self.set_notes([" ".join(module_explanation)])
         
         self.wants_groups = cps.Binary(
             "Do you want to group your images?", False)

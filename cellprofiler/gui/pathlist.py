@@ -403,6 +403,12 @@ class PathListCtrl(wx.PyScrolledWindow):
         '''Return True if there are any selected items'''
         return len(self.selections) > 0
     
+    def SelectAll(self):
+        '''Select all items in the control'''
+        self.selections =  set(range(len(self)))
+        self.schmutzy = True
+        self.Refresh(eraseBackground=False)
+    
     def has_focus_item(self):
         '''Return True if an item is focused'''
         return self.focus_item is not None

@@ -512,7 +512,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_RUN_MULTIPLE_PIPELINES, 'Run Multiple Pipelines')
         if os.name=='posix':
             self.__menu_file.Append(ID_FILE_NEW_CP, 'Open a New CP Window')
-        self.__menu_file.Append(ID_FILE_RESTART, 'Restart Pipeline', 'Restart a pipeline from a saved measurements file.')
+        self.__menu_file.Append(ID_FILE_RESTART, 'Resume Pipeline', 'Resume a pipeline from a saved measurements file.')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_OPTIONS_PREFERENCES,"&Preferences...","Set global application preferences")
         self.__menu_file.Append(ID_CHECK_NEW_VERSION,"Check for Updates...","Check for a new version of CellProfiler")

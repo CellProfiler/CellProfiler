@@ -119,6 +119,6 @@ def draw_item_selection_rect(window, dc, rect, flags):
         old_brush = dc.Brush
         dc.Brush = wx.TRANSPARENT_BRUSH
         old_pen = dc.Pen
-        dc.Pen = wx.Pen(pen_color)
-        dc.DrawRectangle(r.Left, r.Top, r.Width, r.Height)
+        dc.Pen = wx.Pen(pen_color, width=2)
+        dc.DrawRectangle(rect.Left, rect.Top, rect.Width, rect.Height)
     

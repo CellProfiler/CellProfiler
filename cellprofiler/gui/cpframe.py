@@ -512,7 +512,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_RUN_MULTIPLE_PIPELINES, 'Run Multiple Pipelines')
         if os.name=='posix':
             self.__menu_file.Append(ID_FILE_NEW_CP, 'Open a New CP Window')
-        self.__menu_file.Append(ID_FILE_RESTART, 'Restart Pipeline', 'Restart a pipeline from a saved measurements file.')
+        self.__menu_file.Append(ID_FILE_RESTART, 'Resume Pipeline', 'Resume a pipeline from a saved measurements file.')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_OPTIONS_PREFERENCES,"&Preferences...","Set global application preferences")
         self.__menu_file.Append(ID_CHECK_NEW_VERSION,"Check for Updates...","Check for a new version of CellProfiler")
@@ -543,19 +543,19 @@ class CPFrame(wx.Frame):
 
         self.menu_edit.AppendSeparator()
         self.menu_edit.Append(ID_EDIT_SHOW_FILE_LIST_IMAGE,
-                              "Show selected image",
+                              "Show Selected Image",
                               "Display the first selected image in the file list")
         self.menu_edit.Append(ID_EDIT_REMOVE_FROM_FILE_LIST,
-                              "Remove from file list",
+                              "Remove From File List",
                               "Remove the selected files from the file list")
         self.menu_edit.Append(ID_EDIT_BROWSE_FOR_FILES,
-                              "Browse for images",
+                              "Browse for Images",
                               "Select images to add to the file list using a file browser")
-        self.menu_edit.Append(ID_EDIT_CLEAR_FILE_LIST, "Clear file list",
+        self.menu_edit.Append(ID_EDIT_CLEAR_FILE_LIST, "Clear File List",
                               "Remove all files from the file list")
-        self.menu_edit.Append(ID_EDIT_EXPAND_ALL, "Expand all folders", 
+        self.menu_edit.Append(ID_EDIT_EXPAND_ALL, "Expand All Folders", 
                               "Expand all folders in the file list and show all file names")
-        self.menu_edit.Append(ID_EDIT_COLLAPSE_ALL, "Collapse all folders",
+        self.menu_edit.Append(ID_EDIT_COLLAPSE_ALL, "Collapse All Folders",
                               "Collapse all folders in the file list, hiding all file names")
 
         self.__menu_debug = wx.Menu()
@@ -569,7 +569,7 @@ class CPFrame(wx.Frame):
         if not hasattr(sys, 'frozen') or os.getenv('CELLPROFILER_DEBUG'):
             self.__menu_debug.Append(ID_DEBUG_RELOAD, "Reload Modules' Source")
             self.__menu_debug.Append(ID_DEBUG_NUMPY, "Numpy Memory Usage...")
-            self.__menu_debug.Append(ID_DEBUG_PDB, "Break into debugger")
+            self.__menu_debug.Append(ID_DEBUG_PDB, "Break Into Debugger")
             #
             # Lee wants the wx debugger
             #

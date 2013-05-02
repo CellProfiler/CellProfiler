@@ -31,6 +31,7 @@ if __name__ == "__main__":
     app = wx.PySimpleApp(False)
 
 import cellprofiler.pipeline as cpp
+from cellprofiler.gui import draw_item_selection_rect
 import cellprofiler.gui.movieslider as cpgmov
 from cellprofiler.gui.cpfigure import window_name, find_fig
 from cellprofiler.icons import get_builtin_image
@@ -1370,7 +1371,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     flags += wx.CONTROL_FOCUSED
                     if self.active_item == i:
                         flags += wx.CONTROL_CURRENT
-                rn.DrawItemSelectionRect(self, dc, r, flags)
+                draw_item_selection_rect(self, dc, r, flags)
             dc.SetBackgroundMode(wx.TRANSPARENT)
             dc.SetTextForeground(clr_selected if item.selected else clr_text)
             dc.DrawText(item.module_name, 

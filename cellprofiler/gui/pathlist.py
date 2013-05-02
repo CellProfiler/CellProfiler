@@ -22,6 +22,7 @@ import urllib2
 import uuid
 
 import cellprofiler.preferences as cpprefs
+from cellprofiler.gui import draw_item_selection_rect
 
 class PathListCtrl(wx.PyScrolledWindow):
     #
@@ -558,20 +559,10 @@ class PathListCtrl(wx.PyScrolledWindow):
                         flags += wx.CONTROL_SELECTED
                     if idx == self.focus_item:
                         flags += wx.CONTROL_CURRENT
-                    # Bug in carbon DrawItemSelectionRect uses
-                    # uninitialized color for the rectangle
-                    # if it's not selected.
-                    #
-                    # Optimistically, I've coded it so that it
-                    # might work in Cocoa
-                    #
-                    if (sys.platform != 'darwin' or
-                        sys.maxsize > 0x7fffffff or
-                        (flags & wx.CONTROL_SELECTED) == wx.CONTROL_SELECTED):
-                        rn.DrawItemSelectionRect(
-                            self, paint_dc,
-                            wx.Rect(7-x, yy, self.max_width - 7, line_height),
-                            flags)
+                    draw_item_selection_rect(
+                        self, paint_dc, 
+                        wx.Rect(7-x, yy, self.max_width - 7, line_height),
+                        flags)
                     if selected:
                         paint_dc.SetTextForeground(selected_text)
                     else:

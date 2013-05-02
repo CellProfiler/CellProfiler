@@ -337,6 +337,7 @@ class ModuleView:
         self.__sizer.Reset(0,3)
         if self.notes_panel is not None:
             self.notes_panel.Hide()
+        self.module_settings_box.Label = MODULE_SETTINGS_LABEL
     
     def hide_settings(self):
         for child in self.__module_panel.Children:

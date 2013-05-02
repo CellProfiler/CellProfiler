@@ -750,6 +750,9 @@ class CPFrame(wx.Frame):
 
     def on_update_select_all_ui(self, event):
         focus = wx.Window.FindFocus()
+        if hasattr(focus, "CanSelect") and not focus.CanSelect():
+            event.Enable(False)
+            return
         event.Enable(focus and hasattr(focus, "SelectAll"))
 
     debug_commands = (ID_DEBUG_STEP, ID_DEBUG_NEXT_IMAGE_SET,

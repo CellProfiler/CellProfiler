@@ -829,6 +829,9 @@ class PipelineListView(object):
                 self.input_list_ctrl.deactivate_active_item()
             else:
                 self.list_ctrl.deactivate_active_item()
+                for index in range(self.list_ctrl.GetItemCount()):
+                    if self.list_ctrl.IsSelected(index):
+                        self.list_ctrl.Select(index, False)
         self.__controller.enable_module_controls_panel_buttons()
 
     def __on_item_deselected(self,event):
@@ -1118,6 +1121,17 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.GetEventHandler().ProcessEvent(plv_event)
         self.Refresh(eraseBackground = False)
             
+    def CanSelect(self):
+        '''Return True if selection is allowed in this control'''
+        return self.allow_disable
+    
+    def SelectAll(self):
+        '''Select all modules'''
+        if self.CanSelect():
+            for i in range(self.GetItemCount()):
+                if not self.IsSelected(i):
+                    self.Select(i, True)
+    
     def IsSelected(self, index):
         '''Return True if the item at the given index is selected'''
         return bool(self.items[index].is_selected())
@@ -1400,7 +1414,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             self.RefreshRect(self.get_slider_rect())
         elif hit_test & wx.LIST_HITTEST_ONITEMLABEL:
             if (event.ShiftDown() and self.active_item is not None
-                and self.allow_disable):
+                and self.CanSelect()):
                 # Extend the selection
                 begin = min(self.active_item, index)
                 end = max(self.active_item, index) + 1
@@ -1415,7 +1429,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             plv_event = self.make_event(wx.EVT_LIST_BEGIN_DRAG, index)
             self.GetEventHandler().ProcessEvent(plv_event)
         elif hit_test & wx.LIST_HITTEST_ONITEMICON:
-            if column != ERROR_COLUMN or self.allow_disable:
+            if column != ERROR_COLUMN or self.CanSelect():
                 self.pressed_row = index
                 self.pressed_column = column
                 self.button_is_active = True

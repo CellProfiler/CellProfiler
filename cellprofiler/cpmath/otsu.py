@@ -41,10 +41,6 @@ def otsu(data, min_threshold=None, max_threshold=None,bins=256):
     bins           - we bin the data into this many equally-spaced bins, then pick
                      the bin index that optimizes the metric
     """
-    assert min_threshold==None or min_threshold >=0
-    assert min_threshold==None or min_threshold <=1
-    assert max_threshold==None or max_threshold >=0
-    assert max_threshold==None or max_threshold <=1
     assert min_threshold==None or max_threshold==None or min_threshold < max_threshold
     def constrain(threshold):
         if not min_threshold is None and threshold < min_threshold:
@@ -53,7 +49,8 @@ def otsu(data, min_threshold=None, max_threshold=None,bins=256):
             threshold = max_threshold
         return threshold
     
-    data = np.array(data).flatten()
+    data = np.atleast_1d(data)
+    data = data[~ np.isnan(data)]
     if len(data) == 0:
         return (min_threshold if not min_threshold is None
                 else max_threshold if not max_threshold is None
@@ -99,7 +96,8 @@ def entropy(data, bins=256):
                      the bin index that optimizes the metric
     """
     
-    data = np.array(data).flatten()
+    data = np.atleast_1d(data)
+    data = data[~ np.isnan(data)]
     if len(data) == 0:
         return 0
     elif len(data) == 1:
@@ -152,15 +150,12 @@ def otsu3(data, min_threshold=None, max_threshold=None,bins=128):
     three pieces.
     Returns the lower and upper thresholds
     """
-    assert min_threshold==None or min_threshold >=0
-    assert min_threshold==None or min_threshold <=1
-    assert max_threshold==None or max_threshold >=0
-    assert max_threshold==None or max_threshold <=1
     assert min_threshold==None or max_threshold==None or min_threshold < max_threshold
     
     #
     # Compute the running variance and reverse running variance.
     # 
+    data = np.atleast_1d(data)
     data = data[~ np.isnan(data)]
     data.sort()
     if len(data) == 0:
@@ -206,7 +201,8 @@ def entropy3(data, bins=128):
     #
     # Compute the running variance and reverse running variance.
     # 
-    data = np.array(data).flatten()
+    data = np.atleast_1d(data)
+    data = data[~ np.isnan(data)]
     data.sort()
     if len(data) == 0:
         return 0

@@ -1390,8 +1390,7 @@ class Pipeline(object):
         from cellprofiler.modules.metadata import Metadata
         from cellprofiler.modules.namesandtypes import NamesAndTypes
         from cellprofiler.modules.groups import Groups
-        self.start_undoable_action()
-        try:
+        with self.undoable_action("Legacy modules converted"):
             images, metadata, namesandtypes, groups = (
                 Images(), Metadata(), NamesAndTypes(), Groups())
             for i, module in enumerate((images, metadata, namesandtypes, groups)):
@@ -1405,24 +1404,29 @@ class Pipeline(object):
                 if module.needs_conversion():
                     module.convert(self, metadata, namesandtypes, groups)
                     self.remove_module(module.module_num)
-        finally:
-            self.stop_undoable_action()
+            self.notify_listeners(PipelineLoadedEvent())
             
     def convert_default_input_folder(self, path):
         '''Convert all references to the default input folder to abolute paths
         
         path - the path to use in place of the default input folder
         '''
-        for module in self.modules(False):
-            for setting in module.settings():
-                if isinstance(setting, cps.DirectoryPath):
-                    if setting.dir_choice == cpprefs.DEFAULT_INPUT_FOLDER_NAME:
-                        setting.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
-                        setting.custom_path = path
-                    elif setting.dir_choice == cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME:
-                        subpath = os.path.join(path, setting.custom_path)
-                        setting.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
-                        setting.custom_path = subpath
+        with self.undoable_action("Convert default input folder"):
+            for module in self.modules(False):
+                was_edited = False
+                for setting in module.settings():
+                    if isinstance(setting, cps.DirectoryPath):
+                        if setting.dir_choice == cpprefs.DEFAULT_INPUT_FOLDER_NAME:
+                            setting.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+                            setting.custom_path = path
+                            was_edited = True
+                        elif setting.dir_choice == cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME:
+                            subpath = os.path.join(path, setting.custom_path)
+                            setting.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
+                            setting.custom_path = subpath
+                if was_edited:
+                    self.edit_module(module.module_num, True)
+            self.notify_listeners(PipelineLoadedEvent())
             
     def requires_aggregation(self):
         '''Return True if the pipeline requires aggregation across image sets

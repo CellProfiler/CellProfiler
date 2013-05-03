@@ -264,7 +264,10 @@ class DirectoryPath(Text):
         
     def split_parts(self):
         '''Return the directory choice and custom path as a tuple'''
-        return tuple(self.value.split('|',1))
+        result = tuple(self.value.split('|',1))
+        if len(result) == 1:
+            result = (result[0], ".")
+        return result
     
     @staticmethod
     def split_string(value):

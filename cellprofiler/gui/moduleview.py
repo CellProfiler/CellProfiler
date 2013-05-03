@@ -583,13 +583,19 @@ class ModuleView:
             elif self.__frame is not None:
                 if self.__started:
                     self.__frame.show_module_ui(True)
-                self.module_panel.Thaw()
                 if imageset_control is not None:
                     self.__frame.show_imageset_ctrl()
                     self.__frame.reset_imageset_ctrl(refresh_image_set=False)
                 elif table_control is None:
                     self.__frame.show_imageset_sash(False)
                 self.__frame.show_path_list_ctrl(path_control is not None)
+                #
+                # Lay out everything from outermost to innermost
+                #
+                self.__frame.layout_pmi_panel()
+                self.top_panel.Layout()
+                self.module_panel.Layout()
+                self.module_panel.Thaw()
             else:
                 self.module_panel.Thaw()
 
@@ -1857,12 +1863,13 @@ class ModuleView:
     def __on_pipeline_event(self,pipeline,event):
         if (isinstance(event, cpp.PipelineClearedEvent) or
             isinstance(event, cpp.PipelineLoadedEvent)):
-            self.clear_selection()
+            if self.__module not in self.__pipeline.modules(False):
+                self.clear_selection()
         elif isinstance(event, cpp.ModuleEditedPipelineEvent):
             if (not self.__inside_notify and self.__module is not None
                 and self.__module.module_num == event.module_num):
                 self.reset_view()
-            self.request_validation()
+                self.request_validation()
         elif isinstance(event, cpp.ModuleRemovedPipelineEvent):
             if (self.__module is not None and 
                 event.module_num == self.__module.module_num):

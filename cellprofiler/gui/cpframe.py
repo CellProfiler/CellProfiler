@@ -390,6 +390,9 @@ class CPFrame(wx.Frame):
 
     def show_module_ui(self, show):
         '''Show or hide the module and notes panel'''
+        if (show == self.__path_module_imageset_panel.IsShownOnScreen() and
+            show == self.__notes_panel.IsShownOnScreen()):
+            return
         right_sizer = self.__right_win.Sizer
         assert isinstance(right_sizer, wx.Sizer)
         right_sizer.Show(self.__notes_panel, show)

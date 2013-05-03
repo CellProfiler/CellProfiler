@@ -119,7 +119,7 @@ class CalculateImageOverlap(cpm.CPModule):
             on loading objects.""")
         
         self.img_obj_found_in_GT = cps.ImageNameSubscriber(
-            "Which image did you find these objects in?",
+            "Which image was used to identify the objects?",
             "None", doc ="""
             <i>(Used only when comparing segmented objects)</i> <br>
             Select which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,

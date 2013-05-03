@@ -331,6 +331,7 @@ def RunOne_2_0(x, run):
          "-p",'"%(data_dir)s/Batch_data.mat"'%(x),
          "-c",
          "-r","-b","--do-not-fetch",
+         "-o",'"%(data_dir)s"' % x,
          "-f","%(start)d"%(x),
          "-l","%(end)d"%(x),
          "-d",'"%(done_file)s"'%(x)]

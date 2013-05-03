@@ -160,7 +160,6 @@ class CPFrame(wx.Frame):
         # The right window has the following structure:
         #
         #  right_win
-        #    startup_blurb
         #    Notes window
         #    path_module_imageset_panel
         #        path_list_sash
@@ -174,9 +173,6 @@ class CPFrame(wx.Frame):
         #            image_set_list_ctrl
         #
         self.__right_win.Sizer = wx.BoxSizer(wx.VERTICAL)
-        self.__startup_blurb = HtmlClickableWindow(
-            self.__right_win, wx.ID_ANY, style=wx.NO_BORDER)
-        self.__right_win.Sizer.Add(self.__startup_blurb, 1, wx.EXPAND)
         self.__notes_panel = wx.Panel(self.__right_win)
         self.__right_win.Sizer.Add(self.__notes_panel, 0, wx.EXPAND | wx.ALL)
         self.__right_win.Sizer.AddSpacer(4)
@@ -285,11 +281,6 @@ class CPFrame(wx.Frame):
         self.__imageset_panel.Sizer.Add(self.__imageset_ctrl, 1, wx.EXPAND)
         self.__grid_ctrl = wx.grid.Grid(self.__imageset_panel)
         self.__imageset_panel.Sizer.Add(self.__grid_ctrl, 1, wx.EXPAND)
-        #
-        # If the user wants to see the blurb on startup, show it and
-        # hide the module UI
-        #
-        self.__startup_blurb.load_startup_blurb()
 
         self.__right_win.Sizer.AddSpacer(4)
         #
@@ -315,6 +306,7 @@ class CPFrame(wx.Frame):
         self.__set_icon()
         self.__do_layout()
         self.__make_search_frame()
+        self.__make_startup_blurb_frame()
         self.__error_listeners = []
         self.Bind(wx.EVT_CLOSE, self.OnClose)
         self.tbicon = wx.TaskBarIcon()
@@ -322,8 +314,7 @@ class CPFrame(wx.Frame):
         self.SetAutoLayout(True)
         if cpprefs.get_startup_blurb():
             self.show_welcome_screen(True)
-        else:
-            self.show_module_ui(True)
+        self.show_module_ui(True)
         
     def start(self, workspace_path, pipeline_path):
         '''Handle resource loading after the GUI has been constructed
@@ -338,6 +329,13 @@ class CPFrame(wx.Frame):
         '''
         self.__pipeline_controller.start(workspace_path, pipeline_path)
         self.__module_view.start()
+        #
+        # Do a little placement after the UI has been constructed
+        #
+        # Put the welcome screen over the module settings.
+        #
+        r = self.__right_win.GetScreenRect()
+        self.startup_blurb_frame.SetRect(r)
 
     def show_path_list_ctrl(self, show):
         '''Show or hide the path list control
@@ -394,12 +392,10 @@ class CPFrame(wx.Frame):
         '''Show or hide the module and notes panel'''
         right_sizer = self.__right_win.Sizer
         assert isinstance(right_sizer, wx.Sizer)
-        right_sizer.Show(self.__startup_blurb, not show)
         right_sizer.Show(self.__notes_panel, show)
         right_sizer.Show(self.__path_module_imageset_panel, show)
         self.__right_win.Layout()
         if show:
-            self.show_welcome_screen(False)
             self.show_preferences(False)
             self.layout_pmi_panel()
             self.__path_list_sash.Layout()
@@ -416,11 +412,8 @@ class CPFrame(wx.Frame):
         show - If True, show the welcome screen and hide the preferences 
                and module UI, otherwise hide the welcome screen.
         '''
-        self.__startup_blurb.Show(show)
-        if show:
-            self.show_module_ui(False)
-            self.show_preferences(False)
-            self.__startup_blurb.Parent.Layout()
+        self.startup_blurb_frame.Show(show)
+        self.startup_blurb_frame.Raise()
             
     def show_preferences(self, show):
         '''Show or hide the preferences panel
@@ -894,7 +887,7 @@ All rights reserved."""
         dlg.ShowModal()
 
     def __on_help_welcome(self, event):
-        self.show_module_ui(False)
+        self.show_welcome_screen(True)
         
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()
@@ -1185,6 +1178,26 @@ All rights reserved."""
         if self.search_frame is not None:
             self.search_frame.Show()
             self.search_frame.Raise()
+            
+    def __make_startup_blurb_frame(self):
+        '''Make the frame surrounding the startup blurb panel'''
+        background_color = cpprefs.get_background_color()
+        frame = self.startup_blurb_frame = wx.Frame(
+            self, title = "Welcome to CellProfiler",
+            size = (640, 480))
+        frame.BackgroundColour = background_color
+        frame.Sizer = wx.BoxSizer()
+        content = HtmlClickableWindow(frame)
+        content.load_startup_blurb()
+        frame.Sizer.Add(content, 1, wx.EXPAND)
+        
+        def on_close(event):
+            assert isinstance(event, wx.CloseEvent)
+            event.EventObject.Hide()
+            event.Veto()
+        
+        frame.Bind(wx.EVT_CLOSE, on_close)
+        frame.Layout()
 
     def __on_data_tool(self, event, tool_name):
         module = instantiate_module(tool_name)

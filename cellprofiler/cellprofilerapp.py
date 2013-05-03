@@ -84,6 +84,8 @@ class CellProfilerApp(wx.App):
         sys.excepthook = show_errordialog
         self.SetTopWindow(self.frame)
         self.frame.Show()
+        if self.frame.startup_blurb_frame.IsShownOnScreen():
+            self.frame.startup_blurb_frame.Raise()
         return 1
 
     def destroy_splash_screen(self, event = None):

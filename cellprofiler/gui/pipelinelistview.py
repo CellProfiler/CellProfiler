@@ -687,6 +687,9 @@ class PipelineListView(object):
         """
         self.resetItems(pipeline)
         self.request_validation()
+        if len(self.__pipeline.modules()) > 0:
+            self.select_one_module(1)
+            self.__frame.show_module_ui(True)
         
     def resetItems(self, pipeline):
         '''Reset the list view and repopulate the list items'''
@@ -729,6 +732,9 @@ class PipelineListView(object):
     def __on_pipeline_cleared(self, pipeline, event):
         self.resetItems(pipeline)
         self.request_validation()
+        if len(self.__pipeline.modules()) > 0:
+            self.select_one_module(1)
+            self.__frame.show_module_ui(True)
         
     def __on_module_added(self,pipeline, event):
         module = pipeline.modules(False)[event.module_num - 1]
@@ -1383,8 +1389,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     flags += wx.CONTROL_SELECTED
                 if self.FindFocus() is self:
                     flags += wx.CONTROL_FOCUSED
-                    if self.active_item == i:
-                        flags += wx.CONTROL_CURRENT
+                if self.active_item == i:
+                    flags += wx.CONTROL_CURRENT
                 draw_item_selection_rect(self, dc, r, flags)
             dc.SetBackgroundMode(wx.TRANSPARENT)
             dc.SetTextForeground(clr_selected if item.selected else clr_text)
@@ -1463,6 +1469,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         if self.allow_disable:
             if self.IsSelected(index) and toggle_selection:
                 self.Select(index, False)
+                self.Refresh(eraseBackground=False)
                 return False
             if not multiple_selection:
                 for i, item in enumerate(self.items):

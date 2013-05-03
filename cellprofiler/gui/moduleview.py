@@ -39,7 +39,7 @@ from regexp_editor import edit_regexp
 from htmldialog import HTMLDialog
 from treecheckboxdialog import TreeCheckboxDialog
 from metadatactrl import MetadataControl
-from namesubscriber import NameSubcriberComboBox
+from namesubscriber import NameSubscriberComboBox
 import cellprofiler.utilities.walk_in_background as W
 import cellprofiler.gui.pathlist as PL
 
@@ -643,14 +643,14 @@ class ModuleView:
         control_name - assign this name to the control
         """
         if v.value not in [c[0] for c in choices]:
-            choices = choices + [(v.value, "", 0)]
+            choices = choices + [(v.value, "", 0, False)]
         if not control:
-            control = NameSubcriberComboBox(self.__module_panel,
+            control = NameSubscriberComboBox(self.__module_panel,
                                             value=v.value,
                                             choices=choices,
                                             name=control_name)
             def callback(event, setting=v, control=control):
-                # the NameSubcriberComboBox behaves like a combobox
+                # the NameSubscriberComboBox behaves like a combobox
                 self.__on_combobox_change(event, setting, control)
             control.add_callback(callback)
         else:

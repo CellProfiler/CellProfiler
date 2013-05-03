@@ -1125,8 +1125,10 @@ def get_name_provider_choices(pipeline, last_setting, group):
     '''
     choices = []
     for module in pipeline.modules(False):
-        module_choices = [(other_name, module.module_name, module.module_num)
-                          for other_name in module.other_providers(group)]
+        module_choices = [
+            (other_name, module.module_name, module.module_num, 
+             module.is_input_module())
+            for other_name in module.other_providers(group)]
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
                 return filter_duplicate_names(choices)
@@ -1134,7 +1136,9 @@ def get_name_provider_choices(pipeline, last_setting, group):
                 module.enabled and
                 setting != DO_NOT_USE and
                 last_setting.matches(setting)):
-                module_choices.append((setting.value, module.module_name, module.module_num))
+                module_choices.append((
+                    setting.value, module.module_name, module.module_num,
+                    module.is_input_module()))
         choices += module_choices
     assert False, "Setting not among visible settings in pipeline"
 

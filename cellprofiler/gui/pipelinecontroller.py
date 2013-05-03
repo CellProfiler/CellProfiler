@@ -1631,6 +1631,9 @@ class PipelineController:
         enable_duplicate = True
         if len(selected_modules) == 0:
             enable_delete = enable_duplicate = False
+        enable_add = ((active_module is not None) and 
+                      (not active_module.is_input_module()))
+        self.__mcp_add_module_button.Enable(enable_add)
         
         for menu_id, control, state in (
             (cpframe.ID_EDIT_MOVE_DOWN, self.__mcp_module_down_button, enable_down),

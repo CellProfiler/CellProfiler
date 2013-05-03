@@ -49,8 +49,8 @@ class NameSubscriberComboBox(wx.Panel):
             value=value, style=wx.CB_READONLY)
         self.annotation_dlg = wx.StaticText(self, label='', style=wx.ST_NO_AUTORESIZE)
         self.annotation_dlg.MinSize = (
-            max([self.annotation_dlg.GetTextExtent(annotation+" (from #00)")[0]
-                 for _, annotation, _, _ in self.orig_choices]), -1)
+            max([self.annotation_dlg.GetTextExtent(choice[1] + " (from #00)")[0]
+                 for choice in self.orig_choices]), -1)
         self.update_annotation()
 
         sizer.AddStretchSpacer()

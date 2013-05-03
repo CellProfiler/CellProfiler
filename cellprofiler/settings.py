@@ -1089,7 +1089,7 @@ class NameSubscriber(Setting):
     def get_choices(self,pipeline):
         choices = []
         if self.__can_be_blank:
-            choices.append((self.__blank_text, "", 0))
+            choices.append((self.__blank_text, "", 0, False))
         return choices + sorted(get_name_provider_choices(pipeline, self, self.group))
     
     def get_is_blank(self):
@@ -1446,7 +1446,8 @@ class SubscriberMultiChoice(MultiChoice):
     
     def load_choices(self, pipeline):
         '''Get the choice list from name providers'''
-        self.choices = sorted([name for name, module, module_number in get_name_provider_choices(pipeline, self, self.group)])
+        self.choices = sorted([
+            c[0] for c in get_name_provider_choices(pipeline, self, self.group)])
     
     @property
     def group(self):

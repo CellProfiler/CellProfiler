@@ -75,8 +75,9 @@ DELIMITERS = (DELIMITER_COMMA,DELIMITER_TAB)
 OBJECT_RELATIONSHIPS = "Object relationships"
 RELATIONSHIPS = "Relationships"
 
+SETTING_OG_OFFSET_V7 = 15
 """Offset of the first object group in the settings"""
-SETTING_OG_OFFSET = 15
+SETTING_OG_OFFSET = 16
 
 """Offset of the object name setting within an object group"""
 SETTING_OBJECT_NAME_IDX = 0
@@ -106,11 +107,14 @@ GP_NAME_FILENAME = "Image filename"
 GP_NAME_METADATA = "Metadata"
 GP_NAME_OPTIONS = [GP_NAME_METADATA, GP_NAME_FILENAME]
 
+NANS_AS_NULLS = "Null"
+NANS_AS_NANS = "NaN"
+
 class ExportToSpreadsheet(cpm.CPModule):
 
     module_name = 'ExportToSpreadsheet'
     category = ["File Processing","Data Tools"]
-    variable_revision_number = 7
+    variable_revision_number = 8
     
     def create_settings(self):
         self.delimiter = cps.CustomChoice('Select or enter the column delimiter',DELIMITERS, doc = """
@@ -124,9 +128,9 @@ class ExportToSpreadsheet(cpm.CPModule):
         self.directory = cps.DirectoryPath(
             "Output file location",
             dir_choices = [
-                DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
-                ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
-                DEFAULT_OUTPUT_SUBFOLDER_NAME],
+                ABSOLUTE_FOLDER_NAME, 
+                DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
+                DEFAULT_INPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME ],
             doc="""This setting lets you choose the folder for the output
             files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
             
@@ -143,7 +147,19 @@ class ExportToSpreadsheet(cpm.CPModule):
                             If your output has more than 256 columns, a window will open
                             which allows you to select the columns you'd like to export. If your output exceeds
                             65,000 rows, you can still open the .csv in Excel, but not all rows will be visible.""")
-        
+        self.nan_representation = cps.Choice(
+            "Representation of Nan/Inf", [NANS_AS_NANS, NANS_AS_NULLS],
+            doc = """This setting controls the output for numeric fields
+            if the calculated value is infinite (Inf) or undefined (NaN).
+            CellProfiler will produce Inf or NaN values under certain rare
+            circumstances, for instance when calculating the mean intensity
+            of an object within a masked region of an image.
+            <br>
+            You can choose to output Inf or NaN values as either null values
+            represented by an empty field or as the strings, "Inf", "-Inf" or
+            "NaN". Choose %(NANS_AS_NULLS)s to output them as empty fields.
+            Choose %(NANS_AS_NANS)s to output them as NaN or Inf.
+            """ % globals())
         self.pick_columns = cps.Binary("Select the columns of measurements to export?", False, doc = """
                             Checking this setting will open up a window that allows you to select the columns to export.""")
         
@@ -275,7 +291,7 @@ class ExportToSpreadsheet(cpm.CPModule):
                   self.wants_aggregate_std, self.directory,
                   self.wants_genepattern_file, self.how_to_specify_gene_name, 
                   self.use_which_image_for_gene_name,self.gene_name_column,
-                  self.wants_everything, self.columns]
+                  self.wants_everything, self.columns, self.nan_representation]
         for group in self.object_groups:
             result += [group.name, group.previous_file, group.file_name,
                        group.wants_automatic_file_name]
@@ -285,7 +301,8 @@ class ExportToSpreadsheet(cpm.CPModule):
         """Return the settings as seen by the user"""
         result = [self.delimiter, self.prepend_output_filename,
                   self.directory]
-        result += [ self.add_metadata, self.excel_limits, self.pick_columns]
+        result += [ self.add_metadata, self.excel_limits, 
+                    self.nan_representation, self.pick_columns]
         if self.pick_columns:
             result += [ self.columns]
         result += [ self.wants_aggregate_means, self.wants_aggregate_medians,
@@ -778,6 +795,10 @@ Do you want to save it anyway?""" %
                                 obj_index < column.shape[0])
                             else np.NAN
                             for column in columns]
+                    if self.nan_representation == NANS_AS_NULLS:
+                        row = [ 
+                            "" if np.isreal(field) and not np.isfinite(field)
+                            else field for field in row]
                     writer.writerow(row)
         finally:
             fd.close()
@@ -938,7 +959,7 @@ Do you want to save it anyway?""" %
                               [directory] +
                               setting_values[11:])
             variable_revision_number = 6
-            
+        
         # Standardize input/output directory name references
         SLOT_DIRCHOICE = 8
         directory = setting_values[SLOT_DIRCHOICE]
@@ -955,8 +976,15 @@ Do you want to save it anyway?""" %
             setting_values = (setting_values[:9] +
                               [cps.NO,GP_NAME_METADATA,"None","None"] + 
                               setting_values[9:])
-            variable_revision_number == 7
+            variable_revision_number = 7
             
+        if variable_revision_number == 7 and not from_matlab:
+            # Add nan_representation
+            setting_values = (
+                setting_values[:SETTING_OG_OFFSET_V7] +
+                [NANS_AS_NANS] + setting_values[SETTING_OG_OFFSET_V7:])
+            variable_revision_number = 8
+                
         return setting_values, variable_revision_number, from_matlab
 
 def is_object_group(group):

@@ -81,7 +81,7 @@ class Images(cpm.CPModule):
             which contains a mixture of images that you want to analyze and other files that you want to ignore.</p>""")
             
         self.filter = cps.Filter("Filter", predicates, 
-            'or (file does contain "")',doc = """
+            'or (extension does isimage)',doc = """
             Specify filter to narrow down the files to be analyzed. 
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals())
         

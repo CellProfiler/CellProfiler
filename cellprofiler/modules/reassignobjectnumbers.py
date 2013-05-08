@@ -330,7 +330,7 @@ class ReassignObjectNumbers(cpm.CPModule):
         
         output_labels = renumber_labels_for_display(
                 workspace.display_data.output_labels)
-        if self.relabel_option == OPTION_UNIFY:
+        if self.relabel_option == OPTION_UNIFY and ((self.unify_option == UNIFY_DISTANCE and self.wants_image) or (self.unify_option == UNIFY_PARENT)):
             if self.unify_option == UNIFY_DISTANCE and self.wants_image:
                 #
                 # Make a nice picture which superimposes the labels on the
@@ -354,7 +354,8 @@ class ReassignObjectNumbers(cpm.CPModule):
                 image[output_labels > 0] / 4 * 3 +
                 output_image[output_labels > 0,:] / 4)
         
-            figure.subplot_imshow(0,1, image,
+            figure.subplot_imshow(0,1, 
+                                  image,
                                   title = self.output_objects_name.value,
                                   sharex = figure.subplot(0,0),
                                   sharey = figure.subplot(0,0))

@@ -710,9 +710,8 @@ class CPFrame(wx.Frame):
             
     def on_update_cut_ui(self, event):
         focus = wx.Window.FindFocus() 
-        event.Enable(focus and 
-                     hasattr(focus, 'CanCut') and 
-                     focus.CanCut())
+        event.Enable(bool(
+            focus and hasattr(focus, 'CanCut') and focus.CanCut()))
        
     def on_copy(self, event):
         '''Handle ID_COPY'''
@@ -722,9 +721,8 @@ class CPFrame(wx.Frame):
             
     def on_update_copy_ui(self, event):
         focus = wx.Window.FindFocus() 
-        event.Enable(focus and 
-                     hasattr(focus, 'CanCopy') and 
-                     focus.CanCopy())
+        event.Enable(bool(
+            focus and hasattr(focus, 'CanCopy') and focus.CanCopy()))
 
     def on_paste(self, event):
         '''Handle ID_PASTE'''
@@ -734,9 +732,8 @@ class CPFrame(wx.Frame):
             
     def on_update_paste_ui(self, event):
         focus = wx.Window.FindFocus() 
-        event.Enable(focus and 
-                     hasattr(focus, 'CanPaste') and 
-                     focus.CanPaste())
+        event.Enable(bool(
+            focus and hasattr(focus, 'CanPaste') and focus.CanPaste()))
         
     def on_select_all(self, event):
         focus = wx.Window.FindFocus()

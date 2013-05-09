@@ -605,6 +605,29 @@ are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set t
 <Date> metadata field from the file names. The pipeline will then match the individual 
 images with their corresponding illumination correction functions based on matching 
 "Metadata_Date" fields.</p>
+
+<p>The underlying assumption in matching metadata values to image sets is that there is an
+exact pairing (i.e., a one-to-one match) for a given metadata tag combination. A common example is that for
+a two-channel microtiter plate assay, each plate, well and site metadata from one channel
+gets matched uniquely to the plate, well and site metadata from the other channel.
+There are two special cases in metadata handling worth mentioning:
+<ul>
+<li><i>Missing metadata:</i> For a particular metadata tag, one image from a given
+image set has metadata values defined but another image does not. An example is when a microscope
+aborts acquisition prematurely in the middle of scanning two channels for a site, and captures 
+one channel but not the other. In this case, plate, well and site metadata value exists for one
+image but not for the other since it was never acquired. </li>
+<li><i>Duplicate metadata:</i> For a particular metadata tag, the same metadata values exist
+for multiple image sets such that they are not uniquely defined. An example is when a microscope
+re-scans a site in order to recover from a prior error. In this case, there may be one image from
+one channel but <i>two</i> images for the other channel, for the same site. Therefore, multiple instances
+of the same plate, well and site metadata values exist for the same image set.</li>
+</ul> 
+In both of these cases, the exact pairing between channels no longer exists. For missing metadata, the pairing is one-to-none,
+and for duplicate metadata, the pairing is one-to-two. In these instances where a match cannot be
+made, <b>NamesAndTypes</b> will simply omit the confounding metadata values from consideration. In the above
+example, an image set will not be created for the plate, well and site combination in question. 
+</p>
 """ + \
 """<h3>Use of metadata-specific module settings</h3>
 

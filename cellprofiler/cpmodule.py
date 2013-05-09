@@ -86,7 +86,7 @@ class CPModule(object):
         # subclass can override this either by declaring a module_name
         # attribute in the class definition or by assigning to it in
         # the create_settings method.
-        if 'module_name' not in self.__dict__:
+        if not hasattr(self, "module_name"):
             self.module_name = self.__class__.__name__
         self.create_settings()
 

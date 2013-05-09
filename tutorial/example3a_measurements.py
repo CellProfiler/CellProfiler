@@ -72,7 +72,7 @@ class Example3a(cpm.CPModule):
     def is_interactive(self):
         return True
     
-    def display(self, workspace, figure=None):
+    def display(self, workspace, frame=None):
         if frame is not None:
             #
             # New style: tell the figure frame that we want to break the frame
@@ -88,7 +88,7 @@ class Example3a(cpm.CPModule):
             #
             frame = workspace.create_or_find_figure(subplots=(1,1))
         frame.subplot_table(
-            0, 0, [[ "Value = %f" % workspace.display_data.value]])
+            0, 0, [[ "Value = %f" % workspace.display_data.variance]])
         
     def get_feature_name(self):
         '''Return the name to be used to store the feature
@@ -107,6 +107,6 @@ class Example3a(cpm.CPModule):
         # second and the datatype which is cpmeas.COLTYPE_FLOAT as
         # it's third.
         #
-        return [(cpmeas.IMAGE, self.get_feature_name(), cpmeas.COLTYPE_FLOAT)]
+        ##return [(cpmeas.IMAGE, self.get_feature_name(), cpmeas.COLTYPE_FLOAT)]
         
         

@@ -1,4 +1,4 @@
-'''<b>Example4</b> Object processing
+'''<b>Example4b</b> Object processing - location measurements 
 <hr>
 '''
 
@@ -74,29 +74,77 @@ class Example4b(cpm.CPModule):
         output_objects_name = self.output_objects_name.value
         object_set.add_objects(output_objects, output_objects_name)
         
-        measurements = workspace.measurements
-        n_objects = output_objects.count
-        I.add_object_count_measurements(measurements, output_objects_name,
-                                        n_objects)
-        I.add_object_location_measurements(
-            measurements, output_objects_name, labels, n_objects)
-        
-    def get_measurement_columns(self, pipeline):
-        import cellprofiler.modules.identify as I
-        return I.get_object_measurement_columns(
-            self.output_objects_name.value)
-    
-    def get_categories(self, pipeline, object_name):
-        import cellprofiler.modules.identify as I
-        if object_name == cpmeas.IMAGE:
-            return [I.C_COUNT]
-        elif object_name == self.output_objects_name:
-            return [I.C_LOCATION]
-        return []
-    
-    def get_measurements(self, pipeline, object_name, category):
-        import cellprofiler.modules.identify as I
-        if object_name == cpmeas.IMAGE and category == I.C_COUNT:
-            return [self.output_objects_name.value]
-        if object_name == self.output_objects_name and category == I.C_LOCATION:
-            return [I.FTR_CENTER_X, I.FTR_CENTER_Y]
+        ##measurements = workspace.measurements
+        #
+        # The cpo.Objects has several useful properties that are calculated
+        # and remembered: count and area are the ones most frequently used.
+        # count is the # of objects in the segmentation
+        # 
+        ##n_objects = output_objects.count
+        #
+        # cellprofiler.module.identify has some helper methods for adding
+        # measurements in a standardized fashion. add_object_count_measurements
+        # only adds one measurement: Count_<objects-name>
+        #
+        ##I.add_object_count_measurements(measurements, output_objects_name,
+        ##                                n_objects)
+        #
+        # cellprofiler.modules.identify.add_object_location_measurements
+        # computes the center of mass for each object in the labels matrix
+        # and records those in the object measurement, Location_Center_X
+        # and Location_Center_Y. These measurements are used by data mining
+        # programs such as CellProfiler Analyst to center an image on a
+        # particular cell.
+        #
+        ##I.add_object_location_measurements(
+        ##    measurements, output_objects_name, labels, n_objects)
+        if workspace.show_frame:
+            workspace.display_data.input_labels = input_objects.segmented
+            workspace.display_data.output_labels = labels
+            
+    def display(self, workspace, frame):
+        frame.set_subplots((2, 1))
+        frame.subplot_imshow_labels(0, 0, workspace.display_data.input_labels,
+                                    title = self.input_objects_name.value)
+        frame.subplot_imshow_labels(1, 0, workspace.display_data.output_labels,
+                                    title = self.output_objects_name.value)        
+
+#
+# get_measurement_columns is used by measurement export modules to
+#                         prepare for export of measurements before
+#                         the first cycle has started. For instance,
+#                         ExportToDatabase creates the database tables it
+#                         needs using the output of get_measurement_columns.
+#        
+##    def get_measurement_columns(self, pipeline):
+##        import cellprofiler.modules.identify as I
+##        return I.get_object_measurement_columns(
+##            self.output_objects_name.value)
+#
+# get_categories tells the measurement settings system which categories of
+#                measurements will be produced by upstream modules. Here,
+#                we tell the system that count image measurements will 
+#                be produced and location object measurements will be
+#                produced for our objects.
+#                    
+##    def get_categories(self, pipeline, object_name):
+##        import cellprofiler.modules.identify as I
+##        if object_name == cpmeas.IMAGE:
+##            return [I.C_COUNT]
+##        elif object_name == self.output_objects_name:
+##            return [I.C_LOCATION]
+##        return []
+#
+# get_measurements tells the measurement settings system which feature classes
+#                  will be produced for a given object (or Images) and
+#                  category. Here, the "feature" for the Count image measurement
+#                  is our object's name. There are two features for the 
+#                  Location category for our objects' measurements:
+#                  Center_X and Center_Y.
+#
+##    def get_measurements(self, pipeline, object_name, category):
+##        import cellprofiler.modules.identify as I
+##        if object_name == cpmeas.IMAGE and category == I.C_COUNT:
+##            return [self.output_objects_name.value]
+##        if object_name == self.output_objects_name and category == I.C_LOCATION:
+##            return [I.FTR_CENTER_X, I.FTR_CENTER_Y]

@@ -1,4 +1,4 @@
-'''<b>Example2b</b> - An example of an image processing function.
+'''<b>Example2b</b> - Handling masked images
 <hr>
 This example deconvolves the image with a Gaussian. Given a point spread
 function that is an accurate representation of how optics aberations map
@@ -66,7 +66,8 @@ class Example2b(cpm.CPModule):
         # Add your ImageNameProvider and ImageNameSubscriber to the
         # settings that are returned.
         #
-        return [self.input_image_name, self.output_image_name,
+        return [
+                self.input_image_name, self.output_image_name,
                 self.scale, self.iterations]
     
     def run(self, workspace):
@@ -85,10 +86,51 @@ class Example2b(cpm.CPModule):
         # help(cpi.ImageSet)
         #
         input_image = image_set.get_image(self.input_image_name.value)
+        input_pixels = input_image.pixel_data
+        #
+        # The "sharpen" function does the actual image processing. You
+        # can adapt this module by replacing sharpen with your own image
+        # processing function.
+        #
+        output_pixels = self.sharpen(input_pixels)
+        #
+        # The mask makes more sense for measurement and segmentation
+        # operations where you want to confine the operation to a
+        # region of interest. For image processing, the convention
+        # is to not process the region outside of the region of
+        # interest if possible and to make the output image either
+        # zero outside of the ROI or make it a copy of the original.
+        # 
+        ##if input_image.has_mask:
+        ##    mask = input_image.mask
+        ##    # Copy the pixels outside of the ROI from the input
+        ##    # to the output.
+        ##    output_pixels[~mask] = input_pixels[~mask] 
+        #
+        # Save it in the image set
+        #
+        output_image = cpi.Image(output_pixels, parent_image=input_image)
+        image_set.add(self.output_image_name.value,
+                      output_image)
+        #
+        # Display the image
+        #
+        if workspace.show_frame:
+            # Put the original image and the final one into display_data
+            workspace.display_data.input_image = input_pixels
+            workspace.display_data.output_image = output_pixels
+            
+        
+    def sharpen(self, observed):
+        '''Sharpen an observed image
+        
+        observed - 2-d numpy array of pixel values
+        
+        Sharpens the image using the Richardson/Lucy algorithm
+        '''
         #
         # Get the observed image from the pixel_data
         #
-        observed = input_image.pixel_data
         if observed.ndim == 3:
             #
             # This converts a color image to grayscale. A hint: you
@@ -149,35 +191,13 @@ class Example2b(cpm.CPModule):
                                   mode='same', # return an array of the same size
                                   boundary='symm') # reflect the image at boundary
             #   relative_blur = observed./est_conv;
-            relative_blur = observed / est_conv
+            relative_blur = observed / (est_conv + np.finfo(observed.dtype).eps)
             #   error_est     = conv2(relative_blur,psf_hat,'same'); 
             error_est = convolve2d(relative_blur, psf_hat, 'same', 'symm')
             #   latent_est    = latent_est.* error_est;
             latent_est = latent_est * error_est
             #end
-        #
-        # In some ways, it doesn't make sense to mask an image for
-        # deconvolution. You want to use the masked-out pixels in the loop
-        # above to help with the deblurring. Nevertheless, the convention
-        # is to not change the pixels in the masked-out region.
-        #
-        # ~mask is the pixels that are masked out - ~ takes the inverse
-        mask = input_image.mask
-        latent_est[~mask] = observed[~mask]
-        #
-        # Save it in the image set
-        #
-        output_image = cpi.Image(latent_est, parent_image=input_image)
-        image_set.add(self.output_image_name.value,
-                      output_image)
-        #
-        # Display the image
-        #
-        if workspace.show_frame:
-            # Put the original image and the final one into display_data
-            workspace.display_data.input_image = input_image.pixel_data
-            workspace.display_data.output_image = latent_est
-            
+        return latent_est
     #
     # The display interface is changing / has changed.
     # This is a recipe to make yours work with both
@@ -187,9 +207,16 @@ class Example2b(cpm.CPModule):
             figure = workspace.create_or_find_figure(subplots=(2, 1))
         else:
             figure.set_subplots((2, 1))
-        figure.subplot_imshow_grayscale(
+        #
+        # ax0 is the driving axis. If you specify ax0 as
+        # the sharexy axis for subsequent plots, resizing one
+        # axis will resize all the others because the scaling
+        # and translation are scaled
+        #
+        ax0 = figure.subplot_imshow_grayscale(
             0, 0, workspace.display_data.input_image,
             title = self.input_image_name.value)
         figure.subplot_imshow_grayscale(
             1, 0, workspace.display_data.output_image,
-            title = "Sharpened image")        
+            title = "Sharpened image",
+            sharexy = ax0)        

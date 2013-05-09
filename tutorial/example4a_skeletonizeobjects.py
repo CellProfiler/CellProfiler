@@ -27,17 +27,17 @@ class Example4a(cpm.CPModule):
         # modules upstream of this one. You use it to let the user choose
         # the objects produced by a prior module.
         #
-        self.input_objects_name = cps.ObjectNameSubscriber(
-            "Input objects", "Nuclei")
+        ##self.input_objects_name = cps.ObjectNameSubscriber(
+        ##    "Input objects", "Nuclei")
         #
-        # The ObjectNamePublisher lets downstream modules know that this
+        # The ObjectNameProvider lets downstream modules know that this
         # module will produce objects with the name entered by the user.
         #
-        self.output_objects_name = cps.ObjectNameProvider(
-            "Output objects", "Skeletons")
+        ##self.output_objects_name = cps.ObjectNameProvider(
+        ##    "Output objects", "Skeletons")
         
     def settings(self):
-        return [self.input_objects_name, self.output_objects_name]
+        ## return [self.input_objects_name, self.output_objects_name]
     
     def run(self, workspace):
         #
@@ -59,10 +59,19 @@ class Example4a(cpm.CPModule):
         # You can be "nicer" by giving more information, but this is not
         # absolutely necessary. See subsequent exercises for how to be nice.
         #     
-        object_set = workspace.object_set
-        input_objects = object_set.get_objects(self.input_objects_name.value)
-        labels = skeletonize_labels(input_objects.segmented)
-        output_objects = cpo.Objects()
-        output_objects.segmented = labels
-        object_set.add_objects(output_objects, self.output_objects_name.value)
-        
+        ##object_set = workspace.object_set
+        ##input_objects = object_set.get_objects(self.input_objects_name.value)
+        ##labels = skeletonize_labels(input_objects.segmented)
+        ##output_objects = cpo.Objects()
+        ##output_objects.segmented = labels
+        ##object_set.add_objects(output_objects, self.output_objects_name.value)
+        if workspace.show_frame:
+            workspace.display_data.input_labels = input_objects.segmented
+            workspace.display_data.output_labels = labels
+            
+    def display(self, workspace, frame):
+        frame.set_subplots((2, 1))
+        frame.subplot_imshow_labels(0, 0, workspace.display_data.input_labels,
+                                    title = self.input_objects_name.value)
+        frame.subplot_imshow_labels(1, 0, workspace.display_data.output_labels,
+                                    title = self.output_objects_name.value)

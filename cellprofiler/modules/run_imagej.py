@@ -100,11 +100,18 @@ class RunImageJ(cpm.CPModule):
             self.post_command_settings, "Post-group command settings count")
 
         self.macro = cps.Text(
-            "Macro", 'run("Invert");',
+            "Macro", 
+            """import imagej.command.CommandService;
+cmdSvcClass = CommandService.class;
+cmdSvc = ImageJ.getService(cmdSvcClass);
+cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPlanes", true}).get();""",
             multiline = True,
             doc="""<i>(Used only if running a macro)</i><br>
-            This is the ImageJ macro to be executed. For help on
-            writing macros, see <a href="http://rsb.info.nih.gov/ij/developer/macro/macros.html">here</a>.""")
+            This is the ImageJ macro to be executed. The syntax for ImageJ
+            macros depends on the scripting language engine chosen.
+            We suggest that you use the Beanshell scripting language
+            <a href="http://www.beanshell.org/manual/contents.html">
+            (Beanshell documentation)</a>.""")
         
         all_engines = ij2.get_script_service(get_context()).getLanguages()
         self.language_dictionary = dict(

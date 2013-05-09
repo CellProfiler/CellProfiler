@@ -188,7 +188,8 @@ class NamesAndTypes(cpm.CPModule):
             <tr><td>A01</td><td>s1</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
             <tr><td>A01</td><td>s2</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
             </table>
-            </p>
+            Image sets for which a given metadata value combination (e.g., plate, well, site) is either
+            missing or duplicated for a given channel will simply be omitted.</p>
             <p>In addition, CellProfiler can match a single file for one channel against many files from
             another channel. This is useful, for instance, for applying an illumination correction file
             for an entire plate against every image file for that plate.</p></li>

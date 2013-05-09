@@ -45,9 +45,9 @@ class Example2a(cpm.CPModule):
         #
         # Those are the names that are expected by the unit tests.
         #
-        self.input_image_name = cps.ImageNameSubscriber("Input image")
-        self.output_image_name = cps.ImageNameProvider("Output image", 
-                                                       "Sharpened")
+        ##self.input_image_name = cps.ImageNameSubscriber("Input image")
+        ##self.output_image_name = cps.ImageNameProvider("Output image", 
+        ##                                               "Sharpened")
         self.scale = cps.Float(
             "Scale", .5, 0,
         doc="""This is the sigma of the Gaussian used as the point spread function""")
@@ -66,11 +66,12 @@ class Example2a(cpm.CPModule):
         # Add your ImageNameProvider and ImageNameSubscriber to the
         # settings that are returned.
         #
-        return [self.input_image_name, self.output_image_name,
+        return [
+                ##self.input_image_name, self.output_image_name,
                 self.scale, self.iterations]
     
     def run(self, workspace):
-        image_set = workspace.image_set
+        ##image_set = workspace.image_set
         #
         # Get your image from the image set using the ImageNameProvider
         # Get the pixel data from the image
@@ -84,11 +85,39 @@ class Example2a(cpm.CPModule):
         # help(cpi.Image)
         # help(cpi.ImageSet)
         #
-        input_image = image_set.get_image(self.input_image_name.value)
+        ##input_image = image_set.get_image(self.input_image_name.value)
+        ##input_pixels = input_image.pixel_data
+        #
+        # The "sharpen" function does the actual image processing. You
+        # can adapt this module by replacing sharpen with your own image
+        # processing function.
+        #
+        ##output_pixels = self.sharpen(input_pixels)
+        #
+        # Save it in the image set
+        #
+        ##output_image = cpi.Image(output_pixels, parent_image=input_image)
+        ##image_set.add(self.output_image_name.value,
+        ##              output_image)
+        #
+        # Display the image
+        #
+        if workspace.show_frame:
+            # Put the original image and the final one into display_data
+            workspace.display_data.input_image = input_pixels
+            workspace.display_data.output_image = output_pixels
+            
+        
+    def sharpen(self, observed):
+        '''Sharpen an observed image
+        
+        observed - 2-d numpy array of pixel values
+        
+        Sharpens the image using the Richardson/Lucy algorithm
+        '''
         #
         # Get the observed image from the pixel_data
         #
-        observed = input_image.pixel_data
         if observed.ndim == 3:
             #
             # This converts a color image to grayscale. A hint: you
@@ -149,26 +178,13 @@ class Example2a(cpm.CPModule):
                                   mode='same', # return an array of the same size
                                   boundary='symm') # reflect the image at boundary
             #   relative_blur = observed./est_conv;
-            relative_blur = observed / est_conv
+            relative_blur = observed / (est_conv + np.finfo(observed.dtype).eps)
             #   error_est     = conv2(relative_blur,psf_hat,'same'); 
             error_est = convolve2d(relative_blur, psf_hat, 'same', 'symm')
             #   latent_est    = latent_est.* error_est;
             latent_est = latent_est * error_est
             #end
-        #
-        # Save it in the image set
-        #
-        output_image = cpi.Image(latent_est, parent_image=input_image)
-        image_set.add(self.output_image_name.value,
-                      output_image)
-        #
-        # Display the image
-        #
-        if workspace.show_frame:
-            # Put the original image and the final one into display_data
-            workspace.display_data.input_image = input_image.pixel_data
-            workspace.display_data.output_image = latent_est
-            
+        return latent_est
     #
     # The display interface is changing / has changed.
     # This is a recipe to make yours work with both
@@ -178,9 +194,16 @@ class Example2a(cpm.CPModule):
             figure = workspace.create_or_find_figure(subplots=(2, 1))
         else:
             figure.set_subplots((2, 1))
-        figure.subplot_imshow_grayscale(
+        #
+        # ax0 is the driving axis. If you specify ax0 as
+        # the sharexy axis for subsequent plots, resizing one
+        # axis will resize all the others because the scaling
+        # and translation are scaled
+        #
+        ax0 = figure.subplot_imshow_grayscale(
             0, 0, workspace.display_data.input_image,
             title = self.input_image_name.value)
         figure.subplot_imshow_grayscale(
             1, 0, workspace.display_data.output_image,
-            title = "Sharpened image")        
+            title = "Sharpened image",
+            sharexy = ax0)        

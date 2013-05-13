@@ -172,6 +172,7 @@ class PipelineController:
         startup_workspace_file = os.path.expanduser(
             os.path.join("~","CellProfiler.cpi"))
         default_workspace_file = cpprefs.get_workspace_file()
+        first_time = True
         if workspace_file is False:
             ans = self.OOCN_CREATE_NEW
         elif workspace_file is not None:
@@ -194,19 +195,21 @@ class PipelineController:
                 ans = self.OOCN_OPEN_OLD
             elif config_ans == cpprefs.WC_SHOW_WORKSPACE_CHOICE_DIALOG:
                 ans = self.OOCN_ASK
-                first_time = True
         message = "Welcome to CellProfiler"
         caption = "Welcome to CellProfiler"
         while True:
-            if ans == self.OOCN_ASK:
+            if ans in (self.OOCN_ASK, self.OOCN_OPEN_DEFAULT):
                 if first_time:
                     try:
                         if not lock_file(default_workspace_file):
                             first_time = False
+                            ans = self.OOCN_ASK
                     except:
                         # If we couldn't write the lock because of permissions
                         # or invalid directory, best not to display the option
                         first_time = False
+                        ans = self.OOCN_ASK
+            if ans == self.OOCN_ASK:
                 ans = self.display_open_or_create_new_dlg(
                     caption, message, first_time)
                 if ans != self.OOCN_OPEN_DEFAULT and first_time:

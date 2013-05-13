@@ -710,7 +710,7 @@ def start_lock_thread():
                     del locked_uids[uid]
                     del locked_files[msg[2]]
                     msg[3].put("OK")
-                except ValueError as e:
+                except Exception as e:
                     msg[3].put(e)
         __lock_thread = None
         logger.info("Exiting the lock thread")

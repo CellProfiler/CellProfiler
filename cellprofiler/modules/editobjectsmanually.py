@@ -389,21 +389,13 @@ class EditObjectsManually(I.Identify):
                 if fullname.endswith(".ilp"):
                     self.save_into_ilp(fullname, labels, guidename)
                 else:
-                    md = ome.OMEXML()
-                    mdp = md.image().Pixels
-                    mdp.SizeX = shape[1]
-                    mdp.SizeY = shape[0]
-                    mdp.SizeC = n_frames
-                    mdp.SizeT = 1
-                    mdp.SizeZ = 1
-                    mdp.PixelType = ome.PT_UINT16
-                    mdp.channel_count = n_frames
+                    from bioformats.formatwriter import write_image
+                    from bioformats.omexml import PT_UINT16
                     if os.path.exists(fullname):
                         os.unlink(fullname)
-                    xml = md.to_xml()
                     for i, l in enumerate(labels):
-                        post_image(pathname2url(fullname),
-                                   l, xml, index = str(i))
+                        write_image(fullname, l, PT_UINT16,
+                                    t = i, size_t = len(labels))
 
     def save_into_ilp(self, project_name, labels, guidename):
         import h5py

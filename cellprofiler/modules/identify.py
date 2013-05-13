@@ -642,6 +642,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
     
         if self.threshold_smoothing_choice == TSM_NONE:
             blurred_image = img
+            sigma = 0
         else:
             if self.threshold_smoothing_choice == TSM_AUTOMATIC:
                 sigma = 1
@@ -655,6 +656,8 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 return scipy.ndimage.gaussian_filter(
                     img, sigma, mode='constant', cval=0)
             blurred_image = smooth_with_function_and_mask(img, fn, mask)
+        if hasattr(workspace,"display_data"):
+            workspace.display_data.threshold_sigma = sigma          
             
         binary_image = (blurred_image >= local_threshold) & mask
         self.add_fg_bg_measurements(

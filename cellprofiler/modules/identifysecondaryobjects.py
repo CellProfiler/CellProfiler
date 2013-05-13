@@ -433,6 +433,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         image_name = self.image_name.value
         image = workspace.image_set.get_image(image_name,
                                               must_be_grayscale = True)
+        workspace.display_data.statistics = []
         img = image.pixel_data
         mask = image.mask
         objects = workspace.object_set.get_objects(self.primary_objects.value)
@@ -649,6 +650,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             workspace.display_data.primary_outline = primary_outline
             workspace.display_data.secondary_outline = secondary_outline
             workspace.display_data.global_threshold = global_threshold
+            workspace.display_data.object_count = object_count
 
     def display(self, workspace, figure):
         object_pct = workspace.display_data.object_pct
@@ -657,37 +659,49 @@ class IdentifySecondaryObjects(cpmi.Identify):
         secondary_outline = workspace.display_data.secondary_outline
         segmented_out = workspace.display_data.segmented_out
         global_threshold = workspace.display_data.global_threshold
+        object_count = workspace.display_data.object_count
+        statistics = workspace.display_data.statistics
+        
+        if global_threshold is not None:
+            statistics.append(["Threshold","%.3f" % global_threshold])
 
+        if object_count > 0:
+            areas = scind.sum(np.ones(segmented_out.shape), segmented_out, np.arange(1, object_count + 1))
+            areas.sort()
+            low_diameter  = (np.sqrt(float(areas[object_count / 10]) / np.pi) * 2)
+            median_diameter = (np.sqrt(float(areas[object_count / 2]) / np.pi) * 2)
+            high_diameter = (np.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
+            statistics.append(["10th pctile diameter",
+                               "%.1f pixels" % (low_diameter)])
+            statistics.append(["Median diameter",
+                               "%.1f pixels" % (median_diameter)])
+            statistics.append(["90th pctile diameter",
+                               "%.1f pixels" % (high_diameter)])
+            if self.method != M_DISTANCE_N:
+                statistics.append(["Thresholding filter size",
+                                "%.1f"%(workspace.display_data.threshold_sigma)])            
+            statistics.append(["Area covered by objects", "%.1f %%" % object_pct])
+        workspace.display_data.statistics = statistics
+        
         figure.set_subplots((2, 2))
         title = "Input image, cycle #%d" % (workspace.measurements.image_number)
         figure.subplot_imshow_grayscale(0, 0, img, title)
         figure.subplot_imshow_labels(1, 0, segmented_out, "%s objects" % self.objects_name.value,
                                        sharexy = figure.subplot(0, 0))
 
-        outline_img = np.dstack((img, img, img))
-        cpmi.draw_outline(outline_img, secondary_outline > 0,
-                          cpprefs.get_secondary_outline_color())
-        figure.subplot_imshow(0, 1, outline_img, "%s outlines"%self.objects_name.value,
-                                normalize=False,
-                                sharexy = figure.subplot(0, 0))
-
         primary_img = np.dstack((img, img, img))
         cpmi.draw_outline(primary_img, primary_outline > 0,
                           cpprefs.get_primary_outline_color())
         cpmi.draw_outline(primary_img, secondary_outline > 0,
                           cpprefs.get_secondary_outline_color())
-        figure.subplot_imshow(1, 1, primary_img,
+        figure.subplot_imshow(0, 1, primary_img,
                                 "%s and %s outlines"%(self.primary_objects.value,self.objects_name.value),
                                 normalize=False,
                                 sharexy = figure.subplot(0, 0))
-        if global_threshold is not None:
-            figure.status_bar.SetFields(
-                ["Threshold: %.3f" % global_threshold,
-                 "Area covered by objects: %.1f %%" % object_pct])
-        else:
-            figure.status_bar.SetFields(
-                ["Area covered by objects: %.1f %%" % object_pct])
-
+        figure.subplot_table(
+            1, 1, 
+            [[x[1]] for x in workspace.display_data.statistics],
+            row_labels = [x[0] for x in workspace.display_data.statistics])        
 
     def filter_labels(self, labels_out, objects, workspace):
         """Filter labels out of the output

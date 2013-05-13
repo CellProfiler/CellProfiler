@@ -806,7 +806,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 high_diameter = (math.sqrt(float(areas[object_count * 9 / 10]) / np.pi) * 2)
                 statistics.append(["10th pctile diameter",
                                    "%.1f pixels" % (low_diameter)])
-                statistics.append(["median diameter",
+                statistics.append(["Median diameter",
                                    "%.1f pixels" % (median_diameter)])
                 statistics.append(["90th pctile diameter",
                                    "%.1f pixels" % (high_diameter)])
@@ -815,13 +815,15 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 statistics.append(["Area covered by objects",
                                    "%.1f %%" % (100.0 * float(object_area) /
                                               float(total_area))])
+                statistics.append(["Thresholding filter size",
+                    "%.1f"%(workspace.display_data.threshold_sigma)])            
                 if self.unclump_method != UN_NONE:
                     if self.unclump_method == UN_LOG:
                         statistics.append(["LoG threshold",
                                    "%.1f"%(LoG_threshold)])
                         statistics.append(["LoG filter diameter",
                                    "%.1f"%(LoG_filter_diameter)])
-                    statistics.append(["Smoothing filter size",
+                    statistics.append(["Declumping smoothing filter size",
                                    "%.1f"%(self.calc_smoothing_filter_size())])
                     statistics.append(["Maxima suppression size",
                                    "%.1f"%(maxima_suppression_size)])

@@ -745,7 +745,7 @@ class CPFrame(wx.Frame):
         if hasattr(focus, "CanSelect") and not focus.CanSelect():
             event.Enable(False)
             return
-        event.Enable(focus and hasattr(focus, "SelectAll"))
+        event.Enable(bool(focus and hasattr(focus, "SelectAll")))
 
     debug_commands = (ID_DEBUG_STEP, ID_DEBUG_NEXT_IMAGE_SET,
                       ID_DEBUG_NEXT_GROUP, ID_DEBUG_CHOOSE_GROUP,

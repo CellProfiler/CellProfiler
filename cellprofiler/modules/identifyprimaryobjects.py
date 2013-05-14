@@ -704,8 +704,8 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
     def visible_settings(self):
         vv = [self.image_name,self.object_name,self.size_range,
-              self.exclude_size, self.merge_objects,
-              self.exclude_border_objects] + self.get_threshold_visible_settings()
+              self.exclude_size, self.exclude_border_objects
+              ] + self.get_threshold_visible_settings()
         vv += [ self.unclump_method ]
         if self.unclump_method != UN_NONE:
             if self.unclump_method == UN_LOG:

@@ -668,17 +668,39 @@ class AnalysisRunner(object):
         for idx in range(num):
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.
-            if hasattr(sys, 'frozen') and sys.platform.startswith("win"):
-                root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
-                aw_path = os.path.join(root_path, "analysis_worker")
-                worker = subprocess.Popen([aw_path,
-                                           '--work-announce',
-                                           cls.work_announce_address],
+            if hasattr(sys, 'frozen'):
+                if sys.platform == 'darwin':
+                    # sys.argv[0] points at 
+                    # CellProfiler.app/Contents/Resources/CellProfiler.py
+                    # We want
+                    # CellProfiler.app/Contents/MacOS/CellProfiler
+                    #
+                    contents_resources_dir = os.path.split(sys.argv[0])[0]
+                    contents_dir = os.path.split(contents_resources_dir)[0]
+                    cp_executable = os.path.join(contents_dir, "MacOS", "CellProfiler")
+                    assert os.path.isfile(cp_executable), \
+                           "Did not find CellProfiler in its expected place: %s" % cp_executable
+                    assert os.access(cp_executable, os.EX_OK), \
+                           "%s is not executable" % cp_executable
+                    args = ["arch", "-x86_64", cp_executable, 
+                            "--work-announce", cls.work_announce_address]
+                    print " ".join(args)
+                else:
+                    aw_path = os.path.join(
+                        os.path.split(
+                            os.path.abspath(sys.argv[0]))[0],
+                                           "analysis_worker")
+                    args = [aw_path,
+                            '--work-announce',
+                            cls.work_announce_address]
+                    
+                worker = subprocess.Popen(args,
                                           env=find_worker_env(),
                                           stdin=subprocess.PIPE,
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT)
             else:
+                print "I am not frozen"
                 worker = subprocess.Popen([find_python(),
                                            '-u',  # unbuffered
                                            find_analysis_worker_source(),

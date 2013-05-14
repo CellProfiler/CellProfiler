@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 """
 import sys
 import os
+
 if __name__=="__main__" and "CP_DEBUG_WORKER" not in os.environ:
     #
     # Sorry to put ugliness so early:

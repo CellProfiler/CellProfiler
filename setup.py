@@ -59,6 +59,7 @@ OPTIONS = {'argv_emulation': True,
            'resources': ['CellProfilerIcon.png'],
            'iconfile' : 'CellProfilerIcon.icns',
            'frameworks' : [tiff_dylib, jpeg_dylib],
+           'plist': { "LSArchitecturePriority": ["i386"] }
            }
 
 if sys.argv[-1] == 'py2app':
@@ -78,5 +79,5 @@ if sys.argv[-1] == 'py2app':
     # want to figure it out right now, and our setup is going to be changing
     # significantly soon, anyway.
     call('find dist/CellProfiler.app -name tests -type d | xargs rm -rf', shell=True)
-    call('lipo dist/CellProfiler.app/Contents/MacOS/CellProfiler -thin i386 -output dist/CellProfiler.app/Contents/MacOS/CellProfiler', shell=True)
+    #call('lipo dist/CellProfiler.app/Contents/MacOS/CellProfiler -thin i386 -output dist/CellProfiler.app/Contents/MacOS/CellProfiler', shell=True)
     call('rm dist/CellProfiler.app/Contents/Resources/lib/python2.7/cellprofiler/icons/*.png', shell=True)

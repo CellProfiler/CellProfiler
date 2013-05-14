@@ -454,6 +454,8 @@ class Crop(cpm.CPModule):
             dm = max((10,min(pixel_data.shape)/50))
             height, width = (dm,dm)
             def __init__(self, x, y, on_move):
+                x = max(0, min(x, pixel_data.shape[1]))
+                y = max(0, min(y, pixel_data.shape[0]))
                 self.__selected = False
                 self.__color = cpprefs.get_primary_outline_color()
                 self.__color = np.hstack((self.__color,[255])).astype(float) / 255.0

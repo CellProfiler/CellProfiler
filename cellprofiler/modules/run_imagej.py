@@ -1,17 +1,4 @@
-"""
-CellProfiler is distributed under the GNU General Public License.
-See the accompanying file LICENSE for details.
-
-Copyright (c) 2003-2009 Massachusetts Institute of Technology
-Copyright (c) 2009-2013 Broad Institute
-All rights reserved.
-
-Please see the AUTHORS file for credits.
-
-Website: http://www.cellprofiler.org
-"""
-
-'''<b>RunImageJ</b> runs an ImageJ command.
+'''<b>Run ImageJ</b> runs an ImageJ command.
 <hr>
 
 <a href="http://rsbweb.nih.gov/ij/">ImageJ</a> is an image processing and analysis program.
@@ -24,8 +11,29 @@ ImageJ and operate on them together.
 
 The <b>RunImageJ</b> module runs one ImageJ command or macro per cycle. It first
 loads the images you want to process into ImageJ, then runs the command, and, if
-desired, retrieves images you want to process further in CellProfiler.'''
+desired, retrieves images you want to process further in CellProfiler.
 
+<h3>Technical notes</h3>
+<p>ImageJ runs using Java, and as such, relies on proper handling of the Java memory requirements.
+When ImageJ starts, the Java Virtual Machine (JVM) allocates a portion of memory for its
+own use from the operating system; this memory is called the <i>java heap memory</i>. If you
+encounter JVM memory errors, you can tell CellProfiler to increase the size of the Java heap memory 
+on startup.</p>
+<p>To do this, run CellProfiler from the command line with the following argument:
+<code>--jvm-heap-size=JVM_HEAP_SIZE</code>
+where <code>JVM_HEAP_SIZE</code> is the amount of memory to be reserved for the JVM. Example formats
+for <code>JVM_HEAP_SIZE</code> include <i>512000k</i>, <i>512m</i>, <i>1g</i>, etc. For example,
+to increase the JVM heap memory to 2GB, use <code>--jvm-heap-size=2g</code></p>
+'''
+# CellProfiler is distributed under the GNU General Public License.
+# See the accompanying file LICENSE for details.
+# 
+# Copyright (c) 2003-2009 Massachusetts Institute of Technology
+# Copyright (c) 2009-2013 Broad Institute
+# 
+# Please see the AUTHORS file for credits.
+# 
+# Website: http://www.cellprofiler.org
 
 import logging
 logger = logging.getLogger(__name__)

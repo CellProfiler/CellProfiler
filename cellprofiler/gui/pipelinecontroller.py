@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 """
 
 import csv
+import h5py
 import logging
 import math
 import numpy
@@ -895,14 +896,18 @@ class PipelineController:
     def is_running(self):
         return self.__analysis is not None
     
-    def do_load_pipeline(self,pathname):
+    def do_load_pipeline(self, pathname):
         try:
             if self.__pipeline.test_mode:
                 self.stop_debugging()
             if self.is_running():
                 self.stop_running()
-
-            self.__pipeline.load(pathname)
+            
+            if h5py.is_hdf5(pathname):
+                if not self.load_hdf5_pipeline(pathname):
+                    return
+            else:
+                self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__pipeline.load_image_plane_details(self.__workspace)
             self.__clear_errors()
@@ -1020,6 +1025,69 @@ class PipelineController:
             from cellprofiler.gui.errordialog import display_error_dialog
             display_error_dialog(self.__frame, instance, self.__pipeline,
                                  continue_only=True)
+            
+    def load_hdf5_pipeline(self, pathname):
+        '''Load a pipeline from an HDF5 measurements file or similar
+        
+        pathname - pathname to the file
+        '''
+        assert h5py.is_hdf5(pathname)
+        m = cpm.Measurements(
+            filename = pathname,
+            mode = "r")
+        has_user_pipeline = m.has_feature(
+            cpm.EXPERIMENT, cpp.M_USER_PIPELINE)
+        has_pipeline = m.has_feature(
+            cpm.EXPERIMENT, cpp.M_PIPELINE)
+        if has_user_pipeline:
+            if has_pipeline:
+                with wx.Dialog(
+                    self.__frame,
+                    title = "Choose pipeline to open") as dlg:
+                    dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+                    sizer = wx.BoxSizer(wx.VERTICAL)
+                    dlg.Sizer.Add(sizer, 1, wx.EXPAND | wx.ALL, 10)
+                    message = (
+                        "%s contains two pipelines, the primary pipeline and\n"
+                        "the user pipeline. The primary pipeline is the one\n"
+                        "that should be used for batch processing, but it\n"
+                        "may have been modified to make it suitable for that\n"
+                        "purpose. The user pipeline is the pipeline as\n"
+                        "displayed by CellProfiler and is more suitable for\n"
+                        "editing and running in test mode.\n\n"
+                        "Do you want to open the primary or user pipeline?") %\
+                        os.path.split(pathname)[1]
+                    sizer.Add(wx.StaticText(dlg, label = message), 0, wx.EXPAND)
+                    sizer.AddSpacer(4)
+                    groupbox = wx.StaticBox(dlg, label="Pipeline choice")
+                    gb_sizer = wx.StaticBoxSizer(groupbox, wx.VERTICAL)
+                    sizer.Add(gb_sizer, 1, wx.EXPAND)
+                    rb_primary = wx.RadioButton(dlg, label = "&Primary pipeline")
+                    gb_sizer.Add(rb_primary, 0, wx.ALIGN_LEFT)
+                    gb_sizer.AddSpacer(2)
+                    rb_user = wx.RadioButton(dlg, label = "&User pipeline")
+                    gb_sizer.Add(rb_user, 0, wx.ALIGN_LEFT)
+                    rb_user.SetValue(True)
+                    
+                    btn_sizer = wx.StdDialogButtonSizer()
+                    dlg.Sizer.Add(btn_sizer, 0, wx.EXPAND)
+                    btn_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
+                    btn_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+                    btn_sizer.Realize()
+                    dlg.Fit()
+                    if dlg.ShowModal() == wx.ID_OK:
+                        ftr = (cpp.M_USER_PIPELINE if rb_user.Value else
+                               cpp.M_PIPELINE)
+                    else:
+                        return False
+            else:
+                ftr = cpp.M_USER_PIPELINE
+        else:
+            ftr = cpp.M_PIPELINE
+        pipeline_text = m.get_experiment_measurement(ftr)
+        pipeline_text = pipeline_text.encode('us-ascii')
+        self.__pipeline.load(StringIO(pipeline_text))
+        return True
 
     def __clear_errors(self):
         for key,error in self.__setting_errors.iteritems():

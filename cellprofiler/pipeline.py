@@ -181,7 +181,9 @@ HDF5_HEADER = (chr(137) + chr(72) + chr(68) + chr(70) + chr(13) + chr(10) +
 C_PIPELINE = "Pipeline"
 C_CELLPROFILER = "CellProfiler"
 F_PIPELINE = "Pipeline"
+F_USER_PIPELINE = "UserPipeline"
 M_PIPELINE = "_".join((C_PIPELINE,F_PIPELINE))
+M_USER_PIPELINE = "_".join((C_PIPELINE, F_USER_PIPELINE))
 F_VERSION = "Version"
 M_VERSION = "_".join((C_CELLPROFILER, F_VERSION))
 C_RUN = "Run"
@@ -1234,12 +1236,22 @@ class Pipeline(object):
             root['handles'][key][0,0]=value
         self.savemat(filename, root)
 
-    def write_pipeline_measurement(self, m):
-        '''Write the pipeline experiment measurement to the measurements'''
+    def write_pipeline_measurement(self, m, user_pipeline=False):
+        '''Write the pipeline experiment measurement to the measurements
+        
+        m - write into these measurements
+        
+        user_pipeline - if True, write the pipeline into M_USER_PIPELINE
+                        M_USER_PIPELINE is the pipeline that should be loaded
+                        by the UI for the user for cases like a pipeline
+                        created by CreateBatchFiles.
+        '''
         assert(isinstance(m, cpmeas.Measurements))
         fd = StringIO.StringIO()
         self.savetxt(fd, save_image_plane_details=False)
-        m.add_measurement(cpmeas.EXPERIMENT, M_PIPELINE, fd.getvalue(), 
+        m.add_measurement(cpmeas.EXPERIMENT, 
+                          M_USER_PIPELINE if user_pipeline else M_PIPELINE, 
+                          fd.getvalue(), 
                           can_overwrite = True)
         
     def savemat(self, filename, root):

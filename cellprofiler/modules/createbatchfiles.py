@@ -260,6 +260,7 @@ class CreateBatchFiles(cpm.CPModule):
             assert isinstance(pipeline, cpp.Pipeline)
             assert isinstance(m, cpmeas.Measurements)
     
+            orig_pipeline = pipeline
             pipeline = pipeline.copy()
             # this use of workspace.frame is okay, since we're called from
             # prepare_run which happens in the main wx thread.
@@ -276,6 +277,7 @@ class CreateBatchFiles(cpm.CPModule):
                         self.alter_path(cpprefs.get_default_image_directory())
             bizarro_self.batch_mode.value = True
             pipeline.write_pipeline_measurement(m)
+            orig_pipeline.write_pipeline_measurement(m, user_pipeline=True)
             return h5_path
         finally:
             m.close()

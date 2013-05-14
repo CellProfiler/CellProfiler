@@ -248,18 +248,20 @@ class IdentifyObjectsInGrid(cpm.CPModule):
     def fill_grid(self, workspace, gridding):
         '''Fill a labels matrix by labeling each rectangle in the grid'''
         assert isinstance(gridding, cpg.CPGridInfo)
+        i, j = np.mgrid[0:gridding.image_height,
+                        0:gridding.image_width]
         i_min = int(gridding.y_location_of_lowest_y_spot -
                     gridding.y_spacing / 2)
         j_min = int(gridding.x_location_of_lowest_x_spot -
                     gridding.x_spacing / 2)
-        labels=np.zeros((gridding.image_height,
-                         gridding.image_width), int)
-        i,j = np.mgrid[0:gridding.total_height,0:gridding.total_width]
-        i = i / gridding.y_spacing
-        j = j / gridding.x_spacing
-        labels[i_min:(i_min+gridding.total_height),
-               j_min:(j_min+gridding.total_width)] = \
-              gridding.spot_table[i.astype(int),j.astype(int)]
+        i = np.floor((i - i_min) / gridding.y_spacing).astype(int)
+        j = np.floor((j - j_min) / gridding.x_spacing).astype(int)
+        mask = ((i >= 0) & (j >= 0) &
+                (i < gridding.spot_table.shape[0]) &
+                (j < gridding.spot_table.shape[1]))
+        labels = np.zeros((gridding.image_height,
+                          gridding.image_width), int)
+        labels[mask] = gridding.spot_table[i[mask], j[mask]]
         return labels
     
     def run_forced_circle(self, workspace, gridding):
@@ -283,10 +285,6 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         radius = self.get_radius(workspace, gridding)
         labels = self.fill_grid(workspace,gridding)
         labels = self.fit_labels_to_guiding_objects(workspace, labels)
-        i_min = int(gridding.y_location_of_lowest_y_spot -
-                    gridding.y_spacing / 2)
-        j_min = int(gridding.x_location_of_lowest_x_spot -
-                    gridding.x_spacing / 2)
         spot_center_i_flat = np.zeros(gridding.spot_table.max()+1)
         spot_center_j_flat = np.zeros(gridding.spot_table.max()+1)
         spot_center_i_flat[gridding.spot_table.flatten()] = spot_center_i.flatten()

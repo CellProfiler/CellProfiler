@@ -762,28 +762,6 @@ class DefineGrid(cpm.CPModule):
         if self.origin in (NUM_TOP_RIGHT, NUM_BOTTOM_RIGHT):
             # Flip left and right
             gridding.spot_table = gridding.spot_table[:,::-1]
-        #
-        # Validate the gridding. All spots must be within the image
-        # boundaries.
-        #
-        left_edge = int(gridding.x_location_of_lowest_x_spot - gridding.x_spacing/2)
-        if left_edge < 0:
-            raise ValueError(("The left edge of the first grid column is %d "
-                              "pixels outside of the image.") % -left_edge)
-        right_edge = int(gridding.x_location_of_lowest_x_spot + gridding.x_spacing/2)
-        if image_shape is not None and image_shape[1] < right_edge:
-            raise ValueError(("The right edge of the last grid column is %d "
-                              "pixels outside of the image.") %
-                             (right_edge - image_shape[1]))
-        top_edge = int(gridding.y_location_of_lowest_y_spot - gridding.y_spacing / 2)
-        if top_edge < 0:
-            raise ValueError(("The top edge of the last grid row is %d "
-                              "pixels outside of the image.") % -top_edge)
-        bottom_edge = int(gridding.y_location_of_lowest_y_spot + gridding.y_spacing / 2)
-        if image_shape is not None and image_shape[0] < bottom_edge:
-            raise ValueError(("The bottom edge of the last grid column is %d "
-                              "pixels outside of the image.") %
-                             (bottom_edge - image_shape[0]))
         if image_shape is not None:
             gridding.image_height = image_shape[0]
             gridding.image_width = image_shape[1]

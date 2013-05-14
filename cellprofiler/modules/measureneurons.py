@@ -6,7 +6,15 @@ any skeleton objects with seed points
 an image. The module takes a skeletonized image of the neuron plus previously 
 identified seed objects (for instance, the neuron soma) and finds the number of 
 axon or dendrite trunks that emerge from the soma and the number of branches along the
-axons and dendrites.</p>
+axons and dendrites.  Note that the seed objects must be both smaller than, and touching 
+the skeleton in order to be counted.</p>
+
+<p>The typical use case is to take a seed object, typically a nucleus, and segment it 
+using IdentifyPrimaryObjects.  Then a larger object that touches this seed object, 
+e.g. a neuron cytoplasm, is grown from the initial seed nuclei using IdentifySecondaryObjects. 
+Use the Morph module to skeletonize those IDSecondary objects.  Finally, the nuclear,
+primary objects and the skeletons from IdentifySecondaryObjects are used as inputs to
+MeasureNeurons.</p>
 
 <p>The module determines distances from the seed objects along the axons and dendrites 
 and assigns branchpoints based on distance to the closest seed object when two seed objects

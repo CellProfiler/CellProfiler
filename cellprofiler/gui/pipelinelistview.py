@@ -400,6 +400,10 @@ class PipelineListView(object):
                     break
             else:
                 self.select_one_module(event.module_num)
+            for module in self.__pipeline.modules():
+                if module.module_num == event.module_num:
+                    self.request_validation(module)
+            
         elif isinstance(event, cpp.ModuleEnabledEvent):
             self.__on_module_enabled(event)
         elif isinstance(event, cpp.ModuleDisabledEvent):
@@ -860,7 +864,6 @@ class PipelineListView(object):
                     if (not module.is_input_module() and
                         self.list_ctrl.running_item > index):
                         self.list_ctrl.set_running_item(index)
-                    self.request_validation(module)
                     return
                 
     def on_stop_debugging(self):

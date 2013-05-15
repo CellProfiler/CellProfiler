@@ -1869,6 +1869,8 @@ class ModuleView:
             if (not self.__inside_notify and self.__module is not None
                 and self.__module.module_num == event.module_num):
                 self.reset_view()
+            if (self.__module is not None and 
+                self.__module.module_num == event.module_num):
                 self.request_validation()
         elif isinstance(event, cpp.ModuleRemovedPipelineEvent):
             if (self.__module is not None and 

@@ -70,8 +70,7 @@ F_ALL_IMAGES = "All images"
 F_FILTERED_IMAGES = "Images selected using a filter"
 COL_PATH = "Path / URL"
 COL_SERIES = "Series"
-COL_INDEX = "Index"
-COL_CHANNEL = "Channel"
+COL_INDEX = "Frame"
 
 '''Index of the extraction method count in the settings'''
 IDX_EXTRACTION_METHOD_COUNT = 1
@@ -735,7 +734,7 @@ class Metadata(cpm.CPModule):
             ipd_metadata = self.get_ipd_metadata(ipd)
             metadata.append(ipd_metadata)
             columns.update(ipd_metadata.keys())
-        columns = [COL_PATH, COL_SERIES, COL_INDEX, COL_CHANNEL] + \
+        columns = [COL_PATH, COL_SERIES, COL_INDEX] + \
             sorted(list(columns))
         self.table.clear_columns()
         self.table.clear_rows()
@@ -744,8 +743,8 @@ class Metadata(cpm.CPModule):
             
         data = []
         for ipd, ipd_metadata in zip(self.ipds, metadata):
-            row = [ipd.path, ipd.series, ipd.index, ipd.channel]
-            row += [ipd_metadata.get(column) for column in columns[4:]]
+            row = [ipd.path, ipd.series, ipd.index]
+            row += [ipd_metadata.get(column) for column in columns[3:]]
             data.append(row)
         self.table.add_rows(columns, data)
         
@@ -776,7 +775,25 @@ class Metadata(cpm.CPModule):
             
         while len(self.extraction_methods) < n_extraction_methods:
             self.add_extraction_method()
-            
+
+    def validate_module(self, pipeline):
+        '''Validate the module settings
+        
+        pipeline - current pipeline
+        
+        Metadata throws an exception if any of the metadata tags collide with
+        tags that can be automatically extracted.
+        '''
+        for group in self.extraction_methods:
+            if group.extraction_method == X_MANUAL_EXTRACTION:
+                re_setting = (group.file_regexp if group.source == XM_FILE_NAME
+                              else group.folder_regexp)
+                for token in cpmeas.find_metadata_tokens(re_setting.value):
+                    if token in cpmeas.RESERVED_METADATA_TAGS:
+                        raise cps.ValidationError(
+                            'The metadata tag, "%s", is reserved for use by CellProfiler. Please use some other tag name.' %
+                            token, re_setting)
+                    
     def get_metadata_keys(self):
         '''Return a collection of metadata keys to be associated with files'''
         keys = set()

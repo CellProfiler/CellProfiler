@@ -174,6 +174,10 @@ M_METADATA_TAGS = "_".join((C_METADATA, "Tags"))
 '''The experiment feature name used to store the image set's grouping tags'''
 M_GROUPING_TAGS = "_".join((C_METADATA, "GroupingTags"))
 
+'''Tags that are reserved for automatic population of metadata'''
+RESERVED_METADATA_TAGS = ( "C", "T", "Z", "ColorFormat", "ChannelName",
+                           C_SERIES, C_FRAME)
+
 def get_length_from_varchar(x):
     '''Retrieve the length of a varchar column from its coltype def'''
     m = re.match(r'^varchar\(([0-9]+)\)$', x)

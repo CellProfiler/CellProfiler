@@ -768,8 +768,14 @@ class DefineGrid(cpm.CPModule):
         else:
             # guess the image shape by adding the same border to the right
             # and bottom that we have on the left and top
-            gridding.image_height = top_edge * 2 + gridding.y_spacing * gridding.rows
-            gridding.image_width = right_edge * 2 + gridding.x_spacing * gridding.columns
+            top_edge = int(gridding.y_location_of_lowest_y_spot - 
+                           gridding.y_spacing / 2)
+            right_edge = int(gridding.x_location_of_lowest_x_spot + 
+                             gridding.x_spacing/2)
+            gridding.image_height = \
+                top_edge * 2 + gridding.y_spacing * gridding.rows
+            gridding.image_width = \
+                right_edge * 2 + gridding.x_spacing * gridding.columns
         return gridding
         
     def canonical_row_and_column(self, row, column):

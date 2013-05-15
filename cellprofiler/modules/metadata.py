@@ -24,7 +24,45 @@ for annotation or sample-tracking purposes.</li>
 <p>The <b>Metadata</b> module allows you extract the metadata that is particular to the image 
 format, assigned as part of the file name or location (by a vendor microscope, for example),
 contained in a text file filled out by the user, or any of the above.</p>
+
+<p>The underlying assumption in matching metadata values to image sets is that there is an
+exact pairing (i.e., a one-to-one match) for a given metadata tag combination. A common example is that for
+a two-channel microtiter plate assay, each plate, well and site metadata from one channel
+gets matched uniquely to the plate, well and site metadata from the other channel.</p>
+
+<p>There are two special cases in metadata handling worth mentioning:
+<ul>
+<li><i>Missing metadata:</i> For a particular metadata tag, one image from a given
+image set has metadata values defined but another image does not. An example is when a microscope
+aborts acquisition prematurely in the middle of scanning two channels for a site, and captures 
+one channel but not the other. In this case, plate, well and site metadata value exists for one
+image but not for the other since it was never acquired. </li>
+<li><i>Duplicate metadata:</i> For a particular metadata tag, the same metadata values exist
+for multiple image sets such that they are not uniquely defined. An example is when a microscope
+re-scans a site in order to recover from a prior error. In this case, there may be one image from
+one channel but <i>two</i> images for the other channel, for the same site. Therefore, multiple instances
+of the same plate, well and site metadata values exist for the same image set.</li>
+</ul> 
+In both of these cases, the exact pairing between channels no longer exists. For missing metadata, the pairing is one-to-none,
+and for duplicate metadata, the pairing is one-to-two. In these instances where a match cannot be
+made, <b>NamesAndTypes</b> will simply omit the confounding metadata values from consideration. In the above
+example, an image set will not be created for the plate, well and site combination in question. 
 </p>
+
+<p>Once the metadata has been obtained, you can use <i>metadata tags</i> to reference them
+in later modules. Several modules are capable of using metadata tags for various purposes. Examples include:
+<ul>
+<li>You would like to create and apply an illumination correction function to all images from a particular
+plate. You can use metadata tags to save each illumination correction function with a plate-specific
+name in <b>SaveImages</b>, and then use <b>Images</b> to get files
+with the name associated with your image's plate to be applied to your original images.</li>
+<li>You have a set of experiments for which you would like to produce and save results
+individually for each experiment but using only one analysis run. You can use metadata tags
+in <b>ExportToSpreadsheet</b> or <b>ExportToDatabase</b> to save a spreadsheet for each experiment in 
+a folder named according to the experiment.</li>
+</ul>
+In each case, the pre-defined metadata tag is used to name a file or folder. See the module setting help for additional
+information on how to use them in the context of the specific module.</p>
 """
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

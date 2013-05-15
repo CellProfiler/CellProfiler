@@ -4,7 +4,7 @@ The <b>Groups</b> module organizes sets of images into groups.
 Once the images have been identified with the <b>Images</b> module (and/or optionally has
 had metadata associated with the images using the <b>Metadata</b> module), and been given
 a name by the <b>NamesAndTypes</b> module, you have the option of further sub-dividing
-an image set into a <i>group</i> that is meant to be processed in a certain way.
+an image set into <i>groups</i> that share a common feature.
 
 <p>The key to understanding why grouping may be necessary is that CellProfiler processes
 the input images sequentially and in the order given. If you have multiple collections of images

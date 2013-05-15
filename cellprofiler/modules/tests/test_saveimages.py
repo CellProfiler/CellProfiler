@@ -527,7 +527,7 @@ SaveImages:[module_num:2|svn_version:\'10581\'|variable_revision_number:7|show_w
         self.assertTrue(isinstance(module, cpm_si.SaveImages))
         self.assertEqual(module.gray_or_color, cpm_si.GC_COLOR)
         
-    def test_00_07_load_v7(self):
+    def test_00_08_load_v8(self):
         pipeline = cpp.Pipeline()
         image_folder_text = pipeline.encode_txt(
             "%s|%s" % (cpprefs.ABSOLUTE_FOLDER_NAME, 
@@ -546,7 +546,7 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
     Enter single file name:\\g<Well>_Nuclei
     Do you want to add a suffix to the image file name?:No
     Text to append to the image name:Whatever
-    Select file format to use:png
+    Select file format to use:tif
     Output file location:Default Output Folder\x7CNone
     Image bit depth:8
     Overwrite existing files without warning?:No
@@ -572,7 +572,68 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
         self.assertEqual(module.single_file_name, r"\g<Well>_Nuclei")
         self.assertFalse(module.wants_file_name_suffix)
         self.assertEqual(module.file_name_suffix, "Whatever")
-        self.assertEqual(module.file_format, cpm_si.FF_PNG)
+        self.assertEqual(module.file_format, cpm_si.FF_TIFF)
+        self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
+        self.assertEqual(module.pathname.custom_path, r"None")
+        self.assertEqual(module.bit_depth, 8)
+        self.assertFalse(module.overwrite)
+        self.assertEqual(module.when_to_save, cpm_si.WS_EVERY_CYCLE)
+        self.assertFalse(module.rescale)
+        self.assertEqual(module.gray_or_color, cpm_si.GC_GRAYSCALE)
+        self.assertEqual(module.colormap, "Default")
+        self.assertFalse(module.update_file_names)
+        self.assertTrue(module.create_subdirectories)
+        self.assertEqual(module.root_dir.dir_choice, 
+                         cpprefs.ABSOLUTE_FOLDER_NAME)
+        self.assertEqual(module.root_dir.custom_path,
+                         cpmt.example_images_directory())
+
+    def test_00_08_load_v9(self):
+        pipeline = cpp.Pipeline()
+        image_folder_text = pipeline.encode_txt(
+            "%s|%s" % (cpprefs.ABSOLUTE_FOLDER_NAME, 
+                       cpmt.example_images_directory()))
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:1
+SVNRevision:10782
+
+SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_window:True|notes:\x5B\x5D]
+    Select the type of image to save:Objects
+    Select the image to save:None
+    Select the objects to save:Nuclei
+    Select the module display window to save:None
+    Select method for constructing file names:Single name
+    Select image name for file prefix:None
+    Enter single file name:\\g<Well>_Nuclei
+    Do you want to add a suffix to the image file name?:No
+    Text to append to the image name:Whatever
+    Select file format to use:tif
+    Output file location:Default Output Folder\x7CNone
+    Image bit depth:8
+    Overwrite existing files without warning?:No
+    Select how often to save:Every cycle
+    Rescale the images? :No
+    Save as grayscale or color image?:Grayscale
+    Select colormap:Default
+    Store file and path information to the saved image?:No
+    Create subfolders in the output folder?:Yes
+    Image folder:%s
+""" % image_folder_text
+        def callback(caller,event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO(data))        
+        self.assertEqual(len(pipeline.modules()), 1)
+        module = pipeline.modules()[0]
+        self.assertTrue(isinstance(module, cpm_si.SaveImages))
+        self.assertEqual(module.save_image_or_figure, cpm_si.IF_OBJECTS)
+        self.assertEqual(module.objects_name, "Nuclei")
+        self.assertEqual(module.file_name_method, cpm_si.FN_SINGLE_NAME)
+        self.assertEqual(module.file_image_name, "None")
+        self.assertEqual(module.single_file_name, r"\g<Well>_Nuclei")
+        self.assertFalse(module.wants_file_name_suffix)
+        self.assertEqual(module.file_name_suffix, "Whatever")
+        self.assertEqual(module.file_format, cpm_si.FF_TIF)
         self.assertEqual(module.pathname.dir_choice, cps.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.pathname.custom_path, r"None")
         self.assertEqual(module.bit_depth, 8)
@@ -590,9 +651,9 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
 
     def test_01_01_save_first_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tiff')
+        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tiff')
+        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tif')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -647,9 +708,9 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
 
     def test_01_02_save_all_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tiff')
+        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tiff')
+        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tif')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -705,9 +766,9 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
 
     def test_01_03_save_last_to_same_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tiff')
+        img1_out_filename = os.path.join(self.new_image_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tiff')
+        img2_out_filename = os.path.join(self.new_image_directory,'img2OUT.tif')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -755,9 +816,9 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
 
     def test_01_04_save_all_to_output_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.new_output_directory,'img1OUT.tiff')
+        img1_out_filename = os.path.join(self.new_output_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.new_output_directory,'img2OUT.tiff')
+        img2_out_filename = os.path.join(self.new_output_directory,'img2OUT.tif')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -813,9 +874,9 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
 
     def test_01_05_save_all_to_custom_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.tiff')
+        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.tiff')
+        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.tif')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -997,9 +1058,9 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
 
     def test_01_09_save_single_to_custom_tif(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.tiff')
+        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.tif')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.tiff')
+        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.tif')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -1150,7 +1211,7 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
         
     def test_01_13_save_with_metadata(self):
         '''Test saving to a custom folder with metadata in the path'''
-        img_filename = os.path.join(self.new_output_directory, "test", 'img1.tiff')
+        img_filename = os.path.join(self.new_output_directory, "test", 'img1.tif')
         workspace, module = self.make_workspace(np.zeros((10,10)))
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpm.Measurements))
@@ -1158,7 +1219,7 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
         self.assertTrue(isinstance(module, cpm_si.SaveImages))
         module.file_name_method.value = cpm_si.FN_SINGLE_NAME
         module.single_file_name.value = "img1"
-        module.file_format.value = cpm_si.FF_TIFF
+        module.file_format.value = cpm_si.FF_TIF
         module.pathname.dir_choice = cps.DEFAULT_OUTPUT_SUBFOLDER_NAME
         module.pathname.custom_path = "\\g<T>"
         module.run(workspace)
@@ -1169,16 +1230,16 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
         input_path = os.path.join(self.new_image_directory, "test")
         # Needed for relpath
         os.mkdir(input_path)
-        img_filename = os.path.join(img_path, 'img1.tiff')
+        img_filename = os.path.join(img_path, 'img1.tif')
         workspace, module = self.make_workspace(np.zeros((10,10)))
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpm.Measurements))
         self.assertTrue(isinstance(module, cpm_si.SaveImages))
-        m.add_image_measurement("FileName_"+FILE_IMAGE_NAME, "img1.tiff")
+        m.add_image_measurement("FileName_"+FILE_IMAGE_NAME, "img1.tif")
         m.add_image_measurement("PathName_"+FILE_IMAGE_NAME, input_path)
         module.file_name_method.value = cpm_si.FN_FROM_IMAGE
         module.file_image_name.value = FILE_IMAGE_NAME
-        module.file_format.value = cpm_si.FF_TIFF
+        module.file_format.value = cpm_si.FF_TIF
         module.pathname.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
         module.create_subdirectories.value = True
         module.root_dir.dir_choice = cpprefs.DEFAULT_INPUT_FOLDER_NAME
@@ -1195,16 +1256,16 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
         input_path = os.path.join(self.new_image_directory, "test")
         # Needed for relpath
         os.makedirs(input_path)
-        img_filename = os.path.join(img_path, 'img1.tiff')
+        img_filename = os.path.join(img_path, 'img1.tif')
         workspace, module = self.make_workspace(np.zeros((10,10)))
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpm.Measurements))
         self.assertTrue(isinstance(module, cpm_si.SaveImages))
-        m.add_image_measurement("FileName_"+FILE_IMAGE_NAME, "img1.tiff")
+        m.add_image_measurement("FileName_"+FILE_IMAGE_NAME, "img1.tif")
         m.add_image_measurement("PathName_"+FILE_IMAGE_NAME, input_path)
         module.file_name_method.value = cpm_si.FN_FROM_IMAGE
         module.file_image_name.value = FILE_IMAGE_NAME
-        module.file_format.value = cpm_si.FF_TIFF
+        module.file_format.value = cpm_si.FF_TIF
         module.pathname.dir_choice = cps.DEFAULT_OUTPUT_FOLDER_NAME
         module.create_subdirectories.value = True
         module.root_dir.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
@@ -1217,8 +1278,10 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:8|show_w
         img_path2 = os.path.join(self.new_image_directory, "test2")
         img1_filename = os.path.join(img_path1, 'img1.tif')
         img2_filename = os.path.join(img_path2, 'img2.tif')
-        img1_out_filename = os.path.join(self.new_output_directory, "test1", 'TEST1.tiff')
-        img2_out_filename = os.path.join(self.new_output_directory, "test2", 'TEST2.tiff')
+        img1_out_filename = os.path.join(self.new_output_directory, "test1", 
+                                         'TEST1.tif')
+        img2_out_filename = os.path.join(self.new_output_directory, "test2", 
+                                         'TEST2.tif')
         os.mkdir(img_path1)
         os.mkdir(img_path2)
         make_file(img1_filename, cpmt.tif_8_1)

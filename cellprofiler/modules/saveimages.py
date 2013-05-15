@@ -114,7 +114,7 @@ OFFSET_DIRECTORY_PATH = 10
 class SaveImages(cpm.CPModule):
 
     module_name = "SaveImages"
-    variable_revision_number = 8
+    variable_revision_number = 9
     category = "File Processing"
     
     def create_settings(self):
@@ -806,8 +806,6 @@ class SaveImages(cpm.CPModule):
             return FF_AVI
         if self.file_format == FF_JPG:
             return FF_JPEG
-        if self.file_format == FF_TIF:
-            return FF_TIFF
         return self.file_format.value
     
     def get_bit_depth(self):
@@ -992,6 +990,18 @@ class SaveImages(cpm.CPModule):
         if (not from_matlab) and (variable_revision_number == 7):
             setting_values = setting_values + [DEFAULT_INPUT_FOLDER_NAME]
             variable_revision_number = 8
+        ######################
+        #
+        # Version 9 - FF_TIF now outputs .tif files (go figure), so
+        #             change FF_TIF in settings to FF_TIFF to maintain ultimate
+        #             backwards compatibiliy.
+        #
+        ######################
+        if (not from_matlab) and (variable_revision_number == 8):
+            if setting_values[9] == FF_TIF:
+                setting_values = setting_values[:9] + [FF_TIFF] + \
+                    setting_values[10:]
+                variable_revision_number = 9
         setting_values[OFFSET_DIRECTORY_PATH] = \
             SaveImagesDirectoryPath.upgrade_setting(setting_values[OFFSET_DIRECTORY_PATH])
         

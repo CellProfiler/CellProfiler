@@ -102,6 +102,7 @@ IMAGE_TOOLS_HELP_REF = """"Help > How To Use The Image Tools"""
 METADATA_GROUPING_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Image Grouping """
 DATA_TOOL_HELP_REF = """Help > Data Tool Help """
 WORKSPACE_INTRO_HELP = """Help > Using CellProfiler > Creating a Workspace > Introduction to Workspaces"""
+MEASUREMENT_NAMING_HELP = """Help > Using CellProfiler > How Data is Handled > How Measurements Are Named"""
 USING_METADATA_HELP_REF = """ 
 Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>%(METADATA_HELP_REF)s</i> 
 for more details on obtaining, extracting, and using metadata tags from your images"""%globals()
@@ -678,6 +679,21 @@ want grouped together.</li>
 <p>%(USING_METADATA_HELP_REF)s</p>
 """%globals()
 
+SPREADSHEETS_DATABASE_HELP = """
+<p>The most common form of output for cellular analysis is a <i>spreadsheet<i> of data, which is a file
+of numbers. CellProfiler can also output data into a <i>database</i>, which is a . Which format you use will depend on
+some of the considerations below:
+<ul>
+<li>Learning curve:</li>
+<li>Assessibility:</li> For spreadsheets, the most widely used program to open these files is Excel (Microsoft, commercial) 
+Since the file is plain text, other editors can also be used, such as Calc (OpenOffice, freeware) or Google Docs.
+Databases are often run on servers and accessed over networks. In most cases, a database will have a software application
+built on top of it, providing user access to the data.
+<li>Speed:</li>
+<li>Capacity:</li>
+</ul>
+"""
+
 MEMORY_AND_SPEED_HELP = """
 <p>CellProfiler includes several options for dealing with out-of-memory
 errors associated with image analysis: </p>
@@ -1134,6 +1150,28 @@ current test run or next analysis run. The display mode icons next to each modul
 in the pipeline panel will switch to <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>.</li>
 </ul>"""%globals()
 
+PARAMETER_SAMPLING_MENU_HELP = """
+The <i>Sampling</i> menu is an interplace for Paramorama, a plugin for an interactive visualization 
+program for exploring the parameter space of image analysis algorithms.<p>
+
+<p>Using this plugin will allow you sample a range of setting values in <b>IdentifyPrimaryObjects</b> and
+save the object identification results for later inspection. Upon completion, the plug-in will 
+generate a text file, which specifies: (1) all unique combinations of 
+the sampled parameter values; (2) the mapping from each combination of parameter values to 
+one or more output images; and (3) the actual output images.</p>
+
+<p>More information on how to use the plugin can be found 
+<a href="http://www.comp.leeds.ac.uk/scsajp/applications/paramorama2/">here</a>.</p>
+
+<p>Note that CellProfiler must be restarted after changing this setting.</p>
+
+<p><b>References</b>
+<ul>
+<li>Visualization of parameter space for image analysis. Pretorius AJ, Bray MA, Carpenter AE 
+and Ruddle RA. (2011) IEEE Transactions on Visualization and Computer Graphics, 17(12), 2402-2411.</li>
+</ul></p>
+"""
+
 MENU_BAR_DATATOOLS_HELP = """
 The <i>Data Tools</i> menu provides tools to allow you
 to plot, view, export or perform specialized analyses on your measurements.
@@ -1383,10 +1421,6 @@ preference determines whether CellProfiler will display a warning on startup
 if CellProfiler can't locate the Java installation on your computer. Check
 this box if you want to be warned. Uncheck this box to hide warnings."""
 
-IMAGE_SET_FILE_HELP = """The <i>Image Set File</i> preference is the path
-and file name of the image set file. This file holds the files and metadata
-for each image set in a CellProfiler pipeline iteration."""
-
 MAX_WORKERS_HELP = """The <i>Maximum number of workers</i> preference controls
 the maximum number of copies of CellProfiler that will be started at the outset
 of an analysis run. CellProfiler uses these copies to process multiple image
@@ -1410,16 +1444,21 @@ EACH_PREFERENCE_HELP = (
     ( "Table font", TABLE_FONT_HELP ),
     ( "Default colormap", DEFAULT_COLORMAP_HELP ),
     ( "Window background", WINDOW_BACKGROUND_HELP ),
-    ( "Plugins directory", PLUGINS_DIRECTORY_HELP ),
-    ( "Image set file", IMAGE_SET_FILE_HELP ),
-    ( "ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
-    ( "ImageJ version", IJ_VERSION_HELP),
-    ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
     ( "Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
     ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
     ( "Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
+    ( "CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP ),
+    ( "ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
+    ( "ImageJ version", IJ_VERSION_HELP),
+    ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
+    ( "Display welcome text on startup", SHOW_STARTUP_BLURB_HELP ),
     ( "Initial workspace choice", WORKSPACE_CHOICE_HELP),
     ( "Warn if Java runtime not present", REPORT_JVM_ERROR_HELP),
+    ( "Show the 'Analysis complete' message", SHOW_ANALYSIS_COMPLETE_HELP),
+    ( "Show the 'Exiting test mode' message", SHOW_EXITING_TEST_MODE_HELP),
+    ( "Warn if images are different sizes", SHOW_REPORT_BAD_SIZES_DLG_HELP),
+    ( "Show the parameter sampling menu", PARAMETER_SAMPLING_MENU_HELP),
+    ( "Warn about old pipelines", WARN_ABOUT_OLD_PIPELINES_HELP), 
     ( "Use more figure space", USE_MORE_FIGURE_SPACE_HELP),
     ( "Maximum number of workers", MAX_WORKERS_HELP),
     ( "Temporary folder", TEMP_DIR_HELP)
@@ -1753,41 +1792,42 @@ learning curve to using them, but are quite powerful once you understand the bas
 from cellprofiler.modules import images, metadata, namesandtypes, groups
 
 MAIN_HELP = (
-    ("Introduction",(
-        ("Why Use CellProfiler", WHEN_CAN_I_USE_CELLPROFILER_HELP),
-        ("New Features in 2.0", NEW_FEATURES_HELP))),
-    ("Using CellProfiler",(
-        ( "Navigating The Menu Bar", (
-            ("Using The File Menu",MENU_BAR_FILE_HELP),
-            ("Using The Edit Menu",MENU_BAR_EDIT_HELP),
-            ("Using The Test Menu",TEST_MODE_HELP),
-            ("Using The Window Menu",MENU_BAR_WINDOW_HELP),
-            ("Using The Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
-        ("Using Module Display Windows", FIGURE_HELP ),
-        ("Setting the Preferences", PREFERENCES_HELP),
-        ("Creating A Workspace",(
-            ("Introduction To Workspaces",INTRODUCTION_TO_WORKSPACES_HELP),
-            ("Using The Images Module",images.__doc__),
-            ("Using The Metadata Module",metadata.__doc__),
-            ("Using The NamesAndTypes Module",namesandtypes.__doc__),
-            ("Using The Groups Module",groups.__doc__),
-            ("Loading Image Stacks And Movies",LOADING_IMAGE_SEQUENCES_HELP))),
-        ("How Data Is Handled",(
-            ("Using Metadata In CellProfiler",USING_METADATA_HELP),
-            ("How To Use Image Grouping",USING_METADATA_GROUPING_HELP),
-            ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP))),
-        ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
-        ("Before The Analysis Run", (
-            ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
-            ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
-            ("Setting The Output Filename", OUTPUT_FILENAME_HELP))),
-        ("Testing Your Pipeline",TEST_MODE_HELP),
-        ("Troubleshooting Memory and Speed Issues",MEMORY_AND_SPEED_HELP),
-        ("Other Features",(
-            ("Batch Processing", BATCHPROCESSING_HELP),
-            ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
-            ("Configuring Logging", CONFIGURING_LOGGING_HELP)))
-    ))
+    ("Why Use CellProfiler", WHEN_CAN_I_USE_CELLPROFILER_HELP),
+    ( "Navigating The Menu Bar", (
+        ("Using The File Menu",MENU_BAR_FILE_HELP),
+        ("Using The Edit Menu",MENU_BAR_EDIT_HELP),
+        ("Using The Test Menu",TEST_MODE_HELP),
+        ("Using The Window Menu",MENU_BAR_WINDOW_HELP),
+        ("Using The Parameter Sampling Menu",PARAMETER_SAMPLING_MENU_HELP),
+        ("Using The Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
+    ("Using Module Display Windows", FIGURE_HELP ),
+    ("Setting the Preferences", PREFERENCES_HELP),
+    ("Creating A Workspace",(
+        ("Introduction To Workspaces",INTRODUCTION_TO_WORKSPACES_HELP),
+        ("Using The Images Module",images.__doc__),
+        ("Using The Metadata Module",metadata.__doc__),
+        ("Using The NamesAndTypes Module",namesandtypes.__doc__),
+        ("Using The Groups Module",groups.__doc__),
+        ("Loading Image Stacks And Movies",LOADING_IMAGE_SEQUENCES_HELP))),
+    ("How Data Is Handled",(
+        ("Using Metadata In CellProfiler",USING_METADATA_HELP),
+        ("How To Use Image Grouping",USING_METADATA_GROUPING_HELP),
+        ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP))),
+    ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
+    ("Before The Analysis Run", (
+        ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
+        ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
+        ("Setting The Output Filename", OUTPUT_FILENAME_HELP))),
+    ("Testing Your Pipeline",TEST_MODE_HELP),
+    ("Using your Output", (
+        ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP),
+        ("Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
+        ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),   
+    ("Troubleshooting Memory and Speed Issues",MEMORY_AND_SPEED_HELP),
+    ("Other Features",(
+        ("Batch Processing", BATCHPROCESSING_HELP),
+        ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
+        ("Configuring Logging", CONFIGURING_LOGGING_HELP)))
 )
 
 def make_help_menu(h, window, menu=None):

@@ -393,8 +393,12 @@ class PipelineListView(object):
         elif isinstance(event,cpp.PipelineClearedEvent):
             self.__on_pipeline_cleared(pipeline, event)
         elif isinstance(event,cpp.ModuleEditedPipelineEvent):
-            if event.module_num not in [
-                x.module_num for x in self.get_selected_modules()]:
+            for list_ctrl in self.list_ctrl, self.input_list_ctrl:
+                active_item = list_ctrl.get_active_item()
+                if (active_item is not None and 
+                    active_item.module.module_num == event.module_num):
+                    break
+            else:
                 self.select_one_module(event.module_num)
         elif isinstance(event, cpp.ModuleEnabledEvent):
             self.__on_module_enabled(event)
@@ -1216,6 +1220,12 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         y = position[1]
         row = int(y / self.line_height)
         return max(0, min(row, self.ItemCount-1))
+    
+    def get_active_item(self):
+        '''Return the active PipelineListCtrlItem or None'''
+        if self.active_item is not None:
+            return self.items[self.active_item]
+        return None
     
     def set_test_mode(self, mode):
         self.test_mode = mode

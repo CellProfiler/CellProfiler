@@ -130,12 +130,12 @@ class LoadSingleImage(cpm.CPModule):
             "None",
             metadata=True,
             get_directory_fn = get_directory_fn,
-            exts = [("Tagged image file (*.tif)","*.tif"),
-                    ("Portable network graphics (*.png)", "*.png"),
-                    ("JPEG file (*.jpg)", "*.jpg"),
-                    ("Bitmap file (*.bmp)", "*.bmp"),
-                    ("GIF file (*.gif)", "*.gif"),
-                    ("Matlab image (*.mat)","*.mat"),
+            exts = [("TIF - Tagged Image File format (*.tif,*.tiff)","*.tif,*.tiff"),
+                    ("PNG - Portable Network Graphics (*.png)", "*.png"),
+                    ("JPG/JPEG file (*.jpg,*.jpeg)", "*.jpg,*.jpeg"),
+                    ("BMP - Windows Bitmap (*.bmp)", "*.bmp"),
+                    ("Compuserve GIF file (*.gif)", "*.gif"),
+                    ("MATLAB image (*.mat)","*.mat"),
                     ("All files (*.*)", "*.*")],doc = """
                     The filename can be constructed in one of two ways:
                     <ul>

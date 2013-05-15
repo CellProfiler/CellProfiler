@@ -694,6 +694,9 @@ built on top of it, providing user access to the data.
 </ul>
 """
 
+USING_THE_OUTPUT_FILE_HELP = """
+"""
+
 MEMORY_AND_SPEED_HELP = """
 <p>CellProfiler includes several options for dealing with out-of-memory
 errors associated with image analysis: </p>

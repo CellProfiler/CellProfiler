@@ -80,10 +80,9 @@ def generate_html(webpage_path = None):
 
 <p>If you find it useful, please credit CellProfiler in publications
 <ol>
-<li>Cite the website (www.cellprofiler.org)</li>
-<li>Cite the publication (check the website for the citation).</li>
-<li>Post the reference for your publication on the CellProfiler Forum (accessible 
-from the website) so that we are aware of it.</li>
+<li>Cite the <a href="www.cellprofiler.org">website</a>.</li>
+<li>Cite the <a href="http://cellprofiler.org/citations.shtml">publication</a>.</li>
+<li>Post the reference for your publication on the CellProfiler <a href="http://cellprofiler.org/forum/">forum</a> so that we are aware of it.</li>
 </ol></p>
 
 <p>These steps will help us to maintain funding for the project and continue to 

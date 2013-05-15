@@ -111,6 +111,7 @@ ID_HELP_MODULE = wx.NewId()
 ID_HELP_SEARCH = wx.NewId()
 ID_HELP_DATATOOLS = wx.NewId()
 ID_HELP_ONLINE_MANUAL = wx.NewId()
+ID_HELP_RELEASE_NOTES = wx.NewId()
 ID_HELP_DEVELOPERS_GUIDE = wx.NewId()
 ID_HELP_SOURCE_CODE = wx.NewId()
 ID_HELP_ABOUT = wx.ID_ABOUT
@@ -585,24 +586,27 @@ class CPFrame(wx.Frame):
         self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS,"Hide All Windows on Run",
                                   "Hide all module display windows for all modules during analysis")
         self.__menu_window.AppendSeparator()
+        
         self.__menu_help = wx.Menu()
         # We must add a non-submenu menu item before
         # make_help_menu adds submenus, otherwise the submenus
         # will disappear on the Mac.
-        self.__menu_help.Append(ID_HELP_WELCOME, "Show Welcome Screen")
-        self.__menu_help.Append(ID_HELP_ONLINE_MANUAL, "Online Manual",
-                                "Launch the HTML help in a browser")
+        self.__menu_help.Append(ID_HELP_WELCOME, "Show Welcome Screen","Display the welcome screen shown at startup")
+        self.__menu_help.Append(ID_HELP_RELEASE_NOTES, "Release Notes","Show the release notes in a browser")
+        self.__menu_help.Append(ID_HELP_ONLINE_MANUAL, "Online Manual","Launch the HTML help in a browser")
+        self.__menu_help.AppendSeparator()
         make_help_menu(MAIN_HELP, self, self.__menu_help)
+        self.__menu_help.AppendSeparator()
         self.__menu_help.AppendSubMenu(self.data_tools_help(), 'Data Tool Help','Display documentation for available data tools')
         self.__menu_help.Append(ID_HELP_MODULE,'Module Help','Display Documentation for the Current Module')
-        self.__menu_help.Append(ID_HELP_SEARCH, "Search help",
+        self.__menu_help.Append(ID_HELP_SEARCH, "Search Help...",
                                 "Search for help pages that match a search term.")
         self.__menu_help.AppendSeparator()
         self.__menu_help.Append(ID_HELP_DEVELOPERS_GUIDE,"Developer's Guide",
                                 "Launch the developer's guide webpage")
-        self.__menu_help.Append(ID_HELP_SOURCE_CODE, "Source code",
+        self.__menu_help.Append(ID_HELP_SOURCE_CODE, "Source Code",
                                 "Visit CellProfiler's Github repository")
-        self.__menu_help.Append(ID_HELP_ABOUT, "&About",
+        self.__menu_help.Append(ID_HELP_ABOUT, "&About...",
                                 "About CellProfiler")
 
         self.__menu_bar = wx.MenuBar()
@@ -638,6 +642,7 @@ class CPFrame(wx.Frame):
         
         wx.EVT_MENU(self, ID_HELP_WELCOME, self.__on_help_welcome)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
+        wx.EVT_MENU(self,ID_HELP_RELEASE_NOTES,self.__on_help_release_notes)
         wx.EVT_MENU(self,ID_HELP_ONLINE_MANUAL,self.__on_help_online_manual)
         wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
         wx.EVT_MENU(self, ID_HELP_SOURCE_CODE, self.__on_help_source_code)
@@ -812,6 +817,10 @@ class CPFrame(wx.Frame):
         else:       
             os.system('open -na CellProfiler2.0.app')
 
+    def __on_help_release_notes(self, event):
+            import webbrowser
+            webbrowser.open("http://github.com/CellProfiler/CellProfiler/wiki/CellProfiler-release-notes")    
+    
     def __on_help_online_manual(self, event):
         import webbrowser
         webbrowser.open("http://cellprofiler.org/CPmanual/")

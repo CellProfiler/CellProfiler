@@ -458,9 +458,9 @@ class PipelineController:
             
     ANALYZE_IMAGES = "Analyze Images"
     ANALYZE_IMAGES_HELP = "Start a CellProfiler analysis run"
-    ENTER_TEST_MODE = "Start test mode"
+    ENTER_TEST_MODE = "Start Test Mode"
     ENTER_TEST_MODE_HELP = "Test your pipeline settings"
-    EXIT_TEST_MODE = "Exit test mode"
+    EXIT_TEST_MODE = "Exit Test Mode"
     EXIT_TEST_MODE_HELP = "Exit pipeline testing"
     PAUSE = "Pause"
     PAUSE_HELP = "Pause the analysis run"

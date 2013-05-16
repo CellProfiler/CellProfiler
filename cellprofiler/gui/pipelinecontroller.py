@@ -560,15 +560,15 @@ class PipelineController:
         self.__tcp_test_sizer.Add(sub_sizer, 1, wx.EXPAND)
         
         self.__tcp_stop_testmode = BitmapLabelButton(
-            panel, label = "Exit test mode", bitmap = stop_bmp)
+            panel, label = "Exit Test Mode", bitmap = stop_bmp)
         self.__tcp_stop_testmode.SetToolTip(wx.ToolTip("Exit test mode"))
         self.__tcp_stop_testmode.Bind(wx.EVT_BUTTON, self.on_debug_stop)        
         sub_sizer.Add(self.__tcp_stop_testmode, 1, wx.EXPAND)        
 
         next_image_bmp = wx.BitmapFromImage(get_builtin_image("IMG_IMAGE"))
         self.__tcp_next_imageset = BitmapLabelButton(
-            panel, label = "Next Image", bitmap = next_image_bmp)
-        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image cycle"))        
+            panel, label = "Next Image Set", bitmap = next_image_bmp)
+        self.__tcp_next_imageset.SetToolTip(wx.ToolTip("Jump to next image set"))        
         self.__tcp_next_imageset.Bind(wx.EVT_BUTTON, self.on_debug_next_image_set)
         sub_sizer.Add(self.__tcp_next_imageset, 1, wx.EXPAND)        
 

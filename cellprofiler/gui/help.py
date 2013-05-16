@@ -58,37 +58,40 @@ except:
              "relative paths.\n") % drive)
     path = os.path.abspath(cellprofiler.icons.get_builtin_images_path())
 
-LOCATION_REFRESH_BUTTON = os.path.join(path,'folder_refresh.png')
-LOCATION_BROWSE_BUTTON = os.path.join(path,'folder_browse.png')
-LOCATION_CREATE_BUTTON = os.path.join(path,'folder_create.png')
+LOCATION_REFRESH_BUTTON = 'folder_refresh.png' #os.path.join(path,'folder_refresh.png')
+LOCATION_BROWSE_BUTTON = 'folder_browse.png' #os.path.join(path,'folder_browse.png')
+LOCATION_CREATE_BUTTON = 'folder_create.png' #os.path.join(path,'folder_create.png')
 
-LOCATION_MODULE_HELP_BUTTON = os.path.join(path,'module_help.png')
-LOCATION_MODULE_MOVEUP_BUTTON = os.path.join(path,'module_moveup.png')
-LOCATION_MODULE_MOVEDOWN_BUTTON = os.path.join(path,'module_movedown.png')
-LOCATION_MODULE_ADD_BUTTON = os.path.join(path,'module_add.png')
-LOCATION_MODULE_REMOVE_BUTTON = os.path.join(path,'module_remove.png')
+LOCATION_MODULE_HELP_BUTTON = 'module_help.png' #os.path.join(path,'module_help.png')
+LOCATION_MODULE_MOVEUP_BUTTON = 'module_moveup.png' #os.path.join(path,'module_moveup.png')
+LOCATION_MODULE_MOVEDOWN_BUTTON = 'module_movedown.png' #os.path.join(path,'module_movedown.png')
+LOCATION_MODULE_ADD_BUTTON = 'module_add.png' #os.path.join(path,'module_add.png')
+LOCATION_MODULE_REMOVE_BUTTON = 'module_remove.png' #os.path.join(path,'module_remove.png')
 
-LOCATION_TESTMODE_PAUSE_ICON = os.path.join(path,'IMG_PAUSE.png')
-LOCATION_TESTMODE_GO_ICON = os.path.join(path,'IMG_GO.png')
+LOCATION_TESTMODE_PAUSE_ICON = 'IMG_PAUSE.png' #os.path.join(path,'IMG_PAUSE.png')
+LOCATION_TESTMODE_GO_ICON = 'IMG_GO.png' #os.path.join(path,'IMG_GO.png')
 
-LOCATION_DISPLAYMODE_SHOW_ICON = os.path.join(path,'IMG_EYE.png')
-LOCATION_DISPLAYMODE_HIDE_ICON = os.path.join(path,'IMG_CLOSED_EYE.png')
+LOCATION_DISPLAYMODE_SHOW_ICON = 'IMG_EYE.png' #os.path.join(path,'IMG_EYE.png')
+LOCATION_DISPLAYMODE_HIDE_ICON = 'IMG_CLOSED_EYE.png' #os.path.join(path,'IMG_CLOSED_EYE.png')
 
-LOCATION_SETTINGS_OK_ICON = os.path.join(path,'IMG_OK.png')
-LOCATION_SETTINGS_ERROR_ICON = os.path.join(path,'IMG_ERROR.png')
-LOCATION_SETTINGS_WARNING_ICON = os.path.join(path,'IMG_WARN.png')
+LOCATION_SETTINGS_OK_ICON = 'IMG_OK.png' #os.path.join(path,'IMG_OK.png')
+LOCATION_SETTINGS_ERROR_ICON = 'IMG_ERROR.png' #os.path.join(path,'IMG_ERROR.png')
+LOCATION_SETTINGS_WARNING_ICON = 'IMG_WARN.png' #os.path.join(path,'IMG_WARN.png')
 
-LOCATION_RUNSTATUS_PAUSE_BUTTON = os.path.join(path,'status_pause.png')
-LOCATION_RUNSTATUS_STOP_BUTTON  = os.path.join(path,'status_stop.png')
-LOCATION_RUNSTATUS_SAVE_BUTTON  = os.path.join(path,'status_save.png')
+LOCATION_RUNSTATUS_PAUSE_BUTTON = 'status_pause.png' #os.path.join(path,'status_pause.png')
+LOCATION_RUNSTATUS_STOP_BUTTON  = 'status_stop.png' #os.path.join(path,'status_stop.png')
+LOCATION_RUNSTATUS_SAVE_BUTTON  = 'status_save.png' #os.path.join(path,'status_save.png')
 
-LOCATION_WINDOW_HOME_BUTTON = os.path.join(path,'window_home.png')
-LOCATION_WINDOW_BACK_BUTTON  = os.path.join(path,'window_back.png')
-LOCATION_WINDOW_FORWARD_BUTTON  = os.path.join(path,'window_forward.png')
-LOCATION_WINDOW_PAN_BUTTON  = os.path.join(path,'window_pan.png')
-LOCATION_WINDOW_ZOOMTORECT_BUTTON  = os.path.join(path,'window_zoom_to_rect.png')
-LOCATION_WINDOW_SAVE_BUTTON  = os.path.join(path,'window_filesave.png')
+LOCATION_WINDOW_HOME_BUTTON = 'window_home.png' #os.path.join(path,'window_home.png')
+LOCATION_WINDOW_BACK_BUTTON  = 'window_back.png' #os.path.join(path,'window_back.png')
+LOCATION_WINDOW_FORWARD_BUTTON  = 'window_forward.png' #os.path.join(path,'window_forward.png')
+LOCATION_WINDOW_PAN_BUTTON  = 'window_pan.png' #os.path.join(path,'window_pan.png')
+LOCATION_WINDOW_ZOOMTORECT_BUTTON  = 'window_zoom_to_rect.png' #os.path.join(path,'window_zoom_to_rect.png')
+LOCATION_WINDOW_SAVE_BUTTON  = 'window_filesave.png' #os.path.join(path,'window_filesave.png')
 
+LOCATION_ANALYZE_IMAGE_BUTTON = 'IMG_ANALYZE_16.png'
+LOCATION_STOP_ANALYSIS_BUTTON = 'IMG_STOP.png'
+LOCATION_PAUSE_ANALYSIS_BUTTON = 'IMG_PAUSE.png'
 
 ####################################################
 #
@@ -125,6 +128,103 @@ proper use of metadata for grouping"""%globals()
 #
 ##################################################
 
+LEGACY_LOAD_MODULES_HELP = """
+<p>Historically, two modules were used for workspace creation: <b>LoadImages</b> and <b>LoadData</b>.
+While the approach described above supercedes these modules in part, old pipelines
+loaded into CellProfiler that contain these modules will provide the option of preserving them;
+these pipelines will operate exactly as before.</p>
+<p>Alternately, the user can choose to convert these 
+modules into the workspace equivalent as closely as possible. Both modules remain accesible
+via the "Add module" and "+" buttons at the bottom of the pipeline panel. The section details
+information relevant for users who would like to continue using these modules. Please note,
+however, that these modules are deprcated and may be removed in the future.</p>
+
+<h3>Associating metadata with images</h3>
+<p>Metadata (i.e., additional data about image data) is sometimes available for input images.
+This information can be:
+<ol>
+<li>Used by CellProfiler to group images with common metadata identifiers (or "tags") 
+together for particular steps in a pipeline;</li>
+<li>Stored in the output file along with CellProfiler-measured features for
+annotation or sample-tracking purposes;
+<li>Used to name additional input/output files.</li></ol></p>
+<p>Two sources of metadata are:
+<ul>
+<li><i>Metadata provided in the image filename or location (pathname).</i> For example, images produced by an automated
+microscope can be given names similar to "Experiment1_A01_w1_s1.tif" in which the metadata about the
+plate ("Experiment1"), the well ("A01"), the wavelength number ("w1") and the imaging site ("s1") are encapsulated. The
+name of the folder in which the images are saved may be meaningful and may also be considered metadata as well.
+If this is the case for your data, use <b>LoadImages</b> to extract this information for
+use in the pipeline and storage in the output file.</li>
+<li><i>Metadata provided as a table of information</i>. Often, information associated with each image (such as
+treatment, plate, well, etc) is available as a separate spreadsheet. If this is the case for your data, use 
+<b>LoadData</b> to load this information.</li>
+</ul>
+Details for the metadata-specific help is given next to the appropriate settings in 
+<b>LoadImages</b> and <b>LoadData</b>, as well the specific settings in other modules which
+can make use of metadata. However, here is an overview of how metadata is obtained and used.</p>
+
+<p>In <b>LoadImages</b>, metadata can be extracted from the filename and/or folder 
+location using regular expression, a specialized syntax used for text pattern-matching.
+These regular expressions can be used to identify different parts of the filename / folder. 
+The syntax <i>(?P&lt;fieldname&gt;expr)</i> will extract whatever matches <i>expr</i> and 
+assign it to the image's <i>fieldname</i> measurement. A regular expression tool is available 
+which will allow you to check the accuracy of your regular expression.</p>
+
+<p>For instance, say a researcher has folder names with the date and subfolders containing the
+images with the run ID (e.g., <i>./2009_10_02/1234/</i>). 
+The following regular expression will capture the plate, well and site in the fields 
+<i>Date</i> and <i>Run</i>:<br>
+<table border = "1">
+<tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$ </td></tr>
+<tr><td>.*[\\\\/]</td><td>Skip characters at the beginning of the pathname until either a slash (/) or
+backslash (\\) is encountered (depending on the OS). The extra slash for the backslash is used as
+an escape sequence.</td></tr>
+<tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i></td></tr>
+<tr><td>.*</td><td>Capture as many characters that follow</td></tr>
+<tr><td>[\\\\/]</td><td>Discard the slash/backslash character</td></tr>
+<tr><td>(?P&lt;Run&gt;</td><td>Name the captured field <i>Run</i></td></tr>
+<tr><td>.*</td><td>Capture as many characters as follow</td></tr>
+<tr><td>$</td><td>The <i>Run</i> field must be at the end of the path string, i.e. the
+last folder on the path. This also means that the <i>Date</i> field contains the parent
+folder of the <i>Date</i> folder.</td></tr>
+</table>
+
+<p>In <b>LoadData</b>, metadata is extracted from a CSV (comma-separated) file 
+(a spreadsheet). Columns whose name begins with "Metadata" can be used to group 
+files loaded by <b>LoadData</b> that are associated with a common metadata value.
+The files thus grouped together are then processed as a distinct image set.</p>
+
+<p>For instance, an experiment might require that images created on the same day 
+use an illumination correction function calculated from all images from that day, 
+and furthermore, that the date be captured in the file names for the individual image 
+sets and in a .csv file specifying the illumination correction functions. </p>
+
+<p>In this case, if the illumination correction images are loaded with the 
+<b>LoadData</b> module, the file should have a "Metadata_Date" 
+column which contains the date identifiers. Similarly, if the individual images 
+are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set to extract the 
+<Date> metadata field from the file names. The pipeline will then match the individual 
+images with their corresponding illumination correction functions based on matching 
+"Metadata_Date" fields.</p>
+
+<h3>Using image grouping</h3>
+<p>To use grouping, you must define the relevant metadata for each image. This can be done using regular
+expressions in <b>LoadImages</b> or having them pre-defined in a .csv for use in <b>LoadData</b>.</p>
+
+<p>To use image grouping in <b>LoadImages</b>, please note the following:
+<ul>
+<li><i>Metadata tags must be specified for all images listed.</i> You cannot use
+grouping unless an appropriate regular expression is defined for all the images listed
+in the module.</li>
+<li><i>Shared metadata tags must be specified with the same name for each image listed.</i> For example, if you 
+are grouping on the basis of a metadata tag "Plate" in one image channel, you
+must also specify the "Plate" metadata tag in the regular expression for the other channels that you 
+want grouped together.</li>
+</ul>
+</p>
+"""
+
 DEFAULT_IMAGE_FOLDER_HELP = """
 <p>In the Folder panel, the <i>Default Input Folder</i> contains the input image or data files
 that you want to analyze. Several File Processing modules (e.g., 
@@ -137,12 +237,12 @@ computer. If, instead, you type specific folder path names into a module's setti
 your pipeline will not work on someone else's computer until you adjust those
 pathnames within each module.</p>
 
-<p>Use the <i>Browse</i> button <img src="%(LOCATION_BROWSE_BUTTON)s"></img> to specify 
+<p>Use the <i>Browse</i> button <img src="memory:%(LOCATION_BROWSE_BUTTON)s"></img> to specify 
 the folder you would like to use as the Default Input Folder, or 
 type the full folder path in the edit box. If you type a folder path that  
 cannot be found, the message box below will indicate this fact until you correct the problem. 
 If you want to specify a folder that does not yet exist, type the desired name and 
-click on the <i>New folder</i> button <img src="%(LOCATION_CREATE_BUTTON)s"></img>.
+click on the <i>New folder</i> button <img src="memory:%(LOCATION_CREATE_BUTTON)s"></img>.
 The folder will be created according to the pathname you have typed.</p>
 
 <p>The contents of the Default Input Folder are shown in the file panel to the left.
@@ -150,7 +250,7 @@ Double-clicking image file names in this panel opens them in a figure window.
 If you double-click on .mat pipeline or output files (CellProfiler 1.0) or .cp 
 pipeline files (CellProfiler 2.0), you will be asked if you want to load a       
 pipeline from the file. To refresh the contents of this panel, click the <i>Refresh</i>
-button <img src="%(LOCATION_REFRESH_BUTTON)s"></img>.</p>"""%globals()
+button <img src="memory:%(LOCATION_REFRESH_BUTTON)s"></img>.</p>"""%globals()
 
 DEFAULT_OUTPUT_FOLDER_HELP = """
 <p>In the Folder panel, the <i>Default Output Folder</i> is the folder that CellProfiler uses to
@@ -338,6 +438,11 @@ or repeating the analysis with slightly different parameters).</li>
 Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM (2006) 
 CellProfiler: image analysis software for identifying and quantifying cell 
 phenotypes. <i>Genome Biology</i> 7:R100. PMID: 17076895</li>
+<li>Kamentsky L, Jones TR, Fraser A, Bray MA, Logan D, Madden K, Ljosa V, 
+Rueden C, Harris GB, Eliceiri K, Carpenter AE (2011) Improved structure, 
+function, and compatibility for CellProfiler: modular high-throughput image 
+analysis software. <i>Bioinformatics</i> 27(8):1179-1180/doi:10.1093/bioinformatics/btr095.
+PMID: 21349861 PMCID: PMC3072555</li>
 <li>Lamprecht MR, Sabatini DM, Carpenter AE (2007) CellProfiler: free, versatile 
 software for automated biological image analysis. <i>Biotechniques</i> 
 42(1):71-75. PMID: 17269487</li>
@@ -357,7 +462,7 @@ BUILDING_A_PIPELINE_HELP = """
 best way to learn how to use CellProfiler is to load an example pipeline 
 from the CellProfiler website's Examples page and try it out, then adapt it for 
 your own images. You can also build a 
-pipeline from scratch. Click the <i>Help</i> <img src="%(LOCATION_MODULE_HELP_BUTTON)s">
+pipeline from scratch. Click the <i>Help</i> <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s">
 </img> button in the main window to get
 help for a specific module.</p>
 
@@ -371,7 +476,7 @@ help for a specific module.</p>
 window) to be the folder where you put the images.</li> 
 <li>Load the pipeline using <i>File > Load Pipeline</i> in the main menu of 
 CellProfiler.</li> 
-<li>Click <i>Analyze images</i> to start processing.</li> 
+<li>Click the <i>Analyze Images</i> button to start processing.</li> 
 <li>Examine the measurements using <i>Data tools</i>. The <i>Data tools</i> options are accessible in 
 the main menu of CellProfiler and allow you to plot, view, or export your 
 measurements (e.g., to Excel).</li>   
@@ -388,7 +493,7 @@ left-hand side of the CellProfiler window).</p>
 <ol>
 <li><p><i>Place modules in a new pipeline.</i><br>
 Choose image analysis modules to add to your pipeline by clicking the <i>Add</i> 
-<img src="%(LOCATION_MODULE_ADD_BUTTON)s"></img> button
+<img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button
 (located underneath the pipeline panel) or right-clicking in the pipeline panel
 itself and selecting a module from the 
 pop-up box that appears. You can learn more about each module by clicking
@@ -396,9 +501,9 @@ pop-up box that appears. You can learn more about each module by clicking
 been placed and selected in the pipeline. Modules are added to the end of the pipeline, but you can
 adjust their order in the main window by dragging and dropping them, or by selecting a module (or
 modules, using the <i>Shift</i> key) and using the <i>Move module up</i> 
-<img src="%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> and <i>Move module down</i> 
-<img src="%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> buttons. 
-The <i>Remove module</i> <img src="%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button will 
+<img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> and <i>Move module down</i> 
+<img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> buttons. 
+The <i>Remove module</i> <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button will 
 delete the selected module(s) from the pipeline.</p> 
 <p>Typically, the first module you must run is 
  <b>LoadImages</b>, in which you specify the identity of the images 
@@ -434,11 +539,11 @@ right of each setting, or at the bottom of the pipeline panel
 for the help for all the settings for that module.</p>
 <p>If there is an error with the settings (e.g., a setting refers to an image 
 that doesn't exist yet), 
-a <img src="%(LOCATION_SETTINGS_ERROR_ICON)s"></img>  icon will appear next to the 
+a <img src="memory:%(LOCATION_SETTINGS_ERROR_ICON)s"></img>  icon will appear next to the 
 module name. If there is a warning (e.g., a special notification attached to a choice of setting), 
-a <img src="%(LOCATION_SETTINGS_WARNING_ICON)s"></img>  icon will appear. Errors
+a <img src="memory:%(LOCATION_SETTINGS_WARNING_ICON)s"></img>  icon will appear. Errors
 will cause the pipeline to fail upon running, whereas a warning will not. Once 
-the errors/warnings have been resolved, a <img src="%(LOCATION_SETTINGS_OK_ICON)s">
+the errors/warnings have been resolved, a <img src="memory:%(LOCATION_SETTINGS_OK_ICON)s">
 </img>  icon will appear indicating that the module is ready to run.</p>
 </li>
 <li><p><i>Set your Default Input Folder, Default Output Folder and output filename.</i><br>
@@ -450,13 +555,13 @@ and settings you have specified. A status window will appear which has the follo
 <ul>
 <li>A <i>progress bar</i> which gives the elapsed time and estimates the time remaining to 
 process the full image set.</li>
-<li>A <i>pause button</i> <img src="%(LOCATION_RUNSTATUS_PAUSE_BUTTON)s"></img> 
+<li>A <i>pause button</i> <img src="memory:%(LOCATION_RUNSTATUS_PAUSE_BUTTON)s"></img> 
 which pauses execution and allows you to subsequently 
 resume the analysis.
-<li>A <i>stop button</i> <img src="%(LOCATION_RUNSTATUS_STOP_BUTTON)s"></img> 
+<li>A <i>stop button</i> <img src="memory:%(LOCATION_RUNSTATUS_STOP_BUTTON)s"></img> 
 which cancels execution after prompting you for a place to
 save the measurements collected to that point.</li>
-<li>A <i>save measurements</i> button <img src="%(LOCATION_RUNSTATUS_SAVE_BUTTON)s"></img> 
+<li>A <i>save measurements</i> button <img src="memory:%(LOCATION_RUNSTATUS_SAVE_BUTTON)s"></img> 
 which will prompt you for a place to
 save the measurements collected to that point while continuing the analysis run.</li>
 </ul> 
@@ -536,158 +641,15 @@ Examples:
 </ul>
 """
 
-USING_METADATA_HELP = """
-Metadata (i.e., additional data about image data) is sometimes available for input images.
-This information can be:
-<ol>
-<li>Used by CellProfiler to group images with common metadata identifiers (or "tags") 
-together for particular steps in a pipeline;</li>
-<li>Stored in the output file along with CellProfiler-measured features for
-annotation or sample-tracking purposes;
-<li>Used to name additional input/output files.</li></ol></p>
-<p>Two sources of metadata are:
-<ul>
-<li><i>Metadata provided in the image filename or location (pathname).</i> For example, images produced by an automated
-microscope can be given names similar to "Experiment1_A01_w1_s1.tif" in which the metadata about the
-plate ("Experiment1"), the well ("A01"), the wavelength number ("w1") and the imaging site ("s1") are encapsulated. The
-name of the folder in which the images are saved may be meaningful and may also be considered metadata as well.
-If this is the case for your data, use <b>LoadImages</b> to extract this information for
-use in the pipeline and storage in the output file.</li>
-<li><i>Metadata provided as a table of information</i>. Often, information associated with each image (such as
-treatment, plate, well, etc) is available as a separate spreadsheet. If this is the case for your data, use 
-<b>LoadData</b> to load this information.</li>
-</ul>
-Details for the metadata-specific help is given next to the appropriate settings in 
-<b>LoadImages</b> and <b>LoadData</b>, as well the specific settings in other modules which
-can make use of metadata. However, here is an overview of how metadata is obtained and used.
-
-<h3>Associating images with metadata</h3>
-
-<p>In <b>LoadImages</b>, metadata can be extracted from the filename and/or folder 
-location using regular expression, a specialized syntax used for text pattern-matching.
-These regular expressions can be used to identify different parts of the filename / folder. 
-The syntax <i>(?P&lt;fieldname&gt;expr)</i> will extract whatever matches <i>expr</i> and 
-assign it to the image's <i>fieldname</i> measurement. A regular expression tool is available 
-which will allow you to check the accuracy of your regular expression.</p>
-
-<p>For instance, say a researcher has folder names with the date and subfolders containing the
-images with the run ID (e.g., <i>./2009_10_02/1234/</i>). 
-The following regular expression will capture the plate, well and site in the fields 
-<i>Date</i> and <i>Run</i>:<br>
-<table border = "1">
-<tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$ </td></tr>
-<tr><td>.*[\\\\/]</td><td>Skip characters at the beginning of the pathname until either a slash (/) or
-backslash (\\) is encountered (depending on the OS). The extra slash for the backslash is used as
-an escape sequence.</td></tr>
-<tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i></td></tr>
-<tr><td>.*</td><td>Capture as many characters that follow</td></tr>
-<tr><td>[\\\\/]</td><td>Discard the slash/backslash character</td></tr>
-<tr><td>(?P&lt;Run&gt;</td><td>Name the captured field <i>Run</i></td></tr>
-<tr><td>.*</td><td>Capture as many characters as follow</td></tr>
-<tr><td>$</td><td>The <i>Run</i> field must be at the end of the path string, i.e. the
-last folder on the path. This also means that the <i>Date</i> field contains the parent
-folder of the <i>Date</i> folder.</td></tr>
-</table>
-
-<p>In <b>LoadData</b>, metadata is extracted from a CSV (comma-separated) file 
-(a spreadsheet). Columns whose name begins with "Metadata" can be used to group 
-files loaded by <b>LoadData</b> that are associated with a common metadata value.
-The files thus grouped together are then processed as a distinct image set.</p>
-
-<p>For instance, an experiment might require that images created on the same day 
-use an illumination correction function calculated from all images from that day, 
-and furthermore, that the date be captured in the file names for the individual image 
-sets and in a .csv file specifying the illumination correction functions. </p>
-
-<p>In this case, if the illumination correction images are loaded with the 
-<b>LoadData</b> module, the file should have a "Metadata_Date" 
-column which contains the date identifiers. Similarly, if the individual images 
-are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set to extract the 
-<Date> metadata field from the file names. The pipeline will then match the individual 
-images with their corresponding illumination correction functions based on matching 
-"Metadata_Date" fields.</p>
-
-<p>The underlying assumption in matching metadata values to image sets is that there is an
-exact pairing (i.e., a one-to-one match) for a given metadata tag combination. A common example is that for
-a two-channel microtiter plate assay, each plate, well and site metadata from one channel
-gets matched uniquely to the plate, well and site metadata from the other channel.
-There are two special cases in metadata handling worth mentioning:
-<ul>
-<li><i>Missing metadata:</i> For a particular metadata tag, one image from a given
-image set has metadata values defined but another image does not. An example is when a microscope
-aborts acquisition prematurely in the middle of scanning two channels for a site, and captures 
-one channel but not the other. In this case, plate, well and site metadata value exists for one
-image but not for the other since it was never acquired. </li>
-<li><i>Duplicate metadata:</i> For a particular metadata tag, the same metadata values exist
-for multiple image sets such that they are not uniquely defined. An example is when a microscope
-re-scans a site in order to recover from a prior error. In this case, there may be one image from
-one channel but <i>two</i> images for the other channel, for the same site. Therefore, multiple instances
-of the same plate, well and site metadata values exist for the same image set.</li>
-</ul> 
-In both of these cases, the exact pairing between channels no longer exists. For missing metadata, the pairing is one-to-none,
-and for duplicate metadata, the pairing is one-to-two. In these instances where a match cannot be
-made, <b>NamesAndTypes</b> will simply omit the confounding metadata values from consideration. In the above
-example, an image set will not be created for the plate, well and site combination in question. 
-</p>
-""" + \
-"""<h3>Use of metadata-specific module settings</h3>
-
-<p>Once the metadata has been obtained, you can use <i>metadata tags</i> to reference them
-in later modules. %(USING_METADATA_TAGS_REF)s Several modules are capable of 
-using metadata tags for various purposes. Examples include:
-<ul>
-<li>You would like to create and apply an illumination correction function to all images from a particular
-plate. You can use metadata tags to save each illumination correction function with a plate-specific
-name in <b>SaveImages</b>, and then use <b>LoadSingleImage</b> to get files
-with the name associated with your image's plate to be applied to your original images.</li>
-<li>You have a set of experiments for which you would like to produce and save results
-individually for each experiment but using only one analysis run. You can use metadata tags
-in <b>ExportToSpreadsheet</b> or <b>ExportToDatabase</b> to save a spreadsheet for each experiment in 
-a folder named according to the experiment.</li>
-</ul>
-<p>In each case, the pre-defined metadata tag is used to name a file or folder. Tags are case-sensitive; 
-the name must match the metadata field defined by <b>LoadImages</b> or <b>LoadData</b>. The options
-for the setting will specify whether tags are applicable; see the module setting help for additional
-information on how to use them in the context of the specific module.</p>
-"""%globals()
-
-USING_METADATA_GROUPING_HELP = """
-<p>In some instances, you may want to subdivide an image set into groups that share a common feature.
-For example, if you are performing illumination correction for a screening experiment, we recommend 
-that the illumination function (an image which represents the overall background fluorescence) 
-be calculated on a per-plate basis. Since the illumination function is an aggregate of images from a
-plate, each plate will required independent processing from the others. A pipeline can be made for 
-this purpose, but it would be time-consuming to run the same pipeline multiple times, once for each plate.
-In this case, CellProfiler can use image grouping for this purpose; if the image subdivisions are 
-distinguishable by some metadata
-(usually defined within the filename or folder location), grouping will enable you to
-process images that have the same plate metadata together.</p>
-
-<p>To use grouping, you must define the relevant metadata for each image. This can be done using regular
-expressions in <b>LoadImages</b> or having them pre-defined in a .csv for use in <b>LoadData</b>.</p>
-
-<p>To use image grouping in <b>LoadImages</b>, please note the following:
-<ul>
-<li><i>Metadata tags must be specified for all images listed.</i> You cannot use
-grouping unless an appropriate regular expression is defined for all the images listed
-in the module.</li>
-<li><i>Shared metadata tags must be specified with the same name for each image listed.</i> For example, if you 
-are grouping on the basis of a metadata tag "Plate" in one image channel, you
-must also specify the "Plate" metadata tag in the regular expression for the other channels that you 
-want grouped together.</li>
-</ul>
-<p>%(USING_METADATA_HELP_REF)s</p>
-"""%globals()
-
 SPREADSHEETS_DATABASE_HELP = """
 <p>The most common form of output for cellular analysis is a <i>spreadsheet<i> of data, which is a file
 of numbers. CellProfiler can also output data into a <i>database</i>, which is a . Which format you use will depend on
 some of the considerations below:
 <ul>
 <li>Learning curve:</li>
-<li>Assessibility:</li> For spreadsheets, the most widely used program to open these files is Excel (Microsoft, commercial) 
+<li>Assessibility:</li> For spreadsheets, the most widely used program to open these files is Microsoft's Excel program.
 Since the file is plain text, other editors can also be used, such as Calc (OpenOffice, freeware) or Google Docs.
-Databases are often run on servers and accessed over networks. In most cases, a database will have a software application
+on the other hand, databases are often run on servers and accessed over networks. In most cases, a database will have a software application
 built on top of it, providing user access to the data.
 <li>Speed:</li>
 <li>Capacity:</li>
@@ -721,9 +683,9 @@ with the exception of any you specify. Please see the
 Each module is associated with a display window that takes time to render and/or
 update. Closing these windows improves speed somewhat. 
 To the left of each module listed in your pipeline an icon 
-<img src="%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img> indicates whether
+<img src="memory:%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img> indicates whether
 the module window will be displayed during the analysis run. You can turn off individual module windows by
-clicking on the icon; this icon <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img> indicates that the window 
+clicking on the icon; this icon <img src="memory:%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img> indicates that the window 
 will not be shown. Select <i>Window > Hide all windows on run</i> to prevent display
 of all module windows.</p></li>           
                                                                             
@@ -742,11 +704,11 @@ TEST_MODE_HELP = """
 the main menu. Test mode allows you to run the pipeline on a selected
 image, preview the results and adjust the module settings on the fly.</p>
 
-<p>To enter Test mode once you have built a pipeline, choose <i>Test > Start test mode</i> in the
+<p>To enter Test mode once you have built a pipeline, choose <i>Test > Start Test Mode</i> in the
 menu bar in the main window. At this point, you will see the following features appear:
 <ul>
 <li>The module view will have a slider bar appearing on the far left.</li>
-<li>A Pause icon <img src="%(LOCATION_TESTMODE_GO_ICON)s"></img> will appear to the left of each module.</li>
+<li>A Pause icon <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img> will appear to the left of each module.</li>
 <li>A series of buttons will appear at the bottom of the pipeline panel above the 
 module adjustment buttons.</li>
 <li>The grayed-out items in the <i>Test</i> menu will become active, and the 
@@ -767,38 +729,57 @@ been produced yet. To avoid this, it is best to actually run the pipeline up to 
 of interest, and move the slider to modules already executed.
 <li><i>Pause:</i> Clicking the pause icon will cause the pipeline test run to halt
 execution when that module is reached (the paused module itself is not executed). The icon 
-changes from <img src="%(LOCATION_TESTMODE_GO_ICON)s"></img> to 
-<img src="%(LOCATION_TESTMODE_PAUSE_ICON)s"></img> to indicate that a pause has 
+changes from <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img> to 
+<img src="memory:%(LOCATION_TESTMODE_PAUSE_ICON)s"></img> to indicate that a pause has 
 been inserted at that point.</li>
 <li><i>Run:</i> Execution of the pipeline will be started/resumed until
 the next module pause is reached. When all modules have been executed for a given image cycle,
 execution will stop.</li>
 <li><i>Step:</i> Execute the next module (as indicated by the slider location)</li>
-<li><i>Next image:</i> Skip ahead to the next image cycle as determined by the image 
+<li><i>Next Image:</i> Skip ahead to the next image cycle as determined by the image 
 order in <b>LoadImages</b>/<b>LoadData</b>. The slider will automatically return to the 
 first module in the pipeline.</li>
 </ul>
 </p>
 <p>From the <i>Test</i> menu, you can choose additional options:
 <ul>
-<li><i>Stop test mode:</i> Exit <i>Test</i> mode. Loading a new pipeline or adding/subtracting
+<li><i>Exit Test Mode:</i> Exit <i>Test</i> mode. Loading a new pipeline or adding/subtracting
 modules will also automatically exit test mode.</li>
 <li><i>Step to next module:</i> Execute the next module (as indicated by the slider location)</li>
-<li><i>Next image cycle:</i> Step to the next image cycle in the current group or the .</li>
-<li><i>Next image group:</i> Step to the next group in the image set</li>
-<li><i>Random image cycle:</i> Randomly select an image cycle in the current group to jump to.</li>
-<li><i>Choose image cycle:</i> Choose the image cycle to jump to.
+<li><i>Next Image Set:</i> Step to the next image set in the current group or the .</li>
+<li><i>Next Image Group:</i> Step to the next group in the image set</li>
+<li><i>Random Image Set:</i> Randomly select an image set in the current group to jump to.</li>
+<li><i>Choose Image Set:</i> Choose the image set to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
-<li><i>Choose group:</i> Choose the group to jump to.
+<li><i>Choose Image Group:</i> Choose the group to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
-<li><i>Reload modules source:</i> For developers only. This option will reload the module source 
+<li><i>Reload Modules Source:</i> For developers only. This option will reload the module source 
 code, so any changes to the code will be reflected immediately.</li>
 </ul>
 Note that if movies are being loaded, the individual movie is defined as a group automatically.
-Selecting <i>Choose group</i> will allow you to choose the movie file, and <i>Choose image cycle</i> 
+Selecting <i>Choose Image Group</i> will allow you to choose the movie file, and <i>Choose Image Set</i> 
 will let you choose the individual movie frame from that file.
 <p>%(USING_METADATA_GROUPING_HELP_REF)s</p>
 </p>
+"""%globals()
+
+RUNNING_YOUR_PIPELINE_HELP = """
+Once you have tested your pipeline using Test mode and you are satisfied with the
+module settings, you are ready to run the pipeline on your entire set of images. To
+do this:
+<ul>
+<li>Exit Test mode by clicking the "Exit Test Mode" button or selecting <i>Test > Exit Test Mode</i>.</li>
+<li>Click the "<img src="memory:%(LOCATION_ANALYZE_IMAGE_BUTTON)s"></img> Analyze Images" button and begin processing your data sets.</li>
+</ul>
+During the analysis run, the progress will appear in the status bar at the bottom of CellProfiler. It will
+show you the total number of image sets, the number of image sets completed, the time elapsed and the approximate 
+time remaining in the run.
+<p>If you need to pause analysis, click the "<img src="memory:%(LOCATION_PAUSE_ANALYSIS_BUTTON)s"></img> Pause" button, then click the 
+"Resume" button to continue. If you
+want to terminate analysis, click the "<img src="memory:%(LOCATION_STOP_ANALYSIS_BUTTON)s"></img> Stop analysis" button.</p>
+<p>If your computer has multiple processors, CellProfiler will take advantage of them by starting multiple copies
+of itself to process the image sets in parallel. You can set the number of <i>workers</i> (i.e.,copies of 
+CellProfiler activated) under <i>File > Preferences...</i></p>
 """%globals()
 
 # The help below contains a Google URL shortener since the URL has a control character that the URL reader doesn't interpret correctly
@@ -858,10 +839,9 @@ MySQL database. Please refer to the help for these modules in order learn more
 about which settings are appropriate.</li>
 
 <li><i>Analyze your images to create a batch file.</i> Click the <i>Analyze images</i>
-button and the analysis will begin locally processing the first image set only. 
-Do not be surprised if processing the first image set takes much longer than usual
-if using <b>LoadImages</b> since this module creates a list of all images to be 
-processed which can take a while if there are many of them (this process can be sped
+button and the analysis will begin local processing. Do not be surprised if this initial step
+takes a while since CellProfiler must first create the entire image set list based
+on your settings in the workspace modules (this process can be sped
 up by creating your list of images as a CSV and using the <b>LoadData</b> module to load it).
 <p>At the end of processing the first cycle locally, the <b>CreateBatchFiles</b>
 module halts execution, creates the proper batch file (a file called 
@@ -1121,19 +1101,19 @@ The <i>Edit</i> menu provides options for modifying modules in your current pipe
 <ul>
 <li><b>Undo:</b> Undo your previous module modification.</li>
 <li><b>Move Module Up:</b> Move the currently selected module(s) up in the module list. You
-can also use the <img src="%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> button located
+can also use the <img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> button located
 below the Pipeline panel.</li>
 <li><b>Move Module Down:</b> Move the currently selected module(s) down in the module list. You
-can also use the <img src="%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> button located
+can also use the <img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> button located
 below the Pipeline panel.</li>
 <li><b>Delete Module:</b> Remove the currently selected module(s) from the module list. 
 Pressing the Delete key also removes the module(s). You
-can also use the <img src="%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button located
+can also use the <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button located
 under the Pipeline panel.</li>
 <li><b>Duplicate Module:</b> Duplicate the currently selected module(s) in the pipeline.
 The current settings of the selected module(s) are retained in the duplicate.</li>
 <li><b>Add Module:</b> Select a module from the pop-up list to inster into the current
-pipeline. You can also use the <img src="%(LOCATION_MODULE_ADD_BUTTON)s"></img> button located
+pipeline. You can also use the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button located
 under the Pipeline panel.</li>
 </ul>
 You can select multiple modules at once for moving, deletion and duplication 
@@ -1147,10 +1127,10 @@ The <i>Windows</i> menu provides options for showing and hiding the module displ
 <li><b>Close All Open Windows:</b> Closes all display windows that are currently open.</li>
 <li><b>Show All Windows On Run:</b> Select to show all display windows during the
 current test run or next analysis run. The display mode icons next to each module
-in the pipeline panel will switch to <img src="%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img>.</li>
+in the pipeline panel will switch to <img src="memory:%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img>.</li>
 <li><b>Hide All Windows On Run:</b> Select to show no display windows during the
 current test run or next analysis run. The display mode icons next to each module
-in the pipeline panel will switch to <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>.</li>
+in the pipeline panel will switch to <img src="memory:%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>.</li>
 </ul>"""%globals()
 
 PARAMETER_SAMPLING_MENU_HELP = """
@@ -1230,9 +1210,9 @@ MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP = """
 All figure windows come with a navigation toolbar, which can be used to navigate through the data set.
 <ul>
 <li><b>Home, Forward, Back buttons:</b>
-<i>Home</i> <img src="%(LOCATION_WINDOW_HOME_BUTTON)s"></img> always takes you to 
-the initial, default view of your data. The <i>Forward</i> <img src="%(LOCATION_WINDOW_FORWARD_BUTTON)s"></img>
-and <i>Back</i> <img src="%(LOCATION_WINDOW_BACK_BUTTON)s"></img> buttons are akin 
+<i>Home</i> <img src="memory:%(LOCATION_WINDOW_HOME_BUTTON)s"></img> always takes you to 
+the initial, default view of your data. The <i>Forward</i> <img src="memory:%(LOCATION_WINDOW_FORWARD_BUTTON)s"></img>
+and <i>Back</i> <img src="memory:%(LOCATION_WINDOW_BACK_BUTTON)s"></img> buttons are akin 
 to the web browser forward and back buttons in that they are used to navigate back 
 and forth between previously defined views, one step at a time. They will not be 
 enabled unless you have already navigated within an image else using 
@@ -1240,7 +1220,7 @@ the <b>Pan</b> and <b>Zoom</b> buttons, which are used to define new views. </li
 
 <li><b>Pan/Zoom button:</b>
 This button has two modes: pan and zoom. Click the toolbar button 
-<img src="%(LOCATION_WINDOW_PAN_BUTTON)s"></img> to activate panning 
+<img src="memory:%(LOCATION_WINDOW_PAN_BUTTON)s"></img> to activate panning 
 and zooming, then put your mouse somewhere over an axes, where it will turn into a hand
 icon. 
 <ul>
@@ -1257,14 +1237,14 @@ clicking off the plot. This is a known bug to be corrected in the next release.<
 </ul>
 </li>
 
-<li><b>Zoom-to-rectangle button:</b> Click this toolbar button <img src="%(LOCATION_WINDOW_ZOOMTORECT_BUTTON)s"></img> 
+<li><b>Zoom-to-rectangle button:</b> Click this toolbar button <img src="memory:%(LOCATION_WINDOW_ZOOMTORECT_BUTTON)s"></img> 
 to activate this mode. To zoom in, press the left mouse button and drag in the window 
 to draw a box around the area you want to zoom in on. When you release the mouse button, 
 the image is re-drawn to display the specified area. Remember that you can always use 
 <i>Backward</i> button to go back to the previous zoom level, or use the <i>Home</i> 
 button to reset the window to the initial view.</li>
 
-<li><b>Save:</b> Click this button <img src="%(LOCATION_WINDOW_SAVE_BUTTON)s"></img>to launch a file save dialog. You can save the 
+<li><b>Save:</b> Click this button <img src="memory:%(LOCATION_WINDOW_SAVE_BUTTON)s"></img>to launch a file save dialog. You can save the 
 figure window to a file (currently, Postscript (.PS), PNGs and PDFs are supported). 
 Note that this will save the entire contents of the window, not just the individual 
 subplot(s) or images.</li>
@@ -1429,8 +1409,9 @@ if CellProfiler can't locate the Java installation on your computer. Check
 this box if you want to be warned. Uncheck this box to hide warnings."""
 
 MAX_WORKERS_HELP = """The <i>Maximum number of workers</i> preference controls
-the maximum number of copies of CellProfiler that will be started at the outset
-of an analysis run. CellProfiler uses these copies to process multiple image
+the maximum number of <i>workers</i> (i.e., copies of CellProfiler)
+that will be started at the outset of an analysis run. CellProfiler uses these 
+copies to process multiple image
 sets in parallel, utilizing the computer's CPUs and memory fully. The default
 value is the number of CPUs detected on your computer. Use fewer workers for
 pipelines that require a large amount of memory. Use more workers for
@@ -1629,7 +1610,7 @@ For the above example, you could do the following:
 <li>Make a new rule <code>[Metadata][Does][Have Stain matching][phase]</code> and name it <i>OrigPhase</i>.
 <li>In the "Assign channel by" setting, select "Metadata".</li>
 <li>Select "Well" for the <i>OrigFluor</i>, <i>OrigFluo2</i> and <i>OrigPhase</i> channels.</li>
-<li>Click the <img src="%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
+<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
 and select "Frame" for each channel.</li>
 <li>Click "Update table" to confirm the channel matching. The corresponding well and frame for each
 channel should be matched to each other.</li>
@@ -1700,7 +1681,7 @@ multiple channels, you will need to do this for each channel.
 <li>Click the "Add" button to add another rule.</li>
 <li>In the "Assign channel by" setting, select "Metadata".</li>
 <li>Select "Z" for the <i>OrigDAPI</i> and <i>OrigGFP</i> channels.</li>
-<li>Click the <img src="%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
+<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
 and select "T" for each channel.</li>
 <li>Click "Update table" to confirm the channel matching. The corresponding <i>Z</i> and <i>T</i> for each
 channel should be matched to each other.</li>
@@ -1800,8 +1781,8 @@ learning curve to using them, but are quite powerful once you understand the bas
 from cellprofiler.modules import images, metadata, namesandtypes, groups
 
 MAIN_HELP = (
-    ("Why Use CellProfiler", WHEN_CAN_I_USE_CELLPROFILER_HELP),
-    ( "Navigating The Menu Bar", (
+    ("Why Use CellProfiler?", WHEN_CAN_I_USE_CELLPROFILER_HELP),
+    ("Navigating The Menu Bar", (
         ("Using The File Menu",MENU_BAR_FILE_HELP),
         ("Using The Edit Menu",MENU_BAR_EDIT_HELP),
         ("Using The Test Menu",TEST_MODE_HELP),
@@ -1817,22 +1798,20 @@ MAIN_HELP = (
         ("Using The NamesAndTypes Module",namesandtypes.__doc__),
         ("Using The Groups Module",groups.__doc__),
         ("Loading Image Stacks And Movies",LOADING_IMAGE_SEQUENCES_HELP))),
-    ("How Data Is Handled",(
-        ("Using Metadata In CellProfiler",USING_METADATA_HELP),
-        ("How To Use Image Grouping",USING_METADATA_GROUPING_HELP),
-        ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP))),
     ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
-    ("Before The Analysis Run", (
-        ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
-        ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
-        ("Setting The Output Filename", OUTPUT_FILENAME_HELP))),
     ("Testing Your Pipeline",TEST_MODE_HELP),
+    ("Running Your Pipeline", RUNNING_YOUR_PIPELINE_HELP),    
     ("Using your Output", (
         ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP),
         ("Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
         ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),   
     ("Troubleshooting Memory and Speed Issues",MEMORY_AND_SPEED_HELP),
     ("Other Features",(
+        ("Legacy Modules and Features",(
+            ("Load Modules", LEGACY_LOAD_MODULES_HELP),
+            ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
+            ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
+            ("Setting The Output Filename", OUTPUT_FILENAME_HELP))),
         ("Batch Processing", BATCHPROCESSING_HELP),
         ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
         ("Configuring Logging", CONFIGURING_LOGGING_HELP)))

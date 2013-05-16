@@ -120,7 +120,9 @@ def output_gui_html(webpage_path):
                 help_text += "<b>%s</b>"%key
                 help_text = write_menu(prefix+"_"+key, value, help_text)
             else:
-                file_name = "%s_%s.html" % (prefix, key)
+                cleaned_up_key = re.sub("[/\\\?%\*:\|\"<>\.\+]","",key) # Replace special characters with blanks
+                cleaned_up_key = re.sub(" ","_",cleaned_up_key) # Replace spaces with underscores
+                file_name = "%s_%s.html" % (prefix, cleaned_up_key)
                 fd = open(os.path.join(webpage_path, file_name),"w")
                 fd.write("<html style=""font-family:arial""><head><title>%s</title></head>\n" % key)
                 fd.write("<body><h1>%s</h1>\n<div>\n" % key)

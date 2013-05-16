@@ -297,6 +297,7 @@ OMERO_SESSION_ID = "OmeroSessionId"
 MAX_WORKERS = "MaxWorkers"
 TEMP_DIR = "TempDir"
 WORKSPACE_CHOICE = "WorkspaceChoice"
+ERROR_COLOR = "ErrorColor"
 
 WC_SHOW_WORKSPACE_CHOICE_DIALOG = "ShowWorkspaceChoiceDlg"
 WC_OPEN_LAST_WORKSPACE = "OpenLastWorkspace"
@@ -503,7 +504,41 @@ def set_background_color(color):
     
     '''
     config_write(BACKGROUND_COLOR,
-                       ','.join([str(x) for x in color.Get()]))
+                 ','.join([str(x) for x in color.Get()]))
+    
+__error_color = None
+def get_error_color():
+    '''Get the color to be used for error text'''
+    global __error_color
+    #
+    # Red found here: 
+    # http://www.jankoatwarpspeed.com/css-message-boxes-for-different-message-types/
+    # but seems to be widely used.
+    #
+    default_color = (0xD8, 0x00, 0x0C)
+    if __error_color is None:
+        if not config_exists(ERROR_COLOR):
+            __error_color = tuple_to_color(default_color)
+        else:
+            color_string = config_read(ERROR_COLOR)
+            try:
+                __error_color = tuple_to_color(color_string.split(','))
+            except:
+                print "Failed to parse error color string: " + color_string
+                traceback.print_exc()
+                __error_color = default_color
+    return __error_color
+
+def set_error_color(color):
+    '''Set the color to be used for error text
+    
+    color - a WX color or ducktyped
+    '''
+    global __error_color
+    config_write(ERROR_COLOR,
+                 ','.join([str(x) for x in color.Get()]))
+    __error_color = tuple_to_color(color.Get())
+            
 
 def get_pixel_size():
     """The size of a pixel in microns"""

@@ -44,7 +44,6 @@ import cellprofiler.utilities.walk_in_background as W
 import cellprofiler.gui.pathlist as PL
 
 
-ERROR_COLOR = wx.RED
 WARNING_COLOR = wx.Colour(224,224,0,255)
 RANGE_TEXT_WIDTH = 40 # number of pixels in a range text box TO_DO - calculate it
 ABSOLUTE = "Absolute"
@@ -904,7 +903,8 @@ class ModuleView:
                 index = choices.index(selection)
                 control.SetSelection(index)
                 if selection not in v.choices:
-                    control.SetItemForegroundColour(index, ERROR_COLOR)
+                    control.SetItemForegroundColour(
+                        index, cpprefs.get_error_color())
             
             def callback(event, setting = v, control = control):
                 self.__on_multichoice_change(event, setting, control)
@@ -921,7 +921,8 @@ class ModuleView:
                 elif choices[i] in selections:
                     control.Select(i)
                     if choices[i] not in v.choices:
-                        control.SetItemForegroundColour(i, ERROR_COLOR)
+                        control.SetItemForegroundColour(
+                            i, cpprefs.get_error_color())
         return control
     
     def make_colormap_control(self, v, control_name, control):
@@ -1922,16 +1923,19 @@ class ModuleView:
                 bad_setting = instance.get_setting()
         #
         # Update the group box
-        # TO_DO: choose which way looks better
         #
         if bad_setting is None:
             self.module_settings_box.Label = MODULE_SETTINGS_LABEL
-        elif self.__module.module_num & 1:
-            self.module_settings_box.Label = "%s: %s" % (
-                MODULE_SETTINGS_LABEL, "Hover over error for more information")
+            self.module_settings_box.SetForegroundColour(
+                wx.SystemSettings.GetColour(wx.SYS_COLOUR_WINDOWTEXT))
+            self.module_settings_box.SetToolTip(None)
         else:
             self.module_settings_box.Label = "%s: %s" % (
-                MODULE_SETTINGS_LABEL, message)
+                MODULE_SETTINGS_LABEL, 
+                "Hover over the error below for more information")
+            self.module_settings_box.SetToolTipString(message)
+            self.module_settings_box.SetForegroundColour(
+                cpprefs.get_error_color())
         # update settings' foreground/background
         try:
             for setting in visible_settings:
@@ -1942,7 +1946,7 @@ class ModuleView:
                     desired_fg, desired_bg = default_fg_color, default_bg_color
                     if setting is bad_setting:
                         if level == logging.ERROR:
-                            desired_fg = ERROR_COLOR
+                            desired_fg = cpprefs.get_error_color()
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
                 if (static_text.SetForegroundColour(desired_fg) or
@@ -3555,7 +3559,7 @@ class BinaryMatrixController(object):
 class TableController(wx.grid.PyGridTableBase):
     DEFAULT_ATTR = wx.grid.GridCellAttr()
     ERROR_ATTR = wx.grid.GridCellAttr()
-    ERROR_ATTR.TextColour = ERROR_COLOR
+    ERROR_ATTR.TextColour = cpprefs.get_error_color()
     def __init__(self, v):
         super(self.__class__, self).__init__()
         assert isinstance(v, cps.Table)

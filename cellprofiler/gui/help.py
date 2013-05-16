@@ -1330,6 +1330,10 @@ page</a> for pictures of available colormaps."""
 WINDOW_BACKGROUND_HELP = """The <i>Window Background</i> preference sets the
 window background color of the CellProfiler main window."""
 
+ERROR_COLOR_HELP = """The <i>Error color</i> preference sets the color
+used for the error alerts associated with misconfigured settings and other
+errors."""
+
 PLUGINS_DIRECTORY_HELP = """The <i>Plugins directory</i> preference chooses
 the directory that holds dynamically-loaded CellProfiler modules. You
 can write your own module and place it in this directory and CellProfiler
@@ -1447,6 +1451,7 @@ EACH_PREFERENCE_HELP = (
     ( "Table font", TABLE_FONT_HELP ),
     ( "Default colormap", DEFAULT_COLORMAP_HELP ),
     ( "Window background", WINDOW_BACKGROUND_HELP ),
+    ( "Error color", ERROR_COLOR_HELP),
     ( "Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
     ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
     ( "Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),

@@ -2345,6 +2345,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
             module.separate_object_tables.value = E.OT_COMBINE
+            module.allow_overwrite.value = E.OVERWRITE_DATA
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
             module.run_as_data_tool(workspace)
@@ -2574,6 +2575,7 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             module.db_type.value = E.DB_SQLITE
+            module.allow_overwrite.value = E.OVERWRITE_DATA
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False

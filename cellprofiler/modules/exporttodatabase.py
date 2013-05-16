@@ -1933,8 +1933,11 @@ CREATE TABLE %s (
         values = []
         for column in experiment_columns:
             ftr = column[1]
-            value = workspace.measurements.get_experiment_measurement(ftr)
             column_names.append(ftr)
+            if not workspace.measurements.has_feature(cpmeas.EXPERIMENT, ftr):
+                values.append("null")
+                continue
+            value = workspace.measurements.get_experiment_measurement(ftr)
             if column[2].startswith(cpmeas.COLTYPE_VARCHAR):
                 if isinstance(value, unicode):
                     value = value.encode('utf-8')

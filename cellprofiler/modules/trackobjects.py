@@ -702,12 +702,17 @@ class TrackObjects(cpm.CPModule):
                      self.get_saved_object_numbers(workspace)
             
     def display(self, workspace, figure):
-        figure.set_subplots((1, 1))
-        subfigure = figure.figure
-        subfigure.clf()
-        ax = subfigure.add_subplot(1,1,1)
-        self.draw(workspace.display_data.labels, ax, 
-                  workspace.display_data.object_numbers)
+        if hasattr(workspace.display_data, "labels"):
+            figure.set_subplots((1, 1))
+            subfigure = figure.figure
+            subfigure.clf()
+            ax = subfigure.add_subplot(1,1,1)
+            self.draw(workspace.display_data.labels, ax, 
+                      workspace.display_data.object_numbers)
+        else:
+            # We get here after running as a data tool
+            figure.figure.text(.5, .5, "Analysis complete",
+                               ha="center", va="center")
 
     def draw(self, labels, ax, object_numbers):
         indexer = np.zeros(len(object_numbers)+1,int)
@@ -1343,14 +1348,15 @@ class TrackObjects(cpm.CPModule):
         # The first column of z is the index of the track that ends. The second
         # is the index into P2 of the object to be merged into
         #
-        z = np.zeros((0,2), np.int32)
+        z = []
         while i <len(F):
             y = P1[j, IIDX] - L[i, IIDX]
             y = y.astype("int32")
             x = np.argwhere((y <= para8) & (y > 0))
             y = np.column_stack((np.zeros(len(x), dtype="int32")+i, x))
-            z = np.vstack((z, y))
+            z.append(y)
             i = i+1
+        z = np.vstack(z)
 
         # calculates actual cost according to the formula given in the 
         # supplementary notes    
@@ -1419,14 +1425,15 @@ class TrackObjects(cpm.CPModule):
             # The second is the index of the track that results from
             # the split.
             #
-            z = np.zeros((0,2), np.int32)
+            z = []
             while i < len(P1):
                 y = F[j, IIDX] - P2[i, IIDX]
                 y = y.astype("int32")
                 x = np.argwhere((y <= para8) & (y > 0))
                 y = np.column_stack((np.zeros(len(x), dtype="int32")+i, x))
-                z = np.vstack((z, y))
+                z.append(y)
                 i = i+1
+            z = np.vstack(z)
     
             AreaFirst = F[z[:, 1], AIDX]
             AreaAfterSplit = P[ P2[z[:, 0], PIDX].astype(int) + 1, AIDX]

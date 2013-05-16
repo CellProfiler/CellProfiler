@@ -684,7 +684,6 @@ class AnalysisRunner(object):
                            "%s is not executable" % cp_executable
                     args = ["arch", "-x86_64", cp_executable, 
                             "--work-announce", cls.work_announce_address]
-                    print " ".join(args)
                 else:
                     aw_path = os.path.join(
                         os.path.split(
@@ -700,7 +699,6 @@ class AnalysisRunner(object):
                                           stdout=subprocess.PIPE,
                                           stderr=subprocess.STDOUT)
             else:
-                print "I am not frozen"
                 worker = subprocess.Popen([find_python(),
                                            '-u',  # unbuffered
                                            find_analysis_worker_source(),

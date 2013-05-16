@@ -167,6 +167,16 @@ W_INDEX = "Index"
 W_TYPE_ALL = [cpmeas.IMAGE, cpmeas.OBJECT, W_INDEX]
 W_INDEX_ALL = [C_IMAGE_NUMBER, GROUP_INDEX]
 
+################################################
+#
+# Choices for overwrite
+#
+################################################
+
+OVERWRITE_NEVER = "Never"
+OVERWRITE_DATA = "Data only"
+OVERWRITE_ALL = "Data and schema"
+
 """Offset of the image group count in the settings"""
 SETTING_IMAGE_GROUP_COUNT = 29
 
@@ -187,7 +197,9 @@ SETTING_FIXED_SETTING_COUNT_V23 = 36
 
 SETTING_FIXED_SETTING_COUNT_V24 = 37
 
-SETTING_FIXED_SETTING_COUNT = 37
+SETTING_FIXED_SETTING_COUNT_V25 = 38
+
+SETTING_FIXED_SETTING_COUNT = 38
 
 ##############################################
 #
@@ -291,7 +303,7 @@ def connect_sqlite(db_file):
 class ExportToDatabase(cpm.CPModule):
  
     module_name = "ExportToDatabase"
-    variable_revision_number = 24
+    variable_revision_number = 25
     category = ["File Processing","Data Tools"]
 
     def create_settings(self):
@@ -719,6 +731,37 @@ class ExportToDatabase(cpm.CPModule):
             the thumbnail pixel intensities to the range 0-1, where 0 is 
             black/unsaturated, and 1 is white/saturated.""")
         
+        self.allow_overwrite = cps.Choice(
+            "Overwrite without warning?", 
+            [OVERWRITE_NEVER, OVERWRITE_DATA, OVERWRITE_ALL],
+            doc = """
+            <b>ExportToDatabase</b> creates tables and databases at the start
+            of a run when writing directly to a MySQL or SQLite database. It
+            writes SQL scripts and CSVs when not writing directly. It also
+            can write CellProfiler Analysis property files. In some cases,
+            it's appropriate to run CellProfiler and append to or overwrite
+            the data in existing tables, for instance when running several
+            CellProfiler instances which each process a range of the experiment's
+            image sets. In others, such as when the measurements to be written
+            have changed, the data tables must be dropped completely.
+            <br>
+            <ul><li><i>%(OVERWRITE_NEVER)s</i> - <b>ExportToDatabase</b> will
+            ask before dropping and recreating tables unless you are running
+            headless. CellProfiler will exit if running headless if the tables
+            exist and this option is chosen.</li>
+            <li><i>%(OVERWRITE_DATA)s</i> - <b>ExportToDatabase</b> will keep
+            the existing tables if present and will overwrite the data. Choose
+            <i>%(OVERWRITE_DATA)s</i> if you are breaking your experiment
+            into ranges of image sets and running each range on a separate
+            instance of CellProfiler.</li>
+            <li><i>%(OVERWRITE_ALL)s</i> - <b>ExportToDatabase</b> will
+            drop previous versions of tables at the start of a run. This option
+            is appropriate if you are using the <b>CreateBatchFiles</b> module;
+            your tables will be created by the run that creates the batch
+            data file. The actual analysis runs that utilize the Batch_data.h5
+            file will use the existing tables without trying to recreate them.
+            """)
+        
     def add_image_group(self,can_remove = True):
         group = cps.SettingsGroup()
         
@@ -1000,6 +1043,7 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.sqlite_file]
         elif self.db_type == DB_ORACLE:
             result += [self.sql_file_prefix]
+        result += [self.allow_overwrite]
         # # # # # # # # # # # # # # # # # #
         #
         # Table names
@@ -1149,7 +1193,7 @@ class ExportToDatabase(cpm.CPModule):
                 self.image_group_count, self.group_field_count, self.filter_field_count,
                 self.workspace_measurement_count, self.experiment_name, 
                 self.location_object, self.properties_class_table_name,
-                self.wants_relationship_table_setting]
+                self.wants_relationship_table_setting, self.allow_overwrite]
         
         # Properties: Image groups
         for group in self.image_groups:
@@ -1179,7 +1223,8 @@ class ExportToDatabase(cpm.CPModule):
         return [self.db_type, self.experiment_name, 
                 self.db_name, self.db_host, self.db_user, self.db_passwd, 
                 self.sql_file_prefix, self.sqlite_file, 
-                self.want_table_prefix, self.table_prefix,  
+                self.allow_overwrite,
+                self.want_table_prefix, self.table_prefix, 
                 self.save_cpa_properties, self.location_object, 
                 self.properties_image_url_prepend, 
                 self.properties_plate_type, self.properties_plate_metadata, self.properties_well_metadata,
@@ -1369,18 +1414,30 @@ class ExportToDatabase(cpm.CPModule):
                             ", ".join(tables_that_exist[:-1]), 
                             tables_that_exist[-1])
                     if cpprefs.get_headless():
-                        logger.warning("%s already in database, not creating" , table_msg)
-                        return True
-                    import wx
-                    dlg = wx.MessageDialog(
-                        workspace.frame, 
-                        'ExportToDatabase will overwrite the %s. OK?' % table_msg,
-                                        'Overwrite tables?', 
-                                        style=wx.OK|wx.CANCEL|wx.ICON_QUESTION)
-                    if dlg.ShowModal() != wx.ID_OK:
-                        dlg.Destroy()
-                        return False
-                    dlg.Destroy()
+                        if self.allow_overwrite == OVERWRITE_NEVER:
+                            logger.error("%s already in database and overwrite not allowed. Exiting" % table_msg)
+                            return False
+                        elif self.allow_overwrite == OVERWRITE_DATA:
+                            logger.warning("%s already in database, not creating" % table_msg)
+                            return True
+                    elif self.allow_overwrite in (OVERWRITE_NEVER, OVERWRITE_DATA):
+                        import wx
+                        message = (
+                            "Do you want ExportToDatabase to drop the %s?\n\n"
+                            'Choose "Yes" to drop and recreate the tables, '
+                            'discarding all existing data.\n'
+                            'Choose "No" to keep the existing tables and '
+                            'overwrite data as necessary.\n'
+                            'Choose "Cancel" to stop and leave the tables intact.') % table_msg
+                        
+                        with wx.MessageDialog(
+                            workspace.frame, message,
+                            style=wx.YES|wx.NO|wx.CANCEL|wx.ICON_QUESTION) as dlg:
+                            result = dlg.ShowModal()
+                            if result == wx.ID_CANCEL:
+                                return False
+                            elif result != wx.ID_YES:
+                                return True
     
                 mappings = self.get_column_name_mappings(pipeline, image_set_list)
                 column_defs = self.get_pipeline_measurement_columns(pipeline, 
@@ -3603,6 +3660,16 @@ CP version : %d\n""" % version_number
                 [ cps.NO ] + 
                 setting_values[SETTING_FIXED_SETTING_COUNT_V23:])
             variable_revision_number = 24
+            
+        if (not from_matlab) and variable_revision_number == 24:
+            #
+            # Added allow_overwrite
+            #
+            setting_values = (
+                setting_values[:SETTING_FIXED_SETTING_COUNT_V24] + 
+                [ OVERWRITE_DATA ] +
+                setting_values[SETTING_FIXED_SETTING_COUNT_V24:])
+            variable_revision_number = 25
             
         # Added view creation to object table settings
         setting_values[OT_IDX] = OT_DICTIONARY.get(setting_values[OT_IDX],

@@ -1045,7 +1045,8 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.sqlite_file]
         elif self.db_type == DB_ORACLE:
             result += [self.sql_file_prefix]
-        result += [self.allow_overwrite]
+        if self.db_type != DB_MYSQL_CSV:
+            result += [self.allow_overwrite]
         # # # # # # # # # # # # # # # # # #
         #
         # Table names

@@ -2174,7 +2174,9 @@ class PipelineController:
                                                          evt.image_set_number,
                                                          self.__frame)
                 module.display(self.__workspace, fig)
-                fig.Refresh()
+                if hasattr(fig.figure.canvas, "_isDrawn"):
+                    fig.figure.canvas._isDrawn = False
+                fig.figure.canvas.Refresh()
         except:
             _, exc, tb = sys.exc_info()
             display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,

@@ -635,6 +635,8 @@ class Measurements(object):
                     i_min, i_max = d.get(image_number, (t_min, t_max-1))
                     t_min = min(i_min, t_min)
                     t_max = max(i_max+1, t_max)
+                if t_min >= t_max:
+                    return np.zeros(0, dt).view(np.recarray)
                 #
                 # Construct a mask, offset by the minimum index to be addressed
                 # of the image numbers to keep in the slice

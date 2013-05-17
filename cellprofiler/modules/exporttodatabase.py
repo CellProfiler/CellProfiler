@@ -2195,6 +2195,11 @@ CREATE TABLE %s (
         
         key = (module_num, relationship, object_name1, object_name2)
         if key not in rd:
+            logger.info("Adding missing relationship type:")
+            logger.info("        module #: %d" % module_num)
+            logger.info("    relationship: %s" % relationship)
+            logger.info("        object 1: %s" % object_name1)
+            logger.info("        object 2: %s" % object_name2)
             #
             # If the code reaches here, it's because:
             # * some module has an absent or mis-coded get_relationship_columns
@@ -2217,7 +2222,7 @@ CREATE TABLE %s (
             statement += \
                 "SELECT MAX(%s)+1, %d, '%s', '%s', '%s' FROM %s" % \
                 (COL_RELATIONSHIP_TYPE_ID, module_num, relationship,
-                 object_name1, object_name2)
+                 object_name1, object_name2, relationship_type_table)
             statement += "WHERE NOT EXISTS (SELECT 'x' FROM %s WHERE " % \
                 relationship_type_table
             statement += "%s = %d AND " % (COL_MODULE_NUMBER, module_num)
@@ -2236,7 +2241,7 @@ CREATE TABLE %s (
                                (COL_OBJECT_NAME2, object_name2)):
                 statement += " AND %s = '%s'" % (col, value)
             result = execute(cursor, statement)
-            if len(result == 0):
+            if len(result) == 0:
                 raise ValueError(
                     "Failed to retrieve relationship_type_id for "
                     "module # %d, %s %s %s" % 

@@ -739,28 +739,30 @@ class ExportToDatabase(cpm.CPModule):
             of a run when writing directly to a MySQL or SQLite database. It
             writes SQL scripts and CSVs when not writing directly. It also
             can write CellProfiler Analysis property files. In some cases,
-            it's appropriate to run CellProfiler and append to or overwrite
+            it is appropriate to run CellProfiler and append to or overwrite
             the data in existing tables, for instance when running several
             CellProfiler instances which each process a range of the experiment's
-            image sets. In others, such as when the measurements to be written
+            image sets. In other cases, such as when the measurements to be written
             have changed, the data tables must be dropped completely.
             <br>
-            <ul><li><i>%(OVERWRITE_NEVER)s</i> - <b>ExportToDatabase</b> will
+            You can choose fromm three options to conrtol overwriting behavior:
+            <ul><li><i>%(OVERWRITE_NEVER)s:</i> <b>ExportToDatabase</b> will
             ask before dropping and recreating tables unless you are running
             headless. CellProfiler will exit if running headless if the tables
             exist and this option is chosen.</li>
-            <li><i>%(OVERWRITE_DATA)s</i> - <b>ExportToDatabase</b> will keep
+            <li><i>%(OVERWRITE_DATA)s:</i> <b>ExportToDatabase</b> will keep
             the existing tables if present and will overwrite the data. Choose
             <i>%(OVERWRITE_DATA)s</i> if you are breaking your experiment
             into ranges of image sets and running each range on a separate
             instance of CellProfiler.</li>
-            <li><i>%(OVERWRITE_ALL)s</i> - <b>ExportToDatabase</b> will
+            <li><i>%(OVERWRITE_ALL)s:</i> <b>ExportToDatabase</b> will
             drop previous versions of tables at the start of a run. This option
             is appropriate if you are using the <b>CreateBatchFiles</b> module;
             your tables will be created by the run that creates the batch
-            data file. The actual analysis runs that utilize the Batch_data.h5
+            data file. The actual analysis runs that utilize the <code>Batch_data</code>
             file will use the existing tables without trying to recreate them.
-            """)
+            </ul>
+            """%globals())
         
     def add_image_group(self,can_remove = True):
         group = cps.SettingsGroup()
@@ -1043,7 +1045,8 @@ class ExportToDatabase(cpm.CPModule):
             result += [self.sqlite_file]
         elif self.db_type == DB_ORACLE:
             result += [self.sql_file_prefix]
-        result += [self.allow_overwrite]
+        if self.db_type != DB_MYSQL_CSV:
+            result += [self.allow_overwrite]
         # # # # # # # # # # # # # # # # # #
         #
         # Table names

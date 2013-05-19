@@ -626,7 +626,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
     
     def get_object_relationships(self, pipeline):
         '''Return column definitions for object relationships output by module'''
-        objects_name = self.objects_name.value
+        objects_name = self.object_name.value
         if self.neighbors_are_objects:
             neighbors_name = objects_name
         else:

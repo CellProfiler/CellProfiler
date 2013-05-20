@@ -167,6 +167,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
 opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
                               "matplotlib", "matplotlib.numerix.random_array",
+                              "h5py", "h5py.*",
                               "email.iterators",
                               "cellprofiler.modules.*"],
                 'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython', 'zmq'],
@@ -188,7 +189,6 @@ try:
     if os.path.exists(vigranumpy_path):
         data_files += [(".",[vigranumpy_path])]
     opts['py2exe']['includes'] += ["vigra", "vigra.impex",
-                                   "h5py", "h5py.*",
                                    "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic",
                                    "sip"]
     opts['py2exe']['excludes'] += ["ilastik"]

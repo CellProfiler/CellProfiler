@@ -169,7 +169,7 @@ opts = {
                               "matplotlib", "matplotlib.numerix.random_array",
                               "email.iterators",
                               "cellprofiler.modules.*"],
-                'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],
+                'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython', 'zmq'],
                 'dll_excludes': ["jvm.dll"]
               },
     'msi': {}
@@ -188,8 +188,7 @@ try:
     if os.path.exists(vigranumpy_path):
         data_files += [(".",[vigranumpy_path])]
     opts['py2exe']['includes'] += ["vigra", "vigra.impex",
-                                   "h5py","h5py._stub","h5py._conv",
-                                   "h5py.utils","h5py._proxy",
+                                   "h5py", "h5py.*",
                                    "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic",
                                    "sip"]
     opts['py2exe']['excludes'] += ["ilastik"]
@@ -236,6 +235,13 @@ try:
     # Include this package if present
     import scipy.io.matlab.streams
     opts['py2exe']['includes'] += [ "scipy.io.matlab.streams"]
+except:
+    pass
+
+try:
+    # Fix for scipy 0.11
+    from scipy.sparse.csgraph import _validation
+    opts['py2exe']['includes'] += ["scipy.sparse.csgraph._validation"]
 except:
     pass
 

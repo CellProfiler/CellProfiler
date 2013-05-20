@@ -760,7 +760,7 @@ class ExportToDatabase(cpm.CPModule):
             is appropriate if you are using the <b>CreateBatchFiles</b> module;
             your tables will be created by the run that creates the batch
             data file. The actual analysis runs that utilize the <code>Batch_data</code>
-            file will use the existing tables without trying to recreate them.
+            file will use the existing tables without trying to recreate them.</li>
             </ul>
             """%globals())
         

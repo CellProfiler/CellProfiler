@@ -1219,6 +1219,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 outline_img[:,:,2] = workspace.display_data.image
             else:
                 outline_img = workspace.display_data.image.copy()
+            #
+            # Stretch the outline image to the full scale
+            #
+            outline_img = stretch(outline_img)
             
             # Outline the accepted objects pixels
             draw_outline(outline_img, workspace.display_data.outline_image,

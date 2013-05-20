@@ -628,7 +628,9 @@ class Morph(cpm.CPModule):
             if function.can_remove:
                 result.append(function.divider)
             result.append(function.function)
-            if function.function == F_FILL_SMALL:
+            if function.function in (F_CLOSE, F_DILATE, F_ERODE, F_OPEN):
+                pass # These functions are idempotent, so giving the option to iterate makes no sense 
+            elif function.function == F_FILL_SMALL:
                 function.custom_repeats.text = "Maximum hole area"
                 function.custom_repeats.doc = """Fill in all holes that have
                 this many pixels or fewer."""

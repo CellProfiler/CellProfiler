@@ -299,6 +299,43 @@ def connect_sqlite(db_file):
     cursor = connection.cursor()
     return connection, cursor
 
+class DBContext(object):
+    '''A database context suitable for the "with" statement
+    
+    Usage:
+    
+    assert isinstance(self, ExportToDatabase)
+    
+    with DBContext(self):
+    
+       do stuff with self.connection & self.cursor
+       
+    # cursor and connection are closed. Changes are either committed
+    # or rolled back depending on exception status
+    '''
+    def __init__(self, module):
+        assert isinstance(module, ExportToDatabase)
+        self.module = module
+        
+    def __enter__(self):
+        if self.module.db_type == DB_MYSQL:
+            self.connection, self.cursor = connect_mysql(
+                self.module.db_host.value, 
+                self.module.db_user.value, 
+                self.module.db_passwd.value,
+                self.module.db_name.value)
+        elif self.module.db_type == DB_SQLITE:
+            db_file = self.module.make_full_filename(
+                self.module.sqlite_file.value)
+            self.connection, self.cursor = connect_sqlite(db_file)
+        return self.connection, self.cursor
+        
+    def __exit__(self, exc_type, exc_value, traceback):
+        if exc_type is None:
+            self.connection.commit()
+        else:
+            self.connection.rollback()
+        self.connection.close()
     
 class ExportToDatabase(cpm.CPModule):
  
@@ -1572,18 +1609,34 @@ class ExportToDatabase(cpm.CPModule):
             try:
                 self.write_data_to_db(workspace)
                 workspace.interaction_request(
-                    self, self.connection.get_state())
+                    self, self.INTERACTION_EXECUTE, self.connection.get_state())
             except workspace.NoInteractionException:
                 # Assume that the interaction can be handled directly,
                 # for instance, in headless mode with no handler
                 #
-                self.handle_interaction(self.connection.get_state())
+                self.handle_interaction(self.INTERACTION_EXECUTE,
+                                        self.connection.get_state())
             finally:
                 self.connection = None
                 self.cursor = None
 
-    def handle_interaction(self, state):
+    INTERACTION_EXECUTE = "Execute"
+    INTERACTION_GET_RELATIONSHIP_TYPES = "GetRelationshipTypes"
+    INTERACTION_ADD_RELATIONSHIP_TYPE = "AddRelationshipType"
+    
+    def handle_interaction(self, command, *args, **kwargs):
         '''Handle sqllite interactions from workers'''
+        
+        if command == self.INTERACTION_EXECUTE:
+            return self.handle_interaction_execute(*args, **kwargs)
+        elif command == self.INTERACTION_GET_RELATIONSHIP_TYPES:
+            return self.handle_interaction_get_relationship_types(*args, **kwargs)
+        elif command == self.INTERACTION_ADD_RELATIONSHIP_TYPE:
+            return self.handle_interaction_add_relationship_type(*args, **kwargs)
+        else:
+            raise ValueError("No %s interaction" % command)
+        
+    def handle_interaction_execute(self, state):
         commands = SQLiteCommands()
         commands.set_state(state)
         db_file = self.make_full_filename(self.sqlite_file.value)
@@ -1596,6 +1649,113 @@ class ExportToDatabase(cpm.CPModule):
         finally:
             cursor.close()
             connection.close()
+            
+    def handle_interaction_get_relationship_types(self):
+        '''Get the relationship types from the database
+
+        returns a dictionary whose key is 
+        (module_number, relationship name, object_name1, object_name2) and
+        whose value is the relationship type ID for that relationship.
+        '''
+        db_file = self.make_full_filename(self.sqlite_file.value)
+        with DBContext(self) as (connection, cursor):
+            return self.get_relationship_types(cursor)
+        
+    def get_relationship_types(self, cursor):
+        '''Get the relationship types from the database
+
+        returns a dictionary whose key is 
+        (module_number, relationship name, object_name1, object_name2) and
+        whose value is the relationship type ID for that relationship.
+        '''
+        relationship_type_table = self.get_table_name(T_RELATIONSHIP_TYPES)
+        statement = "SELECT %s, %s, %s, %s, %s FROM %s" % (
+            COL_RELATIONSHIP_TYPE_ID, COL_RELATIONSHIP, COL_MODULE_NUMBER,
+            COL_OBJECT_NAME1, COL_OBJECT_NAME2, relationship_type_table)
+        
+        return dict(
+            [((mn, r, o1, o2), rt_id) for rt_id, mn, r, o1, o2 in
+              execute(cursor, statement)])
+        
+    def handle_interaction_add_relationship_type(
+        self, module_num, relationship, object_name1, object_name2):
+        '''Add a relationship type to the database
+        
+        module_num, relationship, object_name1, object_name2: the key
+              to the relationship in the relationship type table
+              
+        returns the relationship type ID
+        '''
+        with DBContext(self) as (connection, cursor):
+            return self.add_relationship_type(
+                module_num, relationship, object_name1, object_name2, cursor)
+        
+    def add_relationship_type(self, module_num, relationship, object_name1,
+                              object_name2, cursor):
+        '''Add a relationship type to the database
+        
+        module_num, relationship, object_name1, object_name2: the key
+              to the relationship in the relationship type table
+              
+        returns the relationship type ID
+        '''
+        logger.info("Adding missing relationship type:")
+        logger.info("        module #: %d" % module_num)
+        logger.info("    relationship: %s" % relationship)
+        logger.info("        object 1: %s" % object_name1)
+        logger.info("        object 2: %s" % object_name2)
+        #
+        # If the code reaches here, it's because:
+        # * some module has an absent or mis-coded get_relationship_columns
+        # * the user changed the pipeline after prepare_run was called.
+        #
+        relationship_type_table = self.get_table_name(T_RELATIONSHIP_TYPES)
+        #
+        # An insert guarantees that a record exists
+        #
+        # INSERT INTO <t> (...)
+        # SELECT * FROM (
+        #     SELECT relationship_type_id + 1, <module #>... FROM <t>
+        # ) as mytable WHERE NOT EXISTS
+        # (SELECT 'x' FROM <t> WHERE MODULE_NUM=<module %>...)
+        # ORDER BY relationship_type_id desc LIMIT 1
+        #
+        statement = \
+            "INSERT INTO %s (%s, %s, %s, %s, %s) " % (
+                relationship_type_table,
+                COL_RELATIONSHIP_TYPE_ID, COL_MODULE_NUMBER,
+                COL_RELATIONSHIP, COL_OBJECT_NAME1, COL_OBJECT_NAME2)
+        statement += "SELECT * FROM "
+        statement += \
+            "(SELECT coalesce(max(%s), -1)+1, %d, '%s', '%s', '%s' FROM %s)" % \
+            (COL_RELATIONSHIP_TYPE_ID, module_num, relationship,
+             object_name1, object_name2, relationship_type_table)
+        statement += " AS mytable WHERE NOT EXISTS "
+        statement += "(SELECT 'x' FROM %s WHERE " % relationship_type_table
+        statement += "%s = %d AND " % (COL_MODULE_NUMBER, module_num)
+        statement += "%s = '%s' AND " % (COL_RELATIONSHIP, relationship)
+        statement += "%s = '%s' AND " % (COL_OBJECT_NAME1, object_name1)
+        statement += "%s = '%s')" % (COL_OBJECT_NAME2, object_name2)
+        cursor.execute(statement)
+        #
+        # Then we select and find it
+        #
+        select_statement = \
+            "SELECT min(%s) FROM %s WHERE %s = %d" % (
+                COL_RELATIONSHIP_TYPE_ID, relationship_type_table,
+                COL_MODULE_NUMBER, module_num)
+        for col, value in ((COL_RELATIONSHIP, relationship),
+                           (COL_OBJECT_NAME1, object_name1),
+                           (COL_OBJECT_NAME2, object_name2)):
+            select_statement += " AND %s = '%s'" % (col, value)
+        cursor.execute(select_statement)
+        result = cursor.fetchall()
+        if len(result) == 0 or result[0][0] is None:
+            raise ValueError(
+                "Failed to retrieve relationship_type_id for "
+                "module # %d, %s %s %s" % 
+                (module_num, relationship, object_name1, object_name2))
+        return int(result[0][0])
         
     def post_group(self, workspace, grouping):
         '''Write out any columns that are only available post-group'''
@@ -1633,12 +1793,14 @@ class ExportToDatabase(cpm.CPModule):
             if self.db_type == DB_SQLITE:
                 try:
                     workspace.interaction_request(
-                        self, self.connection.get_state())
+                        self, self.INTERACTION_EXECUTE,
+                        self.connection.get_state())
                 except workspace.NoInteractionException:
                     # Assume that the interaction can be handled directly,
                     # for instance, in headless mode with no handler
                     #
-                    self.handle_interaction(self.connection.get_state())
+                    self.handle_interaction(self.INTERACTION_EXECUTE,
+                                            self.connection.get_state())
         finally:
             self.connection.commit()
             self.connection.close()
@@ -2157,11 +2319,11 @@ CREATE TABLE %s (
         statements.append(statement)
         return statements
     
-    def get_relationship_type_id(self, pipeline, module_num, relationship, 
-                                 object_name1, object_name2, cursor):
+    def get_relationship_type_id(self, workspace, module_num, relationship, 
+                                 object_name1, object_name2):
         '''Get the relationship_type_id for the given relationship
         
-        pipeline - the analysis pipeline
+        workspace - the analysis workspace
         
         module_num - the module number of the module that generated the
                      record
@@ -2172,84 +2334,42 @@ CREATE TABLE %s (
         
         object_name2 - the name of the second object in the relationship
         
-        cursor - used to retrieve or insert entries in the table.
-        
         Returns the relationship_type_id that joins to the relationship
         type record in the relationship types table.
         
         NOTE: this should not be called for CSV databases.
         '''
         assert self.db_type != DB_MYSQL_CSV
-        
+
         d = self.get_dictionary()
         if T_RELATIONSHIP_TYPES not in d:
-            #
-            # Build the dictionary if it doesn't exists
-            #
-            relationship_type_table = self.get_table_name(T_RELATIONSHIP_TYPES)
-            statement = "SELECT %s, %s, %s, %s, %s FROM %s" % (
-                COL_RELATIONSHIP_TYPE_ID, COL_RELATIONSHIP, COL_MODULE_NUMBER,
-                COL_OBJECT_NAME1, COL_OBJECT_NAME2, relationship_type_table)
-            
-            d[T_RELATIONSHIP_TYPES] = dict(
-                [((mn, r, o1, o2), rt_id) for rt_id, mn, r, o1, o2 in
-                  execute(cursor, statement)])
+            if self.db_type == DB_SQLITE:
+                try:
+                    d[T_RELATIONSHIP_TYPES] = workspace.interaction_request(
+                        self, self.INTERACTION_GET_RELATIONSHIP_TYPES)
+                except workspace.NoInteractionException:
+                    # Assume headless: fall through into "else" clause
+                    # at end of loop
+                    d[T_RELATIONSHIP_TYPES] = \
+                        self.handle_interaction_get_relationship_types()
+            else:
+                d[T_RELATIONSHIP_TYPES] = \
+                    self.get_relationship_types(self.cursor)
         rd = d[T_RELATIONSHIP_TYPES]
         
         key = (module_num, relationship, object_name1, object_name2)
         if key not in rd:
-            logger.info("Adding missing relationship type:")
-            logger.info("        module #: %d" % module_num)
-            logger.info("    relationship: %s" % relationship)
-            logger.info("        object 1: %s" % object_name1)
-            logger.info("        object 2: %s" % object_name2)
-            #
-            # If the code reaches here, it's because:
-            # * some module has an absent or mis-coded get_relationship_columns
-            # * the user changed the pipeline after prepare_run was called.
-            #
-            relationship_type_table = self.get_table_name(T_RELATIONSHIP_TYPES)
-            #
-            # An insert guarantees that a record exists
-            #
-            # INSERT INTO <t> (...)
-            # SELECT MAX(relationship_type_id) + 1, <module #>... FROM <t>
-            # WHERE NOT EXISTS
-            # (SELECT 'x' FROM <t> WHERE MODULE_NUM=<module %>...)
-            #
-            statement = \
-                "INSERT INTO %s (%s, %s, %s, %s, %s) " % (
-                    relationship_type_table,
-                    COL_RELATIONSHIP_TYPE_ID, COL_MODULE_NUMBER,
-                    COL_RELATIONSHIP, COL_OBJECT_NAME1, COL_OBJECT_NAME2)
-            statement += \
-                "SELECT MAX(%s)+1, %d, '%s', '%s', '%s' FROM %s" % \
-                (COL_RELATIONSHIP_TYPE_ID, module_num, relationship,
-                 object_name1, object_name2, relationship_type_table)
-            statement += "WHERE NOT EXISTS (SELECT 'x' FROM %s WHERE " % \
-                relationship_type_table
-            statement += "%s = %d AND " % (COL_MODULE_NUMBER, module_num)
-            statement += "%s = '%s' AND " % (COL_RELATIONSHIP, relationship)
-            statement += "%s = '%s' AND " % (COL_OBJECT_NAME1, object_name1)
-            statement += "%s = '%s')" % (COL_OBJECT_NAME2, object_name2)
-            #
-            # Then we select and find it
-            #
-            statement = \
-                "SELECT min(%s) FROM %s WHERE %s = %d" % (
-                    COL_RELATIONSHIP_TYPE_ID, relationship_type_table,
-                    COL_MODULE_NUMBER, module_num)
-            for col, value in ((COL_RELATIONSHIP, relationship),
-                               (COL_OBJECT_NAME1, object_name1),
-                               (COL_OBJECT_NAME2, object_name2)):
-                statement += " AND %s = '%s'" % (col, value)
-            result = execute(cursor, statement)
-            if len(result) == 0:
-                raise ValueError(
-                    "Failed to retrieve relationship_type_id for "
-                    "module # %d, %s %s %s" % 
-                    (module_num, relationship, object_name1, object_name2))
-            rd[key] = int(result[0][0])
+            if self.db_type == DB_SQLITE:
+                try:
+                    rd[key] = workspace.interaction_request(
+                        self, self.INTERACTION_ADD_RELATIONSHIP_TYPE, *key)
+                except workspace.NoInteractionException:
+                    rd[key] = \
+                        self.handle_interaction_add_relationship_type(*key)
+            else:
+                rd[key] = self.add_relationship_type(
+                    module_num, relationship, object_name1, object_name2,
+                    self.cursor)
         return rd[key]
                 
             
@@ -2807,8 +2927,8 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
                         module_num, relationship, object_name1, object_name2,
                         image_numbers = [image_number])
                     rt_id = self.get_relationship_type_id(
-                        pipeline, module_num, relationship, object_name1,
-                        object_name2, self.cursor)
+                        workspace, module_num, relationship, object_name1,
+                        object_name2)
                     if self.db_type == DB_MYSQL:
                         # max_allowed_packet is 16 MB by default
                         # 8 x 10 = 80/row -> 200K rows

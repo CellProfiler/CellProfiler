@@ -2384,18 +2384,28 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
             self.assertRaises(StopIteration, self.cursor.next)
         finally:
             self.drop_tables(module, ("Per_Image","Per_Object"))
-            
+
+    def get_interaction_handler(self, ran_interaction_handler):
+        '''Return an interaction handler for testing
+        
+        return an interaction handler function that sets
+        ran_interaction_handler[0] to True when run.
+        '''
+        def interaction_handler(*args, **vargs):
+            self.assertTrue(len(args) > 0)
+            result = args[0].handle_interaction(*args[1:], **vargs)
+            ran_interaction_handler[0] = True
+            return result
+        return interaction_handler
+        
     def test_03_01_write_sqlite_direct(self):
         '''Write directly to a SQLite database'''
         for with_interaction_handler in (False, True):
             workspace, module, output_dir, finally_fn = self.make_workspace(True)
             ran_interaction_handler = [False]
             if with_interaction_handler:
-                def interaction_handler(*args, **vargs):
-                    self.assertTrue(len(args) > 0)
-                    args[0].handle_interaction(*args[1:], **vargs)
-                    ran_interaction_handler[0] = True
-                workspace.interaction_handler = interaction_handler
+                workspace.interaction_handler = self.get_interaction_handler(
+                    ran_interaction_handler)
             cursor = None
             connection = None
             try:
@@ -4023,11 +4033,8 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
                 True, image_set_count=count, group_measurement=True)
             ran_interaction_handler = [False]
             if with_interaction_handler:
-                def interaction_handler(*args, **vargs):
-                    self.assertTrue(len(args) > 0)
-                    args[0].handle_interaction(*args[1:], **vargs)
-                    ran_interaction_handler[0] = True
-                workspace.interaction_handler = interaction_handler
+                workspace.interaction_handler = self.get_interaction_handler(
+                    ran_interaction_handler)
             self.assertTrue(isinstance(module, E.ExportToDatabase))
             self.assertTrue(isinstance(workspace, cpw.Workspace))
             measurements = workspace.measurements
@@ -4489,6 +4496,41 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
         finally:
             self.drop_tables(module)
         
+    def test_12_06_write_sqlite_relationships(self):
+        for with_interaction_handler in (False, True):
+            workspace, module, output_dir, finally_fn = self.make_workspace(
+                True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
+                relationship_test_type=self.RTEST_SOME)
+            ran_interaction_handler = [False]
+            if with_interaction_handler:
+                workspace.interaction_handler = self.get_interaction_handler(
+                    ran_interaction_handler)
+            try:
+                self.assertTrue(isinstance(module, E.ExportToDatabase))
+                module.db_type.value = E.DB_SQLITE
+                module.wants_agg_mean.value = False
+                module.wants_agg_median.value = False
+                module.wants_agg_std_dev.value = False
+                module.objects_choice.value = E.O_ALL
+                module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+                module.directory.custom_path = output_dir
+                module.separate_object_tables.value = E.OT_COMBINE
+                module.prepare_run(workspace)
+                module.prepare_group(workspace, {}, [1])
+                module.run(workspace)
+                cursor, connection = self.get_sqlite_cursor(module)
+                self.tteesstt_relate(workspace.measurements, module, cursor)
+            finally:
+                if cursor is not None:
+                    cursor.close()
+                if connection is not None:
+                    connection.close()
+                if hasattr(module, "cursor") and module.cursor is not None:
+                    module.cursor.close()
+                if hasattr(module, "connection") and module.connection is not None:
+                    module.connection.close()
+                finally_fn()
+                
     def test_12_07_write_sqlite_duplicates(self):
         if not self.__at_broad:
             self.skipTest("Skipping actual DB work, not at the Broad.")
@@ -4522,135 +4564,233 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
                 module.connection.close()
             finally_fn()
 
-    def test_12_06_write_sqlite_relationships(self):
+    def test_12_08_add_relationship_id_mysql(self):
+        #
+        # Add a missing relationship ID
+        #
         if not self.__at_broad:
             self.skipTest("Skipping actual DB work, not at the Broad.")
             
-        workspace, module, output_dir, finally_fn = self.make_workspace(
-            True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
+        workspace, module = self.make_workspace(
+            False, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
             relationship_test_type=self.RTEST_SOME)
         try:
             self.assertTrue(isinstance(module, E.ExportToDatabase))
-            module.db_type.value = E.DB_SQLITE
+            module.db_type.value = E.DB_MYSQL
             module.wants_agg_mean.value = False
             module.wants_agg_median.value = False
             module.wants_agg_std_dev.value = False
             module.objects_choice.value = E.O_ALL
-            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
-            module.directory.custom_path = output_dir
             module.separate_object_tables.value = E.OT_COMBINE
             module.prepare_run(workspace)
             module.prepare_group(workspace, {}, [1])
+            #
+            # Get rid of the module dictionary entry and the table row
+            #
+            module.get_dictionary()[E.T_RELATIONSHIP_TYPES] = {}
+            self.cursor.execute("use CPUnitTest")
+            self.cursor.execute("delete from %s" % 
+                                module.get_table_name(E.T_RELATIONSHIP_TYPES))
             module.run(workspace)
-            cursor, connection = self.get_sqlite_cursor(module)
-            self.tteesstt_relate(workspace.measurements, module, cursor)
+            self.tteesstt_relate(workspace.measurements, module, self.cursor)
         finally:
-            if cursor is not None:
-                cursor.close()
-            if connection is not None:
-                connection.close()
-            if hasattr(module, "cursor") and module.cursor is not None:
-                module.cursor.close()
-            if hasattr(module, "connection") and module.connection is not None:
-                module.connection.close()
-            finally_fn()
+            self.drop_tables(module)
+            
+    def test_12_09_get_relationship_id_mysql(self):
+        #
+        # Get a missing relationship ID (e.g. worker # 2 gets worker # 1's row)
+        #
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
+            
+        workspace, module = self.make_workspace(
+            False, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
+            relationship_test_type=self.RTEST_SOME)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            module.prepare_run(workspace)
+            module.prepare_group(workspace, {}, [1])
+            #
+            # Get rid of the module dictionary entry and the table row
+            #
+            module.get_dictionary()[E.T_RELATIONSHIP_TYPES] = {}
+            module.run(workspace)
+            self.tteesstt_relate(workspace.measurements, module, self.cursor)
+        finally:
+            self.drop_tables(module)
+
+    def test_12_10_add_relationship_id_sqlite(self):
+        for with_interaction_handler in (False, True):
+            workspace, module, output_dir, finally_fn = self.make_workspace(
+                True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
+                relationship_test_type=self.RTEST_SOME)
+            if with_interaction_handler:
+                ran_interaction_handler = [False]
+                workspace.interaction_handler = self.get_interaction_handler(
+                    ran_interaction_handler)
+            try:
+                self.assertTrue(isinstance(module, E.ExportToDatabase))
+                module.db_type.value = E.DB_SQLITE
+                module.wants_agg_mean.value = False
+                module.wants_agg_median.value = False
+                module.wants_agg_std_dev.value = False
+                module.objects_choice.value = E.O_ALL
+                module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+                module.directory.custom_path = output_dir
+                module.separate_object_tables.value = E.OT_COMBINE
+                module.prepare_run(workspace)
+                module.prepare_group(workspace, {}, [1])
+                with E.DBContext(module) as (connection, cursor):
+                    cursor.execute(
+                        "delete from %s" %
+                        module.get_table_name(E.T_RELATIONSHIP_TYPES))
+                module.get_dictionary()[E.T_RELATIONSHIP_TYPES] = {}
+                module.run(workspace)
+                with E.DBContext(module) as (connection, cursor):
+                    self.tteesstt_relate(workspace.measurements, module, cursor)
+            finally:
+                finally_fn()
+            
+    def test_12_11_get_relationship_id_sqlite(self):
+        for with_interaction_handler in (False, True):
+            workspace, module, output_dir, finally_fn = self.make_workspace(
+                True, relationship_type=cpmeas.MCA_AVAILABLE_EACH_CYCLE,
+                relationship_test_type=self.RTEST_SOME)
+            if with_interaction_handler:
+                ran_interaction_handler = [False]
+                workspace.interaction_handler = self.get_interaction_handler(
+                    ran_interaction_handler)
+            cursor = None
+            connection = None
+            try:
+                self.assertTrue(isinstance(module, E.ExportToDatabase))
+                module.db_type.value = E.DB_SQLITE
+                module.wants_agg_mean.value = False
+                module.wants_agg_median.value = False
+                module.wants_agg_std_dev.value = False
+                module.objects_choice.value = E.O_ALL
+                module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+                module.directory.custom_path = output_dir
+                module.separate_object_tables.value = E.OT_COMBINE
+                module.prepare_run(workspace)
+                module.prepare_group(workspace, {}, [1])
+                module.get_dictionary()[E.T_RELATIONSHIP_TYPES] = {}
+                module.run(workspace)
+                cursor, connection = self.get_sqlite_cursor(module)
+                self.tteesstt_relate(workspace.measurements, module, cursor)
+            finally:
+                if cursor is not None:
+                    cursor.close()
+                if connection is not None:
+                    connection.close()
+                if hasattr(module, "cursor") and module.cursor is not None:
+                    module.cursor.close()
+                if hasattr(module, "connection") and module.connection is not None:
+                    module.connection.close()
+                finally_fn()
             
     def test_13_01_mysql_no_overwrite(self):
         if not self.__at_broad:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         
-            workspace, module = self.make_workspace(False)
-            try:
-                self.assertTrue(isinstance(module, E.ExportToDatabase))
-                module.db_type.value = E.DB_MYSQL
-                module.allow_overwrite.value = E.OVERWRITE_NEVER
-                module.wants_agg_mean.value = False
-                module.wants_agg_median.value = False
-                module.wants_agg_std_dev.value = False
-                module.objects_choice.value = E.O_ALL
-                module.separate_object_tables.value = E.OT_COMBINE
-                self.assertTrue(module.prepare_run(workspace))
-                self.assertFalse(module.prepare_run(workspace))
-            finally:
-                self.drop_tables(module)
+        workspace, module = self.make_workspace(False)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL
+            module.allow_overwrite.value = E.OVERWRITE_NEVER
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            self.assertTrue(module.prepare_run(workspace))
+            self.assertFalse(module.prepare_run(workspace))
+        finally:
+            self.drop_tables(module)
 
     def test_13_02_mysql_keep_schema(self):
         if not self.__at_broad:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         
-            workspace, module = self.make_workspace(False)
-            try:
-                self.assertTrue(isinstance(module, E.ExportToDatabase))
-                module.db_type.value = E.DB_MYSQL
-                module.allow_overwrite.value = E.OVERWRITE_DATA
-                module.wants_agg_mean.value = False
-                module.wants_agg_median.value = False
-                module.wants_agg_std_dev.value = False
-                module.objects_choice.value = E.O_ALL
-                module.separate_object_tables.value = E.OT_COMBINE
-                self.assertTrue(module.prepare_run(workspace))
-                self.cursor.execute("use CPUnitTest")
-                #
-                # There should be no rows in the image table after prepare_run
-                #
-                how_many = "select count('x') from %s" %\
-                    module.get_table_name(cpmeas.IMAGE)
-                self.cursor.execute(how_many)
-                self.assertEqual(self.cursor.fetchall()[0][0], 0)
-                module.prepare_group(workspace, {}, [1])
-                module.run(workspace)
-                #
-                # There should be one row after "run"
-                #
-                self.cursor.execute(how_many)
-                self.assertEqual(self.cursor.fetchall()[0][0], 1)
-                self.assertTrue(module.prepare_run(workspace))
-                #
-                # The row should still be there after the second prepare_run
-                #
-                self.cursor.execute(how_many)
-                self.assertEqual(self.cursor.fetchall()[0][0], 1)
-            finally:
-                self.drop_tables(module)
+        workspace, module = self.make_workspace(False)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL
+            module.allow_overwrite.value = E.OVERWRITE_DATA
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            self.assertTrue(module.prepare_run(workspace))
+            self.cursor.execute("use CPUnitTest")
+            #
+            # There should be no rows in the image table after prepare_run
+            #
+            how_many = "select count('x') from %s" %\
+                module.get_table_name(cpmeas.IMAGE)
+            self.cursor.execute(how_many)
+            self.assertEqual(self.cursor.fetchall()[0][0], 0)
+            module.prepare_group(workspace, {}, [1])
+            module.run(workspace)
+            #
+            # There should be one row after "run"
+            #
+            self.cursor.execute(how_many)
+            self.assertEqual(self.cursor.fetchall()[0][0], 1)
+            self.assertTrue(module.prepare_run(workspace))
+            #
+            # The row should still be there after the second prepare_run
+            #
+            self.cursor.execute(how_many)
+            self.assertEqual(self.cursor.fetchall()[0][0], 1)
+        finally:
+            self.drop_tables(module)
 
     def test_13_03_mysql_drop_schema(self):
         if not self.__at_broad:
             self.skipTest("Skipping actual DB work, not at the Broad.")
         
-            workspace, module= self.make_workspace(False)
-            try:
-                self.assertTrue(isinstance(module, E.ExportToDatabase))
-                module.db_type.value = E.DB_MYSQL
-                module.allow_overwrite.value = E.OVERWRITE_DATA
-                module.wants_agg_mean.value = False
-                module.wants_agg_median.value = False
-                module.wants_agg_std_dev.value = False
-                module.objects_choice.value = E.O_ALL
-                module.separate_object_tables.value = E.OT_COMBINE
-                self.assertTrue(module.prepare_run(workspace))
-                self.cursor.execute("use CPUnitTest")
-                #
-                # There should be no rows in the image table after prepare_run
-                #
-                how_many = "select count('x') from %s" %\
-                    module.get_table_name(cpmeas.IMAGE)
-                self.cursor.execute(how_many)
-                self.assertEqual(self.cursor.fetchall()[0][0], 0)
-                module.prepare_group(workspace, {}, [1])
-                module.run(workspace)
-                #
-                # There should be one row after "run"
-                #
-                self.cursor.execute(how_many)
-                self.assertEqual(self.cursor.fetchall()[0][0], 1)
-                self.assertTrue(module.prepare_run(workspace))
-                #
-                # The row should not be there after the second prepare_run
-                #
-                self.cursor.execute(how_many)
-                self.assertEqual(self.cursor.fetchall()[0][0], 0)
-            finally:
-                self.drop_tables(module)
+        workspace, module= self.make_workspace(False)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL
+            module.allow_overwrite.value = E.OVERWRITE_ALL
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            self.assertTrue(module.prepare_run(workspace))
+            self.cursor.execute("use CPUnitTest")
+            #
+            # There should be no rows in the image table after prepare_run
+            #
+            how_many = "select count('x') from %s" %\
+                module.get_table_name(cpmeas.IMAGE)
+            self.cursor.execute(how_many)
+            self.assertEqual(self.cursor.fetchall()[0][0], 0)
+            module.prepare_group(workspace, {}, [1])
+            module.run(workspace)
+            #
+            # There should be one row after "run"
+            #
+            self.cursor.execute(how_many)
+            self.assertEqual(self.cursor.fetchall()[0][0], 1)
+            self.assertTrue(module.prepare_run(workspace))
+            #
+            # The row should not be there after the second prepare_run
+            #
+            self.cursor.execute(how_many)
+            self.assertEqual(self.cursor.fetchall()[0][0], 0)
+        finally:
+            self.drop_tables(module)
 
     def test_13_04_sqlite_no_overwrite(self):
         workspace, module, output_dir, finally_fn = self.make_workspace(
@@ -4751,4 +4891,41 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
         finally:
             self.drop_tables(module)
 
-                                                                
+    def test_14_01_dbcontext_mysql(self):
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
+        module = E.ExportToDatabase()
+        module.db_type.value = E.DB_MYSQL
+        module.db_host.value = 'imgdb02'
+        module.db_user.value = 'cpuser'
+        module.db_passwd.value = 'cPus3r'
+        module.db_name.value ='CPUnitTest'
+        
+        with E.DBContext(module) as (connection, cursor):
+            cursor.execute("select 1")
+            result = cursor.fetchall()
+            self.assertEqual(len(result), 1)
+            self.assertEqual(result[0][0], 1)
+            
+    def test_14_01_dbcontext_sqlite(self):
+        output_dir = tempfile.mkdtemp()
+        try:
+            module = E.ExportToDatabase()
+            module.db_type.value = E.DB_SQLITE
+            module.directory.dir_choice = E.ABSOLUTE_FOLDER_NAME
+            module.directory.custom_path = output_dir
+            with E.DBContext(module) as (connection, cursor):
+                cursor.execute("select 1")
+                result = cursor.fetchall()
+                self.assertEqual(len(result), 1)
+                self.assertEqual(result[0][0], 1)
+        finally:
+            try:
+                for filename in os.listdir(output_dir):
+                    os.remove(os.path.join(output_dir, filename))
+                os.rmdir(output_dir)
+            except:
+                print "Failed to remove %s" % output_dir
+            
+            
+    

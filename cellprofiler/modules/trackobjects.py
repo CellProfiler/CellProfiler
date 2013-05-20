@@ -357,11 +357,15 @@ class TrackObjects(cpm.CPModule):
             alternative to keeping the gap is to bridge it by connecting
             the tracks on either side of the missing frames).
             The cost of bridging a gap is the distance, in pixels, of the 
-            displacement of the object between frames.<br><br>
-            Set the gap cost higher if tracks from objects in previous
+            displacement of the object between frames.
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>Set the gap cost higher if tracks from objects in previous
             frames are being erroneously joined, across a gap, to tracks from 
-            objects in subsequent frames. Set the cost lower if tracks
-            are not properly joined due to gaps caused by mis-segmentation.''')
+            objects in subsequent frames. </li>
+            <li>Set the cost lower if tracks
+            are not properly joined due to gaps caused by mis-segmentation.</li>
+            </ul></p>''')
         
         self.split_cost = cps.Integer(
             'Split alternative cost', 40, minval=1, doc = '''
@@ -370,15 +374,22 @@ class TrackObjects(cpm.CPModule):
             when the alternative is to make them into one track that
             splits. A split occurs when an object in one frame is assigned
             to the same track as two objects in a subsequent frame.
-            The split score takes into
-            account the area of the split object relative to the area of
-            the resulting objects and the displacement of the resulting
-            objects relative to the position of the original object and is
-            roughly measured in pixels. The split alternative cost is 
-            (conceptually) subtracted from the cost of making the split.<br>
-            The split cost should be set lower if objects are being split
-            that should not be split. It should be set higher if objects
-            that should be split are not.''')
+            The split cost takes two components into account: 
+            <ul>
+            <li>The area of the split object relative to the area of
+            the resulting objects.</li>
+            <li>The displacement of the resulting
+            objects relative to the position of the original object.</li>
+            </ul>
+            The split cost is roughly measured in pixels. The split alternative cost is 
+            (conceptually) subtracted from the cost of making the split.
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>The split cost should be set lower if objects are being split
+            that should not be split. </li>
+            <li>The split cost should be set higher if objects
+            that should be split are not.</li>
+            </ul></p>''')
         
         self.merge_cost = cps.Integer(
             'Merge alternative cost', 40, minval=1,doc = '''
@@ -387,49 +398,72 @@ class TrackObjects(cpm.CPModule):
             distinct when the alternative is to merge them into one.
             A merge occurs when two objects in one frame are assigned to
             the same track as a single object in a subsequent frame.
-            The merge score takes into account the area of the two objects
-            to be merged relative to the area of the resulting objects and
-            the displacement of the original objects relative to the final
-            object. The merge cost is measured in pixels. The merge
+            The merge score takes two components into account:
+            <ul>
+            <li>The area of the two objects
+            to be merged relative to the area of the resulting objects.</li>
+            <li>The displacement of the original objects relative to the final
+            object. </li>
+            </ul>
+            The merge cost is measured in pixels. The merge
             alternative cost is (conceptually) subtracted from the
-            cost of making the merge.<br>
-            Set the merge alternative cost lower if objects are being
-            merged when they should otherwise be kept separate. Set the cost
-            higher if objects that are not merged should be merged.''')
+            cost of making the merge.
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>Set the merge alternative cost lower if objects are being
+            merged when they should otherwise be kept separate. </li>
+            <li>Set the merge alternative cost
+            higher if objects that are not merged should be merged.</li>
+            </ul></p>''')
         
         self.max_gap_score = cps.Integer(
             'Maximum gap displacement', 50, minval=1, doc = '''
             <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
-            displacements during the second phase. The measurement is roughly
-            the maximum displacement of an object's center from frame to frame.
-            The algorithm will run more slowly with a higher value. The
-            algorithm will not consider objects that would otherwise be
-            tracked between frames if set to a lower value.''')
+            displacements during the second phase. 
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>The maximum gap displacement should be set to roughly
+            the maximum displacement of an object's center from frame to frame. An object that makes large
+            frame-to-frame jumps should have a higher value for this setting than one that only moves slightly.</li>
+            <li>Be aware that the LAP algorithm will run more slowly with a higher maximum gap displacement 
+            value, since the higher this value, the more objects that must be compared at each step.</li>
+            <li>Objects that would have been tracked between successive frames for a lower maximum displacement 
+            may not be tracked if the value is set higher.</li>
+            </ul></p>''')
         
         self.max_merge_score = cps.Integer(
             'Maximum merge score', 50, minval=1, doc = '''
             <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
-            merge scores. The merge score has two components: the area
-            of the resulting merged object relative to the area of the
-            two objects to be merged and the distances between the objects
-            to be merged and the resulting object. The algorithm will run
-            more slowly with a higher value. The algorithm will exclude
-            objects that would otherwise be merged if it is set to a lower
-            value.''')
+            merge scores. The merge score has two components: 
+            <ul>
+            <li>The area of the resulting merged object relative to the area of the
+            two objects to be merged.</li>
+            <li>The distances between the objects to be merged and the resulting object. </li>
+            </ul>
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>The LAP algorithm will run more slowly with a higher maximum merge score value. </li>
+            <li>Objects that would have been merged at a lower maximum merge score will not be considered for merging.</li>
+            </ul></p>''')
         
         self.max_split_score = cps.Integer(
             'Maximum split score', 50, minval=1, doc = '''
             <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
-            split scores. The split score has two components: the area
-            of the initial object relative to the area of the
-            two objects resulting from the split and the distances between the 
-            original and resulting objects. The algorithm will run
-            more slowly with a higher value. The algorithm will exclude
-            objects that would otherwise be split if it is set to a lower
-            value.''')
+            split scores. The split score has two components: 
+            <ul>
+            <li>The area of the initial object relative to the area of the
+            two objects resulting from the split.</li>
+            <li>The distances between the original and resulting objects. </li>
+            </ul>
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>The LAP algorithm will run more slowly with a maximum split score value. </li>
+            <li>Objects that would have been split at a lower maximum split score will not be considered for splitting.</li>
+            </ul></p>
+            ''')
         
         self.max_frame_distance = cps.Integer(
             'Maximum gap', 5, minval=1, doc = '''
@@ -437,7 +471,14 @@ class TrackObjects(cpm.CPModule):
             This setting controls the maximum number of frames that can
             be skipped when merging a gap caused by an unsegmented object.
             These gaps occur when an image is mis-segmented and identification
-            fails to find an object in one or more frames.''')
+            fails to find an object in one or more frames.
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>Set the maximum gap higher in order to have more chance of correctly recapturing an object after 
+            erroneously losing the original for a few frames.</li>
+            <li>Set the maximum gap lower to reduce the chance of erroneously connecting to the wrong object after
+            correctly losing the original object (e.g., if the cell dies or moves off-screen).</li>
+            </ul></p>''')
         
         self.wants_lifetime_filtering = cps.Binary(
             'Do you want to filter objects by lifetime?', False, doc = '''
@@ -445,7 +486,7 @@ class TrackObjects(cpm.CPModule):
             lifetime, i.e., total duration in frames. This is useful for
             marking objects which transiently appear and disappear, such
             as the results of a mis-segmentation. <br>
-            Two points to keep in mind when using this feature:
+            <p><i><b>Recommendations:</b></i>
             <ul>
             <li>This operation does not actually delete the filtered object, 
             but merely removes its label from the tracked object list; 
@@ -453,7 +494,7 @@ class TrackObjects(cpm.CPModule):
             <li>An object can be filtered only if it is tracked as an unique object.
             Splits continue the lifetime count from their parents, so the minimum
             lifetime value does not apply to them.</li>
-            </ul>''')
+            </ul></p>''')
         
         self.wants_minimum_lifetime = cps.Binary(
             'Filter using a minimum lifetime?', True, doc = '''

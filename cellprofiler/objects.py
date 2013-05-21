@@ -18,6 +18,7 @@ from scipy.sparse import coo_matrix
 
 from cellprofiler.cpmath.cpmorphology import all_connected_components
 from cellprofiler.cpmath.outline import outline
+from cellprofiler.cpmath.index import Indexes, all_pairs
 
 @decorator.decorator
 def memoize_method(function, *args):
@@ -159,21 +160,50 @@ class Objects(object):
             # are locations that have an overlap.
             #
             overlap = np.all(sijv[:-1,:2] == sijv[1:,:2],1)
-            prev = sijv[:-1][overlap,2]
-            next = sijv[1:][overlap,2]
-            if len(prev) == 0:
+            #
+            # Find the # at each location by finding the index of the
+            # first example of a location, then subtracting successive indexes
+            #
+            firsts = np.argwhere(np.hstack(([True], ~overlap, [True]))).flatten()
+            counts = firsts[1:] - firsts[:-1]
+            indexer = Indexes(counts)
+            #
+            # Eliminate the locations that are singly labeled
+            #
+            sijv = sijv[counts[indexer.rev_idx] > 1, :]
+            counts = counts[counts > 1]
+            if len(counts) == 0:
                 return [(ijv_to_segmented(self.__ijv), self.indices)]
             #
-            # Now double "prev" and "next" so that if I matches J, J matches I
+            # There are n * n-1 pairs for each coordinate (n = # labels)
+            # n = 1 -> 0 pairs, n = 2 -> 2 pairs, n = 3 -> 6 pairs
             #
-            first = np.hstack((prev, next))
-            second = np.hstack((next, prev))
+            pairs = all_pairs(np.max(counts))
+            pair_counts = counts * (counts - 1)
+            #
+            # Create an indexer for the inputs (sijv) and for the outputs
+            # (first and second of the pairs)
+            #
+            input_indexer = Indexes(counts)
+            output_indexer = Indexes(pair_counts)
+            first = sijv[input_indexer.fwd_idx[output_indexer.rev_idx] +
+                         pairs[output_indexer.idx[0], 0], 2]
+            second = sijv[input_indexer.fwd_idx[output_indexer.rev_idx] +
+                          pairs[output_indexer.idx[0], 1], 2]
             #
             # And sort these so that we get consecutive lists for each
             #
             sort_order = np.lexsort((second, first))
             first = first[sort_order]
             second = second[sort_order]
+            #
+            # Eliminate dupes
+            #
+            to_keep = np.hstack(([True], 
+                                 (first[1:] != first[:-1]) |
+                                 (second[1:] != second[:-1])))
+            first = first[to_keep]
+            second = second[to_keep]
             #
             # Bincount each label so we can find the ones that have the
             # most overlap. See cpmorphology.color_labels and
@@ -231,7 +261,7 @@ class Objects(object):
             result = []
             for color in np.unique(v_color):
                 ijv = self.__ijv[v_color[self.__ijv[:,2]] == color]
-                indices = np.arange(len(v_color))[v_color == color]
+                indices = np.arange(1, len(v_color))[v_color[1:] == color]
                 result.append((ijv_to_segmented(ijv), indices))
             return result
         else:

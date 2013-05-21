@@ -358,6 +358,33 @@ class TestObjects(unittest.TestCase):
             mylabels = labels[0][0] if v in unique_a else labels[1][0]
             self.assertEqual(mylabels[i,j], v)
             
+    def test_06_05_ijv_three_overlapping(self):
+        #
+        # This is a regression test of a bug where a segmentation consists
+        # of only one point, labeled three times yielding two planes instead
+        # of three.
+        #
+        ijv = np.array([[4, 5, 1],
+                        [4, 5, 2], 
+                        [4, 5, 3]])
+        x = cpo.Objects()
+        x.set_ijv(ijv, (8, 9))
+        labels = []
+        indices = np.zeros(3, bool)
+        for l, i in x.get_labels():
+            labels.append(l)
+            self.assertEqual(len(i), 1)
+            self.assertTrue(i[0] in (1, 2, 3))
+            indices[i[0]-1] = True
+        self.assertTrue(np.all(indices))
+        self.assertEqual(len(labels), 3)
+        lstacked = np.dstack(labels)
+        i, j, k = np.mgrid[0:lstacked.shape[0],
+                           0:lstacked.shape[1],
+                           0:lstacked.shape[2]]
+        self.assertTrue(np.all(lstacked[(i != 4) | (j != 5)] == 0))
+        self.assertEqual((1, 2, 3), tuple(sorted(lstacked[4, 5, :])))
+            
     def test_07_00_make_ivj_outlines_empty(self):
         np.random.seed(70)
         x = cpo.Objects()

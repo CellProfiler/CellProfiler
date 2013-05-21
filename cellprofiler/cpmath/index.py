@@ -127,4 +127,26 @@ class Indexes(object):
         '''
         return self.__counts
 
-                    
+def all_pairs(n):
+    '''Return an (n*(n - 1)) x 2 array of all non-identity pairs of n things
+    
+    n - # of things
+    
+    The array is (cleverly) ordered so that the first m * (m - 1) elements
+    can be used for m < n things:
+    
+    n = 3
+    [[0, 1], # n = 2
+     [1, 0], # n = 2
+     [0, 2],
+     [1, 2],
+     [2, 0],
+     [2, 1]]
+     '''
+    # Get all against all
+    i, j = [x.flatten() for x in np.mgrid[0:n, 0:n]]
+    # Eliminate the diagonal of i == j
+    i, j = [x[i != j] for x in i,j]
+    # Order by smallest of i or j first, then j then i for neatness
+    order = np.lexsort((j, i, np.maximum(i, j)))
+    return np.column_stack((i[order], j[order]))

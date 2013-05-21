@@ -41,7 +41,8 @@ import cellprofiler.preferences as cpprefs
 import cellprofiler.modules.createbatchfiles as cpm_c
 from cellprofiler.cpmath.filter import stretch
 from cellprofiler.utilities.get_proper_case_filename import get_proper_case_filename
-from bioformats.formatreader import load_using_bioformats_url, load_using_bioformats
+from bioformats.formatreader import\
+     load_using_bioformats_url, load_using_bioformats, get_omexml_metadata
 
 import cellprofiler.modules.tests as cpmt
 IMAGE_NAME = 'inputimage'
@@ -1864,6 +1865,42 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
             self.assertEqual(tuple(im.shape), tuple(o.shape))
             np.testing.assert_array_equal(
                 o, im.astype(bool))
+            
+    def test_07_06_save_three_planes(self):
+        #
+        # A constant source of confusion: if an image has three planes,
+        # isn't it RGB?
+        #
+        ijv = np.array([[ 5, 6, 1],
+                        [ 5, 6, 2],
+                        [ 5, 6, 3]])
+        workspace, module = self.make_workspace(ijv, save_objects = "ijv",
+                                                shape = (10, 15))
+        assert isinstance(module, cpm_si.SaveImages)
+        module.update_file_names.value = True
+        module.gray_or_color.value = cpm_si.GC_GRAYSCALE
+        module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.pathname.custom_path = self.custom_directory
+        module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+        module.file_format.value = cpm_si.FF_TIFF
+
+        filename = module.get_filename(workspace, make_dirs = False,
+                                       check_overwrite = False)
+        if os.path.isfile(filename):
+            os.remove(filename)
+        module.run(workspace)
+        metadata = get_omexml_metadata(filename)
+        planes = []
+        for i in range(3):
+            planes.append(load_using_bioformats(
+                filename, index=i, rescale=False))
+        img = np.dstack(planes)
+        mask = np.ones(img.shape, bool)
+        mask[5, 6, :] = False
+        self.assertTrue(np.all(img[mask] == 0))
+        objects = img[~mask]
+        self.assertEqual(len(objects), 3)
+        self.assertEqual((1, 2, 3), tuple(sorted(objects)))
             
         
 def make_array(encoded,shape,dtype=np.uint8):

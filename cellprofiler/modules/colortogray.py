@@ -22,6 +22,7 @@ the relative weights will adjust the contribution of the colors relative to each
 
 import numpy as np
 import re
+import matplotlib.colors
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
@@ -30,18 +31,19 @@ import cellprofiler.cpimage  as cpi
 COMBINE = "Combine"
 SPLIT = "Split"
 
-CH_RGB = "RGB"
+CH_RGB = "RGB" 
+CH_HSV = "HSV"
 CH_CHANNELS = "Channels"
 
-SLOT_CHANNEL_COUNT = 13
-SLOT_FIXED_COUNT = 14
+SLOT_CHANNEL_COUNT = 19
+SLOT_FIXED_COUNT = 20
 SLOTS_PER_CHANNEL = 3
 SLOT_CHANNEL_CHOICE = 0
 
 class ColorToGray(cpm.CPModule):
 
     module_name = "ColorToGray"
-    variable_revision_number = 2
+    variable_revision_number = 3
     category = "Image Processing"
     
     def create_settings(self):
@@ -51,22 +53,27 @@ class ColorToGray(cpm.CPModule):
                                            [COMBINE,SPLIT],doc='''
                                            How do you want to convert the color image? 
                                            <ul>
-                                           <li><i>Split:</i> Splits the three channels
+                                           <li><i>%(SPLIT)s:</i> Splits the three channels
                                            (red, green, blue) of a color image into three separate grayscale images. </li>
-                                           <li><i>Combine:</i> Converts a color image to a grayscale 
+                                           <li><i>%(COMBINE)s</i> Converts a color image to a grayscale 
                                            image by combining the three channels (red, green, blue) together.</li>
-                                           </ul>''')
+                                           </ul>'''%globals())
         self.rgb_or_channels = cps.Choice(
-            "Image type:", [CH_RGB, CH_CHANNELS],
+            "Image type", [CH_RGB, CH_HSV, CH_CHANNELS],
             doc = """Many images contain color channels other than red, green
             and blue. For instance, GIF and PNG formats can have an alpha
             channel that encodes transparency. TIF formats can have an arbitrary
             number of channels which represent pixel measurements made by
             different detectors, filters or lighting conditions. This setting
-            chooses between a simple RGB model of the image (the typical way
-            images are stored) and a more complex model involving more
-            than three chnnels. Choose <i>%(CH_RGB)s</i> for the RGB model or
-            <i>%(CH_CHANNELS)s</i> for the channels model.""" % globals())
+            provides three options to choose from:
+            <ul>
+            <li> <i>%(CH_RGB)s:</i> The RGB (red,green,blue) color space is the typical model in which color images are stored. Choosing this option
+            will split the image into any of the red, green and blue component images.</li>
+            <li><i>%(CH_HSV)s:</i>The HSV (hue, saturation, value) color space is based on more intuitive color characteristics as 
+            tint, shade and tone. Choosing
+            this option will split the image into any of the hue, saturation, and value component images.</li>
+            <li><i>%(CH_CHANNELS)s:</i>This is a more complex model for images which involve more than three chnnels.</li>
+            </ul>""" % globals())
         
         # The following settings are used for the combine option
         self.grayscale_name = cps.ImageNameProvider("Name the output image",
@@ -89,7 +96,7 @@ class ColorToGray(cpm.CPModule):
                                            colors contribute equally in the final image. To weight colors relative 
                                            to each other, increase or decrease the relative weights.''')
         
-        # The following settings are used for the split option
+        # The following settings are used for the split RGB option
         self.use_red = cps.Binary('Convert red to gray?',True)
         self.red_name = cps.ImageNameProvider('Name the output image',
                                          "OrigRed")
@@ -101,6 +108,19 @@ class ColorToGray(cpm.CPModule):
         self.use_blue = cps.Binary('Convert blue to gray?',True)
         self.blue_name = cps.ImageNameProvider('Name the output image',
                                          "OrigBlue")
+        
+        # The following settings are used for the split HSV ption
+        self.use_hue = cps.Binary('Convert hue to gray?',True)
+        self.hue_name = cps.ImageNameProvider('Name the output image',
+                                         "OrigHue")
+        
+        self.use_saturation = cps.Binary('Convert saturation to gray?',True)
+        self.saturation_name = cps.ImageNameProvider('Name the output image',
+                                         "OrigSaturation")
+        
+        self.use_value = cps.Binary('Convert value to gray?',True)
+        self.value_name = cps.ImageNameProvider('Name the output image',
+                                         "OrigValue")        
         
         # The alternative model:
         self.channels = []
@@ -117,7 +137,7 @@ class ColorToGray(cpm.CPModule):
         group = cps.SettingsGroup()
         group.can_remove = can_remove
         group.append("channel_choice", cps.Choice(
-            "Channel number:", self.channel_names,
+            "Channel number", self.channel_names,
             self.channel_names[len(self.channels) % len(self.channel_names)],
             doc = """This setting chooses a channel to be processed.
             <i>Red: 1</i> is the first channel in a .TIF or the red channel
@@ -151,7 +171,7 @@ class ColorToGray(cpm.CPModule):
         vv = [self.image_name, self.combine_or_split]
         if self.should_combine():
             vv += [self.grayscale_name, self.rgb_or_channels]
-            if self.rgb_or_channels == CH_RGB:
+            if self.rgb_or_channels in (CH_RGB, CH_HSV):
                 vv.extend([self.red_contribution,
                            self.green_contribution, self.blue_contribution])
             else:
@@ -169,6 +189,13 @@ class ColorToGray(cpm.CPModule):
                     vv.append(v_use)
                     if v_use.value:
                         vv.append(v_name)
+            elif self.rgb_or_channels == CH_HSV:
+                for v_use,v_name in ((self.use_hue  ,self.hue_name),
+                                     (self.use_saturation,self.saturation_name),
+                                     (self.use_value ,self.value_name)):
+                    vv.append(v_use)
+                    if v_use.value:
+                        vv.append(v_name)                        
             else:
                 for channel in self.channels:
                     vv += [channel.channel_choice, channel.image_name]
@@ -186,6 +213,9 @@ class ColorToGray(cpm.CPModule):
                 self.use_red, self.red_name,
                 self.use_green, self.green_name,
                 self.use_blue, self.blue_name,
+                self.use_hue, self.hue_name,
+                self.use_saturation, self.saturation_name,
+                self.use_value, self.value_name,                
                 self.channel_count
                 ] + sum([ [channel.channel_choice, channel.contribution,
                            channel.image_name] for channel in self.channels],
@@ -205,17 +235,20 @@ class ColorToGray(cpm.CPModule):
         Throw a ValidationError exception with an explanation if a module is not valid.
         Make sure that we output at least one image if split
         """
-        if (self.should_split() and (self.rgb_or_channels == CH_RGB) and
-            not any([self.use_red.value, self.use_blue.value, self.use_green.value])):
-            raise cps.ValidationError("You must output at least one of the color images when in split mode",
+        if self.should_split():
+            if (self.rgb_or_channels == CH_RGB) and not any([self.use_red.value, self.use_blue.value, self.use_green.value]):
+                raise cps.ValidationError("You must output at least one of the color images when in split mode",
                                       self.use_red)
+            if (self.rgb_or_channels == CH_HSV) and not any([self.use_hue.value, self.use_saturation.value, self.use_value.value]):
+                raise cps.ValidationError("You must output at least one of the color images when in split mode",
+                                      self.use_hue)
     
     def channels_and_contributions(self):
         """Return tuples of channel indexes and their relative contributions
         
         Used when combining channels to find the channels to combine
         """
-        if self.rgb_or_channels == CH_RGB:
+        if self.rgb_or_channels in (CH_RGB,CH_HSV):
             return [ (i, contribution.value) for i,contribution in enumerate(
                 (self.red_contribution, self.green_contribution, 
                  self.blue_contribution))]
@@ -241,6 +274,13 @@ class ColorToGray(cpm.CPModule):
                    (self.use_blue.value, self.blue_name.value, "Blue"))
             return [ (i, name, title) for i, (use_it, name, title) 
                      in enumerate(rgb) if use_it ]
+        
+        if self.rgb_or_channels == CH_HSV:
+            hsv = ((self.use_hue.value, self.hue_name.value, "Hue"),
+                   (self.use_saturation.value, self.saturation_name.value, "Saturation"),
+                   (self.use_value.value, self.value_name.value, "Value"))
+            return [ (i, name, title) for i, (use_it, name, title) 
+                     in enumerate(hsv) if use_it ]        
         
         result = []
         for channel in self.channels:
@@ -309,11 +349,16 @@ class ColorToGray(cpm.CPModule):
         """
         input_image  = image.pixel_data
         disp_collection = []
-        for index, name, title in self.channels_and_image_names():
-            output_image = input_image[:,:,index]
-            image = cpi.Image(output_image,parent_image=image)
-            workspace.image_set.add(name, image)
-            disp_collection.append([output_image, title])
+        if self.rgb_or_channels in (CH_RGB,CH_CHANNELS):
+            for index, name, title in self.channels_and_image_names():
+                output_image = input_image[:,:,index]
+                workspace.image_set.add(name, cpi.Image(output_image,parent_image=image))
+                disp_collection.append([output_image, title])
+        elif self.rgb_or_channels == CH_HSV:
+            output_image = matplotlib.colors.rgb_to_hsv(input_image)
+            for index, name, title in self.channels_and_image_names():
+                workspace.image_set.add(name, cpi.Image(output_image[:,:,index],parent_image=image))
+                disp_collection.append([output_image[:,:,index], title])                
 
         workspace.display_data.input_image = input_image
         workspace.display_data.disp_collection = disp_collection
@@ -391,6 +436,16 @@ class ColorToGray(cpm.CPModule):
                 setting_values[:2] + [ CH_RGB ] + setting_values[2:] +
                 [ "1", "Red: 1", "1", "Channel1"])
             variable_revision_number = 2
+            
+        if not from_matlab and variable_revision_number == 2:
+            #
+            # Added HSV settings
+            #
+            setting_values = (setting_values[:13] + 
+                              [cps.YES,"OrigHue",cps.YES,"OrigSaturation",cps.YES,"OrigValue"] + 
+                              setting_values[13:])
+            variable_revision_number = 3      
+
         #
         # Standardize the channel choices
         #

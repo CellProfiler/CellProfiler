@@ -2611,8 +2611,7 @@ class PipelineController:
                                      len(image_numbers))
         image_number = image_numbers[self.__within_group_index]
         self.__debug_measurements.next_image_set(image_number)
-        
-        self.__pipeline_list_view.reset_debug_module()
+        self.debug_init_imageset()
         self.__debug_outlines = {}
 
     def on_debug_prev_image_set(self, event):
@@ -2763,7 +2762,7 @@ class PipelineController:
         # Select the first executable module
         #
         if len(modules) > 0:
-            self.__pipeline_list_view.select_one_module(modules[0].module_num)
+            self.__pipeline_list_view.reset_debug_module()
         return True
 
     def on_debug_reload(self, event):

@@ -80,10 +80,19 @@ def circular_gaussian_kernel(sd,radius):
     kernel = kernel / np.sum(kernel)
     return kernel
 
-def fit_polynomial(pixel_data, mask):
+def fit_polynomial(pixel_data, mask, clip=True):
     '''Return an "image" which is a polynomial fit to the pixel data
     
     Fit the image to the polynomial Ax**2+By**2+Cxy+Dx+Ey+F
+    
+    pixel_data - a two-dimensional numpy array to be fitted
+    
+    mask - a mask of pixels whose intensities should be considered in the
+           least squares fit
+           
+    clip - if True, clip the output array so that pixels less than zero
+           in the fitted image are zero and pixels that are greater than
+           one are one.
     '''
     mask = np.logical_and(mask,pixel_data > 0)
     if not np.any(mask):
@@ -97,6 +106,7 @@ def fit_polynomial(pixel_data, mask):
     coeffs = scipy.linalg.lstsq(a.transpose(),pixel_data[mask])[0]
     output_pixels = np.sum([coeff * index for coeff, index in
                             zip(coeffs, [x,y,x2,y2,xy,o])],0)
-    output_pixels[output_pixels > 1] = 1
-    output_pixels[output_pixels < 0] = 0
+    if clip:
+        output_pixels[output_pixels > 1] = 1
+        output_pixels[output_pixels < 0] = 0
     return output_pixels

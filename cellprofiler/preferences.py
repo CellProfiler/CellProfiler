@@ -490,26 +490,38 @@ def tuple_to_color(t, default = (0,0,0)):
         return wx.Colour(red=int(t[0]), green = int(t[1]), blue = int(t[2]))
     except IndexError, ValueError:
         return tuple_to_color(default)
-    
+
+__background_color = None    
 def get_background_color():
     '''Get the color to be used for window backgrounds
     
     Return wx.Colour that will be applied as
     the background for all frames and dialogs
     '''
+    global __background_color
+    if __background_color is not None:
+        return __background_color
     default_color = (143, 188, 143) # darkseagreen
     if not config_exists(BACKGROUND_COLOR):
-        return tuple_to_color(default_color)
+        __background_color = tuple_to_color(default_color)
     else:
-        color = config_read(BACKGROUND_COLOR).split(',')
-        return tuple_to_color(tuple(color), default_color)
+        try:
+            color = config_read(BACKGROUND_COLOR).split(',')
+        except:
+            logger.warn("Failed to read background color")
+            traceback.print_exc()
+            color = default_color
+        __background_color = tuple_to_color(tuple(color), default_color)
+    return __background_color
 
 def set_background_color(color):
     '''Set the color to be used for window backgrounds
     
     '''
+    global __background_color
     config_write(BACKGROUND_COLOR,
                  ','.join([str(x) for x in color.Get()]))
+    __background_color = color
     
 __error_color = None
 def get_error_color():

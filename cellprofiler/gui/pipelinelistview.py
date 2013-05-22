@@ -218,6 +218,7 @@ class PipelineListView(object):
         self.input_list_ctrl.set_show_go_pause(False)
         self.input_list_ctrl.set_show_frame_column(False)
         self.input_list_ctrl.set_allow_disable(False)
+        self.input_list_ctrl.always_draw_current_as_if_selected = True
         self.__input_controls.append(self.input_list_ctrl)
         self.__input_sizer.Add(self.input_list_ctrl, 1, wx.EXPAND)
         #
@@ -1031,6 +1032,9 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.button_is_active = False
         # True if the slider is currently being slid by a mouse capture action
         self.active_slider = False
+        # True to draw the current item as if it were selected, even when
+        # it's not.
+        self.always_draw_current_as_if_selected = False
         # A pen to use to draw shadow edges on buttons
         self.shadow_pen = wx.Pen(wx.SystemSettings.GetColour(wx.SYS_COLOUR_3DSHADOW))
         # A pen to use to draw lighted edges on buttons
@@ -1042,6 +1046,11 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         self.Bind(wx.EVT_MOTION, self.on_mouse_move)
         self.Bind(wx.EVT_KEY_DOWN, self.on_key_down)
         self.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.on_capture_lost)
+        self.Bind(wx.EVT_KILL_FOCUS, self.on_focus_change)
+        self.Bind(wx.EVT_SET_FOCUS, self.on_focus_change)
+    
+    def on_focus_change(self, event):
+        self.Refresh(eraseBackground=False);
         
     def HitTestSubItem(self, position):
         '''Mimic ListCtrl's HitTestSubItem
@@ -1404,6 +1413,9 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                     flags += wx.CONTROL_FOCUSED
                 if self.active_item == i:
                     flags += wx.CONTROL_CURRENT
+                    if (self.always_draw_current_as_if_selected and 
+                        not item.selected):
+                        flags |= wx.CONTROL_SELECTED
                 draw_item_selection_rect(self, dc, r, flags)
             dc.SetBackgroundMode(wx.TRANSPARENT)
             dc.SetTextForeground(clr_selected if item.selected else clr_text)

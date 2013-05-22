@@ -183,9 +183,9 @@ def config_write(key, value):
 def config_exists(key):
     '''Return True if the key is defined in the configuration'''
     global __cached_values
-    if key in __cached_values:
+    if key in __cached_values and __cached_values[key] is not None:
         return True
-    return get_config().Exists(key)
+    return get_config().Exists(key) and get_config().Read(key) is not None
     
 def cell_profiler_root_directory():
     if __cp_root:

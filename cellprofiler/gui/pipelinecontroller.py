@@ -251,7 +251,7 @@ class PipelineController:
                     message = (
                         "CellProfiler could not open the workspace\n"
                         "file, ""%s""." % workspace_file)
-                    caption = "Could not open " + workspace_file
+                    caption = "Could not open %s" % workspace_file
                     ans = self.OOCN_ASK
             else:
                 wx.GetApp().abort_initialization=True

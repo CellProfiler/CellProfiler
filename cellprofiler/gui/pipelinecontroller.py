@@ -915,18 +915,16 @@ class PipelineController:
                 # Note: the length of the longest line of text also
                 #       controls the size of the directory entry text box
                 text = (
-    "Your pipeline contains legacy modules such as LoadImages. CellProfiler can\n"
-    "convert this pipeline to use the new input modules (Images, Metadata,\n"
-    "NamesAndTypes, Groups).\n\n"
-    "If you choose to convert the pipeline, you should then make sure to provide\n"
-    "your original images to the Images module as input, and confirm that your\n"
-    "metadata (if any) is provided to the Metadata module.\n\n"
-    "You can also convert all references to the default input folder to\n"
-    "references to an existing folder.")
+"Your pipeline contains the legacy module LoadImages, and legacy references\n"
+"to the Default Input Folder. CellProfiler can convert this pipeline by:\n\n"
+"(1) Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
+"(2) Using an existing folder instead of the Default Input Folder.\n\n"
+"If you choose to convert the pipeline, you should then make sure to provide\n"
+"your original images to the Images module as input, and confirm that your\n"
+"metadata (if any) is provided to the Metadata module.")
                 CANCEL = 0
                 CONVERT = 1
-                CONVERT_DEFAULT_INPUT_FOLDER = 2
-                DONT_CONVERT = 3
+                DONT_CONVERT = 2
                 
                 with wx.Dialog(self.__frame,
                                title = "Convert legacy pipeline?") as dlg:
@@ -942,7 +940,6 @@ class PipelineController:
                     #       static box
                     #       static box sizer (vertical)
                     #           rb_convert
-                    #           rb_dif
                     #           dir_ctrl
                     #           rb_dont_convert
                     #    standard dialog button sizer
@@ -968,14 +965,9 @@ class PipelineController:
                     vsizer.Add(sizer, 0, wx.EXPAND | wx.LEFT, lmargin)
                     rb_convert = wx.RadioButton(
                         dlg, 
-                        label = "Convert legacy modules",
+                        label = "Convert legacy modules and the default input folder",
                         style = wx.RB_GROUP)
                     sizer.Add(rb_convert, 0, wx.ALIGN_LEFT)
-                    sizer.AddSpacer(4)
-                    rb_dif = wx.RadioButton(
-                        dlg,
-                        label = "Convert default input folder references")
-                    sizer.Add(rb_dif, 0, wx.ALIGN_LEFT)
                     sizer.AddSpacer(4)
                     dir_ctrl = filebrowse.DirBrowseButton(
                         dlg, labelText = "Folder",
@@ -996,22 +988,18 @@ class PipelineController:
                     #
                     dlg.action = CONVERT
                     rb_convert.Value = True
-                    rb_dif.Value = False
                     rb_dont_convert.Value = False
-                    dir_ctrl.Enable(False)
                     for rb, action in ((rb_convert, CONVERT),
-                                       (rb_dif, CONVERT_DEFAULT_INPUT_FOLDER),
                                        (rb_dont_convert, DONT_CONVERT)):
                         def fn(event, action=action, dlg=dlg):
                             dlg.action = action
-                            dir_ctrl.Enable(action == CONVERT_DEFAULT_INPUT_FOLDER)
+                            dir_ctrl.Enable(action == CONVERT)
                         rb.Bind(wx.EVT_RADIOBUTTON, fn)
                     dlg.Fit()
                     result = dlg.ShowModal()
                     if result == wx.ID_OK:
                         if dlg.action == CONVERT:
                             self.__pipeline.convert_legacy_input_modules()
-                        elif dlg.action == CONVERT_DEFAULT_INPUT_FOLDER:
                             self.__pipeline.convert_default_input_folder(
                                 dir_ctrl.GetValue())
                 

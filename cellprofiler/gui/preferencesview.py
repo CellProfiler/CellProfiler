@@ -248,7 +248,7 @@ class PreferencesView:
         #
         sizer.Add(wx.BoxSizer(), 0, wx.EXPAND)
         sizer.Add(wx.StaticText(
-            panel, label = "Measurements file format:"), 0, wx.ALIGN_RIGHT)
+            panel, label = "Output file format:"), 0, wx.ALIGN_RIGHT)
         sizer.Add(self.__write_measurements_combo_box, 0, wx.ALIGN_LEFT)
         panel.SetSizer(sizer)
         panel.Bind(wx.EVT_BUTTON,

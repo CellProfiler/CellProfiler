@@ -37,6 +37,7 @@ from cellprofiler.utilities.relpath import relpath
 X_AUTOMATIC_EXTRACTION = "Automatic"
 X_MANUAL_EXTRACTION = "Manual"
 X_IMPORTED_EXTRACTION = "Import metadata"
+DO_NOT_WRITE_MEASUREMENTS = "Do not write measurements"
 
 logger = logging.getLogger(__name__)
 
@@ -226,6 +227,11 @@ want grouped together.</li>
 """
 
 DEFAULT_IMAGE_FOLDER_HELP = """
+<p>Please note that the Default Input Folder will be deprecated in the future. The location
+of non-image files needed by some odules will be set to an absolute path 
+in future versions of CellProfiler. For specifying the location of image files, please
+use the <i>Input modules</i> panel starting with the <b>Images</b> module.</p>
+
 <p>In the Folder panel, the <i>Default Input Folder</i> contains the input image or data files
 that you want to analyze. Several File Processing modules (e.g., 
 <b>LoadImages</b> or <b>LoadData</b>) provide the option of retrieving images 
@@ -253,6 +259,10 @@ pipeline from the file. To refresh the contents of this panel, click the <i>Refr
 button <img src="memory:%(LOCATION_REFRESH_BUTTON)s"></img>.</p>"""%globals()
 
 DEFAULT_OUTPUT_FOLDER_HELP = """
+<p>Please note that the Default Output Folder will be deprecated in the future. The location
+of files written by the various output modules will be set to an absolute path 
+in future versions of CellProfiler.</p>
+
 <p>In the Folder panel, the <i>Default Output Folder</i> is the folder that CellProfiler uses to
 store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or 
 <b>ExportToSpreadsheet</b>) provide the option of saving analysis results to 
@@ -273,18 +283,28 @@ click on the <i>New folder</i> icon to the right of the <i>Browse folder</i> ico
 The folder will be created according to the pathname you have typed.</p>"""
 
 OUTPUT_FILENAME_HELP = """
-<p>In the <i>Output Filename</i> box in the Folder panel, you can specify the name of the output file 
+<p>Please note that the output file will be deprecated in the future. This setting
+is temporarily present for those need HDF5 or MATLAB formats, and will be moved to 
+Export modules in future versions of CellProfiler.</p>
+
+<p>In the <i>Output Filename</i> box, you can specify the name of the output file 
 where all information about the analysis as well as any measurements will be 
-stored to the hard drive. The output file is a 
-.mat file, which is readable by CellProfiler and by MATLAB. Results in the 
-output file can be accessed or exported
+stored to the hard drive. The output file can be written in one of two formats:
+<ul>
+<li>A <i>.mat file</i> which is readable by CellProfiler and by MATLAB. </li>
+<li>An <i>.h5 file</i> which is readable by CellProfiler, MATLAB and any other program
+capable of reading the HDF5 data format. Documentation on
+how measurements are stored and handled in CellProfiler using this format can be found 
+<a href="https://github.com/CellProfiler/CellProfiler/wiki/Module-Structure-and-Data-Storage-Retrieval#hdf5-measurement-and-workspace-format">here</a>.</li>
+</li>
+</ul>
+Results in the output file can also be accessed or exported
 using <b>Data Tools</b> from the main menu of CellProfiler.
 The pipeline with its settings can be be loaded from an output file using 
-<i>File > Load Pipeline...</i>, or by double-clicking the output file in the file
-list panel (located in the lower left corner of the CellProfiler main window).</p>
+<i>File > Load Pipeline...</i></p>
 
 <p>The output file will be saved in the Default Output Folder unless you type a 
-full path and file name into the output file name box. The path must not have 
+full path and file name into the file name box. The path must not have 
 spaces or characters disallowed by your computer's platform.</p>
                                                                            
 <p>If the output filename ends in <i>OUT.mat</i> (the typical text appended to 
@@ -297,8 +317,8 @@ overwrite?</i> box to the right.</p>
 that even though the analysis completes, CellProfiler continues to use 
 an inordinate amount of your CPU and RAM. This is because the output file is written
 after the analysis is completed and can take a very long time for a lot of measurements.
-If you do not need this file and/or notice this behavior, uncheck the <i>Write output
-file?</i> box to the right.</p>"""
+If you do not need this file and/or notice this behavior, select "<i>%(DO_NOT_WRITE_MEASUREMENTS)s</i>" 
+from the "Measurements file format" drop-down box.</p>"""%globals()
 
 NEW_FEATURES_HELP = """ 
 A number of new features have been incorporated into this re-engineered Python 
@@ -642,18 +662,26 @@ Examples:
 """
 
 SPREADSHEETS_DATABASE_HELP = """
-<p>The most common form of output for cellular analysis is a <i>spreadsheet<i> of data, which is a file
-of numbers. CellProfiler can also output data into a <i>database</i>, which is a . Which format you use will depend on
+<p>The most common form of output for cellular analysis is a <i>spreadsheet<i>, which is an application which
+tabulates data values. 
+CellProfiler can also output data into a <i>database</i>, which is a collection of 
+data that is stored for retrieval by users. Which format you use will depend on
 some of the considerations below:
 <ul>
-<li>Learning curve:</li>
-<li>Assessibility:</li> For spreadsheets, the most widely used program to open these files is Microsoft's Excel program.
-Since the file is plain text, other editors can also be used, such as Calc (OpenOffice, freeware) or Google Docs.
-on the other hand, databases are often run on servers and accessed over networks. In most cases, a database will have a software application
-built on top of it, providing user access to the data.
-<li>Speed:</li>
-<li>Capacity:</li>
+<li>Assessibility: Spreadsheet applications are typically designed to allow easy
+user interaction with the data, to edit values, make graphs and the like. In contrast, the values in databases are
+typically not modified after the fact. Instead, database applications typically allow for viewing a specific data range.</li>
+<li>Capacity and speed:</li>Databases are designed to hold larger amounts of data than spreadsheets. Spreadsheets may contain 
+hundreds to a few thousand rows of data, whereas databases can hold mnay millions of rows of data. Due to the high
+capacity, accessing a particular portion of data in a database is optimized for speed.</li>
+<li>Learning curve: The applications that access spreadsheets are usually made for ease-of-use to allow for user edits. 
+Databases are more sophisticated and are not typically edited or modified; to do so 
+require knowledge of specialized languages made for this purpose (e.g., MySQL, Oracle, etc).</li>
 </ul>
+For spreadsheets, the most widely used program to open these files is Microsoft's Excel program.
+Since the file is plain text, other editors can also be used, such as Calc (OpenOffice, freeware) or Google Docs.
+For databases, a popular (and free) access tools is SQLyog. 
+</p>
 """
 
 USING_THE_OUTPUT_FILE_HELP = """
@@ -1651,7 +1679,8 @@ approach include image formats such as:
 <li>Standard movie formats: AVI, Quicktime MOV, etc
 </ul>
 CellProfiler uses the Bio-Formats library for reading various image formats. For more details on 
-supported files, see this <a href="http://loci.wisc.edu/bio-formats/formats">webpage</a>.
+supported files, see this <a href="http://loci.wisc.edu/bio-formats/formats">webpage</a>. In 
+general, we recommend saving stacks and movies in an open format such as .TIF.
 </p>
 
 <p><i>Example:</i>You have a single Z-stack in Zeiss' LSM format, in the form of six slices

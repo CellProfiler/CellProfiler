@@ -298,6 +298,11 @@ MAX_WORKERS = "MaxWorkers"
 TEMP_DIR = "TempDir"
 WORKSPACE_CHOICE = "WorkspaceChoice"
 ERROR_COLOR = "ErrorColor"
+INTERPOLATION_MODE = "InterpolationMode"
+
+IM_NEAREST = "Nearest"
+IM_BILINEAR = "Bilinear"
+IM_BICUBIC = "Bicubic"
 
 WC_SHOW_WORKSPACE_CHOICE_DIALOG = "ShowWorkspaceChoiceDlg"
 WC_OPEN_LAST_WORKSPACE = "OpenLastWorkspace"
@@ -1207,7 +1212,26 @@ __progress_data = threading.local()
 __progress_data.last_report = time.time()
 __progress_data.callbacks = None
 
+__interpolation_mode = None
+def get_interpolation_mode():
+    '''Get the interpolation mode for matplotlib
+    
+    Returns one of IM_NEAREST, IM_BILINEAR or IM_BICUBIC
+    '''
+    global __interpolation_mode
+    if __interpolation_mode is not None:
+        return __interpolation_mode
+    if config_exists(INTERPOLATION_MODE):
+        __interpolation_mode = config_read(INTERPOLATION_MODE)
+    else:
+        __interpolation_mode = IM_NEAREST
+    return __interpolation_mode
 
+def set_interpolation_mode(value):
+    global __interpolation_mode
+    __interpolation_mode = value
+    config_write(INTERPOLATION_MODE, value)
+    
 def add_progress_callback(callback):
     '''Add a callback function that listens to progress calls
     

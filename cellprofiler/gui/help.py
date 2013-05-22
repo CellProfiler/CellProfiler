@@ -1403,6 +1403,18 @@ TERTIARY_OUTLINE_COLOR_HELP = """The <i>Tertiary Outline Color</i> preference
 sets the color used for the objects touching the image border or image mask
 in <i>IdentifyPrimaryObjects</i>."""
 
+INTERPOLATION_MODE_HELP = """The <i>Interpolation mode</i> preference sets
+the way CellProfiler displays image pixels. If you choose <i>Nearest</i>,
+CellProfiler will display each pixel as a square block of uniform intensity.
+This is truest to the data, but the resulting images look blocky and
+pixelated. You can choose either <i>Bilinear</i> or <i>Bicubic</i> to see
+images where the a bilinear or bicubic spline model has been used to interpolate
+the screen pixel value for screen pixels that do not fall exactly in the
+center of the image pixel. The result, for bilinear or bicubic interpolation is
+an image that is more visually appealing and easier to interpret, but obscures
+the true pixel nature of the real data.
+"""
+
 REPORT_JVM_ERROR_HELP = """The <i>Warn if Java runtime environment not present</i>
 preference determines whether CellProfiler will display a warning on startup
 if CellProfiler can't locate the Java installation on your computer. Check
@@ -1436,6 +1448,7 @@ EACH_PREFERENCE_HELP = (
     ( "Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
     ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
     ( "Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
+    ( "Interpolation mode", INTERPOLATION_MODE_HELP),
     ( "CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP ),
     ( "ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
     ( "ImageJ version", IJ_VERSION_HELP),

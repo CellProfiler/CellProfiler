@@ -869,7 +869,7 @@ class CPFigureFrame(wx.Frame):
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=True, vmin=0, vmax=1, 
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
-                       use_imshow = False, interpolation=matplotlib.image.NEAREST):
+                       use_imshow = False, interpolation=None):
         '''Show an image in a subplot
         
         x, y  - show image in this subplot
@@ -893,6 +893,8 @@ class CPFigureFrame(wx.Frame):
         '''
         orig_vmin = vmin
         orig_vmax = vmax
+        if interpolation is None:
+            interpolation = get_matplotlib_interpolation_preference()
         # NOTE: self.subplot_user_params is used to store changes that are made 
         #    to the display through GUI interactions (eg: hiding a channel).
         #    Once a subplot that uses this mechanism has been drawn, it will
@@ -1592,7 +1594,7 @@ class CPImageArtist(matplotlib.artist.Artist):
         # The radius for the gaussian blur of 1 pixel sd
         #
         self.filterrad = 4.0
-        self.interpolation = matplotlib.image.NEAREST
+        self.interpolation = kwargs["interpolation"]
         
     def draw(self, renderer):
         global roundoff
@@ -1667,6 +1669,16 @@ class CPImageArtist(matplotlib.artist.Artist):
             gc = renderer.new_gc()
             gc.set_clip_rectangle(bbox)
             renderer.draw_image(gc, l, b, im)
+
+def get_matplotlib_interpolation_preference():
+    interpolation = cpprefs.get_interpolation_mode()
+    if interpolation == cpprefs.IM_NEAREST:
+        return matplotlib.image.NEAREST
+    elif interpolation == cpprefs.IM_BILINEAR:
+        return matplotlib.image.BILINEAR
+    elif interpolation == cpprefs.IM_BICUBIC:
+        return matplotlib.image.BICUBIC
+    return matplotlib.image.NEAREST
 
 if __name__ == "__main__":
     import numpy as np

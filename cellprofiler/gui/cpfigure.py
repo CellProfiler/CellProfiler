@@ -1272,7 +1272,7 @@ class CPFigureFrame(wx.Frame):
                 col_labels = [""] + list(col_labels)
             self.table.append(col_labels)
         if row_labels is not None:
-            self.table += [[a] + b for a, b in zip(row_labels, statistics)]
+            self.table += [[a] + list(b) for a, b in zip(row_labels, statistics)]
         else:
             self.table += statistics
         self.__menu_file.Enable(MENU_FILE_SAVE_TABLE, True)

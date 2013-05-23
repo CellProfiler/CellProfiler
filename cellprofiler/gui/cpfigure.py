@@ -1269,7 +1269,7 @@ class CPFigureFrame(wx.Frame):
         if col_labels is not None:
             if row_labels is not None:
                 # Need a blank corner header if both col and row labels
-                col_labels = [""] + col_labels
+                col_labels = [""] + list(col_labels)
             self.table.append(col_labels)
         if row_labels is not None:
             self.table += [[a] + b for a, b in zip(row_labels, statistics)]

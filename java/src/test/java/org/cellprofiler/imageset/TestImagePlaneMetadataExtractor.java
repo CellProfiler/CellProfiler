@@ -17,6 +17,7 @@ import static org.junit.Assert.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class TestImagePlaneMetadataExtractor {
 	private ImagePlane makeImagePlane(String path, String filename, String omexml, int series, int index) {
 		File file = new File(new File(System.getProperty("user.home"), path), filename);
 		try {
-			ImageFile imageFile = new ImageFile(file.toURI().toURL());
+			ImageFile imageFile = new ImageFile(file.toURI());
 			if (omexml != null) imageFile.setXMLDocument(omexml);
 			return new ImagePlane(imageFile, series, index);
 		} catch (MalformedURLException e) {
@@ -187,6 +188,8 @@ public class TestImagePlaneMetadataExtractor {
 		} catch (DependencyException e) {
 			fail();
 		} catch (ServiceException e) {
+			fail();
+		} catch (URISyntaxException e) {
 			fail();
 		}
 	}

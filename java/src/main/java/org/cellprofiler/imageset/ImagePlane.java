@@ -88,6 +88,6 @@ public class ImagePlane {
 	}
 	@Override
 	public String toString() {
-		return String.format("ImagePlane: %s, series=%d, index=%d", imageFile.getURL(), series, index);
+		return String.format("ImagePlane: %s, series=%d, index=%d", imageFile, series, index);
 	}
 }

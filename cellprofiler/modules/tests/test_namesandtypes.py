@@ -173,7 +173,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
                 ipd.jipd = J.run_script("""
                 importPackage(Packages.org.cellprofiler.imageset);
                 importPackage(Packages.org.cellprofiler.imageset.filter);
-                var imageFile=new ImageFile(new java.net.URI(url).toURL());
+                var imageFile=new ImageFile(new java.net.URI(url));
                 var imagePlane=new ImagePlane(imageFile);
                 new ImagePlaneDetails(imagePlane, metadata);
                 """, dict(url=url, metadata=jmetadata))

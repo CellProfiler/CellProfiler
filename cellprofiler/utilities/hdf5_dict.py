@@ -931,6 +931,8 @@ class HDF5FileList(object):
         else:
             url = str(url)
         schema, rest = urllib2.splittype(url)
+        if schema.lower() == "omero":
+            return schema, [rest]
         #
         # The first part always has leading slashes which should be preserved.
         # If there are double slashes after the first, just remove them.

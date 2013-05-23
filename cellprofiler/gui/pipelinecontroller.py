@@ -1639,7 +1639,8 @@ class PipelineController:
                 continue
             if (pathname.startswith("http:") or 
                 pathname.startswith("https:") or
-                pathname.startswith("ftp:")):
+                pathname.startswith("ftp:") or
+                pathname.startswith("omero:")):
                 urls.append(pathname)
             else:
                 urls.append(pathname2url(pathname))

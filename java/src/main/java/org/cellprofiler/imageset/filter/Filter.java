@@ -12,8 +12,8 @@
  */
 package org.cellprofiler.imageset.filter;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -128,7 +128,7 @@ public class Filter {
 	 * @return true to keep, false to filter out
 	 * @throws BadFilterExpressionException if the expression cannot be parsed
 	 */
-	static public boolean filter(String expression, URL url) throws BadFilterExpressionException {
+	static public boolean filter(String expression, URI url) throws BadFilterExpressionException {
 		return filter(expression, new ImagePlaneDetails(
 				new ImagePlane(new ImageFile(url)), MetadataExtractor.emptyMap));
 	}
@@ -138,12 +138,12 @@ public class Filter {
 	 * @param expression expression to use to evaluate the URL
 	 * @param url URL as a string
 	 * @return true if passes filter
-	 * @throws MalformedURLException if URL was not in correct format
 	 * @throws BadFilterExpressionException if filter was not in correct format
+	 * @throws URISyntaxException 
 	 */
 	static public boolean filter(String expression, String url) 
-	throws MalformedURLException, BadFilterExpressionException {
-		return filter(expression, new URL(url));
+	throws BadFilterExpressionException, URISyntaxException {
+		return filter(expression, new URI(url));
 	}
 	
 	static private Filter getFilter(String expression) throws BadFilterExpressionException {

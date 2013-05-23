@@ -15,7 +15,6 @@ package org.cellprofiler.imageset;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,13 +52,8 @@ public class TestJoiner {
 				metadata.put(keys[idxs[i]], values[i]);
 		        filename = filename + values;
 		File f = new File(new File(System.getProperty("user.home")), filename);
-		try {
-			ImageFile imageFile = new ImageFile(f.toURI().toURL());
-			return new ImagePlaneDetails(new ImagePlane(imageFile), metadata);
-		} catch (MalformedURLException e) {
-			fail();
-		}
-		return null;
+		ImageFile imageFile = new ImageFile(f.toURI());
+		return new ImagePlaneDetails(new ImagePlane(imageFile), metadata);
 	}
 
 	/**

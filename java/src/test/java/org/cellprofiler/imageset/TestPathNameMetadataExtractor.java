@@ -16,10 +16,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URISyntaxException;
 import java.util.Map;
-
+import java.net.URI;
 import org.junit.Test;
 
 
@@ -33,52 +32,50 @@ public class TestPathNameMetadataExtractor {
 		final String filename = "foo.jpg";
 		final File root = new File(System.getProperty("user.home"));
 		File path = new File(root, filename);
-		try {
-			ImageFile imageFile = new ImageFile(path.toURI().toURL());
-			PathNameMetadataExtractor extractor = new PathNameMetadataExtractor(
-					new MetadataExtractor<String>() {
+		ImageFile imageFile = new ImageFile(path.toURI());
+		PathNameMetadataExtractor extractor = new PathNameMetadataExtractor(
+				new MetadataExtractor<String>() {
 
-				public Map<String, String> extract(String source) {
-					assertEquals(source, root.getAbsolutePath());
-					return emptyMap;
-				}
-			});
-			extractor.extract(imageFile);
-		} catch (MalformedURLException e) {
-			fail();
-		}
+			public Map<String, String> extract(String source) {
+				assertEquals(source, root.getAbsolutePath());
+				return emptyMap;
+			}
+		});
+		extractor.extract(imageFile);
 	}
 	@Test
 	public void testHTTPURL() {
+		ImageFile imageFile;
 		try {
-			ImageFile imageFile = new ImageFile(new URL("http://cellprofiler.org/linked_files/foo.jpg"));
+			imageFile = new ImageFile(new URI("http://cellprofiler.org/linked_files/foo.jpg"));
 			PathNameMetadataExtractor extractor = new PathNameMetadataExtractor(
 					new MetadataExtractor<String>() {
-
+	
 				public Map<String, String> extract(String source) {
 					assertEquals(source, "http://cellprofiler.org/linked_files");
 					return emptyMap;
 				}
 			});
 			extractor.extract(imageFile);
-		} catch (MalformedURLException e) {
+		} catch (URISyntaxException e) {
 			fail();
 		}
 	}
 	@Test
 	public void testURLWithoutPath() {
+		ImageFile imageFile;
 		try {
-			ImageFile imageFile = new ImageFile(new URL("http://cellprofiler.org/foo.jpg"));
+			imageFile = new ImageFile(new URI("http://cellprofiler.org/foo.jpg"));
 			PathNameMetadataExtractor extractor = new PathNameMetadataExtractor(
 					new MetadataExtractor<String>() {
-
+	
 				public Map<String, String> extract(String source) {
 					assertEquals(source, "http://cellprofiler.org");
 					return emptyMap;
 				}
 			});
 			extractor.extract(imageFile);
-		} catch (MalformedURLException e) {
+		} catch (URISyntaxException e) {
 			fail();
 		}
 	}

@@ -726,7 +726,7 @@ class NamesAndTypes(cpm.CPModule):
         
         name = provider.get_name()
         m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + name] = \
-            NamesAndTypes.get_file_hash(provider)
+            NamesAndTypes.get_file_hash(provider, m)
         img = provider.provide_image(m)
         m[cpmeas.IMAGE, C_WIDTH + "_" + name] = img.pixel_data.shape[1]
         m[cpmeas.IMAGE, C_HEIGHT + "_" + name] = img.pixel_data.shape[0]
@@ -734,15 +734,21 @@ class NamesAndTypes(cpm.CPModule):
             m[cpmeas.IMAGE, C_SCALING + "_" + name] = provider.scale
         
     @staticmethod
-    def get_file_hash(provider):
+    def get_file_hash(provider, measurements):
         '''Get an md5 checksum from the (cached) file courtesy of the provider'''
         hasher = hashlib.md5()
-        with open(provider.get_full_name(), "rb") as fd:
-            while True:
-                buf = fd.read(65536)
-                if len(buf) == 0:
-                    break
-                hasher.update(buf)
+        path = provider.get_full_name()
+        if not os.path.isfile(path):
+            # No file here - hash the image
+            image = provider.provide_image(measurements)
+            hasher.update(image.pixel_data.tostring())
+        else:
+            with open(provider.get_full_name(), "rb") as fd:
+                while True:
+                    buf = fd.read(65536)
+                    if len(buf) == 0:
+                        break
+                    hasher.update(buf)
         return hasher.hexdigest()
     
     def add_objects(self, workspace, name):

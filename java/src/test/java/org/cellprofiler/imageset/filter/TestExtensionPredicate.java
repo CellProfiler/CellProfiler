@@ -15,7 +15,6 @@ package org.cellprofiler.imageset.filter;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -43,15 +42,13 @@ public class TestExtensionPredicate {
 				for (String filename:(testcase? pos:neg)) { 
 					File rootFile = new File(System.getProperty("user.home"));
 					File testFile = new File(rootFile, filename);
-					ImageFile imageFile = new ImageFile(testFile.toURI().toURL());
+					ImageFile imageFile = new ImageFile(testFile.toURI());
 					ImagePlaneDetails candidate = new ImagePlaneDetails(
 							new ImagePlane(imageFile), new HashMap<String, String>());
 					assertEquals(ep.eval(candidate), testcase);
 				}
 			}
 		} catch (BadFilterExpressionException e) {
-			fail();
-		} catch (MalformedURLException e) {
 			fail();
 		}
 	}

@@ -23,6 +23,7 @@ import uuid
 
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_item_selection_rect
+OMERO_SCHEME = "omero:"
 
 class PathListCtrl(wx.PyScrolledWindow):
     #
@@ -52,6 +53,8 @@ class PathListCtrl(wx.PyScrolledWindow):
             
         def get_full_path(self, idx):
             '''Get the full pathname for the indexed file'''
+            if self.folder_name.lower() == OMERO_SCHEME:
+                return self.folder_name + self.filenames[idx]
             return self.folder_name + "/" + self.filenames[idx]
 
             
@@ -206,6 +209,8 @@ class PathListCtrl(wx.PyScrolledWindow):
     def splitpath(path):
         slash = path.rfind("/")
         if slash == -1:
+            if path.lower().startswith(OMERO_SCHEME):
+                return [path[:len(OMERO_SCHEME)], path[len(OMERO_SCHEME):]]
             return "", path
         else:
             return path[:slash], path[(slash+1):]
@@ -561,7 +566,8 @@ class PathListCtrl(wx.PyScrolledWindow):
                         flags += wx.CONTROL_CURRENT
                     draw_item_selection_rect(
                         self, paint_dc, 
-                        wx.Rect(7-x, yy, self.max_width - 7, line_height),
+                        wx.Rect(self.TREEITEM_WIDTH + self.TREEITEM_GAP-x, 
+                                yy, self.max_width - 7, line_height),
                         flags)
                     if selected:
                         paint_dc.SetTextForeground(selected_text)

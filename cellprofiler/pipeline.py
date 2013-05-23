@@ -2851,6 +2851,10 @@ class Pipeline(object):
                 #
                 m[ImagePlaneDetails.MD_COLOR_FORMAT] = \
                     ImagePlaneDetails.MD_MONOCHROME
+                channel = pixels.Channel(0)
+                channel_name = channel.Name
+                if channel_name is not None:
+                    m[ImagePlaneDetails.MD_CHANNEL_NAME] = channel_name
             elif pixels.channel_count == 1:
                 #
                 # Oh contradictions! It's interleaved, really RGB or RGBA

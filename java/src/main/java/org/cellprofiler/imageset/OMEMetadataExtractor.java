@@ -77,6 +77,10 @@ public class OMEMetadataExtractor implements MetadataExtractor<ImagePlane> {
 		} else {
 			if (pixels.getSizeC().getValue().intValue() == 1) {
 				map.put(MD_COLOR_FORMAT, MD_MONOCHROME);
+				Channel channel = pixels.getChannel(0);
+				if (channel != null) {
+					putIfNotNull(map, MD_CHANNEL_NAME, channel.getName());
+				}
 			} else if (pixels.sizeOfChannelList() == 1) {
 				map.put(MD_COLOR_FORMAT, MD_RGB);
 			} else {

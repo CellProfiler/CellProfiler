@@ -15,8 +15,8 @@ package org.cellprofiler.imageset.filter;
 import static org.junit.Assert.*;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -44,7 +44,7 @@ public class TestFilter {
 			File rootFile = new File(System.getProperty("user.home"));
 			File imagePath = new File(new File(rootFile, pathname), filename);
 			ImageFile imageFile;
-			imageFile = new ImageFile(imagePath.toURI().toURL());
+			imageFile = new ImageFile(imagePath.toURI());
 			ImagePlane imagePlane = new ImagePlane(imageFile, series, index);
 			Map<String, String> metadataMap = new HashMap<String, String>();
 			for (String [] kvpair:metadata) {
@@ -53,17 +53,13 @@ public class TestFilter {
 			assertEquals(expected, Filter.filter(expression, new ImagePlaneDetails(imagePlane, metadataMap)));
 		} catch (BadFilterExpressionException e) {
 			fail(e.getMessage());
-		} catch (MalformedURLException e) {
-			fail(e.getMessage());
 		}
 	}
 	
 	private void testSomething(String expression, String pathname, String filename, boolean expected) {
 		File file = new File(new File(pathname), filename);
 		try {
-			assertEquals(expected, Filter.filter(expression, file.toURI().toURL()));
-		} catch (MalformedURLException e) {
-			fail();
+			assertEquals(expected, Filter.filter(expression, file.toURI()));
 		} catch (BadFilterExpressionException e) {
 			fail();
 		}
@@ -92,13 +88,13 @@ public class TestFilter {
 		try {
 			for (int i=0; i<20; i++) {
 				assertFalse(Filter.filter(String.format("file does contain \"%d\"", i),
-						new URL("http://cellprofiler.org/linked_files/foo.jpg")));
+						new URI("http://cellprofiler.org/linked_files/foo.jpg")));
 			}
 			assertTrue(Filter.filter("file does contain \"foo\"",
-					new URL("http://cellprofiler.org/linked_files/foo.jpg")));
-		} catch (MalformedURLException e) {
-			fail();
+					new URI("http://cellprofiler.org/linked_files/foo.jpg")));
 		} catch (BadFilterExpressionException e) {
+			fail();
+		} catch (URISyntaxException e) {
 			fail();
 		}
 	}

@@ -18,7 +18,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.MalformedURLException;
 import java.nio.CharBuffer;
 import java.util.Map;
 
@@ -44,7 +43,7 @@ public class TestOMEMetadataExtractor {
 		final String filename = "foo.jpg";
 		File path = new File(new File(System.getProperty("user.home")), filename);
 		try {
-			ImageFile imageFile = new ImageFile(path.toURI().toURL());
+			ImageFile imageFile = new ImageFile(path.toURI());
 			imageFile.setXMLDocument(getTestXML());
 			ImagePlane imagePlane = new ImagePlane(imageFile, 0, 0);
 			OMEMetadataExtractor extractor = new OMEMetadataExtractor();
@@ -62,8 +61,6 @@ public class TestOMEMetadataExtractor {
 			assertEquals("monochrome", result.get("ColorFormat"));
 			assertEquals("0", result.get("T"));
 			assertEquals("2", result.get("Z"));
-		} catch (MalformedURLException e) {
-			fail("Unexpected URL processing exception");
 		} catch (ParserConfigurationException e) {
 			fail("Unexpected parser configuration exception");
 		} catch (SAXException e) {

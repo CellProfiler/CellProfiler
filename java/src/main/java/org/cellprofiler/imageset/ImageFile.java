@@ -37,29 +37,29 @@ import org.xml.sax.SAXException;
 /**
  * @author Lee Kamentsky
  * 
- * ImageFile models an image file. Image files have a URL
+ * ImageFile models an image file. Image files have a URI
  * for their retrieval, and OME metadata retrieved from the file.
  *
  */
 public class ImageFile {
-	private final URL url;
+	private final URI uri;
 	private String fileName = null;
 	private String pathName = null;
 	private OME omexml = null;
 	
 	/**
 	 * Construct an image file from a URL
-	 * @param url - URL to be used to retrieve the file
+	 * @param uri - URI to be used to retrieve the file
 	 */
-	public ImageFile(URL url) {
-		this.url = url;
+	public ImageFile(URI uri) {
+		this.uri = uri;
 	}
 	
 	/**
-	 * @return the image file's URL.
+	 * @return the image file's URI.
 	 */
-	public URL getURL() {
-		return url;
+	public URI getURI() {
+		return uri;
 	}
 	
 	/**
@@ -67,21 +67,17 @@ public class ImageFile {
 	 */
 	public String getFileName() {
 		if (fileName == null) {
-			URI uri;
-			try {
-				uri = url.toURI();
-				if (uri.getScheme().equals("file")) {
-					File file = new File(uri);
-					fileName = file.getName();
+			if (uri.getScheme().equals("file")) {
+				File file = new File(uri);
+				fileName = file.getName();
+			} else {
+				String path = uri.getSchemeSpecificPart();
+				int lastslash = path.lastIndexOf("/");
+				if (lastslash == -1) {
+					fileName = path;
 				} else {
-					String path = uri.getPath();
-					fileName = path.substring(path.lastIndexOf("/")+1);
+					fileName = path.substring(lastslash+1);
 				}
-			} catch (URISyntaxException e) {
-				Logger.getLogger(getClass()).info(
-						"Failed to extract file name from badly formed URL: " + 
-						url.toString());
-				return null;
 			}
 		}
 		return fileName;
@@ -97,7 +93,6 @@ public class ImageFile {
 	public String getPathName() {
 		if (pathName == null) {
 			try {
-				final URI uri = url.toURI();
 				if (uri.getScheme().equals("file")) {
 					final File file = new File(uri);
 					pathName = file.getParentFile().getAbsolutePath();
@@ -119,11 +114,11 @@ public class ImageFile {
 			} catch (URISyntaxException e) {
 				Logger.getLogger(getClass()).info(
 						"Failed to extract metadata from badly formed URL: " + 
-						url.toString());
+						uri.toString());
 				return null;
 			} catch (MalformedURLException e) {
 				Logger.getLogger(getClass()).warn(
-						String.format("Failed to reconstitute path from URL, \"%s\"", url.toString()));
+						String.format("Failed to reconstitute path from URL, \"%s\"", uri.toString()));
 				return null;
 			}
 		}
@@ -185,6 +180,6 @@ public class ImageFile {
 	}
 	@Override
 	public String toString() {
-		return String.format("ImageFile: %s", this.url);
+		return String.format("ImageFile: %s", this.uri);
 	}
 }

@@ -14,8 +14,8 @@ package org.cellprofiler.imageset.filter;
 
 import static org.junit.Assert.*;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,14 +59,13 @@ public class TestFileNamePredicate {
 		FileNamePredicate pred = new FileNamePredicate();
 		try {
 			pred.setSubpredicates(Expects.expects("foo.jpg"));
-			ImageFile imgfile = new ImageFile(new URL("file:///imaging/analysis/foo.jpg"));
+			ImageFile imgfile = new ImageFile(new URI("file:///imaging/analysis/foo.jpg"));
 			ImagePlaneDetails imgplane = new ImagePlaneDetails(new ImagePlane(imgfile), null);
 			pred.eval(imgplane);
-		} catch (MalformedURLException e) {
-			fail("Oops");
 		} catch (BadFilterExpressionException e) {
-			// TODO Auto-generated catch block
 			fail("File predicate takes a subpredicate");
+		} catch (URISyntaxException e) {
+			fail();
 		}
 	}
 	@Test
@@ -74,15 +73,29 @@ public class TestFileNamePredicate {
 		FileNamePredicate pred = new FileNamePredicate();
 		try {
 			pred.setSubpredicates(Expects.expects("bar.jpg"));
-			ImageFile imgfile = new ImageFile(new URL("http://www.cellprofiler.org/linked_files/bar.jpg"));
+			ImageFile imgfile = new ImageFile(new URI("http://www.cellprofiler.org/linked_files/bar.jpg"));
 			ImagePlaneDetails imgplane = new ImagePlaneDetails(new ImagePlane(imgfile), null);
 			pred.eval(imgplane);
-		} catch (MalformedURLException e) {
-			fail("Oops");
 		} catch (BadFilterExpressionException e) {
-			// TODO Auto-generated catch block
 			fail("File predicate takes a subpredicate");
+		} catch (URISyntaxException e) {
+			fail();
 		}
+	}
+	@Test
+	public void testEvalOMERO() {
+		FileNamePredicate pred = new FileNamePredicate();
+		try {
+			pred.setSubpredicates(Expects.expects("iid=12345"));
+			ImageFile imgfile = new ImageFile(new URI("omero:iid=12345"));
+			ImagePlaneDetails imgplane = new ImagePlaneDetails(new ImagePlane(imgfile), null);
+			pred.eval(imgplane);
+		} catch (BadFilterExpressionException e) {
+			fail("File predicate takes a subpredicate");
+		} catch (URISyntaxException e) {
+			fail();
+		}
+		
 	}
 		
 }

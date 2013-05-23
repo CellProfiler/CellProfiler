@@ -13,7 +13,8 @@
 package org.cellprofiler.imageset;
 
 import java.io.IOException;
-import java.net.URL;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -177,11 +178,12 @@ public class ImagePlaneMetadataExtractor  {
 	 * @throws ParserConfigurationException 
 	 * @throws ServiceException 
 	 * @throws DependencyException 
+	 * @throws URISyntaxException 
 	 */
 	public Iterator<Map.Entry<String, String>> extractMetadata(
 			String sURL, int series, int index, String metadata, ImagePlaneDetails [] pIPD, ImageFile [] pIF) 
-			throws ParserConfigurationException, SAXException, IOException, DependencyException, ServiceException {
-		ImageFile imageFile = new ImageFile(new URL(sURL));
+			throws ParserConfigurationException, SAXException, IOException, DependencyException, ServiceException, URISyntaxException {
+		ImageFile imageFile = new ImageFile(new URI(sURL));
 		if (metadata != null)
 			imageFile.setXMLDocument(metadata);
 		ImagePlane imagePlane = new ImagePlane(imageFile, series, index);

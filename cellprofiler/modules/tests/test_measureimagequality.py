@@ -23,6 +23,9 @@ from cellprofiler.preferences import set_headless
 set_headless()
 
 import cellprofiler.modules.measureimagequality as miq
+import cellprofiler.modules.namesandtypes
+import cellprofiler.modules.loadsingleimage
+import cellprofiler.modules.smooth
 import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
@@ -846,3 +849,46 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
                                 ("ImageQuality_PercentMinimal_my_image%s"%i)):
                 self.assertFalse(m.has_current_measurements(cpmeas.IMAGE,feature_name),
                             "Erroneously present feature %s"%feature_name)
+    
+    def test_06_01_images_to_process(self):
+        #
+        # Test MeasureImageQuality.images_to_process on a pipeline with a
+        # variety of image providers.
+        #
+        expected_names = ["foo", "bar"]
+        pipeline = cpp.Pipeline()
+        module1 = cellprofiler.modules.namesandtypes.NamesAndTypes()
+        module1.module_num = 1
+        module1.assignment_method.value =\
+            cellprofiler.modules.namesandtypes.ASSIGN_RULES
+        module1.add_assignment()
+        module1.add_assignment()
+        module1.assignments[0].image_name.value = expected_names[0]
+        module1.assignments[0].load_as_choice.value =\
+            cellprofiler.modules.namesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+        #
+        # TO_DO: issue #652
+        #    This test should fail at some later date when we can detect
+        #    that an illumination function should not be QA measured
+        #
+        module1.assignments[1].image_name.value = expected_names[1]
+        module1.assignments[1].load_as_choice.value =\
+            cellprofiler.modules.namesandtypes.LOAD_AS_ILLUMINATION_FUNCTION
+        module1.assignments[2].load_as_choice.value =\
+            cellprofiler.modules.namesandtypes.LOAD_AS_OBJECTS
+        pipeline.add_module(module1)
+        
+        module2 = cellprofiler.modules.smooth.Smooth()
+        module2.module_num = 2
+        module2.image_name.value = expected_names[0]
+        module2.filtered_image_name.value = "henry"
+        pipeline.add_module(module2)
+        
+        miq_module = miq.MeasureImageQuality()
+        miq_module.module_num = 3
+        miq_module.images_choice.value = miq.O_ALL_LOADED
+        image_names = miq_module.images_to_process(
+            miq_module.image_groups[0], None, pipeline)
+        self.assertEqual(len(image_names), len(expected_names))
+        for image_name in image_names:
+            self.assertTrue(image_name in expected_names)

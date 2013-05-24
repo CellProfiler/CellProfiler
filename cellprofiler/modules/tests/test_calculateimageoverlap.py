@@ -203,6 +203,8 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         self.assertTrue(isinstance(measurements, cpmeas.Measurements))
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0),
                                   (C.FTR_FALSE_NEG_RATE, 0),
+                                  (C.FTR_TRUE_POS_RATE, 1),
+                                  (C.FTR_TRUE_NEG_RATE, 1),
                                   (C.FTR_RECALL, 1),
                                   (C.FTR_PRECISION, 1),
                                   (C.FTR_F_FACTOR, 1),
@@ -229,6 +231,8 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         self.assertTrue(isinstance(measurements, cpmeas.Measurements))
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0),
                                   (C.FTR_FALSE_NEG_RATE, 0),
+                                  (C.FTR_TRUE_POS_RATE, 1),
+                                  (C.FTR_TRUE_NEG_RATE, 1),
                                   (C.FTR_RECALL, 1),
                                   (C.FTR_PRECISION, 1),
                                   (C.FTR_F_FACTOR, 1)):
@@ -250,6 +254,8 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         self.assertTrue(isinstance(measurements, cpmeas.Measurements))
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0),
                                   (C.FTR_FALSE_NEG_RATE, 0),
+                                  (C.FTR_TRUE_POS_RATE, 1),
+                                  (C.FTR_TRUE_NEG_RATE, 1),
                                   (C.FTR_RECALL, 1),
                                   (C.FTR_PRECISION, 1),
                                   (C.FTR_F_FACTOR, 1),
@@ -272,6 +278,8 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         f_factor = 2 * precision / (1 + precision)
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0.01),
                                   (C.FTR_FALSE_NEG_RATE, 0),
+                                  (C.FTR_TRUE_POS_RATE, 1),
+                                  (C.FTR_TRUE_NEG_RATE, 0.99),
                                   (C.FTR_RECALL, 1),
                                   (C.FTR_PRECISION, precision),
                                   (C.FTR_F_FACTOR, f_factor)):
@@ -293,6 +301,8 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         f_factor = 2 * recall / (1 + recall)
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0),
                                   (C.FTR_FALSE_NEG_RATE, 0.01),
+                                  (C.FTR_TRUE_POS_RATE, 0.99),
+                                  (C.FTR_TRUE_NEG_RATE, 1),
                                   (C.FTR_RECALL, recall),
                                   (C.FTR_PRECISION, 1),
                                   (C.FTR_F_FACTOR, f_factor)):
@@ -315,6 +325,8 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         f_factor = 2 * precision / (1 + precision)
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0.02),
                                   (C.FTR_FALSE_NEG_RATE, 0),
+                                  (C.FTR_TRUE_POS_RATE, 1),
+                                  (C.FTR_TRUE_NEG_RATE, 0.98),
                                   (C.FTR_RECALL, 1),
                                   (C.FTR_PRECISION, precision),
                                   (C.FTR_F_FACTOR, f_factor)):
@@ -337,6 +349,8 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         f_factor = 2 * recall / (1 + recall)
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0),
                                   (C.FTR_FALSE_NEG_RATE, 0.02),
+                                  (C.FTR_TRUE_POS_RATE, 0.98),
+                                  (C.FTR_TRUE_NEG_RATE, 1),
                                   (C.FTR_RECALL, recall),
                                   (C.FTR_PRECISION, 1),
                                   (C.FTR_F_FACTOR, f_factor)):
@@ -357,6 +371,8 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         measurements = workspace.measurements
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0),
                                   (C.FTR_FALSE_NEG_RATE, 0),
+                                  (C.FTR_TRUE_POS_RATE, 1),
+                                  (C.FTR_TRUE_NEG_RATE, 1),
                                   (C.FTR_RECALL, 1),
                                   (C.FTR_PRECISION, 1),
                                   (C.FTR_F_FACTOR, 1)):
@@ -384,6 +400,8 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         f_factor = 2 * precision / (1 + precision)
         for feature, expected in ((C.FTR_FALSE_POS_RATE, 0.01),
                                   (C.FTR_FALSE_NEG_RATE, 0),
+                                  (C.FTR_TRUE_POS_RATE, 1),
+                                  (C.FTR_TRUE_NEG_RATE, 0.99),
                                   (C.FTR_RECALL, 1),
                                   (C.FTR_PRECISION, precision),
                                   (C.FTR_F_FACTOR, f_factor)):

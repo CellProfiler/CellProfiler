@@ -28,7 +28,9 @@ while a background pixel in the test image that overlaps with foreground in the 
 <ul>
 <li><i>For images and objects:</i>
 <ul>
+<li><i>True positive rate:</i> Total number of true positive pixels / total number of actual positive pixels.</li>
 <li><i>False positive rate:</i> Total number of false positive pixels / total number of actual negative pixels </li>
+<li><i>True negative rate:</i> Total number of true negative pixels / total number of actual negative pixels.</li>
 <li><i>False negative rate:</i> Total number of false negative pixels / total number of actual postive pixels </li>
 <li><i>Precision:</i> Number of true positive pixels / (number of true positive pixels + number of false positive pixels) </li>
 <li><i>Recall:</i> Number of true positive pixels/ (number of true positive pixels + number of false negative pixels) </li>
@@ -72,12 +74,15 @@ C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"
 FTR_PRECISION = "Precision"
 FTR_RECALL = "Recall"
+FTR_TRUE_POS_RATE = "TruePosRate"
 FTR_FALSE_POS_RATE = "FalsePosRate"
 FTR_FALSE_NEG_RATE = "FalseNegRate"
+FTR_TRUE_NEG_RATE = "TrueNegRate"
 FTR_RAND_INDEX = "RandIndex"
 FTR_ADJUSTED_RAND_INDEX = "AdjustedRandIndex"
 
 FTR_ALL = [FTR_F_FACTOR, FTR_PRECISION, FTR_RECALL,
+           FTR_TRUE_POS_RATE, FTR_TRUE_NEG_RATE,
            FTR_FALSE_POS_RATE, FTR_FALSE_NEG_RATE,
            FTR_RAND_INDEX, FTR_ADJUSTED_RAND_INDEX]
 
@@ -218,14 +223,20 @@ class CalculateImageOverlap(cpm.CPModule):
         negative_count = false_positive_count + true_negative_count
         if negative_count == 0:
             false_positive_rate = 0.0
+            true_negative_rate = 1.0
         else:
             false_positive_rate = (float(false_positive_count) / 
                                    float(negative_count))
+            true_negative_rate = (float(true_negative_count) /
+                                  float(negative_count))
         if true_count == 0:
             false_negative_rate = 0.0
+            true_positive_rate = 1.0
         else:
             false_negative_rate = (float(false_negative_count) / 
                                    float(true_count))
+            true_positive_rate = (float(true_positive_count) /
+                                  float(true_count))
         ground_truth_labels, ground_truth_count = label(
             ground_truth_pixels & mask, np.ones((3, 3), bool))
         test_labels, test_count = label(
@@ -238,8 +249,12 @@ class CalculateImageOverlap(cpm.CPModule):
         m.add_image_measurement(self.measurement_name(FTR_PRECISION),
                                 precision)
         m.add_image_measurement(self.measurement_name(FTR_RECALL), recall)
+        m.add_image_measurement(self.measurement_name(FTR_TRUE_POS_RATE),
+                                true_positive_rate)
         m.add_image_measurement(self.measurement_name(FTR_FALSE_POS_RATE),
                                 false_positive_rate)
+        m.add_image_measurement(self.measurement_name(FTR_TRUE_NEG_RATE),
+                                true_negative_rate)
         m.add_image_measurement(self.measurement_name(FTR_FALSE_NEG_RATE),
                                 false_negative_rate)
         m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX),
@@ -375,9 +390,10 @@ class CalculateImageOverlap(cpm.CPModule):
         recall  = TP/GT_tot_area
         precision = TP/(TP+FP)
         F_factor = 2*(precision*recall)/(precision+recall)
+        true_positive_rate = TP/(FN+TP)
         false_positive_rate = FP/(FP+TN)
         false_negative_rate = FN/(FN+TP)
-        
+        true_negative_rate = TN / (FP+TN)
         #
         # Temporary - assume not ijv
         #
@@ -395,8 +411,12 @@ class CalculateImageOverlap(cpm.CPModule):
         m.add_image_measurement(self.measurement_name(FTR_PRECISION),
                                 precision)
         m.add_image_measurement(self.measurement_name(FTR_RECALL), recall)
+        m.add_image_measurement(self.measurement_name(FTR_TRUE_POS_RATE),
+                                true_positive_rate)
         m.add_image_measurement(self.measurement_name(FTR_FALSE_POS_RATE),
                                 false_positive_rate)
+        m.add_image_measurement(self.measurement_name(FTR_TRUE_NEG_RATE),
+                                true_negative_rate)
         m.add_image_measurement(self.measurement_name(FTR_FALSE_NEG_RATE),
                                 false_negative_rate)
         m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX),

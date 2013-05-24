@@ -589,11 +589,13 @@ class ModuleView:
                     self.__frame.show_imageset_sash(False)
                 self.__frame.show_path_list_ctrl(path_control is not None)
                 #
-                # Lay out everything from outermost to innermost
+                # Lay out the module panel, then tell the scroll window
+                # to fit it in order to update the scrollbars
+                # see http://stackoverflow.com/questions/5912761/wxpython-scrolled-panel-not-updating-scroll-bars
                 #
                 self.__frame.layout_pmi_panel()
                 self.top_panel.Layout()
-                self.module_panel.Layout()
+                self.module_panel.FitInside()
                 self.module_panel.Thaw()
             else:
                 self.module_panel.Thaw()

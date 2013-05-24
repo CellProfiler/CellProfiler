@@ -428,6 +428,7 @@ class ImageSetCtrl(wx.grid.Grid):
         corner.Bind(wx.EVT_MOTION, self.on_corner_motion)
         corner.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.on_corner_capture_lost)
         self.corner_hitcode = self.CORNER_HIT_NONE
+        self.corner_button_pressed = False
         
         self.drop_location = None
         self.drop_target = ImageSetCtrlDropTarget(self)
@@ -527,7 +528,10 @@ class ImageSetCtrl(wx.grid.Grid):
             else:
                 r = self.get_corner_update_button_rect()
                 if self.corner_hitcode == self.CORNER_HIT_UPDATE:
-                    flags = wx.CONTROL_PRESSED
+                    if self.corner_button_pressed:
+                        flags = wx.CONTROL_PRESSED | wx.CONTROL_CURRENT | wx.CONTROL_FOCUSED | wx.CONTROL_SELECTED
+                    else:
+                        flags = 0
                 else:
                     flags = 0
                 rn.DrawPushButton(corner, dc, r, flags)
@@ -564,6 +568,7 @@ class ImageSetCtrl(wx.grid.Grid):
                     pass
                 elif hit_code == self.CORNER_HIT_REDO:
                     pass
+            self.corner_hitcode = self.CORNER_HIT_NONE
             corner.ReleaseMouse()
             corner.Refresh(eraseBackground=False)
     

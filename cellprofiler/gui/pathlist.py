@@ -494,6 +494,16 @@ class PathListCtrl(wx.PyScrolledWindow):
                 wx.FONTWEIGHT_BOLD)
         return self.__DROP_FILES_AND_FOLDERS_FONT 
     
+    def show_idx_as_selected(self, idx):
+        '''Return True if the indexed line should be shown selected'''
+        if idx in self.selections:
+            return True
+        if self.mouse_down_idx is None:
+            return False
+        sel_start = min(self.mouse_down_idx, self.mouse_idx)
+        sel_end = max(self.mouse_down_idx, self.mouse_idx) + 1
+        return idx >= sel_start and idx < sel_end
+        
     def on_paint(self, event):
         '''Handle the paint event'''
         assert isinstance(event, wx.PaintEvent)
@@ -529,9 +539,6 @@ class PathListCtrl(wx.PyScrolledWindow):
             paint_dc.SetFont(self.Font)
             
         selected_text = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHTTEXT)
-        if self.mouse_down_idx is not None:
-            sel_start = min(self.mouse_down_idx, self.mouse_idx)
-            sel_end = max(self.mouse_down_idx, self.mouse_idx) + 1
         try:
             x = self.GetScrollPos(wx.SB_HORIZONTAL)
             y = self.GetScrollPos(wx.SB_VERTICAL)
@@ -539,12 +546,31 @@ class PathListCtrl(wx.PyScrolledWindow):
             yline = min(y, len(self))
             yline_max = min(yline + (height + line_height - 1) / line_height,
                             len(self))
+            sel_width = 0
+            #
+            # Precompute the width of the selection rectangle
+            #
+            for idx in range(yline+1, yline_max):
+                item, pidx = self[idx]
+                if item is None:
+                    break
+                if pidx is None:
+                    continue
+                if self.show_idx_as_selected(idx) or self.focus_item == idx:
+                    item_width = paint_dc.GetTextExtent(
+                        item.file_display_names[pidx])[0]
+                    sel_width = max(sel_width, item_width)
+                        
+            #
+            # Paint the strings
+            #
             for idx in range(yline, yline_max):
                 yy = (idx - yline) * line_height
                 item, pidx = self[idx]
                 if item is None:
                     break
                 if pidx is None or idx == yline:
+                    # A directory
                     paint_dc.SetTextForeground(dir_color)
                     rTreeItem = wx.Rect(
                         -x, yy, self.TREEITEM_WIDTH, self.TREEITEM_HEIGHT)
@@ -555,10 +581,8 @@ class PathListCtrl(wx.PyScrolledWindow):
                         item.folder_display_name,
                         self.TREEITEM_WIDTH + self.TREEITEM_GAP - x, yy)
                 else:
-                    selected = (idx in self.selections or (
-                        self.mouse_down_idx is not None and
-                        idx >= sel_start and
-                        idx < sel_end))
+                    # A file
+                    selected = self.show_idx_as_selected(idx)
                     flags = wx.CONTROL_FOCUSED if has_focus else 0
                     if selected:
                         flags += wx.CONTROL_SELECTED
@@ -566,8 +590,8 @@ class PathListCtrl(wx.PyScrolledWindow):
                         flags += wx.CONTROL_CURRENT
                     draw_item_selection_rect(
                         self, paint_dc, 
-                        wx.Rect(self.TREEITEM_WIDTH + self.TREEITEM_GAP-x, 
-                                yy, self.max_width - 7, line_height),
+                        wx.Rect(self.TREEITEM_WIDTH - x, yy, 
+                                sel_width + 2 * self.TREEITEM_GAP, line_height),
                         flags)
                     if selected:
                         paint_dc.SetTextForeground(selected_text)
@@ -721,6 +745,7 @@ class PathListCtrl(wx.PyScrolledWindow):
         if self.mouse_down_idx == self.mouse_idx:
             if self.mouse_down_idx in self.selections:
                 self.selections.remove(self.mouse_down_idx)
+                self.Refresh(eraseBackground=False)
             elif self[self.mouse_down_idx][1] is not None:
                 self.selections.add(self.mouse_down_idx)
         else:

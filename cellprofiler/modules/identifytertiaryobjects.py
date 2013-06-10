@@ -215,8 +215,15 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         #
         child_count_of_secondary, secondary_parents = \
             secondary_objects.relate_children(tertiary_objects)
-        child_count_of_primary, primary_parents = \
-            primary_objects.relate_children(tertiary_objects)
+        if self.shrink_primary:
+            child_count_of_primary, primary_parents = \
+                primary_objects.relate_children(tertiary_objects)
+        else:
+            # Primary and tertiary don't overlap. If tertiary object
+            # disappeared, have primary disavow knowledge of it.
+            child_count_of_primary = np.zeros(primary_objects.count)
+            child_count_of_primary[tertiary_objects.areas > 0] = 1
+            primary_parents = np.arange(1, tertiary_objects.count+1)
         
         if workspace.frame != None:
             import cellprofiler.gui.cpfigure as cpf
@@ -267,7 +274,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             m.add_measurement(parent_objects_name.value,
                               cpmi.FF_CHILDREN_COUNT%(self.subregion_objects_name.value),
                               child_count)
-        object_count = np.max(tertiary_labels)
+        object_count = tertiary_objects.count
         #
         # The object count
         #

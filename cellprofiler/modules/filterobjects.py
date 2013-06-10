@@ -668,18 +668,20 @@ class FilterObjects(cpm.CPModule):
                 # The operation below gets the mask pixels that are on the border of the mask
                 # The erosion turns all pixels touching an edge to zero. The not of this
                 # is the border + formerly masked-out pixels.
-                mask_border = np.logical_not(scipy.ndimage.binary_erosion(image.mask))
+                image = src_objects.parent_image
+                mask_border = np.logical_not(scind.binary_erosion(image.mask))
                 mask_border = np.logical_and(mask_border,image.mask)
                 border_labels = labeled_image[mask_border]
                 border_labels = border_labels.flatten()
-                histogram = scipy.sparse.coo_matrix((np.ones(border_labels.shape),
-                                                     (border_labels,
-                                                      np.zeros(border_labels.shape))),
-                                                      shape=(np.max(labeled_image)+1,1)).todense()
+                histogram = sp.sparse.coo_matrix(
+                    (np.ones(border_labels.shape),
+                     (border_labels,
+                      np.zeros(border_labels.shape))),
+                    shape=(np.max(labeled_image)+1,1)).todense()
                 histogram = np.array(histogram).flatten()
                 if any(histogram[1:] > 0):
                     histogram_image = histogram[labeled_image]
-                    labeled_image[histogram_image > 0] = 0
+                    border_labeled_image[histogram_image > 0] = 0
 
         return np.unique(border_labeled_image)[1:]
 

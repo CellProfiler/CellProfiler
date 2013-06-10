@@ -1443,3 +1443,31 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         module.run(workspace)
         output_objects = workspace.object_set.get_objects("output_objects")
         self.assertTrue(np.all(expected == output_objects.segmented))
+
+    def test_09_02_discard_mask_objects(self):
+        '''Test discarding objects that touch the mask of objects parent img'''
+        mask = np.ones((10, 10), bool)
+        mask[5, 5] = False
+        labels = np.zeros((10, 10), int)
+        labels[1:4, 1:4] = 1
+        labels[5:8, 5:8] = 2
+        expected = labels.copy()
+        expected[expected==2] = 0
+        
+        workspace, module = self.make_workspace({})
+        parent_image = cpi.Image(np.zeros((10, 10)), mask=mask)
+        workspace.image_set.add("input_image", parent_image)
+        
+        input_objects = cpo.Objects()
+        input_objects.segmented = labels
+        input_objects.parent_image = parent_image
+        
+        workspace.object_set.add_objects(input_objects, "input_objects")
+        
+        module.object_name.value = "input_objects"
+        module.target_name.value = "output_objects"
+        module.mode.value = F.MODE_BORDER
+        module.run(workspace)
+        output_objects = workspace.object_set.get_objects("output_objects")
+        self.assertTrue(np.all(expected == output_objects.segmented))
+        

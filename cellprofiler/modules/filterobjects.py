@@ -6,6 +6,9 @@ This module removes selected objects based on measurements produced by another m
 <b>MeasureObjectSizeShape</b>, <b>MeasureObjectIntensity</b>, <b>MeasureTexture</b>, etc). All objects that do not satisty  
 the specified parameters will be discarded.
 
+This module also may remove objects touching the border or mask edge. This is useful if
+you would like to unify images via <b>ReassignObjectNumbers</b> before deciding to discard these objects.
+
 <h4>Available measurements</h4>
 <i>Image features:</i>
 <ul>
@@ -42,6 +45,7 @@ import logging
 logger = logging.getLogger(__name__)
 import numpy as np
 import os
+import scipy as sp
 import scipy.ndimage as scind
 import traceback
 
@@ -90,8 +94,9 @@ ADDITIONAL_OBJECT_SETTING_INDEX = 11
 '''The location of the measurements count setting'''
 MEASUREMENT_COUNT_SETTING_INDEX = 10
 
-ROM_RULES = "Rules"
-ROM_MEASUREMENTS = "Measurements"
+MODE_RULES = "Rules"
+MODE_MEASUREMENTS = "Measurements"
+MODE_BORDER = "Border"
 
 DIR_CUSTOM = "Custom folder"
 
@@ -118,13 +123,14 @@ class FilterObjects(cpm.CPModule):
         
         self.spacer_1 = cps.Divider(line=False)
         
-        self.rules_or_measurement = cps.Choice(
+        self.mode = cps.Choice(
             'Filter using classifier rules or measurements?',
-            [ROM_MEASUREMENTS, ROM_RULES],
+            [MODE_MEASUREMENTS, MODE_RULES, MODE_BORDER],
             doc = """You can choose either a measurement made on the objects or
             a rules file produced by CellProfiler Analyst. If you choose
             <i>Rules</i>, you will have to ensure that this pipeline makes every
-            measurement in that rules file.""")
+            measurement in that rules file. You can also choose to remove objects
+            touching the border of the image or image mask.""")
         self.spacer_2 = cps.Divider(line=False)
         
         self.measurements = []
@@ -299,7 +305,7 @@ class FilterObjects(cpm.CPModule):
             self.add_measurement()
 
     def settings(self):
-        result =[self.target_name, self.object_name, self.rules_or_measurement,
+        result =[self.target_name, self.object_name, self.mode,
                  self.filter_choice, self.enclosing_object_name,
                   self.wants_outlines, self.outlines_name,
                   self.rules_directory, 
@@ -313,7 +319,7 @@ class FilterObjects(cpm.CPModule):
         return result
 
     def help_settings(self):
-        return [self.target_name, self.object_name, self.rules_or_measurement,
+        return [self.target_name, self.object_name, self.mode,
                 self.filter_choice, self.rules_directory, 
                 self.rules_file_name, self.rules_class,
                 self.enclosing_object_name,
@@ -321,12 +327,11 @@ class FilterObjects(cpm.CPModule):
     
     def visible_settings(self):
         result =[self.target_name, self.object_name, 
-                 self.spacer_2, self.rules_or_measurement]
-        if self.rules_or_measurement == ROM_RULES:
+                 self.spacer_2, self.mode]
+        if self.mode == MODE_RULES:
             result += [self.rules_file_name, self.rules_directory,
                        self.rules_class]
-            
-        else:
+        elif self.mode == MODE_MEASUREMENTS:
             result += [self.spacer_1, self.filter_choice]
             if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
                 result += [self.measurements[0].measurement,
@@ -362,7 +367,7 @@ class FilterObjects(cpm.CPModule):
 
     def validate_module(self, pipeline):
         '''Make sure that the user has selected some limits when filtering'''
-        if (self.rules_or_measurement == ROM_MEASUREMENTS and
+        if (self.mode == MODE_MEASUREMENTS and
             self.filter_choice == FI_LIMITS):
             for group in self.measurements:
                 if (group.wants_minimum.value == False and
@@ -370,7 +375,7 @@ class FilterObjects(cpm.CPModule):
                     raise cps.ValidationError(
                         'Please enter a minimum and/or maximum limit for your measurement',
                         group.wants_minimum)
-        if self.rules_or_measurement == ROM_RULES:
+        if self.mode == MODE_RULES:
             try:
                 rules = self.get_rules()
             except Exception, instance:
@@ -393,15 +398,18 @@ class FilterObjects(cpm.CPModule):
     def run(self, workspace):
         '''Filter objects for this image set, display results'''
         src_objects = workspace.get_objects(self.object_name.value)
-        if self.rules_or_measurement == ROM_RULES:
+        if self.mode == MODE_RULES:
             indexes = self.keep_by_rules(workspace, src_objects)
-        elif self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
-            indexes = self.keep_one(workspace, src_objects)
-        elif self.filter_choice in (FI_MINIMAL_PER_OBJECT, 
-                                    FI_MAXIMAL_PER_OBJECT):
-            indexes = self.keep_per_object(workspace, src_objects)
-        elif self.filter_choice == FI_LIMITS:
-            indexes = self.keep_within_limits(workspace, src_objects)
+        elif self.mode == MODE_MEASUREMENTS:
+            if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):
+                indexes = self.keep_one(workspace, src_objects)
+            if self.filter_choice in (FI_MINIMAL_PER_OBJECT, 
+                                      FI_MAXIMAL_PER_OBJECT):
+                indexes = self.keep_per_object(workspace, src_objects)
+            if self.filter_choice == FI_LIMITS:
+                indexes = self.keep_within_limits(workspace, src_objects)
+        elif self.mode == MODE_BORDER:
+            indexes = self.discard_border_objects(workspace, src_objects)
         else:
             raise ValueError("Unknown filter choice: %s"%
                              self.filter_choice.value)
@@ -624,6 +632,59 @@ class FilterObjects(cpm.CPModule):
         indexes = indexes + 1
         return indexes
 
+    def discard_border_objects(self, workspace, src_objects):
+        '''Return an array containing the indices of objects to keep
+
+        workspace - workspace passed into Run
+        src_objects - the Objects instance to be filtered
+        '''
+        labeled_image = src_objects.segmented
+
+        border_labeled_image = labeled_image.copy()
+        
+        border_labels = list(border_labeled_image[0,:])
+        border_labels.extend(border_labeled_image[:,0])
+        border_labels.extend(border_labeled_image[border_labeled_image.shape[0]-1,:])
+        border_labels.extend(border_labeled_image[:,border_labeled_image.shape[1]-1])
+        border_labels = np.array(border_labels)
+        #
+        # the following histogram has a value > 0 for any object
+        # with a border pixel
+        #
+        histogram = sp.sparse.coo_matrix((np.ones(border_labels.shape),
+                                             (border_labels,
+                                              np.zeros(border_labels.shape))),
+                                             shape=(np.max(border_labeled_image)+1,1)).todense()
+        histogram = np.array(histogram).flatten()
+        if any(histogram[1:] > 0):
+            histogram_image = histogram[border_labeled_image]
+            border_labeled_image[histogram_image > 0] = 0
+        elif src_objects.has_parent_image:
+            if src_objects.parent_image.has_mask:
+                # The assumption here is that, if nothing touches the border,
+                # the mask is a large, elliptical mask that tells you where the
+                # well is. That's the way the old Matlab code works and it's duplicated here
+                #
+                # The operation below gets the mask pixels that are on the border of the mask
+                # The erosion turns all pixels touching an edge to zero. The not of this
+                # is the border + formerly masked-out pixels.
+                image = src_objects.parent_image
+                mask_border = np.logical_not(scind.binary_erosion(image.mask))
+                mask_border = np.logical_and(mask_border,image.mask)
+                border_labels = labeled_image[mask_border]
+                border_labels = border_labels.flatten()
+                histogram = sp.sparse.coo_matrix(
+                    (np.ones(border_labels.shape),
+                     (border_labels,
+                      np.zeros(border_labels.shape))),
+                    shape=(np.max(labeled_image)+1,1)).todense()
+                histogram = np.array(histogram).flatten()
+                if any(histogram[1:] > 0):
+                    histogram_image = histogram[labeled_image]
+                    border_labeled_image[histogram_image > 0] = 0
+
+        return np.unique(border_labeled_image)[1:]
+
     def get_rules(self):
         '''Read the rules from a file'''
         rules_file = self.rules_file_name.value
@@ -821,10 +882,10 @@ class FilterObjects(cpm.CPModule):
                 parts.append(scale)
             measurement = "_".join(parts)
             if rules_file_name == cps.DO_NOT_USE:
-                rules_or_measurements = ROM_MEASUREMENTS
+                rules_or_measurements = MODE_MEASUREMENTS
                 rules_directory_choice = DIR_DEFAULT_INPUT
             else:
-                rules_or_measurements = ROM_RULES
+                rules_or_measurements = MODE_RULES
                 if rules_path_name == '.':
                     rules_directory_choice = DIR_DEFAULT_OUTPUT
                 elif rules_path_name == '&':
@@ -873,7 +934,7 @@ class FilterObjects(cpm.CPModule):
             # Added CPA rules
             #
             setting_values = (setting_values[:11] + 
-                              [ROM_MEASUREMENTS, DIR_DEFAULT_INPUT, "."] +
+                              [MODE_MEASUREMENTS, DIR_DEFAULT_INPUT, "."] +
                               setting_values[11:])
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:

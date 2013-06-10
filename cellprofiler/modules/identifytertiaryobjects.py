@@ -70,7 +70,7 @@ from cellprofiler.cpmath.outline import outline
 class IdentifyTertiaryObjects(cpm.CPModule):
 
     module_name = "IdentifyTertiaryObjects"
-    variable_revision_number = 1
+    variable_revision_number = 2
     category = "Object Processing"
     
     def create_settings(self):
@@ -87,6 +87,10 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         self.subregion_objects_name = cps.ObjectNameProvider("Name the tertiary objects to be identified","Cytoplasm",doc="""
             What do you want to call the new subregions? The new tertiary subregion 
             will consist of the smaller object subtracted from the larger object.""")
+
+        self.shrink_primary = cps.Binary("Shrink primary object?",True, doc="""
+            To ensure that there is always a tertiary object produced, the smaller object is shrunk by 1 pixel before
+            subtracting the objects. Uncheck this box to prevent this behavior and subtract the objects directly.""")
         
         self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?",False)
         
@@ -102,7 +106,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         """
         return [self.secondary_objects_name, self.primary_objects_name,
                 self.subregion_objects_name, self.outlines_name,
-                self.use_outlines]
+                self.use_outlines, self.shrink_primary]
     
     def visible_settings(self):
         """The settings that should be visible on-screen
@@ -113,7 +117,8 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         below)
         """
         result = [self.secondary_objects_name, self.primary_objects_name,
-                  self.subregion_objects_name, self.use_outlines]
+                  self.subregion_objects_name, self.shrink_primary,
+                  self.use_outlines]
         #
         # display the name of the outlines image only if the user
         # has asked to use outlines
@@ -189,8 +194,11 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         #
         primary_outline = outline(primary_labels)
         tertiary_labels = secondary_labels.copy()
-        primary_mask = np.logical_or(primary_labels == 0,
-                                     primary_outline)
+        if self.shrink_primary:
+            primary_mask = np.logical_or(primary_labels == 0,
+                                         primary_outline)
+        else:
+            primary_mask = primary_labels == 0
         tertiary_labels[primary_mask == False] = 0
         #
         # Get the outlines of the tertiary image
@@ -207,8 +215,15 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         #
         child_count_of_secondary, secondary_parents = \
             secondary_objects.relate_children(tertiary_objects)
-        child_count_of_primary, primary_parents = \
-            primary_objects.relate_children(tertiary_objects)
+        if self.shrink_primary:
+            child_count_of_primary, primary_parents = \
+                primary_objects.relate_children(tertiary_objects)
+        else:
+            # Primary and tertiary don't overlap. If tertiary object
+            # disappeared, have primary disavow knowledge of it.
+            child_count_of_primary = np.zeros(primary_objects.count)
+            child_count_of_primary[tertiary_objects.areas > 0] = 1
+            primary_parents = np.arange(1, tertiary_objects.count+1)
         
         if workspace.frame != None:
             import cellprofiler.gui.cpfigure as cpf
@@ -259,7 +274,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             m.add_measurement(parent_objects_name.value,
                               cpmi.FF_CHILDREN_COUNT%(self.subregion_objects_name.value),
                               child_count)
-        object_count = np.max(tertiary_labels)
+        object_count = tertiary_objects.count
         #
         # The object count
         #
@@ -340,6 +355,10 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             setting_values = new_setting_values
             from_matlab = False
             variable_revision_number = 1
+            
+        if (not from_matlab) and variable_revision_number == 1:
+            setting_values = setting_values + [cps.YES]
+            variable_revision_number = 2
         
         return setting_values,variable_revision_number,from_matlab
     

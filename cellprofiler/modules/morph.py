@@ -640,8 +640,10 @@ class Morph(cpm.CPModule):
             if function.can_remove:
                 result.append(function.divider)
             result.append(function.function)
-            if function.function in (F_CLOSE, F_DILATE, F_ERODE, F_OPEN):
-                pass # These functions are idempotent, so giving the option to iterate makes no sense 
+            if function.function in (F_CLOSE, F_DILATE, F_ERODE, F_OPEN, F_INVERT):
+                # Iterating open/close, erode/dilate can be handled by
+                # 
+                pass 
             elif function.function == F_DISTANCE:
                 result.append(function.rescale_values)
             elif function.function == F_FILL_SMALL:

@@ -288,9 +288,7 @@ class CreateBatchFiles(cpm.CPModule):
     
     def enter_batch_mode(self, workspace):
         '''Restore the image set list from its setting as we go into batch mode'''
-        image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
-        assert isinstance(image_set_list, cpi.ImageSetList)
         assert isinstance(pipeline, cpp.Pipeline)
         assert not self.distributed_mode, "Distributed mode no longer supported"
         cpprefs.set_default_output_directory(self.custom_output_directory.value)

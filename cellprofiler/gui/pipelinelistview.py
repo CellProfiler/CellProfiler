@@ -545,7 +545,7 @@ class PipelineListView(object):
         if event.EventObject is not self.list_ctrl:
             return
         
-        if self.list_ctrl.pressed_row is None:
+        if self.list_ctrl.active_item is None:
             self.__frame.PopupMenu(self.__frame.menu_edit_add_module)
         else:
             menu = wx.Menu()

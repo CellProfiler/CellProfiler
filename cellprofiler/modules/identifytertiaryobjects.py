@@ -350,7 +350,7 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             variable_revision_number = 1
             
         if (not from_matlab) and variable_revision_number == 1:
-            setting_values += [cps.YES]
+            setting_values = setting_values + [cps.YES]
             variable_revision_number = 2
         
         return setting_values,variable_revision_number,from_matlab

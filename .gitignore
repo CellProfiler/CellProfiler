@@ -29,5 +29,6 @@ java/target
 java/.factorypath
 java/.settings
 killjavabridge.egg-info
+plugins
 output
 windows

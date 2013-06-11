@@ -1,5 +1,14 @@
 '''killvmplugin.py - a nose plugin that kills the javabridge on finalize
 
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2013 Broad Institute
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -39,10 +48,38 @@ class KillVMPlugin(Plugin):
     
     def begin(self):
         if self.enabled:
+            #
+            # Implement workaround from
+            # http://code.google.com/p/python-nose/issues/detail?id=326
+            #
+            # Prevents setup.py from being considered as a test suite
+            #
+            try:
+                from nose.suite import ContextSuite
+                ContextSuite.moduleSetup = tuple(filter(
+                    lambda x: x != "setup", ContextSuite.moduleSetup))
+            except:
+                pass
+            #
+            # Start PySimpleApp for unit tests
+            #
             import wx
             self.app = wx.GetApp()
             if self.app is None:
-                self.app = wx.PySimpleApp(False)
+                class KVMApp(wx.PySimpleApp):
+                    def __init__(self):
+                        super(self.__class__, self).__init__(False)
+                        
+                    def OnExit(self):
+                        from cellprofiler.utilities.jutil import deactivate_awt
+                        deactivate_awt()
+                self.app = KVMApp()
+            #
+            # At least one H5PY build has had debug mode on
+            #
+            import h5py
+            import logging
+            logging.getLogger("h5py").setLevel(logging.WARNING)
         
     def prepareTestRunner(self, testRunner):
         '''Need to make the test runner call finalize if in Wing

@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 
 import unittest
 import numpy
@@ -32,14 +31,16 @@ class testInjectImage(unittest.TestCase):
     
     def test_01_01_get_from_image_set(self):
         image = numpy.zeros((10,10),dtype=float)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
         ii = InjectImage("my_image", image)
         pipeline = cellprofiler.pipeline.Pipeline()
-        workspace = cpw.Workspace(pipeline, ii, None, None,
-                                  cpmeas.Measurements(), image_set_list)
+        measurements = cpmeas.Measurements()
+        workspace = cpw.Workspace(pipeline, ii, measurements, None,
+                                  measurements,
+                                  cellprofiler.cpimage.ImageSetList())
         ii.prepare_run(workspace)
         ii.prepare_group(workspace, {}, [1])
-        image_set = image_set_list.get_image_set(0)
+        ii.run(workspace)
+        image_set = workspace.image_set
         self.assertTrue(image_set,"No image set returned from ImageSetList.GetImageSet")
         my_image = image_set.get_image("my_image")
         self.assertTrue(my_image, "No image returned from ImageSet.GetImage")

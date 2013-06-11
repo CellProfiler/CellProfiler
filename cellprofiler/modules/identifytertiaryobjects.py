@@ -52,7 +52,6 @@ See also <b>IdentifyPrimaryObject</b> and <b>IdentifySecondaryObject</b> modules
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 import matplotlib
@@ -225,34 +224,6 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             child_count_of_primary[tertiary_objects.areas > 0] = 1
             primary_parents = np.arange(1, tertiary_objects.count+1)
         
-        if workspace.frame != None:
-            import cellprofiler.gui.cpfigure as cpf
-            #
-            # Draw the primary, secondary and tertiary labels
-            # and the outlines
-            #
-            window_name = "CellProfiler:%s:%d"%(self.module_name,self.module_num)
-            my_frame=cpf.create_or_find(workspace.frame, 
-                                        title="IdentifyTertiaryObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number), 
-                                        name=window_name, subplots=(2,2))
-            
-            title = "%s, cycle # %d"%(self.primary_objects_name.value,
-                                      workspace.image_set.number+1)
-            my_frame.subplot_imshow_labels(0,0,primary_labels,title)
-            my_frame.subplot_imshow_labels(1,0,secondary_labels, 
-                                           self.secondary_objects_name.value,
-                                           sharex = my_frame.subplot(0,0),
-                                           sharey = my_frame.subplot(0,0))
-            my_frame.subplot_imshow_labels(0, 1,tertiary_labels, 
-                                           self.subregion_objects_name.value,
-                                           sharex = my_frame.subplot(0,0),
-                                           sharey = my_frame.subplot(0,0))
-            my_frame.subplot_imshow_bw(1,1,tertiary_outlines, 
-                                       "Outlines",
-                                       sharex = my_frame.subplot(0,0),
-                                       sharey = my_frame.subplot(0,0))
-            my_frame.Refresh()
         #
         # Write out the objects
         #
@@ -294,6 +265,36 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             out_img = cpi.Image(tertiary_outlines.astype(bool),
                                 parent_image = tertiary_image)
             workspace.image_set.add(self.outlines_name.value, out_img)
+
+        if self.show_window:
+            workspace.display_data.primary_labels = primary_labels
+            workspace.display_data.secondary_labels = secondary_labels
+            workspace.display_data.tertiary_labels = tertiary_labels
+            workspace.display_data.tertiary_outlines = tertiary_outlines
+
+    def display(self, workspace, figure):
+        primary_labels = workspace.display_data.primary_labels
+        secondary_labels = workspace.display_data.secondary_labels
+        tertiary_labels = workspace.display_data.tertiary_labels
+        tertiary_outlines = workspace.display_data.tertiary_outlines
+        #
+        # Draw the primary, secondary and tertiary labels
+        # and the outlines
+        #
+        figure.set_subplots((2, 2))
+
+        figure.subplot_imshow_labels(0, 0, primary_labels, 
+                                     self.primary_objects_name.value)
+        figure.subplot_imshow_labels(1, 0, secondary_labels,
+                                       self.secondary_objects_name.value,
+                                       sharexy = figure.subplot(0, 0))
+        figure.subplot_imshow_labels(0, 1, tertiary_labels,
+                                       self.subregion_objects_name.value,
+                                       sharexy = figure.subplot(0, 0))
+        figure.subplot_imshow_bw(1, 1, tertiary_outlines,
+                                   "Outlines",
+                                   sharexy = figure.subplot(0, 0))
+
             
     def is_object_identification_module(self):
         '''IdentifyTertiaryObjects makes tertiary objects sets so it's a identification module'''

@@ -10,7 +10,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version__ = "$Revision$"
 
 import base64
 import numpy as np
@@ -113,8 +112,11 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
     def make_workspace(self, labels, image, mask = None, 
                        intensity_image = None,
                        wants_graph = False):
+        m = cpmeas.Measurements()
         image_set_list = cpi.ImageSetList()
-        image_set = image_set_list.get_image_set(0)
+        m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1)
+        m.add_measurement(cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1)
+        image_set = m
         img = cpi.Image(image, mask)
         image_set.add(IMAGE_NAME, img)
         
@@ -145,7 +147,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         pipeline.add_listener(callback)
         pipeline.add_module(module)
         workspace = cpw.Workspace(pipeline, module, image_set, object_set,
-                                  cpmeas.Measurements(), image_set_list)
+                                  m, image_set_list)
         return workspace, module
     
     def test_02_01_empty(self):
@@ -353,6 +355,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
             np.zeros((20,10), int),
             np.zeros((20,10), bool),
             intensity_image = np.zeros((20,10)), wants_graph = True)
+        module.prepare_run(workspace)
         module.run(workspace)
         edge_graph = self.read_graph_file(EDGE_FILE)
         vertex_graph = self.read_graph_file(VERTEX_FILE)
@@ -380,6 +383,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
         intensity = np.random.uniform(size = skel.shape)
         workspace, module = self.make_workspace(
             labels, skel, intensity_image = intensity, wants_graph = True)
+        module.prepare_run(workspace)
         module.run(workspace)
         edge_graph = self.read_graph_file(EDGE_FILE)
         vertex_graph = self.read_graph_file(VERTEX_FILE)
@@ -465,6 +469,7 @@ MeasureNeurons:[module_num:1|svn_version:\'8401\'|variable_revision_number:1|sho
                           (5,10, 3, -5))
         workspace, module = self.make_workspace(
             labels, skel, intensity_image = image, wants_graph = True)
+        module.prepare_run(workspace)
         module.run(workspace)
         vertex_graph = self.read_graph_file(VERTEX_FILE)
         edge_graph = self.read_graph_file(EDGE_FILE)

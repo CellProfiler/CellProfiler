@@ -136,7 +136,6 @@ class FlipAndRotate(cpm.CPModule):
         
     def run(self, workspace):
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         image = image_set.get_image(self.image_name.value)
         pixel_data = image.pixel_data.copy()
         mask = image.mask
@@ -174,7 +173,15 @@ class FlipAndRotate(cpm.CPModule):
                     raise NotImplementedError("Unknown axis: %s" %
                                               self.horiz_or_vert.value)
             elif self.rotate_choice == ROTATE_MOUSE:
-                angle = self.angle_from_mouse(workspace, pixel_data)
+                d = self.get_dictionary()
+                if (self.how_often == IO_ONCE and d.has_key(D_ANGLE) and 
+                    d[D_ANGLE] is not None):
+                        angle = d[D_ANGLE]
+                else:
+                    angle = workspace.interaction_request(
+                        self, pixel_data)
+                if self.how_often == IO_ONCE:
+                    d[D_ANGLE] = angle
             else:
                 raise NotImplementedError("Unknown rotation method: %s" %
                                           self.rotate_choice.value)
@@ -233,48 +240,50 @@ class FlipAndRotate(cpm.CPModule):
         image_set.add(self.output_name.value, output_image)
         workspace.measurements.add_image_measurement(
             M_ROTATION_F % self.output_name.value, angle)
-        
-        if workspace.frame is not None:
-            figure = workspace.create_or_find_figure(title="FlipAndRotate, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
-            vmin = min(np.min(image.pixel_data), 
-                       np.min(output_image.pixel_data[output_image.mask]))
-            vmax = max(np.max(image.pixel_data), 
-                       np.max(output_image.pixel_data[output_image.mask]))
-            if vmin==vmax:
-                vmin = 0
-                vmax = 1
-            if pixel_data.ndim == 2:
-                figure.subplot_imshow_grayscale(0,0, image.pixel_data,
-                                                title = self.image_name.value,
-                                                vmin = vmin, vmax=vmax)
-                figure.subplot_imshow_grayscale(1,0, output_image.pixel_data,
-                                                title = self.output_name.value,
-                                                vmin=vmin, vmax = vmax,
-                                                sharex = figure.subplot(0,0),
-                                                sharey = figure.subplot(0,0))
-            else:
-                figure.subplot_imshow(0,0, image.pixel_data,
-                                      title = self.image_name.value,
-                                      normalize=False,
-                                      vmin=vmin,
-                                      vmax=vmax)
-                figure.subplot_imshow(1,0, output_image.pixel_data,
-                                      title = self.output_name.value,
-                                      normalize=False,
-                                      vmin=vmin,
-                                      vmax=vmax,
-                                      sharex = figure.subplot(0,0),
-                                      sharey = figure.subplot(0,0))
-    def angle_from_mouse(self, workspace, pixel_data):
+
+        vmin = min(np.min(image.pixel_data),
+                   np.min(output_image.pixel_data[output_image.mask]))
+        vmax = max(np.max(image.pixel_data),
+                   np.max(output_image.pixel_data[output_image.mask]))
+        workspace.display_data.image_pixel_data = image.pixel_data
+        workspace.display_data.output_image_pixel_data = output_image.pixel_data
+        workspace.display_data.vmin = vmin
+        workspace.display_data.vmax = vmax
+
+    def display(self, workspace, figure):
+        image_pixel_data = workspace.display_data.image_pixel_data
+        output_image_pixel_data = workspace.display_data.output_image_pixel_data
+        vmin = workspace.display_data.vmin
+        vmax = workspace.display_data.vmax
+        figure.set_subplots((2, 1))
+        if vmin == vmax:
+            vmin = 0
+            vmax = 1
+        if output_image_pixel_data.ndim == 2:
+            figure.subplot_imshow_grayscale(0, 0, image_pixel_data,
+                                            title = self.image_name.value,
+                                            vmin = vmin, vmax=vmax)
+            figure.subplot_imshow_grayscale(1, 0, output_image_pixel_data,
+                                            title = self.output_name.value,
+                                            vmin=vmin, vmax = vmax,
+                                            sharexy = figure.subplot(0, 0))
+        else:
+            figure.subplot_imshow(0, 0, image_pixel_data,
+                                  title = self.image_name.value,
+                                  normalize=False,
+                                  vmin=vmin,
+                                  vmax=vmax)
+            figure.subplot_imshow(1, 0, output_image_pixel_data,
+                                  title = self.output_name.value,
+                                  normalize=False,
+                                  vmin=vmin,
+                                  vmax=vmax,
+                                  sharexy = figure.subplot(0, 0))
+
+    def handle_interaction(self, pixel_data):
         '''Run a UI that gets an angle from the user'''
         import wx
 
-        if self.how_often == IO_ONCE:
-            d = self.get_dictionary(workspace.image_set_list)
-            if d.has_key(D_ANGLE):
-                return d[D_ANGLE]
-        
         if pixel_data.ndim == 2:
             # make a color matrix for consistency
             pixel_data = np.dstack((pixel_data,pixel_data,pixel_data))
@@ -297,7 +306,7 @@ class FlipAndRotate(cpm.CPModule):
         #
         # Make a dialog box that contains the image
         #
-        dialog = wx.Dialog(workspace.frame,
+        dialog = wx.Dialog(None,
                            title = "Rotate image")
         sizer = wx.BoxSizer(wx.VERTICAL)
         dialog.SetSizer(sizer)

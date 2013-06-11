@@ -15,7 +15,6 @@ to the rest of the image, by applying image processing filters to the image. It 
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 from scipy.ndimage import gaussian_filter
@@ -298,17 +297,19 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
         result_image = cpi.Image(result, parent_image=image)
         workspace.image_set.add(self.filtered_image_name.value, result_image)
         
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(title="EnhanceOrSuppressFeatures, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
-            figure.subplot_imshow_grayscale(0, 0, image.pixel_data,
-                                            "Original: %s" % 
-                                            self.image_name.value)
-            figure.subplot_imshow_grayscale(1, 0, result,
-                                            "Filtered: %s" %
-                                            self.filtered_image_name.value,
-                                            sharex = figure.subplot(0,0),
-                                            sharey = figure.subplot(0,0))
+        if self.show_window:
+            workspace.display_data.image = image.pixel_data
+            workspace.display_data.result = result
+
+    def display(self, workspace, figure):
+        image = workspace.display_data.image
+        result = workspace.display_data.result
+        figure.set_subplots((2, 1))
+        figure.subplot_imshow_grayscale(0, 0, image,
+                                        "Original: %s" % self.image_name.value)
+        figure.subplot_imshow_grayscale(1, 0, result,
+                                        "Filtered: %s" % self.filtered_image_name.value,
+                                        sharexy = figure.subplot(0, 0))
         
     def upgrade_settings(self, setting_values, variable_revision_number,
                              module_name, from_matlab):

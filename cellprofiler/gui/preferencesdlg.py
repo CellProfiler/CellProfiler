@@ -11,19 +11,30 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version__="$Revision$"
 
 import wx
 import matplotlib.cm
+import sys
 
 import cellprofiler.preferences as cpprefs
 import cellprofiler.gui.help as cphelp
 from cellprofiler.gui.htmldialog import HTMLDialog
 
 DIRBROWSE = "Browse"
+FILEBROWSE = "FileBrowse"
 FONT = "Font"
 COLOR = "Color"
 CHOICE = "Choice"
+
+class IntegerPreference(object):
+    '''User interface info for an integer preference
+    
+    This signals that a preference should be displayed and edited as
+    an integer, optionally limited by a range.
+    '''
+    def __init__(self, minval = None, maxval = None):
+        self.minval = minval
+        self.maxval = maxval
 
 class PreferencesDlg(wx.Dialog):
     '''Display a dialog for setting preferences
@@ -58,7 +69,8 @@ class PreferencesDlg(wx.Dialog):
         for text, getter, setter, ui_info, help_text in p:
             text_ctl = wx.StaticText(scrollpanel, label=text)
             sizer.Add(text_ctl,(index,0))
-            if getattr(ui_info,"__getitem__",False) and not isinstance(ui_info,str):
+            if (getattr(ui_info, "__getitem__", False) and not 
+                isinstance(ui_info, str)):
                 ctl = wx.ComboBox(scrollpanel, -1, 
                                   choices=ui_info, style=wx.CB_READONLY)
                 ctl.SetStringSelection(getter())
@@ -68,6 +80,15 @@ class PreferencesDlg(wx.Dialog):
             elif ui_info == CHOICE:
                 ctl = wx.CheckBox(scrollpanel, -1)
                 ctl.Value = getter()
+            elif isinstance(ui_info, IntegerPreference):
+                minval = (-sys.maxint if ui_info.minval is None 
+                          else ui_info.minval)
+                maxval = (sys.maxint if ui_info.maxval is None 
+                          else ui_info.maxval)
+                ctl = wx.SpinCtrl(scrollpanel, 
+                                  min = minval,
+                                  max = maxval,
+                                  initial = getter())
             else:
                 ctl = wx.TextCtrl(scrollpanel, -1, getter())
                 min_height = ctl.GetMinHeight()
@@ -81,6 +102,18 @@ class PreferencesDlg(wx.Dialog):
                     dlg.Path = ctl.Value
                     if dlg.ShowModal() == wx.ID_OK:
                         ctl.Value = dlg.Path
+                        dlg.Destroy()
+            elif (isinstance(ui_info, basestring) and 
+                  ui_info.startswith(FILEBROWSE)):
+                def on_press(event, ctl=ctl, parent=self, ui_info=ui_info):
+                    dlg = wx.FileDialog(parent)
+                    dlg.Path = ctl.Value
+                    if len(ui_info) > len(FILEBROWSE) + 1:
+                        dlg.Wildcard = ui_info[(len(FILEBROWSE) + 1):]
+                    if dlg.ShowModal() == wx.ID_OK:
+                        ctl.Value = dlg.Path
+                    dlg.Destroy()
+                ui_info = "Browse"
             elif ui_info == FONT:
                 def on_press(event, ctl=ctl, parent=self):
                     name, size = ctl.Value.split(",")
@@ -95,6 +128,7 @@ class PreferencesDlg(wx.Dialog):
                         name = font.GetFaceName()
                         size = font.GetPointSize()
                         ctl.Value = "%s, %f"%(name,size) 
+                    dlg.Destroy()
             elif ui_info == COLOR:
                 def on_press(event, ctl=ctl, parent=self):
                     color = wx.GetColourFromUser(self, ctl.BackgroundColour)
@@ -143,6 +177,27 @@ class PreferencesDlg(wx.Dialog):
                 else:
                     setter(control.Value)
     
+    workspace_choices = [
+        (cphelp.WC_ASK, cpprefs.WC_SHOW_WORKSPACE_CHOICE_DIALOG),
+        (cphelp.WC_LAST, cpprefs.WC_OPEN_LAST_WORKSPACE),
+        (cphelp.WC_OPEN, cpprefs.WC_OPEN_OLD_WORKSPACE),
+        (cphelp.WC_NEW, cpprefs.WC_CREATE_NEW_WORKSPACE)]
+    
+    def get_workspace_choice(self):
+        result = cpprefs.get_workspace_choice()
+        for hchoice, pchoice in self.workspace_choices:
+            if pchoice == result:
+                return hchoice
+        return cphelp.WC_ASK
+    
+    def set_workspace_choice(self, value):
+        for hchoice, pchoice in self.workspace_choices:
+            if hchoice == value:
+                result = pchoice
+        else:
+            result = cpprefs.WC_SHOW_WORKSPACE_CHOICE_DIALOG
+        cpprefs.set_workspace_choice(result)
+    
     def get_preferences(self):
         '''Get the list of preferences.
         
@@ -156,7 +211,15 @@ class PreferencesDlg(wx.Dialog):
         '''
         cmaps = list(matplotlib.cm.datad.keys())
         cmaps.sort()
-        return [[ "Title font", 
+        return [["Default Input Folder",
+                 cpprefs.get_default_image_directory,
+                 cpprefs.set_default_image_directory,
+                 DIRBROWSE, cphelp.DEFAULT_IMAGE_FOLDER_HELP],
+                ["Default Output Folder",
+                 cpprefs.get_default_output_directory,
+                 cpprefs.set_default_output_directory,
+                 DIRBROWSE, cphelp.DEFAULT_OUTPUT_FOLDER_HELP],
+                [ "Title font", 
                   self.get_title_font, 
                   self.set_title_font, 
                   FONT, cphelp.TITLE_FONT_HELP],
@@ -172,6 +235,10 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_background_color, 
                  cpprefs.set_background_color, 
                  COLOR, cphelp.WINDOW_BACKGROUND_HELP],
+                ["Error color",
+                 cpprefs.get_error_color,
+                 cpprefs.set_error_color,
+                 COLOR, cphelp.ERROR_COLOR_HELP],
                 ["Primary outline color",
                  cpprefs.get_primary_outline_color,
                  cpprefs.set_primary_outline_color,
@@ -184,6 +251,11 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_tertiary_outline_color,
                  cpprefs.set_tertiary_outline_color,
                  COLOR, cphelp.TERTIARY_OUTLINE_COLOR_HELP],
+                ["Interpolation mode",
+                 cpprefs.get_interpolation_mode,
+                 cpprefs.set_interpolation_mode,
+                 [cpprefs.IM_NEAREST, cpprefs.IM_BILINEAR, cpprefs.IM_BICUBIC],
+                 cphelp.INTERPOLATION_MODE_HELP],
                 ["CellProfiler plugins directory",
                  cpprefs.get_plugin_directory,
                  cpprefs.set_plugin_directory,
@@ -192,11 +264,6 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_ij_plugin_directory,
                  cpprefs.set_ij_plugin_directory,
                  DIRBROWSE, cphelp.IJ_PLUGINS_DIRECTORY_HELP],
-                ["ImageJ version",
-                 cpprefs.get_ij_version,
-                 cpprefs.set_ij_version,
-                 (cpprefs.IJ_1, cpprefs.IJ_2),
-                 cphelp.IJ_VERSION_HELP],
                 ["Check for updates", 
                  cpprefs.get_check_new_versions, 
                  cpprefs.set_check_new_versions, 
@@ -205,18 +272,23 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_startup_blurb, 
                  cpprefs.set_startup_blurb, 
                  CHOICE, cphelp.SHOW_STARTUP_BLURB_HELP],
+                ["Initial workspace choice",
+                 self.get_workspace_choice,
+                 self.set_workspace_choice,
+                 [x[0] for x in self.workspace_choices],
+                 cphelp.WORKSPACE_CHOICE_HELP],
                 ["Warn if Java runtime environment not present",
                  cpprefs.get_report_jvm_error,
                  cpprefs.set_report_jvm_error,
                  CHOICE, cphelp.REPORT_JVM_ERROR_HELP],
-                ['Show the "Analysis complete" message at the end of a run.',
+                ['Show the "Analysis complete" message at the end of a run',
                  cpprefs.get_show_analysis_complete_dlg,
                  cpprefs.set_show_analysis_complete_dlg,
                  CHOICE, cphelp.SHOW_ANALYSIS_COMPLETE_HELP],
-                ['Show the "Exiting test mode" message.',
+                ['Show the "Exiting test mode" message',
                  cpprefs.get_show_exiting_test_mode_dlg,
                  cpprefs.set_show_exiting_test_mode_dlg,
-                 CHOICE, cphelp.SHOW_ANALYSIS_COMPLETE_HELP],
+                 CHOICE, cphelp.SHOW_EXITING_TEST_MODE_HELP],
                 ['Warn if images are different sizes',
                  cpprefs.get_show_report_bad_sizes_dlg,
                  cpprefs.set_show_report_bad_sizes_dlg,
@@ -238,10 +310,6 @@ class PreferencesDlg(wx.Dialog):
                  <li>Visualization of parameter space for image analysis. Pretorius AJ, Bray MA, Carpenter AE 
                  and Ruddle RA. (2011) IEEE Transactions on Visualization and Computer Graphics, 17(12), 2402-2411.</li>
                  </ul>"""],
-                ['Use distributed workers (EXPERIMENTAL)',
-                 cpprefs.get_run_distributed,
-                 cpprefs.set_run_distributed,
-                 CHOICE, "Use distributed workers to analyze images.  This is experimental functionality."],
                 ['Warn if a pipeline was saved in an old version of CellProfiler',
                  cpprefs.get_warn_about_old_pipeline,
                  cpprefs.set_warn_about_old_pipeline,
@@ -252,7 +320,17 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.set_use_more_figure_space,
                  CHOICE,
                  cphelp.USE_MORE_FIGURE_SPACE_HELP
-                ]]
+                ],
+                ['Maximum number of workers',
+                 cpprefs.get_max_workers,
+                 cpprefs.set_max_workers,
+                 IntegerPreference(1, cpprefs.default_max_workers() * 4),
+                 cphelp.MAX_WORKERS_HELP],
+                ['Temporary folder',
+                 cpprefs.get_temporary_directory,
+                 cpprefs.set_temporary_directory,
+                 DIRBROWSE,
+                 cphelp.TEMP_DIR_HELP]]
     
     def get_title_font(self):
         return "%s,%f"%(cpprefs.get_title_font_name(),

@@ -36,7 +36,6 @@ measurements will be made between the following:
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 from scipy.linalg import lstsq
@@ -177,7 +176,8 @@ class MeasureCorrelation(cpm.CPModule):
 
     def run(self, workspace):
         '''Calculate measurements on an image set'''
-        statistics = [["First image","Second image","Objects","Measurement","Value"]]
+        col_labels = ["First image","Second image","Objects","Measurement","Value"]
+        statistics = []
         for first_image_name, second_image_name in self.get_image_pairs():
             if self.wants_images():
                 statistics += self.run_image_pair_images(workspace, 
@@ -189,10 +189,14 @@ class MeasureCorrelation(cpm.CPModule):
                                                               first_image_name,
                                                               second_image_name, 
                                                               object_name)
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(title="MeasureCorrelation, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-            figure.subplot_table(0,0,statistics,(0.2,0.2,0.2,0.2,0.2))
+        if self.show_window:
+            workspace.display_data.statistics = statistics
+            workspace.display_data.col_labels = col_labels
+
+    def display(self, workspace, figure):
+        statistics = workspace.display_data.statistics
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0, 0, statistics, workspace.display_data.col_labels)
 
     def run_image_pair_images(self, workspace, first_image_name, 
                               second_image_name):

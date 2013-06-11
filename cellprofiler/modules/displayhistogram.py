@@ -24,7 +24,6 @@ See also <b>DisplayDensityPlot</b>, <b>DisplayScatterPlot</b>.
 #
 #Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 
@@ -130,30 +129,30 @@ class DisplayHistogram(cpm.CPModule):
 
     def run(self, workspace):
         """Run the module
-        
-        If is_interactive() returns false, then run() will be run in a
-        background thread.  Background threads cannot safely
-        manipulate the GUI.  See display().
         """
-        if workspace.frame:
+        if self.show_window:
             m = workspace.get_measurements()
             x = m.get_current_measurement(self.get_object(), self.x_axis.value)
             if self.wants_xbounds:
                 x = x[x > self.xbounds.min]
                 x = x[x < self.xbounds.max]
-            figure = workspace.create_or_find_figure(title="DisplayHistogram, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-            figure.subplot_histogram(0, 0, x, 
+            workspace.display_data.x = x
+            workspace.display_data.title = '%s (cycle %s)' % (self.title.value, workspace.measurements.image_set_number)
+
+    def run_as_data_tool(self, workspace):
+        self.run(workspace)
+
+    def display(self, workspace, figure):
+        if self.show_window:
+            figure.set_subplots((1, 1))
+            figure.subplot_histogram(0, 0, workspace.display_data.x,
                                      bins=self.bins.value,
                                      xlabel=self.x_axis.value,
                                      xscale=self.xscale.value,
                                      yscale=self.yscale.value,
-                                     title='%s (cycle %s)'%(self.title.value, workspace.measurements.image_set_number))
-            
-    def run_as_data_tool(self, workspace):
-        self.run(workspace)
+                                     title=workspace.display_data.title)
 
-    def backwards_compatibilize(self, setting_values, variable_revision_number, 
+    def backwards_compatibilize(self, setting_values, variable_revision_number,
                                 module_name, from_matlab):
         if variable_revision_number == 1:
             # Add bins=100 to second position

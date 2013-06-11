@@ -63,11 +63,12 @@ if sys.platform.startswith('win'):
     if java_home is not None:
         found_jvm = False
         for jre_home in (java_home, os.path.join(java_home, "jre")):
-            jre_bin = os.path.join(jre_home, 'bin')
+            jre_bin = os.path.join(jre_home, 'bin').encode('utf-8')
             for place_to_look in ('client','server'):
-                jvm_dir = os.path.join(jre_bin, place_to_look)
+                jvm_dir = os.path.join(jre_bin,place_to_look).encode('utf-8')
                 if os.path.isfile(os.path.join(jvm_dir, "jvm.dll")):
-                    os.environ['PATH'] = ';'.join((os.environ['PATH'], jvm_dir, jre_bin))
+                    os.environ['PATH'] = ";".join(
+                        (os.environ['PATH'], jvm_dir, jre_bin))
                     found_jvm = True
                     break
             if found_jvm:
@@ -225,15 +226,16 @@ class AtExit(object):
                 
     def __del__(self):
         self.fn()
-        
+
+__start_thread = None        
 def start_vm(args, run_headless = False):
     '''Start the Java VM'''
     global __vm
+    global __start_thread
     
     if __vm is not None:
         return
     start_event = threading.Event()
-    pt = [] # holds the thread... eventually
     
     def start_thread(args=args, run_headless=run_headless):
         global __vm
@@ -265,7 +267,6 @@ def start_vm(args, run_headless = False):
         dead_objects = __dead_objects
         main_thread_closures = __main_thread_closures
         thread_local_env = __thread_local_env
-        ptt = pt # needed to bind to pt inside exit_fn
         try:
             if hasattr(sys, 'frozen') and sys.platform != 'darwin':
                 utils_path = os.path.join(
@@ -290,8 +291,6 @@ def start_vm(args, run_headless = False):
             cp_args = [i for i, x in enumerate(args)
                        if x.startswith('-Djava.class.path=')]
             js_jar = os.path.join(utils_path, "js.jar")
-            logger.debug("Loading javascript from %s" %js_jar)
-            assert os.path.isfile(js_jar)
             if len(cp_args) > 0:
                 arg_idx = cp_args[0]
                 cp_arg = args[arg_idx]
@@ -301,15 +300,7 @@ def start_vm(args, run_headless = False):
                 cp_arg = "-Djava.class.path=" + js_jar
                 arg_idx = -1
             if sys.platform == "darwin":
-                logger.debug("Loading runnablequeue from %s" % utils_path)
-                runnablequeue_jar = os.path.join(
-                    utils_path, "runnablequeue-1.0.0.jar")
-                assert os.path.exists(runnablequeue_jar)
-                args[arg_idx] = cp_arg + os.pathsep + runnablequeue_jar
-                
-                logger.debug("Launching VM in non-python thread")
                 vm.create_mac(args, RQCLS)
-                logger.debug("Attaching to VM in monitor thread")
                 env = vm.attach()
                 __thread_local_env.env = env
             else:
@@ -338,6 +329,7 @@ def start_vm(args, run_headless = False):
                 break
         def null_defer_fn(jbo):
             '''Install a "do nothing" defer function in our env'''
+            logger.info("Attempt to deallocate after vm shutdown")
             pass
         if sys.platform == "darwin":
             #
@@ -353,15 +345,15 @@ def start_vm(args, run_headless = False):
             vm.destroy()
         __vm = None
         dead_event.set()
+        logger.info("Exiting the JVM monitor thread")
         
-    t = threading.Thread(target=start_thread)
-    pt.append(t)
-    t.start()
+    __start_thread = threading.Thread(target=start_thread)
+    __start_thread.setName("JVMMonitor")
+    __start_thread.start()
     start_event.wait()
     if __vm is None:
         raise RuntimeError("Failed to start Java VM")
     attach()
-    AtExit(kill_vm)
     
 def unwrap_javascript(o):
     '''Unwrap an object such as NativeJavaObject
@@ -432,10 +424,57 @@ def run_script(script, bindings_in = {}, bindings_out = {},
                 "(Ljava/lang/String;"
                 "Lorg/mozilla/javascript/Scriptable;)"
                 "Ljava/lang/Object;", k, scope))
+    except JavaException, e:
+        if is_instance_of(e.throwable, "org/mozilla/javascript/WrappedException"):
+            raise JavaException(call(e.throwable, "unwrap", "()Ljava/lang/Object;"))
+        raise
     finally:
         static_call("org/mozilla/javascript/Context", "exit", "()V")
     return result
 
+def get_future_wrapper(o, fn_post_process=None):
+    '''Wrap a java.util.concurrent.Future as a class
+    
+    o - the object implementing the Future interface
+    
+    fn_post_process - a post-processing function to run on the object returned
+                      from o.get(). If you have Future<T>, this can apply
+                      the appropriate wrapper for T so you get back a
+                      wrapped class of the appropriate type.
+    '''
+    class Future(object):
+        def __init__(self):
+            self.o = o
+        run = make_method("run", "()V")
+        cancel = make_method("cancel", "(Z)Z")
+        get = make_method(
+            "get", "()Ljava/lang/Object;",
+            "Waits if necessary for the computation to complete, and then retrieves its result.",
+            fn_post_process=fn_post_process)
+        isCancelled = make_method("isCancelled", "()Z")
+        isDone = make_method("isDone", "()Z")
+    return Future()
+
+def make_future_task(runnable_or_callable, 
+                     result=None, fn_post_process=None):
+    '''Make an instance of java.util.concurrent.FutureTask
+    
+    runnable_or_callable - either a java.util.concurrent.Callable or a
+                           java.lang.Runnable which is wrapped inside the Future
+    result - if a Runnable, this is the result that is returned by Future.get
+    
+    fn_post_process - a postprocessing function run on the result of Future.get
+    '''
+    if is_instance_of(runnable_or_callable, 'java/util/concurrent/Callable'):
+        o = make_instance('java/util/concurrent/FutureTask',
+                          '(Ljava/util/concurrent/Callable;)V',
+                          runnable_or_callable)
+    else:
+        o = make_instance('java/util/concurrent/FutureTask',
+                          '(Ljava/lang/Runnable;Ljava/lang/Object;)V',
+                          runnable_or_callable, result)
+    return get_future_wrapper(o, fn_post_process)
+    
 def execute_runnable_in_main_thread(runnable, synchronous=False):
     '''Execute a runnable on the main thread
     
@@ -454,10 +493,7 @@ def execute_runnable_in_main_thread(runnable, synchronous=False):
     if sys.platform == "darwin":
         # Assumes that RunnableQueue has been deployed on the main thread
         if synchronous:
-            future = make_instance(
-                "java/util/concurrent/FutureTask",
-                "(Ljava/lang/Runnable;Ljava/lang/Object;)V",
-                runnable, None)
+            future = make_future_task(runnable)
             execute_future_in_main_thread(future)
         else:
             static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V",
@@ -466,8 +502,10 @@ def execute_runnable_in_main_thread(runnable, synchronous=False):
         run_in_main_thread(
             lambda: call(runnable, "run", "()V"), synchronous)
             
-def execute_future_in_main_thread(jfuture):
-    '''Execute a class implementing Future in the main thread
+def execute_future_in_main_thread(future):
+    '''Execute a Future in the main thread
+    
+    future - a future, wrapped by get_future_wrapper
     
     Synchronize with the return, running the event loop.
     '''
@@ -480,14 +518,14 @@ def execute_future_in_main_thread(jfuture):
     #-----------------------------------------------------------------------------
     
     if sys.platform != "darwin":
-        run_in_main_thread(lambda: call(jfuture, "run", "()V"))
-        return call(jfuture, "get", "()Ljava/lang/Object;")
+        run_in_main_thread(future.run, True)
+        return future.get()
         
     import wx
     import time
     app = wx.GetApp()
     logger.debug("Enqueueing future on runnable queue")
-    static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", jfuture)
+    static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", future.o)
     if (app is None) or (not wx.Thread_IsMain()):
         logger.debug("Synchronizing without event loop")
         #
@@ -495,14 +533,14 @@ def execute_future_in_main_thread(jfuture):
         # by the execution of Future.get() and AWT needing WX to
         # run the event loop. Therefore, we poll before getting.
         #
-        while not call(jfuture, "isDone", "()Z"):
+        while not future.isDone():
             logger.debug("Future is not done")
             time.sleep(.1)
-        return call(jfuture, "get", "()Ljava/lang/Object;")
+        return future.get()
     elif app.IsMainLoopRunning():
         evtloop = wx.EventLoop()
         logger.debug("Polling for future done within main loop")
-        while not call(jfuture, "isDone", "()Z"):
+        while not future.isDone():
             logger.debug("Future is not done")
             if evtloop.Pending():
                 while evtloop.Pending():
@@ -513,9 +551,6 @@ def execute_future_in_main_thread(jfuture):
                 evtloop.Dispatch()
             logger.debug("Sleeping")
             time.sleep(.1)
-        
-        logger.debug("Fetching future value")
-        return call(jfuture, "get", "()Ljava/lang/Object;")
     else:
         logger.debug("Polling for future while running main loop")
         class EventLoopTimer(wx.Timer):
@@ -542,43 +577,10 @@ def execute_future_in_main_thread(jfuture):
                 if self.fn():
                     self.timer.Stop()
                     self.evtloop.Exit()
-        event_loop_runner = EventLoopRunner(
-            lambda: call(jfuture, "isDone", "()Z"))
+        event_loop_runner = EventLoopRunner(lambda: future.isDone())
         event_loop_runner.Run(time=10)
-        return call(jfuture, "get", "()Ljava/lang/Object;")
-        
-        
-def execute_callable_in_main_thread(jcallable):
-    '''Execute a callable on the main thread, returning its value
-    
-    callable - a Java object implementing java.util.concurrent.Callable
-    
-    Returns the result of evaluating the callable's "call" method in the
-    main thread.
-    
-    Hint: to make a callable using scripting,
-    
-    var my_import_scope = new JavaImporter(java.util.concurrent.Callable);
-    with (my_import_scope) {
-        return new Callable() {
-            call: function {
-                <do something that produces result>
-                return result;
-            }
-        };
-    '''
-    if sys.platform == "darwin":
-        # Assumes that RunnableQueue has been deployed on the main thread
-        future = make_instance(
-            "java/util/concurrent/FutureTask",
-            "(Ljava/util/concurrent/Callable;)V",
-            jcallable)
-        return execute_future_in_main_thread(future)
-    else:
-        return run_in_main_thread(
-            lambda: call(jcallable, "call", "()Ljava/lang/Object;"), 
-            True)
-    
+    logger.debug("Fetching future value")
+    return future.get()
 
 def run_in_main_thread(closure, synchronous):
     '''Run a closure in the main Java thread
@@ -669,6 +671,7 @@ def make_kill_vm():
     global __kill
     global __thread_local_env
     global __run_headless
+    global __start_thread
     
     wake_event = __wake_event
     dead_event = __dead_event
@@ -681,11 +684,13 @@ def make_kill_vm():
         if __vm is None:
             return
         deactivate_awt()
+        gc.collect()
         while getattr(thread_local_env, "attach_count", 0) > 0:
-            detach()
+            detach()            
         kill[0] = True
         wake_event.set()
         dead_event.wait()
+        __start_thread.join()
     return kill_vm
 
 '''Kill the currently-running Java environment
@@ -760,6 +765,56 @@ def is_instance_of(o, class_name):
         raise JavaException(jexception)
     return result
     
+def make_call(o, method_name, sig):
+    '''Create a function that calls a method
+    
+    For repeated calls to a method on the same object, this method is faster
+    than "call". The function returned takes raw Java objects which is
+    significantly faster than "call" which parses the signature and
+    casts arguments and return values.
+    
+    o - the object on which to make the call or a class name in slash form
+    
+    method_name - the name of the method to call
+    
+    sig - the function signature
+    
+    returns a function that can be called with the object to execute the method
+    '''
+    assert o is not None
+    env = get_env()
+    if isinstance(o, basestring):
+        klass = env.find_class(o)
+        bind = False
+    else:
+        klass = env.get_object_class(o)
+        bind = True
+    jexception = env.exception_occurred()
+    if jexception is not None:
+        raise JavaException(jexception)
+    method_id = env.get_method_id(klass, method_name, sig)
+    jexception = env.exception_occurred()
+    if method_id is None:
+        if jexception is not None:
+            raise JavaException(jexception)
+        raise JavaError('Could not find method name = "%s" '
+                        'with signature = "%s"' % (method_name, sig))
+    if bind:
+        def fn(*args):
+            result = env.call_method(o, method_id, *args)
+            x = env.exception_occurred()
+            if x is not None:
+                raise JavaException(x)
+            return result
+    else:
+        def fn(o, *args):
+            result = env.call_method(o, method_id, *args)
+            x = env.exception_occurred()
+            if x is not None:
+                raise JavaException(x)
+            return result
+    return fn
+    
 def call(o, method_name, sig, *args):
     '''Call a method on an object
     
@@ -767,34 +822,26 @@ def call(o, method_name, sig, *args):
     method_name - name of method on object's class
     sig - calling signature
     '''
-    assert o is not None
     env = get_env()
-    klass = env.get_object_class(o)
-    jexception = get_env().exception_occurred()
-    if jexception is not None:
-        raise JavaException(jexception)
-    method_id = env.get_method_id(klass, method_name, sig)
-    jexception = get_env().exception_occurred()
-    if method_id is None:
-        if jexception is not None:
-            raise JavaException(jexception)
-        raise JavaError('Could not find method name = "%s" '
-                        'with signature = "%s"' % (method_name, sig))
+    fn = make_call(o, method_name, sig)
     args_sig = split_sig(sig[1:sig.find(')')])
     ret_sig = sig[sig.find(')')+1:]
     nice_args = get_nice_args(args, args_sig)
-    result = env.call_method(o, method_id, *nice_args)
+    result = fn(*nice_args)
     x = env.exception_occurred()
     if x is not None:
         raise JavaException(x)
     return get_nice_result(result, ret_sig)
 
-def static_call(class_name, method_name, sig, *args):
-    '''Call a static method on a class
+def make_static_call(class_name, method_name, sig):
+    '''Create a function that performs a call of a static method
     
-    class_name - name of the class, using slashes
-    method_name - name of the static method
-    sig - signature of the static method
+    make_static_call produces a function that is faster than static_call
+    but is missing the niceties of preparing the argument and result casting.
+    
+    class_name - name of the class using slashes
+    method_name - name of the method to call
+    sig - the signature of the method.
     '''
     env = get_env()
     klass = env.find_class(class_name)
@@ -806,16 +853,30 @@ def static_call(class_name, method_name, sig, *args):
     if method_id is None:
         raise JavaError('Could not find method name = %s '
                         'with signature = %s' %(method_name, sig))
+    def fn(*args):
+        result = env.call_static_method(klass, method_id, *args)
+        jexception = env.exception_occurred() 
+        if jexception is not None:
+            raise JavaException(jexception)
+        return result
+    return fn
+    
+def static_call(class_name, method_name, sig, *args):
+    '''Call a static method on a class
+    
+    class_name - name of the class, using slashes
+    method_name - name of the static method
+    sig - signature of the static method
+    '''
+    env = get_env()
+    fn = make_static_call(class_name, method_name, sig)
     args_sig = split_sig(sig[1:sig.find(')')])
     ret_sig = sig[sig.find(')')+1:]
     nice_args = get_nice_args(args, args_sig)
-    result = env.call_static_method(klass, method_id,*nice_args)
-    jexception = env.exception_occurred() 
-    if jexception is not None:
-        raise JavaException(jexception)
+    result = fn(*nice_args)
     return get_nice_result(result, ret_sig)
 
-def make_method(name, sig, doc='No documentation'):
+def make_method(name, sig, doc='No documentation', fn_post_process = None):
     '''Return a class method for the given Java class
     
     sig - a calling signature. 
@@ -833,6 +894,11 @@ def make_method(name, sig, doc='No documentation'):
           D - double
           L - class (e.g. Lmy/class;)
           [ - array of (e.g. [B = byte array)
+          
+    doc - a docstring for the method
+    
+    fn_post_process - a function, such as a wrapper, that transforms
+                      the method output into something more useable.
     
     Note - this assumes that the JNI object is stored in self.o. Use like this:
     
@@ -848,7 +914,11 @@ def make_method(name, sig, doc='No documentation'):
     
     def method(self, *args):
         assert isinstance(self.o, javabridge.JB_Object)
-        return call(self.o, name, sig, *args)
+        result = call(self.o, name, sig, *args)
+        if fn_post_process is not None:
+            result = fn_post_process(result)
+        return result
+    
     method.__doc__ = doc
     return method
 
@@ -922,12 +992,74 @@ def set_static_field(klass, name, sig, value):
     elif sig == 'J':
         env.set_static_long_field(klass, field_id, value)
     elif sig == 'F':
-        env.get_static_float_field(klass, field_id, value)
+        env.set_static_float_field(klass, field_id, value)
     elif sig == 'D':
         env.set_static_double_field(klass, field_id, value)
     else:
         jobject = get_nice_arg(value, sig)
         env.set_static_object_field(klass, field_id, jobject)
+        
+def get_field(o, name, sig):
+    '''Get the value for a field on an object
+    
+    o - the object
+    name - the name of the field
+    sig - the signature, typically, 'I' or 'Ljava/lang/String;'
+    '''
+    env = get_env()
+    klass = env.get_object_class(o)
+    field_id = env.get_field_id(klass, name, sig)
+    if field_id is None:
+        raise JavaError('Could not find field name = %s '
+                        'with signature = %s' %(name, sig))
+    if sig == 'Z':
+        return env.get_boolean_field(o, field_id)
+    elif sig == 'B':
+        return env.get_byte_field(o, field_id)
+    elif sig == 'S':
+        return env.get_short_field(o, field_id)
+    elif sig == 'I':
+        return env.get_int_field(o, field_id)
+    elif sig == 'J':
+        return env.get_long_field(o, field_id)
+    elif sig == 'F':
+        return env.get_float_field(o, field_id)
+    elif sig == 'D':
+        return env.get_double_field(o, field_id)
+    else:
+        return get_nice_result(env.get_object_field(o, field_id), sig)
+        
+def set_field(o, name, sig, value):
+    '''Set the value for a field on an object
+    
+    o - the object
+    name - the name of the field
+    sig - the signature, typically, 'I' or 'Ljava/lang/String;'
+    value - the value to set
+    '''
+    env = get_env()
+    klass = env.get_object_class(o)
+    field_id = env.get_field_id(klass, name, sig)
+    if sig == 'Z':
+        env.set_boolean_field(o, field_id, value)
+    elif sig == 'B':
+        env.set_byte_field(o, field_id, value)
+    elif sig == 'C':
+        assert len(str(value)) > 0
+        env.set_char_field(o, field_id, value)
+    elif sig == 'S':
+        env.set_short_field(o, field_id, value)
+    elif sig == 'I':
+        env.set_int_field(o, field_id, value)
+    elif sig == 'J':
+        env.set_long_field(o, field_id, value)
+    elif sig == 'F':
+        env.set_float_field(o, field_id, value)
+    elif sig == 'D':
+        env.set_double_field(o, field_id, value)
+    else:
+        jobject = get_nice_arg(value, sig)
+        env.set_object_field(o, field_id, jobject)
         
 def split_sig(sig):
     '''Split a signature into its constituent arguments'''
@@ -1068,6 +1200,162 @@ def to_string(jobject):
         return str(jobject)
     return call(jobject, 'toString', '()Ljava/lang/String;')
 
+def box(value, klass):
+    '''Given a Java class and a value, convert the value to an instance of it
+    
+    value - value to be converted
+    klass - return an object of this class, given the value.
+    '''
+    wclass = get_class_wrapper(klass, True)
+    name = wclass.getCanonicalName()
+    if wclass.isPrimitive():
+        if name == 'boolean':
+            return make_instance('java/lang/Boolean', "(Z)V", value)
+        elif name == 'int':
+            return make_instance('java/lang/Integer', "(I)V", value)
+        elif name == 'byte':
+            return make_instance('java/lang/Byte', "(B)V", value)
+        elif name == 'short':
+            return make_instance('java/lang/Short', "(S)V", value)
+        elif name == 'long':
+            return make_instance('java/lang/Long', "(J)V", value)
+        elif name == 'float':
+            return make_instance('java/lang/Float', "(F)V", value)
+        elif name == 'double':
+            return make_instance('java/lang/Double', "(D)V", value)
+        elif name == 'char':
+            return make_instance('java/lang/Character', "(C)V", value)
+        else:
+            raise NotImplementedError("Boxing %s is not implemented" % name)
+    sig = "L%s;" % wclass.getCanonicalName().replace(".", "/")
+    return get_nice_arg(value, sig)
+
+def get_collection_wrapper(collection, fn_wrapper=None):
+    '''Return a wrapper of java.util.collection
+    
+    collection - an object that implements java.util.collection. If the
+                 object implements the list interface, that is wrapped as well
+    
+    fn_wrapper - if defined, a function that wraps a java object
+    '''
+    class Collection(object):
+        def __init__(self):
+            self.o = collection
+            
+        add = make_method("add", "(Ljava/lang/Object;)Z")
+        addAll = make_method("addAll", "(Ljava/util/Collection;)Z")
+        clear = make_method("clear", "()V")
+        contains = make_method("contains", "(Ljava/lang/Object;)Z")
+        containsAll = make_method("containsAll", "(Ljava/util/Collection;)Z")
+        isEmpty = make_method("isEmpty", "()Z")
+        iterator = make_method("iterator", "()Ljava/util/Iterator;")
+        remove = make_method("remove", "(Ljava/lang/Object;)Z")
+        removeAll = make_method("removeAll", "(Ljava/util/Collection;)Z")
+        retainAll = make_method("retainAll", "(Ljava/util/Collection;)Z")
+        size = make_method("size", "()I")
+        toArray = make_method(
+            "toArray", "()[Ljava/lang/Object;",
+            fn_post_process=get_env().get_object_array_elements)
+        toArrayC = make_method("toArray", "([Ljava/lang/Object;)[Ljava/lang/Object;")
+        
+        def __len__(self):
+            return self.size()
+        
+        def __iter__(self):
+            return iterate_collection(self.o, fn_wrapper = fn_wrapper)
+        
+        def __contains__(self, item):
+            return self.contains(item)
+        
+        @staticmethod
+        def is_collection(x):
+            return (hasattr(x, "o") and 
+                    is_instance_of(x.o, "java/util/Collection"))
+            
+        def __add__(self, items):
+            klass = call(self.o, "getClass", "()Ljava/lang/Class;")
+            copy = get_collection_wrapper(
+                call(klass, "newInstance", "()Ljava/lang/Object;"),
+                fn_wrapper = fn_wrapper)
+            copy.addAll(self.o)
+            if self.is_collection(items):
+                copy.addAll(items.o)
+            else:
+                for item in items:
+                    copy.add(item)
+            return copy
+            
+        def __iadd__(self, items):
+            if self.is_collection(items):
+                self.addAll(items)
+            else:
+                for item in items:
+                    self.add(item)
+            return self
+        
+        if is_instance_of(collection, 'java/util/List'):
+            addI = make_method("add", "(ILjava/lang/Object;)V")
+            addAllI = make_method("addAll", "(ILjava/util/Collection;)Z")
+            indexOf = make_method("indexOf", "(Ljava/lang/Object;)I")
+            lastIndexOf = make_method("lastIndexOf", "(Ljava/lang/Object;)I")
+            removeI = make_method("remove", "(I)Ljava/lang/Object;", 
+                                  fn_post_process=fn_wrapper)
+            get = make_method("get", "(I)Ljava/lang/Object;", 
+                              fn_post_process=fn_wrapper)
+            set = make_method("set", "(ILjava/lang/Object;)Ljava/lang/Object;",
+                              fn_post_process=fn_wrapper)
+            subList = make_method(
+                "subList",
+                "(II)Ljava/util/List;",
+                fn_post_process=lambda x: get_collection_wrapper(x, fn_wrapper))
+            
+            def __normalize_idx(self, idx, none_value):
+                if idx is None:
+                    return none_value
+                elif idx < 0:
+                    return max(0, self.size()+idx)
+                elif idx > self.size():
+                    return self.size()
+                return idx
+            
+            def __getitem__(self, idx):
+                if isinstance(idx, slice):
+                    start = self.__normalize_idx(idx.start, 0)
+                    stop = self.__normalize_idx(idx.stop, self.size())
+                    if idx.step is None or idx.step == 1:
+                        return self.subList(start, stop)
+                    return [self[i] for i in range(start, stop, idx.step)]
+                return self.get(self.__normalize_idx(idx, 0))
+            
+            def __setitem__(self, idx, value):
+                self.set(idx, value)
+                
+            def __delitem__(self, idx):
+                self.removeI(idx)
+            
+    return Collection()
+
+array_list_add_method_id = None
+def make_list(elements=[]):
+    '''Make a wrapped array list, optionally containing the given elements'''
+    global array_list_add_method_id
+    
+    a = get_collection_wrapper(make_instance("java/util/ArrayList", "()V"))
+    env = get_env()
+    if len(elements) > 0:
+        if array_list_add_method_id is None:
+            array_list_class = env.find_class("java/util/ArrayList")
+            array_list_add_method_id = env.get_method_id(
+                array_list_class, "add", "(Ljava/lang/Object;)Z")
+        for element in elements:
+            if not isinstance(element, javabridge.JB_Object):
+                element = get_nice_arg(element, "Ljava/lang/Object;")
+            env.call_method(a.o, array_list_add_method_id, element)
+            x = env.exception_occurred()
+            if x is not None:
+                raise JavaException(x)
+    return a
+
 def get_dictionary_wrapper(dictionary):
     '''Return a wrapper of java.util.Dictionary
     
@@ -1094,6 +1382,47 @@ def get_dictionary_wrapper(dictionary):
                           '(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;',
                           'Associate a value with a key in the dictionary')
     return Dictionary()
+
+def get_map_wrapper(o):
+    '''Return a wrapper of java.util.Map'''
+    assert is_instance_of(o, 'java/util/Map')
+    class Map(object):
+        def __init__(self):
+            self.o = o
+        clear = make_method("clear", "()V")
+        containsKey = make_method("containsKey", "(Ljava/lang/Object;)Z")
+        containsValue = make_method("containsValue", "(Ljava/lang/Object;)Z")
+        entrySet = make_method("entrySet", "()Ljava/util/Set;")
+        get = make_method("get", "(Ljava/lang/Object;)Ljava/lang/Object;")
+        isEmpty = make_method("isEmpty", "()Z")
+        keySet = make_method("keySet", "()Ljava/util/Set;")
+        put = make_method(
+            "put", "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;")
+        putAll = make_method("putAll", "(Ljava/util/Map;)V")
+        remove = make_method("remove", "(Ljava/lang/Object;)Ljava/lang/Object;")
+        size = make_method("size", "()I")
+        values = make_method("values", "()Ljava/util/Collection;")
+        
+        def __len__(self):
+            return self.size()
+        
+        def __getitem__(self, key):
+            return self.get(key)
+        
+        def __setitem__(self, key, value):
+            self.put(key, value)
+            
+        def __iter__(self):
+            return iterate_collection(self.keySet())
+        
+    return Map()
+
+def make_map(**kwargs):
+    '''Create a wrapped java.util.HashMap from arbitrary keyword arguments'''
+    hashmap = get_map_wrapper(make_instance('java/util/HashMap', "()V"))
+    for k, v in kwargs.iteritems():
+        hashmap[k] = v
+    return hashmap
 
 def jdictionary_to_string_dictionary(hashtable):
     '''Convert a Java dictionary to a Python dictionary
@@ -1126,19 +1455,38 @@ def get_enumeration_wrapper(enumeration):
                                   '()Ljava/lang/Object;')
     return Enumeration()
 
-def iterate_java(iterator):
+iterator_has_next_id = None
+iterator_next_id = None
+def iterate_java(iterator, fn_wrapper = None):
     '''Make a Python iterator for a Java iterator
     
     usage:
     for x in iterate_java(foo):
         do_something_with(x)
     '''
-    while(call(iterator, 'hasNext', '()Z')):
-        yield call(iterator, 'next', '()Ljava/lang/Object;')
+    global iterator_has_next_id, iterator_next_id
+    env = get_env()
+    if iterator_has_next_id is None:
+        iterator_class = env.find_class("java/util/Iterator")
+        iterator_has_next_id = env.get_method_id(iterator_class, "hasNext", "()Z")
+        iterator_next_id = env.get_method_id(iterator_class, "next", "()Ljava/lang/Object;")
+    while(True):
+        result = env.call_method(iterator, iterator_has_next_id)
+        x = env.exception_occurred()
+        if x is not None:
+            raise JavaException(x)
+        if not result:
+            break;
+        item = env.call_method(iterator, iterator_next_id)
+        x = env.exception_occurred()
+        if x is not None:
+            raise JavaException(x)
+        yield item if fn_wrapper is None else fn_wrapper(item)
         
-def iterate_collection(c):
+def iterate_collection(c, fn_wrapper=None):
     '''Make a Python iterator over the elements of a Java collection'''
-    return iterate_java(call(c, "iterator", "()Ljava/util/Iterator;"))
+    return iterate_java(call(c, "iterator", "()Ljava/util/Iterator;"),
+                        fn_wrapper = fn_wrapper)
         
 def jenumeration_to_string_list(enumeration):
     '''Convert a Java enumeration to a Python list of strings
@@ -1245,6 +1593,12 @@ def get_class_wrapper(obj, is_class = False):
                                   'Return True if the class is a primitive such as boolean or int')
         newInstance = make_method('newInstance', '()Ljava/lang/Object;',
                                   'Make a new instance of the object with the default constructor')
+        def __repr__(self):
+            methods = get_env().get_object_array_elements(self.getMethods())
+            return "%s\n%s" % (
+                self.getCanonicalName(), 
+                "\n".join([to_string(x) for x in methods]))
+        
     return Klass()
 
 MOD_ABSTRACT  = 'ABSTRACT'
@@ -1360,7 +1714,7 @@ def get_method_wrapper(obj):
                                     '()Ljava/lang/annotation/Annotation;')
         getModifiers = make_method('getModifiers', '()I')
     return Method()
-        
+
 def attach_ext_env(env_address):
     '''Attach to an externally supplied Java environment
     

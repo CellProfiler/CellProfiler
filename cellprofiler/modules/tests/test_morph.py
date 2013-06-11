@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version__ = "$Revision$"
 
 import base64
 import numpy as np
@@ -28,9 +27,11 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.objects as cpo
 import cellprofiler.pipeline as cpp
+import cellprofiler.settings as cps
 import cellprofiler.workspace as cpw
 import cellprofiler.modules.morph as morph
 import cellprofiler.cpmath.cpmorphology as cpmorph
+import cellprofiler.cpmath.filter as cpfilter
 
 class TestMorph(unittest.TestCase):
     def test_01_01_load_matlab(self):
@@ -218,6 +219,10 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
     Repeat operation:Once
     Custom # of repeats:2
     Scale\x3A:3
+    Select the operation to perform:skelpe
+    Repeat operation:Once
+    Custom # of repeats:2
+    Scale\x3A:3
     Select the operation to perform:spur
     Repeat operation:Once
     Custom # of repeats:2
@@ -250,8 +255,8 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
                morph.F_ENDPOINTS, morph.F_ERODE, morph.F_FILL,
                morph.F_FILL_SMALL, morph.F_HBREAK, morph.F_INVERT,
                morph.F_MAJORITY, morph.F_OPEN, morph.F_REMOVE, 
-               morph.F_SHRINK, morph.F_SKEL, morph.F_SPUR, morph.F_THICKEN,
-               morph.F_THIN, morph.F_TOPHAT, morph.F_VBREAK]
+               morph.F_SHRINK, morph.F_SKEL, morph.F_SKELPE, morph.F_SPUR, 
+               morph.F_THICKEN, morph.F_THIN, morph.F_TOPHAT, morph.F_VBREAK]
         self.assertEqual(len(pipeline.modules()), 1)
         module = pipeline.modules()[0]
         self.assertTrue(isinstance(module, morph.Morph))
@@ -268,15 +273,162 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
                 self.assertEqual(function.repeats_choice, morph.R_ONCE)
             self.assertEqual(function.custom_repeats, 2)
             self.assertEqual(function.scale, 3)
+        fn0 = module.functions[0]
+        self.assertEqual(fn0.structuring_element, morph.SE_DISK)
+        self.assertEqual(fn0.x_offset, 1)
+        self.assertEqual(fn0.y_offset, 1)
+        self.assertEqual(fn0.angle, 0)
+        self.assertEqual(fn0.width, 3)
+        self.assertEqual(fn0.height, 3)
+        strel = np.array(fn0.strel.get_matrix())
+        self.assertEqual(strel.shape[0], 3)
+        self.assertEqual(strel.shape[1], 3)
+        self.assertTrue(np.all(strel))
+            
+    def test_01_04_load_v3(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20130402163959
+ModuleCount:1
+HasImagePlaneDetails:False
 
-    def execute(self, image, function, mask=None, custom_repeats=None, scale=None):
+Morph:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:3|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the input image:Thresh
+    Name the output image:MorphedThresh
+    Select the operation to perform:dilate
+    Number of times to repeat operation:Once
+    Repetition number:2
+    Scale:7.0
+    Structuring element:Custom
+    X offset:1
+    Y offset:1
+    Angle:45
+    Width:3
+    Height:3
+    Custom:5,7,11111110000000011111000000001111111
+    Select the operation to perform:close
+    Number of times to repeat operation:Once
+    Repetition number:2
+    Scale:3
+    Structuring element:Diamond
+    X offset:1
+    Y offset:1
+    Angle:0
+    Width:3
+    Height:3
+    Custom:5,5,1111111111111111111111111
+    Select the operation to perform:open
+    Number of times to repeat operation:Once
+    Repetition number:2
+    Scale:4.0
+    Structuring element:Line
+    X offset:1
+    Y offset:1
+    Angle:60.0
+    Width:3
+    Height:3
+    Custom:5,5,1111111111111111111111111
+    Select the operation to perform:erode
+    Number of times to repeat operation:Once
+    Repetition number:2
+    Scale:3
+    Structuring element:Octagon
+    X offset:1
+    Y offset:1
+    Angle:0
+    Width:3
+    Height:3
+    Custom:5,5,1111111111111111111111111
+    Select the operation to perform:close
+    Number of times to repeat operation:Once
+    Repetition number:2
+    Scale:3
+    Structuring element:Pair
+    X offset:4.0
+    Y offset:2.0
+    Angle:0
+    Width:3
+    Height:3
+    Custom:5,5,1111111111111111111111111
+    Select the operation to perform:dilate
+    Number of times to repeat operation:Once
+    Repetition number:2
+    Scale:15.0
+    Structuring element:Periodic line
+    X offset:-1.0
+    Y offset:-3.0
+    Angle:0
+    Width:3
+    Height:3
+    Custom:5,5,1111111111111111111111111
+    Select the operation to perform:erode
+    Number of times to repeat operation:Once
+    Repetition number:2
+    Scale:3
+    Structuring element:Rectangle
+    X offset:1
+    Y offset:1
+    Angle:0
+    Width:5.0
+    Height:8.0
+    Custom:5,5,1111111111111111111111111
+    Select the operation to perform:open
+    Number of times to repeat operation:Once
+    Repetition number:2
+    Scale:9.0
+    Structuring element:Square
+    X offset:1
+    Y offset:1
+    Angle:0
+    Width:3
+    Height:3
+    Custom:5,5,1111111111111111111111111
+"""
+        pipeline = cpp.Pipeline()
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        module = pipeline.modules()[0]
+        assert isinstance(module, morph.Morph)
+        self.assertEqual(module.image_name, "Thresh")
+        self.assertEqual(module.output_image_name, "MorphedThresh")
+        self.assertEqual(len(module.functions), 8)
+        f0 = module.functions[0]
+        matrix = f0.strel.get_matrix()
+        self.assertEqual(len(matrix), 5)
+        self.assertEqual(len(matrix[0]), 7)
+        expected = [[1,1,1,1,1,1,1],
+                    [0,0,0,0,0,0,0],
+                    [0,1,1,1,1,1,0],
+                    [0,0,0,0,0,0,0],
+                    [1,1,1,1,1,1,1]]
+        np.testing.assert_array_equal(matrix, np.array(expected, bool))
+        for f, se in zip(module.functions, (
+            morph.SE_ARBITRARY, morph.SE_DIAMOND, morph.SE_LINE,
+            morph.SE_OCTAGON, morph.SE_PAIR, morph.SE_PERIODIC_LINE,
+            morph.SE_RECTANGLE, morph.SE_SQUARE)):
+            self.assertEqual(f.structuring_element, se)
+            if se == morph.SE_LINE:
+                self.assertEqual(f.angle, 60)
+                self.assertEqual(f.scale, 4.0)
+            elif se == morph.SE_PERIODIC_LINE:
+                self.assertEqual(f.x_offset, -1)
+                self.assertEqual(f.y_offset, -3)
+            elif se == morph.SE_RECTANGLE:
+                self.assertEqual(f.width, 5)
+                self.assertEqual(f.height, 8)
+
+    def execute(self, image, function, mask=None, custom_repeats=None, 
+                scale=None, module=None):
         '''Run the morph module on an input and return the resulting image'''
         INPUT_IMAGE_NAME = 'input'
         OUTPUT_IMAGE_NAME = 'output'
-        module = morph.Morph()
+        if module is None:
+            module = morph.Morph()
+        module.functions[0].function.value = function
         module.image_name.value = INPUT_IMAGE_NAME
         module.output_image_name.value = OUTPUT_IMAGE_NAME
-        module.functions[0].function.value = function
         if custom_repeats is None:
             module.functions[0].repeats_choice.value = morph.R_ONCE
         elif custom_repeats == -1:
@@ -301,7 +453,8 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
         output = image_set.get_image(OUTPUT_IMAGE_NAME)
         return output.pixel_data
     
-    def binary_tteesstt(self, function_name, function, gray_out=False, scale=None, custom_repeats=None):
+    def binary_tteesstt(self, function_name, function,
+                        gray_out=False, scale=None, custom_repeats=None):
         np.random.seed(map(ord,function_name))
         input = np.random.uniform(size=(20,20)) > .7
         output = self.execute(input, function_name, scale=scale, custom_repeats=custom_repeats)
@@ -436,6 +589,13 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
         result = self.execute(image, 'close', mask=np.ones(image.shape, np.bool))
         self.assertTrue(np.all(result >= image))
         
+    def test_02_26_binary_skelpe(self):
+        def fn(x):
+            d = scind.distance_transform_edt(x)
+            pe = cpfilter.poisson_equation(x)
+            return cpmorph.skeletonize(x, ordering = pe * d)
+        self.binary_tteesstt('skelpe', fn)
+        
     def test_03_01_color(self):
         # Regression test for issue # 324
         np.random.seed(0)
@@ -445,5 +605,115 @@ Morph:[module_num:1|svn_version:\'9935\'|variable_revision_number:2|show_window:
                               mask=np.ones(image.shape[:2], np.bool))
         self.assertTrue(np.all(result < image[:, :, 0] + np.finfo(np.float32).eps))
         
+    def test_04_01_strel_arbitrary(self):
+        r = np.random.RandomState()
+        r.seed(41)
+        strel = r.uniform(size=(5,3)) > .5
+        module = morph.Morph()
+        module.functions[0].structuring_element.value = morph.SE_ARBITRARY
+        module.functions[0].strel.value_text = cps.BinaryMatrix.to_value(strel)
+        pixel_data = r.uniform(size=(20, 30)) > .5
+        expected = scind.binary_dilation(pixel_data, strel)
+        result = self.execute(pixel_data, morph.F_DILATE, module = module)
+        np.testing.assert_array_equal(expected, result)
         
+    def test_04_02_strel_diamond(self):
+        r = np.random.RandomState()
+        r.seed(42)
+        module = morph.Morph()
+        module.functions[0].structuring_element.value = morph.SE_DIAMOND
+        strel = cpmorph.strel_diamond(3.5)
+        pixel_data = r.uniform(size=(20, 30)) > .5
+        expected = scind.binary_dilation(pixel_data, strel)
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 7, 
+                              module = module)
+        np.testing.assert_array_equal(expected, result)
+        
+    def test_04_03_strel_disk(self):
+        r = np.random.RandomState()
+        r.seed(43)
+        module = morph.Morph()
+        module.functions[0].structuring_element.value = morph.SE_DISK
+        strel = cpmorph.strel_disk(3.5)
+        pixel_data = r.uniform(size=(20, 30)) > .5
+        expected = scind.binary_dilation(pixel_data, strel)
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 7, 
+                              module = module)
+        np.testing.assert_array_equal(expected, result)
+        
+    def test_04_04_strel_line(self):
+        r = np.random.RandomState()
+        r.seed(44)
+        module = morph.Morph()
+        module.functions[0].structuring_element.value = morph.SE_LINE
+        module.functions[0].angle.value = 75
+        strel = cpmorph.strel_line(15, 75)
+        pixel_data = r.uniform(size=(20, 30)) > .5
+        expected = scind.binary_dilation(pixel_data, strel)
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 15, 
+                              module = module)
+        np.testing.assert_array_equal(expected, result)
+        
+    def test_04_05_strel_octagon(self):
+        r = np.random.RandomState()
+        r.seed(45)
+        module = morph.Morph()
+        module.functions[0].structuring_element.value = morph.SE_OCTAGON
+        strel = cpmorph.strel_octagon(7.5)
+        pixel_data = r.uniform(size=(20, 30)) > .5
+        expected = scind.binary_dilation(pixel_data, strel)
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 15, 
+                              module = module)
+        np.testing.assert_array_equal(expected, result)
+        
+    def test_04_06_strel_pair(self):
+        r = np.random.RandomState()
+        r.seed(46)
+        module = morph.Morph()
+        module.functions[0].structuring_element.value = morph.SE_PAIR
+        module.functions[0].x_offset.value = -1
+        module.functions[0].y_offset.value = 4
+        strel = cpmorph.strel_pair(-1, 4)
+        pixel_data = r.uniform(size=(20, 30)) > .5
+        expected = scind.binary_dilation(pixel_data, strel)
+        result = self.execute(pixel_data, morph.F_DILATE, module = module)
+        np.testing.assert_array_equal(expected, result)
     
+    def test_04_07_strel_periodicline(self):
+        r = np.random.RandomState()
+        r.seed(43)
+        module = morph.Morph()
+        module.functions[0].structuring_element.value = morph.SE_PERIODIC_LINE
+        module.functions[0].x_offset.value = 4
+        module.functions[0].y_offset.value = -3
+        strel = cpmorph.strel_periodicline(4, -3, 3)
+        pixel_data = r.uniform(size=(20, 30)) > .5
+        expected = scind.binary_dilation(pixel_data, strel)
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 30, 
+                              module = module)
+        np.testing.assert_array_equal(expected, result)
+        
+    def test_04_08_strel_disk(self):
+        r = np.random.RandomState()
+        r.seed(48)
+        module = morph.Morph()
+        module.functions[0].structuring_element.value = morph.SE_RECTANGLE
+        module.functions[0].width.value = 5
+        module.functions[0].height.value = 9
+        strel = cpmorph.strel_rectangle(5,9)
+        pixel_data = r.uniform(size=(20, 30)) > .5
+        expected = scind.binary_dilation(pixel_data, strel)
+        result = self.execute(pixel_data, morph.F_DILATE, module = module)
+        np.testing.assert_array_equal(expected, result)
+        
+    def test_04_09_strel_square(self):
+        r = np.random.RandomState()
+        r.seed(49)
+        module = morph.Morph()
+        module.functions[0].structuring_element.value = morph.SE_SQUARE
+        strel = cpmorph.strel_square(7)
+        pixel_data = r.uniform(size=(20, 30)) > .5
+        expected = scind.binary_dilation(pixel_data, strel)
+        result = self.execute(pixel_data, morph.F_DILATE, scale = 7, 
+                              module = module)
+        np.testing.assert_array_equal(expected, result)

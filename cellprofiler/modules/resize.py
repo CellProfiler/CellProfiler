@@ -15,7 +15,6 @@ method to use.
 # Please see the AUTHORS file for credits.
 # 
 # Website: http://www.cellprofiler.org
-__version__="$Revision$"
 
 import logging
 import numpy as np
@@ -180,18 +179,9 @@ class Resize(cpm.CPModule):
 
     def run(self, workspace):
         self.apply_resize(workspace, self.image_name.value, self.resized_image_name.value)
-        statistics = [[0,
-                       self.image_name.value, 
-                       self.resized_image_name.value]]
-        
         for additional in self.additional_images:
             self.apply_resize(workspace, additional.input_image_name.value, additional.output_image_name.value)
-            statistics += [[len(statistics),
-                            additional.input_image_name.value,
-                            additional.output_image_name.value]]
-        # Save data for display
-        workspace.display_data.statistics = statistics
-    
+
     def apply_resize(self, workspace, input_image_name, output_image_name):
         image = workspace.image_set.get_image(input_image_name)
         image_pixels = image.pixel_data
@@ -231,41 +221,49 @@ class Resize(cpm.CPModule):
                                              output_shape = shape,
                                              order = order)
         output_image = cpi.Image(output_pixels)
-        workspace.image_set.add(output_image_name, output_image) 
-        
-    def is_interactive(self):
-        return False
-    
-    def display(self, workspace):
+        workspace.image_set.add(output_image_name, output_image)
+
+        if self.show_window:
+            if not hasattr(workspace.display_data, 'input_images'):
+                workspace.display_data.input_images = [image.pixel_data]
+                workspace.display_data.output_images = [output_image.pixel_data]
+                workspace.display_data.input_image_names = [input_image_name]
+                workspace.display_data.output_image_names = [output_image_name]
+            else:
+                workspace.display_data.input_images += [image.pixel_data]
+                workspace.display_data.output_images += [output_image.pixel_data]
+                workspace.display_data.input_image_names += [input_image_name]
+                workspace.display_data.output_image_names += [output_image_name]
+
+    def display(self, workspace, figure):
         '''Display the resized images
-        
+
         workspace - the workspace being run
         statistics - a list of lists:
             0: index of this statistic
             1: input image name of image being aligned
             2: output image name of image being aligned
         '''
-        statistics = workspace.display_data.statistics
-        figure = workspace.create_or_find_figure(title="Resize, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,len(statistics)))
-        for i, input_name, output_name in statistics:
-            input_image = workspace.image_set.get_image(input_name)
-            input_image_pixels = input_image.pixel_data
-            
-            output_image = workspace.image_set.get_image(output_name)
-            output_image_pixels = output_image.pixel_data
-            
+        input_images = workspace.display_data.input_images
+        output_images = workspace.display_data.output_images
+        input_image_names = workspace.display_data.input_image_names
+        output_image_names = workspace.display_data.output_image_names
+
+        figure.set_subplots((2, len(input_images)))
+
+        for i, (input_image_pixels, output_image_pixels, input_image_name, output_image_name) in \
+                enumerate(zip(input_images, output_images, input_image_names, output_image_names)):
             if input_image_pixels.ndim == 2:
-                figure.subplot_imshow_bw(0,i,input_image_pixels,
-                                         title=input_name)
-                figure.subplot_imshow_bw(1,i,output_image_pixels,
-                                         title=output_name)
+                figure.subplot_imshow_bw(0, i, input_image_pixels,
+                                         title=input_image_name)
+                figure.subplot_imshow_bw(1, i, output_image_pixels,
+                                         title=output_image_name)
             else:
-                figure.subplot_imshow(0, i, input_image_pixels, 
-                                      title=input_name)
+                figure.subplot_imshow(0, i, input_image_pixels,
+                                      title=input_image_name)
                 figure.subplot_imshow(1, i, output_image_pixels,
-                                      title=output_name)
-                
+                                      title=output_image_name)
+
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
         if from_matlab and variable_revision_number == 1:

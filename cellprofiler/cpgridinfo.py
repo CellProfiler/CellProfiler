@@ -12,7 +12,6 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
-__version__="$Revision$"
 
 import numpy as np
 
@@ -38,3 +37,9 @@ class CPGridInfo(object):
         self.top_to_bottom = None
         self.image_width = None
         self.image_height = None
+
+    def serialize(self):
+        return dict((k, v) for k, v in self.__dict__.items() if not k.startswith('_'))
+
+    def deserialize(self, serialized_info):
+        self.__dict__.update(serialized_info)

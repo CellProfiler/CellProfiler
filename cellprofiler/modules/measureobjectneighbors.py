@@ -59,8 +59,6 @@ See also the <b>Identify</b> modules.
 # 
 # Website: http://www.cellprofiler.org
 
-__version = "$Revision$"
-
 import numpy as np
 import scipy.ndimage as scind
 import matplotlib.cm
@@ -459,7 +457,6 @@ class MeasureObjectNeighbors(cpm.CPModule):
         m = workspace.measurements
         assert(isinstance(m, cpmeas.Measurements))
         image_set = workspace.image_set
-        assert(isinstance(image_set, cpi.ImageSet))
         features_and_data = [
             (M_NUMBER_OF_NEIGHBORS, neighbor_count),
             (M_FIRST_CLOSEST_OBJECT_NUMBER, first_object_number),
@@ -480,9 +477,9 @@ class MeasureObjectNeighbors(cpm.CPModule):
                 self.object_name.value,
                 self.object_name.value if self.neighbors_are_objects 
                 else self.neighbors_name.value,
-                m.group_index * np.ones(first_objects.shape, int),
+                m.image_set_number * np.ones(first_objects.shape, int),
                 first_objects,
-                m.group_index * np.ones(second_objects.shape, int),
+                m.image_set_number * np.ones(second_objects.shape, int),
                 second_objects)
                                  
         labels = kept_labels
@@ -500,7 +497,8 @@ class MeasureObjectNeighbors(cpm.CPModule):
         
         image_set = workspace.image_set
         if self.wants_count_image.value:
-            neighbor_cm = get_colormap(self.count_colormap.value)
+            neighbor_cm_name = self.count_colormap.value
+            neighbor_cm = get_colormap(neighbor_cm_name)
             sm = matplotlib.cm.ScalarMappable(cmap = neighbor_cm)
             img = sm.to_rgba(neighbor_count_image)[:,:,:3]
             img[:,:,0][~ object_mask] = 0
@@ -509,9 +507,11 @@ class MeasureObjectNeighbors(cpm.CPModule):
             count_image = cpi.Image(img, masking_objects = objects)
             image_set.add(self.count_image_name.value, count_image)
         else:
-            neighbor_cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
+            neighbor_cm_name = cpprefs.get_default_colormap()
+            neighbor_cm = matplotlib.cm.get_cmap(neighbor_cm_name)
         if self.neighbors_are_objects and self.wants_percent_touching_image:
-            percent_touching_cm = get_colormap(self.touching_colormap.value)
+            percent_touching_cm_name = self.touching_colormap.value
+            percent_touching_cm = get_colormap(percent_touching_cm_name)
             sm = matplotlib.cm.ScalarMappable(cmap = percent_touching_cm)
             img = sm.to_rgba(percent_touching_image)[:,:,:3]
             img[:,:,0][~ object_mask] = 0
@@ -521,19 +521,18 @@ class MeasureObjectNeighbors(cpm.CPModule):
             image_set.add(self.touching_image_name.value,
                           touching_image)
         else:
-            percent_touching_cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
-        workspace.display_data.neighbor_cm = neighbor_cm
-        workspace.display_data.percent_touching_cm = percent_touching_cm
-        workspace.display_data.orig_labels = objects.segmented
-        workspace.display_data.expanded_labels = expanded_labels
-        workspace.display_data.object_mask = object_mask
-            
-    def is_interactive(self):
-        return False
-    
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="MeasureObjectNeighbors, image cycle #%d"%(
-            workspace.measurements.image_set_number),subplots=(2,2))
+            percent_touching_cm_name = cpprefs.get_default_colormap()
+            percent_touching_cm = matplotlib.cm.get_cmap(percent_touching_cm_name)
+
+        if self.show_window:
+            workspace.display_data.neighbor_cm_name = neighbor_cm_name
+            workspace.display_data.percent_touching_cm_name = percent_touching_cm_name
+            workspace.display_data.orig_labels = objects.segmented
+            workspace.display_data.expanded_labels = expanded_labels
+            workspace.display_data.object_mask = object_mask
+
+    def display(self, workspace, figure):
+        figure.set_subplots((2, 2))
         figure.subplot_imshow_labels(0,0, workspace.display_data.orig_labels,
                                      "Original: %s"%self.object_name.value)
         
@@ -541,10 +540,11 @@ class MeasureObjectNeighbors(cpm.CPModule):
         expanded_labels = workspace.display_data.expanded_labels
         neighbor_count_image = workspace.display_data.neighbor_count_image
         neighbor_count_image[~ object_mask] = -1
-        neighbor_cm = workspace.display_data.neighbor_cm
+        neighbor_cm = get_colormap(workspace.display_data.neighbor_cm_name)
         neighbor_cm.set_under((0,0,0))
         if self.neighbors_are_objects:
-            percent_touching_cm = workspace.display_data.percent_touching_cm
+            percent_touching_cm = \
+                get_colormap(workspace.display_data.percent_touching_cm_name)
             percent_touching_cm.set_under((0,0,0))
             percent_touching_image = workspace.display_data.percent_touching_image 
             percent_touching_image[~ object_mask] = -1
@@ -556,8 +556,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                   colorbar=True, vmin=0,
                                   vmax=max(neighbor_count_image.max(), 1),
                                   normalize=False,
-                                  sharex = figure.subplot(0,0),
-                                  sharey = figure.subplot(0,0))
+                                  sharexy = figure.subplot(0,0))
             if self.neighbors_are_objects:
                 figure.subplot_imshow(1,1, percent_touching_image,
                                       "%s colored by pct touching"%
@@ -566,8 +565,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                       colorbar=True, vmin=0, 
                                       vmax=max(percent_touching_image.max(),1),
                                       normalize=False,
-                                      sharex = figure.subplot(0,0),
-                                      sharey = figure.subplot(0,0))
+                                      sharexy = figure.subplot(0,0))
         else:
             # No objects - colorbar blows up.
             figure.subplot_imshow(0,1, neighbor_count_image,
@@ -576,8 +574,7 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                   colormap = neighbor_cm,
                                   vmin = 0,
                                   vmax = max(neighbor_count_image.max(),1),
-                                  sharex = figure.subplot(0,0),
-                                  sharey = figure.subplot(0,0))
+                                  sharexy = figure.subplot(0,0))
             if self.neighbors_are_objects:
                 figure.subplot_imshow(1,1, percent_touching_image,
                                       "%s colored by pct touching"%
@@ -585,15 +582,13 @@ class MeasureObjectNeighbors(cpm.CPModule):
                                       colormap = percent_touching_cm,
                                       vmin = 0,
                                       vmax = max(neighbor_count_image.max(),1),
-                                      sharex = figure.subplot(0,0),
-                                      sharey = figure.subplot(0,0))
+                                      sharexy = figure.subplot(0,0))
             
         if self.distance_method == D_EXPAND:
             figure.subplot_imshow_labels(1,0, expanded_labels,
                                          "Expanded %s"%
                                          self.object_name.value,
-                                         sharex = figure.subplot(0,0),
-                                         sharey = figure.subplot(0,0))
+                                         sharexy = figure.subplot(0,0))
     
     @property
     def all_features(self):
@@ -628,6 +623,16 @@ class MeasureObjectNeighbors(cpm.CPModule):
                  self.get_measurement_name(feature_name),
                  coltypes[feature_name])
                  for feature_name in self.all_features]
+    
+    def get_object_relationships(self, pipeline):
+        '''Return column definitions for object relationships output by module'''
+        objects_name = self.object_name.value
+        if self.neighbors_are_objects:
+            neighbors_name = objects_name
+        else:
+            neighbors_name = self.neighbors_name.value
+        return [(cpmeas.NEIGHBORS, objects_name, neighbors_name, 
+                 cpmeas.MCA_AVAILABLE_EACH_CYCLE)]
         
     def get_categories(self, pipeline, object_name):
         if object_name == self.object_name:

@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
-__version__="$Revision$"
 
 import base64
 import numpy as np
@@ -22,9 +21,6 @@ import PIL.Image
 import tempfile
 import unittest
 import zlib
-
-from cellprofiler.preferences import set_headless
-set_headless()
 
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
@@ -38,11 +34,14 @@ import cellprofiler.workspace as cpw
 import cellprofiler.modules.loadsingleimage as L
 from cellprofiler.modules.identify import M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, M_NUMBER_OBJECT_NUMBER
 from cellprofiler.modules.tests import example_images_directory
+from cellprofiler.modules.tests.test_loadimages import ConvtesterMixin
+
 
 OBJECTS_NAME = "myobjects"
 OUTLINES_NAME = "myoutlines"
 
-class TestLoadSingleImage(unittest.TestCase):
+class TestLoadSingleImage(unittest.TestCase, ConvtesterMixin):
+        
     def test_01_00_load_matlab(self):
         data = ('eJzzdQzxcXRSMNUzUPB1DNFNy8xJ1VEIyEksScsvyrVSCHAO9/TTUXAuSk0s'
                 'SU1RyM+zUggpTVXwTSxSMDRTMDSxMjW3MrJQMDIwNFAgGTAwevryMzAwrGZk'
@@ -317,6 +316,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
     def make_workspace(self, file_names):
         module = L.LoadSingleImage()
         module.module_num = 1
+        module.directory.set_dir_choice(L.DEFAULT_INPUT_FOLDER_NAME)
         for i, file_name in enumerate(file_names):
             if i > 0:
                 module.add_file()
@@ -339,9 +339,12 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         cpprefs.set_default_image_directory(path)
         file_name = "1-162hrh2ax2.tif"
         workspace, module = self.make_workspace([file_name])
+        assert isinstance(module, L.LoadSingleImage)
+        module.prepare_run(workspace)
         module.run(workspace)
         m = workspace.measurements
         self.assertTrue(isinstance(m, cpmeas.Measurements))
+        self.assertEqual(m.image_set_count, 1)
         f = m.get_all_measurements(cpmeas.IMAGE, 
                                    "_".join((L.C_FILE_NAME, self.get_image_name(0))))
         self.assertEqual(len(f), 1)
@@ -371,6 +374,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         self.assertTrue(isinstance(module, L.LoadSingleImage))
         module.file_settings[0].rescale.value = False
         module.file_settings[1].rescale.value = True
+        module.prepare_run(workspace)
         module.run(workspace)
         unscaled, scaled = [workspace.image_set.get_image(self.get_image_name(i)).pixel_data
                             for i in range(2)]
@@ -484,6 +488,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         try:
             module = L.LoadSingleImage()
             module.module_num = 1
+            module.directory.set_dir_choice(L.DEFAULT_INPUT_FOLDER_NAME)
             fs = module.file_settings[0]
             fs.file_name.value = filename
             fs.image_objects_choice.value = L.IO_OBJECTS
@@ -499,6 +504,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(
                 pipeline, module, image_set, object_set, m, image_set_list)
+            module.prepare_run(workspace)
             module.run(workspace)
             
             o = object_set.get_objects(OBJECTS_NAME)
@@ -533,6 +539,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
         try:
             module = L.LoadSingleImage()
             module.module_num = 1
+            module.directory.set_dir_choice(L.DEFAULT_INPUT_FOLDER_NAME)
             fs = module.file_settings[0]
             fs.file_name.value = filename
             fs.image_objects_choice.value = L.IO_OBJECTS
@@ -550,6 +557,7 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
             image_set = image_set_list.get_image_set(0)
             workspace = cpw.Workspace(
                 pipeline, module, image_set, object_set, m, image_set_list)
+            module.prepare_run(workspace)
             module.run(workspace)
             
             outlines = image_set.get_image(OUTLINES_NAME)
@@ -560,3 +568,277 @@ LoadSingleImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:5
                 os.rmdir(directory)
             except:
                 print "Failed to delete directory " + directory
+                
+    def test_05_01_convert_single_image(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120831182904
+ModuleCount:2
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C
+    Check image sets for unmatched or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:
+    Image count:2
+    Text that these images have in common (case-sensitive):Channel1-
+    Position of this image in each group:1
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:rawGFP
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):Channel2-
+    Position of this image in each group:2
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:DNA
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+
+LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Input image file location:Default Input Folder\x7CNone
+    Filename of the image to load (Include the extension, e.g., .tif):Channel1ILLUM.mat
+    Load as images or objects?:Images
+    Name the image that will be loaded:IllumGFP
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outlines:NucleiOutlines
+    Rescale intensities?:No
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleSBSImages")
+        self.convtester(pipeline_text, directory)
+        
+    def test_05_02_convert_two_images(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120831182904
+ModuleCount:2
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C
+    Check image sets for unmatched or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:
+    Image count:2
+    Text that these images have in common (case-sensitive):Channel1-
+    Position of this image in each group:1
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:rawGFP
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):Channel2-
+    Position of this image in each group:2
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:DNA
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+
+LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Input image file location:Default Input Folder\x7CNone
+    Filename of the image to load (Include the extension, e.g., .tif):Channel1ILLUM.mat
+    Load as images or objects?:Images
+    Name the image that will be loaded:IllumGFP
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outlines:NucleiOutlines
+    Rescale intensities?:No
+    Filename of the image to load (Include the extension, e.g., .tif):Channel2ILLUM.mat
+    Load as images or objects?:Images
+    Name the image that will be loaded:IllumDNA
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outlines:NucleiOutlines
+    Rescale intensities?:No
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleSBSImages")
+        self.convtester(pipeline_text, directory)
+
+    def test_05_03_convert_with_metadata(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120831182904
+ModuleCount:2
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C
+    Check image sets for unmatched or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:
+    Image count:1
+    Text that these images have in common (case-sensitive):Channel1-
+    Position of this image in each group:1
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:rawGFP
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+
+LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Input image file location:Default Input Folder\x7CNone
+    Filename of the image to load (Include the extension, e.g., .tif):Channel2-\\\\g<ImageNumber>-\\\\g<Row>-\\\\g<Column>.tif
+    Load as images or objects?:Images
+    Name the image that will be loaded:rawDNA
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outlines:NucleiOutlines
+    Rescale intensities?:Yes
+    Filename of the image to load (Include the extension, e.g., .tif):Channel1ILLUM.mat
+    Load as images or objects?:Images
+    Name the image that will be loaded:IllumGFP
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outlines:NucleiOutlines
+    Rescale intensities?:No
+    Filename of the image to load (Include the extension, e.g., .tif):Channel2ILLUM.mat
+    Load as images or objects?:Images
+    Name the image that will be loaded:IllumDNA
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outlines:NucleiOutlines
+    Rescale intensities?:Yes
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleSBSImages")
+        self.convtester(pipeline_text, directory)
+        
+    def test_05_04_convert_objects(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120831182904
+ModuleCount:2
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C
+    Check image sets for unmatched or duplicate files?:Yes
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:
+    Image count:2
+    Text that these images have in common (case-sensitive):Channel1-
+    Position of this image in each group:1
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:rawGFP
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):Channel2-
+    Position of this image in each group:2
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:DNA
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+
+LoadSingleImage:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:5|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Input image file location:Default Input Folder\x7CNone
+    Filename of the image to load (Include the extension, e.g., .tif):Channel1ILLUM.mat
+    Load as images or objects?:Objects
+    Name the image that will be loaded:IllumGFP
+    Name this loaded object:MyObjects
+    Retain outlines of loaded objects?:No
+    Name the outlines:NucleiOutlines
+    Rescale intensities?:No
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleSBSImages")
+        self.convtester(pipeline_text, directory)
+        

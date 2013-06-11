@@ -41,7 +41,6 @@ See also all <b>Measure</b> modules.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 
@@ -306,30 +305,32 @@ class CalculateMath(cpm.CPModule):
             operand_object1 = self.operands[0].operand_objects.value
             operand_object2 = self.operands[1].operand_objects.value
             g = m.get_relationship_groups()
-            rk = None
             
             for gg in g:
                 if gg.relationship == R_PARENT:
-                    rk = gg
-                    r = m.get_relationships(rk.module_number,
-                                            rk.relationship,
-                                            rk.object_name1,
-                                            rk.object_name2,
-                                            rk.group_number)
                     #
                     # first is parent of second
                     #
                     if (gg.object_name1 == operand_object1 and
                         gg.object_name2 == operand_object2):
-                        i0 = r['object_number1'] - 1
-                        i1 = r['object_number2'] - 1
-                        break
+                        f0 = cpmeas.R_FIRST_OBJECT_NUMBER
+                        f1 = cpmeas.R_SECOND_OBJECT_NUMBER
                     elif (gg.object_name1 == operand_object2 and
                           gg.object_name2 == operand_object1):
-                        i0 = r['object_number2'] - 1
-                        i1 = r['object_number1'] - 1
-                        break
-            if rk is None:
+                        f1 = cpmeas.R_FIRST_OBJECT_NUMBER
+                        f0 = cpmeas.R_SECOND_OBJECT_NUMBER
+                    else:
+                        continue
+                    r = m.get_relationships(
+                        gg.module_number, gg.relationship,
+                        gg.object_name1, gg.object_name2,
+                        image_numbers = [m.image_set_number])
+                    r = r[(r[cpmeas.R_FIRST_IMAGE_NUMBER]==m.image_set_number) &
+                          (r[cpmeas.R_SECOND_IMAGE_NUMBER]==m.image_set_number)]
+                    i0 = r[f0] - 1
+                    i1 = r[f1] - 1
+                    break
+            else:
                 raise ValueError("Incompatable objects: %s has %d objects and %s has %d objects"%
                                  (operand_object1, len(values[0]),
                                   operand_object2, len(values[1])))
@@ -367,14 +368,15 @@ class CalculateMath(cpm.CPModule):
         else:
             for object_name, r in zip(all_object_names, result):
                 m.add_measurement(object_name, feature, r)
-                
             result = result[0]
-            
-        if workspace.frame is not None:
-            workspace.display_data.statistics = [("Measurement name","Measurement type","Result")]
-            workspace.display_data.statistics += [(self.output_feature_name.value, 
-                                                   "Image" if all_image_measurements else "Object", 
-                                                   "%.2f"%np.mean(result))]
+                
+        if self.show_window:
+            workspace.display_data.col_labels = (
+                "Measurement name", "Measurement type", "Result")
+            workspace.display_data.statistics = [
+                (self.output_feature_name.value, 
+                 "Image" if all_image_measurements else "Object", 
+                 "%.2f"%np.mean(result))]
 
     def compute_operation(self, numerator, denominator):
         if self.operation == O_NONE:
@@ -437,14 +439,10 @@ class CalculateMath(cpm.CPModule):
     def measurement_name(self):
         return "%s_%s" %(C_MATH,self.output_feature_name.value)
             
-    def is_interactive(self):
-        return False
-    
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="CalculateMath, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
         figure.subplot_table(0, 0, workspace.display_data.statistics,
-                             ratio=(.25,.5,.25))
+                             col_labels = workspace.display_data.col_labels)
      
     def get_operands(self):
         '''Return the operand structures that participate in the calculation

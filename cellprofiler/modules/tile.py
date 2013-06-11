@@ -252,22 +252,20 @@ class Tile(cpm.CPModule):
             output_pixels = self.tile(workspace)
         output_image = cpi.Image(output_pixels)
         workspace.image_set.add(self.output_image.value, output_image)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.image = output_pixels
             
     def post_group(self, workspace, grouping):
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         if self.output_image.value not in image_set.get_names():
             d = self.get_dictionary(workspace.image_set_list)
             image_set.add(self.output_image.value, 
                           cpi.Image(d[TILED_IMAGE]))
     
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display 
         '''
-        figure = workspace.create_or_find_figure(title="Tile, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
+        figure.set_subplots((1, 1))
         pixels = workspace.display_data.image
         name = self.output_image.value
         if pixels.ndim == 3:
@@ -275,16 +273,12 @@ class Tile(cpm.CPModule):
         else:
             figure.subplot_imshow_grayscale(0, 0, pixels, title = name)
 
-    def is_interactive(self):
-        return False
-        
     def tile(self, workspace):
         '''Tile images across image cycles
         '''
         d = self.get_dictionary(workspace.image_set_list)
         rows, columns = self.get_grid_dimensions(d[IMAGE_COUNT])
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         image = image_set.get_image(self.input_image)
         pixels = image.pixel_data
         if d[TILED_IMAGE] is None:

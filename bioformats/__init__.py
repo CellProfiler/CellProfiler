@@ -19,8 +19,8 @@ import os
 import re
 import cellprofiler.utilities.jutil as jutil
 from cellprofiler.preferences import get_headless, get_ij_plugin_directory
-from cellprofiler.preferences import get_ij_version, IJ_1, IJ_2
 import sys
+from external_dependencies import get_cellprofiler_jars
 
 logger = logging.getLogger("bioformats")
 
@@ -39,46 +39,54 @@ READABLE_FORMATS = ('al3d', 'am', 'amiramesh', 'apl', 'arf', 'avi', 'bmp',
 WRITABLE_FORMATS = ('avi', 'eps', 'epsi', 'ics', 'ids', 'jp2', 'jpeg', 'jpg', 
                     'mov', 'ome', 'ome.tiff', 'png', 'ps', 'tif', 'tiff')
 
-USE_IJ2 = None
 def start_cellprofiler_jvm():
     '''Start the Java VM with arguments appropriate for CellProfiler'''
-    global USE_IJ2
     global logger
     
-    if hasattr(sys, 'frozen') and sys.platform != 'darwin':
-        root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+    if hasattr(sys, 'frozen'):
+        if sys.platform != 'darwin':
+            root_path = os.path.split(os.path.abspath(sys.argv[0]))[0]
+            bioformats_path = os.path.join(root_path, 'bioformats')
+        else:
+            bioformats_path = os.path.abspath(os.path.split(__file__)[0])
+            root_path = os.path.split(bioformats_path)[0]
+        imagej_path = os.path.join(root_path, 'imagej','jars')
+        def sort_fn(a, b):
+            aa,bb = [(0 if x.startswith("cellprofiler-java") else 1, x)
+                     for x in a, b]
+            return cmp(aa, bb)
+        jar_files = [
+            jar_filename
+            for jar_filename in os.listdir(imagej_path)
+            if jar_filename.lower().endswith(".jar")]
+        jar_files = sorted(jar_files, cmp = sort_fn)
     else:
-        root_path = os.path.abspath(os.path.split(__file__)[0])
-        root_path = os.path.split(root_path)[0]
-        if not os.path.isdir(root_path):
-            # CPA's directory structure is this:
-            #
-            # CPAnalyst.app
-            #      Contents
-            #          MacOS
-            #              CPAnalyst
-            #          Resources
-            #
-            macos_path = os.path.abspath(os.path.split(sys.argv[0])[0])
-            contents_path = os.path.split(macos_path)[0]
-            root_path = os.path_join(contents_path, "Resources")
-    path = os.path.join(root_path, 'bioformats')
-    imagej_path = os.path.join(root_path, 'imagej')
-    loci_jar = os.path.join(path, "loci_tools.jar")
-    ij2_jar = os.path.join(imagej_path, "imagej-2.0-SNAPSHOT-all.jar")
-    ij_jar = os.path.join(imagej_path, "ij.jar")
-    imglib_jar = os.path.join(imagej_path, "imglib.jar")
-    javacl_jar = os.path.join(imagej_path, "javacl-1.0-beta-4-shaded.jar")
-    USE_IJ2 = get_ij_version() == IJ_2
-    if os.path.exists(ij2_jar) and USE_IJ2:
-        class_path = os.pathsep.join((loci_jar, ij2_jar))
-        USE_IJ2 = True
-    else:
-        USE_IJ2 = False
-        class_path = os.pathsep.join((loci_jar, ij_jar, imglib_jar, 
-                                      javacl_jar))
+        bioformats_path = os.path.abspath(os.path.split(__file__)[0])
+        root_path = os.path.split(bioformats_path)[0]
+        jar_files = get_cellprofiler_jars()
+        imagej_path = os.path.join(root_path, 'imagej','jars')
+    
+    class_path = os.pathsep.join(
+        [os.path.join(imagej_path, jar_file) for jar_file in jar_files])
+    
     if os.environ.has_key("CLASSPATH"):
         class_path += os.pathsep + os.environ["CLASSPATH"]
+        
+    if (get_ij_plugin_directory() is not None and 
+        os.path.isdir(get_ij_plugin_directory())):
+        plugin_directory = get_ij_plugin_directory()
+        #
+        # Add the plugin directory to pick up .class files in a directory
+        # hierarchy.
+        #
+        class_path += os.pathsep + plugin_directory
+        #
+        # Add any .jar files in the directory
+        #
+        class_path += os.pathsep + os.pathsep.join(
+            [os.path.join(plugin_directory, jarfile)
+             for jarfile in os.listdir(plugin_directory)
+             if jarfile.lower().endswith(".jar")])
         
     if sys.platform.startswith("win") and not hasattr(sys, 'frozen'):
         # Have to find tools.jar
@@ -103,21 +111,24 @@ def start_cellprofiler_jvm():
             #r"-verbose:class",
             #r"-verbose:jni",
             r"-Xmx%s" % jvm_arg]
-    if get_ij_plugin_directory() is not None:
-        args.append("-Dplugins.dir="+get_ij_plugin_directory())
-    
     #
     # Get the log4j logger setup from a file in the bioformats directory
     # if such a file exists.
     #
-    log4j_properties = os.path.join(path, "log4j.properties")
+    log4j_properties = os.path.join(bioformats_path, "log4j.properties")
     if os.path.exists(log4j_properties):
         log4j_properties = "file:/"+log4j_properties.replace(os.path.sep, "/")
         args += [r"-Dlog4j.configuration="+log4j_properties]
         init_logger = False
     else:
         init_logger = True
-        
+    
+    if get_headless():
+        # We're running silently, so don't change the Java preferences
+        # The following definition uses a process-scope preferences factory
+        args += [
+            "-Djava.util.prefs.PreferencesFactory="
+            "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
     run_headless = (get_headless() and 
                     not os.environ.has_key("CELLPROFILER_USE_XVFB"))
         
@@ -160,4 +171,4 @@ if __name__ == "__main__":
     import wx.py.PyCrust
     
     wx.py.PyCrust.main()
-    J.kill_vm()
+    jutil.kill_vm()

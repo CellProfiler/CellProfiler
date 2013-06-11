@@ -26,7 +26,6 @@ root path is <tt>/imaging/analysis</tt>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import httplib
 import numpy as np
@@ -192,7 +191,6 @@ class CreateBatchFiles(cpm.CPModule):
         
         pipeline = workspace.pipeline
         image_set_list = workspace.image_set_list
-        frame = workspace.frame
         
         if pipeline.test_mode or self.from_old_matlab:
             return True
@@ -200,25 +198,18 @@ class CreateBatchFiles(cpm.CPModule):
             self.enter_batch_mode(workspace)
             return True
         else:
-            self.save_pipeline(workspace)
+            path = self.save_pipeline(workspace)
+            if not cpprefs.get_headless():
+                import wx
+                wx.MessageBox(
+                    "CreateBatchFiles saved pipeline to %s" % path,
+                    caption = "CreateBatchFiles: Batch file saved",
+                    style = wx.OK | wx.ICON_INFORMATION)
             return False
     
     def run(self, workspace):
         # all the actual work is done in prepare_run
         pass
-
-    def display(self, workspace):
-        if workspace.frame != None:
-            if workspace.pipeline.test_mode:
-                message = 'In test mode: no batch files created'
-            else:
-                message = 'Batch files created.'
-            figure = workspace.create_or_find_figure(title="CreateBatchFiles, image cycle #%d"%(
-                workspace.measurements.image_set_number), subplots=(1,1))
-            figure.subplot_table(0, 0, [[message]])
-
-    def is_interactive(self):
-        return False
 
     def clear_old_matlab(self):
         self.from_old_matlab.value = cps.NO
@@ -265,25 +256,31 @@ class CreateBatchFiles(cpm.CPModule):
         pipeline = workspace.pipeline
         m = cpmeas.Measurements(copy = workspace.measurements,
                                 filename = h5_path)
-        assert isinstance(image_set_list, cpi.ImageSetList)
-        assert isinstance(pipeline, cpp.Pipeline)
-        assert isinstance(m, cpmeas.Measurements)
-
-        pipeline = pipeline.copy()
-        target_workspace = cpw.Workspace(pipeline, None, None, None,
-                                         m, image_set_list,
-                                         workspace.frame)
-        pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
-        bizarro_self = pipeline.module(self.module_num)
-        bizarro_self.revision.value = version_number
-        if self.wants_default_output_directory:
-            bizarro_self.custom_output_directory.value = \
-                        self.alter_path(cpprefs.get_default_output_directory())
-        bizarro_self.default_image_directory.value = \
-                    self.alter_path(cpprefs.get_default_image_directory())
-        bizarro_self.batch_mode.value = True
-        pipeline.write_pipeline_measurement(m)
-        del m
+        try:
+            assert isinstance(pipeline, cpp.Pipeline)
+            assert isinstance(m, cpmeas.Measurements)
+    
+            orig_pipeline = pipeline
+            pipeline = pipeline.copy()
+            # this use of workspace.frame is okay, since we're called from
+            # prepare_run which happens in the main wx thread.
+            target_workspace = cpw.Workspace(pipeline, None, None, None,
+                                             m, image_set_list,
+                                             workspace.frame)
+            pipeline.prepare_to_create_batch(target_workspace, self.alter_path)
+            bizarro_self = pipeline.module(self.module_num)
+            bizarro_self.revision.value = version_number
+            if self.wants_default_output_directory:
+                bizarro_self.custom_output_directory.value = \
+                            self.alter_path(cpprefs.get_default_output_directory())
+            bizarro_self.default_image_directory.value = \
+                        self.alter_path(cpprefs.get_default_image_directory())
+            bizarro_self.batch_mode.value = True
+            pipeline.write_pipeline_measurement(m)
+            orig_pipeline.write_pipeline_measurement(m, user_pipeline=True)
+            return h5_path
+        finally:
+            m.close()
 
     def in_batch_mode(self):
         '''Tell the system whether we are in batch mode on the cluster'''
@@ -291,20 +288,11 @@ class CreateBatchFiles(cpm.CPModule):
     
     def enter_batch_mode(self, workspace):
         '''Restore the image set list from its setting as we go into batch mode'''
-        image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
-        assert isinstance(image_set_list, cpi.ImageSetList)
         assert isinstance(pipeline, cpp.Pipeline)
-        if self.distributed_mode:
-            import tempfile
-            try:
-                cpprefs.set_default_output_directory(tempfile.gettempdir())
-                cpprefs.set_default_image_directory(tempfile.gettempdir())
-            except:
-                pass
-        else:
-            cpprefs.set_default_output_directory(self.custom_output_directory.value)
-            cpprefs.set_default_image_directory(self.default_image_directory.value)
+        assert not self.distributed_mode, "Distributed mode no longer supported"
+        cpprefs.set_default_output_directory(self.custom_output_directory.value)
+        cpprefs.set_default_image_directory(self.default_image_directory.value)
     
     def turn_off_batch_mode(self):
         '''Remove any indications that we are in batch mode

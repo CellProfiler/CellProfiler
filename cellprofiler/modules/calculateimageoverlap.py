@@ -28,7 +28,9 @@ while a background pixel in the test image that overlaps with foreground in the 
 <ul>
 <li><i>For images and objects:</i>
 <ul>
+<li><i>True positive rate:</i> Total number of true positive pixels / total number of actual positive pixels.</li>
 <li><i>False positive rate:</i> Total number of false positive pixels / total number of actual negative pixels </li>
+<li><i>True negative rate:</i> Total number of true negative pixels / total number of actual negative pixels.</li>
 <li><i>False negative rate:</i> Total number of false negative pixels / total number of actual postive pixels </li>
 <li><i>Precision:</i> Number of true positive pixels / (number of true positive pixels + number of false positive pixels) </li>
 <li><i>Recall:</i> Number of true positive pixels/ (number of true positive pixels + number of false negative pixels) </li>
@@ -55,7 +57,6 @@ objects to occupy the same clusters, so the Rand Index will never actually be ze
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision: 9000 $"
 
 import numpy as np
 from contrib.english import ordinal
@@ -73,12 +74,15 @@ C_IMAGE_OVERLAP = "Overlap"
 FTR_F_FACTOR = "Ffactor"
 FTR_PRECISION = "Precision"
 FTR_RECALL = "Recall"
+FTR_TRUE_POS_RATE = "TruePosRate"
 FTR_FALSE_POS_RATE = "FalsePosRate"
 FTR_FALSE_NEG_RATE = "FalseNegRate"
+FTR_TRUE_NEG_RATE = "TrueNegRate"
 FTR_RAND_INDEX = "RandIndex"
 FTR_ADJUSTED_RAND_INDEX = "AdjustedRandIndex"
 
 FTR_ALL = [FTR_F_FACTOR, FTR_PRECISION, FTR_RECALL,
+           FTR_TRUE_POS_RATE, FTR_TRUE_NEG_RATE,
            FTR_FALSE_POS_RATE, FTR_FALSE_NEG_RATE,
            FTR_RAND_INDEX, FTR_ADJUSTED_RAND_INDEX]
 
@@ -120,7 +124,7 @@ class CalculateImageOverlap(cpm.CPModule):
             on loading objects.""")
         
         self.img_obj_found_in_GT = cps.ImageNameSubscriber(
-            "Which image did you find these objects in?",
+            "Which image was used to identify the objects?",
             "None", doc ="""
             <i>(Used only when comparing segmented objects)</i> <br>
             Select which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,
@@ -150,10 +154,6 @@ class CalculateImageOverlap(cpm.CPModule):
         elif self.obj_or_img == O_OBJ:
             result += [self.object_name_GT, self.img_obj_found_in_GT,self.object_name_ID, self.img_obj_found_in_ID]
         return result
-
-    def is_interactive(self):
-        return False
-    
 
     def run(self,workspace):
         if self.obj_or_img == O_IMG:
@@ -223,14 +223,20 @@ class CalculateImageOverlap(cpm.CPModule):
         negative_count = false_positive_count + true_negative_count
         if negative_count == 0:
             false_positive_rate = 0.0
+            true_negative_rate = 1.0
         else:
             false_positive_rate = (float(false_positive_count) / 
                                    float(negative_count))
+            true_negative_rate = (float(true_negative_count) /
+                                  float(negative_count))
         if true_count == 0:
             false_negative_rate = 0.0
+            true_positive_rate = 1.0
         else:
             false_negative_rate = (float(false_negative_count) / 
                                    float(true_count))
+            true_positive_rate = (float(true_positive_count) /
+                                  float(true_count))
         ground_truth_labels, ground_truth_count = label(
             ground_truth_pixels & mask, np.ones((3, 3), bool))
         test_labels, test_count = label(
@@ -243,8 +249,12 @@ class CalculateImageOverlap(cpm.CPModule):
         m.add_image_measurement(self.measurement_name(FTR_PRECISION),
                                 precision)
         m.add_image_measurement(self.measurement_name(FTR_RECALL), recall)
+        m.add_image_measurement(self.measurement_name(FTR_TRUE_POS_RATE),
+                                true_positive_rate)
         m.add_image_measurement(self.measurement_name(FTR_FALSE_POS_RATE),
                                 false_positive_rate)
+        m.add_image_measurement(self.measurement_name(FTR_TRUE_NEG_RATE),
+                                true_negative_rate)
         m.add_image_measurement(self.measurement_name(FTR_FALSE_NEG_RATE),
                                 false_negative_rate)
         m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX),
@@ -252,7 +262,7 @@ class CalculateImageOverlap(cpm.CPModule):
         m.add_image_measurement(self.measurement_name(FTR_ADJUSTED_RAND_INDEX),
                                 adjusted_rand_index)
         
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.true_positives = true_positives
             workspace.display_data.true_negatives = true_negatives
             workspace.display_data.false_positives = false_positives
@@ -260,7 +270,6 @@ class CalculateImageOverlap(cpm.CPModule):
             workspace.display_data.rand_index = rand_index
             workspace.display_data.adjusted_rand_index = adjusted_rand_index
             workspace.display_data.statistics = [
-                ("Measurement", "Value"),
                 (FTR_F_FACTOR, f_factor),
                 (FTR_PRECISION, precision),
                 (FTR_RECALL, recall),
@@ -381,9 +390,10 @@ class CalculateImageOverlap(cpm.CPModule):
         recall  = TP/GT_tot_area
         precision = TP/(TP+FP)
         F_factor = 2*(precision*recall)/(precision+recall)
+        true_positive_rate = TP/(FN+TP)
         false_positive_rate = FP/(FP+TN)
         false_negative_rate = FN/(FN+TP)
-        
+        true_negative_rate = TN / (FP+TN)
         #
         # Temporary - assume not ijv
         #
@@ -401,8 +411,12 @@ class CalculateImageOverlap(cpm.CPModule):
         m.add_image_measurement(self.measurement_name(FTR_PRECISION),
                                 precision)
         m.add_image_measurement(self.measurement_name(FTR_RECALL), recall)
+        m.add_image_measurement(self.measurement_name(FTR_TRUE_POS_RATE),
+                                true_positive_rate)
         m.add_image_measurement(self.measurement_name(FTR_FALSE_POS_RATE),
                                 false_positive_rate)
+        m.add_image_measurement(self.measurement_name(FTR_TRUE_NEG_RATE),
+                                true_negative_rate)
         m.add_image_measurement(self.measurement_name(FTR_FALSE_NEG_RATE),
                                 false_negative_rate)
         m.add_image_measurement(self.measurement_name(FTR_RAND_INDEX),
@@ -435,13 +449,12 @@ class CalculateImageOverlap(cpm.CPModule):
         FP_pixels = maskimg(FP_mask, FP_pixels)
         TN_pixels = maskimg(TN_mask, TN_pixels)
 
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.true_positives = TP_pixels
             workspace.display_data.true_negatives = FN_pixels
             workspace.display_data.false_positives = FP_pixels
             workspace.display_data.false_negatives = TN_pixels
             workspace.display_data.statistics = [
-                ("Measurement", "Value"),
                 (FTR_F_FACTOR, F_factor),
                 (FTR_PRECISION, precision),
                 (FTR_RECALL, recall),
@@ -689,21 +702,21 @@ class CalculateImageOverlap(cpm.CPModule):
         adjusted_rand_index = (rand_index - e_omega) / (1 - e_omega)
         return rand_index, adjusted_rand_index
         
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display the image confusion matrix & statistics'''
-        figure = workspace.create_or_find_figure(title="CalculateImageOverlap, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,3))
+        figure.set_subplots((3, 2))
         for x, y, image, label in (
             (0, 0, workspace.display_data.true_positives, "True positives"),
             (0, 1, workspace.display_data.false_positives, "False positives"),
             (1, 0, workspace.display_data.false_negatives, "False negatives"),
             (1, 1, workspace.display_data.true_negatives, "True negatives")):
             figure.subplot_imshow_bw(x, y, image, title=label,
-                                     sharex=figure.subplot(0,0),
-                                     sharey=figure.subplot(0,0))
+                                     sharexy = figure.subplot(0,0))
             
-        figure.subplot_table(1, 2, workspace.display_data.statistics,
-                             ratio = (.5, .5))
+        figure.subplot_table(2, 0, 
+                             workspace.display_data.statistics,
+                             col_labels = ("Measurement", "Value"),
+                             n_rows = 2)
 
     def measurement_name(self, feature):
         if self.obj_or_img == O_IMG:

@@ -14,7 +14,6 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
-__version__="$Revision$"
 
 import logging
 import threading
@@ -30,12 +29,14 @@ class VersionChecker(threading.Thread):
         self.current_version = current_version
         self.callback = callback
         self.daemon = True # if we hang it's no big deal
+        self.setName("VersionChecker")
     
     def run(self):
         try:
             req = urllib2.Request(self.url, None, {'User-Agent' : self.user_agent})
             response = urllib2.urlopen(req)
             html = response.read()
+            response.close()
             # format should be version number in first line followed by html
             new_version, info = html.split('\n', 1)
             new_version = int(new_version)
@@ -49,5 +50,3 @@ def check_for_updates(url, current_version, callback, user_agent='CellProfiler_c
     vc = VersionChecker(url, current_version, callback, user_agent)
     vc.start()
 
-
-# XXX - needs a test case written

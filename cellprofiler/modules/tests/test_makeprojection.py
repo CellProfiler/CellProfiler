@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version__="$Revision$"
 
 import base64
 from matplotlib.image import pil_to_array
@@ -211,8 +210,6 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
             if i < image_count - 1 or run_last:
                 module.run(w)
         module.post_group(w, {})
-        self.assertEqual(len(filter(lambda x: x == PROJECTED_IMAGE_NAME,
-                             w.image_set.get_names())), 1)
         image = w.image_set.get_image(PROJECTED_IMAGE_NAME)
         #
         # Make sure that the image provider is reset after prepare_group
@@ -227,8 +224,9 @@ MakeProjection:[module_num:7|svn_version:\'9999\'|variable_revision_number:2|sho
         module.run(w)
         image_provider = image_set.get_image_provider(PROJECTED_IMAGE_NAME)
         self.assertEqual(np.max(image_provider.count), 1)
+
         return image
-    
+
     def test_02_01_average(self):
         np.random.seed(0)
         images_and_masks = [(np.random.uniform(size=(10,10)).astype(np.float32), None)

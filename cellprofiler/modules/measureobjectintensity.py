@@ -65,7 +65,6 @@ See also <b>LoadImages</b>, <b>MeasureImageIntensity</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as nd
@@ -307,13 +306,11 @@ class MeasureObjectIntensity(cpm.CPModule):
                 return [image.name.value for image in self.images]
         return []
     
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
-        if workspace.frame is not None:
-            statistics = [("Image","Object","Feature","Mean","Median","STD")]
-            workspace.display_data.statistics = statistics
+        if self.show_window:
+            workspace.display_data.col_labels = (
+                "Image","Object","Feature","Mean","Median","STD")
+            workspace.display_data.statistics = statistics = []
         for image_name in [img.name for img in self.images]:
             image = workspace.image_set.get_image(image_name.value,
                                                   must_be_grayscale=True)
@@ -487,15 +484,15 @@ class MeasureObjectIntensity(cpm.CPModule):
                                                    image_name.value)
                     m.add_measurement(object_name.value,measurement_name, 
                                       measurement)
-                    if workspace.frame is not None and len(measurement) > 0:
+                    if self.show_window and len(measurement) > 0:
                         statistics.append((image_name.value, object_name.value, 
                                            feature_name,
                                            np.round(np.mean(measurement),3),
                                            np.round(np.median(measurement),3),
                                            np.round(np.std(measurement),3)))
         
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="MeasureObjectIntensity, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-        figure.subplot_table(0,0,workspace.display_data.statistics,
-                             ratio=(.2,.2,.3,.1,.1,.1))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0, 0,
+                             workspace.display_data.statistics,
+                             col_labels = workspace.display_data.col_labels)

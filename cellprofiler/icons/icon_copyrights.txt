@@ -1,0 +1,42 @@
+The following icons have copyrights that are not covered by the CellProfiler
+license:
+
+microscope-icon_16.png
+microscope-icon_32.png
+Creative Commons Attribution 3.0
+    http://creativecommons.org/licenses/by/3.0/legalcode
+    Generously donated by http://onlinepharmacycheck.com/
+
+movie_16.png
+Free for use with attribution to:
+    http://pixel-mixer.com
+    
+color.png
+Image from the Silk icon theme by Mark James. Free for use with attribution to:
+    http://www.famfamfam.com/lab/icons/silk/
+    
+delete.png
+Image from the Icons Land website:  http://www.icons-land.com
+    distributed under their demo license agreement.
+    
+IMG_ANALYZE_16.png
+filter.png
+Free for use with attribution to Oxygen Team:
+    http://www.oxygen-icons.org/
+    
+illumination_function.png
+mask.png
+Free for use with attribution to Yusuke Kamiyamane
+    http://p.yusukekamiyamane.com/
+    
+objects.png
+GPL licensed: Gnome project
+http://www.gnome.org/
+
+IMG_STOP.png
+LGPL licensed: David Vignoni 
+http://www.icon-king.com/
+
+CollapseTree.png and ExpandTree.png
+Covered by the following license: https://wiki.trin.org.au/Mangroves/TermsOfUse
+Author: Emma Clifton, https://wiki.trin.org.au/Main/EmmaClifton

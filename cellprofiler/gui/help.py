@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 
 #######################################################
 #
@@ -34,6 +33,11 @@ import os
 import sys
 import cellprofiler.icons
 from cellprofiler.utilities.relpath import relpath
+#from cellprofiler.modules.metadata import X_AUTOMATIC_EXTRACTION, X_MANUAL_EXTRACTION, X_IMPORTED_EXTRACTION
+X_AUTOMATIC_EXTRACTION = "Automatic"
+X_MANUAL_EXTRACTION = "Manual"
+X_IMPORTED_EXTRACTION = "Import metadata"
+DO_NOT_WRITE_MEASUREMENTS = "Do not write measurements"
 
 logger = logging.getLogger(__name__)
 
@@ -55,37 +59,40 @@ except:
              "relative paths.\n") % drive)
     path = os.path.abspath(cellprofiler.icons.get_builtin_images_path())
 
-LOCATION_REFRESH_BUTTON = os.path.join(path,'folder_refresh.png')
-LOCATION_BROWSE_BUTTON = os.path.join(path,'folder_browse.png')
-LOCATION_CREATE_BUTTON = os.path.join(path,'folder_create.png')
+LOCATION_REFRESH_BUTTON = 'folder_refresh.png' #os.path.join(path,'folder_refresh.png')
+LOCATION_BROWSE_BUTTON = 'folder_browse.png' #os.path.join(path,'folder_browse.png')
+LOCATION_CREATE_BUTTON = 'folder_create.png' #os.path.join(path,'folder_create.png')
 
-LOCATION_MODULE_HELP_BUTTON = os.path.join(path,'module_help.png')
-LOCATION_MODULE_MOVEUP_BUTTON = os.path.join(path,'module_moveup.png')
-LOCATION_MODULE_MOVEDOWN_BUTTON = os.path.join(path,'module_movedown.png')
-LOCATION_MODULE_ADD_BUTTON = os.path.join(path,'module_add.png')
-LOCATION_MODULE_REMOVE_BUTTON = os.path.join(path,'module_remove.png')
+LOCATION_MODULE_HELP_BUTTON = 'module_help.png' #os.path.join(path,'module_help.png')
+LOCATION_MODULE_MOVEUP_BUTTON = 'module_moveup.png' #os.path.join(path,'module_moveup.png')
+LOCATION_MODULE_MOVEDOWN_BUTTON = 'module_movedown.png' #os.path.join(path,'module_movedown.png')
+LOCATION_MODULE_ADD_BUTTON = 'module_add.png' #os.path.join(path,'module_add.png')
+LOCATION_MODULE_REMOVE_BUTTON = 'module_remove.png' #os.path.join(path,'module_remove.png')
 
-LOCATION_TESTMODE_PAUSE_ICON = os.path.join(path,'IMG_PAUSE.png')
-LOCATION_TESTMODE_GO_ICON = os.path.join(path,'IMG_GO.png')
+LOCATION_TESTMODE_PAUSE_ICON = 'IMG_PAUSE.png' #os.path.join(path,'IMG_PAUSE.png')
+LOCATION_TESTMODE_GO_ICON = 'IMG_GO.png' #os.path.join(path,'IMG_GO.png')
 
-LOCATION_DISPLAYMODE_SHOW_ICON = os.path.join(path,'IMG_EYE.png')
-LOCATION_DISPLAYMODE_HIDE_ICON = os.path.join(path,'IMG_CLOSED_EYE.png')
+LOCATION_DISPLAYMODE_SHOW_ICON = 'IMG_EYE.png' #os.path.join(path,'IMG_EYE.png')
+LOCATION_DISPLAYMODE_HIDE_ICON = 'IMG_CLOSED_EYE.png' #os.path.join(path,'IMG_CLOSED_EYE.png')
 
-LOCATION_SETTINGS_OK_ICON = os.path.join(path,'IMG_OK.png')
-LOCATION_SETTINGS_ERROR_ICON = os.path.join(path,'IMG_ERROR.png')
-LOCATION_SETTINGS_WARNING_ICON = os.path.join(path,'IMG_WARN.png')
+LOCATION_SETTINGS_OK_ICON = 'IMG_OK.png' #os.path.join(path,'IMG_OK.png')
+LOCATION_SETTINGS_ERROR_ICON = 'IMG_ERROR.png' #os.path.join(path,'IMG_ERROR.png')
+LOCATION_SETTINGS_WARNING_ICON = 'IMG_WARN.png' #os.path.join(path,'IMG_WARN.png')
 
-LOCATION_RUNSTATUS_PAUSE_BUTTON = os.path.join(path,'status_pause.png')
-LOCATION_RUNSTATUS_STOP_BUTTON  = os.path.join(path,'status_stop.png')
-LOCATION_RUNSTATUS_SAVE_BUTTON  = os.path.join(path,'status_save.png')
+LOCATION_RUNSTATUS_PAUSE_BUTTON = 'status_pause.png' #os.path.join(path,'status_pause.png')
+LOCATION_RUNSTATUS_STOP_BUTTON  = 'status_stop.png' #os.path.join(path,'status_stop.png')
+LOCATION_RUNSTATUS_SAVE_BUTTON  = 'status_save.png' #os.path.join(path,'status_save.png')
 
-LOCATION_WINDOW_HOME_BUTTON = os.path.join(path,'window_home.png')
-LOCATION_WINDOW_BACK_BUTTON  = os.path.join(path,'window_back.png')
-LOCATION_WINDOW_FORWARD_BUTTON  = os.path.join(path,'window_forward.png')
-LOCATION_WINDOW_PAN_BUTTON  = os.path.join(path,'window_pan.png')
-LOCATION_WINDOW_ZOOMTORECT_BUTTON  = os.path.join(path,'window_zoom_to_rect.png')
-LOCATION_WINDOW_SAVE_BUTTON  = os.path.join(path,'window_filesave.png')
+LOCATION_WINDOW_HOME_BUTTON = 'window_home.png' #os.path.join(path,'window_home.png')
+LOCATION_WINDOW_BACK_BUTTON  = 'window_back.png' #os.path.join(path,'window_back.png')
+LOCATION_WINDOW_FORWARD_BUTTON  = 'window_forward.png' #os.path.join(path,'window_forward.png')
+LOCATION_WINDOW_PAN_BUTTON  = 'window_pan.png' #os.path.join(path,'window_pan.png')
+LOCATION_WINDOW_ZOOMTORECT_BUTTON  = 'window_zoom_to_rect.png' #os.path.join(path,'window_zoom_to_rect.png')
+LOCATION_WINDOW_SAVE_BUTTON  = 'window_filesave.png' #os.path.join(path,'window_filesave.png')
 
+LOCATION_ANALYZE_IMAGE_BUTTON = 'IMG_ANALYZE_16.png'
+LOCATION_STOP_ANALYSIS_BUTTON = 'IMG_STOP.png'
+LOCATION_PAUSE_ANALYSIS_BUTTON = 'IMG_PAUSE.png'
 
 ####################################################
 #
@@ -98,7 +105,8 @@ METADATA_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Using M
 IMAGE_TOOLS_HELP_REF = """"Help > How To Use The Image Tools"""
 METADATA_GROUPING_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Image Grouping """
 DATA_TOOL_HELP_REF = """Help > Data Tool Help """
-
+WORKSPACE_INTRO_HELP = """Help > Using CellProfiler > Creating a Workspace > Introduction to Workspaces"""
+MEASUREMENT_NAMING_HELP = """Help > Using CellProfiler > How Data is Handled > How Measurements Are Named"""
 USING_METADATA_HELP_REF = """ 
 Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>%(METADATA_HELP_REF)s</i> 
 for more details on obtaining, extracting, and using metadata tags from your images"""%globals()
@@ -121,7 +129,109 @@ proper use of metadata for grouping"""%globals()
 #
 ##################################################
 
+LEGACY_LOAD_MODULES_HELP = """
+<p>Historically, two modules were used for workspace creation: <b>LoadImages</b> and <b>LoadData</b>.
+While the approach described above supercedes these modules in part, old pipelines
+loaded into CellProfiler that contain these modules will provide the option of preserving them;
+these pipelines will operate exactly as before.</p>
+<p>Alternately, the user can choose to convert these 
+modules into the workspace equivalent as closely as possible. Both modules remain accesible
+via the "Add module" and "+" buttons at the bottom of the pipeline panel. The section details
+information relevant for users who would like to continue using these modules. Please note,
+however, that these modules are deprcated and may be removed in the future.</p>
+
+<h3>Associating metadata with images</h3>
+<p>Metadata (i.e., additional data about image data) is sometimes available for input images.
+This information can be:
+<ol>
+<li>Used by CellProfiler to group images with common metadata identifiers (or "tags") 
+together for particular steps in a pipeline;</li>
+<li>Stored in the output file along with CellProfiler-measured features for
+annotation or sample-tracking purposes;
+<li>Used to name additional input/output files.</li></ol></p>
+<p>Two sources of metadata are:
+<ul>
+<li><i>Metadata provided in the image filename or location (pathname).</i> For example, images produced by an automated
+microscope can be given names similar to "Experiment1_A01_w1_s1.tif" in which the metadata about the
+plate ("Experiment1"), the well ("A01"), the wavelength number ("w1") and the imaging site ("s1") are encapsulated. The
+name of the folder in which the images are saved may be meaningful and may also be considered metadata as well.
+If this is the case for your data, use <b>LoadImages</b> to extract this information for
+use in the pipeline and storage in the output file.</li>
+<li><i>Metadata provided as a table of information</i>. Often, information associated with each image (such as
+treatment, plate, well, etc) is available as a separate spreadsheet. If this is the case for your data, use 
+<b>LoadData</b> to load this information.</li>
+</ul>
+Details for the metadata-specific help is given next to the appropriate settings in 
+<b>LoadImages</b> and <b>LoadData</b>, as well the specific settings in other modules which
+can make use of metadata. However, here is an overview of how metadata is obtained and used.</p>
+
+<p>In <b>LoadImages</b>, metadata can be extracted from the filename and/or folder 
+location using regular expression, a specialized syntax used for text pattern-matching.
+These regular expressions can be used to identify different parts of the filename / folder. 
+The syntax <i>(?P&lt;fieldname&gt;expr)</i> will extract whatever matches <i>expr</i> and 
+assign it to the image's <i>fieldname</i> measurement. A regular expression tool is available 
+which will allow you to check the accuracy of your regular expression.</p>
+
+<p>For instance, say a researcher has folder names with the date and subfolders containing the
+images with the run ID (e.g., <i>./2009_10_02/1234/</i>). 
+The following regular expression will capture the plate, well and site in the fields 
+<i>Date</i> and <i>Run</i>:<br>
+<table border = "1">
+<tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$ </td></tr>
+<tr><td>.*[\\\\/]</td><td>Skip characters at the beginning of the pathname until either a slash (/) or
+backslash (\\) is encountered (depending on the OS). The extra slash for the backslash is used as
+an escape sequence.</td></tr>
+<tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i></td></tr>
+<tr><td>.*</td><td>Capture as many characters that follow</td></tr>
+<tr><td>[\\\\/]</td><td>Discard the slash/backslash character</td></tr>
+<tr><td>(?P&lt;Run&gt;</td><td>Name the captured field <i>Run</i></td></tr>
+<tr><td>.*</td><td>Capture as many characters as follow</td></tr>
+<tr><td>$</td><td>The <i>Run</i> field must be at the end of the path string, i.e. the
+last folder on the path. This also means that the <i>Date</i> field contains the parent
+folder of the <i>Date</i> folder.</td></tr>
+</table>
+
+<p>In <b>LoadData</b>, metadata is extracted from a CSV (comma-separated) file 
+(a spreadsheet). Columns whose name begins with "Metadata" can be used to group 
+files loaded by <b>LoadData</b> that are associated with a common metadata value.
+The files thus grouped together are then processed as a distinct image set.</p>
+
+<p>For instance, an experiment might require that images created on the same day 
+use an illumination correction function calculated from all images from that day, 
+and furthermore, that the date be captured in the file names for the individual image 
+sets and in a .csv file specifying the illumination correction functions. </p>
+
+<p>In this case, if the illumination correction images are loaded with the 
+<b>LoadData</b> module, the file should have a "Metadata_Date" 
+column which contains the date identifiers. Similarly, if the individual images 
+are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set to extract the 
+<Date> metadata field from the file names. The pipeline will then match the individual 
+images with their corresponding illumination correction functions based on matching 
+"Metadata_Date" fields.</p>
+
+<h3>Using image grouping</h3>
+<p>To use grouping, you must define the relevant metadata for each image. This can be done using regular
+expressions in <b>LoadImages</b> or having them pre-defined in a .csv for use in <b>LoadData</b>.</p>
+
+<p>To use image grouping in <b>LoadImages</b>, please note the following:
+<ul>
+<li><i>Metadata tags must be specified for all images listed.</i> You cannot use
+grouping unless an appropriate regular expression is defined for all the images listed
+in the module.</li>
+<li><i>Shared metadata tags must be specified with the same name for each image listed.</i> For example, if you 
+are grouping on the basis of a metadata tag "Plate" in one image channel, you
+must also specify the "Plate" metadata tag in the regular expression for the other channels that you 
+want grouped together.</li>
+</ul>
+</p>
+"""
+
 DEFAULT_IMAGE_FOLDER_HELP = """
+<p>Please note that the Default Input Folder will be deprecated in the future. The location
+of non-image files needed by some odules will be set to an absolute path 
+in future versions of CellProfiler. For specifying the location of image files, please
+use the <i>Input modules</i> panel starting with the <b>Images</b> module.</p>
+
 <p>In the Folder panel, the <i>Default Input Folder</i> contains the input image or data files
 that you want to analyze. Several File Processing modules (e.g., 
 <b>LoadImages</b> or <b>LoadData</b>) provide the option of retrieving images 
@@ -133,12 +243,12 @@ computer. If, instead, you type specific folder path names into a module's setti
 your pipeline will not work on someone else's computer until you adjust those
 pathnames within each module.</p>
 
-<p>Use the <i>Browse</i> button <img src="%(LOCATION_BROWSE_BUTTON)s"></img> to specify 
+<p>Use the <i>Browse</i> button <img src="memory:%(LOCATION_BROWSE_BUTTON)s"></img> to specify 
 the folder you would like to use as the Default Input Folder, or 
 type the full folder path in the edit box. If you type a folder path that  
 cannot be found, the message box below will indicate this fact until you correct the problem. 
 If you want to specify a folder that does not yet exist, type the desired name and 
-click on the <i>New folder</i> button <img src="%(LOCATION_CREATE_BUTTON)s"></img>.
+click on the <i>New folder</i> button <img src="memory:%(LOCATION_CREATE_BUTTON)s"></img>.
 The folder will be created according to the pathname you have typed.</p>
 
 <p>The contents of the Default Input Folder are shown in the file panel to the left.
@@ -146,9 +256,13 @@ Double-clicking image file names in this panel opens them in a figure window.
 If you double-click on .mat pipeline or output files (CellProfiler 1.0) or .cp 
 pipeline files (CellProfiler 2.0), you will be asked if you want to load a       
 pipeline from the file. To refresh the contents of this panel, click the <i>Refresh</i>
-button <img src="%(LOCATION_REFRESH_BUTTON)s"></img>.</p>"""%globals()
+button <img src="memory:%(LOCATION_REFRESH_BUTTON)s"></img>.</p>"""%globals()
 
 DEFAULT_OUTPUT_FOLDER_HELP = """
+<p>Please note that the Default Output Folder will be deprecated in the future. The location
+of files written by the various output modules will be set to an absolute path 
+in future versions of CellProfiler.</p>
+
 <p>In the Folder panel, the <i>Default Output Folder</i> is the folder that CellProfiler uses to
 store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or 
 <b>ExportToSpreadsheet</b>) provide the option of saving analysis results to 
@@ -169,18 +283,28 @@ click on the <i>New folder</i> icon to the right of the <i>Browse folder</i> ico
 The folder will be created according to the pathname you have typed.</p>"""
 
 OUTPUT_FILENAME_HELP = """
-<p>In the <i>Output Filename</i> box in the Folder panel, you can specify the name of the output file 
+<p>Please note that the output file will be deprecated in the future. This setting
+is temporarily present for those need HDF5 or MATLAB formats, and will be moved to 
+Export modules in future versions of CellProfiler.</p>
+
+<p>In the <i>Output Filename</i> box, you can specify the name of the output file 
 where all information about the analysis as well as any measurements will be 
-stored to the hard drive. The output file is a 
-.mat file, which is readable by CellProfiler and by MATLAB. Results in the 
-output file can be accessed or exported
+stored to the hard drive. The output file can be written in one of two formats:
+<ul>
+<li>A <i>.mat file</i> which is readable by CellProfiler and by MATLAB. </li>
+<li>An <i>.h5 file</i> which is readable by CellProfiler, MATLAB and any other program
+capable of reading the HDF5 data format. Documentation on
+how measurements are stored and handled in CellProfiler using this format can be found 
+<a href="https://github.com/CellProfiler/CellProfiler/wiki/Module-Structure-and-Data-Storage-Retrieval#hdf5-measurement-and-workspace-format">here</a>.</li>
+</li>
+</ul>
+Results in the output file can also be accessed or exported
 using <b>Data Tools</b> from the main menu of CellProfiler.
 The pipeline with its settings can be be loaded from an output file using 
-<i>File > Load Pipeline...</i>, or by double-clicking the output file in the file
-list panel (located in the lower left corner of the CellProfiler main window).</p>
+<i>File > Load Pipeline...</i></p>
 
 <p>The output file will be saved in the Default Output Folder unless you type a 
-full path and file name into the output file name box. The path must not have 
+full path and file name into the file name box. The path must not have 
 spaces or characters disallowed by your computer's platform.</p>
                                                                            
 <p>If the output filename ends in <i>OUT.mat</i> (the typical text appended to 
@@ -193,8 +317,8 @@ overwrite?</i> box to the right.</p>
 that even though the analysis completes, CellProfiler continues to use 
 an inordinate amount of your CPU and RAM. This is because the output file is written
 after the analysis is completed and can take a very long time for a lot of measurements.
-If you do not need this file and/or notice this behavior, uncheck the <i>Write output
-file?</i> box to the right.</p>"""
+If you do not need this file and/or notice this behavior, select "<i>%(DO_NOT_WRITE_MEASUREMENTS)s</i>" 
+from the "Measurements file format" drop-down box.</p>"""%globals()
 
 NEW_FEATURES_HELP = """ 
 A number of new features have been incorporated into this re-engineered Python 
@@ -303,7 +427,13 @@ assays (e.g., cell count, size, per-cell protein levels) as well as complex
 morphological assays (e.g., cell/organelle shape or subcellular patterns of DNA 
 or protein staining).</p>
 
-<p>The wide variety of measurements produced by CellProfiler serves as useful "raw material" for machine learning algorithms. CellProfiler's companion software, CellProfiler Analyst, has an interactive machine learning tool called Classifier which can learn to recognize a phenotype of interest based on your guidance. Once you complete the training phase, CellProfiler Analyst will score every object in your images based on CellProfiler's measurements.  CellProfiler Analyst also contains tools for the interactive visualization of the data produced by CellProfiler.</p>
+<p>The wide variety of measurements produced by CellProfiler serves as useful "raw material" 
+for machine learning algorithms. CellProfiler's companion software, CellProfiler Analyst, 
+has an interactive machine learning tool called Classifier which can learn to recognize a 
+phenotype of interest based on your guidance. Once you complete the training phase, 
+CellProfiler Analyst will score every object in your images based on CellProfiler's 
+measurements.  CellProfiler Analyst also contains tools for the interactive visualization 
+of the data produced by CellProfiler.</p>
 
 <p>In summary, CellProfiler contains:
 <ul>
@@ -328,19 +458,32 @@ or repeating the analysis with slightly different parameters).</li>
 Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM (2006) 
 CellProfiler: image analysis software for identifying and quantifying cell 
 phenotypes. <i>Genome Biology</i> 7:R100. PMID: 17076895</li>
+<li>Kamentsky L, Jones TR, Fraser A, Bray MA, Logan D, Madden K, Ljosa V, 
+Rueden C, Harris GB, Eliceiri K, Carpenter AE (2011) Improved structure, 
+function, and compatibility for CellProfiler: modular high-throughput image 
+analysis software. <i>Bioinformatics</i> 27(8):1179-1180/doi:10.1093/bioinformatics/btr095.
+PMID: 21349861 PMCID: PMC3072555</li>
 <li>Lamprecht MR, Sabatini DM, Carpenter AE (2007) CellProfiler: free, versatile 
 software for automated biological image analysis. <i>Biotechniques</i> 
 42(1):71-75. PMID: 17269487</li>
-<li>Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J, Root D, Golland P, Sabatini DM (2009) Scoring diverse cellular morphologies in image-based screens with iterative feedback and machine learning. PNAS 106(6):1826-1831/doi: 10.1073/pnas.0808843106. PMID: 19188593 PMCID: PMC2634799</li>
-<li>Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM, Golland P, Carpenter AE (2008) CellProfiler Analyst: data exploration and analysis software for complex image-based screens. BMC Bioinformatics 9(1):482/doi: 10.1186/1471-2105-9-482. PMID: 19014601 PMCID: PMC2614436</li>
+<li>Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J, Root D, 
+Golland P, Sabatini DM (2009) Scoring diverse cellular morphologies in image-based 
+screens with iterative feedback and machine learning. PNAS 106(6):1826-1831/doi: 
+10.1073/pnas.0808843106. PMID: 19188593 PMCID: PMC2634799</li>
+<li>Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM, Golland P, 
+Carpenter AE (2008) CellProfiler Analyst: data exploration and analysis software for 
+complex image-based screens. BMC Bioinformatics 9(1):482/doi: 10.1186/1471-2105-9-482. 
+PMID: 19014601 PMCID: PMC2614436</li>
 </ul>
 """
 
 BUILDING_A_PIPELINE_HELP = """
 <p>A <i>pipeline</i> is a sequential set of image analysis modules. The 
 best way to learn how to use CellProfiler is to load an example pipeline 
-from the CellProfiler website's Examples page and try it out, then adapt it for your own images. You can also build a 
-pipeline from scratch. Click the <i>Help</i> <img src="%(LOCATION_MODULE_HELP_BUTTON)s"></img> button in the main window to get
+from the CellProfiler website's Examples page and try it out, then adapt it for 
+your own images. You can also build a 
+pipeline from scratch. Click the <i>Help</i> <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s">
+</img> button in the main window to get
 help for a specific module.</p>
 
 <p>To adjust the CellProfiler source code, see <i>Help > Developer's Guide</i>. 
@@ -353,7 +496,7 @@ help for a specific module.</p>
 window) to be the folder where you put the images.</li> 
 <li>Load the pipeline using <i>File > Load Pipeline</i> in the main menu of 
 CellProfiler.</li> 
-<li>Click <i>Analyze images</i> to start processing.</li> 
+<li>Click the <i>Analyze Images</i> button to start processing.</li> 
 <li>Examine the measurements using <i>Data tools</i>. The <i>Data tools</i> options are accessible in 
 the main menu of CellProfiler and allow you to plot, view, or export your 
 measurements (e.g., to Excel).</li>   
@@ -370,18 +513,18 @@ left-hand side of the CellProfiler window).</p>
 <ol>
 <li><p><i>Place modules in a new pipeline.</i><br>
 Choose image analysis modules to add to your pipeline by clicking the <i>Add</i> 
-<img src="%(LOCATION_MODULE_ADD_BUTTON)s"></img> button
+<img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button
 (located underneath the pipeline panel) or right-clicking in the pipeline panel
 itself and selecting a module from the 
 pop-up box that appears. You can learn more about each module by clicking
-<i>Module Help</i> in the "Add modules" window or the <i>?</i> button after the module has been placed and selected
-in the pipeline. Modules are added to the end of the pipeline, but you can
+<i>Module Help</i> in the "Add modules" window or the <i>?</i> button after the module has 
+been placed and selected in the pipeline. Modules are added to the end of the pipeline, but you can
 adjust their order in the main window by dragging and dropping them, or by selecting a module (or
-modules, using the <i>Shift</i> key) and using the <i>Move up</i> 
-<img src="%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> and <i>Move down</i> 
-<img src="%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> buttons. 
-The <i>Remove</i> <img src="%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button will delete the selected 
-module(s) from the pipeline.</p> 
+modules, using the <i>Shift</i> key) and using the <i>Move module up</i> 
+<img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> and <i>Move module down</i> 
+<img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> buttons. 
+The <i>Remove module</i> <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button will 
+delete the selected module(s) from the pipeline.</p> 
 <p>Typically, the first module you must run is 
  <b>LoadImages</b>, in which you specify the identity of the images 
 you want to analyze. </p>
@@ -416,11 +559,11 @@ right of each setting, or at the bottom of the pipeline panel
 for the help for all the settings for that module.</p>
 <p>If there is an error with the settings (e.g., a setting refers to an image 
 that doesn't exist yet), 
-a <img src="%(LOCATION_SETTINGS_ERROR_ICON)s"></img>  icon will appear next to the 
+a <img src="memory:%(LOCATION_SETTINGS_ERROR_ICON)s"></img>  icon will appear next to the 
 module name. If there is a warning (e.g., a special notification attached to a choice of setting), 
-a <img src="%(LOCATION_SETTINGS_WARNING_ICON)s"></img>  icon will appear. Errors
+a <img src="memory:%(LOCATION_SETTINGS_WARNING_ICON)s"></img>  icon will appear. Errors
 will cause the pipeline to fail upon running, whereas a warning will not. Once 
-the errors/warnings have been resolved, a <img src="%(LOCATION_SETTINGS_OK_ICON)s">
+the errors/warnings have been resolved, a <img src="memory:%(LOCATION_SETTINGS_OK_ICON)s">
 </img>  icon will appear indicating that the module is ready to run.</p>
 </li>
 <li><p><i>Set your Default Input Folder, Default Output Folder and output filename.</i><br>
@@ -432,13 +575,13 @@ and settings you have specified. A status window will appear which has the follo
 <ul>
 <li>A <i>progress bar</i> which gives the elapsed time and estimates the time remaining to 
 process the full image set.</li>
-<li>A <i>pause button</i> <img src="%(LOCATION_RUNSTATUS_PAUSE_BUTTON)s"></img> 
+<li>A <i>pause button</i> <img src="memory:%(LOCATION_RUNSTATUS_PAUSE_BUTTON)s"></img> 
 which pauses execution and allows you to subsequently 
 resume the analysis.
-<li>A <i>stop button</i> <img src="%(LOCATION_RUNSTATUS_STOP_BUTTON)s"></img> 
+<li>A <i>stop button</i> <img src="memory:%(LOCATION_RUNSTATUS_STOP_BUTTON)s"></img> 
 which cancels execution after prompting you for a place to
 save the measurements collected to that point.</li>
-<li>A <i>save measurements</i> button <img src="%(LOCATION_RUNSTATUS_SAVE_BUTTON)s"></img> 
+<li>A <i>save measurements</i> button <img src="memory:%(LOCATION_RUNSTATUS_SAVE_BUTTON)s"></img> 
 which will prompt you for a place to
 save the measurements collected to that point while continuing the analysis run.</li>
 </ul> 
@@ -455,123 +598,94 @@ image, preview the results, and adjust the module settings on the fly. See
 </ol>
 """% globals()
 
-
-USING_METADATA_HELP = """
-Metadata (i.e., additional data about image data) is sometimes available for input images.
-This information can be:
-<ol>
-<li>Used by CellProfiler to group images with common metadata identifiers (or "tags") 
-together for particular steps in a pipeline;</li>
-<li>Stored in the output file along with CellProfiler-measured features for
-annotation or sample-tracking purposes;
-<li>Used to name additional input/output files.</li></ol></p>
-<p>Two sources of metadata are:
-<ul>
-<li><i>Metadata provided in the image filename or location (pathname).</i> For example, images produced by an automated
-microscope can be given names similar to "Experiment1_A01_w1_s1.tif" in which the metadata about the
-plate ("Experiment1"), the well ("A01"), the wavelength number ("w1") and the imaging site ("s1") are encapsulated. The
-name of the folder in which the images are saved may be meaningful and may also be considered metadata as well.
-If this is the case for your data, use <b>LoadImages</b> to extract this information for
-use in the pipeline and storage in the output file.</li>
-<li><i>Metadata provided as a table of information</i>. Often, information associated with each image (such as
-treatment, plate, well, etc) is available as a separate spreadsheet. If this is the case for your data, use 
-<b>LoadData</b> to load this information.</li>
-</ul>
-Details for the metadata-specific help is given next to the appropriate settings in 
-<b>LoadImages</b> and <b>LoadData</b>, as well the specific settings in other modules which
-can make use of metadata. However, here is an overview of how metadata is obtained and used.
-
-<h3>Associating images with metadata</h3>
-
-<p>In <b>LoadImages</b>, metadata can be extracted from the filename and/or folder 
-location using regular expression, a specialized syntax used for text pattern-matching.
-These regular expressions can be used to identify different parts of the filename / folder. 
-The syntax <i>(?P&lt;fieldname&gt;expr)</i> will extract whatever matches <i>expr</i> and 
-assign it to the image's <i>fieldname</i> measurement. A regular expression tool is available 
-which will allow you to check the accuracy of your regular expression.</p>
-
-<p>For instance, say a researcher has folder names with the date and subfolders containing the
-images with the run ID (e.g., <i>./2009_10_02/1234/</i>). 
-The following regular expression will capture the plate, well and site in the fields 
-<i>Date</i> and <i>Run</i>:<br>
-<table border = "1">
-<tr><td colspan = "2">.*[\\\/](?P&lt;Date&gt;.*)[\\\\/](?P&lt;Run&gt;.*)$ </td></tr>
-<tr><td>.*[\\\\/]</td><td>Skip characters at the beginning of the pathname until either a slash (/) or
-backslash (\\) is encountered (depending on the OS). The extra slash for the backslash is used as
-an escape sequence.</td></tr>
-<tr><td>(?P&lt;Date&gt;</td><td>Name the captured field <i>Date</i></td></tr>
-<tr><td>.*</td><td>Capture as many characters that follow</td></tr>
-<tr><td>[\\\\/]</td><td>Discard the slash/backslash character</td></tr>
-<tr><td>(?P&lt;Run&gt;</td><td>Name the captured field <i>Run</i></td></tr>
-<tr><td>.*</td><td>Capture as many characters as follow</td></tr>
-<tr><td>$</td><td>The <i>Run</i> field must be at the end of the path string, i.e. the
-last folder on the path. This also means that the <i>Date</i> field contains the parent
-folder of the <i>Date</i> folder.</td></tr>
+REGEXP_HELP_REF = """
+Patterns are specified using
+combinations of metacharacters and literal characters. There are a few
+classes of metacharacters, partially listed below. A more extensive
+explanation of regular expressions can be found <a href="http://www.python.org/doc/2.3/lib/re-syntax.html">here</a>
+and a helpful quick reference can be found <a href="http://www.addedbytes.com/cheat-sheets/regular-expressions-cheat-sheet/">here</a>.
+<p>The following metacharacters match exactly one character from its respective set of characters:<br><br>
+<table border="1">
+<tr><th>Metacharacter</th><th>Meaning</th></tr>
+<tr><td>.</td><td>Any character</td></tr>
+<tr><td>[]</td><td>Any character contained within the brackets</td></tr>
+<tr><td>[^]</td><td>Any character not contained within the brackets</td></tr>
+<tr><td>\w</td><td>A word character [a-z_A-Z0-9]</td></tr>
+<tr><td>\W</td><td>Not a word character [^a-z_A-Z0-9]</td></tr>
+<tr><td>\d</td><td>A digit [0-9]</td></tr>
+<tr><td>\D</td><td>Not a digit [^0-9]</td></tr>
+<tr><td>\s</td><td>Whitespace [ \\t\\r\\n\\f\\v]</td></tr>
+<tr><td>\S</td><td>Not whitespace [^ \\t\\r\\n\\f\\v]</td></tr>
 </table>
 
-<p>In <b>LoadData</b>, metadata is extracted from a CSV (comma-separated) file 
-(a spreadsheet). Columns whose name begins with "Metadata" can be used to group 
-files loaded by <b>LoadData</b> that are associated with a common metadata value.
-The files thus grouped together are then processed as a distinct image set.</p>
+<p>The following metacharacters are used to logically group subexpressions
+or to specify context for a position in the match. These metacharacters
+do not match any characters in the string:<br><br>
+<table border="1">
+<tr><th>Metacharacter</th><th>Meaning</th></tr>
+<tr><td>( )</td><td>Group subexpression</td></tr>
+<tr><td>|</td><td>Match subexpression before or after the |</td></tr>
+<tr><td>^</td><td>Match expression at the start of string</td></tr>
+<tr><td>$</td><td>Match expression at the end of string</td></tr>
+<tr><td>\&lt;</td><td>Match expression at the start of a word</td></tr>
+<tr><td>\&gt;</td><td>Match expression at the end of a word</td></tr>
+</table>
 
-<p>For instance, an experiment might require that images created on the same day 
-use an illumination correction function calculated from all images from that day, 
-and furthermore, that the date be captured in the file names for the individual image 
-sets and in a .csv file specifying the illumination correction functions. </p>
+<p>The following metacharacters specify the number of times the previous
+metacharacter or grouped subexpression may be matched:<br><br>
+<table border="1">
+<tr><th>Metacharacter</th><th>Meaning</th></tr>
+<tr><td>*</td><td>Match zero or more occurrences</td></tr>
+<tr><td>+</td><td>Match one or more occurrences</td></tr>
+<tr><td>?</td><td>Match zero or one occurrence</td></tr>
+<tr><td>{n,m}</td><td>Match between n and m occurrences</td></tr>
+</table>
 
-<p>In this case, if the illumination correction images are loaded with the 
-<b>LoadData</b> module, the file should have a "Metadata_Date" 
-column which contains the date identifiers. Similarly, if the individual images 
-are loaded using the <b>LoadImages</b> module, <b>LoadImages</b> should be set to extract the 
-<Date> metadata field from the file names. The pipeline will then match the individual 
-images with their corresponding illumination correction functions based on matching 
-"Metadata_Date" fields.</p>
-""" + \
-"""<h3>Use of metadata-specific module settings</h3>
+<p>Characters that are not special metacharacters are all treated literally
+in a match. To match a character that is a special metacharacter, escape
+that character with a '\\'. For example '.' matches any character, so to
+match a '.' specifically, use '\.' in your pattern.
 
-<p>Once the metadata has been obtained, you can use <i>metadata tags</i> to reference them
-in later modules. %(USING_METADATA_TAGS_REF)s Several modules are capable of 
-using metadata tags for various purposes. Examples include:
+Examples:
 <ul>
-<li>You would like to create and apply an illumination correction function to all images from a particular
-plate. You can use metadata tags to save each illumination correction function with a plate-specific
-name in <b>SaveImages</b>, and then use <b>LoadSingleImage</b> to get files
-with the name associated with your image's plate to be applied to your original images.</li>
-<li>You have a set of experiments for which you would like to produce and save results
-individually for each experiment but using only one analysis run. You can use metadata tags
-in <b>ExportToSpreadsheet</b> or <b>ExportToDatabase</b> to save a spreadsheet for each experiment in 
-a folder named according to the experiment.</li>
+<li>[trm]ail matches 'tail' or 'rail' or 'mail'</li>
+<li>[0-9] matches any digit between 0 to 9</li>
+<li>[^Q-S] matches any character other than 'Q' or 'R' or 'S'</li>
+<li>[[]A-Z] matches any upper case alphabet along with square brackets</li>
+<li>[ag-i-9] matches characters 'a' or 'g' or 'h' or 'i' or '-' or '9'</li>
+<li>[a-p]* matches '' or 'a' or 'aab' or 'p' etc.</li>
+<li>[a-p]+ matches  'a' or 'abc' or 'p' etc.</li>
+<li>[^0-9] matches any string that is not a number</li>
+<li>^[0-9]*$ matches any string that is a natural number or ''</li>
+<li>^-[0-9]+$|^\+?[0-9]+$ matches any integer</li>
 </ul>
-<p>In each case, the pre-defined metadata tag is used to name a file or folder. Tags are case-sensitive; 
-the name must match the metadata field defined by <b>LoadImages</b> or <b>LoadData</b>. The options
-for the setting will specify whether tags are applicable; see the module setting help for additional
-information on how to use them in the context of the specific module.</p>
-"""%globals()
+"""
 
-USING_METADATA_GROUPING_HELP = """
-<p>In some instances, you may want to subdivide an image set into groups that share a common feature.
-For example, if you are performing illumination correction, we usually recommend that the illumination
-function be calculated on a per-plate basis, and hence each plate should be processed independently.
-Since running the same pipeline multiple times (one for each grop) would be time-consuming, CellProfiler
-is able to perform image grouping for this purpose. If the image subdivisions are distinguishable by some metadata
-(usually defined within the filename or folder location), grouping will enable you to
-process those images that have the metadata together.</p>
-
-<p>To use grouping, you must define the relevant metadata for each image. This can be done using regular
-expressions in <b>LoadImages</b> or having them pre-defined in a .csv for use in <b>LoadData</b>.</p>
-
-<p>To use image grouping in <b>LoadImages</b>, please note the following:
+SPREADSHEETS_DATABASE_HELP = """
+<p>The most common form of output for cellular analysis is a <i>spreadsheet<i>, which is an application which
+tabulates data values. 
+CellProfiler can also output data into a <i>database</i>, which is a collection of 
+data that is stored for retrieval by users. Which format you use will depend on
+some of the considerations below:
 <ul>
-<li><i>Metadata tags must be specified for all images listed.</i> You cannot use
-grouping unless an appropriate regular expression is defined for all the images listed
-in the module.</li>
-<li><i>Shared metadata tags must be specified with the same name for each image listed.</i> For example, if you 
-are grouping on the basis of a metadata tag "Plate" in one image channel, you
-must also specify the "Plate" metadata tag in the regular expression for the other channels that you 
-want grouped together.</li>
+<li>Assessibility: Spreadsheet applications are typically designed to allow easy
+user interaction with the data, to edit values, make graphs and the like. In contrast, the values in databases are
+typically not modified after the fact. Instead, database applications typically allow for viewing a specific data range.</li>
+<li>Capacity and speed:</li>Databases are designed to hold larger amounts of data than spreadsheets. Spreadsheets may contain 
+hundreds to a few thousand rows of data, whereas databases can hold mnay millions of rows of data. Due to the high
+capacity, accessing a particular portion of data in a database is optimized for speed.</li>
+<li>Learning curve: The applications that access spreadsheets are usually made for ease-of-use to allow for user edits. 
+Databases are more sophisticated and are not typically edited or modified; to do so 
+require knowledge of specialized languages made for this purpose (e.g., MySQL, Oracle, etc).</li>
 </ul>
-<p>%(USING_METADATA_HELP_REF)s</p>
-"""%globals()
+For spreadsheets, the most widely used program to open these files is Microsoft's Excel program.
+Since the file is plain text, other editors can also be used, such as Calc (OpenOffice, freeware) or Google Docs.
+For databases, a popular (and free) access tools is SQLyog. 
+</p>
+"""
+
+USING_THE_OUTPUT_FILE_HELP = """
+"""
 
 MEMORY_AND_SPEED_HELP = """
 <p>CellProfiler includes several options for dealing with out-of-memory
@@ -597,9 +711,9 @@ with the exception of any you specify. Please see the
 Each module is associated with a display window that takes time to render and/or
 update. Closing these windows improves speed somewhat. 
 To the left of each module listed in your pipeline an icon 
-<img src="%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img> indicates whether
+<img src="memory:%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img> indicates whether
 the module window will be displayed during the analysis run. You can turn off individual module windows by
-clicking on the icon; this icon <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img> indicates that the window 
+clicking on the icon; this icon <img src="memory:%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img> indicates that the window 
 will not be shown. Select <i>Window > Hide all windows on run</i> to prevent display
 of all module windows.</p></li>           
                                                                             
@@ -618,11 +732,11 @@ TEST_MODE_HELP = """
 the main menu. Test mode allows you to run the pipeline on a selected
 image, preview the results and adjust the module settings on the fly.</p>
 
-<p>To enter Test mode once you have built a pipeline, choose <i>Test > Start test run</i> in the
+<p>To enter Test mode once you have built a pipeline, choose <i>Test > Start Test Mode</i> in the
 menu bar in the main window. At this point, you will see the following features appear:
 <ul>
 <li>The module view will have a slider bar appearing on the far left.</li>
-<li>A Pause icon <img src="%(LOCATION_TESTMODE_GO_ICON)s"></img> will appear to the left of each module.</li>
+<li>A Pause icon <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img> will appear to the left of each module.</li>
 <li>A series of buttons will appear at the bottom of the pipeline panel above the 
 module adjustment buttons.</li>
 <li>The grayed-out items in the <i>Test</i> menu will become active, and the 
@@ -643,38 +757,57 @@ been produced yet. To avoid this, it is best to actually run the pipeline up to 
 of interest, and move the slider to modules already executed.
 <li><i>Pause:</i> Clicking the pause icon will cause the pipeline test run to halt
 execution when that module is reached (the paused module itself is not executed). The icon 
-changes from <img src="%(LOCATION_TESTMODE_GO_ICON)s"></img> to 
-<img src="%(LOCATION_TESTMODE_PAUSE_ICON)s"></img> to indicate that a pause has 
+changes from <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img> to 
+<img src="memory:%(LOCATION_TESTMODE_PAUSE_ICON)s"></img> to indicate that a pause has 
 been inserted at that point.</li>
 <li><i>Run:</i> Execution of the pipeline will be started/resumed until
 the next module pause is reached. When all modules have been executed for a given image cycle,
 execution will stop.</li>
 <li><i>Step:</i> Execute the next module (as indicated by the slider location)</li>
-<li><i>Next image:</i> Skip ahead to the next image cycle as determined by the image 
+<li><i>Next Image:</i> Skip ahead to the next image cycle as determined by the image 
 order in <b>LoadImages</b>/<b>LoadData</b>. The slider will automatically return to the 
 first module in the pipeline.</li>
 </ul>
 </p>
 <p>From the <i>Test</i> menu, you can choose additional options:
 <ul>
-<li><i>Stop test run:</i> Exit <i>Test</i> mode. Loading a new pipeline or adding/subtracting
+<li><i>Exit Test Mode:</i> Exit <i>Test</i> mode. Loading a new pipeline or adding/subtracting
 modules will also automatically exit test mode.</li>
 <li><i>Step to next module:</i> Execute the next module (as indicated by the slider location)</li>
-<li><i>Next image cycle:</i> Step to the next image cycle in the current group or the .</li>
-<li><i>Next image group:</i> Step to the next group in the image set</li>
-<li><i>Random image cycle:</i> Randomly select an image cycle in the current group to jump to.</li>
-<li><i>Choose image cycle:</i> Choose the image cycle to jump to.
+<li><i>Next Image Set:</i> Step to the next image set in the current group or the .</li>
+<li><i>Next Image Group:</i> Step to the next group in the image set</li>
+<li><i>Random Image Set:</i> Randomly select an image set in the current group to jump to.</li>
+<li><i>Choose Image Set:</i> Choose the image set to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
-<li><i>Choose group:</i> Choose the group to jump to.
+<li><i>Choose Image Group:</i> Choose the group to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
-<li><i>Reload modules source:</i> For developers only. This option will reload the module source 
+<li><i>Reload Modules Source:</i> For developers only. This option will reload the module source 
 code, so any changes to the code will be reflected immediately.</li>
 </ul>
 Note that if movies are being loaded, the individual movie is defined as a group automatically.
-Selecting <i>Choose group</i> will allow you to choose the movie file, and <i>Choose image cycle</i> 
+Selecting <i>Choose Image Group</i> will allow you to choose the movie file, and <i>Choose Image Set</i> 
 will let you choose the individual movie frame from that file.
 <p>%(USING_METADATA_GROUPING_HELP_REF)s</p>
 </p>
+"""%globals()
+
+RUNNING_YOUR_PIPELINE_HELP = """
+Once you have tested your pipeline using Test mode and you are satisfied with the
+module settings, you are ready to run the pipeline on your entire set of images. To
+do this:
+<ul>
+<li>Exit Test mode by clicking the "Exit Test Mode" button or selecting <i>Test > Exit Test Mode</i>.</li>
+<li>Click the "<img src="memory:%(LOCATION_ANALYZE_IMAGE_BUTTON)s"></img> Analyze Images" button and begin processing your data sets.</li>
+</ul>
+During the analysis run, the progress will appear in the status bar at the bottom of CellProfiler. It will
+show you the total number of image sets, the number of image sets completed, the time elapsed and the approximate 
+time remaining in the run.
+<p>If you need to pause analysis, click the "<img src="memory:%(LOCATION_PAUSE_ANALYSIS_BUTTON)s"></img> Pause" button, then click the 
+"Resume" button to continue. If you
+want to terminate analysis, click the "<img src="memory:%(LOCATION_STOP_ANALYSIS_BUTTON)s"></img> Stop analysis" button.</p>
+<p>If your computer has multiple processors, CellProfiler will take advantage of them by starting multiple copies
+of itself to process the image sets in parallel. You can set the number of <i>workers</i> (i.e.,copies of 
+CellProfiler activated) under <i>File > Preferences...</i></p>
 """%globals()
 
 # The help below contains a Google URL shortener since the URL has a control character that the URL reader doesn't interpret correctly
@@ -734,10 +867,9 @@ MySQL database. Please refer to the help for these modules in order learn more
 about which settings are appropriate.</li>
 
 <li><i>Analyze your images to create a batch file.</i> Click the <i>Analyze images</i>
-button and the analysis will begin locally processing the first image set only. 
-Do not be surprised if processing the first image set takes much longer than usual
-if using <b>LoadImages</b> since this module creates a list of all images to be 
-processed which can take a while if there are many of them (this process can be sped
+button and the analysis will begin local processing. Do not be surprised if this initial step
+takes a while since CellProfiler must first create the entire image set list based
+on your settings in the workspace modules (this process can be sped
 up by creating your list of images as a CSV and using the <b>LoadData</b> module to load it).
 <p>At the end of processing the first cycle locally, the <b>CreateBatchFiles</b>
 module halts execution, creates the proper batch file (a file called 
@@ -996,20 +1128,20 @@ MENU_BAR_EDIT_HELP = """
 The <i>Edit</i> menu provides options for modifying modules in your current pipeline.
 <ul>
 <li><b>Undo:</b> Undo your previous module modification.</li>
-<li><b>Move Up:</b> Move the currently selected module(s) up in the module list. You
-can also use the <img src="%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> button located
+<li><b>Move Module Up:</b> Move the currently selected module(s) up in the module list. You
+can also use the <img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> button located
 below the Pipeline panel.</li>
-<li><b>Move Down:</b> Move the currently selected module(s) down in the module list. You
-can also use the <img src="%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> button located
+<li><b>Move Module Down:</b> Move the currently selected module(s) down in the module list. You
+can also use the <img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> button located
 below the Pipeline panel.</li>
-<li><b>Delete:</b> Remove the currently selected module(s) from the module list. 
+<li><b>Delete Module:</b> Remove the currently selected module(s) from the module list. 
 Pressing the Delete key also removes the module(s). You
-can also use the <img src="%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button located
+can also use the <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button located
 under the Pipeline panel.</li>
-<li><b>Duplicate:</b> Duplicate the currently selected module(s) in the pipeline.
+<li><b>Duplicate Module:</b> Duplicate the currently selected module(s) in the pipeline.
 The current settings of the selected module(s) are retained in the duplicate.</li>
 <li><b>Add Module:</b> Select a module from the pop-up list to inster into the current
-pipeline. You can also use the <img src="%(LOCATION_MODULE_ADD_BUTTON)s"></img> button located
+pipeline. You can also use the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button located
 under the Pipeline panel.</li>
 </ul>
 You can select multiple modules at once for moving, deletion and duplication 
@@ -1023,11 +1155,33 @@ The <i>Windows</i> menu provides options for showing and hiding the module displ
 <li><b>Close All Open Windows:</b> Closes all display windows that are currently open.</li>
 <li><b>Show All Windows On Run:</b> Select to show all display windows during the
 current test run or next analysis run. The display mode icons next to each module
-in the pipeline panel will switch to <img src="%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img>.</li>
+in the pipeline panel will switch to <img src="memory:%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img>.</li>
 <li><b>Hide All Windows On Run:</b> Select to show no display windows during the
 current test run or next analysis run. The display mode icons next to each module
-in the pipeline panel will switch to <img src="%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>.</li>
+in the pipeline panel will switch to <img src="memory:%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>.</li>
 </ul>"""%globals()
+
+PARAMETER_SAMPLING_MENU_HELP = """
+The <i>Sampling</i> menu is an interplace for Paramorama, a plugin for an interactive visualization 
+program for exploring the parameter space of image analysis algorithms.<p>
+
+<p>Using this plugin will allow you sample a range of setting values in <b>IdentifyPrimaryObjects</b> and
+save the object identification results for later inspection. Upon completion, the plug-in will 
+generate a text file, which specifies: (1) all unique combinations of 
+the sampled parameter values; (2) the mapping from each combination of parameter values to 
+one or more output images; and (3) the actual output images.</p>
+
+<p>More information on how to use the plugin can be found 
+<a href="http://www.comp.leeds.ac.uk/scsajp/applications/paramorama2/">here</a>.</p>
+
+<p>Note that CellProfiler must be restarted after changing this setting.</p>
+
+<p><b>References</b>
+<ul>
+<li>Visualization of parameter space for image analysis. Pretorius AJ, Bray MA, Carpenter AE 
+and Ruddle RA. (2011) IEEE Transactions on Visualization and Computer Graphics, 17(12), 2402-2411.</li>
+</ul></p>
+"""
 
 MENU_BAR_DATATOOLS_HELP = """
 The <i>Data Tools</i> menu provides tools to allow you
@@ -1084,9 +1238,9 @@ MODULE_DISPLAY_INTERACTIVE_NAVIGATION_HELP = """
 All figure windows come with a navigation toolbar, which can be used to navigate through the data set.
 <ul>
 <li><b>Home, Forward, Back buttons:</b>
-<i>Home</i> <img src="%(LOCATION_WINDOW_HOME_BUTTON)s"></img> always takes you to 
-the initial, default view of your data. The <i>Forward</i> <img src="%(LOCATION_WINDOW_FORWARD_BUTTON)s"></img>
-and <i>Back</i> <img src="%(LOCATION_WINDOW_BACK_BUTTON)s"></img> buttons are akin 
+<i>Home</i> <img src="memory:%(LOCATION_WINDOW_HOME_BUTTON)s"></img> always takes you to 
+the initial, default view of your data. The <i>Forward</i> <img src="memory:%(LOCATION_WINDOW_FORWARD_BUTTON)s"></img>
+and <i>Back</i> <img src="memory:%(LOCATION_WINDOW_BACK_BUTTON)s"></img> buttons are akin 
 to the web browser forward and back buttons in that they are used to navigate back 
 and forth between previously defined views, one step at a time. They will not be 
 enabled unless you have already navigated within an image else using 
@@ -1094,7 +1248,7 @@ the <b>Pan</b> and <b>Zoom</b> buttons, which are used to define new views. </li
 
 <li><b>Pan/Zoom button:</b>
 This button has two modes: pan and zoom. Click the toolbar button 
-<img src="%(LOCATION_WINDOW_PAN_BUTTON)s"></img> to activate panning 
+<img src="memory:%(LOCATION_WINDOW_PAN_BUTTON)s"></img> to activate panning 
 and zooming, then put your mouse somewhere over an axes, where it will turn into a hand
 icon. 
 <ul>
@@ -1111,14 +1265,14 @@ clicking off the plot. This is a known bug to be corrected in the next release.<
 </ul>
 </li>
 
-<li><b>Zoom-to-rectangle button:</b> Click this toolbar button <img src="%(LOCATION_WINDOW_ZOOMTORECT_BUTTON)s"></img> 
+<li><b>Zoom-to-rectangle button:</b> Click this toolbar button <img src="memory:%(LOCATION_WINDOW_ZOOMTORECT_BUTTON)s"></img> 
 to activate this mode. To zoom in, press the left mouse button and drag in the window 
 to draw a box around the area you want to zoom in on. When you release the mouse button, 
 the image is re-drawn to display the specified area. Remember that you can always use 
 <i>Backward</i> button to go back to the previous zoom level, or use the <i>Home</i> 
 button to reset the window to the initial view.</li>
 
-<li><b>Save:</b> Click this button <img src="%(LOCATION_WINDOW_SAVE_BUTTON)s"></img>to launch a file save dialog. You can save the 
+<li><b>Save:</b> Click this button <img src="memory:%(LOCATION_WINDOW_SAVE_BUTTON)s"></img>to launch a file save dialog. You can save the 
 figure window to a file (currently, Postscript (.PS), PNGs and PDFs are supported). 
 Note that this will save the entire contents of the window, not just the individual 
 subplot(s) or images.</li>
@@ -1184,6 +1338,10 @@ page</a> for pictures of available colormaps."""
 WINDOW_BACKGROUND_HELP = """The <i>Window Background</i> preference sets the
 window background color of the CellProfiler main window."""
 
+ERROR_COLOR_HELP = """The <i>Error color</i> preference sets the color
+used for the error alerts associated with misconfigured settings and other
+errors."""
+
 PLUGINS_DIRECTORY_HELP = """The <i>Plugins directory</i> preference chooses
 the directory that holds dynamically-loaded CellProfiler modules. You
 can write your own module and place it in this directory and CellProfiler
@@ -1213,6 +1371,20 @@ CellProfiler looks for updates on startup."""
 
 SHOW_STARTUP_BLURB_HELP = """The <i>Display welcome text on startup</i> preference 
 controls whether CellProfiler displays an orientation message on startup."""
+
+WC_ASK = "Ask"
+WC_LAST = "Last"
+WC_OPEN = "Open"
+WC_NEW = "New"
+WORKSPACE_CHOICE_HELP = """The <i>Initial workspace choice</i> preference
+determines the workspace that's chosen when CellProfiler starts. The choices
+are<br><ul>
+<li><i>%(WC_ASK)s</i>: Show a dialog box that lets you choose any of the options below.</li>
+<li><i>%(WC_LAST)s</i>: Open the workspace that you used last.</li>
+<li><i>%(WC_OPEN)s</i>: Choose an existing workspace to open.</li>
+<li><i>%(WC_NEW)s</i>: Always open a new workspace on startup.</li>
+</ul>
+""" % globals()
 
 SHOW_ANALYSIS_COMPLETE_HELP = """The <i>Show "Analysis complete"</i>
 preference determines whether CellProfiler displays a message box at the
@@ -1259,30 +1431,310 @@ TERTIARY_OUTLINE_COLOR_HELP = """The <i>Tertiary Outline Color</i> preference
 sets the color used for the objects touching the image border or image mask
 in <i>IdentifyPrimaryObjects</i>."""
 
+INTERPOLATION_MODE_HELP = """The <i>Interpolation mode</i> preference sets
+the way CellProfiler displays image pixels. If you choose <i>Nearest</i>,
+CellProfiler will display each pixel as a square block of uniform intensity.
+This is truest to the data, but the resulting images look blocky and
+pixelated. You can choose either <i>Bilinear</i> or <i>Bicubic</i> to see
+images where the a bilinear or bicubic spline model has been used to interpolate
+the screen pixel value for screen pixels that do not fall exactly in the
+center of the image pixel. The result, for bilinear or bicubic interpolation is
+an image that is more visually appealing and easier to interpret, but obscures
+the true pixel nature of the real data.
+"""
+
 REPORT_JVM_ERROR_HELP = """The <i>Warn if Java runtime environment not present</i>
 preference determines whether CellProfiler will display a warning on startup
 if CellProfiler can't locate the Java installation on your computer. Check
 this box if you want to be warned. Uncheck this box to hide warnings."""
+
+MAX_WORKERS_HELP = """The <i>Maximum number of workers</i> preference controls
+the maximum number of <i>workers</i> (i.e., copies of CellProfiler)
+that will be started at the outset of an analysis run. CellProfiler uses these 
+copies to process multiple image
+sets in parallel, utilizing the computer's CPUs and memory fully. The default
+value is the number of CPUs detected on your computer. Use fewer workers for
+pipelines that require a large amount of memory. Use more workers for
+pipelines that are accessing image data over a slow connection.
+"""
+
+TEMP_DIR_HELP = """The <i>Temporary folder</i> preference determines the
+folder that CellProfiler uses when storing temporary files. CellProfiler will
+create a temporary measurements file for analyses when the user specifies that
+a Matlab measurements file should be created or when the user asks that no
+measurements file should be permanently saved. CellProfiler will also save
+images accessed by http URL temporarily to disk (but will efficiently access
+OMERO image planes directly from the server).
+"""
 
 EACH_PREFERENCE_HELP = (
     ( "Title font", TITLE_FONT_HELP ),
     ( "Table font", TABLE_FONT_HELP ),
     ( "Default colormap", DEFAULT_COLORMAP_HELP ),
     ( "Window background", WINDOW_BACKGROUND_HELP ),
-    ( "Plugins directory", PLUGINS_DIRECTORY_HELP ),
-    ( "ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
-    ( "ImageJ version", IJ_VERSION_HELP),
-    ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
+    ( "Error color", ERROR_COLOR_HELP),
     ( "Primary outline color", PRIMARY_OUTLINE_COLOR_HELP),
     ( "Secondary outline color", SECONDARY_OUTLINE_COLOR_HELP),
     ( "Tertiary outline color", TERTIARY_OUTLINE_COLOR_HELP),
-    ( "Warn if Java runtime not present", REPORT_JVM_ERROR_HELP)
+    ( "Interpolation mode", INTERPOLATION_MODE_HELP),
+    ( "CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP ),
+    ( "ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
+    ( "ImageJ version", IJ_VERSION_HELP),
+    ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
+    ( "Display welcome text on startup", SHOW_STARTUP_BLURB_HELP ),
+    ( "Initial workspace choice", WORKSPACE_CHOICE_HELP),
+    ( "Warn if Java runtime not present", REPORT_JVM_ERROR_HELP),
+    ( "Show the 'Analysis complete' message", SHOW_ANALYSIS_COMPLETE_HELP),
+    ( "Show the 'Exiting test mode' message", SHOW_EXITING_TEST_MODE_HELP),
+    ( "Warn if images are different sizes", SHOW_REPORT_BAD_SIZES_DLG_HELP),
+    ( "Show the parameter sampling menu", PARAMETER_SAMPLING_MENU_HELP),
+    ( "Warn about old pipelines", WARN_ABOUT_OLD_PIPELINES_HELP), 
+    ( "Use more figure space", USE_MORE_FIGURE_SPACE_HELP),
+    ( "Maximum number of workers", MAX_WORKERS_HELP),
+    ( "Temporary folder", TEMP_DIR_HELP)
     )
 PREFERENCES_HELP = """The Preferences allow you to change many options in CellProfiler
 <ul>"""
 for key, value in enumerate(EACH_PREFERENCE_HELP):
     PREFERENCES_HELP += """<li><b>""" + value[0] + """:</b>""" + value[1] + """</li>"""
 PREFERENCES_HELP += """</ul>"""
+
+#########################################################
+#
+# Help re: workspaces
+#
+#########################################################
+INTRODUCTION_TO_WORKSPACES_HELP = """
+<h3>What is a workspace?</h3>
+<p>In CellProfiler, a <i>workspace</i> comprises two elements:<br>
+<ul>
+<li>An <i>image file list</i> which is the list of files and their locations that are selected by the user as 
+candidates for analysis.</li>
+<li>Optionally, the associated information about the images (<i>metadata</i>). This 
+information may be part of the images themselves, or imported 
+externally by the user.</li>
+</ul>
+Note that this is distinct from the <i>pipeline</i>, which is a series of modules put together used to
+analyze a set of images.</li>
+</ul>
+</p>
+
+<h3>Why would I want to use workspaces?</h3>
+<p>The workspace is the container for image information associated with a CellProfiler analysis. It stores
+such details as: 
+<ul>
+<li>What type of image(s) are the input files?</li>
+<li>Where are the input images located?</li>
+<li>What distinguishes multiple image channels from each other? How are these relationships 
+represented?</li>
+<li>What information about the images and/or experiment is linked to the images, and how?</li>
+<li>Are certain groups of images to be processed differently from other groups?</li>
+</ul>
+You might consider the workspace to be a "project" file after a fashion. By using workspaces, 
+the above information is stored along with the analysis pipeline and is
+avilable on demand. </p>
+
+<h3>Working with workspaces</h3>
+<h4>Creating a workspace</h4>
+<p>Upon starting CellProfiler, you will be prompted whether to create a new workspace, or open
+the workspace last used, or open another one entirely. If you request a new workspace, you will be
+asked to provide a filename and location for it. </p>
+<p>At this point, you may start building your workspace by using the modules located in "Create
+workspace" panel on the upper-left. The modules are:
+<ul>
+<li><b>Images</b>: Assemble the relevant images for analysis (required).</li>
+<li><b>Metadata</b>: Asociate metadata with the images (optional).</li>
+<li><b>NamesAndTypes</b>: Assign names to channels and define their relationship (required).</li>
+<li><b>Groups</b>: Define sub-divisions between groups of images for processing (optional).</li>
+</ul>
+Detailed help for each module is provided by selecting the module and clicking the "?" button on 
+the bottom of CellProfiler.</p>
+
+<h4>Saving a workspace</h4>
+<p>As you work in CellProfiler, the workspace is updated automatically, so there is no need to
+save it unless you are saving the workspace to a new name or location. You can always save your 
+current work to a new workspace file by selecting <i>File > New 
+workspace...</i> or <i>File > Save as...</i> and selecting "Save pipeline and workspace (.cpi)". 
+Selecting either option with save your workspace, along with the current pipeline, to a file with 
+with the extension <i>.cpi</i>.</p>
+<p>For those interested, some technical details:
+<ul>
+<li>The .cpi file stores collected information using the HDF5 format. Documentation on
+how measurements are stored and handled in CellProfiler using this format can be found 
+<a href="https://github.com/CellProfiler/CellProfiler/wiki/Module-Structure-and-Data-Storage-Retrieval#hdf5-measurement-and-workspace-format">here</a>.</li>
+<li>All information is cached in the workspace file after it is computed. It is either
+re-computed or retrieved from the cache when an analysis run is started, when 
+entering Test mode, or when the user requests a refreshed view of the information
+(e.g., when a setting has been changed).</li>
+</ul>
+</p>
+
+<h4>Legacy workspace modules: LoadImages and LoadData</h4>
+<p>Historically, two modules were used for workspace creation: <b>LoadImages</b> and <b>LoadData</b>.
+While the approach described above supercedes these modules in part, old pipelines
+loaded into CellProfiler that contain these modules will provide the option of preserving them;
+these pipelines will operate exactly as before.</p>
+<p>Alternately, the user can choose to convert these 
+modules into the workspace equivalent as closely as possible. Both modules remain accesible
+via the "Add module" and "+" buttons at the bottom of the pipeline panel.</p>
+"""
+
+LOADING_IMAGE_SEQUENCES_HELP = """
+<h3>Introdution</h3>
+In this context, the term <i>image sequence</i> is used to refer to a collection of images which can be from
+a time-lapse assay, a 3-D Z-stack assay, or both. This section will instruct you how to load these collections
+in order to properly represent your data for processing.
+
+<h3>Sequences of individual files</h3>
+<p>The simplest method of collecting image sequences is to simply acquire them as a series of individual
+images, where each image represents a single timepoint/z-slice. Typically, the image filename reflects
+the timepoint, such that the alphabetical image listing corresponds to timepoint sequence,
+e.g., <i>img000.png</i>, <i>img001.png</i>, <i>img002.png</i>, etc</p>. It is also not uncommon
+to store the movie such that one movie's worth of files is stored in a single folder.</p>
+<p><i>Example:</i>You have a time-lapse movie of individual files set up as follows:
+<ul>
+<li>Three folders, one for each image channel, named <i>fluo2</i>, <i>fluor</i> and <i>phase</i>.</li>
+<li>In each folder, the files are named as follows:
+<ul>
+<li><i>fluo2</i>: calibrate2-P01.001.TIF, calibrate2-P01.002.TIF,..., calibrate2-P01.287.TIF</li>
+<li><i>fluor</i>: calibrated-P01.001.TIF, calibrated-P01.002.TIF,..., calibrated-P01.287.TIF</li>
+<li><i>phase</i>: phase-P01.001.TIF, phase-P01.002.TIF,..., phase-P01.287.TIF</li>
+</ul>
+where the file names are in the format <i>&lt;Stain&gt;-&lt;Well&gt;.&lt;Timepoint&gt;.TIF</i>. </li>
+<li>There are 287 timepoints per movie, and a movie of the 3 channels above is acquired from each well.</li>
+</ul>
+</p>
+<p>In this case, the procedure to set up the input modules to handle these files is as follows:
+<ul>
+<li>In the <b>Images</b> module, drag-and-drop your folders of images into the file list panel. If 
+neccesary, set your rules accordingly in order to filter out any files that are not part of a movie 
+sequence.
+<p>In the above example, you would drag-and-drop the <i>fluo2</i>, <i>fluor</i> and <i>phase</i> folders
+into the file list panel.</p></li>
+<li>In the <b>Metadata</b> module, check the "Extract metadata?" box. The key step here is to
+obtain the identifiers neccesary to do two things:
+<ul>
+<li>Distinguish the movies from each other. This information may be encapsulated in the filename 
+and/or the folder name.</li>
+<li>For each movie, distinguish the timepoints from each other. This information is usually contained
+in the filename.</li>
+</ul>
+To accomplish this, do the following:
+<ul>
+<li>Select "%(X_MANUAL_EXTRACTION)s" or "%(X_IMPORTED_EXTRACTION)s" as the metadata extraction method. You 
+will use these to extract the movie and timepoint identifiers from the images. </li>
+<li>Use "%(X_MANUAL_EXTRACTION)s" to create a regular expression to extract the metadata from the
+filename and/or path name.</li>
+<li>Use "%(X_IMPORTED_EXTRACTION)s" if you have a comma-delimted list (.csv) of 
+metadata columns (including the movie and timepoint identifiers) for each image.</li>
+</ul>
+If there are multiple channels for each movies, this step may need to be performed for each channel.
+<p>In the above example, you could do the following:
+<ul>
+<li>Select "%(X_MANUAL_EXTRACTION)s" as the method, "From file name" as the source, and 
+<code>.*-(?P&lt;Well&gt;\w\d{2}).(?P&lt;Frame&gt;\d*)</code> as the regular expression.</li>
+<li>Click the "Add" button to add another extraaction method.</i>
+<li>In the new setting, Select "%(X_MANUAL_EXTRACTION)s" as the method, "From folder name" as the source, and 
+<code>.*[\\/](?P&lt;Stain>.*)[\\/].*$</code> as the regular expression.</li>
+<li>Click "Update table" to confirm the metadata extraction accuracy.</li>
+</ul></p>
+</li>
+<li>In the <b>NamesAndTypes</b> module, assign the channel(s) to a name of your choice. If there are 
+multiple channels, you will need to do this for each channel.<br>
+For the above example, you could do the following:
+<ul>
+<li>Select "Assign images matching rules".</li>
+<li>Make a new rule <code>[Metadata][Does][Have Stain matching][fluor]</code> and name it <i>OrigFluor</i>.
+<li>Click the "Add" button to add another rule.</li>
+<li>Make a new rule <code>[Metadata][Does][Have Stain matching][fluo2]</code> and name it <i>OrigFluo2</i>.
+<li>Click the "Add" button to add another rule.</li>
+<li>Make a new rule <code>[Metadata][Does][Have Stain matching][phase]</code> and name it <i>OrigPhase</i>.
+<li>In the "Assign channel by" setting, select "Metadata".</li>
+<li>Select "Well" for the <i>OrigFluor</i>, <i>OrigFluo2</i> and <i>OrigPhase</i> channels.</li>
+<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
+and select "Frame" for each channel.</li>
+<li>Click "Update table" to confirm the channel matching. The corresponding well and frame for each
+channel should be matched to each other.</li>
+</ul>
+</li>
+<li>In the <b>Groups</b> module, select the metadata that defines a distinct movie of data.</br>
+For the example above, do the following:
+<ul>
+<li>Select "Well" as the metadata category.</li>
+<li>The tables below this setting will update themselves, and you should be able to visually confirm that 
+each well is defined as a group, each with 287 frames' worth of images.</li>
+</ul>
+</li>
+</ul>
+</p>
+
+<h3>Image sequences consisting of a single file</h3>
+<p>Another common means of storing time-lapse/Z-stack data is as a single file containg the movie. Examples of this
+approach include image formats such as:
+<ul>
+<li>Multi-frame TIF</li>
+<li>Metamorph stack: STK</li>
+<li>Evotec/PerkinElmer Opera Flex</li>
+<li>Zeiss ZVI, LSM</li>
+<li>Standard movie formats: AVI, Quicktime MOV, etc
+</ul>
+CellProfiler uses the Bio-Formats library for reading various image formats. For more details on 
+supported files, see this <a href="http://loci.wisc.edu/bio-formats/formats">webpage</a>. In 
+general, we recommend saving stacks and movies in an open format such as .TIF.
+</p>
+
+<p><i>Example:</i>You have a single Z-stack in Zeiss' LSM format, in the form of six slices
+with two channels (DAPI, GFP) at each slice.</p>
+<p>In this case, the procedure to set up the input modules to handle these this file is as follows
+(please note that this procedure is basically identical whether the file is for a time-lapse assay
+or a Z-stack assay):
+<ul>
+<li>In the <b>Images</b> module, drag-and-drop your folders of images into the file list panel. If 
+neccesary, set your rules accordingly in order to filter out any files that are not part of a movie 
+sequence.<br>
+In the above example, you would drag-and-drop the LSM files into the file list panel.</li>
+<li>In the <b>Metadata</b> module, check the "Extract metadata?" box. The key step here is to
+obtain the identifiers neccesary to do two things:
+<ul>
+<li>Distinguish the movies from each other. This information may be encapsulated in the filename 
+and/or the folder name.</li>
+<li>For each movie, distinguish the timepoints from each other. This information is usually contained
+in theimage's internal metadata, in contrast to the image sequences described above.</li>
+</ul> 
+To accomplish this, do the following:
+<ul>
+<li>Select "%(X_AUTOMATIC_EXTRACTION)s" as the metadata extraction method. In this case, CellProfiler will
+extract the requisite information from the metadata stored in the image headers.</li>
+<li>Click the "Update metadata" button.</li>
+<li>Click the "Show table" button.</li>
+<li>The resultant table should show the various metadata contained in the file. In this case, the 
+relevant information is contained in the <i>Z</i> and <i>C</i> columns. <i>C</i> shows values
+0 and 1, and <i>Z</i> shows values from 0 to 5.</li>
+</ul>
+</li>
+<li>In the <b>NamesAndTypes</b> module, assign the channel(s) to a name of your choice. If there are 
+multiple channels, you will need to do this for each channel. 
+<p>For the above example, you could do the following:
+<ul>
+<li>Select "Assign images matching rules".</li>
+<li>Make a new rule <code>[Metadata][Does][Have C matching][0]</code> and name it <i>OrigDAPI</i>.
+<li>Click the "Add" button to add another rule.</li>
+<li>Make a new rule <code>[Metadata][Does][Have C matching][1]</code> and name it <i>OrigGFP</i>.
+<li>Click the "Add" button to add another rule.</li>
+<li>In the "Assign channel by" setting, select "Metadata".</li>
+<li>Select "Z" for the <i>OrigDAPI</i> and <i>OrigGFP</i> channels.</li>
+<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
+and select "T" for each channel.</li>
+<li>Click "Update table" to confirm the channel matching. The corresponding <i>Z</i> and <i>T</i> for each
+channel should be matched to each other.</li>
+</ul></p>
+</li>
+<li>Unlike the individual file example above, the <b>Groups</b> module is not neeeded, since CellProfiler
+knows that each file is essentially its own group.</li>
+</ul>
+</p>
+"""%globals()
+     
 #########################################################
 #
 # Misc. help
@@ -1305,6 +1757,62 @@ HELP_ON_PIXEL_INTENSITIES = """To view pixel intensities in an open image, use t
 pixel intensity tool which is available in any open display window. When you move 
 your mouse over the image, the pixel intensities will appear in the bottom bar of the display window."""
 
+HELP_ON_PATH_LIST = """The image file path list displays the image files
+that are managed by the <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
+and <b>Groups</b> modules. You can drop files and directories into this window
+or use the <i>Browse...</i> button to add files to the list. The context menu
+for the window lets you display or remove files and lets you remove folders.
+<br>
+The buttons and checkbox along the bottom have the following functions:<br>
+<ul><li><i>Browse...</i>: Browse for files and folders to add.</li>
+<li><i>Clear</i>: Clear all entries from the file list</li>
+<li><i>Show files excluded by filters</i>: <i>(Only shown if filtered based on rules is selected)</i> Check this to see all files in the
+list. Uncheck it to see only the files that pass the rules criteria in the
+<b>Images</b> module.</li>
+<li><i>Expand tree</i>: Expand all of the folders in the tree</li>
+<li><i>Collapse tree</i>: Collapse the folders in the tree</li></ul>
+"""
+
+FILTER_RULES_BUTTONS_HELP = """
+Clicking the rule menus shows you all the file <i>attributes</i>, <i>operators</i> and <i>conditions</i> you can specify to narrow down 
+the image list.
+<ol>
+<li>For each rule, first select the <i>attribute</i> that the rule is to be based on. For example, you can select <i>File</i> 
+among others. </li>
+<li>The <i>operator</i> menu is updated with operators applicable to the attribute you selected. For example, if you select 
+<i>File</i> as the attribute, the operator
+menu includes text operators such as <i>Contain</i> or <i>Starts with</i>. On the other hand, if you
+select <i>Extension</i> as the attribute, you can choose the logical operators <i>Is</i> or <i>Is not</i> from the menu.</li>
+<li>In the operator menu, select the operator you want to use. For example,
+if you want to match data exactly, you may want the <i>Exactly match</i> or the <i>Is</i> operator. If you want the
+condition to be more loose, select an operator such as <i>Contains</i>.</li>
+<li>Use the Condition box to type the condition you want to match. The more
+you type, the more specific the condition is. 
+<ul>
+<li>As an example, if you create a new filter and select
+<i>File</i> as the Attribute, select <i>Does</i> and <i>Contain</i> as the Operators, and type "Channel" as the condition,
+the filter finds all files that include the text "Channel", such as "Channel1.tif" "Channel2.jpg", "1-Channel-A01.BMP" and so on.</li>
+<li>If you select <i>Does</i> and <i>Start with</i> as the operators and <i>Channel1</i> in the Condition box, 
+the rule will includes such files as "Channel1.tif" "Channel1-A01.png", and so on.</li></ul>
+</li>
+You can also create regular expressions (an advanced syntax for pattern matching; see <a href="#regexp">below</a>) in order to select particular files.
+</ol>
+<p>To add another rule, click the plus  buttons to the right of each rule. Subtract an existing rule by clicking the 
+minus button.</p>
+<p>You can also link a set of rules by choosing the logical expression <i>All</i> or <i>Any</i>. If you use  
+<i>All</i> logical expression, all the rules be true for a file to be included in the file list. If
+you use the <i>Any</i> option, only one of the conditions has to be met for a file to be included.</p>
+<p>If you want to create more complex rules (e.g, some criteria matching all rules and others matching any),
+you can create sets of rules, by clicking the ellipsis button (to the right of the plus button). 
+Repeat the above steps to add more rules to the filter until you have
+all the conditions you want to include.</p>
+
+<a name="regexp"><h4>Details on regular expressions</h4></a>
+<p>A <i>regular expression</i> is a general term refering to a method of searching for pattern matches in text. There is a high
+learning curve to using them, but are quite powerful once you understand the basics.</p>
+<p>%(REGEXP_HELP_REF)s</p>
+"""%globals() 
+
 #########################################################
 #
 # The top-level of help - used when building the HTML manual
@@ -1312,41 +1820,50 @@ your mouse over the image, the pixel intensities will appear in the bottom bar o
 #########################################################
 
 '''The help menu for CP's main window'''
+from cellprofiler.modules import images, metadata, namesandtypes, groups
+
 MAIN_HELP = (
-    ("Introduction",(
-        ("Why Use CellProfiler", WHEN_CAN_I_USE_CELLPROFILER_HELP),
-        ("New Features in 2.0", NEW_FEATURES_HELP))),
-    ("Using CellProfiler",(
-        ( "Navigating The Menu Bar", (
-            ("Using The File Menu",MENU_BAR_FILE_HELP),
-            ("Using The Edit Menu",MENU_BAR_EDIT_HELP),
-            ("Using The Test Menu",TEST_MODE_HELP),
-            ("Using The Window Menu",MENU_BAR_WINDOW_HELP),
-            ("Using The Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
-        ("Using Module Display Windows", FIGURE_HELP ),
-        ("Setting the Preferences", PREFERENCES_HELP),
-        ("How Data Is Handled",(
-            ("Using Metadata In CellProfiler",USING_METADATA_HELP),
-            ("How To Use Image Grouping",USING_METADATA_GROUPING_HELP),
-            ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP))),
-        ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
-        ("Before The Analysis Run", (
+    ("Why Use CellProfiler?", WHEN_CAN_I_USE_CELLPROFILER_HELP),
+    ("Navigating The Menu Bar", (
+        ("Using The File Menu",MENU_BAR_FILE_HELP),
+        ("Using The Edit Menu",MENU_BAR_EDIT_HELP),
+        ("Using The Test Menu",TEST_MODE_HELP),
+        ("Using The Window Menu",MENU_BAR_WINDOW_HELP),
+        ("Using The Parameter Sampling Menu",PARAMETER_SAMPLING_MENU_HELP),
+        ("Using The Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
+    ("Using Module Display Windows", FIGURE_HELP ),
+    ("Setting the Preferences", PREFERENCES_HELP),
+    ("Creating A Workspace",(
+        ("Introduction To Workspaces",INTRODUCTION_TO_WORKSPACES_HELP),
+        ("Using The Images Module",images.__doc__),
+        ("Using The Metadata Module",metadata.__doc__),
+        ("Using The NamesAndTypes Module",namesandtypes.__doc__),
+        ("Using The Groups Module",groups.__doc__),
+        ("Loading Image Stacks And Movies",LOADING_IMAGE_SEQUENCES_HELP))),
+    ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
+    ("Testing Your Pipeline",TEST_MODE_HELP),
+    ("Running Your Pipeline", RUNNING_YOUR_PIPELINE_HELP),    
+    ("Using your Output", (
+        ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP),
+        ("Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
+        ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),   
+    ("Troubleshooting Memory and Speed Issues",MEMORY_AND_SPEED_HELP),
+    ("Other Features",(
+        ("Legacy Modules and Features",(
+            ("Load Modules", LEGACY_LOAD_MODULES_HELP),
             ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
             ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
             ("Setting The Output Filename", OUTPUT_FILENAME_HELP))),
-        ("Testing Your Pipeline",TEST_MODE_HELP),
-        ("Troubleshooting Memory and Speed Issues",MEMORY_AND_SPEED_HELP),
-        ("Other Features",(
-            ("Batch Processing", BATCHPROCESSING_HELP),
-            ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
-            ("Configuring Logging", CONFIGURING_LOGGING_HELP)))
-    ))
+        ("Batch Processing", BATCHPROCESSING_HELP),
+        ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
+        ("Configuring Logging", CONFIGURING_LOGGING_HELP)))
 )
 
-def make_help_menu(h, window):
+def make_help_menu(h, window, menu=None):
     import wx
     import htmldialog
-    menu = wx.Menu()
+    if menu is None:
+        menu = wx.Menu()
     for key, value in h:
         my_id = wx.NewId()
         if hasattr(value, "__iter__") and not isinstance(value, (str, unicode)):

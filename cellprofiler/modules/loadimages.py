@@ -43,7 +43,6 @@ See also <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import logging
 import numpy as np
@@ -60,34 +59,8 @@ import urllib
 import urlparse
 
 logger = logging.getLogger(__name__)
-try:
-    import bioformats.formatreader as formatreader
-    import bioformats.metadatatools as metadatatools
-    import cellprofiler.utilities.jutil as jutil
-    from bioformats import load_using_bioformats
-    FormatTools = formatreader.make_format_tools_class()
-    ImageReader = formatreader.make_image_reader_class()
-    ChannelSeparator = formatreader.make_reader_wrapper_class(
-        "loci/formats/ChannelSeparator")
-    has_bioformats = True
-except:
-    logger.warning("Failed to load bioformats", exc_info=True)
-    has_bioformats = False
-#
-# Load all the PIL image plugins to initialize PIL in the
-# compiled version of CP
-#
-import PIL.Image as PILImage
-import PIL.BmpImagePlugin
-import PIL.DcxImagePlugin
-import PIL.EpsImagePlugin
-import PIL.GifImagePlugin
-import PIL.JpegImagePlugin
-import PIL.PngImagePlugin
-import PIL.TiffImagePlugin as TIFF
+cached_file_lists = {}
 
-import cellprofiler.dib
-import matplotlib.image
 import scipy.io.matlab.mio
 import uuid
 
@@ -98,6 +71,7 @@ import cellprofiler.measurements as cpmeas
 from cellprofiler.pipeline import GROUP_INDEX
 import cellprofiler.preferences as preferences
 import cellprofiler.settings as cps
+import cellprofiler.cpmath.outline
 import identify as I
 from cellprofiler.utilities.relpath import relpath
 from cellprofiler.preferences import \
@@ -107,12 +81,14 @@ from cellprofiler.preferences import \
      IO_FOLDER_CHOICE_HELP_TEXT, \
      get_show_report_bad_sizes_dlg, set_show_report_bad_sizes_dlg, \
      get_headless
-from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, METADATA_HELP_REF
+from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF, METADATA_HELP_REF, REGEXP_HELP_REF
 from cellprofiler.gui.errordialog import show_warning
 
-PILImage.init()
+from cellprofiler.measurements import \
+     C_FILE_NAME, C_PATH_NAME, C_URL, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,\
+     C_OBJECTS_URL
 
-cached_file_lists = {}
+
 
 '''STK TIFF Tag UIC1 - for MetaMorph internal use'''
 UIC1_TAG = 33628
@@ -122,24 +98,6 @@ UIC2_TAG = 33629
 UIC3_TAG = 33630
 '''STK TIFF TAG UIC4 - internal'''
 UIC4_TAG = 33631
-
-'''The FileName measurement category'''
-C_FILE_NAME = "FileName"
-
-'''The PathName measurement category'''
-C_PATH_NAME = "PathName"
-
-'''The URL measurement category'''
-C_URL = "URL"
-
-'''The FileName measurement category when loading objects'''
-C_OBJECTS_FILE_NAME = "ObjectsFileName"
-
-'''The PathName measurement category when loading objects'''
-C_OBJECTS_PATH_NAME = "ObjectsPathName"
-
-'''The URL category when loading objects'''
-C_OBJECTS_URL = "ObjectsURL"
 
 '''The MD5 digest measurement category'''
 C_MD5_DIGEST = "MD5Digest"
@@ -183,19 +141,14 @@ SUPPORTED_IMAGE_EXTENSIONS = set([
 SUPPORTED_IMAGE_EXTENSIONS.add(".mat")
 
 SUPPORTED_MOVIE_EXTENSIONS = set(['.avi', '.mpeg', '.stk','.flex', '.mov', '.tif', 
-                                  '.tiff','.zvi','.lsm'])
+                                  '.tiff','.zvi'])
 
-if has_bioformats:
-    FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
-    SUPPORTED_IMAGE_EXTENSIONS.update([
-        ".1sc",".2fl",".afm", ".aim", ".avi", ".co1",".flex", ".fli", ".gel", 
-        ".ics", ".ids", ".im", ".img", ".j2k", ".lif", ".lsm", ".mpeg", ".pic", 
-        ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi", ".c01", ".lsm"])
-    SUPPORTED_MOVIE_EXTENSIONS.update(['mng'] )
-else:
-    FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES]
-
-USE_BIOFORMATS_FIRST = [".tiff", ".tif", ".flex",".stk",".dib",".c01",'.zvi','.mov','.png','.lsm']
+FF = [FF_INDIVIDUAL_IMAGES, FF_STK_MOVIES, FF_AVI_MOVIES, FF_OTHER_MOVIES]
+SUPPORTED_IMAGE_EXTENSIONS.update([
+    ".1sc",".2fl",".afm", ".aim", ".avi", ".co1",".flex", ".fli", ".gel", 
+    ".ics", ".ids", ".im", ".img", ".j2k", ".lif", ".lsm", ".mpeg", ".pic", 
+    ".pict", ".ps", ".raw", ".svs", ".stk", ".tga", ".zvi", ".c01", ".xdce"])
+SUPPORTED_MOVIE_EXTENSIONS.update(['mng'] )
 
 # The metadata choices:
 # M_NONE - don't extract metadata
@@ -285,66 +238,7 @@ class LoadImages(cpmodule.CPModule):
                 the files that contain that text exactly will be loaded and given the name you specify. 
                 The search for the text is case-sensitive.</li>
                 <li><i>Text-Regular expressions:</i> Used to load image (or movie) files that match
-                a pattern of regular expressions. Patterns are specified using
-                combinations of metacharacters and literal characters. There are a few
-                classes of metacharacters, partially listed below. A more extensive
-                explanation of regular expressions can be found <a href="http://www.python.org/doc/2.3/lib/re-syntax.html">here</a>
-                and a helpful quick reference can be found <a href="http://www.addedbytes.com/cheat-sheets/regular-expressions-cheat-sheet/">here</a>.
-                <p>The following metacharacters match exactly one character from its respective set of characters:<br><br>
-                <table border="1">
-                <tr><th>Metacharacter</th><th>Meaning</th></tr>
-                <tr><td>.</td><td>Any character</td></tr>
-                <tr><td>[]</td><td>Any character contained within the brackets</td></tr>
-                <tr><td>[^]</td><td>Any character not contained within the brackets</td></tr>
-                <tr><td>\w</td><td>A word character [a-z_A-Z0-9]</td></tr>
-                <tr><td>\W</td><td>Not a word character [^a-z_A-Z0-9]</td></tr>
-                <tr><td>\d</td><td>A digit [0-9]</td></tr>
-                <tr><td>\D</td><td>Not a digit [^0-9]</td></tr>
-                <tr><td>\s</td><td>Whitespace [ \\t\\r\\n\\f\\v]</td></tr>
-                <tr><td>\S</td><td>Not whitespace [^ \\t\\r\\n\\f\\v]</td></tr>
-                </table>
-        
-                <p>The following metacharacters are used to logically group subexpressions
-                or to specify context for a position in the match. These metacharacters
-                do not match any characters in the string:<br><br>
-                <table border="1">
-                <tr><th>Metacharacter</th><th>Meaning</th></tr>
-                <tr><td>( )</td><td>Group subexpression</td></tr>
-                <tr><td>|</td><td>Match subexpression before or after the |</td></tr>
-                <tr><td>^</td><td>Match expression at the start of string</td></tr>
-                <tr><td>$</td><td>Match expression at the end of string</td></tr>
-                <tr><td>\&lt;</td><td>Match expression at the start of a word</td></tr>
-                <tr><td>\&gt;</td><td>Match expression at the end of a word</td></tr>
-                </table>
-                
-                <p>The following metacharacters specify the number of times the previous
-                metacharacter or grouped subexpression may be matched:<br><br>
-                <table border="1">
-                <tr><th>Metacharacter</th><th>Meaning</th></tr>
-                <tr><td>*</td><td>Match zero or more occurrences</td></tr>
-                <tr><td>+</td><td>Match one or more occurrences</td></tr>
-                <tr><td>?</td><td>Match zero or one occurrence</td></tr>
-                <tr><td>{n,m}</td><td>Match between n and m occurrences</td></tr>
-                </table>
-                
-                <p>Characters that are not special metacharacters are all treated literally
-                in a match. To match a character that is a special metacharacter, escape
-                that character with a '\\'. For example '.' matches any character, so to
-                match a '.' specifically, use '\.' in your pattern.
-                
-                Examples:
-                <ul>
-                <li>[trm]ail matches 'tail' or 'rail' or 'mail'</li>
-                <li>[0-9] matches any digit between 0 to 9</li>
-                <li>[^Q-S] matches any character other than 'Q' or 'R' or 'S'</li>
-                <li>[[]A-Z] matches any upper case alphabet along with square brackets</li>
-                <li>[ag-i-9] matches characters 'a' or 'g' or 'h' or 'i' or '-' or '9'</li>
-                <li>[a-p]* matches '' or 'a' or 'aab' or 'p' etc.</li>
-                <li>[a-p]+ matches  'a' or 'abc' or 'p' etc.</li>
-                <li>[^0-9] matches any string that is not a number</li>
-                <li>^[0-9]*$ matches any string that is a natural number or ''</li>
-                <li>^-[0-9]+$|^\+?[0-9]+$ matches any integer</li>
-                </ul>
+                a pattern of regular expressions. %(REGEXP_HELP_REF)s
                 </li>
                 
                 <li><i>Order:</i> Used when image (or movie) files are present in a repeating order,
@@ -354,7 +248,7 @@ class LoadImages(cpmodule.CPModule):
                 within each group the file is located (e.g., three images per
                 group; DAPI is always first).</li>
                 
-                </ul>""")
+                </ul>"""%globals())
         
         self.exclude = cps.Binary('Exclude certain files?', False,doc="""
                 <i>(Used only if Text-Exact match option for loading files is selected)</i> <br>
@@ -391,8 +285,8 @@ class LoadImages(cpmodule.CPModule):
         self.location = cps.DirectoryPath(
             "Input image file location", 
             dir_choices = [
-                DEFAULT_INPUT_FOLDER_NAME,  DEFAULT_OUTPUT_FOLDER_NAME,
-                ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
+                ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME,  
+                DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
                 DEFAULT_OUTPUT_SUBFOLDER_NAME, URL_FOLDER_NAME],
             allow_metadata = False, support_urls = cps.SUPPORT_URLS_SHOW_DIR,
             doc ="""Select the folder containing the images to be loaded. 
@@ -1466,14 +1360,10 @@ class LoadImages(cpmodule.CPModule):
     def prepare_run_of_images(self, workspace):
         """Set up image providers for image files"""
         pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
+        # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
-        files = self.collect_files(pipeline.test_mode, frame)
+        files = self.collect_files(workspace)
         if len(files) == 0:
-            message = ("CellProfiler did not find any image files that "
-                       'matched your matching pattern: "%s"' %
-                       self.images[0].common_text.value)
-            self.report_no_matching_files(frame, message)
             return False
         
         if (self.do_group_by_metadata and len(self.get_metadata_tags())):
@@ -1488,8 +1378,8 @@ class LoadImages(cpmodule.CPModule):
         """Organize each kind of file by their lexical order
         
         """
-        image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
+        # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -1502,6 +1392,9 @@ class LoadImages(cpmodule.CPModule):
         
         for x,name in zip(list_of_lists[1:],image_names[1:]):
             if len(x) != image_set_count:
+                message = "Image %s has %d files, but image %s has %d files" %\
+                    (image_names[0], image_set_count, name, len(x))
+                pipeline.report_prepare_run_error(self, message)
                 if frame is not None:
                     images = [ (tuple(),
                                 [os.path.split(list_of_lists[i][j])
@@ -1509,10 +1402,7 @@ class LoadImages(cpmodule.CPModule):
                                  for i in range(len(list_of_lists))])
                                for j in range(image_set_count)]
                     self.report_errors([], images, frame)
-                    return False
-                raise RuntimeError("Image %s has %d files, but image %s has %d files" %
-                                   (image_names[0], image_set_count,
-                                    name, len(x)))
+                return False
         list_of_lists = np.array(list_of_lists)
         root = self.image_directory()
         for i in range(image_set_count):
@@ -1531,8 +1421,8 @@ class LoadImages(cpmodule.CPModule):
         """Organize each kind of file by metadata
         
         """
-        image_set_list = workspace.image_set_list
         pipeline = workspace.pipeline
+        # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         #
         # Distribute files according to metadata tags. Each image_name
@@ -1626,15 +1516,38 @@ class LoadImages(cpmodule.CPModule):
                                 message += ("%s: path=%s, file=%s" %
                                             (fd.channels[0].image_name.value,
                                              mi[1][i][0],mi[1][i][1]))
-                raise ValueError(message)
+                pipeline.report_prepare_run_error(self, message)
+                return False
                 
         root = self.image_directory()
         features = {}
+        #
+        # Two cases - the measurements already have image sets or the
+        #             measurements have no image sets.
+        # 1: measurements must have an image measurement corresponding to each
+        #    tag. Create a dictionary of tag values to a list of image numbers
+        #    with those tag values. Populate our images to that list.
+        # 2: write fresh image set records to measurements.
+        #
+        measurements = workspace.measurements
+        assert isinstance(measurements, cpmeas.Measurements)
+        if measurements.image_set_count > 0:
+            match_metadata = True
+            md_dict = self.get_image_numbers_by_tags(workspace, tags)
+            if md_dict is None:
+                return False
+            n_image_sets = measurements.image_set_count
+        else:
+            match_metadata = False
+            n_image_sets = len(image_sets)
         for idx, image_set in enumerate(image_sets):
             keys = {}
             for tag,value in zip(tags,image_set[0]):
                 keys[tag] = value
-            cpimageset = image_set_list.get_image_set(keys)
+            if match_metadata:
+                image_numbers = md_dict[keys]
+            else:
+                image_numbers = [idx + 1]
             for i in range(len(self.images)):
                 if self.location.dir_choice == cps.URL_FOLDER_NAME:
                     full_path = root
@@ -1644,14 +1557,15 @@ class LoadImages(cpmodule.CPModule):
                 else:
                     path = os.path.join(image_set[1][i][0],image_set[1][i][1])
                     full_path = os.path.join(root, path)
-                d = self.write_measurements(
-                    None,
-                    cpimageset.number + 1,
-                    self.images[i], full_path)
-                for k, v in d.iteritems():
-                    if not features.has_key(k):
-                        features[k] = [None] * len(image_sets)
-                    features[k][idx] = v
+                for image_number in image_numbers:
+                    d = self.write_measurements(
+                        None,
+                        image_number,
+                        self.images[i], full_path)
+                    for k, v in d.iteritems():
+                        if not features.has_key(k):
+                            features[k] = [None] * n_image_sets
+                        features[k][image_number-1] = v
         for k, v in features.iteritems():
             workspace.measurements.add_all_measurements(cpmeas.IMAGE, k, v)
                                            
@@ -1691,6 +1605,42 @@ class LoadImages(cpmodule.CPModule):
                 result.append(subset)
         return result
 
+    def get_image_numbers_by_tags(self, workspace, tags):
+        '''Make a dictionary of tag values to image numbers
+        
+        Look up the metadata values for each of the tags in "tags" and
+        create a dictionary of tag values to the list of image numbers
+        that have those tag values. This dictionary can then be used to
+        populate all image sets with a particular tag value.
+        
+        workspace.measurements - the measurements populated with metadata values
+                                 for each tag
+                       
+        tags - the metadata tags to be used for matching
+        '''
+        measurements = workspace.measurements
+        metadata_features = [
+            x for x in measurements.get_feature_names(cpmeas.IMAGE)
+            if x.startswith(cpmeas.C_METADATA)]
+        for tag in tags:
+            if "_".join((cpmeas.C_METADATA, tag)) not in metadata_features:
+                message = (
+                    "LoadImages needs the prior Load modules to define "
+                    'the metadata tag, "%s", in order to match metadata' %
+                    tag)
+                workspace.pipeline.report_prepare_run_error(self, message)
+                return None
+        md_dict = {}
+        for i in measurements.get_image_numbers():
+            keys = tuple([measurements.get_measurement(
+                cpmeas.IMAGE, "_".join((cpmeas.C_METADATA, tag)), i)
+                          for tag in tags])
+            if md_dict.has_key(keys):
+                md_dict.append(i)
+            else:
+                md_dict[keys] = [i]
+        return md_dict
+        
     def report_errors(self, conflicts, missing_images, frame):
         """Create an error report window
         
@@ -1790,13 +1740,24 @@ class LoadImages(cpmodule.CPModule):
     
     def prepare_run_of_flex(self, workspace):
         '''Set up image providers for flex files'''
+        import bioformats.omexml
+        from bioformats.formatreader import get_omexml_metadata
+        
         pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
+        # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
-        files = self.collect_files(pipeline.test_mode, frame)
+        assert isinstance(m, cpmeas.Measurements)
+        if m.image_set_count > 0 and self.do_group_by_metadata:
+            match_metadata = True
+            tags = list(self.get_metadata_tags()) + [M_Z, M_T, C_SERIES]
+            md_dict = self.get_image_numbers_by_tags(workspace, tags)
+            if md_dict is None:
+                return False
+        else:
+            match_metadata = False
+        files = self.collect_files(workspace)
         if len(files) == 0:
-            self.report_no_matching_files(frame)
             return False
         #
         # Organize the files into one column per image index.
@@ -1831,37 +1792,43 @@ class LoadImages(cpmodule.CPModule):
                 metadata = self.get_filename_metadata(image_settings, filename, 
                                                       path)
                 image_set_count = starting_image_index
-                rdr = ImageReader()
-                rdr.setGroupFiles(False)
-                rdr.setId(pathname)
+                xml = get_omexml_metadata(pathname)
+                omemetadata = bioformats.omexml.OMEXML(xml)
+                image_count = omemetadata.image_count
                 if len(d) == 0:
-                    d = [ {} for _ in range(rdr.getSeriesCount())]
-                elif len(d) != rdr.getSeriesCount():
-                    raise RuntimeError(("File %s has %d series, "
-                                        "but file %s has %d series.") %
-                                       (image_set_files[0], len(d),
-                                        file_pathname, rdr.getSeriesCount()))
-                for i in range(rdr.getSeriesCount()):
-                    rdr.setSeries(i)
-                    channel_count = rdr.getSizeC()
-                    stack_count = rdr.getSizeZ()
+                    d = [ {} for _ in range(image_count)]
+                elif len(d) != image_count:
+                    message = (
+                        "File %s has %d series, but file %s has %d series." %
+                        (image_set_files[0], len(d), 
+                         file_pathname, image_count))
+                    pipeline.report_prepare_run_error(self, message)
+                    return False
+                for i in range(image_count):
+                    pixels = omemetadata.image(i).Pixels
+                    channel_count = pixels.SizeC
+                    stack_count = pixels.SizeZ
                     if not d[i].has_key("Z"):
                         d[i]["Z"] = stack_count
                     elif stack_count != d[i]["Z"]:
-                        raise RuntimeError(("File %s, series %d has %d "
-                                            "Z stacks, but file %s has %d") %
-                                           (image_set_files[0], i,
-                                            d[i]["Z"], file_pathname,
-                                            stack_count))
-                    timepoint_count = rdr.getSizeT()
+                        message = (
+                            ("File %s, series %d has %d Z stacks, "
+                             "but file %s has %d") %
+                            (image_set_files[0], i,
+                             d[i]["Z"], file_pathname, stack_count))
+                        pipeline.report_prepare_run_error(self, message)
+                        return False
+                    timepoint_count = pixels.SizeT
                     if not d[i].has_key("T"):
                         d[i]["T"] = timepoint_count
                     elif timepoint_count != d[i]["T"]:
-                        raise RuntimeError(("File %s, series %d has %d "
-                                            "timepoints, but file %s has %d") %
-                                           (image_set_files[0], i,
-                                            d[i]["T"], file_pathname,
-                                            timepoint_count))
+                        message = (
+                            ("File %s, series %d has %d "
+                             "timepoints, but file %s has %d") %
+                            (image_set_files[0], i,
+                             d[i]["T"], file_pathname, timepoint_count))
+                        pipeline.report_prepare_run_error(self, message)
+                        return False
                     if image_settings.wants_movie_frame_grouping:
                         #
                         # For movie frame grouping, assume that all of
@@ -1891,82 +1858,28 @@ class LoadImages(cpmodule.CPModule):
                             frame_metadata[M_Z] = 0 # so sorry, real Z obliterated
                             frame_metadata[M_T] = idx
                             frame_metadata[C_SERIES] = i
-                            if self.do_group_by_metadata:
+                            image_numbers = [image_set_count + 1]
+                            if match_metadata:
                                 key = dict([(k, str(v)) 
                                             for k,v in frame_metadata.items()])
-                                image_set = image_set_list.get_image_set(key)
-                            else:
-                                image_set = image_set_list.get_image_set(
-                                    image_set_count)
-                            image_number = image_set.image_number
-                            for channel_settings in image_settings.channels:
-                                image_name = channel_settings.get_image_name()
-                                channel = int(channel_settings.channel_number.value) - 1
-                                if image_settings.interleaving == I_INTERLEAVED:
-                                    cidx = idx * nchannels + channel
-                                else:
-                                    cidx = channel * nsets + idx
-                                c = cidx % channel_count
-                                z = int(cidx / channel_count) % stack_count
-                                t = int(cidx / channel_count / stack_count) % timepoint_count
-                                m.add_measurement(
-                                    cpmeas.IMAGE,
-                                    "_".join((C_FILE_NAME, image_name)), 
-                                    filename,
-                                    image_set_number = image_number)
-                                m.add_measurement(
-                                    cpmeas.IMAGE,
-                                    "_".join((C_PATH_NAME, image_name)),
-                                    path,
-                                    image_set_number = image_number)
-                                m.add_measurement(
-                                    cpmeas.IMAGE,
-                                    "_".join((C_URL, image_name)), 
-                                    url,
-                                    image_set_number = image_number)
-                                m.add_measurement(
-                                    cpmeas.IMAGE,
-                                    "_".join((C_SERIES, image_name)), i,
-                                    image_set_number = image_number)
-                                m.add_measurement(
-                                    cpmeas.IMAGE,
-                                    "_".join((C_FRAME, image_name)), cidx,
-                                    image_set_number = image_number)
-                            for k in frame_metadata.keys():
-                                m.add_measurement(
-                                    cpmeas.IMAGE, 
-                                    "_".join((cpmeas.C_METADATA, k)),
-                                    frame_metadata[k], 
-                                    image_set_number = image_number)
-                            image_set_count += 1
-                    else:
-                        for z in range(rdr.getSizeZ()):
-                            for t in range(rdr.getSizeT()):
-                                frame_metadata = metadata.copy()
-                                frame_metadata[M_Z] = z
-                                frame_metadata[M_T] = t
-                                frame_metadata[C_SERIES] = i
-                                if self.do_group_by_metadata:
-                                    key = dict(
-                                        [(k, str(v))
-                                          for k, v in frame_metadata.items()])
-                                        
-                                    image_set = image_set_list.get_image_set(
-                                        frame_metadata)
-                                else:
-                                    image_set = image_set_list.get_image_set(
-                                        image_set_count)
-                                image_number = image_set.image_number
+                                if not md_dict.has_key(key):
+                                    message = (
+                                        "Could not find a matching image set for " %
+                                        ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
+                                    pipeline.report_prepare_run_error(self, message)
+                                    return False
+                                image_numbers = md_dict[key]
+                            for image_number in image_numbers:
                                 for channel_settings in image_settings.channels:
-                                    c = int(channel_settings.channel_number.value) - 1
                                     image_name = channel_settings.get_image_name()
-                                    if c >= channel_count:
-                                        message = \
-         ("The flex file, ""%s"", series # %d, has only %d channels. "
-          "%s is assigned to channel % d") % (file_pathname, i, channel_count, 
-                                              image_name, c+1)
-                                        self.report_no_matching_files(frame, message)
-                                        return False
+                                    channel = int(channel_settings.channel_number.value) - 1
+                                    if image_settings.interleaving == I_INTERLEAVED:
+                                        cidx = idx * nchannels + channel
+                                    else:
+                                        cidx = channel * nsets + idx
+                                    c = cidx % channel_count
+                                    z = int(cidx / channel_count) % stack_count
+                                    t = int(cidx / channel_count / stack_count) % timepoint_count
                                     m.add_measurement(
                                         cpmeas.IMAGE,
                                         "_".join((C_FILE_NAME, image_name)), 
@@ -1988,8 +1901,7 @@ class LoadImages(cpmodule.CPModule):
                                         image_set_number = image_number)
                                     m.add_measurement(
                                         cpmeas.IMAGE,
-                                        "_".join((C_FRAME, image_name)), 
-                                        rdr.getIndex(z, c, t),
+                                        "_".join((C_FRAME, image_name)), cidx,
                                         image_set_number = image_number)
                                 for k in frame_metadata.keys():
                                     m.add_measurement(
@@ -1998,39 +1910,91 @@ class LoadImages(cpmodule.CPModule):
                                         frame_metadata[k], 
                                         image_set_number = image_number)
                                 image_set_count += 1
+                    else:
+                        distance = 1
+                        for dimension in pixels.DimensionOrder[2:]:
+                            if dimension == "C":
+                                strideC = distance
+                                distance *= pixels.SizeC
+                            elif dimension == "Z":
+                                strideZ = distance
+                                distance *= pixels.SizeZ
+                            elif dimension == "T":
+                                strideT = distance
+                                distance *= pixels.SizeT
+                        for z in range(pixels.SizeZ):
+                            for t in range(pixels.SizeT):
+                                frame_metadata = metadata.copy()
+                                frame_metadata[M_Z] = z
+                                frame_metadata[M_T] = t
+                                frame_metadata[C_SERIES] = i
+                                image_numbers = [image_set_count + 1]
+                                if match_metadata:
+                                    key = dict([(k, str(v)) 
+                                                for k,v in frame_metadata.items()])
+                                    if not md_dict.has_key(key):
+                                        message = (
+                                            "Could not find a matching image set for " %
+                                            ", ".join(["%s=%s%" % kv for kv in frame_metadata.items()]))
+                                        pipeline.report_prepare_run_error(
+                                            self, message)
+                                        return False
+                                    image_numbers = md_dict[key]
+                                for image_number in image_numbers:
+                                    for channel_settings in image_settings.channels:
+                                        c = int(channel_settings.channel_number.value) - 1
+                                        image_name = channel_settings.get_image_name()
+                                        if c >= channel_count:
+                                            message = \
+             ("The flex file, ""%s"", series # %d, has only %d channels. "
+              "%s is assigned to channel % d") % (file_pathname, i, channel_count, 
+                                                  image_name, c+1)
+                                            pipeline.report_prepare_run_error(
+                                                self, message)
+                                            return False
+                                        index = c * strideC + t * strideT + z * strideZ
+                                        m.add_measurement(
+                                            cpmeas.IMAGE,
+                                            "_".join((C_FILE_NAME, image_name)), 
+                                            filename,
+                                            image_set_number = image_number)
+                                        m.add_measurement(
+                                            cpmeas.IMAGE,
+                                            "_".join((C_PATH_NAME, image_name)),
+                                            path,
+                                            image_set_number = image_number)
+                                        m.add_measurement(
+                                            cpmeas.IMAGE,
+                                            "_".join((C_URL, image_name)), 
+                                            url,
+                                            image_set_number = image_number)
+                                        m.add_measurement(
+                                            cpmeas.IMAGE,
+                                            "_".join((C_SERIES, image_name)), i,
+                                            image_set_number = image_number)
+                                        m.add_measurement(
+                                            cpmeas.IMAGE,
+                                            "_".join((C_FRAME, image_name)), 
+                                            index,
+                                            image_set_number = image_number)
+                                    for k in frame_metadata.keys():
+                                        m.add_measurement(
+                                            cpmeas.IMAGE, 
+                                            "_".join((cpmeas.C_METADATA, k)),
+                                            frame_metadata[k], 
+                                            image_set_number = image_number)
+                                    image_set_count += 1
                                 
-                rdr.close()
-                del rdr
         return True
 
-    def report_no_matching_files(self, frame, message = None):
-        '''Handle a case of prepare_run when no files were found.
-        
-        Call this to report that no files matched the module's criteria.
-        frame - the app's frame or None if headless
-        message - a descriptive message if the condition is not quite
-                  "no matching files" and can be reported succinctly
-        
-        Throws an exception if headless, shows a message box if not.
-        '''
-        if message is None:
-            message = "there are no image files in the chosen folder (or subfolders, if you requested them to be analyzed as well)"
-        if frame is not None:
-            import wx
-            wx.MessageBox(message, caption = "No matching files", 
-                          style = wx.OK | wx.ICON_ERROR, parent = frame)
-            return False
-        raise ValueError(message)
-        
     def prepare_run_of_movies(self, workspace):
         """Set up image providers for movie files"""
         pipeline = workspace.pipeline
-        image_set_list = workspace.image_set_list
+        # OK to use workspace.frame, since we're in prepare_run
         frame = workspace.frame
         m = workspace.measurements
-        files = self.collect_files(pipeline.test_mode, frame)
+        files = self.collect_files(workspace)
         if len(files) == 0:
-            self.report_no_matching_files(frame)
             return False
         root = self.image_directory()
         image_names = self.image_name_vars()
@@ -2084,10 +2048,13 @@ class LoadImages(cpmodule.CPModule):
         image_set_count = len(list_of_lists[0])
         for x,name in zip(list_of_lists[1:], image_names):
             if len(x) != image_set_count:
-                raise RuntimeError("Image %s has %d frames, but image %s has %d frames"%(image_names[0],image_set_count,name,len(x)))
+                message = (
+                    "Image %s has %d frames, but image %s has %d frames" %
+                    (image_names[0],image_set_count,name,len(x)))
+                pipeline.report_prepare_run_error(self, message)
+                return False
         list_of_lists = np.array(list_of_lists,dtype=object)
         for i in range(0,image_set_count):
-            image_set = image_set_list.get_image_set(i)
             for name, (file, frame, t, image_group_index) \
                 in zip(image_names, list_of_lists[:,i]):
                 image_group = self.images[image_group_index]
@@ -2118,51 +2085,16 @@ class LoadImages(cpmodule.CPModule):
         '''
         image_set_list = workspace.image_set_list
         m = workspace.measurements
-        for i in m.get_image_numbers():
-            image_set = image_set_list.get_image_set(i - 1)
-            for image_group in self.images:
-                for channel in image_group.channels:
-                    if self.channel_wants_images(channel):
-                        path_feature = C_PATH_NAME
-                        file_feature = C_FILE_NAME
-                        url_feature = C_URL
-                    else:
-                        path_feature = C_OBJECTS_PATH_NAME
-                        file_feature = C_OBJECTS_FILE_NAME
-                        url_feature = C_URL
-                    path_feature, file_feature, url_feature = [
-                        "_".join((f, channel.get_image_name()))
-                        for f in (path_feature, file_feature, url_feature)]
-                    
-                    url = m.get_measurement(cpmeas.IMAGE, url_feature,
-                                            image_set_number = i)
-                    if url.lower().startswith("file:"):
-                        full_name = url2pathname(url.encode("utf-8"))
-                        full_name = fn_alter_path(full_name)
-                        new_url = pathname2url(full_name)
-                        if url != new_url:
-                            m.add_measurement(cpmeas.IMAGE, url_feature,
-                                              new_url,
-                                              image_set_number = i)
-                    path = m.get_measurement(cpmeas.IMAGE, path_feature,
-                                             image_set_number = i)
-                    new_path = fn_alter_path(path)
-                    if (path != new_path):
-                        m.add_measurement(cpmeas.IMAGE, path_feature,
-                                          new_path, image_set_number = i)
-                    filename = m.get_measurement(cpmeas.IMAGE, file_feature,
-                                                 image_set_number = i)
-                    new_filename = fn_alter_path(filename)
-                    if new_filename != filename:
-                        m.add_measurement(cpmeas.IMAGE, file_feature,
-                                          new_filename, image_set_number = i)
+        for image_group in self.images:
+            for channel in image_group.channels:
+                m.alter_path_for_create_batch(
+                    channel.get_image_name(),
+                    self.channel_wants_images(channel),
+                    fn_alter_path)
                                     
         self.location.alter_for_create_batch_files(fn_alter_path)
         return True
     
-    def is_interactive(self):
-        return False
-
     def run(self,workspace):
         """Run the module - add the measurements
         
@@ -2173,7 +2105,7 @@ class LoadImages(cpmodule.CPModule):
         ratio += [1.0 for tag in tags]
         ratio = [x / sum(ratio) for x in ratio]
         header += tags 
-        statistics = [header]
+        statistics = []
         m = workspace.measurements
         image_set = workspace.image_set
         image_set_metadata = {}
@@ -2248,41 +2180,38 @@ class LoadImages(cpmodule.CPModule):
                                                     pixel_data.shape[:2], filename)
                         if get_headless():
                             print warning
-                        elif workspace.frame is not None:
+                        elif self.show_window:
                             workspace.display_data.warning = warning
                 else:
+                    ################
                     #
-                    # Save as objects.
+                    #  Interpret file as objects
                     #
-                    provider.cache_file()
-                    fullname = provider.get_full_name()
+                    # Get the frame count from the OME-XML metadta
                     #
-                    # Get the frame count
-                    #
-                    n_frames = 1
-                    formatreader.jutil.attach()
-                    try:
-                        rdr = ImageReader()
-                        rdr.setGroupFiles(False)
-                        rdr.setId(fullname)
-                        n_frames = rdr.getImageCount()
-                    except:
-                        logger.warn("Failed to get number of frames from %s" %
-                                    filename)
-                    finally:
-                        formatreader.jutil.detach()
+                    from bioformats.formatreader import get_omexml_metadata
+                    import bioformats.omexml
+                    
+                    md = get_omexml_metadata(provider.get_full_name())
+                    md = bioformats.omexml.OMEXML(md)
+                    mdpixels = md.image().Pixels
+                    if (mdpixels.channel_count == 1 and 
+                        mdpixels.Channel().SamplesPerPixel == 3):
+                        #
+                        # Single interleaved color image
+                        #
+                        n_frames = 1
+                    else:
+                        n_frames = mdpixels.SizeZ * mdpixels.SizeC * mdpixels.SizeT
+                    series = provider.series
                     ijv = np.zeros((0, 3), int)
                     offset = 0
                     for index in range(n_frames):
-                        if n_frames == 1:
-                            # Handle special case of interleaved color
-                            labels = load_using_bioformats(
-                                fullname, rescale = False)
-                        else:
-                            labels = load_using_bioformats(
-                                fullname, index = index, rescale = False)
-                        labels = convert_image_to_objects(labels)
+                        provider.index = index
+                        provider.rescale = False
+                        labels = provider.provide_image(None).pixel_data
                         shape = labels.shape[:2]
+                        labels = convert_image_to_objects(labels)
                         i, j = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
                         ijv = np.vstack((
                             ijv, np.column_stack((i[labels!=0],
@@ -2318,21 +2247,20 @@ class LoadImages(cpmodule.CPModule):
                         row.append("")
                 statistics.append(row)
         workspace.display_data.statistics = statistics
-        workspace.display_data.ratio = ratio
+        workspace.display_data.col_labels = header
 
-    def display(self, workspace):
-        if workspace.frame != None:
+    def display(self, workspace, figure):
+        if self.show_window:
             if hasattr(workspace.display_data, "warning"):
                 show_warning("Images have different sizes", 
                              workspace.display_data.warning,
                              get_show_report_bad_sizes_dlg,
                              set_show_report_bad_sizes_dlg)
 
-            figure = workspace.create_or_find_figure(title="LoadImages, image cycle #%d"%(
-                workspace.measurements.image_set_number),
-                                                 subplots=(1,1))
-            figure.subplot_table(0,0,workspace.display_data.statistics,
-                             ratio=workspace.display_data.ratio)
+            figure.set_subplots((1, 1))
+            figure.subplot_table(0, 0, 
+                                 workspace.display_data.statistics,
+                                 col_labels = workspace.display_data.col_labels)
 
     def get_filename_metadata(self, fd, filename, path):
         """Get the filename and path metadata for a given image
@@ -2418,24 +2346,16 @@ class LoadImages(cpmodule.CPModule):
         
     def get_frame_count(self, pathname):
         """Return the # of frames in a movie"""
+        import bioformats.omexml
+        from bioformats.formatreader import get_omexml_metadata
         if self.file_types in (FF_AVI_MOVIES,FF_OTHER_MOVIES,FF_STK_MOVIES):
-            formatreader.jutil.attach()
-            try:
-                rdr = ImageReader()
-                rdr.setGroupFiles(False)
-                rdr.setId(pathname)
-                if self.file_types == FF_STK_MOVIES:
-                    #
-                    # We've seen the frame count in both of these...
-                    #
-                    frame_count = rdr.getSizeT()
-                    if frame_count == 1:
-                        frame_count = rdr.getSizeZ()
-                    return frame_count
-                else:
-                    return rdr.getSizeT()
-            finally:
-                formatreader.jutil.detach()
+            url = pathname2url(pathname)
+            xml = get_omexml_metadata(pathname)
+            omexml = bioformats.omexml.OMEXML(xml)
+            frame_count = omexml.image(0).Pixels.SizeT
+            if frame_count == 1:
+                frame_count = omexml.image(0).Pixels.SizeZ
+            return frame_count
             
         raise NotImplementedError("get_frame_count not implemented for %s"%(self.file_types))
 
@@ -2550,7 +2470,7 @@ class LoadImages(cpmodule.CPModule):
         """
         return self.descend_subdirectories != SUB_NONE
     
-    def collect_files(self, can_cache = False, frame = None):
+    def collect_files(self, workspace):
         """Collect the files that match the filter criteria
         
         Collect the files that match the filter criteria, starting at the image directory
@@ -2561,6 +2481,8 @@ class LoadImages(cpmodule.CPModule):
         index within the image settings (e.g. ImageNameVars).
         """
         global cached_file_lists
+        can_cache = workspace.pipeline.test_mode
+        frame = workspace.frame
         root = self.image_directory()
         use_cached = False
         if can_cache and frame is not None and cached_file_lists.has_key(root):
@@ -2641,6 +2563,12 @@ class LoadImages(cpmodule.CPModule):
         files = [ (path, idx) for path, idx in files
                   if idx is not None]
         files.sort()
+        if len(files) == 0:
+            message = (
+                "CellProfiler did not find any image files that "
+                'matched your matching pattern: "%s"' %
+                self.images[0].common_text.value)
+            workspace.pipeline.report_prepare_run_error(self, message)
         return files
         
     def image_directory(self):
@@ -2875,6 +2803,161 @@ class LoadImages(cpmodule.CPModule):
         # It's safest to say that any change in loadimages requires a restart
         #
         return True
+    
+    def needs_conversion(self):
+        if self.match_method not in (MS_EXACT_MATCH, MS_REGEXP):
+            raise ValueError(
+                "Can't convert a LoadImages module that matches images by %s" %
+                self.match_method.value)
+        return True
+    
+    def convert(self, pipeline, metadata, namesandtypes, groups):
+        '''Convert to the modern format using the input modules
+        
+        This method converts any LoadImages modules in the pipeline to
+        Images / Metadata / NamesAndTypes and Groups
+        
+        metadata - the metadata module
+        namesandtypes - the namesandtypes module
+        groups - the groups module
+        first - True if no images have been added to namesandtypes yet.
+        '''
+        import cellprofiler.modules.metadata as cpmetadata
+        import cellprofiler.modules.namesandtypes as cpnamesandtypes
+        import cellprofiler.modules.groups as cpgroups
+        assert isinstance(metadata, cpmetadata.Metadata)
+        assert isinstance(namesandtypes, cpnamesandtypes.NamesAndTypes)
+        assert isinstance(groups, cpgroups.Groups)
+
+        if self.match_method not in (MS_EXACT_MATCH, MS_REGEXP):
+            raise ValueError(
+                "Can't convert a LoadImages module that matches images by %s" %
+                self.match_method.value)
+        if self.group_by_metadata:
+            groups.notes.append(
+                "WARNING: original pipeline used metadata grouping"
+                " which was not converted during processing"
+                " of current pipeline.")
+        warn_metadata_match = False
+        warn_gray_color = False
+        edited_modules = set()
+        for group in self.images:
+            for channel in group.channels:
+                if namesandtypes.assignment_method == cpnamesandtypes.ASSIGN_ALL:
+                    namesandtypes.assignment_method.value = \
+                        cpnamesandtypes.ASSIGN_RULES
+                else:
+                    namesandtypes.add_assignment()
+                edited_modules.add(namesandtypes)
+                assignment = namesandtypes.assignments[-1]
+                if channel.image_object_choice == IO_IMAGES:
+                    name = assignment.image_name.value = \
+                        channel.image_name.value
+                    assignment.load_as_choice.value = \
+                        cpnamesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+                    warn_gray_color = True
+                else:
+                    name = assignment.object_name.value = \
+                        channel.object_name.value
+                    assignment.load_as_choice.value = \
+                        cpnamesandtypes.LOAD_AS_OBJECTS
+                rfilter = assignment.rule_filter
+                assert isinstance(rfilter, cps.Filter)
+                structure = [cps.Filter.AND_PREDICATE ]
+                fp = cpnamesandtypes.FilePredicate()
+                fp_does, fp_does_not = [
+                    [d for d in fp.subpredicates if isinstance(d, c)][0]
+                    for c in (cps.Filter.DoesPredicate, cps.Filter.DoesNotPredicate)]
+                if self.exclude:
+                    # Exclude with a predicate of
+                    # File doesnot contain <match_exclude>
+                    #
+                    structure.append([
+                        fp, fp_does_not, cps.Filter.CONTAINS_PREDICATE, 
+                        self.match_exclude.value])
+                if self.match_method == MS_EXACT_MATCH:
+                    structure.append([
+                        fp, fp_does, cps.Filter.CONTAINS_PREDICATE, 
+                        group.common_text.value])
+                else:
+                    structure.append([
+                        fp, fp_does, cps.Filter.CONTAINS_REGEXP_PREDICATE,
+                        group.common_text.value])
+                assignment.rule_filter.build(structure)
+                my_tags = set()
+                for metadata_choice, source, value in (
+                    (M_FILE_NAME, cpmetadata.XM_FILE_NAME, group.file_metadata.value),
+                    (M_PATH, cpmetadata.XM_FOLDER_NAME, group.path_metadata.value)):
+                    if group.metadata_choice in (metadata_choice, M_BOTH):
+                        if not metadata.wants_metadata:
+                            metadata.wants_metadata.value = True
+                        else:
+                            metadata.add_extraction_method()
+                        edited_modules.add(metadata)
+                        mgroup = metadata.extraction_methods[-1]
+                        mgroup.source.value = source
+                        if metadata_choice == M_FILE_NAME:
+                            mgroup.file_regexp.value = value
+                        else:
+                            mgroup.folder_regexp.value = value
+                        mgroup.filter_choice.value = cpmetadata.F_FILTERED_IMAGES
+                        mgroup.extraction_method.value = cpmetadata.X_MANUAL_EXTRACTION
+                        mgroup.filter.build(structure)
+                        my_tags.update(cpmeas.find_metadata_tokens(value))
+                if namesandtypes.matching_choice == cpnamesandtypes.MATCH_BY_METADATA:
+                    # Add our metadata tags to the joiner
+                    current = namesandtypes.join.parse()
+                    for d in current:
+                        for v in d.values():
+                            if v in my_tags:
+                                d[name] = v
+                                my_tags.remove(v)
+                                break
+                        else:
+                            warn_metadata_match = True
+                            d[name] = None
+                    if len(my_tags) > 0:
+                        warn_metadata_match = True
+                        if len(current) == 0:
+                            for tag in my_tags:
+                                current.append({ name:tag })
+                        else:
+                            for tag in my_tags:
+                                entry = dict([(k, None) for k in current[0]])
+                                entry[name] = tag
+                                current.append(entry)
+                    namesandtypes.join.build(current)
+                    edited_modules.add(namesandtypes)
+                elif len(my_tags) > 0:
+                    namesandtypes.matching_choice.value = \
+                        cpnamesandtypes.MATCH_BY_METADATA
+                    namesandtypes.join.build([ { name: tag} for tag in my_tags])
+                    edited_modules.add(namesandtypes)
+        if self.group_by_metadata:
+            groups.wants_groups.value = True
+            edited_modules.add(groups)
+            metadata_fields = self.metadata_fields.get_selections()
+            if (len(groups.grouping_metadata) > len(metadata_fields)):
+                del groups.grouping_metadata[len(metadata_fields):]
+            else:
+                while (len(groups.grouping_metadata) < len(metadata_fields)):
+                    groups.add_grouping_metadata()
+                
+            for i, field in enumerate(metadata_fields):
+                md_group = groups.grouping_metadata[i]
+                md_group.metadata_choice.value = \
+                    field
+                
+        if warn_metadata_match:
+            namesandtypes.notes.append(
+                "WARNING: the metadata matching for this pipeline may not"
+                " have been converted correctly.")
+        if warn_gray_color:
+            namesandtypes.notes.append(
+                'Please change any color images from "Load as Grayscale image"'
+                ' to "Load as Color image"')
+        for module in edited_modules:
+            pipeline.edit_module(module.module_num, True)
             
 def well_metadata_tokens(tokens):
     '''Return the well row and well column tokens out of a set of metadata tokens'''
@@ -2907,7 +2990,6 @@ def is_movie(filename):
     ext = os.path.splitext(filename)[1].lower()
     return ext in SUPPORTED_MOVIE_EXTENSIONS
 
-
 class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
     '''Base for image providers: handle pathname and filename & URLs'''
     def __init__(self, name, pathname, filename):
@@ -2936,9 +3018,12 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         return self.__filename
     
     def cache_file(self):
-        '''Cache a file that needs to be HTTP downloaded'''
+        '''Cache a file that needs to be HTTP downloaded
+        
+        Return True if the file has been cached
+        '''
         if self.__cacheing_tried:
-            return
+            return self.__is_cached
         self.__cacheing_tried = True
         #
         # Check to see if the pathname can be accessed as a directory
@@ -2948,13 +3033,13 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
         if len(path) == 0:
             filename = self.get_filename()
             if os.path.exists(filename):
-                return
+                return False
             parsed_path = urlparse.urlparse(filename)
             url = filename
             if len(parsed_path.scheme) < 2:
                 raise IOError("Test for access to file failed. File: %s" % filename)
         elif os.path.exists(path):
-            return
+            return False
         else:
             parsed_path = urlparse.urlparse(path)
             url = '/'.join((path, self.get_filename()))
@@ -2966,15 +3051,42 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
                 raise IOError("Test for access to directory failed. Directory: %s" %path)
         if parsed_path.scheme == 'file':
             self.__cached_file = url2pathname(path)
+        elif parsed_path.scheme.lower() == 'omero':
+            # Let bioformats open the URL directly
+            self.__is_cached = False
+            return True
         else:
-            self.__cached_file, headers = urllib.urlretrieve(url)
+            #
+            # urlretrieve uses the suffix of the path component of the URL
+            # to name the temporary file, so we replicate that behavior
+            #
+            temp_dir = preferences.get_temporary_directory()
+            filename = self.get_filename()
+            suffix_idx = filename.rfind(".")
+            if suffix_idx > 0:
+                suffix = filename[suffix_idx:]
+                tempfd, temppath = tempfile.mkstemp(suffix=suffix,
+                                                    dir = temp_dir)
+            else:
+                tempfd, temppath = tempfile.mkstemp(dir = temp_dir)
+            self.__cached_file = temppath
+            try:
+                self.__cached_file, headers = urllib.urlretrieve(
+                    url, filename=temppath)
+            finally:
+                os.close(tempfd)
         self.__is_cached = True
+        return True
             
     def get_full_name(self):
         self.cache_file()
         if self.__is_cached:
             return self.__cached_file
         return os.path.join(self.get_pathname(),self.get_filename())
+    
+    def get_url(self):
+        '''Get the URL representation of the file location'''
+        return pathname2url(self.get_full_name())
     
     def release_memory(self):
         '''Release any image memory
@@ -2989,6 +3101,7 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
             except:
                 logger.warning("Could not delete file %s", self.__cached_file,
                                exc_info=True)
+                
 
     def __del__(self):
         # using __del__ is all kinds of bad, but we need to remove the
@@ -2998,13 +3111,18 @@ class LoadImagesImageProviderBase(cpimage.AbstractImageProvider):
 class LoadImagesImageProvider(LoadImagesImageProviderBase):
     """Provide an image by filename, loading the file as it is requested
     """
-    def __init__(self, name, pathname, filename, rescale=True):
+    def __init__(self, name, pathname, filename, rescale=True, 
+                 series = None, index = None, channel = None):
         super(LoadImagesImageProvider, self).__init__(name, pathname, filename)
         self.rescale = rescale
+        self.series = series
+        self.index = index
+        self.channel = channel
     
     def provide_image(self, image_set):
         """Load an image from a pathname
         """
+        import bioformats
         self.cache_file()
         filename = self.get_filename()
         channel_names = []
@@ -3012,37 +3130,20 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             imgdata = scipy.io.matlab.mio.loadmat(self.get_full_name(),
                                                   struct_as_record=True)
             img = imgdata["Image"]
-            self.scale = 255.0
-        elif (os.path.splitext(filename.lower())[-1] 
-              in USE_BIOFORMATS_FIRST and
-              has_bioformats):
-            try:
-                img, self.scale = load_using_bioformats(
-                    self.get_full_name(), 
-                    rescale = self.rescale,
-                    wants_max_intensity = True,
-                    channel_names = channel_names)
-            except:
-                logger.warning(
-                    "Failed to load %s with bioformats. Use PIL instead",
-                    self.get_full_name(), exc_info=True)
-                img, self.scale = load_using_PIL(self.get_full_name(),
-                                                 rescale = self.rescale,
-                                                 wants_max_intensity = True)
+            # floating point - scale = 1:1
+            self.scale = 1.0
+            pixel_type_scale = 1.0
         else:
-            # try PIL first, for speed
-            try:
-                img, self.scale = load_using_PIL(self.get_full_name(),
-                                                 rescale = self.rescale,
-                                                 wants_max_intensity = True)
-            except:
-                if has_bioformats:
-                    img, self.scale = load_using_bioformats(self.get_full_name(),
-                                                            rescale = self.rescale,
-                                                            wants_max_intensity = True)
-                else:
-                    raise
-            
+            url = self.get_url()
+            if not url.lower().startswith("omero:"):
+                url = self.get_full_name()
+            img, self.scale = bioformats.load_using_bioformats(
+                url,
+                c = self.channel,
+                index = self.index,
+                rescale = self.rescale,
+                wants_max_intensity=True,
+                channel_names=channel_names)
         image = cpimage.Image(img,
                               path_name = self.get_pathname(),
                               file_name = self.get_filename(),
@@ -3051,120 +3152,45 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             image.channel_names = list(channel_names)
         return image
     
-
-def load_using_PIL(path, index=0, seekfn=None, rescale = True, wants_max_intensity = False):
-    '''Get the pixel data for an image using PIL
+class LoadImagesImageProviderURL(LoadImagesImageProvider):
+    '''Reference an image via a URL'''
+    def __init__(self, name, url, rescale=True, 
+                 series = None, index = None, channel = None):
+        if url.lower().startswith("file:"):
+            path = url2pathname(url)
+            pathname, filename = os.path.split(path)
+        else:
+            pathname = ""
+            filename = url
+        super(LoadImagesImageProviderURL, self).__init__(
+            name, pathname, filename, rescale, series, index, channel)
+        self.url = url
+        
+    def get_url(self):
+        if self.cache_file():
+            return super(LoadImagesImageProviderURL, self).get_url()
+        return self.url
     
-    path - path to file
-    index - index of the image if stacked image format such as TIFF
-    seekfn - a function for seeking to a given image in a stack
-    rescale - True to rescale to MaxSampleValue, false to scale to the bit-depth
-              (for example, 16-bit integers are divided by 65535)
-    max_intensity - if true, the image and max intensity are returned as a tuple
-    '''
-    if path.lower().endswith(".tif"):
-        try:
-            img = PILImage.open(path)
-        except:
-            from contrib.tifffile import TIFFfile
-            tiffimg = TIFFfile(str(path))
-            img = tiffimg.asarray(squeeze=True)
-            if img.dtype == np.uint16:
-                img = (img.astype(np.float) - 2**15) / 2**12
-            if wants_max_intensity:
-                return img, 2**12
-            return img
-    else:
-        img = PILImage.open(path)
-    if seekfn is None:
-        img.seek(index)
-    else:
-        seekfn(img, index)
-    if img.mode=='I;16':
-        # 16-bit image
-        # deal with the endianness explicitly... I'm not sure
-        # why PIL doesn't get this right.
-        imgdata = np.fromstring(img.tostring(),np.uint8)
-        imgdata.shape=(int(imgdata.shape[0]/2),2)
-        imgdata = imgdata.astype(np.uint16)
-        hi,lo = (0,1) if img.tag.prefix == 'MM' else (1,0)
-        imgdata = imgdata[:,hi]*256 + imgdata[:,lo]
-        img_size = list(img.size)
-        img_size.reverse()
-        new_img = imgdata.reshape(img_size)
-        # The magic # for maximum sample value is 281
-        if img.tag.has_key(281):
-            scale = img.tag[281][0]
-        elif np.max(new_img) < 4096:
-            scale = 4095.
-        else:
-            scale = 65535.
-        if not rescale:
-            img = new_img.astype(np.float32)
-        else:
-            img = new_img.astype(np.float32) / scale
-    else:
-        # The magic # for maximum sample value is 281
-        if hasattr(img, "tag") and img.tag.has_key(281):
-            scale = img.tag[281][0]
-        else:
-            scale = 255.
-        # There's an apparent bug in the PIL library that causes
-        # images to be loaded upside-down. At best, load and save have opposite
-        # orientations; in other words, if you load an image and then save it
-        # the resulting saved image will be upside-down
-        img = img.transpose(PILImage.FLIP_TOP_BOTTOM)
-        img = matplotlib.image.pil_to_array(img)
-    if wants_max_intensity:
-        return img, scale
-    return img
-
-   
-class LoadImagesMovieFrameProvider(LoadImagesImageProviderBase):
+ 
+class LoadImagesMovieFrameProvider(LoadImagesImageProvider):
     """Provide an image by filename:frame, loading the file as it is requested
     """
     def __init__(self, name, pathname, filename, frame, rescale):
-        super(LoadImagesMovieFrameProvider, self).__init__(name, pathname, filename)
-        self.__frame = frame
-        self.__rescale = rescale
-    
-    def provide_image(self, image_set):
-        """Load an image from a movie frame
-        """
-        pixel_data, self.scale = load_using_bioformats(
-            self.get_full_name(),
-            index=self.__frame,
-            rescale = self.__rescale,
-            wants_max_intensity = True)
-        image = cpimage.Image(pixel_data, path_name = self.get_pathname(),
-                              file_name = self.get_filename(),
-                              scale = self.scale)
-        return image
+        super(LoadImagesMovieFrameProvider, self).__init__(
+            name, pathname, filename, rescale, index=frame)
         
-class LoadImagesFlexFrameProvider(LoadImagesImageProviderBase):
+class LoadImagesFlexFrameProvider(LoadImagesImageProvider):
     """Provide an image by filename:frame, loading the file as it is requested
     """
     def __init__(self,name, pathname, filename, series, index, rescale):
-        super(LoadImagesFlexFrameProvider, self).__init__(name, pathname, filename)
-        self.__series  = series
-        self.__index   = index
-        self.__rescale = rescale
-    
-    def provide_image(self, image_set):
-        """Load an image from a movie frame
-        """
-        pixel_data, self.scale = load_using_bioformats(self.get_full_name(), 
-                                                       series=self.__series,
-                                                       index = self.__index,
-                                                       rescale = self.__rescale,
-                                                       wants_max_intensity = True)
-        image = cpimage.Image(pixel_data, path_name = self.get_pathname(),
-                              file_name = self.get_filename(),
-                              scale = self.scale)
-        return image
+        super(LoadImagesFlexFrameProvider, self).__init__(
+            name, pathname, filename, 
+            rescale = rescale,
+            series = series,
+            index = index)
     
     
-class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
+class LoadImagesSTKFrameProvider(LoadImagesImageProvider):
     """Provide an image by filename:frame from an STK file"""
     def __init__(self, name, pathname, filename, frame, rescale):
         '''Initialize the provider
@@ -3174,52 +3200,8 @@ class LoadImagesSTKFrameProvider(LoadImagesImageProviderBase):
         filename - name of the file
         frame - # of the frame to provide
         '''
-        super(LoadImagesSTKFrameProvider, self).__init__(name, pathname, filename)
-        self.__frame    = frame
-        self.rescale = rescale
-        
-    def provide_image(self, image_set):
-        try:
-            def seekfn(img, index):
-                '''Seek in an STK file to a given stack frame
-                
-                The stack frames are of constant size and follow each other.
-                The tiles contain offsets which need to be incremented by
-                the size of a stack frame. The following is from 
-                Molecular Devices' STK file format document:
-                StripOffsets
-                The strips for all the planes of the stack are stored 
-                contiguously at this location. The following pseudocode fragment 
-                shows how to find the offset of a specified plane planeNum.
-                LONG	planeOffset = planeNum *
-                    (stripOffsets[stripsPerImage - 1] +
-                    stripByteCounts[stripsPerImage - 1] - stripOffsets[0]);
-                Note that the planeOffset must be added to the stripOffset[0]
-                to find the image data for the specific plane in the file.
-                '''
-                plane_offset = long(index) * (img.ifd[TIFF.STRIPOFFSETS][-1] +
-                                              img.ifd[TIFF.STRIPBYTECOUNTS][-1] -
-                                              img.ifd[TIFF.STRIPOFFSETS][0])
-                img.tile = [(coding, location, offset+plane_offset, format)
-                            for coding, location, offset, format in img.tile]
-                
-            img, self.scale = load_using_PIL(self.get_full_name(), 
-                                             self.__frame, seekfn,
-                                             rescale = self.rescale, 
-                                             wants_max_intensity = True)
-        except:
-            if has_bioformats:
-                img, self.scale = load_using_bioformats(
-                    self.get_full_name(),
-                    index = self.__frame,
-                    rescale = self.rescale,
-                    wants_max_intensity = True)
-            else:
-                raise
-        return cpimage.Image(img,
-                             path_name = self.get_pathname(),
-                             file_name = self.get_filename(),
-                             scale = self.scale)
+        super(LoadImagesSTKFrameProvider, self).__init__(
+            name, pathname, filename, rescale = rescale, index=frame)
     
 def convert_image_to_objects(image):
     '''Interpret an image as object indices
@@ -3269,10 +3251,11 @@ def bad_sizes_warning(first_size, first_filename,
     return warning
 
 FILE_SCHEME = "file:"
+PASSTHROUGH_SCHEMES = ("http", "https", "ftp", "omero")
 def pathname2url(path):
     '''Convert the unicode path to a file: url'''
     utf8_path = path.encode('utf-8')
-    if any([utf8_path.lower().startswith(x) for x in ("http", "https")]):
+    if any([utf8_path.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return utf8_path
     return FILE_SCHEME + urllib.pathname2url(utf8_path)
 
@@ -3280,7 +3263,7 @@ def is_file_url(url):
     return url.lower().startswith(FILE_SCHEME)
 
 def url2pathname(url):
-    if any([url.lower().startswith(x) for x in ("http", "https")]):
+    if any([url.lower().startswith(x) for x in PASSTHROUGH_SCHEMES]):
         return url
     assert is_file_url(url)
     utf8_url = urllib.url2pathname(url[len(FILE_SCHEME):])

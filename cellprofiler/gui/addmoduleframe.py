@@ -12,7 +12,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version = "$Revision$"
 import os
 import sys
 import re
@@ -22,6 +21,7 @@ import cellprofiler.modules
 import cellprofiler.cpmodule
 from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import BUILDING_A_PIPELINE_HELP
+from cellprofiler.gui.html.manual import search_module_help
 import cpframe
 
 class AddModuleFrame(wx.Frame):
@@ -57,10 +57,20 @@ class AddModuleFrame(wx.Frame):
         w,h = self.__module_list_box.GetTextExtent("CorrectIllumination_Calculate_Plus")
         self.__module_list_box.SetMinSize(wx.Size(w,h * 30))
         # Sizers
+        self.Sizer = wx.BoxSizer(wx.VERTICAL)
+        search_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        self.Sizer.Add(search_sizer, 0, wx.EXPAND | wx.ALL, 2)
+        search_sizer.Add(wx.StaticText(self, label="Search:"), 0, 
+                         wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL)
+        self.search_text = wx.TextCtrl(self)
+        search_sizer.Add(self.search_text, 1, wx.EXPAND)
+        self.search_button = wx.Button(self, label="Search")
+        search_sizer.Add(self.search_button, 0, wx.EXPAND)
+        self.Sizer.AddSpacer(2)
         top_sizer = wx.BoxSizer(wx.HORIZONTAL)
         top_sizer.AddMany([(left_panel,0,wx.EXPAND|wx.LEFT,5),
                            (right_panel,1,wx.EXPAND)])
-        self.SetSizer(top_sizer)
+        self.Sizer.Add(top_sizer, 1, wx.EXPAND)
         left_sizer = wx.BoxSizer(wx.VERTICAL)
         left_sizer.Add(module_categories_text,0,wx.EXPAND)
         left_sizer.AddSpacer(4)
@@ -99,6 +109,7 @@ class AddModuleFrame(wx.Frame):
         self.Bind(wx.EVT_BUTTON,self.__on_getting_started, getting_started_button)
         self.Bind(wx.EVT_BUTTON,self.__on_wheres_my_module, wheres_my_module_button)
         self.Bind(wx.EVT_MENU, self.__on_close, id=cpframe.ID_FILE_EXIT)
+        self.search_button.Bind(wx.EVT_BUTTON, self.__on_search_help)
         self.__get_module_files()
         self.__set_categories()
         self.__listeners = []
@@ -133,6 +144,8 @@ class AddModuleFrame(wx.Frame):
                 return module
             try:
                 module = cellprofiler.modules.instantiate_module(mn)
+                if module.is_input_module():
+                    continue
                 categories = ([module.category] 
                               if isinstance(module.category, str)
                               else list(module.category)) + ['All']
@@ -181,13 +194,26 @@ class AddModuleFrame(wx.Frame):
                 help = module.get_help()
                 wx.MessageBox(help)
                 
+    def __on_search_help(self, event):
+        html = search_module_help(self.search_text.Value)
+        if html is None:
+            wx.MessageBox('No references found for "%s".' % self.search_text.Value,
+                          caption = "Text not found",
+                          parent = self,
+                          style = wx.OK | wx.CENTRE | wx.ICON_INFORMATION)
+        else:
+            self.display_helpframe(html, "Help matching %s" % self.search_text)
+            
     def __on_getting_started(self,event):
-        helpframe = wx.Frame(self,-1,'Add modules: Getting Started',size=(640,480))
+        self.display_helpframe(BUILDING_A_PIPELINE_HELP,
+                               'Add modules: Getting Started')
+    def display_helpframe(self, help, title):
+        helpframe = wx.Frame(self, -1,title, size=(640,480))
         sizer = wx.BoxSizer()
         helpframe.SetSizer(sizer)
         window = wx.html.HtmlWindow(helpframe)
         sizer.Add(window,1,wx.EXPAND)
-        window.AppendToPage(BUILDING_A_PIPELINE_HELP)
+        window.AppendToPage(help)
         helpframe.SetIcon(get_cp_icon())
         helpframe.Layout()
         helpframe.Show()

@@ -23,7 +23,6 @@ See also <b>CorrectIlluminationApply</b>, <b>EnhanceOrSuppressFeatures</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as scind
@@ -455,20 +454,22 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                        "preparing for run"%(len(image_numbers)))
             output_image_provider = CorrectIlluminationImageProvider(
                 self.illumination_image_name.value, self)
-            self.get_dictionary(image_set_list)[OUTPUT_IMAGE] = \
-                output_image_provider
+            d = self.get_dictionary(image_set_list)[OUTPUT_IMAGE] = {}
             if self.each_or_all == EA_ALL_FIRST:
                 for w in pipeline.run_group_with_yield(
                     workspace, grouping, image_numbers, self, title, message):
                     image = w.image_set.get_image(self.image_name.value,
                                                   cache = False)
                     output_image_provider.add_image(image)
+            output_image_provider.serialize(d)
             
         return True
         
     def run(self, workspace):
         if self.each_or_all != EA_EACH:
-            output_image_provider = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
+            d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
+            output_image_provider = CorrectIlluminationImageProvider.deserialize(
+                d, self)
             if self.each_or_all == EA_ALL_ACROSS:
                 #
                 # We are accumulating a pipeline image. Add this image set's
@@ -476,6 +477,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 # 
                 orig_image = workspace.image_set.get_image(self.image_name.value)
                 output_image_provider.add_image(orig_image)
+                output_image_provider.serialize(d)
 
             # fetch images for display
             if (workspace.display or self.save_average_image or 
@@ -506,10 +508,14 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                                     dilated_image)
         if workspace.display:
             # store images for potential display
-            workspace.display_data.avg_image = avg_image
-            workspace.display_data.dilated_image = dilated_image
-            workspace.display_data.output_image = output_image
-        
+            workspace.display_data.avg_image = avg_image.pixel_data
+            workspace.display_data.dilated_image = dilated_image.pixel_data
+            workspace.display_data.output_image = output_image.pixel_data
+
+    def is_aggregation_module(self):
+        '''Return True if aggregation is performed within a group'''
+        return self.each_or_all != EA_EACH
+    
     def post_group(self, workspace, grouping):
         '''Handle tasks to be performed after a group has been processed
         
@@ -519,9 +525,9 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         '''
         if self.each_or_all != EA_EACH:
             image_set = workspace.image_set
-            assert isinstance(image_set, cpi.ImageSet)
-            output_image_provider = \
-                self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
+            d = self.get_dictionary(workspace.image_set_list)[OUTPUT_IMAGE]
+            output_image_provider = CorrectIlluminationImageProvider.deserialize(
+                d, self)
             assert isinstance(output_image_provider, CorrectIlluminationImageProvider)
             if not self.illumination_image_name.value in image_set.get_names():
                 workspace.image_set.providers.append(output_image_provider)
@@ -535,33 +541,30 @@ class CorrectIlluminationCalculate(cpm.CPModule):
                 workspace.image_set.add(
                     self.dilated_image_name.value, 
                     output_image_provider.provide_dilated_image())
-                
-            
-    def display(self, workspace):
+
+    def display(self, workspace, figure):
+        # these are actually just the pixel data
         avg_image = workspace.display_data.avg_image
         dilated_image = workspace.display_data.dilated_image
         output_image = workspace.display_data.output_image
         
-        figure = workspace.create_or_find_figure(title="CorrectIlluminationCalculate, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,2))
+        figure.set_subplots((2, 2))
         def imshow(x, y, image, *args, **kwargs):
-            if image.pixel_data.ndim == 2:
+            if image.ndim == 2:
                 f = figure.subplot_imshow_grayscale
             else:
                 f = figure.subplot_imshow_color
-            return f(x, y, image.pixel_data, *args, **kwargs)
+            return f(x, y, image, *args, **kwargs)
         imshow(0, 0, avg_image, "Averaged image")
-        pixel_data = output_image.pixel_data
+        pixel_data = output_image
         imshow(0, 1, output_image,
                "Final illumination function",
-               sharex=figure.subplot(0,0),
-               sharey=figure.subplot(0,0))
+               sharexy = figure.subplot(0,0))
         imshow(1, 0, dilated_image,
                "Dilated image",
-               sharex=figure.subplot(0,0),
-               sharey=figure.subplot(0,0))
-        statistics = [["Min value", round(np.min(output_image.pixel_data),2)],
-                      ["Max value", round(np.max(output_image.pixel_data),2)],
+               sharexy = figure.subplot(0,0))
+        statistics = [["Min value", round(np.min(output_image),2)],
+                      ["Max value", round(np.max(output_image),2)],
                       ["Calculation type", self.intensity_choice.value]
                       ]
         if self.intensity_choice == IC_REGULAR:
@@ -572,11 +575,10 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         statistics.append(["Each or all?", self.each_or_all.value])
         statistics.append(["Smoothing method", self.smoothing_method.value])
         statistics.append(["Smoothing filter size",
-                           round(self.smoothing_filter_size(output_image.pixel_data.size),2)])
-        figure.subplot_table(1, 1, statistics, ratio=[.6,.4])
-
-    def is_interactive(self):
-        return False
+                           round(self.smoothing_filter_size(output_image.size),2)])
+        figure.subplot_table(1, 1, 
+                             [[x[1]] for x in statistics],
+                             row_labels = [x[0] for x in statistics])
 
     def apply_dilation(self, image, orig_image=None):
         """Return an image that is dilated according to the settings
@@ -904,10 +906,40 @@ class CorrectIlluminationImageProvider(cpi.AbstractImageProvider):
         self.__module = module
         self.__dirty = False
         self.__image_sum = None
+        self.__mask_count = None
         self.__cached_image = None
         self.__cached_avg_image = None
         self.__cached_dilated_image = None
         self.__cached_mask_count = None
+        
+    D_NAME = "name"
+    D_IMAGE_SUM = "image_sum"
+    D_MASK_COUNT = "mask_count"
+    def serialize(self, d):
+        '''Save the internal state of the provider to a dictionary
+        
+        d - save to this dictionary, numpy arrays and json serializable only
+        '''
+        d[self.D_NAME] = self.__name
+        d[self.D_IMAGE_SUM] = self.__image_sum
+        d[self.D_MASK_COUNT] = self.__mask_count
+        
+    @staticmethod
+    def deserialize(d, module):
+        '''Restore a state saved by serialize
+        
+        d - dictionary containing the state
+        module - the module providing details on how to perform the correction
+        
+        returns a provider set up with the restored state
+        '''
+        provider = CorrectIlluminationImageProvider(
+            d[CorrectIlluminationImageProvider.D_NAME],
+            module)
+        provider.__dirty = True
+        provider.__image_sum = d[CorrectIlluminationImageProvider.D_IMAGE_SUM]
+        provider.__mask_count = d[CorrectIlluminationImageProvider.D_MASK_COUNT]
+        return provider
 
     def add_image(self, image):
         """Accumulate the data from the given image

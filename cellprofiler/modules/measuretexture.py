@@ -116,7 +116,6 @@ SMC-3(6):610-621.</li>
 # Website: http://www.cellprofiler.org
 
 
-__version__ = "$Revision$"
 
 import numpy as np
 import scipy.ndimage as scind
@@ -449,13 +448,12 @@ class MeasureTexture(cpm.CPModule):
                                 
         return cols
 
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""
         
-        statistics = [["Image","Object","Measurement","Scale", "Value"]]
+        workspace.display_data.col_labels = [
+            "Image", "Object", "Measurement", "Scale", "Value"]
+        statistics = []
         for image_group in self.image_groups:
             image_name = image_group.image_name.value
             for scale_group in self.scale_groups:
@@ -475,14 +473,14 @@ class MeasureTexture(cpm.CPModule):
                                                          object_name, 
                                                          scale,
                                                          workspace)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.statistics = statistics
     
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="MeasureTexture, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-        figure.subplot_table(0, 0, workspace.display_data.statistics,
-                             ratio=(.20,.20,.20,.20,.20))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0, 0, 
+                             workspace.display_data.statistics,
+                             col_labels = workspace.display_data.col_labels)
     
     def run_one(self, image_name, object_name, scale, angle, workspace):
         """Run, computing the area measurements for a single map of objects"""

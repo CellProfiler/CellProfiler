@@ -297,16 +297,12 @@ class StraightenWorms(cpm.CPModule):
         for i in range(1,nimages):
             self.add_image()
             
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         '''Process one image set'''
         object_set = workspace.object_set
         assert isinstance(object_set, cpo.ObjectSet)
 
         image_set = workspace.image_set
-        assert(isinstance(image_set, cpi.ImageSet))
 
         objects_name = self.objects_name.value
         orig_objects = object_set.get_objects(objects_name)
@@ -452,7 +448,7 @@ class StraightenWorms(cpm.CPModule):
             mask = map_coordinates((orig_labels == i+1).astype(np.float32), 
                                    [ix[islice, jslice], jx[islice,jslice]]) > .5
             labels[islice, jslice][mask] = i+1
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.image_pairs = []
         #
         # Now create one straightened image for each input image
@@ -475,7 +471,7 @@ class StraightenWorms(cpm.CPModule):
                                            straightened_mask,
                                            parent_image = image)
             image_set.add(straightened_image_name, straightened_image)
-            if workspace.frame is not None:
+            if self.show_window:
                 workspace.display_data.image_pairs.append(
                     ((image.pixel_data, image_name),
                      (straightened_pixel_data, straightened_image_name)))
@@ -804,7 +800,6 @@ class StraightenWorms(cpm.CPModule):
         nworms - # of labels.
         '''
         image_set = workspace.image_set
-        assert(isinstance(image_set, cpi.ImageSet))
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
         object_name = self.straightened_objects_name.value
@@ -861,10 +856,10 @@ class StraightenWorms(cpm.CPModule):
         add_object_location_measurements(m, straightened_objects_name,
                                          labels, nworms)
         
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display the results of the worm straightening'''
         image_pairs = workspace.display_data.image_pairs
-        figure = workspace.create_or_find_figure(subplots=(2,len(image_pairs)))
+        figure.set_subplots((2, len(image_pairs)))
         src_axis = None
         for i, ((src_pix, src_name), (dest_pix, dest_name)) in enumerate(image_pairs):
             if src_pix.ndim == 2:
@@ -872,7 +867,7 @@ class StraightenWorms(cpm.CPModule):
             else:
                 imshow = figure.subplot_imshow_color
             axis = imshow(0, i, src_pix, title = src_name,
-                          sharex = src_axis, sharey = src_axis)
+                          sharexy = src_axis)
             if src_axis is None:
                 src_axis = axis
             if dest_pix.ndim == 2:

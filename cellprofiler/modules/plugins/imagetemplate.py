@@ -1,3 +1,16 @@
+"""
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2013 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+
 '''<b>ImageTemplate</b> - an example image processing module
 <hr>
 This is an example of a module that takes one image as an input and
@@ -211,12 +224,8 @@ class ImageTemplate(cpm.CPModule):
         output_image_name = self.output_image_name.value
         #
         # Get the image set. The image set has all of the images in it.
-        # The assert statement makes sure that it really is an image set,
-        # but, more importantly, it lets my editor do context-sensitive
-        # completion for the image set.
         #
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         #
         # Get the input image object. We want a grayscale image here.
         # The image set will convert a color image to a grayscale one
@@ -264,19 +273,11 @@ class ImageTemplate(cpm.CPModule):
         #
         # Save intermediate results for display if the window frame is on
         #
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.input_pixels = pixels
             workspace.display_data.gradient = g
             workspace.display_data.output_pixels = output_pixels
 
-    #
-    # is_interactive tells CellProfiler whether "run" uses any interactive
-    # GUI elements. If you return False here, CellProfiler will run your
-    # module on a separate thread which will make the user interface more
-    # responsive.
-    #
-    def is_interactive(self):
-        return False
     #
     # display lets you use matplotlib to display your results. 
     #

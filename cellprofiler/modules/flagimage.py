@@ -31,7 +31,6 @@ modules upon which the flags are based.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import logging
 import numpy as np
@@ -319,7 +318,7 @@ class FlagImage(cpm.CPModule):
 
         result += [self.add_flag_button]
         return result
-    
+
     def validate_module(self, pipeline):
         '''If using rules, validate them'''
         for flag in self.flags:
@@ -341,21 +340,19 @@ class FlagImage(cpm.CPModule):
                         raise cps.ValidationError("The rule described by %s has not been measured earlier in the pipeline."%undef_features[0],
                                                     measurement_setting.rules_file_name)
 
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
-        statistics = [ ("Flag", "Source", "Measurement", "Value","Pass/Fail")]
+        col_labels = ("Flag", "Source", "Measurement", "Value","Pass/Fail")
+        statistics = []
         for flag in self.flags:
             statistics += self.run_flag(workspace, flag)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.statistics = statistics
+            workspace.display_data.col_labels = col_labels
         
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="FlagImage, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-        figure.subplot_table(0,0, workspace.display_data.statistics,
-                             (.25,.25,.25,.125,.125))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0, 0, workspace.display_data.statistics,
+                             col_labels = workspace.display_data.col_labels)
 
     def run_as_data_tool(self, workspace):
         m = workspace.measurements
@@ -364,7 +361,7 @@ class FlagImage(cpm.CPModule):
         image_set_count = m.image_set_count
         for i in range(image_set_count):
             self.run(workspace)
-            if workspace.frame is not None:
+            if self.show_window:
                 img_stats = workspace.display_data.statistics
                 if i == 0:
                     statistics = [["Image set"] + list(img_stats[0])]
@@ -372,7 +369,8 @@ class FlagImage(cpm.CPModule):
                                for x in img_stats[1:]]
             if i < image_set_count - 1:
                 m.next_image_set()
-        if workspace.frame is not None and image_set_count > 0:
+        assert False, "NEed to make run_as_data_cool called with show_window = True"
+        if self.show_window and image_set_count > 0:
             import wx
             from wx.grid import Grid, PyGridTableBase, EVT_GRID_LABEL_LEFT_CLICK
             from cellprofiler.gui import get_cp_icon

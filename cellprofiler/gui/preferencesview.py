@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 
 import os
 import string
@@ -19,16 +18,14 @@ import time
 import numpy as np
 import wx
 import cellprofiler.preferences as cpprefs
-import cellprofiler.distributed as cpdistributed
+from cellprofiler.icons import get_builtin_image
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.help import \
      DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, OUTPUT_FILENAME_HELP
+import cellprofiler.analysis as cpanalysis
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
 
-
-ANALYZE_IMAGES = 'Analyze Images'
-START_WORK_SERVER = 'Start Distributed Computation'
 
 WRITE_MAT_FILE = "MATLAB"
 WRITE_HDF_FILE = "HDF5"
@@ -38,10 +35,17 @@ class PreferencesView:
     """View / controller for the preferences that get displayed in the main window
     
     """
-    def __init__(self,panel):
+    def __init__(self, parent_sizer, panel, progress_panel, status_panel):
         self.__panel = panel
-        self.__sizer = wx.BoxSizer(wx.VERTICAL)
-        self.__image_folder_panel = wx.Panel(panel,-1)
+        self.__parent_sizer = parent_sizer
+        panel.AutoLayout = True
+        static_box = wx.StaticBox(panel, label="Folders")
+        panel.SetSizer(wx.BoxSizer(wx.VERTICAL))
+        static_box_sizer = wx.StaticBoxSizer(static_box, wx.VERTICAL)
+        panel.Sizer.Add(static_box_sizer, 1, wx.EXPAND)
+        self.__sizer = static_box_sizer
+        self.__image_folder_panel = wx.Panel(panel)
+        self.__image_folder_panel.AutoLayout = True
         self.__image_edit_box = self.__make_folder_panel(
             self.__image_folder_panel,
             cpprefs.get_default_image_directory(),
@@ -51,7 +55,8 @@ class PreferencesView:
             [cpprefs.set_default_image_directory,
              self.__notify_pipeline_list_view_directory_change],
             refresh_action = self.refresh_input_directory)
-        self.__output_folder_panel = wx.Panel(panel,-1)
+        self.__output_folder_panel = wx.Panel(panel)
+        self.__output_folder_panel.AutoLayout =  True
         self.__output_edit_box = self.__make_folder_panel(
             self.__output_folder_panel,
             cpprefs.get_default_output_directory(),
@@ -60,21 +65,49 @@ class PreferencesView:
             DEFAULT_OUTPUT_FOLDER_HELP,
             [cpprefs.set_default_output_directory,
              self.__notify_pipeline_list_view_directory_change])
-        self.__odds_and_ends_panel = wx.Panel(panel,-1)
+        self.__odds_and_ends_panel = wx.Panel(panel)
+        self.__odds_and_ends_panel.AutoLayout = True
         self.__make_odds_and_ends_panel()
-        self.__status_text = wx.StaticText(panel,-1,style=wx.SUNKEN_BORDER,label=WELCOME_MESSAGE)
-        self.__progress_panel = wx.Panel(panel, -1)
+        self.__status_panel = status_panel
+        status_panel.Sizer = wx.BoxSizer()
+        self.__status_text = wx.StaticText(
+            status_panel, style=wx.SUNKEN_BORDER, label=WELCOME_MESSAGE)
+        status_panel.Sizer.Add(self.__status_text, 1, wx.EXPAND)
+        self.__progress_panel = progress_panel
+        self.__progress_panel.AutoLayout = True
         self.__make_progress_panel()
         self.__sizer.AddMany([(self.__image_folder_panel,0,wx.EXPAND|wx.ALL,1),
                               (self.__output_folder_panel,0,wx.EXPAND|wx.ALL,1),
-                              (self.__odds_and_ends_panel,0,wx.EXPAND|wx.ALL,1),
-                              (self.__status_text,0,wx.EXPAND|wx.ALL, 4),
-                              (self.__progress_panel, 0, wx.EXPAND | wx.BOTTOM, 2)])
-        panel.SetSizer(self.__sizer)
-        self.__sizer.Hide(self.__progress_panel)
+                              (self.__odds_and_ends_panel,0,wx.EXPAND|wx.ALL,1)])
+        self.show_status_text()
         self.__errors = set()
         self.__pipeline_list_view = None
         self.__progress_watcher = None
+        
+    def show_default_image_folder(self, show):
+        if self.__sizer.IsShown(self.__image_folder_panel) == show:
+            return
+        self.__sizer.Show(self.__image_folder_panel, show)
+        parent = self.__image_folder_panel.GetParent()
+        while parent is not None:
+            parent.Layout()
+            if parent == self.__image_folder_panel.GetTopLevelParent():
+                break
+            parent = parent.GetParent()
+        
+    def show_progress_panel(self):
+        '''Show the pipeline progress panel and hide the status text'''
+        self.__parent_sizer.Hide(self.__status_panel)
+        self.__parent_sizer.Show(self.__progress_panel)
+        self.__parent_sizer.Layout()
+        self.__progress_panel.Layout()
+        
+    def show_status_text(self):
+        '''Show the status text and hide the pipeline progress panel'''
+        self.__parent_sizer.Show(self.__status_panel)
+        self.__parent_sizer.Hide(self.__progress_panel)
+        self.__parent_sizer.Layout()
+        self.__status_panel.Layout()
         
     def close(self):
         cpprefs.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
@@ -85,13 +118,20 @@ class PreferencesView:
                             actions, refresh_action = None):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         help_button = wx.Button(panel,-1,'?',(0,0), (30,-1))
+        sizer.Add(help_button, 0, wx.ALIGN_CENTER)
+        sizer.AddSpacer(2)
         text_static = wx.StaticText(panel,-1,text+':')
+        sizer.Add(text_static, 0, wx.ALIGN_CENTER)
         edit_box = wx.ComboBox(panel, -1, value, choices=list_fn())
+        sizer.Add(edit_box, 1, wx.ALIGN_CENTER)
+        sizer.AddSpacer(2)
         browse_bmp = wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN,
                                               wx.ART_CMN_DIALOG,
                                               (16,16))
         browse_button = wx.BitmapButton(panel,-1,bitmap = browse_bmp)
         browse_button.SetToolTipString("Browse for %s folder" % text)
+        sizer.Add(browse_button, 0, wx.ALIGN_CENTER)
+        sizer.AddSpacer(2)
         
         new_bmp = wx.ArtProvider.GetBitmap(wx.ART_NEW_DIR,
                                            wx.ART_CMN_DIALOG,
@@ -100,21 +140,18 @@ class PreferencesView:
         new_button.SetToolTipString("Make a new sub-folder")
         if os.path.isdir(value):
             new_button.Disable()
-        sizer.AddMany([(help_button,0,wx.ALL | wx.ALIGN_CENTER, 1),
-                       (text_static,0,wx.ALIGN_CENTER, 1),
-                       (edit_box,3,wx.EXPAND|wx.ALL,1)])
+        sizer.Add(new_button, 0, wx.ALIGN_CENTER)
         if refresh_action is not None:
             refresh_bitmap = wx.ArtProvider.GetBitmap(wx.ART_REDO,
                                                       wx.ART_CMN_DIALOG,
                                                       (16,16))
             refresh_button = wx.BitmapButton(panel, -1, bitmap = refresh_bitmap)
+            sizer.AddSpacer(2)
             sizer.Add(refresh_button, 0, wx.ALIGN_CENTER, 1)
             refresh_button.SetToolTipString("Refresh the Default Input Folder list")
             def on_refresh(event):
                 refresh_action()
             refresh_button.Bind(wx.EVT_BUTTON, on_refresh)
-        sizer.AddMany([(browse_button,0,0|wx.ALL,1),
-                       (new_button,0,0|wx.ALL,1)])
         panel.SetSizer(sizer)
         def on_new_folder(event):
             if os.path.exists(edit_box.Value):
@@ -195,22 +232,24 @@ class PreferencesView:
         self.__write_measurements_combo_box.Bind(
             wx.EVT_CHOICE, on_write_MAT_files_combo_box)
         output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
-        if not cpdistributed.run_distributed():
-            self.__analyze_images_button = wx.Button(panel, -1, ANALYZE_IMAGES)
-        else:
-            self.__analyze_images_button = wx.Button(panel, -1, START_WORK_SERVER)
-        self.__stop_analysis_button = wx.Button(panel,-1,'Stop analysis')
-        sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.AddMany([(output_filename_help_button,0,wx.ALIGN_CENTER|wx.ALL,1),
-                       (self.__output_filename_text,0,wx.ALIGN_CENTER,1),
-                       (self.__output_filename_edit_box,5,wx.ALL,1),
-                       (self.__allow_output_filename_overwrite_check_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
-                       ((1, 1), 1),
-                       (wx.StaticText(panel, label = "Measurements file format:"), 0, wx.ALIGN_CENTER | wx.ALL, 1),
-                       (self.__write_measurements_combo_box, 0, wx.ALIGN_CENTER | wx.ALL, 1),
-                       (self.__analyze_images_button,0,wx.ALL,1),
-                       (self.__stop_analysis_button, 0, wx.ALL,1)])
-        sizer.Hide(self.__stop_analysis_button)
+        sizer = wx.FlexGridSizer(2, 3, 2, 2)
+        sizer.SetFlexibleDirection(wx.HORIZONTAL)
+        sizer.AddGrowableCol(2)
+        sizer.Add(output_filename_help_button, 0, wx.ALIGN_CENTER)
+        sizer.Add(self.__output_filename_text, 0, wx.ALIGN_RIGHT)
+        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
+        sizer.Add(sub_sizer, 1, wx.EXPAND)
+        sub_sizer.Add(self.__output_filename_edit_box,1 , wx.EXPAND)
+        sub_sizer.AddSpacer(2)
+        sub_sizer.Add(self.__allow_output_filename_overwrite_check_box, 0, 
+             wx.ALIGN_CENTER)
+        #
+        # One blank in second row (help button column)
+        #
+        sizer.Add(wx.BoxSizer(), 0, wx.EXPAND)
+        sizer.Add(wx.StaticText(
+            panel, label = "Output file format:"), 0, wx.ALIGN_RIGHT)
+        sizer.Add(self.__write_measurements_combo_box, 0, wx.ALIGN_LEFT)
         panel.SetSizer(sizer)
         panel.Bind(wx.EVT_BUTTON,
                    lambda event: self.__on_help(event, OUTPUT_FILENAME_HELP),
@@ -219,7 +258,8 @@ class PreferencesView:
         cpprefs.add_output_file_name_listener(self.__on_preferences_output_filename_event)
         cpprefs.add_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.add_output_directory_listener(self.__on_preferences_output_directory_event)
-        cpprefs.add_run_distributed_listener(self.__on_preferences_run_distributed_event)
+        self.__hold_a_reference_to_progress_callback = self.progress_callback
+        cpprefs.add_progress_callback(self.__hold_a_reference_to_progress_callback)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
     
     def __make_progress_panel(self):
@@ -228,18 +268,69 @@ class PreferencesView:
         self.__progress_bar = wx.Gauge(panel, -1, size=(100, -1))
         self.__progress_bar.Value = 25
         self.__timer = wx.StaticText(panel, -1, label="1:45/3:50")
-        self.pause_button = wx.Button(panel, -1, 'Pause')
         sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.AddMany([((1,1), 1),
                        (self.__current_status, 0, wx.ALIGN_BOTTOM),
                        ((10, 0), 0),
                        (self.__progress_bar, 0, wx.ALIGN_BOTTOM),
                        ((10, 0), 0),
-                       (self.__timer, 0, wx.ALIGN_BOTTOM),
-                       ((5, 0), 0),
-                       (self.pause_button, 0, wx.BOTTOM|wx.ALIGN_CENTER, 2)])
+                       (self.__timer, 0, wx.ALIGN_BOTTOM)])
         panel.SetSizer(sizer)
         panel.Layout()
+        #
+        # The progress model is that one operation might invoke sub-operations
+        # which might report their own progress. We model this as a stack,
+        # tracking the innermost operation until done, then popping.
+        #
+        # The dictionary has as its key the operation ID and as it's value
+        # a tuple of amount done and current message
+        #
+        self.__progress_stack = []
+        self.__progress_dictionary = {}
+        self.__progress_dialog = None
+        
+    def progress_callback(self, operation_id, progress, message):
+        '''Monitor progress events in the UI thread
+        
+        operation_id - a unique id identifying an instance of an operation
+        progress - a number from 0 to 1 where 0 is the start of the operation
+                   and 1 is its end.
+        message - the message to display to the user.
+        '''
+        def reset_progress(): 
+            self.__progress_stack = []
+            self.__progress_dictionary = {}
+            if self.__progress_dialog is not None:
+                self.__progress_dialog.Destroy()
+                self.__progress_dialog = None
+            wx.SetCursor(wx.NullCursor)
+            self.set_message_text(WELCOME_MESSAGE)
+            wx.Yield()
+        
+        if operation_id == None:
+            reset_progress()
+            return
+        
+        if operation_id not in self.__progress_stack:
+            self.__progress_stack.append(operation_id)
+        else:
+            loc = self.__progress_stack.index(operation_id)
+            if loc == 0 and progress == 1:
+                reset_progress()
+                return
+            if progress == 1:
+                loc = loc-1
+            for operation_id in self.__progress_stack[(loc+1):]:
+                del self.__progress_dictionary[operation_id]
+            self.__progress_stack = self.__progress_stack[:(loc+1)]
+        self.__progress_dictionary[operation_id] = (progress, message)
+        wx.SetCursor(wx.StockCursor(wx.CURSOR_WAIT))
+        message = ", ".join(
+            ["%s (%d %%)" % (message , int(progress * 100))
+             for progress, message in [
+                 self.__progress_dictionary[o] for o in self.__progress_stack]])
+        self.set_message_text(message)
+        wx.SafeYield(None, True) #ouch, can't repaint without it.
 
     def check_preferences(self):
         '''Return True if preferences are OK (e.g. directories exist)'''
@@ -269,52 +360,22 @@ class PreferencesView:
         cpprefs.remove_image_directory_listener(self.__on_preferences_image_directory_event)
         cpprefs.remove_output_directory_listener(self.__on_preferences_output_directory_event)
         cpprefs.remove_output_file_name_listener(self.__on_preferences_output_filename_event)
-        cpprefs.remove_run_distributed_listener(self.__on_preferences_run_distributed_event)
 
-    def attach_to_pipeline_controller(self, pipeline_controller):
-        self.__panel.Bind(wx.EVT_BUTTON,
-                          pipeline_controller.on_analyze_images, 
-                          self.__analyze_images_button)
-        self.__panel.Bind(wx.EVT_BUTTON,
-                          pipeline_controller.on_stop_running,
-                          self.__stop_analysis_button)
-    
     def attach_to_pipeline_list_view(self, pipeline_list_view):
         self.__pipeline_list_view = pipeline_list_view
     
-    def start_debugging(self):
-        self.__analyze_images_button.Disable()
-        self.__stop_analysis_button.Disable()
-        
-    def stop_debugging(self):
-        self.__analyze_images_button.Enable()
-        self.__stop_analysis_button.Enable()
-        
     def on_analyze_images(self):
-        self.__odds_and_ends_panel.Sizer.Hide(self.__analyze_images_button)
-        self.__odds_and_ends_panel.Sizer.Show(self.__stop_analysis_button)
-        self.__odds_and_ends_panel.Layout()
-        self.pause_button.SetLabel('Pause')
-        self.__panel.Sizer.Hide(self.__status_text)
-        self.__panel.Sizer.Show(self.__progress_panel)
-        self.__panel.Parent.Layout()
-        self.__panel.Layout()
         # begin tracking progress
         self.__progress_watcher = ProgressWatcher(self.__progress_panel,
                                                   self.update_progress,
-                                                  distributed=cpdistributed.run_distributed())
+                                                  multiprocessing=cpanalysis.use_analysis)
+        self.show_progress_panel()
         
     def on_pipeline_progress(self, *args):
         self.__progress_watcher.on_pipeline_progress(*args)
 
     def pause(self, do_pause):
         self.__progress_watcher.pause(do_pause)
-        if do_pause:
-            self.pause_button.SetLabel('Resume')
-        else:
-            self.pause_button.SetLabel('Pause')
-        self.pause_button.Update()
-        self.__progress_panel.Layout()
 
     def update_progress(self, message, elapsed_time, remaining_time):
         self.__current_status.SetLabel(message)
@@ -326,14 +387,8 @@ class PreferencesView:
         if self.__progress_watcher is not None:
             self.__progress_watcher.stop()
         self.__progress_watcher = None
-        self.__odds_and_ends_panel.Sizer.Show(self.__analyze_images_button)
-        self.__odds_and_ends_panel.Sizer.Hide(self.__stop_analysis_button)
-        self.__odds_and_ends_panel.Layout()
-        self.__panel.Sizer.Hide(self.__progress_panel)
-        self.__panel.Sizer.Show(self.__status_text)
-        self.__panel.Parent.Layout()
-        self.__panel.Layout()
-
+        self.show_status_text()
+        
     def set_message_text(self,text):
         saved_size = self.__status_text.GetSize()
         self.__status_text.SetLabel(text)
@@ -415,11 +470,6 @@ class PreferencesView:
         if self.__image_edit_box.Value != cpprefs.get_default_image_directory():
             self.__image_edit_box.Value = cpprefs.get_default_image_directory()
 
-    def __on_preferences_run_distributed_event(self, event):
-        self.__analyze_images_button.Label = START_WORK_SERVER if cpdistributed.run_distributed() else ANALYZE_IMAGES
-        self.__analyze_images_button.Size = self.__analyze_images_button.BestSize
-        self.__odds_and_ends_panel.Layout()
-
     def __notify_pipeline_list_view_directory_change(self, path):
         # modules may need revalidation
         if self.__pipeline_list_view is not None:
@@ -430,7 +480,7 @@ class PreferencesView:
 
 class ProgressWatcher:
     """ Tracks pipeline progress and estimates time to completion """
-    def __init__(self, parent, update_callback, distributed=False):
+    def __init__(self, parent, update_callback, multiprocessing=False):
         self.update_callback = update_callback
 
         # start tracking progress
@@ -442,21 +492,21 @@ class ProgressWatcher:
         self.image_set_index = 0
         self.num_image_sets = 1
 
-        # for distributed computation
+        # for multiprocessing computation
         self.num_jobs = 1
         self.num_received = 0
 
-        self.distributed = distributed
+        self.multiprocessing = multiprocessing
 
         timer_id = wx.NewId()
         self.timer = wx.Timer(parent, timer_id)
         self.timer.Start(500)
-        if not distributed:
+        if not multiprocessing:
             wx.EVT_TIMER(parent, timer_id, self.update)
             self.update()
         else:
-            wx.EVT_TIMER(parent, timer_id, self.update_distributed)
-            self.update_distributed()
+            wx.EVT_TIMER(parent, timer_id, self.update_multiprocessing)
+            self.update_multiprocessing()
 
     def stop(self):
         self.timer.Stop()
@@ -467,14 +517,15 @@ class ProgressWatcher:
                              self.elapsed_time(),
                              self.remaining_time())
 
-    def update_distributed(self, event=None):
-        status = 'Distributed work: %d/%d completed'%(self.num_received, self.num_jobs)
+    def update_multiprocessing(self, event=None):
+        status = 'Processing: %d of %d image sets completed' %\
+            (self.num_received, self.num_jobs)
         self.update_callback(status,
                              self.elapsed_time(),
-                             self.remaining_time_distributed())
+                             self.remaining_time_multiprocessing())
 
     def on_pipeline_progress(self, *args):
-        if not self.distributed:
+        if not self.multiprocessing:
             self.on_start_module(*args)
         else:
             self.on_receive_work(*args)
@@ -506,12 +557,12 @@ class ProgressWatcher:
     def on_receive_work(self, num_jobs, num_received):
         self.num_jobs = num_jobs
         self.num_received = num_received
-
         if self.end_times is None:
             # One extra element at the beginning for the start time
             self.end_times = np.zeros(1 + num_jobs)
+            self.end_times[0] = self.elapsed_time()
         self.end_times[num_received] = self.elapsed_time()
-        self.update_distributed()
+        self.update_multiprocessing()
 
     def pause(self, do_pause):
         if do_pause:
@@ -558,15 +609,14 @@ class ProgressWatcher:
             per_module_estimates[module_index] -= current_module_so_far
             return per_module_estimates.sum()
 
-    def remaining_time_distributed(self):
+    def remaining_time_multiprocessing(self):
         """Return our best estimate of the remaining duration, or None
         if we have no bases for guessing."""
-        if self.end_times is None:
+        if (self.end_times is None) or (self.num_received == 0):
             return 2 * self.elapsed_time() # We have not started the first module yet
         else:
-            expected_per_job = np.median(np.diff(self.end_times[:self.num_received + 1]))
+            expected_per_job = self.end_times[self.num_received] / self.num_received
             return expected_per_job * (self.num_jobs - self.num_received)
-
 
 def secs_to_timestr(duration):
     dur = int(round(duration))

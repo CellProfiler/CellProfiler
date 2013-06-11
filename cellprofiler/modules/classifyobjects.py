@@ -56,7 +56,6 @@ See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> categ
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import cellprofiler.preferences as cpprefs
 
@@ -461,14 +460,10 @@ class ClassifyObjects(cpm.CPModule):
             result += [self.add_measurement_button]
         return result
     
-    def is_interactive(self):
-        '''Indicate that this module's display does not interact with the user'''
-        return False
-    
     def run(self, workspace):
         """Classify the objects in the image cycle"""
         if self.contrast_choice == BY_SINGLE_MEASUREMENT:
-            if workspace.frame:
+            if self.show_window:
                 workspace.display_data.labels = []
                 workspace.display_data.bins = []
                 workspace.display_data.values = []
@@ -480,11 +475,11 @@ class ClassifyObjects(cpm.CPModule):
             raise ValueError("Invalid classification method: %s"%
                              self.contrast_choice.value)
     
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.contrast_choice == BY_TWO_MEASUREMENTS:
-            self.display_two_measurements(workspace)
+            self.display_two_measurements(workspace, figure)
         else:
-            self.display_single_measurement(workspace)
+            self.display_single_measurement(workspace, figure)
                 
     def get_feature_name_matrix(self):
         '''Get a 2x2 matrix of feature names for two measurements'''
@@ -552,14 +547,13 @@ class ClassifyObjects(cpm.CPModule):
             image = cpi.Image(image,parent_image = objects.parent_image)
             workspace.image_set.add(self.image_name.value, image)
             
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.in_high_class=in_high_class
             workspace.display_data.labels = objects.segmented,
             workspace.display_data.saved_values = saved_values
             
-    def display_two_measurements(self, workspace):            
-        figure = workspace.create_or_find_figure(title="ClassifyObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,2))
+    def display_two_measurements(self, workspace, figure):
+        figure.set_subplots((2, 2))
         object_name = self.object_name.value
         for i, feature_name in ((0, self.first_measurement.value),
                                 (1, self.second_measurement.value)):
@@ -637,7 +631,7 @@ class ClassifyObjects(cpm.CPModule):
             measurement_name = '_'.join((M_CATEGORY, feature_name,F_PCT_PER_BIN))
             measurements.add_measurement(cpmeas.IMAGE, measurement_name,
                                          100.0*float(num_hits)/num_values if num_values > 0 else 0)
-        if group.wants_images or (workspace.frame is not None):
+        if group.wants_images or (self.show_window):
             colors = self.get_colors(bin_hits.shape[1])
             object_bins = np.sum(bin_hits * th_idx,1)+1
             object_color = np.hstack(([0],object_bins))
@@ -649,16 +643,14 @@ class ClassifyObjects(cpm.CPModule):
                     group.image_name.value, 
                     cpi.Image(image, parent_image = objects.parent_image))
             
-            if workspace.frame is not None:
+            if self.show_window:
                 workspace.display_data.bins.append(object_bins[~np.isnan(values)])
                 workspace.display_data.labels.append(labels)
                 workspace.display_data.values.append(values[~np.isnan(values)])
     
-    def display_single_measurement(self, workspace):
+    def display_single_measurement(self, workspace, figure):
         '''Display an array of single measurements'''
-        figure = workspace.create_or_find_figure(title="ClassifyObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number),
-            subplots=(3,len(self.single_measurements)))
+        figure.set_subplots((3, len(self.single_measurements)))
         for i, group in enumerate(self.single_measurements):
             bin_hits = workspace.display_data.bins[i]
             labels = workspace.display_data.labels[i]
@@ -692,8 +684,7 @@ class ClassifyObjects(cpm.CPModule):
             figure.subplot_imshow_labels(2,i, labels, 
                                          title = group.object_name.value,
                                          renumber=False, 
-                                         sharex=figure.subplot(2,0),
-                                         sharey=figure.subplot(2,0))
+                                         sharexy = figure.subplot(2,0))
             
     def get_colors(self, count):
         '''Get colors used for two-measurement labels image'''

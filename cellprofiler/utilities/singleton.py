@@ -1,3 +1,6 @@
+# No CellProfiler copyright notice here because this file is in the
+# public domain (see below).
+
 '''
 A Python Singleton mixin class that makes use of some of the ideas
 found at http://c2.com/cgi/wiki?PythonSingleton. Just inherit

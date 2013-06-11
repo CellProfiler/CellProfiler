@@ -218,10 +218,6 @@ class MaskObjects(I.Identify):
             result += [self.outlines_name]
         return result
     
-    def is_interactive(self):
-        '''Tell CP that this module does not have an interactive UI'''
-        return False
-    
     def run(self, workspace):
         '''Run the module on an image set'''
         
@@ -326,12 +322,12 @@ class MaskObjects(I.Identify):
         #
         # Save the input, mask and output images for display
         #
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.original_labels = original_objects.segmented
             workspace.display_data.final_labels = labels
             workspace.display_data.mask = mask
             
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Create an informative display for the module'''
         import matplotlib
         from cellprofiler.gui.cpfigure import renumber_labels_for_display
@@ -365,14 +361,12 @@ class MaskObjects(I.Identify):
         image[outlines, :] = original_color[np.newaxis, :]
         image[final_outlines, :] = final_color[np.newaxis, :]
         
-        figure = workspace.create_or_find_figure(title="MaskObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
+        figure.set_subplots((2, 1))
         figure.subplot_imshow_labels(0, 0, original_labels,
                                      title = self.object_name.value)
         figure.subplot_imshow_color(1, 0, image,
                                     title = self.remaining_objects.value,
-                                    sharex = figure.subplot(0,0),
-                                    sharey = figure.subplot(0,0))
+                                    sharexy = figure.subplot(0,0))
         
     def get_measurement_columns(self, pipeline):
         '''Return column definitions for measurements made by this module'''

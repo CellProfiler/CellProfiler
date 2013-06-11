@@ -44,7 +44,6 @@ deconvolution.</i> Analytical & Quantitative Cytology & Histology 2001; 23: 291-
 # 
 # Website: http://www.cellprofiler.org
 
-__version__ = "$Revision$"
 
 import numpy as np
 from scipy.linalg import lstsq
@@ -296,9 +295,6 @@ class UnmixColors(cpm.CPModule):
         result += [self.add_image_button]
         return result
     
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         '''Unmix the colors on an image in the image set'''
         input_image_name = self.input_image_name.value
@@ -342,12 +338,10 @@ class UnmixColors(cpm.CPModule):
         output_image = cpi.Image(image, parent_image = input_image)
         workspace.image_set.add(image_name, output_image)
         
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display all of the images in a figure'''
-        figure = workspace.create_or_find_figure(title="UnmixColors, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(len(self.outputs)+1,1))
+        figure.set_subplots((len(self.outputs)+1, 1))
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         input_image_name = self.input_image_name.value
         input_image = image_set.get_image(input_image_name,
                                           must_be_color = True)
@@ -360,7 +354,7 @@ class UnmixColors(cpm.CPModule):
                                                must_be_grayscale = True)
             figure.subplot_imshow_grayscale(i+1, 0, output_image.pixel_data,
                                             title = image_name,
-                                            sharex = ax, sharey = ax)
+                                            sharexy = ax)
 
     def get_absorbances(self, output):
         '''Given one of the outputs, return the red, green and blue absorbance'''

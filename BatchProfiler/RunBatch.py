@@ -1,3 +1,15 @@
+"""
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2013 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
 #
 # Functions for running a batch or a single run from the database
 #
@@ -318,7 +330,8 @@ def RunOne_2_0(x, run):
          "CellProfiler.py",
          "-p",'"%(data_dir)s/Batch_data.mat"'%(x),
          "-c",
-         "-r","-b",
+         "-r","-b","--do-not-fetch",
+         "-o",'"%(data_dir)s"' % x,
          "-f","%(start)d"%(x),
          "-l","%(end)d"%(x),
          "-d",'"%(done_file)s"'%(x)]

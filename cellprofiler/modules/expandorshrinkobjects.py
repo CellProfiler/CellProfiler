@@ -40,7 +40,6 @@ See also <b>Identify</b> modules.'''
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 from scipy.ndimage import distance_transform_edt
@@ -169,17 +168,21 @@ class ExpandOrShrinkObjects(cpm.CPModule):
             outline_image = cpi.Image(outline(output_objects.segmented) > 0,
                                       parent_image = input_objects.parent_image)
             workspace.image_set.add(self.outlines_name.value, outline_image)
-        
-        if workspace.frame is not None:
-            figure = workspace.create_or_find_figure(title="ExpandOrShrinkObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
-            figure.subplot_imshow_labels(0,0,input_objects.segmented,
-                                         self.object_name.value)
-            figure.subplot_imshow_labels(1,0,output_objects.segmented,
-                                         self.output_object_name.value,
-                                         sharex = figure.subplot(0,0),
-                                         sharey = figure.subplot(0,0))
-    
+
+        if self.show_window:
+            workspace.display_data.input_objects_segmented = input_objects.segmented
+            workspace.display_data.output_objects_segmented = output_objects.segmented
+
+    def display(self, workspace, figure):
+        input_objects_segmented = workspace.display_data.input_objects_segmented
+        output_objects_segmented = workspace.display_data.output_objects_segmented
+        figure.set_subplots((2, 1))
+        figure.subplot_imshow_labels(0, 0, input_objects_segmented,
+                                     self.object_name.value)
+        figure.subplot_imshow_labels(1, 0, output_objects_segmented,
+                                     self.output_object_name.value,
+                                     sharexy = figure.subplot(0, 0))
+
     def do_labels(self, labels):
         '''Run whatever transformation on the given labels matrix'''
         if (self.operation in (O_SHRINK, O_SHRINK_INF) and 

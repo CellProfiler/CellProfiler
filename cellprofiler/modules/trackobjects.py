@@ -81,7 +81,6 @@ See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>L
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 import numpy.ma
@@ -117,6 +116,8 @@ TM_ALL = [TM_OVERLAP, TM_DISTANCE, TM_MEASUREMENTS,TM_LAP]
 DT_COLOR_AND_NUMBER = 'Color and Number'
 DT_COLOR_ONLY = 'Color Only'
 DT_ALL = [DT_COLOR_AND_NUMBER, DT_COLOR_ONLY]
+
+R_PARENT = "Parent"
 
 F_PREFIX = "TrackObjects"
 F_LABEL = "Label"
@@ -357,11 +358,15 @@ class TrackObjects(cpm.CPModule):
             alternative to keeping the gap is to bridge it by connecting
             the tracks on either side of the missing frames).
             The cost of bridging a gap is the distance, in pixels, of the 
-            displacement of the object between frames.<br><br>
-            Set the gap cost higher if tracks from objects in previous
+            displacement of the object between frames.
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>Set the gap cost higher if tracks from objects in previous
             frames are being erroneously joined, across a gap, to tracks from 
-            objects in subsequent frames. Set the cost lower if tracks
-            are not properly joined due to gaps caused by mis-segmentation.''')
+            objects in subsequent frames. </li>
+            <li>Set the cost lower if tracks
+            are not properly joined due to gaps caused by mis-segmentation.</li>
+            </ul></p>''')
         
         self.split_cost = cps.Integer(
             'Split alternative cost', 40, minval=1, doc = '''
@@ -370,15 +375,22 @@ class TrackObjects(cpm.CPModule):
             when the alternative is to make them into one track that
             splits. A split occurs when an object in one frame is assigned
             to the same track as two objects in a subsequent frame.
-            The split score takes into
-            account the area of the split object relative to the area of
-            the resulting objects and the displacement of the resulting
-            objects relative to the position of the original object and is
-            roughly measured in pixels. The split alternative cost is 
-            (conceptually) subtracted from the cost of making the split.<br>
-            The split cost should be set lower if objects are being split
-            that should not be split. It should be set higher if objects
-            that should be split are not.''')
+            The split cost takes two components into account: 
+            <ul>
+            <li>The area of the split object relative to the area of
+            the resulting objects.</li>
+            <li>The displacement of the resulting
+            objects relative to the position of the original object.</li>
+            </ul>
+            The split cost is roughly measured in pixels. The split alternative cost is 
+            (conceptually) subtracted from the cost of making the split.
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>The split cost should be set lower if objects are being split
+            that should not be split. </li>
+            <li>The split cost should be set higher if objects
+            that should be split are not.</li>
+            </ul></p>''')
         
         self.merge_cost = cps.Integer(
             'Merge alternative cost', 40, minval=1,doc = '''
@@ -387,49 +399,72 @@ class TrackObjects(cpm.CPModule):
             distinct when the alternative is to merge them into one.
             A merge occurs when two objects in one frame are assigned to
             the same track as a single object in a subsequent frame.
-            The merge score takes into account the area of the two objects
-            to be merged relative to the area of the resulting objects and
-            the displacement of the original objects relative to the final
-            object. The merge cost is measured in pixels. The merge
+            The merge score takes two components into account:
+            <ul>
+            <li>The area of the two objects
+            to be merged relative to the area of the resulting objects.</li>
+            <li>The displacement of the original objects relative to the final
+            object. </li>
+            </ul>
+            The merge cost is measured in pixels. The merge
             alternative cost is (conceptually) subtracted from the
-            cost of making the merge.<br>
-            Set the merge alternative cost lower if objects are being
-            merged when they should otherwise be kept separate. Set the cost
-            higher if objects that are not merged should be merged.''')
+            cost of making the merge.
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>Set the merge alternative cost lower if objects are being
+            merged when they should otherwise be kept separate. </li>
+            <li>Set the merge alternative cost
+            higher if objects that are not merged should be merged.</li>
+            </ul></p>''')
         
         self.max_gap_score = cps.Integer(
             'Maximum gap displacement', 50, minval=1, doc = '''
             <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
-            displacements during the second phase. The measurement is roughly
-            the maximum displacement of an object's center from frame to frame.
-            The algorithm will run more slowly with a higher value. The
-            algorithm will not consider objects that would otherwise be
-            tracked between frames if set to a lower value.''')
+            displacements during the second phase. 
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>The maximum gap displacement should be set to roughly
+            the maximum displacement of an object's center from frame to frame. An object that makes large
+            frame-to-frame jumps should have a higher value for this setting than one that only moves slightly.</li>
+            <li>Be aware that the LAP algorithm will run more slowly with a higher maximum gap displacement 
+            value, since the higher this value, the more objects that must be compared at each step.</li>
+            <li>Objects that would have been tracked between successive frames for a lower maximum displacement 
+            may not be tracked if the value is set higher.</li>
+            </ul></p>''')
         
         self.max_merge_score = cps.Integer(
             'Maximum merge score', 50, minval=1, doc = '''
             <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
-            merge scores. The merge score has two components: the area
-            of the resulting merged object relative to the area of the
-            two objects to be merged and the distances between the objects
-            to be merged and the resulting object. The algorithm will run
-            more slowly with a higher value. The algorithm will exclude
-            objects that would otherwise be merged if it is set to a lower
-            value.''')
+            merge scores. The merge score has two components: 
+            <ul>
+            <li>The area of the resulting merged object relative to the area of the
+            two objects to be merged.</li>
+            <li>The distances between the objects to be merged and the resulting object. </li>
+            </ul>
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>The LAP algorithm will run more slowly with a higher maximum merge score value. </li>
+            <li>Objects that would have been merged at a lower maximum merge score will not be considered for merging.</li>
+            </ul></p>''')
         
         self.max_split_score = cps.Integer(
             'Maximum split score', 50, minval=1, doc = '''
             <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
-            split scores. The split score has two components: the area
-            of the initial object relative to the area of the
-            two objects resulting from the split and the distances between the 
-            original and resulting objects. The algorithm will run
-            more slowly with a higher value. The algorithm will exclude
-            objects that would otherwise be split if it is set to a lower
-            value.''')
+            split scores. The split score has two components: 
+            <ul>
+            <li>The area of the initial object relative to the area of the
+            two objects resulting from the split.</li>
+            <li>The distances between the original and resulting objects. </li>
+            </ul>
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>The LAP algorithm will run more slowly with a maximum split score value. </li>
+            <li>Objects that would have been split at a lower maximum split score will not be considered for splitting.</li>
+            </ul></p>
+            ''')
         
         self.max_frame_distance = cps.Integer(
             'Maximum gap', 5, minval=1, doc = '''
@@ -438,9 +473,14 @@ class TrackObjects(cpm.CPModule):
             This setting controls the maximum number of frames that can
             be skipped when merging a gap caused by an unsegmented object.
             These gaps occur when an image is mis-segmented and identification
-            fails to find an object in one or more frames. The adjustment of
-            this setting depends on image signal-to-noise and the object
-            detection efficacy.''')
+            fails to find an object in one or more frames.
+            <p><i><b>Recommendations:</b></i>
+            <ul>
+            <li>Set the maximum gap higher in order to have more chance of correctly recapturing an object after 
+            erroneously losing the original for a few frames.</li>
+            <li>Set the maximum gap lower to reduce the chance of erroneously connecting to the wrong object after
+            correctly losing the original object (e.g., if the cell dies or moves off-screen).</li>
+            </ul></p>''')
         
         self.wants_lifetime_filtering = cps.Binary(
             'Do you want to filter objects by lifetime?', False, doc = '''
@@ -448,7 +488,7 @@ class TrackObjects(cpm.CPModule):
             lifetime, i.e., total duration in frames. This is useful for
             marking objects which transiently appear and disappear, such
             as the results of a mis-segmentation. <br>
-            Two points to keep in mind when using this feature:
+            <p><i><b>Recommendations:</b></i>
             <ul>
             <li>This operation does not actually delete the filtered object, 
             but merely removes its label from the tracked object list; 
@@ -456,7 +496,7 @@ class TrackObjects(cpm.CPModule):
             <li>An object can be filtered only if it is tracked as an unique object.
             Splits continue the lifetime count from their parents, so the minimum
             lifetime value does not apply to them.</li>
-            </ul>''')
+            </ul></p>''')
         
         self.wants_minimum_lifetime = cps.Binary(
             'Filter using a minimum lifetime?', True, doc = '''
@@ -670,9 +710,6 @@ class TrackObjects(cpm.CPModule):
         measurement_name = self.image_measurement_name(feature)
         workspace.measurements.add_image_measurement(measurement_name, value)
         
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         objects = workspace.object_set.get_objects(self.object_name.value)
         if self.tracking_method == TM_DISTANCE:
@@ -702,19 +739,23 @@ class TrackObjects(cpm.CPModule):
             image_pixels = figure_to_image(figure, dpi=figure.dpi)
             image = cpi.Image(image_pixels)
             workspace.image_set.add(self.image_name.value, image)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.labels = objects.segmented
             workspace.display_data.object_numbers = \
                      self.get_saved_object_numbers(workspace)
             
-    def display(self, workspace):
-        frame = workspace.create_or_find_figure(title="TrackObjects, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-        figure = frame.figure
-        figure.clf()
-        ax = figure.add_subplot(1,1,1)
-        self.draw(workspace.display_data.labels, ax, 
-                  workspace.display_data.object_numbers)
+    def display(self, workspace, figure):
+        if hasattr(workspace.display_data, "labels"):
+            figure.set_subplots((1, 1))
+            subfigure = figure.figure
+            subfigure.clf()
+            ax = subfigure.add_subplot(1,1,1)
+            self.draw(workspace.display_data.labels, ax, 
+                      workspace.display_data.object_numbers)
+        else:
+            # We get here after running as a data tool
+            figure.figure.text(.5, .5, "Analysis complete",
+                               ha="center", va="center")
 
     def draw(self, labels, ax, object_numbers):
         indexer = np.zeros(len(object_numbers)+1,int)
@@ -1132,6 +1173,10 @@ class TrackObjects(cpm.CPModule):
             z = self.flood(c[i], at, a, b, c, d, z)
         return z
 
+    def is_aggregation_module(self):
+        '''We connect objects across imagesets within a group = aggregation'''
+        return True
+    
     def post_group(self, workspace, grouping):
         # If any tracking method other than LAP, recalculate measurements
         # (Really, only the final age needs to be re-done)
@@ -1346,14 +1391,15 @@ class TrackObjects(cpm.CPModule):
         # The first column of z is the index of the track that ends. The second
         # is the index into P2 of the object to be merged into
         #
-        z = np.zeros((0,2), np.int32)
+        z = []
         while i <len(F):
             y = P1[j, IIDX] - L[i, IIDX]
             y = y.astype("int32")
             x = np.argwhere((y <= para8) & (y > 0))
             y = np.column_stack((np.zeros(len(x), dtype="int32")+i, x))
-            z = np.vstack((z, y))
+            z.append(y)
             i = i+1
+        z = np.vstack(z)
 
         # calculates actual cost according to the formula given in the 
         # supplementary notes    
@@ -1422,14 +1468,15 @@ class TrackObjects(cpm.CPModule):
             # The second is the index of the track that results from
             # the split.
             #
-            z = np.zeros((0,2), np.int32)
+            z = []
             while i < len(P1):
                 y = F[j, IIDX] - P2[i, IIDX]
                 y = y.astype("int32")
                 x = np.argwhere((y <= para8) & (y > 0))
                 y = np.column_stack((np.zeros(len(x), dtype="int32")+i, x))
-                z = np.vstack((z, y))
+                z.append(y)
                 i = i+1
+            z = np.vstack(z)
     
             AreaFirst = F[z[:, 1], AIDX]
             AreaAfterSplit = P[ P2[z[:, 0], PIDX].astype(int) + 1, AIDX]
@@ -1493,7 +1540,18 @@ class TrackObjects(cpm.CPModule):
         d = np.zeros(len(F)+1, dtype="int32")-1
         z = np.zeros(len(F)+1, dtype="int32")
         
+        # relationships is a list of parent-child relationships. Each element
+        # is a two-tuple of parent and child and each parent/child is a
+        # two-tuple of image index and object number:
+        #
+        # [((<parent-image-index>, <parent-object-number>),
+        #   (<child-image-index>, <child-object-number>))...]
+        #
+        relationships = []
         for i in range(len(F)):
+            my_image_index = int(F[i, IIDX])
+            my_object_index = int(F[i, OIIDX])
+            my_object_number = int(F[i, ONIDX])
             if(y[i] < len(F)):
                 #
                 # y[i] gives index of last hooked to first
@@ -1503,14 +1561,16 @@ class TrackObjects(cpm.CPModule):
                 #
                 # Hook our parent image/object number to found parent
                 #
-                my_image_index = int(F[i, IIDX])
-                my_object_index = int(F[i, OIIDX])
                 parent_image_index = int(L[y[i], IIDX])
                 parent_object_number = int(L[y[i], ONIDX])
+                parent_image_number = image_numbers[parent_image_index]
                 parent_image_numbers[my_image_index][my_object_index] = \
-                                    image_numbers[parent_image_index]
+                                    parent_image_number
                 parent_object_numbers[my_image_index][my_object_index] = \
                                      parent_object_number
+                relationships.append(
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
                 #
                 # One less new object
                 #
@@ -1525,16 +1585,18 @@ class TrackObjects(cpm.CPModule):
                 # Hook split objects to their parent
                 #
                 p2_idx = y[i] - ss_off
-                my_image_index = int(F[i, IIDX])
-                my_object_index = int(F[i, OIIDX])
                 parent_image_index = int(P2[p2_idx, IIDX])
+                parent_image_number = image_numbers[parent_image_index]
                 parent_object_number = int(P2[p2_idx, ONIDX])
                 b[i+1] = P2[p2_idx, LIDX]
                 c[b[i+1]] = i+1
                 parent_image_numbers[my_image_index][my_object_index] = \
-                                    image_numbers[parent_image_index]
+                                    parent_image_number
                 parent_object_numbers[my_image_index][my_object_index] = \
                                      parent_object_number
+                relationships.append(
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
                 #
                 # one less new object
                 #
@@ -1551,15 +1613,21 @@ class TrackObjects(cpm.CPModule):
                 d[a[i+1]] = i+1
             elif(x[i] >= me_off and x[i] < me_off+len(P1)):
                 #
-                # Handle merged objects
+                # Handle merged objects. A merge hooks the end (L) of
+                # a segment (the parent) to a gap alternative in P1 (the child)
                 # 
                 p1_idx = x[i]-me_off
-                my_image_index = int(P1[p1_idx, IIDX])
-                my_object_index = int(P1[p1_idx, OIIDX])
                 a[i+1] = P1[p1_idx, LIDX]
                 d[a[i+1]] = i+1
-                lost_object_count[my_image_index] -= 1
-                merge_count[my_image_index] += 1
+                parent_image_index = int(L[i, IIDX])
+                parent_object_number = int(L[i, ONIDX])
+                child_image_index = int(P1[p1_idx, IIDX])
+                child_object_number = int(P1[p1_idx, ONIDX])
+                relationships.append(
+                    ((parent_image_index, parent_object_number),
+                     (my_image_index, my_object_number)))
+                lost_object_count[child_image_index] -= 1
+                merge_count[child_image_index] += 1
             else:
                 a[i+1] = -1
 
@@ -1617,6 +1685,19 @@ class TrackObjects(cpm.CPModule):
             m.add_measurement(cpmeas.IMAGE,
                               self.image_measurement_name(F_SPLIT_COUNT),
                               split_count[i], True, image_number)
+        #
+        # Write the relationships.
+        #
+        if len(relationships) > 0:
+            relationships = np.array(relationships)
+            parent_image_numbers = image_numbers[relationships[:, 0, 0]]
+            child_image_numbers = image_numbers[relationships[:, 1, 0]]
+            parent_object_numbers = relationships[:, 0, 1]
+            child_object_numbers = relationships[:, 1, 1]
+            m.add_relate_measurement(
+                self.module_num, R_PARENT, object_name, object_name,
+                parent_image_numbers, parent_object_numbers,
+                child_image_numbers, child_object_numbers)
 
         self.recalculate_group(workspace, image_numbers)
         
@@ -1648,6 +1729,9 @@ class TrackObjects(cpm.CPModule):
         #
         count = np.array([len(x) for x in parent_image_numbers])
         idx = Indexes(count)
+        if idx.length == 0:
+            # Nothing to do
+            return
         parent_image_numbers = np.hstack(parent_image_numbers).astype(int)
         parent_object_numbers = np.hstack(parent_object_numbers).astype(int)
         parent_image_indexes = image_index[parent_image_numbers]
@@ -1808,15 +1892,13 @@ class TrackObjects(cpm.CPModule):
         if self.wants_lifetime_filtering.value:
             m.add_experiment_measurement(F_EXPT_FILT_NUMTRACKS, nlabels-len(labels_to_filter))
 
-    def map_objects(self, workspace, new_of_old, old_of_new, i,j):
+    def map_objects(self, workspace, new_of_old, old_of_new, i, j):
         '''Record the mapping of old to new objects and vice-versa
 
         workspace - workspace for current image set
         new_to_old - an array of the new labels for every old label
         old_to_new - an array of the old labels for every new label
-        score - a score that is higher for better mappings: we use this
-                score to assign new label numbers so that the new objects
-                that are "better" inherit the old objects' label number
+        i, j - the coordinates for each new object.
         '''
         m = workspace.measurements
         assert isinstance(m, cpmeas.Measurements)
@@ -1931,6 +2013,40 @@ class TrackObjects(cpm.CPModule):
         else:
             merge_count = 0
         self.add_image_measurement(workspace, F_MERGE_COUNT, merge_count)
+        #########################################
+        #
+        # Compile the relationships between children and parents
+        #
+        #########################################
+        last_object_numbers = np.arange(1, len(new_of_old) + 1)
+        new_object_numbers = np.arange(1, len(old_of_new)+1)
+        r_parent_object_numbers = np.hstack((
+            old_of_new[old_of_new != 0], 
+            last_object_numbers[new_of_old != 0]))
+        r_child_object_numbers = np.hstack((
+            new_object_numbers[parents != 0], new_of_old[new_of_old != 0]))
+        if len(r_child_object_numbers) > 0:
+            #
+            # Find unique pairs
+            #
+            order = np.lexsort((r_child_object_numbers, r_parent_object_numbers))
+            r_child_object_numbers = r_child_object_numbers[order]
+            r_parent_object_numbers = r_parent_object_numbers[order]
+            to_keep = np.hstack((
+                [True], 
+                (r_parent_object_numbers[1:] != r_parent_object_numbers[:-1]) |
+                (r_child_object_numbers[1:] != r_child_object_numbers[:-1])))
+            r_child_object_numbers = r_child_object_numbers[to_keep]
+            r_parent_object_numbers = r_parent_object_numbers[to_keep]
+            r_image_numbers = np.ones(
+                r_parent_object_numbers.shape[0],
+                r_parent_object_numbers.dtype) * image_number
+            if len(r_child_object_numbers) > 0:
+                m.add_relate_measurement(
+                    self.module_num, R_PARENT, 
+                    self.object_name.value, self.object_name.value,
+                    r_image_numbers - 1, r_parent_object_numbers,
+                    r_image_numbers, r_child_object_numbers)
 
     def get_kalman_feature_names(self):
         if self.tracking_method != TM_LAP:
@@ -1963,7 +2079,16 @@ class TrackObjects(cpm.CPModule):
                 attributes = { cpmeas.MCA_AVAILABLE_POST_GROUP: True }
                 result = [ ( c[0], c[1], c[2], attributes) for c in result]
         return result
-
+    
+    def get_object_relationships(self, pipeline):
+        '''Return the object relationships produced by this module'''
+        object_name = self.object_name.value
+        if self.wants_second_phase and self.tracking_method == TM_LAP:
+            when = cpmeas.MCA_AVAILABLE_POST_GROUP
+        else:
+            when = cpmeas.MCA_AVAILABLE_EACH_CYCLE
+        return [(R_PARENT, object_name, object_name, when)]
+    
     def get_categories(self, pipeline, object_name):
         if object_name in (self.object_name.value, cpmeas.IMAGE):
             return [F_PREFIX]

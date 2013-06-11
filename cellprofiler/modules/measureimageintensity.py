@@ -45,7 +45,6 @@ See also <b>LoadImages</b>, <b>MeasureObjectIntensity</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 
@@ -175,24 +174,23 @@ class MeasureImageIntensity(cpm.CPModule):
             dict[key] = im
         return dict.values()
         
-    def is_interactive(self):
-        return False
-
     def run(self, workspace):
         '''Perform the measurements on the imageset'''
         #
         # Then measure each
         #
-        statistics = [["Image","Masking object","Feature","Value"]]
+        col_labels = ["Image","Masking object","Feature","Value"]
+        statistics = []
         for im in self.get_non_redundant_image_measurements():
             statistics += self.measure(im, workspace)
         workspace.display_data.statistics = statistics
+        workspace.display_data.col_labels = col_labels
 
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="MeasureImageIntensity, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-        figure.subplot_table(0, 0, workspace.display_data.statistics, 
-                             ratio=(.25,.25,.25,.25))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0, 0, 
+                             workspace.display_data.statistics, 
+                             col_labels = workspace.display_data.col_labels)
     
     def measure(self, im, workspace):
         '''Perform measurements according to the image measurement in im

@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version__="$Revision$"
 
 import base64
 import numpy as np
@@ -30,6 +29,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.rescaleintensity as R
+from cellprofiler.modules.injectimage import InjectImage
 
 INPUT_NAME = 'input'
 OUTPUT_NAME = 'output'
@@ -469,15 +469,26 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         object_set = cpo.ObjectSet()
         image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        measurements = cpmeas.Measurements() 
+        measurements = cpmeas.Measurements()
+        module_number = 1
         module = R.RescaleIntensity()
-        module.module_num = 1
-        pipeline.add_module(module)
         module.image_name.value = INPUT_NAME
-        if input_mask is None:
-            image = cpi.Image(input_image)
+        if isinstance(input_image, (tuple, list)):
+            first_input_image = input_image[0]
         else:
-            image = cpi.Image(input_image, input_mask)
+            first_input_image = input_image
+        if isinstance(input_mask, (tuple, list)):
+            first_input_mask = input_mask[0]
+        else:
+            first_input_mask = input_mask
+        if first_input_mask is None:
+            image = cpi.Image(first_input_image)
+        else:
+            image = cpi.Image(first_input_image, first_input_mask)
+        ii = InjectImage(INPUT_NAME, input_image, input_mask)
+        ii.module_num = module_number
+        module_number += 1
+        pipeline.add_module(ii)
         image_set.add(INPUT_NAME, image)
         module.rescaled_image_name.value = OUTPUT_NAME
         if reference_image is not None:
@@ -487,6 +498,12 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
             else:
                 image = cpi.Image(reference_image, mask = reference_mask)
             image_set.add(REFERENCE_NAME, image)
+            ii = InjectImage(REFERENCE_NAME, reference_image, reference_mask)
+            ii.module_num = module_number
+            module_number += 1
+            pipeline.add_module(ii)
+        module.module_num = module_number
+        pipeline.add_module(module)
         if measurement is not None:
             module.divisor_measurement.value = MEASUREMENT_NAME
             measurements.add_image_measurement(MEASUREMENT_NAME, measurement)
@@ -545,6 +562,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.wants_automatic_low.value = R.LOW_EACH_IMAGE
         module.wants_automatic_high.value = R.CUSTOM_VALUE
         module.source_high.value = .6
+        self.assertFalse(module.is_aggregation_module())
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
@@ -554,14 +572,13 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         image1 = np.random.uniform(size=(10,20)).astype(np.float32) * .5 + .5
         image2 = np.random.uniform(size=(10,20)).astype(np.float32)
         expected = (image1 - np.min(image2))/ (1 - np.min(image2))
-        workspace, module = self.make_workspace(image1)
+        workspace, module = self.make_workspace([image1, image2])
         self.assertTrue(isinstance(module, R.RescaleIntensity))
-        image_set_2 = workspace.image_set_list.get_image_set(1)
-        image_set_2.add(INPUT_NAME, cpi.Image(image2))
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = R.LOW_ALL_IMAGES
         module.wants_automatic_high.value = R.CUSTOM_VALUE
         module.source_high.value = 1
+        self.assertTrue(module.is_aggregation_module())
         module.prepare_group(workspace, {}, [1, 2])
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
@@ -576,6 +593,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.wants_automatic_low.value = R.CUSTOM_VALUE
         module.wants_automatic_high.value = R.HIGH_EACH_IMAGE
         module.source_low.value = .1
+        self.assertFalse(module.is_aggregation_module())
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
         np.testing.assert_almost_equal(pixels, expected)
@@ -585,7 +603,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         image1 = np.random.uniform(size=(10,20)).astype(np.float32) * .5
         image2 = np.random.uniform(size=(10,20)).astype(np.float32)
         expected = image1 / np.max(image2)
-        workspace, module = self.make_workspace(image1)
+        workspace, module = self.make_workspace([image1, image2])
         self.assertTrue(isinstance(module, R.RescaleIntensity))
         image_set_2 = workspace.image_set_list.get_image_set(1)
         image_set_2.add(INPUT_NAME, cpi.Image(image2))
@@ -593,6 +611,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         module.wants_automatic_low.value = R.CUSTOM_VALUE
         module.wants_automatic_high.value = R.HIGH_ALL_IMAGES
         module.source_low.value = 0
+        self.assertTrue(module.is_aggregation_module())
         module.prepare_group(workspace, {}, [1, 2])
         module.run(workspace)
         pixels = workspace.image_set.get_image(OUTPUT_NAME).pixel_data
@@ -618,7 +637,7 @@ RescaleIntensity:[module_num:1|svn_version:\'8913\'|variable_revision_number:3|s
         mask = np.ones(expected.shape, bool)
         mask[3:5,4:7] = False
         expected[~ mask] = 1.5
-        workspace, module = self.make_workspace(expected / 2 + .1,mask)
+        workspace, module = self.make_workspace(expected / 2 + .1, mask)
         module.rescale_method.value = R.M_MANUAL_INPUT_RANGE
         module.wants_automatic_low.value = R.CUSTOM_VALUE
         module.wants_automatic_high.value = R.HIGH_EACH_IMAGE

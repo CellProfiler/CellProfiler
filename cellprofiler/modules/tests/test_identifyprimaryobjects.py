@@ -11,178 +11,91 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__ = "$Revision$"
 import os
 
 import base64
 import unittest
 import numpy as np
-import PIL.Image as PILImage
 import scipy.ndimage
 import tempfile
 import StringIO
 import zlib
-
-from cellprofiler.preferences import set_headless
-set_headless()
 
 import cellprofiler.modules.identifyprimaryobjects as ID
 import cellprofiler.modules.identify as I
 import cellprofiler.cpmath.threshold as T
 from cellprofiler.modules.injectimage import InjectImage
 import cellprofiler.settings
-import cellprofiler.cpimage
-import cellprofiler.objects
+import cellprofiler.cpimage as cpi
+import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline
 from cellprofiler.workspace import Workspace
-import cellprofiler.modules.tests
+from cellprofiler.modules.tests import read_example_image
+
+IMAGE_NAME = "my_image"
+OBJECTS_NAME = "my_objects"
+BINARY_IMAGE_NAME = "binary_image"
+MASKING_OBJECTS_NAME = "masking_objects"
 
 class test_IdentifyPrimaryObjects(unittest.TestCase):
     def load_error_handler(self, caller, event):
         if isinstance(event, cellprofiler.pipeline.LoadExceptionEvent):
             self.fail(event.error.message)
+            
+    def make_workspace(self, image, 
+                       mask = None,
+                       labels = None, 
+                       binary_image = None):
+        '''Make a workspace and IdentifyPrimaryObjects module
+        
+        image - the intensity image for thresholding
+        
+        mask - if present, the "don't analyze" mask of the intensity image
+        
+        labels - if thresholding per-object, the labels matrix needed
+        
+        binary_image - if thresholding using a binary image, the image
+        '''
+        module = ID.IdentifyPrimaryObjects()
+        module.module_num = 1
+        module.image_name.value = IMAGE_NAME
+        module.object_name.value = OBJECTS_NAME
+        module.binary_image.value = BINARY_IMAGE_NAME
+        module.masking_objects.value = MASKING_OBJECTS_NAME
+        
+        pipeline = cellprofiler.pipeline.Pipeline()
+        pipeline.add_module(module)
+        m = cpmeas.Measurements()
+        cpimage = cpi.Image(image, mask = mask)
+        m.add(IMAGE_NAME, cpimage)
+        if binary_image is not None:
+            m.add(BINARY_IMAGE_NAME, cpi.Image(binary_image))
+        object_set = cpo.ObjectSet()
+        if labels is not None:
+            o = cpo.Objects()
+            o.segmented = labels
+            object_set.add_objects(o, MASKING_OBJECTS_NAME)
+        workspace = cellprofiler.workspace.Workspace(
+            pipeline, module, m, object_set, m, None)
+        return workspace, module
 
     def test_00_00_init(self):
-        x = ID.IdentifyPrimAutomatic()
-    
-    def test_01_01_image_name(self):
-        x = ID.IdentifyPrimAutomatic()
-        x.setting(ID.IMAGE_NAME_VAR+1).set_value("MyImage")
-        self.assertEqual(x.image_name, "MyImage")
-    
-    def test_01_02_object_name(self):
-        x = ID.IdentifyPrimAutomatic()
-        x.setting(ID.OBJECT_NAME_VAR+1).set_value("MyObject")
-        self.assertEqual(x.object_name, "MyObject")
-    
-    def test_01_03_size_range(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertEqual(x.size_range.min,10)
-        self.assertEqual(x.size_range.max,40)
-        x.setting(ID.SIZE_RANGE_VAR+1).set_value("5,100")
-        self.assertEqual(x.size_range.min,5)
-        self.assertEqual(x.size_range.max,100)
-    
-    def test_01_04_exclude_size(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertTrue(x.exclude_size.value,"Default should be yes")
-        x.setting(ID.EXCLUDE_SIZE_VAR+1).set_value("No")
-        self.assertFalse(x.exclude_size.value)
-        x.setting(ID.EXCLUDE_SIZE_VAR+1).set_value("Yes")
-        self.assertTrue(x.exclude_size.value)
-        
-    def test_01_05_merge_objects(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertFalse(x.merge_objects.value, "Default should be no")
-        x.setting(ID.MERGE_CHOICE_VAR+1).set_value("Yes")
-        self.assertTrue(x.merge_objects.value)
-        x.setting(ID.MERGE_CHOICE_VAR+1).set_value("No")
-        self.assertFalse(x.merge_objects.value)
-    
-    def test_01_06_exclude_border_objects(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertTrue(x.exclude_border_objects.value,"Default should be yes")
-        x.setting(ID.EXCLUDE_BORDER_OBJECTS_VAR+1).set_value("Yes")
-        self.assertTrue(x.exclude_border_objects.value)
-        x.setting(ID.EXCLUDE_BORDER_OBJECTS_VAR+1).set_value("No")
-        self.assertFalse(x.exclude_border_objects.value)
-    
-    def test_01_07_threshold_method(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertEqual(x.threshold_method, T.TM_OTSU_GLOBAL, "Default should be Otsu global")
-        x.setting(ID.THRESHOLD_METHOD_VAR+1).set_value(T.TM_BACKGROUND_GLOBAL)
-        self.assertEqual(x.threshold_method, T.TM_BACKGROUND_GLOBAL)
-    
-    def test_01_07_01_threshold_modifier(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertEqual(x.threshold_modifier, T.TM_GLOBAL)
-        x.setting(ID.THRESHOLD_METHOD_VAR+1).set_value(T.TM_BACKGROUND_ADAPTIVE)
-        self.assertEqual(x.threshold_modifier, T.TM_ADAPTIVE)
-
-    def test_01_07_02_threshold_algorithm(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertTrue(x.threshold_algorithm == T.TM_OTSU, "Default should be Otsu")
-        x.setting(ID.THRESHOLD_METHOD_VAR+1).set_value(T.TM_BACKGROUND_GLOBAL)
-        self.assertTrue(x.threshold_algorithm == T.TM_BACKGROUND)
-
-    def test_01_08_threshold_range(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertEqual(x.threshold_range.min,0)
-        self.assertEqual(x.threshold_range.max,1)
-        x.setting(ID.THRESHOLD_RANGE_VAR+1).set_value(".2,.8")
-        self.assertEqual(x.threshold_range.min,.2)
-        self.assertEqual(x.threshold_range.max,.8)
-    
-    def test_01_09_threshold_correction_factor(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertEqual(x.threshold_correction_factor.value,1)
-        x.setting(ID.THRESHOLD_CORRECTION_VAR+1).set_value("1.5")
-        self.assertEqual(x.threshold_correction_factor.value,1.5)
-    
-    def test_01_10_object_fraction(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertEqual(x.object_fraction.value,'0.01')
-        x.setting(ID.OBJECT_FRACTION_VAR+1).set_value("0.2")
-        self.assertEqual(x.object_fraction.value,'0.2')
-        
-    def test_01_11_unclump_method(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertEqual(x.unclump_method.value, ID.UN_INTENSITY, "Default should be intensity, was %s"%(x.unclump_method))
-        x.setting(ID.UNCLUMP_METHOD_VAR+1).set_value(ID.UN_LOG)
-        self.assertEqual(x.unclump_method.value, ID.UN_LOG)
-
-    def test_01_12_watershed_method(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertEqual(x.watershed_method.value, ID.WA_INTENSITY, "Default should be intensity")
-        x.setting(ID.WATERSHED_VAR+1).set_value(ID.WA_SHAPE)
-        self.assertEqual(x.watershed_method.value, ID.WA_SHAPE)
-        
-    def test_01_13_smoothing_filter_size(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertTrue(x.automatic_smoothing.value, "Default should be automatic")
-        x.automatic_smoothing.value = False
-        x.setting(ID.SMOOTHING_SIZE_VAR+1).set_value("10")
-        self.assertFalse(x.automatic_smoothing.value)
-        self.assertEqual(x.smoothing_filter_size,10)
-    
-    def test_01_14_maxima_suppression_size(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertTrue(x.automatic_suppression.value, "Default should be automatic")
-        x.automatic_suppression.value= False
-        x.setting(ID.MAXIMA_SUPPRESSION_SIZE_VAR+1).set_value("10")
-        self.assertFalse(x.automatic_suppression.value)
-        self.assertEqual(x.maxima_suppression_size.value,10)
-        
-    def test_01_15_use_low_res(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertTrue(x.low_res_maxima.value)
-        x.setting(ID.LOW_RES_MAXIMA_VAR+1).set_value("No")
-        self.assertFalse(x.low_res_maxima.value)
-        x.setting(ID.LOW_RES_MAXIMA_VAR+1).set_value("Yes")
-        self.assertTrue(x.low_res_maxima.value)
-        
-    def test_01_17_fill_holes(self):
-        x = ID.IdentifyPrimAutomatic()
-        self.assertTrue(x.fill_holes.value)
-        x.setting(ID.FILL_HOLES_OPTION_VAR+1).value = cellprofiler.settings.NO
-        self.assertFalse(x.fill_holes.value)
-        x.setting(ID.FILL_HOLES_OPTION_VAR+1).value = cellprofiler.settings.YES
-        self.assertTrue(x.fill_holes.value)
+        x = ID.IdentifyPrimaryObjects()
         
     def test_02_000_test_zero_objects(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.threshold_range.min =.1
         x.threshold_range.max = 1
         x.watershed_method.value = ID.WA_NONE
         img = np.zeros((25,25))
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -207,7 +120,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         self.assertEqual(np.product(location_center_y.shape),0)
 
     def test_02_001_test_zero_objects_wa_in_lo_in(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.threshold_range.min = .1
@@ -215,11 +128,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.watershed_method.value = ID.WA_INTENSITY
         x.unclump_method.value = ID.UN_INTENSITY
         img = np.zeros((25,25))
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -230,7 +143,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         self.assertTrue(np.all(segmented == 0))
 
     def test_02_002_test_zero_objects_wa_di_lo_in(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.threshold_range.min = .1
@@ -238,11 +151,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.watershed_method.value = ID.WA_SHAPE
         x.unclump_method.value = ID.UN_INTENSITY
         img = np.zeros((25,25))
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -253,7 +166,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         self.assertTrue(np.all(segmented == 0))
         
     def test_02_003_test_zero_objects_wa_in_lo_sh(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.threshold_range.min = .1
@@ -261,11 +174,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.watershed_method.value = ID.WA_INTENSITY
         x.unclump_method.value = ID.UN_SHAPE
         img = np.zeros((25,25))
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -276,7 +189,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         self.assertTrue(np.all(segmented == 0))
 
     def test_02_004_test_zero_objects_wa_di_lo_sh(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.threshold_range.min = .1
@@ -284,11 +197,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.watershed_method.value = ID.WA_SHAPE
         x.unclump_method.value = ID.UN_SHAPE
         img = np.zeros((25,25))
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -299,19 +212,20 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         self.assertTrue(np.all(segmented == 0))
 
     def test_02_01_test_one_object(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
-        x.smoothing_filter_size.value = 0
-        x.automatic_smoothing.value = False
         x.watershed_method.value = ID.WA_NONE
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_OTSU
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         img = one_cell_image()
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -349,17 +263,20 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
             self.assertTrue(all([column[1] in features for column in ocolumns]))
 
     def test_02_02_test_two_objects(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
         x.watershed_method.value = ID.WA_NONE
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_OTSU
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         img = two_cell_image()
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -392,7 +309,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         self.assertTrue(location_center_x[1]<16)
 
     def test_02_03_test_threshold_range(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.threshold_range.min = .7
@@ -401,11 +318,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.exclude_size.value = False
         x.watershed_method.value = ID.WA_NONE
         img = two_cell_image()
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -435,24 +352,25 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         self.assertTrue(location_center_x[0]<36)
     
     def test_02_04_fill_holes(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
         x.fill_holes.value = True
-        x.automatic_smoothing.value = False
-        x.smoothing_filter_size.value = 0
         x.watershed_method.value = ID.WA_NONE
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_OTSU
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         img = np.zeros((40,40))
         draw_circle(img, (10,10), 7, .5)
         draw_circle(img, (30,30), 7, .5)
         img[10,10] = 0
         img[30,30] = 0
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -461,7 +379,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         self.assertTrue(objects.segmented[30,30] > 0)
         
     def test_02_05_dont_fill_holes(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.threshold_range.min = .7
@@ -476,11 +394,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         draw_circle(img, (30,30), 7, .5)
         img[10,10] = 0
         img[30,30] = 0
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -490,23 +408,24 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
     
     def test_02_05_01_fill_holes_within_holes(self):
         'Regression test of img-1431'
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
         x.fill_holes.value = True
-        x.automatic_smoothing.value = False
-        x.smoothing_filter_size.value = 0
         x.watershed_method.value = ID.WA_NONE
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_OTSU
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         img = np.zeros((40,40))
         draw_circle(img, (20,20), 10, .5)
         draw_circle(img, (20,20), 4, 0)
         img[20,20] = 1
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -521,18 +440,19 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         Create an object whose intensity is high near the middle
         but has an hourglass shape, then segment it using shape/shape
         """
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
         x.size_range.value = (2,10)
         x.fill_holes.value = False
-        x.smoothing_filter_size.value = 0
-        x.automatic_smoothing.value = 0
         x.maxima_suppression_size.value = 3
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_SHAPE
         x.watershed_method.value = ID.WA_SHAPE
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_OTSU
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
@@ -555,11 +475,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                            ])
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -572,18 +492,19 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         Create an object with an hourglass shape to get two maxima, but
         set the intensities so that one maximum gets the middle portion
         """
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
         x.size_range.value = (2,10)
         x.fill_holes.value = False
-        x.smoothing_filter_size.value = 0
-        x.automatic_smoothing.value = 0
         x.maxima_suppression_size.value = 3
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_SHAPE
         x.watershed_method.value = ID.WA_INTENSITY
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_OTSU
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
@@ -606,11 +527,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                            ])
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -624,18 +545,19 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         Create an object with an hourglass shape and a peak in the middle.
         It should be segmented into a single object.
         """
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
         x.size_range.value = (4,10)
         x.fill_holes.value = False
-        x.smoothing_filter_size.value = 0
-        x.automatic_smoothing.value = 0
         x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_SHAPE
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_OTSU
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
@@ -661,11 +583,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         # We do a little blur here so that there's some monotonic decrease
         # from the central peak
         img = scipy.ndimage.gaussian_filter(img, .25, mode='constant')
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -678,7 +600,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         Create an object with an hourglass shape and a peak in the middle.
         It should be segmented into a single object.
         """
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
@@ -690,6 +612,9 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_SHAPE
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_OTSU
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
@@ -712,11 +637,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                            ])
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -729,7 +654,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         Create an object with an hourglass shape and a peak in the middle.
         It should be segmented into a single object.
         """
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
@@ -741,6 +666,9 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_SHAPE
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_OTSU
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
@@ -763,11 +691,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
                            ])
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -783,7 +711,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         should be shared because the watershed is done using the distance
         transform.
         """
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
@@ -820,11 +748,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         # We do a little blur here so that there's some monotonic decrease
         # from the central peak
         img = scipy.ndimage.gaussian_filter(img, .5, mode='constant')
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -834,7 +762,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         
     def test_02_11_propagate(self):
         """Test the propagate unclump method"""
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.image_name.value = "my_image"
         x.object_name.value = "my_object"
         x.exclude_size.value = False
@@ -844,10 +772,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.automatic_smoothing.value = 0
         x.maxima_suppression_size.value = 3.6
         x.automatic_suppression.value = False
-        x.threshold_method.value = T.TM_MANUAL
         x.manual_threshold.value = .3
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_PROPAGATE
+        x.threshold_scope.value = I.TS_MANUAL
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         img = np.array([[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                            [ 0, 0, 0, 0, 0,.5,.5,.5,.5,.5,.5, 0, 0, 0, 0, 0],
@@ -873,11 +802,11 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         # We do a little blur here so that there's some monotonic decrease
         # from the central peak
         img = scipy.ndimage.gaussian_filter(img, .5, mode='constant')
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -936,7 +865,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         self.assertTrue(isinstance(x, ID.IdentifyPrimaryObjects))
         
         img = fly_image()[300:600,300:600]
-        image = cellprofiler.cpimage.Image(img)
+        image = cpi.Image(img)
         #
         # Make sure it runs both regular and with reduced image
         #
@@ -949,16 +878,13 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
                 x.unclump_method.value = unclump_method
                 for watershed_method in (ID.WA_INTENSITY, ID.WA_SHAPE, ID.WA_PROPAGATE):
                     x.watershed_method.value = watershed_method
-                    image_set_list = cellprofiler.cpimage.ImageSetList()
+                    image_set_list = cpi.ImageSetList()
                     image_set = image_set_list.get_image_set(0)
                     image_set.add(x.image_name.value, image)
-                    object_set = cellprofiler.objects.ObjectSet()
+                    object_set = cpo.ObjectSet()
                     measurements = cpmeas.Measurements()
                     x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
     
-    def test_03_01_run_inside_pipeline(self):
-        pass # No longer supported
-
     def test_04_01_load_matlab_12(self):
         """Test loading a Matlab version 12 IdentifyPrimAutomatic pipeline
         
@@ -1018,7 +944,7 @@ IdentifyPrimaryObjects:[module_num:1|svn_version:\'9633\'|variable_revision_numb
         pipeline.load(StringIO.StringIO(zlib.decompress(base64.b64decode(data))))
         self.assertEqual(len(pipeline.modules()),3)
         module = pipeline.modules()[1]
-        self.assertTrue(isinstance(module, ID.IdentifyPrimAutomatic))
+        self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
         self.assertTrue(module.should_save_outlines.value)
         self.assertEqual(module.save_outlines.value, "NucleiOutlines")
     
@@ -1216,7 +1142,8 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertTrue(module.exclude_size)
         self.assertFalse(module.merge_objects)
         self.assertTrue(module.exclude_border_objects)
-        self.assertEqual(module.threshold_method, T.TM_ROBUST_BACKGROUND_GLOBAL)
+        self.assertEqual(module.threshold_algorithm, T.TM_ROBUST_BACKGROUND)
+        self.assertEqual(module.threshold_modifier, T.TM_GLOBAL)
         self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
         self.assertAlmostEqual(module.threshold_range.min, 0.1)
         self.assertAlmostEqual(module.threshold_range.max, 0.6)
@@ -1251,7 +1178,8 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertFalse(module.exclude_size)
         self.assertTrue(module.merge_objects)
         self.assertFalse(module.exclude_border_objects)
-        self.assertEqual(module.threshold_method, T.TM_OTSU_ADAPTIVE)
+        self.assertEqual(module.threshold_algorithm, T.TM_OTSU)
+        self.assertEqual(module.threshold_modifier, T.TM_ADAPTIVE)
         self.assertAlmostEqual(module.threshold_correction_factor.value, 1.2)
         self.assertAlmostEqual(module.threshold_range.min, 0.1)
         self.assertAlmostEqual(module.threshold_range.max, 0.6)
@@ -1276,23 +1204,469 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(module.log_diameter, 5)
         self.assertEqual(module.limit_choice, ID.LIMIT_ERASE)
         self.assertEqual(module.maximum_object_count, 305)
+        
+    # Missing tests for versions 6-9 (!)
+    
+    def test_04_10_load_v10(self):
+        # Sorry about this overly-long pipeline, it seemed like we need to
+        # revisit many of the choices.
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20130226215424
+ModuleCount:11
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    :
+    Filter based on rules:No
+    Filter:or (file does contain "")
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Extract metadata?:Yes
+    Extraction method count:2
+    Extraction method:Automatic
+    Source:From file name
+    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)_w(?P<ChannelNumber>\x5B0-9\x5D)
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Filter images:All images
+    :or (file does contain "")
+    Metadata file location\x3A:
+    Match file and image metadata:\x5B\x5D
+    Case insensitive matching:No
+    Extraction method:Manual
+    Source:From file name
+    Regular expression:^(?P<StackName>\x5B^.\x5D+).flex
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Filter images:All images
+    :or (file does contain "")
+    Metadata file location\x3A:
+    Match file and image metadata:\x5B\x5D
+    Case insensitive matching:No
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Assignment method:Assign all images
+    Load as:Grayscale image
+    Image name:Channel0
+    :\x5B\x5D
+    Assign channels by:Order
+    Assignments count:1
+    Match this rule:or (metadata does StackName "")
+    Image name:DNA
+    Objects name:Cell
+    Load as:Grayscale image
+
+Groups:[module_num:4|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Do you want to group your images?:Yes
+    grouping metadata count:1
+    Metadata category:StackName
+
+IdentifyPrimaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the input image:Channel0
+    Name the primary objects to be identified:Cells
+    Typical diameter of objects, in pixel units (Min,Max):15,45
+    Discard objects outside the diameter range?:Yes
+    Try to merge too small objects with nearby larger objects?:No
+    Discard objects touching the border of the image?:Yes
+    Method to distinguish clumped objects:Intensity
+    Method to draw dividing lines between clumped objects:Intensity
+    Size of smoothing filter:11
+    Suppress local maxima that are closer than this minimum allowed distance:9
+    Speed up by using lower-resolution image to find local maxima?:Yes
+    Name the outline image:CellOutlines
+    Fill holes in identified objects?:Yes
+    Automatically calculate size of smoothing filter?:Yes
+    Automatically calculate minimum allowed distance between local maxima?:Yes
+    Retain outlines of the identified objects?:No
+    Automatically calculate the threshold using the Otsu method?:Yes
+    Enter Laplacian of Gaussian threshold:0.2
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:Yes
+    Enter LoG filter diameter:3
+    Handling of objects if excessive number of objects identified:Continue
+    Maximum number of objects:499
+    Threshold setting version:1
+    Threshold strategy:Adaptive
+    Threshold method:Otsu
+    Smoothing for threshold:Automatic
+    Threshold smoothing scale:2.0
+    Threshold correction factor:.80
+    Lower and upper bounds on threshold:0.01,0.90
+    Approximate fraction of image covered by objects?:0.05
+    Manual threshold:0.03
+    Select the measurement to threshold with:Metadata_Threshold
+    Select binary image:Segmentation
+    Masking objects:Wells
+    Two-class or three-class thresholding?:Two classes
+    Minimize the weighted variance or the entropy?:Weighted variance
+    Assign pixels in the middle intensity class to the foreground or the background?:Foreground
+    Method to calculate adaptive window size:Image size
+    Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:6|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the input image:Channel1
+    Name the primary objects to be identified:Cells
+    Typical diameter of objects, in pixel units (Min,Max):15,45
+    Discard objects outside the diameter range?:No
+    Try to merge too small objects with nearby larger objects?:Yes
+    Discard objects touching the border of the image?:No
+    Method to distinguish clumped objects:Laplacian of Gaussian
+    Method to draw dividing lines between clumped objects:None
+    Size of smoothing filter:11
+    Suppress local maxima that are closer than this minimum allowed distance:9
+    Speed up by using lower-resolution image to find local maxima?:No
+    Name the outline image:CellOutlines
+    Fill holes in identified objects?:No
+    Automatically calculate size of smoothing filter?:No
+    Automatically calculate minimum allowed distance between local maxima?:No
+    Retain outlines of the identified objects?:Yes
+    Automatically calculate the threshold using the Otsu method?:No
+    Enter Laplacian of Gaussian threshold:0.2
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+    Enter LoG filter diameter:3
+    Handling of objects if excessive number of objects identified:Erase
+    Maximum number of objects:499
+    Threshold setting version:1
+    Threshold strategy:Automatic
+    Threshold method:MCT
+    Smoothing for threshold:Manual
+    Threshold smoothing scale:2.0
+    Threshold correction factor:.80
+    Lower and upper bounds on threshold:0.01,0.09
+    Approximate fraction of image covered by objects?:0.05
+    Manual threshold:0.03
+    Select the measurement to threshold with:Metadata_Threshold
+    Select binary image:Segmentation
+    Masking objects:Wells
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Entropy
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Method to calculate adaptive window size:Custom
+    Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:7|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the input image:Channel2
+    Name the primary objects to be identified:Cells
+    Typical diameter of objects, in pixel units (Min,Max):15,45
+    Discard objects outside the diameter range?:No
+    Try to merge too small objects with nearby larger objects?:Yes
+    Discard objects touching the border of the image?:No
+    Method to distinguish clumped objects:None
+    Method to draw dividing lines between clumped objects:Propagate
+    Size of smoothing filter:11
+    Suppress local maxima that are closer than this minimum allowed distance:9
+    Speed up by using lower-resolution image to find local maxima?:No
+    Name the outline image:CellOutlines
+    Fill holes in identified objects?:No
+    Automatically calculate size of smoothing filter?:No
+    Automatically calculate minimum allowed distance between local maxima?:No
+    Retain outlines of the identified objects?:Yes
+    Automatically calculate the threshold using the Otsu method?:No
+    Enter Laplacian of Gaussian threshold:0.2
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+    Enter LoG filter diameter:3
+    Handling of objects if excessive number of objects identified:Truncate
+    Maximum number of objects:499
+    Threshold setting version:1
+    Threshold strategy:Binary image
+    Threshold method:MoG
+    Smoothing for threshold:No smoothing
+    Threshold smoothing scale:2.0
+    Threshold correction factor:.80
+    Lower and upper bounds on threshold:0.01,0.09
+    Approximate fraction of image covered by objects?:0.05
+    Manual threshold:0.03
+    Select the measurement to threshold with:Metadata_Threshold
+    Select binary image:Segmentation
+    Masking objects:Wells
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Entropy
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Method to calculate adaptive window size:Custom
+    Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:8|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the input image:Channel3
+    Name the primary objects to be identified:Cells
+    Typical diameter of objects, in pixel units (Min,Max):15,45
+    Discard objects outside the diameter range?:No
+    Try to merge too small objects with nearby larger objects?:Yes
+    Discard objects touching the border of the image?:No
+    Method to distinguish clumped objects:Shape
+    Method to draw dividing lines between clumped objects:Shape
+    Size of smoothing filter:11
+    Suppress local maxima that are closer than this minimum allowed distance:9
+    Speed up by using lower-resolution image to find local maxima?:No
+    Name the outline image:CellOutlines
+    Fill holes in identified objects?:No
+    Automatically calculate size of smoothing filter?:No
+    Automatically calculate minimum allowed distance between local maxima?:No
+    Retain outlines of the identified objects?:Yes
+    Automatically calculate the threshold using the Otsu method?:No
+    Enter Laplacian of Gaussian threshold:0.2
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+    Enter LoG filter diameter:3
+    Handling of objects if excessive number of objects identified:Truncate
+    Maximum number of objects:499
+    Threshold setting version:1
+    Threshold strategy:Global
+    Threshold method:Background
+    Smoothing for threshold:No smoothing
+    Threshold smoothing scale:2.0
+    Threshold correction factor:.80
+    Lower and upper bounds on threshold:0.01,0.09
+    Approximate fraction of image covered by objects?:0.05
+    Manual threshold:0.03
+    Select the measurement to threshold with:Metadata_Threshold
+    Select binary image:Segmentation
+    Masking objects:Wells
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Entropy
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Method to calculate adaptive window size:Custom
+    Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:9|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the input image:Channel4
+    Name the primary objects to be identified:Cells
+    Typical diameter of objects, in pixel units (Min,Max):15,45
+    Discard objects outside the diameter range?:No
+    Try to merge too small objects with nearby larger objects?:Yes
+    Discard objects touching the border of the image?:No
+    Method to distinguish clumped objects:Shape
+    Method to draw dividing lines between clumped objects:Shape
+    Size of smoothing filter:11
+    Suppress local maxima that are closer than this minimum allowed distance:9
+    Speed up by using lower-resolution image to find local maxima?:No
+    Name the outline image:CellOutlines
+    Fill holes in identified objects?:No
+    Automatically calculate size of smoothing filter?:No
+    Automatically calculate minimum allowed distance between local maxima?:No
+    Retain outlines of the identified objects?:Yes
+    Automatically calculate the threshold using the Otsu method?:No
+    Enter Laplacian of Gaussian threshold:0.2
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+    Enter LoG filter diameter:3
+    Handling of objects if excessive number of objects identified:Truncate
+    Maximum number of objects:499
+    Threshold setting version:1
+    Threshold strategy:Manual
+    Threshold method:Kapur
+    Smoothing for threshold:No smoothing
+    Threshold smoothing scale:2.0
+    Threshold correction factor:.80
+    Lower and upper bounds on threshold:0.01,0.09
+    Approximate fraction of image covered by objects?:0.05
+    Manual threshold:0.03
+    Select the measurement to threshold with:Metadata_Threshold
+    Select binary image:Segmentation
+    Masking objects:Wells
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Entropy
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Method to calculate adaptive window size:Custom
+    Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:10|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the input image:Channel4
+    Name the primary objects to be identified:Cells
+    Typical diameter of objects, in pixel units (Min,Max):15,45
+    Discard objects outside the diameter range?:No
+    Try to merge too small objects with nearby larger objects?:Yes
+    Discard objects touching the border of the image?:No
+    Method to distinguish clumped objects:Shape
+    Method to draw dividing lines between clumped objects:Shape
+    Size of smoothing filter:11
+    Suppress local maxima that are closer than this minimum allowed distance:9
+    Speed up by using lower-resolution image to find local maxima?:No
+    Name the outline image:CellOutlines
+    Fill holes in identified objects?:No
+    Automatically calculate size of smoothing filter?:No
+    Automatically calculate minimum allowed distance between local maxima?:No
+    Retain outlines of the identified objects?:Yes
+    Automatically calculate the threshold using the Otsu method?:No
+    Enter Laplacian of Gaussian threshold:0.2
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+    Enter LoG filter diameter:3
+    Handling of objects if excessive number of objects identified:Truncate
+    Maximum number of objects:499
+    Threshold setting version:1
+    Threshold strategy:Measurement
+    Threshold method:RidlerCalvard
+    Smoothing for threshold:No smoothing
+    Threshold smoothing scale:2.0
+    Threshold correction factor:.80
+    Lower and upper bounds on threshold:0.01,0.09
+    Approximate fraction of image covered by objects?:0.05
+    Manual threshold:0.03
+    Select the measurement to threshold with:Metadata_Threshold
+    Select binary image:Segmentation
+    Masking objects:Wells
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Entropy
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Method to calculate adaptive window size:Custom
+    Size of adaptive window:12
+
+IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_number:10|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the input image:Channel4
+    Name the primary objects to be identified:Cells
+    Typical diameter of objects, in pixel units (Min,Max):15,45
+    Discard objects outside the diameter range?:No
+    Try to merge too small objects with nearby larger objects?:Yes
+    Discard objects touching the border of the image?:No
+    Method to distinguish clumped objects:Shape
+    Method to draw dividing lines between clumped objects:Shape
+    Size of smoothing filter:11
+    Suppress local maxima that are closer than this minimum allowed distance:9
+    Speed up by using lower-resolution image to find local maxima?:No
+    Name the outline image:CellOutlines
+    Fill holes in identified objects?:No
+    Automatically calculate size of smoothing filter?:No
+    Automatically calculate minimum allowed distance between local maxima?:No
+    Retain outlines of the identified objects?:Yes
+    Automatically calculate the threshold using the Otsu method?:No
+    Enter Laplacian of Gaussian threshold:0.2
+    Automatically calculate the size of objects for the Laplacian of Gaussian filter?:No
+    Enter LoG filter diameter:3
+    Handling of objects if excessive number of objects identified:Truncate
+    Maximum number of objects:499
+    Threshold setting version:1
+    Threshold strategy:Per object
+    Threshold method:RobustBackground
+    Smoothing for threshold:No smoothing
+    Threshold smoothing scale:2.0
+    Threshold correction factor:.80
+    Lower and upper bounds on threshold:0.01,0.09
+    Approximate fraction of image covered by objects?:0.05
+    Manual threshold:0.03
+    Select the measurement to threshold with:Metadata_Threshold
+    Select binary image:Segmentation
+    Masking objects:Wells
+    Two-class or three-class thresholding?:Three classes
+    Minimize the weighted variance or the entropy?:Entropy
+    Assign pixels in the middle intensity class to the foreground or the background?:Background
+    Method to calculate adaptive window size:Custom
+    Size of adaptive window:12
+"""
+        pipeline = cellprofiler.pipeline.Pipeline()
+        def callback(caller,event):
+            self.assertFalse(
+                isinstance(event, cellprofiler.pipeline.LoadExceptionEvent))
+        pipeline.add_listener(callback)
+        pipeline.load(StringIO.StringIO(data))
+        module = pipeline.modules()[4]
+        self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
+        self.assertEqual(module.image_name, "Channel0")
+        self.assertEqual(module.object_name, "Cells")
+        self.assertEqual(module.size_range.min, 15)
+        self.assertEqual(module.size_range.max, 45)
+        self.assertTrue(module.exclude_size)
+        self.assertFalse(module.merge_objects)
+        self.assertTrue(module.exclude_border_objects)
+        self.assertEqual(module.unclump_method, ID.UN_INTENSITY)
+        self.assertEqual(module.watershed_method, ID.WA_INTENSITY)
+        self.assertTrue(module.automatic_smoothing)
+        self.assertEqual(module.smoothing_filter_size, 11)
+        self.assertTrue(module.automatic_suppression)
+        self.assertEqual(module.maxima_suppression_size, 9)
+        self.assertTrue(module.low_res_maxima)
+        self.assertFalse(module.should_save_outlines)
+        self.assertEqual(module.save_outlines, "CellOutlines")
+        self.assertTrue(module.fill_holes)
+        self.assertTrue(module.wants_automatic_log_threshold)
+        self.assertEqual(module.manual_log_threshold, .2)
+        self.assertTrue(module.wants_automatic_log_diameter)
+        self.assertEqual(module.log_diameter, 3)
+        self.assertEqual(module.limit_choice, ID.LIMIT_NONE)
+        self.assertEqual(module.maximum_object_count, 499)
+        #
+        self.assertEqual(module.threshold_scope, I.TS_ADAPTIVE)
+        self.assertEqual(module.threshold_method, I.TM_OTSU)
+        self.assertEqual(module.threshold_smoothing_choice, I.TSM_AUTOMATIC)
+        self.assertEqual(module.threshold_smoothing_scale, 2.0)
+        self.assertAlmostEqual(module.threshold_correction_factor, .80)
+        self.assertAlmostEqual(module.threshold_range.min, 0.01)
+        self.assertAlmostEqual(module.threshold_range.max, 0.90)
+        self.assertAlmostEqual(module.object_fraction, 0.05)
+        self.assertAlmostEqual(module.manual_threshold, 0.03)
+        self.assertEqual(module.thresholding_measurement, "Metadata_Threshold")
+        self.assertEqual(module.binary_image, "Segmentation")
+        self.assertEqual(module.masking_objects, "Wells")
+        self.assertEqual(module.two_class_otsu, I.O_TWO_CLASS)
+        self.assertEqual(module.use_weighted_variance, I.O_WEIGHTED_VARIANCE)
+        self.assertEqual(module.assign_middle_to_foreground, I.O_FOREGROUND)
+        self.assertEqual(module.adaptive_window_method, I.FI_IMAGE_SIZE)
+        self.assertEqual(module.adaptive_window_size, 12)
+        #
+        # Test alternate settings using subsequent instances of IDPrimary
+        #
+        module = pipeline.modules()[5]
+        self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
+        self.assertFalse(module.exclude_size)
+        self.assertTrue(module.merge_objects)
+        self.assertFalse(module.exclude_border_objects)
+        self.assertEqual(module.unclump_method, ID.UN_LOG)
+        self.assertEqual(module.watershed_method, ID.WA_NONE)
+        self.assertFalse(module.automatic_smoothing)
+        self.assertFalse(module.automatic_suppression)
+        self.assertFalse(module.low_res_maxima)
+        self.assertTrue(module.should_save_outlines)
+        self.assertFalse(module.fill_holes)
+        self.assertFalse(module.wants_automatic_log_threshold)
+        self.assertFalse(module.wants_automatic_log_diameter)
+        self.assertEqual(module.limit_choice, ID.LIMIT_ERASE)
+        self.assertEqual(module.threshold_scope, I.TS_AUTOMATIC)
+        self.assertEqual(module.threshold_method, I.TM_MCT)
+        self.assertEqual(module.threshold_smoothing_choice, I.TSM_MANUAL)
+        self.assertEqual(module.two_class_otsu, I.O_THREE_CLASS)
+        self.assertEqual(module.use_weighted_variance, I.O_ENTROPY)
+        self.assertEqual(module.assign_middle_to_foreground, I.O_BACKGROUND)
+        self.assertEqual(module.adaptive_window_method, I.FI_CUSTOM)
+        module = pipeline.modules()[6]
+        self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
+        self.assertEqual(module.unclump_method, ID.UN_NONE)
+        self.assertEqual(module.watershed_method, ID.WA_PROPAGATE)
+        self.assertEqual(module.limit_choice, ID.LIMIT_TRUNCATE)
+        self.assertEqual(module.threshold_scope, I.TS_BINARY_IMAGE)
+        self.assertEqual(module.threshold_method, I.TM_MOG)
+        self.assertEqual(module.threshold_smoothing_choice, I.TSM_NONE)
+        module = pipeline.modules()[7]
+        self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
+        self.assertEqual(module.unclump_method, ID.UN_SHAPE)
+        self.assertEqual(module.watershed_method, ID.WA_SHAPE)
+        self.assertEqual(module.threshold_scope, I.TS_GLOBAL)
+        self.assertEqual(module.threshold_method, T.TM_BACKGROUND)
+        module = pipeline.modules()[8]
+        self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
+        self.assertEqual(module.threshold_scope, I.TS_MANUAL)
+        self.assertEqual(module.threshold_method, T.TM_KAPUR)
+        module = pipeline.modules()[9]
+        self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
+        self.assertEqual(module.threshold_scope, I.TS_MEASUREMENT)
+        self.assertEqual(module.threshold_method, T.TM_RIDLER_CALVARD)
+        module = pipeline.modules()[10]
+        self.assertTrue(isinstance(module, ID.IdentifyPrimaryObjects))
+        self.assertEqual(module.threshold_scope, I.TS_PER_OBJECT)
+        self.assertEqual(module.threshold_method, T.TM_ROBUST_BACKGROUND)
+        
 
     def test_05_01_discard_large(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = True
         x.size_range.min = 10
         x.size_range.max = 40
         x.watershed_method.value = ID.WA_NONE
+        x.threshold_scope.value = I.TS_MANUAL
+        x.manual_threshold.value = .3
         img = np.zeros((200,200))
         draw_circle(img,(100,100),25,.5)
         draw_circle(img,(25,25),10,.5)
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -1308,21 +1682,23 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(np.product(location_center_x.shape),1)
 
     def test_05_02_keep_large(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
         x.size_range.min = 10
         x.size_range.max = 40
         x.watershed_method.value = ID.WA_NONE
+        x.threshold_scope.value = I.TS_MANUAL
+        x.manual_threshold.value = .3
         img = np.zeros((200,200))
         draw_circle(img,(100,100),25,.5)
         draw_circle(img,(25,25),10,.5)
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -1336,21 +1712,23 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(np.product(location_center_x.shape),2)
 
     def test_05_03_discard_small(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = True
         x.size_range.min = 40
         x.size_range.max = 60
         x.watershed_method.value = ID.WA_NONE
+        x.threshold_scope.value = I.TS_MANUAL
+        x.manual_threshold.value = .3
         img = np.zeros((200,200))
         draw_circle(img,(100,100),25,.5)
         draw_circle(img,(25,25),10,.5)
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -1366,23 +1744,25 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         self.assertEqual(np.product(location_center_x.shape),1)
 
     def test_05_02_discard_edge(self):
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
         x.size_range.min = 10
         x.size_range.max = 40
         x.watershed_method.value = ID.WA_NONE
+        x.threshold_scope.value = I.TS_MANUAL
+        x.manual_threshold.value = .3
         img = np.zeros((100,100))
         centers = [(50,50),(10,50),(50,10),(90,50),(50,90)]
         present = [ True,  False,  False,  False,  False]
         for center in centers:
             draw_circle(img,center,15,.5)
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -1398,13 +1778,15 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
 
     def test_05_03_discard_with_mask(self):
         """Check discard of objects that are on the border of a mask"""
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
         x.size_range.min = 10
         x.size_range.max = 40
         x.watershed_method.value = ID.WA_NONE
+        x.threshold_scope.value = I.TS_MANUAL
+        x.manual_threshold.value = .3
         img = np.zeros((200,200))
         centers = [(100,100),(30,100),(100,30),(170,100),(100,170)]
         present = [ True,  False,  False,  False,  False]
@@ -1412,11 +1794,11 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
             draw_circle(img,center,15,.5)
         mask = np.zeros((200,200))
         mask[25:175,25:175]=1
-        image = cellprofiler.cpimage.Image(img,mask)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img,mask)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -1432,23 +1814,24 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
 
     def test_06_01_regression_diagonal(self):
         """Regression test - was using one-connected instead of 3-connected structuring element"""
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
         x.smoothing_filter_size.value = 0
         x.automatic_smoothing.value = False
         x.watershed_method.value = ID.WA_NONE
-        x.threshold_method.value = T.TM_MANUAL
+        x.threshold_scope.value = I.TS_MANUAL
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         x.manual_threshold.value = .5
         img = np.zeros((10,10))
         img[4,4]=1
         img[5,5]=1
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(img)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        object_set = cellprofiler.objects.ObjectSet()
+        image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+        object_set = cpo.ObjectSet()
         measurements = cpmeas.Measurements()
         pipeline = cellprofiler.pipeline.Pipeline()
         x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -1462,21 +1845,22 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
     def test_06_02_regression_adaptive_mask(self):
         """Regression test - mask all but one pixel / adaptive"""
         for o_alg in (I.O_WEIGHTED_VARIANCE, I.O_ENTROPY):
-            x = ID.IdentifyPrimAutomatic()
+            x = ID.IdentifyPrimaryObjects()
             x.use_weighted_variance.value = o_alg
             x.object_name.value = "my_object"
             x.image_name.value = "my_image"
             x.exclude_size.value = False
-            x.threshold_method.value = T.TM_OTSU_ADAPTIVE
+            x.threshold_scope.value = T.TM_ADAPTIVE
+            x.threshold_method.value = T.TM_OTSU
             np.random.seed(62)
             img = np.random.uniform(size=(100,100))
             mask = np.zeros(img.shape, bool)
             mask[-1,-1] = True
-            image = cellprofiler.cpimage.Image(img, mask)
-            image_set_list = cellprofiler.cpimage.ImageSetList()
+            image = cpi.Image(img, mask)
+            image_set_list = cpi.ImageSetList()
             image_set = image_set_list.get_image_set(0)
-            image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-            object_set = cellprofiler.objects.ObjectSet()
+            image_set.providers.append(cpi.VanillaImageProvider("my_image",image))
+            object_set = cpo.ObjectSet()
             measurements = cpmeas.Measurements()
             pipeline = cellprofiler.pipeline.Pipeline()
             x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
@@ -1504,11 +1888,12 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
                 r = np.random.uniform(0,np.pi*2,(60,55))
                 rsin = (np.sin(r) + 1) / 2
                 image[i0:i1,j0:j1] = dmin + rsin * dmult
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_OTSU_ADAPTIVE
-        threshold,global_threshold = x.get_threshold(image, 
-                                                     np.ones((120,110),bool),
-                                                     None,None)
+        workspace, x = self.make_workspace(image)
+        assert isinstance(x, ID.IdentifyPrimaryObjects)
+        x.threshold_scope.value = T.TM_ADAPTIVE
+        x.threshold_method.value = T.TM_OTSU
+        threshold, global_threshold = x.get_threshold(
+            image, np.ones((120,110),bool), workspace)
         self.assertTrue(threshold[0,0] != threshold[0,109])
         self.assertTrue(threshold[0,0] != threshold[119,0])
         self.assertTrue(threshold[0,0] != threshold[119,109])
@@ -1539,11 +1924,12 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
                 r = np.random.uniform(0,np.pi*2,(i1-i0,j1-j0))
                 rsin = (np.sin(r) + 1) / 2
                 image[i0:i1,j0:j1] = dmin + rsin * dmult
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_OTSU_ADAPTIVE
-        threshold,global_threshold = x.get_threshold(image, 
-                                                     np.ones((525,525),bool),
-                                                     None,None)
+        workspace, x = self.make_workspace(image)
+        assert isinstance(x, ID.IdentifyPrimaryObjects)
+        x.threshold_scope.value = T.TM_ADAPTIVE
+        x.threshold_method.value = T.TM_OTSU
+        threshold, global_threshold = x.get_threshold(
+            image, np.ones((525,525),bool), workspace)
     
     def test_08_01_per_object_otsu(self):
         """Test get_threshold using Otsu per-object"""
@@ -1555,11 +1941,12 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         labels = np.zeros((20,20),int)
         draw_circle(labels,(5,5),3,1)
         draw_circle(labels,(15,15),3,2)
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_OTSU_PER_OBJECT
+        workspace, x = self.make_workspace(image, labels=labels)
+        x.threshold_scope.value = I.TS_PER_OBJECT
+        x.threshold_method.value = T.TM_OTSU
         threshold, global_threshold = x.get_threshold(image, 
                                                       np.ones((20,20), bool),
-                                                      labels,None)
+                                                      workspace)
         t1 = threshold[5,5]
         t2 = threshold[15,15]
         self.assertTrue(t1 < .1)
@@ -1580,34 +1967,19 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         labels = np.zeros((20,20),int)
         draw_circle(labels,(5,5),5,1)
         draw_circle(labels,(15,15),5,2)
-        objects = cellprofiler.objects.Objects()
-        objects.segmented = labels
-        image = cellprofiler.cpimage.Image(image,
-                                           masking_objects = objects)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
-        image_set = image_set_list.get_image_set(0)
-        image_set.add("my_image", image)
-        object_set = cellprofiler.objects.ObjectSet()
         
         expected_labels = np.zeros((20,20),int)
         draw_circle(expected_labels,(5,5),2,1)
         draw_circle(expected_labels,(15,15),2,2)
         
-        x = ID.IdentifyPrimAutomatic()
-        x.object_name.value = "my_object"
-        x.image_name.value = "my_image"
+        workspace, x = self.make_workspace(image, labels = labels)
         x.exclude_size.value = False
         x.watershed_method.value = ID.WA_NONE
-        x.threshold_method.value = T.TM_OTSU_PER_OBJECT
+        x.threshold_scope.value = I.TS_PER_OBJECT
+        x.threshold_method.value = T.TM_OTSU
         x.threshold_correction_factor.value = 1.05
-        x.module_num = 1
-        pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.add_module(x)
-        measurements = cpmeas.Measurements()
-        workspace = Workspace(pipeline, x, image_set, object_set, measurements, 
-                              image_set_list)
         x.run(workspace)
-        labels = object_set.get_objects("my_object").segmented
+        labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
         # Do a little indexing trick so we can ignore which object got
         # which label
         self.assertNotEqual(labels[5,5], labels[15,15])
@@ -1616,53 +1988,63 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
 
         self.assertTrue(np.all(indexes[labels] == expected_labels))
     
-    def test_09_01_mog(self):
+    def test_09_01_small_images(self):
         """Test mixture of gaussians thresholding with few pixels
         
         Run MOG to see if it blows up, given 0-10 pixels"""
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_MOG_GLOBAL
-        for i in range(11):
-            if i:
-                image = np.array(range(i),float) / float(i)
-            else:
-                image = np.array((0,))
-            x.get_threshold(image, np.ones((i,),bool),None,None)
+        r = np.random.RandomState()
+        r.seed(91)
+        image = r.uniform(size=(9, 11))
+        ii, jj = np.mgrid[0:image.shape[0], 0:image.shape[1]]
+        ii, jj = ii.flatten(), jj.flatten()
+        
+        for threshold_method in (T.TM_BACKGROUND, T.TM_KAPUR, T.TM_MCT,
+                                 T.TM_MOG, T.TM_OTSU, T.TM_RIDLER_CALVARD,
+                                 T.TM_ROBUST_BACKGROUND):
+            for i in range(11):
+                mask = np.zeros(image.shape, bool)
+                if i:
+                    p = r.permutation(np.prod(image.shape))[:i]
+                    mask[ii[p], jj[p]] = True
+                workspace, x = self.make_workspace(image, mask)
+                x.threshold_method.value = threshold_method
+                x.threshold_scope.value = I.TS_GLOBAL
+                l, g = x.get_threshold(image, mask, workspace)
+                v = image[mask]
+                image = r.uniform(size=(9, 11))
+                image[mask] = v
+                l1, g1 = x.get_threshold(image, mask, workspace)
+                self.assertAlmostEqual(l1, l)
 
     def test_09_02_mog_fly(self):
         """Test mixture of gaussians thresholding on the fly image"""
         image = fly_image()
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_MOG_GLOBAL
+        workspace, x = self.make_workspace(image)
+        x.threshold_method.value = T.TM_MOG
+        x.threshold_scope.value = I.TS_GLOBAL
         x.object_fraction.value = '0.10'
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
+        local_threshold,threshold = x.get_threshold(
+            image, np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.036)
         self.assertTrue(threshold < 0.040)
         x.object_fraction.value = '0.20'
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
+        local_threshold,threshold = x.get_threshold(
+            image, np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.0084)
         self.assertTrue(threshold < 0.0088)
         x.object_fraction.value = '0.50'
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
+        local_threshold,threshold = x.get_threshold(
+            image, np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.0082)
         self.assertTrue(threshold < 0.0086)
     
-    def test_10_01_test_background(self):
-        """Test simple mode background for problems with small images"""
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_BACKGROUND_GLOBAL
-        for i in range(11):
-            if i:
-                image = np.array(range(i),float) / float(i)
-            else:
-                image = np.array((0,))
-            x.get_threshold(image, np.ones((i,),bool),None,None)
-    
     def test_10_02_test_background_fly(self):
         image = fly_image()
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_BACKGROUND_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
+        workspace, x = self.make_workspace(image)
+        x.threshold_method.value = T.TM_BACKGROUND
+        x.threshold_scope.value = I.TS_GLOBAL
+        local_threshold,threshold = x.get_threshold(
+            image, np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.030)
         self.assertTrue(threshold < 0.032)
         
@@ -1677,120 +2059,87 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         image[0] = 0
         image[1] = 1
         image.shape = (100,100)
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_BACKGROUND_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
+        workspace, x = self.make_workspace(image)
+        x.threshold_method.value = T.TM_BACKGROUND
+        x.threshold_scope.value = I.TS_GLOBAL
+        local_threshold,threshold = x.get_threshold(
+            image, np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > .18 * 2)
         self.assertTrue(threshold < .22 * 2)
         
-    def test_11_01_test_robust_background(self):
-        """Test robust background for problems with small images"""
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_ROBUST_BACKGROUND_GLOBAL
-        for i in range(11):
-            if i:
-                image = np.array(range(i),float) / float(i)
-            else:
-                image = np.array((0,))
-            x.get_threshold(image, np.ones((i,),bool),None,None)
-    
-    def test_11_02_test_robust_background_fly(self):
+    def test_11_01_test_robust_background_fly(self):
         image = fly_image()
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_ROBUST_BACKGROUND_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
+        workspace, x = self.make_workspace(image)
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_ROBUST_BACKGROUND
+        local_threshold,threshold = x.get_threshold(
+            image, np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.054)
         self.assertTrue(threshold < 0.056)
         
-    def test_12_01_test_ridler_calvard_background(self):
-        """Test ridler-calvard background for problems with small images"""
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_RIDLER_CALVARD_GLOBAL
-        for i in range(11):
-            if i:
-                image = np.array(range(i),float) / float(i)
-            else:
-                image = np.array((0,))
-            x.get_threshold(image, np.ones((i,),bool),None,None)
-
-    def test_12_02_test_ridler_calvard_background_fly(self):
+    def test_12_01_test_ridler_calvard_background_fly(self):
         image = fly_image()
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_RIDLER_CALVARD_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
+        workspace, x = self.make_workspace(image)
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_RIDLER_CALVARD
+        local_threshold,threshold = x.get_threshold(
+            image, np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.017)
         self.assertTrue(threshold < 0.019)
         
         
-    def test_13_01_test_kapur_background(self):
-        """Test kapur background for problems with small images"""
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_KAPUR_GLOBAL
-        for i in range(11):
-            if i:
-                image = np.array(range(i),float) / float(i)
-            else:
-                image = np.array((0,))
-            x.get_threshold(image, np.ones((i,),bool),None,None)
-    
-    def test_13_02_test_kapur_background_fly(self):
+    def test_13_01_test_kapur_background_fly(self):
         image = fly_image()
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_KAPUR_GLOBAL
-        local_threshold,threshold = x.get_threshold(image, np.ones(image.shape,bool),None,None)
+        workspace, x = self.make_workspace(image)
+        x.threshold_scope.value = I.TS_GLOBAL
+        x.threshold_method.value = T.TM_KAPUR
+        local_threshold,threshold = x.get_threshold(
+            image, np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.015)
         self.assertTrue(threshold < 0.020)
     
     def test_14_01_test_manual_background(self):
         """Test manual background"""
-        x = ID.IdentifyPrimAutomatic()
-        x.threshold_method.value = T.TM_MANUAL
+        workspace, x = self.make_workspace(np.zeros((10, 10)))
+        x = ID.IdentifyPrimaryObjects()
+        x.threshold_scope.value = T.TM_MANUAL
         x.manual_threshold.value = .5
         local_threshold,threshold = x.get_threshold(np.zeros((10,10)), 
                                                     np.ones((10,10),bool),
-                                                    None,None)
+                                                    workspace)
         self.assertTrue(threshold == .5)
         self.assertTrue(threshold == .5)
     
     def test_15_01_test_binary_background(self):
-        x = ID.IdentifyPrimAutomatic()
-        x.object_name.value = "my_object"
-        x.image_name.value = "my_image"
-        x.exclude_size.value = False
-        x.watershed_method.value = ID.WA_NONE
-        x.threshold_method.value = T.TM_BINARY_IMAGE
-        x.binary_image.value = "my_threshold"
         img = np.zeros((200,200),np.float32)
         thresh = np.zeros((200,200),bool)
         draw_circle(thresh,(100,100),50,True)
         draw_circle(thresh,(25,25),20,True)
-        image = cellprofiler.cpimage.Image(img)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
-        image_set = image_set_list.get_image_set(0)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_image",image))
-        threshold = cellprofiler.cpimage.Image(thresh)
-        image_set.providers.append(cellprofiler.cpimage.VanillaImageProvider("my_threshold",threshold))
-        object_set = cellprofiler.objects.ObjectSet()
-        measurements = cpmeas.Measurements()
-        pipeline = cellprofiler.pipeline.Pipeline()
-        x.run(Workspace(pipeline,x,image_set,object_set,measurements,None))
-        self.assertTrue("Count_my_object" in measurements.get_feature_names("Image"))
-        count = measurements.get_current_measurement("Image","Count_my_object")
+        workspace, x = self.make_workspace(img, binary_image=thresh)
+        x.exclude_size.value = False
+        x.watershed_method.value = ID.WA_NONE
+        x.threshold_scope.value = I.TS_BINARY_IMAGE
+        x.run(workspace)
+        count_ftr = I.C_COUNT + "_" + OBJECTS_NAME
+        m = workspace.measurements
+        self.assertTrue(m.has_feature(cpmeas.IMAGE, count_ftr))
+        count = m.get_current_measurement(cpmeas.IMAGE, count_ftr)
         self.assertEqual(count,2)
     
     def test_16_01_get_measurement_columns(self):
         '''Test the get_measurement_columns method'''
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         oname = "my_object"
         x.object_name.value = oname
         x.image_name.value = "my_image"
         columns = x.get_measurement_columns(None)
-        expected_columns = [(cpmeas.IMAGE, format%oname, coltype )
-                            for format,coltype in ((I.FF_COUNT, cpmeas.COLTYPE_INTEGER),
-                                                   (ID.FF_FINAL_THRESHOLD, cpmeas.COLTYPE_FLOAT),
-                                                   (ID.FF_ORIG_THRESHOLD, cpmeas.COLTYPE_FLOAT),
-                                                   (ID.FF_WEIGHTED_VARIANCE, cpmeas.COLTYPE_FLOAT),
-                                                   (ID.FF_SUM_OF_ENTROPIES, cpmeas.COLTYPE_FLOAT))]
+        expected_columns = [
+            (cpmeas.IMAGE, format%oname, coltype )
+            for format,coltype in ((I.FF_COUNT, cpmeas.COLTYPE_INTEGER),
+                                   (I.FF_FINAL_THRESHOLD, cpmeas.COLTYPE_FLOAT),
+                                   (I.FF_ORIG_THRESHOLD, cpmeas.COLTYPE_FLOAT),
+                                   (I.FF_WEIGHTED_VARIANCE, cpmeas.COLTYPE_FLOAT),
+                                   (I.FF_SUM_OF_ENTROPIES, cpmeas.COLTYPE_FLOAT))]
         expected_columns += [(oname, feature, cpmeas.COLTYPE_FLOAT)
                              for feature in (I.M_LOCATION_CENTER_X,
                                              I.M_LOCATION_CENTER_Y)]
@@ -1868,34 +2217,22 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
                          [0,0,0,1,1,1,1,1,1,0,0,0],                           
                          [0,0,0,0,0,0,0,0,0,0,0,0],
                          [0,0,0,0,0,0,0,0,0,0,0,0]], bool)
-        image = cellprofiler.cpimage.Image(pixels)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
-        image_set = image_set_list.get_image_set(0)
-        image_set.add("my_image", image)
-        object_set = cellprofiler.objects.ObjectSet()
-        
-        x = ID.IdentifyPrimAutomatic()
-        x.object_name.value = "my_object"
-        x.image_name.value = "my_image"
+        workspace, x = self.make_workspace(pixels)
         x.exclude_size.value = True
         x.size_range.min = 6
         x.size_range.max = 50
         x.maxima_suppression_size.value = 3
         x.automatic_suppression.value = False
         x.watershed_method.value = ID.WA_INTENSITY
-        x.threshold_method.value = T.TM_MANUAL
+        x.threshold_scope.value = T.TM_MANUAL
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         x.manual_threshold.value = .05
         x.threshold_correction_factor.value = 1
         x.should_save_outlines.value = True
         x.save_outlines.value = "outlines"
-        x.module_num = 1
-        pipeline = cellprofiler.pipeline.Pipeline()
-        pipeline.add_module(x)
-        measurements = cpmeas.Measurements()
-        workspace = Workspace(pipeline, x, image_set, object_set, measurements, 
-                              image_set_list)
+        measurements = workspace.measurements
         x.run(workspace)
-        my_objects = object_set.get_objects("my_object")
+        my_objects = workspace.object_set.get_objects(OBJECTS_NAME)
         self.assertTrue(my_objects.segmented[3,3] != 0)
         if my_objects.unedited_segmented[3,3] == 2:
             unedited_segmented = my_objects.unedited_segmented
@@ -1969,13 +2306,13 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
                          [0,0,0,1,1,1,1,1,1,0,0,0],                           
                          [0,0,0,0,0,0,0,0,0,0,0,0],
                          [0,0,0,0,0,0,0,0,0,0,0,0]], bool)
-        image = cellprofiler.cpimage.Image(pixels)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(pixels)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add("my_image", image)
-        object_set = cellprofiler.objects.ObjectSet()
+        object_set = cpo.ObjectSet()
         
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = True
@@ -2006,20 +2343,21 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
             pixels[12:18,2:8] = .5
             pixels[2:8,12:18] = .5
             pixels[12:18,12:18] = .5
-            image = cellprofiler.cpimage.Image(pixels)
-            image_set_list = cellprofiler.cpimage.ImageSetList()
+            image = cpi.Image(pixels)
+            image_set_list = cpi.ImageSetList()
             image_set = image_set_list.get_image_set(0)
             image_set.add("my_image", image)
-            object_set = cellprofiler.objects.ObjectSet()
+            object_set = cpo.ObjectSet()
             
-            x = ID.IdentifyPrimAutomatic()
+            x = ID.IdentifyPrimaryObjects()
             x.object_name.value = "my_object"
             x.image_name.value = "my_image"
             x.exclude_size.value = False
             x.unclump_method.value = ID.UN_NONE
             x.watershed_method.value = ID.WA_NONE
-            x.threshold_method.value = T.TM_MANUAL
+            x.threshold_scope.value = T.TM_MANUAL
             x.manual_threshold.value = .25
+            x.threshold_smoothing_choice.value = I.TSM_NONE
             x.threshold_correction_factor.value = 1
             x.limit_choice.value = ID.LIMIT_TRUNCATE
             x.maximum_object_count.value = maximum_object_count
@@ -2044,19 +2382,20 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         pixels[12:18,2:8] = .5
         pixels[2:8,12:18] = .5
         pixels[12:18,12:18] = .5
-        image = cellprofiler.cpimage.Image(pixels)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(pixels)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add("my_image", image)
-        object_set = cellprofiler.objects.ObjectSet()
+        object_set = cpo.ObjectSet()
         
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
         x.unclump_method.value = ID.UN_NONE
         x.watershed_method.value = ID.WA_NONE
-        x.threshold_method.value = T.TM_MANUAL
+        x.threshold_scope.value = T.TM_MANUAL
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         x.manual_threshold.value = .25
         x.threshold_correction_factor.value = 1
         x.limit_choice.value = ID.LIMIT_ERASE
@@ -2082,19 +2421,20 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         pixels[12:18,2:8] = .5
         pixels[2:8,12:18] = .5
         pixels[12:18,12:18] = .5
-        image = cellprofiler.cpimage.Image(pixels)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(pixels)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add("my_image", image)
-        object_set = cellprofiler.objects.ObjectSet()
+        object_set = cpo.ObjectSet()
         
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "my_object"
         x.image_name.value = "my_image"
         x.exclude_size.value = False
         x.unclump_method.value = ID.UN_NONE
         x.watershed_method.value = ID.WA_NONE
-        x.threshold_method.value = T.TM_MANUAL
+        x.threshold_scope.value = T.TM_MANUAL
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         x.manual_threshold.value = .25
         x.threshold_correction_factor.value = 1
         x.limit_choice.value = ID.LIMIT_ERASE
@@ -2116,23 +2456,24 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         pixels = np.zeros((10,10))
         pixels[2:6,2:6] = .5
         
-        image = cellprofiler.cpimage.Image(pixels)
-        image_set_list = cellprofiler.cpimage.ImageSetList()
+        image = cpi.Image(pixels)
+        image_set_list = cpi.ImageSetList()
         image_set = image_set_list.get_image_set(0)
         image_set.add("MyImage", image)
-        object_set = cellprofiler.objects.ObjectSet()
+        object_set = cpo.ObjectSet()
 
         pipeline = cellprofiler.pipeline.Pipeline()
         measurements = cpmeas.Measurements()
         measurements.add_image_measurement("MeanIntensity_MyImage", np.mean(pixels))
         
-        x = ID.IdentifyPrimAutomatic()
+        x = ID.IdentifyPrimaryObjects()
         x.object_name.value = "MyObject"
         x.image_name.value = "MyImage"
         x.exclude_size.value = False
         x.unclump_method.value = ID.UN_NONE
         x.watershed_method.value = ID.WA_NONE
-        x.threshold_method.value = T.TM_MEASUREMENT
+        x.threshold_scope.value = T.TM_MEASUREMENT
+        x.threshold_smoothing_choice.value = I.TSM_NONE
         x.thresholding_measurement.value = "MeanIntensity_MyImage"
         x.threshold_correction_factor.value = 1
         x.module_num = 1
@@ -2143,6 +2484,61 @@ IdentifyPrimaryObjects:[module_num:3|svn_version:\'8981\'|variable_revision_numb
         x.run(workspace)
         self.assertEqual(measurements.get_current_image_measurement("Count_MyObject"),1)
         self.assertEqual(measurements.get_current_image_measurement("Threshold_FinalThreshold_MyObject"),np.mean(pixels))
+        
+    def test_20_01_threshold_smoothing_automatic(self):
+        image = np.array([[  0,  0,  0,  0,  0,  0,  0],
+                          [  0,  0,  0,  0,  0,  0,  0],
+                          [  0,  0, .4, .4, .4,  0,  0],
+                          [  0,  0, .4, .5, .4,  0,  0],
+                          [  0,  0, .4, .4, .4,  0,  0],
+                          [  0,  0,  0,  0,  0,  0,  0],
+                          [  0,  0,  0,  0,  0,  0,  0]])
+        expected = np.array([[  0,  0,  0,  0,  0,  0,  0],
+                             [  0,  0,  0,  0,  0,  0,  0],
+                             [  0,  0,  0,  1,  0,  0,  0],
+                             [  0,  0,  1,  1,  1,  0,  0],
+                             [  0,  0,  0,  1,  0,  0,  0],
+                             [  0,  0,  0,  0,  0,  0,  0],
+                             [  0,  0,  0,  0,  0,  0,  0]])
+        workspace, module = self.make_workspace(image)
+        assert isinstance(module, ID.IdentifyPrimaryObjects)
+        module.exclude_size.value = False
+        module.unclump_method.value = ID.UN_NONE
+        module.watershed_method.value = ID.WA_NONE
+        module.threshold_scope.value = T.TM_MANUAL
+        module.threshold_smoothing_choice.value = I.TSM_AUTOMATIC
+        module.manual_threshold.value = .225
+        module.run(workspace)
+        labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
+        np.testing.assert_array_equal(expected, labels)
+        
+    def test_20_02_threshold_smoothing_manual(self):
+        image = np.array([[  0,  0,  0,  0,  0,  0,  0],
+                          [  0,  0,  0,  0,  0,  0,  0],
+                          [  0,  0, .4, .4, .4,  0,  0],
+                          [  0,  0, .4, .5, .4,  0,  0],
+                          [  0,  0, .4, .4, .4,  0,  0],
+                          [  0,  0,  0,  0,  0,  0,  0],
+                          [  0,  0,  0,  0,  0,  0,  0]])
+        expected = np.array([[  0,  0,  0,  0,  0,  0,  0],
+                             [  0,  0,  0,  0,  0,  0,  0],
+                             [  0,  0,  0,  1,  0,  0,  0],
+                             [  0,  0,  1,  1,  1,  0,  0],
+                             [  0,  0,  0,  1,  0,  0,  0],
+                             [  0,  0,  0,  0,  0,  0,  0],
+                             [  0,  0,  0,  0,  0,  0,  0]])
+        workspace, module = self.make_workspace(image)
+        assert isinstance(module, ID.IdentifyPrimaryObjects)
+        module.exclude_size.value = False
+        module.unclump_method.value = ID.UN_NONE
+        module.watershed_method.value = ID.WA_NONE
+        module.threshold_scope.value = T.TM_MANUAL
+        module.threshold_smoothing_choice.value = I.TSM_MANUAL
+        module.threshold_smoothing_scale.value = 3
+        module.manual_threshold.value = .125
+        module.run(workspace)
+        labels = workspace.object_set.get_objects(OBJECTS_NAME).segmented
+        np.testing.assert_array_equal(expected, labels)
         
 def add_noise(img, fraction):
     '''Add a fractional amount of noise to an image to make it look real'''
@@ -2163,11 +2559,7 @@ def two_cell_image():
     return add_noise(img,.01)
 
 def fly_image():
-    file = os.path.join(cellprofiler.modules.tests.example_images_directory(),
-                        'ExampleFlyImages','01_POS002_D.TIF')
-    img = np.asarray(PILImage.open(file))
-    img = img.astype(float) / 255.0
-    return img
+    return read_example_image('ExampleFlyImages','01_POS002_D.TIF')
     
 def draw_circle(img,center,radius,value):
     x,y=np.mgrid[0:img.shape[0],0:img.shape[1]]
@@ -2182,14 +2574,16 @@ class TestWeightedVariance(unittest.TestCase):
     
     def test_02_zero_wv(self):
         output = T.weighted_variance(np.zeros((3,3)),
-                                      np.ones((3,3),bool),1)
+                                     np.ones((3,3),bool),
+                                     np.ones((3,3),bool))
         self.assertEqual(output, 0)
     
     def test_03_fg_0_bg_0(self):
         """Test all foreground pixels same, all background same, wv = 0"""
         img = np.zeros((4,4))
         img[:,2:4]=1
-        output = T.weighted_variance(img, np.ones(img.shape,bool),.5)
+        binary_image = img > .5
+        output = T.weighted_variance(img, np.ones(img.shape,bool), binary_image)
         self.assertEqual(output,0)
     
     def test_04_values(self):
@@ -2198,8 +2592,8 @@ class TestWeightedVariance(unittest.TestCase):
         # The log of this array is [-4,-3],[-2,-1] and
         # the variance should be (.25 *2 + .25 *2)/4 = .25
         img = np.array([[1.0/16.,1.0/8.0],[1.0/4.0,1.0/2.0]])
-        threshold = 3.0/16.0
-        output = T.weighted_variance(img, np.ones((2,2),bool), threshold)
+        binary_image = np.array([[False, False], [True, True]])
+        output = T.weighted_variance(img, np.ones((2,2),bool), binary_image)
         self.assertAlmostEqual(output,.25)
     
     def test_05_mask(self):
@@ -2209,8 +2603,8 @@ class TestWeightedVariance(unittest.TestCase):
         # the variance should be (.25*2 + .25 *2)/4 = .25
         img = np.array([[1.0/16.,1.0/16.0,1.0/8.0],[1.0/4.0,1.0/4.0,1.0/2.0]])
         mask = np.array([[False,True,True],[False,True,True]])
-        threshold = 3.0/16.0
-        output = T.weighted_variance(img, mask, threshold)
+        binary_image = np.array([[False, False, False], [True, True, True]])
+        output = T.weighted_variance(img, mask, binary_image)
         self.assertAlmostEquals(output,.25)
 
 class TestSumOfEntropies(unittest.TestCase):
@@ -2221,20 +2615,42 @@ class TestSumOfEntropies(unittest.TestCase):
     
     def test_020_all_zero(self):
         """Can't take the log of zero, so all zero matrix = 0"""
-        output = T.sum_of_entropies(np.zeros((4,2)),np.ones((4,2),bool),1)
+        output = T.sum_of_entropies(np.zeros((4,2)),
+                                    np.ones((4,2),bool), 
+                                    np.ones((4,2), bool))
         self.assertAlmostEqual(output,0)
     
     def test_03_fg_bg_equal(self):
         img = np.ones((128,128))
-        img[0:64,:] *= .1
-        img[64:128,:] *= .9
-        output = T.sum_of_entropies(img, np.ones((128,128),bool), .5)
+        img[0:64,:] *= .15
+        img[64:128,:] *= .85
+        img[0, 0] = img[-1, 0] = 0
+        img[0, -1] = img[-1, -1] = 1
+        binary_mask = np.zeros(img.shape, bool)
+        binary_mask[64:, :] = True
+        #
+        # You need one foreground and one background pixel to defeat a
+        # divide-by-zero (that's appropriately handled)
+        #
+        one_of_each = np.zeros(img.shape, bool)
+        one_of_each[0,0] = one_of_each[-1, -1] = True
+        output = T.sum_of_entropies(img, np.ones((128,128),bool), binary_mask)
+        ob = T.sum_of_entropies(img, one_of_each | ~binary_mask, binary_mask)
+        of = T.sum_of_entropies(img, one_of_each | binary_mask, binary_mask)
+        self.assertAlmostEqual(output, ob + of)
     
     def test_04_fg_bg_different(self):
         img = np.ones((128,128))
-        img[0:64,0:64] *= .1
+        img[0:64,0:64] *= .15
         img[0:64,64:128] *= .3
         img[64:128,0:64] *= .7
-        img[64:128,64:128] *= .9
-        output = T.sum_of_entropies(img, np.ones((128,128),bool), .5)
+        img[64:128,64:128] *= .85
+        binary_mask = np.zeros(img.shape, bool)
+        binary_mask[64:, :] = True
+        one_of_each = np.zeros(img.shape, bool)
+        one_of_each[0,0] = one_of_each[-1, -1] = True
+        output = T.sum_of_entropies(img, np.ones((128,128),bool), binary_mask)
+        ob = T.sum_of_entropies(img, one_of_each | ~binary_mask, binary_mask)
+        of = T.sum_of_entropies(img, one_of_each | binary_mask, binary_mask)
+        self.assertAlmostEqual(output, ob + of)
         

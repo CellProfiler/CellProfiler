@@ -15,7 +15,6 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
-__version__="$Revision$"
 
 import os
 import sys
@@ -79,3 +78,47 @@ def draw_bevel(dc, rect, width, state, shadow_pen = None, highlight_pen = None):
         dc.DrawLine(rect.Right,rect.Bottom, rect.Right, rect.Top)
         rect = wx.Rect(rect.Left+1, rect.Top+1, rect.width-2, rect.height-2)
     return rect
+
+def draw_item_selection_rect(window, dc, rect, flags):
+    '''Replacement for RendererNative.DrawItemSelectionRect
+    
+    window - draw in this window
+    
+    dc - device context to use for drawing
+    
+    rect - draw selection UI inside this rectangle
+    
+    flags - a combination of wx.CONTROL_SELECTED, wx.CONTROL_CURRENT and
+            wx.CONTROL_FOCUSED
+            
+    This function fixes a bug in the Carbon implementation for drawing
+    with wx.CONTROL_CURRENT and not wx.CONTROL_SELECTED.
+    '''
+    # Bug in carbon DrawItemSelectionRect uses
+    # uninitialized color for the rectangle
+    # if it's not selected.
+    #
+    # Optimistically, I've coded it so that it
+    # might work in Cocoa
+    #
+    import wx
+    if (sys.platform != 'darwin' or
+        sys.maxsize > 0x7fffffff or
+        (flags & wx.CONTROL_SELECTED) == wx.CONTROL_SELECTED):
+        wx.RendererNative.Get().DrawItemSelectionRect(
+            window, dc, rect, flags)
+    elif flags & wx.CONTROL_CURRENT:
+        #
+        # On the Mac, draw a rectangle with the highlight pen and a null
+        # brush.
+        #
+        if flags & wx.CONTROL_FOCUSED:
+            pen_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_HIGHLIGHT)
+        else:
+            pen_color = wx.SystemSettings.GetColour(wx.SYS_COLOUR_GRAYTEXT)
+        old_brush = dc.Brush
+        dc.Brush = wx.TRANSPARENT_BRUSH
+        old_pen = dc.Pen
+        dc.Pen = wx.Pen(pen_color, width=2)
+        dc.DrawRectangle(rect.Left, rect.Top, rect.Width, rect.Height)
+    

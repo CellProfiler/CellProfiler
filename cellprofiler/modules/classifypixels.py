@@ -1,3 +1,16 @@
+"""
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2013 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+
 '''<b>ClassifyPixels</b> classify pixels using ilastik
 <hr>
 
@@ -88,6 +101,12 @@ CLASSIFIERS_KEY = "IlastikClassifiers"
 FEATURE_ITEMS_KEY = "IlastikFeatureItems"
 
 SI_PROBABILITY_MAP_COUNT = 3
+
+#
+# Classifiers by file. Key is file name, value is a tuple of stat modification
+# time and classifier
+#
+classifier_dict = {}
 
 class ClassifyPixels(cpm.CPModule):
     module_name = 'ClassifyPixels'
@@ -242,24 +261,25 @@ class ClassifyPixels(cpm.CPModule):
             workspace.display_data.dest_images.append(probMap)
 
     def get_classifiers(self, workspace):
-        self.parse_classifier_file(workspace)
-        d = self.get_dictionary(workspace.image_set_list)
+        d = self.parse_classifier_file(workspace)
         return d[CLASSIFIERS_KEY]
     
     def get_feature_items(self, workspace):
-        self.parse_classifier_file(workspace)
-        d = self.get_dictionary(workspace.image_set_list)
+        d = self.parse_classifier_file(workspace)
         return d[FEATURE_ITEMS_KEY]
         
     def parse_classifier_file(self, workspace):
-        d = self.get_dictionary(workspace.image_set_list)
-        if all([d.has_key(k) for k in (CLASSIFIERS_KEY, FEATURE_ITEMS_KEY)]):
-            return
-        
+        global classifier_dict
         # Load classifier from hdf5
         fileName = str(os.path.join(self.h5_directory.get_absolute_path(), 
                                     self.classifier_file_name.value))
+        modtime = os.stat(fileName).st_mtime
+        if fileName in classifier_dict:
+            last_modtime, d = classifier_dict[fileName]
+            if modtime == last_modtime:
+                return d
         
+        d = {}
         hf = h5py.File(fileName,'r')
         temp = hf['classifiers'].keys()
         # If hf is not closed this leads to an error in win64 and mac os x
@@ -284,14 +304,11 @@ class ClassifyPixels(cpm.CPModule):
         f.close()
         del f
         d[FEATURE_ITEMS_KEY] = featureItems
-            
-        
-    def is_interactive(self):
-        return False
-    
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(
-            subplots = (len(workspace.display_data.dest_images)+1, 1))
+        classifier_dict[fileName] = (modtime, d)
+        return d
+
+    def display(self, workspace, figure):
+        figure.set_subplots((len(workspace.display_data.dest_images) + 1, 1))
         source_image = workspace.display_data.source_image
         if source_image.ndim == 3:
             src_plot = figure.subplot_imshow_color(
@@ -301,18 +318,19 @@ class ClassifyPixels(cpm.CPModule):
                 0, 0, source_image, title = self.image_name.value)
         for i, dest_image in enumerate(workspace.display_data.dest_images):
             figure.subplot_imshow_grayscale(
-                i+1, 0, dest_image, title = self.probability_maps[i].output_image.value,
-                sharex = src_plot, sharey = src_plot)
-    
+                i + 1, 0, dest_image,
+                title = self.probability_maps[i].output_image.value,
+                sharexy = src_plot)
+
     def prepare_settings(self, setting_values):
         '''Prepare the module to receive the settings'''
         n_maps = int(setting_values[SI_PROBABILITY_MAP_COUNT])
         if len(self.probability_maps) > n_maps:
-            del self.probability_maps[nmaps:]
+            del self.probability_maps[n_maps:]
         elif len(self.probability_maps) < n_maps:
             for _ in range(len(self.probability_maps), n_maps):
                 self.add_probability_map()
-            
+
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         '''Upgrade settings to maintain backwards compatibility
@@ -332,3 +350,4 @@ class ClassifyPixels(cpm.CPModule):
                 setting_values[2]] # class_sel
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
+

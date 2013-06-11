@@ -10,7 +10,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version__="$Revision$"
 
 import base64
 from matplotlib.image import pil_to_array
@@ -503,8 +502,6 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
             for flip in (False, True):
                 def setup_fn(module, workspace, oo0=oo0, oo1=oo1, flip=flip):
                     m = workspace.measurements
-                    m.add_image_measurement(cpmeas.GROUP_INDEX, 1)
-                    m.add_image_measurement(cpmeas.GROUP_NUMBER, 1)
                     self.assertTrue(isinstance(m, cpmeas.Measurements))
                     if not flip:
                         m.add_relate_measurement(
@@ -524,6 +521,53 @@ CalculateRatios:[module_num:1|svn_version:\'8913\'|variable_revision_number:6|sh
                 data = measurements.get_current_measurement(
                     OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
                 np.testing.assert_almost_equal(e1, data)
+                
+    def test_10_01_02_different_image_sets(self):
+        #
+        # Relationship code was matching object numbers from any object
+        # set to any other
+        #
+        r = np.random.RandomState(100102)
+        o0 = [ np.array([1,2,3,4,5]), np.array([1,1,2,2,3]), 
+               np.array([1,2,4,5]), np.array([1,1,1,1])]
+        o1 = [ np.array([1,1,2,2,3]), np.array([1,2,3,4,5]),
+               np.array([1,1,1,1]), np.array([1,2,4,5])]
+        in0 = [ np.array([0,1,2,3,4], float), np.array([2,4,8], float),
+                np.array([0,1,2,3,4], float), np.array([5], float)]
+        in1 = [ np.array([2,4,8], float), np.array([0,1,2,3,4], float),
+                np.array([5], float), np.array([0,1,2,3,4], float)]
+
+        expected0 = [ np.array([2, 3, 6, 7, 12]),
+                      np.array([2.5, 6.5, 12]),
+                      np.array([5, 6, np.nan, 8, 9]),
+                      np.array([7])]
+        expected1 = [ np.array([2.5, 6.5, 12]),
+                      np.array([2, 3, 6, 7, 12]),
+                      np.array([7]),
+                      np.array([5, 6, np.nan, 8, 9])]
+        for oo0, oo1, ii0, ii1, e0, e1 in zip(o0, o1, in0, in1, expected0, expected1):
+            def setup_fn(module, workspace, oo0=oo0, oo1=oo1):
+                m = workspace.measurements
+                self.assertTrue(isinstance(m, cpmeas.Measurements))
+                m.add_relate_measurement(
+                    1, C.R_PARENT, OBJECT[0], OBJECT[1],
+                    np.ones(len(oo0), int), oo0,
+                    np.ones(len(oo1), int), oo1)
+                for i1, i2 in ((1, 2), (2, 1), (2, 2)):
+                    m.add_relate_measurement(
+                        1, C.R_PARENT, OBJECT[0], OBJECT[1],
+                        np.ones(len(oo0), int) * i1, r.permutation(oo0),
+                        np.ones(len(oo1), int) * i2, oo1)
+                
+            measurements = self.run_workspace(C.O_ADD, False, ii0,
+                                              False, ii1, setup_fn)
+            data = measurements.get_current_measurement(
+                OBJECT[0], MATH_OUTPUT_MEASUREMENTS)
+            np.testing.assert_almost_equal(e0, data)
+            data = measurements.get_current_measurement(
+                OBJECT[1], MATH_OUTPUT_MEASUREMENTS)
+            np.testing.assert_almost_equal(e1, data)
+        
 
     def test_10_01_issue_422(self):
         # Regression test of issue # 422

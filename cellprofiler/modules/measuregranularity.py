@@ -40,7 +40,6 @@ Intelligence</i>, 11, N 7, pp. 701-716, 1989</li>
 # Website: http://www.cellprofiler.org
 
 
-__version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as scind
@@ -190,23 +189,26 @@ class MeasureGranularity(cpm.CPModule):
     def run(self, workspace):
         max_scale = np.max([image.granular_spectrum_length.value
                             for image in self.images])
-        statistics = [[ "Image name" ] + 
-                      [ "GS%d"%n for n in range(1,max_scale+1)]]
-        
+        col_labels = ([ "Image name" ] + 
+                      [ "GS%d"%n for n in range(1,max_scale+1)])
+        statistics = []
         for image in self.images:
             statistic = self.run_on_image_setting(workspace, image)
             statistic += ["-"] * (max_scale - image.granular_spectrum_length.value)
             statistics.append(statistic)
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(title="MeasureGranularity, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-            ratio = [1.0 / float(max_scale+1)] * (max_scale+1)
-            figure.subplot_table(0, 0, statistics, ratio = ratio)
-    
+        if self.show_window:
+            workspace.display_data.statistics = statistics
+            workspace.display_data.col_labels = col_labels
+
+    def display(self, workspace, figure):
+        statistics = workspace.display_data.statistics
+        col_labels = workspace.display_data.col_labels
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0, 0, statistics, col_labels = col_labels)
+
     def run_on_image_setting(self, workspace, image):
         assert isinstance(workspace, cpw.Workspace)
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         measurements = workspace.measurements
         im = image_set.get_image(image.image_name.value,
                                     must_be_grayscale=True)

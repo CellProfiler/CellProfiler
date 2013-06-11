@@ -29,7 +29,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 import numpy as np
 import scipy.ndimage.measurements
 
@@ -262,7 +261,7 @@ def otsu_entropy(cs, cs2, lo, hi):
     w = (hi - lo) / float(len(cs))
     mean = (cs[hi] - cs[lo]) / (hi - lo)
     mean2 = (cs2[hi] - cs2[lo]) / (hi - lo)
-    return w * (log (w * (mean2 - mean**2) * sqrt(2*np.pi*exp(1))))
+    return w * (np.log (w * (mean2 - mean**2) * np.sqrt(2*np.pi*np.exp(1))))
 
 def running_variance(x):
     '''Given a vector x, compute the variance for x[0:i]

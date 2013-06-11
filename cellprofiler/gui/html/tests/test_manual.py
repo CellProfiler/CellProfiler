@@ -1,7 +1,5 @@
-'''Tests for cellprofiler.gui.html.manual
-
-CellProfiler is distributed under the GNU General Public License,
-but this file is licensed under the more permissive BSD license.
+"""
+CellProfiler is distributed under the GNU General Public License.
 See the accompanying file LICENSE for details.
 
 Copyright (c) 2003-2009 Massachusetts Institute of Technology
@@ -10,8 +8,10 @@ All rights reserved.
 
 Please see the AUTHORS file for credits.
 
-Website: http://www.cellprofiler.org'
-'''
+Website: http://www.cellprofiler.org
+"""
+
+'''Tests for cellprofiler.gui.html.manual'''
 
 import os
 import re

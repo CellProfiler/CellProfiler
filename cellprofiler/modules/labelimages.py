@@ -83,9 +83,6 @@ class LabelImages(cpm.CPModule):
         return [self.site_count, self.column_count, self.row_count,
                 self.order]
     
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         '''Run one image set'''
         m = workspace.measurements
@@ -114,8 +111,8 @@ class LabelImages(cpm.CPModule):
                        (cpmeas.M_PLATE, plate_index + 1)]
         for feature, value in statistics:
             m.add_image_measurement(feature, value)
-        workspace.display_data.statistics = [("Metadata", "Value")]
-        workspace.display_data.statistics += [
+        workspace.display_data.col_labels = ("Metadata", "Value")
+        workspace.display_data.statistics = [
             (feature, str(value)) for feature, value in statistics]
     
     @property
@@ -155,11 +152,12 @@ class LabelImages(cpm.CPModule):
                     cpmeas.FTR_WELL, cpmeas.FTR_PLATE]
         return []
     
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display the plate / well information in a figure table'''
-        figure = workspace.create_or_find_figure(title="LabelImages, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-        figure.subplot_table(0, 0, workspace.display_data.statistics)
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0, 0, 
+                             workspace.display_data.statistics,
+                             col_labels = workspace.display_data.col_labels)
         
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):

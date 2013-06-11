@@ -133,7 +133,6 @@ See also <b>MeasureImageAreaOccupied</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as scind
@@ -301,15 +300,13 @@ class MeasureObjectSizeShape(cpm.CPModule):
             return self.get_feature_names()
         return []
     
-    def is_interactive(self):
-        return False
-
     def run(self, workspace):
         """Run, computing the area measurements for the objects"""
         
-        if workspace.frame is not None:
-            workspace.display_data.statistics = \
-                     [("Object","Feature","Mean","Median","STD")]
+        if self.show_window:
+            workspace.display_data.col_labels = \
+                     ("Object", "Feature", "Mean", "Median", "STD")
+            workspace.display_data.statistics = []
         for object_group in self.object_groups:
             self.run_on_objects(object_group.name.value, workspace)
     
@@ -422,11 +419,11 @@ class MeasureObjectSizeShape(cpm.CPModule):
                        for n,m in zernike_numbers]):
             self.record_measurement(workspace, object_name, f, m) 
             
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="MeasureObjectSizeShape, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-        figure.subplot_table(0,0,workspace.display_data.statistics,
-                             ratio=(.25,.45,.1,.1,.1))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0, 0,
+                             workspace.display_data.statistics,
+                             col_labels = workspace.display_data.col_labels)
         
     def perform_measurement(self, workspace, function,
                             object_name, feature_name):
@@ -477,7 +474,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
         workspace.add_measurement(object_name, 
                                   "%s_%s"%(AREA_SHAPE,feature_name), 
                                   data)
-        if workspace.frame is not None and np.any(np.isfinite(data)) > 0:
+        if self.show_window and np.any(np.isfinite(data)) > 0:
             data = data[np.isfinite(data)]
             workspace.display_data.statistics.append(
                 (object_name, feature_name, 

@@ -32,7 +32,6 @@ will want to use <b>LoadImages</b> or <b>LoadData</b> with a single, hardcoded f
 See also <b>LoadImages</b>,<b>LoadData</b>.
 
 """
-__version__="$Revision$"
 
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -56,11 +55,12 @@ import cellprofiler.objects as cpo
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 import cellprofiler.settings as cps
-from loadimages import LoadImagesImageProvider, C_SCALING, C_FILE_NAME, C_HEIGHT, C_WIDTH
-from loadimages import C_PATH_NAME, C_MD5_DIGEST, C_OBJECTS_FILE_NAME
+from loadimages import LoadImagesImageProvider, C_SCALING, C_FILE_NAME
+from loadimages import C_HEIGHT, C_WIDTH, C_PATH_NAME, C_MD5_DIGEST, C_URL
+from loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_URL
 from loadimages import C_OBJECTS_PATH_NAME, IO_IMAGES, IO_OBJECTS, IO_ALL
 from loadimages import IMAGE_FOR_OBJECTS_F
-from loadimages import convert_image_to_objects
+from loadimages import convert_image_to_objects, pathname2url
 from identify import add_object_count_measurements, add_object_location_measurements
 from identify import get_object_measurement_columns
 from identify import C_COUNT, C_LOCATION, C_NUMBER
@@ -130,12 +130,12 @@ class LoadSingleImage(cpm.CPModule):
             "None",
             metadata=True,
             get_directory_fn = get_directory_fn,
-            exts = [("Tagged image file (*.tif)","*.tif"),
-                    ("Portable network graphics (*.png)", "*.png"),
-                    ("JPEG file (*.jpg)", "*.jpg"),
-                    ("Bitmap file (*.bmp)", "*.bmp"),
-                    ("GIF file (*.gif)", "*.gif"),
-                    ("Matlab image (*.mat)","*.mat"),
+            exts = [("TIF - Tagged Image File format (*.tif,*.tiff)","*.tif,*.tiff"),
+                    ("PNG - Portable Network Graphics (*.png)", "*.png"),
+                    ("JPG/JPEG file (*.jpg,*.jpeg)", "*.jpg,*.jpeg"),
+                    ("BMP - Windows Bitmap (*.bmp)", "*.bmp"),
+                    ("Compuserve GIF file (*.gif)", "*.gif"),
+                    ("MATLAB image (*.mat)","*.mat"),
                     ("All files (*.*)", "*.*")],doc = """
                     The filename can be constructed in one of two ways:
                     <ul>
@@ -284,7 +284,7 @@ class LoadSingleImage(cpm.CPModule):
     def get_base_directory(self, workspace):
         return self.directory.get_absolute_path(workspace.measurements)
     
-    def get_file_names(self, workspace):
+    def get_file_names(self, workspace, image_set_number = None):
         """Get the files for the current image set
         
         workspace - workspace for current image set
@@ -294,7 +294,8 @@ class LoadSingleImage(cpm.CPModule):
         result = {}
         for file_setting in self.file_settings:
             file_pattern = file_setting.file_name.value
-            file_name = workspace.measurements.apply_metadata(file_pattern)
+            file_name = workspace.measurements.apply_metadata(file_pattern,
+                                                              image_set_number)
             if file_setting.image_objects_choice == IO_IMAGES:
                 image_name = file_setting.image_name.value
             else:
@@ -317,38 +318,85 @@ class LoadSingleImage(cpm.CPModule):
     
     def file_wants_images(self, file_setting):
         '''True if the file_setting produces images, false if it produces objects'''
-        return file_setting.image_object_choice == IO_IMAGES
+        return file_setting.image_objects_choice == IO_IMAGES
     
-    def run(self, workspace):
-        dict = self.get_file_names(workspace)
-        root = self.get_base_directory(workspace)
-        statistics = [("Image name","File")]
+    def is_load_module(self):
+        return True
+    
+    def prepare_run(self, workspace):
         m = workspace.measurements
-        for image_name in dict.keys():
-            file_settings = self.get_file_settings(image_name)
-            rescale = (file_settings.image_objects_choice == IO_IMAGES and
-                       file_settings.rescale)
+        assert isinstance(m, cpmeas.Measurements)
+        root = self.get_base_directory(workspace)
+        
+        if m.image_set_count == 0:
+            # Oh bad - using LoadSingleImage to load one image and process it
+            image_numbers = [1]
+        else:
+            image_numbers = m.get_image_numbers()
+            
+        for image_number in image_numbers:
+            dict = self.get_file_names(workspace, image_set_number=image_number)
+            for image_name in dict.keys():
+                file_settings = self.get_file_settings(image_name)
+                if file_settings.image_objects_choice == IO_IMAGES:
+                    #
+                    # Add measurements
+                    #
+                    path_name_category = C_PATH_NAME
+                    file_name_category = C_FILE_NAME
+                    url_category = C_URL
+                else:
+                    #
+                    # Add measurements
+                    #
+                    path_name_category = C_OBJECTS_PATH_NAME
+                    file_name_category = C_OBJECTS_FILE_NAME
+                    url_category = C_OBJECTS_URL
+                
+                url = pathname2url(os.path.join(root, dict[image_name]))
+                for category, value in (
+                    (path_name_category, root),
+                    (file_name_category, dict[image_name]),
+                    (url_category, url)):
+                    measurement_name = "_".join((category, image_name))
+                    m.add_measurement(cpmeas.IMAGE, measurement_name, value,
+                                      image_set_number = image_number)
+        return True
+ 
+    def run(self, workspace):
+        statistics = []
+        m = workspace.measurements
+        assert isinstance(m, cpmeas.Measurements)
+        image_set = workspace.image_set
+        for file_setting in self.file_settings:
+            wants_images = self.file_wants_images(file_setting)
+            image_name = file_setting.image_name.value if wants_images else \
+                file_setting.objects_name.value
+            m_path, m_file, m_md5_digest, m_scaling, m_height, m_width = [
+                "_".join((c, image_name)) for c in (
+                    C_PATH_NAME if wants_images else C_OBJECTS_PATH_NAME,
+                    C_FILE_NAME if wants_images else C_OBJECTS_FILE_NAME,
+                    C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH)]
+            pathname = m.get_current_image_measurement(m_path)
+            filename = m.get_current_image_measurement(m_file)
+            rescale = (wants_images and file_setting.rescale.value)
+            
             provider = LoadImagesImageProvider(
-                image_name, root, dict[image_name], rescale)
-            image = provider.provide_image(workspace.image_set)
+                image_name, pathname, filename, rescale)
+            image = provider.provide_image(image_set)
             pixel_data = image.pixel_data
-            if file_settings.image_objects_choice == IO_IMAGES:
-                workspace.image_set.providers.append(provider)
-                #
-                # Add measurements
-                #
-                path_name_category = C_PATH_NAME
-                file_name_category = C_FILE_NAME
-                digest = hashlib.md5()
+            digest = hashlib.md5()
+            if wants_images:
                 digest.update(np.ascontiguousarray(pixel_data).data)
                 m.add_image_measurement("_".join((C_MD5_DIGEST, image_name)), 
                                         digest.hexdigest())
                 m.add_image_measurement("_".join((C_SCALING, image_name)),
-                                        image.scale)
+                                         image.scale)
                 m.add_image_measurement("_".join((C_HEIGHT, image_name)),
-                                            int(pixel_data.shape[0]))
+                                        int(pixel_data.shape[0]))
                 m.add_image_measurement("_".join((C_WIDTH, image_name)),
-                                            int(pixel_data.shape[1]))
+                                        int(pixel_data.shape[1]))
+                image_set.providers.append(provider)
             else:
                 #
                 # Turn image into objects
@@ -359,33 +407,30 @@ class LoadSingleImage(cpm.CPModule):
                 object_set = workspace.object_set
                 assert isinstance(object_set, cpo.ObjectSet)
                 object_set.add_objects(objects, image_name)
-                #
-                # Add measurements
-                #
                 add_object_count_measurements(m, image_name, objects.count)
                 add_object_location_measurements(m, image_name, labels)
-                path_name_category = C_OBJECTS_PATH_NAME
-                file_name_category = C_OBJECTS_FILE_NAME
                 #
                 # Add outlines if appropriate
                 #
-                if file_settings.wants_outlines:
+                if file_setting.wants_outlines:
                     outlines = cellprofiler.cpmath.outline.outline(labels)
                     outline_image = cpi.Image(outlines.astype(bool))
-                    workspace.image_set.add(file_settings.outlines_name.value,
+                    workspace.image_set.add(file_setting.outlines_name.value,
                                             outline_image)
-                
-            m.add_image_measurement(file_name_category + '_' + image_name, 
-                                    dict[image_name])
-            m.add_image_measurement(path_name_category + '_' + image_name, root)
-                
-            statistics += [(image_name, dict[image_name])]
-        if workspace.frame:
-            title = "Load single image: image cycle # %d"%(workspace.measurements.image_set_number+1)
-            figure = workspace.create_or_find_figure(title="LoadSingleImage, image cycle #%d"%(
-                workspace.measurements.image_set_number),
-                                                     subplots=(1,1))
-            figure.subplot_table(0,0, statistics)
+            statistics += [(image_name, filename)]
+        workspace.display_data.col_labels = ("Image name","File")
+        workspace.display_data.statistics = statistics
+        
+    def is_interactive(self):
+        return False
+    
+    def display(self, workspace, figure):
+        statistics = workspace.display_data.statistics
+        col_labels = workspace.display_data.col_labels
+        title = "Load single image: image cycle # %d"%(
+            workspace.measurements.image_set_number+1)
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0,0, statistics, col_labels=col_labels)
     
     def get_measurement_columns(self, pipeline):
         columns = []
@@ -489,7 +534,115 @@ class LoadSingleImage(cpm.CPModule):
             if file_setting.image_objects_choice == IO_IMAGES:
                 if not re.match(invalid_chars_pattern,file_setting.image_name.value):
                         raise cps.ValidationError(warning_text,file_setting.image_name)
-                        
+                    
+    def needs_conversion(self):
+        return True
+    
+    def convert(self, pipeline, metadata, namesandtypes, groups):
+        '''Convert from legacy to modern'''
+        import cellprofiler.modules.metadata as cpmetadata
+        import cellprofiler.modules.namesandtypes as cpnamesandtypes
+        import cellprofiler.modules.groups as cpgroups
+        assert isinstance(metadata, cpmetadata.Metadata)
+        assert isinstance(namesandtypes, cpnamesandtypes.NamesAndTypes)
+        assert isinstance(groups, cpgroups.Groups)
+        
+        edited_modules = set()
+        for group in self.file_settings:
+            tags = []
+            file_name = group.file_name.value
+            if group.image_objects_choice == IO_IMAGES:
+                name = group.image_name.value
+            else:
+                name = group.objects_name.value
+            loc = 0
+            regexp = "^"
+            while True:
+                m = re.search('\\\\g[<](.+?)[>]', file_name[loc:])
+                if m is None:
+                    break
+                tag = m.groups()[0]
+                tags.append(tag)
+                start = loc + m.start()
+                end = loc + m.end()
+                regexp += re.escape(file_name[loc:start])
+                regexp += "(?P<%s>.+?)" % tag
+                loc = end
+                if loc == len(file_name):
+                    break
+            regexp += re.escape(file_name[loc:])+"$"
+            if namesandtypes.assignment_method != cpnamesandtypes.ASSIGN_RULES:
+                namesandtypes.assignment_method.value = cpnamesandtypes.ASSIGN_RULES
+            else:
+                namesandtypes.add_assignment()
+            edited_modules.add(namesandtypes)
+            assignment = namesandtypes.assignments[-1]
+            structure = [cps.Filter.AND_PREDICATE ]
+            fp = cpnamesandtypes.FilePredicate()
+            fp_does, fp_does_not = [
+                [d for d in fp.subpredicates if isinstance(d, c)][0]
+                for c in (cps.Filter.DoesPredicate, cps.Filter.DoesNotPredicate)]
+            if len(tags) == 0:
+                structure.append([fp, fp_does, cps.Filter.EQ_PREDICATE,
+                                  file_name])
+            else:
+                #
+                # Unfortunately, we can't replace metadata in the file name.
+                # We have to extract metadata from files that match the
+                # parts of the file name outside of the metadata region. This
+                # isn't what the user intended, but we do the best we can.
+                #
+                # Examples: file_A01.TIF, file_thumbnail.TIF will both match
+                # file_(?P<well>.+?)\.TIF even though the user doesn't want
+                # file_thumbnail.TIF.
+                #
+                metadata.notes.append(
+                    "WARNING: LoadSingleImage used metadata matching. The conversion "
+                    "might match files that were not matched by the legacy "
+                    "module.")
+                namesandtypes.notes.append(
+                    ("WARNING: LoadSingleImage used metadata matching for the %s "
+                     "image. The conversion might match files that were not "
+                     "matched by the legacy module.") % name)
+                structure.append([
+                    fp, fp_does, cps.Filter.CONTAINS_REGEXP_PREDICATE, regexp])
+                if not metadata.wants_metadata:
+                    metadata.wants_metadata.value = True
+                else:
+                    metadata.add_extraction_method()
+                edited_modules.add(metadata)
+                em = metadata.extraction_methods[-1]
+                em.extraction_method.value = cpmetadata.X_MANUAL_EXTRACTION
+                em.source.value = cpmetadata.XM_FILE_NAME
+                em.file_regexp.value = regexp
+                em.filter_choice.value = cpmetadata.F_FILTERED_IMAGES
+                em.filter.build(structure)
+            #
+            # If there was metadata to match, namesandtypes should
+            # have a metadata joiner.
+            #
+            if namesandtypes.matching_choice == cpnamesandtypes.MATCH_BY_METADATA:
+                joins = namesandtypes.join.parse()
+                for d in joins:
+                    for v in d.values():
+                        if v in tags:
+                            d[name] = v
+                            tags.remove(v)
+                            break
+                    else:
+                        d[name] = None
+                namesandtypes.join.build(joins)
+                
+            assignment.rule_filter.build(structure)
+            if group.image_objects_choice == IO_IMAGES:
+                assignment.image_name.value = name
+                assignment.load_as_choice.value = cpnamesandtypes.LOAD_AS_GRAYSCALE_IMAGE
+            else:
+                assignment.object_name.value = name
+                assignment.load_as_choice.value = cpnamesandtypes.LOAD_AS_OBJECTS
+        for module in edited_modules:
+            pipeline.edit_module(module.module_num, True)
+                
     def upgrade_settings(self, setting_values, variable_revision_number, module_name, from_matlab):
         if from_matlab and variable_revision_number == 4:
             new_setting_values = list(setting_values)

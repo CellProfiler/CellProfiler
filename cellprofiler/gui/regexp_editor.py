@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 
 import re
 import wx
@@ -31,15 +30,18 @@ STYLE_MATCH = 1
 STYLE_FIRST_LABEL = 2
 STYLE_ERROR = 31
 
+UUID_REGEXP = "[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}"
 RE_GUESSES = [
     # This is the generic naming convention for fluorescent microscopy images
-    "^(?P<Plate>.*?)_(?P<Well>[A-Z]+[0-9]+)f(?P<Site>[0-9]{2})d(?P<Channel>[0-9])\\.tif$",
+    "^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)f(?P<Site>[0-9]{2})d(?P<Dye>[0-9])\\.tif$",
     # A full-well image with a UUID at the end
-    "^(?P<Plate>.*?)_(?P<Well>[A-Z]+[0-9]+)_w(?P<Channel>[0-9])_[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\\.tif$",
+    "^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_w(?P<Wavelength>[0-9])_" + UUID_REGEXP + "\\.tif$" ,
     # Plate / well / site / channel without UUID
-    "^(?P<Plate>.*?)_(?P<Well>[A-Z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Channel>[0-9])\\.tif$",
+    "^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])\\.tif$",
     # Plate / well / site / channel with UUID
-    '^(?P<Plate>.*?)_(?P<Well>[A-Z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Channel>[0-9])[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}\\.tif$'
+    '^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_s(?P<Site>[0-9])_w(?P<Wavelength>[0-9])' + UUID_REGEXP + '\\.tif$',
+    # Plate / well / [UUID]
+    '^(?P<Plate>.*?)_(?P<Well>[A-Za-z]+[0-9]+)_\\[' + UUID_REGEXP + '\\]\\.tif$'
     # Please add more guesses below
     ]
 

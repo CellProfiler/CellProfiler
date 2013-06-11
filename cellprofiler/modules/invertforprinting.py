@@ -19,7 +19,6 @@ If you want to invert the grayscale intensities of an image, use <b>ImageMath</b
 # Please see the AUTHORS file for credits.
 # 
 # Website: http://www.cellprofiler.org
-__version__="$Revision$"
 
 import numpy as np
 
@@ -151,7 +150,6 @@ class InvertForPrinting(cpm.CPModule):
         
     def run(self, workspace):
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         shape = None
         if self.input_color_choice == CC_GRAYSCALE:
             if self.wants_red_input.value:
@@ -210,17 +208,20 @@ class InvertForPrinting(cpm.CPModule):
         else:
             raise ValueError("Unimplemented color choice: %s" %
                              self.output_color_choice.value)
-        #
-        # display
-        #
-        if workspace.frame is not None:
-            figure = workspace.create_or_find_figure(title="InvertForPrinting, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
-            figure.subplot_imshow(0, 0, color_image, "Original image")
-            figure.subplot_imshow(1, 0, inverted_color, "Color-inverted image",
-                                  sharex = figure.subplot(0,0),
-                                  sharey = figure.subplot(0,0))
-    
+
+        if self.show_window:
+            workspace.display_data.color_image = color_image
+            workspace.display_data.inverted_color = inverted_color
+
+
+    def display(self, workspace, figure):
+        figure.set_subplots((2, 1))
+        color_image = workspace.display_data.color_image
+        inverted_color = workspace.display_data.inverted_color
+        figure.subplot_imshow(0, 0, color_image, "Original image")
+        figure.subplot_imshow(1, 0, inverted_color, "Color-inverted image",
+                              sharexy = figure.subplot(0,0))
+
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if from_matlab and variable_revision_number == 1:

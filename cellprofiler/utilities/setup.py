@@ -132,7 +132,7 @@ def find_javahome():
     if os.environ.has_key('JAVA_HOME'):
         return os.environ['JAVA_HOME']
     if sys.platform == 'darwin':
-        return "Doesn't matter"
+        return None
     if is_win:
         import _winreg
         java_key_path = 'SOFTWARE\\JavaSoft\\Java Runtime Environment'
@@ -157,7 +157,7 @@ def find_javahome():
 def find_jdk():
     """Find the JDK under Windows"""
     if sys.platform == 'darwin':
-        return "Doesn't matter"
+        return None
     if is_win:
         import _winreg
         jdk_key_path = 'SOFTWARE\\JavaSoft\\Java Development Kit'

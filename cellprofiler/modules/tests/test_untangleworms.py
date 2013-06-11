@@ -9,7 +9,6 @@
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import base64
 import gc

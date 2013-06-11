@@ -110,6 +110,7 @@ Here is an example file:<br><br>
 
 See also <b>LoadData</b>.
 '''
+
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
 # 
@@ -314,6 +315,7 @@ class CalculateStatistics(cpm.CPModule):
 
     def run_as_data_tool(self, workspace):
         self.post_run(workspace)
+        workspace.post_run_display(self)
         
     def get_image_measurements(self, measurements, feature_name):
         assert isinstance(measurements, cpmeas.Measurements)
@@ -322,7 +324,8 @@ class CalculateStatistics(cpm.CPModule):
         for i, image_number in enumerate(image_numbers):
             value = measurements.get_measurement(
                 cpmeas.IMAGE, feature_name, image_number)
-            result[i] = value if np.isscalar(value) else value[0]
+            result[i] = (None if value is None 
+                         else value if np.isscalar(value) else value[0])
         return result
     
     def aggregate_measurement(self, measurements, object_name, feature_name):
@@ -404,20 +407,21 @@ class CalculateStatistics(cpm.CPModule):
             for statistic, value in expt_measurements.iteritems():
                 sfeature_name = '_'.join((statistic, object_name, feature_name))
                 measurements.add_experiment_measurement(sfeature_name, value[i])
-        if workspace.frame is not None:
-            #
-            # Create tables for the top 10 Z and V
-            #
-            figure = workspace.create_or_find_figure(title="CalculateStatistics, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
-            for ii, key in enumerate(("Zfactor","Vfactor")):
-                a = expt_measurements[key]
-                indexes = np.lexsort((-a,))
-                stats = [["Object","Feature",key]]
-                stats += [[feature_set[i][0], feature_set[i][1], a[i]]
-                           for i in indexes[:10]]
-                figure.subplot_table(ii,0, stats, (.3,.5,.2))
-                figure.set_subplot_title("Top 10 by %s"%key, ii,0)
+        if self.show_window:
+            workspace.display_data.expt_measurements = expt_measurements
+            workspace.display_data.feature_set = feature_set
+            
+    def display_post_run(self, workspace, figure):
+        expt_measurements = workspace.display_data.expt_measurements
+        feature_set = workspace.display_data.feature_set
+        figure.set_subplots((2, 1))
+        for ii, key in enumerate(("Zfactor","Vfactor")):
+            a = expt_measurements[key]
+            indexes = np.lexsort((-a,))
+            col_labels = ["Object","Feature",key]
+            stats = [[feature_set[i][0], feature_set[i][1], a[i]]
+                       for i in indexes[:10]]
+            figure.subplot_table(ii,0, stats, col_labels=col_labels)
                 
     def include_feature(self, measurements, object_name, feature_name, 
                         image_numbers):
@@ -437,15 +441,20 @@ class CalculateStatistics(cpm.CPModule):
             return False
         if len(image_numbers) == 0:
             return False
-        v = measurements.get_measurement(object_name, 
-                                         feature_name,
-                                         image_numbers[0])
+        for image_number in image_numbers:
+            v = measurements.get_measurement(object_name, 
+                                             feature_name,
+                                             image_number)
+            if v is not None:
+                break
+        else:
+            return False
         if np.isscalar(v):
             return not (isinstance(v, (str, unicode)))
         #
         # Make sure the measurement isn't a string or other oddity
         #
-        return v[0].dtype.kind not in "OSU"
+        return np.asanyarray(v).dtype.kind not in "OSU"
         
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):

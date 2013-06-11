@@ -20,7 +20,6 @@ by specifying "Objects" as the type of image to save.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 
@@ -108,29 +107,6 @@ class ConvertObjectsToImage(cpm.CPModule):
             pixel_data = np.zeros(objects.shape, np.int32)
         else:
             pixel_data = np.zeros((objects.shape[0], objects.shape[1], 3))
-            import matplotlib.cm
-            from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
-            if self.colormap.value == DEFAULT_COLORMAP:
-                cm_name = cpprefs.get_default_colormap()
-            elif self.colormap.value == COLORCUBE:
-                # Colorcube missing from matplotlib
-                cm_name = "gist_rainbow"
-            elif self.colormap.value == LINES:
-                # Lines missing from matplotlib and not much like it,
-                # Pretty boring palette anyway, hence
-                cm_name = "Pastel1"
-            elif self.colormap.value == WHITE:
-                # White missing from matplotlib, it's just a colormap
-                # of all completely white... not even different kinds of
-                # white. And, isn't white just a uniform sampling of
-                # frequencies from the spectrum?
-                cm_name = "Spectral"
-            else:
-                cm_name = self.colormap.value
-            cm = matplotlib.cm.get_cmap(cm_name)
-            mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-            colors = mapper.to_rgba(np.arange(objects.count))[:, :3]
-            color_idx = 0
         convert = True
         for labels, indices in objects.get_labels():
             mask = labels != 0
@@ -143,10 +119,30 @@ class ConvertObjectsToImage(cpm.CPModule):
                 pixel_data[mask] = labels[mask].astype(float) / np.max(labels)
                 alpha[mask] = 1
             elif self.image_mode == IM_COLOR:
-                rlabels = renumber_labels_for_display(labels)[mask] + color_idx
-                pixel_data[mask, :] += colors[rlabels-1, :]
+                import matplotlib.cm
+                from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+                if self.colormap.value == DEFAULT_COLORMAP:
+                    cm_name = cpprefs.get_default_colormap()
+                elif self.colormap.value == COLORCUBE:
+                    # Colorcube missing from matplotlib
+                    cm_name = "gist_rainbow"
+                elif self.colormap.value == LINES:
+                    # Lines missing from matplotlib and not much like it,
+                    # Pretty boring palette anyway, hence
+                    cm_name = "Pastel1"
+                elif self.colormap.value == WHITE:
+                    # White missing from matplotlib, it's just a colormap
+                    # of all completely white... not even different kinds of
+                    # white. And, isn't white just a uniform sampling of
+                    # frequencies from the spectrum?
+                    cm_name = "Spectral"
+                else:
+                    cm_name = self.colormap.value
+                cm = matplotlib.cm.get_cmap(cm_name)
+                mapper = matplotlib.cm.ScalarMappable(cmap=cm)
+                pixel_data[mask, :] += \
+                    mapper.to_rgba(renumber_labels_for_display(labels))[mask, :3]
                 alpha[mask] += 1
-                color_idx += len(indices) - 1
             elif self.image_mode == IM_UINT16:
                 pixel_data[mask] = labels[mask]
                 alpha[mask] = 1
@@ -161,40 +157,32 @@ class ConvertObjectsToImage(cpm.CPModule):
         image = cpi.Image(pixel_data, parent_image = objects.parent_image,
                           convert = convert)
         workspace.image_set.add(self.image_name.value, image)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.ijv = objects.ijv
             workspace.display_data.pixel_data = pixel_data
-    
-    def is_interactive(self):
-        return False
-    
-    def display(self, workspace):
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(title="ConvertObjectsToImage, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
-            figure.subplot_imshow_ijv(
-                0, 0, workspace.display_data.ijv,
-                shape = workspace.display_data.pixel_data.shape[:2],
+
+    def display(self, workspace, figure):
+        pixel_data = workspace.display_data.pixel_data
+        figure.set_subplots((2, 1))
+        figure.subplot_imshow_ijv(
+            0, 0, workspace.display_data.ijv,
+            shape = workspace.display_data.pixel_data.shape[:2],
                 title = "Original: %s"%self.object_name.value)
-            if self.image_mode == IM_COLOR:
-                figure.subplot_imshow(1, 0, workspace.display_data.pixel_data,
-                                      self.image_name.value,
-                                      sharex=figure.subplot(0,0),
-                                      sharey=figure.subplot(0,0))
-                
-            elif self.image_mode == IM_BINARY:
-                figure.subplot_imshow_bw(
-                    1, 0, workspace.display_data.pixel_data, self.image_name.value,
-                    sharex=figure.subplot(0,0), sharey=figure.subplot(0,0))
-            else:
-                figure.subplot_imshow_grayscale(1, 0, workspace.display_data.pixel_data,
-                                                self.image_name.value,
-                                                sharex=figure.subplot(0,0),
-                                                sharey=figure.subplot(0,0))
-                
-                
-        
-    def upgrade_settings(self, setting_values, variable_revision_number, 
+        if self.image_mode == IM_BINARY:
+            figure.subplot_imshow_bw(1, 0, pixel_data,
+                                            self.image_name.value,
+                                            sharexy = figure.subplot(0, 0))
+        elif pixel_data.shape[1] == 2:
+            figure.subplot_imshow_grayscale(1, 0, pixel_data,
+                                            self.image_name.value,
+                                            sharexy = figure.subplot(0, 0))
+        else:
+            figure.subplot_imshow_grayscale(1, 0, pixel_data,
+                                            self.image_name.value,
+                                            sharexy = figure.subplot(0, 0))
+
+
+    def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if variable_revision_number == 1 and from_matlab:
             from_matlab = False

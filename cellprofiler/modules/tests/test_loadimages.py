@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 import base64
 import gc
 import glob
@@ -29,9 +28,6 @@ from StringIO import StringIO
 import traceback
 import PIL.Image
 
-from cellprofiler.preferences import set_headless
-set_headless()
-
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as CPM
 import cellprofiler.modules.loadimages as LI
@@ -42,13 +38,87 @@ import cellprofiler.measurements as measurements
 import cellprofiler.pipeline as P
 import cellprofiler.workspace as W
 from cellprofiler.modules.tests import example_images_directory
+import cellprofiler.preferences as cpprefs
 
 IMAGE_NAME = "image"
 ALT_IMAGE_NAME = "altimage"
 OBJECTS_NAME = "objects"
 OUTLINES_NAME = "outlines"
 
-class testLoadImages(unittest.TestCase):
+class ConvtesterMixin:
+    '''Mixin class that supplies a generic legacy conversion tester method
+    
+    '''
+    def convtester(self, pipeline_text, directory, fn_filter = (lambda x: True)):
+        '''Test whether a converted pipeline yields the same output
+        
+        pipeline_text - the pipeline as a text file
+        
+        directory - the default input directory
+        
+        fn_filter - a function that returns True if a file should be included
+                    in the workspace file list.
+        '''
+        cpprefs.set_default_image_directory(directory)
+        pipeline = cpp.Pipeline()
+        pipeline.load(StringIO(pipeline_text))
+        def callback(caller, event):
+            self.assertFalse(isinstance(event, cpp.RunExceptionEvent))
+        pipeline.add_listener(callback)
+        m = [m for m in pipeline.modules() if isinstance(m, LI.LoadImages)][0]
+        m1 = measurements.Measurements(mode="memory")
+        w1 = W.Workspace(pipeline, m, m1, None, m1, None)
+        pipeline.prepare_run(w1)
+        
+        m2 = measurements.Measurements(mode="memory")
+        w2 = W.Workspace(pipeline, m, m2, None, m2, None)
+        urls = [LI.pathname2url(os.path.join(directory, filename))
+                 for filename in os.listdir(directory)
+                 if fn_filter(filename)]
+        w2.file_list.add_files_to_filelist(urls)
+        pipeline.convert_legacy_input_modules()
+        pipeline.load_image_plane_details(w2)
+        pipeline.prepare_run(w2)
+        
+        ff1 = m1.get_feature_names(measurements.IMAGE)
+        ffexpected = [f.replace("IMAGE_FOR_", "") for f in ff1]
+        ff2 = m2.get_feature_names(measurements.IMAGE)
+        self.assertItemsEqual(ffexpected, ff2)
+        self.assertEqual(m1.image_set_count, m2.image_set_count)
+        image_numbers = m1.get_image_numbers()
+        #
+        # Order images by URL
+        #
+        m_url1 = sorted(ff1, key=lambda f: f.replace("IMAGE_FOR_", ""))
+        m_url2 = sorted(ff2)
+        order1, order2 = [np.lexsort(
+            [mm.get_measurement(measurements.IMAGE, f, image_numbers)
+             for f in m_url]) for mm, m_url in ((m1, m_url1), (m2, m_url2))]
+        image_numbers1 = image_numbers[order1]
+        image_numbers2 = image_numbers[order2]
+        for f1, f2 in zip(ff1, ff2):
+            if f1 in (measurements.GROUP_INDEX, measurements.GROUP_NUMBER,
+                      measurements.IMAGE_NUMBER):
+                continue
+            v1 = m1.get_measurement(measurements.IMAGE, f1,
+                                    image_set_number = image_numbers1)
+            v2 = m2.get_measurement(measurements.IMAGE, f2,
+                                    image_set_number = image_numbers2)
+            if (f1.startswith(measurements.C_PATH_NAME) or
+                f1.startswith(measurements.C_OBJECTS_PATH_NAME)):
+                for p1, p2 in zip(v1, v2):
+                    self.assertEqual(os.path.normcase(p1),
+                                     os.path.normcase(p2))
+            elif (f1.startswith(measurements.C_URL) or
+                  f1.startswith(measurements.C_OBJECTS_URL)):
+                for p1, p2 in zip(v1, v2):
+                    self.assertEqual(
+                        os.path.normcase(LI.url2pathname(p1.encode("utf-8"))),
+                        os.path.normcase(LI.url2pathname(p2.encode("utf-8"))))
+            else:        
+                np.testing.assert_array_equal(v1, v2)
+
+class testLoadImages(unittest.TestCase, ConvtesterMixin):
     def setUp(self):
         self.directory = None
         
@@ -1186,7 +1256,8 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             def settings(self):
                 return []
             def run(self,workspace):
-                image = workspace.image_set.get_image('Orig')
+                image = workspace.image_set.get_image(
+                    'Orig', must_be_grayscale=True)
                 matfh.close()
                 pixel_data = image.pixel_data
                 pixel_data = (pixel_data * 255+.5).astype(np.uint8)
@@ -1300,13 +1371,17 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             "http://www.cellprofiler.org/linked_files",
             "broad-logo.gif", True)
         logo = lip.provide_image(None)
-        self.assertEqual(logo.pixel_data.shape, (38, 150, 4))
+        self.assertEqual(logo.pixel_data.shape, (38, 150, 3))
         lip.release_memory()
         
     def test_05_06_load_Nikon_tif(self):
         '''This is the Nikon format TIF file from IMG-838'''
-        nikon_path = os.path.join(T.testimages_directory(), "NikonTIF.tif")
-        image = LI.load_using_bioformats(nikon_path)
+        lip = LI.LoadImagesImageProvider(
+            "nikon", 
+            T.testimages_directory(),
+            "NikonTIF.tif",
+            True)
+        image = lip.provide_image(None).pixel_data
         self.assertEqual(tuple(image.shape), (731, 805, 3))
         self.assertAlmostEqual(np.sum(image.astype(np.float64)), 560730.83, 0)
         
@@ -1315,13 +1390,18 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         
         This file generated a null-pointer exception in the MetamorphReader
         '''
-        metamorph_path = os.path.join(
-            T.testimages_directory(), 
-            "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif")
-        image = LI.load_using_bioformats(metamorph_path)
+        lip = LI.LoadImagesImageProvider(
+            "nikon", 
+            T.testimages_directory(),
+            "IXMtest_P24_s9_w560D948A4-4D16-49D0-9080-7575267498F9.tif",
+            True)
+        image = lip.provide_image(None).pixel_data
         self.assertEqual(tuple(image.shape), (520, 696))
         self.assertAlmostEqual(np.sum(image.astype(np.float64)), 2071.93, 0)
-        
+    
+    # With Subimager and the new file_ui framework, you'd load individual
+    # planes.
+    @unittest.skip
     def test_05_08_load_5channel_tif(self):
         '''Load a 5-channel image'''
         
@@ -1364,8 +1444,12 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
 
     def test_05_09_load_C01(self):
         """IMG-457: Test loading of a .c01 file"""
-        c01_path = os.path.join(T.testimages_directory(), "icd002235_090127090001_a01f00d1.c01")
-        image = LI.load_using_bioformats(c01_path)
+        lip = LI.LoadImagesImageProvider(
+            "nikon", 
+            T.testimages_directory(),
+            "icd002235_090127090001_a01f00d1.c01",
+            True)
+        image = lip.provide_image(None).pixel_data
         self.assertEqual(tuple(image.shape), (512,512))
         m = hashlib.md5()
         m.update((image * 65535).astype(np.uint16))
@@ -1411,7 +1495,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         workspace = W.Workspace(pipeline, load_images, None, None, m, 
                                 image_set_list)
         load_images.prepare_run(workspace)
-        self.assertEqual(image_set_list.count(),2)
+        self.assertEqual(m.image_set_count, 2)
         load_images.prepare_group(workspace, (), [1,2])
         image_set = image_set_list.get_image_set(0)
         w = W.Workspace(pipeline, load_images, image_set, cpo.ObjectSet(),m,
@@ -1495,10 +1579,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         pipeline.add_listener(self.error_callback)
         pipeline.add_module(load_images)
         image_set_list = I.ImageSetList()
-        self.assertRaises(ValueError, load_images.prepare_run, 
-                          W.Workspace(pipeline, load_images, None, None,
-                                      measurements.Measurements(), 
-                                      image_set_list))
+        self.assertFalse(load_images.prepare_run(
+            W.Workspace(pipeline, load_images, None, None,
+                        measurements.Measurements(), 
+                        image_set_list)))
             
     def test_06_04_conflict(self):
         """Test expected failure when two images have the same metadata"""
@@ -1535,10 +1619,10 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
             pipeline.add_module(load_images)
             pipeline.add_listener(self.error_callback)
             image_set_list = I.ImageSetList()
-            self.assertRaises(
-                ValueError, load_images.prepare_run, W.Workspace(
+            self.assertFalse(load_images.prepare_run(
+                W.Workspace(
                     pipeline, load_images, None, None, 
-                    measurements.Measurements(), image_set_list))
+                    measurements.Measurements(), image_set_list)))
         finally:
             for filename in filenames:
                 os.remove(os.path.join(directory,filename))
@@ -2184,7 +2268,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         workspace = W.Workspace(pipeline, module, None, None,
                                 m, image_set_list)
         module.prepare_run(workspace)
-        self.assertEqual(image_set_list.count(), 65)
+        self.assertEqual(m.image_set_count, 65)
         module.prepare_group(workspace, (), [1,2,3])
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
@@ -2364,7 +2448,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         workspace = W.Workspace(pipeline, module, None, None, m,
                                 image_set_list)
         module.prepare_run(workspace)
-        self.assertEqual(image_set_list.count(), 13)
+        self.assertEqual(m.image_set_count, 13)
         module.prepare_group(workspace, (), np.arange(1,16))
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
@@ -2431,7 +2515,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         m = measurements.Measurements()
         workspace = W.Workspace(pipeline, module, None, None, m, image_set_list)
         module.prepare_run(workspace)
-        self.assertEqual(image_set_list.count(), 13)
+        self.assertEqual(m.image_set_count, 13)
         module.prepare_group(workspace, (), np.arange(1,16))
         image_set = image_set_list.get_image_set(0)
         workspace = W.Workspace(pipeline, module, image_set,
@@ -3100,7 +3184,7 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         image_set = image_set_list.get_image_set(0)
         module.run(W.Workspace(pipeline, module, image_set,
                                cpo.ObjectSet(), m, image_set_list))
-        image = image_set.get_image(IMAGE_NAME)
+        image = image_set.get_image(IMAGE_NAME, must_be_grayscale=True)
         self.assertEqual(tuple(image.pixel_data.shape), (1006, 1000))
 
     def test_16_02_load_url_with_groups(self):
@@ -3148,7 +3232,470 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
         self.assertEqual(group_list[1][0]["Column"], "2")
         self.assertEqual(len(group_list[1][1]), 1)
         self.assertEqual(group_list[1][1][0], image_numbers[-1])
+        
+    def test_17_01_single_channel(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120830205040
+ModuleCount:1
+HasImagePlaneDetails:False
 
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B\'Load the images by matching files in the folder against the unique text pattern for each stain\x3A D.TIF for DAPI, F.TIF for the FITC image, R.TIF for the rhodamine image. The three images together comprise an image set.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C.
+    Check image sets for unmatched or duplicate files?:No
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:
+    Image count:1
+    Text that these images have in common (case-sensitive):D.TIF
+    Position of this image in each group:D.TIF
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:None
+    Type the regular expression that finds metadata in the subfolder path:None
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:OrigBlue
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleFlyImages")
+        self.convtester(pipeline_text, directory)
+        
+    def test_17_02_three_channels(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120830205040
+ModuleCount:1
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B\'Load the images by matching files in the folder against the unique text pattern for each stain\x3A D.TIF for DAPI, F.TIF for the FITC image, R.TIF for the rhodamine image. The three images together comprise an image set.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C.
+    Check image sets for unmatched or duplicate files?:No
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:
+    Image count:3
+    Text that these images have in common (case-sensitive):D.TIF
+    Position of this image in each group:D.TIF
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:None
+    Type the regular expression that finds metadata in the subfolder path:None
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:DAPI
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):F.TIF
+    Position of this image in each group:2
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:FITC
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):R.TIF
+    Position of this image in each group:3
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:Rhodamine
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleFlyImages")
+        self.convtester(pipeline_text, directory)
+        
+    def test_17_03_regexp(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120830205040
+ModuleCount:1
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B\'Load the images by matching files in the folder against the unique text pattern for each stain\x3A D.TIF for DAPI, F.TIF for the FITC image, R.TIF for the rhodamine image. The three images together comprise an image set.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Regular expressions
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C.
+    Check image sets for unmatched or duplicate files?:No
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:
+    Image count:3
+    Text that these images have in common (case-sensitive):.*?D.TIF
+    Position of this image in each group:D.TIF
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:None
+    Type the regular expression that finds metadata in the subfolder path:None
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:DAPI
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):.*?F.TIF
+    Position of this image in each group:2
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:FITC
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):.*?R.TIF
+    Position of this image in each group:3
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:Rhodamine
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleFlyImages")
+        self.convtester(pipeline_text, directory)
+        
+    def test_17_04_order_by_metadata(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120830205040
+ModuleCount:1
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B\'Load the images by matching files in the folder against the unique text pattern for each stain\x3A D.TIF for DAPI, F.TIF for the FITC image, R.TIF for the rhodamine image. The three images together comprise an image set.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C.
+    Check image sets for unmatched or duplicate files?:No
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:
+    Image count:3
+    Text that these images have in common (case-sensitive):D.TIF
+    Position of this image in each group:D.TIF
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:^(?P<field>.+?)_\x5BDFR\x5D\\\\.TIF$
+    Type the regular expression that finds metadata in the subfolder path:None
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:DAPI
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):F.TIF
+    Position of this image in each group:2
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:^(?P<field>.+?)_\x5BDFR\x5D\\\\.TIF$
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:FITC
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):R.TIF
+    Position of this image in each group:3
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:^(?P<field>.+?)_\x5BDFR\x5D\\\\.TIF$
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:Rhodamine
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleFlyImages")
+        self.convtester(pipeline_text, directory)
+        
+    def test_17_05_directory_metadata(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120830205040
+ModuleCount:1
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B\'Load the images by matching files in the folder against the unique text pattern for each stain\x3A D.TIF for DAPI, F.TIF for the FITC image, R.TIF for the rhodamine image. The three images together comprise an image set.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C.
+    Check image sets for unmatched or duplicate files?:No
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:
+    Image count:3
+    Text that these images have in common (case-sensitive):D.TIF
+    Position of this image in each group:D.TIF
+    Extract metadata from where?:Both
+    Regular expression that finds metadata in the file name:^(?P<field>.+?)_\x5BDFR\x5D\\\\.TIF$
+    Type the regular expression that finds metadata in the subfolder path:Example(?P<fly>\x5B^I\x5D+?)Images
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:DAPI
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):F.TIF
+    Position of this image in each group:2
+    Extract metadata from where?:Both
+    Regular expression that finds metadata in the file name:^(?P<field>.+?)_\x5BDFR\x5D\\\\.TIF$
+    Type the regular expression that finds metadata in the subfolder path:Example(?P<fly>\x5B^I\x5D+?)Images
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:FITC
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):R.TIF
+    Position of this image in each group:3
+    Extract metadata from where?:Both
+    Regular expression that finds metadata in the file name:^(?P<field>.+?)_\x5BDFR\x5D\\\\.TIF$
+    Type the regular expression that finds metadata in the subfolder path:Example(?P<fly>\x5B^I\x5D+?)Images
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:Rhodamine
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleFlyImages")
+        self.convtester(pipeline_text, directory)
+        
+    def test_17_06_objects(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120830205040
+ModuleCount:1
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B\'Load the images by matching files in the folder against the unique text pattern for each stain\x3A D.TIF for DAPI, F.TIF for the FITC image, R.TIF for the rhodamine image. The three images together comprise an image set.\'\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C.
+    Check image sets for unmatched or duplicate files?:No
+    Group images by metadata?:No
+    Exclude certain files?:No
+    Specify metadata fields to group by:
+    Select subfolders to analyze:
+    Image count:3
+    Text that these images have in common (case-sensitive):D.TIF
+    Position of this image in each group:D.TIF
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:None
+    Type the regular expression that finds metadata in the subfolder path:None
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:DAPI
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):F.TIF
+    Position of this image in each group:2
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Objects
+    Name this loaded image:FITC
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):R.TIF
+    Position of this image in each group:3
+    Extract metadata from where?:None
+    Regular expression that finds metadata in the file name:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})_s(?P<Site>\x5B0-9\x5D)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:3
+    Load the input as images or objects?:Images
+    Name this loaded image:Rhodamine
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:LoadedImageOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleFlyImages")
+        self.convtester(pipeline_text, directory)
+
+    def test_17_07_group_by_metadata(self):
+        pipeline_text = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20120917145632
+ModuleCount:1
+HasImagePlaneDetails:False
+
+LoadImages:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:11|show_window:True|notes:\x5B"Load the images by matching files in the folder against the unique text pattern for each stain\x3A \'Channel1-\' for nuclei, \'Channel2-\' for the GFP image. The two images together comprise an image set."\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    File type to be loaded:individual images
+    File selection method:Text-Exact match
+    Number of images in each group?:3
+    Type the text that the excluded images have in common:Do not use
+    Analyze all subfolders within the selected folder?:None
+    Input image file location:Default Input Folder\x7C
+    Check image sets for unmatched or duplicate files?:Yes
+    Group images by metadata?:Yes
+    Exclude certain files?:No
+    Specify metadata fields to group by:Column,Row
+    Select subfolders to analyze:
+    Image count:2
+    Text that these images have in common (case-sensitive):Channel1-
+    Position of this image in each group:1
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:rawGFP
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+    Text that these images have in common (case-sensitive):Channel2-
+    Position of this image in each group:2
+    Extract metadata from where?:File name
+    Regular expression that finds metadata in the file name:.*-(?P<ImageNumber>\\\\d*)-(?P<Row>.*)-(?P<Column>\\\\d*)
+    Type the regular expression that finds metadata in the subfolder path:.*\x5B\\\\\\\\/\x5D(?P<Date>.*)\x5B\\\\\\\\/\x5D(?P<Run>.*)$
+    Channel count:1
+    Group the movie frames?:No
+    Grouping method:Interleaved
+    Number of channels per group:2
+    Load the input as images or objects?:Images
+    Name this loaded image:rawDNA
+    Name this loaded object:Nuclei
+    Retain outlines of loaded objects?:No
+    Name the outline image:NucleiOutlines
+    Channel number:1
+    Rescale intensities?:Yes
+"""
+        directory = os.path.join(example_images_directory(),
+                                 "ExampleSBSImages")
+        self.convtester(pipeline_text, directory)
+        
 '''A two-channel tif containing two overlapped objects'''
 overlapped_objects_data = zlib.decompress(base64.b64decode(
     "eJztlU9oI1Ucx1/abau7KO7irq6u8BwQqnYymfTfNiRZ2NRAILsJNMVuQfBl"

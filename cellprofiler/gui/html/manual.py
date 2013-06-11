@@ -1,3 +1,17 @@
+"""
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2013 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+
+import re
 import sys
 import os
 import cellprofiler.icons
@@ -66,10 +80,9 @@ def generate_html(webpage_path = None):
 
 <p>If you find it useful, please credit CellProfiler in publications
 <ol>
-<li>Cite the website (www.cellprofiler.org)</li>
-<li>Cite the publication (check the website for the citation).</li>
-<li>Post the reference for your publication on the CellProfiler Forum (accessible 
-from the website) so that we are aware of it.</li>
+<li>Cite the <a href="www.cellprofiler.org">website</a>.</li>
+<li>Cite the <a href="http://cellprofiler.org/citations.shtml">publication</a>.</li>
+<li>Post the reference for your publication on the CellProfiler <a href="http://cellprofiler.org/forum/">forum</a> so that we are aware of it.</li>
 </ol></p>
 
 <p>These steps will help us to maintain funding for the project and continue to 
@@ -107,7 +120,9 @@ def output_gui_html(webpage_path):
                 help_text += "<b>%s</b>"%key
                 help_text = write_menu(prefix+"_"+key, value, help_text)
             else:
-                file_name = "%s_%s.html" % (prefix, key)
+                cleaned_up_key = re.sub("[/\\\?%\*:\|\"<>\.\+]","",key) # Replace special characters with blanks
+                cleaned_up_key = re.sub(" ","_",cleaned_up_key) # Replace spaces with underscores
+                file_name = "%s_%s.html" % (prefix, cleaned_up_key)
                 fd = open(os.path.join(webpage_path, file_name),"w")
                 fd.write("<html style=""font-family:arial""><head><title>%s</title></head>\n" % key)
                 fd.write("<body><h1>%s</h1>\n<div>\n" % key)
@@ -157,6 +172,8 @@ def output_module_html(webpage_path):
                 d[category] = {}
             d[category][module_name] = module
         result = module.get_help()
+        if result is None:
+            continue
         result = result.replace('<body><h1>','<body><h1>Module: ')
         
         # Check if a corresponding image exists for the module
@@ -180,3 +197,151 @@ def output_module_html(webpage_path):
     help_text += "</ul>\n"
     return help_text
         
+def search_module_help(text):
+    '''Search the help for a string
+    
+    text - find text in the module help using case-insensitive matching
+    
+    returns an html document of all the module help pages that matched or
+            None if no match found.
+    '''
+    matching_help = []
+    for item in MAIN_HELP:
+        matching_help += __search_menu_helper(
+            item, lambda x:__search_fn(x, text))
+    count = sum([len(x[2]) for x in matching_help])
+    
+    for module_name in get_module_names():
+        module = instantiate_module(module_name)
+        location = os.path.split(
+            module.create_settings.im_func.func_code.co_filename)[0]
+        if location == cpprefs.get_plugin_directory():
+            continue
+        help_text = module.get_help()
+        matches = __search_fn(help_text, text)
+        if len(matches) > 0:
+            matching_help.append((module_name, help_text, matches))
+            count += len(matches)
+    if len(matching_help) == 0:
+        return None
+    top = """<html style="font-family:arial">
+    <head><title>%s found</title></head>
+    <body><h1>Matches found</h1><br><ul>
+    """ % ("1 match" if len(matching_help) == 1 else "%d matches" % len(matching_help))
+    body = "<br>"
+    match_num = 1
+    prev_link = '<a href="#match%d" title="Previous match">&lt;</a>'
+    anchor = '<a name="match%d"><u>%s</u></a>'
+    next_link = '<a href="#match%d" title="Next match">&gt;</a>'
+    for title, help_text, pairs in matching_help:
+        top += """<li><a href="#match%d">%s</a></li>\n""" % (
+            match_num, title)
+        start_match = re.search(r"<\s*body[^>]*?>", help_text, re.IGNORECASE)
+        if start_match is None:
+            start = 0
+        else:
+            start = start_match.end()
+        end_match = re.search(r"<\\\s*body", help_text, re.IGNORECASE)
+        if end_match is None:
+            end = len(help_text)
+        else:
+            end = end_match.start()
+            
+        for begin_pos, end_pos in pairs:
+            body += help_text[start:begin_pos]
+            if match_num > 1:
+                body += prev_link % (match_num - 1)
+            body += anchor % (match_num, help_text[begin_pos:end_pos])
+            if match_num != count:
+                body += next_link % (match_num + 1)
+            start = end_pos
+            match_num += 1
+        body += help_text[start:end] + "<br>"
+    result = "%s</ul><br>\n%s</body></html>" % (top, body)
+    return result
+
+def __search_fn(html, text):
+    '''Find begin-end coordinates of case-insensitive matches in html
+    
+    html - an HTML document
+    
+    text - a search string
+    
+    Find the begin and end indices of case insensitive matches of "text"
+    within the text-data of the HTML, searching only in its body and excluding
+    text in the HTML tags.
+    '''
+    start_match = re.search(r"<\s*body[^>]*?>", html, re.IGNORECASE)
+    if start_match is None:
+        start = 0
+    else:
+        start = start_match.end()
+    end_match = re.search(r"<\\\s*body", html, re.IGNORECASE)
+    if end_match is None:
+        end = len(html)
+    else:
+        end = end_match.start()
+    escaped_text = re.escape(text)
+    if " " in escaped_text:
+        #
+        # Many problems here:
+        # <b>Groups</b> module
+        # Some\ntext
+        #
+        # For now, just solve the multiple space problems
+        #
+        escaped_text = escaped_text.replace("\\ ", "\\s+")
+    pattern = "(<[^>]*?>|%s)" % escaped_text
+    return [(x.start()+start, x.end()+start)
+            for x in re.finditer(pattern, html[start:end], re.IGNORECASE)
+            if x.group(1)[0] != '<']
+    
+def __search_menu_helper(menu, search_fn):
+    '''Search a help menu for text
+    
+    menu - a menu in the style of MAIN_HELP. A leaf is a two-tuple composed
+           of a title string and its HTML help. Non-leaf branches are two-tuples
+           of titles and tuples of leaves and branches.
+           
+    search_fn - given a string, returns a list of begin-end tuples of search
+                matches within that string.
+                
+    returns a list of three-tuples. The first item is the title. The second is
+    the html help. The third is a list of begin-end tuples of matches found.
+    '''
+    if len(menu) == 2 and all([isinstance(x, basestring) for x in menu]):
+        matches = search_fn(menu[1])
+        if len(matches) > 0:
+            return [(menu[0], menu[1], matches)]
+        return []
+    return sum(map(lambda x:__search_menu_helper(x, search_fn), menu[1]), [])
+
+if __name__ == "__main__":
+    import wx
+    import wx.html
+    app = wx.PySimpleApp(True)
+    frame = wx.Frame(None, title="Search the help")
+    frame.Sizer = wx.BoxSizer(wx.VERTICAL)
+    search_sizer = wx.BoxSizer(wx.HORIZONTAL)
+    frame.Sizer.Add(search_sizer, 0, wx.EXPAND | wx.ALL, 5)
+    search_sizer.Add(wx.StaticText(frame, label="Search:"), 0, wx.ALIGN_LEFT)
+    search_sizer.AddSpacer(2)
+    text = wx.TextCtrl(frame)
+    search_sizer.Add(text, 1, wx.EXPAND)
+    search_sizer.AddSpacer(2)
+    button = wx.Button(frame, label="Search")
+    search_sizer.Add(button, 0, wx.EXPAND)
+    
+    htmlwindow = wx.html.HtmlWindow(frame)
+    frame.Sizer.Add(htmlwindow, 1, wx.EXPAND)
+    
+    def do_search(event):
+        search_text = text.Value
+        html = search_module_help(search_text)
+        if html is None:
+            html = "<html><header><title>%s not found</title><header><body>So sorry, %s not found</body></html>" % (search_text, search_text)
+        htmlwindow.SetPage(html)
+    button.Bind(wx.EVT_BUTTON, do_search)
+    frame.Layout()
+    frame.Show()
+    app.MainLoop()

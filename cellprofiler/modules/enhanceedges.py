@@ -19,7 +19,6 @@ produces a binary (black/white) mask image consisting of the edge pixels.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__ = "$Revision$"
 
 import numpy as np
 from scipy.ndimage import convolve
@@ -189,33 +188,38 @@ class EnhanceEdges(cpm.CPModule):
         else:
             raise NotImplementedError("Unimplemented edge detection method: %s"%
                                       self.method.value)
-        if not workspace.frame is None:
-            figure = workspace.create_or_find_figure(title="EnhanceEdges, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,2))
-            figure.subplot_imshow_grayscale(0,0, orig_pixels,
-                                            "Original: %s"%
-                                            self.image_name.value)
-            if self.method == M_CANNY:
-                # Canny is binary
-                figure.subplot_imshow_bw(0,1, output_pixels,
-                                         self.output_image_name.value,
-                                         sharex = figure.subplot(0,0),
-                                         sharey = figure.subplot(0,0))
-            else:
-                figure.subplot_imshow_grayscale(0,1,output_pixels,
-                                                self.output_image_name.value,
-                                                sharex = figure.subplot(0,0),
-                                                sharey = figure.subplot(0,0))
-            color_image = np.zeros((output_pixels.shape[0],
-                                    output_pixels.shape[1],3))
-            color_image[:,:,0] = stretch(orig_pixels)
-            color_image[:,:,1] = stretch(output_pixels)
-            figure.subplot_imshow(1,0, color_image,"Composite image",
-                                  sharex = figure.subplot(0,0),
-                                  sharey = figure.subplot(0,0))
+
         output_image = cpi.Image(output_pixels, parent_image = image)
-        workspace.image_set.add(self.output_image_name.value, output_image)   
-    
+        workspace.image_set.add(self.output_image_name.value, output_image)
+
+        if self.show_window:
+            workspace.display_data.orig_pixels = orig_pixels
+            workspace.display_data.output_pixels = output_pixels
+
+    def display(self, workspace, figure):
+        orig_pixels = workspace.display_data.orig_pixels
+        output_pixels = workspace.display_data.output_pixels
+
+        figure.set_subplots((2, 2))
+        figure.subplot_imshow_grayscale(0, 0, orig_pixels,
+                                            "Original: %s" %
+                                            self.image_name.value)
+        if self.method == M_CANNY:
+            # Canny is binary
+            figure.subplot_imshow_bw(0, 1, output_pixels,
+                                     self.output_image_name.value,
+                                     sharexy = figure.subplot(0, 0))
+        else:
+            figure.subplot_imshow_grayscale(0, 1, output_pixels,
+                                            self.output_image_name.value,
+                                            sharexy = figure.subplot(0, 0))
+        color_image = np.zeros((output_pixels.shape[0],
+                                output_pixels.shape[1], 3))
+        color_image[:, :, 0] = stretch(orig_pixels)
+        color_image[:, :, 1] = stretch(output_pixels)
+        figure.subplot_imshow(1, 0, color_image,"Composite image",
+                              sharexy = figure.subplot(0, 0))
+
     def get_sigma(self):
         if self.wants_automatic_sigma.value:
             #

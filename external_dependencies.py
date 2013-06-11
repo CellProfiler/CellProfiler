@@ -1,26 +1,55 @@
+"""
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2013 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+
 # This file allows developers working in the git repository to fetch
 # binary files from SVN (or other site) so that the git repository
 # doesn't have to track large files.
 
+import re
 import os.path
 import hashlib
 import urllib2
 import shutil
+import subprocess
 import sys
+import traceback
+import zipfile
 
+ACTION_MAVEN = "Maven"
+
+CELLPROFILER_DEPENDENCIES_URL = \
+    'http://www.cellprofiler.org/linked_files/CellProfilerDependencies'
+OMERO_CLIENTS_URL = CELLPROFILER_DEPENDENCIES_URL + '/OMERO.clients-4.4.6'
 # The list of files (relative path) to fetch, their SHA1, and their source URL.
 files = [
-    [['bioformats', 'loci_tools.jar'], 'a1d08a9dfb648eb86290a036fe0b5a4e47f2c44a', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11312/trunk/CellProfiler/bioformats/loci_tools.jar'],
-    [['cellprofiler', 'utilities', 'runnablequeue-1.0.0.jar'], '25df9c1f986cc2b9384c9d2d8053cea0863b28ef', 'http://www.cellprofiler.org/linked_files/runnablequeue/builds/runnablequeue-ad0369388502018b519c943d92206fed94347817.jar'],
-    [['cellprofiler', 'utilities', 'js.jar'], 'b95d5212ff4cea92cee1c3c6fa50aa82c9d4905b', 'http://repo1.maven.org/maven2/rhino/js/1.7R2/js-1.7R2.jar'],
-    [['imagej', 'ij.jar'], 'f675dc28e38a9a2612e55db049f4d4bb47d774b1', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/ij.jar'],
-    [['imagej', 'imglib.jar'], '7e0e68aa371706012e224df0b31925317a3dc284', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/imglib.jar'],
-    [['imagej', 'javacl-1.0-beta-4-shaded.jar'], '62b3b41c4759652595070534d79d1294eeba8139', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/javacl-1.0-beta-4-shaded.jar'],
-    [['imagej', 'junit-4.5.jar'], '41eb8ac5586d163d61518be18a13626983f9ece6', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/junit-4.5.jar'],
-    [['imagej', 'precompiled_headless.jar'], '39ef36e6cfbd7f48e8c0e3033b30b0e3f5b5d24e', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11073/trunk/CellProfiler/imagej/precompiled_headless.jar'],
-    [['imagej', 'imagej-2.0-SNAPSHOT-all.jar'], '78de1c8c2fc32a4ea17998cb7c2e56f0d1a7f241', 'https://svn.broadinstitute.org/CellProfiler/!svn/bc/11495/trunk/CellProfiler/imagej/imagej-2.0-SNAPSHOT-all.jar']
-]
+    [['imagej', 'apache-maven-3.0.4-bin.zip'], 
+     '29cfd351206016b67dd0d556098513d2b259c69b',
+     CELLPROFILER_DEPENDENCIES_URL + '/apache-maven-3.0.4-bin.zip',
+     ACTION_MAVEN],
+    [['imagej', 'jars', 'blitz.jar'], 
+     '187b6ba235b248b9e0bbbdbce030b677c43e0ca6',
+     OMERO_CLIENTS_URL + '/blitz.jar', None],
+    [['imagej', 'jars', 'common.jar'], 
+     'b5e71c170ec44e532a42a21c3d4f0114b36a8a0a',
+     OMERO_CLIENTS_URL + '/common.jar', None],
+    [['imagej', 'jars', 'model-psql.jar'], 
+     'f0dfd921e0569e5eb78a0842c595904e0b059fd9',
+     OMERO_CLIENTS_URL + '/model-psql.jar', None],
+    [['imagej', 'jars', 'ice.jar'], 
+     '017c5f3960be550673ff491bbcc7184c6d6388f1',
+     OMERO_CLIENTS_URL + '/ice.jar', None]]
 
+pom_folders = ["imagej", "java"]
 
 def filehash(filename):
     sha1 = hashlib.sha1()
@@ -35,16 +64,31 @@ def filehash(filename):
 def fetchfile(filename, url):
     print "fetching %s to %s"%(url, filename)
     # no try/except, it's wrapped below, and we just fail and whine to the user.
+    path = os.path.split(filename)[0]
+    if not os.path.isdir(path):
+        os.makedirs(path)
     src = urllib2.urlopen(url)
     dest = open(filename, 'wb')
     shutil.copyfileobj(src, dest)
 
+def get_cellprofiler_root_dir():
+    if __name__ == "__main__":
+        root = os.path.abspath(os.curdir)
+    else:
+        root = os.path.abspath(os.path.split(__file__)[0])
+    return root
+    
+def get_maven_install_path():
+    '''Return the location of the Maven install'''
+    root = get_cellprofiler_root_dir()
+    return os.path.join(root, 'imagej', 'maven')
+    
 def fetch_external_dependencies(overwrite=False):
     # look for each file, check its hash, download if missing, or out
     # of date if overwrite==True, complain if it fails.  If overwrite
     # is 'fail', die on mismatches hashes.
-    root = os.path.split(__file__)[0]
-    for path, hash, url in files:
+    root = get_cellprofiler_root_dir()
+    for path, hash, url, action in files:
         path = os.path.join(root, *path)
         try:
             assert os.path.isfile(path)
@@ -62,8 +106,223 @@ def fetch_external_dependencies(overwrite=False):
                 fetchfile(path, url)
                 assert os.path.isfile(path)
                 assert filehash(path) == hash, 'Hashes do not match!'
+                if action == ACTION_MAVEN:
+                    install_maven(path)
             except:
-                import traceback
                 sys.stderr.write(traceback.format_exc())
                 sys.stderr.write("Could not fetch external binary dependency %s from %s.  Some functionality may be missing.  You might try installing it by hand.\n"%(path, url))
                 
+    print "Updating Java dependencies using Maven."
+    for pom_folder in pom_folders:
+        pom_dir = os.path.join(root, pom_folder)
+        try:
+            try:
+                if check_maven_repositories(pom_dir):
+                    aggressive_update = overwrite
+                else:
+                    aggressive_update = None
+            except:
+                # check_maven_repositories runs with the -o switch to prevent it
+                # from going to the Internet. If the local repository doesn't
+                # have all the necessary pieces, mvn returns an error code
+                # and check_output throws to here.
+                #
+                # Tell run_maven to update aggressively
+                aggressive_update = True
+    
+            run_maven(pom_dir, 
+                      quiet = not overwrite,
+                      run_tests = overwrite,
+                      aggressive_update = aggressive_update)
+        except:
+            sys.stderr.write(traceback.format_exc())
+            sys.stderr.write("Maven failed to update Java dependencies.\n")
+            if not overwrite:
+                sys.stderr.write("Run external_dependencies with the -o switch to get full output.\n")
+        
+    
+def install_maven(zipfile_path):
+    '''Install the Maven jars from a zipfile
+    
+    zipfile_path - path to the zipfile
+    zip_jar_path - path to the jar files within the zip file
+    jar_path - destination for the jar files
+    '''
+    install_path = get_maven_install_path()
+    zf = zipfile.ZipFile(zipfile_path)
+    zf.extractall(install_path)
+    if sys.platform != 'win32':
+        import stat
+        executeable_path = get_mvn_executable_path(install_path)
+        os.chmod(executeable_path,
+                 stat.S_IRUSR | stat.S_IWUSR | stat.S_IXUSR|
+                 stat.S_IRGRP | stat.S_IXGRP|
+                 stat.S_IROTH | stat.S_IXOTH)
+    
+def get_mvn_executable_path(maven_install_path):
+    subdir = reduce(max, [x for x in os.listdir(maven_install_path)
+                          if x.startswith('apache-maven')])
+    
+    if sys.platform == 'win32':
+        executeable = 'mvn.bat'
+    else:
+        executeable = 'mvn'
+    executeable_path = os.path.join(maven_install_path, subdir, 'bin', 
+                                    executeable)
+    return executeable_path
+
+def run_maven(pom_path, goal="package",
+              quiet=False, run_tests=True, aggressive_update = True,
+              return_stdout = False, additional_args = []):
+    '''Run a Maven pom to install all of the needed jars
+    
+    pom_path - the directory hosting the Maven POM
+    
+    goal - the maven goal. "package" is the default which is pretty much
+           "do whatever the POM was built to do"
+    
+    quiet - feed Maven the -q switch if true to make it run in quiet mode
+    
+    run_tests - if False, set the "skip tests" maven flag. This is appropriate
+                if you're silently building a known-good downloaded source.
+    
+    aggressive_update - if True, use the -U switch to make Maven go to the
+                internet and check for updates. If False, default behavior.
+                If None, use the -o switch to prevent Maven from any online
+                updates.
+                
+    return_stdout - redirect stdout to capture a string and return it if True,
+                    dump Maven output to console if False
+                    
+    additional_args - additional arguments for the command-line
+    
+    Runs mvn package on the POM
+    '''
+    from cellprofiler.utilities.setup import find_jdk
+    
+    maven_install_path = get_maven_install_path()
+    jdk_home = find_jdk()
+    env = os.environ.copy()
+    if jdk_home is not None:
+        env["JAVA_HOME"] = jdk_home.encode("utf-8")
+            
+    executeable_path = get_mvn_executable_path(maven_install_path)
+    args = [executeable_path]
+    if aggressive_update:
+        args.append("-U")
+    elif aggressive_update is None:
+        args.append("-o")
+    if quiet:
+        args.append("-q")
+    if not run_tests:
+        args.append("-Dmaven.test.skip=true")
+    args += additional_args
+    args.append(goal)
+    if return_stdout:
+        return subprocess.check_output(args, cwd = pom_path, env=env)
+    else:
+        subprocess.check_call(args, cwd = pom_path, env=env)
+            
+def check_maven_repositories(pom_path):
+    '''Check the repositories used by the POM for internet connectivity
+    
+    pom_path - location of the pom.xml file
+    
+    returns True if we can reach all repositories in a reasonable amount of time,
+            False if the ping failed.
+    Throws an exception if Maven failed, possibly because, given the -o switch
+    it didn't have what it needed to run the POM.
+    
+    the goal, "dependency-list-repositories", lists the repositories needed
+    by a POM.
+    '''
+    output = run_maven(pom_path, 
+                       goal="dependency:list-repositories",
+                       aggressive_update = None,
+                       return_stdout=True)
+    pattern = r"\s*url:\s+((?:http|ftp|https):.+)"
+    for line in output.split("\n"):
+        line = line.strip()
+        match = re.match(pattern, line)
+        if match is not None:
+            url = match.groups()[0]
+            try:
+                urllib2.urlopen(url, timeout=1)
+            except urllib2.URLError, e:
+                return False
+    return True
+
+def get_cellprofiler_jars():
+    '''Return the class path for the Java dependencies
+    
+    NOTE: should not be called for the frozen version of CP
+    '''
+    root = get_cellprofiler_root_dir()
+    jars = set(filter(lambda x:x.endswith(".jar"), [x[0][-1] for x in files]))
+    aggressive_update = None
+    #
+    # Our jars come first because of patches
+    #
+    our_jars = []
+    for pom_folder in pom_folders:
+        pom_dir = os.path.join(root, pom_folder)
+        # Get the name of the jar output by this pom
+        #
+        output = run_maven(
+            pom_dir,
+            goal = "help:evaluate",
+            aggressive_update=False,
+            return_stdout=True,
+            additional_args = ["-Dexpression=project.build.finalName"])
+        lines = filter(lambda x: not x.startswith("["), output.split("\n"))
+        if len(lines) > 0:
+            our_jars.append(lines[0].strip() + ".jar")
+        #
+        # Get the dependencies
+        #
+        if aggressive_update is None:
+            try:
+                output = run_maven(
+                    pom_dir,
+                    goal = "dependency:build-classpath",
+                    aggressive_update=aggressive_update,
+                    return_stdout=True)
+            except:
+                aggressive_update = True
+        if aggressive_update is not None:
+            output = run_maven(
+                pom_dir,
+                goal = "dependency:build-classpath",
+                aggressive_update=aggressive_update,
+                return_stdout=True)
+        lines = filter(lambda x: not x.startswith("["), output.split("\n"))
+        if len(lines) > 0:
+            jars.update([os.path.split(x)[1] for x in
+                         lines[0].strip().split(os.pathsep)])
+    return our_jars + sorted(jars)
+
+if __name__=="__main__":
+    import optparse
+    usage = """Fetch external dependencies from internet
+usage: %prog [options]"""
+    parser = optparse.OptionParser(usage=usage)
+    parser.add_option("-m", "--missing-only",
+                      action="store_const",
+                      const=False,
+                      dest="overwrite",
+                      default=False,
+                      help="Download external dependency only if missing")
+    parser.add_option("-o", "--overwrite",
+                      action="store_const",
+                      const=True,
+                      dest="overwrite",
+                      help="Download external dependency if hash doesn't match")
+    parser.add_option("-f", "--fail",
+                      action="store_const",
+                      const="fail",
+                      dest="overwrite",
+                      help="Fail if a dependency exists and its hash is wrong")
+    options, args = parser.parse_args()
+    print "Fetching external dependencies..."
+    fetch_external_dependencies(options.overwrite)
+    print "Fetch complete"

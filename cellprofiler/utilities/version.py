@@ -32,6 +32,43 @@ def get_version():
     if not hasattr(sys, 'frozen'):
         import cellprofiler
         cellprofiler_basedir = os.path.abspath(os.path.join(os.path.dirname(cellprofiler.__file__), '..'))
+        # Evil GIT without GIT. Look for what we want in the log files.
+        try:
+            while True:
+                git_dir = os.path.join(cellprofiler_basedir, ".git")
+                if not os.path.isdir(git_dir):
+                    break
+                with open(os.path.join(git_dir, "HEAD"), "r") as fd:
+                    line = fd.readline().strip()
+                # Line is like this:
+                #
+                # ref: refs/heads/master
+                #
+                match = re.match("ref:\\s+(.+)", line)
+                if match is None:
+                    break
+                treeish = match.groups()[0]
+                #
+                # The log is in .git/logs/<treeish>
+                #
+                log_file = os.path.join(git_dir, "logs", treeish)
+                if not os.path.isfile(log_file):
+                    break
+                pattern = (
+                    "(?P<oldhash>[0-9a-f]+) (?P<newhash>[0-9a-f]+) "
+                    ".+? (?P<timestamp>[0-9]+) (?P<timezone>[-+]?[0-9]{4})[\t\n]")
+                last_hash = None
+                with open(log_file, "r") as fd:
+                    for line in fd:
+                        match = re.search(pattern, line)
+                        if match is not None:
+                            last_hash = match.groupdict()["newhash"]
+                            last_timestamp = match.groupdict()["timestamp"]
+                if last_hash is not None:
+                    t = datetime.datetime.utcfromtimestamp(float(last_timestamp))
+                    return "%s %s" %(t.isoformat("T"), last_hash[:7])
+        except:
+            pass
 
         # GIT
         try:
@@ -45,14 +82,15 @@ def get_version():
 
         # SVN
         try:
-            # use svn info because it doesn't require the network.
-            output = subprocess.Popen(['svn', 'info', '--xml'],
-                                      stdout=subprocess.PIPE,
-                                      stderr=subprocess.STDOUT,
-                                      cwd=cellprofiler_basedir).communicate()[0]
-            date = re.search('<date>([^.]*)(\\.[0-9]*Z)</date>', output).group(1)
-            version = re.search('revision="(.*)">', output).group(1)
-            return '%s SVN:%s' % (datetime_from_isoformat(date).isoformat('T'), version)
+            if os.path.isdir(os.path.join(cellprofiler_basedir, ".svn")):
+                # use svn info because it doesn't require the network.
+                output = subprocess.Popen(['svn', 'info', '--xml'],
+                                          stdout=subprocess.PIPE,
+                                          stderr=subprocess.STDOUT,
+                                          cwd=cellprofiler_basedir).communicate()[0]
+                date = re.search('<date>([^.]*)(\\.[0-9]*Z)</date>', output).group(1)
+                version = re.search('revision="(.*)">', output).group(1)
+                return '%s SVN:%s' % (datetime_from_isoformat(date).isoformat('T'), version)
         except (OSError, subprocess.CalledProcessError), e:
             pass
         except (AttributeError,), e:

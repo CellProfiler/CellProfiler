@@ -1,3 +1,16 @@
+"""
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2013 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+
 """Windows setup file
 To invoke, from the command-line type:
 python windows_setup.py py2exe msi
@@ -170,27 +183,29 @@ opts = {
                               "h5py", "h5py.*",
                               "email.iterators",
                               "cellprofiler.modules.*"],
-                'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython', 'zmq'],
+                'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],
                 'dll_excludes': ["jvm.dll"]
               },
     'msi': {}
        }
 
 data_files = []
-try:
-    import nuageux
-    opts['py2exe']['includes'] += ['nuageux']
-except:
-    print "Nuageux not installed, no distributed support"
+####################################
+#
+# Ilastik fixups
+#
+####################################
 try:
     import vigra
     import ilastik
     vigranumpy_path = os.path.join(vigra.__path__[0],"vigranumpycore.pyd")
     if os.path.exists(vigranumpy_path):
         data_files += [(".",[vigranumpy_path])]
-    opts['py2exe']['includes'] += ["vigra", "vigra.impex",
-                                   "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic",
-                                   "sip"]
+    opts['py2exe']['includes'] += [
+        "vigra", "vigra.impex",
+        "h5py", "h5py._stub", "h5py._conv", "h5py.utils", "h5py._proxy",
+        "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip",
+        "zmq", "zmq.utils", "zmq.utils.jsonapi", "zmq.utils.strtypes"]
     opts['py2exe']['excludes'] += ["ilastik"]
     #
     # Put path to QT dlls in PATH environment variable
@@ -230,7 +245,12 @@ try:
         print "This installation will not supply OpenGL support for Ilastik"
 except:
     print "This installation will not include Ilastik"
-    
+
+##################################
+#
+# Scipy fixups
+#
+##################################
 try:
     # Include this package if present
     import scipy.io.matlab.streams
@@ -238,6 +258,34 @@ try:
 except:
     pass
 
+##############################################
+#
+# 0MQ fixups
+#
+# libzmq.dll is not found by py2exe, so we
+# semi-manually copy it to the right place
+# and ask py2exe to ignore not being able
+# to find it.
+##############################################
+try:
+    import zmq
+    zmq_loc = os.path.split(zmq.__file__)[0]
+    os.environ["PATH"] = os.environ["PATH"] + ";"+zmq_loc
+    #
+    # 2.2 added this and distutils did not find it
+    # Not present prior to 2.2
+    #
+    if zmq.__version__ >= "2.2.0":
+        opts['py2exe']['includes'] += ["zmq.core.pysocket"]
+except:
+    print "This installation will not include 0MQ"
+
+##############################################
+#
+# Visual Studio DLL fixups - Much better to use the official installer
+#                            than to hand-patch the manifest and DLLs.
+#
+##############################################
 try:
     # Fix for scipy 0.11
     from scipy.sparse.csgraph import _validation
@@ -266,17 +314,17 @@ else:
 data_files += [('cellprofiler\\icons',
                ['cellprofiler\\icons\\%s'%(x) 
                 for x in os.listdir('cellprofiler\\icons')
-                if x.endswith(".png") or x.endswith(".psd")]),
-              ('bioformats', ['bioformats\\loci_tools.jar']),
-              ('cellprofiler\\utilities',
-               ['cellprofiler\\utilities\\js.jar',
-                'cellprofiler\\utilities\\runnablequeue-1.0.0.jar']),
-              ('imagej', ['imagej\\'+jar_file
-                          for jar_file in os.listdir('imagej')
-                          if jar_file.endswith('.jar')])]
+                if x.endswith(".png") 
+                or x.endswith(".psd") or x.endswith(".txt")]),
+              ('imagej\\jars', 
+               ['imagej\\jars\\%s' % x for x in os.listdir('imagej\\jars')])]
 data_files += matplotlib.get_py2exe_datafiles()
+################################
+#
 # Collect the JVM
 #
+################################
+
 from cellprofiler.utilities.setup import find_jdk
 jdk_dir = find_jdk()
 def add_jre_files(path):
@@ -304,7 +352,8 @@ data_files += [("jre\\ext", [os.path.join(jdk_dir, "lib", "tools.jar")])]
 #
 try:
     setup(console=[{'script':'CellProfiler.py',
-                    'icon_resources':[(1,'CellProfilerIcon.ico')]}],
+                    'icon_resources':[(1,'CellProfilerIcon.ico')]},
+                   {'script':'cellprofiler\\analysis_worker.py'}],
           name='Cell Profiler',
           data_files = data_files,
           cmdclass={'msi':CellProfilerMSI

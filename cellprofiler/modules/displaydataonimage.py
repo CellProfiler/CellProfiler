@@ -21,7 +21,6 @@ CellProfiler 1.0 were merged into DisplayDataOnImage in the CellProfiler 2.0.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 
@@ -160,9 +159,6 @@ class DisplayDataOnImage(cpm.CPModule):
                    self.saved_image_contents, self.offset]
         return result
         
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         import matplotlib
         import matplotlib.cm
@@ -266,22 +262,19 @@ class DisplayDataOnImage(cpm.CPModule):
         self.run(workspace)
         self.display(workspace)
         
-    def display(self, workspace):
-        fig = workspace.create_or_find_figure(title="DisplayDataOnImage, image cycle #%d"%(
-                workspace.measurements.image_set_number),
-                                              subplots=(1,1))
-        fig.clf()
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
+        figure.clf()
         title = "%s_%s" % (self.objects_name.value, self.measurement.value)
         def imshow_fn(pixel_data):
             if pixel_data.ndim == 3:
-                fig.subplot_imshow_color(0, 0, pixel_data, title=title,
+                figure.subplot_imshow_color(0, 0, pixel_data, title=title,
                                          use_imshow = True)
             else:
-                fig.subplot_imshow_grayscale(0, 0, pixel_data, title=title,
+                figure.subplot_imshow_grayscale(0, 0, pixel_data, title=title,
                                              use_imshow = True)
 
-        self.display_on_figure(workspace, fig.subplot(0,0), imshow_fn)
-        fig.figure.canvas.draw_idle()
+        self.display_on_figure(workspace, figure.subplot(0,0), imshow_fn)
         
     def display_on_figure(self, workspace, axes, imshow_fn):
         import matplotlib

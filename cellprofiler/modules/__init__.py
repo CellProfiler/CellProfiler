@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 
 import logging
 logger = logging.getLogger(__name__)
@@ -69,6 +68,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'flagimage' : 'FlagImage',
                         'flipandrotate' : 'FlipAndRotate',
                         'graytocolor' : 'GrayToColor',
+                        'groups': 'Groups',
                         'identifydeadworms': 'IdentifyDeadWorms',
                         'identifyobjectsingrid': 'IdentifyObjectsInGrid',
                         'identifyobjectsmanually': 'IdentifyObjectsManually',
@@ -76,6 +76,7 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'identifysecondaryobjects' : 'IdentifySecondaryObjects',
                         'identifytertiaryobjects' : 'IdentifyTertiaryObjects',
                         'imagemath' : 'ImageMath',
+                        'images': 'Images',
                         'invertforprinting' : 'InvertForPrinting',
                         'labelimages' : 'LabelImages',
                         'loadimages' : 'LoadImages',
@@ -98,7 +99,9 @@ pymodule_to_cpmodule = {'align' : 'Align',
                         'measureneurons': 'MeasureNeurons',
                         'measuretexture' : 'MeasureTexture',
                         'mergeoutputfiles' : 'MergeOutputFiles',
+                        'metadata' : 'Metadata',
                         'morph' : 'Morph',
+                        'namesandtypes' : 'NamesAndTypes',
                         'overlayoutlines' : 'OverlayOutlines',
                         'pausecellprofiler': 'PauseCellProfiler',
                         'relateobjects' : 'RelateObjects',
@@ -153,6 +156,7 @@ builtin_modules = ['align',
                    'flagimage',
                    'flipandrotate',
                    'graytocolor',
+                   'groups',
                    'identifydeadworms',
                    'identifyobjectsingrid',
                    'identifyobjectsmanually',
@@ -160,6 +164,7 @@ builtin_modules = ['align',
                    'identifysecondaryobjects',
                    'identifytertiaryobjects',
                    'imagemath',
+                   'images',
                    'invertforprinting',
                    'labelimages',
                    'loadimages',
@@ -169,6 +174,7 @@ builtin_modules = ['align',
                    'makeprojection',
                    'maskimage',
                    'maskobjects',
+                   'metadata',
                    'measurecorrelation',
                    'measuregranularity',
                    'measureimageareaoccupied',
@@ -182,6 +188,7 @@ builtin_modules = ['align',
                    'measuretexture',
                    'mergeoutputfiles',
                    'morph',
+                   'namesandtypes',
                    'overlayoutlines',
                    'pausecellprofiler',
                    'relateobjects',
@@ -285,10 +292,16 @@ def check_module(module, name):
         assert getattr(module, method_name) != getattr(cpm.CPModule, method_name), "Module %s should override method %s"%(name, method_name)
     
 
-def find_cpmodule_name(m):
+def find_cpmodule(m):
+    '''Returns the CPModule from within the loaded Python module
+    
+    m - an imported module
+    
+    returns the CPModule class
+    '''
     for v, val in m.__dict__.iteritems():
         if isinstance(val, type) and issubclass(val, cpm.CPModule):
-            return val.module_name
+            return val
     raise "Could not find cpm.CPModule class in %s"%(m.__file__)
 
 def fill_modules():
@@ -301,7 +314,8 @@ def fill_modules():
     def add_module(mod, check_svn):
         try:
             m = __import__(mod, globals(), locals(), ['__all__'], 0)
-            name = find_cpmodule_name(m)
+            cp_module = find_cpmodule(m)
+            name = cp_module.module_name
         except Exception, e:
             logger.warning("Could not load %s", mod, exc_info=True)
             badmodules.append((mod, e))
@@ -314,8 +328,8 @@ def fill_modules():
                     "Multiple definitions of module %s\n\told in %s\n\tnew in %s", 
                     name, sys.modules[all_modules[name].__module__].__file__, 
                     m.__file__)
-            all_modules[name] = m.__dict__[name]
-            check_module(m.__dict__[name], name)
+            all_modules[name] = cp_module
+            check_module(cp_module, name)
             # attempt to instantiate
             all_modules[name]()
             if hasattr(all_modules[name], "run_as_data_tool"):

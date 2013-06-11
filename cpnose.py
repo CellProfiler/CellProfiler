@@ -1,7 +1,18 @@
+"""
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2013 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+
 import nose
 import sys
-
-from killjavabridge import KillVMPlugin
 
 import numpy as np
 np.seterr(all='ignore')
@@ -24,5 +35,4 @@ if len(sys.argv) == 0:
 else:
     args = sys.argv
 
-nose.main(argv=args + ['--with-kill-vm', '--exe'],
-          addplugins=[KillVMPlugin()])
+nose.main(argv=args + ['--exe'])

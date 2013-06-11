@@ -10,7 +10,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__ = "$Revision$"
 
 from setuptools import setup
 import sys
@@ -45,19 +44,22 @@ if sys.platform == "darwin":
     f.write("# MACHINE_GENERATED\nversion_string = '%s'" % cellprofiler.utilities.version.version_string)
     f.close()
 
-APPNAME = 'CellProfiler2.0'
+APPNAME = 'CellProfiler'
 APP = ['CellProfiler.py']
-DATA_FILES = [('cellprofiler/icons', glob.glob(os.path.join('.', 'cellprofiler', 'icons', '*.png')))]
+icon_src_path = os.path.join('.', 'cellprofiler', 'icons')
+DATA_FILES = [('cellprofiler/icons', 
+               glob.glob(os.path.join(icon_src_path, '*.png'))+
+               [os.path.join(icon_src_path, "icon_copyrights.txt")])]
 OPTIONS = {'argv_emulation': True,
-           'packages': ['cellprofiler', 'contrib', 'bioformats', 'imagej'],
+           'packages': ['bioformats', 'cellprofiler', 'contrib', 'imagej', 'zmq'],
            'includes': ['numpy', 'wx', 'matplotlib','email.iterators', 'smtplib',
-                        'sqlite3', 'libtiff', 'libtiff.'+tiff_h_name,
-                        'wx.lib.intctrl', 'wx.lib.filebrowsebutton',
-                        'xml.dom.minidom', 'h5py', 'h5py.defs', 'h5py.utils', 'h5py._proxy'],
+                        'sqlite3', 'libtiff', 'wx.lib.intctrl', 'libtiff.'+tiff_h_name,
+                        'xml.dom.minidom', 'h5py', 'h5py.defs', 'h5py.utils', 'h5py._proxy', 'readline'],
            'excludes': ['pylab', 'nose', 'Tkinter', 'Cython', 'scipy.weave'],
            'resources': ['CellProfilerIcon.png'],
            'iconfile' : 'CellProfilerIcon.icns',
            'frameworks' : [tiff_dylib, jpeg_dylib],
+           'plist': { "LSArchitecturePriority": ["i386"] }
            }
 
 if sys.argv[-1] == 'py2app':
@@ -69,13 +71,13 @@ setup(
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
-    name="CellProfiler2.0"
+    name="CellProfiler"
 )
 
 if sys.argv[-1] == 'py2app':
     # there should be some way to do this within setup's framework, but I don't
     # want to figure it out right now, and our setup is going to be changing
     # significantly soon, anyway.
-    call('find dist/CellProfiler2.0.app -name tests -type d | xargs rm -rf', shell=True)
-    call('lipo dist/CellProfiler2.0.app/Contents/MacOS/CellProfiler2.0 -thin i386 -output dist/CellProfiler2.0.app/Contents/MacOS/CellProfiler2.0', shell=True)
-    call('rm dist/CellProfiler2.0.app/Contents/Resources/lib/python2.7/cellprofiler/icons/*.png', shell=True)
+    call('find dist/CellProfiler.app -name tests -type d | xargs rm -rf', shell=True)
+    #call('lipo dist/CellProfiler.app/Contents/MacOS/CellProfiler -thin i386 -output dist/CellProfiler.app/Contents/MacOS/CellProfiler', shell=True)
+    call('rm dist/CellProfiler.app/Contents/Resources/lib/python2.7/cellprofiler/icons/*.png', shell=True)

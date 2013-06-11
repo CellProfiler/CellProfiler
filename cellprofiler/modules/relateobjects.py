@@ -42,7 +42,6 @@ See also: <b>ReassignObjectNumbers</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__ = "$Revision$"
 
 import sys
 import numpy as np
@@ -219,9 +218,6 @@ class RelateObjects(cpm.CPModule):
                 result += [self.add_step_parent_button]
         return result
 
-    def is_interactive(self):
-        return False
-    
     def run(self, workspace):
         parents = workspace.object_set.get_objects(self.parent_name.value)
         children = workspace.object_set.get_objects(self.sub_object_name.value)
@@ -251,26 +247,25 @@ class RelateObjects(cpm.CPModule):
         m.add_measurement(self.parent_name.value,
                           FF_CHILDREN_COUNT%(self.sub_object_name.value),
                           child_count)
-        group_index = m.get_current_image_measurement(cpmeas.GROUP_INDEX)
-        group_indexes = np.ones(np.sum(parents_of != 0), int) * group_index
         good_parents = parents_of[parents_of != 0]
+        image_numbers = np.ones(len(good_parents), int) * m.image_set_number
         good_children = np.argwhere(parents_of != 0).flatten() + 1
         if np.any(good_parents):
             m.add_relate_measurement(self.module_num,
                                      R_PARENT, 
                                      self.parent_name.value,
                                      self.sub_object_name.value,
-                                     group_indexes,
+                                     image_numbers,
                                      good_parents,
-                                     group_indexes,
+                                     image_numbers,
                                      good_children)
             m.add_relate_measurement(self.module_num,
                                      R_CHILD, 
                                      self.sub_object_name.value,
                                      self.parent_name.value,
-                                     group_indexes,
+                                     image_numbers,
                                      good_children,
-                                     group_indexes,
+                                     image_numbers,
                                      good_parents)
         parent_names = self.get_parent_names()
         
@@ -279,17 +274,18 @@ class RelateObjects(cpm.CPModule):
                 self.calculate_centroid_distances(workspace, parent_name)
             if self.find_parent_child_distances in (D_BOTH, D_MINIMUM):
                 self.calculate_minimum_distances(workspace, parent_name)
-            
-        if workspace.frame is not None:
-            workspace.display_data.parent_count = parents.count
+
+        if self.show_window:
             workspace.display_data.parent_labels = parents.segmented
-            workspace.display_data.child_count = children.count
+            workspace.display_data.parent_count = parents.count
             workspace.display_data.child_labels = children.segmented
             workspace.display_data.parents_of = parents_of
-            
-    def display(self, workspace):
+
+    def display(self, workspace, figure):
+        if not self.show_window:
+            return
         from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
-        figure = workspace.create_or_find_figure(subplots=(2,2))
+        figure.set_subplots((2,2))
         renumbered_parent_labels = renumber_labels_for_display(
             workspace.display_data.parent_labels)
         child_labels = workspace.display_data.child_labels
@@ -562,6 +558,15 @@ class RelateObjects(cpm.CPModule):
                              FF_MINIMUM % parent_name,
                              cpmeas.COLTYPE_INTEGER)]
         return columns
+    
+    def get_object_relationships(self, pipeline):
+        '''Return the object relationships produced by this module'''
+        parent_name = self.parent_name.value
+        sub_object_name = self.sub_object_name.value
+        return [(R_PARENT, parent_name, sub_object_name, 
+                 cpmeas.MCA_AVAILABLE_EACH_CYCLE),
+                (R_CHILD, sub_object_name, parent_name,
+                 cpmeas.MCA_AVAILABLE_EACH_CYCLE)]
 
     def get_categories(self, pipeline, object_name):
         if object_name == self.parent_name.value:

@@ -27,7 +27,6 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
-__version__ = "$Revision$"
 
 from _heapq import heapify, heappush, heappop
 import numpy

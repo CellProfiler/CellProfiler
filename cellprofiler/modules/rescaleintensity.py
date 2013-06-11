@@ -20,7 +20,6 @@ Rescaling is especially helpful when converting 12-bit images saved in
 # 
 # Website: http://www.cellprofiler.org
 #
-__version__="$Revision: 6746 $"
 
 import numpy as np
 
@@ -305,6 +304,11 @@ class RescaleIntensity(cpm.CPModule):
         if self.wants_automatic_low == LOW_ALL_IMAGES:
             self.set_automatic_minimum(workspace.image_set_list, min_value)
 
+    def is_aggregation_module(self):
+        '''We scan through all images in a group in some cases'''
+        return ((self.wants_automatic_high == HIGH_ALL_IMAGES) or
+                (self.wants_automatic_low == LOW_ALL_IMAGES))
+    
     def run(self, workspace):
         input_image = workspace.image_set.get_image(self.image_name.value)
         output_mask = None
@@ -336,30 +340,27 @@ class RescaleIntensity(cpm.CPModule):
                                        parent_image = input_image,
                                        convert = False)
         workspace.image_set.add(self.rescaled_image_name.value, rescaled_image)
+        if self.show_window:
+            workspace.display_data.image_data = [input_image.pixel_data,
+                                                 rescaled_image.pixel_data]
 
-    def is_interactive(self):
-        return False
-    
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Display the input image and rescaled image'''
-        figure = workspace.create_or_find_figure(title="RescaleIntensity, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
-        image_set = workspace.image_set
-        for image_name, i,j in ((self.image_name, 0,0),
+        figure.set_subplots((2, 1))
+
+        for image_name, i, j in ((self.image_name, 0, 0),
                                 (self.rescaled_image_name, 1, 0)):
             image_name = image_name.value
-            pixel_data = image_set.get_image(image_name).pixel_data
+            pixel_data = workspace.display_data.image_data[i]
             if pixel_data.ndim == 2:
-                figure.subplot_imshow_grayscale(i,j,pixel_data,
+                figure.subplot_imshow_grayscale(i, j, pixel_data,
                                                 title = image_name,
                                                 vmin = 0, vmax = 1,
-                                                sharex = figure.subplot(0,0),
-                                                sharey = figure.subplot(0,0))
+                                                sharexy = figure.subplot(0, 0))
             else:
                 figure.subplot_imshow(i, j, pixel_data, title=image_name,
                                       normalize=False,
-                                      sharex = figure.subplot(0,0),
-                                      sharey = figure.subplot(0,0))
+                                      sharexy = figure.subplot(0, 0))
     
     def stretch(self, input_image):
         '''Stretch the input image to the range 0:1'''

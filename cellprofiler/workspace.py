@@ -11,9 +11,14 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
+
+import logging
+logger = logging.getLogger(__name__)
+from cStringIO import StringIO
+import numpy as np
 
 from cellprofiler.cpgridinfo import CPGridInfo
+from .utilities.hdf5_dict import HDF5FileList
 
 '''Continue to run the pipeline
 
@@ -77,6 +82,13 @@ class Workspace(object):
         self.__disposition = DISPOSITION_CONTINUE
         self.__disposition_listeners = []
         self.__in_background = False # controls checks for calls to create_or_find_figure()
+        self.__file_list = None
+        if measurements is not None:
+            self.set_file_list(HDF5FileList(measurements.hdf5_dict.hdf5_file))
+        self.__notification_callbacks = []
+
+        self.interaction_handler = None
+        self.post_run_display_handler = None
 
         class DisplayData(object):
             pass
@@ -141,6 +153,24 @@ class Workspace(object):
         data - the result of the measurement
         """
         self.measurements.add_measurement(object_name, feature_name, data)
+        
+    def get_file_list(self):
+        '''The user-curated list of files'''
+        return self.__file_list
+    
+    def set_file_list(self, file_list):
+        """Set the file list
+        
+        A caller can set the file list to the file list in some other
+        workspace. This lets a single, sometimes very bulky file list be
+        used without copying it to a measurements file.
+        """
+        if self.__file_list is not None:
+            self.__file_list.remove_notification_callback(self.__on_file_list_changed)
+        self.__file_list = file_list
+        self.__file_list.add_notification_callback(self.__on_file_list_changed)
+    
+    file_list = property(get_file_list)
 
     def get_grid(self, grid_name):
         '''Return a grid with the given name'''
@@ -188,6 +218,32 @@ class Workspace(object):
     def set_in_background(self, val):
         self.__in_background = val
     in_background = property(get_in_background, set_in_background)
+
+    def get_module_figure(self, module, image_set_number, parent=None):
+        """Create a CPFigure window or find one already created"""
+        import cellprofiler.gui.cpfigure as cpf
+
+        # catch any background threads trying to call display functions.
+        assert not self.__in_background
+
+        window_name = cpf.window_name(module)
+        title = "%s #%d, image cycle #%d" % (module.module_name,
+                                             module.module_num,
+                                             image_set_number)
+
+        if self.__create_new_window:
+            figure = cpf.CPFigureFrame(parent or self.__frame,
+                                       name=window_name,
+                                       title=title)
+        else:
+            figure = cpf.create_or_find(parent or self.__frame,
+                                        name=window_name,
+                                        title=title)
+
+        if not figure in self.__windows_used:
+            self.__windows_used.append(figure)
+
+        return figure
 
     def create_or_find_figure(self,title=None,subplots=None,window_name = None):
         """Create a matplotlib figure window or find one already created"""
@@ -237,6 +293,49 @@ class Workspace(object):
         """Set the module currently being run"""
         self.__module = module
     
+    def interaction_request(self, module, *args, **kwargs):
+        '''make a request for GUI interaction via a pipeline event
+        
+        module - target module for interaction request
+        
+        headless_ok - True if the interaction request can be made in
+                      a headless context. An example is synchronized access to 
+                      a shared resource which must be coordinated among all
+                      workers.
+        '''
+        # See also:
+        # main().interaction_handler() in analysis_worker.py
+        # PipelineController.module_interaction_request() in pipelinecontroller.py
+        import cellprofiler.preferences as cpprefs
+        if "headless_ok" in kwargs:
+            tmp = kwargs.copy()
+            del tmp["headless_ok"]
+            headless_ok = kwargs["headless_ok"]
+            kwargs = tmp
+        else:
+            headless_ok = False
+        if self.interaction_handler is None:
+            if cpprefs.get_headless() and not headless_ok:
+                raise self.NoInteractionException()
+            else:
+                return module.handle_interaction(*args, **kwargs)
+        else:
+            return self.interaction_handler(module, *args, **kwargs)
+        
+    def post_run_display(self, module):
+        '''Perform whatever post-run module display is necessary
+        
+        module - module being run
+        '''
+        if self.post_run_display_handler is not None:
+            self.post_run_display_handler(self, module)
+        elif self.frame is not None:
+            figure = self.get_module_figure(
+                module,
+                self.measurements.image_set_count+1,
+                self.frame)
+            module.display_post_run(self, figure)
+            
     @property
     def is_last_image_set(self):
         return (self.measurements.image_set_number ==
@@ -265,7 +364,164 @@ class Workspace(object):
     def add_disposition_listener(self, listener):
         self.__disposition_listeners.append(listener)
 
+    class NoInteractionException(Exception):
+        pass
+    
+    def load(self, filename, load_pipeline):
+        '''Load a workspace from a .cpi file
+        
+        filename - path to file to load
+        
+        load_pipeline - true to load the pipeline from the file, false to
+                        use the current pipeline.
+        '''
+        import h5py
+        from .pipeline import M_PIPELINE
+        import cellprofiler.measurements as cpmeas
+        from cStringIO import StringIO
+        
+        if self.__measurements is not None:
+            self.__measurements.close()
+            
+        self.__measurements = cpmeas.Measurements(
+            filename = filename, mode = "r+")
+        if self.__file_list is not None:
+            self.__file_list.remove_notification_callback(
+                self.__on_file_list_changed)
+        self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
+        self.__file_list.add_notification_callback(self.__on_file_list_changed)
+        if load_pipeline and self.__measurements.has_feature(
+            cpmeas.EXPERIMENT, M_PIPELINE):
+            pipeline_txt = self.__measurements.get_experiment_measurement(
+                M_PIPELINE).encode("utf-8")
+            self.pipeline.load(StringIO(pipeline_txt))
+        elif load_pipeline:
+            self.pipeline.clear()
+        else:
+            fd = StringIO()
+            self.pipeline.savetxt(fd, save_image_plane_details = False)
+            self.__measurements.add_experiment_measurement(
+                M_PIPELINE, fd.getvalue())
+        self.notify(self.WorkspaceLoadedEvent(self))
+        
+    def create(self, filename):
+        '''Create a new workspace file
+        
+        filename - name of the workspace file
+        '''
+        from .measurements import Measurements
+        if isinstance(self.measurements, Measurements):
+            self.measurements.close()
+        self.__measurements = Measurements(filename = filename,
+                                           mode = "w")
+        if self.__file_list is not None:
+            self.__file_list.remove_notification_callback(
+                self.__on_file_list_changed)
+        self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
+        self.__file_list.add_notification_callback(self.__on_file_list_changed)
+        self.notify(self.WorkspaceCreatedEvent(self))
+        
+    def save_pipeline_to_measurements(self):
+        from cellprofiler.pipeline import M_PIPELINE
+        fd = StringIO()
+        self.pipeline.savetxt(fd, save_image_plane_details=False)
+        self.measurements.add_experiment_measurement(M_PIPELINE, fd.getvalue())
+        self.measurements.flush()
+        
+    def invalidate_image_set(self):
+        self.measurements.clear()
+        self.save_pipeline_to_measurements()
+        
+    def refresh_image_set(self, force=False):
+        '''Refresh the image set if not present
+        
+        force - force a rewrite, even if the image set is cached
+        
+        This method executes Pipeline.prepare_run in order on self in order
+        to write the image set image measurements to our internal
+        measurements. If image set measurements are present, then we
+        assume that the cache reflects pipeline + file list unless "force"
+        is true.
+        '''
+        import cellprofiler.measurements as cpmeas
+        if len(self.measurements.get_image_numbers()) == 0 or force:
+            self.measurements.clear()
+            self.save_pipeline_to_measurements()
+            modules = self.pipeline.modules()
+            stop_module = None
+            if len(modules) > 1 and not modules[-1].is_load_module():
+                for module, next_module in zip(
+                    self.pipeline.modules()[:-1],
+                    self.pipeline.modules()[1:]):
+                    if module.is_load_module():
+                        stop_module = next_module
+            
+            # TODO: Get rid of image_set_list
+            no_image_set_list = self.image_set_list is None
+            if no_image_set_list:
+                from cellprofiler.cpimage import ImageSetList
+                self.__image_set_list = ImageSetList()
+            try:
+                result = self.pipeline.prepare_run(self, stop_module)
+                return result
+            except:
+                logger.error("Failed during prepare_run", exc_info=1)
+                return False
+            finally:
+                if no_image_set_list:
+                    self.__image_set_list = None
+        return True
+    
+    def add_notification_callback(self, callback):
+        '''Add a callback that will be called on a workspace event
+        
+        Workspace events are load events, and file list events.
+        
+        callback - a function to be called when an event occurs. The signature
+        is: callback(event)
+        '''
+        self.__notification_callbacks.append(callback)
+        
+    def remove_notification_callback(self, callback):
+        self.__notification_callbacks.remove(callback)
+        
+    def notify(self, event):
+        for callback in self.__notification_callbacks:
+            try:
+                callback(event)
+            except:
+                logger.error("Notification callback threw an exception",
+                             exc_info = 1)
+                
+    def __on_file_list_changed(self):
+        self.notify(self.WorkspaceFileListNotification(self))
+                
+    class WorkspaceEvent(object):
+        '''The base for any event sent to a workspace callback via Workspace.notify
+        
+        '''
+        def __init__(self, workspace):
+            self.workspace = workspace
+            
+    class WorkspaceLoadedEvent(WorkspaceEvent):
+        '''Indicates that a workspace has been loaded
+        
+        When a workspace loads, the file list changes.
+        '''
+        def __init__(self, workspace):
+            super(self.__class__, self).__init__(workspace)
+            
+    class WorkspaceCreatedEvent(WorkspaceEvent):
+        '''Indicates that a blank workspace has been created'''
+        def __init__(self, workspace):
+            super(self.__class__, self).__init__(workspace)
+            
+    class WorkspaceFileListNotification(WorkspaceEvent):
+        '''Indicates that the workspace's file list changed'''
+        def __init__(self, workspace):
+            super(self.__class__, self).__init__(workspace)
+        
+
 class DispositionChangedEvent(object):
     def __init__(self, disposition):
         self.disposition = disposition
-

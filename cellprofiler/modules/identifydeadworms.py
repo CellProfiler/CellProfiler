@@ -252,7 +252,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         objects.segmented = labels
         objects.parent_image = image
         object_set.add_objects(objects, object_name)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.i = center_y
             workspace.display_data.j = center_x
             workspace.display_data.angle = angles
@@ -260,15 +260,12 @@ class IdentifyDeadWorms(cpm.CPModule):
             workspace.display_data.labels = labels
             workspace.display_data.count = nlabels
         
-    def is_interactive(self):
-        return False
-    
-    def display(self, workspace):
+    def display(self, workspace, figure):
         '''Show an informative display'''
         import matplotlib
         import cellprofiler.gui.cpfigure
         
-        figure = workspace.create_or_find_figure(subplots = (2,1))
+        figure.set_subplots((2, 1))
         assert isinstance(figure, cellprofiler.gui.cpfigure.CPFigureFrame)
         
         i = workspace.display_data.i
@@ -319,7 +316,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         figure.subplot_imshow_color(1, 0, color_image[:,:,:-1],
                                     title= self.object_name.value,
                                     normalize = False,
-                                    sharex = plot00, sharey = plot00)
+                                    sharexy = plot00)
     def get_diamond(self, angle):
         '''Get a diamond-shaped structuring element
         

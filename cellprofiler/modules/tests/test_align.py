@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version__ = "$Revision$"
 
 import base64
 import numpy as np
@@ -24,7 +23,7 @@ import zlib
 from cellprofiler.preferences import set_headless
 set_headless()
 
-from cellprofiler.modules.tests import example_images_directory
+from cellprofiler.modules.tests import read_example_image
 import cellprofiler.pipeline as cpp
 import cellprofiler.cpmodule as cpm
 import cellprofiler.cpimage as cpi
@@ -34,9 +33,10 @@ import cellprofiler.workspace as cpw
 
 import cellprofiler.modules.align as A
 
-from cellprofiler.modules.loadimages import load_using_PIL
+from cellprofiler.modules.loadimages import pathname2url
 
 class TestAlign(unittest.TestCase):
+        
     def make_workspace(self, images, masks):
         pipeline = cpp.Pipeline()
         object_set = cpo.ObjectSet()
@@ -625,10 +625,8 @@ Name the second output image:AlignedImage2
         
         This is a regression test for the bug, IMG-284
         '''
-        fly_file = '01_POS002_D.TIF'
-        fly_dir = "ExampleFlyImages"
-        path = os.path.join(example_images_directory(), fly_dir, fly_file)
-        image = load_using_PIL(path)
+        image = read_example_image("ExampleFlyImages",
+                                   '01_POS002_D.TIF')
         image = image[0:300,0:300] # make smaller so as to be faster
         workspace, module = self.make_workspace((image, image),(None,None))
         module.alignment_method.value = A.M_MUTUAL_INFORMATION

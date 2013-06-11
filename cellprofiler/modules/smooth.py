@@ -15,7 +15,6 @@ Note that smoothing can be a time-consuming process.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as scind
@@ -41,7 +40,7 @@ class Smooth(cpm.CPModule):
     
     module_name = 'Smooth'
     category = "Image Processing"
-    variable_revision_number = 1
+    variable_revision_number = 2
      
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber('Select the input image','None')
@@ -113,11 +112,24 @@ class Smooth(cpm.CPModule):
             setting is used to adjust the rough magnitude of these changes. A lower
             number will preserve weaker edges. A higher number will preserve only stronger edges.
             Values should be between zero and one. %(HELP_ON_PIXEL_INTENSITIES)s"""%globals())
+        
+        self.clip = cps.Binary(
+            'Clip intensity at 0 and 1', True,
+            doc="""<i>(Used only if Fit Polynomial is selected)</i>
+            The Fit Polynomial is the only smoothing option that can yield
+            an output image whose values are outside of the values of the
+            input image. This setting controls whether to limit the image
+            intensity to the 0 - 1 range used by CellProfiler. Check this
+            setting to set all output image pixels less than zero to zero
+            and all pixels greater than one to one. Uncheck the setting to
+            allow values less than zero and greater than one in the output
+            image.
+            """)
 
     def settings(self):
         return [self.image_name, self.filtered_image_name, 
                 self.smoothing_method, self.wants_automatic_object_size,
-                self.object_size, self.sigma_range]
+                self.object_size, self.sigma_range, self.clip]
 
     def visible_settings(self):
         result = [self.image_name, self.filtered_image_name, 
@@ -128,10 +140,9 @@ class Smooth(cpm.CPModule):
                 result.append(self.object_size)
             if self.smoothing_method.value == SMOOTH_KEEPING_EDGES:
                 result.append(self.sigma_range)
+        if self.smoothing_method.value == FIT_POLYNOMIAL:
+            result.append(self.clip)
         return result
-
-    def is_interactive(self):
-        return False
 
     def run(self, workspace):
         image = workspace.image_set.get_image(self.image_name.value,
@@ -156,7 +167,8 @@ class Smooth(cpm.CPModule):
             output_pixels = bilateral_filter(pixel_data, image.mask,
                                              sigma, sigma_range)
         elif self.smoothing_method.value == FIT_POLYNOMIAL:
-            output_pixels = fit_polynomial(pixel_data, image.mask)
+            output_pixels = fit_polynomial(pixel_data, image.mask,
+                                           self.clip.value)
         elif self.smoothing_method.value == CIRCULAR_AVERAGE_FILTER:
             output_pixels = circular_average_filter(pixel_data, object_size/2+1, image.mask)
         elif self.smoothing_method.value == SM_TO_AVERAGE:
@@ -174,9 +186,8 @@ class Smooth(cpm.CPModule):
         workspace.display_data.pixel_data = pixel_data
         workspace.display_data.output_pixels = output_pixels
 
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="Smooth, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,1))
+    def display(self, workspace, figure):
+        figure.set_subplots((2, 1))
         figure.subplot_imshow_grayscale(0, 0, 
                                         workspace.display_data.pixel_data,
                                         "Original: %s" % 
@@ -185,8 +196,7 @@ class Smooth(cpm.CPModule):
                                         workspace.display_data.output_pixels,
                                         "Filtered: %s" %
                                         self.filtered_image_name.value,
-                                        sharex = figure.subplot(0,0),
-                                        sharey = figure.subplot(0,0))
+                                        sharexy = figure.subplot(0,0))
     
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
@@ -227,5 +237,8 @@ class Smooth(cpm.CPModule):
             module_name = 'Smooth'
             from_matlab = False
             variable_revision_number = 1
+        if variable_revision_number == 1 and not from_matlab:
+            setting_values = setting_values + [cps.YES]
+            variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 

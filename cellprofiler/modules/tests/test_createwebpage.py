@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
-__version__="$Revision$"
 
 import base64
 import numpy as np
@@ -22,6 +21,7 @@ from StringIO import StringIO
 import tempfile
 import unittest
 import xml.dom.minidom as DOM
+import zipfile
 import zlib
 
 import cellprofiler.preferences as cpprefs
@@ -39,6 +39,7 @@ from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
 IMAGE_NAME = "image"
 THUMB_NAME = "thumb"
 DEFAULT_HTML_FILE = "default.html"
+ZIPFILE_NAME = "zipfile.zip"
 
 class TestCreateWebPage(unittest.TestCase):
     def setUp(self):
@@ -268,24 +269,20 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
             module.wants_thumbnails.value = False
             
         measurements = cpmeas.Measurements()
-        image_set_list = cpi.ImageSetList()
         
-        workspace = cpw.Workspace(pipeline, module, None, None, measurements, 
-                          image_set_list, None)
-        self.assertTrue(module.prepare_run(workspace))
-        module.prepare_group(workspace, {}, np.arange(1, len(image_paths)+1))
+        workspace = cpw.Workspace(pipeline, module, 
+                                  measurements, None, measurements, 
+                                  None, None)
         for i in range(len(image_paths)):
-            image_set = image_set_list.get_image_set(i)
+            image_number = i+1
             if metadata is not None:
                 for key in metadata.keys():
                     values = metadata[key]
                     feature = cpmeas.C_METADATA + "_" + key
-                    measurements.add_image_measurement(feature, values[i])
+                    measurements[cpmeas.IMAGE, feature, image_number] = values[i]
                     
             for image_name, paths in images:
                 pixel_data = np.random.uniform(size=(10,13))
-                img = cpi.Image(pixel_data)
-                image_set.add(image_name, img)
                 path_name, file_name = paths[i]
                 if path_name is None:
                     path_name = cpprefs.get_default_image_directory()
@@ -294,16 +291,12 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
                 imsave(full_path, pixel_data)
                 path_feature = '_'.join((C_PATH_NAME, image_name))
                 file_feature = '_'.join((C_FILE_NAME, image_name))
-                measurements.add_image_measurement(path_feature, 
-                                                   os.path.split(full_path)[0])
-                measurements.add_image_measurement(file_feature, file_name)
-            workspace = cpw.Workspace(pipeline, module, image_set, cpo.ObjectSet(),
-                                      measurements, image_set_list)
-            module.run(workspace)
-            if i < len(image_paths)-1:
-                measurements.next_image_set()
-        module.post_group(workspace, {})
+                measurements[cpmeas.IMAGE, path_feature, image_number] = \
+                    os.path.split(full_path)[0]
+                measurements[cpmeas.IMAGE, file_feature, image_number] =\
+                    file_name
         module.post_run(workspace)
+        return measurements
     
     def read_html(self, html_path = None):
         '''Read html file, assuming the default location
@@ -612,3 +605,47 @@ CreateWebPage:[module_num:3|svn_version:\'9401\'|variable_revision_number:1|show
             img = imgs[0]
             self.assertTrue(img.hasAttribute("src"))
             self.assertEqual(img.getAttribute("src"), image_name)
+            
+    def test_05_01_zipfiles(self):
+        # Test the zipfile function
+        def alter_fn(module):
+            self.assertTrue(isinstance(module, C.CreateWebPage))
+            module.wants_zip_file.value = True
+            module.zipfile_name.value = ZIPFILE_NAME
+        filenames = ['A%02d.png' % i for i in range(1, 3)]
+        self.run_create_webpage([(None, fn) for fn in filenames],
+                                alter_fn=alter_fn),
+        
+        zpath = os.path.join(cpprefs.get_default_image_directory(), ZIPFILE_NAME)
+        with zipfile.ZipFile(zpath, "r") as zfile:
+            assert isinstance(zfile, zipfile.ZipFile)
+            for filename in filenames:
+                fpath = os.path.join(cpprefs.get_default_image_directory(), 
+                                     filename)
+                with open(fpath, "rb") as fd:
+                    with zfile.open(filename, "r") as zfd:
+                        self.assertEqual(fd.read(), zfd.read())
+                        
+    def test_05_02_zipfile_and_metadata(self):
+        # Test the zipfile function with metadata substitution
+        def alter_fn(module):
+            self.assertTrue(isinstance(module, C.CreateWebPage))
+            module.wants_zip_file.value = True
+            module.zipfile_name.value = '\\g<FileName>'
+        filenames = ['A%02d.png' % i for i in range(1, 3)]
+        zipfiles = ['A%02d' % i for i in range(1, 3)]
+        self.run_create_webpage(
+            [(None, fn) for fn in filenames],
+            metadata=dict(FileName=zipfiles),
+            alter_fn=alter_fn)
+        
+        for filename, zname in zip(filenames, zipfiles):
+            zpath = os.path.join(cpprefs.get_default_image_directory(), zname)
+            zpath += ".zip"
+            fpath = os.path.join(cpprefs.get_default_image_directory(), 
+                                 filename)
+            with zipfile.ZipFile(zpath, "r") as zfile:
+                with open(fpath, "rb") as fd:
+                    with zfile.open(filename, "r") as zfd:
+                        self.assertEqual(fd.read(), zfd.read())
+

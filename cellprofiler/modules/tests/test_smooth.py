@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version__="$Revision$"
 
 import base64
 import numpy as np
@@ -106,20 +105,60 @@ class TestSmooth(unittest.TestCase):
         self.assertEqual(smooth.filtered_image_name.value, 'CorrBlue')
         self.assertEqual(smooth.smoothing_method.value, S.FIT_POLYNOMIAL)
         self.assertTrue(smooth.wants_automatic_object_size)
-    
+        self.assertTrue(smooth.clip)
+        
+    def test_01_03_load_v02(self):
+        data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20130522170932
+ModuleCount:1
+HasImagePlaneDetails:False
+
+Smooth:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:2|show_window:False|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)|enabled:True]
+    Select the input image:InputImage
+    Name the output image:OutputImage
+    Select smoothing method:Median Filter
+    Calculate artifact diameter automatically?:Yes
+    Typical artifact diameter, in  pixels:19.0
+    Edge intensity difference:0.2
+    Clip intensity at 0 and 1:No
+
+"""
+        pipeline = cpp.Pipeline()
+        pipeline.load(StringIO.StringIO(data))
+        self.assertEqual(len(pipeline.modules()), 1)
+        smooth = pipeline.modules()[0]
+        self.assertTrue(isinstance(smooth, S.Smooth))
+        self.assertEqual(smooth.image_name, "InputImage")
+        self.assertEqual(smooth.filtered_image_name, "OutputImage")
+        self.assertTrue(smooth.wants_automatic_object_size)
+        self.assertEqual(smooth.object_size, 19)
+        self.assertEqual(smooth.smoothing_method, S.MEDIAN_FILTER)
+        self.assertFalse(smooth.clip)
+        
     def test_02_01_fit_polynomial(self):
         '''Test the smooth module with polynomial fitting'''
         np.random.seed(0)
-        image = np.random.uniform(size=(100,100)).astype(np.float32)
+        #
+        # Make an image that has a single sinusoidal cycle with different
+        # phase in i and j. Make it a little out-of-bounds to start to test
+        # clipping
+        #
+        i, j = np.mgrid[0:100, 0:100].astype(float) * np.pi / 50
+        image = (np.sin(i) + np.cos(j)) / 1.8 + .9
+        image += np.random.uniform(size=(100, 100)) * .1
         mask = np.ones(image.shape,bool)
         mask[40:60,45:65] = False
-        expected = fit_polynomial(image, mask)
-        workspace, module = self.make_workspace(image, mask)
-        module.smoothing_method.value = S.FIT_POLYNOMIAL
-        module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
-        self.assertFalse(result is None)
-        np.testing.assert_almost_equal(result.pixel_data, expected)
+        for clip in (False, True):
+            expected = fit_polynomial(image, mask, clip)
+            self.assertEqual(np.all((expected >= 0) & (expected <= 1)), clip)
+            workspace, module = self.make_workspace(image, mask)
+            module.smoothing_method.value = S.FIT_POLYNOMIAL
+            module.clip.value = clip
+            module.run(workspace)
+            result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+            self.assertFalse(result is None)
+            np.testing.assert_almost_equal(result.pixel_data, expected)
     
     def test_03_01_gaussian_auto_small(self):
         '''Test the smooth module with Gaussian smoothing in automatic mode'''

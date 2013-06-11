@@ -138,8 +138,6 @@ See also <b>LoadImages</b> and <b>CalculateStatistics</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version = "$Revision$"
-
 import csv
 import hashlib
 import logging
@@ -215,6 +213,9 @@ def is_file_name_feature(feature):
     '''Return true if the feature name is a file name'''
     return feature.startswith(C_FILE_NAME+'_')
 
+def is_url_name_feature(feature):
+    return feature.startswith(C_URL + "_")
+
 def is_objects_path_name_feature(feature):
     '''Return true if the feature name is the path to a labels file'''
     return feature.startswith(C_OBJECTS_PATH_NAME+"_")
@@ -223,12 +224,17 @@ def is_objects_file_name_feature(feature):
     '''Return true if the feature name is a labels file name'''
     return feature.startswith(C_OBJECTS_FILE_NAME+"_")
 
+def is_objects_url_name_feature(feature):
+    return feature.startswith(C_OBJECTS_URL + "_")
+
 def get_image_name(feature):
     '''Extract the image name from a feature name'''
     if is_path_name_feature(feature):
         return feature[len(C_PATH_NAME+'_'):]
     if is_file_name_feature(feature):
         return feature[len(C_FILE_NAME+'_'):]
+    if is_url_name_feature(feature):
+        return feature[len(C_URL+'_'):]
     raise ValueError('"%s" is not a path feature or file name feature'%feature)
 
 def get_objects_name(feature):
@@ -237,6 +243,8 @@ def get_objects_name(feature):
         return feature[len(C_OBJECTS_PATH_NAME+"_"):]
     if is_objects_file_name_feature(feature):
         return feature[len(C_OBJECTS_FILE_NAME+"_"):]
+    if is_objects_url_name_feature(feature):
+        return feature[len(C_OBJECTS_URL+"_"):]
     raise ValueError('"%s" is not a objects path feature or file name feature'%feature)
 
 def make_path_name_feature(image):
@@ -270,11 +278,6 @@ def make_objects_file_name_feature(objects_name):
     the objects file name.
     '''
     return C_OBJECTS_FILE_NAME+'_'+objects_name
-
-def get_object_names(features):
-    '''Get the object names represented by the header features in the data file'''
-    return [ get_objects_name(feature) for feature in features
-             if is_objects_file_name_feature(feature)]
 
 class LoadData(cpm.CPModule):
     
@@ -675,15 +678,20 @@ class LoadData(cpm.CPModule):
         
     def get_image_names(self, do_not_cache = False):
         header = self.get_header(do_not_cache=do_not_cache)
-        return [get_image_name(field)
-                for field in header
-                if is_file_name_feature(field)]
+        image_names = set([
+            get_image_name(field)
+            for field in header
+            if is_file_name_feature(field) or is_url_name_feature(field)])
+        return list(image_names)
     
     def get_object_names(self, do_not_cache = False):
         header = self.get_header(do_not_cache=do_not_cache)
-        return [get_objects_name(field)
+        object_names = set([get_objects_name(field)
                 for field in header
-                if is_objects_file_name_feature(field)]
+                if is_objects_file_name_feature(field) or 
+                is_objects_url_name_feature(field)])
+        return list(object_names)
+                    
         
         
     def other_providers(self, group):
@@ -839,6 +847,15 @@ class LoadData(cpm.CPModule):
                                                         row[file_name_column])
                             url = pathname2url(fullname)
                             row.append(url)
+                    if path_name_column is None:
+                        #
+                        # Add path column
+                        #
+                        d[name].append(len(header))
+                        path_feature = "_".join((path_name_category, name))
+                        header.append(path_feature)
+                        for row in rows:
+                            row.append(path_base)
         column_type = {}
         for column in self.get_measurement_columns(pipeline):
             column_type[column[1]] = column[2]
@@ -865,12 +882,23 @@ class LoadData(cpm.CPModule):
                     value = float(value)
                 c.append(value)
         
-        if len(metadata_columns) == 0:
-            image_numbers = [[i] for i in range(1, len(rows) + 1)]
-        else:
+        if len(metadata_columns) > 0:
+            # Reorder the rows by matching metadata against previous metadata
+            # (for instance, to assign metadata values to images from
+            #  loadimages)
+            #
             image_numbers = m.match_metadata(
                 metadata_columns.keys(), 
                 [columns[k] for k in metadata_columns.keys()])
+            image_numbers = np.array(image_numbers, int).flatten()
+            max_image_number = np.max(image_numbers)
+            new_columns = {}
+            for key, values in columns.iteritems():
+                new_values = [None] * max_image_number
+                for image_number, value in zip(image_numbers, values):
+                    new_values[image_number - 1] = value
+                new_columns[key] = new_values
+            columns = new_columns
         for feature, values in columns.iteritems():
             m.add_all_measurements(cpmeas.IMAGE, feature, values)
                 
@@ -986,7 +1014,7 @@ class LoadData(cpm.CPModule):
                 elif tuple(pixel_data.shape[:2]) != image_size:
                     warning = bad_sizes_warning(image_size, first_filename,
                                                 pixel_data.shape, image.file_name)
-                    if workspace.frame is not None:
+                    if self.show_window:
                         workspace.display_data.warning = warning
                     else:
                         print warning
@@ -1009,22 +1037,18 @@ class LoadData(cpm.CPModule):
             value = m.get_measurement(cpmeas.IMAGE, feature_name)
             statistics.append((feature_name, value))
             
-        if not workspace.frame is None:
+        if self.show_window:
             workspace.display_data.statistics = statistics
             
-    def is_interactive(self):
-        return False
-    
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if hasattr(workspace.display_data, "warning"):
             from cellprofiler.gui.errordialog import show_warning
             show_warning("Images have different sizes",
                          workspace.display_data.warning,
                          cpprefs.get_show_report_bad_sizes_dlg,
                          cpprefs.set_show_report_bad_sizes_dlg)
-        figure = workspace.create_or_find_figure(title="LoadData, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-        figure.subplot_table(0,0, workspace.display_data.statistics,[.3,.7])
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0,0, workspace.display_data.statistics)
     
     def get_groupings(self, workspace):
         '''Return the image groupings of the image sets
@@ -1124,19 +1148,22 @@ class LoadData(cpm.CPModule):
         result = [(cpmeas.IMAGE, colname, coltype)
                    for colname, coltype in zip(header, coltypes)
                    if colname not in previous_fields]
-        for feature, coltype in (
-            (C_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
-            (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
-            (C_SCALING, cpmeas.COLTYPE_FLOAT),
-            (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
-            (C_WIDTH, cpmeas.COLTYPE_INTEGER)):
-            result += [(cpmeas.IMAGE, feature +'_'+image_name, coltype)
-                       for image_name in image_names]
-        #
-        # Add the object features
-        #
         if self.wants_images:
-            for object_name in get_object_names(header):
+            for feature, coltype in (
+                (C_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                (C_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
+                (C_SCALING, cpmeas.COLTYPE_FLOAT),
+                (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
+                (C_WIDTH, cpmeas.COLTYPE_INTEGER)):
+                for image_name in image_names:
+                    measurement = feature +'_'+image_name
+                    if not any([measurement == c[1] for c in result]):
+                        result.append((cpmeas.IMAGE, measurement, coltype))
+            #
+            # Add the object features
+            #
+            for object_name in self.get_object_names():
                 result += I.get_object_measurement_columns(object_name)
                 url_feature = C_OBJECTS_URL + "_" + object_name
                 result.append((cpmeas.IMAGE, url_feature, 

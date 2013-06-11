@@ -1,3 +1,16 @@
+"""
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2013 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+
 """ParameterSampleFrame.py - a window for specifying sampling options.
 
 Author: AJ Pretorius
@@ -617,9 +630,6 @@ class ParameterSampleFrame(wx.Frame):
             #module.run(workspace)
             module.run(self.__workspace)
             # ~^~
-            # Next two lines cause errors to be raised on some modules
-            #if (not module.is_interactive()) and module.show_window:
-            #    module.display(workspace)
             # ~*~
             #workspace.refresh()
             self.__workspace.refresh()

@@ -19,7 +19,6 @@ See also <b>CorrectIlluminationCalculate</b>.'''
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 
@@ -210,48 +209,48 @@ class CorrectIlluminationApply(cpm.CPModule):
         #
         output_image = cpi.Image(output_pixels, parent_image = orig_image) 
         workspace.image_set.add(corrected_image_name, output_image)
+        #
+        # Save images for display
+        #
+        if self.show_window:
+            if not hasattr(workspace.display_data, 'images'):
+                workspace.display_data.images = {}
+            workspace.display_data.images[image_name] = orig_image.pixel_data
+            workspace.display_data.images[corrected_image_name] = output_pixels
+            workspace.display_data.images[illum_correct_name] = illum_function.pixel_data
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         ''' Display one row of orig / illum / output per image setting group'''
-        figure = workspace.create_or_find_figure(title="CorrectIlluminationApply, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(3,len(self.images)))
+        figure.set_subplots((3, len(self.images)))
         for j, image in enumerate(self.images):
             image_name = image.image_name.value
             illum_correct_function_image_name = \
                 image.illum_correct_function_image_name.value
             corrected_image_name = image.corrected_image_name.value
-            orig_image = workspace.image_set.get_image(image_name)
-            illum_image = workspace.image_set.get_image(
-                illum_correct_function_image_name)
-            corrected_image = workspace.image_set.get_image(corrected_image_name)
-
+            orig_image = workspace.display_data.images[image_name]
+            illum_image = workspace.display_data.images[illum_correct_function_image_name]
+            corrected_image = workspace.display_data.images[corrected_image_name]
             def imshow(x, y, image, *args, **kwargs):
-                if image.pixel_data.ndim == 2:
+                if image.ndim == 2:
                     f = figure.subplot_imshow_grayscale
                 else:
                     f = figure.subplot_imshow_color
-                return f(x, y, image.pixel_data, *args, **kwargs)
-            
+                return f(x, y, image, *args, **kwargs)
+
             imshow(0, j, orig_image,
                    "Original image: %s" % image_name,
-                   sharex=figure.subplot(0,0),
-                   sharey=figure.subplot(0,0))
+                   sharexy = figure.subplot(0,0))
             title = ("Illumination function: %s\nmin=%f, max=%f" %
                      (illum_correct_function_image_name,
-                      round(illum_image.pixel_data.min(),4),
-                      round(illum_image.pixel_data.max(),4)))
+                      round(illum_image.min(), 4),
+                      round(illum_image.max(), 4)))
 
             imshow(1, j, illum_image, title,
-                   sharex=figure.subplot(0,0),
-                   sharey=figure.subplot(0,0))
+                   sharexy = figure.subplot(0,0))
             imshow(2, j, corrected_image,
                    "Final image: %s" %
                    corrected_image_name,
-                   sharex=figure.subplot(0,0),
-                   sharey=figure.subplot(0,0))
-
-    def is_interactive(self):
-        return False
+                   sharexy = figure.subplot(0,0))
 
     def validate_module_warnings(self, pipeline):
         """If a CP 1.0 pipeline used a rescaling option other than 'No rescaling', warn the user."""

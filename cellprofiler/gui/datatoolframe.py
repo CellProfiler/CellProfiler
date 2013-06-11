@@ -12,8 +12,8 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 '''
 
-__version__="$Revision$"
 
+import h5py
 import numpy as np
 from scipy.io.matlab.mio import loadmat
 import wx
@@ -25,6 +25,7 @@ import cellprofiler.pipeline as cpp
 import cellprofiler.workspace as cpw
 import cellprofiler.cpimage as cpi
 import cellprofiler.objects as cpo
+import cellprofiler.gui.cpfigure as cpf
 from cellprofiler.gui.moduleview import ModuleView
 from cellprofiler.modules import instantiate_module
 from cellprofiler.gui import get_cp_icon
@@ -54,8 +55,17 @@ class DataToolFrame(wx.Frame):
         wx.Frame.__init__(self, *args, **kwds_copy)
         self.module = instantiate_module(module_name)
         self.pipeline = cpp.Pipeline()
-        self.pipeline.load(measurements_file_name)
-        self.load_measurements(measurements_file_name)
+        if h5py.is_hdf5(measurements_file_name):
+            self.workspace = cpw.Workspace(self.pipeline, self.module, None, None, None,
+                                           None)
+            self.workspace.load(measurements_file_name, True)
+            self.measurements = self.workspace.measurements
+        else:
+            self.pipeline.load(measurements_file_name)
+            self.load_measurements(measurements_file_name)
+            self.workspace = cpw.Workspace(self.pipeline, self.module, None, None,
+                                           self.measurements, None)
+        
         self.module.module_num = len(self.pipeline.modules())+1
         self.pipeline.add_module(self.module)
 
@@ -65,13 +75,13 @@ class DataToolFrame(wx.Frame):
         module_panel.BackgroundColour = cpprefs.get_background_color()
         self.BackgroundColour = cpprefs.get_background_color()
 
-        self.module_view = ModuleView(module_panel, self.pipeline, True)
+        self.module_view = ModuleView(module_panel, self.workspace, True)
         self.module_view.set_selection(self.module.module_num)
         def on_change(caller, event):
             setting = event.get_setting()
             proposed_value = event.get_proposed_value()
             setting.value = proposed_value
-            self.pipeline.edit_module(event.get_module().module_num)
+            self.pipeline.edit_module(event.get_module().module_num, False)
             self.module_view.reset_view()
         self.module_view.add_listener(on_change)
 
@@ -131,12 +141,12 @@ class DataToolFrame(wx.Frame):
             self.load_measurements(dlg.GetPath())
     
     def on_save_measurements(self, event):
-        dlg = wx.FileDialog(self, "Save measurements file",
-                            wildcard = "Measurements file (*.mat)|*.mat",
-                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-        if dlg.ShowModal() == wx.ID_OK:
-            self.pipeline.save_measurements(dlg.GetPath(),
-                                            self.measurements)
+        with wx.FileDialog(self, "Save measurements file", wildcard = 
+                           "Matlab measurements file (*.mat)|*.mat",
+                           style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                self.pipeline.save_measurements(dlg.GetPath(),
+                                                self.measurements)
     
     def on_exit(self, event):
         self.Close()
@@ -203,5 +213,11 @@ class DataToolFrame(wx.Frame):
                                   self.measurements,
                                   image_set_list,
                                   frame=self)
+        self.module.show_window = True  # to make sure it saves display data
         self.module.run_as_data_tool(workspace)
-        workspace.refresh()
+        self.measurements.flush()
+        fig = cpf.create_or_find(parent=self,
+                                 title="%s Output" % (self.module.module_name),
+                                 name="CellProfiler:DataTool:%s" % (self.module.module_name))
+        self.module.display(workspace, fig)
+        fig.Refresh()

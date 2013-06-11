@@ -43,8 +43,101 @@ import sys
 import cellprofiler.utilities.jutil as jutil
 import bioformats
 import cellprofiler.utilities.javabridge as javabridge
+import bioformats.omexml as ome
 
 
+def write_image(pathname, pixels, pixel_type, 
+                c = 0, z = 0, t = 0,
+                size_c = 1, size_z = 1, size_t = 1,
+                channel_names = None):
+    """Write the image using bioformats
+    
+        filename - save to this filename
+        
+        pixels - the image to save
+        
+        pixel_type - save using this pixel type
+        
+        c - the image's channel index
+        
+        z - the image's z index
+        
+        t - the image's t index
+        
+        sizeC - # of channels in the stack
+        
+        sizeZ - # of z stacks
+        
+        sizeT - # of timepoints in the stack
+        
+        channel_names - names of the channels (make up names if not present
+        """
+    omexml = ome.OMEXML()
+    omexml.image(0).Name = os.path.split(pathname)[1]
+    p = omexml.image(0).Pixels
+    assert isinstance(p, ome.OMEXML.Pixels)
+    p.SizeX = pixels.shape[1]
+    p.SizeY = pixels.shape[0]
+    p.SizeC = size_c
+    p.SizeT = size_t
+    p.SizeZ = size_z
+    p.DimensionOrder = ome.DO_XYCZT
+    p.PixelType = pixel_type
+    index = c + size_c * z + size_c * size_z * t
+    if pixels.ndim == 3:
+        p.SizeC = pixels.shape[2]
+        p.Channel(0).SamplesPerPixel = pixels.shape[2]
+        omexml.structured_annotations.add_original_metadata(
+            ome.OM_SAMPLES_PER_PIXEL, str(pixels.shape[2]))
+    elif size_c > 1:
+        p.channel_count = size_c
+
+    pixel_buffer = convert_pixels_to_buffer(pixels, pixel_type)
+    xml = omexml.to_xml()
+    script = """
+    importClass(Packages.loci.formats.services.OMEXMLService,
+                Packages.loci.common.services.ServiceFactory,
+                Packages.loci.formats.ImageWriter);
+    var service = new ServiceFactory().getInstance(OMEXMLService);
+    var metadata = service.createOMEXMLMetadata(xml);
+    var writer = new ImageWriter();
+    writer.setMetadataRetrieve(metadata);
+    writer.setId(path);
+    writer.setInterleaved(true);
+    writer.saveBytes(index, buffer);
+    writer.close();
+    """
+    jutil.run_script(script,
+                     dict(path=pathname,
+                          xml=xml,
+                          index=index,
+                          buffer=pixel_buffer))
+    
+def convert_pixels_to_buffer(pixels, pixel_type):
+    '''Convert the pixels in the image into a buffer of the right pixel type
+    
+    pixels - a 2d monochrome or color image
+    
+    pixel_type - one of the OME pixel types
+    
+    returns a 1-d byte array
+    '''
+    if pixel_type in (ome.PT_UINT8, ome.PT_INT8, ome.PT_BIT):
+        as_dtype = np.uint8
+    elif pixel_type in (ome.PT_UINT16, ome.PT_INT16):
+        as_dtype = "<u2"
+    elif pixel_type in (ome.PT_UINT32, ome.PT_INT32):
+        as_dtype = "<u4"
+    elif pixel_type == ome.PT_FLOAT:
+        as_dtype = "<f4"
+    elif pixel_type == ome.PT_DOUBLE:
+        as_dtype = "<f8"
+    else:
+        raise NotImplementedError("Unsupported pixel type: %d" % pixel_type)
+    buf = np.frombuffer(pixels.astype(as_dtype).data, np.uint8)
+    env = jutil.get_env()
+    return env.make_byte_array(buf)
+        
 def make_iformat_writer_class(class_name):
     '''Bind a Java class that implements IFormatWriter to a Python class
     

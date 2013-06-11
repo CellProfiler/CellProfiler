@@ -11,14 +11,15 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 
+import json
 import matplotlib.cm
 import numpy as np
 import os
 import sys
 import re
 import uuid
+
 from cellprofiler.preferences import \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME,\
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
@@ -242,8 +243,9 @@ class RegexpText(Setting):
 class DirectoryPath(Text):
     """A setting that displays a filesystem path name
     """
-    DIR_ALL = [DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME,
-               ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
+    DIR_ALL = [ABSOLUTE_FOLDER_NAME, 
+               DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME,
+               DEFAULT_INPUT_SUBFOLDER_NAME,
                DEFAULT_OUTPUT_SUBFOLDER_NAME]
     def __init__(self, text, value = None, dir_choices = None, 
                  allow_metadata = True, support_urls = False,
@@ -262,7 +264,10 @@ class DirectoryPath(Text):
         
     def split_parts(self):
         '''Return the directory choice and custom path as a tuple'''
-        return tuple(self.value.split('|',1))
+        result = tuple(self.value.split('|',1))
+        if len(result) == 1:
+            result = (result[0], ".")
+        return result
     
     @staticmethod
     def split_string(value):
@@ -449,6 +454,29 @@ class FilenameText(Text):
  
     def set_browsable(self, val):
         self.browsable = val
+        
+class Pathname(Text):
+    """A setting that displays a path name
+    
+    text - text to display to right
+    value - initial value
+    wildcard - wildcard to filter files in browse dialog
+    """
+    def __init__(self, text, value="", *args, **kwargs):
+        kwargs = kwargs.copy()
+        if kwargs.has_key("wildcard"):
+            self.wildcard = kwargs["wildcard"]
+            del kwargs["wildcard"]
+        else:
+            self.wildcard = "All files (*.*)|*.*"
+        super(self.__class__, self).__init__(text, value, *args, **kwargs)
+        
+    def test_valid(self, pipeline):
+        if not os.path.isfile(self.value):
+            raise ValidationError("Can't find file, %s" % self.value, self)
+        
+    def alter_for_create_batch(self, fn_alter):
+        self.value = fn_alter(self.value)
 
 class ImageFileSpecifier(Text):
     """A setting for choosing an image file, including switching between substring, file globbing, and regular expressions,
@@ -883,6 +911,46 @@ class FloatRange(Setting):
         if self.min > self.max:
             raise ValidationError("%f is greater than %f"%(self.min, self.max),self)
 
+class BinaryMatrix(Setting):
+    """A setting that allows editing of a 2D matrix of binary values
+    """
+    def __init__(self, text, 
+                 default_value = True, 
+                 default_width = 5,
+                 default_height = 5, **kwargs):
+        initial_value_text = self.to_value(
+            [[default_value] * default_width] * default_height)
+        Setting.__init__(self, text, initial_value_text, **kwargs)
+        
+    @staticmethod
+    def to_value(matrix):
+        '''Convert a matrix to a pickled form
+        
+        format is <row-count>,<column-count>,<0 or 1>*row-count*column-count
+        
+        e.g. [[True, False, True], [True, True, True]] -> "2,3,101111"
+        '''
+        h = len(matrix)
+        w = 0 if h==0 else len(matrix[0])
+        return ",".join((
+            str(h), str(w), 
+            "".join(["".join(["1" if v else "0" for v in row]) 
+                     for row in matrix])))
+    
+    def get_matrix(self):
+        '''Return the setting's matrix'''
+        hs, ws, datas = self.value_text.split(",")
+        h, w = int(hs), int(ws)
+        return [ [datas[i * w + j] == "1" for j in range(w)] for i in range(h)]
+    
+    def get_size(self):
+        '''Return the size of the matrix
+        
+        returns a tuple of height, width
+        '''
+        hs, ws, datas = self.value_text.split(",")
+        return int(hs), int(ws)
+    
 PROVIDED_ATTRIBUTES = "provided_attributes"
 class NameProvider(Text):
     """A setting that provides a named object
@@ -913,6 +981,19 @@ class NameProvider(Text):
         that was loaded from  a file.
         '''
         return self.__provided_attributes
+    
+    def test_valid(self, pipeline):
+        '''Restrict names to legal ascii C variables
+        
+        First letter = a-zA-Z and underbar, second is that + digit.
+        '''
+        pattern = "^[A-Za-z_][A-Za-z_0-9]*$"
+        match = re.match(pattern, self.value)
+        if match is None:
+            raise ValidationError(
+                'Names must start with an ASCII letter or underbar ("_")'
+                ' optionally followed by ASCII letters, underbars or digits.',
+                self)
 
 class ImageNameProvider(NameProvider):
     """A setting that provides an image name
@@ -920,6 +1001,7 @@ class ImageNameProvider(NameProvider):
     def __init__(self, text, value=DO_NOT_USE, *args, **kwargs):
         super(ImageNameProvider,self).__init__(text, IMAGE_GROUP, value,
                                                *args, **kwargs)
+        
 
 class FileImageNameProvider(ImageNameProvider):
     """A setting that provides an image name where the image has an associated file"""
@@ -1007,7 +1089,7 @@ class NameSubscriber(Setting):
     def get_choices(self,pipeline):
         choices = []
         if self.__can_be_blank:
-            choices.append((self.__blank_text, "", 0))
+            choices.append((self.__blank_text, "", 0, False))
         return choices + sorted(get_name_provider_choices(pipeline, self, self.group))
     
     def get_is_blank(self):
@@ -1042,16 +1124,21 @@ def get_name_provider_choices(pipeline, last_setting, group):
     returns a list of tuples, each with (provider name, module name, module number)
     '''
     choices = []
-    for module in pipeline.modules():
-        module_choices = [(other_name, module.module_name, module.module_num)
-                          for other_name in module.other_providers(group)]
+    for module in pipeline.modules(False):
+        module_choices = [
+            (other_name, module.module_name, module.module_num, 
+             module.is_input_module())
+            for other_name in module.other_providers(group)]
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
                 return filter_duplicate_names(choices)
             if (isinstance(setting, NameProvider) and
+                module.enabled and
                 setting != DO_NOT_USE and
                 last_setting.matches(setting)):
-                module_choices.append((setting.value, module.module_name, module.module_num))
+                module_choices.append((
+                    setting.value, module.module_name, module.module_num,
+                    module.is_input_module()))
         choices += module_choices
     assert False, "Setting not among visible settings in pipeline"
 
@@ -1064,13 +1151,14 @@ def get_name_providers(pipeline, last_setting):
     same name as that of the subscriber
     '''
     choices = []
-    for module in pipeline.modules():
+    for module in pipeline.modules(False):
         module_choices = []
         for setting in module.visible_settings():
             if setting.key() == last_setting.key():
                 return choices
             if (isinstance(setting, NameProvider) and 
                 setting != DO_NOT_USE and
+                module.enabled and
                 last_setting.matches(setting) and
                 setting.value == last_setting.value):
                 module_choices.append(setting)
@@ -1246,7 +1334,9 @@ class Choice(Setting):
         if self.__choices_fn is not None:
             self.__choices = self.__choices_fn(pipeline)
         if self.value not in self.choices:
-            raise ValidationError("%s is not one of %s"%(self.value, reduce(lambda x,y: "%s,%s"%(x,y),self.choices)),self)
+            raise ValidationError(
+                "%s is not one of %s" %
+                (self.value, ",".join(self.choices)),self)
 
 class CustomChoice(Choice):
     def __init__(self, text, choices, value=None, *args, **kwargs):
@@ -1356,7 +1446,8 @@ class SubscriberMultiChoice(MultiChoice):
     
     def load_choices(self, pipeline):
         '''Get the choice list from name providers'''
-        self.choices = sorted([name for name, module, module_number in get_name_provider_choices(pipeline, self, self.group)])
+        self.choices = sorted([
+            c[0] for c in get_name_provider_choices(pipeline, self, self.group)])
     
     @property
     def group(self):
@@ -1510,19 +1601,36 @@ class TreeChoice(Setting):
     
     A good UI choice would be a hierarchical menu.
     '''
-    def __init__(self, text, value, tree, **kwargs):
+    def __init__(self, text, value, tree, fn_is_leaf = None, **kwargs):
+        '''Initializer
+        
+        text - informative label
+        
+        value - the text value, e.g. as encoded by encode_path_parts
+        
+        tree - the tree to chose from
+        
+        fn_is_leaf - if defined, a function that takes a tree node and
+                     returns True if that node is a leaf (a node might
+                     have subnodes, but also be a leaf)
+        '''
         super(TreeChoice, self).__init__(text, value, **kwargs)
         self.__tree = tree
-        
-    def get_value(self):
+        self.fn_is_leaf = fn_is_leaf or self.default_fn_is_leaf
+
+    @staticmethod
+    def default_fn_is_leaf(node):
+        return node[1] is None or len(node[1]) == 0
+    
+    def get_path_parts(self):
         '''Split at |, but || escapes to |'''
         result = re.split("(?<!\\|)\\|(?!\\|)",self.get_value_text())
         return [x.replace("||","|") for x in result]
     
-    def set_value(self, value):
-        if isinstance(value, (str, unicode)):
-            self.set_value_text(unicode(value))
-        self.set_value_text("|".join([x.replace("|","||") for x in value]))
+    @staticmethod
+    def encode_path_parts(value):
+        '''Return the setting value for a list of menu path parts'''
+        return "|".join([x.replace("|","||") for x in value])
         
     def get_leaves(self, path = []):
         '''Get all leaf nodes of a given parent node
@@ -1532,11 +1640,11 @@ class TreeChoice(Setting):
         current = self.get_tree()
         while len(path) > 0:
             idx = current.index(path[0])
-            if idx == -1 or current[idx][1] is None:
+            if idx == -1 or current[idx][1] is None or len(current[idx][1]) == 0:
                 return []
             current = current[idx][1]
             path = path[1:]
-        return [x[0] for x in current if x[1] is None]
+        return [x[0] for x in current if x[1] is None or len(x[1] == 0)]
     
     def get_subnodes(self, path = []):
         '''Get all child nodes that are not leaves for a  given parent
@@ -1556,11 +1664,11 @@ class TreeChoice(Setting):
         '''Get the leaf node of the tree for the current setting value'''
         tree = self.get_tree()
         node = None
-        for item in self.value:
+        for item in self.get_path_parts():
             nodes = [n for n in tree if n[0] == item]
             if len(nodes) != 1:
                 raise ValidationError("Unable to find command " +
-                                     ">".join(self.value), self)
+                                     ">".join(self.get_path_parts()), self)
             node = nodes[0]
             tree = node[1]
         return node
@@ -1587,7 +1695,10 @@ class DoSomething(Setting):
         """Return the text label for the button"""
         return self.__label
     
-    label = property(get_label)
+    def set_label(self, label):
+        self.__label = label
+    
+    label = property(get_label, set_label)
     
     def on_event_fired(self):
         """Call the callback in response to the user's request to do something"""
@@ -1959,6 +2070,169 @@ class Color(Setting):
     def __init(self, text, value="gray", *args, **kwargs):
         super(Color, self).__init(text, value, *args, **kwargs)
         
+    def to_rgb(self):
+        if self.value.startswith("#") and len(self.value) >= 7:
+            return (int(self.value[1:3]), 
+                    int(self.value[3:5]), 
+                    int(self.value[5:7]))
+        elif self.colortable.has_key(self.value.lower()):
+            return self.colortable(self.value.lower())
+        else:
+            raise ValueError("Unknown color: " + self.value)
+        
+    '''The HTML color table taken from the W3C CSS Color Module Level 3 spec
+    
+    http://www.w3.org/TR/2011/REC-css3-color-20110607
+    '''
+    colortable = {
+        "aliceblue":(240,248,255),
+        "antiquewhite":(250,235,215),
+        "aqua":(0,255,255),
+        "aquamarine":(127,255,212),
+        "azure":(240,255,255),
+        "beige":(245,245,220),
+        "bisque":(255,228,196),
+        "black":(0,0,0),
+        "blanchedalmond":(255,235,205),
+        "blue":(0,0,255),
+        "blueviolet":(138,43,226),
+        "brown":(165,42,42),
+        "burlywood":(222,184,135),
+        "cadetblue":(95,158,160),
+        "chartreuse":(127,255,0),
+        "chocolate":(210,105,30),
+        "coral":(255,127,80),
+        "cornflowerblue":(100,149,237),
+        "cornsilk":(255,248,220),
+        "crimson":(220,20,60),
+        "cyan":(0,255,255),
+        "darkblue":(0,0,139),
+        "darkcyan":(0,139,139),
+        "darkgoldenrod":(184,134,11),
+        "darkgray":(169,169,169),
+        "darkgreen":(0,100,0),
+        "darkgrey":(169,169,169),
+        "darkkhaki":(189,183,107),
+        "darkmagenta":(139,0,139),
+        "darkolivegreen":(85,107,47),
+        "darkorange":(255,140,0),
+        "darkorchid":(153,50,204),
+        "darkred":(139,0,0),
+        "darksalmon":(233,150,122),
+        "darkseagreen":(143,188,143),
+        "darkslateblue":(72,61,139),
+        "darkslategray":(47,79,79),
+        "darkslategrey":(47,79,79),
+        "darkturquoise":(0,206,209),
+        "darkviolet":(148,0,211),
+        "deeppink":(255,20,147),
+        "deepskyblue":(0,191,255),
+        "dimgray":(105,105,105),
+        "dimgrey":(105,105,105),
+        "dodgerblue":(30,144,255),
+        "firebrick":(178,34,34),
+        "floralwhite":(255,250,240),
+        "forestgreen":(34,139,34),
+        "fuchsia":(255,0,255),
+        "gainsboro":(220,220,220),
+        "ghostwhite":(248,248,255),
+        "gold":(255,215,0),
+        "goldenrod":(218,165,32),
+        "gray":(128,128,128),
+        "green":(0,128,0),
+        "greenyellow":(173,255,47),
+        "grey":(128,128,128),
+        "honeydew":(240,255,240),
+        "hotpink":(255,105,180),
+        "indianred":(205,92,92),
+        "indigo":(75,0,130),
+        "ivory":(255,255,240),
+        "khaki":(240,230,140),
+        "lavender":(230,230,250),
+        "lavenderblush":(255,240,245),
+        "lawngreen":(124,252,0),
+        "lemonchiffon":(255,250,205),
+        "lightblue":(173,216,230),
+        "lightcoral":(240,128,128),
+        "lightcyan":(224,255,255),
+        "lightgoldenrodyellow":(250,250,210),
+        "lightgray":(211,211,211),
+        "lightgreen":(144,238,144),
+        "lightgrey":(211,211,211),
+        "lightpink":(255,182,193),
+        "lightsalmon":(255,160,122),
+        "lightseagreen":(32,178,170),
+        "lightskyblue":(135,206,250),
+        "lightslategray":(119,136,153),
+        "lightslategrey":(119,136,153),
+        "lightsteelblue":(176,196,222),
+        "lightyellow":(255,255,224),
+        "lime":(0,255,0),
+        "limegreen":(50,205,50),
+        "linen":(250,240,230),
+        "magenta":(255,0,255),
+        "maroon":(128,0,0),
+        "mediumaquamarine":(102,205,170),
+        "mediumblue":(0,0,205),
+        "mediumorchid":(186,85,211),
+        "mediumpurple":(147,112,219),
+        "mediumseagreen":(60,179,113),
+        "mediumslateblue":(123,104,238),
+        "mediumspringgreen":(0,250,154),
+        "mediumturquoise":(72,209,204),
+        "mediumvioletred":(199,21,133),
+        "midnightblue":(25,25,112),
+        "mintcream":(245,255,250),
+        "mistyrose":(255,228,225),
+        "moccasin":(255,228,181),
+        "navajowhite":(255,222,173),
+        "navy":(0,0,128),
+        "oldlace":(253,245,230),
+        "olive":(128,128,0),
+        "olivedrab":(107,142,35),
+        "orange":(255,165,0),
+        "orangered":(255,69,0),
+        "orchid":(218,112,214),
+        "palegoldenrod":(238,232,170),
+        "palegreen":(152,251,152),
+        "paleturquoise":(175,238,238),
+        "palevioletred":(219,112,147),
+        "papayawhip":(255,239,213),
+        "peachpuff":(255,218,185),
+        "peru":(205,133,63),
+        "pink":(255,192,203),
+        "plum":(221,160,221),
+        "powderblue":(176,224,230),
+        "purple":(128,0,128),
+        "red":(255,0,0),
+        "rosybrown":(188,143,143),
+        "royalblue":(65,105,225),
+        "saddlebrown":(139,69,19),
+        "salmon":(250,128,114),
+        "sandybrown":(244,164,96),
+        "seagreen":(46,139,87),
+        "seashell":(255,245,238),
+        "sienna":(160,82,45),
+        "silver":(192,192,192),
+        "skyblue":(135,206,235),
+        "slateblue":(106,90,205),
+        "slategray":(112,128,144),
+        "slategrey":(112,128,144),
+        "snow":(255,250,250),
+        "springgreen":(0,255,127),
+        "steelblue":(70,130,180),
+        "tan":(210,180,140),
+        "teal":(0,128,128),
+        "thistle":(216,191,216),
+        "tomato":(255,99,71),
+        "turquoise":(64,224,208),
+        "violet":(238,130,238),
+        "wheat":(245,222,179),
+        "white":(255,255,255),
+        "whitesmoke":(245,245,245),
+        "yellow":(255,255,0),
+        "yellowgreen":(154,205,50)}
+        
 class Filter(Setting):
     '''A filter that can be applied to an object
     
@@ -1985,85 +2259,161 @@ class Filter(Setting):
     "and", "or" and "literal".
     '''
     class FilterPredicate(object):
-        def __init__(self, symbol, display_name, function, subpredicates):
+        def __init__(self, symbol, display_name, function, subpredicates, 
+                     doc=None):
             self.symbol = symbol
             self.display_name = display_name
             self.function = function
             self.subpredicates = subpredicates
+            self.doc = doc
         
         def __call__(self, *args, **kwargs):
             return self.function(*args, **kwargs)
+        
+        def test_valid(self, pipeline, *args):
+            '''Try running the filter on a test string'''
+            self("", *args)
+            
+        @classmethod
+        def encode_symbol(cls, symbol):
+            '''Escape encode an abritrary symbol name
+            
+            The parser needs to have special characters escaped. These are
+            backslash, open and close parentheses, space and double quote.
+            '''
+            return re.escape(symbol)
+            
+        @classmethod
+        def decode_symbol(cls, symbol):
+            '''Decode an escape-encoded symbol'''
+            s = ''
+            in_escape = False
+            for c in symbol:
+                if in_escape:
+                    in_escape = False
+                    s += c
+                elif c == '\\':
+                    in_escape = True
+                else:
+                    s += c
+            return s
+            
+    class CompoundFilterPredicate(FilterPredicate):
+        def test_valid(self, pipeline, *args):
+            for subexp in args:
+                subexp[0].test_valid(pipeline, *subexp[1:])
     
     @classmethod
-    def eval_list(cls, x, *args):
-        return [arg[0](x, *arg[1:]) for arg in args]
-    AND_PREDICATE = FilterPredicate(
+    def eval_list(cls, fn, x, *args):
+        results = [v for v in [arg[0](x, *arg[1:]) for arg in args] 
+                   if v is not None]
+        if len(results) == 0:
+            return None
+        return fn(results)
+
+    AND_PREDICATE = CompoundFilterPredicate(
         "and", "All", 
-        lambda x, *l: all(Filter.eval_list(x, *l)), list)
-    OR_PREDICATE = FilterPredicate(
+        lambda x, *l: Filter.eval_list(all, x, *l), list,
+        doc="All subordinate rules must be satisfied")
+    OR_PREDICATE = CompoundFilterPredicate(
         "or", "Any", 
-        lambda x, *l: any(Filter.eval_list(x, *l)), list)
-    LITERAL_PREDICATE = FilterPredicate("literal", "Custom value", None, [])
+        lambda x, *l: Filter.eval_list(any, x, *l), list,
+        doc = "Any one of the subordinate rules must be satisfied")
+    LITERAL_PREDICATE = FilterPredicate(
+        "literal", "Custom value", None, [],
+        doc = "Enter the rule's text")
     CONTAINS_PREDICATE = FilterPredicate(
         "contain", "Contain",
-        lambda x, y: x.find(y) >= 0, [LITERAL_PREDICATE])
+        lambda x, y: x.find(y) >= 0, [LITERAL_PREDICATE],
+        doc = "The element must contain the text that you enter to the right")
     STARTS_WITH_PREDICATE = FilterPredicate(
         "startwith", "Start with",
-       lambda x, y: x.startswith(y), [LITERAL_PREDICATE])
+        lambda x, y: x.startswith(y), [LITERAL_PREDICATE],
+        doc = "The element must start with the text that you enter to the right")
     ENDSWITH_PREDICATE = FilterPredicate(
         "endwith", "End with",
-        lambda x, y: x.endswith(y), [LITERAL_PREDICATE])
-    CONTAINS_REGEXP_PREDICATE = FilterPredicate(
-        "containregexp", "Contain regular expression", 
-        lambda x,y: re.match(y, x) is not None,
-        [LITERAL_PREDICATE])
+        lambda x, y: x.endswith(y), [LITERAL_PREDICATE],
+        doc = "The element must end with the text that you enter to the right")
+    
+    class RegexpFilterPredicate(FilterPredicate):
+        def __init__(self, display_name, subpredicates):
+            super(self.__class__, self).__init__(
+                "containregexp", display_name, self.regexp_fn, subpredicates,
+            doc = "The element must contain a match for the regular expression that you enter to the right")
+            
+        def regexp_fn(self, x, y):
+            try:
+                pattern = re.compile(y)
+            except:
+                raise ValueError("Badly formatted regular expression: %s" %y)
+            return pattern.search(x) is not None
+        
+    CONTAINS_REGEXP_PREDICATE = RegexpFilterPredicate(
+        "Contain regular expression", [LITERAL_PREDICATE])
     EQ_PREDICATE = FilterPredicate(
-        "eq", "Exactly match", lambda x,y: x == y, [LITERAL_PREDICATE])
+        "eq", "Exactly match", lambda x,y: x == y, [LITERAL_PREDICATE],
+        doc = "Must exactly match the text that you enter to the right")
     
     class DoesPredicate(FilterPredicate):
         '''Pass the arguments through (no-op)'''
-        def __init__(self, subpredicates):
+        SYMBOL = "does"
+        def __init__(self, subpredicates, text = "Does", 
+                     doc = "The rule passes if the condition to the right holds"):
             super(self.__class__, self).__init__(
-                "does", "Does",
-                lambda x, f, *l: f(x, *l), subpredicates)
+                self.SYMBOL, text,
+                lambda x, f, *l: f(x, *l), subpredicates,
+            doc = doc)
             
     class DoesNotPredicate(FilterPredicate):
         '''Negate the result of the arguments'''
-        def __init__(self, subpredicates):
+        SYMBOL = "doesnot"
+        def __init__(self, subpredicates, text = "Does not",
+                     doc = "The rule fails if the condition to the right holds"):
             super(self.__class__, self).__init__(
-                "doesnot", "Does not",
-                lambda x, f, *l: not f(x, *l), subpredicates)
+                self.SYMBOL, text,
+                lambda x, f, *l: not f(x, *l), subpredicates,
+            doc = doc)
         
     def __init__(self, text, predicates, value = "", **kwargs):
         super(self.__class__, self).__init__(text, value, **kwargs)
         self.predicates = predicates
+        self.cached_token_string = None
+        self.cached_tokens = None
         
     def evaluate(self, x):
         '''Evaluate the value passed using the predicates'''
-        tokens = self.parse()
-        return tokens[0](x, *tokens[1:])
-    
+        try:
+            tokens = self.parse()
+            return tokens[0](x, *tokens[1:])
+        except:
+            return False
+        
     def parse(self):
         '''Parse the value into filter predicates, literals and lists
         
         Returns the value of the text as a list.
         '''
-        tokens = []
         s = self.value_text
+        if s == self.cached_token_string:
+            return self.cached_tokens
+        tokens = []
         predicates = self.predicates
         while len(s) > 0:
             token, s, predicates = self.parse_token(s, predicates)
             tokens.append(token)
+        self.cached_tokens = list(tokens)
+        self.cached_token_string = self.value_text
         return tokens
     
-    def default(self):
+    def default(self, predicates = None):
         '''A default list of tokens to use if things go horribly wrong
         
         We need to be able to generate a default list of tokens if the
         pipeline has been corrupted and the text can't be parsed.
         '''
         tokens = []
-        predicates = self.predicates
+        if predicates is None:
+            predicates = self.predicates
         while len(predicates) > 0:
             token = predicates[0]
             if token is self.LITERAL_PREDICATE:
@@ -2117,11 +2467,18 @@ class Filter(Setting):
                 else:
                     result += s[i]
             raise ValueError("Unterminated literal")
-        parts = s.split(" ", 1)
-        if len(parts) == 1:
-            kwd, rest = s, ""
+        #
+        # (?:\\.|[^ )]) matches either backslash-anything or anything but
+        # space and parentheses. So you can have variable names with spaces
+        # and that's needed for arbitrary metadata names
+        #
+        match = re.match(r"^((?:\\.|[^ )])+) ?(.*)$", s)
+        if match is None:
+            kwd = s
+            rest = ""
         else:
-            kwd, rest = parts
+            kwd, rest = match.groups()
+        kwd = Filter.FilterPredicate.decode_symbol(kwd)
         if kwd == cls.AND_PREDICATE.symbol:
             match = cls.AND_PREDICATE
         elif kwd == cls.OR_PREDICATE.symbol:
@@ -2138,6 +2495,11 @@ class Filter(Setting):
         elif match.subpredicates is not None:
             predicates = match.subpredicates
         return match, rest, predicates
+    
+    @classmethod
+    def encode_literal(cls, literal):
+        '''Encode a literal value with backslash escapes'''
+        return literal.replace("\\", "\\\\").replace('"','\\"')
     
     def build(self, structure):
         '''Build the textual representation of a filter from its structure
@@ -2160,7 +2522,7 @@ class Filter(Setting):
         
         The function sets the filter's value using the generated string.
         '''
-        self.text = self.build_string(structure)
+        self.value = self.build_string(structure)
         
     @classmethod
     def build_string(cls, structure):
@@ -2172,9 +2534,10 @@ class Filter(Setting):
         s = []
         for element in structure:
             if isinstance(element, Filter.FilterPredicate):
-                s.append(unicode(element.symbol))
+                s.append(
+                    cls.FilterPredicate.encode_symbol(unicode(element.symbol)))
             elif isinstance(element, basestring):
-                s.append(u'"'+element+u'"')
+                s.append(u'"'+cls.encode_literal(element)+u'"')
             else:
                 s.append(u"("+cls.build_string(element)+")")
         return u" ".join(s)
@@ -2184,7 +2547,617 @@ class Filter(Setting):
             tokens = self.parse()
         except ValueError:
             raise ValidationError("Invalid filter expression: %s" % self.value_text, self)
+        try:
+            tokens[0].test_valid(pipeline, *tokens[1:])
+        except Exception, e:
+            raise ValidationError(str(e), self)
+        
+class FileCollectionDisplay(Setting):
+    '''A setting to be used to display directories and their files
+    
+    The FileCollectionDisplay shows directory trees with mechanisms to
+    communicate directory additions and deletions to its parent module.
+    
+    The central data structure is the dictionary, "self.file_tree". The keys
+    for the top-level of the dictionary are the directories managed by the
+    setting. If a key represents a directory, its value is another directory.
+    If a key represents a file, its value is either True (the file is included
+    in the collection) or False (the file is filtered out of the collection).
+    
+    Directory dictionaries can be filtered: this is done by setting the
+    special key, "None" to either True or False.
+    
+    The FileCollectionDisplay manages the tree and it should be treated as
+    read-only by callers. Callers can request that nodes be added, removed,
+    filtered or not filtered by calling the appropriate notification function
+    with a nested collection of two-tuples and strings (modpaths). Two-tuples
+    represent directories whose subdirectories or files are being operated on. 
+    Strings represent directories or files that are being operated on. The first
+    element of the two-tuple is the directory name and the second is a
+    sub-collection of two-tuples. For instance, to operate on foo/bar, send:
+    
+    ("foo", ("bar", ))
 
+    The FileCollectionDisplay communicates events on individual files or
+    directories by specifying a path as a collection of path parts. These
+    can be any sort of object and it is the caller's job to maintain the
+    display names of each of them and their node categories (used for
+    icon display).
+    '''
+    ADD = "ADD"
+    REMOVE = "REMOVE"
+    METADATA = "METADATA"
+    NODE_DIRECTORY = "directory"
+    NODE_COMPOSITE_IMAGE = "compositeimage"
+    NODE_COLOR_IMAGE = "colorimage"
+    NODE_MONOCHROME_IMAGE = "monochromeimage"
+    NODE_IMAGE_PLANE = "imageplane"
+    NODE_MOVIE = "movie"
+    NODE_FILE = "file"
+    NODE_CSV = "csv"
+    BKGND_PAUSE = "pause"
+    BKGND_RESUME = "resume"
+    BKGND_STOP = "stop"
+    BKGND_GET_STATE = "getstate"
+    class DeleteMenuItem(object):
+        '''A placeholder in the context menu for the delete command
+        
+        The DeleteMenuItem can be placed in the context menu returned
+        by fn_get_path_info so that the user can delete the selected items
+        from the context menu.
+        
+        text - the text to display in the context menu
+        '''
+        def __init__(self, text):
+            self.text = text
+            
+    def __init__(self, text, value, 
+                 fn_on_drop, 
+                 fn_on_remove,
+                 fn_get_path_info,
+                 fn_on_menu_command,
+                 fn_on_bkgnd_control,
+                 hide_text = "Hide filtered files", **kwargs):
+        '''Constructor
+        
+        text - the label to the left of the setting
+        
+        value - the value for the control. This is a serialization of
+                the appearance (for instance, whether to show or hide
+                filtered files).
+                
+        fn_on_drop - called when files are dropped. The signature is
+                     fn_on_drop(pathnames, check_for_directories) The first
+                     argument is a list of pathnames of the dropped files.
+                     The second argument is True if the user has performed
+                     a file name drop which might include directories and
+                     False if the user has dropped text file names.
+                     
+        fn_on_remove - called when the UI requests that files be removed. Has
+                       one argument which is a collection of paths to remove.
+                     
+        fn_get_path_info - called when the UI needs to know the display name,
+                     icon type, context menu and tool tip for an item. These
+                     are returned in a four-tuple by the callee, e.g:
+                     [ "image.tif", NODE_MONOCHROME_IMAGE,
+                       "image of well A01 on plate P-12345", 
+                       ( "Show image", "Show metadata", "Delete image")]
+                       
+        fn_on_menu_command - called when the user selects a context menu
+                     command. The argument is the text from the context menu or
+                     None if the default command.
+                     
+        fn_on_bkgnd_control - called when the UI wants to stop, pause or resume
+                     all background processing. BKGND_PAUSE asks for the
+                     caller to pause processing, BKGND_RESUME asks for the
+                     caller to resume, BKGND_STOP asks for processing to be
+                     aborted, BKGND_GET_STATE asks for the caller to
+                     return its current state = BKGND_PAUSE if it is paused,
+                     BKGND_RESUME if it is running or BKGND_STOP if it is
+                     idle.
+                
+        hide_text - the text displayed next to the hide checkbox.
+        '''
+        super(self.__class__, self).__init__(text, value, **kwargs)
+        self.fn_on_drop = fn_on_drop
+        self.fn_on_remove = fn_on_remove
+        self.fn_get_path_info = fn_get_path_info
+        self.fn_on_menu_command = fn_on_menu_command
+        self.fn_on_bkgnd_control = fn_on_bkgnd_control
+        self.hide_text = hide_text
+        self.fn_update = None
+        self.file_tree = {}
+        self.properties = { self.SHOW_FILTERED: True}
+        try:
+            properties = json.loads(value)
+            if isinstance(properties, dict):
+                self.properties.update(properties)
+        except:
+            pass
+    
+    SHOW_FILTERED = "ShowFiltered"
+    
+    def update_value(self):
+        '''Update the setting value after changing a property'''
+        self.value_text = json.dumps(self.properties)
+    
+    def update_ui(self, cmd=None, mods = None):
+        if self.fn_update is not None:
+            self.fn_update(cmd, mods)
+        
+    def set_update_function(self, fn_update=None):
+        '''Set the function that will be called when the file_tree is updated'''
+        self.fn_update = fn_update
+        
+    def initialize_tree(self, mods):
+        '''Remove all nodes in the file tree'''
+        self.file_tree = {}
+        self.add_subtree(mods, self.file_tree)
+        
+    def add(self, mods):
+        '''Add nodes to the file tree
+        
+        mods - modification structure. See class documentation for its form.
+        '''
+        self.add_subtree(mods, self.file_tree)
+        self.update_ui(self.ADD, mods)
+        
+    def modify(self, mods):
+        '''Indicate a minor modification such as metadtaa change
+        
+        mods - modification structure. See class documentation for its form.
+        '''
+        self.update_ui(self.METADATA, mods)
+
+    @classmethod
+    def is_leaf(cls, mod):
+        '''True if the modification structure is the leaf of a tree
+        
+        The leaves are either strings representing the last part of a path
+        or 3-tuples representing image planes within an image file. Branches
+        are two-tuples composed of a path part and more branches / leaves
+        '''
+        return len(mod) != 2 or not isinstance(mod[0], basestring)
+    
+    def node_count(self, file_tree = None):
+        '''Count the # of nodes (leaves + directories) in the tree'''
+        if file_tree == None:
+            file_tree = self.file_tree
+        count = 0
+        for key in file_tree.keys():
+            if key is None:
+                pass
+            elif isinstance(file_tree[key], dict):
+                count += 1 + self.node_count(file_tree[key])
+            else:
+                count += 1
+        return count
+    
+    def get_tree_modpaths(self, path):
+        '''Create a modpath containing the selected node and all children
+        
+        root - list of paths to the selected node
+        
+        returns a modpath (two-tuples where the first is the key and the second
+        is a list of sub-modpaths)
+        '''
+        tree = self.file_tree
+        root_modlist = sub_modlist = []
+        while len(path) > 1:
+            next_sub_modlist = []
+            sub_modlist.append((path[0], next_sub_modlist))
+            tree = tree[path[0]]
+            path = path[1:]
+            sub_modlist = next_sub_modlist
+        if isinstance(tree[path[0]], dict):
+            sub_modlist.append((path[0], self.get_all_modpaths(tree[path[0]])))
+        else:
+            sub_modlist.append(path[0])
+        return root_modlist[0]
+        
+    def get_all_modpaths(self, tree):
+        '''Get all sub-modpaths from the branches of the given tree'''
+        result = []
+        for key in tree.keys():
+            if key is None:
+                continue
+            elif not isinstance(tree[key], dict):
+                result.append(key)
+            else:
+                result.append((key, self.get_all_modpaths(tree[key])))
+        return result
+                           
+    def add_subtree(self, mods, tree):
+        for mod in mods:
+            if self.is_leaf(mod):
+                if not tree.has_key(mod):
+                    tree[mod] = True
+            else:
+                if tree.has_key(mod[0]) and isinstance(tree[mod[0]], dict):
+                    subtree = tree[mod[0]]
+                else:
+                    subtree = tree[mod[0]] = {}
+                subtree[None] = True
+                self.add_subtree(mod[1], subtree)
+                
+    def on_remove(self, mods):
+        '''Called when the UI wants to remove nodes
+        
+        mods - a modlist of nodes to remove
+        '''
+        self.fn_on_remove(mods)
+        
+    def remove(self, mods):
+        '''Remove nodes from the file tree
+        
+        mods - modification structure. See class documentation for its form.
+        '''
+        for mod in mods:
+            self.remove_subtree(mod, self.file_tree)
+        self.update_ui(self.REMOVE, mods)
+        
+    def remove_subtree(self, mod, tree):
+        if not (isinstance(mod, tuple) and len(mod) == 2):
+            if tree.has_key(mod):
+                subtree = tree[mod]
+                if isinstance(subtree, dict):
+                    #
+                    # Remove whole tree
+                    #
+                    for key in subtree.keys():
+                        if key is None:
+                            continue
+                        if isinstance(subtree[key], dict):
+                            self.remove_subtree(key, subtree)
+                del tree[mod]
+        elif tree.has_key(mod[0]):
+            root_mod = mod[0]
+            subtree = tree[root_mod]
+            if isinstance(subtree, dict):
+                for submod in mod[1]:
+                    self.remove_subtree(submod, subtree)
+                #
+                # Delete the subtree if the subtree is emptied
+                #
+                if len(subtree) == 0 or (
+                    len(subtree) == 1 and subtree.has_key(None)):
+                    del tree[root_mod]
+            else:
+                del tree[root_mod]
+    
+    def mark(self, mods, keep):
+        '''Mark tree nodes as filtered in or out
+        
+        mods - modification structure. See class documentation for its form.
+        
+        keep - true to mark a node as in the set, false to filter it out.
+        '''
+        self.mark_subtree(mods, keep, self.file_tree)
+        self.update_ui()
+        
+    def mark_subtree(self, mods, keep, tree):
+        for mod in mods:
+            if self.is_leaf(mod):
+                if tree.has_key(mod):
+                    if isinstance(tree[mod], dict):
+                        tree[mod][None] = keep
+                    else:
+                        tree[mod] = keep
+            else:
+                if tree.has_key(mod[0]):
+                    self.mark_subtree(mod[1], keep, tree[mod[0]])
+        kept = [tree[k][None] if isinstance(tree[k], dict)
+                else tree[k]
+                for k in tree.keys() if k is not None]
+        tree[None] = any(kept)
+                    
+    def get_node_info(self, path):
+        '''Get the display name, node type and tool tip for a node
+        
+        path - path to the image plane as a list of nodes
+        
+        returns a tuple of display name, node type and tool tip
+        '''
+        display_name, node_type, tool_tip, menu = self.fn_get_path_info(path)
+        return display_name, node_type, tool_tip
+    
+    def get_context_menu(self, path):
+        '''Get the context menu associated with a path
+        
+        path - path to the image plane
+        
+        returns a list of context menu items.
+        '''
+        display_name, node_type, tool_tip, menu = self.fn_get_path_info(path)
+        return menu
+            
+    def get_show_filtered(self):
+        return self.properties[self.SHOW_FILTERED]
+    
+    def set_show_filtered(self, show_state):
+        '''Mark that we should show filtered files in the user interface
+        
+        show_state - true to show files / false to hide them
+        '''
+        self.properties[self.SHOW_FILTERED] = show_state
+        self.update_value()
+        self.update_ui()
+    
+    show_filtered = property(get_show_filtered, set_show_filtered)
+
+class PathListDisplay(Setting):
+    '''This setting's only purpose is to signal that the path list should be shown
+    
+    Set self.using_filter to True if the module knows that the path list will
+    be filtered or if the module doesn't know. Set it to False if the module
+    knows the path list won't be filtered.
+    '''
+    def __init__(self):
+        super(self.__class__, self).__init__(
+            "", value = "")
+        self.using_filter = True
+        
+class PathListRefreshButton(DoSomething):
+    '''A setting that displays as a button which refreshes the path list'''
+    def __init__(self, text, label, *args, **kwargs):
+        DoSomething.__init__(self, text, label, self.fn_callback, *args, **kwargs)
+        #callback set by module view
+        self.callback = None
+    
+    def fn_callback(self, *args, **kwargs):
+        if self.callback is not None:
+            self.callback(*args, **kwargs)
+        
+class ImageSetDisplay(DoSomething):
+    '''A button that refreshes the image set display when pressed
+    
+    '''
+    def __init__(self, *args, **kwargs):
+        super(self.__class__, self).__init__(args[0], args[1], None, *args[:2],
+                                             **kwargs)
+    
+class Table(Setting):
+    '''The Table setting displays a table of values'''
+    
+    ATTR_ERROR = "Error"
+    
+    def __init__(self, text,
+                 min_size = (400, 300), 
+                 max_field_size=30,
+                 use_sash = False,
+                 **kwargs):
+        '''Constructor
+        
+        text - text label to display to the left of the table
+        min_size - initial size of the table before user stretches it
+        max_field_size - any field with more than this # of characters will
+                         be truncated using an ellipsis.
+        use_sash - if True, place the table in the bottom resizable sash.
+                   if False, place the table inline
+        '''
+        super(self.__class__, self).__init__(text, "", **kwargs)
+        self.column_names = []
+        self.data = []
+        self.row_attributes = {}
+        self.cell_attributes = {}
+        self.min_size = min_size
+        self.max_field_size = max_field_size
+        self.use_sash = use_sash
+        
+    def insert_column(self, index, column_name):
+        '''Insert a column at the given index
+        
+        index - the zero-based index of the column's position
+        
+        column_name - the name of the column
+        
+        Adds the column to the table and sets the value for any existing
+        rows to None.
+        '''
+        self.column_names.insert(index, column_name)
+        for row in self.data:
+            row.insert(index, None)
+        
+    def add_rows(self, columns, data):
+        '''Add rows to the table
+        
+        columns - define the columns for each row of data
+        
+        data - rows of data to add. Each field in a row is placed
+               at the column indicated by "columns"
+        '''
+        indices = [columns.index(c) if c in columns else None
+                   for c in self.column_names]
+        for row in data:
+            self.data.append([None if index is None else row[index]
+                              for index in indices])
+    
+    def sort_rows(self, columns):
+        '''Sort rows based on values in columns'''
+        indices = [self.column_names.index(c) for c in columns]
+        def compare_fn(row1, row2):
+            for index in indices:
+                x = cmp(row1[index], row2[index])
+                if x != 0:
+                    return x
+            return 0
+        self.data.sort(compare_fn)
+
+    def clear_rows(self):
+        self.data = []
+        self.row_attributes = {}
+        self.cell_attributes = {}
+        
+    def clear_columns(self):
+        self.column_names = []
+        
+    def get_data(self, row_index, columns):
+        '''Get the column values for a given row or rows
+        
+        row_index - can either be the index of one row or can be a slice or list
+                    of rows
+        
+        columns - the names of the columns to fetch, in the order they will
+                  appear in the row
+        '''
+        column_indices = [self.column_names.index(c) for c in columns]
+        if isinstance(row_index, int):
+            row_index = slice(row_index, row_index+1)
+        return [[row[ci] for ci in column_indices] for row in self.data[row_index]]
+
+    def set_row_attribute(self, row_index, attribute, set_attribute = True):
+        '''Set an attribute on a row
+        
+        row_index - index of row in question
+        
+        attribute - one of the ATTR_ values, for instance ATTR_ERROR
+        
+        set_attribute - True to set, False to clear
+        '''
+        if set_attribute:
+            if self.row_attributes.has_key(row_index):
+                self.row_attributes[row_index].add(attribute)
+            else:
+                self.row_attributes[row_index] = set([attribute])
+        else:
+            if self.row_attributes.has_key(row_index):
+                s = self.row_attributes[row_index]
+                s.remove(attribute)
+                if len(s) == 0:
+                    del self.row_attributes[row_index]
+    
+    def get_row_attributes(self, row_index):
+        '''Get the set of attributes on a row
+        
+        row_index - index of the row being queried
+        
+        returns None if no attributes or a set of attributes set on the row
+        '''
+        return self.row_attributes.get(row_index, None)
+    
+    def set_cell_attribute(self, row_index, column_name, 
+                           attribute, set_attribute = True):
+        '''Set an attribute on a cell
+        
+        row_index - index of row in question
+        
+        column_name - name of the cell's column
+        
+        attribute - one of the ATTR_ values, for instance ATTR_ERROR
+        
+        set_attribute - True to set, False to clear
+        '''
+        key = (row_index, self.column_names.index(column_name))
+        if set_attribute:
+            if self.cell_attributes.has_key(key):
+                self.cell_attributes[key].add(attribute)
+            else:
+                self.cell_attributes[key] = set([attribute])
+        else:
+            if self.cell_attributes.has_key(key):
+                s = self.cell_attributes[key]
+                s.remove(attribute)
+                if len(s) == 0:
+                    del self.cell_attributes[key]
+    
+    def get_cell_attributes(self, row_index, column_name):
+        '''Get the set of attributes on a row
+        
+        row_index - index of the row being queried
+        
+        returns None if no attributes or a set of attributes set on the row
+        '''
+        key = (row_index, self.column_names.index(column_name))
+        return self.cell_attributes.get(key, None)
+    
+class HTMLText(Setting):
+    '''The HTMLText setting displays a HTML control with content
+    
+    '''
+    def __init__(self, text, content = "", size = None, **kwargs):
+        '''Initialize with the html content
+        
+        text - the text to the right of the setting
+        
+        content - the HTML to display
+        
+        size - a (x,y) tuple of the minimum window size in units of
+               wx.SYS_CAPTION_Y (the height of the window caption).
+        '''
+        super(self.__class__, self).__init__(text, "", **kwargs)
+        self.content = content
+        self.size = size
+        
+class Joiner(Setting):
+    '''The joiner setting defines a joining condition between conceptual tables
+    
+    You might want to join several tables by specifying the columns that match
+    each other or might want to join images in an image set by matching
+    their metadata. The joiner takes a dictionary of lists of column names
+    or metadata keys where the dictionary key holds the table or image name
+    and the list of values holds the names of table columns or metadata keys.
+    
+    The joiner's value is, conceptually, a list of dictionaries where each
+    dictionary in the list documents how to join one column or metadata key
+    in one of the tables or images to the others.
+    
+    The conceptual value is a list of dictionaries of unicode string keys
+    and values (or value = None). This can be encoded using str() and
+    can be decoded using eval.
+    '''
+    def __init__(self, text, value = "[]", allow_none = True, **kwargs):
+        '''Initialize the joiner
+        
+        text - label to the left of the joiner
+        
+        value - "repr" done on the joiner's underlying structure which is
+                a list of dictionaries
+                
+        allow_none - True (by default) to allow one of the entities to have
+                     None for a join, indicating that it matches against
+                     everything
+        '''
+        super(self.__class__, self).__init__(text, value, **kwargs)
+        self.entities = {}
+        self.allow_none = allow_none
+        
+    def parse(self):
+        '''Parse the value into a list of dictionaries
+        
+        return a list of dictionaries where the key is the table or image name
+        and the value is the column or metadata
+        '''
+        return eval(self.value_text, {"__builtins__":None}, {})
+    
+    def default(self):
+        '''Concoct a default join as a guess if setting is uninitialized'''
+        all_names = {}
+        best_name = None
+        best_count = 0
+        for value_list in self.entities.values():
+            for value in value_list:
+                if all_names.has_key(value):
+                    all_names[value] += 1
+                else:
+                    all_names[value] = 1
+                if best_count < all_names[value]:
+                    best_count = all_names[value]
+                    best_name = value
+        if best_count == 0:
+            return []
+        else:
+            return [ dict([(k, best_name if best_name in self.entities[k]
+                            else None) for k in self.entities.keys()])]
+            
+    
+    def build(self, dictionary_list):
+        '''Build a value from a list of dictionaries'''
+        self.value = self.build_string(dictionary_list)
+        
+    @classmethod
+    def build_string(cls, dictionary_list):
+        return str(dictionary_list)
+        
 class SettingsGroup(object):
     '''A group of settings that are managed together in the UI.
     Particulary useful when used with a RemoveSettingButton.

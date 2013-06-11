@@ -216,74 +216,75 @@ class Align(cpm.CPModule):
                                               self.first_input_image.value,
                                               additional.input_image_name.value)
             offsets.append((a_off_y, a_off_x))
-        
-        shapes = [ workspace.image_set.get_image(x).pixel_data.shape[:2]
-                   for x,_ in names]
+
+        shapes = [workspace.image_set.get_image(x).pixel_data.shape[:2]
+                  for x, _ in names]
         offsets, shapes = self.adjust_offsets(offsets, shapes)
-        
-        statistics = [(input_name, output_name, x, y, shape)
-                      for (input_name, output_name), (y, x), shape
-                      in zip(names, offsets, shapes)]
-        
-        for input_name, output_name, x, y, shape in statistics:
+
+        #
+        # Align and write the measurements
+        #
+        for (input_name, output_name), (y, x), shape in zip(names, offsets, shapes):
             self.apply_alignment(workspace, input_name, output_name, x, y, shape)
-                                 
-        #
-        # Write the measurements
-        #
-        for input_name, output_name, t_off_x, t_off_y, shape in statistics:
-            for axis, value in (('X',-t_off_x),('Y',-t_off_y)):
+            for axis, value in (('X', -x), ('Y', -y)):
                 feature = (MEASUREMENT_FORMAT %
                            (axis, output_name))
                 workspace.measurements.add_image_measurement(feature, value)
-            
+
         # save data for display
-        workspace.display_data.statistics = statistics
-    
-    def display(self, workspace):
+        workspace.display_data.image_info = \
+            [(input_name,
+              workspace.image_set.get_image(input_name).pixel_data,
+              output_name,
+              workspace.image_set.get_image(output_name).pixel_data,
+              x, y, shape)
+             for (input_name, output_name), (y, x), shape
+             in zip(names, offsets, shapes)]
+
+    def display(self, workspace, figure):
         '''Display the overlaid images
-        
-        workspace - the workspace being run
-        statistics - a list of lists:
-            0: index of this statistic
-            1: input image name of image being aligned
-            2: output image name of image being aligned
-            3: x offset
-            4: y offset
+
+        workspace - the workspace being run, with display_data holding:
+            image_info - a list of lists:
+                 input image name of image being aligned
+                 input image data
+                 output image name of image being aligned
+                 output image data
+                 x offset
+                 y offset
         '''
-        statistics = workspace.display_data.statistics
-        image_set = workspace.image_set
+        image_info = workspace.display_data.image_info
         first_input_name = self.first_input_image.value
         first_output_name = self.first_output_image.value
-        figure = workspace.create_or_find_figure(title="Align, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(2,len(statistics)-1))
-        for j, (input_name, output_name, off_x, off_y, shape) in enumerate(statistics[1:]):
-            unaligned_title = ("Unaligned images: %s and %s"%
+        figure.set_subplots((2, len(image_info) - 1))
+
+        first_input_pixels = image_info[0][1]
+        first_output_pixels = image_info[0][3]
+        for j, (input_name, input_pixels, output_name, output_pixels, off_x, off_y, shape) \
+                in enumerate(image_info[1:]):
+            unaligned_title = ("Unaligned images: %s and %s" %
                                (first_input_name, input_name))
-            aligned_title = ("Aligned images: %s and %s\nX offset: %d, Y offset: %d"%
+            first_pixels = first_input_pixels
+            other_pixels = input_pixels
+            max_shape = np.maximum(first_pixels.shape, other_pixels.shape)
+            img = np.zeros((max_shape[0], max_shape[1], 3))
+            img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels
+            img[:other_pixels.shape[0], :other_pixels.shape[1], 1] = other_pixels
+            figure.subplot_imshow(0, j, img, unaligned_title,
+                                  sharexy = figure.subplot(0, 0))
+
+            aligned_title = ("Aligned images: %s and %s\nX offset: %d, Y offset: %d" %
                              (first_output_name, output_name,
                               -off_x, -off_y))
+            first_pixels = first_output_pixels
+            other_pixels = output_pixels
+            max_shape = np.maximum(first_pixels.shape, other_pixels.shape)
+            img = np.zeros((max_shape[0], max_shape[1], 3))
+            img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels
+            img[:other_pixels.shape[0], :other_pixels.shape[1], 1] = other_pixels
+            figure.subplot_imshow(1, j, img, aligned_title,
+                                  sharexy = figure.subplot(0, 0))
 
-            for i, (first_name, other_name, title) in enumerate(
-                (( first_input_name, input_name, unaligned_title),
-                 ( first_output_name, output_name, aligned_title))) :
-                first_image = image_set.get_image(first_name, 
-                                                  must_be_grayscale = True)
-                first_pixels = first_image.pixel_data
-                other_image = image_set.get_image(other_name,
-                                                  must_be_grayscale=True)
-                other_pixels = other_image.pixel_data
-                max_shape = np.maximum(first_pixels.shape, other_pixels.shape)
-                img = np.zeros((max_shape[0], max_shape[1], 3))
-                img[:first_pixels.shape[0], :first_pixels.shape[1], 0] = first_pixels
-                img[:other_pixels.shape[0], :other_pixels.shape[1], 1] = other_pixels
-                figure.subplot_imshow(i, j, img, title, 
-                                      sharex=figure.subplot(0,0), 
-                                      sharey=figure.subplot(0,0))
-
-    def is_interactive(self):
-        return False
-        
     def align(self, workspace, input1_name, input2_name):
         '''Align the second image with the first
         

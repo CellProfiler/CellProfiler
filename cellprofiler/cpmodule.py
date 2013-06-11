@@ -13,7 +13,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 
 import re
 import os
@@ -63,10 +62,10 @@ class CPModule(object):
                for instance on all measurements
     post_pipeline_load - use this to update any settings that require the pipeline
                 to be available before they can be adjusted.
-                
-    If your module requires state across image_sets, think of storing that 
-    state in the image_set_list's legacy_fields dictionary instead
-    of the module. 
+
+    If your module requires state across image_sets, think of storing
+    information in the module shared_state dictionary (fetched by
+    get_dictionary()).
     """
     
     def __init__(self):
@@ -76,16 +75,18 @@ class CPModule(object):
         self.__settings = []
         self.__notes = []
         self.__variable_revision_number = 0
-        self.__show_window = True
+        self.__show_window = False
         self.__wants_pause = False
         self.__svn_version = "Unknown"
+        self.__enabled = True
+        self.shared_state = {}  # used for maintaining state between modules, see get_dictionary()
         self.id = uuid.uuid4()
         self.batch_state = np.zeros((0,),np.uint8)
         # Set the name of the module based on the class name.  A
         # subclass can override this either by declaring a module_name
         # attribute in the class definition or by assigning to it in
         # the create_settings method.
-        if 'module_name' not in self.__dict__:
+        if not hasattr(self, "module_name"):
             self.module_name = self.__class__.__name__
         self.create_settings()
 
@@ -224,7 +225,11 @@ class CPModule(object):
         The default help is taken from your modules docstring and from
         the settings.
         """
-        doc = self.__doc__.replace("\r","").replace("\n\n","<p>")
+        if self.__doc__ is None:
+            doc = "<i>No help available for module</i>\n"
+        else:
+            doc = self.__doc__
+        doc = doc.replace("\r","").replace("\n\n","<p>")
         doc = doc.replace("\n"," ")
         result = "<html style=""font-family:arial""><head><title>%s</title></head>" % self.module_name
         result += "<body><h1>%s</h1><div>" % self.module_name + doc
@@ -369,6 +374,17 @@ class CPModule(object):
         """
         return self.__module__+'.'+self.module_name
     
+    def get_enabled(self):
+        """True if the module should be executed, False if it should be ignored.
+        
+        """
+        return self.__enabled
+    
+    def set_enabled(self, enable):
+        self.__enabled = enable
+        
+    enabled = property(get_enabled, set_enabled)
+    
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline
         
@@ -457,7 +473,7 @@ class CPModule(object):
             module - this module
             
             measurements - measurements structure that can be populated with
-                           image set file names and metadata.
+                          a image set file names and metadata.
             
             image_set_list - add any image sets to the image set list
             
@@ -468,15 +484,51 @@ class CPModule(object):
         """
         return True
     
-    def is_interactive(self):
-        """If true, the module will be run in the background.
-        Background threads cannot safely manipulate the GUI.  See
-        display()."""
-        return True
-    
     def is_load_module(self):
         """If true, the module will load files and make image sets"""
         return False
+    
+    def is_input_module(self):
+        """If true, the module is one of the input modules
+        
+        The input modules are "Images", "Metadata", "NamesAndTypes" and "Groups"
+        """
+        return False
+    
+    def is_aggregation_module(self):
+        """If true, the module uses data from other imagesets in a group
+        
+        Aggregation modules perform operations that require access to
+        all image sets in a group, generally resulting in an aggregation
+        operation during the last image set or in post_group. Examples are
+        TrackObjects, MakeProjection and CorrectIllumination_Calculate.
+        """
+        return False
+    
+    def needs_conversion(self):
+        '''Return True if the module needs to be converted from legacy
+        
+        A module can throw an exception if it is impossible to convert - for
+        instance, LoadData.
+        '''
+        return False
+    
+    def convert(self, pipeline, metadata, namesandtypes, groups):
+        '''Convert the input processing of this module from the legacy format
+        
+        Legacy modules like LoadImages should copy their settings into
+        the Metadata, NamesAndTypes and Groups modules when this call is made.
+        
+        pipeline - the pipeline being converted
+        
+        metadata - the pipeline's Metadata module
+        
+        namesandtypes - the pipeline's NamesAndTypes module
+        
+        groups - the pipeline's Groups module
+        
+        '''
+        pass
 
     def is_object_identification_module(self):
         """If true, the module will identify primary, secondary or tertiary objects"""
@@ -492,10 +544,12 @@ class CPModule(object):
             measurements - the measurements for this run
             frame        - the parent frame to whatever frame is created. 
                            None means don't draw.
+            display_data - the run() module should store anything to be
+                           displayed in this attribute, which will be used in
+                           display()
 
-        If is_interactive() returns false, then run() will be run in a
-        background thread.  Background threads cannot safely
-        manipulate the GUI.  See display().
+        run() should not attempt to display any data, but should communicate it
+        to display() via the workspace.
         """
         pass
     
@@ -506,21 +560,27 @@ class CPModule(object):
         """
         pass
 
-    def display(self, workspace):
+    def display(self, workspace, figure):
         """Display the results, and possibly intermediate results, as
         appropriate for this module.  This method will be called after
-        run() is finished if workspace.frame is not false.
+        run() is finished if self.show_window is True.
 
-        This method exists because the run() method will run in the
-        background if is_interactive() returns false, and background
-        threads cannot safely manipulate the GUI.  The default
-        implementation does nothing.
-        
         The run() method should store whatever data display() needs in
-        workspace.display_data.
+        workspace.display_data.  The module is given a CPFigure to use for
+        display in the third argument.
+        """
+        figure.Close()  # modules that don't override display() shouldn't
+                        # display anything
+                        
+    def display_post_run(self, workspace, figure):
+        """Display results after post_run completes
+        
+        workspace - a workspace with pipeline, module and measurements valid
+        
+        figure - display results in this CPFigure
         """
         pass
-    
+
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         '''Prepare to create a batch file
         
@@ -612,17 +672,34 @@ class CPModule(object):
                      "float")
         '''
         return []
-
-    def get_dictionary(self, image_set_list):
-        '''Get the dictionary for this module
-        
-        image_set_list - get the dictionary from the legacy fields
-        '''
-        key = "%s:%d"%(self.module_name, self.module_num)
-        if not image_set_list.legacy_fields.has_key(key):
-            image_set_list.legacy_fields[key] = {}
-        return image_set_list.legacy_fields[key]
     
+    def get_object_relationships(self, pipeline):
+        '''Return a sequence describing the relationships recorded in measurements
+        
+        This method reports the relationships recorded in the measurements
+        using add_relate_measurement. Modules that add relationships should
+        return one 4-tuple of 
+        (<relationship-name>, <object-name-1>, <object-name-2>, <when>)
+        for every combination of relationship and parent / child objects
+        that will be produced during the course of a run.
+        
+        <when> is one of cpmeas.MCA_AVAILABILE_EACH_CYCLE or 
+        cpmeas.MCA_AVAILABLE_POST_GROUP. cpmeas.MCA_AVAILABLE_EACH_CYCLE 
+        promises that the relationships will be available after each cycle.
+        Any relationship with that cycle's image number (as either the
+        parent or child) will be inserted if not already present in the database.
+        
+        MCA_AVAILABLE_POST_GROUP indicates that the relationship is not available
+        until the group has completed - all relationships with a group's
+        image number will be written in that case.
+        '''
+        return []
+
+    def get_dictionary(self, ignore=None):
+        '''Get the dictionary for this module
+        '''
+        return self.shared_state
+
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces
         
@@ -689,6 +766,19 @@ class CPModule(object):
         '''
         return False
     
+    def needs_default_image_folder(self, pipeline):
+        '''Returns True if the module needs the default image folder
+        
+        pipeline - pipeline being run
+        
+        Legacy modules might need the default image folder as does any module
+        that uses the DirectoryPath setting.
+        '''
+        for setting in self.visible_settings():
+            if isinstance(setting, cps.DirectoryPath):
+                return True
+        return False
+    
     def obfuscate(self):
         '''Erase any sensitive information in a module's settings
         
@@ -696,5 +786,29 @@ class CPModule(object):
         passwords or file names so that the pipeline can be uploaded
         for error reporting without revealing that information.
         '''
+        pass
+    
+    def on_activated(self, workspace):
+        '''Called when the module is activated in the GUI
+        
+        workspace - the workspace that's currently running
+        
+        on_activated is here to give modules the chance to modify other
+        elements of the pipeline, such as the image plane details or image
+        set list. You're allowed to modify these parts of the pipeline
+        in the UI thread until on_deactivated is called.
+        '''
+        pass
+    
+    def on_deactivated(self):
+        '''Called when the module is deactivated in the GUI
+        
+        This is the signal that the settings have been unhooked from the
+        GUI and can't be used to edit the pipeline
+        '''
+        pass
+    
+    def on_setting_changed(self, setting, pipeline):
+        '''Called when a setting has been changed in the GUI'''
         pass
     

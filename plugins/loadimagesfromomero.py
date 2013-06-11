@@ -40,7 +40,6 @@ In the above example the pipeline "mypipeline" will be run with "1" as omero obj
 
 # module author: Bram Gerritsen
 # e-mail: b.gerritsen@nki.nl
-__version__="$Revision: 10415 $"
 
 import numpy as np
 import wx
@@ -491,9 +490,9 @@ class OmeroLoadImages(cpm.CPModule):
 		if not image_set.legacy_fields.has_key(key):
 			image_set.legacy_fields[key] = {}
 		d = image_set.legacy_fields[key]
-		if not d.has_key(image_set.number):
-			d[image_set.number] = {}
-		return d[image_set.number]
+		if not d.has_key(image_set.image_number):
+			d[image_set.image_number] = {}
+		return d[image_set.image_number]
 	
 	def prepare_group(self, workspace, grouping, image_numbers):
 		'''Load the images from the dictionary into the image sets here'''		
@@ -502,11 +501,6 @@ class OmeroLoadImages(cpm.CPModule):
 			        image_number-1)
 			self.load_image_set_info(image_set)
 				
-	def is_interactive(self):
-		'''Tell CellProfiler that this module's run method 
-		can be executed in the worker thread'''
-		return False
-	
 	def run(self, workspace):
 		'''Run the module. Add the measurements. '''
 		
@@ -590,8 +584,9 @@ class OmeroLoadImages(cpm.CPModule):
 												vmin = 0, vmax = 1,
 												sharex = figure.subplot(0,0),
 												sharey = figure.subplot(0,0))
-				figure.subplot_table(1, int(channel_number), workspace.display_data.statistics[channel_number],
-									ratio=workspace.display_data.ratio[channel_number])
+				figure.subplot_table(
+				        1, int(channel_number), 
+				        workspace.display_data.statistics[channel_number])
 	
 	def get_categories(self, pipeline, object_name):
 		'''Return the categories that this module produces'''

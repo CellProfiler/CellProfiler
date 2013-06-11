@@ -1,3 +1,16 @@
+"""
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2013 Broad Institute
+All rights reserved.
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+"""
+
 '''<b>MeasurementTemplate</b> - an example measurement module
 <hr>
 This is an example of a module that measures a property of an image both
@@ -165,12 +178,8 @@ class MeasurementTemplate(cpm.CPModule):
         # GETTING AN IMAGE FROM THE IMAGE SET
         #
         # Get the image set. The image set has all of the images in it.
-        # The assert statement makes sure that it really is an image set,
-        # but, more importantly, it lets my editor do context-sensitive
-        # completion for the image set.
         #
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         #
         # Get the input image object. We want a grayscale image here.
         # The image set will convert a color image to a grayscale one
@@ -239,17 +248,10 @@ class MeasurementTemplate(cpm.CPModule):
     # 
     # DISPLAY
     #
-    # We define is_interactive to be False to tell CellProfiler
-    # that it should execute "run" in a background thread and then
-    # execute "display" in a foreground thread.
-    #
-    def is_interactive(self):
-        return False
-    
     def display(self, workspace):
         statistics = workspace.display_data.statistics
         figure = workspace.create_or_find_figure(subplots=(1,1,))
-        figure.subplot_table(0,0, statistics, ratio = (.25, .25, .25, .25))
+        figure.subplot_table(0,0, statistics)
     
     ################################
     #

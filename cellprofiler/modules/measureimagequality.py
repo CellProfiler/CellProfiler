@@ -52,7 +52,6 @@ thresholding method of choice.</li>
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 import logging
@@ -713,14 +712,10 @@ class MeasureImageQuality(cpm.CPModule):
             statistics += self.run_on_image_group(image_group, workspace)
         workspace.display_data.statistics = statistics
 
-    def is_interactive(self):
-        return False
-    
-    def display(self, workspace):
-        if workspace.frame is not None:
+    def display(self, workspace, figure):
+        if self.show_window:
             statistics = workspace.display_data.statistics
-            figure = workspace.create_or_find_figure(title="%s, image cycle #%d"%(
-                workspace.module.module_name, workspace.measurements.image_set_number),subplots=(1,1))
+            figure.set_subplots((1, 1))
             figure.subplot_table(0,0,statistics)
     
     def post_run(self, workspace):
@@ -1130,14 +1125,17 @@ class MeasureImageQuality(cpm.CPModule):
             accepted_image_list = []
             if pipeline is None:
                 pipeline = workspace.pipeline
-            for module in pipeline.modules():
-                if module.is_load_module(): # LoadSingleImage is not a load module
-                    columns = module.get_measurement_columns(pipeline)
-                    for column in columns:
-                        object_name, feature, coltype = column
-                        image_name = feature[(len(C_FILE_NAME)+1):]
-                        if object_name == cpmeas.IMAGE and feature.startswith(C_FILE_NAME):
-                            accepted_image_list.append(image_name)
+            #
+            # Get a dictionary of image name to (module, setting)
+            #
+            image_providers = pipeline.get_provider_dictionary(
+                cps.IMAGE_GROUP, self)
+            for image_name in image_providers:
+                for  module, setting in image_providers[image_name]:
+                    if (module.is_load_module() and 
+                        ((not isinstance(setting, cps.ImageNameProvider)) or
+                          cps.FILE_IMAGE_ATTRIBUTE in setting.provided_attributes)):
+                        accepted_image_list.append(image_name)
             return accepted_image_list
         
     def upgrade_settings(self, setting_values, variable_revision_number, 

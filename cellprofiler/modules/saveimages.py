@@ -27,7 +27,6 @@ See also <b>LoadImages</b>, <b>ConserveMemory</b>.
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import logging
 import matplotlib
@@ -35,32 +34,10 @@ import numpy as np
 import re
 import os
 import sys
-import PIL.Image as PILImage
 import scipy.io.matlab.mio
 import traceback
 
 logger = logging.getLogger(__name__)
-try:
-    from bioformats.formatreader import *
-    from bioformats.formatwriter import *
-    from bioformats.metadatatools import *
-    has_bioformats = True
-except:
-    logger.error(
-        "Failed to load bioformats. SaveImages will not be able to save movies.",
-        exc_info = True)
-    has_bioformats = False
-
-try:
-    import libtiff
-    has_tiff = True
-except:
-    if sys.platform == 'darwin':
-        traceback.print_exc()
-        logger.error("Failed to load pylibtiff.  SaveImages on Mac may not be "
-                     "able to write 16-bit TIFF format.")
-    has_tiff = False
-
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -71,11 +48,17 @@ from cellprofiler.preferences import \
      standardize_default_folder_names, DEFAULT_INPUT_FOLDER_NAME, \
      DEFAULT_OUTPUT_FOLDER_NAME, ABSOLUTE_FOLDER_NAME, \
      DEFAULT_INPUT_SUBFOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME, \
-     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT
+     IO_FOLDER_CHOICE_HELP_TEXT, IO_WITH_METADATA_HELP_TEXT, \
+     get_default_image_directory
 from cellprofiler.utilities.relpath import relpath
-from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME
-from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME
+from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
+from cellprofiler.modules.loadimages import \
+     C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
+from cellprofiler.modules.loadimages import pathname2url
 from cellprofiler.cpmath.cpmorphology import distance_color_labels
+from cellprofiler.utilities.version import get_version
+from bioformats.formatwriter import write_image
+import bioformats.omexml as ome
 
 IF_IMAGE       = "Image"
 IF_MASK        = "Mask"
@@ -97,7 +80,6 @@ FN_IMAGE_FILENAME_WITH_METADATA = "Image filename with metadata"
 METADATA_NAME_TEXT = ("""Enter file name with metadata""")
 SEQUENTIAL_NUMBER_TEXT = "Enter file prefix"
 FF_BMP         = "bmp"
-FF_GIF         = "gif"
 FF_HDF         = "hdf"
 FF_JPG         = "jpg"
 FF_JPEG        = "jpeg"
@@ -132,7 +114,7 @@ OFFSET_DIRECTORY_PATH = 10
 class SaveImages(cpm.CPModule):
 
     module_name = "SaveImages"
-    variable_revision_number = 7
+    variable_revision_number = 9
     category = "File Processing"
     
     def create_settings(self):
@@ -244,10 +226,10 @@ class SaveImages(cpm.CPModule):
                 Enter the text that should be appended to the filename specified above.""")
         
         self.file_format = cps.Choice("Select file format to use",
-                                      [FF_BMP,FF_GIF,FF_HDF,FF_JPG,FF_JPEG,
+                                      [FF_BMP,FF_HDF,FF_JPG,FF_JPEG,
                                        FF_PBM,FF_PCX,FF_PGM,FF_PNG,FF_PNM,
                                        FF_PPM,FF_RAS,FF_TIF,FF_TIFF,FF_XWD,
-                                       FF_MAT],FF_BMP,doc="""
+                                       FF_MAT],FF_TIF,doc="""
                 <i>(Used only when saving non-movie files)</i><br>
                 Select the image or movie format to save the image(s). Most common
                 image formats are available; MAT-files are readable by MATLAB.""")
@@ -352,8 +334,24 @@ class SaveImages(cpm.CPModule):
                 the newly saved files.</li>
                 </ul>""")
         
-        self.create_subdirectories = cps.Binary("Create subfolders in the output folder?",False,
-                                                doc = """Subfolders will be created to match the input image folder structure.""")
+        self.create_subdirectories = cps.Binary(
+            "Create subfolders in the output folder?",False,
+            doc = """Subfolders will be created to match the input image folder structure.""")
+        self.root_dir = cps.DirectoryPath(
+            "Image folder", 
+            doc = """<i>Used only if creating subfolders in the output folder</i>
+            In subfolder mode, <b>SaveImages</b> determines the folder for
+            an image file by examining the path of the matching input file.
+            The path that SaveImages uses is relative to the image folder
+            chosen using this setting. As an example, input images might be stored
+            in a folder structure of "images%(sep)s<i>experiment-name</i>%(sep)s
+            <i>date</i>%(sep)s<i>plate-name</i>". If the image folder is
+            "images", <b>SaveImages</b> will store images in the subfolder,
+            "<i>experiment-name</i>%(sep)s<i>date</i>%(sep)s<i>plate-name</i>".
+            If the image folder is "images%(sep)s<i>experiment-name</i>",
+            <b>SaveImages</b> will store images in the subfolder,
+            <i>date</i>%(sep)s<i>plate-name</i>".
+            """ % dict(sep=os.path.sep))
     
     def settings(self):
         """Return the settings in the order to use when saving"""
@@ -365,7 +363,8 @@ class SaveImages(cpm.CPModule):
                 self.pathname, self.bit_depth,
                 self.overwrite, self.when_to_save,
                 self.rescale, self.gray_or_color, self.colormap, 
-                self.update_file_names, self.create_subdirectories]
+                self.update_file_names, self.create_subdirectories,
+                self.root_dir]
     
     def visible_settings(self):
         """Return only the settings that should be shown"""
@@ -412,20 +411,14 @@ class SaveImages(cpm.CPModule):
         result.append(self.update_file_names)
         if self.file_name_method == FN_FROM_IMAGE:
             result.append(self.create_subdirectories)
+            if self.create_subdirectories:
+                result.append(self.root_dir)
         return result
     
     @property
     def module_key(self):
         return "%s_%d"%(self.module_name, self.module_num)
     
-    def get_dictionary(self, image_set_list):
-        '''Return the runtime dictionary associated with this module'''
-        return image_set_list.legacy_fields[self.module_key]
-    
-    def prepare_run(self, workspace, *args):
-        workspace.image_set_list.legacy_fields[self.module_key] = {}
-        return True
-
     def prepare_group(self, workspace, grouping, image_numbers):
         d = self.get_dictionary(workspace.image_set_list)
         d['FIRST_IMAGE'] = True
@@ -459,16 +452,15 @@ class SaveImages(cpm.CPModule):
         workspace.display_data.filename = self.get_filename(
             workspace, make_dirs = False, check_overwrite = False)
         
-    def is_interactive(self):
-        # if we overwrite files, it's safe to run in the background
-        return not self.overwrite.value
-
-    def display(self, workspace):
-        if workspace.frame != None:
+    def is_aggregation_module(self):
+        '''SaveImages is an aggregation module when it writes movies'''
+        return self.save_image_or_figure == IF_MOVIE
+    
+    def display(self, workspace, figure):
+        if self.show_window:
             if self.save_image_or_figure == IF_MOVIE:
                 return
-            figure = workspace.create_or_find_figure(title="SaveImages, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
+            figure.set_subplots((1, 1))
             outcome = ("Wrote %s" if workspace.display_data.wrote_image
                        else "Did not write %s")
             figure.subplot_table(0, 0, [[outcome %
@@ -497,12 +489,11 @@ class SaveImages(cpm.CPModule):
     
     
     def run_movie(self, workspace):
-        assert has_bioformats
         out_file = self.get_filename(workspace, check_overwrite=False)
         # overwrite checks are made only for first frame.
         d = self.get_dictionary(workspace.image_set_list)
         if d["CURRENT_FRAME"] == 0 and os.path.exists(out_file):
-            if not self.check_overwrite(out_file):
+            if not self.check_overwrite(out_file, workspace):
                 d["CURRENT_FRAME"] = "Ignore"
                 return
             else:
@@ -511,48 +502,14 @@ class SaveImages(cpm.CPModule):
         elif d["CURRENT_FRAME"] == "Ignore":
             return
             
-        env = jutil.attach()
-        try:
-            image = workspace.image_set.get_image(self.image_name.value)
-            pixels = image.pixel_data
-            width = pixels.shape[1]
-            height = pixels.shape[0]
-            if pixels.ndim == 2:
-                channels = 1
-                color_space = getGrayColorSpace()
-            elif pixels.ndim == 3 and pixels.shape[2] == 3:
-                channels = 3
-                color_space = getRGBColorSpace()
-            else:
-                raise 'Image shape is not supported for saving to movie'
-            stacks = 1
-            frames = d['N_FRAMES']
-            
-            nice_name = self.image_name.value+":" + os.path.split(out_file)[1]
-            meta = self.make_metadata(nice_name, width, height, channels, 
-                                      stacks, frames)
-            ImageWriter = make_image_writer_class()
-            writer = ImageWriter()    
-            writer.setMetadataRetrieve(meta)
-            writer.setId(out_file)
-
-            is_last_image = (d['CURRENT_FRAME'] == d['N_FRAMES']-1)
-            image = workspace.image_set.get_image(self.image_name.value)
-            pixels = image.pixel_data
-            pixels = (pixels*255).astype(np.uint8)
-            if len(pixels.shape)==3 and pixels.shape[2] == 3:  
-                save_im = np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]]).flatten()
-            else:
-                save_im = pixels.flatten()
-            byte_array = env.make_byte_array(save_im)
-            try:
-                writer.saveBytesIB(d['CURRENT_FRAME'], byte_array)
-            except jutil.JavaException:
-                writer.saveBytes(byte_array, is_last_image)
-            writer.close()
-            d['CURRENT_FRAME'] += 1
-        finally:
-            jutil.detach()
+        image = workspace.image_set.get_image(self.image_name.value)
+        pixels = image.pixel_data
+        pixels = pixels * 255
+        frames = d['N_FRAMES']
+        current_frame = d["CURRENT_FRAME"]
+        d["CURRENT_FRAME"] += 1
+        self.do_save_image(workspace, out_file, pixels, ome.PT_UINT8,
+                           t = current_frame, size_t = frames)
     
     def run_objects(self, workspace):
         objects_name = self.objects_name.value
@@ -561,314 +518,80 @@ class SaveImages(cpm.CPModule):
         if filename is None:  # failed overwrite check
             return
 
-        pixels = np.dstack([l for l,c in objects.get_labels()])
-        if ((self.gray_or_color == GC_GRAYSCALE) and 
-            (self.file_format in (FF_TIF, FF_TIFF) and 
-             (objects.count > 255 or pixels.shape[2] > 1))):
-            if has_bioformats:
-                self.save_image_with_bioformats(
-                    workspace, pixels, timeseries=True)
-            else:
-                self.save_image_with_libtiff(workspace, pixels)
-            return
-        pixels = pixels[:, :, 0]
-        if self.file_format != FF_MAT:
-            if self.gray_or_color == GC_GRAYSCALE:
-                if objects.count > 255:
-                    sys.stderr.write(
-                        "Warning: %s has %d objects, but the file format can "
-                        "only support 255 objects. %s may not be correct\n" %
-                        (objects_name, objects.count, filename))
-                pixels = pixels.astype(np.uint8)
-                mode = "L"
-            else:
-                if self.colormap == cps.DEFAULT:
-                    colormap = cpp.get_default_colormap()
-                else:
-                    colormap = self.colormap.value
-                cm = matplotlib.cm.get_cmap(colormap)
-                
-                mapper = matplotlib.cm.ScalarMappable(cmap=cm)
-                cpixels = mapper.to_rgba(distance_color_labels(pixels), bytes=True)
-                cpixels[pixels == 0,:3] = 0
-                pixels = cpixels
-                mode = 'RGBA'
+        labels = [l for l, c in objects.get_labels()]
         if self.get_file_format() == FF_MAT:
+            pixels = objects.segmented
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
+        
+        elif self.gray_or_color == GC_GRAYSCALE:
+            if objects.count > 255:
+                pixel_type = ome.PT_UINT16
+            else:
+                pixel_type = ome.PT_UINT8
+            for i, l in enumerate(labels):
+                self.do_save_image(
+                    workspace, filename, l, pixel_type, t=i, size_t=len(labels))
+        
         else:
-            pil = PILImage.fromarray(pixels,mode)
-            pil.save(filename, self.get_file_format())
+            if self.colormap == cps.DEFAULT:
+                colormap = cpp.get_default_colormap()
+            else:
+                colormap = self.colormap.value
+            cm = matplotlib.cm.get_cmap(colormap)
+                
+            cpixels = np.zeros((labels[0].shape[0], labels[0].shape[1], 3))
+            counts = np.zeros(labels[0].shape, int)
+            mapper = matplotlib.cm.ScalarMappable(cmap=cm)
+            for pixels in labels:
+                cpixels[pixels != 0, :] += \
+                    mapper.to_rgba(distance_color_labels(pixels), 
+                                   bytes=True)[pixels != 0, :3]
+                counts[pixels != 0] += 1
+            counts[counts == 0] = 1
+            cpixels = cpixels / counts[:, :, np.newaxis]
+            self.do_save_image(workspace, filename, cpixels, ome.PT_UINT8)
         self.save_filename_measurements(workspace)
         workspace.display_data.wrote_image = True
-    
-    def make_metadata(self, nice_name, width, height, channels, stacks, frames, 
-                      bit_depth = BIT_DEPTH_8, channel_names = None):
-        '''Make a Bioformats IMetadata for an image'''
-        imeta = createOMEXMLMetadata()
-        meta = wrap_imetadata_object(imeta)
-        meta.createRoot()
-        if (self.save_image_or_figure == IF_MOVIE) and (channels == 3):
-            logical_channels = 3
-        else:
-            logical_channels = 1
-        is_big = (sys.byteorder != 'little')
-        meta.setPixelsBigEndian(is_big, 0, 0)
-        meta.setPixelsDimensionOrder('XYCZT', 0, 0)
-        try:
-            PixelType = make_pixel_type_class()
-            if bit_depth == BIT_DEPTH_8:
-                meta.setPixelsType(PixelType.UINT8, 0)
-            else:
-                meta.setPixelsType(PixelType.UINT16, 0)
-        except jutil.JavaException:
-            FormatTools = make_format_tools_class()
-            if bit_depth == BIT_DEPTH_8:
-                bit_depth_enum = FormatTools.UINT8
-            else:
-                bit_depth_enum = FormatTools.UINT16
-                
-            meta.setPixelsPixelType( 
-                FormatTools.getPixelTypeString(bit_depth_enum), 0, 0)
-        meta.setPixelsSizeX(width, 0, 0)
-        meta.setPixelsSizeY(height, 0, 0)
-        meta.setPixelsSizeC(channels, 0, 0)
-        meta.setPixelsSizeZ(stacks, 0, 0)
-        meta.setPixelsSizeT(frames, 0, 0)
-        try:
-            meta.setImageID(nice_name, 0)
-            meta.setPixelsID(nice_name, 0)
-            if channels == 1:
-                meta.setChannelID(self.image_name.value, 0, 0)
-                meta.setLogicalChannelSamplesPerPixel(logical_channels, 0, 0)
-            else:
-                if channel_names is None:
-                    channel_names = ["Channel 0:%d" % (i+1) for i in range(channels)]
-                for i, channel_name in enumerate(channel_names):
-                    meta.setLogicalChannelSamplesPerPixel(logical_channels, 0, i)
-                    meta.setChannelID(self.image_name.value + ":" + channel_name,
-                                      0, i)
-        except jutil.JavaException:
-            # Pre 4.2 will throw.
-            pass
-        return meta
     
     def post_group(self, workspace, *args):
         if (self.when_to_save == WS_LAST_CYCLE and 
             self.save_image_or_figure != IF_MOVIE):
             self.save_image(workspace)
         
-
-    def save_image_with_bioformats(
-        self, workspace, pixels = None, channel_names = None,
-        timeseries=False):
-        ''' Saves using bioformats library. Currently used for saving 16-bit
-        tiffs. Some code is redundant from save_image, but it's easier to 
-        separate the logic completely.
+    def do_save_image(self, workspace, filename, pixels, pixel_type, 
+                   c = 0, z = 0, t = 0,
+                   size_c = 1, size_z = 1, size_t = 1,
+                   channel_names = None):
+        '''Save image using bioformats
+        
+        workspace - the current workspace
+        
+        filename - save to this filename
+        
+        pixels - the image to save
+        
+        pixel_type - save using this pixel type
+        
+        c - the image's channel index
+        
+        z - the image's z index
+        
+        t - the image's t index
+        
+        sizeC - # of channels in the stack
+        
+        sizeZ - # of z stacks
+        
+        sizeT - # of timepoints in the stack
+        
+        channel_names - names of the channels (make up names if not present
         '''
-        assert self.file_format in (FF_TIF, FF_TIFF)
-        assert ((self.save_image_or_figure == IF_IMAGE) or (pixels is not None))
-        assert has_bioformats
-        
-        workspace.display_data.wrote_image = False
+        write_image(filename, pixels, pixel_type, 
+                    c = c, z = z, t = t,
+                    size_c = size_c, size_z = size_z, size_t = size_t,
+                    channel_names = channel_names)
 
-        # get the filename and check overwrite before attaching to java bridge
-        filename = self.get_filename(workspace)
-        if filename is None:  # failed overwrite check
-            return
-
-        path, fname = os.path.split(filename)
-        if os.path.isfile(filename):
-            # Important: bioformats will append to files by default, so we must
-            # delete it explicitly if it exists.
-            os.remove(filename)
-        
-        if pixels is None:
-            # Get the image data to be written
-            image = workspace.image_set.get_image(self.image_name.value)
-            pixels = image.pixel_data
-            if image.has_channel_names:
-                channel_names = image.channel_names
-        
-        if (self.rescale.value and (self.save_image_or_figure != IF_OBJECTS)):
-            # Normalize intensities for each channel
-            pixels = pixels.astype(np.float32)
-            if pixels.ndim == 3:
-                # RGB
-                for i in range(3):
-                    img_min = np.min(pixels[:,:,i])
-                    img_max = np.max(pixels[:,:,i])
-                    if img_max > img_min:
-                        pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
-            else:
-                # Grayscale
-                img_min = np.min(pixels)
-                img_max = np.max(pixels)
-                if img_max > img_min:
-                    pixels = (pixels - img_min) / (img_max - img_min)
-        
-        env = jutil.attach()
-        try:
-            width = pixels.shape[1]
-            height = pixels.shape[0]
-            stacks = 1
-            frames = 1
-            if pixels.ndim == 2:
-                channels = 1
-                interleaved = None
-            elif pixels.ndim == 3 and timeseries:
-                channels = 1
-                interleaved = None
-                frames = pixels.shape[2]
-            elif pixels.ndim == 3 and pixels.shape[2] == 3:
-                channels = 3
-                interleaved = True
-            elif (pixels.ndim == 3 and 
-                  (channel_names is None or pixels.shape[2] <= len(channel_names))):
-                channels = pixels.shape[2]
-                interleaved = False
-            else:
-                raise ValueError('Image shape is not supported')
-            is_big_endian = (sys.byteorder.lower() == 'big')
-            FormatTools = make_format_tools_class()
-            
-            # Build bioformats metadata object
-            nice_name = self.image_name.value + ":" + fname
-            meta = self.make_metadata(nice_name, width, height, channels, 
-                                      stacks, frames, 
-                                      bit_depth = BIT_DEPTH_16,
-                                      channel_names = channel_names)
-            klass = "loci/formats/out/OMETiffWriter"
-            ImageWriter = make_ome_tiff_writer_class()
-            writer = ImageWriter()
-            writer.setMetadataRetrieve(meta)
-            if interleaved is not None:
-                writer.setInterleaved(interleaved)
-            writer.setId(filename)
-            if channels == 1:
-                # Baseline TIFF does not support a planar configuration.
-                # The spec says to ignore planar configuration = 2 if there
-                # is only one channel, but at least one reader barfs anyway.
-                # Setting interleaved on makes it work.
-                writer.setInterleaved(True)
-
-            if pixels.dtype in (np.int8, np.uint8, np.int16):
-                # Leave the values alone, but cast to unsigned int 16
-                pixels = pixels.astype(np.uint16)
-            elif pixels.dtype in (np.uint32, np.uint64, np.int32, np.int64):
-                logger.warning(
-                    "Warning: converting %s image to 16-bit could result in "
-                    "incorrect values.\n" % repr(pixels.dtype))
-                pixels = pixels.astype(np.uint16)
-            elif issubclass(pixels.dtype.type, np.floating):
-                # Scale pixel vals to 16 bit
-                pixels = (pixels * 65535).astype(np.uint16)
-
-            if pixels.ndim == 2:
-                channel_pixels = [ pixels.flatten() ]
-            elif pixels.shape[2] == 3 and not timeseries:
-                channel_pixels = [
-                    np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]]).flatten()]
-            else:
-                channel_pixels = [pixels[:,:,i] for i in range(pixels.shape[2])]
-
-            for i, pixels in enumerate(channel_pixels):
-                # split the 16-bit image into byte-sized chunks for saveBytes
-                pixels = np.fromstring(pixels.tostring(), dtype=np.uint8)
-                
-                ifd = jutil.make_instance("loci/formats/tiff/IFD","()V")
-                #
-                # Need to explicitly set the maximum sample value or images
-                # get rescaled inside the TIFF writer.
-                #
-                min_sample_value = jutil.get_static_field(
-                    "loci/formats/tiff/IFD", "MIN_SAMPLE_VALUE", "I")
-                jutil.call(ifd, "putIFDValue", "(II)V", min_sample_value, 0)
-                max_sample_value = jutil.get_static_field(
-                    "loci/formats/tiff/IFD", "MAX_SAMPLE_VALUE","I")
-                jutil.call(ifd, "putIFDValue","(II)V",
-                           max_sample_value, 65535)
-                writer.saveBytesIFD(i, env.make_byte_array(pixels), ifd)
-                
-            writer.close()
-        
-            workspace.display_data.wrote_image = True
-            
-            if self.when_to_save != WS_LAST_CYCLE:
-                self.save_filename_measurements(workspace)
-        finally:
-            jutil.detach()
-                        
-    def save_image_with_libtiff(self, workspace, pixels = None):
-        ''' Saves using libtiff.
-        '''
-        assert self.file_format in (FF_TIF, FF_TIFF)
-        assert self.save_image_or_figure in (IF_IMAGE, IF_OBJECTS)
-
-        workspace.display_data.wrote_image = False
-
-        # get the filename and check overwrite
-        filename = self.get_filename(workspace)
-        if filename is None:  # failed overwrite check
-            return
-
-        if os.path.isfile(filename):
-            # Important: bioformats will append to files by default, so we must
-            # delete it explicitly if it exists.
-            os.remove(filename)
-        
-        if pixels is None:
-            # Get the image data to be written
-            image = workspace.image_set.get_image(self.image_name.value)
-            pixels = image.pixel_data
-        
-        if self.rescale.value and (self.save_image_or_figure != IF_OBJECTS):
-            # Normalize intensities for each channel
-            pixels = pixels.astype(np.float32)
-            if pixels.ndim == 3:
-                # RGB
-                for i in range(3):
-                    img_min = np.min(pixels[:,:,i])
-                    img_max = np.max(pixels[:,:,i])
-                    if img_max > img_min:
-                        pixels[:,:,i] = (pixels[:,:,i] - img_min) / (img_max - img_min)
-            else:
-                # Grayscale
-                img_min = np.min(pixels)
-                img_max = np.max(pixels)
-                if img_max > img_min:
-                    pixels = (pixels - img_min) / (img_max - img_min)
-        
-        if pixels.dtype in (np.uint32, np.uint64, np.int32, np.int64):
-            sys.stderr.write("Warning: converting %s image to 16-bit could result in incorrect values.\n" % repr(pixels.dtype))
-        elif issubclass(pixels.dtype.type, np.floating):
-            # Scale pixel vals to 16 bit
-            pixels = (np.clip(pixels, 0, 1) * 65535)
-        # convert to uint16
-        pixels = pixels.astype(np.uint16)
-
-        planar = (self.save_image_or_figure == IF_OBJECTS and
-                  self.gray_or_color == GC_GRAYSCALE and pixels.ndim == 3)
-        if (not planar) and len(pixels.shape) == 3 and pixels.shape[2] == 3:  
-            pixels = np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]])
-
-        out = libtiff.TIFF.open(filename, 'w')
-        if planar:
-            for i in range(pixels.shape[2]):
-                out.write_image(pixels[:, :, i], write_rgb = False)
-        else:
-            out.write_image(pixels, write_rgb=True)
-        out.close()
-        workspace.display_data.wrote_image = True
-        if self.when_to_save != WS_LAST_CYCLE:
-            self.save_filename_measurements(workspace)
-                        
     def save_image(self, workspace):
-        if self.get_bit_depth() == BIT_DEPTH_16:
-            if has_tiff:
-                return self.save_image_with_libtiff(workspace)
-            else:
-                return self.save_image_with_bioformats(workspace)
-        
         workspace.display_data.wrote_image = False
         image = workspace.image_set.get_image(self.image_name.value)
         if self.save_image_or_figure == IF_IMAGE:
@@ -911,25 +634,24 @@ class SaveImages(cpm.CPModule):
                     if self.get_bit_depth() == '8':
                         mapper = matplotlib.cm.ScalarMappable(cmap=cm)
                         pixels = mapper.to_rgba(pixels, bytes=True)
+                        pixel_type = ome.PT_UINT8
                     else:
-                        raise NotImplementedError("12 and 16-bit images not yet supported")
+                        pixel_type = ome.PT_UINT16
+                        pixels *= 255
                 elif self.get_bit_depth() == '8':
                     pixels = (pixels*255).astype(np.uint8)
+                    pixel_type = ome.PT_UINT8
                 else:
-                    raise NotImplementedError("12 and 16-bit images not yet supported")
+                    pixels = (pixels*65535)
+                    pixel_type = ome.PT_UINT16
                 
         elif self.save_image_or_figure == IF_MASK:
             pixels = image.mask.astype(np.uint8) * 255
+            pixel_type = ome.PT_BIT
             
         elif self.save_image_or_figure == IF_CROPPING:
             pixels = image.crop_mask.astype(np.uint8) * 255
-
-        if pixels.ndim == 3 and pixels.shape[2] == 4:
-            mode = 'RGBA'
-        elif pixels.ndim == 3:
-            mode = 'RGB'
-        else:
-            mode = 'L'
+            pixel_type = ome.PT_BIT
 
         filename = self.get_filename(workspace)
         if filename is None:  # failed overwrite check
@@ -938,41 +660,51 @@ class SaveImages(cpm.CPModule):
         if self.get_file_format() == FF_MAT:
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
         else:
-            pil = PILImage.fromarray(pixels,mode)
-            pil.save(filename, self.get_file_format())
+            self.do_save_image(workspace, filename, pixels, pixel_type)
         workspace.display_data.wrote_image = True
         if self.when_to_save != WS_LAST_CYCLE:
             self.save_filename_measurements(workspace)
         
-    def check_overwrite(self, filename):
+    def check_overwrite(self, filename, workspace):
         '''Check to see if it's legal to overwrite a file
-        
-        Throws an exception if can't overwrite and no GUI.
-        Returns False if can't overwrite otherwise
+
+        Throws an exception if can't overwrite and no interaction available.
+        Returns False if can't overwrite, otherwise True.
         '''
         if not self.overwrite.value and os.path.isfile(filename):
-            if cpp.get_headless():
-                raise ValueError('SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"'%(filename))
-            else:
-                import wx
-                over = wx.MessageBox("Do you want to overwrite %s?"%(filename),
-                                     "Warning: overwriting file", wx.YES_NO)
-                if over == wx.NO:
-                    return False
+            try:
+                return (workspace.interaction_request(self, workspace.measurements.image_set_number, filename) == "Yes")
+            except workspace.NoInteractionException:
+                raise ValueError('SaveImages: trying to overwrite %s in headless mode, but Overwrite files is set to "No"' % (filename))
         return True
-        
+
+    def handle_interaction(self, image_set_number, filename):
+        '''handle an interaction request from check_overwrite()'''
+        import wx
+        dlg = wx.MessageDialog(wx.GetApp().TopWindow,
+                               "%s #%d, set #%d - Do you want to overwrite %s?" % \
+                                   (self.module_name, self.module_num, image_set_number, filename),
+                               "Warning: overwriting file", wx.YES_NO | wx.ICON_QUESTION)
+        result = dlg.ShowModal() == wx.ID_YES
+        return "Yes" if result else "No"
+
     def save_filename_measurements(self, workspace):
         if self.update_file_names.value:
             filename = self.get_filename(workspace, make_dirs = False,
                                          check_overwrite = False)
             pn, fn = os.path.split(filename)
-            workspace.measurements.add_measurement('Image',
+            url = pathname2url(filename)
+            workspace.measurements.add_measurement(cpmeas.IMAGE,
                                                    self.file_name_feature,
                                                    fn,
                                                    can_overwrite=True)
-            workspace.measurements.add_measurement('Image',
+            workspace.measurements.add_measurement(cpmeas.IMAGE,
                                                    self.path_name_feature,
                                                    pn,
+                                                   can_overwrite=True)
+            workspace.measurements.add_measurement(cpmeas.IMAGE,
+                                                   self.url_feature,
+                                                   url,
                                                    can_overwrite=True)
     
     @property
@@ -988,6 +720,13 @@ class SaveImages(cpm.CPModule):
         if self.save_image_or_figure == IF_OBJECTS:
             return '_'.join((C_OBJECTS_PATH_NAME, self.objects_name.value))
         return '_'.join((C_PATH_NAME, self.image_name.value))
+    
+    @property
+    def url_feature(self):
+        '''The URL measurement for the output file'''
+        if self.save_image_or_figure == IF_OBJECTS:
+            return '_'.join((C_OBJECTS_URL, self.objects_name.value))
+        return '_'.join((C_URL, self.image_name.value))
     
     @property
     def source_file_name_feature(self):
@@ -1030,7 +769,9 @@ class SaveImages(cpm.CPModule):
         elif self.file_name_method == FN_SEQUENTIAL:
             filename = self.single_file_name.value
             filename = workspace.measurements.apply_metadata(filename)
-            padded_num_string = str(measurements.image_set_number).zfill(int(np.ceil(np.log10(workspace.image_set_list.count()+1))))
+            n_image_sets = workspace.measurements.image_set_count
+            ndigits = int(np.ceil(np.log10(n_image_sets+1)))
+            padded_num_string = str(measurements.image_set_number).zfill(ndigits)
             filename = '%s%s'%(filename, padded_num_string)
         else:
             file_name_feature = self.source_file_name_feature
@@ -1046,14 +787,16 @@ class SaveImages(cpm.CPModule):
         pathname = self.pathname.get_absolute_path(measurements)
         if self.create_subdirectories:
             image_path = self.source_path(workspace)
-            subdir = relpath(image_path, cpp.get_default_image_directory())
+            subdir = relpath(image_path, self.root_dir.get_absolute_path())
             pathname = os.path.join(pathname, subdir)
         if len(pathname) and not os.path.isdir(pathname) and make_dirs:
             os.makedirs(pathname)
         result = os.path.join(pathname, filename)
-        if check_overwrite and not self.check_overwrite(result):
+        if check_overwrite and not self.check_overwrite(result, workspace):
             return
         
+        if check_overwrite and os.path.isfile(result):
+            os.remove(result)
         return result
     
     def get_file_format(self):
@@ -1063,8 +806,6 @@ class SaveImages(cpm.CPModule):
             return FF_AVI
         if self.file_format == FF_JPG:
             return FF_JPEG
-        if self.file_format == FF_TIF:
-            return FF_TIFF
         return self.file_format.value
     
     def get_bit_depth(self):
@@ -1145,7 +886,7 @@ class SaveImages(cpm.CPModule):
            
         ##########################
         #
-        # Version 1
+        # Version 2
         #
         ##########################
         if not from_matlab and variable_revision_number == 1:
@@ -1158,7 +899,7 @@ class SaveImages(cpm.CPModule):
             
         #########################
         #
-        # Version 2
+        # Version 3
         #
         #########################
         if (not from_matlab) and variable_revision_number == 2:
@@ -1173,7 +914,7 @@ class SaveImages(cpm.CPModule):
             
         #########################
         #
-        # Version 3
+        # Version 4
         #
         #########################
         if (not from_matlab) and variable_revision_number == 3:
@@ -1185,7 +926,7 @@ class SaveImages(cpm.CPModule):
 
         #########################
         #
-        # Version 4
+        # Version 5
         #
         #########################
         if (not from_matlab) and variable_revision_number == 4:
@@ -1211,7 +952,7 @@ class SaveImages(cpm.CPModule):
             
         #######################
         #
-        # Version 5
+        # Version 6
         #
         #######################
         if (not from_matlab) and variable_revision_number == 5:
@@ -1233,7 +974,7 @@ class SaveImages(cpm.CPModule):
             
         ######################
         #
-        # Version 6 - added objects
+        # Version 7 - added objects
         #
         ######################
         if (not from_matlab) and (variable_revision_number == 6):
@@ -1241,27 +982,32 @@ class SaveImages(cpm.CPModule):
                 setting_values[:2] + ["None"] + setting_values[2:14] +
                 [ GC_GRAYSCALE ] + setting_values[14:])
             variable_revision_number = 7
+        ######################
+        #
+        # Version 8 - added root_dir
+        #
+        ######################
+        if (not from_matlab) and (variable_revision_number == 7):
+            setting_values = setting_values + [DEFAULT_INPUT_FOLDER_NAME]
+            variable_revision_number = 8
+        ######################
+        #
+        # Version 9 - FF_TIF now outputs .tif files (go figure), so
+        #             change FF_TIF in settings to FF_TIFF to maintain ultimate
+        #             backwards compatibiliy.
+        #
+        ######################
+        if (not from_matlab) and (variable_revision_number == 8):
+            if setting_values[9] == FF_TIF:
+                setting_values = setting_values[:9] + [FF_TIFF] + \
+                    setting_values[10:]
+                variable_revision_number = 9
         setting_values[OFFSET_DIRECTORY_PATH] = \
             SaveImagesDirectoryPath.upgrade_setting(setting_values[OFFSET_DIRECTORY_PATH])
         
         return setting_values, variable_revision_number, from_matlab
     
     def validate_module(self, pipeline):
-        if (self.save_image_or_figure == IF_MOVIE and not has_bioformats):
-            raise cps.ValidationError("CellProfiler requires bioformats to write movies.",
-                                      self.save_image_or_figure)
-
-        if sys.platform == 'darwin':
-            if (self.file_format in FF_SUPPORTING_16_BIT and 
-                self.save_image_or_figure == IF_IMAGE and
-                self.get_bit_depth()== '16' and 
-                not has_tiff):
-                raise cps.ValidationError("Writing TIFFs on OS X using bioformats may cause CellProfiler to hang or crash (install libtiff & pylibtiff).",
-                                          self.bit_depth)
-            if (self.save_image_or_figure == IF_MOVIE):
-                raise cps.ValidationError("Saving movies on OS X may cause CellProfiler to hang or crash.",
-                                          self.save_image_or_figure)
-
         if (self.save_image_or_figure in (IF_IMAGE, IF_MASK, IF_CROPPING) and
             self.when_to_save in (WS_FIRST_CYCLE, WS_EVERY_CYCLE)):
             #

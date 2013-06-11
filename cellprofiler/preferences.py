@@ -15,16 +15,21 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 
 import logging
 import random
 import cellprofiler
+import multiprocessing
 import os
 import os.path
 import re
 import sys
+import tempfile
+import threading
+import time
 import traceback
+import uuid
+import weakref
 from cellprofiler.utilities.utf16encode import utf16encode, utf16decode
 
 logger = logging.getLogger(__name__)
@@ -47,8 +52,17 @@ class HeadlessConfig(object):
     def Read(self, kwd):
         return self.__preferences[kwd]
     
+    def ReadInt(self, kwd, default=0):
+        return int(self.__preferences.get(kwd, default))
+    
+    def ReadBool(self, kwd, default=False):
+        return bool(self.__preferences.get(kwd, default))
+    
     def Write(self, kwd, value):
         self.__preferences[kwd] = value
+        
+    WriteInt = Write
+    WriteBool = Write
     
     def Exists(self, kwd):
         return self.__preferences.has_key(kwd)
@@ -96,21 +110,59 @@ def get_config():
             
     return config
 
+def preferences_as_dict():
+    return dict((k, config_read(k)) for k in ALL_KEYS)
+
+def set_preferences_from_dict(d):
+    '''Set the preferences by faking the configuration cache'''
+    global __cached_values
+    __cached_values = d.copy()
+    #
+    # We also have to defeat value-specific caches.
+    #
+    global __recent_files
+    __recent_files = {}
+    for cache_var in (
+        "__default_colormap", "__default_image_directory",
+        "__default_output_directory", "__allow_output_file_overwrite",
+        "__current_pipeline_path", "__has_reported_jvm_error",
+        "__ij_plugin_directory", "__ij_version", "__output_filename",
+        "__plugin_directory", "__show_analysis_complete_dlg",
+        "__show_exiting_test_mode_dlg", "__show_report_bad_sizes_dlg",
+        "__show_sampling", "__show_workspace_choice_dlg",
+        "__use_more_figure_space",
+        "__warn_about_old_pipeline", "__write_MAT_files",
+        "__workspace_file", "__omero_server", "__omero_port",
+        "__omero_user", "__omero_session_id"):
+        globals()[cache_var] = None
+
+__cached_values = {}
 def config_read(key):
     '''Read the given configuration value
     
+    Only read from the registry once. This is both technically efficient
+    and keeps parallel running instances of CellProfiler from overwriting
+    each other's values for things like the current output directory.
+    
     Decode escaped config sequences too.
     '''
+    global __cached_values
     if not __is_headless:
         #
         # Keeps popup box from appearing during testing I hope
         #
         import wx
         shutup = wx.LogNull()
-    value = get_config().Read(key)
-    if value is None:
-        return None
-    return utf16decode(value)
+    if __cached_values.has_key(key):
+        return __cached_values[key]
+    if get_config().Exists(key):
+        value = get_config().Read(key)
+    else:
+        value = None
+    if value is not None:
+        value = utf16decode(value)
+    __cached_values[key] = value
+    return value
 
 def config_write(key, value):
     '''Write the given configuration value
@@ -123,10 +175,18 @@ def config_write(key, value):
         #
         import wx
         shutup = wx.LogNull()
+    __cached_values[key] = value
     if value is not None:
         value = utf16encode(value)
     get_config().Write(key, value)
-
+    
+def config_exists(key):
+    '''Return True if the key is defined in the configuration'''
+    global __cached_values
+    if key in __cached_values and __cached_values[key] is not None:
+        return True
+    return get_config().Exists(key) and get_config().Read(key) is not None
+    
 def cell_profiler_root_directory():
     if __cp_root:
         return __cp_root
@@ -226,10 +286,28 @@ SHOW_EXITING_TEST_MODE_DLG = "ShowExitingTestModeDlg"
 SHOW_BAD_SIZES_DLG = "ShowBadSizesDlg"
 SHOW_SAMPLING = "ShowSampling"
 WRITE_MAT = "WriteMAT"
-RUN_DISTRIBUTED = "RunDistributed"
 WARN_ABOUT_OLD_PIPELINE = "WarnAboutOldPipeline"
 USE_MORE_FIGURE_SPACE = "UseMoreFigureSpace"
 WRITE_HDF5 = "WriteHDF5"
+WORKSPACE_FILE = "WorkspaceFile"
+OMERO_SERVER = "OmeroServer"
+OMERO_PORT = "OmeroPort"
+OMERO_USER = "OmeroUser"
+OMERO_SESSION_ID = "OmeroSessionId"
+MAX_WORKERS = "MaxWorkers"
+TEMP_DIR = "TempDir"
+WORKSPACE_CHOICE = "WorkspaceChoice"
+ERROR_COLOR = "ErrorColor"
+INTERPOLATION_MODE = "InterpolationMode"
+
+IM_NEAREST = "Nearest"
+IM_BILINEAR = "Bilinear"
+IM_BICUBIC = "Bicubic"
+
+WC_SHOW_WORKSPACE_CHOICE_DIALOG = "ShowWorkspaceChoiceDlg"
+WC_OPEN_LAST_WORKSPACE = "OpenLastWorkspace"
+WC_CREATE_NEW_WORKSPACE = "CreateNewWorkspace"
+WC_OPEN_OLD_WORKSPACE = "OpenOldWorkspace"
 
 '''The preference key for selecting the correct version of ImageJ'''
 IJ_VERSION = "ImageJVersion"
@@ -241,23 +319,28 @@ IJ_2 = "ImageJ 2.0"
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
 
-
+'''All keys saved in the registry'''
 ALL_KEYS = ([ALLOW_OUTPUT_FILE_OVERWRITE, BACKGROUND_COLOR, CHECKFORNEWVERSIONS,
              COLORMAP, DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY,
              IJ_PLUGIN_DIRECTORY, MODULEDIRECTORY, PLUGIN_DIRECTORY,
-             PRIMARY_OUTLINE_COLOR, RUN_DISTRIBUTED, SECONDARY_OUTLINE_COLOR,
+             PRIMARY_OUTLINE_COLOR, SECONDARY_OUTLINE_COLOR,
              SHOW_ANALYSIS_COMPLETE_DLG, SHOW_BAD_SIZES_DLG, 
-             SHOW_EXITING_TEST_MODE_DLG, SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
+             SHOW_EXITING_TEST_MODE_DLG, WORKSPACE_CHOICE,
+             SHOW_SAMPLING, SKIPVERSION, STARTUPBLURB,
              TABLE_FONT_NAME, TABLE_FONT_SIZE, TERTIARY_OUTLINE_COLOR,
              TITLE_FONT_NAME, TITLE_FONT_SIZE, WARN_ABOUT_OLD_PIPELINE,
-             WRITE_MAT, USE_MORE_FIGURE_SPACE] + 
+             WRITE_MAT, USE_MORE_FIGURE_SPACE, WORKSPACE_FILE,
+             OMERO_SERVER, OMERO_PORT, OMERO_USER] + 
             [recent_file(n, category) for n in range(RECENT_FILE_COUNT)
-             for category in ("", DEFAULT_IMAGE_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY)])
+             for category in ("", 
+                              DEFAULT_IMAGE_DIRECTORY, 
+                              DEFAULT_OUTPUT_DIRECTORY,
+                              WORKSPACE_FILE)])
 
 def module_directory():
-    if not get_config().Exists(MODULEDIRECTORY):
+    if not config_exists(MODULEDIRECTORY):
         return os.path.join(cell_profiler_root_directory(), 'Modules')
-    return str(get_config().Read(MODULEDIRECTORY))
+    return str(config_read(MODULEDIRECTORY))
 
 def set_module_directory(value):
     config_write(MODULEDIRECTORY, value)
@@ -271,7 +354,7 @@ def get_default_image_directory():
     if __default_image_directory is not None:
         return __default_image_directory
     # I'm not sure what it means for the preference not to exist.  No read-write preferences file?
-    if not get_config().Exists(DEFAULT_IMAGE_DIRECTORY):
+    if not config_exists(DEFAULT_IMAGE_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
     # Fetch the default.  Note that it might be None
     default_image_directory = config_read(DEFAULT_IMAGE_DIRECTORY) or ''
@@ -325,7 +408,7 @@ def get_default_output_directory():
     global __default_output_directory
     if __default_output_directory is not None:
         return __default_output_directory
-    if not get_config().Exists(DEFAULT_OUTPUT_DIRECTORY):
+    if not config_exists(DEFAULT_OUTPUT_DIRECTORY):
         return os.path.abspath(os.path.expanduser('~'))
 
     # Fetch the default.  Note that it might be None
@@ -368,7 +451,7 @@ def remove_output_directory_listener(listener):
         __output_directory_listeners.remove(listener)
 
 def get_title_font_size():
-    if not get_config().Exists(TITLE_FONT_SIZE):
+    if not config_exists(TITLE_FONT_SIZE):
         return 12
     title_font_size = config_read(TITLE_FONT_SIZE)
     return float(title_font_size)
@@ -377,7 +460,7 @@ def set_title_font_size(title_font_size):
     config_write(TITLE_FONT_SIZE,str(title_font_size))
 
 def get_title_font_name():
-    if not get_config().Exists(TITLE_FONT_NAME):
+    if not config_exists(TITLE_FONT_NAME):
         return "Tahoma"
     return config_read(TITLE_FONT_NAME)
 
@@ -385,7 +468,7 @@ def set_title_font_name(title_font_name):
     config_write(TITLE_FONT_NAME, title_font_name)
 
 def get_table_font_name():
-    if not get_config().Exists(TABLE_FONT_NAME):
+    if not config_exists(TABLE_FONT_NAME):
         return "Tahoma"
     return config_read(TABLE_FONT_NAME)
 
@@ -393,7 +476,7 @@ def set_table_font_name(title_font_name):
     config_write(TABLE_FONT_NAME, title_font_name)
     
 def get_table_font_size():
-    if not get_config().Exists(TABLE_FONT_SIZE):
+    if not config_exists(TABLE_FONT_SIZE):
         return 9
     table_font_size = config_read(TABLE_FONT_SIZE)
     return float(table_font_size)
@@ -407,30 +490,76 @@ def tuple_to_color(t, default = (0,0,0)):
         return wx.Colour(red=int(t[0]), green = int(t[1]), blue = int(t[2]))
     except IndexError, ValueError:
         return tuple_to_color(default)
-    
+
+__background_color = None    
 def get_background_color():
     '''Get the color to be used for window backgrounds
     
     Return wx.Colour that will be applied as
     the background for all frames and dialogs
     '''
+    global __background_color
+    if __background_color is not None:
+        return __background_color
     default_color = (143, 188, 143) # darkseagreen
-    if not get_config().Exists(BACKGROUND_COLOR):
-        return tuple_to_color(default_color)
+    if not config_exists(BACKGROUND_COLOR):
+        __background_color = tuple_to_color(default_color)
     else:
-        color = config_read(BACKGROUND_COLOR).split(',')
-        return tuple_to_color(tuple(color), default_color)
+        try:
+            color = config_read(BACKGROUND_COLOR).split(',')
+        except:
+            logger.warn("Failed to read background color")
+            traceback.print_exc()
+            color = default_color
+        __background_color = tuple_to_color(tuple(color), default_color)
+    return __background_color
 
 def set_background_color(color):
     '''Set the color to be used for window backgrounds
     
     '''
+    global __background_color
     config_write(BACKGROUND_COLOR,
-                       ','.join([str(x) for x in color.Get()]))
+                 ','.join([str(x) for x in color.Get()]))
+    __background_color = color
+    
+__error_color = None
+def get_error_color():
+    '''Get the color to be used for error text'''
+    global __error_color
+    #
+    # Red found here: 
+    # http://www.jankoatwarpspeed.com/css-message-boxes-for-different-message-types/
+    # but seems to be widely used.
+    #
+    default_color = (0xD8, 0x00, 0x0C)
+    if __error_color is None:
+        if not config_exists(ERROR_COLOR):
+            __error_color = tuple_to_color(default_color)
+        else:
+            color_string = config_read(ERROR_COLOR)
+            try:
+                __error_color = tuple_to_color(color_string.split(','))
+            except:
+                print "Failed to parse error color string: " + color_string
+                traceback.print_exc()
+                __error_color = default_color
+    return __error_color
+
+def set_error_color(color):
+    '''Set the color to be used for error text
+    
+    color - a WX color or ducktyped
+    '''
+    global __error_color
+    config_write(ERROR_COLOR,
+                 ','.join([str(x) for x in color.Get()]))
+    __error_color = tuple_to_color(color.Get())
+            
 
 def get_pixel_size():
     """The size of a pixel in microns"""
-    if not get_config().Exists(PIXEL_SIZE):
+    if not config_exists(PIXEL_SIZE):
         return 1.0
     return float(config_read(PIXEL_SIZE))
 
@@ -453,7 +582,10 @@ def add_output_file_name_listener(listener):
     __output_filename_listeners.append(listener)
 
 def remove_output_file_name_listener(listener):
-    __output_filename_listeners.remove(listener)
+    try:
+        __output_filename_listeners.remove(listener)
+    except:
+        logger.warn("File name listener doubly removed")
 
 def get_absolute_path(path, abspath_mode = ABSPATH_IMAGE):
     """Convert a path into an absolute path using the path conventions
@@ -496,12 +628,19 @@ def is_url_path(path):
             return True
     return False
 
+__default_colormap = None
 def get_default_colormap():
-    if not get_config().Exists(COLORMAP):
-        return 'jet'
-    return config_read(COLORMAP)
+    global __default_colormap
+    if __default_colormap is None:
+        if not config_exists(COLORMAP):
+            __default_colormap = 'jet'
+        else:
+            __default_colormap = config_read(COLORMAP)
+    return __default_colormap
 
 def set_default_colormap(colormap):
+    global __default_colormap
+    __default_colormap = colormap
     config_write(COLORMAP, colormap)
 
 __current_pipeline_path = None
@@ -514,7 +653,7 @@ def set_current_pipeline_path(path):
     __current_pipeline_path = path
 
 def get_check_new_versions():
-    if not get_config().Exists(CHECKFORNEWVERSIONS):
+    if not config_exists(CHECKFORNEWVERSIONS):
         # should this check for whether we can actually save preferences?
         return True
     return get_config().ReadBool(CHECKFORNEWVERSIONS)
@@ -529,7 +668,7 @@ def set_check_new_versions(val):
     
 
 def get_skip_version():
-    if not get_config().Exists(SKIPVERSION):
+    if not config_exists(SKIPVERSION):
         return 0
     return get_config().ReadInt(SKIPVERSION)
 
@@ -542,7 +681,7 @@ def get_show_sampling():
     global __show_sampling
     if __show_sampling is not None:
         return __show_sampling
-    if not get_config().Exists(SHOW_SAMPLING):
+    if not config_exists(SHOW_SAMPLING):
         __show_sampling = False
         return False
     return get_config().ReadBool(SHOW_SAMPLING)
@@ -551,36 +690,6 @@ def set_show_sampling(value):
     global __show_sampling
     get_config().WriteBool(SHOW_SAMPLING, bool(value))
     __show_sampling = bool(value)
-    
-__run_distributed = None
-__run_distributed_listeners = []
-
-def get_run_distributed():
-    global __run_distributed
-    if __run_distributed is not None:
-        return __run_distributed
-    if not get_config().Exists(RUN_DISTRIBUTED):
-        __run_distributed = False
-        return False
-    return get_config().ReadBool(RUN_DISTRIBUTED)
-
-def set_run_distributed(value):
-    global __run_distributed
-    get_config().WriteBool(RUN_DISTRIBUTED, bool(value))
-    __run_distributed = bool(value)
-    for listener in __run_distributed_listeners:
-        listener(PreferenceChangedEvent(__run_distributed))
-
-def add_run_distributed_listener(listener):
-    """Add a listener that will be notified when the image directory changes
-    """
-    __run_distributed_listeners.append(listener)
-
-def remove_run_distributed_listener(listener):
-    """Remove a previously-added image directory listener
-    """
-    if listener in __run_distributed_listeners:
-        __run_distributed_listeners.remove(listener)
 
 __recent_files = {}
 def get_recent_files(category=""):
@@ -590,7 +699,7 @@ def get_recent_files(category=""):
         for i in range(RECENT_FILE_COUNT):
             key = recent_file(i, category)
             try:
-                if get_config().Exists(key):
+                if config_exists(key):
                     __recent_files[category].append(config_read(key)) 
             except:
                 pass
@@ -614,7 +723,7 @@ def get_plugin_directory():
     if __plugin_directory is not None:
         return __plugin_directory
     
-    if get_config().Exists(PLUGIN_DIRECTORY):
+    if config_exists(PLUGIN_DIRECTORY):
         __plugin_directory = config_read(PLUGIN_DIRECTORY)
     elif get_headless():
         return None
@@ -637,7 +746,7 @@ def get_ij_plugin_directory():
     if __ij_plugin_directory is not None:
         return __ij_plugin_directory
     
-    if get_config().Exists(IJ_PLUGIN_DIRECTORY):
+    if config_exists(IJ_PLUGIN_DIRECTORY):
         __ij_plugin_directory = config_read(IJ_PLUGIN_DIRECTORY)
     else:
         # The default is the startup directory
@@ -710,7 +819,7 @@ def update_cpfigure_position():
                                __cpfigure_position[1] + 24)
     
 def get_startup_blurb():
-    if not get_config().Exists(STARTUPBLURB):
+    if not config_exists(STARTUPBLURB):
         return True
     return get_config().ReadBool(STARTUPBLURB)
 
@@ -719,7 +828,7 @@ def set_startup_blurb(val):
 
 def get_primary_outline_color():
     default = (0,255,0)
-    if not get_config().Exists(PRIMARY_OUTLINE_COLOR):
+    if not config_exists(PRIMARY_OUTLINE_COLOR):
         return tuple_to_color(default)
     return tuple_to_color(config_read(PRIMARY_OUTLINE_COLOR).split(","))
 
@@ -728,8 +837,8 @@ def set_primary_outline_color(color):
                        ','.join([str(x) for x in color.Get()]))
 
 def get_secondary_outline_color():
-    default = (255,0,0)
-    if not get_config().Exists(SECONDARY_OUTLINE_COLOR):
+    default = (255,0,255)
+    if not config_exists(SECONDARY_OUTLINE_COLOR):
         return tuple_to_color(default)
     return tuple_to_color(config_read(SECONDARY_OUTLINE_COLOR).split(","))
 
@@ -739,7 +848,7 @@ def set_secondary_outline_color(color):
 
 def get_tertiary_outline_color():
     default = (255,255,0)
-    if not get_config().Exists(TERTIARY_OUTLINE_COLOR):
+    if not config_exists(TERTIARY_OUTLINE_COLOR):
         return tuple_to_color(default)
     return tuple_to_color(config_read(TERTIARY_OUTLINE_COLOR).split(","))
 
@@ -753,7 +862,7 @@ def get_report_jvm_error():
     '''Return true if user still wants to report a JVM error'''
     if __has_reported_jvm_error:
         return False
-    if not get_config().Exists(JVM_ERROR):
+    if not config_exists(JVM_ERROR):
         return True
     return config_read(JVM_ERROR) == "True"
 
@@ -775,7 +884,7 @@ def get_allow_output_file_overwrite():
     global __allow_output_file_overwrite
     if __allow_output_file_overwrite is not None:
         return __allow_output_file_overwrite
-    if not get_config().Exists(ALLOW_OUTPUT_FILE_OVERWRITE):
+    if not config_exists(ALLOW_OUTPUT_FILE_OVERWRITE):
         return False
     return config_read(ALLOW_OUTPUT_FILE_OVERWRITE) == "True"
 
@@ -794,7 +903,7 @@ def get_show_analysis_complete_dlg():
     global __show_analysis_complete_dlg
     if __show_analysis_complete_dlg is not None:
         return __show_analysis_complete_dlg
-    if not get_config().Exists(SHOW_ANALYSIS_COMPLETE_DLG):
+    if not config_exists(SHOW_ANALYSIS_COMPLETE_DLG):
         return True
     return config_read(SHOW_ANALYSIS_COMPLETE_DLG) == "True"
 
@@ -813,7 +922,7 @@ def get_show_exiting_test_mode_dlg():
     global __show_exiting_test_mode_dlg
     if __show_exiting_test_mode_dlg is not None:
         return __show_exiting_test_mode_dlg
-    if not get_config().Exists(SHOW_EXITING_TEST_MODE_DLG):
+    if not config_exists(SHOW_EXITING_TEST_MODE_DLG):
         return True
     return config_read(SHOW_EXITING_TEST_MODE_DLG) == "True"
 
@@ -832,7 +941,7 @@ def get_show_report_bad_sizes_dlg():
     global __show_report_bad_sizes_dlg
     if __show_report_bad_sizes_dlg is not None:
         return __show_report_bad_sizes_dlg
-    if not get_config().Exists(SHOW_BAD_SIZES_DLG):
+    if not config_exists(SHOW_BAD_SIZES_DLG):
         return True
     return config_read(SHOW_BAD_SIZES_DLG) == "True"
 
@@ -854,7 +963,7 @@ def get_write_MAT_files():
     global __write_MAT_files
     if __write_MAT_files is not None:
         return __write_MAT_files
-    if not get_config().Exists(WRITE_MAT):
+    if not config_exists(WRITE_MAT):
         return True
     value = config_read(WRITE_MAT)
     if value == "True":
@@ -877,7 +986,7 @@ def get_warn_about_old_pipeline():
     global __warn_about_old_pipeline
     if __warn_about_old_pipeline is not None:
         return __warn_about_old_pipeline
-    if not get_config().Exists(WARN_ABOUT_OLD_PIPELINE):
+    if not config_exists(WARN_ABOUT_OLD_PIPELINE):
         return True
     return config_read(WARN_ABOUT_OLD_PIPELINE) == "True"
 
@@ -894,7 +1003,7 @@ def get_use_more_figure_space():
     global __use_more_figure_space
     if __use_more_figure_space is not None:
         return __use_more_figure_space
-    if not get_config().Exists(USE_MORE_FIGURE_SPACE):
+    if not config_exists(USE_MORE_FIGURE_SPACE):
         return False
     return config_read(USE_MORE_FIGURE_SPACE) == "True"
 
@@ -918,7 +1027,7 @@ def get_ij_version():
     global __ij_version
     if __ij_version is not None:
         return __ij_version
-    if not get_config().Exists(IJ_VERSION):
+    if not config_exists(IJ_VERSION):
         return IJ_1
     result = config_read(IJ_VERSION)
     return IJ_1 if result not in (IJ_1, IJ_2) else result
@@ -932,3 +1041,305 @@ def set_ij_version(value):
     assert value in (IJ_1, IJ_2)
     __ij_version = value
     config_write(IJ_VERSION, value)
+
+__workspace_file = None
+def get_workspace_file():
+    '''Return the path to the workspace file'''
+    global __workspace_file
+    if __workspace_file is not None:
+        return __workspace_file
+    if not config_exists(WORKSPACE_FILE):
+        return None
+    __workspace_file = config_read(WORKSPACE_FILE)
+    return __workspace_file
+
+def set_workspace_file(path, permanently = True):
+    '''Set the path to the workspace file
+
+    path - path to the file
+    
+    permanently - True to write it to the configuration, False if the file
+                  should only be set for the running instance (e.g. as a
+                  command-line parameter for a scripted run)
+    '''
+    global __workspace_file
+    __workspace_file = path
+    if permanently:
+        add_recent_file(path, WORKSPACE_FILE)
+        config_write(WORKSPACE_FILE, path)
+
+###########################################
+#
+# OMERO logon credentials
+#
+###########################################
+
+__omero_server = None
+__omero_port = None
+__omero_user = None
+__omero_session_id = None
+
+def get_omero_server():
+    '''Get the DNS name of the Omero server'''
+    global __omero_server
+    if __omero_server is None:
+        if not config_exists(OMERO_SERVER):
+            return None
+        __omero_server = config_read(OMERO_SERVER)
+    return __omero_server
+
+def set_omero_server(omero_server):
+    '''Set the DNS name of the Omero server'''
+    global __omero_server
+    __omero_server = omero_server
+    config_write(OMERO_SERVER, omero_server)
+    
+def get_omero_port():
+    '''Get the port used to connect to the Omero server'''
+    global __omero_port
+    if __omero_port is None:
+        if not config_exists(OMERO_PORT):
+            return 4064
+        try:
+            __omero_port = int(config_read(OMERO_PORT))
+        except:
+            return 4064
+    return __omero_port
+
+def set_omero_port(omero_port):
+    '''Set the port used to connect to the Omero server'''
+    global __omero_port
+    __omero_port = omero_port
+    config_write(OMERO_PORT, str(omero_port))
+    
+def get_omero_user():
+    '''Get the Omero user name'''
+    global __omero_user
+    if __omero_user is None:
+        if not config_exists(OMERO_USER):
+            return None
+        __omero_user = config_read(OMERO_USER)
+    return __omero_user
+
+def set_omero_user(omero_user):
+    '''Set the Omero user name'''
+    global __omero_user
+    __omero_user = omero_user
+    config_write(OMERO_USER, omero_user)
+    
+def get_omero_session_id():
+    '''Get the session ID to use to communicate to Omero'''
+    global __omero_session_id
+    if __omero_session_id is None:
+        if not config_exists(OMERO_SESSION_ID):
+            return None
+        __omero_session_id = config_read(OMERO_SESSION_ID)
+    return __omero_session_id
+
+def set_omero_session_id(omero_session_id):
+    '''Set the Omero session ID'''
+    global __omero_session_id
+    __omero_session_id = omero_session_id
+    config_write(OMERO_SESSION_ID, omero_session_id)
+
+def default_max_workers():
+    try:
+        return multiprocessing.cpu_count()
+    except:
+        return 4
+    
+__max_workers = None
+def get_max_workers():
+    '''Get the maximum number of worker processes allowed during analysis'''
+    global __max_workers
+    if __max_workers is not None:
+        return __max_workers
+    default = default_max_workers()
+    if config_exists(MAX_WORKERS):
+        __max_workers = get_config().ReadInt(MAX_WORKERS, default)
+        return __max_workers
+    return default
+
+def set_max_workers(value):
+    '''Set the maximum number of worker processes allowed during analysis'''
+    global __max_workers
+    get_config().WriteInt(MAX_WORKERS, value)
+    __max_workers = value
+
+__temp_dir = None
+def get_temporary_directory():
+    '''Get the directory to be used for temporary files
+    
+    The default is whatever is returned by tempfile.gettempdir()
+    (see http://docs.python.org/2/library/tempfile.html#tempfile.gettempdir)
+    '''
+    global __temp_dir
+    if __temp_dir is not None:
+        pass
+    elif config_exists(TEMP_DIR):
+        __temp_dir = config_read(TEMP_DIR)
+    else:
+        __temp_dir = tempfile.gettempdir()
+    return __temp_dir
+
+def set_temporary_directory(tempdir):
+    '''Set the directory to be used for temporary files
+    
+    tempdir - pathname of the directory
+    '''
+    global __temp_dir
+    config_write(TEMP_DIR, tempdir)
+    __temp_dir = tempdir
+
+__workspace_choice = None
+def get_workspace_choice():
+    '''Get the user's preference for the initial workspace
+    
+    Returns one of the following:
+    WC_SHOW_WORKSPACE_CHOICE_DIALOG - ask the user what to do
+    WC_OPEN_LAST_WORKSPACE - open the workspace stored in the preferences
+    WC_CREATE_NEW_WORKSPACE - ask the user for the name of a new workspace
+    WC_OPEN_OLD_WORKSPACE - ask the user for the name of an old workspace
+    '''
+    global __workspace_choice
+    if __workspace_choice is not None:
+        pass
+    elif config_exists(WORKSPACE_CHOICE):
+        __workspace_choice = config_read(WORKSPACE_CHOICE)
+        if __workspace_choice not in (
+            WC_SHOW_WORKSPACE_CHOICE_DIALOG, WC_OPEN_LAST_WORKSPACE,
+            WC_CREATE_NEW_WORKSPACE, WC_OPEN_OLD_WORKSPACE):
+            __workspace_choice = WC_SHOW_WORKSPACE_CHOICE_DIALOG
+    else:
+        __workspace_choice = WC_SHOW_WORKSPACE_CHOICE_DIALOG
+    return __workspace_choice
+
+def set_workspace_choice(value):
+    '''Set the user preference for showing the workspace choice dialog'''
+    global __workspace_choice
+    __workspace_choice = value
+    config_write(WORKSPACE_CHOICE, value)
+    
+__progress_data = threading.local()
+__progress_data.last_report = time.time()
+__progress_data.callbacks = None
+
+__interpolation_mode = None
+def get_interpolation_mode():
+    '''Get the interpolation mode for matplotlib
+    
+    Returns one of IM_NEAREST, IM_BILINEAR or IM_BICUBIC
+    '''
+    global __interpolation_mode
+    if __interpolation_mode is not None:
+        return __interpolation_mode
+    if config_exists(INTERPOLATION_MODE):
+        __interpolation_mode = config_read(INTERPOLATION_MODE)
+    else:
+        __interpolation_mode = IM_NEAREST
+    return __interpolation_mode
+
+def set_interpolation_mode(value):
+    global __interpolation_mode
+    __interpolation_mode = value
+    config_write(INTERPOLATION_MODE, value)
+    
+def add_progress_callback(callback):
+    '''Add a callback function that listens to progress calls
+    
+    The progress indicator is designed to monitor progress of operations
+    on the user interface thread. The model is that operations are nested
+    so that both an operation and sub-operation can report their progress.
+    An operation reports its initial progress and is pushed onto the
+    stack at that point. When it reports 100% progress, it's popped from
+    the stack.
+    
+    callback - callback function with signature of 
+               fn(operation_id, progress, message)
+               where operation_id names the instance of the operation being
+               performed (e.g. a UUID), progress is a number between 0 and 1
+               where 1 indicates that the operation has completed and
+               message is the message to show.
+               
+               Call the callback with operation_id = None to pop the operation
+               stack after an exception.
+               
+    Note that the callback must remain in-scope. For example:
+    
+    class Foo():
+       def callback(operation_id, progress, message):
+          ...
+          
+    works but
+    
+    class Bar():
+        def __init__(self):
+            def callback(operation_id, progress, message):
+                ...
+            
+    does not work because the reference is lost when __init__ returns.
+    '''
+    global __progress_data
+    if __progress_data.callbacks is None:
+        __progress_data.callbacks = weakref.WeakSet()
+    __progress_data.callbacks.add(callback)
+    
+def remove_progress_callback(callback):
+    global __progress_data
+    if (__progress_data.callbacks is not None and 
+        callback in __progress_data.callbacks):
+        __progress_data.callbacks.remove(callback)
+    
+def report_progress(operation_id, progress, message):
+    '''Report progress to all callbacks registered on the caller's thread
+    
+    operation_id - ID of operation being performed
+    
+    progress - a number between 0 and 1 indicating the extent of progress.
+               None indicates indeterminate operation duration. 0 should be
+               reported at the outset and 1 at the end.
+               
+    message - an informative message.
+    '''
+    global __progress_data
+    if __progress_data.callbacks is None:
+        return
+    t = time.time()
+    if progress in (None, 0, 1) or t - __progress_data.last_report > 1:
+        for callback in __progress_data.callbacks:
+            callback(operation_id, progress, message)
+        __progress_data.last_report = time.time()
+        
+def map_report_progress(fn_map, fn_report, sequence, freq=None):
+    '''Apply a mapping function to a sequence, reporting progress
+    
+    fn_map - function that maps members of the sequence to members of the output
+    
+    fn_report - function that takes a sequence member and generates an
+                informative string
+                
+    freq - report on mapping every N items. Default is to report 100 or less
+           times.
+    '''
+    n_items = len(sequence)
+    if n_items == 0:
+        return []
+    if freq == None:
+        if n_items < 100:
+            freq = 1
+        else:
+            freq = (n_items + 99) / 100
+    output = []
+    uid = uuid.uuid4()
+    for i in range(0, n_items, freq):
+        report_progress(uuid, float(i) / n_items, fn_report(sequence[i]))
+        output += map(fn_map, sequence[i:i+freq])
+    report_progress(uuid, 1, "Done")
+    return output
+        
+def cancel_progress():
+    '''Cancel all progress indicators
+    
+    for instance, after an exception is thrown that bubbles to the top.
+    '''
+    report_progress(None, None, None)

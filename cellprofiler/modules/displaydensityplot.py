@@ -28,7 +28,6 @@ See also <b>DisplayScatterPlot</b>, <b>DisplayHistogram</b>.
 #
 #Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 
@@ -153,20 +152,25 @@ class DisplayDensityPlot(cpm.CPModule):
         bins = None
         if self.bins.value != 'linear':
             bins = self.bins.value
-            
-        if workspace.frame:
-            figure = workspace.create_or_find_figure(title="DisplayDensityPlot, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-            figure.subplot_density(0, 0, data,
-                                   gridsize=self.gridsize.value,
-                                   xlabel=self.x_axis.value,
-                                   ylabel=self.y_axis.value,
-                                   xscale=self.xscale.value,
-                                   yscale=self.yscale.value,
-                                   bins=bins,
-                                   cmap=self.colormap.value,
-                                   title='%s (cycle %s)'%(self.title.value, workspace.measurements.image_set_number))
-                
+
+        if self.show_window:
+            workspace.display_data.data = data
+            workspace.display_data.bins = bins
+
+    def display(self, workspace, figure):
+        data = workspace.display_data.data
+        bins = workspace.display_data.bins
+        figure.set_subplots((1, 1))
+        figure.subplot_density(0, 0, data,
+                               gridsize=self.gridsize.value,
+                               xlabel=self.x_axis.value,
+                               ylabel=self.y_axis.value,
+                               xscale=self.xscale.value,
+                               yscale=self.yscale.value,
+                               bins=bins,
+                               cmap=self.colormap.value,
+                               title='%s (cycle %s)'%(self.title.value, workspace.measurements.image_set_number))
+
     def run_as_data_tool(self, workspace):
         self.run(workspace)
         

@@ -12,7 +12,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 import hashlib
 import numpy as np
 
@@ -30,6 +29,18 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
     variable_revision_number = 1
 
     def __init__(self, image_name, image, mask=None, release_image = False):
+        '''Initializer
+        
+        image_name - the name of the image to put into the image set
+        
+        image - either the pixel data for the image if adding the same
+                image to every set or a list or tuple of pixel data,
+                one per image set
+                
+        mask - None for no mask (default), a binary 2-d matrix if same mask
+               for all image sets or a list or tuple of masks if one
+               different mask per image set.
+        '''
         super(InjectImage,self).__init__()
         self.__image_name = image_name
         self.__image = image
@@ -61,7 +72,6 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         """
     
     def prepare_run(self, workspace):
-        workspace.image_set_list.get_image_set(0)
         digest = hashlib.md5()
         digest.update(np.ascontiguousarray(self.__image).data)
 
@@ -70,17 +80,6 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
             image_set_number = 1)
         return True
     
-    def prepare_group(self, workspace, grouping, image_numbers):
-        """Set up all of the image providers inside the image_set_list
-        """
-        image_set_list = workspace.image_set_list
-        image = cellprofiler.cpimage.Image(self.__image, self.__mask)
-        provider = cellprofiler.cpimage.VanillaImageProvider(self.__image_name,
-                                                             image)
-        for image_number in image_numbers:
-            image_set_list.get_image_set(image_number-1).providers.append(provider)
-        return True 
-
     def run(self,workspace):
         """Run the module (abstract method)
         
@@ -89,7 +88,16 @@ class InjectImage(cellprofiler.cpmodule.CPModule):
         object_set   - the objects (labeled masks) in this image set
         measurements - the measurements for this run
         """
-        pass
+        if isinstance(self.__image, (tuple, list)):
+            image = self.__image[workspace.image_set.image_number-1]
+        else:
+            image = self.__image
+        if isinstance(self.__mask, (tuple, list)):
+            mask = self.__mask[workspace.image_set.image_number-1]
+        else:
+            mask = self.__mask
+        image = cellprofiler.cpimage.Image(image, mask)
+        workspace.image_set.add(self.__image_name, image)
 
     def post_run(self, workspace):
         if self.__release_image:

@@ -1554,7 +1554,10 @@ cdef class JB_Env:
         index - the zero-based index of the element to set
         v - the value to be inserted
         '''
-        self.env[0].SetObjectArrayElement(self.env, jbo.o, index, v.o)
+        if v is None:
+            self.env[0].SetObjectArrayElement(self.env, jbo.o, index, NULL)
+        else:
+            self.env[0].SetObjectArrayElement(self.env, jbo.o, index, v.o)
         
     def make_jb_object(self, char *address):
         '''Wrap a java object in a javabridge object

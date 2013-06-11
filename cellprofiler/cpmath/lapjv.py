@@ -15,7 +15,6 @@ Copyright (c) 2009-2013 Broad Institute
 All rights reserved.
 '''
 
-__version__ = "$Revision: 1 $"
 
 import numpy as np
 

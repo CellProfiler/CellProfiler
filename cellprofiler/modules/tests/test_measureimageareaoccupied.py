@@ -12,8 +12,6 @@ Please see the AUTHORS file for credits.
 Website: http://www.cellprofiler.org
 """
 
-__version__="$Revison: 1 $"
-
 import base64
 import numpy as np
 from StringIO import StringIO

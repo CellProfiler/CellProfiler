@@ -11,14 +11,16 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 
 import base64
 import gc
+import h5py
 import unittest
 import numpy as np
 import os
+import sys
 import tempfile
+import uuid
 import zlib
 
 import cellprofiler.measurements as cpmeas
@@ -30,6 +32,18 @@ FEATURE_NAME = "feature"
 class TestMeasurements(unittest.TestCase):
     def test_00_00_init(self):
         x = cpmeas.Measurements()
+        
+    def test_00_01_wrap_unwrap(self):
+        test0 = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
+        test = test0 + [x.encode("utf-8") for x in test0]
+        # numpy.object_
+        test += np.array(test0, object).tolist()
+        for case in test:
+            result = cpmeas.Measurements.unwrap_string(
+                cpmeas.Measurements.wrap_string(case))
+            if not isinstance(case, unicode):
+                case = case.decode("utf-8")
+            self.assertEqual(result, case)
     
     def test_01_01_image_number_is_zero(self):
         x = cpmeas.Measurements()
@@ -249,6 +263,50 @@ class TestMeasurements(unittest.TestCase):
         result = m[OBJECT_NAME, "Feature", :]
         self.assertTrue(all([np.all(r == v) and len(r) == len(v)
                              for r, v in zip(result, vals)]))
+        
+    def test_04_05_get_many_string_measurements(self):
+        #
+        # Add string measurements that are likely to break things, then
+        # read them back in one shot
+        #
+        test = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
+        test = test + [x.encode('utf-8') for x in test]
+        test.append(None)
+        expected = [x if isinstance(x, unicode) 
+                    or x is None
+                    else x.decode('utf-8')
+                    for x in test]
+        m = cpmeas.Measurements()
+        for i, v in enumerate(test):
+            m[cpmeas.IMAGE, "Feature", i+1] = v
+        
+        result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
+        self.assertSequenceEqual(expected, result)
+        
+    def test_04_06_set_many_string_measurements(self):
+        #
+        # Add string measurements all at once
+        #
+        test = [u"foo", u"foo\\", u"foo\\u0384", u"foo\u0384"]
+        test = test + [x.encode('utf-8') for x in test]
+        test.append(None)
+        expected = [x if isinstance(x, unicode) 
+                    or x is None
+                    else x.decode('utf-8')
+                    for x in test]
+        m = cpmeas.Measurements()
+        m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)] = test
+        
+        result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
+        self.assertSequenceEqual(expected, result)
+        
+    def test_04_07_set_many_numeric_measurements(self):
+        test = [1.5, np.NaN, 3.0]
+        m = cpmeas.Measurements()
+        m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)] = test
+        
+        result = m[cpmeas.IMAGE, "Feature", range(1, len(test)+1)]
+        np.testing.assert_array_equal(test, result)
     
     def test_05_01_test_has_current_measurements(self):
         x = cpmeas.Measurements()
@@ -460,7 +518,7 @@ class TestMeasurements(unittest.TestCase):
         m.add_measurement(OBJECT_NAME, "M", np.arange(5), image_set_number = 1)
         m.add_measurement(OBJECT_NAME, "M", np.arange(7), image_set_number = 2)
         m.remove_measurement(OBJECT_NAME, "M", 1)
-        self.assertTrue(m.get_measurement(OBJECT_NAME, "M", 1) is None)
+        self.assertEqual(len(m.get_measurement(OBJECT_NAME, "M", 1)), 0)
         np.testing.assert_equal(m.get_measurement(OBJECT_NAME, "M", 2), 
                                 np.arange(7))
         
@@ -864,18 +922,81 @@ class TestMeasurements(unittest.TestCase):
                 value = m.get_measurement(OBJECT_NAME, FEATURE_NAME,
                                           image_set_number = i+1)
                 if expected is None:
-                    self.assertTrue(value is None)
+                    self.assertEqual(len(value), 0)
                 else:
                     np.testing.assert_almost_equal(expected, value)
         finally:
             del m
-    def test_19_01_delete_tempfile(self):
+
+    def test_19_01_load_image_sets(self):
+        expected_features = [cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX,
+                             "URL_DNA", "PathName_DNA", "FileName_DNA"]
+        expected_values = [[1,1,"file://foo/bar.tif","/foo","bar.tif"],
+                           [1,2,"file://bar/foo.tif","/bar","foo.tif"],
+                           [2,1,"file://baz/foobar.tif","/baz","foobar.tif"]]
+
+        data = """"%s","%s","URL_DNA","PathName_DNA","FileName_DNA"
+1,1,"file://foo/bar.tif","/foo","bar.tif"
+1,2,"file://bar/foo.tif","/bar","foo.tif"
+2,1,"file://baz/foobar.tif","/baz","foobar.tif"
+""" % (cpmeas.GROUP_NUMBER, cpmeas.GROUP_INDEX)
+        m = cpmeas.Measurements()
+        try:
+            m.load_image_sets(StringIO(data))
+            features = m.get_feature_names(cpmeas.IMAGE)
+            self.assertItemsEqual(features, expected_features)
+            for i, row_values in enumerate(expected_values):
+                image_number = i+1
+                for value, feature_name in zip(row_values, expected_features):
+                    self.assertEqual(value, m.get_measurement(
+                        cpmeas.IMAGE, feature_name, image_set_number=image_number))
+        finally:
+            m.close()
+    
+    def test_19_02_write_and_load_image_sets(self):
+        m = cpmeas.Measurements()
+        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_NUMBER, [1, 1, 2])
+        m.add_all_measurements(cpmeas.IMAGE, cpmeas.GROUP_INDEX, [1, 2, 1])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "URL_DNA", 
+            ["file://foo/bar.tif", "file://bar/foo.tif", "file://baz/foobar.tif"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "PathName_DNA", ["/foo", "/bar", "/baz"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "FileName_DNA", ["bar.tif", "foo.tif", "foobar.tif"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "Metadata_test",
+            ["quotetest\"", "backslashtest\\", "unicodeescapetest\\u0384"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "Metadata_testunicode",
+            [u"quotetest\"", u"backslashtest\\", u"unicodeescapetest\u0384"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "Metadata_testnull",
+            ["Something", None, "SomethingElse"])
+        m.add_all_measurements(
+            cpmeas.IMAGE, "Dont_copy", ["do", "not", "copy"])
+        fd = StringIO()
+        m.write_image_sets(fd)
+        fd.seek(0)
+        mdest = cpmeas.Measurements()
+        mdest.load_image_sets(fd)
+        expected_features = [
+            feature_name for feature_name in m.get_feature_names(cpmeas.IMAGE)
+            if feature_name != "Dont_copy"]
+        self.assertItemsEqual(expected_features, mdest.get_feature_names(cpmeas.IMAGE))
+        image_numbers = m.get_image_numbers()
+        for feature_name in expected_features:
+            src = m.get_measurement(cpmeas.IMAGE, feature_name, image_numbers)
+            dest = mdest.get_measurement(cpmeas.IMAGE, feature_name, image_numbers)
+            self.assertSequenceEqual(list(src), list(dest))
+
+    def test_19_03_delete_tempfile(self):
         m = cpmeas.Measurements()
         filename = m.hdf5_dict.filename
         del m
         self.assertFalse(os.path.exists(filename))
-        
-    def test_19_02_dont_delete_file(self):
+
+    def test_19_04_dont_delete_file(self):
         fd, filename = tempfile.mkstemp(suffix=".h5")
         m = cpmeas.Measurements(filename = filename)
         os.close(fd)
@@ -883,5 +1004,363 @@ class TestMeasurements(unittest.TestCase):
         self.assertTrue(os.path.exists(filename))
         os.unlink(filename)
         
+    def test_20_01_add_one_relationship_measurement(self):
+        m = cpmeas.Measurements()
+        r = np.random.RandomState()
+        r.seed(2001)
+        image_numbers1, object_numbers1 = [
+            x.flatten() for x in np.mgrid[1:4, 1:10]]
+        order = r.permutation(len(image_numbers1))
+        image_numbers2, object_numbers2 = [
+            x[order] for x in image_numbers1, object_numbers1]
+        
+        m.add_relate_measurement(1, "Foo", "O1", "O2",
+                                 image_numbers1, object_numbers1,
+                                 image_numbers2, object_numbers2)
+        rg = m.get_relationship_groups()
+        self.assertEqual(len(rg), 1)
+        self.assertEqual(rg[0].module_number, 1)
+        self.assertEqual(rg[0].relationship, "Foo")
+        self.assertEqual(rg[0].object_name1, "O1")
+        self.assertEqual(rg[0].object_name2, "O2")
+        r = m.get_relationships(1, "Foo", "O1", "O2")
+        ri1, ro1, ri2, ro2 = [
+            r[key] for key in 
+            cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+        order = np.lexsort((ro1, ri1))
+        np.testing.assert_array_equal(image_numbers1, ri1[order])
+        np.testing.assert_array_equal(object_numbers1, ro1[order])
+        np.testing.assert_array_equal(image_numbers2, ri2[order])
+        np.testing.assert_array_equal(object_numbers2, ro2[order])
+        
+    def test_20_02_add_two_sets_of_relationships(self):
+        m = cpmeas.Measurements()
+        r = np.random.RandomState()
+        r.seed(2002)
+        image_numbers1, object_numbers1 = [
+            x.flatten() for x in np.mgrid[1:4, 1:10]]
+        order = r.permutation(len(image_numbers1))
+        image_numbers2, object_numbers2 = [
+            x[order] for x in image_numbers1, object_numbers1]
+        
+        split = int(len(image_numbers1) / 2)
+        m.add_relate_measurement(
+            1, "Foo", "O1", "O2",
+            image_numbers1[:split], object_numbers1[:split],
+            image_numbers2[:split], object_numbers2[:split])
+        m.add_relate_measurement(
+            1, "Foo", "O1", "O2",
+            image_numbers1[split:], object_numbers1[split:],
+            image_numbers2[split:], object_numbers2[split:])
+        r = m.get_relationships(1, "Foo", "O1", "O2")
+        ri1, ro1, ri2, ro2 = [
+            r[key] for key in 
+            cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+        order = np.lexsort((ro1, ri1))
+        np.testing.assert_array_equal(image_numbers1, ri1[order])
+        np.testing.assert_array_equal(object_numbers1, ro1[order])
+        np.testing.assert_array_equal(image_numbers2, ri2[order])
+        np.testing.assert_array_equal(object_numbers2, ro2[order])
+        
+    def test_20_03_add_many_different_relationships(self):
+        m = cpmeas.Measurements()
+        r = np.random.RandomState()
+        r.seed(2003)
+        image_numbers1, object_numbers1 = [
+            x.flatten() for x in np.mgrid[1:4, 1:10]]
+        module_numbers = [1, 2]
+        relationship_names = ["Foo", "Bar"]
+        first_object_names = ["Nuclei", "Cells"]
+        second_object_names = ["Alice", "Bob"]
+        d = {}
+        midxs, ridxs, on1idxs, on2idxs = [
+            x.flatten() for x in np.mgrid[0:2, 0:2, 0:2, 0:2]]
+        for midx, ridx, on1idx, on2idx in zip(midxs, ridxs, on1idxs, on2idxs):
+            key = (module_numbers[midx], relationship_names[ridx],
+                   first_object_names[on1idx], second_object_names[on2idx])
+            order = r.permutation(len(image_numbers1))
+            image_numbers2, object_numbers2 = [
+                x[order] for x in image_numbers1, object_numbers1]
+            d[key] = (image_numbers2, object_numbers2)
+            m.add_relate_measurement(key[0], key[1], key[2], key[3],
+                                     image_numbers1, object_numbers1,
+                                     image_numbers2, object_numbers2)
+        
+        rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
+              for x in m.get_relationship_groups()]
+        self.assertItemsEqual(d.keys(), rg)
+        
+        for key in d:
+            image_numbers2, object_numbers2 = d[key]
+            r = m.get_relationships(key[0], key[1], key[2], key[3])
+            ri1, ro1, ri2, ro2 = [
+                r[key] for key in 
+                cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+                cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+            order = np.lexsort((ro1, ri1))
+            np.testing.assert_array_equal(image_numbers1, ri1[order])
+            np.testing.assert_array_equal(object_numbers1, ro1[order])
+            np.testing.assert_array_equal(image_numbers2, ri2[order])
+            np.testing.assert_array_equal(object_numbers2, ro2[order])
+            
+    def test_20_04_saved_relationships(self):
+        #
+        # Test closing and reopening a measurements file with
+        # relationships.
+        #
+        fd, filename = tempfile.mkstemp(suffix=".h5")
+        m = cpmeas.Measurements(filename = filename)
+        os.close(fd)
+        try:
+            r = np.random.RandomState()
+            r.seed(2004)
+            image_numbers1, object_numbers1 = [
+                x.flatten() for x in np.mgrid[1:4, 1:10]]
+            module_numbers = [1, 2]
+            relationship_names = ["Foo", "Bar"]
+            first_object_names = ["Nuclei", "Cells"]
+            second_object_names = ["Alice", "Bob"]
+            d = {}
+            midxs, ridxs, on1idxs, on2idxs = [
+                x.flatten() for x in np.mgrid[0:2, 0:2, 0:2, 0:2]]
+            for midx, ridx, on1idx, on2idx in zip(midxs, ridxs, on1idxs, on2idxs):
+                key = (module_numbers[midx], relationship_names[ridx],
+                       first_object_names[on1idx], second_object_names[on2idx])
+                order = r.permutation(len(image_numbers1))
+                image_numbers2, object_numbers2 = [
+                    x[order] for x in image_numbers1, object_numbers1]
+                d[key] = (image_numbers2, object_numbers2)
+                m.add_relate_measurement(key[0], key[1], key[2], key[3],
+                                         image_numbers1, object_numbers1,
+                                         image_numbers2, object_numbers2)
+                
+            m.close()
+            m = cpmeas.Measurements(filename = filename, mode="r")
+                
+            rg = [(x.module_number, x.relationship, x.object_name1, x.object_name2)
+                  for x in m.get_relationship_groups()]
+            self.assertItemsEqual(d.keys(), rg)
+            
+            for key in d:
+                image_numbers2, object_numbers2 = d[key]
+                r = m.get_relationships(key[0], key[1], key[2], key[3])
+                ri1, ro1, ri2, ro2 = [
+                    r[key] for key in 
+                    cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+                    cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+                order = np.lexsort((ro1, ri1))
+                np.testing.assert_array_equal(image_numbers1, ri1[order])
+                np.testing.assert_array_equal(object_numbers1, ro1[order])
+                np.testing.assert_array_equal(image_numbers2, ri2[order])
+                np.testing.assert_array_equal(object_numbers2, ro2[order])
+        finally:
+            m.close()
+            os.unlink(filename)
+            
+    def test_20_05_copy_relationships(self):
+        m1 = cpmeas.Measurements()
+        m2 = cpmeas.Measurements()
+        r = np.random.RandomState()
+        r.seed(2005)
+        image_numbers1, object_numbers1 = [
+            x.flatten() for x in np.mgrid[1:4, 1:10]]
+        image_numbers2 = r.permutation(image_numbers1)
+        object_numbers2 = r.permutation(object_numbers1)
+        m1.add_relate_measurement(
+            1, "Foo", "O1", "O2",
+            image_numbers1, object_numbers1,
+            image_numbers2, object_numbers2)
+        m2.copy_relationships(m1)
+        rg = m2.get_relationship_groups()
+        self.assertEqual(len(rg), 1)
+        self.assertEqual(rg[0].module_number, 1)
+        self.assertEqual(rg[0].relationship, "Foo")
+        self.assertEqual(rg[0].object_name1, "O1")
+        self.assertEqual(rg[0].object_name2, "O2")
+        r = m2.get_relationships(1, "Foo", "O1", "O2")
+        ri1, ro1, ri2, ro2 = [
+            r[key] for key in 
+            cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+            cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+        order = np.lexsort((ro1, ri1))
+        np.testing.assert_array_equal(image_numbers1, ri1[order])
+        np.testing.assert_array_equal(object_numbers1, ro1[order])
+        np.testing.assert_array_equal(image_numbers2, ri2[order])
+        np.testing.assert_array_equal(object_numbers2, ro2[order])
+        
+    def test_20_06_get_relationship_range(self):
+        #
+        # Test writing and reading relationships with a variety of ranges
+        # over the whole extent of the storage
+        #
+        m = cpmeas.Measurements()
+        r = np.random.RandomState()
+        r.seed(2005)
+        image_numbers1, image_numbers2 = r.randint(1, 1001, (2, 4000))
+        object_numbers1, object_numbers2 = r.randint(1, 10, (2, 4000))
+        for i in range(0, 4000, 500):
+            m.add_relate_measurement(
+                1, "Foo", "O1", "O2",
+                *[x[i:(i+500)] for x in image_numbers1, object_numbers1,
+                  image_numbers2, object_numbers2])
+        
+        for _ in range(50):
+            image_numbers = r.randint(1, 1001, 3)
+            result = m.get_relationships(1, "Foo", "O1", "O2", image_numbers)
+            ri1, ro1, ri2, ro2 = [
+                result[key] for key in 
+                cpmeas.R_FIRST_IMAGE_NUMBER, cpmeas.R_FIRST_OBJECT_NUMBER,
+                cpmeas.R_SECOND_IMAGE_NUMBER, cpmeas.R_SECOND_OBJECT_NUMBER]
+            rorder = np.lexsort((ro2, ri2, ro1, ri1))
+            i, j = [x.flatten() for x in np.mgrid[0:2, 0:3]]
+            mask = reduce(
+                np.logical_or,
+                [(image_numbers1 if ii==0 else image_numbers2)==image_numbers[jj]
+                for ii, jj in zip(i, j)])
+            ei1, eo1, ei2, eo2 = map(
+                lambda x:x[mask], (image_numbers1, object_numbers1,
+                                   image_numbers2, object_numbers2))
+            eorder = np.lexsort((eo2, ei2, eo1, ei1))
+            np.testing.assert_array_equal(ri1[rorder], ei1[eorder])
+            np.testing.assert_array_equal(ri2[rorder], ei2[eorder])
+            np.testing.assert_array_equal(ro1[rorder], eo1[eorder])
+            np.testing.assert_array_equal(ro2[rorder], eo2[eorder])
+        
+IMAGE_NAME = "ImageName"
+ALT_IMAGE_NAME = "AltImageName"
+OBJECT_NAME = "ObjectName"
+ALT_OBJECT_NAME = "AltObjectName"
+METADATA_NAMES = [ "Metadata_%d" % i for i in range(1, 10)]
+
+class TestImageSetCache(unittest.TestCase):
+    def setUp(self):
+        if sys.platform == "darwin":
+            fd, self.path = tempfile.mkstemp(".h5")
+            os.close(fd)
+            self.f = h5py.File(self.path)
+        else:
+            self.f = h5py.File("foo", driver="core", backing_store=False)
+            
+    def tearDown(self):
+        self.f.close()
+        if sys.platform == "darwin":
+            os.unlink(self.path)
+            
+    def test_01_01_no_cache(self):
+        cache = cpmeas.ImageSetCache(self.f)
+        self.assertFalse(cache.has_cache)
+        
+    def test_02_01_one_image(self):
+        cache = cpmeas.ImageSetCache(self.f)
+        urls = ["file:///foo", "file:///bar"]
+        cache.cache_image_set(
+            [(IMAGE_NAME, cpmeas.IMAGE)], 
+            [cpmeas.ImageSetCache.ImageSetData(
+                tuple(), 
+                [cpmeas.ImageSetCache.ImageData(url, None, None, None)], [])
+             for url in urls])
+        for reopen in (False, True):
+            if reopen:
+                cache = cpmeas.ImageSetCache(self.f)
+            self.assertTrue(cache.has_cache)
+            self.assertSequenceEqual(cache.image_names, [IMAGE_NAME])
+            self.assertIsNone(cache.metadata_keys)
+            for i, url in enumerate(urls):
+                image_set_data = cache.get_image_set_data(i)
+                self.assertEqual(len(image_set_data.errors), 0)
+                self.assertEqual(len(image_set_data.key), 0)
+                self.assertEqual(len(image_set_data.ipds), 1)
+                ipd = image_set_data.ipds[0]
+                self.assertEqual(ipd.url, url)
+                self.assertIsNone(ipd.series)
+                self.assertIsNone(ipd.index)
+                self.assertIsNone(ipd.channel)
+            
+    def test_02_02_image_and_metadata(self):
+        cache = cpmeas.ImageSetCache(self.f)
+        metadata_column_name = "Metadata_well"
+        urls = ["file:///foo", "file:///bar"]
+        series = (0, 2)
+        index = (0, 1)
+        channel = (1, 0)
+        metadata = ["A01", "A02"]
+        cache.cache_image_set(
+            [(IMAGE_NAME, cpmeas.IMAGE)], 
+            [cpmeas.ImageSetCache.ImageSetData(
+                (md,), [cpmeas.ImageSetCache.ImageData(url, s, i, c)], [])
+             for url, md, s, i, c in zip(urls, metadata, series, index, channel)],
+            metadata_keys = [metadata_column_name])
+        for reopen in (False, True):
+            if reopen:
+                cache = cpmeas.ImageSetCache(self.f)
+            self.assertTrue(cache.has_cache)
+            self.assertSequenceEqual(cache.image_names, [IMAGE_NAME])
+            self.assertSequenceEqual(cache.image_or_object, [cpmeas.IMAGE])
+            self.assertSequenceEqual(cache.metadata_keys, [metadata_column_name])
+            for idx, url, md, s, i, c in zip(
+                (0, 1), urls, metadata, series, index, channel):
+                image_set_data = cache.get_image_set_data(idx)
+                self.assertEqual(len(image_set_data.errors), 0)
+                self.assertEqual(len(image_set_data.key), 1)
+                self.assertEqual(image_set_data.key[0], md)
+                self.assertEqual(len(image_set_data.ipds), 1)
+                self.assertEqual(image_set_data.ipds[0].url, url)
+                self.assertEqual(image_set_data.ipds[0].series, s)
+                self.assertEqual(image_set_data.ipds[0].index, i)
+                self.assertEqual(image_set_data.ipds[0].channel, c)
+                
+    def test_02_03_images_and_objects(self):
+        cache = cpmeas.ImageSetCache(self.f)
+        metadata_columns = ["%s_%d"%(cpmeas.C_METADATA, i) for i in range(1,3)]
+        image_names = [IMAGE_NAME, ALT_IMAGE_NAME, OBJECT_NAME, ALT_OBJECT_NAME]
+        image_or_object = [cpmeas.IMAGE, cpmeas.IMAGE, cpmeas.OBJECT, cpmeas.OBJECT]
+        data = [cpmeas.ImageSetCache.ImageSetData(
+            tuple([uuid.uuid4().hex for _ in metadata_columns]),
+            [cpmeas.ImageSetCache.ImageData("file:///%s" % uuid.uuid4().hex, None, None,None)
+             for _ in image_names], []) for __ in range(4)]
+        cache.cache_image_set(
+            [(x,y) for x, y in zip(image_names, image_or_object)],
+            data,
+            metadata_columns)
+        for reopen in (False, True):
+            if reopen:
+                cache = cpmeas.ImageSetCache(self.f)
+            self.assertTrue(cache.has_cache)
+            self.assertSequenceEqual(cache.image_names, image_names)
+            self.assertSequenceEqual(cache.image_or_object, image_or_object)
+            for i, expected in enumerate(data):
+                image_set_data = cache.get_image_set_data(i)
+                self.assertEqual(len(image_set_data.errors), 0)
+                self.assertSequenceEqual(image_set_data.key, expected.key)
+                self.assertEqual(len(image_set_data.ipds), len(expected.ipds))
+                for ipd, eipd in zip(image_set_data.ipds, expected.ipds):
+                    self.assertEqual(ipd.url, eipd.url)
+                    for x in (ipd.series, ipd.index, ipd.channel):
+                        self.assertIsNone(x)
+    
+    def test_03_01_errors(self):
+        cache = cpmeas.ImageSetCache(self.f)
+        image_names = [IMAGE_NAME, ALT_IMAGE_NAME]
+        data = [
+            cpmeas.ImageSetCache.ImageSetData(
+                [],
+                [cpmeas.ImageSetCache.ImageData("file:///%s" % uuid.uuid4().hex, None, None,None)
+                 for _ in image_names], [(i, uuid.uuid4().hex)])
+            for i in range(len(image_names))]
+        cache.cache_image_set([(n, cpmeas.IMAGE) for n in image_names],
+                              data)
+        for reopen in (False, True):
+            if reopen:
+                cache = cpmeas.ImageSetCache(self.f)
+            self.assertTrue(cache.has_cache)
+            for i, expected in enumerate(data):
+                image_set_data = cache.get_image_set_data(i)
+                self.assertEqual(len(image_set_data.errors), 1)
+                idx, msg = image_set_data.errors[0]
+                self.assertEqual(idx, i)
+                self.assertEqual(msg, expected.errors[0][1])
+                
 if __name__ == "__main__":
     unittest.main()

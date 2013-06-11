@@ -15,7 +15,6 @@ stained cells.", Proceedings of the 12th Scandinavian Conference on Image
 Analysis (SCIA), pp. 264-271, Bergen, Norway, June 2001
 '''
 
-__version__="$Revision$"
 
 import numpy as np
 import warnings

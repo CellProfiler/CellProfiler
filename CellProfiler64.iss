@@ -27,6 +27,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: ".\dist\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: ".\dist\analysis_worker.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\dist\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: ".\windows\vcredist_x64.exe"; DestDir: "{tmp}"
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

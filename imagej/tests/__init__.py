@@ -14,4 +14,3 @@
 This package contains the tests for the imageJ classes
 """
 
-__version__ = "$Revision$"

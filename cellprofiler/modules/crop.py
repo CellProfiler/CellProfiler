@@ -31,7 +31,6 @@ this, save either the mask or cropping in <b>SaveImages</b>. See the <b>SaveImag
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import logging
 import math
@@ -296,7 +295,7 @@ class Crop(cpm.CPModule):
                                self.image_name.value, 
                                str(d[D_FIRST_CROPPING].shape),
                                str(orig_image.pixel_data.shape[:2]),
-                               workspace.image_set.number+1)
+                               workspace.image_set.image_number)
         mask = None # calculate the mask after cropping unless set below
         cropping = None
         masking_objects = None
@@ -354,17 +353,11 @@ class Crop(cpm.CPModule):
         #
         # Display the image
         #
-        if workspace.frame != None:
-            window_name = "CellProfiler:%s:%d"%(self.module_name,self.module_num)
-            my_frame=workspace.create_or_find_figure(
-                        title="Crop, image cycle #%d"%(workspace.measurements.image_set_number), 
-                        window_name=window_name, subplots=(2,1))
-            
-            title = "Original: %s, cycle # %d"%(self.image_name.value,
-                                      workspace.image_set.number+1)
-            my_frame.subplot_imshow_grayscale(0,0, orig_image.pixel_data, title)
-            my_frame.subplot_imshow_bw(1, 0, cropped_pixel_data,
-                                       self.cropped_image_name.value)
+        if self.show_window:
+            workspace.display_data.orig_image_pixel_data = orig_image.pixel_data
+            workspace.display_data.cropped_pixel_data = cropped_pixel_data
+            workspace.display_data.image_set_number = workspace.measurements.image_set_number
+
         if save_flag:
             d[D_FIRST_CROPPING_MASK] = mask
             d[D_FIRST_CROPPING] = cropping
@@ -384,7 +377,18 @@ class Crop(cpm.CPModule):
         feature = FF_ORIGINAL_AREA%(self.cropped_image_name.value)
         m.add_measurement('Image', feature,
                           np.array([original_image_area]))
-    
+
+    def display(self, workspace, figure):
+        orig_image_pixel_data = workspace.display_data.orig_image_pixel_data
+        cropped_pixel_data = workspace.display_data.cropped_pixel_data
+        figure.set_subplots((2, 1))
+
+        title = "Original: %s, cycle # %d" % (self.image_name.value,
+                                  workspace.display_data.image_set_number)
+        figure.subplot_imshow_grayscale(0, 0, orig_image_pixel_data, title)
+        figure.subplot_imshow_bw(1, 0, cropped_pixel_data,
+                                   self.cropped_image_name.value)
+
     def get_measurement_columns(self, pipeline):
         '''Return information on the measurements made during cropping'''
         return [(cpmeas.IMAGE,
@@ -395,47 +399,49 @@ class Crop(cpm.CPModule):
     def ui_crop(self, workspace, orig_image):
         """Crop into a rectangle or ellipse, guided by UI"""
         d = self.get_dictionary(workspace.image_set_list)
-        if ((not d.has_key(self.shape)) or 
+        if ((not d.has_key(self.shape.value)) or
             self.individual_or_once == IO_INDIVIDUALLY):
-            self.run_ui(workspace, orig_image)
+            d[self.shape.value] = \
+                workspace.interaction_request(self, d.get(self.shape.value, None), orig_image.pixel_data)
         if self.shape == SH_ELLIPSE:
             return self.apply_ellipse_cropping(workspace, orig_image)
         else:
             return self.apply_rectangle_cropping(workspace, orig_image)
-            
-    def run_ui(self, workspace, orig_image):
+
+    def handle_interaction(self, current_shape, orig_image):
         '''Show the cropping user interface'''
         import matplotlib as M
         import matplotlib.cm
         import wx
         from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-        pixel_data = stretch(orig_image.pixel_data)
+        pixel_data = stretch(orig_image)
         #
         # Create the UI - a dialog with a figure inside
         #
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-        dialog_box = wx.Dialog(workspace.frame, -1,
+        dialog_box = wx.Dialog(wx.GetApp().TopWindow, -1,
                                "Select the cropping region",
                                size=(640,480),
                                style = style)
         sizer = wx.BoxSizer(wx.VERTICAL)
-        dialog_box.SetSizer(sizer)
         figure = matplotlib.figure.Figure()
         panel = FigureCanvasWxAgg(dialog_box, -1, figure)
         sizer.Add(panel, 1, wx.EXPAND)
         btn_sizer = wx.StdDialogButtonSizer()
         btn_sizer.AddButton(wx.Button(dialog_box, wx.ID_OK))
         btn_sizer.AddButton(wx.Button(dialog_box, wx.ID_CANCEL))
-        sizer.Add(btn_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
         btn_sizer.Realize()
-        
+        sizer.Add(btn_sizer, 0, wx.ALIGN_CENTER_HORIZONTAL | wx.ALL, 5)
+        dialog_box.SetSizer(sizer)
+        dialog_box.Size = dialog_box.BestSize
+        dialog_box.Layout()
+
         axes = figure.add_subplot(1,1,1)
         assert isinstance(axes, matplotlib.axes.Axes)
         if pixel_data.ndim == 2:
             axes.imshow(pixel_data, matplotlib.cm.Greys_r, origin="upper")
         else:
             axes.imshow(pixel_data, origin="upper")
-        d = self.get_dictionary(workspace.image_set_list)
         #t = axes.transData.inverted()
         current_handle = [ None ]
         def data_xy(mouse_event):
@@ -448,6 +454,8 @@ class Crop(cpm.CPModule):
             dm = max((10,min(pixel_data.shape)/50))
             height, width = (dm,dm)
             def __init__(self, x, y, on_move):
+                x = max(0, min(x, pixel_data.shape[1]))
+                y = max(0, min(y, pixel_data.shape[0]))
                 self.__selected = False
                 self.__color = cpprefs.get_primary_outline_color()
                 self.__color = np.hstack((self.__color,[255])).astype(float) / 255.0
@@ -629,25 +637,25 @@ class Crop(cpm.CPModule):
                 return [self.center_handle, self.radius_handle]
             
         if self.shape == SH_ELLIPSE:
-            if not d.has_key(SH_ELLIPSE):
-                d[SH_ELLIPSE] = {
+            if current_shape is None:
+                current_shape = {
                     EL_XCENTER: pixel_data.shape[1] / 2,
                     EL_YCENTER: pixel_data.shape[0] / 2,
                     EL_XRADIUS: pixel_data.shape[1] / 2,
-                    EL_YRADIUS: pixel_data.shape[1] / 2
+                    EL_YRADIUS: pixel_data.shape[0] / 2
                     }
-            ellipse = d[SH_ELLIPSE]
+            ellipse = current_shape
             shape = crop_ellipse((ellipse[EL_XCENTER], ellipse[EL_YCENTER]),
                                  (ellipse[EL_XRADIUS], ellipse[EL_YRADIUS]))
         else:
-            if not d.has_key(SH_RECTANGLE):
-                d[SH_RECTANGLE] = {
+            if current_shape is None:
+                current_shape = {
                     RE_LEFT: pixel_data.shape[1] / 4,
                     RE_TOP: pixel_data.shape[0] / 4,
                     RE_RIGHT: pixel_data.shape[1] * 3 / 4,
                     RE_BOTTOM: pixel_data.shape[0] * 3 / 4
                     }
-            rectangle = d[SH_RECTANGLE]
+            rectangle = current_shape
             shape = crop_rectangle((rectangle[RE_LEFT], rectangle[RE_TOP]),
                                    (rectangle[RE_RIGHT], rectangle[RE_BOTTOM]))
         for patch in shape.patches:
@@ -674,28 +682,26 @@ class Crop(cpm.CPModule):
         figure.canvas.mpl_connect('motion_notify_event', on_mouse_move_event)
         figure.canvas.mpl_connect('pick_event', on_pick_event)
         
-        dialog_box.Layout()
         try:
             if dialog_box.ShowModal() != wx.ID_OK:
                 raise ValueError("Cancelled by user")
         finally:
             dialog_box.Destroy()
         if self.shape == SH_RECTANGLE:
-            d[SH_RECTANGLE] = {
+            return {
                 RE_LEFT: shape.left,
                 RE_TOP: shape.top,
                 RE_RIGHT: shape.right,
                 RE_BOTTOM: shape.bottom
-            }
+                }
         else:
-            d[SH_ELLIPSE] = {
+            return {
                 EL_XCENTER: shape.center_x,
                 EL_YCENTER: shape.center_y,
                 EL_XRADIUS: shape.width / 2,
                 EL_YRADIUS: shape.height / 2
                 }
-    
-       
+
     def get_ellipse_cropping(self, workspace,orig_image):
         """Crop into an ellipse using user-specified coordinates"""
         x_center = self.ellipse_center.x

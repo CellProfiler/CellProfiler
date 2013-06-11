@@ -11,7 +11,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 '''
-__version = "$Revision$"
 
 import base64
 import numpy as np
@@ -397,7 +396,8 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             # This appears to be bistable, depending on whether PIL or
             # Bioformats loads it (???)
             #
-            self.assertTrue(hexdigest == '1a37c43914c7ceb7d9cac503a5c1c767')
+            self.assertTrue((hexdigest == 'f7d75e4ba3ca1385dfe09c111261359e') or
+                            (hexdigest == '1a37c43914c7ceb7d9cac503a5c1c767'))
             self.assertTrue('PathName_DNA' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('PathName_DNA'),
                              dir)
@@ -668,10 +668,11 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
             self.assertTrue(c0_ran[0])
             hexdigest = m.get_current_image_measurement('MD5Digest_DAPI')
             #
-            # This appears to be bistable, depending on whether PIL or
-            # Bioformats loads it (???)
+            # This appears to be tristable, depending on whether PIL or
+            # Bioformats or Subimager loads it (???)
             #
-            self.assertTrue(hexdigest == '1a37c43914c7ceb7d9cac503a5c1c767')
+            self.assertTrue((hexdigest == u'f7d75e4ba3ca1385dfe09c111261359e') or
+                            (hexdigest == '1a37c43914c7ceb7d9cac503a5c1c767'))
             self.assertTrue('PathName_DAPI' in m.get_feature_names(cpmeas.IMAGE))
             self.assertEqual(m.get_current_image_measurement('PathName_DAPI'),
                              dir)
@@ -820,6 +821,34 @@ CPD_MMOL_CONC,SOURCE_NAME,SOURCE_COMPOUND_NAME,CPD_SMILES
                 except:
                     pass
             
+    def test_13_01_load_filename(self):
+        #
+        # Load a file, only specifying the FileName in the CSV
+        #
+        dir = os.path.join(example_images_directory(), "ExampleSBSImages")
+        file_name = 'Channel2-01-A-01.tif'
+        csv_text = '''"Image_FileName_DNA"
+"%s"
+'''% file_name
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        assert isinstance(module, L.LoadData)
+        module.image_directory.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.image_directory.custom_path = dir
+        m = cpmeas.Measurements(mode="memory")
+        workspace = cpw.Workspace(pipeline, module, m, cpo.ObjectSet(),
+                                  m, cpi.ImageSetList())
+        self.assertTrue(module.prepare_run(workspace))
+        self.assertEqual(m.get_measurement(cpmeas.IMAGE, "FileName_DNA", 1),
+                         file_name)
+        path = m.get_measurement(cpmeas.IMAGE, "PathName_DNA", 1)
+        self.assertEqual(path, dir)
+        self.assertEqual(m.get_measurement(cpmeas.IMAGE, "URL_DNA", 1),
+                         L.pathname2url(os.path.join(dir, file_name)))
+        module.prepare_group(workspace, {}, [1])
+        module.run(workspace)
+        img = workspace.image_set.get_image("DNA", must_be_grayscale=True)
+        self.assertEqual(tuple(img.pixel_data.shape), (640, 640))
+        
     
 class C0(cpm.CPModule):
     module_name = 'C0'

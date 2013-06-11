@@ -1,5 +1,15 @@
 """killjavabridge setup.py - easy_install setup to kill the javabridge
 
+CellProfiler is distributed under the GNU General Public License.
+See the accompanying file LICENSE for details.
+
+Copyright (c) 2003-2009 Massachusetts Institute of Technology
+Copyright (c) 2009-2013 Broad Institute
+
+Please see the AUTHORS file for credits.
+
+Website: http://www.cellprofiler.org
+
 This module creates a Nose plugin that can kill the Java VM
 started by cellprofiler.utilities.jutil. It should be installed using easy_install
 

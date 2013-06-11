@@ -12,7 +12,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__="$Revision$"
 
 import numpy as np
 import scipy.ndimage as scind

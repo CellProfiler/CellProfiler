@@ -11,10 +11,10 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-__version__ = "$Revision$"
 
 import logging
 logger = logging.getLogger(__name__)
+import csv
 import numpy as np
 import os
 import sys
@@ -27,12 +27,9 @@ import matplotlib.patches
 import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
 from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
-import cellprofiler.utilities.matplotlib_axes_monkey_patch
 from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position, reset_cpfigure_position
-import scipy.misc
 from scipy.sparse import coo_matrix
-from cStringIO import StringIO
-import sys
+import functools
 
 from cellprofiler.gui import get_cp_icon
 from cellprofiler.gui.help import make_help_menu, FIGURE_HELP
@@ -137,9 +134,7 @@ def find_fig(parent=None, title="", name=wx.FrameNameStr, subplots=None):
         if window:
             if len(title) and title != window.Title:
                 window.Title = title
-            window.clf()
-            if subplots!=None:
-                window.subplots = np.zeros(subplots,dtype=object)
+            window.set_subplots(subplots)
         return window
 
 def create_or_find(parent=None, id=-1, title="", 
@@ -173,8 +168,22 @@ def close_all(parent):
             detach()
     except:
         pass
-        
+
+def allow_sharexy(fn):
+    @functools.wraps(fn)
+    def wrapper(*args, **kwargs):
+        if 'sharexy' in kwargs:
+            assert (not 'sharex' in kwargs) and (not 'sharey' in kwargs), \
+                "Cannot specify sharexy with sharex or sharey"
+            kwargs['sharex'] = kwargs['sharey'] = kwargs.pop('sharexy')
+        return fn(*args, **kwargs)
+    if wrapper.__doc__ is not None:
+        wrapper.__doc__ += \
+            '\n        sharexy=ax can be used to specify sharex=ax, sharey=ax'
+    return wrapper
+
 MENU_FILE_SAVE = wx.NewId()
+MENU_FILE_SAVE_TABLE = wx.NewId()
 MENU_CLOSE_WINDOW = wx.NewId()
 MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
 MENU_CLOSE_ALL = wx.NewId()
@@ -212,6 +221,7 @@ class CPFigureFrame(wx.Frame):
         self.BackgroundColour = cpprefs.get_background_color()
         self.mouse_mode = MODE_NONE
         self.length_arrow = None
+        self.table = None
         self.images = {}
         self.colorbar = {}
         self.subplot_params = {}
@@ -219,6 +229,7 @@ class CPFigureFrame(wx.Frame):
         self.event_bindings = {}
         self.popup_menus = {}
         self.subplot_menus = {}
+        self.widgets = []
         self.mouse_down = None
         self.remove_menu = []
         sizer = wx.BoxSizer(wx.VERTICAL)
@@ -239,7 +250,6 @@ class CPFigureFrame(wx.Frame):
         self.panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(self, -1, self.figure)
         sizer.Add(self.panel, 1, wx.EXPAND) 
         self.status_bar = self.CreateStatusBar()
-        wx.EVT_PAINT(self, self.on_paint)
         wx.EVT_CLOSE(self, self.on_close)
         if subplots:
             self.subplots = np.zeros(subplots,dtype=object)
@@ -248,6 +258,7 @@ class CPFigureFrame(wx.Frame):
         self.figure.canvas.mpl_connect('button_press_event', self.on_button_press)
         self.figure.canvas.mpl_connect('motion_notify_event', self.on_mouse_move)
         self.figure.canvas.mpl_connect('button_release_event', self.on_button_release)
+        self.figure.canvas.mpl_connect('resize_event', self.on_resize)
         try:
             self.SetIcon(get_cp_icon())
         except:
@@ -283,7 +294,10 @@ class CPFigureFrame(wx.Frame):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE,"&Save")
+        self.__menu_file.Append(MENU_FILE_SAVE_TABLE, "&Save table")
+        self.__menu_file.Enable(MENU_FILE_SAVE_TABLE, False)
         wx.EVT_MENU(self, MENU_FILE_SAVE, self.on_file_save)
+        wx.EVT_MENU(self, MENU_FILE_SAVE_TABLE, self.on_file_save_table)
         self.MenuBar.Append(self.__menu_file,"&File")
                 
         self.__menu_tools = wx.Menu()
@@ -339,13 +353,68 @@ class CPFigureFrame(wx.Frame):
         self.subplot_user_params = {}
         self.colorbar = {}
         self.images = {}
+        for x, y, width, height, halign, valign, ctrl in self.widgets:
+            ctrl.Destroy()
+        self.widgets = []
         
-    def on_paint(self, event):
-        dc = wx.PaintDC(self)
-        self.panel.draw(dc)
-        event.Skip()
-        del dc
-    
+    def on_resize(self, event):
+        '''Handle mpl_connect('resize_event')'''
+        assert isinstance(event, matplotlib.backend_bases.ResizeEvent)
+        for x, y, width, height, halign, valign, ctrl in self.widgets:
+            self.align_widget(ctrl, x, y, width, height, halign, valign,
+                              event.width, event.height)
+            ctrl.ForceRefresh() # I don't know why, but it seems to be needed.
+            
+    def align_widget(self, ctrl, x, y, width, height, 
+                     halign, valign, canvas_width, canvas_height):
+        '''Align a widget within the canvas
+        
+        ctrl - the widget to be aligned
+        
+        x, y - the fractional position (0 <= {x,y} <= 1) of the top-left of the 
+               allotted space for the widget
+               
+        width, height - the fractional width and height of the allotted space
+        
+        halign, valign - alignment of the widget if its best size is smaller
+                         than the space (wx.ALIGN_xx or wx.EXPAND)
+        
+        canvas_width, canvas_height - the width and height of the canvas parent
+        '''
+        assert isinstance(ctrl, wx.Window)
+        x = x * canvas_width
+        y = y * canvas_height
+        width = width * canvas_width
+        height = height * canvas_height
+        
+        best_width, best_height = ctrl.GetBestSizeTuple()
+        vscroll_x = wx.SystemSettings.GetMetric(wx.SYS_VSCROLL_X)
+        hscroll_y = wx.SystemSettings.GetMetric(wx.SYS_HSCROLL_Y)
+        if height < best_height:
+            #
+            # If the control's ideal height is less than what's allowed
+            # then we have to account for the scroll bars
+            #
+            best_width += vscroll_x
+        if width < best_width:
+            best_height += hscroll_y
+            
+        if height > best_height and valign != wx.EXPAND:
+            if valign == wx.ALIGN_BOTTOM:
+                y = y + height - best_height
+                height = best_height
+            elif valign in (wx.ALIGN_CENTER, wx.ALIGN_CENTER_VERTICAL):
+                y = y + (height - best_height) / 2
+            height = best_height
+        if width > best_width:
+            if halign == wx.ALIGN_RIGHT:
+                x = x + width - best_width
+            elif halign in (wx.ALIGN_CENTER, wx.ALIGN_CENTER_VERTICAL):
+                x = x + (width - best_width) / 2
+            width = best_width
+        ctrl.SetPosition(wx.Point(x, y))
+        ctrl.SetSize(wx.Size(width, height))
+            
     def on_close(self, event):
         if self.close_fn is not None:
             self.close_fn(event)
@@ -527,23 +596,43 @@ class CPFigureFrame(wx.Frame):
         self.Refresh()
     
     def on_file_save(self, event):
-        dlg = wx.FileDialog(self, "Save figure", 
-                            wildcard = ("PDF file (*.pdf)|*.pdf|"
-                                        "Png image (*.png)|*.png|"
-                                        "Postscript file (*.ps)|*.ps"),
-                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT)
-        if dlg.ShowModal() == wx.ID_OK:
-            path = os.path.join(dlg.GetPath())
-            if dlg.FilterIndex == 1:
-                format = "png"
-            elif dlg.FilterIndex == 0:
-                format = "pdf"
-            elif dlg.FilterIndex == 2:
-                format = "ps"
-            else:
-                format = "pdf"
-            self.figure.savefig(path, format = format)
+        with wx.FileDialog(self, "Save figure", 
+                           wildcard = ("PDF file (*.pdf)|*.pdf|"
+                                       "Png image (*.png)|*.png|"
+                                       "Postscript file (*.ps)|*.ps"),
+                           style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                if dlg.FilterIndex == 1:
+                    format = "png"
+                elif dlg.FilterIndex == 0:
+                    format = "pdf"
+                elif dlg.FilterIndex == 2:
+                    format = "ps"
+                else:
+                    format = "pdf"
+                self.figure.savefig(path, format = format)
             
+    def on_file_save_table(self, event):
+        if self.table is None:
+            return
+        with wx.FileDialog(self, "Save table",
+                           wildcard = "Excel file (*.csv)|*.csv",
+                           style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                with open(path, "wb") as fd:
+                    csv.writer(fd).writerows(self.table)
+
+    def set_subplots(self, subplots):
+        self.clf()  # get rid of any existing subplots, menus, etc.
+        if subplots is None:
+            if hasattr(self, 'subplots'):
+                delattr(self, 'subplots')
+        else:
+            self.subplots = np.zeros(subplots, dtype=object)
+
+    @allow_sharexy
     def subplot(self, x, y, sharex=None, sharey=None):
         """Return the indexed subplot
         
@@ -607,6 +696,9 @@ class CPFigureFrame(wx.Frame):
         MENU_CONTRAST_RAW = wx.NewId()
         MENU_CONTRAST_NORMALIZED = wx.NewId()
         MENU_CONTRAST_LOG = wx.NewId()
+        MENU_INTERPOLATION_NEAREST = wx.NewId()
+        MENU_INTERPOLATION_BILINEAR = wx.NewId()
+        MENU_INTERPOLATION_BICUBIC = wx.NewId()
         popup = wx.Menu()
         self.popup_menus[(x,y)] = popup
         open_in_new_figure_item = wx.MenuItem(popup, -1, 
@@ -636,6 +728,36 @@ class CPFigureFrame(wx.Frame):
         else:
             item_raw.Check()
         popup.AppendMenu(-1, 'Image contrast', submenu)
+        
+        submenu = wx.Menu()
+        item_nearest = submenu.Append(
+            MENU_INTERPOLATION_NEAREST,
+            "Nearest neighbor",
+            "Use the intensity of the nearest image pixel when displaying "
+            "screen pixels at sub-pixel resolution. This produces a blocky "
+            "image, but the image accurately reflects the data",
+            wx.ITEM_RADIO)
+        item_bilinear = submenu.Append(
+            MENU_INTERPOLATION_BILINEAR,
+            "Linear",
+            "Use the weighted average of the four nearest image pixels when "
+            "displaying screen pixels at sub-pixel resolution. This produces "
+            "a smoother, more visually appealing image, but makes it more "
+            "difficult to find pixel borders", wx.ITEM_RADIO)
+        item_bicubic = submenu.Append(
+            MENU_INTERPOLATION_BICUBIC,
+            "Cubic",
+            "Perform a bicubic interpolation of the nearby image pixels when "
+            "displaying screen pixels at sub-pixel resolution. This produces "
+            "the most visually appealing image but is the least faithful to "
+            "the image pixel values.", wx.ITEM_RADIO)
+        popup.AppendMenu(-1, "Interpolation", submenu)
+        if params['interpolation'] == matplotlib.image.BILINEAR:
+            item_bilinear.Check()
+        elif params['interpolation'] == matplotlib.image.BICUBIC:
+            item_bicubic.Check()
+        else:
+            item_nearest.Check()
         
         def open_image_in_new_figure(evt):
             '''Callback for "Open image in new window" popup menu item '''
@@ -681,6 +803,26 @@ class CPFigureFrame(wx.Frame):
             self.subplot(x,y).set_ylim(ylims[0], ylims[1])                
             self.figure.canvas.draw()
             
+        def change_interpolation(evt):
+            if evt.Id == MENU_INTERPOLATION_NEAREST:
+                params['interpolation'] = matplotlib.image.NEAREST
+            elif evt.Id == MENU_INTERPOLATION_BILINEAR:
+                params['interpolation'] = matplotlib.image.BILINEAR
+            elif evt.Id == MENU_INTERPOLATION_BICUBIC:
+                params['interpolation'] = matplotlib.image.BICUBIC
+            axes = self.subplot(x, y)
+            for artist in axes.artists:
+                if isinstance(artist, CPImageArtist):
+                    artist.interpolation = params['interpolation']
+                    self.figure.canvas.draw()
+                    return
+            else:
+                self.subplot_imshow(x, y, self.images[(x,y)], **params)
+                # Restore plot zoom
+                self.subplot(x,y).set_xlim(xlims[0], xlims[1])
+                self.subplot(x,y).set_ylim(ylims[0], ylims[1])                
+                self.figure.canvas.draw()
+                
         if is_color_image(self.images[x,y]):
             submenu = wx.Menu()
             rgb_mask = match_rgbmask_to_image(params['rgb_mask'], self.images[x,y])
@@ -718,13 +860,16 @@ class CPFigureFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_RAW)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_NORMALIZED)
         self.Bind(wx.EVT_MENU, change_contrast, id=MENU_CONTRAST_LOG)
+        self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_NEAREST)
+        self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BICUBIC)
+        self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BILINEAR)
         return popup
-    
-    
+
+    @allow_sharexy
     def subplot_imshow(self, x, y, image, title=None, clear=True, colormap=None,
                        colorbar=False, normalize=True, vmin=0, vmax=1, 
                        rgb_mask=(1, 1, 1), sharex=None, sharey=None,
-                       use_imshow = False):
+                       use_imshow = False, interpolation=None):
         '''Show an image in a subplot
         
         x, y  - show image in this subplot
@@ -748,6 +893,8 @@ class CPFigureFrame(wx.Frame):
         '''
         orig_vmin = vmin
         orig_vmax = vmax
+        if interpolation is None:
+            interpolation = get_matplotlib_interpolation_preference()
         # NOTE: self.subplot_user_params is used to store changes that are made 
         #    to the display through GUI interactions (eg: hiding a channel).
         #    Once a subplot that uses this mechanism has been drawn, it will
@@ -761,7 +908,8 @@ class CPFigureFrame(wx.Frame):
                   'vmin' : vmin,
                   'vmax' : vmax,
                   'rgb_mask' : rgb_mask,
-                  'use_imshow' : use_imshow}
+                  'use_imshow' : use_imshow,
+                  'interpolation': interpolation}
         if (x,y) not in self.subplot_user_params:
             self.subplot_user_params[(x,y)] = {}
         if (x,y) not in self.subplot_params:
@@ -781,6 +929,7 @@ class CPFigureFrame(wx.Frame):
         vmin = kwargs['vmin']
         vmax = kwargs['vmax']
         rgb_mask = kwargs['rgb_mask']
+        interpolation = kwargs['interpolation']
         
         # Note: if we do not do this, then passing in vmin,vmax without setting
         # normalize=False will cause the normalized image to be stretched 
@@ -858,90 +1007,6 @@ class CPFigureFrame(wx.Frame):
             image = self.images[(x, y)]
             subplot.imshow(self.normalize_image(image, **kwargs))
         else:
-            class CPImageArtist(matplotlib.artist.Artist):
-                def __init__(self, image, frame, kwargs):
-                    super(CPImageArtist, self).__init__()
-                    self.image = image
-                    self.frame = frame
-                    self.kwargs = kwargs
-                    #
-                    # The radius for the gaussian blur of 1 pixel sd
-                    #
-                    self.filterrad = 4.0
-                    
-                def draw(self, renderer):
-                    image = self.frame.normalize_image(self.image, 
-                                                       **self.kwargs)
-                    magnification = renderer.get_image_magnification()
-                    numrows, numcols = self.image.shape[:2]
-                    if numrows == 0 or numcols == 0:
-                        return
-                    #
-                    # Limit the viewports to the image extents
-                    #
-                    view_x0 = int(min(numcols-1, max(0, self.axes.viewLim.x0 - self.filterrad)))
-                    view_x1 = int(min(numcols,   max(0, self.axes.viewLim.x1 + self.filterrad)))
-                    view_y0 = int(min(numrows-1, 
-                                      max(0, min(self.axes.viewLim.y0, 
-                                                 self.axes.viewLim.y1) - self.filterrad)))
-                    view_y1 = int(min(numrows, 
-                                      max(0, max(self.axes.viewLim.y0,
-                                                 self.axes.viewLim.y1) + self.filterrad)))
-                    xslice = slice(view_x0, view_x1)
-                    yslice = slice(view_y0, view_y1)
-                    image = image[yslice, xslice, :]
-                    
-                    #
-                    # Flip image upside-down if height is negative
-                    #
-                    flip_ud = self.axes.viewLim.height < 0
-                    if flip_ud:
-                        image = np.flipud(image)
-            
-                    im = matplotlib.image.fromarray(image, 0)
-                    im.is_grayscale = False
-                    im.set_interpolation(matplotlib.image.NEAREST)
-                    fc = self.axes.patch.get_facecolor()
-                    bg = matplotlib.colors.colorConverter.to_rgba(fc, 0)
-                    im.set_bg( *bg)
-            
-                    # image input dimensions
-                    im.reset_matrix()
-            
-                    # the viewport translation in the X direction
-                    tx = view_x0 - self.axes.viewLim.x0
-                    #
-                    # the viewport translation in the Y direction
-                    # which is from the bottom of the screen
-                    #
-                    if self.axes.viewLim.height < 0:
-                        ty = (self.axes.viewLim.y0 - view_y1)
-                    else:
-                        ty = view_y0 - self.axes.viewLim.y0
-                    im.apply_translation(tx, ty)
-            
-                    l, b, r, t = self.axes.bbox.extents
-                    widthDisplay = (round(r) + 0.5) - (round(l) - 0.5)
-                    heightDisplay = (round(t) + 0.5) - (round(b) - 0.5)
-                    widthDisplay = int(widthDisplay * magnification)
-                    heightDisplay = int(heightDisplay * magnification)
-            
-                    # resize viewport to display
-                    sx = widthDisplay / self.axes.viewLim.width
-                    sy = abs(heightDisplay  / self.axes.viewLim.height)
-                    im.apply_scaling(sx, sy)
-                    im.resize(widthDisplay, heightDisplay,
-                              norm=1, radius = self.filterrad)
-                    bbox = self.axes.bbox.frozen()
-                    im._url = self.frame.Title
-                    
-                    # Two ways to do this, try by version
-                    mplib_version = matplotlib.__version__.split(".")
-                    if mplib_version[0] == '0':
-                        renderer.draw_image(l, b, im, bbox)
-                    else:
-                        gc = renderer.new_gc()
-                        renderer.draw_image(gc, l, b, im)
             subplot.add_artist(CPImageArtist(self.images[(x,y)], self, kwargs))
         
         # Also add this menu to the main menu
@@ -962,14 +1027,15 @@ class CPFigureFrame(wx.Frame):
                                         self.get_imshow_menu((x,y)))
         
         # Attempt to update histogram plot if one was created
-        hist_fig = find_fig(self, name='%s %s image histogram'%(self.Title, 
-                                                                (x,y)))
+        hist_fig = find_fig(self, name='%s %s image histogram' % (self.Name,
+                                                                  (x, y)))
         if hist_fig:
             hist_fig.subplot_histogram(0, 0, self.images[(x,y)].flatten(), 
                                        bins=200, xlabel='pixel intensity')
             hist_fig.figure.canvas.draw()
         return subplot
-    
+
+    @allow_sharexy
     def subplot_imshow_color(self, x, y, image, title=None, clear=True, 
                              normalize=True, rgb_mask=[1,1,1],
                              sharex=None, sharey=None,
@@ -978,7 +1044,8 @@ class CPFigureFrame(wx.Frame):
                                    normalize=normalize, rgb_mask=rgb_mask, 
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)
-    
+
+    @allow_sharexy
     def subplot_imshow_labels(self, x, y, labels, title=None, clear=True, 
                               renumber=True, sharex=None, sharey=None,
                               use_imshow = False):
@@ -1008,7 +1075,8 @@ class CPFigureFrame(wx.Frame):
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)
-    
+
+    @allow_sharexy
     def subplot_imshow_ijv(self, x, y, ijv, shape = None, title=None, 
                            clear=True, renumber=True, sharex=None, sharey=None,
                            use_imshow = False):
@@ -1051,7 +1119,7 @@ class CPFigureFrame(wx.Frame):
                                    normalize=False, vmin=None, vmax=None,
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)
-        
+    @allow_sharexy
     def subplot_imshow_grayscale(self, x, y, image, title=None, clear=True,
                                  colorbar=False, normalize=True, vmin=0, vmax=1,
                                  sharex=None, sharey=None, 
@@ -1078,7 +1146,8 @@ class CPFigureFrame(wx.Frame):
                                    colorbar=colorbar, vmin=vmin, vmax=vmax,
                                    sharex=sharex, sharey=sharey,
                                    use_imshow = use_imshow)
-    
+
+    @allow_sharexy
     def subplot_imshow_bw(self, x, y, image, title=None, clear=True, 
                           sharex=None, sharey=None, use_imshow = False):
         '''Show a binary image in black and white
@@ -1140,32 +1209,73 @@ class CPFigureFrame(wx.Frame):
         return image
     
     def subplot_table(self, x, y, statistics, 
-                      ratio = (.6, .4),
-                      loc = 'center',
-                      cellLoc = 'left',
-                      clear = True):
+                      col_labels=None, 
+                      row_labels = None, 
+                      n_cols = 1,
+                      n_rows = 1, **kwargs):
         """Put a table into a subplot
         
         x,y - subplot's column and row
         statistics - a sequence of sequences that form the values to
                      go into the table
-        ratio - the ratio of column widths
-        loc   - placement of the table within the axes
-        cellLoc - alignment of text within cells
+        col_labels - labels for the column header
+        
+        row_labels - labels for the row header
+        
+        **kwargs - for backwards compatibility, old argument values
         """
-        if clear:
-            self.clear_subplot(x, y)
+        
+        nx, ny = self.subplots.shape
+        xstart = float(x) / float(nx)
+        ystart = float(y) / float(ny)
+        width = float(n_cols) / float(nx)
+        height = float(n_rows) / float(ny)
+        cw, ch = self.figure.canvas.GetSizeTuple()
+        ctrl = wx.grid.Grid(self.figure.canvas)
+        self.widgets.append(
+            (xstart, ystart, width, height, 
+             wx.ALIGN_CENTER, wx.ALIGN_CENTER, ctrl))
+        nrows = len(statistics)
+        ncols = 0 if nrows == 0 else len(statistics[0])
+        ctrl.CreateGrid(nrows, ncols)
+        if col_labels is not None:
+            for i, value in enumerate(col_labels):
+                ctrl.SetColLabelValue(i, unicode(value))
+        else:
+            ctrl.SetColLabelSize(0)
+        if row_labels is not None:
+            ctrl.GridRowLabelWindow.Font = ctrl.GetLabelFont()
+            ctrl.SetRowLabelAlignment(wx.ALIGN_LEFT, wx.ALIGN_CENTER)
+            max_width = 0
+            for i, value in enumerate(row_labels):
+                value = unicode(value)
+                ctrl.SetRowLabelValue(i, value)
+                max_width = max(
+                    max_width, 
+                    ctrl.GridRowLabelWindow.GetTextExtent(value+"M")[0])
+            ctrl.SetRowLabelSize(max_width)
+        else:
+            ctrl.SetRowLabelSize(0)
             
-        table_axes = self.subplot(x, y)
-        table = table_axes.table(cellText=statistics,
-                                 colWidths=ratio,
-                                 loc=loc,
-                                 cellLoc=cellLoc)
-        table_axes.set_frame_on(False)
-        table_axes.set_axis_off()
-        table.auto_set_font_size(False)
-        table.set_fontsize(cpprefs.get_table_font_size())
-        # table.set_fontfamily(cpprefs.get_table_font_name())
+        for i, row in enumerate(statistics):
+            for j, value in enumerate(row):
+                ctrl.SetCellValue(i, j, unicode(value))
+                ctrl.SetReadOnly(i, j, True)
+        ctrl.AutoSize()
+        ctrl.Show()
+        self.align_widget(ctrl, xstart, ystart, width, height,
+                          wx.ALIGN_CENTER, wx.ALIGN_CENTER, cw, ch)
+        self.table = []
+        if col_labels is not None:
+            if row_labels is not None:
+                # Need a blank corner header if both col and row labels
+                col_labels = [""] + list(col_labels)
+            self.table.append(col_labels)
+        if row_labels is not None:
+            self.table += [[a] + list(b) for a, b in zip(row_labels, statistics)]
+        else:
+            self.table += statistics
+        self.__menu_file.Enable(MENU_FILE_SAVE_TABLE, True)
         
     def subplot_scatter(self, x , y,
                         xvals, yvals, 
@@ -1444,7 +1554,132 @@ def format_plate_data_as_array(plate_dict, plate_type):
             continue
         data[r,c] = val
     return data
+
+def show_image(url, parent = None, needs_raise_after = True):
+    '''Show an image in a figure frame
+    
+    url - url of the image
+    parent - parent frame to this one.
+    '''
+    from bioformats.formatreader import load_using_bioformats_url
+    filename = url[(url.rfind("/")+1):]
+    try:
+        image = load_using_bioformats_url(url)
+    except Exception, e:
+        from cellprofiler.gui.errordialog import display_error_dialog
+        display_error_dialog(None, e, None, 
+                             "Failed to load %s" % url)
+    frame = CPFigureFrame(parent = parent, 
+                          title = filename,
+                          subplots = (1,1))
+    if image.ndim == 2:
+        frame.subplot_imshow_grayscale(0, 0, image, title = filename)
+    else:
+        frame.subplot_imshow_color(0, 0, image, title = filename)
+    frame.panel.draw()
+    if needs_raise_after:
+        #%$@ hack hack hack
+        import wx
+        wx.CallAfter(lambda: frame.Raise())
+    return True
+
+roundoff = True
+class CPImageArtist(matplotlib.artist.Artist):
+    def __init__(self, image, frame, kwargs):
+        super(CPImageArtist, self).__init__()
+        self.image = image
+        self.frame = frame
+        self.kwargs = kwargs
+        #
+        # The radius for the gaussian blur of 1 pixel sd
+        #
+        self.filterrad = 4.0
+        self.interpolation = kwargs["interpolation"]
         
+    def draw(self, renderer):
+        global roundoff
+        image = self.frame.normalize_image(self.image, 
+                                           **self.kwargs)
+        magnification = renderer.get_image_magnification()
+        numrows, numcols = self.image.shape[:2]
+        if numrows == 0 or numcols == 0:
+            return
+        #
+        # Limit the viewports to the image extents
+        #
+        view_x0 = int(min(numcols-1, max(0, self.axes.viewLim.x0 - self.filterrad)))
+        view_x1 = int(min(numcols,   max(0, self.axes.viewLim.x1 + self.filterrad)))
+        view_y0 = int(min(numrows-1, 
+                          max(0, min(self.axes.viewLim.y0, 
+                                     self.axes.viewLim.y1) - self.filterrad)))
+        view_y1 = int(min(numrows, 
+                          max(0, max(self.axes.viewLim.y0,
+                                     self.axes.viewLim.y1) + self.filterrad)))
+        xslice = slice(view_x0, view_x1)
+        yslice = slice(view_y0, view_y1)
+        image = image[yslice, xslice, :]
+        
+        #
+        # Flip image upside-down if height is negative
+        #
+        flip_ud = self.axes.viewLim.height < 0
+        if flip_ud:
+            image = np.flipud(image)
+
+        im = matplotlib.image.fromarray(image, 0)
+        im.is_grayscale = False
+        im.set_interpolation(self.interpolation)
+        fc = self.axes.patch.get_facecolor()
+        bg = matplotlib.colors.colorConverter.to_rgba(fc, 0)
+        im.set_bg( *bg)
+
+        # image input dimensions
+        im.reset_matrix()
+
+        # the viewport translation in the X direction
+        tx = view_x0 - self.axes.viewLim.x0 - .5
+        #
+        # the viewport translation in the Y direction
+        # which is from the bottom of the screen
+        #
+        if self.axes.viewLim.height < 0:
+            ty = (self.axes.viewLim.y0 - view_y1) + .5
+        else:
+            ty = view_y0 - self.axes.viewLim.y0 - .5
+        im.apply_translation(tx, ty)
+
+        l, b, r, t = self.axes.bbox.extents
+        widthDisplay = (r - l + 1) * magnification
+        heightDisplay = (t - b + 1) * magnification
+
+        # resize viewport to display
+        sx = widthDisplay / self.axes.viewLim.width
+        sy = abs(heightDisplay  / self.axes.viewLim.height)
+        im.apply_scaling(sx, sy)
+        im.resize(widthDisplay, heightDisplay,
+                  norm=1, radius = self.filterrad)
+        bbox = self.axes.bbox.frozen()
+        im._url = self.frame.Title
+        
+        # Two ways to do this, try by version
+        mplib_version = matplotlib.__version__.split(".")
+        if mplib_version[0] == '0':
+            renderer.draw_image(l, b, im, bbox)
+        else:
+            gc = renderer.new_gc()
+            gc.set_clip_rectangle(bbox)
+            renderer.draw_image(gc, l, b, im)
+
+def get_matplotlib_interpolation_preference():
+    interpolation = cpprefs.get_interpolation_mode()
+    if interpolation == cpprefs.IM_NEAREST:
+        return matplotlib.image.NEAREST
+    elif interpolation == cpprefs.IM_BILINEAR:
+        return matplotlib.image.BILINEAR
+    elif interpolation == cpprefs.IM_BICUBIC:
+        return matplotlib.image.BICUBIC
+    return matplotlib.image.NEAREST
+
 if __name__ == "__main__":
     import numpy as np
 

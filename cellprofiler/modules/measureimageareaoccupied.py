@@ -30,7 +30,6 @@ See also <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, <b>Iden
 # 
 # Website: http://www.cellprofiler.org
 
-__version__ = "$Revision$"
 
 import numpy as np
 
@@ -190,27 +189,24 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         return result
 
    
-    def is_interactive(self):
-        return False
-
-
-            
     def run(self, workspace):
         m = workspace.measurements
-        statistics = [["Objects or Image", "Area Occupied", "Perimeter", "Total Area"]]
+        statistics = []
         for op in self.operands:
             if op.operand_choice  == O_OBJECTS:
                 statistics += self.measure_objects(op,workspace) 
             if op.operand_choice == O_BINARY_IMAGE:
                 statistics += self.measure_images(op,workspace)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.statistics = statistics
+            workspace.display_data.col_labels = [
+                "Objects or Image", "Area Occupied", "Perimeter", "Total Area"]
     
-    def display(self, workspace):
-        figure = workspace.create_or_find_figure(title="MeasureImageAreaOccupied, image cycle #%d"%(
-                workspace.measurements.image_set_number),subplots=(1,1))
-        figure.subplot_table(0, 0, workspace.display_data.statistics,
-                             ratio=(.25,.25,.25,.25))
+    def display(self, workspace, figure):
+        figure.set_subplots((1, 1))
+        figure.subplot_table(0, 0, 
+                             workspace.display_data.statistics,
+                             col_labels = workspace.display_data.col_labels)
         
     def measure_objects(self, operand, workspace):
         '''Performs the measurements on the requested objects'''

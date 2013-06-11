@@ -25,7 +25,6 @@ See also <b>DisplayDensityPlot</b>, <b>DisplayHistogram</b>,
 #
 #Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import numpy as np
 from contrib.english import ordinal
@@ -173,7 +172,7 @@ class DisplayPlatemap(cpm.CPModule):
         return result
         
     def run(self, workspace):
-        if workspace.frame:
+        if self.show_window:
             m = workspace.get_measurements()
             # Get plates
             plates = m.get_all_measurements(cpmeas.IMAGE, self.plate_name.value)
@@ -211,18 +210,18 @@ class DisplayPlatemap(cpm.CPModule):
                         pm_dict[plate][well] = np.std(vals) / np.mean(vals)
                     else:
                         raise NotImplemented
-            
-            figure = workspace.create_or_find_figure(
-                         title="DisplayPlateMap, image cycle #%d"%(
-                workspace.measurements.image_set_number), 
-                         subplots=(1,1))
-            if self.title.value != '':
-                title = '%s (cycle %s)'%(self.title.value, workspace.measurements.image_set_number)
-            else:
-                title = '%s(%s)'%(self.agg_method, self.plot_measurement.value)
-            figure.subplot_platemap(0, 0, pm_dict, self.plate_type,
-                                    title=title)
-            
+            workspace.display_data.pm_dict = pm_dict
+
+    def display(self, workspace, figure):
+        pm_dict = workspace.display_data.pm_dict
+        figure.set_subplots((1, 1))
+        if self.title.value != '':
+            title = '%s (cycle %s)'%(self.title.value, workspace.measurements.image_set_number)
+        else:
+            title = '%s(%s)'%(self.agg_method, self.plot_measurement.value)
+        figure.subplot_platemap(0, 0, pm_dict, self.plate_type,
+                                title=title)
+
     def run_as_data_tool(self, workspace):
         return self.run(workspace)
 

@@ -20,7 +20,7 @@ specifying "Objects" as the type of image to save.
 <li><i>Angle:</i> The angle at each of the control points</li>
 <li><i>ControlPointX_N, ControlPointY_N:</i> The X,Y coordinate of a control point <i>N</i>.
 A control point is a sampled location along the worm shape used to construct the model.</li>
-</ul>
+</ul></li>
 </ul>
 
 <h3>Technical notes</h3>
@@ -45,7 +45,7 @@ Large clusters (> 6 worms) may be slow to process.</p>
 
 References
 <ul>
-<li>W&auml;hlby C, KKamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ, 
+<li>W&auml;hlby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ, 
 Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P, Ruvkun G,
 Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput 
 <i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716.</li>
@@ -61,7 +61,6 @@ Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput
 # 
 # Website: http://www.cellprofiler.org
 
-__version__="$Revision$"
 
 import logging
 import numpy as np
@@ -607,7 +606,6 @@ class UntangleWorms(cpm.CPModule):
         
         image_name = self.image_name.value
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         image = image_set.get_image(image_name,
                                     must_be_binary = True)
         num_control_points = self.ncontrol_points()
@@ -616,7 +614,7 @@ class UntangleWorms(cpm.CPModule):
         distances = scind.distance_transform_edt(image.pixel_data)
         worms = self.get_dictionary(workspace.image_set_list)[TRAINING_DATA]
         areas = np.bincount(labels.ravel())
-        if workspace.frame is not None:
+        if self.show_window:
             dworms = workspace.display_data.worms = []
             workspace.display_data.input_image = image.pixel_data
         for i in range(1, count+1):
@@ -648,9 +646,13 @@ class UntangleWorms(cpm.CPModule):
                 radial_profile += distances[ii, jj] * f
             worms.append(self.TrainingData(areas[i], cumul_lengths[-1],
                                            angles, radial_profile))
-            if workspace.frame is not None:
+            if self.show_window:
                 dworms.append(control_points)
     
+    def is_aggregation_module(self):
+        '''Building the model requires aggregation across image sets'''
+        return self.mode == MODE_TRAIN
+            
     def post_group(self, workspace, grouping):
         '''Write the training data file as we finish grouping.'''
         if self.mode == MODE_TRAIN:
@@ -762,7 +764,8 @@ class UntangleWorms(cpm.CPModule):
                     values.appendChild(value)
             doc.writexml(fd, addindent="  ", newl="\n")
             fd.close()
-            if workspace.frame is not None:
+            if self.show_window:
+                assert False, "Needs update for use with multiprocessing"
                 from matplotlib.transforms import Bbox
                 figure = workspace.create_or_find_figure(
                     subplots = (4,1),
@@ -794,7 +797,6 @@ class UntangleWorms(cpm.CPModule):
         params = self.read_params()
         image_name = self.image_name.value
         image_set = workspace.image_set
-        assert isinstance(image_set, cpi.ImageSet)
         image = image_set.get_image(image_name,
                                     must_be_binary = True)
         labels, count = scind.label(image.pixel_data, morph.eight_connect)
@@ -849,7 +851,7 @@ class UntangleWorms(cpm.CPModule):
         ijv, all_lengths, all_angles, all_control_coords_x, all_control_coords_y = \
            self.worm_descriptor_building(all_path_coords, params,
                                          labels.shape)
-        if workspace.frame is not None:
+        if self.show_window:
             workspace.display_data.input_image = image.pixel_data
             workspace.display_data.ijv = ijv
         object_set = workspace.object_set
@@ -932,12 +934,9 @@ class UntangleWorms(cpm.CPModule):
                     measurements.add_measurement(name, feature, values[:, i])
             
     
-    def is_interactive(self):
-        return False
-    
-    def display(self, workspace):
+    def display(self, workspace, figure):
         if self.mode == MODE_UNTANGLE:
-            figure = workspace.create_or_find_figure(subplots = (2,1))
+            figure.set_subplots((2, 1))
             axes = figure.subplot_imshow_bw(0, 0, workspace.display_data.input_image,
                                             title = self.image_name.value)
             if self.overlap in (OO_BOTH, OO_WITH_OVERLAP):
@@ -947,11 +946,11 @@ class UntangleWorms(cpm.CPModule):
             figure.subplot_imshow_ijv(1, 0, workspace.display_data.ijv,
                                       shape = workspace.display_data.input_image.shape,
                                       title = title,
-                                      sharex = axes, sharey = axes)
+                                      sharexy = axes)
         else:
             from matplotlib.path import Path
             from matplotlib.patches import PathPatch
-            figure = workspace.create_or_find_figure(subplots = (1,1))
+            figure.set_subplots((1, 1))
             figure.subplot_imshow_bw(0, 0, workspace.display_data.input_image,
                                      title = self.image_name.value)
             axes = figure.subplot(0,0)

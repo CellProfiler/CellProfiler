@@ -717,11 +717,14 @@ class FilterObjects(cpm.CPModule):
         rules = self.get_rules()
         rules_class = int(self.rules_class.value)-1
         scores = rules.score(workspace.measurements)
-        is_not_nan = np.any(~ np.isnan(scores), 1)
-        best_class = np.argmax(scores[is_not_nan], 1).flatten()
-        hits = np.zeros(scores.shape[0], bool)
-        hits[is_not_nan] = best_class == rules_class
-        indexes = np.argwhere(hits).flatten() + 1
+        if len(scores) > 0:
+            is_not_nan = np.any(~ np.isnan(scores), 1)
+            best_class = np.argmax(scores[is_not_nan], 1).flatten()
+            hits = np.zeros(scores.shape[0], bool)
+            hits[is_not_nan] = best_class == rules_class
+            indexes = np.argwhere(hits).flatten() + 1
+        else:
+            indexes = np.array([],int)
         return indexes
     
     def get_measurement_columns(self, pipeline):

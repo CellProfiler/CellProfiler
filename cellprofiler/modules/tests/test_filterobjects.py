@@ -912,7 +912,7 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertTrue(isinstance(module, F.FilterByObjectMeasurement))
         self.assertEqual(module.target_name.value, 'FilteredBlue')
         self.assertEqual(module.object_name.value, 'Nuclei')
-        self.assertEqual(module.rules_or_measurement, F.ROM_RULES)
+        self.assertEqual(module.mode, F.MODE_RULES)
         self.assertEqual(module.rules_file_name, 'rules.txt')
         self.assertEqual(module.rules_directory.dir_choice, 
                          cpprefs.DEFAULT_INPUT_SUBFOLDER_NAME )
@@ -950,7 +950,7 @@ Module #3: FilterByObjectMeasurement revision - 6
         self.assertTrue(isinstance(module, F.FilterObjects))
         self.assertEqual(module.object_name, "Nucs")
         self.assertEqual(module.target_name, "FilteredNuclei")
-        self.assertEqual(module.rules_or_measurement, F.ROM_RULES)
+        self.assertEqual(module.mode, F.MODE_RULES)
         self.assertEqual(module.rules_directory.dir_choice, 
                          cpprefs.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.rules_file_name, "myrules.txt")
@@ -988,7 +988,7 @@ FilterObjects:[module_num:1|svn_version:\'8955\'|variable_revision_number:3|show
         self.assertTrue(isinstance(module, F.FilterObjects))
         self.assertEqual(module.object_name, "Things")
         self.assertEqual(module.target_name, "FilteredThings")
-        self.assertEqual(module.rules_or_measurement, F.ROM_MEASUREMENTS)
+        self.assertEqual(module.mode, F.MODE_MEASUREMENTS)
         self.assertEqual(module.rules_directory.dir_choice, 
                          cpprefs.DEFAULT_OUTPUT_FOLDER_NAME)
         self.assertEqual(module.rules_file_name, "myrules.txt")
@@ -1128,7 +1128,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:4|show
         self.assertTrue(isinstance(module, F.FilterObjects))
         self.assertEqual(module.target_name, "MyFilteredObjects")
         self.assertEqual(module.object_name, "MyObjects")
-        self.assertEqual(module.rules_or_measurement, F.ROM_MEASUREMENTS)
+        self.assertEqual(module.mode, F.MODE_MEASUREMENTS)
         self.assertEqual(module.filter_choice, F.FI_LIMITS)
         self.assertEqual(module.rules_directory.dir_choice, cpprefs.DEFAULT_INPUT_FOLDER_NAME)
         self.assertEqual(module.rules_directory.custom_path, "./rules")
@@ -1199,7 +1199,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
         self.assertTrue(isinstance(module, F.FilterObjects))
         self.assertEqual(module.target_name, "MyFilteredObjects")
         self.assertEqual(module.object_name, "MyObjects")
-        self.assertEqual(module.rules_or_measurement, F.ROM_MEASUREMENTS)
+        self.assertEqual(module.mode, F.MODE_MEASUREMENTS)
         self.assertEqual(module.filter_choice, F.FI_LIMITS)
         self.assertEqual(module.rules_directory.dir_choice, cpprefs.DEFAULT_INPUT_FOLDER_NAME)
         self.assertEqual(module.rules_directory.custom_path, "./rules")
@@ -1272,7 +1272,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertTrue(isinstance(module, F.FilterObjects))
             self.assertEqual(module.target_name, "MyFilteredObjects")
             self.assertEqual(module.object_name, "MyObjects")
-            self.assertEqual(module.rules_or_measurement, F.ROM_MEASUREMENTS)
+            self.assertEqual(module.mode, F.MODE_MEASUREMENTS)
             self.assertEqual(module.filter_choice, F.FI_LIMITS)
             self.assertEqual(module.rules_directory.dir_choice, cpprefs.DEFAULT_INPUT_FOLDER_NAME)
             self.assertEqual(module.rules_directory.custom_path, "./rules")
@@ -1376,7 +1376,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             fd.close()
             rules_dir, rules_file = os.path.split(rules_path)
             module.object_name.value = "MyObjects"
-            module.rules_or_measurement.value = F.ROM_RULES
+            module.mode.value = F.MODE_RULES
             module.rules_file_name.value = rules_file
             module.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
             module.rules_directory.custom_path = rules_dir
@@ -1411,7 +1411,7 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                                   np.array([ 1.5, 2.3,1.8]))
                 rules_dir, rules_file = os.path.split(rules_path)
                 module.object_name.value = "MyObjects"
-                module.rules_or_measurement.value = F.ROM_RULES
+                module.mode.value = F.MODE_RULES
                 module.rules_file_name.value = rules_file
                 module.rules_directory.dir_choice = cpprefs.ABSOLUTE_FOLDER_NAME
                 module.rules_directory.custom_path = rules_dir
@@ -1425,4 +1425,49 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
                 self.assertTrue(np.all(target_labels[labels != kept] == 0))
         finally:
             os.remove(rules_path)
+        
+    def test_09_01_discard_border_objects(self):
+        '''Test the mode to discard border objects'''
+        labels = np.zeros((10,10), int)
+        labels[1:4, 0:3] = 1
+        labels[4:8, 1:5] = 2
+        labels[:,9] = 3
+
+        expected = np.zeros((10,10), int)
+        expected[4:8, 1:5] = 1
+
+        workspace, module = self.make_workspace({"input_objects" : labels})
+        module.object_name.value = "input_objects"
+        module.target_name.value = "output_objects"
+        module.mode.value = F.MODE_BORDER
+        module.run(workspace)
+        output_objects = workspace.object_set.get_objects("output_objects")
+        self.assertTrue(np.all(expected == output_objects.segmented))
+
+    def test_09_02_discard_mask_objects(self):
+        '''Test discarding objects that touch the mask of objects parent img'''
+        mask = np.ones((10, 10), bool)
+        mask[5, 5] = False
+        labels = np.zeros((10, 10), int)
+        labels[1:4, 1:4] = 1
+        labels[5:8, 5:8] = 2
+        expected = labels.copy()
+        expected[expected==2] = 0
+        
+        workspace, module = self.make_workspace({})
+        parent_image = cpi.Image(np.zeros((10, 10)), mask=mask)
+        workspace.image_set.add("input_image", parent_image)
+        
+        input_objects = cpo.Objects()
+        input_objects.segmented = labels
+        input_objects.parent_image = parent_image
+        
+        workspace.object_set.add_objects(input_objects, "input_objects")
+        
+        module.object_name.value = "input_objects"
+        module.target_name.value = "output_objects"
+        module.mode.value = F.MODE_BORDER
+        module.run(workspace)
+        output_objects = workspace.object_set.get_objects("output_objects")
+        self.assertTrue(np.all(expected == output_objects.segmented))
         

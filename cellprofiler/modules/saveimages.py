@@ -567,8 +567,7 @@ class SaveImages(cpm.CPModule):
              (objects.count > 255 or pixels.shape[2] > 1))):
             if has_bioformats:
                 self.save_image_with_bioformats(
-                    workspace, pixels, 
-                    channel_names = ["Labels%d" for i in range(pixels.shape[2])])
+                    workspace, pixels, timeseries=True)
             else:
                 self.save_image_with_libtiff(workspace, pixels)
             return
@@ -659,7 +658,9 @@ class SaveImages(cpm.CPModule):
             self.save_image(workspace)
         
 
-    def save_image_with_bioformats(self, workspace, pixels = None, channel_names = None):
+    def save_image_with_bioformats(
+        self, workspace, pixels = None, channel_names = None,
+        timeseries=False):
         ''' Saves using bioformats library. Currently used for saving 16-bit
         tiffs. Some code is redundant from save_image, but it's easier to 
         separate the logic completely.
@@ -709,9 +710,15 @@ class SaveImages(cpm.CPModule):
         try:
             width = pixels.shape[1]
             height = pixels.shape[0]
+            stacks = 1
+            frames = 1
             if pixels.ndim == 2:
                 channels = 1
                 interleaved = None
+            elif pixels.ndim == 3 and timeseries:
+                channels = 1
+                interleaved = None
+                frames = pixels.shape[2]
             elif pixels.ndim == 3 and pixels.shape[2] == 3:
                 channels = 3
                 interleaved = True
@@ -721,8 +728,6 @@ class SaveImages(cpm.CPModule):
                 interleaved = False
             else:
                 raise ValueError('Image shape is not supported')
-            stacks = 1
-            frames = 1
             is_big_endian = (sys.byteorder.lower() == 'big')
             FormatTools = make_format_tools_class()
             
@@ -760,7 +765,7 @@ class SaveImages(cpm.CPModule):
 
             if pixels.ndim == 2:
                 channel_pixels = [ pixels.flatten() ]
-            elif pixels.shape[2] == 3:
+            elif pixels.shape[2] == 3 and not timeseries:
                 channel_pixels = [
                     np.array([pixels[:,:,0], pixels[:,:,1], pixels[:,:,2]]).flatten()]
             else:

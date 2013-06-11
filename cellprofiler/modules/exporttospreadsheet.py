@@ -343,6 +343,15 @@ class ExportToSpreadsheet(cpm.CPModule):
         if pipeline.test_mode:
             raise cps.ValidationError("ExportToSpreadsheet will not produce output in Test Mode",
                                       self.directory)
+        
+        '''Warn user that changing the extension may cause Excel to stuff everything into one column'''
+        if not self.wants_everything.value:
+            all_extensions = [os.path.splitext(group.file_name.value)[1] for group in self.object_groups]
+            is_valid_extension = [not group.wants_automatic_file_name.value and ((extension == ".csv" and self.delimiter == DELIMITER_COMMA) or (extension ==  ".txt" and self.delimiter == DELIMITER_TAB)) 
+                                  for (extension,group) in zip(all_extensions,self.object_groups)]
+            if not all(is_valid_extension):
+                raise(cps.ValidationError("To avoid formatting problems in Excel, use the extension .csv for comma-delimited files and .txt for tab-delimited..",
+                          self.object_groups[is_valid_extension.index(False)].file_name))        
 
     @property
     def delimiter_char(self):
@@ -385,7 +394,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         if self.wants_everything:
             for object_name in workspace.measurements.get_object_names():
                 self.run_objects([object_name], 
-                                 "%s.csv" % object_name, workspace)
+                                 "%s.%s" %(object_name, "csv" if self.delimiter == DELIMITER_COMMA else "txt"), workspace)
             return
         
         object_names = []

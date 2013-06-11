@@ -293,10 +293,23 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_show_report_bad_sizes_dlg,
                  cpprefs.set_show_report_bad_sizes_dlg,
                  CHOICE, cphelp.SHOW_REPORT_BAD_SIZES_DLG_HELP],
-                ['Show the parameter sampling menu',
+                ['Show the sampling menu',
                  cpprefs.get_show_sampling,
                  cpprefs.set_show_sampling,
-                 CHOICE, cphelp.PARAMETER_SAMPLING_MENU_HELP],
+                 CHOICE, """<p>Show the sampling menu </p>
+                 <p><i>Note that CellProfiler must be restarted after setting.</i></p>
+                 <p>The sampling menu is an interplace for Paramorama, a plugin for an interactive visualization 
+                 program for exploring the parameter space of image analysis algorithms.
+                 will generate a text file, which specifies: (1) all unique combinations of 
+                 the sampled parameter values; (2) the mapping from each combination of parameter values to 
+                 one or more output images; and (3) the actual output images.</p>
+                 <p>More information on how to use the plugin can be found 
+                 <a href="http://www.comp.leeds.ac.uk/scsajp/applications/paramorama2/">here</a>.</p>
+                 <p><b>References</b>
+                 <ul>
+                 <li>Visualization of parameter space for image analysis. Pretorius AJ, Bray MA, Carpenter AE 
+                 and Ruddle RA. (2011) IEEE Transactions on Visualization and Computer Graphics, 17(12), 2402-2411.</li>
+                 </ul>"""],
                 ['Warn if a pipeline was saved in an old version of CellProfiler',
                  cpprefs.get_warn_about_old_pipeline,
                  cpprefs.set_warn_about_old_pipeline,

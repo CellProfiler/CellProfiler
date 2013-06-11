@@ -168,7 +168,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             This is the CellProfiler name for ImageJ's current image after
             processing by the command or macro. The image will be a
             snapshot of the current image after the command has run, and
-            will be avilable for processing by subsequent CellProfiler modules.""")
+            will be available for processing by subsequent CellProfiler modules.""")
         
         self.pause_before_proceeding = cps.Binary(
             "Wait for ImageJ before continuing?", False,

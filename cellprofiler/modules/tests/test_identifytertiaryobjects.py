@@ -337,3 +337,77 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         for column in columns:
             self.assertTrue(any([all([cv==ev for cv,ev in zip(column, ec)])
                                  for ec in expected]))
+
+    def test_04_01_do_not_shrink(self):
+        '''Test the option to not shrink the smaller objects'''
+        primary_labels = np.zeros((10,10),int)
+        secondary_labels = np.zeros((10,10),int)
+        primary_labels[3:6,4:7] = 1
+        secondary_labels[2:7,3:8] = 1
+        expected_labels = np.zeros((10,10),int)
+        expected_labels[2:7,3:8] = 1
+        expected_labels[3:6,4:7] = 0
+        
+        workspace = self.make_workspace(primary_labels, secondary_labels)
+        module = workspace.module
+        module.shrink_primary.value = False
+        module.run(workspace)
+        measurements = workspace.measurements
+
+        output_objects = workspace.object_set.get_objects(TERTIARY)
+        self.assertTrue(np.all(output_objects.segmented == expected_labels))
+        
+    def test_04_02_do_not_shrink_identical(self):
+        '''Test a case where the primary and secondary objects are identical'''
+        primary_labels = np.zeros((20, 20), int)
+        secondary_labels = np.zeros((20, 20), int)
+        expected_labels = np.zeros((20, 20), int)
+        
+        # first and third objects have different sizes
+        primary_labels[3:6,4:7] = 1
+        secondary_labels[2:7,3:8] = 1
+        expected_labels[2:7,3:8] = 1
+        expected_labels[3:6,4:7] = 0
+        
+        primary_labels[13:16,4:7] = 3
+        secondary_labels[12:17,3:8] = 3
+        expected_labels[12:17,3:8] = 3
+        expected_labels[13:16,4:7] = 0
+        
+        # second object and fourth have same size
+        
+        primary_labels[3:6, 14:17] = 2
+        secondary_labels[3:6, 14:17] = 2
+        primary_labels[13:16, 14:17] = 4
+        secondary_labels[13:16, 14:17] = 4
+        workspace = self.make_workspace(primary_labels, secondary_labels)
+
+        module = workspace.module
+        module.shrink_primary.value = False
+        module.run(workspace)
+        output_objects = workspace.object_set.get_objects(TERTIARY)
+        self.assertTrue(np.all(output_objects.segmented == expected_labels))
+
+        measurements = workspace.measurements
+        count_feature = "Count_%s"%(TERTIARY)
+        value = measurements.get_current_measurement("Image", count_feature)
+        self.assertEqual(value, 3)
+
+        child_count_feature = "Children_%s_Count"%(TERTIARY)
+        for parent_name in PRIMARY, SECONDARY:
+            parent_of_feature = "Parent_%s" % parent_name
+            parent_of = measurements.get_current_measurement(
+                TERTIARY, parent_of_feature)
+            child_count = measurements.get_current_measurement(
+                parent_name, child_count_feature)
+            for parent, expected_child_count in ((1, 1), (2, 0), (3, 1), (4,0)):
+                self.assertEqual(child_count[parent-1], expected_child_count)
+            for child in (1, 3):
+                self.assertEqual(parent_of[child-1], child)
+            
+        for location_feature in (
+            cpmi.M_LOCATION_CENTER_X, cpmi.M_LOCATION_CENTER_Y):
+            values = measurements.get_current_measurement(
+                TERTIARY, location_feature)
+            self.assertTrue(np.all(np.isnan(values) == [False, True, False]))
+                

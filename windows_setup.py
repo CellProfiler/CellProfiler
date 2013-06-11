@@ -180,6 +180,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
 opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
                               "matplotlib", "matplotlib.numerix.random_array",
+                              "h5py", "h5py.*",
                               "email.iterators",
                               "cellprofiler.modules.*"],
                 'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],
@@ -285,6 +286,12 @@ except:
 #                            than to hand-patch the manifest and DLLs.
 #
 ##############################################
+try:
+    # Fix for scipy 0.11
+    from scipy.sparse.csgraph import _validation
+    opts['py2exe']['includes'] += ["scipy.sparse.csgraph._validation"]
+except:
+    pass
 
 if do_modify:
     # A trick to load the dlls

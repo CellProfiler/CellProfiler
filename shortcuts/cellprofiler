@@ -1,0 +1,14 @@
+#!/bin/bash
+
+function runcp {
+    export JAVA_HOME=$HOME/CellProfiler/jdk1.7.0_21
+    export LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64/server:/home/cp/usr/CellProfiler/lib/
+    export HOSTTYPE=amd64
+    export BLAS=/usr/lib64
+    export LAPACK=/usr/lib64
+    export PYTHONPATH=/home/cp/CellProfiler/:/usr/lib64/python2.6/site-packages/:/home/cp/usr/CellProfiler/lib/python2.6/site-packages/:/home/cp/usr/CellProfiler/lib/    
+    cd ~/CellProfiler
+    ~/usr/CellProfiler/bin/python2.6 CellProfiler.py
+}
+
+runcp

@@ -369,6 +369,12 @@ class ExportToDatabase(cpm.CPModule):
             <a href="http://www.sqlite.org/">here</a>. </li>
             </ul>""")
         
+        self.test_connection_button = cps.DoSomething(
+            "Press this button to test the connection to the remote server using the current settings",
+            "Test connection", self.test_connection,
+            doc = """This button test the connection to MySQL server specified using
+            the settings entered by the user.""")
+        
         self.db_name = cps.Text(
             "Database name", "DefaultDB",doc = """
             Select a name for the database you want to use""")
@@ -1075,6 +1081,7 @@ class ExportToDatabase(cpm.CPModule):
                 result += [self.db_host]
                 result += [self.db_user]
                 result += [self.db_passwd]
+                result += [self.test_connection_button]
         elif self.db_type == DB_MYSQL_CSV:
             result += [self.sql_file_prefix]
             result += [self.db_name]
@@ -1358,19 +1365,58 @@ class ExportToDatabase(cpm.CPModule):
                     raise cps.ValidationError(warning_string%"class table name",self.properties_class_table_name)
             
         '''Warn user re: objects that are not 1:1 (i.e., primary/secondary/tertiary) if creating a view'''
-        if self.objects_choice != O_NONE and self.separate_object_tables == OT_VIEW:
-            d = {}
-            selected_objs = self.objects_list.value.rsplit(',')
-            for obj in selected_objs:
-                for module in pipeline.modules(): 
-                    if module.is_object_identification_module() and module.get_measurements(pipeline,obj,C_PARENT):
-                        d[obj] = module.get_measurements(pipeline,obj,C_PARENT)[0]
-        
-            candidate_objs = set(d.keys() + d.values())
-            mismatched_objs = set(selected_objs).difference(candidate_objs)
-            if mismatched_objs:
-                raise cps.ValidationError("%s is not in a 1:1 relationship with the other selected objects. Either de-select the object or choose another object container."%",".join(mismatched_objs),self.separate_object_tables)
+        if self.objects_choice != O_NONE and self.separate_object_tables in (OT_VIEW,OT_COMBINE):
+            if self.objects_choice == O_SELECT:
+                selected_objs = self.objects_list.value.rsplit(',')
+            elif self.objects_choice == O_ALL:
+                selected_objs = pipeline.get_provider_dictionary(cps.OBJECT_GROUP).keys()
             
+            if len(selected_objs) > 1:
+                # Check whether each selected object comes from an Identify module. If it does, look for its parent.
+                d = dict.fromkeys(selected_objs,None)
+                for obj in selected_objs:
+                    for module in pipeline.modules(): 
+                        if module.is_object_identification_module():# and module.get_measurements(pipeline,obj,C_PARENT):
+                            parent = module.get_measurements(pipeline,obj,C_PARENT)
+                            if len(parent) > 0:
+                                d[obj] = parent[0] 
+                # For objects with no parents (primary), use the object itself
+                d = dict(zip(d.keys(),[key if value is None else value for (key,value) in d.items()]))
+                
+                # Only those objects which have parents in common should be written together
+                if len(set(d.values())) > 1:
+                    # Pick out the parent with the lowest representation in the selected object list
+                    mismatched_parent = sorted(zip([d.values().count(item) for item in set(d.values())],set(d.values())))[0][1]
+                    # Find the objects that this parent goes with
+                    mismatched_objs = [key for (key,value) in d.items() if value == mismatched_parent]
+                    msg = "%s is not in a 1:1 relationship with the other objects, which may cause downstream problems.\n "%",".join(mismatched_objs)
+                    msg += "You may want to choose another object container"
+                    msg += "." if self.objects_choice == O_ALL else " or de-select the object(s)."
+                    raise cps.ValidationError(msg,self.separate_object_tables)
+            
+    def test_connection(self):
+        '''Check to make sure the MySQL server is remotely accessible'''
+        import wx
+        
+        error = None
+        try:
+            connection = connect_mysql(self.db_host.value, 
+                                        self.db_user.value, 
+                                        self.db_passwd.value,
+                                        self.db_name.value)
+        except MySQLdb.Error, error:
+            if error.args[0] == 1045:
+                msg = "Incorrect username or password"
+            elif error.args[0] == 1049:
+                msg = "The database does not exist."
+            else:
+                msg = "A connection error to the database host was returned: %s"%error.args[1]         
+        
+        if not error:
+            wx.MessageBox("Connection to database host successful.")
+        else:
+            wx.MessageBox("%s. Please check your settings."%msg)
+    
     def make_full_filename(self, file_name, 
                            workspace = None, image_set_index = None):
         """Convert a file name into an absolute path

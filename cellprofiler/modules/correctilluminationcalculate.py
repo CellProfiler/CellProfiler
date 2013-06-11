@@ -119,7 +119,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
              <i>Rescale</i>. </li>
              </ul> 
              <p>Please note that if a mask was applied to the input image, the pixels outside of the
-             mask will be exlcuded from consideration. This is useful, for instance, in cases where
+             mask will be excluded from consideration. This is useful, for instance, in cases where
              you have masked out the well edge in an image from a multi-well plate; the dark well 
              edge would distort the illumination correction function along the interior well edge.
              Masking the image beforehand solves this problem.</p>''')

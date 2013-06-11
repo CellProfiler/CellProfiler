@@ -20,7 +20,7 @@ specifying "Objects" as the type of image to save.
 <li><i>Angle:</i> The angle at each of the control points</li>
 <li><i>ControlPointX_N, ControlPointY_N:</i> The X,Y coordinate of a control point <i>N</i>.
 A control point is a sampled location along the worm shape used to construct the model.</li>
-</ul>
+</ul></li>
 </ul>
 
 <h3>Technical notes</h3>
@@ -45,7 +45,7 @@ Large clusters (> 6 worms) may be slow to process.</p>
 
 References
 <ul>
-<li>W&auml;hlby C, KKamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ, 
+<li>W&auml;hlby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ, 
 Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P, Ruvkun G,
 Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput 
 <i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716.</li>

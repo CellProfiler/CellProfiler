@@ -566,9 +566,12 @@ def get_pixel_size():
 def set_pixel_size(pixel_size):
     config_write(PIXEL_SIZE,str(pixel_size))
 
-__output_filename = 'DefaultOUT.mat'
+__output_filename = None
 __output_filename_listeners = []
 def get_output_file_name():
+    global __output_filename
+    if __output_filename is None:
+        return 'DefaultOUT.mat'
     return __output_filename
 
 def set_output_file_name(filename):

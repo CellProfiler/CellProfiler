@@ -87,9 +87,15 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             What do you want to call the new subregions? The new tertiary subregion 
             will consist of the smaller object subtracted from the larger object.""")
 
-        self.shrink_primary = cps.Binary("Shrink primary object?",True, doc="""
-            To ensure that there is always a tertiary object produced, the smaller object is shrunk by 1 pixel before
-            subtracting the objects. Uncheck this box to prevent this behavior and subtract the objects directly.""")
+        self.shrink_primary = cps.Binary("Shrink smaller object prior to subtraction?",True, doc="""
+            Checking this box will shrink the smaller object by 1 pixel before subtracting the objects.
+            this approach will ensure that there is always a tertiary object produced, even if it is
+            only 1 pixel wide.
+            <p>Unchecking this box will subtract the objects directly, which will ensure that no pixels
+            are shared between the primary/secondary/tertiary objects and hence measurements for all
+            three sets of objects will not use the same pixels multiple times. However, this may result 
+            in the creation of objects with no area. Measurements can still be made on such objects, but
+            the results will be zero or not-a-number (NaN)</p>""")
         
         self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?",False)
         

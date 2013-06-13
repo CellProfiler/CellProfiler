@@ -174,10 +174,10 @@ class HDF5Dict(object):
             self.hdf5_file = h5py.File(self.filename, mode)
         try:
             if load_measurements:
-                if VERSION not in self.hdf5_file.keys():
+                if (VERSION not in self.hdf5_file.keys() or
+                    top_level_group_name not in self.hdf5_file):
                     load_measurements = False
-                elif top_level_group_name not in self.hdf5_file:
-                    load_measurements = False
+                    run_group_name = default_run_group_name
                 else:
                     mgroup = self.hdf5_file[top_level_group_name]
                     if run_group_name is None:

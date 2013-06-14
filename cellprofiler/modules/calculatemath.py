@@ -205,17 +205,22 @@ class CalculateMath(cpm.CPModule):
                                     <i>(Used only for operations other than None)</i><br>
                                     To what power would you like to raise the result?""")
 
-        self.final_addend = cps.Float("Add to the result",0,doc=""" """)
+        self.final_addend = cps.Float("Add to the result",0,doc="""
+                                    What number would you like to add to the result?""")
 
         self.constrain_lower_bound = cps.Binary("Constrain the result to a lower bound?",False,doc="""
-                                            Check this if you want the result to be constrained to a lower bound.""")
+                                    Check this setting if you want the result to be 
+                                    constrained to a lower bound.""")
 
-        self.lower_bound = cps.Float("Set values less than this to this value?",0,doc="""""")
+        self.lower_bound = cps.Float("Enter the lower bound",0,doc="""
+                                    Enter the lower bound here.""")
 
         self.constrain_upper_bound = cps.Binary("Constrain the result to an upper bound?",False,doc="""
-                                            Check this if you want the result to be constrained to an upper bound.""")
+                                    Check this setting if you want the result to be 
+                                    constrained to an upper bound.""")
 
-        self.upper_bound = cps.Float("Set values greater than this to this value?",1,doc="""""")
+        self.upper_bound = cps.Float("Enter the upper bound",1,doc="""
+                                    Enter the upper bound here.""")
         
     def settings(self):
         result = [self.output_feature_name, self.operation] 

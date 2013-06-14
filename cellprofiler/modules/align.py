@@ -84,16 +84,16 @@ class Align(cpm.CPModule):
                                            M_ALL, doc='''
              Two options for the alignment method are available:<br>
              <ul>
-             <li><i>Mutual Information:</i> This more general method works well for aligning
+             <li><i>%(M_MUTUAL_INFORMATION)s:</i> This more general method works well for aligning
              images from different modalities that contain the same information, but are 
-             expressed differently. However, this method performs better than Normalized Cross Correlation, 
+             expressed differently. However, this method performs better than %(M_CROSS_CORRELATION)s, 
              even in the same modality, if the images are not highly correlated.  
              It is iterative, and thus tends to be slower than other methods, 
              but is more likely to be correct.  Essentially, alignment is performed by measuring
              how well one image "explains" the other. For example, a flourescent image 
              can be aligned to a brightfield image by this method since the relevant 
              features are bright in one modality where they are dim in the other. </li>
-             <li><i>Normalized Cross Correlation:</i> This is a good means 
+             <li><i>%(M_CROSS_CORRELATION)s:</i> This is a good means 
              of alignment in the case of images acquired with the same modality
              (e.g., all images to be aligned are fluorescent). It is fast, however 
              it can be highly influenced by a particular, possibly spurious, feature and 
@@ -101,7 +101,13 @@ class Align(cpm.CPModule):
              linear relationship between the intensities of the two images, 
              i.e., the relevant features in the images to be aligned all have
              varying degrees of brightness.</li>
-             </ul>''')
+             </ul>
+             <p>
+             References
+             <ul>
+             <li>Lewis JP. (1995) "Fast normalized cross-correlation." <i>Vision Interface</i>, 1-7.</li>
+             </ul>
+             </p>'''%globals())
         self.crop_mode = cps.Choice(
             "Crop mode", [C_CROP, C_PAD, C_SAME_SIZE],
             doc = """The crop mode determines how the output images are either cropped

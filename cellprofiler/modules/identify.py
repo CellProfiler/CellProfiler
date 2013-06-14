@@ -321,7 +321,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             
             <li><i>Ridler-Calvard:</i> This method is simple and its results are
             often very similar to Otsu's. According to
-            Sezgin and Sankur's paper (<i>Journal of Electronic Imaging</i>, 2004), Otsu's 
+            Sezgin and Sankur 2004, Otsu's 
             overall quality on testing 40 nondestructive testing images is slightly 
             better than Ridler's (average error: Otsu, 0.318; Ridler, 0.401). 
             Ridler-Calvard chooses an initial threshold and then iteratively calculates the next 
@@ -345,10 +345,12 @@ class Identify(cellprofiler.cpmodule.CPModule):
             <p>References
             <ul>
             <li>Sezgin M, Sankur B (2004) "Survey over image thresholding techniques and quantitative 
-            performance evaluation." <i>Journal of Electronic Imaging</i>, 13(1), 146-165</li>
+            performance evaluation." <i>Journal of Electronic Imaging</i>, 13(1), 146-165.
+            <a href="http://dx.doi.org/10.1117/1.1631315">(link)</a></li>
             <li>Padmanabhan K, Eddy WF, Crowley JC (2010) "A novel algorithm for
             optimal image thresholding of biological data" <i>Journal of 
-            Neuroscience Methods</i> 193, 380-384.</li>
+            Neuroscience Methods</i> 193, 380-384.
+            <a href="http://dx.doi.org/10.1016/j.jneumeth.2010.08.031">(link)</a></li>
             </ul></p>
             """)
         

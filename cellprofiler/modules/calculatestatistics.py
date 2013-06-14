@@ -69,8 +69,9 @@ References
 <ul>
 <li><i>Z' factor:</i> Zhang JH, Chung TD, et al. (1999) "A
 simple statistical parameter for use in evaluation and validation of high
-throughput screening assays." <i>J Biomolecular Screening</i> 4(2): 67-73.</li>
-<li><i>V factor:</i> Ravkin I. (2004): Poster #P12024 - Quality
+throughput screening assays" <i>J Biomolecular Screening</i> 4(2): 67-73.
+<a href="http://dx.doi.org/10.1177/108705719900400206">(link)</a></li>
+<li><i>V factor:</i> Ravkin I (2004): Poster #P12024 - Quality
 Measures for Imaging-based Cellular Assays. <i>Society for Biomolecular
 Screening Annual Meeting Abstracts</i>. </li>
 <li>Code for the calculation of Z' and V factors was kindly donated by 

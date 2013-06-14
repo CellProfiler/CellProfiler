@@ -40,6 +40,13 @@ thresholding method of choice.</li>
 </ul>
 </li>
 </ul>
+
+References
+<ul>
+<li>Bray MA, Fraser AN, Hasaka TP, Carpenter AE (2012) "Workflow and metrics for image quality 
+control in large-scale high-content screens." <i>J Biomol Screen</i> 17(2):266-74. 
+<a href="http://dx.doi.org/10.1177/1087057111420292">(link)</a></li>
+</ul>
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -202,16 +209,20 @@ class MeasureImageQuality(cpm.CPModule):
             <p><b>References</b><br>
             <ul>
             <li>Field DJ (1997) "Relations between the statistics of natural 
-            images and the response properties of cortical cells," <i>Journal of the Optical 
+            images and the response properties of cortical cells" <i>Journal of the Optical 
             Society of America. A, Optics, image science, and vision</i>
-            4(12):2379-94.</li>
-            <li>Haralick RM (1979) "Statistical and structural approaches to texture,"
-            Proc. IEEE, 67(5):786-804.</li>
-            <li>Vollath D (1987) "Automatic focusing by correlative methods," <i>Journal of Microscopy</i>
-            147(3):279-288 </li>
-            <li>Sun Y, Duthaler S, Nelson B (2004) "Autofocusing in Computer Microscopy:
-            Selecting the optimal focus algorithm," <i>Microscopy Research and
-            Technique</i> 65:139-149 </li>
+            4(12):2379-94.
+            <a href="http://redwood.psych.cornell.edu/papers/field_87.pdf"><(pdf)</a></li>
+            <li>Haralick RM (1979) "Statistical and structural approaches to texture"
+            Proc. IEEE, 67(5):786-804.
+            <a href="http://dx.doi.org/10.1109/PROC.1979.11328"><(link)</a></li>
+            <li>Vollath D (1987) "Automatic focusing by correlative methods" <i>Journal of Microscopy</i>
+            147(3):279-288.
+            <a href="http://dx.doi.org/10.1111/j.1365-2818.1987.tb02839.x"><(link)</a></li>
+            <li>Sun Y, Duthaler S, Nelson B (2004) "Autofocusing in computer microscopy:
+            Selecting the optimal focus algorithm" <i>Microscopy Research and
+            Technique</i> 65:139-149 
+            <a href="http://itee.uq.edu.au/~elec4601/Module%201/AutofocusMicroscopy.pdf"><(pdf)</a></li>
             </ul>"""))
         
         group.append("include_local_blur", cps.Binary(

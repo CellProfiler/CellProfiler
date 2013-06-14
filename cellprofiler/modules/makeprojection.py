@@ -79,9 +79,7 @@ class MakeProjection(cpm.CPModule):
             <li><i>%(P_MINIMUM)s:</i> Use the minimum pixel value at each pixel position.</li>
             <li><i>%(P_SUM)s:</i> Add the pixel values at each pixel position.</li>
             <li><i>%(P_VARIANCE)s:</i> Compute the variance at each pixel position. <br>
-            The variance  method is described in "Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al. (2009), 
-            "Bright Field Microscopy as an Alternative to Whole Cell Fluorescence in Automated Analysis of
-            Macrophage Images", PLoS ONE 4(10): e7497 <a href="http://dx.doi.org/10.1371/journal.pone.0007497">(link)</a>.
+            The variance  method is described in Selinummi et al (2009).
             The method is designed to operate on a z-stack of brightfield images taken
             at different focus planes. Background pixels will have relatively uniform
             illumination whereas cytoplasm pixels will have higher variance across the
@@ -111,6 +109,15 @@ class MakeProjection(cpm.CPModule):
             <b>MaskObjects</b> in another pipeline to mask all images or objects in the
             group similarly.</li>
             </ul>
+            <p>
+            References
+            <ul>
+            <li>Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al. (2009) 
+            "Bright field microscopy as an alternative to whole cell fluorescence in 
+            automated analysis of macrophage images", PLoS ONE 4(10): e7497 
+            <a href="http://dx.doi.org/10.1371/journal.pone.0007497">(link)</a>.</li>
+            </ul>
+            </p>
             ''' % globals())
         self.projection_image_name = cps.ImageNameProvider(
             'Name the output image',

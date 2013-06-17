@@ -282,18 +282,22 @@ problem. If you want to specify a folder that does not yet exist, type the desir
 click on the <i>New folder</i> icon to the right of the <i>Browse folder</i> icon.
 The folder will be created according to the pathname you have typed.</p>"""
 
-OUTPUT_FILENAME_HELP = """
+USING_THE_OUTPUT_FILE_HELP = """
 <p>Please note that the output file will be deprecated in the future. This setting
 is temporarily present for those need HDF5 or MATLAB formats, and will be moved to 
 Export modules in future versions of CellProfiler.</p>
 
-<p>In the <i>Output Filename</i> box, you can specify the name of the output file 
-where all information about the analysis as well as any measurements will be 
-stored to the hard drive. <b>Important note:</b> This file does <i>not</i> provide
-the same functionality as the Export modules. If you want to produce a spreadsheet
-of measurements easily readable by Excel or a database viewer (or similar programs),
-please refer to the <b>ExportToSpreadsheet</b> or <b>ExportToDatabase</b> modules
-and the associated help.</p>
+<p>The <i>output file</i> is a file where all information about the analysis as well 
+as any measurements will be stored to the hard drive. <b>Important note:</b> This file 
+does <i>not</i> provide the same functionality as the Export modules. If you want to 
+produce a spreadsheet of measurements easily readable by Excel or a database viewer 
+(or similar programs), please refer to the <b>ExportToSpreadsheet</b> or 
+<b>ExportToDatabase</b> modules and the associated help.</p>
+
+<p>The options associated with the output file are accessible by pressing the 
+"View output settings" button at the bottom of the pipeline panel. In the 
+settings panel to the left, in the <i>Output Filename</i> box, you can specify the 
+name of the output file.</p>
 
 <p>The output file can be written in one of two formats:
 <ul>
@@ -688,9 +692,6 @@ For spreadsheets, the most widely used program to open these files is Microsoft'
 Since the file is plain text, other editors can also be used, such as Calc (OpenOffice, freeware) or Google Docs.
 For databases, a popular (and free) access tools is SQLyog. 
 </p>
-"""
-
-USING_THE_OUTPUT_FILE_HELP = """
 """
 
 MEMORY_AND_SPEED_HELP = """
@@ -1834,7 +1835,7 @@ MAIN_HELP = (
     ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
     ("Testing Your Pipeline",TEST_MODE_HELP),
     ("Running Your Pipeline", RUNNING_YOUR_PIPELINE_HELP),    
-    ("Using your Output", (
+    ("Using Your Output", (
         ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP),
         ("Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
         ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),   
@@ -1844,7 +1845,7 @@ MAIN_HELP = (
             ("Load Modules", LEGACY_LOAD_MODULES_HELP),
             ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
             ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
-            ("Setting The Output Filename", OUTPUT_FILENAME_HELP))),
+            ("Setting The Output Filename", USING_THE_OUTPUT_FILE_HELP))),
         ("Batch Processing", BATCHPROCESSING_HELP),
         ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
         ("Configuring Logging", CONFIGURING_LOGGING_HELP)))

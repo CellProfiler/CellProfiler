@@ -21,7 +21,7 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.icons import get_builtin_image
 from cellprofiler.gui.htmldialog import HTMLDialog
 from cellprofiler.gui.help import \
-     DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, OUTPUT_FILENAME_HELP
+     DEFAULT_IMAGE_FOLDER_HELP, DEFAULT_OUTPUT_FOLDER_HELP, USING_THE_OUTPUT_FILE_HELP
 import cellprofiler.analysis as cpanalysis
 
 WELCOME_MESSAGE = 'Welcome to CellProfiler'
@@ -252,7 +252,7 @@ class PreferencesView:
         sizer.Add(self.__write_measurements_combo_box, 0, wx.ALIGN_LEFT)
         panel.SetSizer(sizer)
         panel.Bind(wx.EVT_BUTTON,
-                   lambda event: self.__on_help(event, OUTPUT_FILENAME_HELP),
+                   lambda event: self.__on_help(event, USING_THE_OUTPUT_FILE_HELP),
                    output_filename_help_button)
         panel.Bind(wx.EVT_TEXT, self.__on_output_filename_changed, self.__output_filename_edit_box)
         cpprefs.add_output_file_name_listener(self.__on_preferences_output_filename_event)

@@ -986,7 +986,8 @@ class NamesAndTypes(cpm.CPModule):
             if has_images:
                 result += [C_FILE_NAME, C_PATH_NAME, C_URL]
             if has_objects:
-                result += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_COUNT]
+                result += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, 
+                           C_OBJECTS_URL, C_COUNT]
             result += [C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH, C_SERIES,
                        C_FRAME]
         elif object_name in self.get_object_names():

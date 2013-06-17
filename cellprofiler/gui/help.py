@@ -892,7 +892,7 @@ This command runs the batch by using additional options to CellProfiler that
 specify the following (type "CellProfiler.py -h" to see a list of available options):
 <ul>
 <li><code>-p &lt;Default_Output_Folder_path&gt;/Batch_data.mat</code>: The 
-location of the batch file, where &lt;Default_Output_Folder_path%gt; is the 
+location of the batch file, where &lt;Default_Output_Folder_path&gt; is the 
 output folder path as seen by the cluster computer.</li>
 <li><code>-c</code>: Run "headless", i.e., without the GUI</li>
 <li><code>-r</code>: Run the pipeline specified on startup, which is contained in 

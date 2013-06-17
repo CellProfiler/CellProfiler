@@ -289,7 +289,13 @@ Export modules in future versions of CellProfiler.</p>
 
 <p>In the <i>Output Filename</i> box, you can specify the name of the output file 
 where all information about the analysis as well as any measurements will be 
-stored to the hard drive. The output file can be written in one of two formats:
+stored to the hard drive. <b>Important note:</b> This file does <i>not</i> provide
+the same functionality as the Export modules. If you want to produce a spreadsheet
+of measurements easily readable by Excel or a database viewer (or similar programs),
+please refer to the <b>ExportToSpreadsheet</b> or <b>ExportToDatabase</b> modules
+and the associated help.</p>
+
+<p>The output file can be written in one of two formats:
 <ul>
 <li>A <i>.mat file</i> which is readable by CellProfiler and by MATLAB. </li>
 <li>An <i>.h5 file</i> which is readable by CellProfiler, MATLAB and any other program

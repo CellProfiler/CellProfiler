@@ -872,8 +872,9 @@ class PipelineController:
         
         for url_feature in url_features:
             channel = [url_feature[(len(cpm.C_URL)+1):]] * len(image_numbers)
+            urls = m.get_measurement(cpm.IMAGE, url_feature, image_numbers)
             data.add_files(
-                m.get_measurement(cpm.IMAGE, url_feature, image_numbers),
+                [url.encode('utf-8') for url in urls],
                 plate, well, site, channel_names = channel)
         if self.__plate_viewer is None:
             self.__pv_frame = wx.Frame(self.__frame, title = "Plate viewer")

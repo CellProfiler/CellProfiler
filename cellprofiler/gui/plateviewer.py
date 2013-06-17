@@ -22,7 +22,8 @@ from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 import threading
 import multiprocessing
 
-from bioformats import load_using_bioformats
+from bioformats.formatreader import load_using_bioformats_url
+import cellprofiler.utilities.jutil
 
 class PlateData(object):
     '''The plate data is the data store for the image files
@@ -119,7 +120,7 @@ class PlateData(object):
         self.on_update()
         
     def get_plate_names(self):
-        return self.plate_well_site.keys()
+        return filter((lambda x:x is not None), self.plate_well_site.keys())
     
     def get_plate(self, name):
         pd = self.plate_well_site[name]
@@ -277,6 +278,9 @@ class PlateViewer(object):
         self.plate_name = self.plate_choice.GetStringSelection()
         if self.plate_name in self.data.get_plate_names():
             self.plate_data = self.data.get_plate(self.plate_name)
+        elif (len(self.data.get_plate_names()) == 0 and
+              None in self.data.plate_well_site):
+            self.plate_data = self.data.get_plate(None)
         else:
             self.plate_data = None
         self.draw_plate()
@@ -294,19 +298,25 @@ class PlateViewer(object):
                             [fd[PlateData.D_CHANNEL] 
                              if PlateData.D_CHANNEL in fd else str(i+1)
                              for i, fd in enumerate(sd)])
-            update_values = self.site_grid.GetNumberRows() != len(site_names)
-            if (self.site_grid.GetNumberRows() < len(site_names)):
-                self.site_grid.AppendRows(
-                    len(site_names) - self.site_grid.GetNumberRows())
-            elif (self.site_grid.GetNumberRows() > len(site_names)):
-                self.site_grid.DeleteRows(
-                    numRows = self.site_grid.GetNumberRows() - len(site_names))
-            side = int(np.ceil(np.sqrt(float(len(site_names)))))
-            for i, site_name in enumerate(sorted(site_names)):
-                self.site_grid.SetRowLabelValue(i, site_name)
-                if update_values:
-                    self.site_grid.SetCellValue(i, 0, str((i % side) + 1))
-                    self.site_grid.SetCellValue(i, 1, str(int(i / side) + 1))
+            if len(site_names) > 1 or None not in site_names:
+                self.site_grid.Show(True)
+                self.use_site_grid = True
+                update_values = self.site_grid.GetNumberRows() != len(site_names)
+                if (self.site_grid.GetNumberRows() < len(site_names)):
+                    self.site_grid.AppendRows(
+                        len(site_names) - self.site_grid.GetNumberRows())
+                elif (self.site_grid.GetNumberRows() > len(site_names)):
+                    self.site_grid.DeleteRows(
+                        numRows = self.site_grid.GetNumberRows() - len(site_names))
+                side = int(np.ceil(np.sqrt(float(len(site_names)))))
+                for i, site_name in enumerate(sorted(site_names)):
+                    self.site_grid.SetRowLabelValue(i, site_name)
+                    if update_values:
+                        self.site_grid.SetCellValue(i, 0, str((i % side) + 1))
+                        self.site_grid.SetCellValue(i, 1, str(int(i / side) + 1))
+            else:
+                self.site_grid.Show(False)
+                self.use_site_grid = False
             update_values = self.channel_grid.GetNumberRows() != len(channel_names)
             if (self.channel_grid.GetNumberRows() < len(channel_names)):
                 self.channel_grid.AppendRows(
@@ -423,6 +433,7 @@ class PlateViewer(object):
             self.image_dict_generation += 1
         
         def fn():
+            cellprofiler.utilities.jutil.attach()
             with self.image_dict_lock:
                 generation = self.image_dict_generation
                 
@@ -437,12 +448,13 @@ class PlateViewer(object):
                         channel = fd[PlateData.D_CHANNEL]
                     else:
                         channel = str(c+1)
-                    img = load_using_bioformats(fd[PlateData.D_FILENAME])
+                    img = load_using_bioformats_url(fd[PlateData.D_FILENAME])
                     with self.image_dict_lock:
                         if self.image_dict_generation > generation:
                             return
                         sd[channel] = img
-                wx.CallAfter(self.update_figure)
+            wx.CallAfter(self.update_figure)
+            cellprofiler.utilities.jutil.detach()
         t = threading.Thread(target = fn)
         t.setDaemon(True)
         t.start()
@@ -463,13 +475,16 @@ class PlateViewer(object):
             
         site_dict = {}
         tile_dims = [0, 0]
-        for i in range(self.site_grid.GetNumberRows()):
-            site_name = self.site_grid.GetRowLabelValue(i)
-            site_dict[site_name] = np.array([
-                float(self.site_grid.GetCellValue(i, j)) - 1
-                for j in range(2)])[::-1]
-            tile_dims = [max(i0, i1) for i0, i1 in zip(
-                site_dict[site_name], tile_dims)]
+        if self.use_site_grid:
+            for i in range(self.site_grid.GetNumberRows()):
+                site_name = self.site_grid.GetRowLabelValue(i)
+                site_dict[site_name] = np.array([
+                    float(self.site_grid.GetCellValue(i, j)) - 1
+                    for j in range(2)])[::-1]
+                tile_dims = [max(i0, i1) for i0, i1 in zip(
+                    site_dict[site_name], tile_dims)]
+        else:
+            site_dict[None] = np.zeros(2)
         img_size = [0, 0]
         for sd in image_dict.values():
             for channel in sd:

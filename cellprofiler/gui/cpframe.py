@@ -552,7 +552,6 @@ class CPFrame(wx.Frame):
             ID_FILE_OPEN_IMAGE,
             'View Image',
             'Open an image file for viewing')
-        self.__menu_file.Append(ID_FILE_PLATEVIEWER, 'Plate Viewer', 'Open the plate viewer to inspect the images in the current workspace')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze Images\tctrl+N','Run the pipeline on the images in the image directory')
         self.__menu_file.Append(ID_FILE_STOP_ANALYSIS,'Stop Analysis','Stop running the pipeline')
@@ -741,6 +740,9 @@ class CPFrame(wx.Frame):
 
         if not hasattr(self, "__data_tools_menu"):
             self.__data_tools_menu = wx.Menu()
+            self.__data_tools_menu.Append(
+                ID_FILE_PLATEVIEWER, 'Plate Viewer', 
+                'Open the plate viewer to inspect the images in the current workspace')
             for data_tool_name in get_data_tool_names():
                 new_id = wx.NewId()
                 self.__data_tools_menu.Append(new_id, data_tool_name)

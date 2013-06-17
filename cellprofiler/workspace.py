@@ -463,7 +463,7 @@ class Workspace(object):
         
     def close(self):
         '''Close the workspace and delete the temporary measurements file'''
-        if self.measurements is not None:
+        if self.measurements is not None and self.__filename is not None:
             self.measurements.close()
             os.unlink(self.__filename)
         

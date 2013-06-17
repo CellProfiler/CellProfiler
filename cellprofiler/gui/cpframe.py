@@ -504,7 +504,7 @@ class CPFrame(wx.Frame):
             help="Create an empty project")
         self.__menu_file.Append(
             wx.ID_OPEN,
-            "Open Project\tctrl+O",
+            "Open Project...\tctrl+O",
             help='Open a project from a .cpi project file')
         self.recent_workspace_files = wx.Menu()
         self.__menu_file.AppendSubMenu(
@@ -520,7 +520,7 @@ class CPFrame(wx.Frame):
             help='Save the project to a file of your choice')
         self.__menu_file.Append(
             ID_FILE_REVERT_TO_SAVED,
-            "Revert to saved",
+            "Revert to Saved",
             help="Reload the project file, discarding changes")
         submenu = wx.Menu()
         submenu.Append(

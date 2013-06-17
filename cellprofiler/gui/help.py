@@ -38,6 +38,7 @@ X_AUTOMATIC_EXTRACTION = "Automatic"
 X_MANUAL_EXTRACTION = "Manual"
 X_IMPORTED_EXTRACTION = "Import metadata"
 DO_NOT_WRITE_MEASUREMENTS = "Do not write measurements"
+VIEW_OUTPUT_SETTINGS_BUTTON_NAME = "View output settings"
 
 logger = logging.getLogger(__name__)
 
@@ -228,11 +229,13 @@ want grouped together.</li>
 
 DEFAULT_IMAGE_FOLDER_HELP = """
 <p>Please note that the Default Input Folder will be deprecated in the future. The location
-of non-image files needed by some odules will be set to an absolute path 
+of non-image files needed by some modules will be set to an absolute path 
 in future versions of CellProfiler. For specifying the location of image files, please
 use the <i>Input modules</i> panel starting with the <b>Images</b> module.</p>
 
-<p>In the Folder panel, the <i>Default Input Folder</i> contains the input image or data files
+<p>The <i>Default Input Folder</i> is enabled only if a legacy pipeline is loaded into
+CellProfiler and is accessible by pressing the "%(VIEW_OUTPUT_SETTINGS_BUTTON_NAME)s"
+button at the botton of the pipeline panel. The folder designated as the <i>Default Input Folder</i> contains the input image or data files
 that you want to analyze. Several File Processing modules (e.g., 
 <b>LoadImages</b> or <b>LoadData</b>) provide the option of retrieving images 
 from this folder on a default basis unless you specify, within the module, an alternate, 
@@ -249,21 +252,15 @@ type the full folder path in the edit box. If you type a folder path that
 cannot be found, the message box below will indicate this fact until you correct the problem. 
 If you want to specify a folder that does not yet exist, type the desired name and 
 click on the <i>New folder</i> button <img src="memory:%(LOCATION_CREATE_BUTTON)s"></img>.
-The folder will be created according to the pathname you have typed.</p>
-
-<p>The contents of the Default Input Folder are shown in the file panel to the left.
-Double-clicking image file names in this panel opens them in a figure window.             
-If you double-click on .mat pipeline or output files (CellProfiler 1.0) or .cp 
-pipeline files (CellProfiler 2.0), you will be asked if you want to load a       
-pipeline from the file. To refresh the contents of this panel, click the <i>Refresh</i>
-button <img src="memory:%(LOCATION_REFRESH_BUTTON)s"></img>.</p>"""%globals()
+The folder will be created according to the pathname you have typed.</p>"""%globals()
 
 DEFAULT_OUTPUT_FOLDER_HELP = """
 <p>Please note that the Default Output Folder will be deprecated in the future. The location
 of files written by the various output modules will be set to an absolute path 
 in future versions of CellProfiler.</p>
 
-<p>In the Folder panel, the <i>Default Output Folder</i> is the folder that CellProfiler uses to
+<p>The <i>Default Output Folder</i> is accessible by pressing the "%(VIEW_OUTPUT_SETTINGS_BUTTON_NAME)s"
+button at the botton of the pipeline panel. The Default Output Folder is the folder that CellProfiler uses to
 store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or 
 <b>ExportToSpreadsheet</b>) provide the option of saving analysis results to 
 this folder on a default basis unless you specify, within the module, an alternate, 
@@ -282,18 +279,22 @@ problem. If you want to specify a folder that does not yet exist, type the desir
 click on the <i>New folder</i> icon to the right of the <i>Browse folder</i> icon.
 The folder will be created according to the pathname you have typed.</p>"""
 
-OUTPUT_FILENAME_HELP = """
+USING_THE_OUTPUT_FILE_HELP = """
 <p>Please note that the output file will be deprecated in the future. This setting
 is temporarily present for those need HDF5 or MATLAB formats, and will be moved to 
 Export modules in future versions of CellProfiler.</p>
 
-<p>In the <i>Output Filename</i> box, you can specify the name of the output file 
-where all information about the analysis as well as any measurements will be 
-stored to the hard drive. <b>Important note:</b> This file does <i>not</i> provide
-the same functionality as the Export modules. If you want to produce a spreadsheet
-of measurements easily readable by Excel or a database viewer (or similar programs),
-please refer to the <b>ExportToSpreadsheet</b> or <b>ExportToDatabase</b> modules
-and the associated help.</p>
+<p>The <i>output file</i> is a file where all information about the analysis as well 
+as any measurements will be stored to the hard drive. <b>Important note:</b> This file 
+does <i>not</i> provide the same functionality as the Export modules. If you want to 
+produce a spreadsheet of measurements easily readable by Excel or a database viewer 
+(or similar programs), please refer to the <b>ExportToSpreadsheet</b> or 
+<b>ExportToDatabase</b> modules and the associated help.</p>
+
+<p>The options associated with the output file are accessible by pressing the 
+"View output settings" button at the bottom of the pipeline panel. In the 
+settings panel to the left, in the <i>Output Filename</i> box, you can specify the 
+name of the output file.</p>
 
 <p>The output file can be written in one of two formats:
 <ul>
@@ -690,9 +691,6 @@ For databases, a popular (and free) access tools is SQLyog.
 </p>
 """
 
-USING_THE_OUTPUT_FILE_HELP = """
-"""
-
 MEMORY_AND_SPEED_HELP = """
 <p>CellProfiler includes several options for dealing with out-of-memory
 errors associated with image analysis: </p>
@@ -847,8 +845,9 @@ each of the separate cluster computers will write output files to this folder.
 If you cannot create folders and set read/write permissions to these folders (or don't know 
 how), ask your Information Technology (IT) department for help. </li>
 
-<li>In the CellProfiler folder panel, set the Default Input and Default Output Folders
-to the <i>images</i> and <i>output</i> folders created above, respectively.</li>
+<li>Press the "%(VIEW_OUTPUT_SETTINGS_BUTTON_NAME)s" button. In the panel that appears, set the Default Input and Default Output Folders
+to the <i>images</i> and <i>output</i> folders created above, respectively. The Default Input
+Folder setting will only appear if a legacy pipeline is being run.</li>
 
 <li><i>Create a pipeline for your image set.</i> You should test it on a few example
 images from your image set. The module settings selected for your pipeline will be 
@@ -925,7 +924,7 @@ can be resubmitted.</p>
 <a href = "http://goo.gl/HtTzD">wiki</a> 
 if installing CellProfiler on a Unix system, or post your questions on 
 the CellProfiler <a href = "http://cellprofiler.org/forum/viewforum.php?f=18">CPCluster forum</a>.</p>
-"""
+"""%globals()
 
 RUN_MULTIPLE_PIPELINES_HELP = """
 <br>The <b>Run multiple pipelines</b> dialog lets you select several pipelines
@@ -1096,6 +1095,19 @@ MENU_BAR_FILE_HELP = """
 The <i>File</i> menu provides options for loading and saving your pipelines and 
 performing an analysis run.
 <ul>
+<li><b>New project:</b> Clears the current workspace by removing all the analysis
+modules and resetting the input modules.</li>
+<li><b>Open Project...:</b> Open a previously saved CellProfiler project (.cpi file)
+from your hard drive.</li>
+<li><b>Open Recent:</b> Lets you select a project file to open from a list of 
+recently opened projects.</li>
+<li><b>Save Project:</b> Save the current project to your hard drive as a .cpi file. 
+If it has not been saved previously, you will be asked for a file name to give the 
+project. Thereafter, any changes to the project will be automatically saved to that filename unless
+you choose <b>Save as...</b>.</li>
+<li>Save Project As...:</b> Save the project to a new file name.</li>
+<li><b>Revert to Saved:</b> Restore the currently open project to the settings it had when
+it was first opened.</li>
 <li><b>Load Pipeline...:</b> Load a CellProfiler pipeline (.cp or .mat) file from 
 your hard drive.</li>
 <li><b>Load Pipeline from URL:</b> Load a CellProfiler pipeline from a web address 
@@ -1105,8 +1117,8 @@ CellProfiler .cp pipeline file.</li>
 <li><b>Save Pipeline as...:</b> Prompts the user for a filename to save the 
 pipeline as.</li>
 <li><b>Clear Pipeline:</b> Removes all modules from the current pipeline.</li>
-<li><b>Open Image:</b> Opens a dialog box prompting you to select an image file for
-display. Images listed in the file panel can be also be displayed by double-clicking 
+<li><b>View Image:</b> Opens a dialog box prompting you to select an image file for
+display. Images listed in the File list panel in the <b>Images</b> module can be also be displayed by double-clicking 
 on the filename.</li>
 <li><b>Analyze Images:</b> Executes the current pipeline using the current module
 and Default Input and Output folder settings.</li>
@@ -1834,7 +1846,7 @@ MAIN_HELP = (
     ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
     ("Testing Your Pipeline",TEST_MODE_HELP),
     ("Running Your Pipeline", RUNNING_YOUR_PIPELINE_HELP),    
-    ("Using your Output", (
+    ("Using Your Output", (
         ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP),
         ("Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
         ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),   
@@ -1844,7 +1856,7 @@ MAIN_HELP = (
             ("Load Modules", LEGACY_LOAD_MODULES_HELP),
             ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
             ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
-            ("Setting The Output Filename", OUTPUT_FILENAME_HELP))),
+            ("Setting The Output Filename", USING_THE_OUTPUT_FILE_HELP))),
         ("Batch Processing", BATCHPROCESSING_HELP),
         ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
         ("Configuring Logging", CONFIGURING_LOGGING_HELP)))

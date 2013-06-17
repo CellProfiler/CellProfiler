@@ -978,7 +978,7 @@ class NamesAndTypes(cpm.CPModule):
              C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
              C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, \
              C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
-        from cellprofiler.modules.identify import C_LOCATION, C_NUMBER
+        from cellprofiler.modules.identify import C_LOCATION, C_NUMBER, C_COUNT
         result = []
         if object_name == cpmeas.IMAGE:
             has_images = any(self.get_image_names())

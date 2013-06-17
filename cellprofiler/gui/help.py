@@ -1372,20 +1372,6 @@ CellProfiler looks for updates on startup."""
 SHOW_STARTUP_BLURB_HELP = """The <i>Display welcome text on startup</i> preference 
 controls whether CellProfiler displays an orientation message on startup."""
 
-WC_ASK = "Ask"
-WC_LAST = "Last"
-WC_OPEN = "Open"
-WC_NEW = "New"
-WORKSPACE_CHOICE_HELP = """The <i>Initial workspace choice</i> preference
-determines the workspace that's chosen when CellProfiler starts. The choices
-are<br><ul>
-<li><i>%(WC_ASK)s</i>: Show a dialog box that lets you choose any of the options below.</li>
-<li><i>%(WC_LAST)s</i>: Open the workspace that you used last.</li>
-<li><i>%(WC_OPEN)s</i>: Choose an existing workspace to open.</li>
-<li><i>%(WC_NEW)s</i>: Always open a new workspace on startup.</li>
-</ul>
-""" % globals()
-
 SHOW_ANALYSIS_COMPLETE_HELP = """The <i>Show "Analysis complete"</i>
 preference determines whether CellProfiler displays a message box at the
 end of a run. Check this preference to show the message box or uncheck it
@@ -1482,7 +1468,6 @@ EACH_PREFERENCE_HELP = (
     ( "ImageJ version", IJ_VERSION_HELP),
     ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
     ( "Display welcome text on startup", SHOW_STARTUP_BLURB_HELP ),
-    ( "Initial workspace choice", WORKSPACE_CHOICE_HELP),
     ( "Warn if Java runtime not present", REPORT_JVM_ERROR_HELP),
     ( "Show the 'Analysis complete' message", SHOW_ANALYSIS_COMPLETE_HELP),
     ( "Show the 'Exiting test mode' message", SHOW_EXITING_TEST_MODE_HELP),

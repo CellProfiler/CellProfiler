@@ -16,6 +16,8 @@ import logging
 logger = logging.getLogger(__name__)
 from cStringIO import StringIO
 import numpy as np
+import h5py
+import os
 
 from cellprofiler.cpgridinfo import CPGridInfo
 from .utilities.hdf5_dict import HDF5FileList
@@ -82,6 +84,7 @@ class Workspace(object):
         self.__disposition = DISPOSITION_CONTINUE
         self.__disposition_listeners = []
         self.__in_background = False # controls checks for calls to create_or_find_figure()
+        self.__filename = None
         self.__file_list = None
         if measurements is not None:
             self.set_file_list(HDF5FileList(measurements.hdf5_dict.hdf5_file))
@@ -375,16 +378,22 @@ class Workspace(object):
         load_pipeline - true to load the pipeline from the file, false to
                         use the current pipeline.
         '''
-        import h5py
+        import shutil
         from .pipeline import M_PIPELINE
         import cellprofiler.measurements as cpmeas
-        from cStringIO import StringIO
         
         if self.__measurements is not None:
-            self.__measurements.close()
+            self.close()
+        #
+        # Copy the file to a temporary location before opening
+        #
+        fd, self.__filename = cpmeas.make_temporary_file()
+        os.close(fd)
+        
+        shutil.copyfile(filename, self.__filename)
             
         self.__measurements = cpmeas.Measurements(
-            filename = filename, mode = "r+")
+            filename = self.__filename, mode = "r+")
         if self.__file_list is not None:
             self.__file_list.remove_notification_callback(
                 self.__on_file_list_changed)
@@ -404,22 +413,59 @@ class Workspace(object):
                 M_PIPELINE, fd.getvalue())
         self.notify(self.WorkspaceLoadedEvent(self))
         
-    def create(self, filename):
+    def create(self):
         '''Create a new workspace file
         
         filename - name of the workspace file
         '''
-        from .measurements import Measurements
+        from .measurements import Measurements, make_temporary_file
         if isinstance(self.measurements, Measurements):
-            self.measurements.close()
-        self.__measurements = Measurements(filename = filename,
-                                           mode = "w")
+            self.close()
+        
+        fd, self.__filename = make_temporary_file()
+        self.__measurements = Measurements(
+            filename = self.__filename, mode = "w")
+        os.close(fd)
         if self.__file_list is not None:
             self.__file_list.remove_notification_callback(
                 self.__on_file_list_changed)
         self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
         self.__file_list.add_notification_callback(self.__on_file_list_changed)
         self.notify(self.WorkspaceCreatedEvent(self))
+        
+    def save(self, path):
+        '''Save the current workspace to the given path
+        
+        path - path to file to save
+        
+        Note: "saving" means copying the temporary workspace file
+        '''
+        self.measurements.flush()
+        #
+        # Note: shutil.copy and similar don't seem to work under Windows.
+        #       I suspect that there's some file mapping magic that's
+        #       causing problems because I found some internet postings
+        #       where people tried to copy database files and failed.
+        #       If you're thinking, "He didn't close the file", I did.
+        #       shutil.copy creates a truncated file if you use it.
+        #
+        hdf5src = self.measurements.hdf5_dict.hdf5_file
+        hdf5dest = h5py.File(path, mode="w")
+        for key in hdf5src:
+            obj = hdf5src[key]
+            if isinstance(obj, h5py.Dataset):
+                hdf5dest[key] = obj.value
+            else:
+                hdf5src.copy(hdf5src[key], hdf5dest, key)
+        for key in hdf5src.attrs:
+            hdf5dest.attrs[key] = hdf5src.attrs[key]
+        hdf5dest.close()
+        
+    def close(self):
+        '''Close the workspace and delete the temporary measurements file'''
+        if self.measurements is not None:
+            self.measurements.close()
+            os.unlink(self.__filename)
         
     def save_pipeline_to_measurements(self):
         from cellprofiler.pipeline import M_PIPELINE

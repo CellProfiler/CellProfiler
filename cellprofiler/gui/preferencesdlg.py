@@ -177,27 +177,6 @@ class PreferencesDlg(wx.Dialog):
                 else:
                     setter(control.Value)
     
-    workspace_choices = [
-        (cphelp.WC_ASK, cpprefs.WC_SHOW_WORKSPACE_CHOICE_DIALOG),
-        (cphelp.WC_LAST, cpprefs.WC_OPEN_LAST_WORKSPACE),
-        (cphelp.WC_OPEN, cpprefs.WC_OPEN_OLD_WORKSPACE),
-        (cphelp.WC_NEW, cpprefs.WC_CREATE_NEW_WORKSPACE)]
-    
-    def get_workspace_choice(self):
-        result = cpprefs.get_workspace_choice()
-        for hchoice, pchoice in self.workspace_choices:
-            if pchoice == result:
-                return hchoice
-        return cphelp.WC_ASK
-    
-    def set_workspace_choice(self, value):
-        for hchoice, pchoice in self.workspace_choices:
-            if hchoice == value:
-                result = pchoice
-        else:
-            result = cpprefs.WC_SHOW_WORKSPACE_CHOICE_DIALOG
-        cpprefs.set_workspace_choice(result)
-    
     def get_preferences(self):
         '''Get the list of preferences.
         
@@ -272,11 +251,6 @@ class PreferencesDlg(wx.Dialog):
                  cpprefs.get_startup_blurb, 
                  cpprefs.set_startup_blurb, 
                  CHOICE, cphelp.SHOW_STARTUP_BLURB_HELP],
-                ["Initial workspace choice",
-                 self.get_workspace_choice,
-                 self.set_workspace_choice,
-                 [x[0] for x in self.workspace_choices],
-                 cphelp.WORKSPACE_CHOICE_HELP],
                 ["Warn if Java runtime environment not present",
                  cpprefs.get_report_jvm_error,
                  cpprefs.set_report_jvm_error,

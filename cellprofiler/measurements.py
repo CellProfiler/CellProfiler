@@ -185,6 +185,18 @@ def get_length_from_varchar(x):
         return None
     return int(m.groups()[0])
 
+def make_temporary_file():
+    '''Make a temporary file to use for backing measurements data
+    
+    returns a file descriptor (that should be closed when done) and a
+    file name.
+    '''
+    dir = cpprefs.get_temporary_directory()
+    if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
+        dir = None
+    return tempfile.mkstemp(
+        prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
+    
 class Measurements(object):
     """Represents measurements made on images and objects
     """
@@ -226,10 +238,7 @@ class Measurements(object):
             mode = "w"
             is_temporary = False
         elif filename is None:
-            dir = cpprefs.get_temporary_directory()
-            if not (os.path.exists(dir) and os.access(dir, os.W_OK)):
-                dir = None
-            fd, filename = tempfile.mkstemp(prefix='Cpmeasurements', suffix='.hdf5', dir=dir)
+            fd, filename = make_temporary_file()
             is_temporary = True
             import traceback
             logger.debug("Created temporary file %s" % filename)

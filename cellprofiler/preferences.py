@@ -646,14 +646,14 @@ def set_default_colormap(colormap):
     __default_colormap = colormap
     config_write(COLORMAP, colormap)
 
-__current_pipeline_path = None
-def get_current_pipeline_path():
-    global __current_pipeline_path
-    return __current_pipeline_path
+__current_workspace_path = None
+def get_current_workspace_path():
+    global __current_workspace_path
+    return __current_workspace_path
 
-def set_current_pipeline_path(path):
-    global __current_pipeline_path
-    __current_pipeline_path = path
+def set_current_workspace_path(path):
+    global __current_workspace_path
+    __current_workspace_path = path
 
 def get_check_new_versions():
     if not config_exists(CHECKFORNEWVERSIONS):
@@ -1194,39 +1194,9 @@ def set_temporary_directory(tempdir):
     config_write(TEMP_DIR, tempdir)
     __temp_dir = tempdir
 
-__workspace_choice = None
-def get_workspace_choice():
-    '''Get the user's preference for the initial workspace
-    
-    Returns one of the following:
-    WC_SHOW_WORKSPACE_CHOICE_DIALOG - ask the user what to do
-    WC_OPEN_LAST_WORKSPACE - open the workspace stored in the preferences
-    WC_CREATE_NEW_WORKSPACE - ask the user for the name of a new workspace
-    WC_OPEN_OLD_WORKSPACE - ask the user for the name of an old workspace
-    '''
-    global __workspace_choice
-    if __workspace_choice is not None:
-        pass
-    elif config_exists(WORKSPACE_CHOICE):
-        __workspace_choice = config_read(WORKSPACE_CHOICE)
-        if __workspace_choice not in (
-            WC_SHOW_WORKSPACE_CHOICE_DIALOG, WC_OPEN_LAST_WORKSPACE,
-            WC_CREATE_NEW_WORKSPACE, WC_OPEN_OLD_WORKSPACE):
-            __workspace_choice = WC_SHOW_WORKSPACE_CHOICE_DIALOG
-    else:
-        __workspace_choice = WC_SHOW_WORKSPACE_CHOICE_DIALOG
-    return __workspace_choice
-
-def set_workspace_choice(value):
-    '''Set the user preference for showing the workspace choice dialog'''
-    global __workspace_choice
-    __workspace_choice = value
-    config_write(WORKSPACE_CHOICE, value)
-    
 __progress_data = threading.local()
 __progress_data.last_report = time.time()
 __progress_data.callbacks = None
-
 __interpolation_mode = None
 def get_interpolation_mode():
     '''Get the interpolation mode for matplotlib

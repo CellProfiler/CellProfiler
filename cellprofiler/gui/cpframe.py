@@ -47,13 +47,17 @@ import cellprofiler.utilities.version as version
 import traceback
 import sys
 
-ID_FILE_NEW_WORKSPACE = wx.NewId()
-ID_FILE_LOAD=wx.NewId()
+ID_FILE_NEW_WORKSPACE = wx.ID_NEW
+ID_FILE_LOAD=wx.ID_OPEN
+ID_FILE_LOAD_PIPELINE=wx.NewId()
 ID_FILE_URL_LOAD_PIPELINE = wx.NewId()
+ID_FILE_OPEN_IMAGE = wx.NewId()
 ID_FILE_EXIT=wx.NewId()
 ID_FILE_WIDGET_INSPECTOR=wx.NewId()
 ID_FILE_SAVE_PIPELINE=wx.NewId()
-ID_FILE_SAVE_AS = wx.NewId()
+ID_FILE_SAVE=wx.ID_SAVE
+ID_FILE_SAVE_AS = wx.ID_SAVEAS
+ID_FILE_REVERT_TO_SAVED = wx.NewId()
 ID_FILE_CLEAR_PIPELINE=wx.NewId()
 ID_FILE_EXPORT_IMAGE_SETS = wx.NewId()
 ID_FILE_ANALYZE_IMAGES=wx.NewId()
@@ -494,13 +498,60 @@ class CPFrame(wx.Frame):
 
         """
         self.__menu_file = wx.Menu()
-        self.__menu_file.Append(ID_FILE_NEW_WORKSPACE, "New Workspace...", 
-                                "Create a blank workspace and .cpi file")
-        self.__menu_file.Append(ID_FILE_LOAD,'Load...\tctrl+O','Load a pipeline or workspace')
-        self.__menu_file.Append(ID_FILE_URL_LOAD_PIPELINE, 'Load Pipeline from URL', 'Load a pipeline from the web')
-        self.__menu_file.Append(ID_FILE_SAVE_PIPELINE,'Save Pipeline\tctrl+shift+S','Save changes to a pipeline')
-        self.__menu_file.Append(ID_FILE_SAVE_AS,'Save as...','Save a pipeline, a workspace or export an image set list')
-        self.__menu_file.Append(ID_FILE_CLEAR_PIPELINE,'Clear Pipeline','Remove all modules from the current pipeline')
+        self.__menu_file.Append(
+            wx.ID_NEW,
+            "New Project",
+            help="Create an empty project")
+        self.__menu_file.Append(
+            wx.ID_OPEN,
+            "Open Project\tctrl+O",
+            help='Open a project from a .cpi project file')
+        self.recent_workspace_files = wx.Menu()
+        self.__menu_file.AppendSubMenu(
+            self.recent_workspace_files, 
+            "Open Recent")
+        self.__menu_file.Append(
+            wx.ID_SAVE,
+            "Save Project\tctrl+S",
+            help='Save the project to the current project file')
+        self.__menu_file.Append(
+            wx.ID_SAVEAS,
+            "Save Project As...",
+            help='Save the project to a file of your choice')
+        self.__menu_file.Append(
+            ID_FILE_REVERT_TO_SAVED,
+            "Revert to saved",
+            help="Reload the project file, discarding changes")
+        submenu = wx.Menu()
+        submenu.Append(
+            ID_FILE_LOAD_PIPELINE,
+            'From file...',
+            'Import a pipeline into the project from a .cp file')
+        submenu.Append(
+            ID_FILE_URL_LOAD_PIPELINE, 
+            'From URL...', 
+            'Load a pipeline from the web')
+        self.__menu_file.AppendSubMenu(submenu, "Import Pipeline")
+        
+        submenu = wx.Menu()
+        submenu.Append(
+            ID_FILE_SAVE_PIPELINE,
+            'Pipeline...',
+            "Save the project's pipeline to a .cp file")
+        submenu.Append(
+            ID_FILE_EXPORT_IMAGE_SETS,
+            "Image Set Listing...",
+            "Export the project's image sets as a .csv file suitable for LoadData")
+        self.__menu_file.AppendSubMenu(submenu, "Export")
+        self.__menu_file.Append(
+            ID_FILE_CLEAR_PIPELINE,
+            'Clear Pipeline',
+            'Remove all modules from the current pipeline')
+        self.__menu_file.AppendSeparator()
+        self.__menu_file.Append(
+            ID_FILE_OPEN_IMAGE,
+            'View Image',
+            'Open an image file for viewing')
         self.__menu_file.Append(ID_FILE_PLATEVIEWER, 'Plate Viewer', 'Open the plate viewer to inspect the images in the current workspace')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_FILE_ANALYZE_IMAGES,'Analyze Images\tctrl+N','Run the pipeline on the images in the image directory')
@@ -511,13 +562,9 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(ID_FILE_RESTART, 'Resume Pipeline', 'Resume a pipeline from a saved measurements file.')
         self.__menu_file.AppendSeparator()
         self.__menu_file.Append(ID_OPTIONS_PREFERENCES,"&Preferences...","Set global application preferences")
-        self.__menu_file.Append(ID_CHECK_NEW_VERSION,"Check for Updates...","Check for a new version of CellProfiler")
+
         self.recent_files = wx.Menu()
-        self.__menu_file.AppendSubMenu(self.recent_files, "&Recent")
         self.recent_pipeline_files = wx.Menu()
-        self.recent_files.AppendSubMenu(self.recent_pipeline_files, "&Pipelines")
-        self.recent_workspace_files = wx.Menu()
-        self.recent_files.AppendSubMenu(self.recent_workspace_files, "&Workspaces")
         self.__menu_file.Append(ID_FILE_EXIT,'E&xit\tctrl+Q','Quit the application')
 
         self.menu_edit = wx.Menu()
@@ -606,6 +653,10 @@ class CPFrame(wx.Frame):
                                 "Launch the developer's guide webpage")
         self.__menu_help.Append(ID_HELP_SOURCE_CODE, "Source Code",
                                 "Visit CellProfiler's Github repository")
+        self.__menu_help.Append(
+            ID_CHECK_NEW_VERSION,
+            "Check for Updates...",
+            "Check for a new version of CellProfiler")
         self.__menu_help.Append(ID_HELP_ABOUT, "&About...",
                                 "About CellProfiler")
 
@@ -626,6 +677,7 @@ class CPFrame(wx.Frame):
         self.SetMenuBar(self.__menu_bar)
         self.enable_edit_commands([])
 
+        wx.EVT_MENU(self, ID_FILE_OPEN_IMAGE, self.on_open_image)
         wx.EVT_MENU(self,ID_FILE_EXIT,lambda event: self.Close())
         wx.EVT_MENU(self,ID_FILE_WIDGET_INSPECTOR,self.__on_widget_inspector)
         wx.EVT_MENU(self, ID_FILE_NEW_CP,self.__on_new_cp)
@@ -656,7 +708,7 @@ class CPFrame(wx.Frame):
         accelerator_table = wx.AcceleratorTable(
             [(wx.ACCEL_CMD,ord('N'),ID_FILE_ANALYZE_IMAGES),
              (wx.ACCEL_CMD,ord('O'),ID_FILE_LOAD),
-             (wx.ACCEL_CMD|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE_PIPELINE),
+             (wx.ACCEL_CMD|wx.ACCEL_SHIFT,ord('S'),ID_FILE_SAVE),
              (wx.ACCEL_CMD,ord('L'),ID_WINDOW_CLOSE_ALL),
              (wx.ACCEL_CMD,ord('Q'),ID_FILE_EXIT),
              (wx.ACCEL_CMD,ord('W'),ID_FILE_EXIT),

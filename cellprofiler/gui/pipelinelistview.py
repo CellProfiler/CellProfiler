@@ -1417,8 +1417,11 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                         not item.selected):
                         flags |= wx.CONTROL_SELECTED
                 draw_item_selection_rect(self, dc, r, flags)
+                text_clr = clr_selected
+            else:
+                text_clr = clr_text
             dc.SetBackgroundMode(wx.TRANSPARENT)
-            dc.SetTextForeground(clr_selected if item.selected else clr_text)
+            dc.SetTextForeground(text_clr)
             dc.DrawText(item.module_name, 
                         r.left + self.text_gap, 
                         r.top + self.border)

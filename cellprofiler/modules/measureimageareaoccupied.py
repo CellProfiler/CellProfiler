@@ -39,6 +39,8 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.cpmath.outline import outline
 
+C_AREA_OCCUPIED = "AreaOccupied"
+
 '''Measurement feature name format for the AreaOccupied measurement'''
 F_AREA_OCCUPIED = "AreaOccupied_AreaOccupied_%s"
 
@@ -267,14 +269,14 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         """The categories output by this module for the given object (or Image)
         
         """
-        if object_name == "Image":
-            return ["AreaOccupied"]
+        if object_name == cpmeas.IMAGE:
+            return [C_AREA_OCCUPIED]
 
         return []
 
     def get_measurements(self, pipeline, object_name, category):
         """The measurements available for a given category"""
-        if object_name == "Image" and category == "AreaOccupied":
+        if object_name == cpmeas.IMAGE and category == C_AREA_OCCUPIED:
             return ["AreaOccupied", "TotalArea"]
         return []
 
@@ -284,8 +286,22 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         
         """
         if (object_name == "Image" and category == "AreaOccupied" and
-            measurement in ("AreaOccupied","TotalArea")):
-            return [ op.operand_objects.value for op in self.operands ]
+            measurement in ("AreaOccupied", "TotalArea")):
+            return [ op.operand_objects.value 
+                     for op in self.operands 
+                     if op.operand_choice == O_OBJECTS]
+        return []
+    
+    def get_measurement_images(self, pipeline, object_name, category, 
+                               measurement):
+        """The images measured for a particular measurement
+        
+        """
+        if (object_name == "Image" and category == "AreaOccupied" and
+            measurement in ("AreaOccupied", "TotalArea")):
+            return [ op.binary_name.value 
+                     for op in self.operands 
+                     if op.operand_choice == O_BINARY_IMAGE]
         return []
     
     def upgrade_settings(self, setting_values, variable_revision_number, 

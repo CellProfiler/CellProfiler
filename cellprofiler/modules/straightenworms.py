@@ -1,4 +1,4 @@
-'''<b>StraightenWorms</b> Straightens untangled worms
+'''<b>StraightenWorms</b> straightens untangled worms.
 <hr>
 
 <b>StraightenWorms</b> uses the objects produced by <b>UntangleWorms</b>
@@ -37,9 +37,16 @@ measurements of transverse segments are designated as "L1of1" indicating that
 there is only one longitudinal stripe. Both mean intensity and standard
 deviation of intensity are measured per worm sub-area.
 
-The idea of straightening worms was inspired by the paper, <i>Straightening
-Caenorhabditis elegans images</i>, Hanchuan Peng, Fuhui Long, Xiao Liu,
-Stuart Kim, Eugene Myers, Bioinformatics Vol 24 # 2, 2008, pp 234-242.
+References
+<ul>
+<li>Peng H, Long F, Liu X, Kim SK, Myers EW (2008) "Straightening <i>Caenorhabditis elegans</i> images."
+<i>Bioinformatics</i>, 24(2):234-42.<a href="http://dx.doi.org/10.1093/bioinformatics/btm569">(link)</a></li>
+<li>W&auml;hlby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ, 
+Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P, Ruvkun G,
+Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput 
+<i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716.
+<a href="http://dx.doi.org/10.1038/nmeth.1984">(link)</a></li>
+</ul>
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -135,7 +142,7 @@ class StraightenWorms(cpm.CPModule):
             "Name the output straightened worm objects", "StraightenedWorms",
             doc = """This is the name that will be given to the straightened
             worm objects. These objects can then be used in a subsequent
-            measurement module""")
+            measurement module.""")
         
         self.width = cps.Integer(
             "Worm width", 20, minval = 3,
@@ -249,7 +256,7 @@ class StraightenWorms(cpm.CPModule):
             doc = '''This is the name of an image that will be straightened
             similarly to the worm. The straightened image and objects can
             then be used in subsequent modules such as
-            <b>MeasureObjectIntensity</b>'''))
+            <b>MeasureObjectIntensity</b>.'''))
         group.append("straightened_image_name", cps.ImageNameProvider(
             'Name the output straightened image', 'StraightenedImage',
             doc = '''This is the name that will be given to the image

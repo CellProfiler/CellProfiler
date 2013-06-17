@@ -46,6 +46,13 @@ objects to occupy the same clusters, so the Rand Index will never actually be ze
 </ul>
 </li>
 </ul>
+
+References
+<ul>
+<li>Collins LM, Dent CW (1998) "Omega: A general formulation of the Rand Index of cluster 
+recovery suitable for non-disjoint solutions", <i>Multivariate Behavioral
+Research</i>, 23, 231-242 <a href="http://dx.doi.org/10.1207/s15327906mbr2302_6">(link)</a></li>
+</ul>
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

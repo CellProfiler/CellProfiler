@@ -97,11 +97,13 @@ CellProfiler 1.0's Gabor filter is calculated only at angles of 0&deg; and 90&de
 
 References
 <ul>
-<li>Haralick et al. (1973), "Textural Features for Image
-Classification," <i>IEEE Transaction on Systems Man, Cybernetics</i>,
-SMC-3(6):610-621.</li>
-<li>Gabor D. (1946). "Theory of communication," 
-<i>Journal of the Institute of Electrical Engineers</i> 93:429-441.</li>
+<li>Haralick RM et al. (1973), "Textural Features for Image
+Classification" <i>IEEE Transaction on Systems Man, Cybernetics</i>,
+SMC-3(6):610-621. 
+<a href="http://dx.doi.org/10.1109/TSMC.1973.4309314"><(link)</a></li>
+<li>Gabor D. (1946). "Theory of communication" 
+<i>Journal of the Institute of Electrical Engineers</i> 93:429-441.
+<a href="http://dx.doi.org/10.1049/ji-3-2.1946.0074"><(link)</a></li>
 </ul>
 """
 

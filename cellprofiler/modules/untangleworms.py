@@ -48,7 +48,8 @@ References
 <li>W&auml;hlby C, Kamentsky L, Liu ZH, Riklin-Raviv T, Conery AL, O'Rourke EJ, 
 Sokolnicki KL, Visvikis O, Ljosa V, Irazoqui JE, Golland P, Ruvkun G,
 Ausubel FM, Carpenter AE (2012). "An image analysis toolbox for high-throughput 
-<i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716.</li>
+<i>C. elegans</i> assays." <i>Nature Methods</i> 9(7): 714-716. 
+<a href="http://dx.doi.org/10.1038/nmeth.1984">(link)</a></li>
 </ul>
 '''
 # CellProfiler is distributed under the GNU General Public License.

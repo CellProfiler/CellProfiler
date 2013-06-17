@@ -253,11 +253,17 @@ class TrackObjects(cpm.CPModule):
             of objects, either in reality or apparently because of noise and imaging limitations.
             To correct this, you may apply an optional second step which closes temporal gaps 
             between tracked objects and captures merging and splitting events. This step takes
-            place at the end of the analysis run.  Reference:
+            place at the end of the analysis run.  
+            
+            References
             <ul>
             <li>Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL, Danuser G. (2008)
             "Robust single-particle tracking in live-cell time-lapse sequences."
-            <i>Nature Methods</i> 5(8),695-702.</li>
+            <i>Nature Methods</i> 5(8),695-702.
+            <a href="http://dx.doi.org/10.1038/nmeth.1237">(link)</a></li>
+            <li>Jaqaman K, Danuser G. (2009) "Computational image analysis of cellular dynamics: 
+            a case study based on particle tracking." Cold Spring Harb Protoc. 2009(12):pdb.top65.
+            <a href="http://dx.doi.org/10.1101/pdb.top65">(link)</a></li>
             </ul>
             </li>
             </ul>""")

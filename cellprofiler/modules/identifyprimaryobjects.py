@@ -83,20 +83,23 @@ intensity, or texture. </li>
 References
 <ul>
 <li>Malpica N, de Solorzano CO, Vaquero JJ, Santos, A, Vallcorba I, 
-Garcia-Sagredo JM, and del Pozo F (1997). "Applying watershed
-algorithms to the segmentation of clustered nuclei." <i> Cytometry</i> 28,
-289-297.</li>
-<li>Meyer F, and Beucher S (1990). "Morphological segmentation." <i>J Visual
-Communication and Image Representation</i> 1, 21-46.</li>
+Garcia-Sagredo JM, del Pozo F (1997) "Applying watershed
+algorithms to the segmentation of clustered nuclei." <i> Cytometry</i> 28, 289-297.
+<a href="http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4<289::AID-CYTO3>3.0.CO;2-7">(link)</a></li>
+<li>Meyer F, Beucher S (1990) "Morphological segmentation." <i>J Visual
+Communication and Image Representation</i> 1, 21-46.
+<a href="http://dx.doi.org/10.1016/1047-3203(90)90014-M"><(link)</a></li>
 <li>Ortiz de Solorzano C, Rodriguez EG, Jones A, Pinkel D, Gray JW, 
-Sudar D, and Lockett SJ. (1999). "Segmentation of confocal
+Sudar D, Lockett SJ. (1999) "Segmentation of confocal
 microscope images of cell nuclei in thick tissue sections." <i>Journal of
-Microscopy-Oxford</i> 193, 212-226.</li>
-<li>Wahlby C (2003) <i>Algorithms for applied digital image cytometry</i>, Ph.D.,
+Microscopy-Oxford</i> 193, 212-226.
+<a href="http://dx.doi.org/10.1046/j.1365-2818.1999.00463.x"><(link)</a></li>
+<li>W&auml;hlby C (2003) <i>Algorithms for applied digital image cytometry</i>, Ph.D.,
 Uppsala University, Uppsala.</li>
-<li>Wahlby C, Sintorn IM, Erlandsson F, Borgefors G, and Bengtsson E. (2004). 
+<li>W&auml;hlby C, Sintorn IM, Erlandsson F, Borgefors G, Bengtsson E. (2004) 
 "Combining intensity, edge and shape information for 2D and 3D
-segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.</li>
+segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.
+<a href="http://dx.doi.org/10.1111/j.0022-2720.2004.01338.x"><(link)</a></li>
 </ul>
 
 <h3>Technical notes</h3> 

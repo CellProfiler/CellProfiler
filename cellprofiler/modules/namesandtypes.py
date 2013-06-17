@@ -987,6 +987,8 @@ class NamesAndTypes(cpm.CPModule):
                 result += [C_FILE_NAME, C_PATH_NAME, C_URL]
             if has_objects:
                 result += [C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_COUNT]
+            result += [C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH, C_SERIES,
+                       C_FRAME]
         elif object_name in self.get_object_names():
             result += [C_LOCATION, C_NUMBER]
         return result
@@ -1004,8 +1006,14 @@ class NamesAndTypes(cpm.CPModule):
         if object_name == cpmeas.IMAGE:
             if category in (C_FILE_NAME, C_PATH_NAME, C_URL):
                 return image_names
+            elif category in (C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME,
+                              C_OBJECTS_URL):
+                return object_names
             elif category == C_COUNT:
                 return object_names
+            elif category in (C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH, 
+                              C_SERIES, C_FRAME):
+                return list(image_names) + list(object_names)
         elif object_name in self.get_object_names():
             if category == C_NUMBER:
                 return [FTR_OBJECT_NUMBER]

@@ -25,7 +25,14 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.workspace as cpw
 import cellprofiler.utilities.jutil as J
 from cellprofiler.modules.tests import example_images_directory, testimages_directory
-from cellprofiler.modules.loadimages import pathname2url, C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING
+from cellprofiler.modules.loadimages import \
+     pathname2url, C_MD5_DIGEST, C_WIDTH, C_HEIGHT, C_SCALING, C_FILE_NAME,\
+     C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SERIES, C_FRAME, \
+     C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL
+     
+from cellprofiler.modules.identify import \
+     C_COUNT, C_LOCATION, M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y, \
+     FTR_CENTER_X, FTR_CENTER_Y
 
 M0, M1, M2, M3, M4, M5, M6 = ["MetadataKey%d" % i for i in range(7)]
 C0, C1, C2, C3, C4, C5, C6 = ["Column%d" % i for i in range(7)]
@@ -711,3 +718,94 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
             except:
                 pass
         
+    def test_04_01_get_measurement_columns(self):
+        p = cpp.Pipeline()
+        p.clear()
+        nts = [m for m in p.modules() if isinstance(m, N.NamesAndTypes)]
+        self.assertEqual(len(nts), 1)
+        m = nts[0]
+        m.assignment_method.value = N.ASSIGN_RULES
+        m.add_assignment()
+        m.assignments[0].image_name.value = IMAGE_NAME
+        m.assignments[1].load_as_choice.value = N.LOAD_AS_OBJECTS
+        m.assignments[1].object_name.value = OBJECTS_NAME
+        
+        columns = m.get_measurement_columns(p)
+        
+        for ftr in C_FILE_NAME, C_PATH_NAME, C_URL, C_MD5_DIGEST, C_SCALING, \
+            C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME:
+            mname = "_".join((ftr, IMAGE_NAME))
+            self.assertTrue(any([c[0] == cpmeas.IMAGE and c[1] == mname
+                                 for c in columns]))
+            
+        for ftr in C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_MD5_DIGEST, \
+            C_OBJECTS_URL, C_HEIGHT, C_WIDTH, C_SERIES, C_FRAME, C_COUNT:
+            mname = "_".join((ftr, OBJECTS_NAME))
+            self.assertTrue(any([c[0] == cpmeas.IMAGE and c[1] == mname
+                                 for c in columns]))
+            
+        for mname in M_LOCATION_CENTER_X, M_LOCATION_CENTER_Y:
+            self.assertTrue(any([c[0] == OBJECTS_NAME and c[1] == mname
+                                 for c in columns]))
+            
+    def test_04_02_get_categories(self):
+        p = cpp.Pipeline()
+        p.clear()
+        nts = [m for m in p.modules() if isinstance(m, N.NamesAndTypes)]
+        self.assertEqual(len(nts), 1)
+        m = nts[0]
+        m.assignment_method.value = N.ASSIGN_RULES
+        m.assignments[0].image_name.value = IMAGE_NAME
+        categories = m.get_categories(p, cpmeas.IMAGE)
+        self.assertFalse(C_OBJECTS_FILE_NAME in categories)
+        self.assertFalse(C_OBJECTS_PATH_NAME in categories)
+        self.assertFalse(C_OBJECTS_URL in categories)
+        self.assertTrue(C_FILE_NAME in categories)
+        self.assertTrue(C_PATH_NAME in categories)
+        self.assertTrue(C_URL in categories)
+        self.assertTrue(C_MD5_DIGEST in categories)
+        self.assertTrue(C_SCALING in categories)
+        self.assertTrue(C_WIDTH in categories)
+        self.assertTrue(C_HEIGHT in categories)
+        self.assertTrue(C_SERIES in categories)
+        self.assertTrue(C_FRAME in categories)
+        m.add_assignment()
+        m.assignments[1].load_as_choice.value = N.LOAD_AS_OBJECTS
+        m.assignments[1].object_name.value = OBJECTS_NAME
+        categories = m.get_categories(p, cpmeas.IMAGE)
+        self.assertTrue(C_OBJECTS_FILE_NAME in categories)
+        self.assertTrue(C_OBJECTS_PATH_NAME in categories)
+        self.assertTrue(C_OBJECTS_URL in categories)
+        categories = m.get_categories(p, OBJECTS_NAME)
+        self.assertTrue(C_LOCATION in categories)
+        
+    def test_04_03_get_measurements(self):
+        p = cpp.Pipeline()
+        p.clear()
+        nts = [m for m in p.modules() if isinstance(m, N.NamesAndTypes)]
+        self.assertEqual(len(nts), 1)
+        m = nts[0]
+        m.assignment_method.value = N.ASSIGN_RULES
+        m.assignments[0].image_name.value = IMAGE_NAME
+        m.add_assignment()
+        m.assignments[1].load_as_choice.value = N.LOAD_AS_OBJECTS
+        m.assignments[1].object_name.value = OBJECTS_NAME
+        for cname in C_FILE_NAME, C_PATH_NAME, C_URL:
+            mnames = m.get_measurements(p, cpmeas.IMAGE, cname)
+            self.assertEqual(len(mnames), 1)
+            self.assertEqual(mnames[0], IMAGE_NAME)
+            
+        for cname in C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL, \
+            C_COUNT:
+            mnames = m.get_measurements(p, cpmeas.IMAGE, cname)
+            self.assertEqual(len(mnames), 1)
+            self.assertEqual(mnames[0], OBJECTS_NAME)
+            
+        for cname in C_MD5_DIGEST, C_SCALING, C_HEIGHT, C_WIDTH, \
+            C_SERIES, C_FRAME:
+            mnames = m.get_measurements(p, cpmeas.IMAGE, cname)
+            self.assertEqual(len(mnames), 2)
+            self.assertTrue(all([x in mnames for x in IMAGE_NAME, OBJECTS_NAME]))
+            
+        mnames = m.get_measurements(p, OBJECTS_NAME, C_LOCATION)
+        self.assertTrue(all([x in mnames for x in FTR_CENTER_X, FTR_CENTER_Y]))

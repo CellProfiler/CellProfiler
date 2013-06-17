@@ -497,9 +497,10 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
             dict(image = np.zeros((20,10), bool)))
         
         assert isinstance(module, C.CalculateImageOverlap)
-        module.img_obj_found_in_GT.value = GROUND_TRUTH_OBJ
+        module.object_name_GT.value = GROUND_TRUTH_OBJ
+        module.object_name_ID.value = ID_OBJ
         for obj_or_img, name in ((O_IMG, TEST_IMAGE_NAME),
-                                 (O_OBJ, GROUND_TRUTH_OBJ)):
+                                 (O_OBJ, "_".join((GROUND_TRUTH_OBJ, ID_OBJ)))):
             module.obj_or_img.value = obj_or_img
             columns = module.get_measurement_columns(workspace.pipeline)
             # All columns should be unique
@@ -565,6 +566,26 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
                                                 C.FTR_FALSE_NEG_RATE)
         self.assertEqual(len(imnames), 0)
         
+    def test_04_05_get_measurement_scales(self):
+        workspace, module = self.make_workspace(
+            dict(image = np.zeros((20,10), bool)),
+            dict(image = np.zeros((20,10), bool)))
+        module.obj_or_img.value = C.O_OBJ
+        module.object_name_GT.value = GROUND_TRUTH_OBJ
+        module.object_name_ID.value = ID_OBJ
+        
+        scales = module.get_measurement_scales(
+            workspace.pipeline, cpmeas.IMAGE, C.C_IMAGE_OVERLAP,
+            C.FTR_RAND_INDEX, None)
+        self.assertEqual(len(scales), 1)
+        self.assertEqual(scales[0], "_".join((GROUND_TRUTH_OBJ, ID_OBJ)))
+        
+        module.obj_or_img.value = C.O_IMG
+        scales = module.get_measurement_scales(
+            workspace.pipeline, cpmeas.IMAGE, C.C_IMAGE_OVERLAP,
+            C.FTR_RAND_INDEX, None)
+        self.assertEqual(len(scales), 0)
+        
     def test_05_01_test_measure_overlap_objects(self):
         r = np.random.RandomState()
         r.seed(51)
@@ -602,10 +623,11 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         module.run(workspace)
         
         measurements = workspace.measurements
-        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX, TEST_IMAGE_NAME))
+        mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX, 
+                          TEST_IMAGE_NAME))
         expected_rand_index = measurements.get_current_image_measurement(mname)
         mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_ADJUSTED_RAND_INDEX,
-                      TEST_IMAGE_NAME))
+                          TEST_IMAGE_NAME))
         expected_adjusted_rand_index = \
             measurements.get_current_image_measurement(mname)
         
@@ -619,11 +641,11 @@ CalculateImageOverlap:[module_num:1|svn_version:\'9000\'|variable_revision_numbe
         module.run(workspace)
         measurements = workspace.measurements
         mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_RAND_INDEX, 
-                          GROUND_TRUTH_OBJ_IMAGE_NAME))
+                          GROUND_TRUTH_OBJ, ID_OBJ))
         rand_index = measurements.get_current_image_measurement(mname)
         self.assertAlmostEqual(rand_index, expected_rand_index)
         mname = '_'.join((C.C_IMAGE_OVERLAP, C.FTR_ADJUSTED_RAND_INDEX,
-                          GROUND_TRUTH_OBJ_IMAGE_NAME))
+                          GROUND_TRUTH_OBJ, ID_OBJ))
         adjusted_rand_index = \
             measurements.get_current_image_measurement(mname)
         self.assertAlmostEqual(adjusted_rand_index, expected_adjusted_rand_index)

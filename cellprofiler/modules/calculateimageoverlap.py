@@ -729,7 +729,9 @@ class CalculateImageOverlap(cpm.CPModule):
         if self.obj_or_img == O_IMG:
             name = '_'.join((C_IMAGE_OVERLAP, feature, self.test_img.value))
         if self.obj_or_img == O_OBJ:
-            name = '_'.join((C_IMAGE_OVERLAP, feature, self.img_obj_found_in_GT.value))
+            name = '_'.join((C_IMAGE_OVERLAP, feature, 
+                             self.object_name_GT.value, 
+                             self.object_name_ID.value))
         return name 
 
 
@@ -750,8 +752,31 @@ class CalculateImageOverlap(cpm.CPModule):
                                measurement):
         '''Return the images that were used when making the measurement'''
         if (object_name == cpmeas.IMAGE and category == C_IMAGE_OVERLAP and
-            measurement in FTR_ALL):
+            measurement in FTR_ALL and self.obj_or_img == O_IMG):
             return [self.test_img.value]
+        return []
+    
+    def get_measurement_scales(
+        self, pipeline, object_name, category, measurement, image_name):
+        '''Return a "scale" that captures the measurement parameters
+        
+        pipeline - the module's pipeline
+        
+        object_name - should be "Images"
+        
+        category - measurement category
+        
+        measurement - measurement feature name
+        
+        image_name - ignored
+        
+        The "scale" in this case is the combination of ground-truth objects and
+        test objects.
+        '''
+        if (object_name == cpmeas.IMAGE and category == C_IMAGE_OVERLAP and
+            measurement in FTR_ALL and self.obj_or_img == O_OBJ):
+            return ["_".join((self.object_name_GT.value, 
+                              self.object_name_ID.value))]
         return []
     
     def get_measurement_columns(self, pipeline):

@@ -136,6 +136,18 @@ def create_context(service_classes):
                           '(Ljava/lang/Class;)Limagej/service/Service;', klass)
     return Context()
 
+the_imagej_context = None
+def get_context():
+    '''Get the ImageJ context
+    
+    This is a singleton ImageJ context. We need a singleton for now because
+    of http://trac.imagej.net/ticket/1413
+    '''
+    global the_imagej_context
+    if the_imagej_context is None:
+        the_imagej_context = create_context(None)
+    return the_imagej_context
+
 def get_module_service(context):
     '''Get the module service for a given context
     

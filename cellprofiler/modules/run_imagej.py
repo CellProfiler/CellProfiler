@@ -47,6 +47,7 @@ import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.gui.help import BATCH_PROCESSING_HELP_REF
 import imagej.imagej2 as ij2
+from imagej.imagej2 import get_context
 import cellprofiler.utilities.jutil as J
 
 CM_COMMAND = "Command"
@@ -841,10 +842,3 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             
         return setting_values, variable_revision_number, from_matlab
         
-the_imagej_context = None
-def get_context():
-    '''Get the ImageJ context'''
-    global the_imagej_context
-    if the_imagej_context is None:
-        the_imagej_context = ij2.create_context(None)
-    return the_imagej_context

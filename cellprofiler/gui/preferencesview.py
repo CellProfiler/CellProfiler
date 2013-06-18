@@ -117,7 +117,7 @@ class PreferencesView:
     def __make_folder_panel(self, panel, value, list_fn, text, help_text, 
                             actions, refresh_action = None):
         sizer = wx.BoxSizer(wx.HORIZONTAL)
-        help_button = wx.Button(panel,-1,'?',(0,0), (30,-1))
+        help_button = wx.Button(panel, label='?', style=wx.BU_EXACTFIT)
         sizer.Add(help_button, 0, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
         text_static = wx.StaticText(panel,-1,text+':')
@@ -181,32 +181,51 @@ class PreferencesView:
         panel.Bind(wx.EVT_BUTTON, on_new_folder, new_button)
         return edit_box
 
-    def __show_output_filename(self, show):
-        for ctrl in (self.__output_filename_text,
-                     self.__output_filename_edit_box,
-                     self.__allow_output_filename_overwrite_check_box):
-            ctrl.Show(show)
-            
     def __make_odds_and_ends_panel(self):
         panel = self.__odds_and_ends_panel
-        self.__output_filename_text = wx.StaticText(panel,-1,'Output Filename:')
-        self.__output_filename_edit_box = wx.TextCtrl(panel, -1, cpprefs.get_output_file_name())
-        self.__allow_output_filename_overwrite_check_box = \
+        output_filename_text = wx.StaticText(panel,-1,'Output Filename:')
+        output_filename_edit_box = wx.TextCtrl(
+            panel,  value=cpprefs.get_output_file_name())
+        self.__output_filename_edit_box = output_filename_edit_box
+        allow_output_filename_overwrite_check_box = \
             wx.CheckBox(panel, label = "Allow overwrite?")
-        self.__allow_output_filename_overwrite_check_box.Value = \
+        allow_output_filename_overwrite_check_box.Value = \
             cpprefs.get_allow_output_file_overwrite()
+        write_measurements_combo_box = wx.Choice(
+            panel, choices = 
+            [WRITE_HDF_FILE, WRITE_MAT_FILE, DO_NOT_WRITE_MEASUREMENTS])
+        # set measurements mode, then fake an event to update output
+        # filename and which controls are shown.
+        measurements_mode_idx = [cpprefs.WRITE_HDF5, True, False].index(
+            cpprefs.get_write_MAT_files())
+        write_measurements_combo_box.SetSelection(measurements_mode_idx)
+        output_filename_help_button = wx.Button(
+            panel, label = '?', style=wx.BU_EXACTFIT)
+        output_file_format_text = wx.StaticText(
+            panel, label = "Output file format:") 
+        cpprefs.add_output_file_name_listener(
+            self.__on_preferences_output_filename_event)
+        cpprefs.add_image_directory_listener(
+            self.__on_preferences_image_directory_event)
+        cpprefs.add_output_directory_listener(
+            self.__on_preferences_output_directory_event)
+        self.__hold_a_reference_to_progress_callback = self.progress_callback
+        cpprefs.add_progress_callback(
+            self.__hold_a_reference_to_progress_callback)
+        
+        def on_output_filename_changed(event):
+            cpprefs.set_output_file_name(output_filename_edit_box.Value)
+    
         def on_allow_checkbox(event):
             cpprefs.set_allow_output_file_overwrite(
-                self.__allow_output_filename_overwrite_check_box.Value)
-        self.__allow_output_filename_overwrite_check_box.Bind(
-            wx.EVT_CHECKBOX, on_allow_checkbox)
-        self.__write_measurements_combo_box = \
-            wx.Choice(panel, choices = 
-                      [WRITE_HDF_FILE, WRITE_MAT_FILE, 
-                       DO_NOT_WRITE_MEASUREMENTS])
+                allow_output_filename_overwrite_check_box.Value)
+            
         def on_write_MAT_files_combo_box(event):
-            sel = self.__write_measurements_combo_box.GetStringSelection()
-            output_filename = self.__output_filename_edit_box.Value
+            #
+            # Update the state to reflect the new measurement choice
+            #
+            sel = write_measurements_combo_box.GetStringSelection()
+            output_filename = output_filename_edit_box.Value
             if sel == WRITE_HDF_FILE:
                 cpprefs.set_write_MAT_files(cpprefs.WRITE_HDF5)
                 if output_filename.lower().endswith('.mat'):
@@ -217,50 +236,59 @@ class PreferencesView:
                     output_filename = output_filename[:-3] + u".mat"
             else:
                 cpprefs.set_write_MAT_files(False)
-            if output_filename != self.__output_filename_edit_box.Value:
-                self.__output_filename_edit_box.Value = output_filename
-                cpprefs.set_output_file_name(self.__output_filename_edit_box.Value)
-            self.__show_output_filename(sel != DO_NOT_WRITE_MEASUREMENTS)
+                
+            if output_filename != output_filename_edit_box.Value:
+                output_filename_edit_box.Value = output_filename
+                cpprefs.set_output_file_name(
+                    output_filename_edit_box.Value)
+            #
+            # Reconstruct the sizers depending on whether we have one or two rows
+            #
+            if sel == DO_NOT_WRITE_MEASUREMENTS:
+                show = False
+                output_sizer = wx.BoxSizer(wx.HORIZONTAL)
+                output_sizer.Add(output_filename_help_button, 0, wx.EXPAND)
+                output_sizer.Add(output_file_format_text, 0, wx.ALIGN_RIGHT)
+                output_sizer.Add(write_measurements_combo_box, 0, wx.ALIGN_LEFT)
+            else:
+                show = True
+                output_sizer = wx.FlexGridSizer(2, 3, 2, 2)
+                output_sizer.SetFlexibleDirection(wx.HORIZONTAL)
+                output_sizer.AddGrowableCol(2)
+                output_filename_edit_box_sizer = wx.BoxSizer(wx.HORIZONTAL)
+                output_filename_edit_box_sizer.Add(
+                    output_filename_edit_box, 1 , wx.EXPAND)
+                output_filename_edit_box_sizer.AddSpacer(2)
+                output_filename_edit_box_sizer.Add(
+                    allow_output_filename_overwrite_check_box, 0, 
+                    wx.ALIGN_CENTER)
+                output_sizer.Add(output_filename_help_button, 0, wx.EXPAND)
+                output_sizer.Add(output_filename_text, 0, wx.ALIGN_RIGHT)
+                output_sizer.Add(output_filename_edit_box_sizer, 1, wx.EXPAND)
+                
+                output_sizer.Add(wx.BoxSizer(), 0, wx.EXPAND)
+                output_sizer.Add(output_file_format_text, 0, wx.ALIGN_RIGHT)
+                output_sizer.Add(write_measurements_combo_box, 0, wx.ALIGN_LEFT)
+                
+            panel.SetSizer(output_sizer)
+            for ctrl in (output_filename_text,
+                         output_filename_edit_box,
+                         allow_output_filename_overwrite_check_box):
+                ctrl.Show(show)
+                
+            panel.Parent.Layout()
             panel.Layout()
-            panel.Refresh()
-        # set measurements mode, then fake an event to update output
-        # filename and which controls are shown.
-        measurements_mode_idx = [cpprefs.WRITE_HDF5, True, False].index(cpprefs.get_write_MAT_files())
-        self.__write_measurements_combo_box.SetSelection(measurements_mode_idx)
-        on_write_MAT_files_combo_box(None)
-
-        self.__write_measurements_combo_box.Bind(
+            
+        write_measurements_combo_box.Bind(
             wx.EVT_CHOICE, on_write_MAT_files_combo_box)
-        output_filename_help_button = wx.Button(panel,-1,'?', (0,0), (30,-1))
-        sizer = wx.FlexGridSizer(2, 3, 2, 2)
-        sizer.SetFlexibleDirection(wx.HORIZONTAL)
-        sizer.AddGrowableCol(2)
-        sizer.Add(output_filename_help_button, 0, wx.ALIGN_CENTER)
-        sizer.Add(self.__output_filename_text, 0, wx.ALIGN_RIGHT)
-        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(sub_sizer, 1, wx.EXPAND)
-        sub_sizer.Add(self.__output_filename_edit_box,1 , wx.EXPAND)
-        sub_sizer.AddSpacer(2)
-        sub_sizer.Add(self.__allow_output_filename_overwrite_check_box, 0, 
-             wx.ALIGN_CENTER)
-        #
-        # One blank in second row (help button column)
-        #
-        sizer.Add(wx.BoxSizer(), 0, wx.EXPAND)
-        sizer.Add(wx.StaticText(
-            panel, label = "Output file format:"), 0, wx.ALIGN_RIGHT)
-        sizer.Add(self.__write_measurements_combo_box, 0, wx.ALIGN_LEFT)
-        panel.SetSizer(sizer)
-        panel.Bind(wx.EVT_BUTTON,
-                   lambda event: self.__on_help(event, USING_THE_OUTPUT_FILE_HELP),
-                   output_filename_help_button)
-        panel.Bind(wx.EVT_TEXT, self.__on_output_filename_changed, self.__output_filename_edit_box)
-        cpprefs.add_output_file_name_listener(self.__on_preferences_output_filename_event)
-        cpprefs.add_image_directory_listener(self.__on_preferences_image_directory_event)
-        cpprefs.add_output_directory_listener(self.__on_preferences_output_directory_event)
-        self.__hold_a_reference_to_progress_callback = self.progress_callback
-        cpprefs.add_progress_callback(self.__hold_a_reference_to_progress_callback)
+        allow_output_filename_overwrite_check_box.Bind(
+                    wx.EVT_CHECKBOX, on_allow_checkbox)
+        output_filename_help_button.Bind(
+            wx.EVT_BUTTON,
+            lambda event: self.__on_help(event, USING_THE_OUTPUT_FILE_HELP))
+        output_filename_edit_box.Bind(wx.EVT_TEXT, on_output_filename_changed)
         panel.Bind(wx.EVT_WINDOW_DESTROY, self.__on_destroy, panel)
+        on_write_MAT_files_combo_box(None)
     
     def __make_progress_panel(self):
         panel = self.__progress_panel
@@ -453,9 +481,6 @@ class PreferencesView:
             self.pop_error_text(error_text)
         else:
             self.set_error_text(error_text)
-    
-    def __on_output_filename_changed(self,event):
-        cpprefs.set_output_file_name(self.__output_filename_edit_box.Value)
     
     def __on_preferences_output_filename_event(self,event):
         if self.__output_filename_edit_box.Value != cpprefs.get_output_file_name():

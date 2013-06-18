@@ -2350,8 +2350,11 @@ class PipelineController:
             text = ["%s=%s"%(k,v) for k,v in grouping.iteritems()]
             text = ', '.join(text)
             choices.append(text)
-        lb = wx.ListBox(dialog, -1, choices=choices)
-        lb.Select(0)
+        lb = wx.ListBox(dialog, choices=choices)
+        if self.__grouping_index < len(choices):
+            lb.Select(self.__grouping_index)
+        else:
+            lb.Select(0)
         super_sizer.Add(lb, 1, wx.EXPAND|wx.ALL, 10)
         super_sizer.Add(wx.StaticLine(dialog),0,wx.EXPAND|wx.ALL,5)
         btnsizer = wx.StdDialogButtonSizer()
@@ -2396,7 +2399,10 @@ class PipelineController:
                           "Can't choose image")
             return
         lb = wx.ListBox(dialog, -1, choices=choices)
-        lb.Select(0)
+        if self.__within_group_index < len(choices):
+            lb.Select(self.__within_group_index)
+        else:
+            lb.Select(0)
         super_sizer.Add(lb, 1, wx.EXPAND|wx.ALL, 10)
         super_sizer.Add(wx.StaticLine(dialog),0,wx.EXPAND|wx.ALL,5)
         btnsizer = wx.StdDialogButtonSizer()

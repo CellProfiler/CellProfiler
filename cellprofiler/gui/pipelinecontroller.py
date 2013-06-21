@@ -2507,13 +2507,13 @@ class PipelineController:
         sizer.Add(dont_show_again, 0, 
                   wx.ALIGN_LEFT | wx.ALIGN_CENTER_VERTICAL | wx.LEFT, 10)
         button_sizer = wx.StdDialogButtonSizer()
-        save_pipeline_button = wx.Button(dlg, -1, "Save pipeline")
+        save_pipeline_button = wx.Button(dlg, -1, "Save project")
         button_sizer.AddButton(save_pipeline_button)
         button_sizer.SetCancelButton(save_pipeline_button)
         button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
         sizer.Add(button_sizer, 0, 
                   wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
-        dlg.Bind(wx.EVT_BUTTON, self.__on_save_pipeline, 
+        dlg.Bind(wx.EVT_BUTTON, self.__on_save_workspace, 
                  save_pipeline_button)
         button_sizer.Realize()
         dlg.Fit()

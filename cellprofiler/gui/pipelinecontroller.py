@@ -56,7 +56,6 @@ import cellprofiler.gui.loadsavedlg as cplsdlg
 import cellprofiler.utilities.walk_in_background as W
 from cellprofiler.gui.omerologin import OmeroLoginDlg
 from cellprofiler.icons import get_builtin_image
-from cellprofiler.utilities.zmqrequest import lock_file, unlock_file
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -517,8 +516,6 @@ class PipelineController:
                 self.set_title()
             finally:
                 cpprefs.remove_progress_callback(progress_callback_fn)
-                if filename != self.__locked_workspace_filename:
-                    unlock_file(filename)
             
     def __on_new_workspace(self, event):
         '''Handle the New Workspace menu command'''

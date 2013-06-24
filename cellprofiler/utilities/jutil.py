@@ -520,12 +520,17 @@ def execute_future_in_main_thread(future):
     if sys.platform != "darwin":
         run_in_main_thread(future.run, True)
         return future.get()
+    
+    logger.debug("Enqueueing future on runnable queue")
+    static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", future.o)
+    if __run_headless:
+        return future.get()
+    if sys.maxsize > 2**32:
+        raise NotImplementedError("Can't execute future in main thread on OS/X 64 because there is no event loop (no wx for x64).")
         
     import wx
     import time
     app = wx.GetApp()
-    logger.debug("Enqueueing future on runnable queue")
-    static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", future.o)
     if (app is None) or (not wx.Thread_IsMain()):
         logger.debug("Synchronizing without event loop")
         #

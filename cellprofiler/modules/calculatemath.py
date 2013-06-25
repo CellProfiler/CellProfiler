@@ -287,10 +287,12 @@ class CalculateMath(cpm.CPModule):
         for operand in all_operands:
             value = m.get_current_measurement(operand.object,operand.operand_measurement.value)
             # Copy the measurement (if it's right type) or else it gets altered by the operation
-            if not np.isscalar(value):
+            if value is None:
+                value = np.nan
+            elif not np.isscalar(value):
                 value = value.copy()
-            # ensure that the data can be changed in-place by floating point ops
-            value = value.astype(np.float)
+                # ensure that the data can be changed in-place by floating point ops
+                value = value.astype(np.float)
 
             if isinstance(value, str) or isinstance(value, unicode):
                 try:

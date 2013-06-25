@@ -41,6 +41,8 @@ See also all <b>Measure</b> modules.
 # 
 # Website: http://www.cellprofiler.org
 
+import logging
+logger = logging.getLogger(__package__)
 
 import numpy as np
 
@@ -334,29 +336,41 @@ class CalculateMath(cpm.CPModule):
                           (r[cpmeas.R_SECOND_IMAGE_NUMBER]==m.image_set_number)]
                     i0 = r[f0] - 1
                     i1 = r[f1] - 1
+                    #
+                    # Use np.bincount to broadcast or sum. Then divide the counts
+                    # by the sum to get count=0 -> Nan, count=1 -> value
+                    # count > 1 -> mean
+                    #
+                    def bincount(indexes, weights=None, minlength=None):
+                        '''Minlength was added to numpy at some point....'''
+                        result = np.bincount(indexes, weights)
+                        if minlength is not None and len(result) < minlength:
+                            result = np.hstack(
+                                [result, 
+                                 (0 if weights is None else np.nan) * 
+                                 np.zeros(minlength - len(result))])
+                        return result
+                    c0 = bincount(i0, minlength=len(values[0]))
+                    c1 = bincount(i1, minlength=len(values[1]))
+                    v1 = bincount(i0, values[1][i1], minlength=len(values[0])) / c0
+                    v0 = bincount(i1, values[0][i0], minlength=len(values[1])) / c1
                     break
             else:
-                raise ValueError("Incompatable objects: %s has %d objects and %s has %d objects"%
-                                 (operand_object1, len(values[0]),
-                                  operand_object2, len(values[1])))
-            #
-            # Use np.bincount to broadcast or sum. Then divide the counts
-            # by the sum to get count=0 -> Nan, count=1 -> value
-            # count > 1 -> mean
-            #
-            def bincount(indexes, weights=None, minlength=None):
-                '''Minlength was added to numpy at some point....'''
-                result = np.bincount(indexes, weights)
-                if minlength is not None and len(result) < minlength:
-                    result = np.hstack(
-                        [result, 
-                         (0 if weights is None else np.nan) * 
-                         np.zeros(minlength - len(result))])
-                return result
-            c0 = bincount(i0, minlength=len(values[0]))
-            c1 = bincount(i1, minlength=len(values[1]))
-            v1 = bincount(i0, values[1][i1], minlength=len(values[0])) / c0
-            v0 = bincount(i1, values[0][i0], minlength=len(values[1])) / c1
+                logger.warning(
+                    "Incompatable objects: %s has %d objects and %s has %d objects"%
+                    (operand_object1, len(values[0]),
+                     operand_object2, len(values[1])))
+                #
+                # Match up as best as we can, padding with Nans
+                #
+                if len(values[0]) < len(values[1]):
+                    v0 = np.ones(len(values[1])) * np.nan
+                    v0[:len(values[0])] = values[0]
+                    v1 = values[1][:len(values[0])]
+                else:
+                    v1 = np.ones(len(values[0])) * np.nan
+                    v1[:len(values[1])] = values[1]
+                    v0 = values[0][:len(values[1])]
             result = [
                 self.compute_operation(values[0], v1),
                 self.compute_operation(v0, values[1])]

@@ -640,7 +640,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
                 return binary_image, None
             return binary_image
         local_threshold, global_threshold = self.get_threshold(
-            img, mask, workspace)
+            image, mask, workspace)
     
         if self.threshold_smoothing_choice == TSM_NONE:
             blurred_image = img
@@ -668,7 +668,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             return binary_image, local_threshold
         return binary_image
         
-    def get_threshold(self, img, mask, workspace):
+    def get_threshold(self, image, mask, workspace):
         '''Calculate a local and global threshold
         
         img - base the threshold on this image's intensity
@@ -694,26 +694,27 @@ class Identify(cellprofiler.cpmodule.CPModule):
                     value = min(value, self.threshold_range.max)
                 local_threshold = global_threshold = value
             else:
+                img = image.pixel_data
                 if self.threshold_scope == TS_PER_OBJECT:
                     if self.masking_objects == O_FROM_IMAGE:
-                        labels = image.labels
+                        masking_objects = image.masking_objects
                     else:
                         masking_objects = workspace.object_set.get_objects(
                             self.masking_objects.value)
-                        label_planes = masking_objects.get_labels(img.shape[:2])
-                        if len(label_planes) == 1:
-                            labels = label_planes[0][0]
-                        else:
-                            # For overlaps, we arbitrarily assign a pixel to
-                            # the first label it appears in. Alternate would be
-                            # to average, seems like it's too fine a point
-                            # to deal with it. A third possibility would be to 
-                            # treat overlaps as distinct entities since the overlapping
-                            # areas will likely be different than either object.
-                            labels = np.zeros(label_planes[0][0].shape,
-                                              label_planes[0][0].dtype)
-                            for label_plane, indices in label_planes:
-                                labels[labels == 0] = label_plane[labels == 0]
+                    label_planes = masking_objects.get_labels(img.shape[:2])
+                    if len(label_planes) == 1:
+                        labels = label_planes[0][0]
+                    else:
+                        # For overlaps, we arbitrarily assign a pixel to
+                        # the first label it appears in. Alternate would be
+                        # to average, seems like it's too fine a point
+                        # to deal with it. A third possibility would be to 
+                        # treat overlaps as distinct entities since the overlapping
+                        # areas will likely be different than either object.
+                        labels = np.zeros(label_planes[0][0].shape,
+                                          label_planes[0][0].dtype)
+                        for label_plane, indices in label_planes:
+                            labels[labels == 0] = label_plane[labels == 0]
                 else:
                     labels = None
                 if self.threshold_scope == TS_ADAPTIVE:

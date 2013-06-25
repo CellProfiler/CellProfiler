@@ -1893,7 +1893,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         x.threshold_scope.value = T.TM_ADAPTIVE
         x.threshold_method.value = T.TM_OTSU
         threshold, global_threshold = x.get_threshold(
-            image, np.ones((120,110),bool), workspace)
+            cpi.Image(image), np.ones((120,110),bool), workspace)
         self.assertTrue(threshold[0,0] != threshold[0,109])
         self.assertTrue(threshold[0,0] != threshold[119,0])
         self.assertTrue(threshold[0,0] != threshold[119,109])
@@ -1929,7 +1929,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         x.threshold_scope.value = T.TM_ADAPTIVE
         x.threshold_method.value = T.TM_OTSU
         threshold, global_threshold = x.get_threshold(
-            image, np.ones((525,525),bool), workspace)
+            cpi.Image(image), np.ones((525,525),bool), workspace)
     
     def test_08_01_per_object_otsu(self):
         """Test get_threshold using Otsu per-object"""
@@ -1944,7 +1944,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         workspace, x = self.make_workspace(image, labels=labels)
         x.threshold_scope.value = I.TS_PER_OBJECT
         x.threshold_method.value = T.TM_OTSU
-        threshold, global_threshold = x.get_threshold(image, 
+        threshold, global_threshold = x.get_threshold(cpi.Image(image), 
                                                       np.ones((20,20), bool),
                                                       workspace)
         t1 = threshold[5,5]
@@ -2009,11 +2009,11 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
                 workspace, x = self.make_workspace(image, mask)
                 x.threshold_method.value = threshold_method
                 x.threshold_scope.value = I.TS_GLOBAL
-                l, g = x.get_threshold(image, mask, workspace)
+                l, g = x.get_threshold(cpi.Image(image), mask, workspace)
                 v = image[mask]
                 image = r.uniform(size=(9, 11))
                 image[mask] = v
-                l1, g1 = x.get_threshold(image, mask, workspace)
+                l1, g1 = x.get_threshold(cpi.Image(image), mask, workspace)
                 self.assertAlmostEqual(l1, l)
 
     def test_09_02_mog_fly(self):
@@ -2024,17 +2024,17 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         x.threshold_scope.value = I.TS_GLOBAL
         x.object_fraction.value = '0.10'
         local_threshold,threshold = x.get_threshold(
-            image, np.ones(image.shape,bool), workspace)
+            cpi.Image(image), np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.036)
         self.assertTrue(threshold < 0.040)
         x.object_fraction.value = '0.20'
         local_threshold,threshold = x.get_threshold(
-            image, np.ones(image.shape,bool), workspace)
+            cpi.Image(image), np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.0084)
         self.assertTrue(threshold < 0.0088)
         x.object_fraction.value = '0.50'
         local_threshold,threshold = x.get_threshold(
-            image, np.ones(image.shape,bool), workspace)
+            cpi.Image(image), np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.0082)
         self.assertTrue(threshold < 0.0086)
     
@@ -2044,7 +2044,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         x.threshold_method.value = T.TM_BACKGROUND
         x.threshold_scope.value = I.TS_GLOBAL
         local_threshold,threshold = x.get_threshold(
-            image, np.ones(image.shape,bool), workspace)
+            cpi.Image(image), np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.030)
         self.assertTrue(threshold < 0.032)
         
@@ -2063,7 +2063,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         x.threshold_method.value = T.TM_BACKGROUND
         x.threshold_scope.value = I.TS_GLOBAL
         local_threshold,threshold = x.get_threshold(
-            image, np.ones(image.shape,bool), workspace)
+            cpi.Image(image), np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > .18 * 2)
         self.assertTrue(threshold < .22 * 2)
         
@@ -2073,7 +2073,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         x.threshold_scope.value = I.TS_GLOBAL
         x.threshold_method.value = T.TM_ROBUST_BACKGROUND
         local_threshold,threshold = x.get_threshold(
-            image, np.ones(image.shape,bool), workspace)
+            cpi.Image(image), np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.054)
         self.assertTrue(threshold < 0.056)
         
@@ -2083,7 +2083,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         x.threshold_scope.value = I.TS_GLOBAL
         x.threshold_method.value = T.TM_RIDLER_CALVARD
         local_threshold,threshold = x.get_threshold(
-            image, np.ones(image.shape,bool), workspace)
+            cpi.Image(image), np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.017)
         self.assertTrue(threshold < 0.019)
         
@@ -2094,7 +2094,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         x.threshold_scope.value = I.TS_GLOBAL
         x.threshold_method.value = T.TM_KAPUR
         local_threshold,threshold = x.get_threshold(
-            image, np.ones(image.shape,bool), workspace)
+            cpi.Image(image), np.ones(image.shape,bool), workspace)
         self.assertTrue(threshold > 0.015)
         self.assertTrue(threshold < 0.020)
     
@@ -2104,7 +2104,7 @@ IdentifyPrimaryObjects:[module_num:11|svn_version:\'Unknown\'|variable_revision_
         x = ID.IdentifyPrimaryObjects()
         x.threshold_scope.value = T.TM_MANUAL
         x.manual_threshold.value = .5
-        local_threshold,threshold = x.get_threshold(np.zeros((10,10)), 
+        local_threshold,threshold = x.get_threshold(cpi.Image(np.zeros((10,10))), 
                                                     np.ones((10,10),bool),
                                                     workspace)
         self.assertTrue(threshold == .5)

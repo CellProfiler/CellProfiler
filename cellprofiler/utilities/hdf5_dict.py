@@ -283,7 +283,7 @@ class HDF5Dict(object):
                                     chunks = (self.chunksize, ), 
                                     maxshape = (None, ))                                
             self.hdf5_file.flush()
-            if is_temporary and self.can_unlink_temporary():
+            if is_temporary:
                 # Unix-ish unlink lets us remove the file from the directory but
                 # it's still there.
                 os.unlink(self.filename)
@@ -292,10 +292,6 @@ class HDF5Dict(object):
             logger.exception("Failed during initial processing of %s" % self.filename)
             raise e
                             
-    @staticmethod
-    def can_unlink_temporary():
-        return sys.platform != "win32" and h5py.version.version_tuple[0] < 2        
-
     def __del__(self):
         logger.debug("HDF5Dict.__del__(): %s, temporary=%s", self.filename, self.is_temporary)
         self.close()
@@ -306,13 +302,12 @@ class HDF5Dict(object):
             # if close is called twice.
             return
         if self.is_temporary:
-            if not self.can_unlink_temporary():
-                try:
-                    self.hdf5_file.flush()  # just in case unlink fails
-                    self.hdf5_file.close()
-                    os.unlink(self.filename)
-                except Exception, e:
-                    logger.warn("So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
+            try:
+                self.hdf5_file.flush()  # just in case unlink fails
+                self.hdf5_file.close()
+                os.unlink(self.filename)
+            except Exception, e:
+                logger.warn("So sorry. CellProfiler failed to remove the temporary file, %s and there it sits on your disk now." % self.filename)
         else:
             self.hdf5_file.flush()
             self.hdf5_file.close()

@@ -134,7 +134,7 @@ def convert_pixels_to_buffer(pixels, pixel_type):
         as_dtype = "<f8"
     else:
         raise NotImplementedError("Unsupported pixel type: %d" % pixel_type)
-    buf = np.frombuffer(pixels.astype(as_dtype).data, np.uint8)
+    buf = np.frombuffer(np.ascontiguousarray(pixels, as_dtype).data, np.uint8)
     env = jutil.get_env()
     return env.make_byte_array(buf)
         

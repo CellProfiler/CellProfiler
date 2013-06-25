@@ -83,6 +83,7 @@ class DataToolFrame(wx.Frame):
             setting.value = proposed_value
             self.pipeline.edit_module(event.get_module().module_num, False)
             self.module_view.reset_view()
+            self.module_view.request_validation()
         self.module_view.add_listener(on_change)
 
         #

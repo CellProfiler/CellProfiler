@@ -155,7 +155,7 @@ def close_all(parent):
         if isinstance(window, CPFigureFrame):
             window.on_close(None)
         else:
-            window.Destroy()
+            window.Close()
         
     reset_cpfigure_position()
     try:

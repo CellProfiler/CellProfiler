@@ -236,22 +236,28 @@ class DisplayDataOnImage(cpm.CPModule):
     def run_as_data_tool(self, workspace):
         # Note: workspace.measurements.image_set_number contains the image
         #    number that should be displayed.
+        import wx
         import loadimages as LI
         import os.path
         im_id = self.image_name.value
-        image_features = workspace.measurements.get_feature_names(cpmeas.IMAGE)
         
-        try:
-            filecol = [x for x in image_features if x.startswith(LI.C_FILE_NAME) 
-                        and x.endswith(im_id)][0]
-            pathcol = [x for x in image_features if x.startswith(LI.C_PATH_NAME) 
-                        and x.endswith(im_id)][0]
-        except:
-            raise Exception('DisplayDataOnImage failed to find your image path and filename features in the supplied measurements.')
-        
-        index = workspace.measurements.image_set_index
-        filename = workspace.measurements.get_measurement(cpmeas.IMAGE, filecol, index)
-        pathname = workspace.measurements.get_measurement(cpmeas.IMAGE, pathcol, index)
+        m = workspace.measurements
+        image_name = self.image_name.value
+        pathname_feature = "_".join((LI.C_PATH_NAME, image_name))
+        filename_feature = "_".join((LI.C_FILE_NAME, image_name))
+        if not all([m.has_feature(cpmeas.IMAGE, f)
+                    for f in pathname_feature, filename_feature]):
+            with wx.FileDialog(
+                None, 
+                message = "Image file for display",
+                wildcard = "Image files (*.tif, *.png, *.jpg)|*.tif;*.png;*.jpg|"
+                "All files (*.*)|*.*") as dlg:
+                if dlg.ShowModal() != wx.ID_OK:
+                    return
+            pathname, filename = os.path.split(dlg.Path)
+        else:
+            pathname = m.get_current_image_measurement(pathname_feature)
+            filename = m.get_current_image_measurement(filename_feature)
         
         # Add the image to the workspace ImageSetList
         image_set_list = workspace.image_set_list
@@ -260,7 +266,6 @@ class DisplayDataOnImage(cpm.CPModule):
         image_set.providers.append(ip)
         
         self.run(workspace)
-        self.display(workspace)
         
     def display(self, workspace, figure):
         figure.set_subplots((1, 1))

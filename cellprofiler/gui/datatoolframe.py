@@ -221,4 +221,4 @@ class DataToolFrame(wx.Frame):
                                  title="%s Output" % (self.module.module_name),
                                  name="CellProfiler:DataTool:%s" % (self.module.module_name))
         self.module.display(workspace, fig)
-        fig.Refresh()
+        fig.figure.canvas.draw()

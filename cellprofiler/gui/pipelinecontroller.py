@@ -2510,8 +2510,13 @@ class PipelineController:
         button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
         sizer.Add(button_sizer, 0, 
                   wx.ALIGN_CENTER_HORIZONTAL | wx.EXPAND | wx.ALL, 10)
-        dlg.Bind(wx.EVT_BUTTON, self.__on_save_workspace, 
-                 save_pipeline_button)
+        def on_save_workspace(event):
+            self.__on_save_workspace(event)
+            wx.MessageBox(
+                "Saved workspace %s" % cpprefs.get_current_workspace_path(),
+                caption = "Saved workspace",
+                parent = self.__frame)
+        save_pipeline_button.Bind(wx.EVT_BUTTON, on_save_workspace)
         button_sizer.Realize()
         dlg.Fit()
         dlg.CenterOnParent()

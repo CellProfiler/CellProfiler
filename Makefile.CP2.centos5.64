@@ -74,7 +74,7 @@
 #
 # This Makefile will download, unpack, compile and install all
 # prerequisites for CP2, except for Java. It requires a fairly
-# recent compiler (gcc) to compile ATLAS with optimal performance.
+# recent compiler (gcc44) to compile ATLAS with optimal performance.
 # Please disable CPU frequency scaling before compilation.
 #
 # PREREQUISITES:
@@ -375,8 +375,8 @@ precheck-cmake:
 						false ; \
 					fi
 
-precheck-gcc:
-					@if ! gcc --version 2>/dev/zero|grep -iqs '^gcc.* [4-9]\.[1-9][0-9]*\.[0-9][0-9]*' && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
+precheck-gcc44:
+					@if ! gcc44 --version 2>/dev/zero|grep -iqs '^gcc44.* [4-9]\.[1-9][0-9]*\.[0-9][0-9]*' && test "$(DISABLE_PRECHECKS)" != "YES" ; then \
 						echo "Could not detect a recent GCC C compiler version (>=4.1.0)," ; \
 						echo "it is very unlikely that you will be able to compile fast code!" ; \
 						false ; \
@@ -400,8 +400,8 @@ precheck-success:
 					@echo "All pre-checks executed successfully."
 
 
-precheck:				sethost precheck-java precheck-env precheck-svn precheck-git precheck-gcc precheck-gpp precheck-gfortran precheck-wget precheck-cmake precheck-success
-.PHONY:					precheck-java precheck-env precheck-svn precheck-git precheck-gcc precheck-gpp precheck-gfortran precheck-wget precheck-cmake precheck-success precheck clean update
+precheck:				sethost precheck-java precheck-env precheck-svn precheck-git precheck-gcc44 precheck-gpp precheck-gfortran precheck-wget precheck-cmake precheck-success
+.PHONY:					precheck-java precheck-env precheck-svn precheck-git precheck-gcc44 precheck-gpp precheck-gfortran precheck-wget precheck-cmake precheck-success precheck clean update
 
 
 
@@ -499,7 +499,7 @@ $(UMFPACKPREFIX)/lib/libumfpack.a:	$(SRCDIR)/$(UMFPACKVERSION).tar.gz $(SRCDIR)/
 					tar -xzf "$(SRCDIR)/$(UFCONFIGVERSION).tar.gz" && \
 					tar -xzf "$(SRCDIR)/$(AMDVERSION).tar.gz" && \
 					perl -pi -e 's@(^CHOLMOD_CONFIG )=.*@$$1= -DNPARTITION@g' UFconfig/UFconfig.mk && \
-					perl -pi -e 's@(^CC )=.*@$$1= gcc@g' UFconfig/UFconfig.mk && \
+					perl -pi -e 's@(^CC )=.*@$$1= gcc44@g' UFconfig/UFconfig.mk && \
 					perl -pi -e 's@(^CFLAGS .*)@$$1 -m64 -fPIC@g' UFconfig/UFconfig.mk && \
 					perl -pi -e 's@(^F77 )=.*@$$1= gfortran@g' UFconfig/UFconfig.mk && \
 					perl -pi -e 's@(^F77FLAGS .*)@$$1 -m64 -fPIC@g' UFconfig/UFconfig.mk && \
@@ -743,31 +743,30 @@ $(SITEPKGPREFIX)/PyOpenGL_$(PYOPENGLACCELVERSION)-py$(PYVERSION).egg-info:	$(SRC
 					$(PYTHONPREFIX)/bin/python setup.py build && \
 					$(PYTHONPREFIX)/bin/python setup.py install
 
-#qt:					qmake
-#qmake:					$(QTPREFIX)/lib/libQtCore.la
-#$(QTPREFIX)/lib/libQtCore.la:		$(SRCDIR)/$(QTVERSION).tar.gz $(PNGPREFIX)/lib/libpng.la $(JPEGPREFIX)/lib/libjpeg.la $(ZLIBPREFIX)/lib/libz.a $(TIFFPREFIX)/lib/libtiff.la
-#					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
-#					rm -fr "$(QTVERSION)" && \
-#					tar -xzf "$(SRCDIR)/$(QTVERSION).tar.gz" && \
-#					cd "$(QTVERSION)" && \
-#					export LD_LIBRARY_PATH="$(PNGPREFIX)/lib:$(JPEGPREFIX)/lib:$(TIFFPREFIX)/lib:$(ZLIBPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-#					echo "yes"|./configure -prefix "$(QTPREFIX)" \
-#						-I"$(PNGPREFIX)/include" -I"$(JPEGPREFIX)/include" -I"$(TIFFPREFIX)/include" -I"$(ZLIBPREFIX)/include" -I"$(SQLITEPREFIX)/include" \
-#						-L"$(PNGPREFIX)/lib" -L"$(JPEGPREFIX)/lib" -L"$(TIFFPREFIX)/lib" -L"$(ZLIBPREFIX)/lib" -L"$(SQLITEPREFIX)/lib -lsqlite3" \
-#						$(QTFLAGS) && \
-#					$(MAKE) $(MAKE_FLAGS) && \
-#					$(MAKE) -j1 install
+qt:					qmake
+qmake:					$(QTPREFIX)/lib/libQtCore.la
+$(QTPREFIX)/lib/libQtCore.la:		$(SRCDIR)/$(QTVERSION).tar.gz $(PNGPREFIX)/lib/libpng.la $(JPEGPREFIX)/lib/libjpeg.la $(ZLIBPREFIX)/lib/libz.a $(TIFFPREFIX)/lib/libtiff.la
+					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
+					rm -fr "$(QTVERSION)" && \
+					tar -xzf "$(SRCDIR)/$(QTVERSION).tar.gz" && \
+					cd "$(QTVERSION)" && \
+					export LD_LIBRARY_PATH="$(PNGPREFIX)/lib:$(JPEGPREFIX)/lib:$(TIFFPREFIX)/lib:$(ZLIBPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
+					echo "yes"|./configure -no-webkit -prefix "$(QTPREFIX)" \
+						-I"$(PNGPREFIX)/include" -I"$(JPEGPREFIX)/include" -I"$(TIFFPREFIX)/include" -I"$(ZLIBPREFIX)/include" -I"$(SQLITEPREFIX)/include" \
+						-L"$(PNGPREFIX)/lib" -L"$(JPEGPREFIX)/lib" -L"$(TIFFPREFIX)/lib" -L"$(ZLIBPREFIX)/lib" -L"$(SQLITEPREFIX)/lib -lsqlite3" \
+						$(QTFLAGS) && \
+					$(MAKE) $(MAKE_FLAGS) && \
+					$(MAKE) -j1 install
 
 pyqt:					$(SITEPKGPREFIX)/PyQt4/pyqtconfig.py
-$(SITEPKGPREFIX)/PyQt4/pyqtconfig.py:	$(SRCDIR)/$(PYQTVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(SITEPKGPREFIX)/sip.so $(SITEPKGPREFIX)/PyOpenGL_$(PYOPENGLACCELVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(PYOPENGLVERSION)-py$(PYVERSION).egg-info
+$(SITEPKGPREFIX)/PyQt4/pyqtconfig.py:	$(SRCDIR)/$(PYQTVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(QTPREFIX)/lib/libQtCore.la $(SITEPKGPREFIX)/sip.so $(SITEPKGPREFIX)/PyOpenGL_$(PYOPENGLACCELVERSION)-py$(PYVERSION).egg-info $(SITEPKGPREFIX)/$(PYOPENGLVERSION)-py$(PYVERSION).egg-info
 					mkdir -p "$(TMPDIR)" && cd "$(TMPDIR)" && \
 					rm -fr "$(PYQTVERSION)" && \
 					tar -zxf "$(SRCDIR)/$(PYQTVERSION).tar.gz" && \
 					cd "$(PYQTVERSION)" && \
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
-					#$(PYTHONPREFIX)/bin/python configure.py --confirm-license && \
-					$(PYTHONPREFIX)/bin/python configure.py --confirm-license -g -q /usr/bin/qmake-qt4 && \
+					$(PYTHONPREFIX)/bin/python configure.py --confirm-license && \
 					$(MAKE) $(MAKE_FLAGS) && \
 					$(MAKE) -j1 install
 
@@ -861,7 +860,7 @@ $(JPEGPREFIX)/lib/libjpeg.la:		$(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz
 					tar -xzf "$(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz" && \
 					cd "jpeg-$(JPEGVERSION)" && \
 					./configure \
-						CC="gcc" CPP="cpp" \
+						CC="gcc44" CPP="cpp" \
 						--prefix="$(JPEGPREFIX)" && \
 					$(MAKE) $(MAKE_FLAGS) && \
 					$(MAKE) -j1 install
@@ -960,6 +959,8 @@ $(SITEPKGPREFIX)/vigra/vigranumpycore.so:	$(PYTHONPREFIX)/bin/python $(SRCDIR)/$
 					export PATH="$(PYTHONPREFIX)/bin:$(PATH)" && \
 					export LD_LIBRARY_PATH="$(PYTHONPREFIX)/lib:$${LD_LIBRARY_PATH}" && \
 					cmake \
+						-DCMAKE_CC_COMPILER=gcc44 \
+						-DCMAKE_CXX_COMPILER=g++44 \
 						-DCMAKE_INSTALL_PREFIX="$(VIGRAPREFIX)" \
 						-DPYTHON_EXECUTABLE="$(PYTHONPREFIX)/bin/python" \
 						-DPYTHON_LIBRARY="$(PYTHONPREFIX)/lib/libpython$(PYVERSION).so" \

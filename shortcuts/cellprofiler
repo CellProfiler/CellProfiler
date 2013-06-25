@@ -3,9 +3,10 @@
 function runcp {
     export JAVA_HOME=/usr/CellProfiler/src/CellProfiler/jdk1.7.0_21
     export LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64/server:/usr/CellProfiler/lib/:$LD_LIBRARY_PATH
-    export PATH=/usr/CellProfiler/bin:$PATH
+    export PATH=/usr/CellProfiler/bin:$JAVA_HOME/bin:$PATH
     export HOSTTYPE=amd64
     cd /usr/CellProfiler/src/CellProfiler
+    export MAVEN_OPTS="-Xmx1024m"
     /usr/CellProfiler/bin/python2.7 CellProfiler.py
 }
 
@@ -13,7 +14,8 @@ function runnose {
     export JAVA_HOME=/usr/CellProfiler/src/CellProfiler/jdk1.7.0_21
     export LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64/server:/usr/CellProfiler/lib/:$LD_LIBRARY_PATH
     export HOSTTYPE=amd64
-    export PATH=/usr/CellProfiler/bin/:$PATH
+    export PATH=/usr/CellProfiler/bin/:$JAVA_HOME/bin:$PATH
+    export MAVEN_OPTS="-Xmx1024m"
     cd /usr/CellProfiler/src/CellProfiler
     /usr/CellProfiler/bin/python2.7 killjavabridge/setup.py install
     export CP_TESTIMAGES=$HOME/CellProfiler/TestImages/

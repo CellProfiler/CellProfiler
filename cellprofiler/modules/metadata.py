@@ -300,7 +300,7 @@ class Metadata(cpm.CPModule):
             "", [FilePredicate(),
                  DirectoryPredicate(),
                  ExtensionPredicate()],
-            'or (file does contain "")',doc = """
+            'and (file does contain "")',doc = """
             Check this setting to display and use rules to select files for metadata extraction.
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals()))
         

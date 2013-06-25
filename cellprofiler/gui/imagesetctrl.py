@@ -1589,7 +1589,7 @@ class FilterPanelDlg(wx.Dialog):
             predicates = [FilePredicate(),
                           DirectoryPredicate(),
                           ExtensionPredicate()],
-            value = 'or (file does contain "")')
+            value = 'and (file does contain "")')
             
         self.make_ui(channel_name, channel_names, function_list)
 

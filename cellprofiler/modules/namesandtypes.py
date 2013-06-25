@@ -216,7 +216,7 @@ class NamesAndTypes(cpm.CPModule):
              ExtensionPredicate(),
              ImagePredicate(),
              mp],
-            'or (file does contain "")',doc = """
+            'and (file does contain "")',doc = """
             Specify filter to narrow down the files to be analyzed. 
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals()))
         

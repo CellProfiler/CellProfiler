@@ -283,10 +283,6 @@ class HDF5Dict(object):
                                     chunks = (self.chunksize, ), 
                                     maxshape = (None, ))                                
             self.hdf5_file.flush()
-            if is_temporary:
-                # Unix-ish unlink lets us remove the file from the directory but
-                # it's still there.
-                os.unlink(self.filename)
         except Exception, e:
             self.hdf5_file.close()
             logger.exception("Failed during initial processing of %s" % self.filename)

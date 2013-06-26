@@ -30,6 +30,7 @@ import zmq
 
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.pipeline as cpp
+import cellprofiler.cpmodule as cpm
 import cellprofiler.preferences as cpprefs
 import cellprofiler.measurements as cpmeas
 import cellprofiler.utilities.zmqrequest as cpzmq
@@ -281,8 +282,11 @@ class TestAnalysis(unittest.TestCase):
     
     def check_display_post_run_requests(self, pipeline):
         '''Read the DisplayPostRunRequest messages during the post_run phase'''
+        
+        m0_func_code = pipeline.modules()[0].display_post_run.im_func.func_code
         for module in pipeline.modules():
-            if module.show_window:
+            if (module.show_window and 
+                module.display_post_run.im_func.func_code != m0_func_code):
                 result = self.event_queue.get()
                 self.assertIsInstance(
                     result, cpanalysis.DisplayPostRunRequest)

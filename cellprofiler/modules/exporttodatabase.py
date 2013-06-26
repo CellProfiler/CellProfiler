@@ -148,7 +148,7 @@ O_SELECT = "Select..."
 #
 ##############################################
 NONE_CHOICE = "None"
-PLATE_TYPES = [NONE_CHOICE,"96","384","5600"]
+PLATE_TYPES = [NONE_CHOICE,"6","24","96","384","1536","5600"]
 COLOR_ORDER = ["red", "green", "blue", "cyan", "magenta", "yellow", "gray", "none"]
 GROUP_COL_DEFAULT = "ImageNumber, Image_Metadata_Plate, Image_Metadata_Well"
 

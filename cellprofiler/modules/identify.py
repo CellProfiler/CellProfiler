@@ -436,7 +436,9 @@ class Identify(cellprofiler.cpmodule.CPModule):
             doc = """<i>(Used only if %(TS_PER_OBJECT)s is selected for the
             thresholding strategy)</i><br>A threshold will be calculated for
             each object and applied to the pixels inside that object. Pixels
-            outside of any object will be assigned to the background."""%globals())
+            outside of any object will be assigned to the background.
+            You can either select a prior object or if you select "%(O_FROM_IMAGE)s,"
+            the input image's mask will be used.</p>"""%globals())
         
         self.two_class_otsu = cps.Choice(
             'Two-class or three-class thresholding?',

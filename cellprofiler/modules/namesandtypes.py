@@ -578,7 +578,7 @@ class NamesAndTypes(cpm.CPModule):
                             "(Ljava/util/List;Ljava/util/Collection;)"
                             "Ljava/util/List;", jipds, errors.o)
             
-            indexes = env.make_int_array(np.array([-1] * len(channels), int))
+            indexes = env.make_int_array(np.array([-1] * len(channels), np.int32))
             getIndices = J.make_static_call(
                 "org/cellprofiler/imageset/filter/IndexedImagePlaneDetails",
                 "getIndices",

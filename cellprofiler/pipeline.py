@@ -2059,8 +2059,6 @@ class Pipeline(object):
             workspace.refresh()
             try:
                 module.post_run(workspace)
-                if module.show_window:
-                    workspace.post_run_display(module)
             except Exception, instance:
                 logging.error(
                     "Failed to complete post_run processing for module %s.",

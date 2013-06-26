@@ -28,7 +28,7 @@ from cellprofiler.gui import get_cp_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
 from cellprofiler.gui.cpfigure import close_all
 from cellprofiler.gui.help import MAIN_HELP, make_help_menu, \
-     HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_PATH_LIST
+     HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_PATH_LIST, PLATEVIEWER_HELP
 from cellprofiler.pipeline import Pipeline
 from cellprofiler.gui.pipelinecontroller import PipelineController
 from cellprofiler.gui.moduleview import ModuleView, stop_validation_queue_thread
@@ -726,6 +726,15 @@ class CPFrame(wx.Frame):
         '''Create a help menu for the data tools'''
         if not hasattr(self, "__data_tools_help_menu"):
             self.__menu_data_tools_help_menu = wx.Menu()
+            def on_plate_viewer_help(event):
+                import htmldialog
+                dlg = htmldialog.HTMLDialog(
+                    self, "Help on plate viewer", PLATEVIEWER_HELP)
+                dlg.Show()
+            new_id = wx.NewId()
+            self.__menu_data_tools_help_menu.Append(new_id, "Plate viewer")
+            wx.EVT_MENU(self, new_id, on_plate_viewer_help)
+                
             for data_tool_name in get_data_tool_names():
                 new_id = wx.NewId()
                 self.__menu_data_tools_help_menu.Append(new_id, data_tool_name)

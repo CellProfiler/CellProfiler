@@ -1818,6 +1818,26 @@ learning curve to using them, but are quite powerful once you understand the bas
 
 #########################################################
 #
+# Plate viewer help
+#
+#########################################################
+PLATEVIEWER_HELP ="""<h1>Plate viewer help</h1>
+<p>The plate viewer is a data tool that displays the images in your
+experiment in plate format. Your project must define an image set list with
+metadata annotations for the image's well and, optionally its plate and site.
+The plate viewer will then group your images by well and display a plate map
+for you. If you have defined a plate metadata tag (with the name, "Plate"),
+the plate viewer will group your images by plate and display a choice box
+that lets you pick the plate to display.
+<p>
+Click on a well to see the images for that well. Channels are composited together if there is more
+than one channel and you can control the color used to display each channel.
+If you have more than one site per well and have site metadata (with the name,
+"Site"), the plate viewer will tile the sites when displaying.
+"""
+
+#########################################################
+#
 # The top-level of help - used when building the HTML manual
 #
 #########################################################
@@ -1859,7 +1879,8 @@ MAIN_HELP = (
             ("Setting The Output Filename", USING_THE_OUTPUT_FILE_HELP))),
         ("Batch Processing", BATCHPROCESSING_HELP),
         ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
-        ("Configuring Logging", CONFIGURING_LOGGING_HELP)))
+        ("Configuring Logging", CONFIGURING_LOGGING_HELP),
+        ("Plate viewer", PLATEVIEWER_HELP)))
 )
 
 def make_help_menu(h, window, menu=None):

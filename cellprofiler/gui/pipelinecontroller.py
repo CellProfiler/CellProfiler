@@ -854,9 +854,19 @@ class PipelineController:
         m = self.__workspace.measurements
         assert isinstance(m, cpm.Measurements)
         
+        image_numbers = m.get_image_numbers()
+        if len(image_numbers) == 0:
+            wx.MessageBox(
+                "Your project does not produce any image sets.\n"
+                "Please configure the input modules correctly.\n"
+                "The plate viewer help is located in the data tools\n"
+                "menu's help menu",
+                caption = "Plate viewer: No image sets",
+                style = wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
+                parent = self.__frame)
+            return
         url_features = [f for f in m.get_feature_names(cpm.IMAGE)
                         if f.startswith(cpm.C_URL)]
-        image_numbers = m.get_image_numbers()
         pws = []
         for feature in ("Plate", "Well", "Site"):
             measurement = cpm.C_METADATA + "_" + feature
@@ -866,6 +876,17 @@ class PipelineController:
             else:
                 pws.append([None] * len(image_numbers))
         plate, well, site = pws
+        if pws[1][0] is None:
+            wx.MessageBox(
+                "Your project needs to tag every image set with well metadata\n"
+                "Please use the Metadata module to define a metadata tag\n"
+                "named, ""Well"".\n"
+                "The plate viewer help is located in the data tools\n"
+                "menu's help menu",
+                caption = "Plate viewer: No well metadata",
+                style = wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
+                parent = self.__frame)
+            return
         
         for url_feature in url_features:
             channel = [url_feature[(len(cpm.C_URL)+1):]] * len(image_numbers)

@@ -1268,6 +1268,9 @@ class PipelineController:
         from cellprofiler.gui.cpfigure import show_image
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY)
+        if len(paths) == 0:
+            wx.MessageBox("No image selected.", caption = "No image selected", parent = self.__frame)
+            return
         show_image(paths[0], self.__frame)
                 
     def on_pathlist_file_delete(self, paths):

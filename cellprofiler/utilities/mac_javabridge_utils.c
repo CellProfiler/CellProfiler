@@ -302,13 +302,13 @@ void MacRunLoopStop()
     pthread_mutex_lock(run_loop_mutex);
     while(1) {
         if (run_loop_state == RLS_BEFORE_START) {
-            pthread_cond_wait(run_loop_cv);
+            pthread_cond_wait(&run_loop_cv, &run_loop_mutex);
         } else if (run_loop_state == RLS_STARTED) {
             run_loop_state = RLS_TERMINATING;
             CFRunLoopStop(CFRunLoopGetMain());
             pthread_cond_signal(run_loop_cv);
             while (run_loop_state == RLS_TERMINATING) {
-                pthread_cond_wait(run_loop_cv);
+                pthread_cond_wait(run_loop_cv, &run_loop_mutex);
             }
             break;
         } else {

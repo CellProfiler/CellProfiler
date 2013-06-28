@@ -691,7 +691,9 @@ class NamesAndTypes(cpm.CPModule):
             else:
                 return None
             
-        url = fetch_measurement_or_none(cpmeas.C_URL).encode("utf-8")
+        url = fetch_measurement_or_none(cpmeas.C_URL)
+        if url is not None:
+            url = url.encode("utf-8")
         series = fetch_measurement_or_none(cpmeas.C_SERIES)
         index = fetch_measurement_or_none(cpmeas.C_FRAME)
         channel = fetch_measurement_or_none(cpmeas.C_CHANNEL)

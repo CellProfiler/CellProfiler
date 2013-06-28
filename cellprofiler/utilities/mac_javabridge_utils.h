@@ -44,3 +44,18 @@ JNIEXPORT int MacStartVM(JavaVM **pVM, JavaVMInitArgs *pVMArgs, const char *clas
 
 JNIEXPORT void MacStopVM();
 
+/**********************************************************
+ *
+ * Enter the Mac's run loop
+ *
+ **********************************************************/
+
+JNIEXPORT void MacRunLoop();
+
+/**********************************************************
+ *
+ * Signal the run loop to stop from some thread
+ *
+ **********************************************************/
+ 
+JNIEXPORT void MacStopRunLoop();

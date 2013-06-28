@@ -26,6 +26,7 @@
 #include <stdio.h>
 #include "jni.h"
 #include <pthread.h>
+#include <CoreFoundation/CoreFoundation.h>
 
 JNIEnv *pEnv;
 
@@ -66,6 +67,21 @@ static int stopped = 0;
 
 /**********************************************************
  *
+ * Run loop synchronization
+ *
+ **********************************************************/
+
+#define RLS_BEFORE_START 0
+#define RLS_STARTED 1
+#define RLS_TERMINATING 2
+#define RLS_TERMINATED 3
+
+static pthread_mutex_t run_loop_mutex;
+static pthread_cond_t run_loop_cv;
+static int run_loop_state = RLS_BEFORE_START;
+
+/**********************************************************
+ *
  * MacStartVM
  *
  * Start the VM on its own thread, instantiate the thread's runnable
@@ -92,6 +108,9 @@ int MacStartVM(JavaVM **pVM, JavaVMInitArgs *pVMArgs, const char *class_name)
     
     pthread_mutex_init(&stop_mutex, NULL);
     pthread_cond_init(&stop_cv, NULL);
+    
+    pthread_mutex_init(&run_loop_mutex, NULL);
+    pthread_cond_init(&run_loop_cv, NULL);
     
     pthread_attr_init(&attr);
     pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
@@ -210,5 +229,95 @@ STOP_VM:
     (*vm)->DestroyJavaVM(vm);
     return NULL;
 }
+
+/**************************************************************************
+ *
+ * CBPerform - a dummy run loop source context perform callback
+ *
+ **************************************************************************/
+ 
+static void CBPerform(void *info)
+{
+}
+
+/*************************************************************************
+ *
+ * CBObserve - a CFRunLoopObserver callback which is called when the
+ *             run loop's state changes
+ *
+ *************************************************************************/
+static void CBObserve(CFRunLoopObserverRef observer, 
+                      CFRunLoopActivity activity,
+                      void *info)
+{
+    if (activity == kCFRunLoopEntry) {
+        pthread_mutex_lock(&run_loop_mutex);
+        if (run_loop_state == RLS_BEFORE_START) {
+            run_loop_state = RLS_STARTED;
+            pthread_cond_signal(&run_loop_cv);
+        }
+        pthread_mutex_unlock(&run_loop_mutex);
+    }
+}
+
+/*************************************************************************
+ *
+ * MacRunLoopRun - start the Mac run loop on the main thread
+ *
+ *************************************************************************/
+ 
+void MacRunLoopRun()
+{
+    CFRunLoopObserverContext observerContext;
+    CFRunLoopObserverRev     observerRef;
+    CFRunLoopSourceContext   sourceContext;
+    CFRunLoopSourceRef       sourceRef;
     
+    memset(observerContext, 0, sizeof(observerContext));
+    observerRef = CFRunLoopObserverCreate(
+            kCFAllocatorDefault,
+            kCFRunLoopAllActivities, 
+            YES, 0, &CBObserve, &context);
+    CFRunLoopAddObserver(
+            CFRunLoopGetCurrent(), observerRef, kCFRunLoopDefaultMode);
+    memset(&sourceContext, 0, sizeof(sourceContext));
+    sourceContext.perform = dummy
+    sourceRef = CFRunLoopSourceCreate(kCFAllocatorDefault, NULL, &sourceContext);
+    CFRunLoopAddSource(CFRunLoopGetCurrent(), sourceRef, kCFRunLoopCommonModes);
+    CFRunLoopRun();
+    pthread_mutex_lock(run_loop_mutex);
+    run_loop_state = RLS_TERMINATED;
+    pthread_cond_signal(run_loop_cv);
+    pthread_mutex_unlock(run_loop_mutex);
+}
+
+/****************************************************************************
+ *
+ * MacRunLoopStop - stop the Mac run loop
+ *
+ ****************************************************************************/
+ 
+void MacRunLoopStop()
+{
+    pthread_mutex_lock(run_loop_mutex);
+    while(1) {
+        if (run_loop_state == RLS_BEFORE_START) {
+            pthread_cond_wait(run_loop_cv);
+        } else if (run_loop_state == RLS_STARTED) {
+            run_loop_state = RLS_TERMINATING;
+            CFRunLoopStop(CFRunLoopGetMain());
+            pthread_cond_signal(run_loop_cv);
+            while (run_loop_state == RLS_TERMINATING) {
+                pthread_cond_wait(run_loop_cv);
+            }
+            break;
+        } else {
+            /*
+             * Assume either RLS_TERMINATING (called twice) or RLS_TERMINATED
+             */
+             break;
+        }
+    }
+    pthread_mutex_unlock(run_loop_mutex);
+}
     

@@ -44,8 +44,6 @@ class TestAnalysisWorker(unittest.TestCase):
     def setUpClass(cls):
         import bioformats
         cls.zmq_context = cpaw.the_zmq_context
-        cls.notify_socket = cls.zmq_context.socket(zmq.PUB)
-        cls.notify_socket.bind(cpaw.NOTIFY_ADDR)
         
     @classmethod
     def tearDownClass(cls):
@@ -54,7 +52,7 @@ class TestAnalysisWorker(unittest.TestCase):
             GLOBAL_WM.stopWorkers()
         except:
             pass
-        cls.notify_socket.close()
+        cpaw.AnalysisWorker.notify_pub_socket.close()
             
     def setUp(self):
         self.out_dir = tempfile.mkdtemp()
@@ -69,7 +67,7 @@ class TestAnalysisWorker(unittest.TestCase):
         
     def tearDown(self):
         if self.awthread:
-            self.notify_socket.send(cpaw.NOTIFY_STOP)
+            cpaw.AnalysisWorker.cancel()
             self.awthread.join(10000)
             self.assertFalse(self.awthread.isAlive())
         self.work_socket.close()
@@ -104,6 +102,7 @@ class TestAnalysisWorker(unittest.TestCase):
             up_queue_send_socket = cpaw.the_zmq_context.socket(zmq.PUB)
             up_queue_send_socket.connect(self.notify_addr)
             with cpaw.AnalysisWorker(self.announce_addr) as aw:
+                aw.enter_thread()
                 self.aw = aw
                 self.up_queue.put("OK")
                 while not self.aw.cancelled:
@@ -116,6 +115,7 @@ class TestAnalysisWorker(unittest.TestCase):
                         traceback.print_exc()
                         self.up_queue.put((None, e))
                         up_queue_send_socket.send("EXCEPTION")
+                aw.exit_thread()
                         
         def recv(self, work_socket, timeout=None):
             '''Receive a request from the worker
@@ -187,7 +187,7 @@ class TestAnalysisWorker(unittest.TestCase):
         '''
         self.analysis_id = uuid.uuid4().hex
         def do_set_work_socket(aw):
-            aw.work_socket = aw.zmq_context.socket(zmq.REQ)
+            aw.work_socket = cpaw.the_zmq_context.socket(zmq.REQ)
             aw.work_socket.connect(self.work_addr)
             aw.work_request_address = self.work_addr
             aw.current_analysis_id = self.analysis_id
@@ -227,7 +227,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.awthread.ex(self.awthread.aw.get_announcement)
-        self.notify_socket.send(cpaw.NOTIFY_STOP)
+        cpaw.AnalysisWorker.cancel()
         self.assertRaises(cpaw.CancelledException, self.awthread.ecute)
         
     def test_02_01_send(self):
@@ -254,7 +254,7 @@ class TestAnalysisWorker(unittest.TestCase):
             reply = self.awthread.aw.send(cpanalysis.WorkRequest("foo"))
             return reply
         self.awthread.ex(send_something)
-        self.notify_socket.send(cpaw.NOTIFY_STOP)
+        cpaw.AnalysisWorker.cancel()
         self.assertRaises(cpaw.CancelledException, self.awthread.ecute)
 
     def test_02_03_send_upstream_exit(self):
@@ -455,7 +455,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Might as well torpedo the app. It should be stalled waiting
         # for the FlipAndRotate display.
         #
-        self.notify_socket.send(cpaw.NOTIFY_STOP)
+        cpaw.AnalysisWorker.cancel()
         self.awthread.ecute()
                                  
     def test_03_05_the_happy_path_chapter_1(self):

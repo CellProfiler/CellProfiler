@@ -28,6 +28,7 @@ Website: http://www.cellprofiler.org
 
 import numpy as np
 import sys
+import threading
 cimport numpy as np
 cimport cython
 
@@ -307,14 +308,40 @@ IF UNAME_SYSNAME == "Darwin":
     cdef extern from "mac_javabridge_utils.h":
         int MacStartVM(JavaVM **, JavaVMInitArgs *pVMArgs, char *class_name) nogil
         void MacStopVM() nogil
+        void MacRunLoop() nogil
+        void MacStopRunLoop() nogil
+
     cdef void StopVM(JavaVM *vm) nogil:
         MacStopVM()
+        
 ELSE:
     cdef int MacStartVM(JavaVM **pvm, JavaVMInitArgs *pVMArgs, char *class_name) nogil:
         return -1
+	
     cdef void StopVM(JavaVM *vm) nogil:
         vm[0].DestroyJavaVM(vm)
-        
+	
+    cdef void MacRunLoop() nogil:
+        pass
+	
+    cdef void MacStopRunLoop() nogil:
+        pass
+    
+def mac_enter_run_loop():
+    '''Enter the run loop and stay there until mac_stop_run_loop is called
+    
+    This enters the main run loop in the main thread and stays in the
+    run loop until some other thread calls MacStopRunLoop.
+    '''
+    MacRunLoop()
+    
+def mac_stop_run_loop():
+    '''Signal the run loop to stop
+    
+    Wait for the main thread to enter the run loop, if necessary, then
+    signal the run loop to stop.
+    '''
+    MacStopRunLoop()
     
 def get_default_java_vm_init_args():
     '''Return the version and default option strings as a tuple'''

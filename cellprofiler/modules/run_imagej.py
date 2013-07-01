@@ -522,6 +522,11 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         logger.info("Starting ImageJ UI")
         ui_service = ij2.get_ui_service(get_context())
         if ui_service is not None and not ui_service.isVisible():
+            if cpprefs.get_headless():
+                # Silence the auto-updater in the headless preferences
+                #
+                ij2.update_never_remind()
+                
             ui_service.createUI()
         
     def prepare_group(self, workspace, grouping, image_numbers):

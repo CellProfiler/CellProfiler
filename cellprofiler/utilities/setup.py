@@ -91,9 +91,22 @@ if not hasattr(sys, 'frozen'):
                 include_dirs += ['/System/Library/Frameworks/JavaVM.framework/Headers']
                 extra_link_args = ['-framework', 'JavaVM']
             elif sys.platform.startswith('linux'):
+
                 include_dirs += [os.path.join(java_home,'include'),
                                  os.path.join(java_home,'include','linux')]
-                library_dirs = [os.path.join(java_home,'jre','lib',os.environ.get('HOSTTYPE','amd64'),'server')]
+                library_dirs = [
+                    os.path.join(java_home,'jre','lib',
+                                 os.environ.get('HOSTTYPE','amd64'),'server')]
+                #
+                # Use findlibjvm to find the JVM in case above doesn't
+                # work.
+                #
+                path = os.path.split(__file__)[0]
+                p = subprocess.Popen(["java","-cp", path, "findlibjvm"],
+                                     stdout=subprocess.PIPE)
+                stdout, stderr = p.communicate()
+                jvm_dir = stdout.strip()
+                library_dirs.append(jvm_dir)
                 libraries = ["jvm"]
             extensions += [Extension(name="javabridge",
                                      sources=javabridge_sources,

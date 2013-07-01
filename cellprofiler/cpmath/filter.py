@@ -469,7 +469,7 @@ def canny(image, mask, sigma, low_threshold, high_threshold):
     # Segment the low-mask, then only keep low-segments that have
     # some high_mask component in them 
     #
-    labels,count = label(low_mask, np.ndarray((3,3),bool))
+    labels,count = label(low_mask, np.ones((3,3),bool))
     if count == 0:
         return low_mask
     

@@ -657,7 +657,8 @@ class NamesAndTypes(cpm.CPModule):
         for name, iz_image in zip(names, is_image):
             workspace.measurements.alter_path_for_create_batch(
                 name, iz_image, fn_alter_path)
-                        
+               
+    @classmethod         
     def is_input_module(self):
         return True
             

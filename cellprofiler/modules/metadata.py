@@ -407,6 +407,7 @@ class Metadata(cpm.CPModule):
         '''
         return setting in self.settings()
     
+    @classmethod
     def is_input_module(self):
         return True
             

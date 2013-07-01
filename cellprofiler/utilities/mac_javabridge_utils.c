@@ -71,10 +71,10 @@ static int stopped = 0;
  *
  **********************************************************/
 
-#define RLS_BEFORE_START 0
-#define RLS_STARTED 1
-#define RLS_TERMINATING 2
-#define RLS_TERMINATED 3
+#define RLS_BEFORE_START 1
+#define RLS_STARTED 2
+#define RLS_TERMINATING 3
+#define RLS_TERMINATED 4
 
 static pthread_mutex_t run_loop_mutex;
 static pthread_cond_t run_loop_cv;
@@ -108,9 +108,6 @@ int MacStartVM(JavaVM **pVM, JavaVMInitArgs *pVMArgs, const char *class_name)
     
     pthread_mutex_init(&stop_mutex, NULL);
     pthread_cond_init(&stop_cv, NULL);
-    
-    pthread_mutex_init(&run_loop_mutex, NULL);
-    pthread_cond_init(&run_loop_cv, NULL);
     
     pthread_attr_init(&attr);
     pthread_attr_setscope(&attr, PTHREAD_SCOPE_SYSTEM);
@@ -258,37 +255,80 @@ static void CBObserve(CFRunLoopObserverRef observer,
         }
         pthread_mutex_unlock(&run_loop_mutex);
     }
+    if (run_loop_state == RLS_TERMINATING) {
+        /* Kill, Kill, Kill */
+        CFRunLoopStop(CFRunLoopGetCurrent());
+    }
 }
 
 /*************************************************************************
  *
- * MacRunLoopRun - start the Mac run loop on the main thread
+ * MacRunLoopInit - Configure the main event loop with an observer and source
  *
  *************************************************************************/
  
-void MacRunLoopRun()
+void MacRunLoopInit()
 {
+    printf("Initializing run loop synchronization variables\n");
     CFRunLoopObserverContext observerContext;
-    CFRunLoopObserverRev     observerRef;
+    CFRunLoopObserverRef     observerRef;
     CFRunLoopSourceContext   sourceContext;
     CFRunLoopSourceRef       sourceRef;
     
-    memset(observerContext, 0, sizeof(observerContext));
+    pthread_mutex_init(&run_loop_mutex, NULL);
+    pthread_cond_init(&run_loop_cv, NULL);
+    
+    printf("Initializing run loop observer\n");
+    memset(&observerContext, 0, sizeof(observerContext));
     observerRef = CFRunLoopObserverCreate(
             kCFAllocatorDefault,
             kCFRunLoopAllActivities, 
-            YES, 0, &CBObserve, &context);
+            1, 0, &CBObserve, &observerContext);
     CFRunLoopAddObserver(
             CFRunLoopGetCurrent(), observerRef, kCFRunLoopDefaultMode);
+    printf("Initializing run loop source\n");
     memset(&sourceContext, 0, sizeof(sourceContext));
-    sourceContext.perform = dummy
-    sourceRef = CFRunLoopSourceCreate(kCFAllocatorDefault, NULL, &sourceContext);
+    sourceContext.perform = CBPerform;
+    sourceRef = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &sourceContext);
     CFRunLoopAddSource(CFRunLoopGetCurrent(), sourceRef, kCFRunLoopCommonModes);
+    printf("Initialization complete\n");
+}
+
+/*************************************************************************
+ *
+ * MacRunLoopReset - reset the run loop state to before start
+ *
+ *************************************************************************/
+void MacRunLoopReset()
+{
+    run_loop_state = RLS_BEFORE_START;
+}
+
+/*************************************************************************
+ *
+ * MacRunLoopRun - run the event loop until stopped
+ *
+ *************************************************************************/
+void MacRunLoopRun()
+{
+    printf("Entering run loop.\n");
     CFRunLoopRun();
-    pthread_mutex_lock(run_loop_mutex);
+    printf("Run loop exited.\n");
+    pthread_mutex_lock(&run_loop_mutex);
     run_loop_state = RLS_TERMINATED;
-    pthread_cond_signal(run_loop_cv);
-    pthread_mutex_unlock(run_loop_mutex);
+    pthread_cond_signal(&run_loop_cv);
+    pthread_mutex_unlock(&run_loop_mutex);
+    printf("Finished signaling exit.\n");
+}
+
+/*************************************************************************
+ *
+ * MacRunLoopRunInMode - run the event loop until timeout or stopped
+ *
+ *************************************************************************/
+void MacRunLoopRunInMode(double timeInterval)
+{
+    CFRunLoopRunInMode(kCFRunLoopDefaultMode, timeInterval, 1);
 }
 
 /****************************************************************************
@@ -299,16 +339,16 @@ void MacRunLoopRun()
  
 void MacRunLoopStop()
 {
-    pthread_mutex_lock(run_loop_mutex);
+    pthread_mutex_lock(&run_loop_mutex);
     while(1) {
         if (run_loop_state == RLS_BEFORE_START) {
             pthread_cond_wait(&run_loop_cv, &run_loop_mutex);
         } else if (run_loop_state == RLS_STARTED) {
             run_loop_state = RLS_TERMINATING;
             CFRunLoopStop(CFRunLoopGetMain());
-            pthread_cond_signal(run_loop_cv);
+            pthread_cond_signal(&run_loop_cv);
             while (run_loop_state == RLS_TERMINATING) {
-                pthread_cond_wait(run_loop_cv, &run_loop_mutex);
+                pthread_cond_wait(&run_loop_cv, &run_loop_mutex);
             }
             break;
         } else {
@@ -318,6 +358,17 @@ void MacRunLoopStop()
              break;
         }
     }
-    pthread_mutex_unlock(run_loop_mutex);
+    pthread_mutex_unlock(&run_loop_mutex);
+}
+
+/***************************************************************
+ *
+ * MacIsMainThread - return true if the run loop of this thread
+ *                   is the main run loop
+ *
+ ***************************************************************/
+int MacIsMainThread()
+{
+    return CFRunLoopGetCurrent() == CFRunLoopGetMain();
 }
     

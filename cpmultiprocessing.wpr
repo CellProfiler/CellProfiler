@@ -1,0 +1,19 @@
+#!wing
+#!version=4.0
+##################################################################
+# Wing IDE project file                                          #
+##################################################################
+[project attributes]
+proj.directory-list = [{'dirloc': loc('.'),
+                        'excludes': [u'dist',
+                                     u'build',
+                                     u'tutorial',
+                                     u'cellprofiler/utilities/build'],
+                        'filter': '*',
+                        'include_hidden': False,
+                        'recursive': True,
+                        'watch_for_changes': True}]
+proj.file-type = 'shared'
+proj.main-file = loc('CellProfiler.py')
+testing.auto-test-file-specs = ('test_',)
+testing.test-framework = {None: 'nose'}

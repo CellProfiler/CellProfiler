@@ -488,7 +488,8 @@ class CPModule(object):
         """If true, the module will load files and make image sets"""
         return False
     
-    def is_input_module(self):
+    @classmethod
+    def is_input_module(cls):
         """If true, the module is one of the input modules
         
         The input modules are "Images", "Metadata", "NamesAndTypes" and "Groups"

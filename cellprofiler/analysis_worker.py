@@ -109,6 +109,17 @@ def main():
     if not options.work_announce_address:
         parser.print_help()
         sys.exit(1)
+    #
+    # For OS/X set up the UI elements that users expect from
+    # an app.
+    #
+    if sys.platform == "darwin":
+        from cellprofiler.icons import get_builtin_images_path
+        
+        icon_path = os.path.join(get_builtin_images_path(), "CellProfilerIcon.png")
+        os.environ["APP_NAME_%d" % os.getpid()] = "CellProfilerWorker"
+        os.environ["APP_ICON_%d" % os.getpid()] = icon_path
+        
     # Start the deadman switch thread.
     start_daemon_thread(target=exit_on_stdin_close, 
                         name="exit_on_stdin_close")
@@ -196,12 +207,14 @@ class AnalysisWorker(object):
         J.detach()
         
     def run(self):
+        t0 = 0
         with self.AnalysisWorkerThreadObject(self):
             while not self.cancelled:
                 self.current_analysis_id, \
                     self.work_request_address = self.get_announcement()
-        
-                logger.debug("Connecting at address %s" % self.work_request_address)
+                if t0 is None or time.time() - t0 > 30:
+                    logger.info("Connecting at address %s" % self.work_request_address)
+                    t0 = time.time()
                 self.work_socket = the_zmq_context.socket(zmq.REQ)
                 self.work_socket.connect(self.work_request_address)
                 try:
@@ -216,6 +229,7 @@ class AnalysisWorker(object):
                     
                 finally:
                     self.work_socket.close()
+            J.deactivate_awt()
     
     def do_job(self, job):
         '''Handle a work request to its completion
@@ -498,7 +512,7 @@ class AnalysisWorker(object):
                     elif socket == announce_socket and state == zmq.POLLIN:
                         announcement = dict(announce_socket.recv_json())
                         if len(announcement) == 0:
-                            sleep(0.25)
+                            threading._sleep(0.25)
                             continue
                         if self.current_analysis_id in announcement:
                             analysis_id = self.current_analysis_id

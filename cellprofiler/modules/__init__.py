@@ -331,8 +331,9 @@ def fill_modules():
             all_modules[name] = cp_module
             check_module(cp_module, name)
             # attempt to instantiate
-            all_modules[name]()
-            if hasattr(all_modules[name], "run_as_data_tool"):
+            if not hasattr(cp_module, 'do_not_check'):
+                cp_module()
+            if hasattr(cp_module, "run_as_data_tool"):
                 datatools.append(name)
             if check_svn and hasattr(m, '__version__'):
                 match = re.match('^\$Revision: ([0-9]+) \$$', m.__version__)
@@ -388,13 +389,13 @@ depricated_modules = [
 unimplemented_modules = [
     'LabelImages', 'Restart', 'SplitOrSpliceMovie'
     ]
-def instantiate_module(module_name):
+def get_module_class(module_name):
     if module_name in substitutions: 
         module_name = substitutions[module_name]
     module_class = module_name.split('.')[-1]
     if not all_modules.has_key(module_class):
         if pure_datatools.has_key(module_class):
-            return pure_datatools[module_class]()
+            return pure_datatools[module_class]
         if module_class in unimplemented_modules:
             raise ValueError(("The %s module has not yet been implemented. "
                               "It will be available in a later version "
@@ -408,7 +409,10 @@ def instantiate_module(module_name):
                               "similar functionality in: %s") %
                              (module_class, ", ".join(replaced_modules[module_class])))
         raise ValueError("Could not find the %s module"%module_class)
-    module = all_modules[module_class]()
+    return all_modules[module_class]
+
+def instantiate_module(module_name):
+    module = get_module_class(module_name)()
     if svn_revisions.has_key(module_name):
         module.svn_version = svn_revisions[module_name]
     return module

@@ -75,9 +75,13 @@ class RunImageJ(cpm.CPModule):
     module_name = "RunImageJ"
     variable_revision_number = 4
     category = "Image Processing"
+    do_not_check=True
     
     def create_settings(self):
         '''Create the settings for the module'''
+        logger.info("Creating RunImageJ module settings")
+        J.activate_awt()
+        logger.info("Activated AWT")
         self.command_or_macro = cps.Choice(
             "Run an ImageJ command or macro?", [CM_COMMAND, CM_MACRO],
             doc = """This setting determines whether <b>RunImageJ</b> runs either a:
@@ -191,6 +195,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             to choose a command to run or <i>%(CM_MACRO)s</i> to run a macro.
             """ % globals())
         
+        logger.info("Finding ImageJ commands")
         self.prepare_group_command = self.make_command_choice(
             "Command", 
             doc = """<i>(Used only if running a command before an image group)</i><br>
@@ -252,6 +257,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             doc="""Press this button to show the ImageJ user interface.
             You can use the user interface to run ImageJ commands or
             set up ImageJ before a CellProfiler run.""")
+        logger.info("Finished creating settings")
 
     @staticmethod
     def is_leaf(node):
@@ -513,6 +519,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         This method shows the ImageJ user interface when the user presses
         the Show ImageJ button.
         '''
+        logger.info("Starting ImageJ UI")
         ui_service = ij2.get_ui_service(get_context())
         if ui_service is not None and not ui_service.isVisible():
             ui_service.createUI()
@@ -526,6 +533,11 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         d = self.get_dictionary(workspace.image_set_list)
         d[D_FIRST_IMAGE_SET] = image_numbers[0]
         d[D_LAST_IMAGE_SET] = image_numbers[-1]
+        if self.wants_to_set_current_image or self.wants_to_get_current_image:
+            # For ImageJ 1.0 and some scripting, the UI has to be open
+            # in order to get or set the current image.
+            #
+            self.on_show_imagej()
         
     def run(self, workspace):
         '''Run the imageJ command'''

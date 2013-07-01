@@ -308,8 +308,12 @@ IF UNAME_SYSNAME == "Darwin":
     cdef extern from "mac_javabridge_utils.h":
         int MacStartVM(JavaVM **, JavaVMInitArgs *pVMArgs, char *class_name) nogil
         void MacStopVM() nogil
-        void MacRunLoop() nogil
-        void MacStopRunLoop() nogil
+        void MacRunLoopInit() nogil
+        void MacRunLoopRun() nogil
+        void MacRunLoopStop() nogil
+        void MacRunLoopReset() nogil
+        int MacIsMainThread() nogil
+        void MacRunLoopRunInMode(double) nogil
 
     cdef void StopVM(JavaVM *vm) nogil:
         MacStopVM()
@@ -321,19 +325,43 @@ ELSE:
     cdef void StopVM(JavaVM *vm) nogil:
         vm[0].DestroyJavaVM(vm)
 	
-    cdef void MacRunLoop() nogil:
+    cdef void MacRunLoopInit() nogil:
+        pass
+        
+    cdef void MacRunLoopRun() nogil:
         pass
 	
-    cdef void MacStopRunLoop() nogil:
+    cdef void MacRunLoopStop() nogil:
         pass
-    
+        
+    cdef void MacRunLoopReset() nogil:
+        pass
+        
+    cdef int MacIsMainThread() nogil:
+        return 0
+        
+    cdef void MacRunLoopRunInMode(double timeout) nogil:
+        pass
+
+MacRunLoopInit()
+
+def mac_reset_run_loop():
+    '''Reset the run loop's internal state so that it's ready to run
+    '''
+    with nogil:
+        MacRunLoopReset()
+        
 def mac_enter_run_loop():
     '''Enter the run loop and stay there until mac_stop_run_loop is called
     
     This enters the main run loop in the main thread and stays in the
     run loop until some other thread calls MacStopRunLoop.
     '''
-    MacRunLoop()
+    with nogil:
+        MacRunLoopRun()
+
+def mac_poll_run_loop(timeout):
+    MacRunLoopRunInMode(timeout)
     
 def mac_stop_run_loop():
     '''Signal the run loop to stop
@@ -341,7 +369,14 @@ def mac_stop_run_loop():
     Wait for the main thread to enter the run loop, if necessary, then
     signal the run loop to stop.
     '''
-    MacStopRunLoop()
+    with nogil:
+        MacRunLoopStop()
+
+def mac_is_main_thread():
+    '''Return True if the current thread runs the main OS/X run loop
+    
+    '''
+    return MacIsMainThread() != 0
     
 def get_default_java_vm_init_args():
     '''Return the version and default option strings as a tuple'''

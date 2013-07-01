@@ -526,7 +526,14 @@ def execute_future_in_main_thread(future):
     if __run_headless:
         return future.get()
     if sys.maxsize > 2**32:
-        raise NotImplementedError("Can't execute future in main thread on OS/X 64 because there is no event loop (no wx for x64).")
+        if javabridge.mac_is_main_thread():
+            #
+            # Haven't figured out how to run a modal event loop
+            # on OS/X - tried CFRunLoopInMode with 1/4 sec timeout and
+            # it never returned.
+            #
+            raise NotImplementedError("No support for synchronizing futures in Python's startup thread on the OS/X in 64-bit mode.")
+        return future.get()
         
     import wx
     import time

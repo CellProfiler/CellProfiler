@@ -636,7 +636,10 @@ class AnalysisRunner(object):
             num = 4
 
         cls.work_announce_address = get_announcer_address()
+        logger.info("Starting workers on address %s" % cls.work_announce_address)
         if 'CP_DEBUG_WORKER' in os.environ:
+            if os.environ['CP_DEBUG_WORKER'] == 'NOT_INPROC':
+                return
             from cellprofiler.analysis_worker import \
                  AnalysisWorker, NOTIFY_ADDR, NOTIFY_STOP, CancelledException
             

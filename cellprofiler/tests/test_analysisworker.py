@@ -44,6 +44,8 @@ class TestAnalysisWorker(unittest.TestCase):
     def setUpClass(cls):
         import bioformats
         cls.zmq_context = cpaw.the_zmq_context
+        cls.notify_pub_socket = cls.zmq_context.socket(zmq.PUB)
+        cls.notify_pub_socket.bind(cpaw.NOTIFY_ADDR)
         
     @classmethod
     def tearDownClass(cls):
@@ -52,7 +54,10 @@ class TestAnalysisWorker(unittest.TestCase):
             GLOBAL_WM.stopWorkers()
         except:
             pass
-        cpaw.AnalysisWorker.notify_pub_socket.close()
+        cls.notify_pub_socket.close()
+        
+    def cancel(self):
+        self.notify_pub_socket.send(cpaw.NOTIFY_STOP)
             
     def setUp(self):
         self.out_dir = tempfile.mkdtemp()
@@ -67,7 +72,8 @@ class TestAnalysisWorker(unittest.TestCase):
         
     def tearDown(self):
         if self.awthread:
-            cpaw.AnalysisWorker.cancel()
+            self.cancel()
+            self.awthread.down_queue.put(None)
             self.awthread.join(10000)
             self.assertFalse(self.awthread.isAlive())
         self.work_socket.close()
@@ -85,6 +91,7 @@ class TestAnalysisWorker(unittest.TestCase):
         def __init__(self, announce_addr, *args, **kwargs):
             threading.Thread.__init__(self, *args, **kwargs)
             self.announce_addr = announce_addr
+            self.cancelled = False
             
         def start(self):
             self.setDaemon(True)
@@ -101,12 +108,15 @@ class TestAnalysisWorker(unittest.TestCase):
         def run(self):
             up_queue_send_socket = cpaw.the_zmq_context.socket(zmq.PUB)
             up_queue_send_socket.connect(self.notify_addr)
-            with cpaw.AnalysisWorker(self.announce_addr) as aw:
+            with cpaw.AnalysisWorker(self.announce_addr,
+                                     with_stop_run_loop=False) as aw:
                 aw.enter_thread()
                 self.aw = aw
                 self.up_queue.put("OK")
-                while not self.aw.cancelled:
+                while True:
                     fn = self.down_queue.get()
+                    if fn is None:
+                        break
                     try:
                         result = fn()
                         self.up_queue.put((result, None))
@@ -227,7 +237,7 @@ class TestAnalysisWorker(unittest.TestCase):
         self.awthread = self.AWThread(self.announce_addr)
         self.awthread.start()
         self.awthread.ex(self.awthread.aw.get_announcement)
-        cpaw.AnalysisWorker.cancel()
+        self.cancel()
         self.assertRaises(cpaw.CancelledException, self.awthread.ecute)
         
     def test_02_01_send(self):
@@ -254,7 +264,7 @@ class TestAnalysisWorker(unittest.TestCase):
             reply = self.awthread.aw.send(cpanalysis.WorkRequest("foo"))
             return reply
         self.awthread.ex(send_something)
-        cpaw.AnalysisWorker.cancel()
+        self.cancel()
         self.assertRaises(cpaw.CancelledException, self.awthread.ecute)
 
     def test_02_03_send_upstream_exit(self):
@@ -455,7 +465,7 @@ class TestAnalysisWorker(unittest.TestCase):
         # Might as well torpedo the app. It should be stalled waiting
         # for the FlipAndRotate display.
         #
-        cpaw.AnalysisWorker.cancel()
+        self.cancel()
         self.awthread.ecute()
                                  
     def test_03_05_the_happy_path_chapter_1(self):

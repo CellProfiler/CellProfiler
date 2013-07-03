@@ -159,10 +159,11 @@ class AnalysisWorker(object):
     '''An analysis worker processing work at a given address
     
     '''
-    def __init__(self, work_announce_address):
+    def __init__(self, work_announce_address, with_stop_run_loop=True):
         from bioformats.formatreader import set_omero_login_hook
         self.work_announce_address = work_announce_address
         self.cancelled = False
+        self.with_stop_run_loop = with_stop_run_loop
         self.current_analysis_id = False
         set_omero_login_hook(self.omero_login_handler)
         
@@ -209,7 +210,8 @@ class AnalysisWorker(object):
         self.notify_socket.close()
         J.deactivate_awt()
         J.detach()
-        stop_run_loop()
+        if self.with_stop_run_loop:
+            stop_run_loop()
         
     def run(self):
         t0 = 0

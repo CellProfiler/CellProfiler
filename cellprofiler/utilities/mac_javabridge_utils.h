@@ -44,3 +44,43 @@ JNIEXPORT int MacStartVM(JavaVM **pVM, JavaVMInitArgs *pVMArgs, const char *clas
 
 JNIEXPORT void MacStopVM();
 
+/**********************************************************
+ *
+ * Initialize the run loop and synchronization variables
+ *
+ **********************************************************/
+
+JNIEXPORT void MacRunLoopInit();
+
+/**********************************************************
+ *
+ * Enter the Mac's run loop
+ *
+ **********************************************************/
+
+JNIEXPORT void MacRunLoopRun();
+
+/*************************************************************************
+ *
+ * MacRunLoopReset - reset the run loop state to before start
+ *
+ *************************************************************************/
+
+JNIEXPORT void MacRunLoopReset();
+
+/**********************************************************
+ *
+ * Signal the run loop to stop from some thread
+ *
+ **********************************************************/
+ 
+JNIEXPORT void MacStopRunLoop();
+
+/***************************************************************
+ *
+ * MacIsMainThread - return true if the run loop of this thread
+ *                   is the main run loop
+ *
+ ***************************************************************/
+
+JNIEXPORT int MacIsMainThread();

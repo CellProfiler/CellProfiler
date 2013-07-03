@@ -385,6 +385,7 @@ class Groups(cpm.CPModule):
         '''
         return self.wants_groups.value
     
+    @classmethod
     def is_input_module(self):
         return True
             

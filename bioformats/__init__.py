@@ -131,6 +131,7 @@ def start_cellprofiler_jvm():
             "org.cellprofiler.headlesspreferences.HeadlessPreferencesFactory"]
     run_headless = (get_headless() and 
                     not os.environ.has_key("CELLPROFILER_USE_XVFB"))
+    run_headless = False
         
     logger.debug("JVM arguments: " + " ".join(args))
     jutil.start_vm(args, run_headless)
@@ -161,7 +162,7 @@ def start_cellprofiler_jvm():
             del warn_level
         except:
             logger.error("Failed to initialize log4j\n", exc_info=True)
-    if not run_headless:
+    if not get_headless():
         jutil.activate_awt()
 start_cellprofiler_jvm()
 from formatreader import load_using_bioformats

@@ -1464,7 +1464,7 @@ class PipelineController:
         d = { "All": [] }
         for module_name in get_module_names():
             try:
-                module = cellprofiler.modules.instantiate_module(module_name)
+                module = cellprofiler.modules.get_module_class(module_name)
                 if module.is_input_module():
                     continue
                 category = module.category

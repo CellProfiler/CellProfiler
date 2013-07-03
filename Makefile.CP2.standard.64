@@ -425,7 +425,7 @@ $(PYTHONPREFIX)/bin/python:		$(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SQLITEPREFIX)/
 						--enable-shared \
 				                --enable-unicode=ucs4 && \
 				        make altinstall prefix="$(PYTHONPREFIX)" exec-prefix="$(PYTHONPREFIX)" && \
-					ln -s "$(PYTHONPREFIX)/bin/python2.7" "$(PYTHONPREFIX)/bin/python"
+					ln -sf "$(PYTHONPREFIX)/bin/python2.7" "$(PYTHONPREFIX)/bin/python"
 
 cython:					$(CYTHONPREFIX)/bin/cython
 $(CYTHONPREFIX)/bin/cython:		$(SRCDIR)/$(CYTHONVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(PYPIPREFIX)/bin/easy_install

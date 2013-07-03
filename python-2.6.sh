@@ -9,9 +9,10 @@ export HOME=/broad/hptmp/imageweb
 fi
 fi
 
-. /broad/tools/scripts/useuse
+. /broad/software/scripts/useuse
 reuse .toolbox-0.11.0
 reuse .cython-0.17-toolbox-0.11.0
+reuse Java-1.6
 export PYTHONPATH=$PYTHONPATH:/imaging/analysis/People/imageweb/batchprofiler/cgi-bin/CellProfiler2.0/python/lib/Python2.6/site-packages
 export MPLCONFIGDIR=/imaging/analysis/CPCluster/CellProfiler-2.0/.matplotlib
 export LAST_CHECKOUT=`echo "import os;cpdir='/imaging/analysis/CPCluster/CellProfiler-2.0';print os.path.join(cpdir,str(max(*[int(x) for x in os.listdir(cpdir) if x.isdigit()])))" | python`

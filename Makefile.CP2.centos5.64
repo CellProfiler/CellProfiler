@@ -1473,12 +1473,12 @@ $(SRCDIR)/$(FONTCFGVERSION).tar.gz:
 
 $(SRCDIR)/$(PYSQLITEVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "i$(PACKAGEHOST)/$(PYSQLITEVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(PYSQLITEVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(SQLITEVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "i$(PACKAGEHOST)/$(SQLITEVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(SQLITEVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(MYSQLVERSION).tar.gz:

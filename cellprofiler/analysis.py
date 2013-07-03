@@ -666,9 +666,13 @@ class AnalysisRunner(object):
             thread.start()
             cls.workers.append(thread)
             return
-                
+        
+        close_fds = False
         # start workers
         for idx in range(num):
+            if sys.platform == 'darwin':
+                close_all_on_exec()
+            
             # stdin for the subprocesses serves as a deadman's switch.  When
             # closed, the subprocess exits.
             if hasattr(sys, 'frozen'):
@@ -700,7 +704,8 @@ class AnalysisRunner(object):
                                           env=find_worker_env(),
                                           stdin=subprocess.PIPE,
                                           stdout=subprocess.PIPE,
-                                          stderr=subprocess.STDOUT)
+                                          stderr=subprocess.STDOUT,
+                                          close_fds = close_fds)
             else:
                 worker = subprocess.Popen([find_python(),
                                            '-u',  # unbuffered
@@ -710,7 +715,8 @@ class AnalysisRunner(object):
                                           env=find_worker_env(),
                                           stdin=subprocess.PIPE,
                                           stdout=subprocess.PIPE,
-                                          stderr=subprocess.STDOUT)
+                                          stderr=subprocess.STDOUT,
+                                          close_fds = close_fds)
 
             def run_logger(workR, widx):
                 while(True):
@@ -928,7 +934,25 @@ class Ack(Reply):
     def __init__(self, message="THANKS"):
         Reply.__init__(self, message=message)
 
-
+if sys.platform == "darwin":
+    import fcntl
+    def close_all_on_exec():
+        '''Mark every file handle above 2 with CLOEXEC
+        
+        We don't want child processes inheret anything
+        except for STDIN / STDOUT / STDERR. This should
+        make it so in a horribly brute-force way.
+        '''
+        try:
+            maxfd = os.sysconf('SC_OPEN_MAX')
+        except:
+            maxfd = 256
+        for fd in range(3, maxfd):
+            try:
+                fcntl.fcntl(fd, fcntl.FD_CLOEXEC)
+            except:
+                pass
+        
 if __name__ == '__main__':
     import time
     import cellprofiler.pipeline
@@ -941,31 +965,5 @@ if __name__ == '__main__':
     import cellprofiler.analysis
     globals().update(cellprofiler.analysis.__dict__)
 
-    print "TESTING", WorkRequest is cellprofiler.analysis.WorkRequest
-    print id(WorkRequest), id(cellprofiler.analysis.WorkRequest)
-
-    cellprofiler.utilities.thread_excepthook.install_thread_sys_excepthook()
-
-    cellprofiler.preferences.set_headless()
-    logging.root.setLevel(logging.INFO)
-    logging.root.addHandler(logging.StreamHandler())
-
-    batch_data = sys.argv[1]
-    pipeline = cellprofiler.pipeline.Pipeline()
-    pipeline.load(batch_data)
-    measurements = cellprofiler.measurements.load_measurements(batch_data)
-    analysis = Analysis(pipeline, 'test_out.h5', initial_measurements=measurements)
-
-    keep_going = True
-
-    def callback(event):
-        global keep_going
-        print "Pipeline Event", event
-        if isinstance(event, AnalysisFinished):
-            keep_going = False
-
-    analysis.start(callback)
-    while keep_going:
-        time.sleep(0.25)
-    del analysis
-    gc.collect()
+    AnalysisRunner.start_workers(2)
+    AnalysisRunner.stop_workers()

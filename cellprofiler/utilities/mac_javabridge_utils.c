@@ -172,13 +172,13 @@ static void *thread_function(void *arg)
         signal_start();
         return NULL;
     }
-    signal_start();
     
     klass = (*env)->FindClass(env, pThreadArgs->class_name);
     if ((*env)->ExceptionOccurred(env)) {
         snprintf(pThreadArgs->message, 256, "Failed to find class %s\n",
                  pThreadArgs->class_name);
         pThreadArgs->result = -1;
+        signal_start();
         goto STOP_VM;
     }
     
@@ -188,6 +188,7 @@ static void *thread_function(void *arg)
         snprintf(pThreadArgs->message, 256, "%s has no default constructor\n",
                  pThreadArgs->class_name);
         pThreadArgs->result = -2;
+        signal_start();
         goto STOP_VM;
     }
     instance = (*env)->NewObjectA(env, klass, method, NULL);
@@ -196,8 +197,10 @@ static void *thread_function(void *arg)
         snprintf(pThreadArgs->message, 256, "Failed to construct %s\n",
                  pThreadArgs->class_name);
         pThreadArgs->result = -3;
+        signal_start();
         goto STOP_VM;
     }
+    signal_start();
 
     method = (*env)->GetMethodID(env, klass, "run", "()V");
     if ((*env)->ExceptionOccurred(env)) {
@@ -269,7 +272,6 @@ static void CBObserve(CFRunLoopObserverRef observer,
  
 void MacRunLoopInit()
 {
-    printf("Initializing run loop synchronization variables\n");
     CFRunLoopObserverContext observerContext;
     CFRunLoopObserverRef     observerRef;
     CFRunLoopSourceContext   sourceContext;
@@ -278,20 +280,10 @@ void MacRunLoopInit()
     pthread_mutex_init(&run_loop_mutex, NULL);
     pthread_cond_init(&run_loop_cv, NULL);
     
-    printf("Initializing run loop observer\n");
-    memset(&observerContext, 0, sizeof(observerContext));
-    observerRef = CFRunLoopObserverCreate(
-            kCFAllocatorDefault,
-            kCFRunLoopAllActivities, 
-            1, 0, &CBObserve, &observerContext);
-    CFRunLoopAddObserver(
-            CFRunLoopGetCurrent(), observerRef, kCFRunLoopDefaultMode);
-    printf("Initializing run loop source\n");
     memset(&sourceContext, 0, sizeof(sourceContext));
     sourceContext.perform = CBPerform;
     sourceRef = CFRunLoopSourceCreate(kCFAllocatorDefault, 0, &sourceContext);
     CFRunLoopAddSource(CFRunLoopGetCurrent(), sourceRef, kCFRunLoopCommonModes);
-    printf("Initialization complete\n");
 }
 
 /*************************************************************************
@@ -311,14 +303,11 @@ void MacRunLoopReset()
  *************************************************************************/
 void MacRunLoopRun()
 {
-    printf("Entering run loop.\n");
     CFRunLoopRun();
-    printf("Run loop exited.\n");
     pthread_mutex_lock(&run_loop_mutex);
     run_loop_state = RLS_TERMINATED;
     pthread_cond_signal(&run_loop_cv);
     pthread_mutex_unlock(&run_loop_mutex);
-    printf("Finished signaling exit.\n");
 }
 
 /*************************************************************************

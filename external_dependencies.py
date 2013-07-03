@@ -220,7 +220,7 @@ def run_maven(pom_path, goal="package",
         args.append("-Dmaven.test.skip=true")
     args += additional_args
     args.append(goal)
-    logging.info("Running %s" % (" ".join(args)))
+    logging.debug("Running %s" % (" ".join(args)))
     if return_stdout:
         return subprocess.check_output(args, cwd = pom_path, env=env)
     else:

@@ -79,9 +79,9 @@ class RunImageJ(cpm.CPModule):
     
     def create_settings(self):
         '''Create the settings for the module'''
-        logger.info("Creating RunImageJ module settings")
+        logger.debug("Creating RunImageJ module settings")
         J.activate_awt()
-        logger.info("Activated AWT")
+        logger.debug("Activated AWT")
         self.command_or_macro = cps.Choice(
             "Run an ImageJ command or macro?", [CM_COMMAND, CM_MACRO],
             doc = """This setting determines whether <b>RunImageJ</b> runs either a:
@@ -195,7 +195,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             to choose a command to run or <i>%(CM_MACRO)s</i> to run a macro.
             """ % globals())
         
-        logger.info("Finding ImageJ commands")
+        logger.debug("Finding ImageJ commands")
         self.prepare_group_command = self.make_command_choice(
             "Command", 
             doc = """<i>(Used only if running a command before an image group)</i><br>
@@ -257,7 +257,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             doc="""Press this button to show the ImageJ user interface.
             You can use the user interface to run ImageJ commands or
             set up ImageJ before a CellProfiler run.""")
-        logger.info("Finished creating settings")
+        logger.debug("Finished creating settings")
 
     @staticmethod
     def is_leaf(node):
@@ -519,7 +519,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         This method shows the ImageJ user interface when the user presses
         the Show ImageJ button.
         '''
-        logger.info("Starting ImageJ UI")
+        logger.debug("Starting ImageJ UI")
         ui_service = ij2.get_ui_service(get_context())
         if ui_service is not None and not ui_service.isVisible():
             if cpprefs.get_headless():
@@ -577,7 +577,18 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         #
         if self.wants_to_get_current_image:
             output_image_name = self.current_output_image_name.value
-            display = display_service.getActiveImageDisplay()
+            for attempt in range(4):
+                display = display_service.getActiveImageDisplay()
+                if display.o is not None:
+                    break
+                #
+                # Possible synchronization problem with ImageJ 1.0
+                # Possible error involving user changing window focus
+                #
+                import time
+                time.sleep(.25)
+            else:
+                raise ValueError("Failed to retrieve active display")
             self.save_display_as_image(workspace, display, output_image_name)
         #
         # Execute the post-group macro or command

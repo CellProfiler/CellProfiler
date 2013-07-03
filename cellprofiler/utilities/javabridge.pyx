@@ -343,7 +343,8 @@ ELSE:
     cdef void MacRunLoopRunInMode(double timeout) nogil:
         pass
 
-MacRunLoopInit()
+def mac_run_loop_init():
+    MacRunLoopInit()
 
 def mac_reset_run_loop():
     '''Reset the run loop's internal state so that it's ready to run

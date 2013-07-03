@@ -30,7 +30,6 @@ Website: http://www.cellprofiler.org
 """
 import sys
 import os
-
 if __name__=="__main__" and "CP_DEBUG_WORKER" not in os.environ:
     #
     # Sorry to put ugliness so early:
@@ -42,6 +41,7 @@ if __name__=="__main__" and "CP_DEBUG_WORKER" not in os.environ:
     except:
         maxfd = 256
     os.closerange(3, maxfd)
+
 if __name__=="__main__":
     from cellprofiler.preferences import set_headless
     set_headless()
@@ -69,12 +69,9 @@ from cellprofiler.analysis import \
      ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
      SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE,  \
      OmeroLoginRequest, OmeroLoginReply
-import bioformats
 import cellprofiler.utilities.jutil as J
 from cellprofiler.utilities.rpdb import Rpdb
-from bioformats.formatreader import set_omero_login_hook
 from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
-
 #
 # CellProfiler expects NaN as a result during calculation
 #
@@ -91,6 +88,9 @@ NOTIFY_ADDR = "inproc://notify"
 NOTIFY_STOP = "STOP"
 
 the_zmq_context = zmq.Context.instance()
+stdin_monitor_lock = threading.Lock()
+stdin_monitor_cv = threading.Condition(stdin_monitor_lock)
+stdin_monitor_started = False
 
 def main():
     # XXX - move all this to a class
@@ -119,20 +119,28 @@ def main():
         icon_path = os.path.join(get_builtin_images_path(), "CellProfilerIcon.png")
         os.environ["APP_NAME_%d" % os.getpid()] = "CellProfilerWorker"
         os.environ["APP_ICON_%d" % os.getpid()] = icon_path
-        
+        J.javabridge.mac_run_loop_init()
+     
+    # Importing bioformats starts the JVM
+    import bioformats
+    
     # Start the deadman switch thread.
     start_daemon_thread(target=exit_on_stdin_close, 
                         name="exit_on_stdin_close")
+    with stdin_monitor_lock:
+        while not stdin_monitor_started:
+            stdin_monitor_cv.wait()
+        
     with AnalysisWorker(options.work_announce_address) as worker:
         worker_thread = threading.Thread(target = worker.run, 
                                          name="WorkerThread")
         worker_thread.setDaemon(True)
         worker_thread.start()
+        print "Entering run loop"
         enter_run_loop()
-        worker.cancel()
+        print "Exiting run loop"
         worker_thread.join()
             
-    AnalysisWorker.notify_pub_socket.close()
     #
     # Shutdown - need to handle some global cleanup here
     #
@@ -151,10 +159,8 @@ class AnalysisWorker(object):
     '''An analysis worker processing work at a given address
     
     '''
-    notify_pub_socket = the_zmq_context.socket(zmq.PUB)
-    notify_pub_socket.bind(NOTIFY_ADDR)
-    
     def __init__(self, work_announce_address):
+        from bioformats.formatreader import set_omero_login_hook
         self.work_announce_address = work_announce_address
         self.cancelled = False
         self.current_analysis_id = False
@@ -177,12 +183,7 @@ class AnalysisWorker(object):
         for m in self.initial_measurements.values():
             m.close()
         self.initial_measurements = {}
-    
-    @classmethod    
-    def cancel(self):
-        '''Cancel an ongoing analysis and tell the worker thread to exit'''
-        self.notify_pub_socket.send(NOTIFY_STOP)
-        
+     
     class AnalysisWorkerThreadObject(object):
         '''Provide the scope needed by the analysis worker thread
         
@@ -193,7 +194,9 @@ class AnalysisWorker(object):
         def __enter__(self):
             self.worker.enter_thread()
             
-        def __exit__(self, type, value, traceback):
+        def __exit__(self, type, value, tb):
+            if type is not None:
+                traceback.print_exception(type, value, tb)
             self.worker.exit_thread()
         
     def enter_thread(self):
@@ -204,7 +207,9 @@ class AnalysisWorker(object):
         
     def exit_thread(self):
         self.notify_socket.close()
+        J.deactivate_awt()
         J.detach()
+        stop_run_loop()
         
     def run(self):
         t0 = 0
@@ -224,12 +229,11 @@ class AnalysisWorker(object):
                     if isinstance(job, NoWorkReply):
                         time.sleep(0.25)  # avoid hammering server
                         # no work, currently.
-                        return
+                        continue
                     self.do_job(job)
                     
                 finally:
                     self.work_socket.close()
-            J.deactivate_awt()
     
     def do_job(self, job):
         '''Handle a work request to its completion
@@ -240,21 +244,26 @@ class AnalysisWorker(object):
         try:
             send_dictionary = job.wants_dictionary
     
+            logger.info("Starting job")
             # Fetch the pipeline and preferences for this analysis if we don't have it
             current_pipeline, current_preferences = \
                 self.pipelines_and_preferences.get(
                     self.current_analysis_id, (None, None))
             if not current_pipeline:
+                logger.info("Fetching pipeline and preferences")
                 rep = self.send(PipelinePreferencesRequest(
                     self.current_analysis_id))
+                logger.info("Received pipeline and preferences response")
                 preferences_dict = rep.preferences
                 # update preferences to match remote values
                 cpprefs.set_preferences_from_dict(preferences_dict)
-            
+ 
+                logger.info("Loading pipeline")
                 pipeline_blob = rep.pipeline_blob.tostring()
                 current_pipeline = cpp.Pipeline()
                 current_pipeline.loadtxt(StringIO.StringIO(pipeline_blob), 
                                          raise_on_error=True)
+                logger.info("Pipeline loaded")
                 current_pipeline.add_listener(
                     self.pipeline_listener.handle_event)
                 current_preferences = rep.preferences
@@ -266,16 +275,20 @@ class AnalysisWorker(object):
             
             # Reset the listener's state
             self.pipeline_listener.reset()
-        
+            logger.info("Getting initial measurements")
             # Fetch the path to the intial measurements if needed.
             current_measurements = self.initial_measurements.get(
                 self.current_analysis_id)
             if current_measurements is None:
+                logger.info("Sending initial measurements request")
                 rep = self.send(InitialMeasurementsRequest(
                     self.current_analysis_id))
+                logger.info("Got initial measurements")
                 current_measurements = \
                     self.initial_measurements[self.current_analysis_id] = \
                     cpmeas.load_measurements_from_buffer(rep.buf)
+            else:
+                logger.info("Has initial measurements")
             # Make a copy of the measurements for writing during this job
             current_measurements = cpmeas.Measurements(copy=current_measurements)
             all_measurements.add(current_measurements)
@@ -611,6 +624,12 @@ class PipelineEventListener(object):
 
 def exit_on_stdin_close():
     '''Read until EOF, then exit, possibly without cleanup.'''
+    global stdin_monitor_started
+    notify_pub_socket = the_zmq_context.socket(zmq.PUB)
+    notify_pub_socket.bind(NOTIFY_ADDR)
+    with stdin_monitor_lock:
+        stdin_monitor_started = True
+        stdin_monitor_cv.notify_all()
     # If sys.stdin closes, either our parent has closed it (indicating we
     # should exit), or our parent has died.  Attempt to exit cleanly via main
     # thread, but if that takes too long (hung filesystem or socket, perhaps),
@@ -622,7 +641,9 @@ def exit_on_stdin_close():
     except:
         pass
     finally:
-        stop_run_loop()
+        print "Cancelling worker"
+        notify_pub_socket.send(NOTIFY_STOP)
+        notify_pub_socket.close()
         # hard exit after 10 seconds unless app exits
         time.sleep(10)
         for m in all_measurements:

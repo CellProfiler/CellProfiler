@@ -3949,7 +3949,7 @@ def cache_pipeline(pipeline):
     settings_hash = pipeline.settings_hash()
     result = d.get(settings_hash)
     if result is None:
-        result = d[settings_hash] = pipeline.copy()
+        result = d[settings_hash] = pipeline.copy(False)
     return result
 
 def validate_module(pipeline, module_num, test_mode, callback):

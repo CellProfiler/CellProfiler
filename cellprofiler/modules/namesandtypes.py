@@ -657,7 +657,8 @@ class NamesAndTypes(cpm.CPModule):
         for name, iz_image in zip(names, is_image):
             workspace.measurements.alter_path_for_create_batch(
                 name, iz_image, fn_alter_path)
-                        
+               
+    @classmethod         
     def is_input_module(self):
         return True
             
@@ -691,7 +692,9 @@ class NamesAndTypes(cpm.CPModule):
             else:
                 return None
             
-        url = fetch_measurement_or_none(cpmeas.C_URL).encode("utf-8")
+        url = fetch_measurement_or_none(cpmeas.C_URL)
+        if url is not None:
+            url = url.encode("utf-8")
         series = fetch_measurement_or_none(cpmeas.C_SERIES)
         index = fetch_measurement_or_none(cpmeas.C_FRAME)
         channel = fetch_measurement_or_none(cpmeas.C_CHANNEL)

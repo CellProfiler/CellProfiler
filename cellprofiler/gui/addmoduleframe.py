@@ -143,7 +143,7 @@ class AddModuleFrame(wx.Frame):
                 module.set_module_num(module_num)
                 return module
             try:
-                module = cellprofiler.modules.instantiate_module(mn)
+                module = cellprofiler.modules.get_module_class(mn)
                 if module.is_input_module():
                     continue
                 categories = ([module.category] 

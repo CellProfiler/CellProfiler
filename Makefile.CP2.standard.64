@@ -142,38 +142,38 @@ PYTHONPREFIX				?= $(PREFIX)
 SITEPKGPREFIX				= $(PYTHONPREFIX)/lib/python$(PYVERSION)/site-packages
 SWIGVERSION				= swig-2.0.1
 SWIGPREFIX				?= $(PREFIX)
-SWIGURL					= http://www.swig.org/download.html
+SWIGURL					= $(PACKAGEHOST) 
 PCREVERSION				= pcre-8.12
 PCREPREFIX				?= $(PREFIX)
-PCREURL					= http://www.pcre.org/
+PCREURL					= $(PACKAGEHOST)
 PYPIVERSION				= setuptools-0.6c11-py$(PYVERSION).egg
 PYPIPREFIX				?= $(PREFIX)
 PILVERSION				= Imaging-1.1.7
 PILPREFIX				?= $(PREFIX)
-PILURL					= http://www.pythonware.com/products/pil/
+PILURL					= $(PACKAGEHOST)
 NCURSESVERSION				= ncurses-5.7
 NCURSESPREFIX				?= $(PREFIX)
 #PYSQLITEVERSION				= pysqlite-2.6.0
 PYSQLITEVERSION				= pysqlite-2.6.1
 PYSQLITEPREFIX				?= $(PREFIX)
-PYSQLITEURL				= http://pypi.python.org/pypi/pysqlite/
+PYSQLITEURL				= $(PACKAGEHOST)
 #SQLITEVERSION				= sqlite-autoconf-3070400
 SQLITEVERSION				= sqlite-autoconf-3070500
 SQLITEPREFIX				?= $(PREFIX)
-SQLITEURL				= http://www.sqlite.org/download.html
+SQLITEURL				= $(PACKAGEHOST)
 #MYSQLVERSION				= mysql-5.1.54
 MYSQLVERSION				= mysql-5.1.55
 MYSQLPREFIX				?= $(PREFIX)
-MYSQLURL				= http://dev.mysql.com/downloads/mysql/5.1.html
+MYSQLURL				= $(PACKAGEHOST)
 MYSQLPYTHONVERSION			= 1.2.3
-MYSQLPYTHONURL				= http://sourceforge.net/projects/mysql-python/
+MYSQLPYTHONURL				= $(PACKAGEHOST)
 PYTHONNOSEVERSION			= nose-1.3.0
 PYTHONNOSEURL				= $(PACKAGEHOST)
 DECORATORVERSION			= decorator-3.2.0
 CYTHONVERSION				= Cython-0.12.1
 #CYTHONVERSION				= Cython-0.14
 CYTHONPREFIX				?= $(PREFIX)
-CYTHONURL				= http://www.cython.org/#download
+CYTHONURL				= $(PACKAGEHOST)#download
 #ATLASVERSION				= atlas3.9.33
 ATLASVERSION				= atlas3.11.8
 ATLASPREFIX				?= /usr/lib64/atlas/ 
@@ -183,7 +183,7 @@ LAPACKFLAGS				= -fPIC -m64
 LAPACKURL				= http://www.netlib.org/lapack/
 VIGRAVERSION				= vigra-1.7.1
 VIGRAPREFIX				?= $(PREFIX)
-VIGRAURL				= http://hci.iwr.uni-heidelberg.de/vigra/
+VIGRAURL				= $(PACKAGEHOST)
 ILASTIKMAJVERSION			= 0.5
 ILASTIKMINVERSION			= 05
 ILASTIKVERSION				= $(ILASTIKMAJVERSION).$(ILASTIKMINVERSION)
@@ -191,12 +191,12 @@ ILASTIKPREFIX				?= $(PREFIX)
 ILASTIKURL				= $(PACKAGEHOST)
 QIMGTOARRVERSION			= qimage2ndarray-1.0
 QIMGTOARRPREFIX				?= $(PREFIX)
-QIMGTOARRURL				= http://kogs-www.informatik.uni-hamburg.de/~meine/software/qimage2ndarray/
+QIMGTOARRURL				= $(PACKAGEHOST)
 HDF5VERSION				= hdf5-1.8.10-patch1
 HDF5PREFIX				?= $(PREFIX)
 H5PYVERSION				= h5py-1.3.1
 H5PYPREFIX				?= $(PREFIX)
-H5PYURL					= http://code.google.com/p/h5py/downloads/
+H5PYURL					= $(PACKAGEHOST)
 FFTWVERSION				= fftw-3.2.2
 FFTWPREFIX				?= $(PREFIX)
 NUMPYVERSION				= numpy-1.5.1
@@ -226,7 +226,7 @@ UFCONFIGURL				= $(PACKAGEHOST)
 AMDVERSION				= AMD-2.2.2
 AMDURL					= $(PACKAGEHOST)
 MATPLOTLIBVERSION			= matplotlib-1.0.1
-MATPLOTLIBURL				= http://sourceforge.net/projects/matplotlib/files/matplotlib/
+MATPLOTLIBURL				= $(PACKAGEHOST)
 WXVERSION				= 2.8.11
 WXPYTHONTOOLKIT_no			= --without-gtk --disable-unicode --disable-gtktest --with-x11
 WXPYTHONTOOLKIT_yes			= --with-gtk --enable-unicode
@@ -1295,27 +1295,27 @@ $(SRCDIR)/$(AMDVERSION).tar.gz:
 $(SRCDIR)/$(PYTHONVERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					PYTHONVERSIONNR=$$(echo $(PYTHONVERSION)|cut -d'-' -f2) && \
-					wget $(WGETFLAGS) "http://www.python.org/ftp/python/$${PYTHONVERSIONNR}/$(PYTHONVERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(PYTHONVERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://downloads.sourceforge.net/project/matplotlib/matplotlib/$(MATPLOTLIBVERSION)/$(MATPLOTLIBVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(MATPLOTLIBVERSION)/$(MATPLOTLIBVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://downloads.sourceforge.net/wxpython/wxPython-src-$(WXPYTHONVERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/wxPython-src-$(WXPYTHONVERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(PYOPENGLVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://pypi.python.org/packages/source/P/PyOpenGL/$(PYOPENGLVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(PYOPENGLVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/PyOpenGL-$(PYOPENGLACCELVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://pypi.python.org/packages/source/P/PyOpenGL-accelerate/PyOpenGL-$(PYOPENGLACCELVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/PyOpenGL-$(PYOPENGLACCELVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(SIPVERSION).tar.gz:
@@ -1342,7 +1342,7 @@ $(SRCDIR)/$(FFTWVERSION).tar.gz:
 $(SRCDIR)/$(PYPIVERSION):
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					PYPIVERSIONNR=$$(echo $(PYTHONVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
-					wget $(WGETFLAGS) "http://pypi.python.org/packages/$${PYPIVERSIONNR}/s/setuptools/$(PYPIVERSION)" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(PYPIVERSION)" && \
 					touch "$@"
 
 $(SRCDIR)/$(DECORATORVERSION).tar.gz:
@@ -1352,7 +1352,7 @@ $(SRCDIR)/$(DECORATORVERSION).tar.gz:
 
 $(SRCDIR)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://downloads.sourceforge.net/project/mysql-python/mysql-python/$(MYSQLPYTHONVERSION)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz:
@@ -1362,12 +1362,12 @@ $(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz:
 
 $(SRCDIR)/$(PILVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://effbot.org/downloads/$(PILVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(PILVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://www.ijg.org/files/jpegsrc.v$(JPEGVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/jpegsrc.v$(JPEGVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(ZLIBVERSION).tar.bz2:
@@ -1382,22 +1382,22 @@ $(SRCDIR)/$(PNGVERSION).tar.bz2:
 
 $(SRCDIR)/$(TIFFVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "ftp://ftp.remotesensing.org/pub/libtiff/$(TIFFVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(TIFFVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(CYTHONVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://pypi.python.org/packages/source/C/Cython/$(CYTHONVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(CYTHONVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(VIGRAVERSION)-src.tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://hci.iwr.uni-heidelberg.de/vigra/$(VIGRAVERSION)-src.tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(VIGRAVERSION)-src.tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(QIMGTOARRVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://kogs-www.informatik.uni-hamburg.de/~meine/software/qimage2ndarray/dist/$(QIMGTOARRVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(QIMGTOARRVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(HDF5VERSION).tar.bz2:
@@ -1407,7 +1407,7 @@ $(SRCDIR)/$(HDF5VERSION).tar.bz2:
 
 $(SRCDIR)/$(H5PYVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://h5py.googlecode.com/files/$(H5PYVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(H5PYVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(PCREVERSION).tar.bz2:
@@ -1417,67 +1417,67 @@ $(SRCDIR)/$(PCREVERSION).tar.bz2:
 
 $(SRCDIR)/$(SWIGVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://prdownloads.sourceforge.net/swig/$(SWIGVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(SWIGVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(ILASTIKVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://www.ilastik.org/download.php?cat=11_Download&file=$(ILASTIKVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/ilastik-v$(ILASTIKVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(GTKVERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					GTKVERSIONNR=$$(echo $(GTKVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
-					wget $(WGETFLAGS) "http://ftp.gnome.org/pub/gnome/sources/gtk+/$${GTKVERSIONNR}/$(GTKVERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(GTKVERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(GLIBVERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					GLIBVERSIONNR=$$(echo $(GLIBVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
-					wget $(WGETFLAGS) "http://ftp.gnome.org/pub/gnome/sources/glib/$${GLIBVERSIONNR}/$(GLIBVERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(GLIBVERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(PANGOVERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					PANGOVERSIONNR=$$(echo $(PANGOVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
-					wget $(WGETFLAGS) "http://ftp.gnome.org/pub/gnome/sources/pango/$${PANGOVERSIONNR}/$(PANGOVERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(PANGOVERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(CAIROVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://cairographics.org/releases/$(CAIROVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(CAIROVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(ATKVERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					ATKVERSIONNR=$$(echo $(ATKVERSION)|cut -d'-' -f2|cut -d'.' -f-2) && \
-					wget $(WGETFLAGS) "http://ftp.gnome.org/pub/GNOME/sources/atk/$${ATKVERSIONNR}/$(ATKVERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(ATKVERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(PIXMANVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://cairographics.org/releases/$(PIXMANVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(PIXMANVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(GDKPIXBUFVERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					GDKPIXBUFVERSIONNR=$$(echo $(GDKPIXBUFVERSION)|cut -d'-' -f3|cut -d'.' -f-2) && \
-					wget $(WGETFLAGS) "http://ftp.gnome.org/pub/gnome/sources/gdk-pixbuf/$${GDKPIXBUFVERSIONNR}/$(GDKPIXBUFVERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(GDKPIXBUFVERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(FONTCFGVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://fontconfig.org/release/$(FONTCFGVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(FONTCFGVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(PYSQLITEVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://pysqlite.googlecode.com/files/$(PYSQLITEVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(PYSQLITEVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(SQLITEVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://www.sqlite.org/$(SQLITEVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(SQLITEVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(MYSQLVERSION).tar.gz:
@@ -1487,18 +1487,18 @@ $(SRCDIR)/$(MYSQLVERSION).tar.gz:
 
 $(SRCDIR)/$(NCURSESVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://ftp.gnu.org/pub/gnu/ncurses/$(NCURSESVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(NCURSESVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/$(BOOSTVERSION).tar.bz2:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
 					BOOSTVERSIONNR=$$(echo $(BOOSTVERSION)|cut -d'_' -f2-|perl -pe 's/_/./g') && \
-					wget $(WGETFLAGS) "http://downloads.sourceforge.net/project/boost/boost/$${BOOSTVERSIONNR}/$(BOOSTVERSION).tar.bz2" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(BOOSTVERSION).tar.bz2" && \
 					touch "$@"
 
 $(SRCDIR)/$(GETTEXTVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "http://ftp.gnu.org/pub/gnu/gettext/$(GETTEXTVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(GETTEXTVERSION).tar.gz" && \
 					touch "$@"
 
 download:				$(SRCDIR)/findlibjvm.class $(SRCDIR)/$(NUMPYVERSION).tar.gz $(SRCDIR)/$(SCIPYVERSION).tar.gz $(SRCDIR)/$(UMFPACKVERSION).tar.gz $(SRCDIR)/$(CAMDVERSION).tar.gz $(SRCDIR)/$(CCOLAMDVERSION).tar.gz $(SRCDIR)/$(COLAMDVERSION).tar.gz $(SRCDIR)/$(CHOLMODVERSION).tar.gz $(SRCDIR)/$(UFCONFIGVERSION).tar.gz $(SRCDIR)/$(AMDVERSION).tar.gz $(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz $(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2 $(SRCDIR)/$(PYOPENGLVERSION).tar.gz $(SRCDIR)/PyOpenGL-$(PYOPENGLACCELVERSION).tar.gz $(SRCDIR)/$(SIPVERSION).tar.gz $(SRCDIR)/$(PYQTVERSION).tar.gz $(SRCDIR)/$(QTVERSION).tar.gz $(SRCDIR)/$(FFTWVERSION).tar.gz $(SRCDIR)/$(PYPIVERSION) $(SRCDIR)/$(DECORATORVERSION).tar.gz $(SRCDIR)/MySQL-python-$(MYSQLPYTHONVERSION).tar.gz $(SRCDIR)/$(PYTHONNOSEVERSION).tar.gz $(SRCDIR)/$(PILVERSION).tar.gz $(SRCDIR)/jpegsrc.v$(JPEGVERSION).tar.gz $(SRCDIR)/$(ZLIBVERSION).tar.bz2 $(SRCDIR)/$(PNGVERSION).tar.bz2 $(SRCDIR)/$(TIFFVERSION).tar.gz $(SRCDIR)/$(CYTHONVERSION).tar.gz $(SRCDIR)/$(VIGRAVERSION)-src.tar.gz $(SRCDIR)/$(QIMGTOARRVERSION).tar.gz $(SRCDIR)/$(HDF5VERSION).tar.bz2 $(SRCDIR)/$(H5PYVERSION).tar.gz $(SRCDIR)/$(PCREVERSION).tar.bz2 $(SRCDIR)/$(SWIGVERSION).tar.gz $(SRCDIR)/$(ILASTIKVERSION).tar.gz $(SRCDIR)/$(GTKVERSION).tar.bz2 $(SRCDIR)/$(GLIBVERSION).tar.bz2 $(SRCDIR)/$(PANGOVERSION).tar.bz2 $(SRCDIR)/$(CAIROVERSION).tar.gz $(SRCDIR)/$(ATKVERSION).tar.bz2 $(SRCDIR)/$(PIXMANVERSION).tar.gz $(SRCDIR)/$(GDKPIXBUFVERSION).tar.bz2 $(SRCDIR)/$(FONTCFGVERSION).tar.gz $(SRCDIR)/$(PYSQLITEVERSION).tar.gz $(SRCDIR)/$(SQLITEVERSION).tar.gz $(SRCDIR)/$(MYSQLVERSION).tar.gz $(SRCDIR)/$(NCURSESVERSION).tar.gz $(SRCDIR)/$(BOOSTVERSION).tar.bz2 $(SRCDIR)/$(GETTEXTVERSION).tar.gz

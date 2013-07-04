@@ -299,8 +299,11 @@ def start_vm(args, run_headless = False):
             else:
                 cp_arg = "-Djava.class.path=" + js_jar
                 arg_idx = -1
+            logger.debug("Starting VM with arguments: %s" % (str(args)))
             if sys.platform == "darwin":
+                logger.debug("Creating VM on pthread")
                 vm.create_mac(args, RQCLS)
+                logger.debug("VM created")
                 env = vm.attach()
                 __thread_local_env.env = env
             else:
@@ -349,7 +352,9 @@ def start_vm(args, run_headless = False):
         
     __start_thread = threading.Thread(target=start_thread)
     __start_thread.setName("JVMMonitor")
+    logging.debug("Starting JVM monitor thread")
     __start_thread.start()
+    logging.debug("JVM monitor thread started")
     start_event.wait()
     if __vm is None:
         raise RuntimeError("Failed to start Java VM")
@@ -526,7 +531,14 @@ def execute_future_in_main_thread(future):
     if __run_headless:
         return future.get()
     if sys.maxsize > 2**32:
-        raise NotImplementedError("Can't execute future in main thread on OS/X 64 because there is no event loop (no wx for x64).")
+        if javabridge.mac_is_main_thread():
+            #
+            # Haven't figured out how to run a modal event loop
+            # on OS/X - tried CFRunLoopInMode with 1/4 sec timeout and
+            # it never returned.
+            #
+            raise NotImplementedError("No support for synchronizing futures in Python's startup thread on the OS/X in 64-bit mode.")
+        return future.get()
         
     import wx
     import time
@@ -652,6 +664,7 @@ def activate_awt():
     '''Activate Java AWT by executing some trivial code'''
     global __awt_is_active
     if not __awt_is_active:
+        logger.debug("Activating AWT")
         execute_runnable_in_main_thread(run_script(
             """new java.lang.Runnable() {
                    run: function() {
@@ -659,6 +672,7 @@ def activate_awt():
                    }
                };"""), True)
         __awt_is_active = True
+        logger.debug("AWT activated")
         
 def deactivate_awt():
     global __awt_is_active

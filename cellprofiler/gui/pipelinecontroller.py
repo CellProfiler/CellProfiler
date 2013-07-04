@@ -41,7 +41,7 @@ from cellprofiler.gui.addmoduleframe import AddModuleFrame
 from cellprofiler.gui import get_cp_bitmap
 import cellprofiler.gui.moduleview
 from cellprofiler.gui.movieslider import EVT_TAKE_STEP
-from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED
+from cellprofiler.gui.help import HELP_ON_MODULE_BUT_NONE_SELECTED, PLATEVIEWER_HELP
 from cellprofiler.gui.bitmaplabelbutton import BitmapLabelButton
 import cellprofiler.utilities.version as version
 from errordialog import display_error_dialog, ED_CONTINUE, ED_STOP, ED_SKIP
@@ -56,6 +56,7 @@ import cellprofiler.gui.loadsavedlg as cplsdlg
 import cellprofiler.utilities.walk_in_background as W
 from cellprofiler.gui.omerologin import OmeroLoginDlg
 from cellprofiler.icons import get_builtin_image
+from cellprofiler.gui.htmldialog import HTMLDialog
 
 logger = logging.getLogger(__name__)
 RECENT_PIPELINE_FILE_MENU_ID = [wx.NewId() for i in range(cpprefs.RECENT_FILE_COUNT)]
@@ -856,14 +857,10 @@ class PipelineController:
         
         image_numbers = m.get_image_numbers()
         if len(image_numbers) == 0:
-            wx.MessageBox(
+            self.display_plate_viewer_help(
                 "Your project does not produce any image sets.\n"
-                "Please configure the input modules correctly.\n"
-                "The plate viewer help is located in the data tools\n"
-                "menu's help menu",
-                caption = "Plate viewer: No image sets",
-                style = wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
-                parent = self.__frame)
+                "Please configure the input modules correctly.",
+                "Plate viewer: No image sets")
             return
         url_features = [f for f in m.get_feature_names(cpm.IMAGE)
                         if f.startswith(cpm.C_URL)]
@@ -877,15 +874,11 @@ class PipelineController:
                 pws.append([None] * len(image_numbers))
         plate, well, site = pws
         if pws[1][0] is None:
-            wx.MessageBox(
+            self.display_plate_viewer_help(
                 "Your project needs to tag every image set with well metadata\n"
                 "Please use the Metadata module to define a metadata tag\n"
-                "named, ""Well"".\n"
-                "The plate viewer help is located in the data tools\n"
-                "menu's help menu",
-                caption = "Plate viewer: No well metadata",
-                style = wx.OK | wx.CENTRE | wx.ICON_INFORMATION,
-                parent = self.__frame)
+                "named, ""Well"".",
+                "Plate viewer: No well metadata")
             return
         
         for url_feature in url_features:
@@ -901,7 +894,42 @@ class PipelineController:
         self.__plate_viewer = pv.PlateViewer(self.__pv_frame, data)
         self.__pv_frame.Fit()
         self.__pv_frame.Show()
-            
+        
+    def display_plate_viewer_help(self, message, caption):
+        '''Display a helpful dialog for a plate viewer config error
+        
+        message - message to display
+        
+        caption - caption on frame bar
+        '''
+        message = message + "\n\nPress ""Help"" for the plate viewer manual page."
+        with wx.Dialog(self.__frame, title = caption) as dlg:
+            assert isinstance(dlg, wx.Dialog)
+            dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+            message_sizer = wx.BoxSizer(wx.HORIZONTAL)
+            dlg.Sizer.Add(message_sizer, 0, wx.EXPAND | wx.ALL, 15)
+            bmpInfo = wx.ArtProvider.GetBitmap(wx.ART_INFORMATION, wx.ART_CMN_DIALOG)
+            message_sizer.Add(wx.StaticBitmap(dlg, bitmap=bmpInfo), 0, 
+                              wx.ALIGN_TOP | wx.ALIGN_LEFT)
+            message_sizer.AddSpacer(12)
+            message_sizer.Add(wx.StaticText(dlg, label=message), 0, 
+                              wx.ALIGN_TOP | wx.ALIGN_LEFT)
+            button_sizer = wx.StdDialogButtonSizer()
+            dlg.Sizer.Add(button_sizer, 0, wx.EXPAND | wx.ALL, 8)
+            ok_button = wx.Button(dlg, wx.ID_OK)
+            help_button = wx.Button(dlg, wx.ID_HELP)
+            button_sizer.AddButton(ok_button)
+            button_sizer.AddButton(help_button)
+            button_sizer.Realize()
+            def do_ok(event):
+                dlg.EndModal(0)
+            def do_help(event):
+                HTMLDialog(self.__frame, "Help for plate viewer",
+                           PLATEVIEWER_HELP).Show()
+            ok_button.Bind(wx.EVT_BUTTON, do_ok)
+            help_button.Bind(wx.EVT_BUTTON, do_help)
+            dlg.Fit()
+            dlg.ShowModal()
     
     def set_current_pipeline_path(self, pathname):
         cpprefs.set_current_pipeline_path(pathname)
@@ -1436,7 +1464,7 @@ class PipelineController:
         d = { "All": [] }
         for module_name in get_module_names():
             try:
-                module = cellprofiler.modules.instantiate_module(module_name)
+                module = cellprofiler.modules.get_module_class(module_name)
                 if module.is_input_module():
                     continue
                 category = module.category

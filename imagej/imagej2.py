@@ -1066,6 +1066,16 @@ def get_ui_service(context):
         
     return UIService()
     
+def update_never_remind():
+    '''Tell ImageJ never to remind us of updates
+    
+    Not as harsh as it sounds - this is done with headless preferences
+    which go to /dev/null.
+    '''
+    never = J.get_static_field("java/lang/Long", "MAX_VALUE", "J")
+    J.static_call("imagej/updater/core/UpToDate", 
+                  "setLatestNag", "(J)V", never)
+    
 def wrap_user_interface(o):
     '''Return a wrapped imagej.ui.UserInterface'''
     class UserInterface(object):

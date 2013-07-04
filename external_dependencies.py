@@ -15,6 +15,8 @@ Website: http://www.cellprofiler.org
 # binary files from SVN (or other site) so that the git repository
 # doesn't have to track large files.
 
+import logging
+logger = logging.getLogger(__package__)
 import re
 import os.path
 import hashlib
@@ -112,7 +114,7 @@ def fetch_external_dependencies(overwrite=False):
                 sys.stderr.write(traceback.format_exc())
                 sys.stderr.write("Could not fetch external binary dependency %s from %s.  Some functionality may be missing.  You might try installing it by hand.\n"%(path, url))
                 
-    print "Updating Java dependencies using Maven."
+    logging.info("Updating Java dependencies using Maven.")
     for pom_folder in pom_folders:
         pom_dir = os.path.join(root, pom_folder)
         try:
@@ -218,6 +220,7 @@ def run_maven(pom_path, goal="package",
         args.append("-Dmaven.test.skip=true")
     args += additional_args
     args.append(goal)
+    logging.debug("Running %s" % (" ".join(args)))
     if return_stdout:
         return subprocess.check_output(args, cwd = pom_path, env=env)
     else:

@@ -116,7 +116,7 @@
 # build jobs for packages that support parallel compilation. Change or
 # add other parameters as you like:
 
-PACKAGEHOST				= http://cellprofiler.org/CPPackageHost/
+PACKAGEHOST				= http://cellprofiler.org/linked_files/CPPackageHost/
 
 MAKE_FLAGS				?= -j4
 PREFIX					?= /usr/CellProfiler

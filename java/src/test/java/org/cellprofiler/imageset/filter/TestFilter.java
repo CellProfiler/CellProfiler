@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.cellprofiler.imageset.ImageFile;
 import org.cellprofiler.imageset.ImagePlane;
+import org.cellprofiler.imageset.OMEMetadataExtractor;
 import org.cellprofiler.imageset.filter.Filter.BadFilterExpressionException;
 import org.junit.Test;
 import org.junit.BeforeClass;
@@ -32,7 +33,7 @@ import org.junit.AfterClass;
  *
  */
 public class TestFilter {
-	private void testSomething(
+	static void testSomething(
 			String expression, 
 			String pathname, 
 			String filename, 
@@ -56,7 +57,7 @@ public class TestFilter {
 		}
 	}
 	
-	private void testSomething(String expression, String pathname, String filename, boolean expected) {
+	static void testSomething(String expression, String pathname, String filename, boolean expected) {
 		File file = new File(new File(pathname), filename);
 		try {
 			assertEquals(expected, Filter.filter(expression, file.toURI()));
@@ -65,11 +66,11 @@ public class TestFilter {
 		}
 	}
 	
-	private void testSomething(String expression, String filename, boolean expected) {
+	static void testSomething(String expression, String filename, boolean expected) {
 		testSomething(expression, "test", filename, expected);
 	}
 	
-	private void testSomething(String expression, String [][] metadata, boolean expected) {
+	static void testSomething(String expression, String [][] metadata, boolean expected) {
 		testSomething(expression, "test", "foo.jpg", 0, 0, metadata, expected);
 	}
 	
@@ -161,5 +162,9 @@ public class TestFilter {
 		testSomething("extension does ismovie", "foo.avi", true);
 		testSomething("extension does ispng", "foo.png", true);
 		testSomething("extension does istif", "foo.tif", true);
+		testSomething("image does iscolor", new String[][] {{OMEMetadataExtractor.MD_COLOR_FORMAT, OMEMetadataExtractor.MD_RGB}}, true);
+		testSomething("image does ismonochrome", new String[][] {{OMEMetadataExtractor.MD_COLOR_FORMAT, OMEMetadataExtractor.MD_MONOCHROME}}, true);
+		testSomething("image does isstack", new String[][] {{OMEMetadataExtractor.MD_SIZE_T, "3"}}, true);
+		testSomething("image does isstackframe", new String [][] {{OMEMetadataExtractor.MD_T, "2"}}, true);
 	}
 }

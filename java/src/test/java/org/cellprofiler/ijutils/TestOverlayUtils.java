@@ -22,9 +22,6 @@ import imagej.display.Display;
 import imagej.display.DisplayService;
 
 import net.imglib2.Cursor;
-import net.imglib2.RealInterval;
-import net.imglib2.RealPositionable;
-import net.imglib2.RealRandomAccess;
 import net.imglib2.img.Img;
 import net.imglib2.meta.Axes;
 import net.imglib2.meta.AxisType;

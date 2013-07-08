@@ -34,6 +34,8 @@ public class OMEMetadataExtractor implements MetadataExtractor<ImagePlane> {
 	final static public String MD_C = "C";
 	final static public String MD_T = "T";
 	final static public String MD_Z = "Z";
+	final static public String MD_SIZE_T = "SizeT";
+	final static public String MD_SIZE_Z = "SizeZ";
 	final static public String MD_COLOR_FORMAT = "ColorFormat";
 	final static public String MD_RGB = "RGB";
 	final static public String MD_MONOCHROME = "monochrome";

@@ -242,6 +242,11 @@ public class Filter {
 			if (key.equals(PathPredicate.SYMBOL)) return cast(new PathPredicate(), klass);
 			if (key.equals(ExtensionPredicate.SYMBOL)) return cast (new ExtensionPredicate(), klass);
 			if (key.equals(MetadataPredicate.SYMBOL)) return cast(new MetadataPredicate(), klass);
+			if (key.equals(ImagePredicate.SYMBOL)) return cast(new ImagePredicate(), klass);
+			if (key.equals(IsColorPredicate.SYMBOL)) return cast(new IsColorPredicate(), klass);
+			if (key.equals(IsMonochromePredicate.SYMBOL)) return cast(new IsMonochromePredicate(), klass);
+			if (key.equals(IsStackPredicate.SYMBOL)) return cast(new IsStackPredicate(), klass);
+			if (key.equals(IsStackFramePredicate.SYMBOL)) return cast(new IsStackFramePredicate(), klass);
 		}
 		if (klass.isAssignableFrom(String.class)) {
 			if (key.equals(ContainsPredicate.SYMBOL)) return cast(new ContainsPredicate(), klass);

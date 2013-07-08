@@ -394,13 +394,21 @@ def get_display_service(context):
             self.o = o
         def createDisplay(self, name, dataset):
             '''Create a display that contains the given dataset'''
-            
-            display = J.call(
-                self.o,
-                "createDisplay", 
-                "(Ljava/lang/String;Ljava/lang/Object;)Limagej/display/Display;",
-                name, dataset.o)
-            return wrap_display(display)
+            #
+            # Must be run on the gui thread
+            #
+            jcallable = J.run_script(
+                """new java.util.concurrent.Callable() {
+                    call:function() {
+                        return displayService.createDisplay(name, dataset);
+                    }
+                };
+                """, dict(displayService=self.o,
+                          name = name,
+                          dataset = dataset.o))
+            future = J.make_future_task(jcallable,
+                                        fn_post_process = wrap_display)
+            return J.execute_future_in_main_thread(future)
         def getActiveDisplay(self, klass=None):
             '''Get the first display, optionally of the given type from the list
             
@@ -423,8 +431,15 @@ def get_display_service(context):
                 "()Limagej/display/Display;",
                 J.class_for_name("imagej.data.display.ImageDisplay")))
         
-        setActiveDisplay = J.make_method("setActiveDisplay",
-                                         "(Limagej/display/Display;)V")
+        def setActiveDisplay(self, display):
+            '''Make this the active display'''
+            # Note: has to be run in GUI thread on mac
+            r = J.run_script(
+                """new java.lang.Runnable() {
+                    run:function() { displayService.setActiveDisplay(display); }
+                }
+                """, dict(displayService=self.o, display=display.o))
+            J.execute_runnable_in_main_thread(r, True)
         getDisplays = J.make_method(
             "getDisplays", 
             "()Ljava/util/List;",
@@ -476,7 +491,17 @@ def wrap_display(display):
                                "Signal display change")
         getName = J.make_method("getName", "()Ljava/lang/String;")
         setName = J.make_method("setName", "(Ljava/lang/String;)V")
-        close = J.make_method("close", "()V")
+        def close(self):
+            '''Close the display
+            
+            This is run in the UI thread with synchronization.
+            '''
+            r = J.run_script(
+                """new java.lang.Runnable() {
+                run: function() { display.close(); }
+                };
+                """, dict(display=self.o))
+            J.execute_runnable_in_main_thread(r, True)
         #
         # ImageDisplay methods
         #
@@ -1053,8 +1078,30 @@ def get_ui_service(context):
     class UIService(object):
         def __init__(self):
             self.o = ui_service
-        createUI = J.make_method("showUI", "()V")
-        createUIS = J.make_method("showUI", "(Ljava/lang/String;)V")
+        def createUI(self):
+            '''Create the ImageJ UI'''
+            #
+            # This has to be done via a future in order
+            # for CP to run the Mac event loop.
+            #
+            r = J.run_script(
+                """new java.lang.Runnable() {
+                    run:function() {
+                        uiService.showUI();
+                    }
+                };
+                """, dict(uiService=self.o))
+            J.execute_runnable_in_main_thread(r, True)
+        def createUIS(self, arg):
+            '''Create the ImageJ UI with a string argument'''
+            r = J.run_script(
+                """new java.lang.Runnable() {
+                    run:function() {
+                        uiService.showUI(arg);
+                    }
+                };
+                """, dict(uiService=self.o, arg=arg))
+            J.execute_runnable_in_main_thread(r, True)
         isVisible = J.make_method("isVisible", "()Z")
         getDefaultUI = J.make_method(
             "getDefaultUI", 

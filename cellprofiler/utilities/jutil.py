@@ -452,12 +452,18 @@ def get_future_wrapper(o, fn_post_process=None):
             self.o = o
         run = make_method("run", "()V")
         cancel = make_method("cancel", "(Z)Z")
-        get = make_method(
+        raw_get = make_method(
             "get", "()Ljava/lang/Object;",
             "Waits if necessary for the computation to complete, and then retrieves its result.",
             fn_post_process=fn_post_process)
         isCancelled = make_method("isCancelled", "()Z")
         isDone = make_method("isDone", "()Z")
+        if sys.platform != 'darwin':
+            get = raw_get
+        else:
+            def get(self):
+                '''Get the future's value after it has come done'''
+                return mac_get_future_value(self)
     return Future()
 
 def make_future_task(runnable_or_callable, 
@@ -528,8 +534,17 @@ def execute_future_in_main_thread(future):
     
     logger.debug("Enqueueing future on runnable queue")
     static_call(RQCLS, "enqueue", "(Ljava/lang/Runnable;)V", future.o)
+    return mac_get_future_value(future)
+
+def mac_get_future_value(future):
+    '''Do special event loop processing to wait for future done on OS/X
+    
+    We need to run the event loop in OS/X while waiting for the
+    future to come done to keep the UI event loop alive for message
+    processing.
+    '''
     if __run_headless:
-        return future.get()
+        return future.raw_get()
     if sys.maxsize > 2**32:
         if javabridge.mac_is_main_thread():
             #
@@ -538,7 +553,7 @@ def execute_future_in_main_thread(future):
             # it never returned.
             #
             raise NotImplementedError("No support for synchronizing futures in Python's startup thread on the OS/X in 64-bit mode.")
-        return future.get()
+        return future.raw_get()
         
     import wx
     import time
@@ -553,7 +568,7 @@ def execute_future_in_main_thread(future):
         while not future.isDone():
             logger.debug("Future is not done")
             time.sleep(.1)
-        return future.get()
+        return future.raw_get()
     elif app.IsMainLoopRunning():
         evtloop = wx.EventLoop()
         logger.debug("Polling for future done within main loop")
@@ -597,7 +612,7 @@ def execute_future_in_main_thread(future):
         event_loop_runner = EventLoopRunner(lambda: future.isDone())
         event_loop_runner.Run(time=10)
     logger.debug("Fetching future value")
-    return future.get()
+    return future.raw_get()
 
 def run_in_main_thread(closure, synchronous):
     '''Run a closure in the main Java thread

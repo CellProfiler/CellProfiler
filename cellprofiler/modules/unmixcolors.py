@@ -23,6 +23,9 @@ example:
 If there are non-stained cells/components that you also want to separate by color,
 choose the stain that closest resembles the color you want, or enter a custom value.
 
+Please note that if you are looking to simply split a color image into red, green and blue
+components, use the <b>ColorToGray</b> module rather than <b>UnmixColors</b>.
+
 <h3>Technical notes</h3>
 This code is adapted from the ImageJ plugin, <i>Colour_Deconvolution.java</i>
 (described <a href="http://www.dentistry.bham.ac.uk/landinig/software/cdeconv/cdeconv.html">here</a>)
@@ -32,6 +35,8 @@ References
 <ul>
 <li>Ruifrok AC, Johnston DA. (2001) "Quantification of histochemical staining by color 
 deconvolution." <i>Analytical & Quantitative Cytology & Histology</i>, 23: 291-299.</li>
+
+See also <b>ColorToGray</b>.
 </ul>
 '''
 # CellProfiler is distributed under the GNU General Public License.

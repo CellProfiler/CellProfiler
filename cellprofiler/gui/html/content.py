@@ -10,38 +10,82 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
+# Icon attributions for welcome screen
+# Help icon: Aha-Soft - http://www.softicons.com/free-icons/toolbar-icons/free-3d-glossy-interface-icons-by-aha-soft/help-icon
+# Manual icon: Double-J Design - http://www.doublejdesign.co.uk (found at http://www.softicons.com/free-icons/toolbar-icons/ravenna-3d-icons-by-double-j-design/book-icon)
+# Tutorial icon: Everaldo Coelho - http://www.softicons.com/free-icons/system-icons/crystal-project-icons-by-everaldo-coelho/apps-tutorials-icon
+# Forum icon: - Aha-Soft - http://www.softicons.com/free-icons/web-icons/free-3d-glossy-icons-by-aha-soft/forum-icon
 
 startup_main = '''<html>
 <body>
-<center><h2>Welcome to CellProfiler!</h2></center>
+<center><h1>Welcome to CellProfiler!</h1></center>
 
 <p>CellProfiler is automated image analysis software designed to measure biological phenotypes in images.</p>
 <br>
 <br>
-From here, you can...
-<table border="0" cellpadding="5" width="100%">
+<table border="0" cellpadding="1" width="100%">
 <tr>
-    <td width="200"><i>Get oriented</i></td>
-    <td>See this <a href="startup_interface">summary</a> for a quick overview of CellProfiler's interface.</td>
+    <td colspan="3"><h2>See how it works</h2></td>
 </tr>
 <tr>
-    <td width="200"><i>Read the documentation</i></td>
-    <td>There is an <a href="http://www.cellprofiler.org/CPmanual#table_of_contents">online manual</a>. Also, detailed help is available for any module by clicking the "<b>?</b>" button, or using the <i>Help</i> menu in the toolbar.</td>
- </tr>
-<tr>
-    <td><i>Try an example pipeline</i></td>
-    <td>You can <a href="loadexample:http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cp">load a simple pipeline</a> from our website.</td>
+    <td>&nbsp;</td>
+    <td colspan="2"><a href="loadexample:http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cp">Load a simple pipeline</a> from our website, then click on the "Analyze images" button.</td>
 </tr>
 <tr>
-    <td><i>Find other examples, read tutorials</i></td>
-    <td>We have <a href="http://www.cellprofiler.org/examples.shtml">examples</a> of pipelines and images for various biological assays. You can pick one that most resembles your phenotypes of interest and begin adjusting its settings.  There are also text and video <a href="http://www.cellprofiler.org/tutorials.shtml">tutorials</a>.</td>
+    <td colspan="3"><h2>Build your own pipeline</h2></td>
 </tr>
 <tr>
-    <td><i>Get user support</i></td>
-    <td>If you need help or advice, you can post a question in our online <a href="http://www.cellprofiler.org/forum/">forum.</a></td>
+    <td width="50">&nbsp;</td>
+    <td width="150"><h4>1: Start</h4></td>
+    <td >Download an <a href="http://www.cellprofiler.org/examples.shtml">example pipeline</a> that suits your application and load it with <i>File &lt; Open Project</i>.</td>
+</tr>
+<tr>
+    <td>&nbsp;</td>
+    <td><h4>2: Adjust</h4></td>
+    <td>Use the input module to select and configure your images for analysis. Add analysis module to identify image features, make measurements and export results.</td>
+</tr>
+<tr>
+    <td>&nbsp;</td>
+    <td><h4>3: Test</h4></td>
+    <td>Click the "Test mode" button to step through the pipeline and check the module settings on a few images.</td>
+</tr>
+<tr>
+    <td>&nbsp;</td>
+    <td><h4>4: Analyze</h4></td>
+    <td>Click the "Analyze images" button to process all of your images with your pipeline.</td>
 </tr>
 </table>
-<p>Click <a href="pref:no_display">here</a> to stop displaying this page when CellProfiler starts.</p>
+<table>
+<tr>
+    <td colspan="3"><h2>Need more help?</h2></td>
+</tr>
+<tr>
+    <td>&nbsp;</td>
+    <td colspan="2">
+        <table border="5" cellspacing="10" cellpadding="10">
+        <tr>
+            <td align="center" width="150"><p><h5>In-App Help</h5></p>
+            <p><button type="button"><a href=""><img src="memory:welcome_screen_help.png"></a></button></p>
+            <p>Click <b>?</b> buttons<br>for detailed help</p>
+            </td>
+            <td align="center" width="150"><p><h5>Manual</h5></p>
+            <p><a href="http://www.cellprofiler.org/CPmanual#table_of_contents" ><img src="memory:welcomescreen_manual.png"></a></p>
+            <p>Online version of<br>detailed help</p></a>
+            </td>
+            <td align="center" width="150"><p><h5>Tutorials/Demos</h5></p>
+            <p><a href="http://www.cellprofiler.org/tutorials.shtml"><img src="memory:welcomescreen_tutorials.png"></a></p>
+            <p>For written and<br>video guidance</p></a>
+            </td>
+            <td align="center" width="150"><p><h5>Q&A Forum</h5></p>
+            <p><a href="http://www.cellprofiler.org/forum/"><img src="memory:welcomescreen_forum.png"></a></p>
+            <p>Post a question<br>online</p></a>
+            </td>
+        </tr>
+        </table>
+    </td>
+</tr>
+</table>
+<p>Click <a href="pref:no_display">here</a> to stop displaying this page when CellProfiler starts. This page can be accessed from <i>Help > Show Welcome Screen</i>.</p>
 </body>
 </html>'''
 

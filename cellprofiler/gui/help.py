@@ -1100,8 +1100,8 @@ performing an analysis run.
 modules and resetting the input modules.</li>
 <li><b>Open Project...:</b> Open a previously saved CellProfiler project (.cpi file)
 from your hard drive.</li>
-<li><b>Open Recent:</b> Lets you select a project file to open from a list of 
-recently opened projects.</li>
+<li><b>Open Recent:</b> Displays a list of the most recent projects used. Select any
+one of these projects to load it.</li>
 <li><b>Save Project:</b> Save the current project to your hard drive as a .cpi file. 
 If it has not been saved previously, you will be asked for a file name to give the 
 project. Thereafter, any changes to the project will be automatically saved to that filename unless
@@ -1109,14 +1109,12 @@ you choose <b>Save as...</b>.</li>
 <li>Save Project As...:</b> Save the project to a new file name.</li>
 <li><b>Revert to Saved:</b> Restore the currently open project to the settings it had when
 it was first opened.</li>
-<li><b>Load Pipeline...:</b> Load a CellProfiler pipeline (.cp or .mat) file from 
-your hard drive.</li>
-<li><b>Load Pipeline from URL:</b> Load a CellProfiler pipeline from a web address 
-(i.e., http://...)</li>
-<li><b>Save Pipeline:</b> Save the pipeline you are currently working on as a 
-CellProfiler .cp pipeline file.</li>
-<li><b>Save Pipeline as...:</b> Prompts the user for a filename to save the 
-pipeline as.</li>
+<li><b>Import Pipeline:</b> Gives you the choice of importing a CellProfiler pipeline file from 
+your hard drive. (<i>From file...</i>) or from a web address (<i>From URL...</i>). If importing from
+a file, you can either import a previously exported pipeline (.cp) file or extract it from
+a prior project (.cpi) file.</li>
+<li><b>Export:</b> You have the choice of exporting the pipeline you are currently working on as a 
+CellProfiler .cp pipeline file (<i>Pipeline</i>), or the image file list as a .csv (<i>Image file listing</i>).</li>
 <li><b>Clear Pipeline:</b> Removes all modules from the current pipeline.</li>
 <li><b>View Image:</b> Opens a dialog box prompting you to select an image file for
 display. Images listed in the File list panel in the <b>Images</b> module can be also be displayed by double-clicking 
@@ -1134,11 +1132,6 @@ containing the partially complete measurements and the analysis run will pick up
 starting with the last cycle that was processed. </li>
 <li><b>Preferences...:</b> Displays the Preferences window, where you can change 
 many options in CellProfiler.</li>
-<li><b>Check for updates...:</b> Displays a dialog which lets you know whether your
-installation of CellProfiler is the latest version and if not, notifies you
-as what version is available from CellProfiler website.</li>
-<li><b>Recent:</b> Displays a list of the most recent pipelines loaded. Select any
-one of these pipelines to load it.</li>
 <li><b>Exit:</b></b> End the current CellProfiler session. You will be given the option
 of saving your current pipeline if you have not done so.</li>
 </ul>"""
@@ -1865,7 +1858,7 @@ MAIN_HELP = (
     ("Running Your Pipeline", RUNNING_YOUR_PIPELINE_HELP),    
     ("Using Your Output", (
         ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP),
-        ("Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
+        ("Using Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
         ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),   
     ("Troubleshooting Memory and Speed Issues",MEMORY_AND_SPEED_HELP),
     ("Other Features",(

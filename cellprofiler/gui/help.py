@@ -107,7 +107,8 @@ IMAGE_TOOLS_HELP_REF = """"Help > How To Use The Image Tools"""
 METADATA_GROUPING_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Image Grouping """
 DATA_TOOL_HELP_REF = """Help > Data Tool Help """
 WORKSPACE_INTRO_HELP = """Help > Using CellProfiler > Creating a Workspace > Introduction to Workspaces"""
-MEASUREMENT_NAMING_HELP = """Help > Using CellProfiler > How Data is Handled > How Measurements Are Named"""
+USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
+MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements Are Named"""
 USING_METADATA_HELP_REF = """ 
 Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>%(METADATA_HELP_REF)s</i> 
 for more details on obtaining, extracting, and using metadata tags from your images"""%globals()
@@ -769,7 +770,7 @@ the next module pause is reached. When all modules have been executed for a give
 execution will stop.</li>
 <li><i>Step:</i> Execute the next module (as indicated by the slider location)</li>
 <li><i>Next Image:</i> Skip ahead to the next image cycle as determined by the image 
-order in <b>LoadImages</b>/<b>LoadData</b>. The slider will automatically return to the 
+order in the Input modules. The slider will automatically return to the 
 first module in the pipeline.</li>
 </ul>
 </p>
@@ -785,7 +786,7 @@ modules will also automatically exit test mode.</li>
 The slider will then automatically return to the first module in the pipeline.</li>
 <li><i>Choose Image Group:</i> Choose the group to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
-<li><i>Reload Modules Source:</i> For developers only. This option will reload the module source 
+<li><i>Reload Modules Source (for developers only):</i> This option will reload the module source 
 code, so any changes to the code will be reflected immediately.</li>
 </ul>
 Note that if movies are being loaded, the individual movie is defined as a group automatically.

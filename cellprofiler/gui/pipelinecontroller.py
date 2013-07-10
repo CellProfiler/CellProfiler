@@ -52,7 +52,6 @@ from cellprofiler.modules.loadimages import pathname2url
 import cellprofiler.gui.parametersampleframe as psf
 import cellprofiler.analysis as cpanalysis
 import cellprofiler.cpmodule as cpmodule
-import cellprofiler.gui.loadsavedlg as cplsdlg
 import cellprofiler.utilities.walk_in_background as W
 from cellprofiler.gui.omerologin import OmeroLoginDlg
 from cellprofiler.icons import get_builtin_image

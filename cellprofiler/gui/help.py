@@ -106,7 +106,7 @@ METADATA_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Using M
 IMAGE_TOOLS_HELP_REF = """"Help > How To Use The Image Tools"""
 METADATA_GROUPING_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Image Grouping """
 DATA_TOOL_HELP_REF = """Help > Data Tool Help """
-WORKSPACE_INTRO_HELP = """Help > Using CellProfiler > Creating a Workspace > Introduction to Workspaces"""
+PROJECT_INTRO_HELP = """Help > Using CellProfiler > Creating a Project > Introduction to Projects"""
 USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
 MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements Are Named"""
 USING_METADATA_HELP_REF = """ 
@@ -132,12 +132,12 @@ proper use of metadata for grouping"""%globals()
 ##################################################
 
 LEGACY_LOAD_MODULES_HELP = """
-<p>Historically, two modules were used for workspace creation: <b>LoadImages</b> and <b>LoadData</b>.
+<p>Historically, two modules served the same functionality as the current project structure: <b>LoadImages</b> and <b>LoadData</b>.
 While the approach described above supercedes these modules in part, old pipelines
 loaded into CellProfiler that contain these modules will provide the option of preserving them;
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these 
-modules into the workspace equivalent as closely as possible. Both modules remain accesible
+modules into the project equivalent as closely as possible. Both modules remain accesible
 via the "Add module" and "+" buttons at the bottom of the pipeline panel. The section details
 information relevant for users who would like to continue using these modules. Please note,
 however, that these modules are deprcated and may be removed in the future.</p>
@@ -561,7 +561,7 @@ data in a format you prefer.</p></li>
 
 <li><p><i>Adjust the settings in each module.</i><br>
 In the CellProfiler main window, click a module in the pipeline to see its 
-settings in the main workspace. To learn more about the settings for each 
+settings in the settings panel. To learn more about the settings for each 
 module, select the module in the pipeline and click the <i>Help</i> button to the 
 right of each setting, or at the bottom of the pipeline panel
 for the help for all the settings for that module.</p>
@@ -875,7 +875,7 @@ about which settings are appropriate.</li>
 <li><i>Analyze your images to create a batch file.</i> Click the <i>Analyze images</i>
 button and the analysis will begin local processing. Do not be surprised if this initial step
 takes a while since CellProfiler must first create the entire image set list based
-on your settings in the workspace modules (this process can be sped
+on your settings in the Input modules (this process can be sped
 up by creating your list of images as a CSV and using the <b>LoadData</b> module to load it).
 <p>At the end of processing the first cycle locally, the <b>CreateBatchFiles</b>
 module halts execution, creates the proper batch file (a file called 
@@ -1096,7 +1096,7 @@ MENU_BAR_FILE_HELP = """
 The <i>File</i> menu provides options for loading and saving your pipelines and 
 performing an analysis run.
 <ul>
-<li><b>New project:</b> Clears the current workspace by removing all the analysis
+<li><b>New project:</b> Clears the current project by removing all the analysis
 modules and resetting the input modules.</li>
 <li><b>Open Project...:</b> Open a previously saved CellProfiler project (.cpi file)
 from your hard drive.</li>
@@ -1505,12 +1505,12 @@ PREFERENCES_HELP += """</ul>"""
 
 #########################################################
 #
-# Help re: workspaces
+# Help re: projects
 #
 #########################################################
-INTRODUCTION_TO_WORKSPACES_HELP = """
-<h3>What is a workspace?</h3>
-<p>In CellProfiler, a <i>workspace</i> comprises two elements:<br>
+INTRODUCTION_TO_PROJECTS_HELP = """
+<h3>What is a project?</h3>
+<p>In CellProfiler, a <i>project</i> is comprised of two elements:<br>
 <ul>
 <li>An <i>image file list</i> which is the list of files and their locations that are selected by the user as 
 candidates for analysis.</li>
@@ -1523,8 +1523,8 @@ analyze a set of images.</li>
 </ul>
 </p>
 
-<h3>Why would I want to use workspaces?</h3>
-<p>The workspace is the container for image information associated with a CellProfiler analysis. It stores
+<h3>Why would I want to use projects?</h3>
+<p>The project is the container for image information associated with a CellProfiler analysis. It stores
 such details as: 
 <ul>
 <li>What type of image(s) are the input files?</li>
@@ -1534,17 +1534,14 @@ represented?</li>
 <li>What information about the images and/or experiment is linked to the images, and how?</li>
 <li>Are certain groups of images to be processed differently from other groups?</li>
 </ul>
-You might consider the workspace to be a "project" file after a fashion. By using workspaces, 
-the above information is stored along with the analysis pipeline and is
+By using projects, the above information is stored along with the analysis pipeline and is
 avilable on demand. </p>
 
-<h3>Working with workspaces</h3>
-<h4>Creating a workspace</h4>
-<p>Upon starting CellProfiler, you will be prompted whether to create a new workspace, or open
-the workspace last used, or open another one entirely. If you request a new workspace, you will be
-asked to provide a filename and location for it. </p>
-<p>At this point, you may start building your workspace by using the modules located in "Create
-workspace" panel on the upper-left. The modules are:
+<h3>Working with projects</h3>
+<h4>Creating a project</h4>
+<p>Upon starting CellProfiler, you will be presented with a new, blank project.
+At this point, you may start building your project by using the modules located in "Input
+modules" panel on the upper-left. The modules are:
 <ul>
 <li><b>Images</b>: Assemble the relevant images for analysis (required).</li>
 <li><b>Metadata</b>: Asociate metadata with the images (optional).</li>
@@ -1554,32 +1551,31 @@ workspace" panel on the upper-left. The modules are:
 Detailed help for each module is provided by selecting the module and clicking the "?" button on 
 the bottom of CellProfiler.</p>
 
-<h4>Saving a workspace</h4>
-<p>As you work in CellProfiler, the workspace is updated automatically, so there is no need to
-save it unless you are saving the workspace to a new name or location. You can always save your 
-current work to a new workspace file by selecting <i>File > New 
-workspace...</i> or <i>File > Save as...</i> and selecting "Save pipeline and workspace (.cpi)". 
-Selecting either option with save your workspace, along with the current pipeline, to a file with 
+<h4>Saving a project</h4>
+<p>As you work in CellProfiler, the project is updated automatically, so there is no need to
+save it unless you are saving the project to a new name or location. You can always save your 
+current work to a new project file by selecting <i>File > Save Project As...</i>, which will
+save your project, complete with the current image file list and pipeline, to a file with 
 with the extension <i>.cpi</i>.</p>
 <p>For those interested, some technical details:
 <ul>
 <li>The .cpi file stores collected information using the HDF5 format. Documentation on
 how measurements are stored and handled in CellProfiler using this format can be found 
 <a href="https://github.com/CellProfiler/CellProfiler/wiki/Module-Structure-and-Data-Storage-Retrieval#hdf5-measurement-and-workspace-format">here</a>.</li>
-<li>All information is cached in the workspace file after it is computed. It is either
+<li>All information is cached in the project file after it is computed. It is either
 re-computed or retrieved from the cache when an analysis run is started, when 
 entering Test mode, or when the user requests a refreshed view of the information
 (e.g., when a setting has been changed).</li>
 </ul>
 </p>
 
-<h4>Legacy workspace modules: LoadImages and LoadData</h4>
-<p>Historically, two modules were used for workspace creation: <b>LoadImages</b> and <b>LoadData</b>.
+<h4>Legacy modules: LoadImages and LoadData</h4>
+<p>Historically, two modules were used for project creation: <b>LoadImages</b> and <b>LoadData</b>.
 While the approach described above supercedes these modules in part, old pipelines
 loaded into CellProfiler that contain these modules will provide the option of preserving them;
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these 
-modules into the workspace equivalent as closely as possible. Both modules remain accesible
+modules into the project equivalent as closely as possible. Both modules remain accesible
 via the "Add module" and "+" buttons at the bottom of the pipeline panel.</p>
 """
 
@@ -1857,8 +1853,8 @@ MAIN_HELP = (
         ("Using The Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
     ("Using Module Display Windows", FIGURE_HELP ),
     ("Setting the Preferences", PREFERENCES_HELP),
-    ("Creating A Workspace",(
-        ("Introduction To Workspaces",INTRODUCTION_TO_WORKSPACES_HELP),
+    ("Creating A Project",(
+        ("Introduction To Projects",INTRODUCTION_TO_PROJECTS_HELP),
         ("Using The Images Module",images.__doc__),
         ("Using The Metadata Module",metadata.__doc__),
         ("Using The NamesAndTypes Module",namesandtypes.__doc__),

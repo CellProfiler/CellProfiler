@@ -247,7 +247,7 @@ computer. If, instead, you type specific folder path names into a module's setti
 your pipeline will not work on someone else's computer until you adjust those
 pathnames within each module.</p>
 
-<p>Use the <i>Browse</i> button <img src="memory:%(LOCATION_BROWSE_BUTTON)s"></img> to specify 
+<p>Use the <i>Browse</i> button <img src="memory:%(LOCATION_BROWSE_BUTTON)s"></img>&nbsp;to specify 
 the folder you would like to use as the Default Input Folder, or 
 type the full folder path in the edit box. If you type a folder path that  
 cannot be found, the message box below will indicate this fact until you correct the problem. 
@@ -491,7 +491,7 @@ best way to learn how to use CellProfiler is to load an example pipeline
 from the CellProfiler website's Examples page and try it out, then adapt it for 
 your own images. You can also build a 
 pipeline from scratch. Click the <i>Help</i> <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s">
-</img> button in the main window to get
+</img>&nbsp;button in the main window to get
 help for a specific module.</p>
 
 <p>To adjust the CellProfiler source code, see <i>Help > Developer's Guide</i>. 
@@ -521,7 +521,7 @@ left-hand side of the CellProfiler window).</p>
 <ol>
 <li><p><i>Place modules in a new pipeline.</i><br>
 Choose image analysis modules to add to your pipeline by clicking the <i>Add</i> 
-<img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button
+<img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;button
 (located underneath the pipeline panel) or right-clicking in the pipeline panel
 itself and selecting a module from the 
 pop-up box that appears. You can learn more about each module by clicking
@@ -531,7 +531,7 @@ adjust their order in the main window by dragging and dropping them, or by selec
 modules, using the <i>Shift</i> key) and using the <i>Move module up</i> 
 <img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> and <i>Move module down</i> 
 <img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> buttons. 
-The <i>Remove module</i> <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button will 
+The <i>Remove module</i> <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img>&nbsp;button will 
 delete the selected module(s) from the pipeline.</p> 
 <p>Typically, the first module you must run is 
  <b>LoadImages</b>, in which you specify the identity of the images 
@@ -567,12 +567,12 @@ right of each setting, or at the bottom of the pipeline panel
 for the help for all the settings for that module.</p>
 <p>If there is an error with the settings (e.g., a setting refers to an image 
 that doesn't exist yet), 
-a <img src="memory:%(LOCATION_SETTINGS_ERROR_ICON)s"></img>  icon will appear next to the 
+a <img src="memory:%(LOCATION_SETTINGS_ERROR_ICON)s"></img>&nbsp;icon will appear next to the 
 module name. If there is a warning (e.g., a special notification attached to a choice of setting), 
-a <img src="memory:%(LOCATION_SETTINGS_WARNING_ICON)s"></img>  icon will appear. Errors
+a <img src="memory:%(LOCATION_SETTINGS_WARNING_ICON)s"></img>&nbsp;icon will appear. Errors
 will cause the pipeline to fail upon running, whereas a warning will not. Once 
 the errors/warnings have been resolved, a <img src="memory:%(LOCATION_SETTINGS_OK_ICON)s">
-</img>  icon will appear indicating that the module is ready to run.</p>
+</img>&nbsp;icon will appear indicating that the module is ready to run.</p>
 </li>
 <li><p><i>Set your Default Input Folder, Default Output Folder and output filename.</i><br>
 For more help, click their nearby <i>Help</i> buttons in the main window. </p></li>
@@ -583,13 +583,13 @@ and settings you have specified. A status window will appear which has the follo
 <ul>
 <li>A <i>progress bar</i> which gives the elapsed time and estimates the time remaining to 
 process the full image set.</li>
-<li>A <i>pause button</i> <img src="memory:%(LOCATION_RUNSTATUS_PAUSE_BUTTON)s"></img> 
+<li>A <i>pause button</i> <img src="memory:%(LOCATION_RUNSTATUS_PAUSE_BUTTON)s"></img>&nbsp;
 which pauses execution and allows you to subsequently 
 resume the analysis.
-<li>A <i>stop button</i> <img src="memory:%(LOCATION_RUNSTATUS_STOP_BUTTON)s"></img> 
+<li>A <i>stop button</i> <img src="memory:%(LOCATION_RUNSTATUS_STOP_BUTTON)s"></img>&nbsp;
 which cancels execution after prompting you for a place to
 save the measurements collected to that point.</li>
-<li>A <i>save measurements</i> button <img src="memory:%(LOCATION_RUNSTATUS_SAVE_BUTTON)s"></img> 
+<li>A <i>save measurements</i> button <img src="memory:%(LOCATION_RUNSTATUS_SAVE_BUTTON)s"></img>&nbsp;
 which will prompt you for a place to
 save the measurements collected to that point while continuing the analysis run.</li>
 </ul> 
@@ -716,9 +716,9 @@ with the exception of any you specify. Please see the
 Each module is associated with a display window that takes time to render and/or
 update. Closing these windows improves speed somewhat. 
 To the left of each module listed in your pipeline an icon 
-<img src="memory:%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img> indicates whether
+<img src="memory:%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img>&nbsp;indicates whether
 the module window will be displayed during the analysis run. You can turn off individual module windows by
-clicking on the icon; this icon <img src="memory:%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img> indicates that the window 
+clicking on the icon; this icon <img src="memory:%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>&nbsp;indicates that the window 
 will not be shown. Select <i>Window > Hide all windows on run</i> to prevent display
 of all module windows.</p></li>           
                                                                             
@@ -741,7 +741,7 @@ image, preview the results and adjust the module settings on the fly.</p>
 menu bar in the main window. At this point, you will see the following features appear:
 <ul>
 <li>The module view will have a slider bar appearing on the far left.</li>
-<li>A Pause icon <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img> will appear to the left of each module.</li>
+<li>A Pause icon <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img>&nbsp;will appear to the left of each module.</li>
 <li>A series of buttons will appear at the bottom of the pipeline panel above the 
 module adjustment buttons.</li>
 <li>The grayed-out items in the <i>Test</i> menu will become active, and the 
@@ -762,8 +762,8 @@ been produced yet. To avoid this, it is best to actually run the pipeline up to 
 of interest, and move the slider to modules already executed.
 <li><i>Pause:</i> Clicking the pause icon will cause the pipeline test run to halt
 execution when that module is reached (the paused module itself is not executed). The icon 
-changes from <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img> to 
-<img src="memory:%(LOCATION_TESTMODE_PAUSE_ICON)s"></img> to indicate that a pause has 
+changes from <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img>&nbsp;to 
+<img src="memory:%(LOCATION_TESTMODE_PAUSE_ICON)s"></img>&nbsp;to indicate that a pause has 
 been inserted at that point.</li>
 <li><i>Run:</i> Execution of the pipeline will be started/resumed until
 the next module pause is reached. When all modules have been executed for a given image cycle,
@@ -802,14 +802,14 @@ module settings, you are ready to run the pipeline on your entire set of images.
 do this:
 <ul>
 <li>Exit Test mode by clicking the "Exit Test Mode" button or selecting <i>Test > Exit Test Mode</i>.</li>
-<li>Click the "<img src="memory:%(LOCATION_ANALYZE_IMAGE_BUTTON)s"></img> Analyze Images" button and begin processing your data sets.</li>
+<li>Click the "<img src="memory:%(LOCATION_ANALYZE_IMAGE_BUTTON)s"></img>&nbsp;Analyze Images" button and begin processing your data sets.</li>
 </ul>
 During the analysis run, the progress will appear in the status bar at the bottom of CellProfiler. It will
 show you the total number of image sets, the number of image sets completed, the time elapsed and the approximate 
 time remaining in the run.
-<p>If you need to pause analysis, click the "<img src="memory:%(LOCATION_PAUSE_ANALYSIS_BUTTON)s"></img> Pause" button, then click the 
+<p>If you need to pause analysis, click the "<img src="memory:%(LOCATION_PAUSE_ANALYSIS_BUTTON)s"></img>&nbsp;Pause" button, then click the 
 "Resume" button to continue. If you
-want to terminate analysis, click the "<img src="memory:%(LOCATION_STOP_ANALYSIS_BUTTON)s"></img> Stop analysis" button.</p>
+want to terminate analysis, click the "<img src="memory:%(LOCATION_STOP_ANALYSIS_BUTTON)s"></img>&nbsp;Stop analysis" button.</p>
 <p>If your computer has multiple processors, CellProfiler will take advantage of them by starting multiple copies
 of itself to process the image sets in parallel. You can set the number of <i>workers</i> (i.e.,copies of 
 CellProfiler activated) under <i>File > Preferences...</i></p>
@@ -1141,19 +1141,19 @@ The <i>Edit</i> menu provides options for modifying modules in your current pipe
 <ul>
 <li><b>Undo:</b> Undo your previous module modification.</li>
 <li><b>Move Module Up:</b> Move the currently selected module(s) up in the module list. You
-can also use the <img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> button located
+can also use the <img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img>&nbsp;button located
 below the Pipeline panel.</li>
 <li><b>Move Module Down:</b> Move the currently selected module(s) down in the module list. You
-can also use the <img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> button located
+can also use the <img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img>&nbsp;button located
 below the Pipeline panel.</li>
 <li><b>Delete Module:</b> Remove the currently selected module(s) from the module list. 
 Pressing the Delete key also removes the module(s). You
-can also use the <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button located
+can also use the <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img>&nbsp;button located
 under the Pipeline panel.</li>
 <li><b>Duplicate Module:</b> Duplicate the currently selected module(s) in the pipeline.
 The current settings of the selected module(s) are retained in the duplicate.</li>
 <li><b>Add Module:</b> Select a module from the pop-up list to inster into the current
-pipeline. You can also use the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button located
+pipeline. You can also use the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;button located
 under the Pipeline panel.</li>
 </ul>
 You can select multiple modules at once for moving, deletion and duplication 
@@ -1251,8 +1251,8 @@ All figure windows come with a navigation toolbar, which can be used to navigate
 <ul>
 <li><b>Home, Forward, Back buttons:</b>
 <i>Home</i> <img src="memory:%(LOCATION_WINDOW_HOME_BUTTON)s"></img> always takes you to 
-the initial, default view of your data. The <i>Forward</i> <img src="memory:%(LOCATION_WINDOW_FORWARD_BUTTON)s"></img>
-and <i>Back</i> <img src="memory:%(LOCATION_WINDOW_BACK_BUTTON)s"></img> buttons are akin 
+the initial, default view of your data. The <i>Forward</i> <img src="memory:%(LOCATION_WINDOW_FORWARD_BUTTON)s"></img>&nbsp;
+and <i>Back</i> <img src="memory:%(LOCATION_WINDOW_BACK_BUTTON)s"></img>&nbsp;buttons are akin 
 to the web browser forward and back buttons in that they are used to navigate back 
 and forth between previously defined views, one step at a time. They will not be 
 enabled unless you have already navigated within an image else using 
@@ -1277,14 +1277,15 @@ clicking off the plot. This is a known bug to be corrected in the next release.<
 </ul>
 </li>
 
-<li><b>Zoom-to-rectangle button:</b> Click this toolbar button <img src="memory:%(LOCATION_WINDOW_ZOOMTORECT_BUTTON)s"></img> 
+<li><b>Zoom-to-rectangle button:</b> Click this toolbar button <img src="memory:%(LOCATION_WINDOW_ZOOMTORECT_BUTTON)s"></img>&nbsp;
 to activate this mode. To zoom in, press the left mouse button and drag in the window 
 to draw a box around the area you want to zoom in on. When you release the mouse button, 
 the image is re-drawn to display the specified area. Remember that you can always use 
 <i>Backward</i> button to go back to the previous zoom level, or use the <i>Home</i> 
 button to reset the window to the initial view.</li>
 
-<li><b>Save:</b> Click this button <img src="memory:%(LOCATION_WINDOW_SAVE_BUTTON)s"></img>to launch a file save dialog. You can save the 
+<li><b>Save:</b> Click this button <img src="memory:%(LOCATION_WINDOW_SAVE_BUTTON)s"></img>&nbsp;
+to launch a file save dialog. You can save the 
 figure window to a file (currently, Postscript (.PS), PNGs and PDFs are supported). 
 Note that this will save the entire contents of the window, not just the individual 
 subplot(s) or images.</li>
@@ -1644,7 +1645,7 @@ For the above example, you could do the following:
 <li>Make a new rule <code>[Metadata][Does][Have Stain matching][phase]</code> and name it <i>OrigPhase</i>.
 <li>In the "Assign channel by" setting, select "Metadata".</li>
 <li>Select "Well" for the <i>OrigFluor</i>, <i>OrigFluo2</i> and <i>OrigPhase</i> channels.</li>
-<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
+<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;button to the right to add another row,
 and select "Frame" for each channel.</li>
 <li>Click "Update table" to confirm the channel matching. The corresponding well and frame for each
 channel should be matched to each other.</li>
@@ -1716,7 +1717,7 @@ multiple channels, you will need to do this for each channel.
 <li>Click the "Add" button to add another rule.</li>
 <li>In the "Assign channel by" setting, select "Metadata".</li>
 <li>Select "Z" for the <i>OrigDAPI</i> and <i>OrigGFP</i> channels.</li>
-<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
+<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;button to the right to add another row,
 and select "T" for each channel.</li>
 <li>Click "Update table" to confirm the channel matching. The corresponding <i>Z</i> and <i>T</i> for each
 channel should be matched to each other.</li>

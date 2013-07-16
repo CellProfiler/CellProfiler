@@ -36,14 +36,14 @@ placed onto this panel as needed. As you add files, you will see a listing of th
 Bio-Formats; see <a href="http://loci.wisc.edu/bio-formats/formats">here</a> for the formats available. Some image formats are better 
 than others for image analysis. Some are <a href="http://www.techterms.com/definition/lossy">"lossy"</a> 
 (information is lost in the conversion to the format) like most JPG/JPEG files; others are 
-<a href="http://www.techterms.com/definition/lossless">lossless</a> (no image information is lost). For image analysis
-purposes, either TIF or PNG are recommended.</p>
+<a href="http://www.techterms.com/definition/lossless">lossless</a> (no image information is lost). For image analysis purposes, a 
+lossless format like TIF or PNG is recommended.</p>
 
 <p>If you have a subset of files that you want to analyze from the full list shown in the 
 panel, you can also filter the files according to a set of rules that you specify. This is useful when, for example, you
 have dragged a folder of images onto the file list panel, but the folder contains the images
 from one experiment that you want to process along with images from another experiment that you
-want to ignore for now. You may specify as many rules as neccessary to define the desired 
+want to ignore for now. You may specify as many rules as necessary to define the desired 
 list of images.</p>'''
 
 CONFIGURE_IMAGES_REF = urllib.quote("Configure images")
@@ -67,17 +67,17 @@ attach additional image information about the experiment, among other things.</p
     <tr align="center"><td><b>NamesAndTypes</b></td><td>Assign names to images and/or channels and define their relationship.</td><td>Yes</td>
     <td>This module gives each image a meaningful name by which modules in the analysis pipeline will refer to it.
     The most common usage for this module is to define a collection of channels that represent a single
-    field of view. By using this module, each of these channels will be loaded and processed together for each site.</td></tr>
+    field of view. By using this module, each of these channels will be loaded and processed together for each field of view.</td></tr>
     <tr align="center"><td><b>Groups</b></td><td>Define sub-divisions between groups of images for processing.</td><td>No</td>
     <td>For some assays, you will need the option of further sub-dividing an image set into <i>groups</i> that share a 
-    common feature. An example of this a time-lapse movie that consists of individual files; each group of files that
-    define a single movie needs to be processes independently of the others. This module allows you to specify what
+    common feature. An example of this is a time-lapse movie that consists of individual files; each group of files that
+    define a single movie needs to be processed independently of the others. This module allows you to specify what
     distinguishes one group of images from another. If your assay does not require this sort of behavior, this module 
     can be safely skipped.</td></tr>
 </table>
 </p>
 <p>For more information on these modules and how to configure for best performance, please see the detailed help by selecting the
-module and clicking the <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img> button at the bottom of the pipeline panel.</p>
+module and clicking the <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img>&nbsp;button at the bottom of the pipeline panel.</p>
 '''%globals()
 
 IDENTIFY_FEATUREES_REF = urllib.quote("Identifying features")
@@ -91,8 +91,8 @@ nuclei, organelles or something else. </p>
 one that is most commonly used. The result of this module is a set of labeled <i>objects</i>; we define an object as a collection of connected pixels 
 in an image which share the same label. The challenge here is to find a combination of settings that best identify the objects from 
 the image, a task called <i>segmentation</i>. The typical expectation is to end up with one object for each cellular feature of interest 
-(for example, each nucleus is assigned to a single object in a DNA stained images). If this is not the
-case, the module settings can be adjusted to make so (or as close as possible). In some cases, image processing modules must be used beforehand
+(for example, each nucleus is assigned to a single object in a DNA stained image). If this is not the
+case, the module settings can be adjusted to make it so (or as close as possible). In some cases, image processing modules must be used beforehand
 to transform the image so it is more amenable to object detection.</p></td>
 <td align="center"><img src="memory:image_to_object_dataflow.png" width="254" height="225"></td>
 </tr></table>
@@ -102,9 +102,8 @@ to transform the image so it is more amenable to object detection.</p></td>
 <li><i>Distinguish the foreground from background:</i> The foreground is defined as that part of the image which contains
 the features of interest, as opposed to the <i>background</i> which does not. The module 
 assumes that the foreground is brighter than the background, which is the case for fluorescence images; for other
-types of images, other modules can be used to first inverting the image, turning dark regions into bright regions 
-and vice versa. This step is performed by thresholding the image to find a single intensity value that divides 
-the foreground from the background.</li>
+types of images, other modules can be used to first invert the image, turning dark regions into bright regions 
+and vice versa. </li>
 <li><i>Identify the objects in each foreground region:</i> Each foreground region may contain multiple objects
 of interest (for example, touching nuclei in a DNA stained image). Recognizing the presence of these objects is the
 objective of this step.</li>
@@ -116,19 +115,19 @@ to get the final object set. At this point, the objects are ready for measuremen
 as a means of extracting other features.</p>
 
 <p>Other modules are able to take the results of this module and use them in combination with additional images 
-(like <b>IdentifySecondaryObjects</b>)or other objects (like <b>IdentifyTeritiaryObjects</b>) to define yet more objects.
+(like <b>IdentifySecondaryObjects</b>) or other objects (like <b>IdentifyTertiaryObjects</b>) to define yet more objects.
 </p>
 
 <p>For more information on these identification modules work and how to configure them for best performance, please see 
-the detailed help by selecting the module and clicking the <i>Add</i><img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img>
+the detailed help by selecting the <b>IdentifyPrimaryObjects</b> module and clicking the <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img>&nbsp;
 button at the bottom of the pipeline panel.</p>
 '''%globals()
 
 MAKING_MEASUREMENTS_REF = urllib.quote("Making measurements")
 MAKING_MEASUREMENTS_HELP = '''
 <p>In most cases, the reason for identifying image features is to make measurements on them. CellProfiler has a number
-of modules dedicated to generating measurements of various types; these
-are accessible by clicking the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button
+of modules dedicated to calculating measurements of various types, on both images and objects; these
+are accessible by clicking the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;button
 (located underneath the pipeline panel) </p>
 
 <p>Below is a list of measurement categories; these is not meant to be comprehensive, but are sufficient for most assays:
@@ -137,7 +136,7 @@ are accessible by clicking the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s">
     <th><font color="#FFFFFF"><b>Measurement</b></font></th>
     <th><font color="#FFFFFF"><b>Description</b></font></th>
     <th><font color="#FFFFFF"><b>Relevant modules</b></font></th></tr>
-    <tr align="center"><td><i>Count</i></td><td>The number of objects in an image.</td><td>All modules which produce a new set of objects</td></tr>
+    <tr align="center"><td><i>Count</i></td><td>The number of objects in an image.</td><td>All modules which produce a new set of objects, such as <b>IdentifyPrimaryObjects</b></td></tr>
     <tr align="center"><td><i>Location</i></td><td> The (x,y) coordinates of each object, which can be of interest in time-lapse imaging.</td>
     <td>All modules which produce a new set of objects</td></tr>
     <tr align="center"><td><i>Morphology</i></td><td> Quantities defining the geometry of the object, as defined by its external boundary.
@@ -154,14 +153,14 @@ are accessible by clicking the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s">
 </p>
 
 <p>For more information on these modules and how to configure them for best performance, please see 
-the detailed help by selecting the module and clicking the <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img>
+the detailed help by selecting the module and clicking the <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img>&nbsp;
 button at the bottom of the pipeline panel. You can also find details on measurement nomenclature when exporting under 
 <i>%(MEASUREMENT_NAMING_HELP)s</i></p>
 '''%globals()
 
 EXPORTING_RESULTS_REF = urllib.quote("Exporting results")
 EXPORTING_RESULTS_HELP = '''
-<p>Writing the measurements generated by CellProfiler is neccesary for downstream statistical analysis. The most
+<p>Writing the measurements generated by CellProfiler is necessary for downstream statistical analysis. The most
 common format for export is the <i>spreadsheet</i> which is a table of values. The module <b>ExportToSpreadsheet</b>
 handles the task of writing the measurements (for images, objects or both) to a file readable by Excel, or the 
 spreadsheet program of your choice.</p>
@@ -208,68 +207,69 @@ WELCOME_HELP = {
 startup_main = '''<html>
 <body>
 <center><h1>Welcome to CellProfiler!</h1></center>
-
-<p>CellProfiler is automated image analysis software designed to measure biological phenotypes in images.</p>
+<br>
+<p>CellProfiler is automated image analysis software to measure biological phenotypes in images.</p>
 <br>
 <br>
-<table border="0" cellpadding="1" width="100%%">
+<table border="0" cellpadding="5" width="100%%">
 <tr>
-    <td colspan="3"><h2>See how it works</h2></td>
+    <td colspan="3"><b><font size="+2">See how it works</font></b></td>
 </tr>
 <tr>
     <td>&nbsp;</td>
     <td colspan="2"><a href="loadexample:http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cp">Load a simple pipeline</a> from our website, then click on the "Analyze images" button.</td>
 </tr>
 <tr>
-    <td colspan="3"><h2>Build your own pipeline</h2></td>
+    <td colspan="3"><b><font size="+2">Build your own pipeline</font></b></td>
 </tr>
 <tr>
-    <td width="50">&nbsp;</td>
-    <td width="150"><h4>1: Start</h4></td>
-    <td >Download an <a href="http://www.cellprofiler.org/examples.shtml">example pipeline</a> that suits your application and load it with <i>File &lt; Open Project</i>.</td>
+    <td width="10">&nbsp;</td>
+    <td width="110"><i><font size="+2">1: Start</font></i></td>
+    <td >Download an <a href="http://www.cellprofiler.org/examples.shtml">example pipeline</a> that suits your application and load it with <i>File &gt; Open Project</i>.</td>
 </tr>
 <tr>
     <td>&nbsp;</td>
-    <td><h4>2: Adjust</h4></td>
+    <td><i><font size="+2">2: Adjust</font></b></td>
     <td>Use the Input modules to <a href="help://%(SELECTING_IMAGES_REF)s">select</a> and <a href="help://%(CONFIGURE_IMAGES_REF)s">configure</a> your images for analysis. 
     Add Analysis modules to <a href="help://%(IDENTIFY_FEATUREES_REF)s">identify</a> image features, make <a href="help://%(MAKING_MEASUREMENTS_REF)s">measurements</a> and 
     <a href="help://%(EXPORTING_RESULTS_REF)s">export</a> results.</td>
 </tr>
 <tr>
     <td>&nbsp;</td>
-    <td><h4>3: Test</h4></td>
+    <td><i><font size="+2">3: Test</font></b></td>
     <td>Click the "Start Test Mode" button to step through the pipeline and <a href="help://%(TEST_MODE_REF)s">check</a> the module settings on a few images.</td>
 </tr>
 <tr>
     <td>&nbsp;</td>
-    <td><h4>4: Analyze</h4></td>
+    <td><i><font size="+2">4: Analyze</font></b></td>
     <td>Click the "Analyze Images" button to <a href="help://%(RUNNING_YOUR_PIPELINE_REF)s">process</a> all of your images with your pipeline.</td>
 </tr>
 </table>
+<br>
 <table>
 <tr>
-    <td colspan="3"><h2>Need more help?</h2></td>
+    <td colspan="3"><b><font size="+2">Need more help?</font></b></td>
 </tr>
 <tr>
     <td>&nbsp;</td>
     <td colspan="2">
-        <table border="5" cellspacing="10" cellpadding="10">
+        <table border="5" cellspacing="5" cellpadding="5">
         <tr>
-            <td align="center" width="150"><p><h5>In-App Help</h5></p>
-            <p><button type="button"><a href="help://%(IN_APP_HELP_REF)s"><img src="memory:welcome_screen_help.png"></a></button></p>
-            <p>Click <b>?</b> buttons<br>for detailed help</p>
+            <td align="center" width="100"><b><font size="+1">In-App Help</font></b><br><br>
+            <a href="help://%(IN_APP_HELP_REF)s"><img src="memory:welcome_screen_help.png"></a><br><br>
+            Click <b>?</b> buttons for detailed help
             </td>
-            <td align="center" width="150"><p><h5>Manual</h5></p>
-            <p><a href="http://www.cellprofiler.org/CPmanual#table_of_contents" ><img src="memory:welcomescreen_manual.png"></a></p>
-            <p>Online version of<br>detailed help</p></a>
+            <td align="center" width="100"><b><font size="+1">Manual</font></b><br><br>
+            <a href="http://www.cellprofiler.org/CPmanual#table_of_contents" ><img src="memory:welcomescreen_manual.png"></a><br><br>
+            Online version of In-App help
             </td>
-            <td align="center" width="150"><p><h5>Tutorials/Demos</h5></p>
-            <p><a href="http://www.cellprofiler.org/tutorials.shtml"><img src="memory:welcomescreen_tutorials.png"></a></p>
-            <p>For written and<br>video guidance</p></a>
+            <td align="center" width="100"><b><font size="+1">Tutorials/Demos</font></b><br><br>
+            <a href="http://www.cellprofiler.org/tutorials.shtml"><img src="memory:welcomescreen_tutorials.png"></a><br><br>
+            For written and video guidance to image analysis
             </td>
-            <td align="center" width="150"><p><h5>Q&A Forum</h5></p>
-            <p><a href="http://www.cellprofiler.org/forum/"><img src="memory:welcomescreen_forum.png"></a></p>
-            <p>Post a question<br>online</p></a>
+            <td align="center" width="100"><b><font size="+1">Q&A Forum</font></b><br><br>
+            <a href="http://www.cellprofiler.org/forum/"><img src="memory:welcomescreen_forum.png"></a><br><br>
+            Post a question online
             </td>
         </tr>
         </table>

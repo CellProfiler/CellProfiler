@@ -1,4 +1,4 @@
-'''<b>Convert Objects To Image </b> converts objects you have identified into an image
+'''<b>Convert Objects To Image </b> converts objects you have identified into an image.
 <hr>
 
 This module allows you to take previously identified objects and convert
@@ -50,26 +50,26 @@ class ConvertObjectsToImage(cpm.CPModule):
     
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber("Select the input objects","None",doc="""
-                                What did you call the objects you want to convert to an image?""")
+                                Choose the name of the objects you want to convert to an image.""")
         
         self.image_name = cps.ImageNameProvider("Name the output image", "CellImage",doc="""
-                                What do you want to call the resulting image?""")
+                                Enter the name of the resulting image.""")
         
-        self.image_mode = cps.Choice("Select the color type",
+        self.image_mode = cps.Choice("Select the color format",
                                 IM_ALL,doc="""
-                                What colors should the resulting image use? Choose how you would like
-                                the objects to appear:
+                                Select which colors the resulting image should use. You have the following
+                                options:
                                 <ul>
-                                <li><i>Color:</i> Allows you to choose a colormap that will
+                                <li><i>%(IM_COLOR)s:</i> Allows you to choose a colormap that will
                                 produce jumbled colors for your objects. </li>
-                                <li><i>Binary:</i> All object pixels will be assigned 1 and all
+                                <li><i>%(IM_BINARY)s:</i> All object pixels will be assigned 1 and all
                                 background pixels will be assigned 0, creating a binary image.</li>
-                                <li><i>Grayscale:</i> Gives each object
+                                <li><i>%(IM_GRAYSCALE)s:</i> Gives each object
                                 a graylevel pixel intensity value corresponding to its number (also
                                 called label), so it usually results in objects on the left side of the
                                 image being very dark, progressing toward white on the right side of
                                 the image. </li>
-                                <li><i>uint16:</i> Assigns each object a different number,
+                                <li><i>%(IM_UINT16)s:</i> Assigns each object a different number,
                                 from 1 to 65535 (the numbers that you can put in
                                 a 16-bit integer) and numbers all pixels in each
                                 object with the object's number. This format can
@@ -78,11 +78,11 @@ class ConvertObjectsToImage(cpm.CPModule):
                                 another program.</li>
                                 </ul>
                                 You can choose <i>Color</i> with a <i>Gray</i> colormap to produce
-                                jumbled gray objects.""")
+                                jumbled gray objects."""%globals())
         
         self.colormap = cps.Colormap("Select the colormap",
                                 doc="""<i>(Used only if Color output image selected)</i><br>
-                                What do you want the colormap to be? This setting affects how the objects are colored. 
+                                Choose the colormap to be used, which affects how the objects are colored. 
                                 You can look up your default colormap under <i>File > Preferences</i>.""")
 
     def settings(self):

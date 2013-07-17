@@ -1,7 +1,6 @@
 '''<b>Edit Objects Manually</b> allows you to remove specific objects
-from each image by pointing and clicking
+from each image by pointing and clicking.
 <hr>
-
 This module allows you to remove specific objects via a user interface 
 where you point and click to select objects for removal. The
 module displays three images: the objects as originally identified,
@@ -94,21 +93,21 @@ class EditObjectsManually(I.Identify):
             # Ask the user for a parameter
             self.smoothing_size = cellprofiler.settings.Float(...)
         """
-        self.object_name = cps.ObjectNameSubscriber("Select the objects to be edited", "None",
-                                                    doc="""
+        self.object_name = cps.ObjectNameSubscriber(
+            "Select the objects to be edited", "None",doc="""
             Choose a set of previously identified objects
             for editing, such as those produced by one of the
             <b>Identify</b> modules.""")
         
         self.filtered_objects = cps.ObjectNameProvider(
-            "Name the edited objects","EditedObjects",
-            doc="""What do you want to call the objects that remain
-            after editing? These objects will be available for use by
+            "Name the edited objects","EditedObjects",doc="""
+            Enter the name for the objects that remain
+            after editing. These objects will be available for use by
             subsequent modules.""")
         
         self.allow_overlap = cps.Binary(
-            "Allow overlapping objects", False,
-            doc = """<b>EditObjectsManually</b> can allow you to edit an
+            "Allow overlapping objects?", False,doc = """
+            <b>EditObjectsManually</b> can allow you to edit an
             object so that it overlaps another or it can prevent you from
             overlapping one object with another. Objects such as worms or
             the neurites of neurons may cross each other and might need to
@@ -117,46 +116,44 @@ class EditObjectsManually(I.Identify):
             allow overlaps or uncheck it to prevent them.""") 
         
         self.wants_outlines = cps.Binary(
-            "Retain outlines of the edited objects?", False,
-            doc="""Check this box if you want to keep images of the outlines
+            "Retain outlines of the edited objects?", False,doc="""
+            Check this box if you want to keep images of the outlines
             of the objects that remain after editing. This image
             can be saved by downstream modules or overlayed on other images
             using the <b>OverlayOutlines</b> module.""")
         
         self.outlines_name = cps.OutlineNameProvider(
-            "Name the outline image", "EditedObjectOutlines",
-            doc="""<i>(Used only if you have selected to retain outlines of edited objects)</i><br>
-            What do you want to call the outline image?""")
+            "Name the outline image", "EditedObjectOutlines", doc="""
+            <i>(Used only if you have selected to retain outlines of edited objects)</i><br>
+            Enter a name for the outline image.""")
         
         self.renumber_choice = cps.Choice(
             "Numbering of the edited objects",
-            [R_RENUMBER, R_RETAIN],
-            doc="""Choose how to number the objects that 
+            [R_RENUMBER, R_RETAIN],doc="""
+            Choose how to number the objects that 
             remain after editing, which controls how edited objects are associated with their predecessors:
-            <p>
-            If you choose <i>Renumber</i>,
-            this module will number the objects that remain 
+            <ul>
+            <li><i>%(R_RENUMBER)s:</i> The module will number the objects that remain 
             using consecutive numbers. This
             is a good choice if you do not plan to use measurements from the
             original objects and you only want to use the edited objects in downstream modules; the
             objects that remain after editing will not have gaps in numbering
-            where removed objects are missing.
-            <p>
-            If you choose <i>Retain</i>,
-            this module will retain each object's original number so that the edited object's number matches its original number. This allows any measurements you make from 
+            where removed objects are missing.</li>
+            <li><i>%(R_RETAIN)s:</i> This option will retain each object's original number so that the 
+            edited object's number matches its original number. This allows any measurements you make from 
             the edited objects to be directly aligned with measurements you might 
             have made of the original, unedited objects (or objects directly 
-            associated with them).""")
+            associated with them).</li>
+            </ul>"""%globals())
         
         self.wants_image_display = cps.Binary(
-            "Display a guiding image?", True,
-            doc = """Check this setting to display an image and outlines
+            "Display a guiding image?", True,doc = """
+            Check this setting to display an image and outlines
             of the objects. Leave the setting unchecked if you do not
             want a guide image while editing""")
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select the guiding image", "None",
-            doc = """
+            "Select the guiding image", "None",doc = """
             <i>(Used only if a guiding image is desired)</i><br>
             This is the image that will appear when editing objects.
             Choose an image supplied by a previous module.""")

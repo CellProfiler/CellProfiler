@@ -1,12 +1,12 @@
-'''<b>Conserve Memory</b> speeds up CellProfiler by removing images from memory
+'''<b>Conserve Memory</b> speeds up CellProfiler by removing images from memory.
 <hr>
 
 This module removes images from memory, which can speed up processing and
 prevent out-of-memory errors.
 
 <i>Note:</i> CellProfiler 1.0's <b>SpeedUpCellProfiler</b> had an option that let you 
-choose how often the output file was saved. This option has been
-moved to the preferences settings (<i>File > Preferences</i>).
+choose how often the output file of measurements was saved. This option is no longer neccessary since
+the output file is automatically updated with each image set.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

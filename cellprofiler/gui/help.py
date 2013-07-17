@@ -106,8 +106,9 @@ METADATA_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Using M
 IMAGE_TOOLS_HELP_REF = """"Help > How To Use The Image Tools"""
 METADATA_GROUPING_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Image Grouping """
 DATA_TOOL_HELP_REF = """Help > Data Tool Help """
-WORKSPACE_INTRO_HELP = """Help > Using CellProfiler > Creating a Workspace > Introduction to Workspaces"""
-MEASUREMENT_NAMING_HELP = """Help > Using CellProfiler > How Data is Handled > How Measurements Are Named"""
+PROJECT_INTRO_HELP = """Help > Using CellProfiler > Creating a Project > Introduction to Projects"""
+USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
+MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements Are Named"""
 USING_METADATA_HELP_REF = """ 
 Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>%(METADATA_HELP_REF)s</i> 
 for more details on obtaining, extracting, and using metadata tags from your images"""%globals()
@@ -131,12 +132,12 @@ proper use of metadata for grouping"""%globals()
 ##################################################
 
 LEGACY_LOAD_MODULES_HELP = """
-<p>Historically, two modules were used for workspace creation: <b>LoadImages</b> and <b>LoadData</b>.
+<p>Historically, two modules served the same functionality as the current project structure: <b>LoadImages</b> and <b>LoadData</b>.
 While the approach described above supercedes these modules in part, old pipelines
 loaded into CellProfiler that contain these modules will provide the option of preserving them;
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these 
-modules into the workspace equivalent as closely as possible. Both modules remain accesible
+modules into the project equivalent as closely as possible. Both modules remain accesible
 via the "Add module" and "+" buttons at the bottom of the pipeline panel. The section details
 information relevant for users who would like to continue using these modules. Please note,
 however, that these modules are deprcated and may be removed in the future.</p>
@@ -246,7 +247,7 @@ computer. If, instead, you type specific folder path names into a module's setti
 your pipeline will not work on someone else's computer until you adjust those
 pathnames within each module.</p>
 
-<p>Use the <i>Browse</i> button <img src="memory:%(LOCATION_BROWSE_BUTTON)s"></img> to specify 
+<p>Use the <i>Browse</i> button <img src="memory:%(LOCATION_BROWSE_BUTTON)s"></img>&nbsp;to specify 
 the folder you would like to use as the Default Input Folder, or 
 type the full folder path in the edit box. If you type a folder path that  
 cannot be found, the message box below will indicate this fact until you correct the problem. 
@@ -490,7 +491,7 @@ best way to learn how to use CellProfiler is to load an example pipeline
 from the CellProfiler website's Examples page and try it out, then adapt it for 
 your own images. You can also build a 
 pipeline from scratch. Click the <i>Help</i> <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s">
-</img> button in the main window to get
+</img>&nbsp;button in the main window to get
 help for a specific module.</p>
 
 <p>To adjust the CellProfiler source code, see <i>Help > Developer's Guide</i>. 
@@ -520,7 +521,7 @@ left-hand side of the CellProfiler window).</p>
 <ol>
 <li><p><i>Place modules in a new pipeline.</i><br>
 Choose image analysis modules to add to your pipeline by clicking the <i>Add</i> 
-<img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button
+<img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;button
 (located underneath the pipeline panel) or right-clicking in the pipeline panel
 itself and selecting a module from the 
 pop-up box that appears. You can learn more about each module by clicking
@@ -530,7 +531,7 @@ adjust their order in the main window by dragging and dropping them, or by selec
 modules, using the <i>Shift</i> key) and using the <i>Move module up</i> 
 <img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> and <i>Move module down</i> 
 <img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> buttons. 
-The <i>Remove module</i> <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button will 
+The <i>Remove module</i> <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img>&nbsp;button will 
 delete the selected module(s) from the pipeline.</p> 
 <p>Typically, the first module you must run is 
  <b>LoadImages</b>, in which you specify the identity of the images 
@@ -560,18 +561,18 @@ data in a format you prefer.</p></li>
 
 <li><p><i>Adjust the settings in each module.</i><br>
 In the CellProfiler main window, click a module in the pipeline to see its 
-settings in the main workspace. To learn more about the settings for each 
+settings in the settings panel. To learn more about the settings for each 
 module, select the module in the pipeline and click the <i>Help</i> button to the 
 right of each setting, or at the bottom of the pipeline panel
 for the help for all the settings for that module.</p>
 <p>If there is an error with the settings (e.g., a setting refers to an image 
 that doesn't exist yet), 
-a <img src="memory:%(LOCATION_SETTINGS_ERROR_ICON)s"></img>  icon will appear next to the 
+a <img src="memory:%(LOCATION_SETTINGS_ERROR_ICON)s"></img>&nbsp;icon will appear next to the 
 module name. If there is a warning (e.g., a special notification attached to a choice of setting), 
-a <img src="memory:%(LOCATION_SETTINGS_WARNING_ICON)s"></img>  icon will appear. Errors
+a <img src="memory:%(LOCATION_SETTINGS_WARNING_ICON)s"></img>&nbsp;icon will appear. Errors
 will cause the pipeline to fail upon running, whereas a warning will not. Once 
 the errors/warnings have been resolved, a <img src="memory:%(LOCATION_SETTINGS_OK_ICON)s">
-</img>  icon will appear indicating that the module is ready to run.</p>
+</img>&nbsp;icon will appear indicating that the module is ready to run.</p>
 </li>
 <li><p><i>Set your Default Input Folder, Default Output Folder and output filename.</i><br>
 For more help, click their nearby <i>Help</i> buttons in the main window. </p></li>
@@ -582,13 +583,13 @@ and settings you have specified. A status window will appear which has the follo
 <ul>
 <li>A <i>progress bar</i> which gives the elapsed time and estimates the time remaining to 
 process the full image set.</li>
-<li>A <i>pause button</i> <img src="memory:%(LOCATION_RUNSTATUS_PAUSE_BUTTON)s"></img> 
+<li>A <i>pause button</i> <img src="memory:%(LOCATION_RUNSTATUS_PAUSE_BUTTON)s"></img>&nbsp;
 which pauses execution and allows you to subsequently 
 resume the analysis.
-<li>A <i>stop button</i> <img src="memory:%(LOCATION_RUNSTATUS_STOP_BUTTON)s"></img> 
+<li>A <i>stop button</i> <img src="memory:%(LOCATION_RUNSTATUS_STOP_BUTTON)s"></img>&nbsp;
 which cancels execution after prompting you for a place to
 save the measurements collected to that point.</li>
-<li>A <i>save measurements</i> button <img src="memory:%(LOCATION_RUNSTATUS_SAVE_BUTTON)s"></img> 
+<li>A <i>save measurements</i> button <img src="memory:%(LOCATION_RUNSTATUS_SAVE_BUTTON)s"></img>&nbsp;
 which will prompt you for a place to
 save the measurements collected to that point while continuing the analysis run.</li>
 </ul> 
@@ -715,9 +716,9 @@ with the exception of any you specify. Please see the
 Each module is associated with a display window that takes time to render and/or
 update. Closing these windows improves speed somewhat. 
 To the left of each module listed in your pipeline an icon 
-<img src="memory:%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img> indicates whether
+<img src="memory:%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img>&nbsp;indicates whether
 the module window will be displayed during the analysis run. You can turn off individual module windows by
-clicking on the icon; this icon <img src="memory:%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img> indicates that the window 
+clicking on the icon; this icon <img src="memory:%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>&nbsp;indicates that the window 
 will not be shown. Select <i>Window > Hide all windows on run</i> to prevent display
 of all module windows.</p></li>           
                                                                             
@@ -740,7 +741,7 @@ image, preview the results and adjust the module settings on the fly.</p>
 menu bar in the main window. At this point, you will see the following features appear:
 <ul>
 <li>The module view will have a slider bar appearing on the far left.</li>
-<li>A Pause icon <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img> will appear to the left of each module.</li>
+<li>A Pause icon <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img>&nbsp;will appear to the left of each module.</li>
 <li>A series of buttons will appear at the bottom of the pipeline panel above the 
 module adjustment buttons.</li>
 <li>The grayed-out items in the <i>Test</i> menu will become active, and the 
@@ -761,15 +762,15 @@ been produced yet. To avoid this, it is best to actually run the pipeline up to 
 of interest, and move the slider to modules already executed.
 <li><i>Pause:</i> Clicking the pause icon will cause the pipeline test run to halt
 execution when that module is reached (the paused module itself is not executed). The icon 
-changes from <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img> to 
-<img src="memory:%(LOCATION_TESTMODE_PAUSE_ICON)s"></img> to indicate that a pause has 
+changes from <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img>&nbsp;to 
+<img src="memory:%(LOCATION_TESTMODE_PAUSE_ICON)s"></img>&nbsp;to indicate that a pause has 
 been inserted at that point.</li>
 <li><i>Run:</i> Execution of the pipeline will be started/resumed until
 the next module pause is reached. When all modules have been executed for a given image cycle,
 execution will stop.</li>
 <li><i>Step:</i> Execute the next module (as indicated by the slider location)</li>
 <li><i>Next Image:</i> Skip ahead to the next image cycle as determined by the image 
-order in <b>LoadImages</b>/<b>LoadData</b>. The slider will automatically return to the 
+order in the Input modules. The slider will automatically return to the 
 first module in the pipeline.</li>
 </ul>
 </p>
@@ -785,7 +786,7 @@ modules will also automatically exit test mode.</li>
 The slider will then automatically return to the first module in the pipeline.</li>
 <li><i>Choose Image Group:</i> Choose the group to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
-<li><i>Reload Modules Source:</i> For developers only. This option will reload the module source 
+<li><i>Reload Modules Source (for developers only):</i> This option will reload the module source 
 code, so any changes to the code will be reflected immediately.</li>
 </ul>
 Note that if movies are being loaded, the individual movie is defined as a group automatically.
@@ -801,14 +802,14 @@ module settings, you are ready to run the pipeline on your entire set of images.
 do this:
 <ul>
 <li>Exit Test mode by clicking the "Exit Test Mode" button or selecting <i>Test > Exit Test Mode</i>.</li>
-<li>Click the "<img src="memory:%(LOCATION_ANALYZE_IMAGE_BUTTON)s"></img> Analyze Images" button and begin processing your data sets.</li>
+<li>Click the "<img src="memory:%(LOCATION_ANALYZE_IMAGE_BUTTON)s"></img>&nbsp;Analyze Images" button and begin processing your data sets.</li>
 </ul>
 During the analysis run, the progress will appear in the status bar at the bottom of CellProfiler. It will
 show you the total number of image sets, the number of image sets completed, the time elapsed and the approximate 
 time remaining in the run.
-<p>If you need to pause analysis, click the "<img src="memory:%(LOCATION_PAUSE_ANALYSIS_BUTTON)s"></img> Pause" button, then click the 
+<p>If you need to pause analysis, click the "<img src="memory:%(LOCATION_PAUSE_ANALYSIS_BUTTON)s"></img>&nbsp;Pause" button, then click the 
 "Resume" button to continue. If you
-want to terminate analysis, click the "<img src="memory:%(LOCATION_STOP_ANALYSIS_BUTTON)s"></img> Stop analysis" button.</p>
+want to terminate analysis, click the "<img src="memory:%(LOCATION_STOP_ANALYSIS_BUTTON)s"></img>&nbsp;Stop analysis" button.</p>
 <p>If your computer has multiple processors, CellProfiler will take advantage of them by starting multiple copies
 of itself to process the image sets in parallel. You can set the number of <i>workers</i> (i.e.,copies of 
 CellProfiler activated) under <i>File > Preferences...</i></p>
@@ -874,7 +875,7 @@ about which settings are appropriate.</li>
 <li><i>Analyze your images to create a batch file.</i> Click the <i>Analyze images</i>
 button and the analysis will begin local processing. Do not be surprised if this initial step
 takes a while since CellProfiler must first create the entire image set list based
-on your settings in the workspace modules (this process can be sped
+on your settings in the Input modules (this process can be sped
 up by creating your list of images as a CSV and using the <b>LoadData</b> module to load it).
 <p>At the end of processing the first cycle locally, the <b>CreateBatchFiles</b>
 module halts execution, creates the proper batch file (a file called 
@@ -1095,12 +1096,12 @@ MENU_BAR_FILE_HELP = """
 The <i>File</i> menu provides options for loading and saving your pipelines and 
 performing an analysis run.
 <ul>
-<li><b>New project:</b> Clears the current workspace by removing all the analysis
+<li><b>New project:</b> Clears the current project by removing all the analysis
 modules and resetting the input modules.</li>
 <li><b>Open Project...:</b> Open a previously saved CellProfiler project (.cpi file)
 from your hard drive.</li>
-<li><b>Open Recent:</b> Lets you select a project file to open from a list of 
-recently opened projects.</li>
+<li><b>Open Recent:</b> Displays a list of the most recent projects used. Select any
+one of these projects to load it.</li>
 <li><b>Save Project:</b> Save the current project to your hard drive as a .cpi file. 
 If it has not been saved previously, you will be asked for a file name to give the 
 project. Thereafter, any changes to the project will be automatically saved to that filename unless
@@ -1108,14 +1109,12 @@ you choose <b>Save as...</b>.</li>
 <li>Save Project As...:</b> Save the project to a new file name.</li>
 <li><b>Revert to Saved:</b> Restore the currently open project to the settings it had when
 it was first opened.</li>
-<li><b>Load Pipeline...:</b> Load a CellProfiler pipeline (.cp or .mat) file from 
-your hard drive.</li>
-<li><b>Load Pipeline from URL:</b> Load a CellProfiler pipeline from a web address 
-(i.e., http://...)</li>
-<li><b>Save Pipeline:</b> Save the pipeline you are currently working on as a 
-CellProfiler .cp pipeline file.</li>
-<li><b>Save Pipeline as...:</b> Prompts the user for a filename to save the 
-pipeline as.</li>
+<li><b>Import Pipeline:</b> Gives you the choice of importing a CellProfiler pipeline file from 
+your hard drive. (<i>From file...</i>) or from a web address (<i>From URL...</i>). If importing from
+a file, you can either import a previously exported pipeline (.cp) file or extract it from
+a prior project (.cpi) file.</li>
+<li><b>Export:</b> You have the choice of exporting the pipeline you are currently working on as a 
+CellProfiler .cp pipeline file (<i>Pipeline</i>), or the image file list as a .csv (<i>Image file listing</i>).</li>
 <li><b>Clear Pipeline:</b> Removes all modules from the current pipeline.</li>
 <li><b>View Image:</b> Opens a dialog box prompting you to select an image file for
 display. Images listed in the File list panel in the <b>Images</b> module can be also be displayed by double-clicking 
@@ -1133,11 +1132,6 @@ containing the partially complete measurements and the analysis run will pick up
 starting with the last cycle that was processed. </li>
 <li><b>Preferences...:</b> Displays the Preferences window, where you can change 
 many options in CellProfiler.</li>
-<li><b>Check for updates...:</b> Displays a dialog which lets you know whether your
-installation of CellProfiler is the latest version and if not, notifies you
-as what version is available from CellProfiler website.</li>
-<li><b>Recent:</b> Displays a list of the most recent pipelines loaded. Select any
-one of these pipelines to load it.</li>
 <li><b>Exit:</b></b> End the current CellProfiler session. You will be given the option
 of saving your current pipeline if you have not done so.</li>
 </ul>"""
@@ -1147,19 +1141,19 @@ The <i>Edit</i> menu provides options for modifying modules in your current pipe
 <ul>
 <li><b>Undo:</b> Undo your previous module modification.</li>
 <li><b>Move Module Up:</b> Move the currently selected module(s) up in the module list. You
-can also use the <img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> button located
+can also use the <img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img>&nbsp;button located
 below the Pipeline panel.</li>
 <li><b>Move Module Down:</b> Move the currently selected module(s) down in the module list. You
-can also use the <img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> button located
+can also use the <img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img>&nbsp;button located
 below the Pipeline panel.</li>
 <li><b>Delete Module:</b> Remove the currently selected module(s) from the module list. 
 Pressing the Delete key also removes the module(s). You
-can also use the <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img> button located
+can also use the <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img>&nbsp;button located
 under the Pipeline panel.</li>
 <li><b>Duplicate Module:</b> Duplicate the currently selected module(s) in the pipeline.
 The current settings of the selected module(s) are retained in the duplicate.</li>
 <li><b>Add Module:</b> Select a module from the pop-up list to inster into the current
-pipeline. You can also use the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button located
+pipeline. You can also use the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;button located
 under the Pipeline panel.</li>
 </ul>
 You can select multiple modules at once for moving, deletion and duplication 
@@ -1257,8 +1251,8 @@ All figure windows come with a navigation toolbar, which can be used to navigate
 <ul>
 <li><b>Home, Forward, Back buttons:</b>
 <i>Home</i> <img src="memory:%(LOCATION_WINDOW_HOME_BUTTON)s"></img> always takes you to 
-the initial, default view of your data. The <i>Forward</i> <img src="memory:%(LOCATION_WINDOW_FORWARD_BUTTON)s"></img>
-and <i>Back</i> <img src="memory:%(LOCATION_WINDOW_BACK_BUTTON)s"></img> buttons are akin 
+the initial, default view of your data. The <i>Forward</i> <img src="memory:%(LOCATION_WINDOW_FORWARD_BUTTON)s"></img>&nbsp;
+and <i>Back</i> <img src="memory:%(LOCATION_WINDOW_BACK_BUTTON)s"></img>&nbsp;buttons are akin 
 to the web browser forward and back buttons in that they are used to navigate back 
 and forth between previously defined views, one step at a time. They will not be 
 enabled unless you have already navigated within an image else using 
@@ -1283,14 +1277,15 @@ clicking off the plot. This is a known bug to be corrected in the next release.<
 </ul>
 </li>
 
-<li><b>Zoom-to-rectangle button:</b> Click this toolbar button <img src="memory:%(LOCATION_WINDOW_ZOOMTORECT_BUTTON)s"></img> 
+<li><b>Zoom-to-rectangle button:</b> Click this toolbar button <img src="memory:%(LOCATION_WINDOW_ZOOMTORECT_BUTTON)s"></img>&nbsp;
 to activate this mode. To zoom in, press the left mouse button and drag in the window 
 to draw a box around the area you want to zoom in on. When you release the mouse button, 
 the image is re-drawn to display the specified area. Remember that you can always use 
 <i>Backward</i> button to go back to the previous zoom level, or use the <i>Home</i> 
 button to reset the window to the initial view.</li>
 
-<li><b>Save:</b> Click this button <img src="memory:%(LOCATION_WINDOW_SAVE_BUTTON)s"></img>to launch a file save dialog. You can save the 
+<li><b>Save:</b> Click this button <img src="memory:%(LOCATION_WINDOW_SAVE_BUTTON)s"></img>&nbsp;
+to launch a file save dialog. You can save the 
 figure window to a file (currently, Postscript (.PS), PNGs and PDFs are supported). 
 Note that this will save the entire contents of the window, not just the individual 
 subplot(s) or images.</li>
@@ -1504,12 +1499,12 @@ PREFERENCES_HELP += """</ul>"""
 
 #########################################################
 #
-# Help re: workspaces
+# Help re: projects
 #
 #########################################################
-INTRODUCTION_TO_WORKSPACES_HELP = """
-<h3>What is a workspace?</h3>
-<p>In CellProfiler, a <i>workspace</i> comprises two elements:<br>
+INTRODUCTION_TO_PROJECTS_HELP = """
+<h3>What is a project?</h3>
+<p>In CellProfiler, a <i>project</i> is comprised of two elements:<br>
 <ul>
 <li>An <i>image file list</i> which is the list of files and their locations that are selected by the user as 
 candidates for analysis.</li>
@@ -1522,8 +1517,8 @@ analyze a set of images.</li>
 </ul>
 </p>
 
-<h3>Why would I want to use workspaces?</h3>
-<p>The workspace is the container for image information associated with a CellProfiler analysis. It stores
+<h3>Why would I want to use projects?</h3>
+<p>The project is the container for image information associated with a CellProfiler analysis. It stores
 such details as: 
 <ul>
 <li>What type of image(s) are the input files?</li>
@@ -1533,17 +1528,14 @@ represented?</li>
 <li>What information about the images and/or experiment is linked to the images, and how?</li>
 <li>Are certain groups of images to be processed differently from other groups?</li>
 </ul>
-You might consider the workspace to be a "project" file after a fashion. By using workspaces, 
-the above information is stored along with the analysis pipeline and is
+By using projects, the above information is stored along with the analysis pipeline and is
 avilable on demand. </p>
 
-<h3>Working with workspaces</h3>
-<h4>Creating a workspace</h4>
-<p>Upon starting CellProfiler, you will be prompted whether to create a new workspace, or open
-the workspace last used, or open another one entirely. If you request a new workspace, you will be
-asked to provide a filename and location for it. </p>
-<p>At this point, you may start building your workspace by using the modules located in "Create
-workspace" panel on the upper-left. The modules are:
+<h3>Working with projects</h3>
+<h4>Creating a project</h4>
+<p>Upon starting CellProfiler, you will be presented with a new, blank project.
+At this point, you may start building your project by using the modules located in "Input
+modules" panel on the upper-left. The modules are:
 <ul>
 <li><b>Images</b>: Assemble the relevant images for analysis (required).</li>
 <li><b>Metadata</b>: Asociate metadata with the images (optional).</li>
@@ -1553,32 +1545,31 @@ workspace" panel on the upper-left. The modules are:
 Detailed help for each module is provided by selecting the module and clicking the "?" button on 
 the bottom of CellProfiler.</p>
 
-<h4>Saving a workspace</h4>
-<p>As you work in CellProfiler, the workspace is updated automatically, so there is no need to
-save it unless you are saving the workspace to a new name or location. You can always save your 
-current work to a new workspace file by selecting <i>File > New 
-workspace...</i> or <i>File > Save as...</i> and selecting "Save pipeline and workspace (.cpi)". 
-Selecting either option with save your workspace, along with the current pipeline, to a file with 
+<h4>Saving a project</h4>
+<p>As you work in CellProfiler, the project is updated automatically, so there is no need to
+save it unless you are saving the project to a new name or location. You can always save your 
+current work to a new project file by selecting <i>File > Save Project As...</i>, which will
+save your project, complete with the current image file list and pipeline, to a file with 
 with the extension <i>.cpi</i>.</p>
 <p>For those interested, some technical details:
 <ul>
 <li>The .cpi file stores collected information using the HDF5 format. Documentation on
 how measurements are stored and handled in CellProfiler using this format can be found 
 <a href="https://github.com/CellProfiler/CellProfiler/wiki/Module-Structure-and-Data-Storage-Retrieval#hdf5-measurement-and-workspace-format">here</a>.</li>
-<li>All information is cached in the workspace file after it is computed. It is either
+<li>All information is cached in the project file after it is computed. It is either
 re-computed or retrieved from the cache when an analysis run is started, when 
 entering Test mode, or when the user requests a refreshed view of the information
 (e.g., when a setting has been changed).</li>
 </ul>
 </p>
 
-<h4>Legacy workspace modules: LoadImages and LoadData</h4>
-<p>Historically, two modules were used for workspace creation: <b>LoadImages</b> and <b>LoadData</b>.
+<h4>Legacy modules: LoadImages and LoadData</h4>
+<p>Historically, two modules were used for project creation: <b>LoadImages</b> and <b>LoadData</b>.
 While the approach described above supercedes these modules in part, old pipelines
 loaded into CellProfiler that contain these modules will provide the option of preserving them;
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these 
-modules into the workspace equivalent as closely as possible. Both modules remain accesible
+modules into the project equivalent as closely as possible. Both modules remain accesible
 via the "Add module" and "+" buttons at the bottom of the pipeline panel.</p>
 """
 
@@ -1654,7 +1645,7 @@ For the above example, you could do the following:
 <li>Make a new rule <code>[Metadata][Does][Have Stain matching][phase]</code> and name it <i>OrigPhase</i>.
 <li>In the "Assign channel by" setting, select "Metadata".</li>
 <li>Select "Well" for the <i>OrigFluor</i>, <i>OrigFluo2</i> and <i>OrigPhase</i> channels.</li>
-<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
+<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;button to the right to add another row,
 and select "Frame" for each channel.</li>
 <li>Click "Update table" to confirm the channel matching. The corresponding well and frame for each
 channel should be matched to each other.</li>
@@ -1726,7 +1717,7 @@ multiple channels, you will need to do this for each channel.
 <li>Click the "Add" button to add another rule.</li>
 <li>In the "Assign channel by" setting, select "Metadata".</li>
 <li>Select "Z" for the <i>OrigDAPI</i> and <i>OrigGFP</i> channels.</li>
-<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img> button to the right to add another row,
+<li>Click the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;button to the right to add another row,
 and select "T" for each channel.</li>
 <li>Click "Update table" to confirm the channel matching. The corresponding <i>Z</i> and <i>T</i> for each
 channel should be matched to each other.</li>
@@ -1856,8 +1847,8 @@ MAIN_HELP = (
         ("Using The Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
     ("Using Module Display Windows", FIGURE_HELP ),
     ("Setting the Preferences", PREFERENCES_HELP),
-    ("Creating A Workspace",(
-        ("Introduction To Workspaces",INTRODUCTION_TO_WORKSPACES_HELP),
+    ("Creating A Project",(
+        ("Introduction To Projects",INTRODUCTION_TO_PROJECTS_HELP),
         ("Using The Images Module",images.__doc__),
         ("Using The Metadata Module",metadata.__doc__),
         ("Using The NamesAndTypes Module",namesandtypes.__doc__),
@@ -1868,7 +1859,7 @@ MAIN_HELP = (
     ("Running Your Pipeline", RUNNING_YOUR_PIPELINE_HELP),    
     ("Using Your Output", (
         ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP),
-        ("Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
+        ("Using Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
         ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),   
     ("Troubleshooting Memory and Speed Issues",MEMORY_AND_SPEED_HELP),
     ("Other Features",(

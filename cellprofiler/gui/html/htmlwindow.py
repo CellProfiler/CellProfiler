@@ -21,6 +21,7 @@ import urllib
 import urllib2
 import cellprofiler.preferences as cpprefs
 from cellprofiler.icons import get_builtin_images_path
+from cellprofiler.gui.html.content import WELCOME_HELP
 
 MEMORY_SCHEME = "memory:"
 class HtmlClickableWindow(wx.html.HtmlWindow):
@@ -42,6 +43,12 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
                 cpprefs.set_startup_blurb(False)
                 self.SetPage('')
                 self.BackgroundColour = cpprefs.get_background_color()
+        elif href.startswith('help:'):
+            href = linkinfo.Href[7:]
+            html_str = WELCOME_HELP[href]
+            html_str += '<p>Go <a href="startup_main">back</a> to the welcome screen.</p>'
+            self.SetPage(html_str)
+            self.BackgroundColour = cpprefs.get_background_color()
         elif href.startswith('load:'):
             pipeline_filename = href[5:]
             try:

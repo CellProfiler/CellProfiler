@@ -1,8 +1,7 @@
 '''<b>Align</b> aligns images relative to each other, for example, to correct 
 shifts in the optical path of a microscope in each channel of a multi-channel 
-set of images
+set of images.
 <hr>
-
 For two or more input images, this module determines the optimal alignment 
 among them. Aligning images is useful to obtain proper measurements of the 
 intensities in one channel based on objects identified in another channel, 
@@ -18,7 +17,6 @@ on how each image is transformed).
 <li><i>XShift, Yshift:</i> The pixel shift in X and Y of the  
 aligned image with respect to the original image.</li>
 </ul>
-
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -65,17 +63,17 @@ class Align(cpm.CPModule):
     def create_settings(self):
         self.first_input_image = cps.ImageNameSubscriber("Select the first input image",
                                                          "None",doc="""
-                                                         What is the name of the first image to align?""")
+                                                         Specify the name of the first image to align.""")
         self.first_output_image = cps.ImageNameProvider("Name the first output image",
                                                         "AlignedRed",doc="""
-                                                        What is the name of the first aligned image?""")
+                                                        Enter the name of the first aligned image.""")
         self.separator_1 = cps.Divider(line=False)
         self.second_input_image = cps.ImageNameSubscriber("Select the second input image",
                                                           "None",doc="""
-                                                          What is the name of the second image to align?""")
+                                                         Specify the name of the second image to align.""")
         self.second_output_image = cps.ImageNameProvider("Name the second output image",
                                                          "AlignedGreen",doc="""
-                                                         What is the name of the second aligned image?""")
+                                                         Enter the name of the second aligned image.""")
         self.separator_2 = cps.Divider(line=False)
         self.additional_images = []
         self.add_button = cps.DoSomething("", "Add another image",
@@ -119,20 +117,20 @@ class Align(cpm.CPModule):
             are three choices for cropping:
             <br>
             <ul>
-            <li><i>%(C_CROP)s</i> - crop every image to the region that overlaps 
+            <li><i>%(C_CROP)s:</i> Crop every image to the region that overlaps 
             in all images. This makes downstream
             analysis simpler and more accurate because all of the output images
             have authentic pixel data at all positions, however it discards
             parts of images. Also, the output images may not be the same size
             as the input images which may cause problems if downstream modules
             use aligned and unaligned images in combination.</li>
-            <li><i>%(C_PAD)s</i> - align every image and pad with masked black
+            <li><i>%(C_PAD)s:</i> Align every image and pad with masked black
             pixels to make each image the same size. This results in larger
             images, but preserves all information in each of the images. This
             may be the best choice if images undergo an operation such as
             smoothing that could use the information that would otherwise be
             cropped.</li>
-            <li><i>%(C_SAME_SIZE)s</i> - maintain the sizes of the images but
+            <li><i>%(C_SAME_SIZE)s:</i> Maintain the sizes of the images but
             align them, masking the unaligned portions with black pixels. 
             <b>Align</b> aligns all images relative to the first. 
             This is a reasonable option for alignments
@@ -143,7 +141,7 @@ class Align(cpm.CPModule):
             the reference image could be loaded for all image sets in a
             group to align the entire group's images similarly, then the
             aligned images could be combined in a module such as
-            <b>MakeProjection</b></li>
+            <b>MakeProjection</b>.</li>
             </ul>""" % globals())
                                                                               
     def add_image(self, can_remove = True):

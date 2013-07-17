@@ -1,8 +1,10 @@
-'''<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features (such as speckles, ring shapes, and neurites), which can improve subsequent identification of objects
+'''<b>Enhance Or Suppress Features</b> enhances or suppresses certain image features 
+(such as speckles, ring shapes, and neurites), which can improve subsequent 
+identification of objects.
 <hr>
-
 This module enhances or suppresses the intensity of certain pixels relative
-to the rest of the image, by applying image processing filters to the image. It produces a grayscale image in which objects can be identified using an <b>Identify</b> module.
+to the rest of the image, by applying image processing filters to the image. It 
+produces a grayscale image in which objects can be identified using an <b>Identify</b> module.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -48,29 +50,34 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
     variable_revision_number = 4
     
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber('Select the input image',
+        self.image_name = cps.ImageNameSubscriber(
+            'Select the input image',
             'None',doc="""
-            What did you call the image with features to be enhanced or suppressed?""")
+            Select the image with features to be enhanced or suppressed.""")
         
-        self.filtered_image_name = cps.ImageNameProvider('Name the output image',
+        self.filtered_image_name = cps.ImageNameProvider(
+            'Name the output image',
             'FilteredBlue',doc="""
-            What do you want to call the feature-enhanced or suppressed image?""")
+            Enter a name for the feature-enhanced or suppressed image.""")
         
         self.method = cps.Choice(
             'Select the operation',
-            [ ENHANCE, SUPPRESS],
-            doc="""
-            Do you want to enhance or suppress the features you designated?
-            <ul><li><i>Enhance</i> produces an image whose intensity is largely 
+            [ ENHANCE, SUPPRESS], doc="""
+            Select whether you want to enhance or suppress the features you designated.
+            <ul>
+            <li><i>%(ENHANCE)s:</i> Produce an image whose intensity is largely 
             composed of the features of interest.</li>
-            <li>Choose <i>Suppress</i> to produce an image with the features largely
-            removed.</li></ul>""")
+            <li <i>%(SUPPRESS)s:</i> Produce an image with the features largely
+            removed.</li>
+            </ul>"""%globals())
         
-        self.enhance_method = cps.Choice('Feature type',
-            [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],
-            doc="""<i>(Used only if Enhance is selected)</i><br>
+        self.enhance_method = cps.Choice(
+            'Feature type',
+            [E_SPECKLES, E_NEURITES, E_DARK_HOLES, E_CIRCLES, E_TEXTURE, E_DIC],doc="""
+            <i>(Used only if %(ENHANCE)s is selected)</i><br>
             This module can enhance three kinds of image intensity features:
-            <ul><li><i>Speckles</i>: A speckle is an area of enhanced intensity
+            <ul>
+            <li><i>%(E_SPECKLES)s:</i> A speckle is an area of enhanced intensity
             relative to its immediate neighborhood. The module enhances
             speckles using a white tophat filter, which is the image minus the
             morphological grayscale opening of the image. The opening operation
@@ -80,11 +87,11 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             approximation of their former shape. The white tophat filter enhances 
             speckles by subtracting the effects of opening from the original image.
             </li>
-            <li><i>Neurites</i>: Neurites are taken to be long, thin features
+            <li><i>%(E_NEURITES)s:</i> Neurites are taken to be long, thin features
             of enhanced intensity. Choose this option to enhance the intensity
             of the neurites using the %(N_GRADIENT)s or %(N_TUBENESS)s methods
             described below.</li>
-            <li><i>Dark holes</i>: The module uses morphological reconstruction 
+            <li><i>%(E_DARK_HOLES)s:</i> The module uses morphological reconstruction 
             (the rolling-ball algorithm) to identify dark holes within brighter
             areas, or brighter ring shapes. The image is inverted so that the dark holes turn into
             bright peaks. The image is successively eroded and the eroded image
@@ -93,7 +100,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             from the previous reconstructed image. This leaves circular bright
             spots with a radius equal to the number of iterations performed.
             </li>
-            <li><i>Circles</i>: The module calculates the circular Hough transform of
+            <li><i>%(E_CIRCLES)s:</i> The module calculates the circular Hough transform of
             the image at the diameter given by the feature size. The Hough transform
             will have the highest intensity at points that are centered within a ring
             of high intensity pixels where the ring diameter is the feature size. You
@@ -102,68 +109,71 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             use <b>IdentifyPrimaryObjects</b> to find the circle centers and then use
             these centers as seeds in <b>IdentifySecondaryObjects</b> to find whole,
             circular objects using a watershed.</li>
-            <li><i>Texture</i>: <b>EnanceOrSuppressFeatures</b> produces an image
+            <li><i>%(E_TEXTURE)s:</i> <b>EnanceOrSuppressFeatures</b> produces an image
             whose intensity is the variance among nearby pixels. This method weights
             pixel contributions by distance using a Gaussian to calculate the weighting.
             You can use this method to separate foreground from background if the foreground
             is textured and the background is not.
             </li>
-            <li><i>DIC</i>: This method recovers the optical density of a DIC image by
+            <li><i>%(E_DIC)s:</i> This method recovers the optical density of a DIC image by
             integrating in a direction perpendicular to the shear direction of the image.
             </li>
             </ul>
             In addition, this module enables you to suppress certain features (such as speckles)
             by specifying the feature size.""" % globals())
         
-        self.object_size = cps.Integer('Feature size',
-            10,2,doc="""
+        self.object_size = cps.Integer(
+            'Feature size', 10,2,doc="""
             <i>(Used only if circles, speckles or neurites are selected, or if suppressing features)</i><br>
             What is the feature size? 
             The diameter of the largest speckle, the width of the circle
             or the width of the neurites to be enhanced or suppressed, which
             will be used to calculate an adequate filter size. %(HELP_ON_PIXEL_INTENSITIES)s"""%globals())
 
-        self.hole_size = cps.IntegerRange('Range of hole sizes',
-            value=(1,10),minval=1, doc="""
-            <i>(Used only if dark hole detection is selected)</i><br>
+        self.hole_size = cps.IntegerRange(
+            'Range of hole sizes', value=(1,10),minval=1, doc="""
+            <i>(Used only if %(E_DARK_HOLES)s is selected)</i><br>
             The range of hole sizes to be enhanced. The algorithm will
             identify only holes whose diameters fall between these two 
-            values""")
+            values."""%globals())
 
         self.smoothing = cps.Float(
-            'Smoothing scale', value = 2.0, minval = 0.1,
-            doc = """<i>(Used only for the texture, DIC or neurite methods)</i><br>
-            For texture, this is the scale of the texture features, roughly
+            'Smoothing scale', value = 2.0, minval = 0.1,doc = """
+            <i>(Used only for the %(E_TEXTURE)s, %(E_DIC)s or %(E_NEURITES)s methods)</i><br>
+            <ul>
+            <li><i>%(E_TEXTURE)s</i>: This is the scale of the texture features, roughly
             in pixels. The algorithm uses the smoothing value entered as
             the sigma of the Gaussian used to weight nearby pixels by distance
-            in the variance calculation.<br>
-            The DIC method smooths the image in the direction parallel to the
+            in the variance calculation.</li>
+            <li><i>%(E_DIC)s:</i> Specifies the amount of smoothing of the image in the direction parallel to the
             shear axis of the image. The line integration method will leave
             streaks in the image without smoothing as it encounters noisy
             pixels during the course of the integration. The smoothing takes
             contributions from nearby pixels which decreases the noise but
-            smooths the resulting image. For DIC, increase the smoothing to
+            smooths the resulting image. </li>
+            <li><i>%(E_DIC)s:</i> Increase the smoothing to
             eliminate streakiness and decrease the smoothing to sharpen
-            the image.<br>
-            The %(N_TUBENESS)s option of the neurite method uses this scale
+            the image.</li>
+            <li><i>%(E_NEURITES)s:</i> The <i>%(N_TUBENESS)s</i> option uses this scale
             as the sigma of the Gaussian used to smooth the image prior to
-            gradient detection.""" % globals())
+            gradient detection.</li>
+            </ul>""" % globals())
         
         self.angle = cps.Float(
-            'Shear angle', value = 0,
-            doc = """<i>(Used only for the DIC method)</i><br>
+            'Shear angle', value = 0,doc = """
+            <i>(Used only for the %(E_DIC)s method)</i><br>
             The shear angle is the direction of constant value for the
             shadows and highlights in a DIC image. The gradients in a DIC
             image run in the direction perpendicular to the shear angle.
             For example, if the shadows run diagonally from lower left
             to upper right and the highlights appear above the shadows,
-            the shear angle is 45 degrees. If the shadows appear on top,
-            the shear angle is 180 + 45 = 225 degrees.
-            """)
+            the shear angle is 45&deg;. If the shadows appear on top,
+            the shear angle is 180&deg; + 45&deg; = 225&deg;.
+            """%globals())
         
         self.decay = cps.Float(
-            'Decay', value = .95, minval = 0.1, maxval = 1,
-            doc = """<i>(Used only for the DIC method)</i><br>
+            'Decay', value = 0.95, minval = 0.1, maxval = 1,doc = 
+            """<i>(Used only for the %(E_DIC)s method)</i><br>
             The decay setting applies an exponential decay during the process
             of integration by multiplying the accumulated sum by the decay
             at each step. This lets the integration recover from accumulated
@@ -172,13 +182,15 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             Set the decay to a large value, on the order of 1 - 1/diameter
             of your objects if the intensities decrease toward the middle.
             Set the decay to a small value if there appears to be a bias
-            in the integration direction.""")
+            in the integration direction."""%globals())
         
         self.neurite_choice = cps.Choice(
-            "Enhancement method", [N_TUBENESS, N_GRADIENT],
-            doc = """<i>(Used only for the neurites method)</i><br>
+            "Enhancement method", 
+            [N_TUBENESS, N_GRADIENT],doc = """
+            <i>(Used only for the %(E_NEURITES)s method)</i><br>
             Two methods can be used to enhance neurites:<br>
-            <ul><li><i>%(N_TUBENESS)s</i>: This method is an adaptation of
+            <ul>
+            <li><i>%(N_TUBENESS)s</i>: This method is an adaptation of
             the method used by the <a href="http://www.longair.net/edinburgh/imagej/tubeness/">
             ImageJ Tubeness plugin</a>. The image
             is smoothed with a Gaussian. The Hessian is then computed at every
@@ -194,8 +206,8 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             white and black tophat filters (a white tophat filtering is the image minus 
             the morphological grayscale opening of the image; a black tophat filtering is the 
             morphological grayscale closing of the image minus the image). 
-            The effect is to enhance lines whose width is the "feature size".
-            </li></ul>"""%globals())
+            The effect is to enhance lines whose width is the "feature size".</li>
+            </ul>"""%globals())
         
     def settings(self):
         return [ self.image_name, self.filtered_image_name,

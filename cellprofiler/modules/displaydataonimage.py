@@ -1,7 +1,6 @@
 '''<b>Display Data On Image</b> 
-produces an image with measured data on top of identified objects
+produces an image with measured data on top of identified objects.
 <hr>
-
 This module displays either a single image measurement on an image of
 your choosing, or one object measurement per object on top
 of every object in an image. The display itself is an image which you
@@ -60,14 +59,18 @@ class DisplayDataOnImage(cpm.CPModule):
         """
         self.objects_or_image = cps.Choice(
             "Display object or image measurements?",
-            [OI_OBJECTS, OI_IMAGE],
-            doc = """<ul><li> <i>Image</i> displays a single measurement made
-            on an image.</li> <li><i>Object</i> displays measurements made on
-            objects.</li></ul>""")
+            [OI_OBJECTS, OI_IMAGE],doc = """
+            <ul>
+            <li><i>%(OI_OBJECTS)s</i> displays measurements made on
+            objects.</li>
+            <li><i>%(OI_IMAGE)s</i> displays a single measurement made
+            on an image.</li> 
+            </ul>"""%globals())
         
         self.objects_name = cps.ObjectNameSubscriber(
-            "Select the input objects", "None",
-            doc = """<i>(Used only when displaying object measurements)</i><br>Choose the name of objects identified by some previous
+            "Select the input objects", "None", doc = """
+            <i>(Used only when displaying object measurements)</i><br>
+            Choose the name of objects identified by some previous
             module (such as <b>IdentifyPrimaryObjects</b> or
             <b>IdentifySecondaryObjects</b>).""")
         
@@ -77,36 +80,38 @@ class DisplayDataOnImage(cpm.CPModule):
             else:
                 return cpmeas.IMAGE
         self.measurement = cps.Measurement(
-            "Measurement to display", object_fn,
-            doc="""Choose the measurement to display. This will be a measurement
+            "Measurement to display", object_fn,doc="""
+            Choose the measurement to display. This will be a measurement
             made by some previous module on either the whole image (if
             displaying a single image measurement) or on the objects you
             selected.""")
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select the image on which to display the measurements", "None",
-            doc="""Choose the image to be displayed behind the measurements.
+            "Select the image on which to display the measurements", "None", doc="""
+            Choose the image to be displayed behind the measurements.
             This can be any image created or loaded by a previous module.""")
         
         self.text_color = cps.Text(
-            "Text color","red",
-            doc="""This is the color that will be used when displaying the text.
+            "Text color","red",doc="""
+            This is the color that will be used when displaying the text.
             There are several different ways by which you can specify the color:<br>
-            <ul><li><i>Single letter.</i> "b"=blue, "g"=green, "r"=red, "c"=cyan, "m"=magenta,
+            <ul>
+            <li><i>Single letter:</i> "b"=blue, "g"=green, "r"=red, "c"=cyan, "m"=magenta,
             "y"=yellow, "k"=black, "w"=white</li>
-            <li><i>Name.</i> You can use any name supported by HTML; a list of colors is shown on this:
-            <a href="http://www.w3schools.com/html/html_colors.asp">page</a>.
+            <li><i>Name:</i> You can use any name supported by HTML; a list of colors is shown on
+            <a href="http://www.w3schools.com/html/html_colors.asp">this page</a>.
             </li>
-            <li><i>RGB code.</i> You can specify the color as a combination of
+            <li><i>RGB code:</i> You can specify the color as a combination of
             the red, green, and blue intensities, for instance, "#FFFF00"
             for yellow; yellow = red("FF") + green("FF") + blue("00"), where <i>FF</i> is
-            hexadecimal for 255, the highest intensity. See 
-            <a href="http://www.w3schools.com/html/html_colors.asp">here</a> for a more detailed
-            explanation</li></ul>""")
+            hexadecimal for 255, the highest intensity. See  
+            <a href="http://www.w3schools.com/html/html_colors.asp">this page</a> for a more detailed
+            explanation.</li>
+            </ul>""")
         
         self.display_image = cps.ImageNameProvider(
-            "Name the output image that has the measurements displayed","DisplayImage",
-            doc="""The name that will be given to the image with
+            "Name the output image that has the measurements displayed","DisplayImage",doc="""
+            The name that will be given to the image with
             the measurements superimposed. You can use this name to refer to the image in
             subsequent modules (such as <b>SaveImages</b>).""")
         
@@ -118,19 +123,16 @@ class DisplayDataOnImage(cpm.CPModule):
         
         self.saved_image_contents = cps.Choice(
             "Image elements to save",
-            [E_IMAGE, E_FIGURE, E_AXES],
-            doc="""This setting controls the level of annotation on the image:
-            <ul><li>
-            <i>Image</i>: Saves the image with
-            the overlaid measurement annotations.</li>
-            <li><i>Axes</i>:
-            Adds axes with tick marks and image coordinates.</li>
-            <li><i>Figure</i>: Adds a title and other
-            decorations.</li></ul>""")
+            [E_IMAGE, E_FIGURE, E_AXES],doc="""
+            This setting controls the level of annotation on the image:
+            <ul>
+            <li><i>%(E_IMAGE)s:</i> Saves the image with the overlaid measurement annotations.</li>
+            <li><i>%(E_AXES)s:</i> Adds axes with tick marks and image coordinates.</li>
+            <li><i>%(E_FIGURE)s:</i> Adds a title and other decorations.</li></ul>"""%globals())
         
         self.offset = cps.Integer(
-            "Annotation offset (in pixels)",0,
-            doc="""Add a pixel offset to the measurement. Normally, the text is
+            "Annotation offset (in pixels)",0,doc="""
+            Add a pixel offset to the measurement. Normally, the text is
             placed at the object (or image) center, which can obscure relevant features of
             the object. This setting adds a specified offset to the text, in a random
             direction.""")

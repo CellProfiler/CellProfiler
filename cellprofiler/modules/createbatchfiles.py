@@ -1,7 +1,6 @@
 '''<b>Create Batch Files</b> produces files that allow individual batches of images to be processed
-separately on a cluster of computers
+separately on a cluster of computers.
 <hr>
-
 This module creates files that can be submitted in parallel to a
 cluster for faster processing. It should be placed at the end of
 an image processing pipeline.
@@ -10,11 +9,11 @@ If your computer mounts the file system differently than the cluster computers,
 <b>CreateBatchFiles</b> can replace the necessary parts of the paths to the 
 image and output files. For instance, a Windows machine might 
 access files images by mounting the file system using a drive letter, like this:<br><br>
-<tt>Z:\imaging_analysis</tt><br><br>
+<tt>Z:\your_data\images</tt><br><br>
 and the cluster computers access the same file system like this:<br><br>
-<tt>/imaging/analysis</tt><br><br>
-In this case, the local root path is <tt>Z:\imaging_analysis</tt> and the cluster 
-root path is <tt>/imaging/analysis</tt>.
+<tt>/server_name/your_name/your_data/images</tt><br><br>
+In this case, the local root path is <tt>Z:\your_data\images</tt> and the cluster 
+root path is <tt>/server_name/your_name/your_data/images</tt>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -77,25 +76,27 @@ class CreateBatchFiles(cpm.CPModule):
     #
     def create_settings(self):
         '''Create the module settings and name the module'''
-        self.wants_default_output_directory = cps.Binary("Store batch files in default output folder?", True,doc="""
-                Do you want to store the batch files in the default output folder? 
-                Check this box to store batch files in the Default Output folder. Uncheck
-                the box to enter the path to the folder that will be used to store
-                these files.""")
+        self.wants_default_output_directory = cps.Binary(
+            "Store batch files in default output folder?", True,doc="""
+            Check this box to store batch files in the Default Output folder. Uncheck
+            the box to enter the path to the folder that will be used to store
+            these files.""")
         
-        self.custom_output_directory = cps.Text("Output folder path",
-                                                cpprefs.get_default_output_directory(),doc="""
-                                                What is the path to the output folder?""")
+        self.custom_output_directory = cps.Text(
+            "Output folder path",
+            cpprefs.get_default_output_directory(),doc="""
+            Enter the path to the output folder.""")
         
         # Worded this way not because I am windows-centric but because it's
         # easier than listing every other OS in the universe except for VMS
-        self.remote_host_is_windows = cps.Binary("Are the cluster computers running Windows?",
-                                                 False,doc="""
-                Check this box if the cluster computers are running one of the Microsoft
-                Windows operating systems. If you check this box, <b>CreateBatchFiles</b> will
-                modify all paths to use the Windows file separator (backslash &#92;). If you
-                leave the box unchecked, <b>CreateBatchFiles</b> will modify all paths to use
-                the Unix or Macintosh file separator (slash,&#47;).""")
+        self.remote_host_is_windows = cps.Binary(
+            "Are the cluster computers running Windows?",
+            False,doc="""
+            Check this box if the cluster computers are running one of the Microsoft
+            Windows operating systems. If you check this box, <b>CreateBatchFiles</b> will
+            modify all paths to use the Windows file separator (backslash &#92;). If you
+            leave the box unchecked, <b>CreateBatchFiles</b> will modify all paths to use
+            the Unix or Macintosh file separator (slash &#47;).""")
         
         self.batch_mode = cps.Binary("Hidden: in batch mode", False)
         self.distributed_mode = cps.Binary("Hidden: in distributed mode", False)
@@ -107,13 +108,16 @@ class CreateBatchFiles(cpm.CPModule):
                                                       self.clear_old_matlab)
         self.mappings = []
         self.add_mapping()
-        self.add_mapping_button = cps.DoSomething("", "Add another path mapping",
-                                                  self.add_mapping, doc="""
-                Use this option if another path must be mapped because there is a difference between how the local computer sees a folder location vs. how the cluster computer sees the folder location.""")
+        self.add_mapping_button = cps.DoSomething("", 
+            "Add another path mapping", self.add_mapping, doc="""
+            Use this option if another path must be mapped because there is a difference 
+            between how the local computer sees a folder location vs. how the cluster 
+            computer sees the folder location.""")
+        
         self.check_path_button = cps.DoSomething(
             "Press this button to check pathnames on the remote server",
-            "Check paths", self.check_paths,
-            doc = """This button will start a routine that will ask the
+            "Check paths", self.check_paths, doc = """
+            his button will start a routine that will ask the
             webserver to check whether the default input and default output
             folders exist. It will also check whether all remote
             path mappings exist.""")
@@ -121,32 +125,34 @@ class CreateBatchFiles(cpm.CPModule):
     def add_mapping(self):
         group = cps.SettingsGroup()
         group.append("local_directory",
-                     cps.Text("Local root path",
-                                cpprefs.get_default_image_directory(),doc="""
-                                What is the path to files on this computer? 
-                                This is the root path on the local machine (i.e., the computer setting up
-                                the batch files). If <b>CreateBatchFiles</b> finds
-                                any pathname that matches the local root path at the begining, it will replace the
-                                start with the cluster root path.
-                                <p>For example, if you have mapped the remote cluster machine like this:<br><br>
-                                <tt>Z:\your_data\images</tt> (on a Windows machine, for instance)<br><br>
-                                and the cluster machine sees the same folder like this:<br><br>
-                                <tt>/server_name/your_name/your_data/images</tt><br><br>
-                                you would enter <tt>Z:</tt> here and <t>/server_name/your_name/</tt> 
-                                for the cluster path in the next setting."""))
+                     cps.Text(
+                        "Local root path",
+                        cpprefs.get_default_image_directory(),doc="""
+                        Enter the path to files on this computer.
+                        This is the root path on the local machine (i.e., the computer setting up
+                        the batch files). If <b>CreateBatchFiles</b> finds
+                        any pathname that matches the local root path at the begining, it will replace the
+                        start with the cluster root path.
+                        <p>For example, if you have mapped the remote cluster machine like this:<br><br>
+                        <tt>Z:\your_data\images</tt> (on a Windows machine, for instance)<br><br>
+                        and the cluster machine sees the same folder like this:<br><br>
+                        <tt>/server_name/your_name/your_data/images</tt><br><br>
+                        you would enter <tt>Z:</tt> here and <t>/server_name/your_name/</tt> 
+                        for the cluster path in the next setting."""))
 
         group.append("remote_directory",
-                     cps.Text("Cluster root path",
-                                cpprefs.get_default_image_directory(),doc="""
-                                What is the path to files on the cluster? This is the cluster 
-                                root path, i.e., how the cluster machine sees the
-                                top-most folder where your input/output files are stored.
-                                <p>For example, if you have mapped the remote cluster machine like this:<br><br>
-                                <tt>Z:\your_data\images</tt> (on a Windows machine, for instance)<br><br>
-                                and the cluster machine sees the same folder like this:<br><br>
-                                <tt>/server_name/your_name/your_data/images</tt><br><br>
-                                you would enter <tt>Z:</tt> in the previous setting for the
-                                local machine path and <t>/server_name/your_name/</tt> here. """))
+                     cps.Text(
+                        "Cluster root path",
+                        cpprefs.get_default_image_directory(),doc="""
+                        Enter the path to files on the cluster. This is the cluster 
+                        root path, i.e., how the cluster machine sees the
+                        top-most folder where your input/output files are stored.
+                        <p>For example, if you have mapped the remote cluster machine like this:<br><br>
+                        <tt>Z:\your_data\images</tt> (on a Windows machine, for instance)<br><br>
+                        and the cluster machine sees the same folder like this:<br><br>
+                        <tt>/server_name/your_name/your_data/images</tt><br><br>
+                        you would enter <tt>Z:</tt> in the previous setting for the
+                        local machine path and <t>/server_name/your_name/</tt> here. """))
         group.append("remover",
                      cps.RemoveSettingButton("", "Remove this path mapping", self.mappings, group))
         group.append("divider", cps.Divider(line=False))

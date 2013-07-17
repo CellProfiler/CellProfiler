@@ -1,6 +1,5 @@
-'''<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance
+'''<b>Expand Or Shrink Objects</b> expands or shrinks objects by a defined distance.
 <hr>
-
 The module expands or shrinks objects by adding or removing border
 pixels. You can specify a certain number of border pixels to be
 added or removed, expand objects until they are almost touching or shrink
@@ -67,66 +66,72 @@ O_SPUR = 'Remove spurs'
 O_ALL = [O_SHRINK_INF, O_EXPAND_INF, O_DIVIDE, O_SHRINK, O_EXPAND,
          O_SKELETONIZE, O_SPUR]
 
-DOC_FILL_HOLES = '''<i>(Used only if one of the "shrink" options selected)</i><br>The shrink algorithm preserves each object's Euler number,
-which means that it will erode an object with a hole to a ring in order to
-keep the hole and it will erode an object with two holes to two rings
-connected by a line in order to keep from breaking up the object or breaking
-the hole. If you fill the holes in each object, then each object will shrink
-to a single point.'''
-
 class ExpandOrShrinkObjects(cpm.CPModule):
 
     module_name = 'ExpandOrShrinkObjects'
     category = 'Object Processing'
     variable_revision_number = 1
     def create_settings(self):
-        self.object_name = cps.ObjectNameSubscriber("Select the input objects",
-                                    "None", doc = '''
-                                    What did you call the objects you want to expand or shrink?''')
+        self.object_name = cps.ObjectNameSubscriber(
+            "Select the input objects",
+            "None", doc = '''
+            Select the objects that you want to expand or shrink.''')
         
-        self.output_object_name = cps.ObjectNameProvider("Name the output objects", 
-                                    "ShrunkenNuclei", doc = '''
-                                    What do you want to call the resulting objects?''')
+        self.output_object_name = cps.ObjectNameProvider(
+            "Name the output objects", 
+            "ShrunkenNuclei", doc = '''
+            Enter a name for the resulting objects.''')
         
-        self.operation = cps.Choice("Select the operation",
-                                    O_ALL,  doc = '''
-                                    What operation do you want to perform?
-                                    <ul>
-                                    <li><i>Shrink objects to a point:</i> Remove all pixels but one from filled objects. Thin objects
-                                    with holes to loops unless the "fill" option is checked.</li>
-                                    <li><i>Expand objects until touching:</i> Expand objects, assigning every pixel in the image to an
-                                    object. Background pixels are assigned to the nearest object.</li>
-                                    <li><i>Add partial dividing lines between objects:</i> Remove pixels from an object that are adjacent to another
-                                    object's pixels unless doing so would change the object's Euler number
-                                    (break an object in two, remove the object completely or open a hole in
-                                    an object).</li>
-                                    <li><i>Shrink objects by a specified number of pixels:</i> Remove pixels around the perimeter of an object unless doing
-                                    so would change the object's Euler number (break the object in two, remove the object completely or open
-                                    a hole in the object). You can specify the number of times 
-                                    perimeter pixels should be removed. Processing stops automatically when there are no more
-                                    pixels to remove.</li>
-                                    <li><i>Expand objects by a specified number of pixels:</i> Expand each object by adding background pixels adjacent to the
-                                    image. You can choose the number of times to expand. Processing stops
-                                    automatically if there are no more background pixels.</li>
-                                    <li><i>Skeletonize each object:</i> Erode each object to its skeleton.</li>
-                                    <li><i>Remove spurs:</i> Remove or reduce the length of spurs in a skeletonized image.
-                                    The algorithm reduces spur size by the number of pixels indicated in the
-                                    setting <i>Number of pixels by which to expand or shrink</i>.</li> </ul>              
-                                    ''')
+        self.operation = cps.Choice(
+            "Select the operation",
+            O_ALL,  doc = '''
+            Select the operation that you want to perform:
+            <ul>
+            <li><i>%(O_SHRINK_INF)s:</i> Remove all pixels but one from filled objects. Thin objects
+            with holes to loops unless the "fill" option is checked.</li>
+            <li><i>%(O_EXPAND_INF)s:</i> Expand objects, assigning every pixel in the image to an
+            object. Background pixels are assigned to the nearest object.</li>
+            <li><i>%(O_DIVIDE)s:</i> Remove pixels from an object that are adjacent to another
+            object's pixels unless doing so would change the object's Euler number
+            (break an object in two, remove the object completely or open a hole in
+            an object).</li>
+            <li><i>%(O_SHRINK)s:</i> Remove pixels around the perimeter of an object unless doing
+            so would change the object's Euler number (break the object in two, remove the object completely or open
+            a hole in the object). You can specify the number of times 
+            perimeter pixels should be removed. Processing stops automatically when there are no more
+            pixels to remove.</li>
+            <li><i>%(O_EXPAND)s:</i> Expand each object by adding background pixels adjacent to the
+            image. You can choose the number of times to expand. Processing stops
+            automatically if there are no more background pixels.</li>
+            <li><i>%(O_SKELETONIZE)s:</i> Erode each object to its skeleton.</li>
+            <li><i>%(O_SPUR)s:</i> Remove or reduce the length of spurs in a skeletonized image.
+            The algorithm reduces spur size by the number of pixels indicated in the
+            setting <i>Number of pixels by which to expand or shrink</i>.</li> 
+            </ul>'''%globals())
         
-        self.iterations = cps.Integer("Number of pixels by which to expand or shrink",
-                                      1, minval=1)
+        self.iterations = cps.Integer(
+            "Number of pixels by which to expand or shrink", 1, minval=1)
         
-        self.wants_fill_holes = cps.Binary("Fill holes in objects so that all objects shrink to a single point?",
-                                    False, doc=DOC_FILL_HOLES)
+        self.wants_fill_holes = cps.Binary(
+            "Fill holes in objects so that all objects shrink to a single point?",False, doc="""
+            <i>(Used only if one of the "shrink" options selected)</i><br>
+            The shrink algorithm preserves each object's Euler number,
+            which means that it will erode an object with a hole to a ring in order to
+            keep the hole and it will erode an object with two holes to two rings
+            connected by a line in order to keep from breaking up the object or breaking
+            the hole. If you fill the holes in each object, then each object will shrink
+            to a single point.""")
         
-        self.wants_outlines = cps.Binary("Retain the outlines of the identified objects for use later in the pipeline (for example, in SaveImages)?",
-                                    False)
+        self.wants_outlines = cps.Binary(
+            "Retain the outlines of the identified objects for use later in the pipeline (for example, in SaveImages)?",
+            False)
         
-        self.outlines_name = cps.OutlineNameProvider("Name the outline image",
-                                    "ShrunkenNucleiOutlines", doc = """
-                                    <i>(Used only if outlines are to be retained for later use in the pipeline)</i><br>
-                                    Choose a name for the outlines of the identified objects that will allow them to be selected as an image later in the pipeline.""")
+        self.outlines_name = cps.OutlineNameProvider(
+            "Name the outline image",
+            "ShrunkenNucleiOutlines", doc = """
+            <i>(Used only if outlines are to be retained for later use in the pipeline)</i><br>
+            Choose a name for the outlines of the identified objects that will allow them to be 
+            selected as an image later in the pipeline.""")
 
     def settings(self):
         return [self.object_name, self.output_object_name, self.operation,

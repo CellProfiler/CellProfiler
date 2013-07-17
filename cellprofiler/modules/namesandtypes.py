@@ -160,7 +160,9 @@ class NamesAndTypes(cpm.CPModule):
             CellProfiler will then match the first from one channel to the
             first from another channel. <br>
             This approach is sufficient for most applications, but
-            will match the wrong images if any of the files are missing or misnamed.</li>
+            will match the wrong images if any of the files are missing or misnamed.
+            The image set list will then get truncated according to the channel with
+            the fewer number of files.</li>
             
             <li><i>%(MATCH_BY_METADATA)s</i>: CellProfiler will match files with
             the same metadata values. This option is more complex to use than 

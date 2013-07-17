@@ -1,5 +1,6 @@
 '''
-<b> Color to Gray</b> converts an image with three color channels to one <i>or</i> three grayscale images
+<b> Color to Gray</b> converts an image with three color channels to a set of individual
+grayscale images.
 <hr>
 
 This module converts RGB (Red, Green, Blue) color images to grayscale. All channels
@@ -159,7 +160,7 @@ class ColorToGray(cpm.CPModule):
         group.append("image_name", cps.ImageNameProvider(
             "Image name:", value="Channel%d" % (len(self.channels)+1),
             doc = """This is the name of the grayscale image that holds
-            the image data from the chosen channel"""))
+            the image data from the chosen channel."""))
         if group.can_remove:
             group.append("remover", cps.RemoveSettingButton(
                 "Remove this channel", "Remove", self.channels, group))

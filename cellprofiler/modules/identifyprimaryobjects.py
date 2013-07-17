@@ -264,7 +264,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         self.merge_objects = cps.Binary(
             "Try to merge too small objects with nearby larger objects?", 
-            False, doc='''\
+            False, doc='''
             Use caution when choosing <i>Yes</i>. Objects that are
             smaller than the specified minimum diameter will be merged, if possible, with
             other surrounding objects. This is helpful in cases when an object was
@@ -279,7 +279,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         self.exclude_border_objects = cps.Binary(
             "Discard objects touching the border of the image?", 
-            True, doc='''\
+            True, doc='''
             You can choose to discard objects that touch the border of the image.
             This is useful in cases when you do not want to make measurements of
             objects that are not fully within the field of view (because, for

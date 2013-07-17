@@ -1,6 +1,5 @@
 """<b>Apply Threshold</b> sets pixel intensities below or above a certain threshold to zero
 <hr>
-
 <b>ApplyThreshold</b> produces either a grayscale or binary image
 based on a threshold which can be pre-selected or calculated automatically using one of many methods.
 """
@@ -55,11 +54,11 @@ class ApplyThreshold(Identify):
                              if method != TM_BINARY_IMAGE]
         self.image_name = cpsetting.ImageNameSubscriber("Select the input image",
                                 doc = '''
-                                Specify the image to be thresholded.''')
+                                Choose the image to be thresholded.''')
         
         self.thresholded_image_name = cpsetting.ImageNameProvider("Name the output image",
                                 "ThreshBlue", doc = '''
-                                Give a name to the thresholded image?''')
+                                Enter a name for the thresholded image.''')
         
         self.binary = cpsetting.Choice("Select the output image type", [GRAYSCALE, BINARY], doc = '''
                                 Two types of output images can be produced:<br>
@@ -72,7 +71,8 @@ class ApplyThreshold(Identify):
         self.low_or_high = cpsetting.Choice(
                                 "Set pixels below or above the threshold to zero?",
                                 [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD],
-                                doc="""<i>(Used only when thresholding a grayscale image)</i> For grayscale output, the dim pixels below 
+                                doc="""<i>(Used only when thresholding a grayscale image)</i><br>
+                                For grayscale output, the dim pixels below 
                                 the threshold can be set to zero or the bright pixels above 
                                 the threshold can be set to zero.
                                 Choose <i>Below threshold</i> to threshold dim pixels and

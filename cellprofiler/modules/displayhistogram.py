@@ -1,6 +1,5 @@
-'''<b>Display Histogram </b> plots a histogram of the desired measurement
+'''<b>Display Histogram </b> plots a histogram of the desired measurement.
 <hr>
-
 A histogram is a plot of tabulated data frequencies (each of which is
 shown as a bar) created by binning measurement data for a set of objects. 
 A two-dimensional histogram can be created using the <b>DisplayDensityPlot</b>
@@ -46,66 +45,62 @@ class DisplayHistogram(cpm.CPModule):
         create_settings is called at the end of initialization.
         """
         self.object = cps.ObjectNameSubscriber(
-                            'Select the object whose measurements will be displayed',
-                            'None',
-                            doc='''
-                            Choose the name of objects identified by some previous 
-                            module (such as <b>IdentifyPrimaryObjects</b> or 
-                            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed.''')
+            'Select the object whose measurements will be displayed',
+            'None',doc='''
+            Choose the name of objects identified by some previous 
+            module (such as <b>IdentifyPrimaryObjects</b> or 
+            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed.''')
         
         self.x_axis = cps.Measurement(
-                            'Select the object measurement to plot', 
-                            self.get_object, 'None',
-                            doc='''
-                            Choose the object measurement made by a previous 
-                            module to plot.''')
+            'Select the object measurement to plot', 
+            self.get_object, 'None',doc='''
+            Choose the object measurement made by a previous 
+            module to plot.''')
         
         self.bins = cps.Integer(
-                            'Number of bins', 100, 1, 1000,
-                            doc='''
-                            Enter the number of equally-spaced bins that you want 
-                            used on the X-axis.''')
+            'Number of bins', 100, 1, 1000,doc='''
+            Enter the number of equally-spaced bins that you want 
+            used on the X-axis.''')
         
         self.xscale = cps.Choice(
-                            'Transform the data prior to plotting along the X-axis?', 
-                            ['no', 'log'], None,
-                            doc='''
-                            The measurement data can be scaled with either a 
-                            linear scale (<i>No</i>) or a <i>log</i> (base 10) 
-                            scaling.
-                            <p>Log scaling is useful when one of the 
-                            measurements being plotted covers a large range of 
-                            values; a log scale can bring out features in the 
-                            measurements that would not easily be seen if the 
-                            measurement is plotted linearly.<p>''')
+            'Transform the data prior to plotting along the X-axis?', 
+            ['no', 'log'], None,doc='''
+            The measurement data can be scaled with either a 
+            linear scale (<i>No</i>) or a <i>log</i> (base 10) 
+            scaling.
+            <p>Log scaling is useful when one of the 
+            measurements being plotted covers a large range of 
+            values; a log scale can bring out features in the 
+            measurements that would not easily be seen if the 
+            measurement is plotted linearly.<p>''')
         
         self.yscale = cps.Choice(
-                            'How should the Y-axis be scaled?', 
-                            ['linear', 'log'], None,
-                            doc='''
-                            The Y-axis can be scaled either with either a <i>linear</i> 
-                            scale or a <i>log</i> (base 10) scaling. 
-                            <p>Log scaling is useful when one of the 
-                            measurements being plotted covers a large range of 
-                            values; a log scale can bring out features in the 
-                            measurements that would not easily be seen if the 
-                            measurement is plotted linearly.</p>''')
+            'How should the Y-axis be scaled?', 
+            ['linear', 'log'], None, doc='''
+            The Y-axis can be scaled either with either a <i>linear</i> 
+            scale or a <i>log</i> (base 10) scaling. 
+            <p>Log scaling is useful when one of the 
+            measurements being plotted covers a large range of 
+            values; a log scale can bring out features in the 
+            measurements that would not easily be seen if the 
+            measurement is plotted linearly.</p>''')
         
         self.title = cps.Text(
-                            'Enter a title for the plot, if desired', '',doc = '''
-                            Enter a title for the plot. If you leave this blank,
-                            the title will default 
-                            to <i>(cycle N)</i> where <i>N</i> is the current image 
-                            cycle being executed.''')
+            'Enter a title for the plot, if desired', '',doc = '''
+            Enter a title for the plot. If you leave this blank,
+            the title will default 
+            to <i>(cycle N)</i> where <i>N</i> is the current image 
+            cycle being executed.''')
 
         self.wants_xbounds = cps.Binary(
-                            'Specify min/max bounds for the x-axis?',
-                            False, doc ='''You can specifiy minimum and maximum values for the 
-                            plot on the x-axis. This is helpful if an outlier bin skews the
-                            plot such that the bins of interest are no longer visible.''')
+            'Specify min/max bounds for the X-axis?',
+            False, doc ='''
+            You can specifiy minimum and maximum values for the 
+            plot on the X-axis. This is helpful if an outlier bin skews the
+            plot such that the bins of interest are no longer visible.''')
         
         self.xbounds = cps.FloatRange(
-                            'Minimum/maximum values for the x-axis')
+            'Minimum/maximum values for the X-axis')
         
     def settings(self):
         """Return the settings to be loaded or saved to/from the pipeline

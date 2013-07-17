@@ -1,6 +1,5 @@
-'''<b>Display Scatter Plot </b> plots the values for two measurements
+'''<b>Display Scatter Plot </b> plots the values for two measurements.
 <hr>
-
 A scatter plot displays the relationship between two measurements (that is, features) as a 
 collection of points.  If there are too many data points on the plot, you should consider 
 using <b>DisplayDensityPlot</b> instead.
@@ -31,8 +30,9 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.settings as cps
 import cellprofiler.measurements as cpmeas
 
+SOURCE_IM = cpmeas.IMAGE
 SOURCE_OBJ = "Object"
-SOURCE_CHOICE = [cpmeas.IMAGE, SOURCE_OBJ]
+SOURCE_CHOICE = [SOURCE_IM, SOURCE_OBJ]
 SCALE_CHOICE = ['linear', 'log']
 
 class DisplayScatterPlot(cpm.CPModule):
@@ -42,90 +42,91 @@ class DisplayScatterPlot(cpm.CPModule):
     variable_revision_number = 2
     
     def create_settings(self):
-        self.x_source = cps.Choice("Type of measurement to plot on X-axis", SOURCE_CHOICE,doc = '''
-                            You can plot two types of measurements:
-                            <ul>
-                            <li><i>Image:</i> For a per-image measurement, one numerical value is 
-                            recorded for each image analyzed.
-                            Per-image measurements are produced by
-                            many modules. Many have <b>MeasureImage</b> in the name but others do not
-                            (e.g., the number of objects in each image is a per-image 
-                            measurement made by <b>IdentifyObject</b> 
-                            modules).</li>
-                            <li><i>Object:</i> For a per-object measurement, each identified 
-                            object is measured, so there may be none or many 
-                            numerical values recorded for each image analyzed. These are usually produced by
-                            modules with <b>MeasureObject</b> in the name.</li>
-                            </ul>''')
+        self.x_source = cps.Choice(
+            "Type of measurement to plot on X-axis", SOURCE_CHOICE,doc = '''
+            You can plot two types of measurements:
+            <ul>
+            <li><i>%(SOURCE_IM)s:</i> For a per-image measurement, one numerical value is 
+            recorded for each image analyzed.
+            Per-image measurements are produced by
+            many modules. Many have <b>MeasureImage</b> in the name but others do not
+            (e.g., the number of objects in each image is a per-image 
+            measurement made by the <b>IdentifyObject</b> 
+            modules).</li>
+            <li><i>%(SOURCE_OBJ)s:</i> For a per-object measurement, each identified 
+            object is measured, so there may be none or many 
+            numerical values recorded for each image analyzed. These are usually produced by
+            modules with <b>MeasureObject</b> in the name.</li>
+            </ul>'''%globals())
         
         self.x_object = cps.ObjectNameSubscriber(
-                            'Select the object to plot on the X-axis',
-                            'None',doc = '''<i>(Used only when plotting objects)</i><br>
-                            Choose the name of objects identified by some previous 
-                            module (such as <b>IdentifyPrimaryObjects</b> or 
-                            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the X-axis.''')
+            'Select the object to plot on the X-axis',
+            'None',doc = '''<i>(Used only when plotting objects)</i><br>
+            Choose the name of objects identified by some previous 
+            module (such as <b>IdentifyPrimaryObjects</b> or 
+            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the X-axis.''')
         
         self.x_axis = cps.Measurement(
-                            'Select the measurement to plot on the X-axis', 
-                            self.get_x_object, 'None',doc = '''
-                            Choose the measurement (made by a previous 
-                            module) to plot on the X-axis.''')
+            'Select the measurement to plot on the X-axis', 
+            self.get_x_object, 'None',doc = '''
+            Choose the measurement (made by a previous 
+            module) to plot on the X-axis.''')
         
         self.y_source = cps.Choice("Type of measurement to plot on Y-axis", SOURCE_CHOICE,doc = '''
-                            You can plot two types of measurements:
-                            <ul>
-                            <li><i>Image:</i> For a per-image measurement, one numerical value is 
-                            recorded for each image analyzed.
-                            Per-image measurements are produced by
-                            many modules. Many have <b>MeasureImage</b> in the name but others do not
-                            (e.g., the number of objects in each image is a per-image 
-                            measurement made by <b>IdentifyObject</b> 
-                            modules).</li>
-                            <li><i>Object:</i> For a per-object measurement, each identified 
-                            object is measured, so there may be none or many 
-                            numerical values recorded for each image analyzed. These are usually produced by
-                            modules with <b>MeasureObject</b> in the name.</li>
-                            </ul>''')
+            You can plot two types of measurements:
+            <ul>
+            <li><i>%(SOURCE_IM)s:</i> For a per-image measurement, one numerical value is 
+            recorded for each image analyzed.
+            Per-image measurements are produced by
+            many modules. Many have <b>MeasureImage</b> in the name but others do not
+            (e.g., the number of objects in each image is a per-image 
+            measurement made by <b>IdentifyObject</b> 
+            modules).</li>
+            <li><i>%(SOURCE_OBJ)s:</i> For a per-object measurement, each identified 
+            object is measured, so there may be none or many 
+            numerical values recorded for each image analyzed. These are usually produced by
+            modules with <b>MeasureObject</b> in the name.</li>
+            </ul>'''%globals())
         
         self.y_object = cps.ObjectNameSubscriber(
-                            'Select the object to plot on the Y-axis',
-                            'None',doc = '''<i>(Used only when plotting objects)</i><br>
-                            Choose the name of objects identified by some previous 
-                            module (such as <b>IdentifyPrimaryObjects</b> or 
-                            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the Y-axis.''')
+            'Select the object to plot on the Y-axis',
+            'None',doc = '''<i>(Used only when plotting objects)</i><br>
+            Choose the name of objects identified by some previous 
+            module (such as <b>IdentifyPrimaryObjects</b> or 
+            <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the Y-axis.''')
         
         self.y_axis = cps.Measurement(
-                            'Select the measurement to plot on the Y-axis', 
-                            self.get_y_object, 'None', doc = '''
-                            Choose the measurement (made by a previous 
-                            module) to plot on the Y-axis.''')
+            'Select the measurement to plot on the Y-axis', 
+            self.get_y_object, 'None', doc = '''
+            Choose the measurement (made by a previous 
+            module) to plot on the Y-axis.''')
         
         self.xscale = cps.Choice(
-                            'How should the X-axis be scaled?', SCALE_CHOICE, None, doc='''
-                            The X-axis can be scaled with either a <i>linear</i> 
-                            scale or a <i>log</i> (base 10) scaling. 
-                            <p>Log scaling is useful when one of the 
-                            measurements being plotted covers a large range of 
-                            values; a log scale can bring out features in the 
-                            measurements that would not easily be seen if the 
-                            measurement is plotted linearly.</p>''')
+            'How should the X-axis be scaled?', SCALE_CHOICE, None, doc='''
+            The X-axis can be scaled with either a <i>linear</i> 
+            scale or a <i>log</i> (base 10) scaling. 
+            <p>Log scaling is useful when one of the 
+            measurements being plotted covers a large range of 
+            values; a log scale can bring out features in the 
+            measurements that would not easily be seen if the 
+            measurement is plotted linearly.</p>''')
         
         self.yscale = cps.Choice(
-                            'How should the Y-axis be scaled?', SCALE_CHOICE, None, doc='''
-                            The Y-axis can be scaled with either a <i>linear</i> 
-                            scale or with a <i>log</i> (base 10) scaling. 
-                            <p>Log scaling is useful when one of the 
-                            measurements being plotted covers a large range of 
-                            values; a log scale can bring out features in the 
-                            measurements that would not easily be seen if the 
-                            measurement is plotted linearly.</p>''')
+            'How should the Y-axis be scaled?', SCALE_CHOICE, None, doc='''
+            The Y-axis can be scaled with either a <i>linear</i> 
+            scale or with a <i>log</i> (base 10) scaling. 
+            <p>Log scaling is useful when one of the 
+            measurements being plotted covers a large range of 
+            values; a log scale can bring out features in the 
+            measurements that would not easily be seen if the 
+            measurement is plotted linearly.</p>''')
         
         self.title = cps.Text(
-                            'Enter a title for the plot, if desired', '',doc = '''
-                            Enter a title for the plot. If you leave this blank,
-                            the title will default 
-                            to <i>(cycle N)</i> where <i>N</i> is the current image 
-                            cycle being executed.''')
+            'Enter a title for the plot, if desired', '',doc = '''
+            Enter a title for the plot. If you leave this blank,
+            the title will default 
+            to <i>(cycle N)</i> where <i>N</i> is the current image 
+            cycle being executed.''')
 
     def get_x_object(self):
         if self.x_source.value == cpmeas.IMAGE:

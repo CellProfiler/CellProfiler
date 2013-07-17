@@ -1,6 +1,5 @@
-'''<b>Display Platemap </b> displays a desired measurement in plate map view
+'''<b>Display Platemap </b> displays a desired measurement in a plate map view.
 <hr>
-
 <b>Display Platemap</b> is a tool for browsing image-based data laid out on 
 multi-well plates common to high-throughput biological screens. The display
 window for this module shows a plate map with each well color-coded according
@@ -60,25 +59,29 @@ class DisplayPlatemap(cpm.CPModule):
     def create_settings(self):        
         self.objects_or_image = cps.Choice(
             "Display object or image measurements?",
-            [OI_OBJECTS, OI_IMAGE],
-            doc = """<ul><li> <i>%s</i> allows you to select an image 
+            [OI_OBJECTS, OI_IMAGE], doc = """
+            <ul>
+            <li><i>%(OI_IMAGE)s</i> allows you to select an image 
             measurement to display for each well.</li> 
-            <li><i>%s</i> allows you to select an object measurement to display 
-            for each well.</li></ul>"""%(OI_IMAGE, OI_OBJECTS))
+            <li><i>%(OI_OBJECTS)s</i> allows you to select an object measurement to display 
+            for each well.</li>
+            </ul>"""%globals())
         
         self.object = cps.ObjectNameSubscriber(
-            'Select the object whose measurements will be displayed','None',
-            doc='''
+            'Select the object whose measurements will be displayed',
+            'None',doc='''
             Choose the name of objects identified by some previous 
             module (such as <b>IdentifyPrimaryObjects</b> or 
             <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed.''')
         
         self.plot_measurement = cps.Measurement(
-            'Select the measurement to plot', self.get_object, 'None', doc='''
+            'Select the measurement to plot', 
+            self.get_object, 'None', doc='''
             Choose the image or object measurement made by a previous module to plot.''')
                 
         self.plate_name = cps.Measurement('Select your plate metadata',
-            lambda:cpmeas.IMAGE, 'Metadata_Plate', doc = '''
+            lambda:cpmeas.IMAGE, 
+            'Metadata_Plate', doc = '''
             Choose the metadata that corresponds to the plate identifier. That is,
             each plate should have a metadata tag containing a specifier corresponding
             uniquely to that plate. 
@@ -90,17 +93,19 @@ class DisplayPlatemap(cpm.CPModule):
             '''The module assumes that your data is laid out in a multi-well plate format
             common to high-throughput biological screens. Supported formats are:
             <ul>
-            <li><i>96:</i> A 96-well plate with 8 rows x 12 columns</li>
-            <li><i>384:</i> A 384-well plate with 16 rows x 24 columns</li>
+            <li><i>96:</i> A 96-well plate with 8 rows &times; 12 columns</li>
+            <li><i>384:</i> A 384-well plate with 16 rows &times; 24 columns</li>
             </ul>''')
         
         self.well_format = cps.Choice(
             "What form is your well metadata in?",
-            [WF_NAME, WF_ROWCOL],
-            doc = """<ul><li> <i>%s</i> allows you to select an image 
+            [WF_NAME, WF_ROWCOL],doc = """
+            <ul>
+            <li> <i>%(WF_NAME)s</i> allows you to select an image 
             measurement to display for each well.</li> 
-            <li><i>%s</i> allows you to select an object measurement to display 
-            for each well.</li></ul>"""%(WF_NAME, WF_ROWCOL))
+            <li><i>%(WF_ROWCOL)s</i> allows you to select an object measurement to display 
+            for each well.</li>
+            </ul>"""%globals())
 
         self.well_name = cps.Measurement('Select your well metadata', 
             lambda:cpmeas.IMAGE, 'Metadata_Well', doc = '''
@@ -130,17 +135,18 @@ class DisplayPlatemap(cpm.CPModule):
 
         self.agg_method = cps.Choice(
             'How should the values be aggregated?', 
-            AGG_NAMES, AGG_NAMES[0], doc='''Measurements must be aggregated to a 
+            AGG_NAMES, AGG_NAMES[0], doc='''
+            Measurements must be aggregated to a 
             single number for each well so that they can be represented by a color. 
             Options are:
             <ul>
-            <li><i>avg:</i> Average</li>
-            <li><i>stdev:</i> Standard deviation</li>
-            <li><i>median</i></li>
-            <li><i>cv%:</i> Coefficient of variation, defined as the ratio of the standard 
+            <li><i>%(AGG_AVG)s:</i> Average</li>
+            <li><i>%(AGG_STDEV)s:</i> Standard deviation</li>
+            <li><i>%(AGG_MEDIAN)s</i></li>
+            <li><i>%(AGG_CV)s:</i> Coefficient of variation, defined as the ratio of the standard 
             deviation to the mean. This is useful for comparing between data sets with 
             different units or widely different means.</li>
-            </ul>''')
+            </ul>'''%globals()) 
 
         self.title = cps.Text(
             'Enter a title for the plot, if desired', '',

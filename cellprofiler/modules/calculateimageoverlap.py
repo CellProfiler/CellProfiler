@@ -1,6 +1,5 @@
 '''<b>Calculate Image Overlap </b> calculates how much overlap occurs between the white portions of two black and white images
 <hr>
-
 This module calculates overlap by determining a set of statistics that measure the closeness of an image or object 
 to its' true value.  One image/object is considered the "ground truth" (possibly the result of hand-segmentation) and the other
 is the "test" image/object; the images are determined to overlap most completely when the test image matches the ground
@@ -34,7 +33,7 @@ while a background pixel in the test image that overlaps with foreground in the 
 <li><i>False negative rate:</i> Total number of false negative pixels / total number of actual postive pixels </li>
 <li><i>Precision:</i> Number of true positive pixels / (number of true positive pixels + number of false positive pixels) </li>
 <li><i>Recall:</i> Number of true positive pixels/ (number of true positive pixels + number of false negative pixels) </li>
-<li><i>F-factor:</i> 2 x (precision x recall)/(precision + recall). Also known as F<sub>1</sub> score, F-score or F-measure.</li>
+<li><i>F-factor:</i> 2 &times; (precision &times; recall)/(precision + recall). Also known as F<sub>1</sub> score, F-score or F-measure.</li>
 </ul>
 </li>
 <li><i>For objects:</i>
@@ -115,7 +114,8 @@ class CalculateImageOverlap(cpm.CPModule):
             "None", doc = """
             <i>(Used only when comparing foreground/background)</i> <br>
             This binary (black and white) image is known as the "ground truth" image.  It can be the product of segmentation performed by hand, or
-                                                   the result of another segmentation algorithm whose results you would like to compare.""")
+            the result of another segmentation algorithm whose results you would like to compare.""")
+        
         self.test_img = cps.ImageNameSubscriber(
             "Select the image to be used to test for overlap", 
             "None", doc = """
@@ -126,28 +126,28 @@ class CalculateImageOverlap(cpm.CPModule):
             "Select the objects to be used as the ground truth basis for calculating the amount of overlap", 
             "None", doc ="""
             <i>(Used only when comparing segmented objects)</i> <br>
-            Specify which set of objects will used as the "ground truth" objects. It can be the product of segmentation performed by hand, or
+            Choose which set of objects will used as the "ground truth" objects. It can be the product of segmentation performed by hand, or
             the result of another segmentation algorithm whose results you would like to compare. See the <b>Load</b> modules for more details
             on loading objects.""")
         
         self.img_obj_found_in_GT = cps.ImageNameSubscriber(
-            "Which image was used to identify the objects?",
+            "Select the image used to identify the objects",
             "None", doc ="""
             <i>(Used only when comparing segmented objects)</i> <br>
-            Select which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,
+            Choose which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,
             select "None." """)
         
         self.object_name_ID = cps.ObjectNameSubscriber(
             "Select the objects to be tested for overlap against the ground truth", 
             "None", doc ="""
             <i>(Used only when comparing segmented objects)</i> <br>
-            This set of objects is what you will compare with the ground truth objects. It is known as the "test object". """)
+            This set of objects is what you will compare with the ground truth objects. It is known as the "test object." """)
         
         self.img_obj_found_in_ID = cps.ImageNameSubscriber(
-            "Which image did you find these objects in?",
+            "Select the image used to find these objects",
             "None", doc ="""
             <i>(Used only when comparing segmented objects)</i> <br>
-            Select which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,
+            Choose which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,
             select "None." """)
 
     def settings(self):

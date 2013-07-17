@@ -1,8 +1,7 @@
 '''<b>Calculate Statistics</b> calculates measures of assay quality 
 (V and Z' factors) and dose response data (EC50) for all measured features
-made from images
+made from images.
 <hr>
-
 The V and Z' factors are statistical measures of assay quality and are
 calculated for each per-image measurement and for each average per-object 
 measurement that you have made in the pipeline. Placing 
@@ -21,16 +20,16 @@ or for each image (per-image), this module produces <i>per-experiment</i> values
 for example, one Z' factor is calculated for each measurement, across the entire analysis run.
 <ul>
 <li><i>Zfactor:</i> The Z'-factor indicates how well separated the positive and negative controls are.
-A Z'-factor > 0 is potentially screenable; a Z'-factor > 0.5 is considered an excellent assay.
-The formula is 1 - 3*(&#963;<sub>p</sub> + &#963;<sub>n</sub>)/|&#956;<sub>p</sub> - &#956;<sub>n</sub>| 
-where &#963;<sub>p</sub> and &#963;<sub>n</sub> are the standard deviations of the positive and negative controls, 
-and &#956;<sub>p</sub> and &#956;<sub>n</sub> are the means of the positive and negative controls.</li>
+A Z'-factor &gt; 0 is potentially screenable; a Z'-factor &gt; 0.5 is considered an excellent assay.
+The formula is 1 &minus 3 &times; (&sigma;<sub>p</sub> + &sigma;<sub>n</sub>)/|&mu;<sub>p</sub> - &mu;<sub>n</sub>| 
+where &sigma;<sub>p</sub> and &sigma;<sub>n</sub> are the standard deviations of the positive and negative controls, 
+and &mu;<sub>p</sub> and &mu;<sub>n</sub> are the means of the positive and negative controls.</li>
 <li><i>Vfactor:</i> The V-factor is a generalization of the Z'-factor, and is 
-calculated as 1 - 6*mean(&#963;)/|&#956;<sub>p</sub> - &#956;<sub>n</sub>| where
-&#963; are the standard deviations of the data, and &#956;<sub>p</sub> and &#956;<sub>n</sub>
+calculated as 1 &minus 6 &times; mean(&sigma;)/|&mu;<sub>p</sub> - &mu;<sub>n</sub>| where
+&sigma; are the standard deviations of the data, and &mu;<sub>p</sub> and &mu;<sub>n</sub>
 are defined as above.</li>
 <li><i>EC50:</i> The half maximal effective concentration (EC50) is the concentration of a
-treatment required to induce a response which is 50% of the maximal response.</li>
+treatment required to induce a response which is 50%% of the maximal response.</li>
 <li><i>OneTailedZfactor:</i> This measure is an attempt to overcome a limitation of 
 the original Z'-factor formulation (it assumes a Gaussian distribution) and is 
 informative for populations with moderate or high amounts of skewness. In these 
@@ -159,9 +158,9 @@ class CalculateStatistics(cpm.CPModule):
             self.smoothing_size = cellprofiler.settings.Float(...)"""
         
         self.grouping_values = cps.Measurement(
-            "Where is information about the positive and negative control status of each image?",
-            lambda : cpmeas.IMAGE,
-            doc = '''The Z' factor, a measure of assay quality, is calculated by this 
+            "Select the image measurement describing the positive and negative control status",
+            lambda : cpmeas.IMAGE, doc = '''
+            The Z' factor, a measure of assay quality, is calculated by this 
             module based on measurements from images that are specified as positive controls 
             and images that are specified as negative controls. (Images that are neither are 
             ignored.) The module assumes that 
@@ -176,10 +175,10 @@ class CalculateStatistics(cpm.CPModule):
             single low value (for instance, 0). Other samples should have an intermediate value
             to exclude them from the Z' factor analysis.<p>
             The typical way to provide this information in the pipeline is to create 
-            a text file outside of CellProfiler and then load that file into the pipeline
-            using <b>LoadData</b>. In that case, choose the
+            a text comma-delimited (.csv) file outside of CellProfiler and then load that file into the pipeline
+            using the <b>Metadata</b> module or the legacy <b>LoadData</b> module. In that case, choose the
             measurement that matches the column header of the measurement
-            in <b>LoadData</b>'s input file. See <b>LoadData</b> help for an example text file.''')
+            in the input file. See the <b>Metadata</b> module help for an example text file.''')
         self.dose_values = []
         self.add_dose_value(can_remove = False)
         self.add_dose_button = cps.DoSomething("","Add another dose specification",
@@ -192,10 +191,10 @@ class CalculateStatistics(cpm.CPModule):
                      button for images that must be present.'''
         group = cps.SettingsGroup()
         group.append("measurement",
-                     cps.Measurement("Where is information about the treatment dose for each image?",
+                     cps.Measurement("Select the image measurement describing the treatment dose",
                                      lambda : cpmeas.IMAGE,
-                                     doc = 
-            """The V and Z' factor, a measure of assay quality, and the EC50, indicating 
+                                     doc = """
+            The V and Z' factor, a measure of assay quality, and the EC50, indicating 
             dose/response, are calculated by this module based on each image being 
             specified as a particular treatment dose. Choose a measurement that gives 
             the dose of some treatment for each of your images. <p>
@@ -205,21 +204,23 @@ class CalculateStatistics(cpm.CPModule):
             measurement that matches the column header of the measurement
             in <b>LoadData</b>'s input file. See <b>LoadData</b> help for an example text file.
             """))
+        
         group.append("log_transform",cps.Binary(
-            "Log-transform dose values?",
-            False,
-            doc = '''This option allows you to log-transform the dose values 
+            "Log-transform the dose values?",False,doc = '''
+            This option allows you to log-transform the dose values 
             before fitting a sigmoid curve. Check
             this box if you have dose-response data. Leave the box unchecked
             if your data values indicate only positive vs. negative controls.'''))
+        
         group.append('wants_save_figure', cps.Binary(
-            '''Create dose/response plots?''',
-            False,
-            doc = '''<a name='wants_save_figure'>Check this box if you want to create and save dose response plots. 
+            '''Create dose/response plots?''',False,doc = '''
+            <a name='wants_save_figure'>Check this box if you want to create and save dose response plots. 
             You will be asked for information on how to save the plots.</a>'''))
+        
         group.append('figure_name', cps.Text(
-            "Figure prefix","",
-            doc = '''<i>(Used only when creating dose/response plots)</i><br>CellProfiler will create a file name by appending the measurement name
+            "Figure prefix","", doc = '''
+            <i>(Used only when creating dose/response plots)</i><br>
+            CellProfiler will create a file name by appending the measurement name
             to the prefix you enter here. For instance, if you have objects
             named, "Cells", the "AreaShape_Area measurement", and a prefix of "Dose_",
             CellProfiler will save the figure as <i>Dose_Cells_AreaShape_Area.m</i>.
@@ -230,11 +231,12 @@ class CalculateStatistics(cpm.CPModule):
             dir_choices = [
                 cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
                 cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""<i>(Used only when creating dose/response plots)</i><br>
+                cps.DEFAULT_INPUT_SUBFOLDER_NAME], doc="""
+            <i>(Used only when creating dose/response plots)</i><br>
             This setting lets you choose the folder for the output
             files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
             
-            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
+            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s 
             For instance, if you have a metadata tag named 
             "Plate", you can create a per-plate folder by selecting one of the subfolder options
             and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will 

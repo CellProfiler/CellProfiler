@@ -45,7 +45,6 @@ import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.filter import stretch
-from cellprofiler.gui.moduleview import ABSOLUTE, FROM_EDGE
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +60,10 @@ IO_FIRST = "First"
 RM_NO = "No"
 RM_EDGES = "Edges"
 RM_ALL = "All"
+
+# Doens't seem to like importing defs from cellprofiler.gui.moduleview so define here
+ABSOLUTE = "Absolute"
+FROM_EDGE = "From edge"
 
 EL_XCENTER = "xcenter"
 EL_YCENTER = "ycenter"

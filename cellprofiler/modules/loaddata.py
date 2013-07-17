@@ -413,14 +413,6 @@ class LoadData(cpm.CPModule):
                 raise cps.ValidationError("No such CSV file: %s"%csv_path,
                                           self.csv_file_name)
 
-        # This will throw if the URL can't be retrieved
-        if self.csv_directory.dir_choice == cps.URL_FOLDER_NAME:
-            try:
-                # do not automatically load URLs
-                self.open_csv(do_not_cache=True)
-            except Exception, e:
-                raise cps.ValidationError("Data loaded by URL are not validated automatically.  Press View or Reload to validate module settings.", self.browse_csv_button)
-                
         try:
             self.open_csv()
         except IOError, e:

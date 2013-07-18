@@ -176,13 +176,12 @@ class TestImagej2(unittest.TestCase):
         module_infos = ij2.get_module_service(self.context).getModules()
         for module_info in module_infos:
             if module_info.getClassName() == \
-               'imagej.core.commands.app.AboutImageJ':
+               'imagej.core.commands.display.ShowLUT':
                 d = J.get_map_wrapper(J.make_instance('java/util/HashMap', '()V'))
-                d['context'] = self.context
                 future = svc.run(module_info.o, d.o)
                 module = future.get()
                 module = ij2.wrap_module(module)
-                module.getOutput('display')
+                module.getOutput('output')
                 break
         else:
             raise AssertionError("Could not find target module")
@@ -317,7 +316,7 @@ class TestImagej2(unittest.TestCase):
         display = display_svc.createDisplay("Foo", ds)
         d2 = display_svc.createDisplay("Bar", ij2.create_dataset(self.context, image, "Bar"))
         overlay = J.run_script(
-            """var o = new Packages.imagej.data.overlay.RectangleOverlay(context);
+            """var o = new Packages.imagej.data.overlay.RectangleOverlay(context.getContext());
                o.setOrigin(5, 0);
                o.setOrigin(3, 1);
                o.setExtent(6, 0);
@@ -388,7 +387,7 @@ class TestImagej2(unittest.TestCase):
         image = r.randint(0, 256, (11,13))
         ds = ij2.create_dataset(self.context, image, "Foo")
         display = svc.createDisplay("Foo", ds)
-        svc.setActiveDisplay(display.o)
+        svc.setActiveDisplay(display)
         
     def test_09_04_get_active_display(self):
         svc = ij2.get_display_service(self.context)
@@ -399,7 +398,7 @@ class TestImagej2(unittest.TestCase):
         display = svc.createDisplay("Foo", ds)
         ds = ij2.create_dataset(self.context, image, "Bar")
         svc.createDisplay("Bar", ds)
-        svc.setActiveDisplay(display.o)
+        svc.setActiveDisplay(display)
         self.assertEqual(svc.getActiveDisplay().getName(), "Foo")
         
     def test_09_05_get_active_image_display(self):
@@ -411,7 +410,7 @@ class TestImagej2(unittest.TestCase):
         svc.createDisplay("Foo", ds)
         ds = ij2.create_dataset(self.context, image, "Bar")
         display = svc.createDisplay("Bar", ds)
-        svc.setActiveDisplay(display.o)
+        svc.setActiveDisplay(display)
         self.assertEqual(svc.getActiveImageDisplay().getName(), "Bar")
         
     def test_09_06_get_display_by_name(self):
@@ -424,7 +423,7 @@ class TestImagej2(unittest.TestCase):
         image = r.randint(0, 256, (14,12))
         ds2 = ij2.create_dataset(self.context, image, "Bar")
         display = svc.createDisplay("Bar", ds)
-        svc.setActiveDisplay(display.o)
+        svc.setActiveDisplay(display)
         display = svc.getDisplay("Foo")
         view = display.getActiveView()
         ds3 = ij2.wrap_interval(view.getData())

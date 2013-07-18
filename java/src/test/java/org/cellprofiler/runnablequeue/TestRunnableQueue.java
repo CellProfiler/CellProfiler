@@ -26,6 +26,7 @@ public class TestRunnableQueue {
 	public void setUp() {
 		RunnableQueue rq = new RunnableQueue();
 		t = new Thread(rq);
+		t.setContextClassLoader(null);
 		t.start();
 	}
 	
@@ -104,6 +105,21 @@ public class TestRunnableQueue {
 			throw new AssertionError("Thread unexpectedly interrupted during enqueue");
 		} catch (ExecutionException e) {
 			throw new AssertionError("Runnable unexpectedly threw an exception");
+		}
+	}
+	@Test
+	public void testContextClassLoader() {
+		Callable<ClassLoader> myCallable = new Callable<ClassLoader> () {
+			public ClassLoader call() throws Exception {
+				return Thread.currentThread().getContextClassLoader();
+			}
+		};
+		try {
+			assertNotNull(RunnableQueue.execute(myCallable));
+		} catch (InterruptedException e) {
+			fail();
+		} catch (ExecutionException e) {
+			fail();
 		}
 	}
 	@Test

@@ -63,6 +63,9 @@ cached_choice_tree = None
 '''The index of the imageJ command in the settings'''
 IDX_COMMAND_CHOICE = 0
 IDX_COMMAND = 1
+IDX_COMMAND_COUNT = 2
+IDX_PRE_COMMAND_COUNT = 3
+IDX_POST_COMMAND_COUNT = 4
 IDX_PRE_COMMAND_CHOICE = 9
 IDX_PRE_COMMAND = 10
 IDX_POST_COMMAND_CHOICE = 12
@@ -294,6 +297,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         for module_info in module_service.getModules():
             if module_info.getMenuRoot() != "app":
                 continue
+            logger.info("Processing module %s" % module_info.getClassName())
             menu_path = module_info.getMenuPath()
             if menu_path is None or J.call(menu_path, "size", "()I") == 0:
                 continue
@@ -336,6 +340,7 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             try:
                 module_info = command.get_selected_leaf()[2]
             except cps.ValidationError:
+                logger.info("Could not find command %s" % key)
                 return []
             result = []
             inputs = module_info.getInputs()
@@ -385,12 +390,10 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                         value=value,
                         doc = description)
                 elif field_type == ij2.FT_STRING:
-                    choices = module_item.Choices
+                    choices = module_item.getChoices()
                     value = J.to_string(default)
-                    if choices is not None and len(choices) > 0:
-                        choices = [J.to_string(choice) 
-                                   for choice 
-                                   in J.iterate_collection(choices)]
+                    if choices is not None:
+                        choices = J.get_collection_wrapper(choices)
                         setting = cps.Choice(
                             label, choices, value, doc = description)
                     else:
@@ -429,6 +432,11 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
     def is_advanced(self, command, d):
         '''A command is an advanced command if there are settings for it'''
         return True
+    
+    def is_aggregation_module(self):
+        '''RunImageJ is an aggregation module if it performs a prepare or post group command'''
+        return self.prepare_group_choice != CM_NOTHING and \
+               self.post_group_choice != CM_NOTHING
     
     def settings(self):
         '''The settings as loaded or stored in the pipeline'''
@@ -815,13 +823,14 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
         
         set up the advanced settings for the commands
         '''
-        for command_settings, idx_choice, idx_cmd, d in (
-            (self.command_settings, IDX_COMMAND_CHOICE, IDX_COMMAND, 
-             self.command_settings_dictionary),
+        for command_settings, idx_choice, idx_cmd, idx_count, d in (
+            (self.command_settings, IDX_COMMAND_CHOICE, IDX_COMMAND,
+             IDX_COMMAND_COUNT, self.command_settings_dictionary),
             (self.pre_command_settings, IDX_PRE_COMMAND_CHOICE, IDX_PRE_COMMAND, 
-             self.pre_command_settings_dictionary),
+             IDX_PRE_COMMAND_COUNT, self.pre_command_settings_dictionary),
             (self.post_command_settings, IDX_POST_COMMAND_CHOICE, 
-             IDX_POST_COMMAND, self.post_command_settings_dictionary)):
+             IDX_POST_COMMAND, IDX_POST_COMMAND_COUNT,
+             self.post_command_settings_dictionary)):
             del command_settings[:]
             if setting_values[idx_choice] == CM_COMMAND:
                 command = self.make_command_choice("", "")

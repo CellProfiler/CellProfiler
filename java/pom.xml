@@ -8,6 +8,8 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <bioformats.version>5.0.0-beta1</bioformats.version>
+    <imagej.version>2.0.0-beta-7</imagej.version>
   </properties>
   <dependencies>
  	<dependency>
@@ -19,27 +21,33 @@
     <dependency>
       <groupId>loci</groupId>
       <artifactId>bio-formats</artifactId>
-      <version>4.5-imagej-2.0.0-beta6</version>
+      <version>${bioformats.version}</version>
     </dependency>
     <dependency>
       <groupId>net.imagej</groupId>
       <artifactId>ij-core</artifactId>
-      <version>2.0.0-beta6</version>
+      <version>${imagej.version}</version>
     </dependency>
     <dependency>
       <groupId>net.imagej</groupId>
       <artifactId>ij-data</artifactId>
-      <version>2.0.0-beta6</version>
+      <version>${imagej.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>net.imagej</groupId>
+      <artifactId>ij-app</artifactId>
+      <version>${imagej.version}</version>
+      <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>net.imglib2</groupId>
       <artifactId>imglib2</artifactId>
-      <version>2.0.0-beta6</version>
+      <version>${imagej.version}</version>
     </dependency>
     <dependency>
       <groupId>net.imglib2</groupId>
       <artifactId>imglib2-ops</artifactId>
-      <version>2.0.0-beta6</version>
+      <version>${imagej.version}</version>
     </dependency>
     <dependency>
       <groupId>log4j</groupId>
@@ -88,7 +96,7 @@
               <artifactItem>
 			      <groupId>loci</groupId>
 			      <artifactId>bio-formats</artifactId>
-			      <version>4.5-imagej-2.0.0-beta6</version>
+			      <version>${bioformats.version}</version>
                 <overWrite>false</overWrite>
               </artifactItem>
             </artifactItems>

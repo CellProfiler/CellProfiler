@@ -13,6 +13,7 @@ import net.imglib2.IterableInterval;
 import net.imglib2.RandomAccessibleInterval;
 import net.imglib2.RealRandomAccess;
 import net.imglib2.img.Img;
+import net.imglib2.img.array.ArrayImgs;
 import net.imglib2.img.planar.PlanarImgFactory;
 import net.imglib2.img.transform.ImgTranslationAdapter;
 import net.imglib2.meta.Axes;
@@ -78,8 +79,9 @@ public class OverlayUtils {
 				 */
 				IterableInterval<BitType> ii = 
 					((IterableRegionOfInterest) roi).getIterableIntervalOverROI(adapter);
-				for (BitType t:ii){
-					t.set(true);
+				Cursor<BitType> c = ii.cursor();
+				while(c.hasNext()){
+					c.next().set(true);
 				}
 			} else {
 				/*
@@ -103,14 +105,14 @@ public class OverlayUtils {
 	 * @param interval - an interval, typically that of a display
 	 * 
 	 * @return a bit image of the interval, initialized to zero.
+	 * 
 	 */
-	public static Img<BitType> createBitMask(Interval interval) {
-		PlanarImgFactory<BitType> f = new PlanarImgFactory<BitType>();
-		long [] dimensions = new long [interval.numDimensions()];
-		for (int i=0; i<dimensions.length; i++) {
-			dimensions[i] = interval.max(i)+1;
-		}
-		return f.create(dimensions, new BitType());
+	public static Img<BitType> createBitMask(ImageDisplay interval) {
+		long [] dimensions = new long [] { 
+				interval.max(interval.getAxisIndex(Axes.Y))+1,
+				interval.max(interval.getAxisIndex(Axes.X))+1
+		};
+		return ArrayImgs.bits(dimensions);
 	}
 
 }

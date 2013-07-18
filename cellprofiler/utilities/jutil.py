@@ -236,6 +236,7 @@ def start_vm(args, run_headless = False):
     if __vm is not None:
         return
     start_event = threading.Event()
+    logger.debug("Args = %s" % ("\n".join(args)))
     
     def start_thread(args=args, run_headless=run_headless):
         global __vm
@@ -309,6 +310,7 @@ def start_vm(args, run_headless = False):
             else:
                 env = vm.create(args)
                 __thread_local_env.env = env
+            init_context_class_loader()
         except:
             traceback.print_exc()
             logger.error("Failed to create Java VM")
@@ -743,6 +745,7 @@ def attach():
     __thread_local_env.attach_count = attach_count + 1
     if attach_count == 0:
         __thread_local_env.env = __vm.attach_as_daemon()
+        init_context_class_loader()
     return __thread_local_env.env
     
 def get_env():
@@ -777,6 +780,25 @@ def detach():
     env.set_defer_fn(defer_fn)
     __thread_local_env.env = None
     __vm.detach()
+    
+def init_context_class_loader():
+    '''Set the thread's context class loader to the system class loader
+    
+    When Java starts, as opposed to the JVM, the thread context class loader
+    is set to the system class loader. When you start the JVM, the context
+    class loader is null. This initializes the context class loader
+    for a thread, if null.
+    '''
+    current_thread = static_call("java/lang/Thread", "currentThread",
+                                 "()Ljava/lang/Thread;")
+    loader = call(current_thread, "getContextClassLoader",
+                  "()Ljava/lang/ClassLoader;")
+    if loader is None:
+        loader = static_call("java/lang/ClassLoader",
+                             "getSystemClassLoader",
+                             "()Ljava/lang/ClassLoader;")
+        call(current_thread, "setContextClassLoader",
+             "(Ljava/lang/ClassLoader;)V", loader)
 
 def is_instance_of(o, class_name):
     '''Return True if object is instance of class

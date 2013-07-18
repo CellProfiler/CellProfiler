@@ -3983,19 +3983,24 @@ def validate_module(pipeline, module_num, test_mode, callback):
     wx.CallAfter(callback, setting_idx, message, level)
 
 def validation_queue_handler():
-    while validation_queue_keep_running:
-        request = validation_queue.get()
-        if not isinstance(request, ValidationRequest) or request.cancelled:
-            continue
-        start = time.clock()
-        try:
-            validate_module(request.pipeline, request.module_num, 
-                            request.test_mode, request.callback)
-        except:
-            pass
-        # Make sure this thread utilizes less than 1/2 of GIL clock
-        wait_for = max(.25, time.clock() - start)
-        time.sleep(wait_for)
+    from cellprofiler.utilities.jutil import attach, detach
+    attach()
+    try:
+        while validation_queue_keep_running:
+            request = validation_queue.get()
+            if not isinstance(request, ValidationRequest) or request.cancelled:
+                continue
+            start = time.clock()
+            try:
+                validate_module(request.pipeline, request.module_num, 
+                                request.test_mode, request.callback)
+            except:
+                pass
+            # Make sure this thread utilizes less than 1/2 of GIL clock
+            wait_for = max(.25, time.clock() - start)
+            time.sleep(wait_for)
+    finally:
+        detach()
     logger.info("Exiting the pipeline validation thread")
 
 def request_module_validation(validation_request):

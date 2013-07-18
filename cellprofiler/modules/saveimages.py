@@ -454,7 +454,8 @@ class SaveImages(cpm.CPModule):
         
     def is_aggregation_module(self):
         '''SaveImages is an aggregation module when it writes movies'''
-        return self.save_image_or_figure == IF_MOVIE
+        return self.save_image_or_figure == IF_MOVIE or \
+               self.when_to_save == WS_LAST_CYCLE
     
     def display(self, workspace, figure):
         if self.show_window:
@@ -551,7 +552,8 @@ class SaveImages(cpm.CPModule):
             cpixels = cpixels / counts[:, :, np.newaxis]
             self.do_save_image(workspace, filename, cpixels, ome.PT_UINT8)
         self.save_filename_measurements(workspace)
-        workspace.display_data.wrote_image = True
+        if self.show_window:
+            workspace.display_data.wrote_image = True
     
     def post_group(self, workspace, *args):
         if (self.when_to_save == WS_LAST_CYCLE and 
@@ -592,7 +594,8 @@ class SaveImages(cpm.CPModule):
                     channel_names = channel_names)
 
     def save_image(self, workspace):
-        workspace.display_data.wrote_image = False
+        if self.show_window:
+            workspace.display_data.wrote_image = False
         image = workspace.image_set.get_image(self.image_name.value)
         if self.save_image_or_figure == IF_IMAGE:
             pixels = image.pixel_data
@@ -661,7 +664,8 @@ class SaveImages(cpm.CPModule):
             scipy.io.matlab.mio.savemat(filename,{"Image":pixels},format='5')
         else:
             self.do_save_image(workspace, filename, pixels, pixel_type)
-        workspace.display_data.wrote_image = True
+        if self.show_window:
+            workspace.display_data.wrote_image = True
         if self.when_to_save != WS_LAST_CYCLE:
             self.save_filename_measurements(workspace)
         

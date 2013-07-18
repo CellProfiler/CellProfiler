@@ -37,6 +37,9 @@ public class RunnableQueue implements Runnable {
 	 */
 	public void run() {
 		try {
+			if (Thread.currentThread().getContextClassLoader() == null) {
+				Thread.currentThread().setContextClassLoader(ClassLoader.getSystemClassLoader());
+			}
 			while (true) {
 				Runnable task = queue.take();
 				task.run();

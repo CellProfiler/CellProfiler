@@ -76,10 +76,9 @@ field_mapping = {
 
 def field_class_mapping():
     return (
-        (J.class_for_name('imagej.display.Display'), FT_IMAGE),
+        (J.class_for_name('imagej.data.display.ImageDisplay'), FT_IMAGE),
         (J.class_for_name('imagej.data.Dataset'), FT_IMAGE),
-        (J.class_for_name('imagej.data.display.DatasetView'), FT_IMAGE),
-        (J.class_for_name('imagej.ImageJ'), FT_CONTEXT)
+        (J.class_for_name('imagej.data.display.DatasetView'), FT_IMAGE)
     )
 
 def run_imagej(*args):
@@ -87,7 +86,12 @@ def run_imagej(*args):
                   *[unicode(arg) for arg in args])
 
 def create_context(service_classes):
-    '''Create an ImageJ context for getting services'''
+    '''Create an ImageJ context for getting services
+
+    This is an imagej.ImageJ, which at one point was the context.
+    Call self.getContext() to get the org.scijava.Context which may be 
+    what you want.
+    '''
     class Context(object):
         def __init__(self):
             if service_classes is None:
@@ -113,17 +117,6 @@ def create_context(service_classes):
             self.o = J.execute_future_in_main_thread(
                 J.make_future_task(ctxt_fn))
         
-        def loadService(self, class_name):
-            '''Load the service class with the given class name
-            
-            You can use this method to pick specific implementations such as
-            the headless or Swing UI.
-            
-            class_name - class name in dotted form, e.g. java.lang.String
-            '''
-            klass = J.class_for_name(class_name)
-            J.call(self.o, 'loadService', '(Ljava/lang/Class;)V', klass)
-            
         def getService(self, class_name):
             '''Get a service with the given class name
             
@@ -132,8 +125,9 @@ def create_context(service_classes):
             returns the class or None if no implementor loaded.
             '''
             klass = J.class_for_name(class_name)
-            return J.call(self.o, 'getService', 
-                          '(Ljava/lang/Class;)Limagej/service/Service;', klass)
+            return J.call(self.o, 'get', 
+                          '(Ljava/lang/Class;)Lorg/scijava/service/Service;', klass)
+        getContext = J.make_method("getContext", "()Lorg/scijava/Context;")
     return Context()
 
 the_imagej_context = None
@@ -142,6 +136,9 @@ def get_context():
     
     This is a singleton ImageJ context. We need a singleton for now because
     of http://trac.imagej.net/ticket/1413
+    This is an imagej.ImageJ, which at one point was the context.
+    Call self.getContext() to get the org.scijava.Context which may be 
+    what you want.
     '''
     global the_imagej_context
     if the_imagej_context is None:
@@ -252,7 +249,7 @@ def wrap_module_info(instance):
             "()Limagej/module/Module;",
             fn_post_process=wrap_module)
         getMenuPath = J.make_method(
-            "getMenuPath", "()Limagej/MenuPath;")
+            "getMenuPath", "()Lorg/scijava/MenuPath;")
         getMenuRoot = J.make_method(
             "getMenuRoot", "()Ljava/lang/String;")
         getName = J.make_method("getName", "()Ljava/lang/String;")
@@ -265,18 +262,18 @@ def wrap_module_item(instance):
         def __init__(self):
             self.o = instance
             
-        IV_NORMAL = J.get_static_field("imagej/module/ItemVisibility",
+        IV_NORMAL = J.get_static_field("org/scijava/ItemVisibility",
                                        "NORMAL",
-                                       "Limagej/module/ItemVisibility;")
-        IV_TRANSIENT = J.get_static_field("imagej/module/ItemVisibility",
+                                       "Lorg/scijava/ItemVisibility;")
+        IV_TRANSIENT = J.get_static_field("org/scijava/ItemVisibility",
                                           "TRANSIENT",
-                                          "Limagej/module/ItemVisibility;")
-        IV_INVISIBLE = J.get_static_field("imagej/module/ItemVisibility",
+                                          "Lorg/scijava/ItemVisibility;")
+        IV_INVISIBLE = J.get_static_field("org/scijava/ItemVisibility",
                                           "INVISIBLE",
-                                          "Limagej/module/ItemVisibility;")
-        IV_MESSAGE = J.get_static_field("imagej/module/ItemVisibility",
+                                          "Lorg/scijava/ItemVisibility;")
+        IV_MESSAGE = J.get_static_field("org/scijava/ItemVisibility",
                                         "MESSAGE",
-                                        "Limagej/module/ItemVisibility;")
+                                        "Lorg/scijava/ItemVisibility;")
                 
         
         def getType(self):
@@ -339,8 +336,10 @@ def wrap_menu_entry(menu_entry):
         getWeight = J.make_method("getWeight", "()D")
         setMnemonic = J.make_method("setMnemonic", "(C)V")
         getMnemonic = J.make_method("getMnemonic", "()C")
-        setAccelerator = J.make_method("setAccelerator", "(Limagej/input/Accelerator;)V")
-        getAccelerator = J.make_method("getAccelerator","()Limagej/input/Accelerator;")
+        setAccelerator = J.make_method(
+            "setAccelerator", "(Lorg/scijava/input/Accelerator;)V")
+        getAccelerator = J.make_method(
+            "getAccelerator", "()Lorg/scijava/input/Accelerator;")
         setIconPath = J.make_method("setIconPath", "(Ljava/lang/String;)V")
         getIconPath = J.make_method("getIconPath", "()Ljava/lang/String;")
         assignProperties = J.make_method("assignProperties", 
@@ -699,8 +698,8 @@ def create_overlay(context, mask):
         "(Lnet/imglib2/img/Img;)V", img)
     overlay = J.make_instance(
         "imagej/data/overlay/BinaryMaskOverlay",
-        "(Limagej/ImageJ;Lnet/imglib2/roi/BinaryMaskRegionOfInterest;)V", 
-        context, roi)
+        "(Lorg/scijava/Context;Lnet/imglib2/roi/BinaryMaskRegionOfInterest;)V", 
+        context.getContext(), roi)
     return overlay
 
 def create_mask(display):
@@ -884,9 +883,9 @@ def get_script_service(context):
             self.o = o
         
         getPluginService = J.make_method(
-            "getPluginService", "()Limagej/plugin/PluginService;")
+            "getPluginService", "()Lorg/scijava/plugin/PluginService;")
         getLogService = J.make_method(
-            "getLogService", "()Limagej/log/LogService;")
+            "getLogService", "()Lorg/scijava/log/LogService;")
         getIndex = J.make_method(
             "getIndex", "()Limagej/script/ScriptLanguageIndex;")
         getLanguages = J.make_method(

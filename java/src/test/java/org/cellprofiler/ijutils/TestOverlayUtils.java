@@ -11,6 +11,7 @@ import java.util.Collections;
 import imagej.ImageJ;
 import imagej.data.Dataset;
 import imagej.data.DatasetService;
+import imagej.data.autoscale.AutoscaleService;
 import imagej.data.display.DataView;
 import imagej.data.display.ImageDisplay;
 import imagej.data.display.ImageDisplayService;
@@ -40,19 +41,22 @@ public class TestOverlayUtils {
 	static ImageJ context;
 	@BeforeClass
 	public static void setUpClass() {
-		context = new ImageJ(DisplayService.class, ImageDisplayService.class, OverlayService.class, DatasetService.class);
+		context = new ImageJ(
+				DisplayService.class, ImageDisplayService.class, 
+				OverlayService.class, DatasetService.class,
+				AutoscaleService.class);
 	}
 	public static ImageDisplayService getImageDisplayService() {
-		return context.getService(ImageDisplayService.class);
+		return context.imageDisplay();
 	}
 	public static DisplayService getDisplayService() {
-		return context.getService(DisplayService.class);
+		return context.display();
 	}
 	public static OverlayService getOverlayService() {
-		return context.getService(OverlayService.class);
+		return context.overlay();
 	}
 	public static DatasetService getDatasetService() {
-		return context.getService(DatasetService.class);
+		return context.dataset();
 	}
 	/**
 	 * Test method for {@link org.cellprofiler.ijutils.OverlayUtils#extractMask(imagej.data.display.ImageDisplay)}.
@@ -63,9 +67,9 @@ public class TestOverlayUtils {
 		Display<?> display = getDisplayService().createDisplay(getImageDisplayService().createDataView(dataset));
 		assertTrue(display instanceof ImageDisplay);
 		ImageDisplay iDisplay = (ImageDisplay)display;
-		RectangleOverlay o = new RectangleOverlay(context);
+		RectangleOverlay o = new RectangleOverlay(context.getContext());
 		o.setOrigin(5, 0);
-		o.setOrigin(3, 1);
+		o.setOrigin(16, 1);
 		o.setExtent(6, 0);
 		o.setExtent(7, 1);
 		getOverlayService().addOverlays(iDisplay, Collections.singletonList((Overlay)o));
@@ -74,8 +78,8 @@ public class TestOverlayUtils {
 		}
 		Img<BitType> mask = OverlayUtils.extractMask(iDisplay);
 		assertNotNull(mask);
-		assertEquals(mask.dimension(0), 15);
-		assertEquals(mask.dimension(1), 25);
+		assertEquals(mask.dimension(0), 25);
+		assertEquals(mask.dimension(1), 15);
 		long [] position = new long[2];
 		Cursor<BitType> c = mask.cursor();
 		/*
@@ -84,7 +88,7 @@ public class TestOverlayUtils {
 		while(c.hasNext()) {
 			BitType t = c.next();
 			c.localize(position);
-			assertEquals(t.get(), position[1] >=5 && position[1] < 11 && position[0] >= 3 && position[0] <10);
+			assertEquals(t.get(), position[1] >=5 && position[1] < 11 && position[0] >= 16 && position[0] <23);
 		}
 	}
 	/**
@@ -125,7 +129,7 @@ public class TestOverlayUtils {
 				maxima[0] = center_x + 10.0;
 				maxima[1] = center_y + 10.0;
 			}};
-		Overlay o = new AbstractROIOverlay<RegionOfInterest>(context, roi) {
+		Overlay o = new AbstractROIOverlay<RegionOfInterest>(context.getContext(), roi) {
 
 			/* (non-Javadoc)
 			 * @see imagej.data.overlay.Overlay#move(double[])
@@ -171,7 +175,7 @@ public class TestOverlayUtils {
 		Display<?> display = getDisplayService().createDisplay(getImageDisplayService().createDataView(dataset));
 		assertTrue(display instanceof ImageDisplay);
 		ImageDisplay iDisplay = (ImageDisplay)display;
-		RectangleOverlay o = new RectangleOverlay(context);
+		RectangleOverlay o = new RectangleOverlay(context.getContext());
 		o.setOrigin(5, 0);
 		o.setOrigin(3, 1);
 		o.setExtent(6, 0);
@@ -193,7 +197,7 @@ public class TestOverlayUtils {
 				{ { 5, 6}, { 3, 7 }},
 				{ { 1, 4}, { 14, 5}}
 		}) {
-			final RectangleOverlay o = new RectangleOverlay(context);
+			final RectangleOverlay o = new RectangleOverlay(context.getContext());
 			for (int i=0; i<coords.length; i++) {
 				o.setOrigin(coords[i][0], i);
 				o.setExtent(coords[i][1], i);

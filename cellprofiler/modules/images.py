@@ -1,19 +1,32 @@
 __doc__ = """
 The <b>Images</b> module helps you specify which image are to be processed in your pipeline.
 <hr>
-<p>The <b>Images</b> module allows you to specify the location of any and all files to
+The <b>Images</b> module allows you to specify the location of any and all files to
 be analyzed by the pipeline. These files can be located on your hard drive or on a networked
 computer elsewhere. If it is easier to specify the folder(s) containing the files rather than 
 the files theselves (for example, because
 the number of files to analyze is too large to deal with individually), you can provide rules to specify only those
-files that you want analyzed from a larger set.</p>
+files that you want analyzed from a larger set.
 
 <p>The most straightforward way to provide files to the <b>Images</b> module is to simply drag-and-drop
 them on the file list panel (the blank space indicated by the text "Drop files and folders here"). 
 Both individual files and entire folders can be dragged onto this panel, and as many folders and files can be 
-placed onto this panel as needed. A "Browse" button is also available with this 
-functionality. However, drag-and-dropping is recommended since it avoids the process of navigating through 
-file folders and menu options to get the files you want.</p>
+placed onto this panel as needed. </p>
+
+<p>Right-clicking on the file list panel will provide a context menu with options to modify the file list:
+<ul>
+<li><i>Show Selected Image:</i> Selecting this option (or double-clicking on the file) will open the image 
+in a new window.</li>
+<li><i>Remove From List:</i> Removes the selected file or folder from the list. Note that this does not remove 
+the file/folder from the hard drive.</li>
+<li><i>Browse For Images:</i> Use a dialog box to select an image file (though drag-and-drop is recommended).</li>
+<li><i>Refresh:</i> Shown only if folder is selected. Refresh the list of files from the folder. Files that were
+manually removed from the list for that folder are restored.</li>
+<li><i>Expand All Folders:</i> Expand all trees shown in the file list panel.</li>
+<li><i>Collapse All Folders:</i> Collapse all folder trees shown in the file list panel.</li>
+<li><i>Clear File List:</i> Remove all files/folders in the file list panel. You will be prompted for 
+confirmation beforehand.</li>
+</ul></p>
 
 <p>If you have a subset of files that you want to analyze from the full listing shown in the 
 panel, you can filter the files according to a set of rules. This is useful when, for example, you

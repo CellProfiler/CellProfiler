@@ -31,6 +31,14 @@ any of the names you defined from a drop-down list.</p>
 associated metadata. If you would like to use the metadata-specific settings, please see the <b>Metadata</b> module 
 or <i>Help > General help > Using Metadata in CellProfiler</i> for more details on metadata usage 
 and syntax. </p>
+
+<h4>Available measurements</h4>
+<ul> 
+<li><i>FileName, PathName:</i> The prefixes of the filename and location, respectively, of each image set written to 
+the per-image table.</li>
+<li><i>ObjectFileName, ObjectPathName:</i> (For images loaded as objects only) The prefixes of the filename and location, 
+respectively, of each object set written to the per-image table.</li>
+</ul>
 """
 
 #CellProfiler is distributed under the GNU General Public License.
@@ -110,8 +118,8 @@ class NamesAndTypes(cpm.CPModule):
         self.metadata_keys = []
         
         self.assignment_method = cps.Choice(
-            "Assignment method", [ASSIGN_ALL, ASSIGN_RULES],
-            doc = """How do you want to assign images to channels?<br>
+            "Assignment method", [ASSIGN_ALL, ASSIGN_RULES],doc = """
+            How do you want to assign images to channels?<br>
             This setting controls how different image types (e.g., an image
             of the GFP stain and a brightfield image) are assigned different
             names so that each type can be treated differently by
@@ -146,8 +154,8 @@ class NamesAndTypes(cpm.CPModule):
             self.add_assignment)
         self.matching_choice = cps.Choice(
             "Assign channels by",
-            [MATCH_BY_ORDER, MATCH_BY_METADATA],
-            doc = """How do you want to match the image from one channel with
+            [MATCH_BY_ORDER, MATCH_BY_METADATA],doc = """
+            How do you want to match the image from one channel with
             the images from other channels?
             <p>This setting controls how CellProfiler picks which images
             should be matched together when analyzing all of the images
@@ -168,33 +176,50 @@ class NamesAndTypes(cpm.CPModule):
             the same metadata values. This option is more complex to use than 
             <i>%(MATCH_BY_ORDER)s</i> but is more flexible and less prone to inadvertent
             errors.
-            <p>As an example, an experiment has two image channels ("w1" and "w2") containing
+            <p>As an example, an experiment is run on a single multiwell plate with two 
+            image channels (OrigBlue, <i>w1</i> and OrigGreen, <i>w2</i>) containing
             well and site metadata extracted using the <b>Metadata</b> module. A set of
             images from two sites in well A01 might be described using the following:
             <table border="1" align="center">
-            <tr><th>File name</th><th> Well</th><th>Site</th><th>Wavelength</th></tr>
-            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>A01</td><td>s1</td><td>w1</td></tr>
-            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s1</font>_<span style="color:#33bbce">w2</font>.tif</td><td>A01</td><td>s1</td><td>w2</td></tr>
-            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>A01</td><td>s2</td><td>w1</td></tr>
-            <tr><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33>s2</font>_<span style="color:#33bbce">w2</font>.tif</td><td>A01</td><td>s2</td><td>w2</td></tr>
+            <tr><th><b>File name</b></th><th><b>Well</b></th><th><b>Site</b></th><th><b>Wavelength</b></th></tr>
+            <tr><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s1</font>_<font color="#33bbce">w1</font>.tif</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s1</font></td><td><font color="#33bbce">w1</font></td></tr>
+            <tr><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s1</font>_<font color="#33bbce">w2</font>.tif</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s1</font></td><td><font color="#33bbce">w2</font></td></tr>
+            <tr><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s2</font>_<font color="#33bbce">w1</font>.tif</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s2</font></td><td><font color="#33bbce">w1</font></td></tr>
+            <tr><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s2</font>_<font color="#33bbce">w2</font>.tif</td><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s2</font></td><td><font color="#33bbce">w2</font></td></tr>
             </table>
             </p>
-            <p>In order to match the w1 and w2 channels with their respective well and site metadata,
-            you would select the "Well" metadata for both channels, followed by the "Site" metadata
-            for both channels. If both files have the same well and site metadata, CellProfiler will 
-            match the file in one channel with well A01 and site 1 with the file in the
-            other channel with well A01 and site 1 and so on, to create an image set like the following:
+            <p>We want to match the channels so that each field of view in uniquely represented by the two channels. In this case, 
+            to match the <i>w1</i> and <i>w2</i> channels with their respective well and site metadata,
+            you would select the <i>Well</i> metadata for both channels, followed by the <i>Site</i> metadata
+            for both channels. In other words:
             <table border="1" align="center">
-            <tr><th>Image set key</th><th>Channel</th><th>Channel</th></tr>
-            <tr><td>Well</td><td>Site</td><td>w1</td><td>w2</td></tr>
-            <tr><td>A01</td><td>s1</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s1</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
-            <tr><td>A01</td><td>s2</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w1</font>.tif</td><td>P-12345_<span style="color:#ce5f33">A01</font>_<span style="color:#3dce33">s2</font>_<span style="color:#33bbce">w2</font>.tif</td></tr>
+            <tr><th><b>OrigBlue</b></th><th><b>OrigGreen</b></th>
+            <tr><td>Well</td><td>Well</td></tr>
+            <tr><td>Site</td><td>Site</td></tr>
             </table>
-            Image sets for which a given metadata value combination (e.g., plate, well, site) is either
+            In this way, CellProfiler will match up files that have the same
+            well and site metadata combination, so that the <i>w1</i> channel belonging to well A01 and site 1 
+            will be paired with the <i>w2</i> channel belonging to well A01 and site 1. This will occur for all
+            unique well and site pairings, to create an image set similar to the following:
+            <table border="1" align="center">
+            <tr><th colspan="2"><b>Image set identifiers</b></th><th colspan="2"><b>Channels</b></th></tr>
+            <tr><td><b>Well</b></td><td><b>Site</b></td><td><b>OrigBlue (w1)</b></td><td><b>OrigGreen (w2)</b></td></tr>
+            <tr><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s1</font></td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s1</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s1</font>_<font color="#33bbce">w2</font>.tif</td></tr>
+            <tr><td><font color="#ce5f33">A01</font></td><td><font color="#3dce33">s2</font></td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s2</font>_<font color="#33bbce">w1</font>.tif</td><td>P-12345_<font color="#ce5f33">A01</font>_<font color="#3dce33">s2</font>_<font color="#33bbce">w2</font>.tif</td></tr>
+            </table>
+            Image sets for which a given metadata value combination (e.g., well, site) is either
             missing or duplicated for a given channel will simply be omitted.</p>
             <p>In addition, CellProfiler can match a single file for one channel against many files from
             another channel. This is useful, for instance, for applying an illumination correction file
-            for an entire plate against every image file for that plate.</p></li>
+            for an entire plate against every image file for that plate. In this instance, this would be 
+            done by selecting <i>Plate</i> as the common identifier and <i>(None)</i> for the rest:
+            <table border="1" align="center">
+            <tr><th><b>OrigBlue</b></th><th><b>IllumBlue</b></th>
+            <tr><td>Plate</td><td>Plate</td></tr>
+            <tr><td>Well</td><td>(None)</td></tr>
+            <tr><td>Site</td><td>(None)</td></tr>
+            </table>
+            </p></li>
             </ul>"""%globals())
         self.join = cps.Joiner("")
         self.imageset_setting = cps.ImageSetDisplay("", "Update table")

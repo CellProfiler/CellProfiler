@@ -2,7 +2,7 @@ __doc__ = """
 The <b>Metadata</b> module associates information about the images (i.e., metadata)
 with the images themselves. 
 <hr>
-<p>The general term <i>metadata</i> refers to "data about data." In this context,
+The general term <i>metadata</i> refers to "data about data." In this context,
 image metadata can include such items as the following (which is not an exhaustive list):
 <ul>
 <li>The height and width of an image, in pixels.</li>
@@ -20,7 +20,8 @@ a specific relationship between the images and the associated metadata. For inst
 processed in a particular way during the pipeline run;</li>
 <li>You want certain information attached to the output measurements and filenames 
 for annotation or sample-tracking purposes.</li>
-</ul></p>
+</ul>
+
 <p>The <b>Metadata</b> module allows you extract the metadata that is particular to the image 
 format, assigned as part of the file name or location (by a vendor microscope, for example),
 contained in a text file filled out by the user, or any of the above.</p>
@@ -63,6 +64,11 @@ a folder named according to the experiment.</li>
 </ul>
 In each case, the pre-defined metadata tag is used to name a file or folder. See the module setting help for additional
 information on how to use them in the context of the specific module.</p>
+
+<h4>Available measurements</h4>
+<ul> 
+<li><i>Metadata:</i> Each metadata identifier is prefixed by <i>Image_Metadata_</i> in the per-image table.</li>
+</ul>
 """
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

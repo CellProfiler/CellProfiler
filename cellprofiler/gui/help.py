@@ -100,13 +100,13 @@ LOCATION_PAUSE_ANALYSIS_BUTTON = 'IMG_PAUSE.png'
 # Module help specifics for repeated use
 #
 ####################################################
-BATCH_PROCESSING_HELP_REF = """Help > Using CellProfiler > Other Features > Batch Processing"""
-TEST_MODE_HELP_REF = """Help > Using CellProfiler > Testing Your Pipeline"""
-METADATA_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Using Metadata In CellProfiler"""
-IMAGE_TOOLS_HELP_REF = """Help > How To Use The Image Tools"""
-METADATA_GROUPING_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Image Grouping """
-DATA_TOOL_HELP_REF = """Help > Data Tool Help """
-PROJECT_INTRO_HELP = """Help > Using CellProfiler > Creating a Project > Introduction to Projects"""
+BATCH_PROCESSING_HELP_REF = """Help > Other Features > Batch Processing"""
+TEST_MODE_HELP_REF = """Help > Testing Your Pipeline"""
+METADATA_HELP_REF = """Help > Creating A Project > Using The Metadata Module"""
+IMAGE_TOOLS_HELP_REF = """Help > Using Module Display Windows > How To Use The Image Tools"""
+METADATA_GROUPING_HELP_REF = """Help > Creating A Project > Using The Groups Module"""
+DATA_TOOL_HELP_REF = """Help > Data Tool Help"""
+PROJECT_INTRO_HELP = """Help > Creating a Project > Introduction to Projects"""
 USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
 MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements Are Named"""
 USING_METADATA_HELP_REF = """ 

@@ -193,7 +193,7 @@ class NamesAndTypes(cpm.CPModule):
             you would select the <i>Well</i> metadata for both channels, followed by the <i>Site</i> metadata
             for both channels. In other words:
             <table border="1" align="center">
-            <tr><th><b>OrigBlue</b></th><th><b>OrigGreen</b></th>
+            <tr><th><b>OrigBlue</b></th><th><b>OrigGreen</b></th></tr>
             <tr><td>Well</td><td>Well</td></tr>
             <tr><td>Site</td><td>Site</td></tr>
             </table>
@@ -214,7 +214,7 @@ class NamesAndTypes(cpm.CPModule):
             for an entire plate against every image file for that plate. In this instance, this would be 
             done by selecting <i>Plate</i> as the common identifier and <i>(None)</i> for the rest:
             <table border="1" align="center">
-            <tr><th><b>OrigBlue</b></th><th><b>IllumBlue</b></th>
+            <tr><th><b>OrigBlue</b></th><th><b>IllumBlue</b></th></tr>
             <tr><td>Plate</td><td>Plate</td></tr>
             <tr><td>Well</td><td>(None)</td></tr>
             <tr><td>Site</td><td>(None)</td></tr>

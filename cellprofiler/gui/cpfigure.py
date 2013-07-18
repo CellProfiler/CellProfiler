@@ -294,7 +294,7 @@ class CPFigureFrame(wx.Frame):
         self.MenuBar = wx.MenuBar()
         self.__menu_file = wx.Menu()
         self.__menu_file.Append(MENU_FILE_SAVE,"&Save")
-        self.__menu_file.Append(MENU_FILE_SAVE_TABLE, "&Save table")
+        self.__menu_file.Append(MENU_FILE_SAVE_TABLE, "&Save Table")
         self.__menu_file.Enable(MENU_FILE_SAVE_TABLE, False)
         wx.EVT_MENU(self, MENU_FILE_SAVE, self.on_file_save)
         wx.EVT_MENU(self, MENU_FILE_SAVE_TABLE, self.on_file_save_table)

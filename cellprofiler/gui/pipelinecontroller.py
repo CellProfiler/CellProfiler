@@ -1182,13 +1182,13 @@ class PipelineController:
                 self.add_paths_to_pathlist(paths)
         
         
-    PATHLIST_CMD_SHOW = "Show selected image"
-    PATHLIST_CMD_BROWSE = "Browse for images"
-    PATHLIST_CMD_REMOVE = "Remove from list"
+    PATHLIST_CMD_SHOW = "Show Selected Image"
+    PATHLIST_CMD_BROWSE = "Browse For Images"
+    PATHLIST_CMD_REMOVE = "Remove From File List"
     PATHLIST_CMD_REFRESH = "Refresh"
-    PATHLIST_CMD_EXPAND_ALL = "Expand all folders"
-    PATHLIST_CMD_COLLAPSE_ALL = "Collapse all folders"
-    PATHLIST_CMD_CLEAR = "Clear list"
+    PATHLIST_CMD_EXPAND_ALL = "Expand All Folders"
+    PATHLIST_CMD_COLLAPSE_ALL = "Collapse All Folders"
+    PATHLIST_CMD_CLEAR = "Clear File List"
     
     def get_pathlist_file_context_menu(self, paths):
         return ((self.PATHLIST_CMD_SHOW, self.PATHLIST_CMD_SHOW),

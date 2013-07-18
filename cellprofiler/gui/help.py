@@ -60,36 +60,36 @@ except:
              "relative paths.\n") % drive)
     path = os.path.abspath(cellprofiler.icons.get_builtin_images_path())
 
-LOCATION_REFRESH_BUTTON = 'folder_refresh.png' #os.path.join(path,'folder_refresh.png')
-LOCATION_BROWSE_BUTTON = 'folder_browse.png' #os.path.join(path,'folder_browse.png')
-LOCATION_CREATE_BUTTON = 'folder_create.png' #os.path.join(path,'folder_create.png')
+LOCATION_REFRESH_BUTTON = 'folder_refresh.png'
+LOCATION_BROWSE_BUTTON = 'folder_browse.png'
+LOCATION_CREATE_BUTTON = 'folder_create.png'
 
-LOCATION_MODULE_HELP_BUTTON = 'module_help.png' #os.path.join(path,'module_help.png')
-LOCATION_MODULE_MOVEUP_BUTTON = 'module_moveup.png' #os.path.join(path,'module_moveup.png')
-LOCATION_MODULE_MOVEDOWN_BUTTON = 'module_movedown.png' #os.path.join(path,'module_movedown.png')
-LOCATION_MODULE_ADD_BUTTON = 'module_add.png' #os.path.join(path,'module_add.png')
-LOCATION_MODULE_REMOVE_BUTTON = 'module_remove.png' #os.path.join(path,'module_remove.png')
+LOCATION_MODULE_HELP_BUTTON = 'module_help.png'
+LOCATION_MODULE_MOVEUP_BUTTON = 'module_moveup.png'
+LOCATION_MODULE_MOVEDOWN_BUTTON = 'module_movedown.png'
+LOCATION_MODULE_ADD_BUTTON = 'module_add.png'
+LOCATION_MODULE_REMOVE_BUTTON = 'module_remove.png'
 
-LOCATION_TESTMODE_PAUSE_ICON = 'IMG_PAUSE.png' #os.path.join(path,'IMG_PAUSE.png')
-LOCATION_TESTMODE_GO_ICON = 'IMG_GO.png' #os.path.join(path,'IMG_GO.png')
+LOCATION_TESTMODE_PAUSE_ICON = 'IMG_PAUSE.png'
+LOCATION_TESTMODE_GO_ICON = 'IMG_GO.png'
 
-LOCATION_DISPLAYMODE_SHOW_ICON = 'IMG_EYE.png' #os.path.join(path,'IMG_EYE.png')
-LOCATION_DISPLAYMODE_HIDE_ICON = 'IMG_CLOSED_EYE.png' #os.path.join(path,'IMG_CLOSED_EYE.png')
+LOCATION_DISPLAYMODE_SHOW_ICON = 'IMG_EYE.png'
+LOCATION_DISPLAYMODE_HIDE_ICON = 'IMG_CLOSED_EYE.png'
 
-LOCATION_SETTINGS_OK_ICON = 'IMG_OK.png' #os.path.join(path,'IMG_OK.png')
-LOCATION_SETTINGS_ERROR_ICON = 'IMG_ERROR.png' #os.path.join(path,'IMG_ERROR.png')
-LOCATION_SETTINGS_WARNING_ICON = 'IMG_WARN.png' #os.path.join(path,'IMG_WARN.png')
+LOCATION_SETTINGS_OK_ICON = 'IMG_OK.png'
+LOCATION_SETTINGS_ERROR_ICON = 'IMG_ERROR.png'
+LOCATION_SETTINGS_WARNING_ICON = 'IMG_WARN.png'
 
-LOCATION_RUNSTATUS_PAUSE_BUTTON = 'status_pause.png' #os.path.join(path,'status_pause.png')
-LOCATION_RUNSTATUS_STOP_BUTTON  = 'status_stop.png' #os.path.join(path,'status_stop.png')
-LOCATION_RUNSTATUS_SAVE_BUTTON  = 'status_save.png' #os.path.join(path,'status_save.png')
+LOCATION_RUNSTATUS_PAUSE_BUTTON = 'status_pause.png'
+LOCATION_RUNSTATUS_STOP_BUTTON  = 'status_stop.png'
+LOCATION_RUNSTATUS_SAVE_BUTTON  = 'status_save.png' 
 
-LOCATION_WINDOW_HOME_BUTTON = 'window_home.png' #os.path.join(path,'window_home.png')
-LOCATION_WINDOW_BACK_BUTTON  = 'window_back.png' #os.path.join(path,'window_back.png')
-LOCATION_WINDOW_FORWARD_BUTTON  = 'window_forward.png' #os.path.join(path,'window_forward.png')
-LOCATION_WINDOW_PAN_BUTTON  = 'window_pan.png' #os.path.join(path,'window_pan.png')
-LOCATION_WINDOW_ZOOMTORECT_BUTTON  = 'window_zoom_to_rect.png' #os.path.join(path,'window_zoom_to_rect.png')
-LOCATION_WINDOW_SAVE_BUTTON  = 'window_filesave.png' #os.path.join(path,'window_filesave.png')
+LOCATION_WINDOW_HOME_BUTTON = 'window_home.png'
+LOCATION_WINDOW_BACK_BUTTON  = 'window_back.png'
+LOCATION_WINDOW_FORWARD_BUTTON  = 'window_forward.png'
+LOCATION_WINDOW_PAN_BUTTON  = 'window_pan.png' 
+LOCATION_WINDOW_ZOOMTORECT_BUTTON  = 'window_zoom_to_rect.png'
+LOCATION_WINDOW_SAVE_BUTTON  = 'window_filesave.png' 
 
 LOCATION_ANALYZE_IMAGE_BUTTON = 'IMG_ANALYZE_16.png'
 LOCATION_STOP_ANALYSIS_BUTTON = 'IMG_STOP.png'
@@ -103,7 +103,7 @@ LOCATION_PAUSE_ANALYSIS_BUTTON = 'IMG_PAUSE.png'
 BATCH_PROCESSING_HELP_REF = """Help > Using CellProfiler > Other Features > Batch Processing"""
 TEST_MODE_HELP_REF = """Help > Using CellProfiler > Testing Your Pipeline"""
 METADATA_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Using Metadata In CellProfiler"""
-IMAGE_TOOLS_HELP_REF = """"Help > How To Use The Image Tools"""
+IMAGE_TOOLS_HELP_REF = """Help > How To Use The Image Tools"""
 METADATA_GROUPING_HELP_REF = """Help > Using CellProfiler > How Data Is Handled > Image Grouping """
 DATA_TOOL_HELP_REF = """Help > Data Tool Help """
 PROJECT_INTRO_HELP = """Help > Using CellProfiler > Creating a Project > Introduction to Projects"""
@@ -132,13 +132,15 @@ proper use of metadata for grouping"""%globals()
 ##################################################
 
 LEGACY_LOAD_MODULES_HELP = """
-<p>Historically, two modules served the same functionality as the current project structure: <b>LoadImages</b> and <b>LoadData</b>.
+<p>Historically, two modules served the same functionality as the current project structure: 
+<b>LoadImages</b> and <b>LoadData</b>.
 While the approach described above supercedes these modules in part, old pipelines
 loaded into CellProfiler that contain these modules will provide the option of preserving them;
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these 
 modules into the project equivalent as closely as possible. Both modules remain accesible
-via the "Add module" and "+" buttons at the bottom of the pipeline panel. The section details
+via the "Add module" and <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;
+button at the bottom of the pipeline panel. The section details
 information relevant for users who would like to continue using these modules. Please note,
 however, that these modules are deprcated and may be removed in the future.</p>
 
@@ -150,7 +152,9 @@ This information can be:
 together for particular steps in a pipeline;</li>
 <li>Stored in the output file along with CellProfiler-measured features for
 annotation or sample-tracking purposes;
-<li>Used to name additional input/output files.</li></ol></p>
+<li>Used to name additional input/output files.</li>
+</ol></p>
+
 <p>Two sources of metadata are:
 <ul>
 <li><i>Metadata provided in the image filename or location (pathname).</i> For example, images produced by an automated
@@ -236,7 +240,8 @@ use the <i>Input modules</i> panel starting with the <b>Images</b> module.</p>
 
 <p>The <i>Default Input Folder</i> is enabled only if a legacy pipeline is loaded into
 CellProfiler and is accessible by pressing the "%(VIEW_OUTPUT_SETTINGS_BUTTON_NAME)s"
-button at the botton of the pipeline panel. The folder designated as the <i>Default Input Folder</i> contains the input image or data files
+button at the botton of the pipeline panel. The folder designated as the 
+<i>Default Input Folder</i> contains the input image or data files
 that you want to analyze. Several File Processing modules (e.g., 
 <b>LoadImages</b> or <b>LoadData</b>) provide the option of retrieving images 
 from this folder on a default basis unless you specify, within the module, an alternate, 
@@ -299,7 +304,8 @@ name of the output file.</p>
 
 <p>The output file can be written in one of two formats:
 <ul>
-<li>A <i>.mat file</i> which is readable by CellProfiler and by MATLAB. </li>
+<li>A <i>.mat file</i> which is readable by CellProfiler and by 
+<a href="http://www.mathworks.com/products/matlab/">MATLAB</a> (Mathworks). </li>
 <li>An <i>.h5 file</i> which is readable by CellProfiler, MATLAB and any other program
 capable of reading the HDF5 data format. Documentation on
 how measurements are stored and handled in CellProfiler using this format can be found 
@@ -426,7 +432,7 @@ an image processing function such as illumination correction, object identificat
 (segmentation), and object measurement. Users mix and match modules and adjust 
 their settings to measure the phenotype of interest. While originally designed for 
 high-throughput images, it is equally appropriate for low-throughput assays as 
-well (i.e., assays of < 100 images).</p>
+well (i.e., assays of &lt; 100 images).</p>
 
 <p>CellProfiler can extract valuable biological information from images quickly 
 while increasing the objectivity and statistical power of assays. It helps researchers 
@@ -461,27 +467,30 @@ or repeating the analysis with slightly different parameters).</li>
 
 
 <h5>References</h5>
+<p>For a full list of references, visit our 
+<a href="http://www.cellprofiler.org/citations.shtml">citation</a> page.</p>
 <ul>
 <li>Carpenter AE, Jones TR, Lamprecht MR, Clarke C, Kang IH, Friman O, 
 Guertin DA, Chang JH, Lindquist RA, Moffat J, Golland P, Sabatini DM (2006) 
-CellProfiler: image analysis software for identifying and quantifying cell 
-phenotypes. <i>Genome Biology</i> 7:R100. PMID: 17076895</li>
+"CellProfiler: image analysis software for identifying and quantifying cell 
+phenotypes" <i>Genome Biology</i> 7:R100 
+[<a href="http://dx.doi.org/10.1186/gb-2006-7-10-r100">link</a>]</li>
 <li>Kamentsky L, Jones TR, Fraser A, Bray MA, Logan D, Madden K, Ljosa V, 
-Rueden C, Harris GB, Eliceiri K, Carpenter AE (2011) Improved structure, 
+Rueden C, Harris GB, Eliceiri K, Carpenter AE (2011) "Improved structure, 
 function, and compatibility for CellProfiler: modular high-throughput image 
-analysis software. <i>Bioinformatics</i> 27(8):1179-1180/doi:10.1093/bioinformatics/btr095.
-PMID: 21349861 PMCID: PMC3072555</li>
-<li>Lamprecht MR, Sabatini DM, Carpenter AE (2007) CellProfiler: free, versatile 
-software for automated biological image analysis. <i>Biotechniques</i> 
-42(1):71-75. PMID: 17269487</li>
+analysis software" <i>Bioinformatics</i> 27(8):1179-1180 
+[<a href="http://dx.doi.org/10.1093/bioinformatics/btr095">link</a>]</li>
+<li>Lamprecht MR, Sabatini DM, Carpenter AE (2007) "CellProfiler: free, versatile 
+software for automated biological image analysis" <i>Biotechniques</i> 
+42(1):71-75. [<a href="http://dx.doi.org/10.2144/000112257">link</a>]</li>
 <li>Jones TR, Carpenter AE, Lamprecht MR, Moffat J, Silver S, Grenier J, Root D, 
-Golland P, Sabatini DM (2009) Scoring diverse cellular morphologies in image-based 
-screens with iterative feedback and machine learning. PNAS 106(6):1826-1831/doi: 
-10.1073/pnas.0808843106. PMID: 19188593 PMCID: PMC2634799</li>
+Golland P, Sabatini DM (2009) "Scoring diverse cellular morphologies in image-based 
+screens with iterative feedback and machine learning" <i>PNAS</i> 106(6):1826-1831  
+[<a href="http://dx.doi.org/10.1073/pnas.0808843106">link</a>]</li>
 <li>Jones TR, Kang IH, Wheeler DB, Lindquist RA, Papallo A, Sabatini DM, Golland P, 
-Carpenter AE (2008) CellProfiler Analyst: data exploration and analysis software for 
-complex image-based screens. BMC Bioinformatics 9(1):482/doi: 10.1186/1471-2105-9-482. 
-PMID: 19014601 PMCID: PMC2614436</li>
+Carpenter AE (2008) "CellProfiler Analyst: data exploration and analysis software for 
+complex image-based screens" <i>BMC Bioinformatics</i> 9(1):482
+[<a href="http://dx.doi.org/10.1186/1471-2105-9-482">link</a>]</li>
 </ul>
 """
 
@@ -494,22 +503,21 @@ pipeline from scratch. Click the <i>Help</i> <img src="memory:%(LOCATION_MODULE_
 </img>&nbsp;button in the main window to get
 help for a specific module.</p>
 
-<p>To adjust the CellProfiler source code, see <i>Help > Developer's Guide</i>. 
-</p>
-
 <h3>Loading an existing pipeline</h3>
 <ol>
 <li>Put the images and pipeline into a folder on your computer.</li>
-<li> Set the Default Input and Output Folders (lower right of the main 
+<li>Set the Default Input and Output Folders (lower right of the main 
 window) to be the folder where you put the images.</li> 
-<li>Load the pipeline using <i>File > Load Pipeline</i> in the main menu of 
+<li>Load the pipeline using <i>File > Import Pipeline > From File...</i> in the main menu of 
 CellProfiler.</li> 
 <li>Click the <i>Analyze Images</i> button to start processing.</li> 
 <li>Examine the measurements using <i>Data tools</i>. The <i>Data tools</i> options are accessible in 
 the main menu of CellProfiler and allow you to plot, view, or export your 
 measurements (e.g., to Excel).</li>   
 <li>If you modify the modules or settings in the pipeline, you can save the 
-pipeline using <i>File > Save Pipeline.</i></li>
+pipeline using <i>File > Export > Pipeline...</i>. Alternately, you can save the project as a whole
+using <i>File > Save Project</i> or <i>Save Project As...</i> which also saves the 
+file list.</li>
 <li>To learn how to use a cluster of computers to process 
 large batches of images, see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.</li>
 </ol>
@@ -519,23 +527,22 @@ large batches of images, see <i>%(BATCH_PROCESSING_HELP_REF)s</i>.</li>
 of modules in the pipeline is shown in the <i>pipeline panel</i> (located on the 
 left-hand side of the CellProfiler window).</p>
 <ol>
-<li><p><i>Place modules in a new pipeline.</i><br>
-Choose image analysis modules to add to your pipeline by clicking the <i>Add</i> 
+<li><p><i>Place analysis modules in a new pipeline.</i><br>
+<p>Choose image analysis modules to add to your pipeline by clicking the <i>Add</i> 
 <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;button
 (located underneath the pipeline panel) or right-clicking in the pipeline panel
 itself and selecting a module from the 
-pop-up box that appears. You can learn more about each module by clicking
-<i>Module Help</i> in the "Add modules" window or the <i>?</i> button after the module has 
-been placed and selected in the pipeline. Modules are added to the end of the pipeline, but you can
+pop-up box that appears.</p>
+<p>You can learn more about each module by clicking
+<i>Module Help</i> in the "Add modules" window or the <i>?</i> button after the module 
+has been placed and selected in the pipeline. Modules are added to the end of the 
+pipeline or after the currently selected module, but you can
 adjust their order in the main window by dragging and dropping them, or by selecting a module (or
-modules, using the <i>Shift</i> key) and using the <i>Move module up</i> 
-<img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img> and <i>Move module down</i> 
-<img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img> buttons. 
-The <i>Remove module</i> <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img>&nbsp;button will 
+modules, using the <i>Shift</i> key) and using the <i>Move Module Up</i> 
+<img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img>&nbsp;and <i>Move Module Down</i> 
+<img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img>&nbsp;buttons. 
+The <i>Remove Module</i> <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img>&nbsp;button will 
 delete the selected module(s) from the pipeline.</p> 
-<p>Typically, the first module you must run is 
- <b>LoadImages</b>, in which you specify the identity of the images 
-you want to analyze. </p>
 <p>Most pipelines depend on one major step: identifying the objects. In 
 CellProfiler, the objects you identify are called <i>primary</i>, 
 <i>secondary</i>, or <i>tertiary</i>:
@@ -551,13 +558,7 @@ secondary objects when their identification is based on the location of nuclei).
 already been identified (e.g., nuclei and cell regions are used to define the 
 cytoplasm objects, which are tertiary objects).</li>
 </ul></p>
-<p><i>Saving images in your pipeline:</i> Due to the typically high number 
-of intermediate images produced during processing, images produced during 
-processing are not saved to the hard drive unless you specifically request it, 
-using a <b>SaveImages</b> module.</p>
-<p><i>Saving data in your pipeline:</i> All measurements will be stored in the CellProfiler-formatted
-output file, but you can include an <b>Export</b> module to automatically export
-data in a format you prefer.</p></li> 
+</li> 
 
 <li><p><i>Adjust the settings in each module.</i><br>
 In the CellProfiler main window, click a module in the pipeline to see its 
@@ -604,6 +605,12 @@ image, preview the results, and adjust the module settings on the fly. See
 <li><p>Save your pipeline via <i>File > Save Pipeline</i>.</p>
 </li>
 </ol>
+<p><i>Saving images in your pipeline:</i> Due to the typically high number 
+of intermediate images produced during processing, images produced during 
+processing are not saved to the hard drive unless you specifically request it, 
+using a <b>SaveImages</b> module.</p>
+<p><i>Saving data in your pipeline:</i> You can include an <b>Export</b> module to automatically export
+data in a format you prefer. See <i>%(USING_YOUR_OUTPUT_REF)s</i> for more details.</p>
 """% globals()
 
 REGEXP_HELP_REF = """
@@ -676,19 +683,21 @@ CellProfiler can also output data into a <i>database</i>, which is a collection 
 data that is stored for retrieval by users. Which format you use will depend on
 some of the considerations below:
 <ul>
-<li>Assessibility: Spreadsheet applications are typically designed to allow easy
+<li><i>Assessibility:</i> Spreadsheet applications are typically designed to allow easy
 user interaction with the data, to edit values, make graphs and the like. In contrast, the values in databases are
 typically not modified after the fact. Instead, database applications typically allow for viewing a specific data range.</li>
-<li>Capacity and speed:</li>Databases are designed to hold larger amounts of data than spreadsheets. Spreadsheets may contain 
+<li><i>Capacity and speed:</i> Databases are designed to hold larger amounts of data than spreadsheets. Spreadsheets may contain 
 hundreds to a few thousand rows of data, whereas databases can hold mnay millions of rows of data. Due to the high
 capacity, accessing a particular portion of data in a database is optimized for speed.</li>
-<li>Learning curve: The applications that access spreadsheets are usually made for ease-of-use to allow for user edits. 
+<li><i>Learning curve:</i> The applications that access spreadsheets are usually made for ease-of-use to allow for user edits. 
 Databases are more sophisticated and are not typically edited or modified; to do so 
 require knowledge of specialized languages made for this purpose (e.g., MySQL, Oracle, etc).</li>
 </ul>
 For spreadsheets, the most widely used program to open these files is Microsoft's Excel program.
-Since the file is plain text, other editors can also be used, such as Calc (OpenOffice, freeware) or Google Docs.
-For databases, a popular (and free) access tools is SQLyog. 
+Since the file is plain text, other editors can also be used, such as 
+<a href="http://www.libreoffice.org/features/calc/">Calc</a> or 
+<a href="https://docs.google.com">Google Docs</a>.
+For databases, a popular freeware access tool is <a href="https://www.webyog.com/">SQLyog</a>. 
 </p>
 """
 
@@ -696,23 +705,22 @@ MEMORY_AND_SPEED_HELP = """
 <p>CellProfiler includes several options for dealing with out-of-memory
 errors associated with image analysis: </p>
 <ul>
-<li><p><i>Resize the input images.</i><br>
+<li><i>Resize the input images.</i><br>
 If the image is high-resolution, it may be helpful to determine whether the 
 features of interest can be processed (and accurate data obtained) by using a 
 lower-resolution image. If this is the  case, use the <b>Resize</b> module (in the
 <i>Image Processing</i> category) to scale down the image to a more manageable size
-and perform the desired operations on the smaller image.</p></li>
+and perform the desired operations on the smaller image.</li>
 
-<li><p><i>Use the <b>ConserveMemory</b> module.</i><br>                                 
+<li><i>Use the <b>ConserveMemory</b> module.</i><br>                                 
 The <b>ConserveMemory</b> module lets you clear the images stored in memory, 
 with the exception of any you specify. Please see the 
-<b>ConserveMemory</b> module help for more details.</p></li>
+<b>ConserveMemory</b> module help for more details.</li>
 </ul>
 
-<p>In addition, there are several options in CellProfiler for speeding up processing: </p>
-
+<p>In addition, there are several options in CellProfiler for speeding up processing:
 <ul>
-<li><p><i>Run without display windows.</i><br>
+<li><i>Run without display windows.</i><br>
 Each module is associated with a display window that takes time to render and/or
 update. Closing these windows improves speed somewhat. 
 To the left of each module listed in your pipeline an icon 
@@ -720,28 +728,31 @@ To the left of each module listed in your pipeline an icon
 the module window will be displayed during the analysis run. You can turn off individual module windows by
 clicking on the icon; this icon <img src="memory:%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>&nbsp;indicates that the window 
 will not be shown. Select <i>Window > Hide all windows on run</i> to prevent display
-of all module windows.</p></li>           
+of all module windows.</li>           
                                                                             
-<li><p><i>Use care in object identification </i><br>                                   
+<li><i>Use care in object identification </i><br>                                   
 If you have a large image which contains many small        
 objects, a good deal of computer time will be spent processing each   
 individual object, many of which you might not need. To avoid this, make 
 sure that you adjust the diameter options in <b>IdentifyPrimaryObjects</b> to   
 exclude small objects in which you are not interested, or use a <b>FilterObjects</b> 
-module to eliminate such objects.</p></li>               
+module to eliminate such objects.</li>               
 </ul>
+ </p>
 """%globals()
 
 TEST_MODE_HELP = """ 
-<p>You can test an analysis on a selected image cycle using the <i>Test</i> mode option on 
+<p>Before starting an analysis run, you can test the pipeline settings on a selected image 
+cycle using the <i>Test</i> mode option on 
 the main menu. Test mode allows you to run the pipeline on a selected
 image, preview the results and adjust the module settings on the fly.</p>
 
-<p>To enter Test mode once you have built a pipeline, choose <i>Test > Start Test Mode</i> in the
+<p>To enter Test mode once you have built a pipeline, choose <i>Test > Start Test Mode</i> from the
 menu bar in the main window. At this point, you will see the following features appear:
 <ul>
 <li>The module view will have a slider bar appearing on the far left.</li>
-<li>A Pause icon <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img>&nbsp;will appear to the left of each module.</li>
+<li>A Pause icon <img src="memory:%(LOCATION_TESTMODE_GO_ICON)s"></img>&nbsp;
+will appear to the left of each module.</li>
 <li>A series of buttons will appear at the bottom of the pipeline panel above the 
 module adjustment buttons.</li>
 <li>The grayed-out items in the <i>Test</i> menu will become active, and the 
@@ -749,8 +760,9 @@ module adjustment buttons.</li>
 </ul>
 </p>
 
-<p>You can run your pipeline in Test mode by selecting <i>Test > Step to next module</i>
-or clicking the <i>Run</i> button. The pipeline will execute normally, but you will
+<p>You can run your pipeline in Test mode by selecting <i>Test > Step to Next Module</i>
+or clicking the <i>Run</i> or <i>Step</i> buttons at the bottom of the pipeline panel. 
+The pipeline will execute normally, but you will
 be able to back up to a previous module or jump to a downstream module, change
 module settings to see the results, or execute the pipeline on the image of your choice.
 The additional controls allow you to do the following:
@@ -778,16 +790,17 @@ first module in the pipeline.</li>
 <ul>
 <li><i>Exit Test Mode:</i> Exit <i>Test</i> mode. Loading a new pipeline or adding/subtracting
 modules will also automatically exit test mode.</li>
-<li><i>Step to next module:</i> Execute the next module (as indicated by the slider location)</li>
-<li><i>Next Image Set:</i> Step to the next image set in the current group or the .</li>
-<li><i>Next Image Group:</i> Step to the next group in the image set</li>
-<li><i>Random Image Set:</i> Randomly select an image set in the current group to jump to.</li>
+<li><i>Step to Next Module:</i> Execute the next module (as indicated by the slider location)</li>
+<li><i>Next Image Set:</i> Step to the next image set in the current image group.</li>
+<li><i>Next Image Group:</i> Step to the next group in the image set. 
+The slider will then automatically return to the first module in the pipeline.</li>
+<li><i>Random Image Set:</i> Randomly select and jump to an image set in the current image group.</li>
 <li><i>Choose Image Set:</i> Choose the image set to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
-<li><i>Choose Image Group:</i> Choose the group to jump to.
+<li><i>Choose Image Group:</i> Choose an image group to jump to.
 The slider will then automatically return to the first module in the pipeline.</li>
-<li><i>Reload Modules Source (for developers only):</i> This option will reload the module source 
-code, so any changes to the code will be reflected immediately.</li>
+<li><i>Reload Modules Source (enabled only if running from source code):</i> This option will reload 
+the module source code, so any changes to the code will be reflected immediately.</li>
 </ul>
 Note that if movies are being loaded, the individual movie is defined as a group automatically.
 Selecting <i>Choose Image Group</i> will allow you to choose the movie file, and <i>Choose Image Set</i> 
@@ -817,14 +830,16 @@ CellProfiler activated) under <i>File > Preferences...</i></p>
 
 # The help below contains a Google URL shortener since the URL has a control character that the URL reader doesn't interpret correctly
 BATCHPROCESSING_HELP = """ 
-CellProfiler is designed to analyze images in a high-throughput manner.   
+<p>CellProfiler is designed to analyze images in a high-throughput manner.   
 Once a pipeline has been established for a set of images, CellProfiler    
 can export batches of images to be analyzed on a computing cluster with the         
-pipeline. We often process tens or even hundreds of thousands of images for one analysis in this 
-manner. We do this by breaking the entire set of images into    
-separate batches, then submitting each of these batches as individual 
-jobs to a cluster. Each individual batch can be separately analyzed from  
-the rest.
+pipeline. </p>
+
+<p>It is possible to process tens or even hundreds of thousands of 
+images for one analysis in this manner. We do this by breaking the entire 
+set of images into separate batches, then submitting each of these batches 
+as individual jobs to a cluster. Each individual batch can be separately 
+analyzed from the rest.</p>
 
 <h3>Submitting files for batch processing</h3>
 
@@ -832,21 +847,22 @@ Below is a basic workflow for submitting your image batches to the cluster.
 <ol>
 <li><i>Create a folder for your project on your cluster.</i> For high throughput 
 analysis, it is recommended to create a separate project folder for each run. </li>
-<li>Within this project folder, create the following folders (both of which must be connected to 
-the cluster computing network):
+<li>Within this project folder, create the following folders (both of which must 
+be connected to the cluster computing network):
 <ul>
-<li>Create an <i>images</i> folder, then transfer all of our images to this folder
+<li>Create an input folder, then transfer all of our images to this folder
 as the input folder. The input folder must be readable by everyone (or at least your 
 cluster) because each of the separate cluster computers will read input files from 
 this folder.
-<li>Create an <i>output</i> folder where all your output data will be stored. The
+<li>Create an output folder where all your output data will be stored. The
 output folder must be writeable by everyone (or at least your cluster) because 
 each of the separate cluster computers will write output files to this folder.
 </ul>
 If you cannot create folders and set read/write permissions to these folders (or don't know 
 how), ask your Information Technology (IT) department for help. </li>
 
-<li>Press the "%(VIEW_OUTPUT_SETTINGS_BUTTON_NAME)s" button. In the panel that appears, set the Default Input and Default Output Folders
+<li>Press the "%(VIEW_OUTPUT_SETTINGS_BUTTON_NAME)s" button. In the panel that appears, 
+set the Default Input and Default Output Folders
 to the <i>images</i> and <i>output</i> folders created above, respectively. The Default Input
 Folder setting will only appear if a legacy pipeline is being run.</li>
 
@@ -956,20 +972,21 @@ way to do this is to use the command-line switch, "-L", to set the log level.
 For instance, to show error messages or more critical events, start CellProfiler
 like this:
 <br>
-CellProfiler -L ERROR
+<code>CellProfiler -L ERROR</code>
 <br>
 The following is a list of log levels that can be used:
-<br><ul><li><b>DEBUG</b> - detailed diagnostic information</li>
-<li><b>INFO</b> - informational messages that confirm normal progress</li>
-<li><b>WARNING</b> - messages that report problems that might need attention</li>
-<li><b>ERROR</b> - messages that report unrecoverable errors that result in data loss or termination of the current operation.</li>
-<li><b>CRITICAL</b> - messages indicating that CellProfiler should be restarted or is incapable of running.</li></ul>
+<ul>
+<li><b>DEBUG:</b> Detailed diagnostic information</li>
+<li><b>INFO:</b> Informational messages that confirm normal progress</li>
+<li><b>WARNING:</b> Messages that report problems that might need attention</li>
+<li><b>ERROR:</b> Messages that report unrecoverable errors that result in data loss or termination of the current operation.</li>
+<li><b>CRITICAL:</b> Messages indicating that CellProfiler should be restarted or is incapable of running.</li></ul>
 <br>
 You can tailor CellProfiler's logging with much more control using a logging
 configuration file. You specify the file name in place of the log level on
 the command line, like this:
 <br>
-CellProfiler -L ~/CellProfiler/my_log_config.cfg
+<code>CellProfiler -L ~/CellProfiler/my_log_config.cfg</code>
 </br>
 Files are in the Microsoft .ini format which is grouped into categories enclosed
 in square brackets and the key/value pairs for each category.
@@ -1056,7 +1073,8 @@ a few modules allow the user to type in the name of the feature (e.g., the
 obtained from the same objects but in different ways. For example, 
 <b>MeasureObjectIntensity</b> can measure intensities for "Nuclei" in two different 
 images. This specifier is used primarily for data obtained from an individual image 
-channel specified by a <b>Load</b> module (e.g.,  "OrigBlue" and "OrigGreen") or a
+channel specified by the <b>Images</b> module or a legacy <b>Load</b> module 
+(e.g.,  "OrigBlue" and "OrigGreen") or a
 particular spatial scale (e.g., under the category "Texture" or "Neighbors"). Multiple 
 parameters are separated by underscores.
 
@@ -1098,36 +1116,36 @@ performing an analysis run.
 <ul>
 <li><b>New project:</b> Clears the current project by removing all the analysis
 modules and resetting the input modules.</li>
-<li><b>Open Project...:</b> Open a previously saved CellProfiler project (.cpi file)
+<li><b>Open Project...:</b> Open a previously saved CellProfiler project (<i>.cpi</i> file)
 from your hard drive.</li>
 <li><b>Open Recent:</b> Displays a list of the most recent projects used. Select any
 one of these projects to load it.</li>
-<li><b>Save Project:</b> Save the current project to your hard drive as a .cpi file. 
+<li><b>Save Project:</b> Save the current project to your hard drive as a <i>.cpi</i> file. 
 If it has not been saved previously, you will be asked for a file name to give the 
 project. Thereafter, any changes to the project will be automatically saved to that filename unless
 you choose <b>Save as...</b>.</li>
-<li>Save Project As...:</b> Save the project to a new file name.</li>
+<li><b>Save Project As...:</b> Save the project to a new file name.</li>
 <li><b>Revert to Saved:</b> Restore the currently open project to the settings it had when
 it was first opened.</li>
 <li><b>Import Pipeline:</b> Gives you the choice of importing a CellProfiler pipeline file from 
-your hard drive. (<i>From file...</i>) or from a web address (<i>From URL...</i>). If importing from
-a file, you can either import a previously exported pipeline (.cp) file or extract it from
-a prior project (.cpi) file.</li>
+your hard drive (<i>From file...</i>) or from a web address (<i>From URL...</i>). If importing from
+a file, you can point it to a pipeline (<i>.cp</i>) file or have it extract the pipeline from
+a project (<i>.cpi</i>) file.</li>
 <li><b>Export:</b> You have the choice of exporting the pipeline you are currently working on as a 
-CellProfiler .cp pipeline file (<i>Pipeline</i>), or the image file list as a .csv (<i>Image file listing</i>).</li>
+CellProfiler <i>.cp</i> pipeline file (<i>Pipeline</i>), or the image set list as a .csv (<i>Image set listing</i>).</li>
 <li><b>Clear Pipeline:</b> Removes all modules from the current pipeline.</li>
 <li><b>View Image:</b> Opens a dialog box prompting you to select an image file for
 display. Images listed in the File list panel in the <b>Images</b> module can be also be displayed by double-clicking 
 on the filename.</li>
-<li><b>Analyze Images:</b> Executes the current pipeline using the current module
+<li><b>Analyze Images:</b> Executes the current pipeline using the current pipeline
 and Default Input and Output folder settings.</li>
 <li><b>Stop Analysis:</b> Stop the current analysis run.</li>
 <li><b>Run Multiple Pipelines:</b> Execute multiple pipelines in sequential order. 
 This option opens a dialog box allowing you to select the pipelines you would like 
-to run as well as the associated input and output folders. See
-the help in the Run Multiple Pipelines dialog for more details.</li>
-<li><b>Restart:</b> Resume a partially completed analysis run from here it left off.
-To restart an analysis run, go to <i>File > Restart</i> choose the output .mat file 
+to run, as well as the associated input and output folders. See
+the help in the <i>Run Multiple Pipelines</i> dialog for more details.</li>
+<li><b>Resume Pipeline:</b> Resume a partially completed analysis run from where it left off.
+You will be prompted to choose the output <i>.mat/.h5</i> file 
 containing the partially complete measurements and the analysis run will pick up 
 starting with the last cycle that was processed. </li>
 <li><b>Preferences...:</b> Displays the Preferences window, where you can change 
@@ -1139,14 +1157,20 @@ of saving your current pipeline if you have not done so.</li>
 MENU_BAR_EDIT_HELP = """
 The <i>Edit</i> menu provides options for modifying modules in your current pipeline.
 <ul>
-<li><b>Undo:</b> Undo your previous module modification.</li>
-<li><b>Move Module Up:</b> Move the currently selected module(s) up in the module list. You
+<li><b>Undo:</b> Undo the last module modification. You can undo multiple actions by using <i>Undo</i>
+repeatedly.</li>
+<li><b>Cut:</b> If a module text setting is currently active, remove the selected text.</li>
+<li><b>Copy:</b> Copy the currently selected text to the clipboard.</li>
+<li><b>Paste:</b> Paste clipboard text to the cursor location, if a text setting is active.</li>
+<li><b>Select All:</b> If a text setting is active, select all the text in the setting. If the module 
+list is active, select all the modules in the module list.</li>
+<li><b>Move Module Up:</b> Move the currently selected module(s) up. You
 can also use the <img src="memory:%(LOCATION_MODULE_MOVEUP_BUTTON)s"></img>&nbsp;button located
 below the Pipeline panel.</li>
-<li><b>Move Module Down:</b> Move the currently selected module(s) down in the module list. You
+<li><b>Move Module Down:</b> Move the currently selected module(s) down. You
 can also use the <img src="memory:%(LOCATION_MODULE_MOVEDOWN_BUTTON)s"></img>&nbsp;button located
 below the Pipeline panel.</li>
-<li><b>Delete Module:</b> Remove the currently selected module(s) from the module list. 
+<li><b>Delete Module:</b> Remove the currently selected module(s). 
 Pressing the Delete key also removes the module(s). You
 can also use the <img src="memory:%(LOCATION_MODULE_REMOVE_BUTTON)s"></img>&nbsp;button located
 under the Pipeline panel.</li>
@@ -1171,11 +1195,16 @@ in the pipeline panel will switch to <img src="memory:%(LOCATION_DISPLAYMODE_SHO
 <li><b>Hide All Windows On Run:</b> Select to show no display windows during the
 current test run or next analysis run. The display mode icons next to each module
 in the pipeline panel will switch to <img src="memory:%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>.</li>
-</ul>"""%globals()
+</ul>
+If there are any open windows, the window titles are listed underneath these options. Select any
+of these window titles to bring that window to the front."""%globals()
 
 PARAMETER_SAMPLING_MENU_HELP = """
 The <i>Sampling</i> menu is an interplace for Paramorama, a plugin for an interactive visualization 
 program for exploring the parameter space of image analysis algorithms.<p>
+
+<p>This menu option is only shown if specified in the Preferences. Note that if this preference setting
+is changed, CellProfiler must be restarted.</p>
 
 <p>Using this plugin will allow you sample a range of setting values in <b>IdentifyPrimaryObjects</b> and
 save the object identification results for later inspection. Upon completion, the plug-in will 
@@ -1186,12 +1215,11 @@ one or more output images; and (3) the actual output images.</p>
 <p>More information on how to use the plugin can be found 
 <a href="http://www.comp.leeds.ac.uk/scsajp/applications/paramorama2/">here</a>.</p>
 
-<p>Note that CellProfiler must be restarted after changing this setting.</p>
-
 <p><b>References</b>
 <ul>
-<li>Visualization of parameter space for image analysis. Pretorius AJ, Bray MA, Carpenter AE 
-and Ruddle RA. (2011) IEEE Transactions on Visualization and Computer Graphics, 17(12), 2402-2411.</li>
+<li>Pretorius AJ, Bray MA, Carpenter AE and Ruddle RA. (2011) "Visualization of 
+parameter space for image analysis" <i>IEEE Transactions on Visualization and Computer Graphics</i>
+17(12), 2402-2411.</li>
 </ul></p>
 """
 
@@ -1201,8 +1229,9 @@ to plot, view, export or perform specialized analyses on your measurements.
 
 <p>Each data tool has a corresponding module with the same name and 
 functionality. The difference between the data tool and the module is that the
-data tool takes a CellProfiler output file as input, which contains measurements
-from a previously completed analysis run. In contrast, a module uses measurements
+data tool takes a CellProfiler output file (i.e., a <i>.mat or .h5</i> file) 
+as input, which contains measurements from a previously completed analysis run. 
+In contrast, a module uses measurements
 received from the upstream modules during an in-progress analysis run.</p>
 
 <p>Opening a data tool will present a prompt in which the user is asked to provide
@@ -1225,9 +1254,12 @@ From the menu bar of each module display window, you have the following options:
 <ul>
 <li><b>File</b>
 <ul>
-<li><i>Save</i>: You can save the figure window to a file (currently,
+<li><i>Save:</i> You can save the figure window to a file (currently,
 Postscript (.PS), PNGs and PDFs are supported). Note that this will save the entire
 contents of the window, not just the individual subplot(s) or images.</li>
+<li><i>Save table:</i> This option is only enabled on windows which are displaying
+tabular output, such as that from a <b>Measure</b> module. This allows you to
+save the tabular data to a comma-delimited file (.csv).</li>
 </ul>
 
 <li><b>Tools</b>
@@ -1337,72 +1369,71 @@ FIGURE_HELP = (
 #
 ###################################################
 
-TITLE_FONT_HELP = """The <i>Title Font </i>preference sets the font used
-in titles above plots displayed in module figure windows."""
+TITLE_FONT_HELP = """
+Sets the font used in titles above plots displayed in module figure windows."""
 
-TABLE_FONT_HELP = """The <i>Table Font</i> preference sets the font used
-in tables displayed in module figure windows."""
+TABLE_FONT_HELP = """
+Sets the font used in tables displayed in module figure windows."""
 
-DEFAULT_COLORMAP_HELP = """The <i>Default Colormap</i> preference specifies the
-color map that sets the colors for labels and other elements. See this
+DEFAULT_COLORMAP_HELP = """
+Specifies the color map that sets the colors for labels and other elements. See this
 <a href ="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">
 page</a> for pictures of available colormaps."""
 
-WINDOW_BACKGROUND_HELP = """The <i>Window Background</i> preference sets the
-window background color of the CellProfiler main window."""
+WINDOW_BACKGROUND_HELP = """
+Sets the window background color of the CellProfiler main window."""
 
-ERROR_COLOR_HELP = """The <i>Error color</i> preference sets the color
-used for the error alerts associated with misconfigured settings and other
+ERROR_COLOR_HELP = """
+Sets the color used for the error alerts associated with misconfigured settings and other
 errors."""
 
-PLUGINS_DIRECTORY_HELP = """The <i>Plugins directory</i> preference chooses
-the directory that holds dynamically-loaded CellProfiler modules. You
+PLUGINS_DIRECTORY_HELP = """
+Chooses the directory that holds dynamically-loaded CellProfiler modules. You
 can write your own module and place it in this directory and CellProfiler
 will make it available for your pipeline. You must restart CellProfiler
 after modifying this setting."""
 
-IJ_PLUGINS_DIRECTORY_HELP = """The <i>ImageJ plugins directory</i> preference
-sets the directory that holds ImageJ plugins (for the <b>RunImageJ</b> module).
+IJ_PLUGINS_DIRECTORY_HELP = """
+Sets the directory that holds ImageJ plugins (for the <b>RunImageJ</b> module).
 You can download or write your own ImageJ plugin and place it in this directory
 and CellProfiler will make it available for your pipeline. You must restart
 CellProfiler after modifying this setting."""
 
-IJ_VERSION_HELP = """The <i>ImageJ version</i> preference chooses which version
-of ImageJ to use in the <b>RunImageJ</b> module. You must restart CellProfiler
+IJ_VERSION_HELP = """
+Chooses which version of ImageJ to use in the <b>RunImageJ</b> module. You must restart CellProfiler
 after changing this preference for the preference to take effect.<p>
-<ul><li><b>ImageJ 1.x</b> - This is a version of ImageJ 1.44 with added support
-for @parameter plugin decorations. You should use this if you only have
+<ul><li><b>ImageJ 1.x:</b> This is a version of ImageJ 1.44 with added support
+for <code>&amp;parameter</code> plugin decorations. You should use this if you only have
 ImageJ 1.0 plugins.</li>
-<li><b>ImageJ 2.0</b> - This is an alpha release of ImageJ 2.0. ImageJ 2.0
+<li><b>ImageJ 2.0:</b> This is an alpha release of ImageJ 2.0. ImageJ 2.0
 has better interoperability with CellProfiler. CellProfiler will display
 ImageJ 2.0 plugin settings as part of the RunImageJ module interface and
 will let you use regular and masked images in ImageJ 2.0 plugins. ImageJ 2.0
 can run ImageJ 1.0 plugins, but there may be incompatibilities.</li></ul>"""
 
-CHECK_FOR_UPDATES_HELP = """The <i>Check for Updates</i> preference controls how
-CellProfiler looks for updates on startup."""
+CHECK_FOR_UPDATES_HELP = """
+Controls whether CellProfiler looks for updates on startup."""
 
-SHOW_STARTUP_BLURB_HELP = """The <i>Display welcome text on startup</i> preference 
-controls whether CellProfiler displays an orientation message on startup."""
+SHOW_STARTUP_BLURB_HELP = """
+Controls whether CellProfiler displays an orientation message on startup."""
 
-SHOW_ANALYSIS_COMPLETE_HELP = """The <i>Show "Analysis complete"</i>
-preference determines whether CellProfiler displays a message box at the
+SHOW_ANALYSIS_COMPLETE_HELP = """
+Determines whether CellProfiler displays a message box at the
 end of a run. Check this preference to show the message box or uncheck it
 to stop display."""
 
-SHOW_EXITING_TEST_MODE_HELP = """The <i>Show "Exiting test mode"</i>
-preference determines whether CellProfiler displays a message box to inform you
+SHOW_EXITING_TEST_MODE_HELP = """
+Determines whether CellProfiler displays a message box to inform you
 that a change made to the pipeline will cause test mode to end. Check this preference 
 to show the message box or uncheck it to stop display."""
 
-SHOW_REPORT_BAD_SIZES_DLG_HELP = """The <i>Show Report Bad Sizes dialog</i>
-preference determines whether CellProfiler will display a warning dialog
+SHOW_REPORT_BAD_SIZES_DLG_HELP = """
+Determines whether CellProfiler will display a warning dialog
 if images of different sizes are loaded together in an image set.
 Check this preference to show the message box or uncheck it to stop display."""
 
 WARN_ABOUT_OLD_PIPELINES_HELP = """
-The <i>Warn if a pipeline was saved in an old version of CellProfiler</i>
-preference determines whether CellProfiler displays a warning dialog
+Determines whether CellProfiler displays a warning dialog
 if you open a pipeline that was saved using an old version of CellProfiler.
 The purpose of this warning is to remind you that, if you save the pipeline
 using the newer version of CellProfiler, people using the old version of
@@ -1411,27 +1442,27 @@ by old CellProfiler versions can always be loaded and used by new
 CellProfiler versions."""
 
 USE_MORE_FIGURE_SPACE_HELP = """
-The <i>Use more figure space</i> preference reduces the padding space
-and font sizes in module display figures.  It is suggested that you
+Determines whether to reduce the padding space
+and font sizes in module display figures. It is suggested that you
 also set the <i>Title font</i> preference to a smaller value."""
 
-PRIMARY_OUTLINE_COLOR_HELP = """The <i>Primary Outline Color</i> preference
-sets the color used for the outline of the object of interest in the
-<i>IdentifyPrimaryObjects</i>, <i>IdentifySecondaryObjects</i> and
-<i>IdentifyTertiaryObjects</i> displays."""
+PRIMARY_OUTLINE_COLOR_HELP = """
+Sets the color used for the outline of the object of interest in the
+<b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b> and
+<b>IdentifyTertiaryObjects</b> displays."""
 
-SECONDARY_OUTLINE_COLOR_HELP = """The <i>Secondary Outline Color</i> preference
-sets the color used for objects other than the ones of interest. In
-<i>IdentifyPrimaryObjects</i>, these are the objects that are too small or
-too large. In <i>IdentifySecondaryObjects</i> and <i>IdentifyTertiaryObjects</i>,
+SECONDARY_OUTLINE_COLOR_HELP = """
+Sets the color used for objects other than the ones of interest. In
+<b>IdentifyPrimaryObjects</b>, these are the objects that are too small or
+too large. In <b>IdentifySecondaryObjects</b> and <b>IdentifyTertiaryObjects</b>,
 this is the color of the secondary objects' outline."""
 
-TERTIARY_OUTLINE_COLOR_HELP = """The <i>Tertiary Outline Color</i> preference
-sets the color used for the objects touching the image border or image mask
-in <i>IdentifyPrimaryObjects</i>."""
+TERTIARY_OUTLINE_COLOR_HELP = """
+Sets the color used for the objects touching the image border or image mask
+in <b>IdentifyPrimaryObjects</b>."""
 
-INTERPOLATION_MODE_HELP = """The <i>Interpolation mode</i> preference sets
-the way CellProfiler displays image pixels. If you choose <i>Nearest</i>,
+INTERPOLATION_MODE_HELP = """
+Sets the way CellProfiler displays image pixels. If you choose <i>Nearest</i>,
 CellProfiler will display each pixel as a square block of uniform intensity.
 This is truest to the data, but the resulting images look blocky and
 pixelated. You can choose either <i>Bilinear</i> or <i>Bicubic</i> to see
@@ -1442,13 +1473,13 @@ an image that is more visually appealing and easier to interpret, but obscures
 the true pixel nature of the real data.
 """
 
-REPORT_JVM_ERROR_HELP = """The <i>Warn if Java runtime environment not present</i>
-preference determines whether CellProfiler will display a warning on startup
+REPORT_JVM_ERROR_HELP = """
+Determines whether CellProfiler will display a warning on startup
 if CellProfiler can't locate the Java installation on your computer. Check
 this box if you want to be warned. Uncheck this box to hide warnings."""
 
-MAX_WORKERS_HELP = """The <i>Maximum number of workers</i> preference controls
-the maximum number of <i>workers</i> (i.e., copies of CellProfiler)
+MAX_WORKERS_HELP = """
+Controls the maximum number of <i>workers</i> (i.e., copies of CellProfiler)
 that will be started at the outset of an analysis run. CellProfiler uses these 
 copies to process multiple image
 sets in parallel, utilizing the computer's CPUs and memory fully. The default
@@ -1457,10 +1488,10 @@ pipelines that require a large amount of memory. Use more workers for
 pipelines that are accessing image data over a slow connection.
 """
 
-TEMP_DIR_HELP = """The <i>Temporary folder</i> preference determines the
-folder that CellProfiler uses when storing temporary files. CellProfiler will
+TEMP_DIR_HELP = """
+Sets the folder that CellProfiler uses when storing temporary files. CellProfiler will
 create a temporary measurements file for analyses when the user specifies that
-a Matlab measurements file should be created or when the user asks that no
+a MATLAB measurements file should be created or when the user asks that no
 measurements file should be permanently saved. CellProfiler will also save
 images accessed by http URL temporarily to disk (but will efficiently access
 OMERO image planes directly from the server).
@@ -1504,18 +1535,15 @@ PREFERENCES_HELP += """</ul>"""
 #########################################################
 INTRODUCTION_TO_PROJECTS_HELP = """
 <h3>What is a project?</h3>
-<p>In CellProfiler, a <i>project</i> is comprised of two elements:<br>
+<p>In CellProfiler, a <i>project</i> is comprised of two elements:
 <ul>
 <li>An <i>image file list</i> which is the list of files and their locations that are selected by the user as 
 candidates for analysis.</li>
 <li>Optionally, the associated information about the images (<i>metadata</i>). This 
-information may be part of the images themselves, or imported 
-externally by the user.</li>
+information may be part of the images themselves, or imported externally by the user.</li>
 </ul>
 Note that this is distinct from the <i>pipeline</i>, which is a series of modules put together used to
-analyze a set of images.</li>
-</ul>
-</p>
+analyze a set of images.</p>
 
 <h3>Why would I want to use projects?</h3>
 <p>The project is the container for image information associated with a CellProfiler analysis. It stores
@@ -1534,7 +1562,7 @@ avilable on demand. </p>
 <h3>Working with projects</h3>
 <h4>Creating a project</h4>
 <p>Upon starting CellProfiler, you will be presented with a new, blank project.
-At this point, you may start building your project by using the modules located in "Input
+At this point, you may start building your project by using the modules located in the "Input
 modules" panel on the upper-left. The modules are:
 <ul>
 <li><b>Images</b>: Assemble the relevant images for analysis (required).</li>
@@ -1553,7 +1581,7 @@ save your project, complete with the current image file list and pipeline, to a 
 with the extension <i>.cpi</i>.</p>
 <p>For those interested, some technical details:
 <ul>
-<li>The .cpi file stores collected information using the HDF5 format. Documentation on
+<li>The <i>.cpi</i> file stores collected information using the HDF5 format. Documentation on
 how measurements are stored and handled in CellProfiler using this format can be found 
 <a href="https://github.com/CellProfiler/CellProfiler/wiki/Module-Structure-and-Data-Storage-Retrieval#hdf5-measurement-and-workspace-format">here</a>.</li>
 <li>All information is cached in the project file after it is computed. It is either
@@ -1565,12 +1593,13 @@ entering Test mode, or when the user requests a refreshed view of the informatio
 
 <h4>Legacy modules: LoadImages and LoadData</h4>
 <p>Historically, two modules were used for project creation: <b>LoadImages</b> and <b>LoadData</b>.
-While the approach described above supercedes these modules in part, old pipelines
-loaded into CellProfiler that contain these modules will provide the option of preserving them;
+While the approach described above partly supercedes these modules, you have the option
+of preserving these modules if you load old pipelines into CellProfiler that contain them;
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these 
-modules into the project equivalent as closely as possible. Both modules remain accesible
-via the "Add module" and "+" buttons at the bottom of the pipeline panel.</p>
+modules into the project equivalent as closely as possible. Both <b>LoadImages</b> and <b>LoadData</b>
+remain accesible via the "Add module" and <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;
+buttons at the bottom of the pipeline panel.</p>
 """
 
 LOADING_IMAGE_SEQUENCES_HELP = """
@@ -1812,7 +1841,7 @@ learning curve to using them, but are quite powerful once you understand the bas
 # Plate viewer help
 #
 #########################################################
-PLATEVIEWER_HELP ="""<h1>Plate viewer help</h1>
+PLATEVIEWER_HELP ="""<h1>Plate Viewer help</h1>
 <p>The plate viewer is a data tool that displays the images in your
 experiment in plate format. Your project must define an image set list with
 metadata annotations for the image's well and, optionally its plate and site.
@@ -1871,7 +1900,7 @@ MAIN_HELP = (
         ("Batch Processing", BATCHPROCESSING_HELP),
         ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
         ("Configuring Logging", CONFIGURING_LOGGING_HELP),
-        ("Plate viewer", PLATEVIEWER_HELP)))
+        ("Plate Viewer", PLATEVIEWER_HELP)))
 )
 
 def make_help_menu(h, window, menu=None):

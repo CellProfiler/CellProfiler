@@ -627,9 +627,9 @@ class CPFrame(wx.Frame):
         self.__menu_window = wx.Menu()
         self.__menu_window.Append(ID_WINDOW_CLOSE_ALL, "Close &All Open Windows\tctrl+L", 
                                   "Close all open module display windows")
-        self.__menu_window.Append(ID_WINDOW_SHOW_ALL_WINDOWS,"Show All Windows on Run",
+        self.__menu_window.Append(ID_WINDOW_SHOW_ALL_WINDOWS,"Show All Windows On Run",
                                   "Show all module display windows for all modules during analysis")
-        self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS,"Hide All Windows on Run",
+        self.__menu_window.Append(ID_WINDOW_HIDE_ALL_WINDOWS,"Hide All Windows On Run",
                                   "Hide all module display windows for all modules during analysis")
         self.__menu_window.AppendSeparator()
         
@@ -827,7 +827,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Enable(ID_FILE_RUN_MULTIPLE_PIPELINES, False)
 
         assert isinstance(startstop, wx.MenuItem)
-        startstop.Text = '&Exit test mode\tF5'
+        startstop.Text = '&Exit Test Mode\tF5'
         startstop.Help = 'Stop testing your pipeline'
         for cmd in self.debug_commands:
             self.__menu_debug.Enable(cmd, True)
@@ -835,7 +835,7 @@ class CPFrame(wx.Frame):
     def enable_launch_commands(self):
         '''Enable commands to start analysis or test mode'''
         startstop = self.__menu_debug.FindItemById(ID_DEBUG_TOGGLE)
-        startstop.Text =  '&Start test mode\tF5'
+        startstop.Text =  '&Start Test Mode\tF5'
         startstop.Help =  'Start testing your pipeline'
         for cmd in self.debug_commands:
             self.__menu_debug.Enable(cmd, False)

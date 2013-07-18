@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<OME xmlns="http://www.openmicroscopy.org/Schemas/OME/2012-06"
+<OME xmlns="http://www.openmicroscopy.org/Schemas/OME/2013-06"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.openmicroscopy.org/Schemas/OME/2012-06 http://www.openmicroscopy.org/Schemas/OME/2012-06/ome.xsd">
-	<Plate xmlns="http://www.openmicroscopy.org/Schemas/SPW/2012-06"
+	xsi:schemaLocation="http://www.openmicroscopy.org/Schemas/OME/2013-06 http://www.openmicroscopy.org/Schemas/OME/2013-06/ome.xsd">
+	<Plate xmlns="http://www.openmicroscopy.org/Schemas/SPW/2013-06"
 		ID="Plate:0" Name="TimePoint_1">
 		<Well Column="0" ID="Well:0:0" Row="0">
 			<WellSample ID="WellSample:0:0:0" Index="0">
@@ -2522,7 +2522,7 @@
 			<Channel ID="Channel:0:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2542,7 +2542,7 @@
 			<Channel ID="Channel:1:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2562,7 +2562,7 @@
 			<Channel ID="Channel:2:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2582,7 +2582,7 @@
 			<Channel ID="Channel:3:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2602,7 +2602,7 @@
 			<Channel ID="Channel:4:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2622,7 +2622,7 @@
 			<Channel ID="Channel:5:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2642,7 +2642,7 @@
 			<Channel ID="Channel:6:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2662,7 +2662,7 @@
 			<Channel ID="Channel:7:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2682,7 +2682,7 @@
 			<Channel ID="Channel:8:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2702,7 +2702,7 @@
 			<Channel ID="Channel:9:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2722,7 +2722,7 @@
 			<Channel ID="Channel:10:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2742,7 +2742,7 @@
 			<Channel ID="Channel:11:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2762,7 +2762,7 @@
 			<Channel ID="Channel:12:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2782,7 +2782,7 @@
 			<Channel ID="Channel:13:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2802,7 +2802,7 @@
 			<Channel ID="Channel:14:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2822,7 +2822,7 @@
 			<Channel ID="Channel:15:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2842,7 +2842,7 @@
 			<Channel ID="Channel:16:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2862,7 +2862,7 @@
 			<Channel ID="Channel:17:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2882,7 +2882,7 @@
 			<Channel ID="Channel:18:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2902,7 +2902,7 @@
 			<Channel ID="Channel:19:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2922,7 +2922,7 @@
 			<Channel ID="Channel:20:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2942,7 +2942,7 @@
 			<Channel ID="Channel:21:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2962,7 +2962,7 @@
 			<Channel ID="Channel:22:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -2982,7 +2982,7 @@
 			<Channel ID="Channel:23:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3002,7 +3002,7 @@
 			<Channel ID="Channel:24:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3022,7 +3022,7 @@
 			<Channel ID="Channel:25:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3042,7 +3042,7 @@
 			<Channel ID="Channel:26:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3062,7 +3062,7 @@
 			<Channel ID="Channel:27:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3082,7 +3082,7 @@
 			<Channel ID="Channel:28:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3102,7 +3102,7 @@
 			<Channel ID="Channel:29:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3122,7 +3122,7 @@
 			<Channel ID="Channel:30:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3142,7 +3142,7 @@
 			<Channel ID="Channel:31:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3162,7 +3162,7 @@
 			<Channel ID="Channel:32:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3182,7 +3182,7 @@
 			<Channel ID="Channel:33:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3202,7 +3202,7 @@
 			<Channel ID="Channel:34:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3222,7 +3222,7 @@
 			<Channel ID="Channel:35:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3242,7 +3242,7 @@
 			<Channel ID="Channel:36:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3262,7 +3262,7 @@
 			<Channel ID="Channel:37:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3282,7 +3282,7 @@
 			<Channel ID="Channel:38:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3302,7 +3302,7 @@
 			<Channel ID="Channel:39:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3322,7 +3322,7 @@
 			<Channel ID="Channel:40:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3342,7 +3342,7 @@
 			<Channel ID="Channel:41:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3362,7 +3362,7 @@
 			<Channel ID="Channel:42:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3382,7 +3382,7 @@
 			<Channel ID="Channel:43:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3402,7 +3402,7 @@
 			<Channel ID="Channel:44:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3422,7 +3422,7 @@
 			<Channel ID="Channel:45:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3442,7 +3442,7 @@
 			<Channel ID="Channel:46:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3462,7 +3462,7 @@
 			<Channel ID="Channel:47:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3482,7 +3482,7 @@
 			<Channel ID="Channel:48:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3502,7 +3502,7 @@
 			<Channel ID="Channel:49:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3522,7 +3522,7 @@
 			<Channel ID="Channel:50:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3542,7 +3542,7 @@
 			<Channel ID="Channel:51:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3562,7 +3562,7 @@
 			<Channel ID="Channel:52:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3582,7 +3582,7 @@
 			<Channel ID="Channel:53:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3602,7 +3602,7 @@
 			<Channel ID="Channel:54:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3622,7 +3622,7 @@
 			<Channel ID="Channel:55:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3642,7 +3642,7 @@
 			<Channel ID="Channel:56:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3662,7 +3662,7 @@
 			<Channel ID="Channel:57:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3682,7 +3682,7 @@
 			<Channel ID="Channel:58:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3702,7 +3702,7 @@
 			<Channel ID="Channel:59:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3722,7 +3722,7 @@
 			<Channel ID="Channel:60:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3742,7 +3742,7 @@
 			<Channel ID="Channel:61:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3762,7 +3762,7 @@
 			<Channel ID="Channel:62:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3782,7 +3782,7 @@
 			<Channel ID="Channel:63:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3802,7 +3802,7 @@
 			<Channel ID="Channel:64:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3822,7 +3822,7 @@
 			<Channel ID="Channel:65:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3842,7 +3842,7 @@
 			<Channel ID="Channel:66:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3862,7 +3862,7 @@
 			<Channel ID="Channel:67:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3882,7 +3882,7 @@
 			<Channel ID="Channel:68:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3902,7 +3902,7 @@
 			<Channel ID="Channel:69:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3922,7 +3922,7 @@
 			<Channel ID="Channel:70:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3942,7 +3942,7 @@
 			<Channel ID="Channel:71:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3962,7 +3962,7 @@
 			<Channel ID="Channel:72:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -3982,7 +3982,7 @@
 			<Channel ID="Channel:73:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4002,7 +4002,7 @@
 			<Channel ID="Channel:74:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4022,7 +4022,7 @@
 			<Channel ID="Channel:75:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4042,7 +4042,7 @@
 			<Channel ID="Channel:76:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4062,7 +4062,7 @@
 			<Channel ID="Channel:77:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4082,7 +4082,7 @@
 			<Channel ID="Channel:78:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4102,7 +4102,7 @@
 			<Channel ID="Channel:79:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4122,7 +4122,7 @@
 			<Channel ID="Channel:80:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4142,7 +4142,7 @@
 			<Channel ID="Channel:81:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4162,7 +4162,7 @@
 			<Channel ID="Channel:82:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4182,7 +4182,7 @@
 			<Channel ID="Channel:83:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4202,7 +4202,7 @@
 			<Channel ID="Channel:84:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4222,7 +4222,7 @@
 			<Channel ID="Channel:85:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4242,7 +4242,7 @@
 			<Channel ID="Channel:86:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4262,7 +4262,7 @@
 			<Channel ID="Channel:87:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4282,7 +4282,7 @@
 			<Channel ID="Channel:88:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4302,7 +4302,7 @@
 			<Channel ID="Channel:89:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4322,7 +4322,7 @@
 			<Channel ID="Channel:90:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4342,7 +4342,7 @@
 			<Channel ID="Channel:91:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4362,7 +4362,7 @@
 			<Channel ID="Channel:92:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4382,7 +4382,7 @@
 			<Channel ID="Channel:93:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4402,7 +4402,7 @@
 			<Channel ID="Channel:94:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4422,7 +4422,7 @@
 			<Channel ID="Channel:95:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4442,7 +4442,7 @@
 			<Channel ID="Channel:96:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4462,7 +4462,7 @@
 			<Channel ID="Channel:97:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4482,7 +4482,7 @@
 			<Channel ID="Channel:98:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4502,7 +4502,7 @@
 			<Channel ID="Channel:99:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4522,7 +4522,7 @@
 			<Channel ID="Channel:100:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4542,7 +4542,7 @@
 			<Channel ID="Channel:101:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4562,7 +4562,7 @@
 			<Channel ID="Channel:102:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4582,7 +4582,7 @@
 			<Channel ID="Channel:103:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4602,7 +4602,7 @@
 			<Channel ID="Channel:104:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4622,7 +4622,7 @@
 			<Channel ID="Channel:105:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4642,7 +4642,7 @@
 			<Channel ID="Channel:106:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4662,7 +4662,7 @@
 			<Channel ID="Channel:107:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4682,7 +4682,7 @@
 			<Channel ID="Channel:108:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4702,7 +4702,7 @@
 			<Channel ID="Channel:109:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4722,7 +4722,7 @@
 			<Channel ID="Channel:110:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4742,7 +4742,7 @@
 			<Channel ID="Channel:111:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4762,7 +4762,7 @@
 			<Channel ID="Channel:112:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4782,7 +4782,7 @@
 			<Channel ID="Channel:113:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4802,7 +4802,7 @@
 			<Channel ID="Channel:114:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4822,7 +4822,7 @@
 			<Channel ID="Channel:115:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4842,7 +4842,7 @@
 			<Channel ID="Channel:116:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4862,7 +4862,7 @@
 			<Channel ID="Channel:117:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4882,7 +4882,7 @@
 			<Channel ID="Channel:118:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4902,7 +4902,7 @@
 			<Channel ID="Channel:119:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4922,7 +4922,7 @@
 			<Channel ID="Channel:120:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4942,7 +4942,7 @@
 			<Channel ID="Channel:121:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4962,7 +4962,7 @@
 			<Channel ID="Channel:122:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -4982,7 +4982,7 @@
 			<Channel ID="Channel:123:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5002,7 +5002,7 @@
 			<Channel ID="Channel:124:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5022,7 +5022,7 @@
 			<Channel ID="Channel:125:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5042,7 +5042,7 @@
 			<Channel ID="Channel:126:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5062,7 +5062,7 @@
 			<Channel ID="Channel:127:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5082,7 +5082,7 @@
 			<Channel ID="Channel:128:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5102,7 +5102,7 @@
 			<Channel ID="Channel:129:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5122,7 +5122,7 @@
 			<Channel ID="Channel:130:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5142,7 +5142,7 @@
 			<Channel ID="Channel:131:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5162,7 +5162,7 @@
 			<Channel ID="Channel:132:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5182,7 +5182,7 @@
 			<Channel ID="Channel:133:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5202,7 +5202,7 @@
 			<Channel ID="Channel:134:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5222,7 +5222,7 @@
 			<Channel ID="Channel:135:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5242,7 +5242,7 @@
 			<Channel ID="Channel:136:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5262,7 +5262,7 @@
 			<Channel ID="Channel:137:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5282,7 +5282,7 @@
 			<Channel ID="Channel:138:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5302,7 +5302,7 @@
 			<Channel ID="Channel:139:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5322,7 +5322,7 @@
 			<Channel ID="Channel:140:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5342,7 +5342,7 @@
 			<Channel ID="Channel:141:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5362,7 +5362,7 @@
 			<Channel ID="Channel:142:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5382,7 +5382,7 @@
 			<Channel ID="Channel:143:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5402,7 +5402,7 @@
 			<Channel ID="Channel:144:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5422,7 +5422,7 @@
 			<Channel ID="Channel:145:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5442,7 +5442,7 @@
 			<Channel ID="Channel:146:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5462,7 +5462,7 @@
 			<Channel ID="Channel:147:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5482,7 +5482,7 @@
 			<Channel ID="Channel:148:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5502,7 +5502,7 @@
 			<Channel ID="Channel:149:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5522,7 +5522,7 @@
 			<Channel ID="Channel:150:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5542,7 +5542,7 @@
 			<Channel ID="Channel:151:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5562,7 +5562,7 @@
 			<Channel ID="Channel:152:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5582,7 +5582,7 @@
 			<Channel ID="Channel:153:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5602,7 +5602,7 @@
 			<Channel ID="Channel:154:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5622,7 +5622,7 @@
 			<Channel ID="Channel:155:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5642,7 +5642,7 @@
 			<Channel ID="Channel:156:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5662,7 +5662,7 @@
 			<Channel ID="Channel:157:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5682,7 +5682,7 @@
 			<Channel ID="Channel:158:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5702,7 +5702,7 @@
 			<Channel ID="Channel:159:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5722,7 +5722,7 @@
 			<Channel ID="Channel:160:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5742,7 +5742,7 @@
 			<Channel ID="Channel:161:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5762,7 +5762,7 @@
 			<Channel ID="Channel:162:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5782,7 +5782,7 @@
 			<Channel ID="Channel:163:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5802,7 +5802,7 @@
 			<Channel ID="Channel:164:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5822,7 +5822,7 @@
 			<Channel ID="Channel:165:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5842,7 +5842,7 @@
 			<Channel ID="Channel:166:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5862,7 +5862,7 @@
 			<Channel ID="Channel:167:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5882,7 +5882,7 @@
 			<Channel ID="Channel:168:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5902,7 +5902,7 @@
 			<Channel ID="Channel:169:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5922,7 +5922,7 @@
 			<Channel ID="Channel:170:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5942,7 +5942,7 @@
 			<Channel ID="Channel:171:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5962,7 +5962,7 @@
 			<Channel ID="Channel:172:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -5982,7 +5982,7 @@
 			<Channel ID="Channel:173:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6002,7 +6002,7 @@
 			<Channel ID="Channel:174:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6022,7 +6022,7 @@
 			<Channel ID="Channel:175:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6042,7 +6042,7 @@
 			<Channel ID="Channel:176:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6062,7 +6062,7 @@
 			<Channel ID="Channel:177:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6082,7 +6082,7 @@
 			<Channel ID="Channel:178:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6102,7 +6102,7 @@
 			<Channel ID="Channel:179:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6122,7 +6122,7 @@
 			<Channel ID="Channel:180:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6142,7 +6142,7 @@
 			<Channel ID="Channel:181:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6162,7 +6162,7 @@
 			<Channel ID="Channel:182:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6182,7 +6182,7 @@
 			<Channel ID="Channel:183:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6202,7 +6202,7 @@
 			<Channel ID="Channel:184:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6222,7 +6222,7 @@
 			<Channel ID="Channel:185:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6242,7 +6242,7 @@
 			<Channel ID="Channel:186:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6262,7 +6262,7 @@
 			<Channel ID="Channel:187:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6282,7 +6282,7 @@
 			<Channel ID="Channel:188:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6302,7 +6302,7 @@
 			<Channel ID="Channel:189:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6322,7 +6322,7 @@
 			<Channel ID="Channel:190:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6342,7 +6342,7 @@
 			<Channel ID="Channel:191:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6362,7 +6362,7 @@
 			<Channel ID="Channel:192:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6382,7 +6382,7 @@
 			<Channel ID="Channel:193:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6402,7 +6402,7 @@
 			<Channel ID="Channel:194:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6422,7 +6422,7 @@
 			<Channel ID="Channel:195:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6442,7 +6442,7 @@
 			<Channel ID="Channel:196:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6462,7 +6462,7 @@
 			<Channel ID="Channel:197:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6482,7 +6482,7 @@
 			<Channel ID="Channel:198:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6502,7 +6502,7 @@
 			<Channel ID="Channel:199:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6522,7 +6522,7 @@
 			<Channel ID="Channel:200:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6542,7 +6542,7 @@
 			<Channel ID="Channel:201:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6562,7 +6562,7 @@
 			<Channel ID="Channel:202:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6582,7 +6582,7 @@
 			<Channel ID="Channel:203:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6602,7 +6602,7 @@
 			<Channel ID="Channel:204:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6622,7 +6622,7 @@
 			<Channel ID="Channel:205:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6642,7 +6642,7 @@
 			<Channel ID="Channel:206:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6662,7 +6662,7 @@
 			<Channel ID="Channel:207:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6682,7 +6682,7 @@
 			<Channel ID="Channel:208:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6702,7 +6702,7 @@
 			<Channel ID="Channel:209:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6722,7 +6722,7 @@
 			<Channel ID="Channel:210:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6742,7 +6742,7 @@
 			<Channel ID="Channel:211:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6762,7 +6762,7 @@
 			<Channel ID="Channel:212:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6782,7 +6782,7 @@
 			<Channel ID="Channel:213:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6802,7 +6802,7 @@
 			<Channel ID="Channel:214:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6822,7 +6822,7 @@
 			<Channel ID="Channel:215:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6842,7 +6842,7 @@
 			<Channel ID="Channel:216:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6862,7 +6862,7 @@
 			<Channel ID="Channel:217:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6882,7 +6882,7 @@
 			<Channel ID="Channel:218:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6902,7 +6902,7 @@
 			<Channel ID="Channel:219:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6922,7 +6922,7 @@
 			<Channel ID="Channel:220:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6942,7 +6942,7 @@
 			<Channel ID="Channel:221:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6962,7 +6962,7 @@
 			<Channel ID="Channel:222:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -6982,7 +6982,7 @@
 			<Channel ID="Channel:223:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7002,7 +7002,7 @@
 			<Channel ID="Channel:224:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7022,7 +7022,7 @@
 			<Channel ID="Channel:225:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7042,7 +7042,7 @@
 			<Channel ID="Channel:226:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7062,7 +7062,7 @@
 			<Channel ID="Channel:227:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7082,7 +7082,7 @@
 			<Channel ID="Channel:228:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7102,7 +7102,7 @@
 			<Channel ID="Channel:229:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7122,7 +7122,7 @@
 			<Channel ID="Channel:230:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7142,7 +7142,7 @@
 			<Channel ID="Channel:231:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7162,7 +7162,7 @@
 			<Channel ID="Channel:232:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7182,7 +7182,7 @@
 			<Channel ID="Channel:233:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7202,7 +7202,7 @@
 			<Channel ID="Channel:234:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7222,7 +7222,7 @@
 			<Channel ID="Channel:235:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7242,7 +7242,7 @@
 			<Channel ID="Channel:236:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7262,7 +7262,7 @@
 			<Channel ID="Channel:237:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7282,7 +7282,7 @@
 			<Channel ID="Channel:238:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7302,7 +7302,7 @@
 			<Channel ID="Channel:239:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7322,7 +7322,7 @@
 			<Channel ID="Channel:240:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7342,7 +7342,7 @@
 			<Channel ID="Channel:241:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7362,7 +7362,7 @@
 			<Channel ID="Channel:242:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7382,7 +7382,7 @@
 			<Channel ID="Channel:243:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7402,7 +7402,7 @@
 			<Channel ID="Channel:244:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7422,7 +7422,7 @@
 			<Channel ID="Channel:245:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7442,7 +7442,7 @@
 			<Channel ID="Channel:246:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7462,7 +7462,7 @@
 			<Channel ID="Channel:247:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7482,7 +7482,7 @@
 			<Channel ID="Channel:248:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7502,7 +7502,7 @@
 			<Channel ID="Channel:249:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7522,7 +7522,7 @@
 			<Channel ID="Channel:250:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7542,7 +7542,7 @@
 			<Channel ID="Channel:251:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7562,7 +7562,7 @@
 			<Channel ID="Channel:252:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7582,7 +7582,7 @@
 			<Channel ID="Channel:253:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7602,7 +7602,7 @@
 			<Channel ID="Channel:254:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7622,7 +7622,7 @@
 			<Channel ID="Channel:255:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7642,7 +7642,7 @@
 			<Channel ID="Channel:256:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7662,7 +7662,7 @@
 			<Channel ID="Channel:257:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7682,7 +7682,7 @@
 			<Channel ID="Channel:258:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7702,7 +7702,7 @@
 			<Channel ID="Channel:259:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7722,7 +7722,7 @@
 			<Channel ID="Channel:260:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7742,7 +7742,7 @@
 			<Channel ID="Channel:261:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7762,7 +7762,7 @@
 			<Channel ID="Channel:262:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7782,7 +7782,7 @@
 			<Channel ID="Channel:263:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7802,7 +7802,7 @@
 			<Channel ID="Channel:264:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7822,7 +7822,7 @@
 			<Channel ID="Channel:265:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7842,7 +7842,7 @@
 			<Channel ID="Channel:266:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7862,7 +7862,7 @@
 			<Channel ID="Channel:267:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7882,7 +7882,7 @@
 			<Channel ID="Channel:268:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7902,7 +7902,7 @@
 			<Channel ID="Channel:269:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7922,7 +7922,7 @@
 			<Channel ID="Channel:270:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7942,7 +7942,7 @@
 			<Channel ID="Channel:271:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7962,7 +7962,7 @@
 			<Channel ID="Channel:272:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -7982,7 +7982,7 @@
 			<Channel ID="Channel:273:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8002,7 +8002,7 @@
 			<Channel ID="Channel:274:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8022,7 +8022,7 @@
 			<Channel ID="Channel:275:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8042,7 +8042,7 @@
 			<Channel ID="Channel:276:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8062,7 +8062,7 @@
 			<Channel ID="Channel:277:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8082,7 +8082,7 @@
 			<Channel ID="Channel:278:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8102,7 +8102,7 @@
 			<Channel ID="Channel:279:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8122,7 +8122,7 @@
 			<Channel ID="Channel:280:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8142,7 +8142,7 @@
 			<Channel ID="Channel:281:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8162,7 +8162,7 @@
 			<Channel ID="Channel:282:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8182,7 +8182,7 @@
 			<Channel ID="Channel:283:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8202,7 +8202,7 @@
 			<Channel ID="Channel:284:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8222,7 +8222,7 @@
 			<Channel ID="Channel:285:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8242,7 +8242,7 @@
 			<Channel ID="Channel:286:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8262,7 +8262,7 @@
 			<Channel ID="Channel:287:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8282,7 +8282,7 @@
 			<Channel ID="Channel:288:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8302,7 +8302,7 @@
 			<Channel ID="Channel:289:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8322,7 +8322,7 @@
 			<Channel ID="Channel:290:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8342,7 +8342,7 @@
 			<Channel ID="Channel:291:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8362,7 +8362,7 @@
 			<Channel ID="Channel:292:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8382,7 +8382,7 @@
 			<Channel ID="Channel:293:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8402,7 +8402,7 @@
 			<Channel ID="Channel:294:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8422,7 +8422,7 @@
 			<Channel ID="Channel:295:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8442,7 +8442,7 @@
 			<Channel ID="Channel:296:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8462,7 +8462,7 @@
 			<Channel ID="Channel:297:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8482,7 +8482,7 @@
 			<Channel ID="Channel:298:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8502,7 +8502,7 @@
 			<Channel ID="Channel:299:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8522,7 +8522,7 @@
 			<Channel ID="Channel:300:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8542,7 +8542,7 @@
 			<Channel ID="Channel:301:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8562,7 +8562,7 @@
 			<Channel ID="Channel:302:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8582,7 +8582,7 @@
 			<Channel ID="Channel:303:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8602,7 +8602,7 @@
 			<Channel ID="Channel:304:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8622,7 +8622,7 @@
 			<Channel ID="Channel:305:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8642,7 +8642,7 @@
 			<Channel ID="Channel:306:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8662,7 +8662,7 @@
 			<Channel ID="Channel:307:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8682,7 +8682,7 @@
 			<Channel ID="Channel:308:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8702,7 +8702,7 @@
 			<Channel ID="Channel:309:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8722,7 +8722,7 @@
 			<Channel ID="Channel:310:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8742,7 +8742,7 @@
 			<Channel ID="Channel:311:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8762,7 +8762,7 @@
 			<Channel ID="Channel:312:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8782,7 +8782,7 @@
 			<Channel ID="Channel:313:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8802,7 +8802,7 @@
 			<Channel ID="Channel:314:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8822,7 +8822,7 @@
 			<Channel ID="Channel:315:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8842,7 +8842,7 @@
 			<Channel ID="Channel:316:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8862,7 +8862,7 @@
 			<Channel ID="Channel:317:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8882,7 +8882,7 @@
 			<Channel ID="Channel:318:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8902,7 +8902,7 @@
 			<Channel ID="Channel:319:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8922,7 +8922,7 @@
 			<Channel ID="Channel:320:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8942,7 +8942,7 @@
 			<Channel ID="Channel:321:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8962,7 +8962,7 @@
 			<Channel ID="Channel:322:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -8982,7 +8982,7 @@
 			<Channel ID="Channel:323:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9002,7 +9002,7 @@
 			<Channel ID="Channel:324:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9022,7 +9022,7 @@
 			<Channel ID="Channel:325:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9042,7 +9042,7 @@
 			<Channel ID="Channel:326:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9062,7 +9062,7 @@
 			<Channel ID="Channel:327:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9082,7 +9082,7 @@
 			<Channel ID="Channel:328:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9102,7 +9102,7 @@
 			<Channel ID="Channel:329:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9122,7 +9122,7 @@
 			<Channel ID="Channel:330:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9142,7 +9142,7 @@
 			<Channel ID="Channel:331:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9162,7 +9162,7 @@
 			<Channel ID="Channel:332:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9182,7 +9182,7 @@
 			<Channel ID="Channel:333:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9202,7 +9202,7 @@
 			<Channel ID="Channel:334:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9222,7 +9222,7 @@
 			<Channel ID="Channel:335:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9242,7 +9242,7 @@
 			<Channel ID="Channel:336:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9262,7 +9262,7 @@
 			<Channel ID="Channel:337:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9282,7 +9282,7 @@
 			<Channel ID="Channel:338:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9302,7 +9302,7 @@
 			<Channel ID="Channel:339:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9322,7 +9322,7 @@
 			<Channel ID="Channel:340:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9342,7 +9342,7 @@
 			<Channel ID="Channel:341:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9362,7 +9362,7 @@
 			<Channel ID="Channel:342:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9382,7 +9382,7 @@
 			<Channel ID="Channel:343:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9402,7 +9402,7 @@
 			<Channel ID="Channel:344:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9422,7 +9422,7 @@
 			<Channel ID="Channel:345:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9442,7 +9442,7 @@
 			<Channel ID="Channel:346:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9462,7 +9462,7 @@
 			<Channel ID="Channel:347:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9482,7 +9482,7 @@
 			<Channel ID="Channel:348:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9502,7 +9502,7 @@
 			<Channel ID="Channel:349:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9522,7 +9522,7 @@
 			<Channel ID="Channel:350:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9542,7 +9542,7 @@
 			<Channel ID="Channel:351:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9562,7 +9562,7 @@
 			<Channel ID="Channel:352:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9582,7 +9582,7 @@
 			<Channel ID="Channel:353:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9602,7 +9602,7 @@
 			<Channel ID="Channel:354:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9622,7 +9622,7 @@
 			<Channel ID="Channel:355:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9642,7 +9642,7 @@
 			<Channel ID="Channel:356:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9662,7 +9662,7 @@
 			<Channel ID="Channel:357:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9682,7 +9682,7 @@
 			<Channel ID="Channel:358:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9702,7 +9702,7 @@
 			<Channel ID="Channel:359:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9722,7 +9722,7 @@
 			<Channel ID="Channel:360:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9742,7 +9742,7 @@
 			<Channel ID="Channel:361:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9762,7 +9762,7 @@
 			<Channel ID="Channel:362:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9782,7 +9782,7 @@
 			<Channel ID="Channel:363:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9802,7 +9802,7 @@
 			<Channel ID="Channel:364:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9822,7 +9822,7 @@
 			<Channel ID="Channel:365:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9842,7 +9842,7 @@
 			<Channel ID="Channel:366:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9862,7 +9862,7 @@
 			<Channel ID="Channel:367:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9882,7 +9882,7 @@
 			<Channel ID="Channel:368:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9902,7 +9902,7 @@
 			<Channel ID="Channel:369:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9922,7 +9922,7 @@
 			<Channel ID="Channel:370:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9942,7 +9942,7 @@
 			<Channel ID="Channel:371:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9962,7 +9962,7 @@
 			<Channel ID="Channel:372:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -9982,7 +9982,7 @@
 			<Channel ID="Channel:373:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10002,7 +10002,7 @@
 			<Channel ID="Channel:374:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10022,7 +10022,7 @@
 			<Channel ID="Channel:375:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10042,7 +10042,7 @@
 			<Channel ID="Channel:376:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10062,7 +10062,7 @@
 			<Channel ID="Channel:377:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10082,7 +10082,7 @@
 			<Channel ID="Channel:378:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10102,7 +10102,7 @@
 			<Channel ID="Channel:379:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10122,7 +10122,7 @@
 			<Channel ID="Channel:380:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10142,7 +10142,7 @@
 			<Channel ID="Channel:381:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10162,7 +10162,7 @@
 			<Channel ID="Channel:382:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10182,7 +10182,7 @@
 			<Channel ID="Channel:383:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10202,7 +10202,7 @@
 			<Channel ID="Channel:384:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10222,7 +10222,7 @@
 			<Channel ID="Channel:385:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10242,7 +10242,7 @@
 			<Channel ID="Channel:386:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10262,7 +10262,7 @@
 			<Channel ID="Channel:387:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10282,7 +10282,7 @@
 			<Channel ID="Channel:388:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10302,7 +10302,7 @@
 			<Channel ID="Channel:389:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10322,7 +10322,7 @@
 			<Channel ID="Channel:390:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10342,7 +10342,7 @@
 			<Channel ID="Channel:391:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10362,7 +10362,7 @@
 			<Channel ID="Channel:392:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10382,7 +10382,7 @@
 			<Channel ID="Channel:393:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10402,7 +10402,7 @@
 			<Channel ID="Channel:394:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10422,7 +10422,7 @@
 			<Channel ID="Channel:395:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10442,7 +10442,7 @@
 			<Channel ID="Channel:396:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10462,7 +10462,7 @@
 			<Channel ID="Channel:397:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10482,7 +10482,7 @@
 			<Channel ID="Channel:398:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10502,7 +10502,7 @@
 			<Channel ID="Channel:399:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10522,7 +10522,7 @@
 			<Channel ID="Channel:400:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10542,7 +10542,7 @@
 			<Channel ID="Channel:401:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10562,7 +10562,7 @@
 			<Channel ID="Channel:402:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10582,7 +10582,7 @@
 			<Channel ID="Channel:403:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10602,7 +10602,7 @@
 			<Channel ID="Channel:404:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10622,7 +10622,7 @@
 			<Channel ID="Channel:405:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10642,7 +10642,7 @@
 			<Channel ID="Channel:406:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10662,7 +10662,7 @@
 			<Channel ID="Channel:407:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10682,7 +10682,7 @@
 			<Channel ID="Channel:408:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10702,7 +10702,7 @@
 			<Channel ID="Channel:409:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10722,7 +10722,7 @@
 			<Channel ID="Channel:410:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10742,7 +10742,7 @@
 			<Channel ID="Channel:411:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10762,7 +10762,7 @@
 			<Channel ID="Channel:412:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10782,7 +10782,7 @@
 			<Channel ID="Channel:413:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10802,7 +10802,7 @@
 			<Channel ID="Channel:414:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10822,7 +10822,7 @@
 			<Channel ID="Channel:415:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10842,7 +10842,7 @@
 			<Channel ID="Channel:416:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10862,7 +10862,7 @@
 			<Channel ID="Channel:417:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10882,7 +10882,7 @@
 			<Channel ID="Channel:418:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10902,7 +10902,7 @@
 			<Channel ID="Channel:419:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10922,7 +10922,7 @@
 			<Channel ID="Channel:420:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10942,7 +10942,7 @@
 			<Channel ID="Channel:421:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10962,7 +10962,7 @@
 			<Channel ID="Channel:422:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -10982,7 +10982,7 @@
 			<Channel ID="Channel:423:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11002,7 +11002,7 @@
 			<Channel ID="Channel:424:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11022,7 +11022,7 @@
 			<Channel ID="Channel:425:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11042,7 +11042,7 @@
 			<Channel ID="Channel:426:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11062,7 +11062,7 @@
 			<Channel ID="Channel:427:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11082,7 +11082,7 @@
 			<Channel ID="Channel:428:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11102,7 +11102,7 @@
 			<Channel ID="Channel:429:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11122,7 +11122,7 @@
 			<Channel ID="Channel:430:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11142,7 +11142,7 @@
 			<Channel ID="Channel:431:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11162,7 +11162,7 @@
 			<Channel ID="Channel:432:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11182,7 +11182,7 @@
 			<Channel ID="Channel:433:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11202,7 +11202,7 @@
 			<Channel ID="Channel:434:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11222,7 +11222,7 @@
 			<Channel ID="Channel:435:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11242,7 +11242,7 @@
 			<Channel ID="Channel:436:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11262,7 +11262,7 @@
 			<Channel ID="Channel:437:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11282,7 +11282,7 @@
 			<Channel ID="Channel:438:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11302,7 +11302,7 @@
 			<Channel ID="Channel:439:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11322,7 +11322,7 @@
 			<Channel ID="Channel:440:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11342,7 +11342,7 @@
 			<Channel ID="Channel:441:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11362,7 +11362,7 @@
 			<Channel ID="Channel:442:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11382,7 +11382,7 @@
 			<Channel ID="Channel:443:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11402,7 +11402,7 @@
 			<Channel ID="Channel:444:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11422,7 +11422,7 @@
 			<Channel ID="Channel:445:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11442,7 +11442,7 @@
 			<Channel ID="Channel:446:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11462,7 +11462,7 @@
 			<Channel ID="Channel:447:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11482,7 +11482,7 @@
 			<Channel ID="Channel:448:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11502,7 +11502,7 @@
 			<Channel ID="Channel:449:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11522,7 +11522,7 @@
 			<Channel ID="Channel:450:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11542,7 +11542,7 @@
 			<Channel ID="Channel:451:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11562,7 +11562,7 @@
 			<Channel ID="Channel:452:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11582,7 +11582,7 @@
 			<Channel ID="Channel:453:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11602,7 +11602,7 @@
 			<Channel ID="Channel:454:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11622,7 +11622,7 @@
 			<Channel ID="Channel:455:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11642,7 +11642,7 @@
 			<Channel ID="Channel:456:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11662,7 +11662,7 @@
 			<Channel ID="Channel:457:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11682,7 +11682,7 @@
 			<Channel ID="Channel:458:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11702,7 +11702,7 @@
 			<Channel ID="Channel:459:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11722,7 +11722,7 @@
 			<Channel ID="Channel:460:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11742,7 +11742,7 @@
 			<Channel ID="Channel:461:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11762,7 +11762,7 @@
 			<Channel ID="Channel:462:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11782,7 +11782,7 @@
 			<Channel ID="Channel:463:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11802,7 +11802,7 @@
 			<Channel ID="Channel:464:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11822,7 +11822,7 @@
 			<Channel ID="Channel:465:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11842,7 +11842,7 @@
 			<Channel ID="Channel:466:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11862,7 +11862,7 @@
 			<Channel ID="Channel:467:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11882,7 +11882,7 @@
 			<Channel ID="Channel:468:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11902,7 +11902,7 @@
 			<Channel ID="Channel:469:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11922,7 +11922,7 @@
 			<Channel ID="Channel:470:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11942,7 +11942,7 @@
 			<Channel ID="Channel:471:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11962,7 +11962,7 @@
 			<Channel ID="Channel:472:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -11982,7 +11982,7 @@
 			<Channel ID="Channel:473:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12002,7 +12002,7 @@
 			<Channel ID="Channel:474:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12022,7 +12022,7 @@
 			<Channel ID="Channel:475:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12042,7 +12042,7 @@
 			<Channel ID="Channel:476:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12062,7 +12062,7 @@
 			<Channel ID="Channel:477:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12082,7 +12082,7 @@
 			<Channel ID="Channel:478:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12102,7 +12102,7 @@
 			<Channel ID="Channel:479:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12122,7 +12122,7 @@
 			<Channel ID="Channel:480:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12142,7 +12142,7 @@
 			<Channel ID="Channel:481:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12162,7 +12162,7 @@
 			<Channel ID="Channel:482:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12182,7 +12182,7 @@
 			<Channel ID="Channel:483:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12202,7 +12202,7 @@
 			<Channel ID="Channel:484:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12222,7 +12222,7 @@
 			<Channel ID="Channel:485:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12242,7 +12242,7 @@
 			<Channel ID="Channel:486:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12262,7 +12262,7 @@
 			<Channel ID="Channel:487:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12282,7 +12282,7 @@
 			<Channel ID="Channel:488:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12302,7 +12302,7 @@
 			<Channel ID="Channel:489:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12322,7 +12322,7 @@
 			<Channel ID="Channel:490:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12342,7 +12342,7 @@
 			<Channel ID="Channel:491:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12362,7 +12362,7 @@
 			<Channel ID="Channel:492:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12382,7 +12382,7 @@
 			<Channel ID="Channel:493:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12402,7 +12402,7 @@
 			<Channel ID="Channel:494:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12422,7 +12422,7 @@
 			<Channel ID="Channel:495:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12442,7 +12442,7 @@
 			<Channel ID="Channel:496:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12462,7 +12462,7 @@
 			<Channel ID="Channel:497:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12482,7 +12482,7 @@
 			<Channel ID="Channel:498:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12502,7 +12502,7 @@
 			<Channel ID="Channel:499:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12522,7 +12522,7 @@
 			<Channel ID="Channel:500:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12542,7 +12542,7 @@
 			<Channel ID="Channel:501:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12562,7 +12562,7 @@
 			<Channel ID="Channel:502:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12582,7 +12582,7 @@
 			<Channel ID="Channel:503:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12602,7 +12602,7 @@
 			<Channel ID="Channel:504:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12622,7 +12622,7 @@
 			<Channel ID="Channel:505:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12642,7 +12642,7 @@
 			<Channel ID="Channel:506:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12662,7 +12662,7 @@
 			<Channel ID="Channel:507:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12682,7 +12682,7 @@
 			<Channel ID="Channel:508:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12702,7 +12702,7 @@
 			<Channel ID="Channel:509:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12722,7 +12722,7 @@
 			<Channel ID="Channel:510:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12742,7 +12742,7 @@
 			<Channel ID="Channel:511:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12762,7 +12762,7 @@
 			<Channel ID="Channel:512:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12782,7 +12782,7 @@
 			<Channel ID="Channel:513:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12802,7 +12802,7 @@
 			<Channel ID="Channel:514:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12822,7 +12822,7 @@
 			<Channel ID="Channel:515:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12842,7 +12842,7 @@
 			<Channel ID="Channel:516:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12862,7 +12862,7 @@
 			<Channel ID="Channel:517:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12882,7 +12882,7 @@
 			<Channel ID="Channel:518:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12902,7 +12902,7 @@
 			<Channel ID="Channel:519:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12922,7 +12922,7 @@
 			<Channel ID="Channel:520:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12942,7 +12942,7 @@
 			<Channel ID="Channel:521:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12962,7 +12962,7 @@
 			<Channel ID="Channel:522:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -12982,7 +12982,7 @@
 			<Channel ID="Channel:523:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13002,7 +13002,7 @@
 			<Channel ID="Channel:524:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13022,7 +13022,7 @@
 			<Channel ID="Channel:525:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13042,7 +13042,7 @@
 			<Channel ID="Channel:526:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13062,7 +13062,7 @@
 			<Channel ID="Channel:527:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13082,7 +13082,7 @@
 			<Channel ID="Channel:528:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13102,7 +13102,7 @@
 			<Channel ID="Channel:529:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13122,7 +13122,7 @@
 			<Channel ID="Channel:530:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13142,7 +13142,7 @@
 			<Channel ID="Channel:531:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13162,7 +13162,7 @@
 			<Channel ID="Channel:532:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13182,7 +13182,7 @@
 			<Channel ID="Channel:533:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13202,7 +13202,7 @@
 			<Channel ID="Channel:534:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13222,7 +13222,7 @@
 			<Channel ID="Channel:535:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13242,7 +13242,7 @@
 			<Channel ID="Channel:536:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13262,7 +13262,7 @@
 			<Channel ID="Channel:537:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13282,7 +13282,7 @@
 			<Channel ID="Channel:538:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13302,7 +13302,7 @@
 			<Channel ID="Channel:539:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13322,7 +13322,7 @@
 			<Channel ID="Channel:540:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13342,7 +13342,7 @@
 			<Channel ID="Channel:541:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13362,7 +13362,7 @@
 			<Channel ID="Channel:542:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13382,7 +13382,7 @@
 			<Channel ID="Channel:543:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13402,7 +13402,7 @@
 			<Channel ID="Channel:544:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13422,7 +13422,7 @@
 			<Channel ID="Channel:545:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13442,7 +13442,7 @@
 			<Channel ID="Channel:546:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13462,7 +13462,7 @@
 			<Channel ID="Channel:547:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13482,7 +13482,7 @@
 			<Channel ID="Channel:548:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13502,7 +13502,7 @@
 			<Channel ID="Channel:549:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13522,7 +13522,7 @@
 			<Channel ID="Channel:550:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13542,7 +13542,7 @@
 			<Channel ID="Channel:551:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13562,7 +13562,7 @@
 			<Channel ID="Channel:552:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13582,7 +13582,7 @@
 			<Channel ID="Channel:553:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13602,7 +13602,7 @@
 			<Channel ID="Channel:554:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13622,7 +13622,7 @@
 			<Channel ID="Channel:555:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13642,7 +13642,7 @@
 			<Channel ID="Channel:556:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13662,7 +13662,7 @@
 			<Channel ID="Channel:557:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13682,7 +13682,7 @@
 			<Channel ID="Channel:558:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13702,7 +13702,7 @@
 			<Channel ID="Channel:559:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13722,7 +13722,7 @@
 			<Channel ID="Channel:560:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13742,7 +13742,7 @@
 			<Channel ID="Channel:561:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13762,7 +13762,7 @@
 			<Channel ID="Channel:562:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13782,7 +13782,7 @@
 			<Channel ID="Channel:563:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13802,7 +13802,7 @@
 			<Channel ID="Channel:564:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13822,7 +13822,7 @@
 			<Channel ID="Channel:565:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13842,7 +13842,7 @@
 			<Channel ID="Channel:566:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13862,7 +13862,7 @@
 			<Channel ID="Channel:567:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13882,7 +13882,7 @@
 			<Channel ID="Channel:568:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13902,7 +13902,7 @@
 			<Channel ID="Channel:569:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13922,7 +13922,7 @@
 			<Channel ID="Channel:570:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13942,7 +13942,7 @@
 			<Channel ID="Channel:571:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13962,7 +13962,7 @@
 			<Channel ID="Channel:572:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -13982,7 +13982,7 @@
 			<Channel ID="Channel:573:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -14002,7 +14002,7 @@
 			<Channel ID="Channel:574:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
@@ -14022,10 +14022,10 @@
 			<Channel ID="Channel:575:3" Name="Texas Red" SamplesPerPixel="1">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="false" Length="0" />
 		</Pixels>
 	</Image>
 	<StructuredAnnotations
-		xmlns="http://www.openmicroscopy.org/Schemas/SA/2012-06" />
+		xmlns="http://www.openmicroscopy.org/Schemas/SA/2013-06" />
 </OME>

@@ -737,9 +737,9 @@ class TestOMEXML(unittest.TestCase):
         self.assertEqual(float(plane.node.get("PositionZ")), 7.5)
         
 TIFF_XML = """<?xml version="1.0" encoding="UTF-8"?>
-<OME xmlns="http://www.openmicroscopy.org/Schemas/OME/2012-06"
+<OME xmlns="http://www.openmicroscopy.org/Schemas/OME/2013-06"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://www.openmicroscopy.org/Schemas/OME/2012-06 http://www.openmicroscopy.org/Schemas/OME/2012-06/ome.xsd">
+	xsi:schemaLocation="http://www.openmicroscopy.org/Schemas/OME/2013-06 http://www.openmicroscopy.org/Schemas/OME/2013-06/ome.xsd">
 	<Image ID="Image:0" Name="Channel1-01-A-01.tif">
 		<AcquiredDate>2008-02-05T17:24:46</AcquiredDate>
 		<Pixels DimensionOrder="XYCZT" ID="Pixels:0" PhysicalSizeX="352.77777777777777"
@@ -748,13 +748,13 @@ TIFF_XML = """<?xml version="1.0" encoding="UTF-8"?>
 			<Channel ID="Channel:0:0" SamplesPerPixel="1" Name="Actin">
 				<LightPath />
 			</Channel>
-			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2012-06"
+			<BinData xmlns="http://www.openmicroscopy.org/Schemas/BinaryFile/2013-06"
 				BigEndian="true" Length="0" />
                         <Plane TheC="0" TheT="0" TheZ="0" DeltaT="1.25" ExposureTime="0.25" PositionX="3.5" PositionY="4.75" PositionZ="2.25"/>
 		</Pixels>
 	</Image>
 	<StructuredAnnotations
-		xmlns="http://www.openmicroscopy.org/Schemas/SA/2012-06">
+		xmlns="http://www.openmicroscopy.org/Schemas/SA/2013-06">
 		<XMLAnnotation ID="Annotation:0">
 			<Value>
 				<OriginalMetadata xmlns="openmicroscopy.org/OriginalMetadata">

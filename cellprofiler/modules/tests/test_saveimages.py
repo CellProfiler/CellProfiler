@@ -1650,6 +1650,11 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
              'bit_depth'     : '8',
              'input_image'   : imagefloat,
              'expected'      : (imagefloat * 255).astype(np.uint8) },
+            {'rescale'       : False,
+             'file_format'   : cpm_si.FF_TIF,
+             'bit_depth'     : '16',
+             'input_image'   : image16s,
+             'expected'      : image16s },
 
             # Rescaled 16-bit image
             {'rescale'       : True, 

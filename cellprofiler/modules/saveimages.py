@@ -599,6 +599,8 @@ class SaveImages(cpm.CPModule):
         image = workspace.image_set.get_image(self.image_name.value)
         if self.save_image_or_figure == IF_IMAGE:
             pixels = image.pixel_data
+            u16hack = (self.get_bit_depth() == '16' and
+                       pixels.dtype.kind in ('u', 'i'))
             if self.file_format != FF_MAT:
                 if self.rescale.value:
                     pixels = pixels.copy()
@@ -616,7 +618,7 @@ class SaveImages(cpm.CPModule):
                         img_max = np.max(pixels)
                         if img_max > img_min:
                             pixels = (pixels - img_min) / (img_max - img_min)
-                else:
+                elif not u16hack:
                     # Clip at 0 and 1
                     if np.max(pixels) > 1 or np.min(pixels) < 0:
                         sys.stderr.write(
@@ -645,7 +647,8 @@ class SaveImages(cpm.CPModule):
                     pixels = (pixels*255).astype(np.uint8)
                     pixel_type = ome.PT_UINT8
                 else:
-                    pixels = (pixels*65535)
+                    if not u16hack:
+                        pixels = (pixels*65535)
                     pixel_type = ome.PT_UINT16
                 
         elif self.save_image_or_figure == IF_MASK:

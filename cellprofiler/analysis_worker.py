@@ -30,30 +30,70 @@ Website: http://www.cellprofiler.org
 """
 import sys
 import os
-if __name__=="__main__" and "CP_DEBUG_WORKER" not in os.environ:
-    #
-    # Sorry to put ugliness so early:
-    #     The process inherits file descriptors from the parent. Windows doesn't
-    #     let you selectively inherit file descriptors, so we close them here.
-    #
-    try:
-        maxfd = os.sysconf('SC_OPEN_MAX')
-    except:
-        maxfd = 256
-    os.closerange(3, maxfd)
+import logging
+logger = logging.getLogger(__name__)
 
 if __name__=="__main__":
-    from cellprofiler.preferences import set_headless
+    if "CP_DEBUG_WORKER" not in os.environ:
+        #
+        # Sorry to put ugliness so early:
+        #     The process inherits file descriptors from the parent. Windows doesn't
+        #     let you selectively inherit file descriptors, so we close them here.
+        #
+        try:
+            maxfd = os.sysconf('SC_OPEN_MAX')
+        except:
+            maxfd = 256
+        os.closerange(3, maxfd)
+
+    from cellprofiler.preferences import set_headless, set_plugin_directory
+    from cellprofiler.preferences import set_ij_plugin_directory
+    import optparse
     set_headless()
+    parser = optparse.OptionParser()
+    parser.add_option("--work-announce",
+                      dest="work_announce_address",
+                      help="ZMQ port where work announcements are published",
+                      default=None)
+    parser.add_option("--log-level",
+                      dest="log_level",
+                      help="Logging level for logger: DEBUG, INFO, WARNING, ERROR",
+                      default=logging.INFO)
+    parser.add_option("--plugins-directory",
+                      dest="plugins_directory",
+                      help="Folder containing the CellProfiler plugin modules needed by client pipelines",
+                      default=None)
+    parser.add_option("--ij-plugins-directory",
+                      dest="ij_plugins_directory",
+                      help="Folder containing the ImageJ plugin .jar and .class files needed bby client pipelines",
+                      default=None)
+    options, args = parser.parse_args()
+    logging.root.setLevel(options.log_level)
+
+    if not options.work_announce_address:
+        parser.print_help()
+        sys.exit(1)
+    #
+    # Set up the headless plugins and ij plugins directories before doing
+    # anything so loading will get them
+    #
+    if options.plugins_directory is not None:
+        set_plugin_directory(options.plugins_directory)
+    else:
+        logger.warning("Plugins directory not set")
+    if options.ij_plugins_directory is not None:
+        logger.debug("Using %s as IJ plugins directory" % options.ij_plugins_directory)
+        set_ij_plugin_directory(options.ij_plugins_directory)
+    else:
+        logger.debug("IJ plugins directory not set")
+    
 import time
-import optparse
 import threading
 import thread
 import random
 import zmq
 import cStringIO as StringIO
 import gc
-import logging
 import traceback
 from weakref import WeakSet
 
@@ -78,7 +118,6 @@ from cellprofiler.utilities.run_loop import enter_run_loop, stop_run_loop
 import numpy as np
 np.seterr(all='ignore')
 
-logger = logging.getLogger(__name__)
 
 # to guarantee closing of measurements, we store all of them in a WeakSet, and
 # close them on exit.
@@ -94,21 +133,7 @@ stdin_monitor_started = False
 
 def main():
     # XXX - move all this to a class
-    parser = optparse.OptionParser()
-    parser.add_option("--work-announce",
-                      dest="work_announce_address",
-                      help="ZMQ port where work announcements are published",
-                      default=None)
-    parser.add_option("--log-level",
-                      dest="log_level",
-                      help="Logging level for logger: DEBUG, INFO, WARNING, ERROR",
-                      default=logging.INFO)
-    options, args = parser.parse_args()
-    logging.root.setLevel(options.log_level)
-
-    if not options.work_announce_address:
-        parser.print_help()
-        sys.exit(1)
+    
     #
     # For OS/X set up the UI elements that users expect from
     # an app.
@@ -120,10 +145,9 @@ def main():
         os.environ["APP_NAME_%d" % os.getpid()] = "CellProfilerWorker"
         os.environ["APP_ICON_%d" % os.getpid()] = icon_path
         J.javabridge.mac_run_loop_init()
-     
+    
     # Importing bioformats starts the JVM
     import bioformats
-    
     # Start the deadman switch thread.
     start_daemon_thread(target=exit_on_stdin_close, 
                         name="exit_on_stdin_close")
@@ -220,7 +244,7 @@ class AnalysisWorker(object):
                 self.current_analysis_id, \
                     self.work_request_address = self.get_announcement()
                 if t0 is None or time.time() - t0 > 30:
-                    logger.info("Connecting at address %s" % self.work_request_address)
+                    logger.debug("Connecting at address %s" % self.work_request_address)
                     t0 = time.time()
                 self.work_socket = the_zmq_context.socket(zmq.REQ)
                 self.work_socket.connect(self.work_request_address)
@@ -252,20 +276,20 @@ class AnalysisWorker(object):
                 self.pipelines_and_preferences.get(
                     self.current_analysis_id, (None, None))
             if not current_pipeline:
-                logger.info("Fetching pipeline and preferences")
+                logger.debug("Fetching pipeline and preferences")
                 rep = self.send(PipelinePreferencesRequest(
                     self.current_analysis_id))
-                logger.info("Received pipeline and preferences response")
+                logger.debug("Received pipeline and preferences response")
                 preferences_dict = rep.preferences
                 # update preferences to match remote values
                 cpprefs.set_preferences_from_dict(preferences_dict)
  
-                logger.info("Loading pipeline")
+                logger.debug("Loading pipeline")
                 pipeline_blob = rep.pipeline_blob.tostring()
                 current_pipeline = cpp.Pipeline()
                 current_pipeline.loadtxt(StringIO.StringIO(pipeline_blob), 
                                          raise_on_error=True)
-                logger.info("Pipeline loaded")
+                logger.debug("Pipeline loaded")
                 current_pipeline.add_listener(
                     self.pipeline_listener.handle_event)
                 current_preferences = rep.preferences
@@ -277,20 +301,20 @@ class AnalysisWorker(object):
             
             # Reset the listener's state
             self.pipeline_listener.reset()
-            logger.info("Getting initial measurements")
+            logger.debug("Getting initial measurements")
             # Fetch the path to the intial measurements if needed.
             current_measurements = self.initial_measurements.get(
                 self.current_analysis_id)
             if current_measurements is None:
-                logger.info("Sending initial measurements request")
+                logger.debug("Sending initial measurements request")
                 rep = self.send(InitialMeasurementsRequest(
                     self.current_analysis_id))
-                logger.info("Got initial measurements")
+                logger.debug("Got initial measurements")
                 current_measurements = \
                     self.initial_measurements[self.current_analysis_id] = \
                     cpmeas.load_measurements_from_buffer(rep.buf)
             else:
-                logger.info("Has initial measurements")
+                logger.debug("Has initial measurements")
             # Make a copy of the measurements for writing during this job
             current_measurements = cpmeas.Measurements(copy=current_measurements)
             all_measurements.add(current_measurements)

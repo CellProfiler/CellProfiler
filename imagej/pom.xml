@@ -6,25 +6,22 @@
   <packaging>pom</packaging>
   <name>cellprofiler-dependencies</name>
   <description>A POM that, when executed, assembles CellProfiler's Java dependencies.</description>
+  <properties>
+  <imagej.version>2.0.0-beta-7</imagej.version>
+  <ome.version>5.0.0-beta1</ome.version>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>loci</groupId>
-      <artifactId>bio-formats</artifactId>
-      <version>4.5-imagej-2.0.0-beta6</version>
-      <type>jar</type>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
-      <groupId>loci</groupId>
       <artifactId>ome_plugins</artifactId>
-      <version>4.5-imagej-2.0.0-beta6</version>
+      <version>${ome.version}</version>
       <type>jar</type>
       <scope>runtime</scope>
     </dependency>
     <dependency>
 	  <groupId>net.imagej</groupId>
 	  <artifactId>ij-app</artifactId>
-	  <version>2.0.0-beta6</version>
+	  <version>${imagej.version}</version>
 	  <scope>runtime</scope>
     </dependency>
     <dependency>
@@ -56,19 +53,13 @@
               <artifactItem>
                 <groupId>net.imagej</groupId>
                 <artifactId>ij.app</artifactId>
-                <version>2.0.0-beta6</version>
-                <overWrite>false</overWrite>
-              </artifactItem>
-              <artifactItem>
-			      <groupId>loci</groupId>
-			      <artifactId>bio-formats</artifactId>
-			      <version>4.5-imagej-2.0.0-beta6</version>
+                <version>${imagej.version}</version>
                 <overWrite>false</overWrite>
               </artifactItem>
               <artifactItem>
 			      <groupId>loci</groupId>
 			      <artifactId>ome_plugins</artifactId>
-			      <version>4.5-imagej-2.0.0-beta6</version>
+			      <version>${ome.version}</version>
                 <overWrite>false</overWrite>
               </artifactItem>
               <artifactItem>

@@ -690,7 +690,9 @@ class AnalysisRunner(object):
                     assert os.access(cp_executable, os.EX_OK), \
                            "%s is not executable" % cp_executable
                     args = ["arch", "-x86_64", cp_executable, 
-                            "--work-announce", cls.work_announce_address]
+                            "--work-announce", cls.work_announce_address,
+                            "--plugins-directory", cpprefs.get_plugin_directory(),
+                            "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()]
                 else:
                     aw_path = os.path.join(
                         os.path.split(
@@ -698,7 +700,9 @@ class AnalysisRunner(object):
                                            "analysis_worker")
                     args = [aw_path,
                             '--work-announce',
-                            cls.work_announce_address]
+                            cls.work_announce_address,
+                            "--plugins-directory", cpprefs.get_plugin_directory(),
+                            "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()]
                     
                 worker = subprocess.Popen(args,
                                           env=find_worker_env(),
@@ -707,16 +711,19 @@ class AnalysisRunner(object):
                                           stderr=subprocess.STDOUT,
                                           close_fds = close_fds)
             else:
-                worker = subprocess.Popen([find_python(),
-                                           '-u',  # unbuffered
-                                           find_analysis_worker_source(),
-                                           '--work-announce',
-                                           cls.work_announce_address],
-                                          env=find_worker_env(),
-                                          stdin=subprocess.PIPE,
-                                          stdout=subprocess.PIPE,
-                                          stderr=subprocess.STDOUT,
-                                          close_fds = close_fds)
+                worker = subprocess.Popen(
+                    [find_python(),
+                     '-u',  # unbuffered
+                     find_analysis_worker_source(),
+                     '--work-announce',
+                     cls.work_announce_address,
+                     "--plugins-directory", cpprefs.get_plugin_directory(),
+                     "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()],
+                    env=find_worker_env(),
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    close_fds = close_fds)
 
             def run_logger(workR, widx):
                 while(True):

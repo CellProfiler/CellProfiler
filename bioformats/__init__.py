@@ -72,21 +72,28 @@ def start_cellprofiler_jvm():
     if os.environ.has_key("CLASSPATH"):
         class_path += os.pathsep + os.environ["CLASSPATH"]
         
-    if (get_ij_plugin_directory() is not None and 
-        os.path.isdir(get_ij_plugin_directory())):
-        plugin_directory = get_ij_plugin_directory()
+    plugin_directory = get_ij_plugin_directory()
+    logger.debug("Using %s as imagej plugin directory" % plugin_directory)
+    if (plugin_directory is not None and 
+        os.path.isdir(plugin_directory)):
         #
         # Add the plugin directory to pick up .class files in a directory
         # hierarchy.
         #
         class_path += os.pathsep + plugin_directory
+        logger.debug("Adding %s to class path" % plugin_directory)
         #
         # Add any .jar files in the directory
         #
-        class_path += os.pathsep + os.pathsep.join(
-            [os.path.join(plugin_directory, jarfile)
-             for jarfile in os.listdir(plugin_directory)
-             if jarfile.lower().endswith(".jar")])
+        for jarfile in os.listdir(plugin_directory):
+            jarpath = os.path.join(plugin_directory, jarfile)
+            if jarfile.lower().endswith(".jar"):
+                logger.debug("Adding %s to class path" % jarpath)
+                class_path += os.pathsep + jarpath
+            else:
+                logger.debug("Skipping %s" % jarpath)
+    else:
+        logger.info("Plugin directory doesn't point to valid folder: " + plugin_directory)
         
     if sys.platform.startswith("win") and not hasattr(sys, 'frozen'):
         # Have to find tools.jar

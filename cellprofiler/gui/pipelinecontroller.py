@@ -2152,7 +2152,12 @@ class PipelineController:
                           style = wx.OK | wx.ICON_ERROR,
                           parent = self.__frame)
             return
-        self.start_debugging()
+        if not self.start_debugging():
+            wx.MessageBox(
+                "Test mode is disabled because there are no image sets",
+                "Test mode is disabled",
+                style = wx.OK | wx.ICON_ERROR,
+                parent = self.__frame)
     
     def start_debugging(self):
         self.__pipeline_list_view.set_debug_mode(True)

@@ -138,25 +138,27 @@ class NamesAndTypes(cpm.CPModule):
             """ % globals())
         
         self.single_load_as_choice = cps.Choice(
-            "Load as", [ LOAD_AS_GRAYSCALE_IMAGE,
+            "Select the image type", [ LOAD_AS_GRAYSCALE_IMAGE,
                          LOAD_AS_COLOR_IMAGE,
                          LOAD_AS_MASK])
         
         self.single_image_provider = cps.FileImageNameProvider(
-            "Image name", IMAGE_NAMES[0])
+            "Name the input image", IMAGE_NAMES[0])
             
         self.assignments = []
         self.assignments_count = cps.HiddenCount( self.assignments,
                                                   "Assignments count")
         self.add_assignment(can_remove = False)
+        
         self.add_assignment_button = cps.DoSomething(
-            "Add another assignment rule", "Add",
+            "", "Add another assignment rule",
             self.add_assignment)
+        
         self.matching_choice = cps.Choice(
-            "Assign channels by",
+            "Channel matching method",
             [MATCH_BY_ORDER, MATCH_BY_METADATA],doc = """
-            How do you want to match the image from one channel with
-            the images from other channels?
+            Select how you want to match the image from one channel with
+            the images from other channels.
             <p>This setting controls how CellProfiler picks which images
             should be matched together when analyzing all of the images
             from one site. </p>
@@ -222,7 +224,7 @@ class NamesAndTypes(cpm.CPModule):
             </p></li>
             </ul>"""%globals())
         self.join = cps.Joiner("")
-        self.imageset_setting = cps.ImageSetDisplay("", "Update table")
+        self.imageset_setting = cps.ImageSetDisplay("", "Update image name table")
         
     def add_assignment(self, can_remove = True):
         '''Add a rules assignment'''
@@ -237,14 +239,14 @@ class NamesAndTypes(cpm.CPModule):
         mp.set_metadata_keys(self.metadata_keys)
         
         group.append("rule_filter", cps.Filter(
-            "Match this rule",
+            "Select the rule criteria",
             [FilePredicate(),
              DirectoryPredicate(),
              ExtensionPredicate(),
              ImagePredicate(),
              mp],
             'and (file does contain "")',doc = """
-            Specify filter to narrow down the files to be analyzed. 
+            Specify a filter using rules to narrow down the files to be analyzed. 
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals()))
         
         unique_image_name = None
@@ -262,7 +264,11 @@ class NamesAndTypes(cpm.CPModule):
                     break
                     
         group.append("image_name", cps.FileImageNameProvider(
-            "Image name", unique_image_name))
+            "Name the input image", unique_image_name, doc = """
+            Enter the name that you want to call this image.
+            After this point, this image will be referred to by this
+            name, and can be selected from any drop-down menu that
+            requests an image selection."""))
         
         unique_object_name = None
         all_object_names = [
@@ -279,17 +285,58 @@ class NamesAndTypes(cpm.CPModule):
                     break
 
         group.append("object_name", cps.ObjectNameProvider(
-            "Objects name", unique_object_name))
+            "Name the input objects", unique_object_name,  doc = """
+            Enter the name that you want to call this set of objects.
+            After this point, this object will be referred to by this
+            name, and can be selected from any drop-down menu that
+            requests an object selection."""))
         
         group.append("load_as_choice", cps.Choice(
-            "Load as", LOAD_AS_ALL))
+            "Select the image type", LOAD_AS_ALL, doc = """
+            You can specify how these images should be treated:
+            <ul>
+            <li><i>%(LOAD_AS_GRAYSCALE_IMAGE)s:</i> An image in which each pixel 
+            represents a single intensity value. Most of the modules in CellProfiler
+            operate on images of this type.</li>
+            <li><i>%(LOAD_AS_COLOR_IMAGE)s:</i> An image in which each pixel
+            repesents a red, green and blue (RGB) triplet of intensity values.
+            Please note that the object detection modules such as <b>IdentifyPrimaryObjects</b>
+            expect a grayscale image, so if you want to identify objects, you
+            should use the <b>ColorToGray</b> module in the analysis pipeline
+            to split the color image into its component channels.</li>
+            <li><i>%(LOAD_AS_MASK)s:</i> A <i>mask</i> is an image where some of the 
+            pixel intensity values are zero, and others are non-zero. The most common
+            use for a mask is to exclude particular image regions from consideration. By 
+            applying a mask to another image, the portion of the image that overlaps with
+            the non-zero regions of the mask are included. Those that overlap with the 
+            zeroed region are "hidden" and not included in downstream calculations.
+            For this option, the input image should be a binary image, i.e, foreground is 
+            white, background is black. The module will convert any nonzero values 
+            to 1, if needed.</li>
+            <li><i>%(LOAD_AS_ILLUMINATION_FUNCTION)s:</i> An <i>illumination correction function</i>
+            is an image which has been generated for the purpose of correcting uneven 
+            illumination/lighting/shading or to reduce uneven background in images. Typically,
+            is a file in the MATLAB .mat format. See <b>CorrectIlluminationCalculate</b> and 
+            <b>CorrectIlluminationApply</b> for more details. </li>
+            <li><i>%(LOAD_AS_OBJECTS)s:</i> Use this option if the input image 
+            is a label matrix and you want to obtain the objects that it defines. 
+            A label matrix is a grayscale or color image in which the connected 
+            regions share the same label, which defines how objects are represented 
+            in CellProfiler. The labels are integer values greater than or equal 
+            to 0. The elements equal to 0 are the background, whereas the elements 
+            equal to 1 make up one object, the elements equal to 2 make up a second 
+            object, and so on. This option allows you to use the objects 
+            immediately without needing to insert an <b>Identify</b> module to 
+            extract them first. See <b>IdentifyPrimaryObjects</b> for more details. </li>
+            </ul>
+            """%globals()))
         
         group.can_remove = can_remove
         if can_remove:
             group.append(
                 "remover", 
                 cps.RemoveSettingButton(
-                'Remove above rule', "Remove", self.assignments, group))
+                '', "Remove this rule", self.assignments, group))
             
     def settings(self):
         result = [self.assignment_method, self.single_load_as_choice,

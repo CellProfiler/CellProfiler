@@ -671,6 +671,19 @@ class PipelineListView(object):
         index = self.where_to_drop(x,y)
         if index is not None:
             self.do_drop(index, action, data)
+            
+    def on_filelist_data(self, x, y, action, filenames):
+        for filename in filenames:
+            logger.info("Processing %s" % filename)
+            if filename.endswith(".cp"):
+                self.__frame.Raise()
+                if wx.MessageBox(
+                    "Do you want to import the pipeline, ""%s""?" % filename,
+                    caption = "Load pipeline",
+                    style = wx.YES_NO | wx.ICON_QUESTION,
+                    parent = self.__frame) == wx.YES:
+                    self.__frame.pipeline_controller.do_load_pipeline(filename)
+                    break
 
     def do_drop(self, index, action, data):
         #
@@ -900,8 +913,13 @@ class PipelineDropTarget(wx.PyDropTarget):
     def __init__(self, window):
         super(PipelineDropTarget, self).__init__()
         self.window = window
-        self.SetDataObject(PipelineDataObject())
-        
+        self.data_object = wx.DataObjectComposite()
+        self.pipeline_data_object = PipelineDataObject()
+        self.file_data_object = wx.FileDataObject()
+        self.data_object.Add(self.pipeline_data_object)
+        self.data_object.Add(self.file_data_object)
+        self.SetDataObject(self.data_object)
+
     def OnDragOver(self, x, y, data):
         if not self.window.provide_drag_feedback(x, y, data):
             return wx.DragNone
@@ -914,9 +932,14 @@ class PipelineDropTarget(wx.PyDropTarget):
     
     def OnData(self, x, y, action):
         if self.GetData():
-            data_object = self.GetDataObject()
-            self.window.on_data(x, y, action, data_object.GetDataHere(
-                wx.CustomDataFormat(PIPELINE_DATA_FORMAT)))
+            if self.data_object.ReceivedFormat.GetType() == \
+               self.pipeline_data_object.Format.GetType():
+                pipeline_data = self.pipeline_data_object.GetDataHere()
+                if pipeline_data is not None:
+                    self.window.on_data(x, y, action, pipeline_data)
+            elif self.data_object.ReceivedFormat.GetType() == wx.DF_FILENAME:
+                self.window.on_filelist_data(
+                    x, y, action, self.file_data_object.Filenames)
         return action
 
 class PipelineListCtrl(wx.PyScrolledWindow):

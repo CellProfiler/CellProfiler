@@ -83,6 +83,7 @@ class Images(cpm.CPModule):
         predicates = [FilePredicate(),
                       DirectoryPredicate(),
                       ExtensionPredicate()]
+        
         self.wants_filter = cps.Binary(
             "Filter based on rules", False, doc = """
             Check this setting to display and use rules to filter files for processing. 
@@ -93,14 +94,14 @@ class Images(cpm.CPModule):
             approach is useful if, for example, you drag-and-dropped a folder onto the file list panel 
             which contains a mixture of images that you want to analyze and other files that you want to ignore.</p>""")
             
-        self.filter = cps.Filter("Filter", predicates, 
+        self.filter = cps.Filter("Select the rule criteria", predicates, 
             'and (extension does isimage)',doc = """
-            Specify filter to narrow down the files to be analyzed. 
+            Specify filter of rules to narrow down the files to be analyzed. 
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals())
         
         self.update_button = cps.PathListRefreshButton(
-            "", "Update file listing",
-            doc = """<i>(Only displayed if filtering based on rules)</i><br>
+            "", "Update file list", doc = """
+            <i>(Only displayed if filtering based on rules)</i><br>
             Re-display the file list, removing or graying out the files
             that do not pass the current filter.
             """)

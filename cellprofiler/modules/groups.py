@@ -84,7 +84,11 @@ class Groups(cpm.CPModule):
         self.set_notes([" ".join(module_explanation)])
         
         self.wants_groups = cps.Binary(
-            "Do you want to group your images?", False)
+            "Do you want to group your images?", False, doc = """
+            If you need to split your images into image subsets (or <i>groups</i>) such that each
+            group is processed independently of each other, then check this box. See the main module
+            help for more details.""")
+        
         self.grouping_text = cps.HTMLText(
             "", content="""
             Each unique metadata value (or combination of values) 

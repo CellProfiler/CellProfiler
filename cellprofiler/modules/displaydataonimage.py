@@ -39,10 +39,13 @@ E_FIGURE = "Figure"
 E_AXES = "Axes"
 E_IMAGE = "Image"
 
+CT_COLOR = "Color"
+CT_TEXT = "Text"
+
 class DisplayDataOnImage(cpm.CPModule):
     module_name = 'DisplayDataOnImage'
     category = 'Data Tools'
-    variable_revision_number = 3
+    variable_revision_number = 4
     
     def create_settings(self):
         """Create your settings by subclassing this function
@@ -90,6 +93,19 @@ class DisplayDataOnImage(cpm.CPModule):
             "Select the image on which to display the measurements", "None", doc="""
             Choose the image to be displayed behind the measurements.
             This can be any image created or loaded by a previous module.""")
+        
+        self.color_or_text = cps.Choice(
+            "Display mode", [CT_TEXT, CT_COLOR],
+            doc = """<i>(Used only when displaying object measurements)</i><br>
+            Choose how to display the measurement information. If you choose
+            %(CT_TEXT)s, <b>DisplayDataOnImage</b> will display the numeric
+            value on top of each object. If you choose %(CT_COLOR)s,
+            <b>DisplayDataOnImage</b> will convert the image to grayscale, if
+            necessary, and display the portion of the image within each object
+            using a hue that indicates the measurement value relative to
+            the other objects in the set using the default color map.
+            """ % globals()
+            )
         
         self.text_color = cps.Text(
             "Text color","red",doc="""
@@ -148,7 +164,7 @@ class DisplayDataOnImage(cpm.CPModule):
         return [self.objects_or_image, self.objects_name, self.measurement,
                 self.image_name, self.text_color, self.display_image,
                 self.font_size, self.decimals, self.saved_image_contents,
-                self.offset]
+                self.offset, self.color_or_text]
     
     def visible_settings(self):
         """The settings that are visible in the UI
@@ -156,11 +172,20 @@ class DisplayDataOnImage(cpm.CPModule):
         result = [self.objects_or_image]
         if self.objects_or_image == OI_OBJECTS:
             result += [self.objects_name]
-        result += [self.measurement, self.image_name, self.text_color,
-                   self.display_image, self.font_size, self.decimals,
-                   self.saved_image_contents, self.offset]
+        result += [self.measurement, self.image_name]
+        if self.objects_or_image == OI_OBJECTS:
+            result += [self.color_or_text]
+        if not self.use_color_map():
+            result += [ self.text_color, self.font_size, self.decimals,
+                        self.offset]
+        result += [self.display_image, self.saved_image_contents]
         return result
         
+    def use_color_map(self):
+        '''True if the measurement values are rendered using a color map'''
+        return self.objects_or_image == OI_OBJECTS and \
+               self.color_or_text == CT_COLOR
+    
     def run(self, workspace):
         import matplotlib
         import matplotlib.cm
@@ -172,6 +197,9 @@ class DisplayDataOnImage(cpm.CPModule):
         #
         image = workspace.image_set.get_image(self.image_name.value)
         workspace.display_data.pixel_data = image.pixel_data
+        if self.use_color_map():
+            workspace.display_data.labels = \
+                workspace.object_set.get_objects(self.objects_name.value).segmented
         #
         # Get the measurements and positions
         #
@@ -220,16 +248,20 @@ class DisplayDataOnImage(cpm.CPModule):
         canvas = matplotlib.backends.backend_agg.FigureCanvasAgg(fig)
         if self.saved_image_contents == E_AXES:
             fig.set_frameon(False)
-            fig.subplots_adjust(0.1,.1,.9,.9,0,0)
+            if not self.use_color_map():
+                fig.subplots_adjust(0.1,.1,.9,.9,0,0)
             shape = workspace.display_data.pixel_data.shape
             width = float(shape[1]) / fig.dpi
             height = float(shape[0]) / fig.dpi
             fig.set_figheight(height)
             fig.set_figwidth(width)
         elif self.saved_image_contents == E_IMAGE:
+            if self.use_color_map():
+                fig.axes[1].set_visible(False)
             only_display_image(fig, workspace.display_data.pixel_data.shape)
         else:
-            fig.subplots_adjust(.1,.1,.9,.9,0,0)
+            if not self.use_color_map():
+                fig.subplots_adjust(.1,.1,.9,.9,0,0)
             
         pixel_data = figure_to_image(fig, dpi=fig.dpi)
         image = cpi.Image(pixel_data)
@@ -285,22 +317,43 @@ class DisplayDataOnImage(cpm.CPModule):
         
     def display_on_figure(self, workspace, axes, imshow_fn):
         import matplotlib
-        imshow_fn(workspace.display_data.pixel_data)
-        for x, y, value in zip(workspace.display_data.x,
-                               workspace.display_data.y,
-                               workspace.display_data.values):
-            try:
-                fvalue = float(value)
-                svalue = "%.*f"%(self.decimals.value, value)
-            except:
-                svalue = str(value)
-            
-            text = matplotlib.text.Text(x=x, y=y, text=svalue,
-                                        size=self.font_size.value,
-                                        color=self.text_color.value,
-                                        verticalalignment='center',
-                                        horizontalalignment='center')
-            axes.add_artist(text)
+        import matplotlib.cm
+        
+        if self.use_color_map():
+            labels = workspace.display_data.labels
+            pixel_data = workspace.display_data.pixel_data
+            if pixel_data.ndim == 3:
+                pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
+            colormap = cpprefs.get_default_colormap()
+            colormap = matplotlib.cm.get_cmap(colormap)
+            values = workspace.display_data.values
+            colors = np.ones((len(values) + 1, 4))
+            sm = matplotlib.cm.ScalarMappable(cmap = colormap)
+            sm.set_array(values)
+            colors[1:, :] = sm.to_rgba(values)
+            img = colors[labels, :3] * pixel_data[:, :, np.newaxis]
+            imshow_fn(img)
+            assert isinstance(axes, matplotlib.axes.Axes)
+            figure = axes.get_figure()
+            assert isinstance(figure, matplotlib.figure.Figure)
+            figure.colorbar(sm, ax=axes)
+        else:
+            imshow_fn(workspace.display_data.pixel_data)
+            for x, y, value in zip(workspace.display_data.x,
+                                   workspace.display_data.y,
+                                   workspace.display_data.values):
+                try:
+                    fvalue = float(value)
+                    svalue = "%.*f"%(self.decimals.value, value)
+                except:
+                    svalue = str(value)
+                
+                text = matplotlib.text.Text(x=x, y=y, text=svalue,
+                                            size=self.font_size.value,
+                                            color=self.text_color.value,
+                                            verticalalignment='center',
+                                            horizontalalignment='center')
+                axes.add_artist(text)
             
     def upgrade_settings(self, setting_values, variable_revision_number, 
                          module_name, from_matlab):
@@ -329,6 +382,11 @@ class DisplayDataOnImage(cpm.CPModule):
             '''Added annotation offset'''
             setting_values = setting_values + ["0"]
             variable_revision_number = 3
+            
+        if variable_revision_number == 3:
+            # Added color map mode
+            setting_values = setting_values + [ CT_TEXT]
+            variable_revision_number = 4
         
         return setting_values, variable_revision_number, from_matlab
         

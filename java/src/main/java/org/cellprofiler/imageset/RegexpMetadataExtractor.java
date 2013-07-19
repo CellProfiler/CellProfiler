@@ -44,7 +44,10 @@ public class RegexpMetadataExtractor implements MetadataExtractor<String> {
 		List<String> keys = new ArrayList<String>();
 		this.pattern = MetadataUtils.compilePythonRegexp(pattern, keys);
 		this.keys = new String [keys.size()];
-		for (int i=0; i<keys.size(); i++) this.keys[i] = StringCache.intern(keys.get(i));
+		for (int i=0; i<keys.size(); i++) {
+			final String key = keys.get(i);
+			this.keys[i] = (key == null)?null:StringCache.intern(key);
+		}
 	}
 
 	/* (non-Javadoc)
@@ -56,7 +59,7 @@ public class RegexpMetadataExtractor implements MetadataExtractor<String> {
 		if (matcher.find()) {
 			for (int i=0; i<matcher.groupCount(); i++) {
 				String value = matcher.group(i+1);
-				if (value != null) {
+				if ((value != null) && (keys[i] != null)) {
 					map.put(keys[i], StringCache.intern(value));
 				}
 			}

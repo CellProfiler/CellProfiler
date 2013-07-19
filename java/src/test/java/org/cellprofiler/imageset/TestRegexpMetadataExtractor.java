@@ -70,4 +70,15 @@ public class TestRegexpMetadataExtractor {
 		testSomething("_(?P<WellName>[A-Z][0-9]{2})|(?P<FamousCowgirl>Annie +Oakley)_",
 				"_Annie Oakley_.jpg", new String [][] { {"FamousCowgirl", "Annie Oakley"}});
 	}
+	@Test
+	public void testNonKeywordMatch() {
+		testSomething(
+				"(Plate|Plato)_(?P<Well>[A-Z][0-9]{2})",
+				"Plate_A01.png",
+				new String[][] {{ "Well", "A01"}});
+		testSomething(
+				"_((?P<Well>[A-Z][0-9]{2}))",
+				"Plate_A01.png",
+				new String[][] {{ "Well", "A01"}});
+	}
 }

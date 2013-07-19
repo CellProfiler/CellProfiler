@@ -88,8 +88,10 @@ public class MetadataUtils {
 		}
 		return image_set_metadata;
 	}
+	//
+	// This expression looks for a parentheses that's not
 	final private static Pattern pythonGroupPattern = Pattern.compile(
-	"(?<!\\\\)(?<=\\()\\?P<([^>]+)>");
+	"(?<!\\\\)((\\(\\?P<([^>]+)>)|(\\((?!\\?P<)))");
 
 	/**
 	 * Compile a Python regular expression, converting the key extraction pattern,
@@ -104,9 +106,14 @@ public class MetadataUtils {
 		String p = "";
 		int start = 0;
 		while (matcher.find()) {
-			p += pattern.substring(start, matcher.start());
-			if (keys != null)
-				keys.add(matcher.group(1));
+			p += pattern.substring(start, matcher.start()+1);
+			if (keys != null) {
+				if (matcher.group(3) != null) {
+					keys.add(matcher.group(3));
+				} else {
+					keys.add(null);
+				}
+			}
 			start = matcher.end();
 		}
 		p += pattern.substring(start);

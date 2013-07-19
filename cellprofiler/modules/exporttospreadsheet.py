@@ -1,7 +1,6 @@
 '''<b>Export To Spreadsheet</b> exports measurements into one or more files that can be
-opened in Excel or other spreadsheet programs
+opened in Excel or other spreadsheet programs.
 <hr>
-
 This module will convert the measurements to a comma-, tab-, or other 
 character-delimited text format and
 save them to the hard drive in one or several files, as requested. 
@@ -118,9 +117,11 @@ class ExportToSpreadsheet(cpm.CPModule):
     
     def create_settings(self):
         self.delimiter = cps.CustomChoice(
-            "Select or enter the column delimiter",DELIMITERS, doc = """
-            What delimiter do you want to use? This is the character that separates columns in a file. The
-            two default choices are tab and comma, but you can type in any single character delimiter you would prefer. Be sure that the delimiter you choose is not a character that is present within your data (for example, in file names).""")
+            "Select the column delimiter",DELIMITERS, doc = """
+            Select the delimiter to use, i.e., the character that separates columns in a file. The
+            two default choices are tab and comma, but you can type in any single character delimiter 
+            you would prefer. Be sure that the delimiter you choose is not a character that is present 
+            within your data (for example, in file names).""")
         
         self.prepend_output_filename = cps.Binary(
             "Prepend the output file name to the data file names?", True, doc = """
@@ -132,8 +133,8 @@ class ExportToSpreadsheet(cpm.CPModule):
             dir_choices = [
                 ABSOLUTE_FOLDER_NAME, 
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_OUTPUT_SUBFOLDER_NAME,
-                DEFAULT_INPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME ],
-            doc="""This setting lets you choose the folder for the output
+                DEFAULT_INPUT_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME ],doc="""
+            This setting lets you choose the folder for the output
             files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
             
             <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s<br>
@@ -157,15 +158,14 @@ class ExportToSpreadsheet(cpm.CPModule):
         self.nan_representation = cps.Choice(
             "Representation of Nan/Inf", [NANS_AS_NANS, NANS_AS_NULLS], doc = """
             This setting controls the output for numeric fields
-            if the calculated value is infinite (Inf) or undefined (NaN).
+            if the calculated value is infinite (<i>Inf</i>) or undefined (<i>NaN</i>).
             CellProfiler will produce Inf or NaN values under certain rare
             circumstances, for instance when calculating the mean intensity
             of an object within a masked region of an image.
-            <br>
-            You can choose to output Inf or NaN values as either null values
-            represented by an empty field or as the strings, "Inf", "-Inf" or
-            "NaN". Choose %(NANS_AS_NULLS)s to output them as empty fields.
-            Choose %(NANS_AS_NANS)s to output them as NaN or Inf.
+            <ul>
+            <li><i>%(NANS_AS_NULLS)s:</i> Output these values as empty fields.</li>
+            <li><i>%(NANS_AS_NANS)s:</i> Output them as the strings "NaN", "Inf" or "-Inf".</li>
+            </ul>
             """ % globals())
         
         self.pick_columns = cps.Binary(

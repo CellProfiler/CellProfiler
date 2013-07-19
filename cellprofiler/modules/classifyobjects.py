@@ -1,7 +1,6 @@
 '''<b>Classify Objects</b> classifies objects into different classes according 
 to the value of measurements you choose.
 <hr>
-
 This module classifies objects into a number of different bins
 according to the value of a measurement (e.g., by size, intensity, shape).
 It reports how many objects fall into each class as well as the
@@ -11,37 +10,44 @@ specify the bins to use. It also requires you to have run a measurement or
 <b>CalculateMath</b> previous to this module in the pipeline so that the measurement
 values can be used to classify the objects. 
 
-<p>There are two flavors of classification. The first classifies each object
+<p>There are two flavors of classification:
+<ul>
+<li>The first classifies each object
 according to the measurements you choose and assigns each object to one
 class per measurement. You may specify more than two classification bins per
-measurement. </p>
-
-<p>The second classifies each object according to two measurements and two
+measurement. </li>
+<li>The second classifies each object according to two measurements and two
 threshold values. The module classifies each object once per measurement
 resulting in four possible object classes. The module then stores one
-measurement per object, based on the object's class.</p>
+measurement per object, based on the object's class.</li>
+</ul>
+</p>
+<p>Note that objects without a measurement are not counted as belonging in a 
+classification bin and will not show up in the output image (shown in the 
+module display window); in the object classification they will have a value of False
+for all bins. However, they are still counted in the total number of objects 
+and hence are reflected in the classification percentages.</p>
 
 <h4>Available measurements</h4>
 <ul>
 <li><i>Image features:</i>
 <ul>
-<li><i>NumObjectsPerBin:</i> The number of objects that are classified into each bin.</li>
-<li><i>PctObjectsPerBin:</i> The percentage of total objects that are classified into each bin.</li>
+<li><i>NumObjectsPerBin:</i> The number of objects that are classified 
+into each bin.</li>
+<li><i>PctObjectsPerBin:</i> The percentage of total objects that are 
+classified into each bin.</li>
 </ul>
 </li>
 <li><i>Object features:</i>
 <ul>
-<li>Single measurement: Classification (true/false) of the N<sup>th</sup> bin for the M<sup>th</sup> measurement.</li>
-<li>Two measurement: Classification (true/false) of the 1<sup>st</sup> measurement versus the 2<sup>nd</sup> measurement 
+<li>Single measurement: Classification (true/false) of the N<sup>th</sup> 
+bin for the M<sup>th</sup> measurement.</li>
+<li>Two measurement: Classification (true/false) of the 1<sup>st</sup> 
+measurement versus the 2<sup>nd</sup> measurement 
 binned into bins above ("high") and below ("low") the cutoff.</li>
 </ul>
 </li>
 </ul>
-
-<p>Note that objects without a measurement are not counted as belonging in a classification bin and will not show up
-in the output image (shown in the module display window); in the object classification they will have a value of False
-for all bins. However, they are still counted in the total number of objects and hence are reflected in the 
-classification percentages.</p>
 
 See also <b>CalculateMath</b> and any of the modules in the <b>Measure</b> category.
 '''
@@ -89,9 +95,10 @@ class ClassifyObjects(cpm.CPModule):
         Create the settings for the module during initialization.
         """
         self.contrast_choice = cps.Choice(
-            "Should each classification decision be based on a single measurement or on the combination of a pair of measurements?",
+            "Make each classification decision on how many measurements?",
             [BY_SINGLE_MEASUREMENT, BY_TWO_MEASUREMENTS],doc="""
-            This setting controls how classifications are recorded:<br>
+            This setting controls how many measurements are used to make a classifications decision
+            for each object:
             <ul>
             <li><i>%(BY_SINGLE_MEASUREMENT)s:</i> Classifies each object based on a single measurement.</li>
             <li><i>%(BY_TWO_MEASUREMENTS)s:</i> Classifies each object based on a pair of measurements taken 

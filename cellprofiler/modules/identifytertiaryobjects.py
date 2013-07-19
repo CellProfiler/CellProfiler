@@ -1,7 +1,6 @@
 '''<b>Identify Tertiary Objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
-objects (e.g. nuclei) from larger secondary objects (e.g., cells), leaving a ring shape
+objects (e.g. nuclei) from larger secondary objects (e.g., cells), leaving a ring shape.
 <hr>
-
 This module will take the smaller identified objects and remove them from
 the larger identified objects. For example, "subtracting" the nuclei from
 the cells will leave just the cytoplasm, the properties of which can then
@@ -16,11 +15,6 @@ are not contiguous, which does not cause problems when running the
 problems when running the <b>MeasureObjectSizeShape</b> module because calculations 
 of the perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
 objects.
-
-<i>Special note on saving images:</i> You can use the settings in this module to pass object outlines along object
-outlines can be passed along to the module <b>OverlayOutlines</b> and then
-save them with the <b>SaveImages</b> module. You can also pass the identified objects themselves along to the object
-processing module <b>ConvertToImage</b> and then save them with the <b>SaveImages</b> module.
 
 <h4>Available measurements</h4>
 <ul>
@@ -65,6 +59,7 @@ import cellprofiler.objects as cpo
 import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.outline import outline
+from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 class IdentifyTertiaryObjects(cpm.CPModule):
 
@@ -77,17 +72,25 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         
         Create the settings for the module during initialization.
         """
-        self.secondary_objects_name = cps.ObjectNameSubscriber("Select the larger identified objects","None",doc="""
-            What did you call the larger identified objects?""")
+        self.secondary_objects_name = cps.ObjectNameSubscriber(
+            "Select the larger identified objects","None",doc="""
+            Select the larger identified objects. This will usually
+            be an object previously identified by a <b>IdentifySecondaryObjects</b>
+            module.""")
         
-        self.primary_objects_name = cps.ObjectNameSubscriber("Select the smaller identified objects","None",doc="""
-            What did you call the smaller identified objects?""")
+        self.primary_objects_name = cps.ObjectNameSubscriber(
+            "Select the smaller identified objects","None",doc="""
+            Select the smaller identified objects. This will usually
+            be an object previously identified by a <b>IdentifyPrimaryObjects</b>
+            module.""")
         
-        self.subregion_objects_name = cps.ObjectNameProvider("Name the tertiary objects to be identified","Cytoplasm",doc="""
-            What do you want to call the new subregions? The new tertiary subregion 
+        self.subregion_objects_name = cps.ObjectNameProvider(
+            "Name the tertiary objects to be identified","Cytoplasm",doc="""
+            Enter a name for the new tertiary objects. The tertiary objects 
             will consist of the smaller object subtracted from the larger object.""")
 
-        self.shrink_primary = cps.Binary("Shrink smaller object prior to subtraction?",True, doc="""
+        self.shrink_primary = cps.Binary(
+            "Shrink smaller object prior to subtraction?",True, doc="""
             Checking this box will shrink the smaller object by 1 pixel before subtracting the objects.
             this approach will ensure that there is always a tertiary object produced, even if it is
             only 1 pixel wide.
@@ -97,11 +100,13 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             in the creation of objects with no area. Measurements can still be made on such objects, but
             the results will be zero or not-a-number (NaN)</p>""")
         
-        self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?",False)
+        self.use_outlines = cps.Binary("Retain outlines of the tertiary objects?",False, doc="""
+            %(RETAINING_OUTLINES_HELP)s"""%globals())
         
-        self.outlines_name = cps.OutlineNameProvider("Name the outline image","CytoplasmOutlines", doc="""\
+        self.outlines_name = cps.OutlineNameProvider(
+            "Name the outline image","CytoplasmOutlines", doc="""
             <i>(Used only if outlines are to be retained for later use in the pipeline)</i><br>
-            <p> Enter a name that will allow the outlines to be selected later in the pipeline.""") 
+            %(NAMING_OUTLINES_HELP)s"""%globals()) 
 
     def settings(self):
         """All of the settings to be loaded and saved in the pipeline file

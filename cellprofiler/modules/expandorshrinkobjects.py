@@ -55,6 +55,7 @@ from cellprofiler.cpmath.cpmorphology import binary_shrink, thin
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes, adjacent
 from cellprofiler.cpmath.cpmorphology import skeletonize_labels, spur
 from cellprofiler.cpmath.outline import outline
+from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 O_SHRINK_INF = 'Shrink objects to a point'
 O_EXPAND_INF = 'Expand objects until touching'
@@ -123,15 +124,15 @@ class ExpandOrShrinkObjects(cpm.CPModule):
             to a single point.""")
         
         self.wants_outlines = cps.Binary(
-            "Retain the outlines of the identified objects for use later in the pipeline (for example, in SaveImages)?",
-            False)
+            "Retain the outlines of the identified objects?",
+            False, doc="""
+            %(RETAINING_OUTLINES_HELP)s"""%globals())
         
         self.outlines_name = cps.OutlineNameProvider(
             "Name the outline image",
             "ShrunkenNucleiOutlines", doc = """
             <i>(Used only if outlines are to be retained for later use in the pipeline)</i><br>
-            Choose a name for the outlines of the identified objects that will allow them to be 
-            selected as an image later in the pipeline.""")
+            %(NAMING_OUTLINES_HELP)s"""%globals())
 
     def settings(self):
         return [self.object_name, self.output_object_name, self.operation,

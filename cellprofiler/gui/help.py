@@ -118,12 +118,23 @@ You can insert a previously defined metadata tag by either using:
 <ul><li>The insert key</li>
 <li>A right mouse button click inside the control</li>
 <li>In Windows, the Context menu key, which is between the Windows key and Ctrl key </li></ul>
-The inserted metadata tag will appear in green. To change a previously inserted metadata tag, navigate the cursor to just before the tag and either:
+The inserted metadata tag will appear in green. To change a previously inserted metadata tag, 
+navigate the cursor to just before the tag and either:
 <ul><li>Use the up and down arrows to cycle through possible values.</li>
 <li>Right-click on the tag to display and select the available values.</li></ul>"""
 
 USING_METADATA_GROUPING_HELP_REF = """Please see <i>%(METADATA_GROUPING_HELP_REF)s</i> for more details on the 
 proper use of metadata for grouping"""%globals()
+
+RETAINING_OUTLINES_HELP = """The outlines of the new objects can be retained for later use in 
+the pipeline. For example, a common use is for quality control purposes by overlaying them on 
+your image of choice using the <b>OverlayOutlines</b> module and then saving the overlay image 
+with the <b>SaveImages</b> module."""
+
+NAMING_OUTLINES_HELP = """
+Enter a name for the outlines of the identified 
+objects. The outlined image can be selected in downstream modules by selecting 
+them from any drop-down image list."""
 
 ##################################################
 #

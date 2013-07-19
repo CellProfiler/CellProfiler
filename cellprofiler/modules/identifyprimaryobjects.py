@@ -1,8 +1,10 @@
 '''<b>Identify Primary Objects</b> identifies objects in an image
 <hr>
-
 This module identifies primary objects in grayscale images
-containing bright objects on a dark background. Primary objects (e.g., nuclei) are those that can be found in an image without using any corresponding reference image. By contrast, secondary objects are those that are found using previously-identified primary objects as a reference.
+containing bright objects on a dark background. Primary objects (e.g., nuclei) 
+are those that can be found in an image without using any corresponding reference 
+image. By contrast, secondary objects are those that are found using 
+previously-identified primary objects as a reference.
 
 After processing, the module display window for this module will
 show a panel with objects outlined in three colors (these are the defaults):
@@ -80,26 +82,26 @@ desired, by excluding objects that are a particular size, shape,
 intensity, or texture. </li>
 </ol>
 
-References
+<b>References</b>
 <ul>
 <li>Malpica N, de Solorzano CO, Vaquero JJ, Santos, A, Vallcorba I, 
 Garcia-Sagredo JM, del Pozo F (1997) "Applying watershed
 algorithms to the segmentation of clustered nuclei." <i> Cytometry</i> 28, 289-297.
-<a href="http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4<289::AID-CYTO3>3.0.CO;2-7">(link)</a></li>
+(<a href="http://dx.doi.org/10.1002/(SICI)1097-0320(19970801)28:4<289::AID-CYTO3>3.0.CO;2-7">link</a>)</li>
 <li>Meyer F, Beucher S (1990) "Morphological segmentation." <i>J Visual
 Communication and Image Representation</i> 1, 21-46.
-<a href="http://dx.doi.org/10.1016/1047-3203(90)90014-M"><(link)</a></li>
+(<a href="http://dx.doi.org/10.1016/1047-3203(90)90014-M">link</a>)</li>
 <li>Ortiz de Solorzano C, Rodriguez EG, Jones A, Pinkel D, Gray JW, 
 Sudar D, Lockett SJ. (1999) "Segmentation of confocal
 microscope images of cell nuclei in thick tissue sections." <i>Journal of
 Microscopy-Oxford</i> 193, 212-226.
-<a href="http://dx.doi.org/10.1046/j.1365-2818.1999.00463.x"><(link)</a></li>
+(<a href="http://dx.doi.org/10.1046/j.1365-2818.1999.00463.x">link</a>)</li>
 <li>W&auml;hlby C (2003) <i>Algorithms for applied digital image cytometry</i>, Ph.D.,
 Uppsala University, Uppsala.</li>
 <li>W&auml;hlby C, Sintorn IM, Erlandsson F, Borgefors G, Bengtsson E. (2004) 
 "Combining intensity, edge and shape information for 2D and 3D
 segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.
-<a href="http://dx.doi.org/10.1111/j.0022-2720.2004.01338.x"><(link)</a></li>
+(<a href="http://dx.doi.org/10.1111/j.0022-2720.2004.01338.x">link</a>)</li>
 </ul>
 
 <h3>Technical notes</h3> 
@@ -108,12 +110,6 @@ performed on the user-controlled heavily smoothed image, the
 foreground/background is  on a hard-coded slightly smoothed image,
 and the dividing lines between clumped objects (watershed) are done on the
 non-smoothed image.
-
-<h3>Special note on saving images</h3> 
-<p>Using the settings in this module, you can pass object outlines along to the
-module <b>OverlayOutlines</b> and then save them with the <b>SaveImages</b> module. 
-You can also pass along the objects themselves to the object processing module 
-<b>ConvertToImage</b> and then save them with the <b>SaveImages module</b>.
 
 See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, and <b>IdentifyPrimManual</b>.
 '''
@@ -157,7 +153,7 @@ import cellprofiler.cpmath.threshold as cpthresh
 from identify import TSM_AUTOMATIC
 from identify import draw_outline
 from identify import FI_IMAGE_SIZE
-from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES
+from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 #################################################
 #
@@ -233,16 +229,16 @@ class IdentifyPrimaryObjects(cpmi.Identify):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",doc="""
-            What did you call the images you want to use to identify objects?""")
+            Select the images from which you want to use to identify objects.""")
         
         self.object_name = cps.ObjectNameProvider(
             "Name the primary objects to be identified",
             "Nuclei",doc="""
-            What do you want to call the objects identified by this module?""")
+            Enter the name that you want to call the objects identified by this module.""")
         
         self.size_range = cps.IntegerRange(
             "Typical diameter of objects, in pixel units (Min,Max)", 
-            (10,40), minval=1, doc='''\
+            (10,40), minval=1, doc='''
             Most options within this module use this estimate of the
             size range of the objects in order to distinguish them from noise in the
             image. For example, for some of the identification methods, the smoothing
@@ -254,7 +250,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         self.exclude_size = cps.Binary(
             "Discard objects outside the diameter range?",
-            True, doc='''\
+            True, doc='''
             You can choose to discard objects outside the range you specified. 
             This allows you to exclude small objects (e.g., dust, noise,
             and debris) or large objects (e.g., large clumps) if desired. Objects discarded 
@@ -265,7 +261,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.merge_objects = cps.Binary(
             "Try to merge too small objects with nearby larger objects?", 
             False, doc='''
-            Use caution when choosing <i>Yes</i>. Objects that are
+            Use caution when checking this box. Objects that are
             smaller than the specified minimum diameter will be merged, if possible, with
             other surrounding objects. This is helpful in cases when an object was
             incorrectly split into two objects, one of which is actually just a tiny
@@ -293,55 +289,59 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         self.unclump_method = cps.Choice(
             'Method to distinguish clumped objects', 
-            [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE], doc="""\
+            [UN_INTENSITY, UN_SHAPE, UN_LOG, UN_NONE], doc="""
             This setting allows you to choose the method that is used to segment
             objects, i.e., "declump" a large, merged object into the appropriate number of  
             objects of interest. To decide between these methods, you can run Test mode to see the results of each.
             <ul>
-            <li><i>Intensity:</i> For objects that tend to have only one peak of brightness
+            <li><i>%(UN_INTENSITY)s:</i> For objects that tend to have only one peak of brightness
             per object (e.g. objects that are brighter towards their interiors and 
             dimmer towards their edges), this
             option counts each intensity peak as a separate object. The objects can
             be any shape, so they need not be round and uniform in size as would be
-            required for the <i>Shape</i> option. The module is more successful when
+            required for the <i>%(UN_SHAPE)s</i> option. The module is more successful when
             the objects have a smooth texture. By default, the image is automatically
-            blurred to attempt to achieve appropriate smoothness (see <i>Blur</i> option),
+            blurred to attempt to achieve appropriate smoothness (see <i>Smoothing filter</i> options),
             but overriding the default value can improve the outcome on
-            lumpy-textured objects. Technical description: Object centers are defined
-            as local intensity maxima in the smoothed image.</li>
-            <li><i>Shape:</i> For cases when there are definite indentations separating
+            lumpy-textured objects.<br>
+            <p><b>Technical description:</b> Object centers are defined
+            as local intensity maxima in the smoothed image.</p></li>
+            <li><i>%(UN_SHAPE)s:</i> For cases when there are definite indentations separating
             objects. This works best for objects that are round. The intensity
             patterns in the original image are largely irrelevant: the image is converted to
             black and white (binary) and the shape determines whether clumped
             objects will be distinguished. Therefore, the cells need not be brighter
-            towards the interior as is required for the <i>Intensity</i> option. The
+            towards the interior as is required for the <i>%(UN_INTENSITY)s</i> option. The
             declumping results of this method are affected by the thresholding
-            method you choose. Technical description: The binary thresholded image is
+            method you choose. 
+            <p><b>Technical description:</b> The binary thresholded image is
             distance-transformed and object centers are defined as peaks in this
             image. A distance-transform gives each pixel a value equal to the distance 
-            to the nearest pixel below a certain threshold, so it indicates the <i>Shape</i> of the object.</li>
-            <li><i>Laplacian of Gaussian (LoG):</i> For objects that have an increasing intensity
-            gradient toward their center, this option performs an LoG (Mexican hat)
+            to the nearest pixel below a certain threshold, so it indicates the <i>%(UN_SHAPE)s</i> of the object.</p></li>
+            <li><i>%(UN_LOG)s:</i> For objects that have an increasing intensity
+            gradient toward their center, this option performs a Laplacian of Gaussian (or Mexican hat)
             transform on the image, which accentuates pixels that are local maxima of a desired size. It
             thresholds the result and finds pixels that are both local maxima and above
             threshold. These pixels are used as the seeds for objects in the watershed.</li>
-            <li><i>None:</i> If objects are well separated and bright relative to the
+            <li><i>%(UN_NONE)s:</i> If objects are well separated and bright relative to the
             background, it may be unnecessary to attempt to separate clumped objects.
-            Using the very fast <i>None</i> option, a simple threshold will be used to identify
-            objects. This will override any declumping method chosen in the next
-            question.</li></ul>""")
+            Using the very fast <i>%(UN_NONE)s</i> option, a simple threshold will be used to identify
+            objects. This will override any declumping method chosen in the settings below.</li>
+            </ul>"""%globals())
 
         self.watershed_method = cps.Choice(
             'Method to draw dividing lines between clumped objects', 
-            [WA_INTENSITY, WA_SHAPE, WA_PROPAGATE, WA_NONE], doc="""\
+            [WA_INTENSITY, WA_SHAPE, WA_PROPAGATE, WA_NONE], doc="""
             This setting allows you to choose the method that is used to draw the line
             bewteen segmented objects, provided that you have chosen to declump the objects.
             To decide between these methods, you can run Test mode to see the results of each.
-            <ul><li><i>Intensity:</i> Works best where the dividing lines between clumped
-            objects are dimmer than the remainder of the objects. Technical description: 
+            <ul>
+            <li><i>%(WA_INTENSITY)s:</i> Works best where the dividing lines between clumped
+            objects are dimmer than the remainder of the objects. 
+            <p><b>Technical description:</b>
             Using the previously identified local maxima as seeds, this method is a
-            watershed (<i>Vincent and Soille, 1991</i>) on the intensity image.</li>
-            <li><i>Shape:</i> Dividing lines between clumped objects are based on the
+            watershed (<i>Vincent and Soille, 1991</i>) on the intensity image.</p></li>
+            <li><i>%(WA_SHAPE)s:</i> Dividing lines between clumped objects are based on the
             shape of the clump. For example, when a clump contains two objects, the
             dividing line will be placed where indentations occur between the two
             objects. The intensity patterns in the original image are largely irrelevant: the
@@ -349,24 +349,26 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             Technical description: Using the previously identified local maxima as seeds, 
             this method is a
             watershed on the distance-transformed thresholded image.</li>
-            <li><i>Propagate</i>: This method uses a propagation algorithm
+            <li><i>%(WA_PROPAGATE)s:</i> This method uses a propagation algorithm
             instead of a watershed. The image is ignored and the pixels are
             assigned to the objects by repeatedly adding unassigned pixels to
             the objects that are immediately adjacent to them. This method
             is suited in cases such as objects with branching extensions,
             for instance neurites, where the goal is to trace outward from
             the cell body along the branch, assigning pixels in the branch
-            along the way.</li>
-            <li><i>None</i>: If objects are well separated and bright relative to the
+            along the way. See the help for the <b>IdentifySecondary</b> module for more
+            details on this method.</li>
+            <li><i>%(WA_NONE)s</i>: If objects are well separated and bright relative to the
             background, it may be unnecessary to attempt to separate clumped objects.
-            Using the very fast <i>None</i> option, a simple threshold will be used to identify
+            Using the very fast <i>%(WA_NONE)s</i> option, a simple threshold will be used to identify
             objects. This will override any declumping method chosen in the previous
-            question.</li></ul>""")
+            question.</li>
+            </ul>"""%globals())
         
         self.automatic_smoothing = cps.Binary(
             'Automatically calculate size of smoothing filter for declumping?', 
-            True, doc="""\
-            <p><i>(Used only when distinguishing between clumped objects)</i> <br>
+            True, doc="""
+            <p><i>(Used only when distinguishing between clumped objects)</i><br>
             This setting, along with the <i>Minimum allowed distance between local maxima</i> 
             setting, affects whether objects
             close to each other are considered a single object or multiple objects.
@@ -385,7 +387,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             calculated value.</p>""")
         
         self.smoothing_filter_size = cps.Integer(
-            'Size of smoothing filter', 10, doc="""\
+            'Size of smoothing filter', 10, doc="""
             <i>(Used only when distinguishing between clumped objects)</i> <br>
             If you see too many objects merged that ought to be separated
             (under-segmentation), the <i>Size of smoothing filter</i> value 
@@ -403,7 +405,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
 
         self.automatic_suppression = cps.Binary(
             'Automatically calculate minimum allowed distance between local maxima?', 
-            True, doc="""\
+            True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
             This setting, along with the <i>Size of the smoothing filter</i> setting,
             affects whether objects close to each other are considered a single object
@@ -418,7 +420,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         self.maxima_suppression_size = cps.Integer(
             'Suppress local maxima that are closer than this minimum allowed distance', 
-            7, doc="""\
+            7, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
             Enter a positive integer, in pixel units. If you see too many objects 
             merged that ought to be separated (under-segmentation), the value 
@@ -432,19 +434,19 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         self.low_res_maxima = cps.Binary(
             'Speed up by using lower-resolution image to find local maxima?', 
-            True, doc="""\
+            True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br> 
-            Note that if you have entered a minimum object diameter of 10 or less, setting this option to
-            <i>Yes</i> will have no effect.""")
+            Note that if you have entered a minimum object diameter of 10 or less, checking
+            this box will have no effect.""")
 
         self.should_save_outlines = cps.Binary(
-            'Retain outlines of the identified objects?', False)
+            'Retain outlines of the identified objects?', False, doc="""
+            %(RETAINING_OUTLINES_HELP)s"""%globals())
         
         self.save_outlines = cps.OutlineNameProvider(
-            'Name the outline image',"PrimaryOutlines", doc="""\
-            <i>(Used only if outlines are to be saved)</i><br>
-            You can use the outlines of the identified objects in modules downstream,
-            by selecting them from any drop-down image list.""")
+            'Name the outline image',"PrimaryOutlines", doc="""
+            <i>(Used only if the outline image is to be retained for later use)</i><br>
+            %(NAMING_OUTLINES_HELP)s"""%globals())
         
         self.fill_holes = cps.Binary(
             'Fill holes in identified objects?', True, doc="""
@@ -454,13 +456,12 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.wants_automatic_log_threshold = cps.Binary(
             'Automatically calculate the threshold using the Otsu method?', True)
         
-        self.manual_log_threshold = cps.Float('Enter Laplacian of '
-                                              'Gaussian threshold', .5, 0, 1)
+        self.manual_log_threshold = cps.Float(
+            'Enter Laplacian of Gaussian threshold', .5, 0, 1)
         
         self.wants_automatic_log_diameter = cps.Binary(
             'Automatically calculate the size of objects '
-            'for the Laplacian of Gaussian filter?', True,
-            doc="""\
+            'for the Laplacian of Gaussian filter?', True,doc="""
             <i>(Used only when applying the LoG thresholding method)</i><br>
             Check this box to use the filtering diameter range above 
             when constructing the LoG filter. Uncheck the
@@ -471,21 +472,22 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         self.log_diameter = cps.Float(
             'Enter LoG filter diameter', 
-            5, minval=1, maxval=100,
-            doc="""\
+            5, minval=1, maxval=100,doc="""
             <i>(Used only when applying the LoG thresholding method)</i><br>
-            The size to use when calculating the LoG filter. The filter enhances the local maxima of objects 
-            whose diameters are roughly the entered number or smaller.""")
+            The size to use when calculating the LoG filter. The filter enhances 
+            the local maxima of objects whose diameters are roughly the entered 
+            number or smaller.""")
         
         self.limit_choice = cps.Choice(
             "Handling of objects if excessive number of objects identified",
-            [LIMIT_NONE, LIMIT_TRUNCATE, LIMIT_ERASE],
-            doc = """This setting deals with images that are segmented
+            [LIMIT_NONE, LIMIT_TRUNCATE, LIMIT_ERASE],doc = """
+            This setting deals with images that are segmented
             into an unreasonable number of objects. This might happen if
             the module calculates a low threshold or if the image has
             unusual artifacts. <b>IdentifyPrimaryObjects</b> can handle
             this condition in one of three ways:
-            <br><ul><li><i>%(LIMIT_NONE)s</i>: Don't check for large numbers
+            <ul>
+            <li><i>%(LIMIT_NONE)s</i>: Don't check for large numbers
             of objects.</li>
             <li><i>%(LIMIT_TRUNCATE)s</i>: Limit the number of objects.
             Arbitrarily erase objects to limit the number to the maximum
@@ -494,13 +496,13 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             objects exceeds the maximum. This results in an image with
             no primary objects. This option is a good choice if a large
             number of objects indicates that the image should not be
-            processed.</li></ul>""" % globals())
+            processed.</li>
+            </ul>""" % globals())
         
         self.maximum_object_count = cps.Integer(
             "Maximum number of objects",
-            value = 500,
-            minval = 2,
-            doc = """<i>(Used only when handling images with large numbers of objects by truncating)</i> <br>
+            value = 500, minval = 2,doc = """
+            <i>(Used only when handling images with large numbers of objects by truncating)</i> <br>
             This setting limits the number of objects in the
             image. See the documentation for the previous setting 
             for details.""")

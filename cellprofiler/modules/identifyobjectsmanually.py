@@ -1,7 +1,6 @@
 '''<b>Identify Objects Manually</b> allows you to identify objects 
-in an image by hand rather than automatically
+in an image by hand rather than automatically.
 <hr>
-
 This module lets you outline the objects in an image using the mouse. The
 user interface has several mouse tools:<br>
 <ul><li><i>Outline:</i> Lets you draw an outline around an
@@ -48,24 +47,25 @@ class IdentifyObjectsManually(I.Identify):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image", "None",
-            doc = """Choose the name of the image to display in the object
+            "Select the input image", "None",doc = """
+            Choose the name of the image to display in the object
             selection user interface.""")
         
         self.objects_name = cps.ObjectNameProvider(
-            "Name the objects to be identified", "Cells",
-            doc = """What do you want to call the objects
+            "Name the objects to be identified", "Cells",doc = """
+            What do you want to call the objects
             that you identify using this module? You can use this name to
             refer to your objects in subsequent modules.""")
         
         self.wants_outlines = cps.Binary(
-            "Retain outlines of the identified objects?", False,
-            doc = """Check this setting to save the outlines around the objects
+            "Retain outlines of the identified objects?", False,doc = """
+            Check this setting to save the outlines around the objects
             as a binary image.""")
         
         self.outlines_name = cps.OutlineNameProvider(
-            "Name the outlines", "CellOutlines",
-            doc = """<i>(Used only if outlines are to be saved)</i><br>What do you want to call the outlines image? You can refer to
+            "Name the outlines", "CellOutlines",doc = """
+            <i>(Used only if outlines are to be saved)</i><br>
+            Enter a name to the image outlines. You can refer to
             this image in subsequent modules, such as <b>SaveImages</b>.""")
         
     def settings(self):

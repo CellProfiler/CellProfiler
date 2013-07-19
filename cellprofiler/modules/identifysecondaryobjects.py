@@ -1,7 +1,6 @@
 '''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using "seed" objects identified by
-an <b>IdentifyPrimaryObjects</b> module (e.g., nuclei)
+an <b>IdentifyPrimaryObjects</b> module (e.g., nuclei).
 <hr>
-
 This module identifies secondary objects (e.g., cell edges) based on two
 inputs: 
 <ol>
@@ -97,6 +96,7 @@ from cellprofiler.cpmath.cpmorphology import fill_labeled_holes
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.watershed import fast_watershed as watershed
 from cellprofiler.cpmath.outline import outline
+from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 M_PROPAGATION = "Propagation"
 M_WATERSHED_G = "Watershed - Gradient"
@@ -114,21 +114,24 @@ class IdentifySecondaryObjects(cpmi.Identify):
     category = "Object Processing"
     
     def create_settings(self):
-        self.primary_objects = cps.ObjectNameSubscriber("Select the input objects","Nuclei",doc="""
+        self.primary_objects = cps.ObjectNameSubscriber(
+            "Select the input objects","Nuclei",doc="""
             What did you call the objects you want to use as "seeds" to identify a secondary 
             object around each one? By definition, each primary object must be associated with exactly one 
             secondary object and completely contained within it.""")
         
-        self.objects_name = cps.ObjectNameProvider("Name the objects to be identified","Cells")
+        self.objects_name = cps.ObjectNameProvider(
+            "Name the objects to be identified","Cells",doc="""
+            Enter the name that you want to call the objects identified by this module.""")
         
-        self.method = cps.Choice("Select the method to identify the secondary objects",
-                                 [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, 
-                                  M_DISTANCE_N, M_DISTANCE_B],
-                                 M_PROPAGATION, doc="""\
+        self.method = cps.Choice(
+            "Select the method to identify the secondary objects",
+            [M_PROPAGATION, M_WATERSHED_G, M_WATERSHED_I, M_DISTANCE_N, M_DISTANCE_B],
+            M_PROPAGATION, doc="""
             <p>There are several methods available to find the dividing lines 
             between secondary objects which touch each other:
             <ul>
-            <li><i>Propagation:</i> This method will find dividing lines
+            <li><i>%(M_PROPAGATION)s:</i> This method will find dividing lines
             between clumped objects where the image stained for secondary objects
             shows a change in staining (i.e., either a dimmer or a brighter line).
             Smoother lines work better, but unlike the Watershed method, small gaps
@@ -138,16 +141,10 @@ class IdentifySecondaryObjects(cpmi.Identify):
             and intensity gradients. This algorithm uses local image similarity to
             guide the location of boundaries between cells. Boundaries are
             preferentially placed where the image's local appearance changes
-            perpendicularly to the boundary (TR Jones, AE Carpenter, P
-            Golland (2005) <i>Voronoi-Based Segmentation of Cells on Image Manifolds</i>,
-            ICCV Workshop on Computer Vision for Biomedical Image Applications, pp.
-            535-543).</li>
+            perpendicularly to the boundary (<i>Jones et al, 2005</i>).</li>
            
             <li><i>%(M_WATERSHED_G)s:</i> This method uses the watershed algorithm
-            (Vincent, Luc and Pierre Soille,
-            <i>Watersheds in Digital Spaces: An Efficient Algorithm Based on Immersion
-            Simulations</i>, IEEE Transactions of Pattern Analysis and Machine
-            Intelligence, Vol. 13, No. 6, June 1991, pp. 583-598) to assign
+            (<i>Vincent and Soille, 1991</i>) to assign
             pixels to the primary objects which act as seeds for the watershed.
             In this variant, the watershed algorithm operates on the Sobel
             transformed image which computes an intensity gradient. This method
@@ -175,22 +172,35 @@ class IdentifySecondaryObjects(cpmi.Identify):
             regions from the secondary objects. This allows the extent of the
             secondary objects to be limited to a certain distance away from the edge
             of the primary objects without including regions of background.</li></ul></li>
+            </ul>
+            <b>References</b>
+            <ul>
+            <li>Jones TR, Carpenter AE, Golland P (2005) "Voronoi-Based Segmentation of Cells on Image Manifolds",
+            <i>ICCV Workshop on Computer Vision for Biomedical Image Applications</i>, 535-543. 
+            (<a href="http://www.cellprofiler.org/linked_files/Papers/JonesCVBIA2005.pdf">link</a>)</li>
+            <li>(Vincent L, Soille P (1991) "Watersheds in Digital Spaces: An Efficient Algorithm Based on Immersion
+            Simulations", <i>IEEE Transactions of Pattern Analysis and Machine
+            Intelligence</i>, 13(6): 583-598 
+            (<a href="http://dx.doi.org/10.1109/34.87344">link</a>)</li>
             </ul>""" % globals())
         
-        self.image_name = cps.ImageNameSubscriber("Select the input image",
-                                                  "None",doc="""
+        self.image_name = cps.ImageNameSubscriber(
+            "Select the input image",
+            "None",doc="""
             The selected image will be used to find the edges of the secondary objects.
-            For <i>Distance - N</i> this will not affect object identification, only the final display.""")
+            For <i>%(M_DISTANCE_N)s</i> this will not affect object identification, 
+            only the final display."""%globals())
         
         self.create_threshold_settings()
         # default smoothing choice is different for idprimary and idsecondary
         self.threshold_smoothing_choice.value = cpmi.TSM_NONE
         
-        self.distance_to_dilate = cps.Integer("Number of pixels by which to expand the primary objects",10,minval=1)
+        self.distance_to_dilate = cps.Integer(
+            "Number of pixels by which to expand the primary objects",10,minval=1)
         
-        self.regularization_factor = cps.Float("Regularization factor",0.05,minval=0,
-                                               doc="""\
-            <i>(Used only if Propagation method selected)</i> <br>
+        self.regularization_factor = cps.Float(
+            "Regularization factor",0.05,minval=0,doc="""
+            <i>(Used only if %(M_PROPAGATION)s method is selected)</i> <br>
             The regularization factor &lambda; can be anywhere in the range 0 to infinity.
             This method takes two factors into account when deciding where to draw
             the dividing line between two touching secondary objects: the distance to
@@ -209,30 +219,31 @@ class IdentifySecondaryObjects(cpmi.Identify):
             secondary staining image.</li>
             </ul>"""%globals())
         
-        self.use_outlines = cps.Binary("Retain outlines of the identified secondary objects?",False)
+        self.use_outlines = cps.Binary(
+            "Retain outlines of the identified secondary objects?",False, doc="""
+            %(RETAINING_OUTLINES_HELP)s"""%globals())
         
-        self.outlines_name = cps.OutlineNameProvider('Name the outline image',"SecondaryOutlines", doc="""\
-            <i>(Used only if outlines are to be saved)</i><br>
-            Once the outline image is named here, the outlines of the identified objects may be used by modules downstream,
-            by selecting them from any drop-down image list.""")
+        self.outlines_name = cps.OutlineNameProvider(
+            'Name the outline image',"SecondaryOutlines", doc="""
+            <i>(Used only if outlines are to be retained for later use)</i><br>
+            %(NAMING_OUTLINES_HELP)s"""%globals())
         
         self.wants_discard_edge = cps.Binary(
             "Discard secondary objects touching the border of the image?",
-            False,
-            doc = """This option will discard objects which have an edge
+            False,doc = """
+            This option will discard objects which have an edge
             that falls on the border of the image. The objects are discarded
             with respect to downstream measurement modules, but they are retained in memory
             as "unedited objects"; this allows them to be considered in downstream modules that modify the
             segmentation.""")
         
         self.fill_holes = cps.Binary(
-            "Fill holes in identified objects?", True,
-            doc = """Check this box to fill any holes inside objects.""")
+            "Fill holes in identified objects?", True,doc = """
+            Check this box to fill any holes inside objects.""")
         
         self.wants_discard_primary = cps.Binary(
-            "Discard the associated primary objects?",
-            False,
-            doc = """<i>(Used only if discarding secondary objects touching the image border)</i> <br>
+            "Discard the associated primary objects?",False,doc = """
+            <i>(Used only if discarding secondary objects touching the image border)</i> <br>
             It might be appropriate to discard the primary object
             for any secondary object that touches the edge of the image.
             The module will create a new set of objects that mirrors your
@@ -242,8 +253,8 @@ class IdentifySecondaryObjects(cpmi.Identify):
             touches the edge of the image.""")
             
         self.new_primary_objects_name = cps.ObjectNameProvider(
-            "Name the new primary objects", "FilteredNuclei",
-            doc = """<i>(Used only if associated primary objects are discarded)</i> <br>
+            "Name the new primary objects", "FilteredNuclei",doc = """
+            <i>(Used only if associated primary objects are discarded)</i> <br>
             You can name the primary objects that remain after the discarding step.
             These objects will all have secondary objects
             that do not touch the edge of the image. Note that any primary object
@@ -252,18 +263,14 @@ class IdentifySecondaryObjects(cpmi.Identify):
             segmentation.""")
         
         self.wants_primary_outlines = cps.Binary(
-            "Retain outlines of the new primary objects?", False,
-            doc = """<i>(Used only if associated primary objects are discarded)</i><br>
-            Check this setting in order to save images of the outlines
-            of the primary objects after filtering. You can save these images
-            using the <b>SaveImages</b> module.""")
+            "Retain outlines of the new primary objects?", False,doc = """
+            <i>(Used only if associated primary objects are discarded)</i><br>
+            %(RETAINING_OUTLINES_HELP)s"""%globals())
         
         self.new_primary_outlines_name = cps.OutlineNameProvider(
-            "Name the new primary object outlines", "FilteredNucleiOutlines",
-            doc = """<i>(Used only if associated primary objects are discarded and saving outlines of new primary objects)</i><br>
-            You can name the outline image of the
-            primary objects after filtering. You can refer to this image
-            using this name in subsequent modules such as <b>SaveImages</b>.""")
+            "Name the new primary object outlines", "FilteredNucleiOutlines",doc = """
+            <i>(Used only if associated primary objects are discarded and saving outlines of new primary objects)</i><br>
+            %(NAMING_OUTLINES_HELP)s"""%globals())
     
     def settings(self):
         return [

@@ -1,10 +1,12 @@
 '''
-<b> Gray to Color</b> takes grayscale images and and produces a
-color image from them 
+<b>Gray to Color</b> takes grayscale images and and produces a
+color image from them.
 <hr>
-
-This module takes grayscale images as input and assigns them to colors in a red, green,
-blue (RGB) image or a cyan, magenta, yellow, black (CMYK) image. Each color's brightness can be adjusted independently by using relative weights.
+This module takes grayscale images as input and assigns them to 
+colors in a red, green,
+blue (RGB) image or a cyan, magenta, yellow, black (CMYK) image. 
+Each color's brightness can be adjusted independently by using 
+relative weights.
 
 <p>See also <b>ColorToGray</b>.'''
 
@@ -45,103 +47,114 @@ class GrayToColor(cpm.CPModule):
     def create_settings(self):
         self.scheme_choice = cps.Choice(
             "Select a color scheme",
-            [SCHEME_RGB, SCHEME_CMYK, SCHEME_STACK],
-            doc="""This module can use one of two color schemes to combine images:<br/>
-            <ul><li><i>RGB</i>: Each input image determines the intensity of
+            [SCHEME_RGB, SCHEME_CMYK, SCHEME_STACK],doc="""
+            This module can use one of two color schemes to combine images:<br/>
+            <ul><li><i>%(SCHEME_RGB)s</i>: Each input image determines the intensity of
             one of the color channels: red, green, and blue.</li>
-            <li><i>CMYK</i>: Three of the input images are combined to determine
+            <li><i>%(SCHEME_CMYK)s</i>: Three of the input images are combined to determine
             the colors (cyan, magenta, and yellow) and a fourth is used only for brightness. The cyan
             image adds equally to the green and blue intensities. The magenta
             image adds equally to the red and blue intensities. The yellow
             image adds equally to the red and green intensities.</li>
-            <li><i>Stack</i>: The channels are stacked in order (arbitrary number).</li></ul>""")
+            <li><i>%(SCHEME_STACK)s</i>: The channels are stacked in order. An arbitrary number of 
+            channels is allowed.</li>
+            </ul>"""%globals())
+        
         # # # # # # # # # # # # # # # #
         # 
         # RGB settings
         #
         # # # # # # # # # # # # # # # #
-        self.red_image_name = cps.ImageNameSubscriber("Select the input image to be colored red",
-                                                      can_be_blank = True,
-                                                      blank_text = LEAVE_THIS_BLACK)
+        self.red_image_name = cps.ImageNameSubscriber(
+            "Select the image to be colored red",
+            can_be_blank = True, blank_text = LEAVE_THIS_BLACK)
         
-        self.green_image_name = cps.ImageNameSubscriber("Select the input image to be colored green",
-                                                        can_be_blank = True,
-                                                        blank_text = LEAVE_THIS_BLACK)
+        self.green_image_name = cps.ImageNameSubscriber(
+            "Select the image to be colored green",
+            can_be_blank = True, blank_text = LEAVE_THIS_BLACK)
         
-        self.blue_image_name = cps.ImageNameSubscriber("Select the input image to be colored blue",
-                                                       can_be_blank = True,
-                                                       blank_text = LEAVE_THIS_BLACK)
-        self.rgb_image_name = cps.ImageNameProvider("Name the output image",
-                                                    "ColorImage")
+        self.blue_image_name = cps.ImageNameSubscriber(
+            "Select the image to be colored blue",
+            can_be_blank = True,blank_text = LEAVE_THIS_BLACK)
         
-        self.red_adjustment_factor = cps.Float("Relative weight for the red image",
-                                               value=1,
-                                               minval=0,doc='''<i>(Used only if RGB is selected)</i><br>
-					       Enter the relative weights: If all relative weights are equal, all three 
-					       colors contribute equally in the final image. To weight colors relative to each other, 
-					       increase or decrease the relative weights.''')
+        self.rgb_image_name = cps.ImageNameProvider(
+            "Name the output image","ColorImage")
         
-        self.green_adjustment_factor = cps.Float("Relative weight for the green image",
-                                                 value=1,
-                                                 minval=0,doc='''<i>(Used only if RGB is selected)</i><br>
-					       Enter the relative weights: If all relative weights are equal, all three 
-					       colors contribute equally in the final image. To weight colors relative to each other, 
-					       increase or decrease the relative weights.''')
+        self.red_adjustment_factor = cps.Float(
+            "Relative weight for the red image",
+            value=1,minval=0,doc='''
+            <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
+            Enter the relative weight for the red image. If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, 
+            increase or decrease the relative weights.'''%globals())
         
-        self.blue_adjustment_factor = cps.Float("Relative weight for the blue image",
-                                                value=1,
-                                                minval=0,doc='''<i>(Used only if RGB is selected)</i><br>
-					       Enter the relative weights: If all relative weights are equal, all three 
-					       colors contribute equally in the final image. To weight colors relative to each other, 
-					       increase or decrease the relative weights.''')
+        self.green_adjustment_factor = cps.Float(
+            "Relative weight for the green image",
+            value=1,minval=0,doc='''
+            <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
+            Enter the relative weight for the green image. If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, 
+            increase or decrease the relative weights.'''%globals())
+        
+        self.blue_adjustment_factor = cps.Float(
+            "Relative weight for the blue image",
+            value=1, minval=0,doc='''
+            <i>(Used only if %(SCHEME_RGB)s is selected as the color scheme)</i><br>
+            Enter the relative weight for the blue image. If all relative weights are equal, all three 
+            colors contribute equally in the final image. To weight colors relative to each other, 
+            increase or decrease the relative weights.'''%globals())
         # # # # # # # # # # # # # #
         #
         # CYMK settings
         #
         # # # # # # # # # # # # # #
         self.cyan_image_name = cps.ImageNameSubscriber(
-            "Select the input image to be colored cyan", can_be_blank = True,
+            "Select the image to be colored cyan", can_be_blank = True,
             blank_text = LEAVE_THIS_BLACK)
         
         self.magenta_image_name = cps.ImageNameSubscriber(
-            "Select the input image to be colored magenta", can_be_blank = True,
+            "Select the image to be colored magenta", can_be_blank = True,
             blank_text = LEAVE_THIS_BLACK)
         
         self.yellow_image_name = cps.ImageNameSubscriber(
-            "Select the input image to be colored yellow", can_be_blank = True,
+            "Select the image to be colored yellow", can_be_blank = True,
             blank_text = LEAVE_THIS_BLACK)
         
         self.gray_image_name = cps.ImageNameSubscriber(
-            "Select the input image that determines brightness", can_be_blank = True,
+            "Select the image that determines brightness", can_be_blank = True,
             blank_text = LEAVE_THIS_BLACK)
         
         self.cyan_adjustment_factor = cps.Float(
-            "Relative weight for the cyan image", value=1,
-            minval=0,doc='''<i>(Used only if CMYK is selected)</i><br>
-			Enter the relative weights: If all relative weights are equal, all 
-                        colors contribute equally in the final image. To weight colors relative to each other, 
-                        increase or decrease the relative weights.''')
+            "Relative weight for the cyan image", 
+            value=1, minval=0,doc='''
+            <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
+            Enter the relative weight for the cyan image. If all relative weights are equal, all 
+            colors contribute equally in the final image. To weight colors relative to each other, 
+            increase or decrease the relative weights.'''%globals())
         
         self.magenta_adjustment_factor = cps.Float(
-            "Relative weight for the magenta image", value=1,
-            minval=0,doc='''<i>(Used only if CMYK is selected)</i><br>
-                            Enter the relative weights: If all relative weights are equal, all 
-                            colors contribute equally in the final image. To weight colors relative to each other, 
-                            increase or decrease the relative weights.''')
+            "Relative weight for the magenta image", 
+            value=1, minval=0,doc='''
+            <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
+            Enter the relative weight for the magenta image. If all relative weights are equal, all 
+            colors contribute equally in the final image. To weight colors relative to each other, 
+            increase or decrease the relative weights.'''%globals())
         
         self.yellow_adjustment_factor = cps.Float(
-            "Relative weight for the yellow image", value=1,
-            minval=0,doc='''<i>(Used only if CMYK is selected)</i><br>
-                            Enter the relative weights: If all relative weights are equal, all 
-                            colors contribute equally in the final image. To weight colors relative to each other, 
-                            increase or decrease the relative weights.''')
+            "Relative weight for the yellow image", 
+            value=1,minval=0,doc='''
+            <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
+            Enter the relative weight for the yellow image. If all relative weights are equal, all 
+            colors contribute equally in the final image. To weight colors relative to each other, 
+            increase or decrease the relative weights.'''%globals())
         
         self.gray_adjustment_factor = cps.Float(
-            "Relative weight for the brightness image", value=1,
-            minval=0,doc='''<i>(Used only if CMYK is selected)</i><br>
-                            Enter the relative weights: If all relative weights are equal, all 
-                            colors contribute equally in the final image. To weight colors relative to each other, 
-                            increase or decrease the relative weights.''')
+            "Relative weight for the brightness image", 
+            value=1,minval=0,doc='''
+            <i>(Used only if %(SCHEME_CMYK)s is selected as the color scheme)</i><br>
+            Enter the relative weight for the brightness image. If all relative weights are equal, all 
+            colors contribute equally in the final image. To weight colors relative to each other, 
+            increase or decrease the relative weights.'''%globals())
     
         # # # # # # # # # # # # # #
         #
@@ -155,7 +168,9 @@ class GrayToColor(cpm.CPModule):
 
     def add_stack_channel_cb(self, can_remove=True):
         group = cps.SettingsGroup()
-        group.append("image_name", cps.ImageNameSubscriber("Select the input image to add to the stacked image", "None"))
+        group.append("image_name", cps.ImageNameSubscriber(
+            "Select the input image to add to the stacked image", "None"))
+        
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.stack_channels, group))
         self.stack_channels.append(group)

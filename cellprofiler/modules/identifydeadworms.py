@@ -78,8 +78,8 @@ class IdentifyDeadWorms(cpm.CPModule):
         Create the settings for the module during initialization.
         """
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image", "None",
-            doc="""The name of a binary image from a previous module.
+            "Select the input image", "None",doc="""
+            The name of a binary image from a previous module.
             <b>IdentifyDeadWorms</b> will use this image to establish the
             foreground and background for the fitting operation. You can use
             <b>ApplyThreshold</b> to threshold a grayscale image and
@@ -88,35 +88,35 @@ class IdentifyDeadWorms(cpm.CPModule):
             <b>ConvertObjectsToImage</b> to make the result a mask.""")
         
         self.object_name = cps.ObjectNameProvider(
-            "Name the dead worm objects to be identified", "DeadWorms",
-            doc="""This is the name for the dead worm objects. You can refer
+            "Name the dead worm objects to be identified", "DeadWorms",doc="""
+            This is the name for the dead worm objects. You can refer
             to this name in subsequent modules such as
             <b>IdentifySecondaryObjects</b>""")
         
         self.worm_width = cps.Integer(
-            "Worm width", 10, minval = 1,
-            doc = """This is the width (the short axis), measured in pixels,
+            "Worm width", 10, minval = 1,doc = """
+            This is the width (the short axis), measured in pixels,
             of the diamond used as a template when
             matching against the worm. It should be less than the width
             of a worm.""")
         
         self.worm_length = cps.Integer(
-            "Worm length", 100, minval= 1,
-            doc = """This is the length (the long axis), measured in pixels, 
+            "Worm length", 100, minval= 1,doc = """
+            This is the length (the long axis), measured in pixels, 
             of the diamond used as a template when matching against the
             worm. It should be less than the length of a worm""")
         
         self.angle_count = cps.Integer(
-            "Number of angles", 32, minval = 1,
-            doc = """This is the number of different angles at which the
+            "Number of angles", 32, minval = 1,doc = """
+            This is the number of different angles at which the
             template will be tried. For instance, if there are 12 angles,
-            the template will be rotated by 0, 15, 30, 45 ... and 165 degrees.
-            The shape is bilaterally symmetric: you get the same shape
-            after rotating it 180 degrees.""")
+            the template will be rotated by 0&deg;, 15&deg;, 30&deg;, 45&deg; ... 165&deg;.
+            The shape is bilaterally symmetric; that is, you will get the same shape
+            after rotating it by 180&deg;.""")
         
         self.wants_automatic_distance = cps.Binary(
-            "Automatically calculate distance parameters?", True,
-            doc = """This setting determines whether or not
+            "Automatically calculate distance parameters?", True,doc = """
+            This setting determines whether or not
             <b>IdentifyDeadWorms</b> automatically calculates the parameters
             used to determine whether two found-worm centers belong to the
             same worm. Check this setting to have <b>IdentifyDeadWorms</b>
@@ -124,14 +124,15 @@ class IdentifyDeadWorms(cpm.CPModule):
             and width. Uncheck the setting to set the distances manually.""")
         
         self.space_distance = cps.Float(
-            "Spatial distance", 5, minval = 1,
-            doc = """<i>(Only if not automatically calculating distance parameters)</i><br>
-            Worm centers must be at least this far apart for the centers to
+            "Spatial distance", 5, minval = 1,doc = """
+            <i>(Used only if not automatically calculating distance parameters)</i><br>
+            Enter the distance for calculating the worm centers, in units of pixels. 
+            The worm centers must be at least many pixels apart for the centers to
             be considered two separate worms.""")
         
         self.angular_distance = cps.Float(
-            "Angular distance", 30, minval = 1,
-            doc = """<i>(Only if not automatically calculating distance parameters)</i><br>
+            "Angular distance", 30, minval = 1,doc = """
+            <i>(Used only if automatically calculating distance parameters)</i><br>
             <b>IdentifyDeadWorms</b> calculates the worm centers at different
             angles. Two worm centers are considered to represent different
             worms if their angular distance is larger than this number. The

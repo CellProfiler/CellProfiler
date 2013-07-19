@@ -107,6 +107,12 @@ class DisplayDataOnImage(cpm.CPModule):
             """ % globals()
             )
         
+        self.colormap = cps.Colormap(
+            "Color map",
+            doc = """<i>(Used only when displaying object measurements)</i><br>
+            This is the color map used as the color gradient for coloring the
+            objects by their measurement values.
+            """)        
         self.text_color = cps.Text(
             "Text color","red",doc="""
             This is the color that will be used when displaying the text.
@@ -164,7 +170,7 @@ class DisplayDataOnImage(cpm.CPModule):
         return [self.objects_or_image, self.objects_name, self.measurement,
                 self.image_name, self.text_color, self.display_image,
                 self.font_size, self.decimals, self.saved_image_contents,
-                self.offset, self.color_or_text]
+                self.offset, self.color_or_text, self.colormap]
     
     def visible_settings(self):
         """The settings that are visible in the UI
@@ -175,7 +181,9 @@ class DisplayDataOnImage(cpm.CPModule):
         result += [self.measurement, self.image_name]
         if self.objects_or_image == OI_OBJECTS:
             result += [self.color_or_text]
-        if not self.use_color_map():
+        if self.use_color_map():
+            result += [self.colormap]
+        else:
             result += [ self.text_color, self.font_size, self.decimals,
                         self.offset]
         result += [self.display_image, self.saved_image_contents]
@@ -324,8 +332,7 @@ class DisplayDataOnImage(cpm.CPModule):
             pixel_data = workspace.display_data.pixel_data
             if pixel_data.ndim == 3:
                 pixel_data = np.sum(pixel_data, 2) / pixel_data.shape[2]
-            colormap = cpprefs.get_default_colormap()
-            colormap = matplotlib.cm.get_cmap(colormap)
+            colormap = matplotlib.cm.get_cmap(self.colormap.value)
             values = workspace.display_data.values
             colors = np.ones((len(values) + 1, 4))
             sm = matplotlib.cm.ScalarMappable(cmap = colormap)
@@ -385,7 +392,8 @@ class DisplayDataOnImage(cpm.CPModule):
             
         if variable_revision_number == 3:
             # Added color map mode
-            setting_values = setting_values + [ CT_TEXT]
+            setting_values = setting_values + [ 
+                CT_TEXT, cpprefs.get_default_colormap() ]
             variable_revision_number = 4
         
         return setting_values, variable_revision_number, from_matlab

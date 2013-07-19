@@ -130,6 +130,7 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
     Image elements to save:Axes
     Annotation offset (in pixels):5
     Display mode:Color
+    Color map:jet
 """
         pipeline = cpp.Pipeline()
         def callback(caller,event):
@@ -150,6 +151,7 @@ DisplayDataOnImage:[module_num:1|svn_version:\'Unknown\'|variable_revision_numbe
         self.assertEqual(module.saved_image_contents, D.E_AXES)
         self.assertEqual(module.offset, 5)
         self.assertEqual(module.color_or_text, D.CT_COLOR)
+        self.assertEqual(module.colormap, "jet")
 
     def make_workspace(self, measurement, labels = None, image = None):
         object_set = cpo.ObjectSet()

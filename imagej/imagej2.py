@@ -51,8 +51,8 @@ FT_OVERLAY = "OVERLAY"
 FT_FILE = "FILE"
 '''Field type = imagej.util.ColorRGB'''
 FT_COLOR = "COLOR"
-'''ImageJ context'''
-FT_CONTEXT = "CONTEXT"
+'''Field type = imagej.data.table.TableDisplay'''
+FT_TABLE = "TABLE"
 
 field_mapping = {
     'java.io.File': FT_FILE,
@@ -78,7 +78,8 @@ def field_class_mapping():
     return (
         (J.class_for_name('imagej.data.display.ImageDisplay'), FT_IMAGE),
         (J.class_for_name('imagej.data.Dataset'), FT_IMAGE),
-        (J.class_for_name('imagej.data.display.DatasetView'), FT_IMAGE)
+        (J.class_for_name('imagej.data.display.DatasetView'), FT_IMAGE),
+        (J.class_for_name('imagej.data.table.TableDisplay'), FT_TABLE)
     )
 
 def run_imagej(*args):

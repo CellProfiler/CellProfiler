@@ -406,6 +406,9 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     setting = cps.ImageNameSubscriber(
                         label, "InputImage",
                         doc = description)
+                elif field_type == ij2.FT_TABLE:
+                    setting = IJTableSubscriber(label, "InputTable",
+                                                doc=description)
                 elif field_type == ij2.FT_FILE:
                     setting = cps.FilenameText(
                         label, None, doc = description)
@@ -424,6 +427,9 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                     result.append((cps.ImageNameProvider(
                         label, "ImageJImage",
                         doc = description), output))
+                elif field_type == ij2.FT_TABLE:
+                    result.append((IJTableProvider(
+                        label, "ImageJTable", doc=description), output))
             d[key] = result
         else:
             result = d[key]
@@ -718,6 +724,11 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                 input_dictionary.put(field_name, display.o)
                 if wants_display:
                     input_images.append((image_name, image.pixel_data))
+            elif field_type == ij2.FT_TABLE:
+                table_name = setting.value
+                table = workspace.object_set.get_type_instance(
+                    IJ_TABLE_TYPE, table_name)
+                input_dictionary.put(field_name, table)
             elif field_type == ij2.FT_FILE:
                 jfile = J.make_instance(
                     "java/io/File", "(Ljava/lang/String;)V", setting.value)
@@ -878,4 +889,19 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             variable_revision_number = 4
             
         return setting_values, variable_revision_number, from_matlab
+        
+IJ_TABLE_SETTING_GROUP = "ijtable"
+IJ_TABLE_TYPE = "imagej.data.table.TableDisplay"
+
+class IJTableProvider(cps.NameProvider):
+    '''A setting provider of ImageJ table names'''
+    def __init__(self, text, *args, **kwargs):
+        super(IJTableProvider, self).__init__(
+            text, IJ_TABLE_SETTING_GROUP, *args, **kwargs)
+        
+class IJTableSubscriber(cps.NameSubscriber):
+    '''A setting subscriber to ImageJ table names'''
+    def __init__(self, text, *args, **kwargs):
+        super(IJTableSubscriber, self).__init__(
+            text, IJ_TABLE_SETTING_GROUP, *args, **kwargs)
         

@@ -20,6 +20,8 @@ from cellprofiler.cpmath.cpmorphology import all_connected_components
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.cpmath.index import Indexes, all_pairs
 
+OBJECT_TYPE_NAME = "objects"
+
 @decorator.decorator
 def memoize_method(function, *args):
     """Cache the result of a method in that class's dictionary
@@ -613,8 +615,12 @@ class ObjectSet(object):
         can_overwrite - True to allow overwriting of a new copy of objects
                         over an old one of the same name (for debugging)
         """
-        self.__objects_by_name = {}
         self.__can_overwrite = can_overwrite
+        self.__types_and_instances = {OBJECT_TYPE_NAME:{} }
+        
+    @property
+    def __objects_by_name(self):
+        return self.__types_and_instances[OBJECT_TYPE_NAME]
     
     def add_objects(self, objects, name):
         assert isinstance(objects,Objects), "objects must be an instance of CellProfiler.Objects"
@@ -640,6 +646,41 @@ class ObjectSet(object):
         return self.__objects_by_name.items()
     
     all_objects = property(get_all_objects)
+    
+    def get_types(self):
+        '''Get then names of types of per-image set "things"
+        
+        The object set can store arbitrary types of things other than objects,
+        for instance ImageJ data tables. This function returns the thing types
+        defined in the object set at this stage of the pipeline.
+        '''
+        return self.__types_and_instances.keys()
+    
+    def add_type_instance(self, type_name, instance_name, instance):
+        '''Add a named instance of a type
+        
+        A thing of a given type can be stored in the object set so that
+        it can be retrieved by name later in the pipeline. This function adds
+        an instance of a type to the object set.
+        
+        type_name - the name of the instance's type
+        instance_name - the name of the instance
+        instance - the instance itself
+        '''
+        if type_name not in self.__types_and_instances:
+            self.__types_and_instances[type_name] = {}
+        self.__types_and_instances[type_name][instance_name] = instance
+        
+    def get_type_instance(self, type_name, instance_name):
+        '''Get an named instance of a type
+        
+        type_name - the name of the type of instance
+        instance_name - the name of the instance to retrieve
+        '''
+        if (type_name not in self.__types_and_instance or
+            instance_name not in self.__types_and_instances[type_name]):
+            return None
+        return self.__types_and_instances[type_name][instance_name]
 
 def downsample_labels(labels):
     '''Convert a labels matrix to the smallest possible integer format'''

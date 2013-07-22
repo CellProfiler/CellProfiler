@@ -225,7 +225,6 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
         self.outlines_name = cps.OutlineNameProvider(
             'Name the outline image',"SecondaryOutlines", doc="""
-            <i>(Used only if outlines are to be retained for later use)</i><br>
             %(NAMING_OUTLINES_HELP)s"""%globals())
         
         self.wants_discard_edge = cps.Binary(
@@ -265,12 +264,17 @@ class IdentifySecondaryObjects(cpmi.Identify):
         self.wants_primary_outlines = cps.Binary(
             "Retain outlines of the new primary objects?", False,doc = """
             <i>(Used only if associated primary objects are discarded)</i><br>
-            %(RETAINING_OUTLINES_HELP)s"""%globals())
+            The outlines of the new objects can be retained for later use in 
+            the pipeline. For example, a common use is for quality control purposes by overlaying them on 
+            your image of choice using the <b>OverlayOutlines</b> module and then saving the overlay image 
+            with the <b>SaveImages</b> module."""%globals())
         
         self.new_primary_outlines_name = cps.OutlineNameProvider(
             "Name the new primary object outlines", "FilteredNucleiOutlines",doc = """
             <i>(Used only if associated primary objects are discarded and saving outlines of new primary objects)</i><br>
-            %(NAMING_OUTLINES_HELP)s"""%globals())
+            Enter a name for the outlines of the identified 
+            objects. The outlined image can be selected in downstream modules by selecting 
+            them from any drop-down image list."""))
     
     def settings(self):
         return [

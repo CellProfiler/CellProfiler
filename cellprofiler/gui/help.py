@@ -132,6 +132,7 @@ your image of choice using the <b>OverlayOutlines</b> module and then saving the
 with the <b>SaveImages</b> module."""
 
 NAMING_OUTLINES_HELP = """
+<i>(Used only if the outline image is to be retained for later use in the pipeline)</i> <br>
 Enter a name for the outlines of the identified 
 objects. The outlined image can be selected in downstream modules by selecting 
 them from any drop-down image list."""

@@ -35,6 +35,7 @@ import identify as I
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.outline import outline
 import cellprofiler.preferences as cpprefs
+from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 MC_OBJECTS = "Objects"
 MC_IMAGE = "Image"
@@ -177,15 +178,12 @@ class MaskObjects(I.Identify):
             associated with them).""")
 
         self.wants_outlines = cps.Binary(
-            "Retain outlines of the resulting objects?", False,
-            doc = """You can save the outlines of the objects that are
-            produced after masking, then display them over
-            images using the <b>OverlayOutlines</b> module.""")
+            "Retain outlines of the resulting objects?", False, doc = """
+            %(RETAINING_OUTLINES_HELP)s"""%globals())
         
         self.outlines_name = cps.OutlineNameProvider(
-            "Name the outline image", "MaskedOutlines",
-            doc = """<i>(Used only if retaining outline image for later in the pipeline)</i><br>What do you want to call the outline image? Subsequent modules
-            can refer to the binary outline image using this name.""")
+            "Name the outline image", "MaskedOutlines", doc = """
+            %(NAMING_OUTLINES_HELP)s"""%globals())
         
     def settings(self):
         '''The settings as they appear in the pipeline'''

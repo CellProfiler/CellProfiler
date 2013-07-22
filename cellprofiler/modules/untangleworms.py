@@ -93,6 +93,7 @@ from cellprofiler.preferences import standardize_default_folder_names, \
      DEFAULT_INPUT_FOLDER_NAME, DEFAULT_OUTPUT_FOLDER_NAME, NO_FOLDER_NAME, \
      ABSOLUTE_FOLDER_NAME, IO_FOLDER_CHOICE_HELP_TEXT
 from cellprofiler.gui.help import USING_METADATA_GROUPING_HELP_REF
+from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 OO_WITH_OVERLAP = "With overlap"
 OO_WITHOUT_OVERLAP = "Without overlap"
@@ -229,23 +230,23 @@ class UntangleWorms(cpm.CPModule):
             these pixels in the measurements of both worms.""")
         
         self.wants_overlapping_outlines = cps.Binary(
-            "Retain outlines of the overlapping objects?", False,
-            """<i>(Used only if untangling and overlap style is "Both" or "With overlap")</i> <br>
+            "Retain outlines of the overlapping objects?", False, doc = """
+            <i>(Used only if untangling and overlap style is "Both" or "With overlap")</i> <br>
             Check this setting to save an image of the outlines of the
             objects with overlap. Leave the setting unchecked if you do
             not need the outline image.""")
         
         self.overlapping_outlines_colormap = cps.Colormap(
-            "Outline colormap?",
-            doc = """<i>(Used only if untangling and overlap style is "Both" or "With overlap" and retaining outlines)</i> <br>
+            "Outline colormap?",doc = """
+            <i>(Used only if untangling and overlap style is "Both" or "With overlap" and retaining outlines)</i> <br>
             This setting controls the colormap used when drawing
             outlines. The outlines are drawn in color to highlight the
             shapes of each worm in a group of overlapping worms""")
         
         self.overlapping_outlines_name = cps.OutlineNameProvider(
             "Name the overlapped outline image",
-            "OverlappedWormOutlines",
-            doc = """<i>(Used only if untangling and overlap style is "Both" or "With overlap")</i> <br>
+            "OverlappedWormOutlines",doc = """
+            <i>(Used only if untangling and overlap style is "Both" or "With overlap")</i> <br>
             This is the name of the outlines of the
             overlapped worms. You can use this image to display the untangling
             results, for instance, by composting the outlines image with
@@ -253,8 +254,8 @@ class UntangleWorms(cpm.CPModule):
         
         self.nonoverlapping_objects = cps.ObjectNameProvider(
             "Name the output non-overlapping worm objects", "NonOverlappingWorms",
-            provided_attributes = { ATTR_WORM_MEASUREMENTS:True },
-            doc = """<i>(Used only if untangling and overlap style is "Both" or "Without overlap")</i> <br>
+            provided_attributes = { ATTR_WORM_MEASUREMENTS:True },doc = """
+            <i>(Used only if untangling and overlap style is "Both" or "Without overlap")</i> <br>
             This setting names the objects representing the worms,
             excluding those regions where the worms overlap. When worms cross,
             there are pixels that cannot be unambiguously assigned to one
@@ -271,23 +272,23 @@ class UntangleWorms(cpm.CPModule):
         
         self.nonoverlapping_outlines_name =cps.OutlineNameProvider(
             "Name the non-overlapped outlines image",
-            "NonoverlappedWormOutlines",
-            doc = """<i>(Used only if untangling and overlap style is "Both" or "Without overlap")</i> <br>
+            "NonoverlappedWormOutlines",doc = """
+            <i>(Used only if untangling and overlap style is "Both" or "Without overlap")</i> <br>
             This is the name of the of the outlines of the worms
             with the overlapping sections removed.""")
         
         self.training_set_directory = cps.DirectoryPath(
             "Training set file location", support_urls = True,
-            allow_metadata = False,
-            doc = """Select the folder containing the training set to be loaded.
+            allow_metadata = False,doc = """
+            Select the folder containing the training set to be loaded.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s
             <p>An additional option is the following:
             <ul>
             <li><i>URL</i>: Use the path part of a URL. For instance, your
             training set might be hosted at 
-            <i>http://university.edu/~johndoe/TrainingSet.xml</i>
+            <i>http://my_institution.edu/server/my_username/TrainingSet.xml</i>
             To access this file, you would choose <i>URL</i> and enter
-            <i>https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages</i>
+            <i>http://my_institution.edu/server/my_username/</i>
             as the path location.</li>
             </ul></p>"""%globals())
         

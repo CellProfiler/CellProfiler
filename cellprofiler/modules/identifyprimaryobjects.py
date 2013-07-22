@@ -445,7 +445,6 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         
         self.save_outlines = cps.OutlineNameProvider(
             'Name the outline image',"PrimaryOutlines", doc="""
-            <i>(Used only if the outline image is to be retained for later use)</i><br>
             %(NAMING_OUTLINES_HELP)s"""%globals())
         
         self.fill_holes = cps.Binary(

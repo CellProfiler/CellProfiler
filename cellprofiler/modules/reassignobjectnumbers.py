@@ -56,6 +56,7 @@ from cellprofiler.modules.identify import FF_CHILDREN_COUNT, FF_PARENT
 import cellprofiler.cpmath.cpmorphology as morph
 from cellprofiler.cpmath.filter import stretch
 import cellprofiler.cpmath.outline
+from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
 OPTION_UNIFY = "Unify"
 OPTION_SPLIT = "Split"
@@ -190,16 +191,13 @@ class ReassignObjectNumbers(cpm.CPModule):
             </ul>""")
         
         self.wants_outlines = cps.Binary(
-            "Retain outlines of the relabeled objects?", False,
-            doc = """<i>(Used only if objects are output)</i><br>
-            Check this setting if you want to save an image of the outlines
-            of the relabeled objects.""")
+            "Retain outlines of the relabeled objects?", False, doc="""
+            %(RETAINING_OUTLINES_HELP)s"""%globals())
         
         self.outlines_name = cps.OutlineNameProvider(
             'Name the outlines',
-            'RelabeledNucleiOutlines',
-            doc = """<i>(Used only if outlined are to be retained)</i><br>
-            Enter a name that will allow the outlines to be selected later in the pipeline.""")
+            'RelabeledNucleiOutlines',doc="""
+            %(NAMING_OUTLINES_HELP)s"""%globals())
 
     def get_parent_choices(self,pipeline):
         columns = pipeline.get_measurement_columns()

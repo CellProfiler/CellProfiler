@@ -131,7 +131,6 @@ class ExpandOrShrinkObjects(cpm.CPModule):
         self.outlines_name = cps.OutlineNameProvider(
             "Name the outline image",
             "ShrunkenNucleiOutlines", doc = """
-            <i>(Used only if outlines are to be retained for later use in the pipeline)</i><br>
             %(NAMING_OUTLINES_HELP)s"""%globals())
 
     def settings(self):

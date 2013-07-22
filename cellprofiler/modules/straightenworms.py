@@ -160,9 +160,9 @@ class StraightenWorms(cpm.CPModule):
             <ul>
             <li><i>URL</i>: Use the path part of a URL. For instance, your
             training set might be hosted at 
-            <i>http://university.edu/~johndoe/TrainingSet.mat</i>
+            <i>http://my_institution.edu/server/my_username/TrainingSet.xml</i>
             To access this file, you would choose <i>URL</i> and enter
-            <i>https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/ExampleSBSImages</i>
+            <i>http://my_institution.edu/server/my_username/</i>
             as the path location.</li>
             </ul></p>"""%globals())
         def get_directory_fn():

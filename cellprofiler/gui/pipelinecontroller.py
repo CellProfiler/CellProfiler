@@ -606,7 +606,11 @@ class PipelineController:
                                  "Load pipeline via URL")
         if dlg.ShowModal() == wx.ID_OK:
             import urllib2
-            self.do_load_pipeline(urllib2.urlopen(dlg.Value))
+            filename, headers = urllib.urlretrieve(dlg.Value)
+            try:
+                self.do_load_pipeline(filename)
+            finally:
+                os.remove(filename)
         dlg.Destroy()
     
     def is_running(self):

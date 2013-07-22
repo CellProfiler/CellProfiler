@@ -566,9 +566,13 @@ class PipelineController:
             style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
-                self.do_save_workspace(dlg.Path)
-                cpprefs.set_current_workspace_path(dlg.Path)
-                cpprefs.set_workspace_file(dlg.Path)
+                pathname, filename = os.path.split(dlg.Path)
+                fullname = dlg.Path
+                if sys.platform == "darwin" and "." not in filename:
+                    fullname += ".cpi"
+                self.do_save_workspace(fullname)
+                cpprefs.set_current_workspace_path(fullname)
+                cpprefs.set_workspace_file(fullname)
                 self.set_title()
                 return True
             return False

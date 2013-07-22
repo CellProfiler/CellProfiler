@@ -963,8 +963,12 @@ All rights reserved."""
         
     def __on_help_module(self,event):
         modules = self.__pipeline_list_view.get_selected_modules()
+        active_module = self.__pipeline_list_view.get_active_module()
         if len(modules) > 0:
             self.do_help_modules(modules)
+        elif active_module is not None:
+            self.do_help_module(active_module.module_name, 
+                                active_module.get_help())
         else:
             wx.MessageBox(HELP_ON_MODULE_BUT_NONE_SELECTED, 
                           "No module selected",

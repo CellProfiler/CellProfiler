@@ -20,9 +20,8 @@ The fields in this row provide the labels for each column of data. Subsequent ro
 provide the values for each image cycle.<p>
 
 <p>There are many reasons why you might want to prepare a CSV file and load it
-via <b>LoadData</b>; using particular names for columns allows special 
-functionality for some downstream modules:
-
+via <b>LoadData</b>. Below, we describe how the column nomenclature allows for special 
+functionality for some downstream modules: 
 <ul>
 <li><i>Columns with any name:</i> Any data loaded via <b>LoadData</b> will be exported 
 as a per-image measurement along with CellProfiler-calculated data. This is a
@@ -120,6 +119,10 @@ to separate files and then merged, thereby removing the discontinuity.</li>
 </ul>
 For a GUI-based approach to performing this task, we suggest using <a href="http://accelrys.com/products/pipeline-pilot/">Pipeline 
 Pilot</a>.
+
+<p>For more details on configuring CellProfiler
+(and LoadData in particular) for a LIMS environment, please see our 
+<a href="https://github.com/CellProfiler/CellProfiler/wiki/Adapting-CellProfiler-to-a-LIMS-environment">wiki</a> on the subject.</p>
 
 <h4>Available measurements</h4>
 <ul>

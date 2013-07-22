@@ -1,18 +1,22 @@
 '''<b>Load Data</b> loads text or numerical data to be associated with images, and 
-can also load images specified by file names
+can also load images specified by file names.
 <hr>
-
-This module loads a file that supplies text or numerical data associated with the images to be processed, e.g., sample names, plate names, well 
+This module loads a file that supplies text or numerical data associated with 
+the images to be processed, e.g., sample names, plate names, well 
 identifiers, or even a list of image filenames to be processed in the analysis run.
+
+<p><i>Disclaimer:</i> Please note that the Input modues (i.e., <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
+and <b>Groups</b>) largely supercedes this module. However, old pipelines loaded into 
+CellProfiler that contain this module will provide the option of preserving them; 
+these pipelines will operate exactly as before.</p>
 
 <p>The module currently reads files in CSV (comma-separated values) format. 
 These files can be produced by saving a spreadsheet from Excel as
 "Windows Comma Separated Values" file format. 
- The lines of the file represent the rows. (Technically, each row
-is terminated by the newline character ASCII 10.) Each field in a row is
+ The lines of the file represent the rows, and each field in a row is
 separated by a comma. Text values may be optionally enclosed by double
-quotes. The <b>LoadData</b> module uses the first row of the file as a header. The fields
-in this row provide the labels for each column of data. Subsequent rows
+quotes. The <b>LoadData</b> module uses the first row of the file as a header. 
+The fields in this row provide the labels for each column of data. Subsequent rows
 provide the values for each image cycle.<p>
 
 <p>There are many reasons why you might want to prepare a CSV file and load it
@@ -20,12 +24,12 @@ via <b>LoadData</b>; using particular names for columns allows special
 functionality for some downstream modules:
 
 <ul>
-<li><i>Columns with any name</i>. Any data loaded via <b>LoadData</b> will be exported 
+<li><i>Columns with any name:</i> Any data loaded via <b>LoadData</b> will be exported 
 as a per-image measurement along with CellProfiler-calculated data. This is a
 convenient way for you to add data from your own sources to the files exported by
 CellProfiler.</li>
 
-<li><i>Columns whose name begins with Image_FileName or Image_PathName.</i>
+<li><i>Columns whose name begins with Image_FileName or Image_PathName:</i>
 A column whose name begins with "Image_FileName" or "Image_PathName" can be used to 
 supply the file name and path name (relative to the base folder) of an image that you want to load.
 The image's name within CellProfiler appears afterward. For instance,
@@ -35,11 +39,11 @@ selected later in the pipeline. "Image_PathName_CY3" would supply the path names
 for the CY3-stained images. The path name column is optional; if all image files are in the base 
 folder, this column is not needed.</li>
 
-<li><i>Columns whose name begins with Image_ObjectsFileName or Image_ObjectsPathName</i>.
+<li><i>Columns whose name begins with Image_ObjectsFileName or Image_ObjectsPathName:</i>
 The behavior of these columns is identical to that of "Image_FileName" or "Image_PathName"
 except that it is used to specify an image that you want to load as objects. </li>
 
-<li><i>Columns whose name begins with Metadata</i>. A column whose name begins with 
+<li><i>Columns whose name begins with Metadata:</i> A column whose name begins with 
 "Metadata" can be used to group or associate files loaded by <b>LoadData</b>.
 <p>For instance, an experiment might require that images created on the same day 
 use an illumination correction function calculated from all images from that day, 
@@ -55,7 +59,7 @@ their corresponding illumination correction functions based on matching
 "Metadata_Date" fields. This is useful if the same data is associated with several
 images (for example, multiple images obtained from a single well).</li>
 
-<li><i>Columns that contain dose-response or positive/negative control information</i>. 
+<li><i>Columns that contain dose-response or positive/negative control information:</i> 
 The <b>CalculateStatistics</b> module can calculate metrics of assay quality for 
 an experiment if provided with information about which images represent positive
 and negative controls and/or what dose of treatment has been used for which images.
@@ -126,7 +130,7 @@ image loading was requested by the user.</li>
 <li><i>Height, Width:</i> The height and width of the current image.</li> 
 </ul>
 
-See also <b>LoadImages</b> and <b>CalculateStatistics</b>.
+See also the <b>Input</b> modules, <b>LoadImages</b> and <b>CalculateStatistics</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -309,8 +313,8 @@ class LoadData(cpm.CPModule):
                 
         self.csv_file_name = cps.FilenameText(
             "Name of the file",
-            "None",
-            doc="""Provide the file name of the CSV file containing the data.""",
+            "None", doc="""
+            Provide the file name of the CSV file containing the data.""",
             get_directory_fn = get_directory_fn,
             set_directory_fn = set_directory_fn,
             browse_msg = "Choose CSV file",
@@ -325,8 +329,8 @@ class LoadData(cpm.CPModule):
             <i>Image_PathName</i> fields (the latter is optional).""")
         
         self.rescale = cps.Binary(
-            "Rescale intensities?", True,
-            doc = """This option determines whether image metadata should be
+            "Rescale intensities?", True,doc = """
+            This option determines whether image metadata should be
             used to rescale the image's intensities. Some image formats
             save the maximum possible intensity value along with the pixel data.
             For instance, a microscope might acquire images using a 12-bit
@@ -336,7 +340,7 @@ class LoadData(cpm.CPModule):
             saturated values are rescaled to 1.0 by dividing all pixels
             in the image by the maximum possible intensity value. Uncheck this 
             setting to ignore the image metadata and rescale the image
-            to 0 - 1.0 by dividing by 255 or 65535, depending on the number
+            to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
             of bits used to store the image.""")
 
         self.image_directory = cps.DirectoryPath(
@@ -353,28 +357,35 @@ class LoadData(cpm.CPModule):
             <li><i>Elsewhere...</i>: Use a particular folder you specify.</li>
             </ul>""")
         
-        self.wants_image_groupings = cps.Binary("Group images by metadata?", False,doc = """
+        self.wants_image_groupings = cps.Binary(
+            "Group images by metadata?", False,doc = """
             Use this option to break the image sets in an experiment into groups
             that can be processed by different nodes on a computing cluster. Each set of
             files that share your selected metadata tags will be processed
             together. See <b>CreateBatchFiles</b> for details on submitting a 
             CellProfiler pipeline to a computing cluster for processing.""")
         
-        self.metadata_fields = cps.MultiChoice("Select metadata fields for grouping", None,doc="""
+        self.metadata_fields = cps.MultiChoice(
+            "Select metadata fields for grouping", None,doc="""
             <i>(Used only if images are to be grouped by metadata)</i><br>
             Select the fields by which you want to group the image files here. You can select multiple tags. For
             example, if a set of images had metadata for "Run", "Plate", "Well", and
             "Site", selecting <i>Run</i> and <i>Plate</i> will create groups containing 
             images that share the same [<i>Run</i>,<i>Plate</i>] pair of fields.""")
         
-        self.wants_rows = cps.Binary("Process just a range of rows?",
-                                     False, doc="""
+        self.wants_rows = cps.Binary(
+            "Process just a range of rows?",
+            False, doc="""
             Check this box if you want to process a subset of the rows in the CSV file.
             Rows are numbered starting at 1 (but do not count the header line). 
             <b>LoadData</b> will process up to and including the end row.""")
-        self.row_range = cps.IntegerRange("Rows to process",
-                                          (1,100000),1, doc = 
-                                          """<i>(Used only if a range of rows is to be specified)</i><br>Enter the row numbers of the first and last row to be processed.""")
+        
+        self.row_range = cps.IntegerRange(
+            "Rows to process",
+            (1,100000),1, doc = """
+            <i>(Used only if a range of rows is to be specified)</i><br>
+            Enter the row numbers of the first and last row to be processed.""")
+        
         def do_reload():
             global header_cache
             header_cache = {}
@@ -384,8 +395,8 @@ class LoadData(cpm.CPModule):
                 pass
             
         self.clear_cache_button = cps.DoSomething(
-            "Reload cached information", "Reload", do_reload,
-            doc = """Press this button to reload header information saved inside
+            "Reload cached information", "Reload", do_reload,doc = """
+            Press this button to reload header information saved inside
             CellProfiler. <b>LoadData</b> caches information about
             your .csv file in its memory for efficiency.  The
             information is reloaded if a modification is detected.
@@ -395,7 +406,7 @@ class LoadData(cpm.CPModule):
             this case, you will have to use this button to reload the
             header information after changing the file.  
             <p>This button will never destroy any information on
-            disk. It is always safe to press it.
+            disk. It is always safe to press it.</p>
             """)
 
     def settings(self):

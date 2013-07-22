@@ -1,18 +1,17 @@
-'''<b>Image Math</b> performs
- simple mathematical operations on image intensities
+'''<b>Image Math</b> performs simple mathematical operations on image intensities.
 <hr>
-
 This module can perform addition, subtraction, multiplication, division, or averaging
 of two or more image intensities, as well as inversion, log transform, or scaling by 
 a constant for individual image intensities.
 
-<i>Multiply factors:</i> The final image may have a substantially different range of pixel
-intensities than the originals, so each image can be multiplied by a 
-factor prior to the operation. This factor can be any real number.  
-See the <b>RescaleIntensity</b> module for more scaling options.
-<br>
-<br>
-See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIllumination_Calculate</b>.
+<p>Keep in mind that after the requested operations are carried out, the final image 
+may have a substantially different range of pixel
+intensities than the original. CellProfiler
+assumes that the image is scaled from 0 &ndash; 1 for object identification and 
+display purposes, so additional rescaling may be needed. Please see the 
+<b>RescaleIntensity</b> module for more scaling options.</p>
+
+See also <b>ApplyThreshold</b>, <b>RescaleIntensity</b>, <b>CorrectIlluminationCalculate</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -73,55 +72,66 @@ class ImageMath(cpm.CPModule):
         self.add_image(False)
 
         # other settings
-        self.operation = cps.Choice("Operation", 
-                                    [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_MAXIMUM, O_INVERT, O_LOG_TRANSFORM, O_NONE], doc=
-            """What operation would you like performed?
-                        
-            <p><i>Note:</i> If more than 2 images are chosen, then operations will be 
-            performed sequentially from first to last, e.g., for "Divide", (Image1 / Image2) / Image3
-            
+        self.operation = cps.Choice(
+            "Operation", 
+            [O_ADD, O_SUBTRACT, O_DIFFERENCE, O_MULTIPLY, O_DIVIDE, O_AVERAGE, O_MAXIMUM, O_INVERT, O_LOG_TRANSFORM, O_NONE], doc="""
+            Select the operation to perform. Note that if more than two images are chosen, 
+            then operations will be performed sequentially from first to last, e.g., 
+            for "Divide", (Image1 / Image2) / Image3
             <ul>
-            <li><i>Add</i> adds the first image to the second, and so on.</li>
-            <li><i>Subtract</i> subtracts the second image from the first.</li>
-            <li><i>Multiply</i> multiplies the first image by the second.</li>
-            <li><i>Divide </i> divides the first image by the second.</li>
-            <li><i>Average</i> calculates the mean intensity of the images loaded in the module.  
+            <li><i>%(O_ADD)s:</i> Adds the first image to the second, and so on.</li>
+            <li><i>%(O_SUBTRACT)s:</i> Subtracts the second image from the first.</li>
+            <li><i>%(O_DIFFERENCE)s:</i> The absolute value of the difference between the first and second images.</li>
+            <li><i>%(O_MULTIPLY)s:</i> Multiplies the first image by the second.</li>
+            <li><i>%(O_DIVIDE)s:</i> Divides the first image by the second.</li>
+            <li><i>%(O_AVERAGE)s</i> Calculates the mean intensity of the images loaded in the module.  
             This is equivalent to the Add option divided by the number of images loaded 
             by this module.  If you would like to average all of the images in 
             an entire pipeline, i.e., across cycles, you should instead use the <b>CorrectIlluminationCalculate</b> module 
             and choose the <i>All</i> (vs. <i>Each</i>) option.</li>
-            <li><i>Maximum </i> returns the element-wise maximum value at each pixel location.</li>   
-            <li><i>Invert</i> subtracts the image intensities from 1. This makes the darkest
+            <li><i>%(O_MAXIMUM)s:</i> Returns the element-wise maximum value at each pixel location.</li>   
+            <li><i>%(O_INVERT)s:</i> Subtracts the image intensities from 1. This makes the darkest
             color the brightest and vice-versa.</li>
-            <li><i>Log transform (base 2)</i> log transforms each pixel's intensity. </li>
-            <li><i>None</i> is useful if you simply want to select some of the later options in the module, such as adding,
-            multiplying, or exponentiating your image by a constant.</li>
-            
-            </ul> <p>Note that <i>Invert</i>, <i>Log Transform</i>, and <i>None</i> operate on only a single image.
-            """)
+            <li><i>%(O_LOG_TRANSFORM)s</i> Log transforms each pixel's intensity. </li>
+            <li><i>%(O_NONE)s</i> This option is useful if you simply want to select some of the later 
+            options in the module, such as adding, multiplying, or exponentiating your image by a constant.</li>
+            </ul> 
+            <p>Note that <i>%(O_INVERT)s</i>, <i>%(O_LOG_TRANSFORM)s</i>, and <i>%(O_NONE)s</i> operate on only a single image.</p>
+            """%globals())
         self.divider_top = cps.Divider(line=False)
         
-        self.exponent = cps.Float("Raise the power of the result by", 1, doc="""
+        self.exponent = cps.Float(
+            "Raise the power of the result by", 1, doc="""
             Enter an exponent to raise the result to *after* the chosen operation""")
         
-        self.after_factor = cps.Float("Multiply the result by", 1, doc="""
+        self.after_factor = cps.Float(
+            "Multiply the result by", 1, doc="""
             Enter a factor to multiply the result by *after* the chosen operation""")
         
-        self.addend = cps.Float("Add to result", 0, doc ="""
+        self.addend = cps.Float(
+            "Add to result", 0, doc ="""
             Enter a number to add to the result *after* the chosen operation""")
         
-        self.truncate_low = cps.Binary("Set values less than 0 equal to 0?", True, doc="""
-            Do you want negative values to be set to 0?
+        self.truncate_low = cps.Binary(
+            "Set values less than 0 equal to 0?", True, doc="""
             Values outside the range 0 to 1 might not be handled well by other modules. 
             Here you have the option of setting negative values to 0.""")
         
-        self.truncate_high = cps.Binary("Set values greater than 1 equal to 1?", True, doc ="""
-            Do you want values greater than one to be set to 1?
+        self.truncate_high = cps.Binary(
+            "Set values greater than 1 equal to 1?", True, doc ="""
             Values outside the range 0 to 1 might not be handled well by other modules. 
             Here you have the option of setting values greater than 1 to a maximum value of 1.""")
         
-        self.ignore_mask = cps.Binary("Ignore the image masks?", False, doc = """Usually, the smallest mask of all image operands is applied after image math has been completed. Choosing to ignore the masks will set equal to zero all previously masked pixels and operate on the masked images as if no mask had been applied.""")
-        self.output_image_name = cps.ImageNameProvider("Name the output image", "ImageAfterMath", doc="""What do you want to call the resulting image?""")
+        self.ignore_mask = cps.Binary(
+            "Ignore the image masks?", False, doc = """
+            Usually, the smallest mask of all image operands is applied after 
+            image math has been completed. Choosing to ignore the masks will set 
+            equal to zero all previously masked pixels and operate on the masked 
+            images as if no mask had been applied.""")
+        
+        self.output_image_name = cps.ImageNameProvider(
+            "Name the output image", "ImageAfterMath", doc="""
+            Enter a name for the resulting image.""")
         
         self.add_button = cps.DoSomething("", "Add another image", self.add_image)
         
@@ -132,23 +142,29 @@ class ImageMath(cpm.CPModule):
         group = cps.SettingsGroup()
         group.removable = removable
         group.append("image_or_measurement", cps.Choice(
-            "Image or measurement?", [IM_IMAGE, IM_MEASUREMENT],
-            doc="""You can perform math operations using two images or you
+            "Image or measurement?", [IM_IMAGE, IM_MEASUREMENT],doc="""
+            You can perform math operations using two images or you
             can use a measurement for one of the operands. For instance,
-            to divide the intensity of one image by another, choose Image
+            to divide the intensity of one image by another, choose <i>%(IM_IMAGE)s</i>
             for both and pick the respective images. To divide the intensity
             of an image by its median intensity, use <b>MeasureImageIntensity</b>
             prior to this module to calculate the median intensity, then
-            select "Measurement" and use the median intensity measurement as
-            the denominator"""))
-        group.append("image_name", cps.ImageNameSubscriber("", "",doc="""Which image do you want to use for this operation?"""))
+            select <i>%(IM_MEASUREMENT)s</i> and use the median intensity measurement as
+            the denominator"""%globals()))
+        
+        group.append("image_name", cps.ImageNameSubscriber("", "",doc="""
+            Selec the image that you want to use for this operation."""))
+        
         group.append("measurement", cps.Measurement(
-            "Measurement", lambda : cpmeas.IMAGE,"",
-            doc="""This is a measurement made on the image. The value of the
+            "Measurement", lambda : cpmeas.IMAGE,"",doc="""
+            This is a measurement made on the image. The value of the
             measurement is used for the operand for all of the pixels of the
             other operand's image."""))
-        group.append("factor", cps.Float("", 1,doc="""By what number would you like to multiply the above image? This multiplication
-                is applied before other operations."""))
+        
+        group.append("factor", cps.Float("", 1,doc="""
+            Enter the number that you would like to multiply the above image by. This multiplication
+            is applied before other operations."""))
+        
         if removable:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         group.append("divider", cps.Divider())

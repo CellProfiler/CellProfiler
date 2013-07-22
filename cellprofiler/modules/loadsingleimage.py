@@ -1,6 +1,5 @@
-"""<b>Load Single Image</b> loads a single image for use in all image cycles
+"""<b>Load Single Image</b> loads a single image for use in all image cycles.
 <hr>
-
 <p>This module tells CellProfiler where to retrieve a single image and gives the image a
 meaningful name by which the other modules can access it. The module 
 executes only the first time through the pipeline; thereafter the image
@@ -8,6 +7,11 @@ is accessible to all subsequent processing cycles. This is
 particularly useful for loading an image like an illumination correction
 image for use by the <b>CorrectIlluminationApply</b> module, when that single
 image will be used to correct all images in the analysis run.</p>
+
+<p><i>Disclaimer:</i> Please note that the Input modues (i.e., <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
+and <b>Groups</b>) largely supercedes this module. However, old pipelines loaded into 
+CellProfiler that contain this module will provide the option of preserving them; 
+these pipelines will operate exactly as before.</p>
 
 <h4>Available measurements</h4>
 <ul>
@@ -20,16 +24,16 @@ filename, if requested.</li>
 
 <h3>Technical notes</h3>
 
-For most purposes, you will probably want to use the <b>LoadImages</b> module, not 
+<p>For most purposes, you will probably want to use the <b>LoadImages</b> module, not 
 <b>LoadSingleImage</b>. The reason is that <b>LoadSingleImage</b> does not actually 
 create image sets (or even a single image set). Instead, it adds the single image 
 to every image cycle for an <i>already existing</i> image set. Hence 
 <b>LoadSingleImage</b> should never be used as the only image-loading module in a 
 pipeline; attempting to do so will display a warning message in the module settings. 
 <p>If you have a single file to load in the pipeline (and only that file), you 
-will want to use <b>LoadImages</b> or <b>LoadData</b> with a single, hardcoded file name. 
+will want to use <b>LoadImages</b> or <b>LoadData</b> with a single, hardcoded file name. </p>
 
-See also <b>LoadImages</b>,<b>LoadData</b>.
+See also the <b>Input</b> modules, <b>LoadImages</b>,<b>LoadData</b>.
 
 """
 
@@ -99,8 +103,8 @@ class LoadSingleImage(cpm.CPModule):
         
         """
         self.directory = cps.DirectoryPath(
-            "Input image file location", support_urls = True,
-            doc = '''Select the folder containing the image(s) to be loaded. Generally, 
+            "Input image file location", support_urls = True,doc = '''
+            Select the folder containing the image(s) to be loaded. Generally, 
             it is best to store the image you want to load in either the Default Input or 
             Output Folder, so that the correct image is loaded into the pipeline 
             and typos are avoided. %(IO_FOLDER_CHOICE_HELP_TEXT)s
@@ -126,17 +130,17 @@ class LoadSingleImage(cpm.CPModule):
             return self.directory.get_absolute_path()
         
         group.append("file_name", cps.FilenameText(
-            FILE_TEXT,
-            "None",
-            metadata=True,
-            get_directory_fn = get_directory_fn,
-            exts = [("TIF - Tagged Image File format (*.tif,*.tiff)","*.tif,*.tiff"),
-                    ("PNG - Portable Network Graphics (*.png)", "*.png"),
-                    ("JPG/JPEG file (*.jpg,*.jpeg)", "*.jpg,*.jpeg"),
-                    ("BMP - Windows Bitmap (*.bmp)", "*.bmp"),
-                    ("Compuserve GIF file (*.gif)", "*.gif"),
-                    ("MATLAB image (*.mat)","*.mat"),
-                    ("All files (*.*)", "*.*")],doc = """
+                    FILE_TEXT,
+                    "None",
+                    metadata=True,
+                    get_directory_fn = get_directory_fn,
+                    exts = [("TIF - Tagged Image File format (*.tif,*.tiff)","*.tif,*.tiff"),
+                            ("PNG - Portable Network Graphics (*.png)", "*.png"),
+                            ("JPG/JPEG file (*.jpg,*.jpeg)", "*.jpg,*.jpeg"),
+                            ("BMP - Windows Bitmap (*.bmp)", "*.bmp"),
+                            ("Compuserve GIF file (*.gif)", "*.gif"),
+                            ("MATLAB image (*.mat)","*.mat"),
+                            ("All files (*.*)", "*.*")],doc = """
                     The filename can be constructed in one of two ways:
                     <ul>
                     <li>As a fixed filename (e.g., <i>Exp1_D03f00d0.tif</i>). </li>
@@ -148,16 +152,16 @@ class LoadSingleImage(cpm.CPModule):
                     in your file specification. %(USING_METADATA_TAGS_REF)s%(USING_METADATA_HELP_REF)s.</li>
                     </ul>
                     <p>Keep in mind that in either case, the image file extension, if any, must be included."""% globals() ))
+        
         group.append("image_objects_choice", cps.Choice(
-                    'Load as images or objects?', IO_ALL,
-                    doc = """
+                    'Load as images or objects?', IO_ALL, doc = """
                     This setting determines whether you load an image as image data
                     or as segmentation results (i.e., objects):
                     <ul>
-                    <li><i>Images:</i> The input image will be given a user-specified name by
+                    <li><i>%(IO_IMAGES)s:</i> The input image will be given a user-specified name by
                     which it will be refered downstream. This is the most common usage for this
                     module.</li>
-                    <li><i>Objects:</i> Use this option if the input image is a label matrix 
+                    <li><i>%(IO_OBJECTS)s:</i> Use this option if the input image is a label matrix 
                     and you want to obtain the objects that it defines. A <i>label matrix</i>
                     is a grayscale or color image in which the connected regions share the
                     same label, and defines how objects are represented in CellProfiler.
@@ -167,16 +171,16 @@ class LoadSingleImage(cpm.CPModule):
                     This option allows you to use the objects without needing to insert an 
                     <b>Identify</b> module to extract them first. See <b>IdentifyPrimaryObjects</b> 
                     for more details.</li>
-                    </ul>"""))
+                    </ul>"""%globals()))
         
         group.append("image_name", cps.FileImageNameProvider("Name the image that will be loaded", 
                     "OrigBlue", doc = '''
                     <i>(Used only if an image is output)</i><br>
-                    What do you want to call the image you are loading? 
+                    Enter the name of the image that will be loaded. 
                     You can use this name to select the image in downstream modules.'''))
+        
         group.append("rescale", cps.Binary(
-                    "Rescale intensities?",True,
-                    doc = """
+                    "Rescale intensities?",True,doc = """
                     <i>(Used only if an image is output)</i><br>
                     This option determines whether image metadata should be
                     used to rescale the image's intensities. Some image formats
@@ -188,7 +192,7 @@ class LoadSingleImage(cpm.CPModule):
                     saturated values are rescaled to 1.0 by dividing all pixels
                     in the image by the maximum possible intensity value. Uncheck this 
                     setting to ignore the image metadata and rescale the image
-                    to 0 - 1.0 by dividing by 255 or 65535, depending on the number
+                    to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
                     of bits used to store the image."""))
 
         group.append("objects_name", cps.ObjectNameProvider(
@@ -198,15 +202,15 @@ class LoadSingleImage(cpm.CPModule):
                     This is the name for the objects loaded from your image"""))
         
         group.append("wants_outlines", cps.Binary(
-                    "Retain outlines of loaded objects?", False,
-                    doc = """<i>(Used only if objects are output)</i><br>
+                    "Retain outlines of loaded objects?", False, doc = """
+                    <i>(Used only if objects are output)</i><br>
                     Check this setting if you want to save an image of the outlines
                     of the loaded objects."""))
         
         group.append("outlines_name", cps.OutlineNameProvider(
                     'Name the outlines',
-                    'NucleiOutlines',
-                    doc = """<i>(Used only if objects are output)</i><br>
+                    'NucleiOutlines',doc = """
+                    <i>(Used only if objects are output)</i><br>
                     Enter a name that will allow the outlines to be selected later in the pipeline."""))
         
         if can_remove:

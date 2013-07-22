@@ -1,21 +1,11 @@
 '''<b>Measure Correlation</b> measures the correlation between intensities in different images (e.g.,
 different color channels) on a pixel-by-pixel basis, within identified
-objects or across an entire image
+objects or across an entire image.
 <hr>
-
 Given two or more images, this module calculates the correlation between the
 pixel intensities. The correlation can be measured for entire
 images, or a correlation measurement can be made within each
 individual object.
-
-<h4>Available measurements</h4>
-<ul>
-<li><i>Correlation coefficient:</i> The correlation between a pair of images I and J. 
-Calculated as Pearson's correlation coefficient, for which the formula is
-covariance(I,J)/[std(I) * std(J)].</li>
-<li><i>Slope:</i> The slope of the least-squares regression between a pair of images
-I and J. Calculated using the model <i>A</i>*I + <i>B</i> = J, where <i>A</i> is the slope.</li>
-</ul>
 
 Correlations will be calculated between all pairs of images that are selected in 
 the module, as well as between selected objects. For example, if correlations 
@@ -25,6 +15,16 @@ measurements will be made between the following:
 <li>The blue and green, red and green, and red and blue images. </li>
 <li>The nuclei in each of the above image pairs.</li>
 </ul>
+
+<h4>Available measurements</h4>
+<ul>
+<li><i>Correlation coefficient:</i> The correlation between a pair of images I and J. 
+Calculated as Pearson's correlation coefficient, for which the formula is
+covariance(I,J)/[std(I) &times; std(J)].</li>
+<li><i>Slope:</i> The slope of the least-squares regression between a pair of images
+I and J. Calculated using the model <i>A</i>&times;I + <i>B</i> = J, where <i>A</i> is the slope.</li>
+</ul>
+
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -73,16 +73,17 @@ class MeasureCorrelation(cpm.CPModule):
         
         self.add_image_button = cps.DoSomething("", 'Add another image', self.add_image)
         self.spacer_2 = cps.Divider()
-        self.images_or_objects = cps.Choice('Select where to measure correlation',
-                                            [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], 
-                                            doc = '''
-                                            Do you want to measure the correlation over the whole image, 
-                                            within objects, or both?
-                                            Both methods measure correlation on a pixel by pixel basis.
-                                            Selecting <i>Objects</i> will measure correlation only in those pixels previously
-                                            identified as an object (you will be asked to specify which object).  Selecting 
-                                            <i>Images</i> will measure correlation across all pixels in the images.
-                                            <i>Images and objects</i> will calculate both measurements.''')
+        self.images_or_objects = cps.Choice(
+            'Select where to measure correlation',
+            [M_IMAGES, M_OBJECTS, M_IMAGES_AND_OBJECTS], doc = '''
+            You can measure the correlation in several ways: 
+            <ul>
+            <li><i>%(M_OBJECTS)s:</i> Measure correlation only in those pixels previously
+            identified as an object. You will be asked to specify which object to measure from.</li>
+            <li><i>%(M_IMAGES)s:</i> Measure the correlation across all pixels in the images.</li>
+            <li><i>%(M_IMAGES_AND_OBJECTS)s:</i> Calculate both measurements above.</li>
+            </ul>
+            All methods measure correlation on a pixel by pixel basis.'''%globals())
         
         self.object_groups = []
         self.add_object(can_delete = False)
@@ -101,8 +102,10 @@ class MeasureCorrelation(cpm.CPModule):
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=False))
-        group.append("image_name", cps.ImageNameSubscriber('Select an image to measure','None',
-                                                          doc = '''What is the name of an image to be measured?'''))
+        group.append("image_name", cps.ImageNameSubscriber(
+            'Select an image to measure','None',doc = '''
+            Select an image to measure the correlation from.'''))
+        
         if len(self.image_groups) == 0: # Insert space between 1st two images for aesthetics
             group.append("extra_divider", cps.Divider(line=False))
         
@@ -116,8 +119,11 @@ class MeasureCorrelation(cpm.CPModule):
         group = cps.SettingsGroup()
         if can_delete:
             group.append("divider", cps.Divider(line=False))
-        group.append("object_name", cps.ObjectNameSubscriber('Select an object to measure','None',
-                                                            doc = '''What is the name of objects to be measured?'''))
+            
+        group.append("object_name", cps.ObjectNameSubscriber(
+            'Select an object to measure','None', doc = '''
+            Select the objects to be measured.'''))
+        
         if can_delete:
             group.append("remover", cps.RemoveSettingButton('', 'Remove this object', self.object_groups, group))
         self.object_groups.append(group)

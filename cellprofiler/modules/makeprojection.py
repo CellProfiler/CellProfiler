@@ -2,7 +2,6 @@
 the same field of view together, either by performing a mathematical operation
 upon the pixel values at each pixel position.
 <hr>
-
 This module combines a set of images by performing a mathematic operation of your
 choice at each pixel position; please refer to the settings help for more information on the available
 operations. The process of averaging or summing a Z-stack (3D image stack) is known as making a projection.
@@ -28,7 +27,7 @@ However, unlike <b>LoadImageDirectory</b>, this per-folder projection is also no
 immediately available in subsequent modules until all image processing cycles for 
 the given subfolder have completed.
 
-See also <b>LoadImages</b>.
+See also the help for the <b>Input</b> modules.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -67,8 +66,9 @@ class MakeProjection(cpm.CPModule):
     variable_revision_number = 2
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            'Select the input image','None', 
-            doc = '''What did you call the images to be made into a projection?''')
+            'Select the input image','None', doc = '''
+            Select the image to be made into a projection.''')
+        
         self.projection_type = cps.Choice(
             'Type of projection',
             P_ALL, doc = '''
@@ -119,15 +119,15 @@ class MakeProjection(cpm.CPModule):
             </ul>
             </p>
             ''' % globals())
+        
         self.projection_image_name = cps.ImageNameProvider(
             'Name the output image',
-            'ProjectionBlue', 
-            doc = '''What do you want to call the projected image?''',
+            'ProjectionBlue', doc = '''
+            Enter the name for the projected image.''',
             provided_attributes={cps.AGGREGATE_IMAGE_ATTRIBUTE: True,
                                  cps.AVAILABLE_ON_LAST_ATTRIBUTE: True } )
         self.frequency = cps.Float(
-            "Frequency", 6.0, minval=1.0,
-            doc = """
+            "Frequency", 6.0, minval=1.0,doc = """
             <i>(Used only if %(P_POWER)s is selected as the projection method)</i><br>
             This setting controls the frequency at which the power
             is measured. A frequency of 2 will respond most strongly to

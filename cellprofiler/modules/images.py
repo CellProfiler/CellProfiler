@@ -85,7 +85,7 @@ class Images(cpm.CPModule):
                       ExtensionPredicate()]
         
         self.wants_filter = cps.Binary(
-            "Filter based on rules", False, doc = """
+            "Filter images based on matching rules?", False, doc = """
             Check this setting to display and use rules to filter files for processing. 
             <p>By default, <b>Images</b> will pass all the files specified in the file list
             panel downstream to have a meaningful name assigned to it (so other modules can access it) or optionally, to 

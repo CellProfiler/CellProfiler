@@ -1,7 +1,6 @@
 '''<b>Load Images</b> allows you to specify which images or movies are to be loaded and in
-which order
+which order.
 <hr>
-
 This module tells CellProfiler where to retrieve images and gives each image a
 meaningful name by which other modules can access it. You can also use <b>LoadImages</b> to extract
 or define the relationships between images and their associated 
@@ -9,6 +8,11 @@ metadata. For example, you could load a group of images (such as three channels 
 of view) together for processing in a single CellProfiler cycle. Finally, you can use
 this module to retrieve a label matrix and give the collection
 of objects a meaningful name.
+
+<p><i>Disclaimer:</i> Please note that the Input modues (i.e., <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
+and <b>Groups</b>) largely supercedes this module. However, old pipelines loaded into 
+CellProfiler that contain this module will provide the option of preserving them; 
+these pipelines will operate exactly as before.</p>
 
 <p>When used in combination with a <b>SaveImages</b> module, you can load images in one file format and
 save them in another, using CellProfiler as a file format converter.</p>
@@ -19,7 +23,8 @@ save them in another, using CellProfiler as a file format converter.</p>
 metadata in CellProfiler</i> for more details on metadata usage and syntax. Briefly, <b>LoadImages</b> can
 extract metadata from the image filename using pattern-matching strings, for grouping similar images 
 together for the analysis run and for metadata-specfic options in other modules; see the settings help for
-<a href='#where_to_extract'><i>Where to extract metadata</i></a>, and if an option for that setting is selected, <a href='#regular_expression'><i>Regular expression 
+<a href='#where_to_extract'><i>Where to extract metadata</i></a>, and if an option for that setting is 
+selected, <a href='#regular_expression'><i>Regular expression 
 that finds metadata in the file name</i></a> for the necessary syntax.</p>
 
 <h4>Available measurements</h4>
@@ -31,7 +36,7 @@ filename, if requested.</li>
 <li><i>Height, Width:</i> The height and width of the current image.</li> 
 </ul>
 
-See also <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
+See also the <b>Input</b> modules, <b>LoadData</b>, <b>LoadSingleImage</b>, <b>SaveImages</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -211,74 +216,76 @@ class LoadImages(cpmodule.CPModule):
 
     def create_settings(self):
         # Settings
-        self.file_types = cps.Choice('File type to be loaded', FF, doc="""
-                CellProfiler accepts the following image file types. For movie file formats, the files are opened as a stack of images and each image is processed individually, although <b> TrackObjects</b> can be used to relate objects across timepoints.
-                <ul>
-                <li><i>Individual images:</i> Each file represents a single image. 
-                Some methods of file compression sacrifice image quality ("lossy") and should be avoided for automated image analysis 
-                if at all possible (e.g., .jpg). Other file compression formats retain exactly the original image information but in 
-                a smaller file ("lossless") so they are perfectly acceptable for image analysis (e.g., .png, .tif, .gif). 
-                Uncompressed file formats are also fine for image analysis (e.g., .bmp).</li>
-                <li><i>AVI, MOV movies:</i> AVIs (Audio Video Interleave) and MOVs (QuicktTime) files are types of movie files. Only 
-                uncompressed AVIs are supported; supported MOVs are listed <a href="http://www.loci.wisc.edu/bio-formats-format/quicktime-movie">here</a>.
-                Note that .mov files are not supported on 64-bit systems.</li>
-                <li><i>TIF, TIFF, FLEX movies:</i> A TIF/TIFF movie is a file that contains a series of images as individual frames. 
-                The same is true for the FLEX file format (used by Evotec Opera automated microscopes).</li>
-                <li><i>STK movies:</i> STKs are a proprietary image format used by MetaMorph (Molecular Devices). It is typically
-                used to encode 3D image data, e.g. from confocal microscopy, and is a special version of the TIF format. </li>
-                <li><i>ZVI movies:</i> ZVIs are a proprietary image format used by Zeiss. It is typically
-                used to encode 3D image data, e.g. from fluorescence microscopy. </li>
-                </ul>""")
+        self.file_types = cps.Choice(
+            'File type to be loaded', FF, doc="""
+            CellProfiler accepts the following image file types. For movie file formats, 
+            the files are opened as a stack of images and each image is processed individually, although <b> TrackObjects</b> 
+            can be used to relate objects across timepoints.
+            <ul>
+            <li><i>%(FF_INDIVIDUAL_IMAGES)s:</i> Each file represents a single image. 
+            Some methods of file compression sacrifice image quality ("lossy") and should be avoided for automated image analysis 
+            if at all possible (e.g., .jpg). Other file compression formats retain exactly the original image information but in 
+            a smaller file ("lossless") so they are perfectly acceptable for image analysis (e.g., .png, .tif, .gif). 
+            Uncompressed file formats are also fine for image analysis (e.g., .bmp).</li>
+            <li><i>%(FF_AVI_MOVIES)s:</i> AVIs (Audio Video Interleave) and MOVs (QuicktTime) files are types of movie files. Only 
+            uncompressed AVIs are supported; supported MOVs are listed <a href="http://www.loci.wisc.edu/bio-formats-format/quicktime-movie">here</a>.
+            Note that .mov files are not supported on 64-bit systems.</li>
+            <li><i>%(FF_STK_MOVIES)s:</i> STKs are a proprietary image format used by MetaMorph (Molecular Devices). It is typically
+            used to encode 3D image data, e.g. from confocal microscopy, and is a special version of the TIF format. </li>
+            <li><i>%(FF_OTHER_MOVIES)s:</i> A TIF/TIFF movie is a file that contains a series of images as individual frames. 
+            The same is true for the FLEX file format (used by Evotec Opera automated microscopes). ZVIs are a proprietary image 
+            format used by Zeiss. It is typically
+            used to encode 3D image data, e.g. from fluorescence microscopy. </li>
+            </ul>"""%globals())
         
-        self.match_method = cps.Choice('File selection method', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER],doc="""
-                Three options are available:
-                <ul>
-                <li><i>Text-Exact match:</i> Used to load image (or movie) files that have a particular piece of
-                text in the name. The specific text that is entered will be searched for in the filenames and
-                the files that contain that text exactly will be loaded and given the name you specify. 
-                The search for the text is case-sensitive.</li>
-                <li><i>Text-Regular expressions:</i> Used to load image (or movie) files that match
-                a pattern of regular expressions. %(REGEXP_HELP_REF)s
-                </li>
-                
-                <li><i>Order:</i> Used when image (or movie) files are present in a repeating order,
-                like "DAPI, FITC, Red; DAPI, FITC, Red;" and so on. Images are
-                loaded based on the order of their location on the hard disk, and they are
-                assigned an identity based on how many images are in each group and what position
-                within each group the file is located (e.g., three images per
-                group; DAPI is always first).</li>
-                
-                </ul>"""%globals())
+        self.match_method = cps.Choice(
+            'File selection method', [MS_EXACT_MATCH, MS_REGEXP, MS_ORDER],doc="""
+            Three options are available:
+            <ul>
+            <li><i>%(MS_EXACT_MATCH)s:</i> Used to load image (or movie) files that have a particular piece of
+            text in the name. The specific text that is entered will be searched for in the filenames and
+            the files that contain that text exactly will be loaded and given the name you specify. 
+            The search for the text is case-sensitive.</li>
+            <li><i>%(MS_REGEXP)s:</i> Used to load image (or movie) files that match
+            a pattern of regular expressions. %(REGEXP_HELP_REF)s</li>
+            <li><i>%(MS_ORDER)s:</i> Used when image (or movie) files are present in a repeating order,
+            like "DAPI, FITC, Red; DAPI, FITC, Red;" and so on. Images are
+            loaded based on the order of their location on the hard disk, and they are
+            assigned an identity based on how many images are in each group and what position
+            within each group the file is located (e.g., three images per
+            group; DAPI is always first).</li>
+            </ul>"""%globals())
         
-        self.exclude = cps.Binary('Exclude certain files?', False,doc="""
-                <i>(Used only if Text-Exact match option for loading files is selected)</i> <br>
-                The image/movie files specified with the <i>Text</i> options may also include
-                files that you want to exclude from analysis (such as thumbnails created 
-                by an imaging system).""")
+        self.exclude = cps.Binary(
+            'Exclude certain files?', False,doc="""
+            <i>(Used only if Text-Exact match option for loading files is selected)</i> <br>
+            The image/movie files specified with the <i>Text</i> options may also include
+            files that you want to exclude from analysis (such as thumbnails created 
+            by an imaging system).""")
         
-        self.match_exclude = cps.Text('Type the text that the excluded images have in common', cps.DO_NOT_USE,doc="""
-                <i>(Used only if file exclusion is selected)</i> <br>
-                Specify text that marks files for exclusion. <b>LoadImages</b> looks for this text as an 
-                exact match within the filename and not as a regular expression. """)
+        self.match_exclude = cps.Text(
+            'Type the text that the excluded images have in common', cps.DO_NOT_USE,doc="""
+            <i>(Used only if file exclusion is selected)</i> <br>
+            Specify text that marks files for exclusion. <b>LoadImages</b> looks for this text as an 
+            exact match within the filename and not as a regular expression. """)
         
         self.order_group_size = cps.Integer(
-            'Number of images in each group?', 3,
-            doc="""
+            'Number of images in each group?', 3,doc="""
             <i>(Used only when Order is selected for file loading)</i><br>
             Enter the number of images that comprise a group. For example, for images given in the order:
             <i>DAPI, FITC, Red; DAPI, FITC, Red</i> and so on, the number of images that in each group would be 3.""")
         
         self.descend_subdirectories = cps.Choice(
             'Analyze all subfolders within the selected folder?', 
-            [SUB_NONE, SUB_ALL, SUB_SOME], 
-            doc="""This setting determines whether <b>LoadImages</b> analyzes
+            [SUB_NONE, SUB_ALL, SUB_SOME], doc="""
+            This setting determines whether <b>LoadImages</b> analyzes
             just the images in the specified folder or whether it analyzes
             images in subfolders as well:
             <ul>
-            <li><i>%(SUB_ALL)s</i>: Analyze all matching image files in subfolders under your 
+            <li><i>%(SUB_ALL)s:</i> Analyze all matching image files in subfolders under your 
             specified image folder location. </li>
-            <li><i>%(SUB_NONE)s</i>: Only analyze files in the specified location.</li>
-            <li><i>%(SUB_SOME)s</i>: Select which subfolders to analyze.</li>
+            <li><i>%(SUB_NONE)s:</i> Only analyze files in the specified location.</li>
+            <li><i>%(SUB_SOME)s:</i> Select which subfolders to analyze.</li>
             </ul>""" % globals())
         
         # Location settings
@@ -294,40 +301,43 @@ class LoadImages(cpmodule.CPModule):
 
         self.subdirectory_filter = cps.SubdirectoryFilter(
             "Select subfolders to analyze",
-            directory_path = self.location,
-            doc = """Use this control to select some subfolders and exclude
+            directory_path = self.location,doc = """
+            Use this control to select some subfolders and exclude
             others from analysis. Press the button to see the folder tree
             and check or uncheck the checkboxes to enable or disable analysis
             of the associated folders.""")
         
-        self.check_images = cps.Binary('Check image sets for unmatched or duplicate files?',True,doc="""
-                <i>(Used only if metadata is extracted from the image file and not loading by order)</i><br>
-                Selecting this option will examine the filenames for 
-                unmatched or duplicate files based on extracted metadata. This is useful for images
-                generated by HCS systems where acquisition may produce a corrupted image and create
-                a duplicate as a correction or may miss an image entirely. See <i>%(METADATA_HELP_REF)s</i> 
-                for more details on obtaining, extracting, and using metadata tags from your images or
-                the <i>Extract metadata from where?</i> setting."""%globals())
+        self.check_images = cps.Binary(
+            'Check image sets for unmatched or duplicate files?',True,doc="""
+            <i>(Used only if metadata is extracted from the image file and not loading by order)</i><br>
+            Selecting this option will examine the filenames for 
+            unmatched or duplicate files based on extracted metadata. This is useful for images
+            generated by HCS systems where acquisition may produce a corrupted image and create
+            a duplicate as a correction or may miss an image entirely. See <i>%(METADATA_HELP_REF)s</i> 
+            for more details on obtaining, extracting, and using metadata tags from your images or
+            the <i>Extract metadata from where?</i> setting."""%globals())
         
-        self.group_by_metadata = cps.Binary('Group images by metadata?',False,doc="""
-                <a name='group_by_metadata'></a>
-                <i>(Used only if metadata is extracted from the image file or if movies are used)</i><br>
-                In some instances, you may want to process as a group those images that share a particular
-                metadata tag. For example, if you are performing per-plate illumination correction and the
-                plate metadata is part of the image file name, image grouping will enable you to
-                process those images that have the same plate field together (the alternative would be
-                to place the images from each plate in a separate folder). The next setting allows you
-                to select the metadata tags by which to group.%(USING_METADATA_GROUPING_HELP_REF)s
-                
-                <p>Please note that if you are loading a movie file(e.g., TIFs, FLEX, STKs, AVIs, ZVIs), each movie
-                is already treated as a group of images, so there is no need to enable here."""%globals())
+        self.group_by_metadata = cps.Binary(
+            'Group images by metadata?',False,doc="""
+            <a name='group_by_metadata'></a>
+            <i>(Used only if metadata is extracted from the image file or if movies are used)</i><br>
+            In some instances, you may want to process as a group those images that share a particular
+            metadata tag. For example, if you are performing per-plate illumination correction and the
+            plate metadata is part of the image file name, image grouping will enable you to
+            process those images that have the same plate field together (the alternative would be
+            to place the images from each plate in a separate folder). The next setting allows you
+            to select the metadata tags by which to group.%(USING_METADATA_GROUPING_HELP_REF)s
+            
+            <p>Please note that if you are loading a movie file(e.g., TIFs, FLEX, STKs, AVIs, ZVIs), each movie
+            is already treated as a group of images, so there is no need to enable here."""%globals())
         
-        self.metadata_fields = cps.MultiChoice('Specify metadata fields to group by',[],doc="""
-                <i>(Used only if grouping images by metadata)</i> <br>
-                Select the fields by which you want group the image files. You can select multiple tags. For
-                example, if a set of images had metadata for "Run", "Plate", "Well", and
-                "Site", selecting <i>Run</i> and <i>Plate</i> will create groups containing 
-                images that share the same [<i>Run</i>,<i>Plate</i>] pair of fields.""")
+        self.metadata_fields = cps.MultiChoice(
+            'Specify metadata fields to group by',[],doc="""
+            <i>(Used only if grouping images by metadata)</i> <br>
+            Select the fields by which you want group the image files. You can select multiple tags. For
+            example, if a set of images had metadata for "Run", "Plate", "Well", and
+            "Site", selecting <i>Run</i> and <i>Plate</i> will create groups containing 
+            images that share the same [<i>Run</i>,<i>Plate</i>] pair of fields.""")
         
         # Add the first image to the images list
         self.images = []
@@ -572,8 +582,7 @@ class LoadImages(cpmodule.CPModule):
         
         group.append("channels_per_group", cps.Integer(
             "Number of channels per group", 3, minval=2,
-            reset_view=True,
-            doc = """
+            reset_view=True,doc = """
             <i>(Used only if a movie image format is selected as file type and movie frame grouping is selected)</i><br>
             This setting controls the number of frames to be
             grouped together. As an example, for an interleaved movie with
@@ -619,17 +628,16 @@ class LoadImages(cpmodule.CPModule):
                 if id(jj) == id(group):
                     break
                 img_index += 1
-                
+
         group.append("image_object_choice", cps.Choice(
-            'Load the input as images or objects?', IO_ALL,
-            doc = """
+            'Load the input as images or objects?', IO_ALL,doc = """
             This setting determines whether you load an image as image data
             or as segmentation results (i.e., objects):
             <ul>
-            <li><i>Images:</i> The input image will be given a user-specified name by
+            <li><i>%(IO_IMAGES)s:</i> The input image will be given a user-specified name by
             which it will be refered downstream. This is the most common usage for this
             module.</li>
-            <li><i>Objects:</i> Use this option if the input image is a label matrix 
+            <li><i>%(IO_OBJECTS)s:</i> Use this option if the input image is a label matrix 
             and you want to obtain the objects that it defines. A <i>label matrix</i>
             is a grayscale or color image in which the connected regions share the
             same label, and defines how objects are represented in CellProfiler.
@@ -639,7 +647,7 @@ class LoadImages(cpmodule.CPModule):
             This option allows you to use the objects without needing to insert an 
             <b>Identify</b> module to extract them first. See <b>IdentifyPrimaryObjects</b> 
             for more details.</li>
-            </ul>"""))
+            </ul>"""%globals()))
         
         group.append("image_name", cps.FileImageNameProvider(
             'Name this loaded image', 
@@ -667,17 +675,18 @@ class LoadImages(cpmodule.CPModule):
         
         group.append("object_name", cps.ObjectNameProvider(
             'Name this loaded object',
-            "Nuclei",
-            doc = """
+            "Nuclei",doc = """
             <i>(Used only if objects are output)</i><br>
             This is the name for the objects loaded from your image"""))
         
-        group.append("wants_outlines", cps.Binary('Retain outlines of loaded objects?', False,
-            doc = """<i>(Used only if objects are output)</i><br>
+        group.append("wants_outlines", cps.Binary(
+            'Retain outlines of loaded objects?', False,doc = """
+            <i>(Used only if objects are output)</i><br>
             Check this setting if you want to create an image of the outlines
             of the loaded objects."""))
         
-        group.append("outlines_name", cps.OutlineNameProvider('Name the outline image','LoadedImageOutlines', doc = '''
+        group.append("outlines_name", cps.OutlineNameProvider(
+            'Name the outline image','LoadedImageOutlines', doc = '''
             <i>(Used only if objects are output and outlines are saved)</i> <br> 
             Enter a name that will allow the outlines to be selected later in the pipeline.
             <p><i>Special note on saving images:</i> You can use the settings in this module
@@ -693,16 +702,16 @@ class LoadImages(cpmodule.CPModule):
             str(x) for x in range(1, max(10, len(image_settings.channels)+2)) ]
         
         group.append("channel_number", cps.Choice(
-            "Channel number", channels, channels[len(image_settings.channels)-1],
-            doc = """<i>(Used only if a movie image format is selected as file type and movie frame grouping is selected)</i><br>
+            "Channel number", channels, channels[len(image_settings.channels)-1],doc = """
+            <i>(Used only if a movie image format is selected as file type and movie frame grouping is selected)</i><br>
             The channels of a multichannel image are numbered starting from 1.
             Each channel is a greyscale image, acquired using different
             illumination sources and/or optics. Use this setting to pick
             the channel to associate with the above image name."""))
         
         group.append("rescale", cps.Binary(
-            "Rescale intensities?", True,
-            doc = """This option determines whether image metadata should be
+            "Rescale intensities?", True,doc = """
+            This option determines whether image metadata should be
             used to rescale the image's intensities. Some image formats
             save the maximum possible intensity value along with the pixel data.
             For instance, a microscope might acquire images using a 12-bit
@@ -712,8 +721,9 @@ class LoadImages(cpmodule.CPModule):
             saturated values are rescaled to 1.0 by dividing all pixels
             in the image by the maximum possible intensity value. Uncheck this 
             setting to ignore the image metadata and rescale the image
-            to 0 - 1.0 by dividing by 255 or 65535, depending on the number
+            to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
             of bits used to store the image."""))
+        
         group.can_remove = can_remove
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(

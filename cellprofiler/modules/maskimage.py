@@ -1,4 +1,6 @@
-"""<b>Mask Image</b> hides certain portions of an image (based on previously identified objects or a binary image) so they are ignored by subsequent mask-respecting modules in the pipeline
+"""<b>Mask Image</b> hides certain portions of an image (based on previously identified 
+objects or a binary image) so they are ignored by subsequent mask-respecting modules 
+in the pipeline.
 <hr>
 This module masks an image and saves it in the handles structure for
 future use. The masked image is based on the original image and the
@@ -45,41 +47,42 @@ class MaskImage(cpm.CPModule):
         """
         self.source_choice=cps.Choice(
             "Use objects or an image as a mask?",
-            [IO_OBJECTS, IO_IMAGE],
-            doc="""You can mask an image in two ways:
+            [IO_OBJECTS, IO_IMAGE],doc="""
+            You can mask an image in two ways:
             <ul>
-            <li><i>Objects</i>: Using objects created by another
+            <li><i>%(IO_OBJECTS)s</i>: Using objects created by another
             module (for instance <b>IdentifyPrimaryObjects</b>). The module
             will mask out all parts of the image that are not within one
             of the objects (unless you invert the mask).</li>
-            <li><i>Image</i>: Using a binary image as the mask, where black 
+            <li><i>5(IO_IMAGE)s</i>: Using a binary image as the mask, where black 
             portions of the image (false or zero-value pixels) will be masked out.
             If the image is not binary, the module will use
-            all pixels whose intensity is greater than .5 as the mask's
+            all pixels whose intensity is greater than 0.5 as the mask's
             foreground (white area). You can use <b>ApplyThreshold</b> instead to create a binary
-            image and have finer control over the intensity choice.</li></ul>""")
+            image and have finer control over the intensity choice.</li>
+            </ul>"""%globals())
         
         self.object_name = cps.ObjectNameSubscriber(
-            "Select object for mask","None",
-            doc = """<i>(Used only if mask is to be made from objects)</i> <br> 
-            Which objects would you like to use to mask the input image?""")
+            "Select object for mask","None",doc = """
+            <i>(Used only if mask is to be made from objects)</i> <br> 
+            Select the objects you would like to use to mask the input image.""")
         
         self.masking_image_name = cps.ImageNameSubscriber(
-            "Select image for mask","None",
-            doc = """<i>(Used only if mask is to be made from an image)</i> <br> 
-            Which image would you like to use to mask the input image?""")
+            "Select image for mask","None",doc = """
+            <i>(Used only if mask is to be made from an image)</i> <br> 
+            Select the image that you like to use to mask the input image.""")
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image","None", 
-            doc = """Which image do you want to mask?""")
+            "Select the input image","None", doc = """
+            Select the image that you want to mask.""")
         
         self.masked_image_name = cps.ImageNameProvider(
-            "Name the output image", "MaskBlue", 
-            doc = """What do you want to call the masked image?""")
+            "Name the output image", "MaskBlue", doc = """
+            Enter the name for the output masked image.""")
         
         self.invert_mask = cps.Binary(
-            "Invert the mask?",False, 
-            doc = """This option reverses the foreground/background relationship of
+            "Invert the mask?",False, doc = 
+            """This option reverses the foreground/background relationship of
             the mask. 
             <ul>
             <li>If unchecked, the mask will be composed of the foregound 

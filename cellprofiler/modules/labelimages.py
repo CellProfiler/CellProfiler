@@ -1,6 +1,5 @@
 '''<b>LabelImages</b> assigns plate metadata to image sets.
 <hr>
-
 <b>LabelImages</b> assigns a plate number, well and site number to each image
 set based on the order in which they are processed. You can use <b>Label
 Images</b> to add plate and well metadata for images loaded using <i>File order</i>
@@ -20,7 +19,7 @@ number of images per plate is the same. </li>
 <li><i>Metadata_Site:</i> The site number within the well, starting at 1 for the first site</li>
 </ul>
 
-See also <b>LoadImages</b>.
+See also the <b>Metadata</b> module.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -48,27 +47,32 @@ class LabelImages(cpm.CPModule):
     
     def create_settings(self):
         self.site_count = cps.Integer(
-            "Number of image sites per well", 1, minval=1,
-            doc = """This setting controls the number of image sets for each well""")
+            "Number of image sites per well", 1, minval=1,doc = """
+            This setting controls the number of image sets for each well""")
+        
         self.column_count = cps.Integer(
-            "Number of columns per plate", 12, minval=1,
-            doc = """The number of columns per plate""")
+            "Number of columns per plate", 12, minval=1,doc = """
+            Enter the number of columns per plate""")
+        
         self.row_count = cps.Integer(
-            "Number of rows per plate", 8, minval=1,
-            doc = """The number of rows per plate""")
+            "Number of rows per plate", 8, minval=1,doc = """
+            The number of rows per plate""")
+        
         self.order = cps.Choice(
-            "Order of image data", [O_ROW, O_COLUMN],
-            doc = """This setting specifies how the input data is ordered (assuming
+            "Order of image data", [O_ROW, O_COLUMN],doc = """
+            This setting specifies how the input data is ordered (assuming
             that sites within a well are ordered consecutively):
             <ul>
             <li><i>%(O_ROW)s:</i>: The data appears by row and then by column. That is,
             all columns for a given row (e.g. A01, A02, A03...) appear consecutively, for
             each row in consecutive order.</li>
-            <li><i>%(O_COLUMN)s</i>: The data appears by column and then by row. That is,
+            <li><i>%(O_COLUMN)s:</i> The data appears by column and then by row. That is,
             all rows for a given column (e.g. A01, B01, C01...) appear consecutively, for
             each column in consecutive order.</li>
             </ul>
-            <p>For instance, the ExampleSBSImages sample has files that are named:<br>
+            <p>For instance, the SBS Bioimage example (available 
+            <a href="http://www.cellprofiler.org/examples.shtml#SBS_Bioimage_CNT">here</a>)
+            has files that are named:<br>
             Channel1-01-A01.tif<br>
             Channel1-02-A02.tif<br>
             ...<br>
@@ -76,7 +80,7 @@ class LabelImages(cpm.CPModule):
             Channel1-13-B01.tif<br>
             ...<br>
             You would use "%(O_ROW)s" to label these because the ordering
-            is by row and then by column.""" % globals())
+            is by row and then by column.</p>""" % globals())
         
     def settings(self):
         '''The settings as they appear in the pipeline'''

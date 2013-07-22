@@ -2546,10 +2546,11 @@ class PipelineController:
         dlg.SetSizer(sizer)
         sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
         sizer.Add(sub_sizer, 1, wx.EXPAND)
-        font = wx.SystemSettings.GetFont(wx.SYS_SYSTEM_FONT)
-        text_ctrl = wx.StaticText(dlg, 
-                                  label="Finished processing pipeline.")
-        text_ctrl.Font = font
+        text_ctrl = wx.StaticText(
+            dlg, 
+            label="Finished processing pipeline. Any saved images\n"
+            "or exported output files specified by your pipeline\n"
+            "have been saved in your designated locations.")
         sub_sizer.Add(
             text_ctrl,
             1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | 

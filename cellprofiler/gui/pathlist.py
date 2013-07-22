@@ -92,6 +92,8 @@ class PathListCtrl(wx.PyScrolledWindow):
         self.fn_do_menu_command = None
         self.fn_folder_context_menu = None
         self.fn_do_folder_menu_command = None
+        self.fn_empty_context_menu = None
+        self.fn_do_empty_context_menu_command = None
         self.EnableScrolling(True, False)
         self.SetScrollRate(1, self.line_height + self.leading)
         self.Bind(wx.EVT_PAINT, self.on_paint)
@@ -114,8 +116,10 @@ class PathListCtrl(wx.PyScrolledWindow):
     def set_context_menu_fn(self, 
                             fn_context_menu, 
                             fn_folder_menu,
+                            fn_empty_menu,
                             fn_do_menu_command,
-                            fn_do_folder_menu_command):
+                            fn_do_folder_menu_command,
+                            fn_do_empty_command):
         '''Set the function to call to get context menu items
         
         fn_context_menu - a function that returns a list of menu items. The calling
@@ -125,6 +129,9 @@ class PathListCtrl(wx.PyScrolledWindow):
         fn_folder_menu - a function that returns a list of menu items for
                   a folder. The signature is fn_folder_menu(path).
                   
+        fn_empty_menu - a function that returns a list of menu items if
+                        nothing is selected
+                  
         fn_do_menu_command - a function that performs the action indicated
                   by the command. It has the signature, 
                   fn_do_menu_command(paths, key) where "key" is the key from
@@ -133,11 +140,16 @@ class PathListCtrl(wx.PyScrolledWindow):
         fn_do_folder_menu_command - a function that performs the action
                   indicated by the folder command. The signature is
                   fn_do_folder_menu_command(path, key)
+                  
+        fn_do_empty_menu_command - a function that performs the command from
+                  the empty menu
         '''
         self.fn_context_menu = fn_context_menu
         self.fn_do_menu_command = fn_do_menu_command
         self.fn_folder_context_menu = fn_folder_menu
         self.fn_do_folder_menu_command = fn_do_folder_menu_command
+        self.fn_empty_context_menu = fn_empty_menu
+        self.fn_do_empty_context_menu_command = fn_do_empty_command
         
     def set_delete_fn(self, fn_delete):
         '''Set the function to call to delete items
@@ -808,16 +820,19 @@ class PathListCtrl(wx.PyScrolledWindow):
     def on_context_menu(self, event):
         '''Handle a context menu request'''
         if self.focus_item is None:
-            return
-        item, idx = self[self.focus_item]
-        if idx is None:
-            fn_context_menu = self.fn_folder_context_menu
-            fn_do_menu_command = self.fn_do_folder_menu_command
-            arg = item.folder_name
+            fn_context_menu = self.fn_empty_context_menu
+            fn_do_menu_command = self.fn_do_empty_context_menu_command
+            arg = None
         else:
-            fn_context_menu = self.fn_context_menu
-            fn_do_menu_command = self.fn_do_menu_command
-            arg = self.get_paths(self.FLAG_SELECTED_ONLY)
+            item, idx = self[self.focus_item]
+            if idx is None:
+                fn_context_menu = self.fn_folder_context_menu
+                fn_do_menu_command = self.fn_do_folder_menu_command
+                arg = item.folder_name
+            else:
+                fn_context_menu = self.fn_context_menu
+                fn_do_menu_command = self.fn_do_menu_command
+                arg = self.get_paths(self.FLAG_SELECTED_ONLY)
             
         if fn_context_menu is None or fn_do_menu_command is None:
             return

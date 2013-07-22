@@ -210,8 +210,10 @@ class PipelineController:
         path_list_ctrl.set_context_menu_fn(
             self.get_pathlist_file_context_menu,
             self.get_pathlist_folder_context_menu,
+            self.get_pathlist_empty_context_menu,
             self.on_pathlist_file_command,
-            self.on_pathlist_folder_command)
+            self.on_pathlist_folder_command,
+            self.on_pathlist_empty_command)
         path_list_ctrl.set_delete_fn(self.on_pathlist_file_delete)
         self.path_list_drop_target = FLDropTarget(
             self.on_pathlist_drop_files,
@@ -1254,6 +1256,13 @@ class PipelineController:
         else:
             self.on_pathlist_command(cmd)
             
+    def get_pathlist_empty_context_menu(self, path):
+        return ((self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),)
+    
+    def on_pathlist_empty_command(self, path, cmd):
+        if cmd == self.PATHLIST_CMD_BROWSE:
+            self.on_pathlist_browse(None)
+    
     def on_pathlist_expand_all(self, event=None):
         self.__path_list_ctrl.expand_all()
         

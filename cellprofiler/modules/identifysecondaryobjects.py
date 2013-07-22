@@ -274,7 +274,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             <i>(Used only if associated primary objects are discarded and saving outlines of new primary objects)</i><br>
             Enter a name for the outlines of the identified 
             objects. The outlined image can be selected in downstream modules by selecting 
-            them from any drop-down image list."""))
+            them from any drop-down image list.""")
     
     def settings(self):
         return [

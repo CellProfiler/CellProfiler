@@ -2288,16 +2288,14 @@ CREATE TABLE %s (
         # View name + drop view if appropriate
         #
         relationship_view_name = self.get_table_name(V_RELATIONSHIPS)
-        if self.db_type == DB_MYSQL:
-            statements.append(
+        statements.append(
                 "DROP VIEW IF EXISTS %s" % relationship_view_name)
         #
         # Table names + drop table if appropriate
         #
         relationship_type_table_name = self.get_table_name(T_RELATIONSHIP_TYPES)
         relationship_table_name = self.get_table_name(T_RELATIONSHIPS)
-        if self.db_type == DB_MYSQL:
-            statements += [
+        statements += [
                 "DROP TABLE IF EXISTS %s" % x for x in 
                 relationship_table_name, relationship_type_table_name]
         #

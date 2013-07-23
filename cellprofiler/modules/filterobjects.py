@@ -179,17 +179,10 @@ class FilterObjects(cpm.CPModule):
             <br>
             Select the location of the rules file that will be used for filtering.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals())
-        def get_rules_class_choices(pipeline):
-            try:
-                rules = self.get_rules()
-                nclasses = len(rules.rules[0].weights[0])
-                return [str(i) for i in range(1, nclasses+1)]
-            except:
-                return [str(i) for i in range(1, 3)]
         self.rules_class = cps.Choice(
             "Class number",
             choices = ["1", "2"],
-            choices_fn = get_rules_class_choices,doc = """
+            choices_fn = self.get_rules_class_choices,doc = """
             <i>(Used only when filtering using %(MODE_RULES)s)</i><br>
             Select which of the classes to keep when filtering. The
             CellProfiler Analyst classifier user interface lists the names of 
@@ -244,6 +237,14 @@ class FilterObjects(cpm.CPModule):
             the filtered object. This is useful in making sure that labeling is maintained 
             between related objects (e.g., primary and secondary objects) after filtering.""")
     
+    def get_rules_class_choices(self, pipeline):
+        try:
+            rules = self.get_rules()
+            nclasses = len(rules.rules[0].weights[0])
+            return [str(i) for i in range(1, nclasses+1)]
+        except:
+            return [str(i) for i in range(1, 3)]
+        
     def add_measurement(self, can_delete = True):
         '''Add another measurement to the filter list'''
         group = cps.SettingsGroup()
@@ -338,6 +339,11 @@ class FilterObjects(cpm.CPModule):
         if self.mode == MODE_RULES:
             result += [self.rules_file_name, self.rules_directory,
                        self.rules_class]
+            try:
+                self.rules_class.test_valid(None)
+            except:
+                pass
+            
         elif self.mode == MODE_MEASUREMENTS:
             result += [self.spacer_1, self.filter_choice]
             if self.filter_choice in (FI_MINIMAL, FI_MAXIMAL):

@@ -351,8 +351,10 @@ class DirectoryPath(Text):
                 custom_path = self.custom_path
                 md_start = custom_path.find("\\g<")
                 if md_start != -1:
-                    custom_path = custom_path[:md_start]
+                    custom_path = custom_path[:md_start].replace("\\\\", "\\")
                     custom_path = os.path.split(custom_path)[0]
+                else:
+                    custom_path = custom_path.replace("\\\\", "\\")
         else:
             custom_path = self.custom_path
         if self.dir_choice == URL_FOLDER_NAME:

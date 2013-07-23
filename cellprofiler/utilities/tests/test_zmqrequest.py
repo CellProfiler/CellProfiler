@@ -18,6 +18,7 @@ import tempfile
 import zmq
 import unittest
 import uuid
+import numpy as np
 
 import cellprofiler.utilities.zmqrequest as Z
 
@@ -209,6 +210,41 @@ class TestZMQRequest(unittest.TestCase):
         self.assertTrue(Z.lock_file(t.name))
         Z.unlock_file(t.name)
         
-            
+    def test_03_04_json_encode(self):
+        r = np.random.RandomState()
+        r.seed(15)
+        test_cases = [
+            { "k":"v" },
+            { "k":(1, 2, 3) },
+            { (1, 2, 3): "k" },
+            { 1: { u"k":"v" } },
+            { "k": [ { 1:2 }, { 3:4}] },
+            { "k": ( (1, 2 ,{ "k1":"v1" }), )},
+            { "k": r.uniform(size=(5, 8)) },
+            { "k": r.uniform(size=(7, 3)) > .5 }
+        ]
+        for test_case in test_cases:
+            json_string, buf = Z.json_encode(test_case)
+            result = Z.json_decode(json_string, buf)
+            self.same(test_case, result)
+    
+    def same(self, a, b):
+        if isinstance(a, (float, int)):
+            self.assertAlmostEquals(a, b)
+        elif isinstance(a, basestring):
+            self.assertEquals(a, b)
+        elif isinstance(a, dict):
+            self.assertTrue(isinstance(b, dict))
+            for k in a:
+                self.assertTrue(k in b)
+                self.same(a[k], b[k])
+        elif isinstance(a, (list, tuple)):
+            self.assertEqual(len(a), len(b))
+            for aa, bb in zip(a, b):
+                self.same(aa, bb)
+        elif not np.isscalar(a):
+            np.testing.assert_almost_equal(a, b)
+        else:
+            self.assertEqual(a, b)
             
                 

@@ -1720,7 +1720,16 @@ class ExportToDatabase(cpm.CPModule):
         '''
         db_file = self.make_full_filename(self.sqlite_file.value)
         with DBContext(self) as (connection, cursor):
-            return self.get_relationship_types(cursor)
+            return self.get_relationship_types(cursor).items()
+        
+    def grt_interaction_to_dict(self, json_struct):
+        '''Handle the conversion from json mangled structure to dictionary
+        
+        json_struct - the result from handle_interaction_get_relationship_types
+                      which has been dumbed-down for json and which json
+                      has likely turned tuples to lists
+        '''
+        return dict([(tuple(k), v) for k,v in json_struct])
         
     def get_relationship_types(self, cursor):
         '''Get the relationship types from the database
@@ -2288,18 +2297,16 @@ CREATE TABLE %s (
         # View name + drop view if appropriate
         #
         relationship_view_name = self.get_table_name(V_RELATIONSHIPS)
-        if self.db_type == DB_MYSQL:
-            statements.append(
-                "DROP VIEW IF EXISTS %s" % relationship_view_name)
+        statements.append(
+            "DROP VIEW IF EXISTS %s" % relationship_view_name)
         #
         # Table names + drop table if appropriate
         #
         relationship_type_table_name = self.get_table_name(T_RELATIONSHIP_TYPES)
         relationship_table_name = self.get_table_name(T_RELATIONSHIPS)
-        if self.db_type == DB_MYSQL:
-            statements += [
-                "DROP TABLE IF EXISTS %s" % x for x in 
-                relationship_table_name, relationship_type_table_name]
+        statements += [
+            "DROP TABLE IF EXISTS %s" % x for x in 
+            relationship_table_name, relationship_type_table_name]
         #
         # The relationship type table has the module #, relationship name
         # and object names of every relationship reported by
@@ -2406,13 +2413,14 @@ CREATE TABLE %s (
         if T_RELATIONSHIP_TYPES not in d:
             if self.db_type == DB_SQLITE:
                 try:
-                    d[T_RELATIONSHIP_TYPES] = workspace.interaction_request(
+                    json_result = workspace.interaction_request(
                         self, self.INTERACTION_GET_RELATIONSHIP_TYPES)
                 except workspace.NoInteractionException:
-                    # Assume headless: fall through into "else" clause
-                    # at end of loop
-                    d[T_RELATIONSHIP_TYPES] = \
+                    # Assume headless and call as if through ZMQ
+                    json_result = \
                         self.handle_interaction_get_relationship_types()
+                d[T_RELATIONSHIP_TYPES] = \
+                    self.grt_interaction_to_dict(json_result)
             else:
                 d[T_RELATIONSHIP_TYPES] = \
                     self.get_relationship_types(self.cursor)

@@ -31,6 +31,7 @@ if sys.platform == "win32":
          FILE_ATTRIBUTE_HIDDEN
     
 NOTIFY_SOCKET_ADDR = 'inproc://BoundaryNotifications'
+SD_KEY_DICT = "__keydict__"
 def make_CP_encoder(buffers):
     '''create an encoder for CellProfiler data and numpy arrays (which will be
     stored in the input argument)'''
@@ -72,6 +73,97 @@ def make_CP_decoder(buffers):
         return dct
     return decoder
 
+def make_sendable_dictionary(d):
+    '''Make a dictionary that passes muster with JSON'''
+    result = {}
+    fake_key_idx = 1
+    for k, v in d.items():
+        if (isinstance(k, basestring) and k.startswith('_')) or callable(d[k]):
+            continue
+        if isinstance(v, dict):
+            v = make_sendable_dictionary(v)
+        elif isinstance(v, (list, tuple)):
+            v = make_sendable_sequence(v)
+        if not isinstance(k, str):
+            if SD_KEY_DICT not in result:
+                result[SD_KEY_DICT] = {}
+            fake_key = "__%d__" % fake_key_idx
+            fake_key_idx += 1
+            result[SD_KEY_DICT][fake_key] = k
+            result[fake_key] = v
+        else:
+            result[k] = v
+    return result
+
+def make_sendable_sequence(l):
+    '''Make a list that passes muster with JSON'''
+    result = []
+    for v in l:
+        if isinstance(v, (list, tuple)):
+            result.append(make_sendable_sequence(v))
+        elif isinstance(v, dict):
+            result.append(make_sendable_dictionary(v))
+        else:
+            result.append(v)
+    return tuple(result)
+
+def decode_sendable_dictionary(d):
+    '''Decode the dictionary encoded by make_sendable_dictionary'''
+    result = {}
+    for k, v in d.items():
+        if k == SD_KEY_DICT:
+            continue
+        if isinstance(v, dict):
+            v = decode_sendable_dictionary(v)
+        elif isinstance(v, list):
+            v = decode_sendable_sequence(v, list)
+        if k.startswith("__") and k.endswith("__"):
+            k = d[SD_KEY_DICT][k]
+            if isinstance(k, list):
+                k = decode_sendable_sequence(k, tuple)
+        result[k] = v
+    return result
+        
+def decode_sendable_sequence(l, desired_type):
+    '''Decode a tuple encoded by make_sendable_sequence'''
+    result = []
+    for v in l:
+        if isinstance(v, dict):
+            result.append(decode_sendable_dictionary(v))
+        elif isinstance(v, (list, tuple)):
+            result.append(decode_sendable_sequence(v, desired_type))
+        else:
+            result.append(v)
+    return result if isinstance(result, desired_type) else desired_type(result)
+        
+def json_encode(o):
+    '''Encode an object as a JSON string
+    
+    o - object to encode
+    
+    returns a 2-tuple of json-encoded object + buffers of binary stuff
+    '''
+    sendable_dict = make_sendable_dictionary(o)
+
+    # replace each buffer with its metadata, and send it separately
+    buffers = []
+    encoder = make_CP_encoder(buffers)
+    json_str = json.dumps(sendable_dict, default=encoder)
+    return json_str, buffers
+
+def json_decode(json_str, buffers):
+    '''Decode a JSON-encoded string
+    
+    json_str - the JSON string
+    
+    buffers - buffers of binary data to feed into the decoder of special cases
+    
+    return the decoded dictionary
+    '''
+    decoder = make_CP_decoder(buffers)
+    attribute_dict = json.loads(json_str, object_hook=decoder)
+    return decode_sendable_dictionary(attribute_dict)
+            
 class Communicable(object):
     '''Base class for Requests and Replies.
 
@@ -81,14 +173,8 @@ class Communicable(object):
     def send(self, socket, routing=[]):
         if hasattr(self, '_remote'):
             assert not self._remote, "send() called on a non-local Communicable object."
-        sendable_dict = dict((k, v) for k, v in self.__dict__.items()
-                             if (not k.startswith('_'))
-                             and (not callable(self.__dict__[k])))
-
-        # replace each buffer with its metadata, and send it separately
-        buffers = []
-        encoder = make_CP_encoder(buffers)
-        json_str = json.dumps(sendable_dict, default=encoder)
+        json_str, buffers = json_encode(self.__dict__)
+        
         socket.send_multipart(routing +
                               [self.__class__.__module__, self.__class__.__name__] +
                               [json_str] +
@@ -108,8 +194,7 @@ class Communicable(object):
             routing = []
         module, classname = message[:2]
         buffers = message[3:]
-        decoder = make_CP_decoder(buffers)
-        attribute_dict = json.loads(message[2], object_hook=decoder)
+        attribute_dict = json_decode(message[2], buffers)
         try:
             instance = sys.modules[module].__dict__[classname](**attribute_dict)
         except:

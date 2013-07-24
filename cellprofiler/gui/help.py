@@ -1612,7 +1612,7 @@ these pipelines will operate exactly as before.</p>
 modules into the project equivalent as closely as possible. Both <b>LoadImages</b> and <b>LoadData</b>
 remain accesible via the "Add module" and <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;
 buttons at the bottom of the pipeline panel.</p>
-"""
+"""%globals()
 
 LOADING_IMAGE_SEQUENCES_HELP = """
 <h3>Introdution</h3>

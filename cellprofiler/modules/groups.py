@@ -197,7 +197,6 @@ class Groups(cpm.CPModule):
     def visible_settings(self):
         result = [self.wants_groups]
         if self.wants_groups:
-            result += [self.grouping_text]
             for group in self.grouping_metadata:
                 result += [ group.metadata_choice]
                 if group.can_remove:

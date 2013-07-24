@@ -1797,9 +1797,12 @@ class ExportToDatabase(cpm.CPModule):
                 COL_RELATIONSHIP, COL_OBJECT_NAME1, COL_OBJECT_NAME2)
         statement += "SELECT * FROM "
         statement += \
-            "(SELECT coalesce(max(%s), -1)+1, %d, '%s', '%s', '%s' FROM %s)" % \
-            (COL_RELATIONSHIP_TYPE_ID, module_num, relationship,
-             object_name1, object_name2, relationship_type_table)
+            "(SELECT coalesce(max(%s), -1)+1 as %s, %d as %s, '%s' as %s, '%s' as %s, '%s' as %s FROM %s)" % \
+            (COL_RELATIONSHIP_TYPE_ID, COL_RELATIONSHIP_TYPE_ID,
+             module_num, COL_MODULE_NUMBER,
+             relationship, COL_RELATIONSHIP,
+             object_name1, COL_OBJECT_NAME1,
+             object_name2, COL_OBJECT_NAME2, relationship_type_table)
         statement += " AS mytable WHERE NOT EXISTS "
         statement += "(SELECT 'x' FROM %s WHERE " % relationship_type_table
         statement += "%s = %d AND " % (COL_MODULE_NUMBER, module_num)

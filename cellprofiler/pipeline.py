@@ -169,6 +169,9 @@ H_MODULE_COUNT = "ModuleCount"
 '''Indicates whether the pipeline has an image plane details section'''
 H_HAS_IMAGE_PLANE_DETAILS = "HasImagePlaneDetails"
 
+'''A message for a user, to be displayed when pipeline is loaded'''
+H_MESSAGE_FOR_USER = "MessageForUser"
+
 '''The cookie that identifies a file as a CellProfiler pipeline'''
 COOKIE = "CellProfiler Pipeline: http://www.cellprofiler.org"
 
@@ -902,6 +905,8 @@ class Pipeline(object):
         '''
         from cellprofiler.utilities.version import version_number as cp_version_number
         self.__modules = []
+        self.caption_for_user = None
+        self.message_for_user = None
         module_count = sys.maxint
         if hasattr(fd_or_filename,'seek') and hasattr(fd_or_filename,'read'):
             fd = fd_or_filename
@@ -994,6 +999,9 @@ class Pipeline(object):
                 module_count = int(value)
             elif kwd == H_HAS_IMAGE_PLANE_DETAILS:
                 has_image_plane_details = (value == "True")
+            elif kwd == H_MESSAGE_FOR_USER:
+                value = value.decode("string_escape")
+                self.caption_for_user, self.message_for_user = value.split("|", 1)
             else:
                 print line
         

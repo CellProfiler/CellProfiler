@@ -516,6 +516,12 @@ class PipelineController:
                     self.__workspace.save_pipeline_to_measurements()
                 self.__dirty_workspace = False
                 self.set_title()
+                if self.__pipeline.message_for_user is not None:
+                    wx.MessageBox(
+                        self.__pipeline.message_for_user,
+                        caption = self.__pipeline.caption_for_user,
+                        style = wx.ICON_INFORMATION | wx.OK,
+                        parent = self.__frame)
             finally:
                 cpprefs.remove_progress_callback(progress_callback_fn)
             
@@ -729,6 +735,12 @@ class PipelineController:
                                 dir_ctrl.GetValue())
                 
             self.__workspace.save_pipeline_to_measurements()
+            if self.__pipeline.message_for_user is not None:
+                wx.MessageBox(
+                    self.__pipeline.message_for_user,
+                    caption = self.__pipeline.caption_for_user,
+                    style = wx.ICON_INFORMATION | wx.OK,
+                    parent = self.__frame)
             
         except Exception,instance:
             from cellprofiler.gui.errordialog import display_error_dialog

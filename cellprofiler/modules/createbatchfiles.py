@@ -228,7 +228,7 @@ class CreateBatchFiles(cpm.CPModule):
                                       "which could not be made compatible with this version of CellProfiler.",
                                       self.acknowledge_old_matlab)
         # This must be the last module in the pipeline
-        if self.module_num != len(pipeline.modules()):
+        if id(self) != id(pipeline.modules()[-1]):
             raise cps.ValidationError("The CreateBatchFiles module must be "
                                       "the last in the pipeline.",
                                       self.wants_default_output_directory)

@@ -693,6 +693,7 @@ class CPFrame(wx.Frame):
         
         wx.EVT_MENU(self, ID_HELP_WELCOME, self.__on_help_welcome)
         wx.EVT_MENU(self,ID_HELP_MODULE,self.__on_help_module)
+        wx.EVT_BUTTON(self,ID_HELP_MODULE,self.__on_help_module)
         wx.EVT_MENU(self,ID_HELP_RELEASE_NOTES,self.__on_help_release_notes)
         wx.EVT_MENU(self,ID_HELP_ONLINE_MANUAL,self.__on_help_online_manual)
         wx.EVT_MENU(self,ID_HELP_DEVELOPERS_GUIDE, self.__on_help_developers_guide)
@@ -961,7 +962,7 @@ All rights reserved."""
     def __on_help_welcome(self, event):
         self.show_welcome_screen(True)
         
-    def __on_help_module(self,event):
+    def __on_help_module(self, event):
         modules = self.__pipeline_list_view.get_selected_modules()
         active_module = self.__pipeline_list_view.get_active_module()
         if len(modules) > 0:

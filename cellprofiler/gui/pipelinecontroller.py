@@ -255,7 +255,9 @@ class PipelineController:
         """
         self.__module_controls_panel = module_controls_panel
         mcp_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        self.__help_button = wx.Button(self.__module_controls_panel,-1,"?",(0,0), (30, -1))
+        self.__help_button = wx.Button(
+            self.__module_controls_panel, cpframe.ID_HELP_MODULE,
+            "?", (0,0), (30, -1))
         self.__help_button.SetToolTipString("Get Help for selected module")
         self.__mcp_text = wx.StaticText(self.__module_controls_panel,-1,"Adjust modules:")
         self.__mcp_add_module_button = wx.Button(self.__module_controls_panel,-1,"+",(0,0), (30, -1))
@@ -280,7 +282,6 @@ class PipelineController:
                            (self.__mcp_module_up_button, 0, wx.ALIGN_CENTER | wx.ALL, 3),
                            (self.__mcp_module_down_button, 0, wx.ALIGN_CENTER | wx.ALL, 3)])
         self.__module_controls_panel.SetSizer(mcp_sizer)
-        self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.__on_help, self.__help_button)
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.__on_add_module,self.__mcp_add_module_button)
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_remove_module,self.__mcp_remove_module_button)
         self.__module_controls_panel.Bind(wx.EVT_BUTTON, self.on_module_up,self.__mcp_module_up_button)
@@ -1465,15 +1466,6 @@ class PipelineController:
             menu_item = self.__frame.menu_edit.FindItemById(menu_id)
             if menu_item is not None:
                 menu_item.Enable(state)
-        
-    def __on_help(self, event):
-        modules = self.__pipeline_list_view.get_selected_modules()
-        if len(modules) > 0:
-            self.__frame.do_help_modules(modules)
-        else:
-            wx.MessageBox(HELP_ON_MODULE_BUT_NONE_SELECTED, 
-                          "No module selected",
-                          style=wx.OK|wx.ICON_INFORMATION)
         
     def __on_add_module(self,event):
         if not self.__add_module_frame.IsShownOnScreen():

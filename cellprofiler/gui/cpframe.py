@@ -911,6 +911,15 @@ class CPFrame(wx.Frame):
         sizer = wx.BoxSizer(wx.VERTICAL)
         dlg.SetSizer(sizer)
         sizer.Add(wx.StaticBitmap(dlg, -1, splashbitmap), 0, wx.EXPAND | wx.ALL, 5)
+        sizer.Add(wx.StaticText(
+            dlg, label="Version: %s" % version.dotted_version),
+                  0, wx.EXPAND | wx.ALL, 5)
+        sizer.Add(wx.StaticText(
+            dlg, label="GIT hash: %s" % version.git_hash),
+                  0, wx.EXPAND | wx.ALL, 5)
+        sizer.Add(wx.StaticText(
+            dlg, label="Revision author timestamp: %d" % version.version_number),
+                  0, wx.EXPAND | wx.ALL, 5)
 
         cellprofiler_copyright = """Copyright (c) 2003-2009 Massachusetts Institute of Technology
 Copyright (c) 2009-2013 Broad Institute

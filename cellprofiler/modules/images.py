@@ -268,6 +268,13 @@ class FilePredicate(cps.Filter.FilterPredicate):
         self((cps.FileCollectionDisplay.NODE_FILE, 
               ["/imaging", "test.tif"], None), *args)
 
+def is_image_extension(suffix):
+    '''Return True if the extension is one of those recongized by bioformats'''
+    extensions = J.get_collection_wrapper(
+        J.static_call("org/cellprofiler/imageset/filter/IsImagePredicate",
+                      "getImageSuffixes", "()Ljava/util/Set;"))
+    return extensions.contains(suffix.lower())
+
 class ExtensionPredicate(cps.Filter.FilterPredicate):
     '''A predicate that operates on file extensions'''
     IS_TIF_PREDICATE = cps.Filter.FilterPredicate(
@@ -284,9 +291,7 @@ class ExtensionPredicate(cps.Filter.FilterPredicate):
         doc = "The extension is associated with PNG image files")
     IS_IMAGE_PREDICATE = cps.Filter.FilterPredicate(
         'isimage', 'the extension of an image file',
-        lambda x: any([ExtensionPredicate.IS_TIF_PREDICATE(x), 
-                       ExtensionPredicate.IS_JPEG_PREDICATE(x),
-                       ExtensionPredicate.IS_PNG_PREDICATE(x)]), [],
+        is_image_extension, [],
         'Is an extension commonly associated with image files')
     IS_FLEX_PREDICATE = cps.Filter.FilterPredicate(
         'isflex', '"flex"',

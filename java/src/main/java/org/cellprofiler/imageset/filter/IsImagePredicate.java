@@ -12,8 +12,13 @@
  */
 package org.cellprofiler.imageset.filter;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import loci.formats.ImageReader;
 
 /**
  * @author Lee Kamentsky
@@ -21,13 +26,25 @@ import java.util.List;
  */
 public class IsImagePredicate extends AbstractTerminalPredicate<String> {
 	final static public String SYMBOL = "isimage";
+	final static HashSet<String> disallowedSuffixes = new HashSet<String>(Arrays.asList(
+			new String [] { "cfg", "csv", "eps", "epsi", "htm", "html", "inf", 
+						    "log", "ps", "txt", "wav", "xml", "zip" }));
+	private static Set<String> cachedImageSuffixes;
 	
-	@SuppressWarnings("unchecked")
-	static List<AbstractTerminalPredicate<String>> predicates = Arrays.asList(
-		new IsTifPredicate(),
-		new IsJPEGPredicate(),
-		new IsPNGPredicate());
-	
+	/**
+	 * @return the suffixes that this predicate considers to be
+	 *         suffixes of image files.
+	 */
+	static public Set<String> getImageSuffixes() {
+		synchronized(disallowedSuffixes) {
+			if (cachedImageSuffixes == null) {
+				cachedImageSuffixes = new HashSet<String>(Arrays.asList(
+						new ImageReader().getSuffixes()));
+				cachedImageSuffixes.removeAll(disallowedSuffixes);
+			}
+		}
+		return cachedImageSuffixes;
+	}
 	public IsImagePredicate() {
 		super(String.class);
 	}
@@ -42,10 +59,7 @@ public class IsImagePredicate extends AbstractTerminalPredicate<String> {
 	 * @see org.cellprofiler.imageset.filter.FilterPredicate#eval(java.lang.Object)
 	 */
 	public boolean eval(String candidate) {
-		for (AbstractTerminalPredicate<String> predicate:predicates) {
-			if (predicate.eval(candidate)) return true;
-		}
-		return false;
+		return getImageSuffixes().contains(candidate.toLowerCase());
 	}
 
 }

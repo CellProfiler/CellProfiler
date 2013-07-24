@@ -1826,7 +1826,10 @@ class PipelineController:
         elif isinstance(evt, cpanalysis.AnalysisProgress):
             print "Progress", evt.counts
             total_jobs = sum(evt.counts.values())
-            completed = evt.counts.get(cpanalysis.AnalysisRunner.STATUS_DONE, 0)
+            completed = sum(map(
+                (lambda status: evt.counts.get(status, 0)),
+                (cpanalysis.AnalysisRunner.STATUS_DONE,
+                 cpanalysis.AnalysisRunner.STATUS_FINISHED_WAITING)))
             wx.CallAfter(self.__frame.preferences_view.on_pipeline_progress, 
                          total_jobs, completed)
         elif isinstance(evt, cpanalysis.AnalysisFinished):

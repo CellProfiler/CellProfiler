@@ -588,6 +588,10 @@ class UntangleWorms(cpm.CPModule):
         d = self.get_dictionary(workspace.image_set_list)
         d[TRAINING_DATA] = []
         
+    def get_dictionary_for_worker(self):
+        '''Don't share the training data dictionary between workers'''
+        return { TRAINING_DATA:[] }
+        
     def run(self, workspace):
         '''Run the module on the current image set'''
         if self.mode == MODE_TRAIN:

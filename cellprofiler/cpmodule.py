@@ -700,6 +700,28 @@ class CPModule(object):
         '''Get the dictionary for this module
         '''
         return self.shared_state
+    
+    def get_dictionary_for_worker(self):
+        '''Get the dictionary that should be shared between analysis workers
+        
+        A module might use the dictionary for cacheing information stored on
+        disk or that's difficult to compute. It might also use it to store
+        aggregate data, but this data may not be useful to other workers.
+        
+        Finally, a module might store Python objects that aren't JSON serializable
+        in its dictionary. In these cases, the module should create a dictionary
+        that can be JSON serialized in get_dictionary_for_worker and then
+        reconstruct the result of JSON deserialization in set_dictionary_in_worker.
+        '''
+        return self.get_dictionary()
+    
+    def set_dictionary_for_worker(self, d):
+        '''Initialize this worker's dictionary using results from first worker
+        
+        see get_dictionary_for_worker for details.
+        '''
+        self.get_dictionary().clear()
+        self.get_dictionary().update(d)
 
     def get_categories(self,pipeline, object_name):
         """Return the categories of measurements that this module produces

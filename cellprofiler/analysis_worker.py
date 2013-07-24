@@ -334,8 +334,7 @@ class AnalysisWorker(object):
                 assert len(shared_dicts) == len(current_pipeline.modules())
                 for module, new_dict in zip(current_pipeline.modules(), 
                                             shared_dicts):
-                    module.get_dictionary().clear()
-                    module.get_dictionary().update(new_dict)
+                    module.set_dictionary_for_worker(new_dict)
         
             # Run prepare group if this is the first image in the group.  We do
             # this here (even if there's no grouping in the pipeline) to ensure
@@ -381,7 +380,7 @@ class AnalysisWorker(object):
                             # run_state dictionaries.
                             ws = cpw.Workspace(current_pipeline, None, None, None,
                                                current_measurements, None, None)
-                            dicts = [m.get_dictionary(ws) 
+                            dicts = [m.get_dictionary_for_worker() 
                                      for m in current_pipeline.modules()]
                             req = ImageSetSuccessWithDictionary(
                                 self.current_analysis_id,

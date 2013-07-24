@@ -242,7 +242,7 @@ must also specify the "Plate" metadata tag in the regular expression for the oth
 want grouped together.</li>
 </ul>
 </p>
-"""
+"""%globals()
 
 DEFAULT_IMAGE_FOLDER_HELP = """
 <p>Please note that the Default Input Folder will be deprecated in the future. The location

@@ -63,6 +63,7 @@ def main(args):
         import cellprofiler.preferences as cpprefs
         cpprefs.set_headless()
         import cellprofiler.analysis_worker
+        cellprofiler.analysis_worker.aw_parse_args()
         cellprofiler.analysis_worker.main()
         sys.exit(0)
         

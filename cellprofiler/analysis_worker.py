@@ -33,22 +33,13 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
-if __name__=="__main__":
-    if "CP_DEBUG_WORKER" not in os.environ:
-        #
-        # Sorry to put ugliness so early:
-        #     The process inherits file descriptors from the parent. Windows doesn't
-        #     let you selectively inherit file descriptors, so we close them here.
-        #
-        try:
-            maxfd = os.sysconf('SC_OPEN_MAX')
-        except:
-            maxfd = 256
-        os.closerange(3, maxfd)
-
+work_announce_address = None
+def aw_parse_args():
+    '''Parse the application arguments into setup parameters'''
     from cellprofiler.preferences import set_headless, set_plugin_directory
     from cellprofiler.preferences import set_ij_plugin_directory
     import optparse
+    global work_announce_address
     set_headless()
     parser = optparse.OptionParser()
     parser.add_option("--work-announce",
@@ -73,6 +64,7 @@ if __name__=="__main__":
     if not options.work_announce_address:
         parser.print_help()
         sys.exit(1)
+    work_announce_address = options.work_announce_address
     #
     # Set up the headless plugins and ij plugins directories before doing
     # anything so loading will get them
@@ -86,6 +78,20 @@ if __name__=="__main__":
         set_ij_plugin_directory(options.ij_plugins_directory)
     else:
         logger.debug("IJ plugins directory not set")
+
+if __name__=="__main__":
+    if "CP_DEBUG_WORKER" not in os.environ:
+        #
+        # Sorry to put ugliness so early:
+        #     The process inherits file descriptors from the parent. Windows doesn't
+        #     let you selectively inherit file descriptors, so we close them here.
+        #
+        try:
+            maxfd = os.sysconf('SC_OPEN_MAX')
+        except:
+            maxfd = 256
+        os.closerange(3, maxfd)
+    aw_parse_args()
     
 import time
 import threading
@@ -155,7 +161,7 @@ def main():
         while not stdin_monitor_started:
             stdin_monitor_cv.wait()
         
-    with AnalysisWorker(options.work_announce_address) as worker:
+    with AnalysisWorker(work_announce_address) as worker:
         worker_thread = threading.Thread(target = worker.run, 
                                          name="WorkerThread")
         worker_thread.setDaemon(True)
@@ -688,7 +694,4 @@ class CancelledException(Exception):
     pass
 
 if __name__ == "__main__":
-    cpprefs.set_headless()
-    logging.root.setLevel(logging.INFO)
-    logging.root.addHandler(logging.StreamHandler())
     main()

@@ -654,7 +654,6 @@ class PipelineController:
 "If you choose to convert the pipeline, you should then make sure to provide\n"
 "your original images to the Images module as input, and confirm that your\n"
 "metadata (if any) is provided to the Metadata module.")
-                CANCEL = 0
                 CONVERT = 1
                 DONT_CONVERT = 2
                 
@@ -664,76 +663,62 @@ class PipelineController:
                     #
                     # Structure:
                     # 
-                    # dialog sizer
-                    #    vsizer
-                    #       sizer (horizontal)
-                    #           static bitmap
-                    #           static text
-                    #       static box
-                    #       static box sizer (vertical)
-                    #           rb_convert
-                    #           dir_ctrl
-                    #           rb_dont_convert
-                    #    standard dialog button sizer
-                    #       ID_OK button
-                    #       ID_CANCEL button
-                    #
+                    # dialog sizer (vertical)
+                    #    sizer (horizontal)
+                    #        static bitmap
+                    #        vsizer (vertical)
+                    #            static text
+                    #            default input folder dirbrowser
+                    # stddlgbuttonsizer
+                    #     Convert button
+                    #     Don't convert button
+                    #         
                     dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
-                    vsizer = wx.BoxSizer(wx.VERTICAL)
-                    dlg.Sizer.Add(vsizer, 0, wx.EXPAND | wx.ALL, 10)
                     sizer = wx.BoxSizer(wx.HORIZONTAL)
-                    vsizer.Add(sizer, 0, wx.EXPAND | wx.ALL)
+                    dlg.Sizer.Add(sizer, 0, wx.EXPAND | wx.ALL, 10)
                     bmp = wx.ArtProvider.GetBitmap(wx.ART_QUESTION,
                                                    wx.ART_CMN_DIALOG)
                     sizer.Add(wx.StaticBitmap(dlg, bitmap = bmp), 0,
                               wx.ALIGN_LEFT | wx.ALIGN_TOP)
                     sizer.AddSpacer(8)
-                    sizer.Add(wx.StaticText(dlg, label=text), 
-                              0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
+                    vsizer = wx.BoxSizer(wx.VERTICAL)
+                    sizer.Add(vsizer, 1, wx.EXPAND | wx.ALL)
+                    vsizer.Add(wx.StaticText(dlg, label=text), 
+                               0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
                     vsizer.AddSpacer(8)
-                    lmargin = bmp.GetSize()[0] + 8
-                    group_ctrl = wx.StaticBox(dlg, label="Conversion choices")
-                    sizer = wx.StaticBoxSizer(group_ctrl, wx.VERTICAL)
-                    vsizer.Add(sizer, 0, wx.EXPAND | wx.LEFT, lmargin)
-                    rb_convert = wx.RadioButton(
-                        dlg, 
-                        label = "Convert legacy modules and the default input folder",
-                        style = wx.RB_GROUP)
-                    sizer.Add(rb_convert, 0, wx.ALIGN_LEFT)
-                    sizer.AddSpacer(4)
                     dir_ctrl = filebrowse.DirBrowseButton(
                         dlg, labelText = "Folder",
                         dialogTitle = "Browse for default input folder",
                         startDirectory = cpprefs.get_default_image_directory())
                     dir_ctrl.SetValue(cpprefs.get_default_image_directory())
-                    sizer.Add(dir_ctrl, 1, wx.EXPAND | wx.LEFT, 10)
-                    sizer.AddSpacer(4)
-                    rb_dont_convert = wx.RadioButton(
-                        dlg, label = "Do not convert")
-                    sizer.Add(rb_dont_convert, 0, wx.ALIGN_LEFT)
-                    vsizer.AddSpacer(8)
+                    vsizer.Add(dir_ctrl, 1, wx.EXPAND)
+                    dlg.Sizer.AddSpacer(8)
                     btn_sizer = wx.StdDialogButtonSizer()
-                    dlg.Sizer.Add(btn_sizer, 0, wx.ALIGN_RIGHT)
-                    btn_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
-                    btn_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+                    dlg.Sizer.Add(btn_sizer, 0, wx.ALIGN_RIGHT | wx.ALL, 6)
+                    convert_button = wx.Button(dlg, label="Convert")
+                    btn_sizer.AddButton(convert_button)
+                    btn_sizer.SetAffirmativeButton(convert_button)
+                    dont_convert_button = wx.Button(dlg, label="Don't Convert")
+                    btn_sizer.AddButton(dont_convert_button)
+                    btn_sizer.SetNegativeButton(dont_convert_button)
                     btn_sizer.Realize()
                     #
-                    dlg.action = CONVERT
-                    rb_convert.Value = True
-                    rb_dont_convert.Value = False
-                    for rb, action in ((rb_convert, CONVERT),
-                                       (rb_dont_convert, DONT_CONVERT)):
-                        def fn(event, action=action, dlg=dlg):
-                            dlg.action = action
-                            dir_ctrl.Enable(action == CONVERT)
-                        rb.Bind(wx.EVT_RADIOBUTTON, fn)
+                    dlg.action = DONT_CONVERT
+                    def on_convert_pressed(event):
+                        dlg.action = CONVERT
+                        dlg.EndModal(CONVERT)
+                    def on_dont_convert_pressed(event):
+                        dlg.action = DONT_CONVERT
+                        dlg.EndModal(DONT_CONVERT)
+                    convert_button.Bind(wx.EVT_BUTTON, on_convert_pressed)
+                    dont_convert_button.Bind(wx.EVT_BUTTON, on_dont_convert_pressed)
                     dlg.Fit()
-                    result = dlg.ShowModal()
-                    if result == wx.ID_OK:
-                        if dlg.action == CONVERT:
-                            self.__pipeline.convert_legacy_input_modules()
-                            self.__pipeline.convert_default_input_folder(
-                                dir_ctrl.GetValue())
+                    convert_button.SetFocus()
+                    dlg.ShowModal()
+                    if dlg.action == CONVERT:
+                        self.__pipeline.convert_legacy_input_modules()
+                        self.__pipeline.convert_default_input_folder(
+                            dir_ctrl.GetValue())
                 
             self.__workspace.save_pipeline_to_measurements()
             if self.__pipeline.message_for_user is not None:

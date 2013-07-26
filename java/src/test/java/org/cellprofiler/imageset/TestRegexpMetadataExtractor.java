@@ -57,6 +57,8 @@ public class TestRegexpMetadataExtractor {
 	public void testParseBackslash() {
 		testSomething("_\\((?P<WellName>[A-Z][0-9]{2})\\)_", "Plate_(A01)_.png",
 				new String[][] { { "WellName", "A01"}});
+		testSomething("Plate\\\\(?P<WellName>[A-Z][0-9]{2})", "Plate\\A01.png",
+				new String[][] {{ "WellName", "A01"}});
 	}
 	@Test
 	public void testTwoKV() {

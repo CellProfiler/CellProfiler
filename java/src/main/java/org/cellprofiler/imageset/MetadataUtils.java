@@ -89,9 +89,17 @@ public class MetadataUtils {
 		return image_set_metadata;
 	}
 	//
-	// This expression looks for a parentheses that's not
+	// This expression looks for:
+	// two backslashes = escaped backslash
+	// backslash open parentheses = escaped parentheses
+	// (?P
+	// (
+	// The first two cases are skipped
+	// The third case is a named group capture
+	// The fourth case is a parentheses expression not
+	// to be captured.
 	final private static Pattern pythonGroupPattern = Pattern.compile(
-	"(?<!\\\\)((\\(\\?P<([^>]+)>)|(\\((?!\\?P<)))");
+	"(\\\\\\\\)|(\\\\\\()|(((\\(\\?P<([^>]+)>)|(\\((?!\\?P<))))");
 
 	/**
 	 * Compile a Python regular expression, converting the key extraction pattern,
@@ -106,10 +114,15 @@ public class MetadataUtils {
 		String p = "";
 		int start = 0;
 		while (matcher.find()) {
+			if ((matcher.group(1) != null)||(matcher.group(2) != null)) {
+				p += pattern.substring(start, matcher.end());
+				start = matcher.end();
+				continue;
+			}
 			p += pattern.substring(start, matcher.start()+1);
 			if (keys != null) {
-				if (matcher.group(3) != null) {
-					keys.add(matcher.group(3));
+				if (matcher.group(6) != null) {
+					keys.add(matcher.group(6));
 				} else {
 					keys.add(null);
 				}

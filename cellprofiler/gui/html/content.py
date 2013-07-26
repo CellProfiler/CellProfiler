@@ -224,7 +224,7 @@ startup_main = '''<html>
 </tr>
 <tr>
     <td width="10">&nbsp;</td>
-    <td width="110"><i><font size="+2">1: Start</font></i></td>
+    <td width="110"><font size="+2">1: Start</font></td>
     <td >Download an <a href="http://www.cellprofiler.org/examples.shtml">example pipeline</a> that suits your application and load it with <i>File &gt; Open Project</i>.</td>
 </tr>
 <tr>

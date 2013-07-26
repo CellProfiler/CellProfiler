@@ -887,7 +887,8 @@ class Metadata(cpm.CPModule):
                 if imported_metadata is None:
                     logger.warn("Unable to import metadata from %s" %
                                 group.csv_location.value)
-                keys.update(imported_metadata.metadata_keys)
+                else:
+                    keys.update(imported_metadata.metadata_keys)
             elif group.extraction_method == X_AUTOMATIC_EXTRACTION:
                 # Assume that automatic extraction will populate T and Z
                 keys.add(cpp.ImagePlaneDetails.MD_T)

@@ -93,14 +93,14 @@ class TestMeasureImageQuality(unittest.TestCase):
                                 (m_value, feature_name, value))
         self.features_and_columns_match(m, q)
                 
-    def features_and_columns_match(self, measurements, module):
-        self.assertEqual(len(measurements.get_object_names()),1)
-        self.assertEqual(measurements.get_object_names()[0],cpmeas.IMAGE)
-        features = measurements.get_feature_names(cpmeas.IMAGE)
-        columns = module.get_measurement_columns(None)
+    def features_and_columns_match(self, measurements, module, 
+                                   object_name=cpmeas.IMAGE):
+        self.assertTrue(object_name in measurements.get_object_names())
+        features = measurements.get_feature_names(object_name)
+        columns = filter((lambda x: x[0] == object_name), 
+                         module.get_measurement_columns(None))
         self.assertEqual(len(features), len(columns))
         for column in columns:
-            self.assertTrue(column[0] == cpmeas.IMAGE, 'features_and_columns_match, %s not %s'%(column[0], cpmeas.IMAGE))
             self.assertTrue(column[1] in features, 'features_and_columns_match, %s not in %s'%(column[1], features))
             self.assertTrue(column[2] == cpmeas.COLTYPE_FLOAT, 'features_and_columns_match, %s type not %s'%(column[2], cpmeas.COLTYPE_FLOAT))
     
@@ -399,10 +399,11 @@ class TestMeasureImageQuality(unittest.TestCase):
         module.post_run(workspace)
             
         # Check threshold algorithms
-        threshold_algorithm = module.image_groups[0].threshold_groups[0].threshold_algorithm
+        threshold_group = module.image_groups[0].threshold_groups[0]
+        threshold_algorithm = threshold_group.threshold_algorithm
         f_mean, f_median, f_std = [
-            miq.C_IMAGE_QUALITY + "_" + x + miq.F_THRESHOLD + threshold_algorithm + 
-            "_" + image_name for x in ("Mean", "Median", "Std")]
+            threshold_group.threshold_feature_name(image_name, agg)
+            for agg in miq.AGG_MEAN, miq.AGG_MEDIAN, miq.AGG_STD]
 
         expected = ( (f_mean, np.mean(data)),
                      (f_median, np.median(data)),
@@ -436,13 +437,15 @@ class TestMeasureImageQuality(unittest.TestCase):
             
         m.add_all_measurements(cpmeas.IMAGE, feature, dlist)
         module.post_run(workspace)
+        self.features_and_columns_match(m, module, cpmeas.EXPERIMENT)
             
         # Check threshold algorithms
-        threshold_algorithm = module.image_groups[0].threshold_groups[0].threshold_algorithm
+        threshold_group = module.image_groups[0].threshold_groups[0]
+        threshold_algorithm = threshold_group.threshold_algorithm
         image_name = module.image_groups[0].image_names.value
         f_mean, f_median, f_std = [
-            miq.C_IMAGE_QUALITY + "_" + x + miq.F_THRESHOLD + threshold_algorithm + 
-            "_" + image_name for x in ("Mean", "Median", "Std")]
+            threshold_group.threshold_feature_name(image_name, agg)
+            for agg in miq.AGG_MEAN, miq.AGG_MEDIAN, miq.AGG_STD]
 
         expected = ( (f_mean, np.mean(data[mask])),
                      (f_median, np.median(data[mask])),

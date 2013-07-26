@@ -87,6 +87,9 @@ MCA_AVAILABLE_EACH_CYCLE = "AvailableEachCycle"
 '''Column attribute: only available after post_group is run (True / False)'''
 MCA_AVAILABLE_POST_GROUP  = "AvailablePostGroup"
 
+'''Column attribute: only available after post_run is run'''
+MCA_AVAILABLE_POST_RUN = "AvailablePostRun"
+
 '''The name of the metadata category'''
 C_METADATA = "Metadata"
 

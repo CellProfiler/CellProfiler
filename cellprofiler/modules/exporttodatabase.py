@@ -1892,6 +1892,8 @@ class ExportToDatabase(cpm.CPModule):
                 os.makedirs(path)
             self.write_mysql_table_defs(workspace)
             self.write_csv_data(workspace)
+        else:
+            self.write_post_run_measurements(workspace)
     
     @property
     def wants_well_tables(self):
@@ -2172,10 +2174,13 @@ CREATE TABLE %s (
         for column in experiment_columns:
             ftr = column[1]
             column_names.append(ftr)
-            if not workspace.measurements.has_feature(cpmeas.EXPERIMENT, ftr):
+            if ((len(column) > 3 and 
+                 column[3].get(cpmeas.MCA_AVAILABLE_POST_RUN, False)) or
+                not workspace.measurements.has_feature(cpmeas.EXPERIMENT, ftr)):
                 values.append("null")
                 continue
             value = workspace.measurements.get_experiment_measurement(ftr)
+                
             if column[2].startswith(cpmeas.COLTYPE_VARCHAR):
                 if isinstance(value, unicode):
                     value = value.encode('utf-8')
@@ -3019,6 +3024,26 @@ OPTIONALLY ENCLOSED BY '"' ESCAPED BY '\\\\';
             self.connection.rollback()
             raise
 
+    def write_post_run_measurements(self, workspace):
+        '''Write any experiment measurements marked as post-run'''
+        columns = workspace.pipeline.get_measurement_columns()
+        columns = filter(
+            (lambda c: 
+             c[0] == cpmeas.EXPERIMENT and len(c) > 3 and
+             c[3].get(cpmeas.MCA_AVAILABLE_POST_RUN, False)), columns)
+        if len(columns) > 0:
+            statement = "UPDATE %s SET " % self.get_table_name(cpmeas.EXPERIMENT)
+            assignments = []
+            for column in columns:
+                value = workspace.measurements[cpmeas.EXPERIMENT, column[1]]
+                if value is not None:
+                    assignments.append("%s='%s'" % (column[1], value))
+            if len(assignments) > 0:
+                statement += ",".join(assignments)
+            with DBContext(self) as (connection, cursor):
+                cursor.execute(statement)
+                connection.commit()
+                
     def write_properties_file(self, workspace):
         """Write the CellProfiler Analyst properties file"""
         all_properties = self.get_property_file_text(workspace)

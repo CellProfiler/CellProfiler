@@ -1326,7 +1326,8 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
                        well_metadata = False, image_set_count = 1,
                        group_measurement = False,
                        relationship_type = None,
-                       relationship_test_type = None):
+                       relationship_test_type = None,
+                       post_run_test = False):
         '''Make a measurements structure with image and object measurements'''
         class TestModule(cpm.CPModule):
             module_name = "TestModule"
@@ -1378,6 +1379,10 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
                     columns += [
                         (cpmeas.IMAGE, GROUP_IMG_MEASUREMENT, cpmeas.COLTYPE_INTEGER, d),
                         (OBJECT_NAME, GROUP_OBJ_MEASUREMENT, cpmeas.COLTYPE_FLOAT, d)]
+                if post_run_test:
+                    columns += [(cpmeas.EXPERIMENT, STRING_IMG_MEASUREMENT, 
+                                 cpmeas.COLTYPE_VARCHAR, 
+                                 { cpmeas.MCA_AVAILABLE_POST_RUN: True })]
                 return columns
             
             def get_object_relationships(self, pipeline):
@@ -4927,5 +4932,35 @@ ExportToDatabase:[module_num:1|svn_version:\'11377\'|variable_revision_number:25
             except:
                 print "Failed to remove %s" % output_dir
             
-            
+    def test_15_01_post_run_experiment_measurement_mysql(self):
+        if not self.__at_broad:
+            self.skipTest("Skipping actual DB work, not at the Broad.")
+        workspace, module= self.make_workspace(False, post_run_test=True)
+        try:
+            self.assertTrue(isinstance(module, E.ExportToDatabase))
+            module.db_type.value = E.DB_MYSQL
+            module.allow_overwrite.value = E.OVERWRITE_ALL
+            module.wants_agg_mean.value = False
+            module.wants_agg_median.value = False
+            module.wants_agg_std_dev.value = False
+            module.objects_choice.value = E.O_ALL
+            module.separate_object_tables.value = E.OT_COMBINE
+            workspace.measurements[cpmeas.EXPERIMENT,
+                                   STRING_IMG_MEASUREMENT] = STRING_VALUE
+            self.assertTrue(module.prepare_run(workspace))
+            self.cursor.execute("use CPUnitTest")
+            self.cursor.execute(
+                "select %s from %s" %
+                (STRING_IMG_MEASUREMENT, module.get_table_name(cpmeas.EXPERIMENT)))
+            result = self.cursor.fetchall()[0][0]
+            self.assertTrue(result is None)
+            module.post_run(workspace)
+            self.cursor.execute(
+                "select %s from %s" %
+                (STRING_IMG_MEASUREMENT, 
+                 module.get_table_name(cpmeas.EXPERIMENT)))
+            self.assertEqual(self.cursor.fetchall()[0][0], STRING_VALUE)
+        finally:
+            self.drop_tables(module)
+        
     

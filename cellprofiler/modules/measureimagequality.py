@@ -117,6 +117,10 @@ MEAN_THRESH_ALL_IMAGES = 'MeanThresh_AllImages'
 MEDIAN_THRESH_ALL_IMAGES = 'MedianThresh_AllImages'
 STD_THRESH_ALL_IMAGES = 'StdThresh_AllImages'
 
+AGG_MEAN = "Mean"
+AGG_MEDIAN = "Median"
+AGG_STD = "Std"
+
 SETTINGS_PER_GROUP_V3 = 11
 IMAGE_GROUP_SETTING_OFFSET = 2
 
@@ -501,6 +505,7 @@ class MeasureImageQuality(cpm.CPModule):
         measurements, sources = self.get_measurement_columns(pipeline, return_sources=True)
         d = {}
         for m, s in zip(measurements, sources):
+            m = (m[0], m[1])
             if m in d:
                 raise cps.ValidationError("Measurement %s for image %s made twice."%(m[1], s[1]), s[0])
             d[m] = True
@@ -603,13 +608,18 @@ class MeasureImageQuality(cpm.CPModule):
                     
             # Threshold measurements
             if image_group.calculate_threshold.value:
-                all_threshold_groups = self.build_threshold_parameter_list() \
-                                            if image_group.use_all_threshold_methods.value \
-                                            else image_group.threshold_groups
+                all_threshold_groups = self.get_all_threshold_groups(image_group)
                 for image_name in selected_images:
                     for threshold_group in all_threshold_groups:
                         feature = threshold_group.threshold_feature_name(image_name)
                         columns.append((cpmeas.IMAGE, feature, cpmeas.COLTYPE_FLOAT))
+                        for agg in ("Mean", "Median", "Std"):
+                            feature = threshold_group.threshold_feature_name(
+                                image_name, agg)
+                            columns.append(
+                                (cpmeas.EXPERIMENT, feature, cpmeas.COLTYPE_FLOAT,
+                                 { cpmeas.MCA_AVAILABLE_POST_RUN:True }))
+                        
                         if image_group.use_all_threshold_methods:
                             sources.append([image_group.use_all_threshold_methods, image_name])
                         else:
@@ -1008,9 +1018,7 @@ class MeasureImageQuality(cpm.CPModule):
     def calculate_thresholds(self, image_group, workspace):
         '''Calculate a threshold for this image'''
         result = []
-        all_threshold_groups = self.build_threshold_parameter_list() \
-                             if image_group.use_all_threshold_methods.value \
-                             else image_group.threshold_groups
+        all_threshold_groups = self.get_all_threshold_groups(image_group)
                 
         for image_name in self.images_to_process(image_group, workspace):
             image = workspace.image_set.get_image(image_name,
@@ -1052,13 +1060,20 @@ class MeasureImageQuality(cpm.CPModule):
             
         return result
     
+    def get_all_threshold_groups(self, image_group):
+        '''Get all threshold groups to apply to an image group
+        
+        image_group - the image group to try thresholding on
+        '''
+        if image_group.use_all_threshold_methods.value:
+            return self.build_threshold_parameter_list()
+        return image_group.threshold_groups
+    
     def calculate_experiment_threshold(self, image_group, workspace):
         '''Calculate experiment-wide threshold mean, median and standard-deviation'''
         m = workspace.measurements
         statistics = []
-        all_threshold_groups = self.build_threshold_parameter_list() \
-                             if image_group.use_all_threshold_methods.value \
-                             else image_group.threshold_groups
+        all_threshold_groups = self.get_all_threshold_groups(image_group)
         if image_group.calculate_threshold.value:
             for image_name in self.images_to_process(image_group, workspace):
                 for threshold_group in all_threshold_groups:
@@ -1068,33 +1083,16 @@ class MeasureImageQuality(cpm.CPModule):
                     values = values[np.isfinite(values)]
                     
                     for feature in (F_THRESHOLD,):
-                        feature_name = "%s_Mean%s%s_%s"%(C_IMAGE_QUALITY,feature,
-                                                     threshold_group.threshold_algorithm,
-                                                     image_name)
-                        mean_val = np.mean(values)
-                        m.add_experiment_measurement(feature_name, mean_val)
-                        statistics.append(["Mean %s %s %s"%(image_name,
-                                                                   threshold_group.threshold_algorithm,
-                                                                   feature.lower()),
-                                           str(mean_val)])
-                        feature_name = "%s_Median%s%s_%s"%(C_IMAGE_QUALITY,feature,
-                                                           threshold_group.threshold_algorithm,
-                                                           image_name)
-                        median_val = np.median(values)
-                        m.add_experiment_measurement(feature_name, median_val)
-                        statistics.append(["Median %s %s %s"%(image_name,
-                                                                     threshold_group.threshold_algorithm,
-                                                                     feature.lower()),
-                                           str(median_val)])
-                        feature_name = "%s_Std%s%s_%s"%(C_IMAGE_QUALITY,feature,
-                                                        threshold_group.threshold_algorithm,
-                                                        image_name)
-                        std_val = np.std(values)
-                        m.add_experiment_measurement(feature_name, std_val)
-                        statistics.append(["Std. dev. %s %s %s"%(image_name,
-                                                                        threshold_group.threshold_algorithm,
-                                                                        feature.lower()),
-                                           str(std_val)])
+                        for fn, agg in ((np.mean, AGG_MEAN),
+                                        (np.median, AGG_MEDIAN),
+                                        (np.std, AGG_STD)):
+                            feature_name = threshold_group.threshold_feature_name(
+                                image_name, agg=agg)
+                            feature_description = threshold_group.threshold_description(
+                                image_name, agg=agg)
+                            val = fn(values)
+                            m.add_experiment_measurement(feature_name, val)
+                        statistics.append([feature_description, str(val)])
         return statistics
         
     def build_threshold_parameter_list(self):
@@ -1321,15 +1319,19 @@ class ImageQualitySettingsGroup(cps.SettingsGroup):
         '''The thresholding algorithm to run'''
         return self.threshold_method.value.split(' ')[0]
 
-    def threshold_feature_name(self, image_name):
+    def threshold_feature_name(self, image_name, agg=None):
         '''The feature name of the threshold measurement generated'''
         scale = self.threshold_scale
+        if agg is None:
+            hdr = F_THRESHOLD
+        else:
+            hdr = F_THRESHOLD+agg
         if scale is None:
-            return "%s_%s%s_%s"%(C_IMAGE_QUALITY, F_THRESHOLD, 
+            return "%s_%s%s_%s"%(C_IMAGE_QUALITY, hdr, 
                                  self.threshold_algorithm,
                                  image_name)
         else:
-            return "%s_%s%s_%s_%s" % (C_IMAGE_QUALITY, F_THRESHOLD,
+            return "%s_%s%s_%s_%s" % (C_IMAGE_QUALITY, hdr,
                                       self.threshold_algorithm,
                                       image_name,
                                       scale)
@@ -1357,4 +1359,34 @@ class ImageQualitySettingsGroup(cps.SettingsGroup):
             return scale
         elif threshold_algorithm == cpthresh.TM_MOG:
             return str(int(self.object_fraction.value * 100))
+    
+    def threshold_description(self, image_name, agg=None):
+        '''Return a description of the threshold meant to be seen by the user
+        
+        image_name - name of thresholded image
+        
+        agg - if present, the aggregating method, e.g. "Mean"
+        '''
+        if self.threshold_algorithm == cpthresh.TM_OTSU:
+            if self.use_weighted_variance == O_WEIGHTED_VARIANCE:
+                wvorentropy = "WV"
+            else:
+                wvorentropy = "S"
+            if self.two_class_otsu == O_TWO_CLASS:
+                result = "Otsu %s 2 cls" % wvorentropy
+            else:
+                result = "Otsu %s 3 cls" % wvorentropy
+                if self.assign_middle_to_foreground == O_FOREGROUND:
+                    result += " Fg"
+                else:
+                    result += " Bg"
+        elif self.threshold_scale is not None:
+            result = self.threshold_algorithm.lower() + " " + self.threshold_scale
+        else:
+            result = self.threshold_algorithm.lower()
+        if agg is not None:
+            result = agg + " " + image_name + result
+        else:
+            result = image_name + result
+        return result
         

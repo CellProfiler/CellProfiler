@@ -379,7 +379,7 @@ class ExportToDatabase(cpm.CPModule):
             Select a name for the database you want to use""")
         
         self.experiment_name = cps.Text(
-            "Experiment name", "Expt_ID", doc = """
+            "Experiment name", "MyExpt", doc = """
             Select a name for the experiment. This name will be
             registered in the database and linked to the tables that
             <b>ExportToDatabase</b> creates. You will be able to select the experiment
@@ -387,13 +387,13 @@ class ExportToDatabase(cpm.CPModule):
             experiment's tables through database queries.""")
         
         self.want_table_prefix = cps.Binary(
-            "Add a prefix to table names?", False, doc = """
+            "Add a prefix to table names?", True, doc = """
             Select whether you want to add a prefix to your table names 
             (<i>Per_Image</i> and <i>Per_Object</i>).  CellProfiler will warn 
             you if your choice entails overwriting an existing table.""")
         
         self.table_prefix = cps.Text(
-            "Table prefix", "Expt_" , doc = """
+            "Table prefix", "MyExpt_" , doc = """
             <i>(Used if Add a prefix to table names?</i> is selected)<br>
             Enter the table prefix you want to use.""")
         
@@ -3584,7 +3584,7 @@ CP version : %d\n""" % version_number
             new_setting_values = [setting_values[0],setting_values[1]]
             if setting_values[2] == cps.DO_NOT_USE:
                 new_setting_values.append(cps.NO)
-                new_setting_values.append("Expt_")
+                new_setting_values.append("MyExpt_")
             else:
                 new_setting_values.append(cps.YES)
                 new_setting_values.append(setting_values[2])
@@ -3629,7 +3629,7 @@ CP version : %d\n""" % version_number
             new_setting_values = setting_values[0:2]
             if setting_values[2] == cps.DO_NOT_USE:
                 new_setting_values.append(cps.NO)
-                new_setting_values.append("Expt_")
+                new_setting_values.append("MyExpt_")
             else:
                 new_setting_values.append(cps.YES)
                 new_setting_values.append(setting_values[2])
@@ -3840,7 +3840,7 @@ CP version : %d\n""" % version_number
             #
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V21] +
-                [ "Expt", "None" ] + 
+                [ "MyExpt", "None" ] + 
                 setting_values[SETTING_FIXED_SETTING_COUNT_V21:])
             variable_revision_number = 22
             

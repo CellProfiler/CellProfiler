@@ -36,7 +36,7 @@ import wx.html
 import cellprofiler.objects as cpo
 import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.outline import outline
-from cellprofiler.cpmath.cpmorphology import triangle_areas, distance2_to_line
+from cellprofiler.cpmath.cpmorphology import triangle_areas, distance2_to_line, convex_hull_image
 from cellprofiler.cpmath.cpmorphology import polygon_lines_to_mask
 from cellprofiler.cpmath.cpmorphology import get_outline_pts, thicken
 from cellprofiler.cpmath.index import Indexes
@@ -235,29 +235,50 @@ class EditObjectsDialog(wx.Dialog):
             LEFT_MOUSE_BUTTON = LEFT_MOUSE
             RIGHT_MOUSE = "right mouse button"
         self.html_panel.SetPage(
-        """<H1>Editing help</H1>
-        The editing user interface lets you create, remove and
-        edit objects. You can remove an object by clicking on it
-        with the %(LEFT_MOUSE)s in the "Objects to keep" window
-        and add it back by clicking on it in the "Objects to
-        remove" window. You can edit objects by selecting them
-        with the %(RIGHT_MOUSE)s. You can move object control points
+        """<h1>Editing help</h1>
+        <p>The editing user interface lets you create, remove and
+        edit objects. The interface will show the image that you selected
+        as the guiding image, overlaid with colored outlines of the selected
+        objects. Buttons are available at the bottom of the panel
+        for various commands. A number of operations are available with
+        the mouse:
+        <ul>
+        <li><i>Remove an object:</i> Click on the object
+        with the %(LEFT_MOUSE)s. The colored object outline will switch from
+        a solid line to a dashed line.</li>
+        <li><i>Restore a removed object:</i> Click on the object that was previously removed. 
+        The colored object outline will switch from
+        a dashed line back to a solid line. </li>
+        <li><i>Edit objects:</i> Select the object 
+        with the %(RIGHT_MOUSE)s to edit it. The outline will switch
+        from a colored outline to a series of points (the <i>control points</i>) 
+        along the object boundary connected by solid lines. You can place any 
+        number of objects into this mode for editing simultaneously; the control
+        point outline will indicate which objects have been selected. 
+        Move object control points
         by dragging them while holding the %(LEFT_MOUSE_BUTTON)s
-        down (you cannot move a control point across the boundary
-        of the object you are editing and you cannot move the
-        edges on either side across another control point).
-        When you are finished editing,
-        click on the object again with the %(RIGHT_MOUSE)s to save changes
-        or hit the <i>Esc</i> key to abandon your changes.
-        <br>
-        Press the <i>Done</i> key to save your edits.
+        down. Please note the following editing limitations:
+        <ul>
+        <li>You cannot move a control point across the interior boundary
+        of the object you are editing.</li>
+        <li>You cannot move the
+        edges on either side of a control point across another control point.</li>
+        </ul>
+        <li><i>Finish editing an object:</i> Click on the object again with 
+        the %(RIGHT_MOUSE)s to save changes.</li>
+        <li><i>Abandon changes to an object:</i> Hit the <i>Esc</i> key.</li>
+        </ul>
         You can always reset your edits to the original state
-        before editing by pressing the <i>Reset</i> key.
+        before editing by pressing the <i>Reset</i> key.</p>
+        
+        <p>Once finished editing all your desired objects, press the <i>Done</i> button to 
+        save your edits. At that point, the editing user interface will be replaced
+        by the module display window showing the original and the edited object set.</p>
+        
         <h2>Editing commands</h2>
-        The following keys perform editing commands when pressed:
-        <br><ul>
-        <li><b>1</b>: Toggle between one display (the editing
-        display) and three.</li>
+        The following keys perform editing 
+        commands when pressed (the keys are not case-sensitive):
+        <ul>
         <li><b>A</b>: Add a control point to the line nearest the
         mouse cursor</li>
         <li><b>C</b>: Join all selected objects into one that forms a
@@ -267,26 +288,31 @@ class EditObjectsDialog(wx.Dialog):
         one round object.</li>
         <li><b>D</b>: Delete the control point nearest to the
         cursor.</li>
-        <li><b>f</b>: Freehand draw. Press down on the %(LEFT_MOUSE)s
+        <li><b>F</b>: Freehand draw. Press down on the %(LEFT_MOUSE)s
         to draw a new object outline, then release to complete
         the outline and return to normal editing.</li>
-        <li><b>J</b>: Join all selected objects into one object.</li>
-        <li><b>N</b>: Create a new object under the cursor.</li>
+        <li><b>J</b>: Join all the selected objects into one object.</li>
+        <li><b>N</b>: Create a new object under the cursor. A new set
+        of control points is produced which you can then start 
+        manipulating with the mouse.</li>
         <li><b>S</b>: Split an object. Pressing <b>S</b> puts
         the user interface into <i>Split Mode</i>. The user interface
         will prompt you to select a first and second point for the
-        split. Two types of splits are allowed: a split between
-        two points on the same contour and a split between the
-        inside and the outside of an object that has a hole in it.
-        The former split creates two separate objects. The latter
-        creates a channel from the hole to the outside of the object.
+        split. Two types of splits are allowed: 
+        <ul>
+        <li>A split between two points on the same contour. This split
+        creates two separate objects.</li>
+        <li>A split between the inside and the outside of an object that 
+        has a hole in it. This split creates a channel from the hole 
+        to the outside of the object.</li>
+        </ul>
         </li>
         </ul>
-        <br><i>Note: editing is disabled in zoom or pan mode. The
+        <p><b>Note:</b> Editing is disabled in zoom or pan mode. The
         zoom or pan button on the navigation toolbar is depressed
         during this mode and your cursor is no longer an arrow.
         You can exit from zoom or pan mode by pressing the
-        appropriate button on the navigation toolbar.</i>
+        appropriate button on the navigation toolbar.</p>
         """ % locals())
         self.html_frame.Show(False)
         self.html_frame.Bind(wx.EVT_CLOSE, self.on_help_close)

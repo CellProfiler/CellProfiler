@@ -2126,6 +2126,8 @@ class PipelineController:
                             return
                 else:
                     path = self.get_output_file_path()
+                    if path is None:
+                        return
                 self.__pipeline.save_measurements(path, event.measurements)
         finally:
             event.measurements.close()

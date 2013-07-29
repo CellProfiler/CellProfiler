@@ -449,8 +449,10 @@ def load_using_bioformats_url(url, c=None, z=0, t=0, series=None, index=None,
     '''
     file_scheme = "file:"
     if url.lower().startswith("omero:"):
-        return load_using_bioformats(url, c, z, t, series, index,
-                                     wants_max_intensity, channel_names)
+        return load_using_bioformats(
+            url, c=c, z=z, t=t, series=series, index=index,
+            rescale=rescale,
+            wants_max_intensity=wants_max_intensity, channel_names=channel_names)
     if not url.lower().startswith(file_scheme):
         ext = url[url.rfind("."):]
         src = urllib2.urlopen(url)
@@ -460,17 +462,20 @@ def load_using_bioformats_url(url, c=None, z=0, t=0, series=None, index=None,
             shutil.copyfileobj(src, dest)
             src.close()
             dest.close()
-            return load_using_bioformats(dest_path,
-                                         c, z, t, series, index, 
-                                         wants_max_intensity, channel_names)
+            return load_using_bioformats(
+                dest_path, c=c, z=z, t=t, series=series, index=index, 
+                rescale=rescale,
+                wants_max_intensity=wants_max_intensity,
+                channel_names=channel_names)
         finally:
             os.remove(dest_path)
     
     utf8_url = urllib.url2pathname(url[len(file_scheme):])
     pathname = unicode(utf8_url, 'utf-8')
-    return load_using_bioformats(pathname,
-                                 c, z, t, series, index, 
-                                 wants_max_intensity, channel_names)
+    return load_using_bioformats(
+        pathname,
+        c=c, z=z, t=t, series=series, index=index, rescale=rescale,
+        wants_max_intensity=wants_max_intensity, channel_names=channel_names)
     
 
 class GetImageReader(object):

@@ -997,9 +997,9 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
 
     def test_01_07_save_all_to_custom_jpg(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.jpeg')
+        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.jpg')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.jpeg')
+        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.jpg')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()
@@ -1705,7 +1705,48 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
                 except:
                     sys.stderr.write("Not ideal, Bioformats still holding onto file handle.\n")
                     traceback.print_exc()
+    
+    def test_06_02_save_bmp(self):
+        # Special code for saving bitmaps
+        r = np.random.RandomState()
+        r.seed(62)
+        images = [
+            r.uniform(size=(16, 20)),
+            r.uniform(size=(15, 20)),
+            r.uniform(size=(16, 20, 3)),
+            r.uniform(size=(15, 20, 3)) ]
+        for i, image in enumerate(images):
+            # Adjust settings each round and retest
+            workspace, module = self.make_workspace(image,
+                                                    convert=False)
 
+            module.module_num = 1
+            module.save_image_or_figure.value = cpm_si.IF_IMAGE
+            module.image_name.value = IMAGE_NAME
+            module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+            module.pathname.custom_path = self.custom_directory
+            module.file_name_method.value = cpm_si.FN_SINGLE_NAME
+            module.single_file_name.value = FILE_NAME+str(i)
+            
+            module.rescale.value = False
+            module.file_format.value = cpm_si.FF_BMP
+            module.bit_depth.value = 8
+        
+            module.save_image(workspace)
+
+            expected = (image * 255).astype(np.uint8)
+            filename = module.get_filename(workspace,
+                                           make_dirs = False,
+                                           check_overwrite = False)
+            im = load_using_bioformats(filename, rescale=False)
+            np.testing.assert_array_equal(im, expected)
+            if os.path.isfile(filename):
+                try:
+                    os.remove(filename)
+                except:
+                    sys.stderr.write("Not ideal, Bioformats still holding onto file handle.\n")
+                    traceback.print_exc()
+        
                 
     def test_07_01_save_objects_grayscale8_tiff(self):
         r = np.random.RandomState()

@@ -40,3 +40,16 @@ http://www.icon-king.com/
 CollapseTree.png and ExpandTree.png
 Covered by the following license: https://wiki.trin.org.au/Mangroves/TermsOfUse
 Author: Emma Clifton, https://wiki.trin.org.au/Main/EmmaClifton
+
+welcomescreen_tutorials.png
+Covered by the following license: http://files.softicons.com/download/system-icons/crystal-project-icons-by-everaldo-coelho/readme.txt
+Author:  Everaldo Coelho, http://www.softicons.com/free-icons/system-icons/crystal-project-icons-by-everaldo-coelho/apps-tutorials-icon
+
+welcomescreen_manual.png
+Free for use with attribution to Double-J Design, http://www.doublejdesign.co.uk 
+    (found at http://www.softicons.com/free-icons/toolbar-icons/ravenna-3d-icons-by-double-j-design/book-icon
+
+welcome_screen_help.png and welcomescreen_forum.png
+Free for use with attribution to Aha-Soft
+    http://www.softicons.com/free-icons/toolbar-icons/free-3d-glossy-interface-icons-by-aha-soft/help-icon
+    http://www.softicons.com/free-icons/web-icons/free-3d-glossy-icons-by-aha-soft/forum-icon

@@ -10,11 +10,6 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-# Icon attributions for welcome screen
-# Help icon: Aha-Soft - http://www.softicons.com/free-icons/toolbar-icons/free-3d-glossy-interface-icons-by-aha-soft/help-icon
-# Manual icon: Double-J Design - http://www.doublejdesign.co.uk (found at http://www.softicons.com/free-icons/toolbar-icons/ravenna-3d-icons-by-double-j-design/book-icon)
-# Tutorial icon: Everaldo Coelho - http://www.softicons.com/free-icons/system-icons/crystal-project-icons-by-everaldo-coelho/apps-tutorials-icon
-# Forum icon: - Aha-Soft - http://www.softicons.com/free-icons/web-icons/free-3d-glossy-icons-by-aha-soft/forum-icon
 
 import urllib
 from cellprofiler.gui.help import LOCATION_MODULE_HELP_BUTTON, LOCATION_MODULE_ADD_BUTTON

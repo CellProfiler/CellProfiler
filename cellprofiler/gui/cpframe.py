@@ -750,9 +750,25 @@ class CPFrame(wx.Frame):
 
         if not hasattr(self, "__data_tools_menu"):
             self.__data_tools_menu = wx.Menu()
+            
+            def on_data_tool_overview(event):
+                import htmldialog
+                from cellprofiler.gui.help import MENU_BAR_DATATOOLS_HELP
+                dlg = htmldialog.HTMLDialog(self, 'Data Tool Overview', MENU_BAR_DATATOOLS_HELP)
+                dlg.Show()            
+            new_id = wx.NewId()
+            self.__data_tools_menu.Append(
+                new_id, 'Data Tool Overview', 'Overview of the Data Tools') 
+            wx.EVT_MENU(self,new_id,on_data_tool_overview)
+            
+            self.__data_tools_menu.AppendSeparator()
+            
             self.__data_tools_menu.Append(
                 ID_FILE_PLATEVIEWER, 'Plate Viewer', 
                 'Open the plate viewer to inspect the images in the current workspace')
+            
+            self.__data_tools_menu.AppendSeparator()
+            
             for data_tool_name in get_data_tool_names():
                 new_id = wx.NewId()
                 self.__data_tools_menu.Append(new_id, data_tool_name)
@@ -760,6 +776,8 @@ class CPFrame(wx.Frame):
                     self.__on_data_tool(event, data_tool_name)
                 wx.EVT_MENU(self, new_id, on_data_tool)
 
+            self.__data_tools_menu.AppendSeparator()
+            
             self.__data_tools_menu.AppendSubMenu(self.data_tools_help(), '&Help')
 
         return self.__data_tools_menu

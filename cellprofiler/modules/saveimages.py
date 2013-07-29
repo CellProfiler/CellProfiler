@@ -80,7 +80,6 @@ FN_IMAGE_FILENAME_WITH_METADATA = "Image filename with metadata"
 METADATA_NAME_TEXT = ("""Enter file name with metadata""")
 SEQUENTIAL_NUMBER_TEXT = "Enter file prefix"
 FF_BMP         = "bmp"
-FF_HDF         = "hdf"
 FF_JPG         = "jpg"
 FF_JPEG        = "jpeg"
 FF_PBM         = "pbm"
@@ -225,14 +224,14 @@ class SaveImages(cpm.CPModule):
                 <i>(Used only when constructing the filename from the image filename)</i><br>
                 Enter the text that should be appended to the filename specified above.""")
         
-        self.file_format = cps.Choice("Select file format to use",
-                                      [FF_BMP,FF_HDF,FF_JPG,FF_JPEG,
-                                       FF_PBM,FF_PCX,FF_PGM,FF_PNG,FF_PNM,
-                                       FF_PPM,FF_RAS,FF_TIF,FF_TIFF,FF_XWD,
-                                       FF_MAT],FF_TIF,doc="""
-                <i>(Used only when saving non-movie files)</i><br>
-                Select the image or movie format to save the image(s). Most common
-                image formats are available; MAT-files are readable by MATLAB.""")
+        self.file_format = cps.Choice(
+            "Select file format to use",
+            [FF_BMP, FF_JPG, FF_JPEG, FF_PNG, FF_TIF, FF_TIFF, FF_MAT],
+            value = FF_TIF,
+            doc="""
+            <i>(Used only when saving non-movie files)</i><br>
+            Select the image or movie format to save the image(s). Most common
+            image formats are available; MAT-files are readable by MATLAB.""")
         
         self.pathname = SaveImagesDirectoryPath(
             "Output file location", self.file_image_name,
@@ -813,8 +812,6 @@ class SaveImages(cpm.CPModule):
         """
         if self.save_image_or_figure == IF_MOVIE:
             return FF_AVI
-        if self.file_format == FF_JPG:
-            return FF_JPEG
         return self.file_format.value
     
     def get_bit_depth(self):

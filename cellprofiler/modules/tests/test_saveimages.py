@@ -997,9 +997,9 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
 
     def test_01_07_save_all_to_custom_jpg(self):
         img1_filename = os.path.join(self.new_image_directory,'img1.tif')
-        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.jpeg')
+        img1_out_filename = os.path.join(self.custom_directory,'img1OUT.jpg')
         img2_filename = os.path.join(self.new_image_directory,'img2.tif') 
-        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.jpeg')
+        img2_out_filename = os.path.join(self.custom_directory,'img2OUT.jpg')
         make_file(img1_filename, cpmt.tif_8_1)
         make_file(img2_filename, cpmt.tif_8_2)
         pipeline = cpp.Pipeline()

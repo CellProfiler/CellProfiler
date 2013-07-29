@@ -2553,9 +2553,12 @@ class PipelineController:
         sizer.Add(sub_sizer, 1, wx.EXPAND)
         text_ctrl = wx.StaticText(
             dlg, 
-            label="Finished processing pipeline. Any saved images\n"
+            label="Finished processing %d image sets. Any saved images\n"
             "or exported output files specified by your pipeline\n"
-            "have been saved in your designated locations.")
+            "have been saved in your designated locations.\n\n"
+            "Note that the module display windows may not show\n"
+            "the final image cycle on computers with multiple\n"
+            "processing cores."%self.__workspace.measurements.image_set_count)
         sub_sizer.Add(
             text_ctrl,
             1, wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | 

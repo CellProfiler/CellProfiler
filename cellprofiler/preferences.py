@@ -967,7 +967,7 @@ def get_write_MAT_files():
     if __write_MAT_files is not None:
         return __write_MAT_files
     if not config_exists(WRITE_MAT):
-        return True
+        return False
     value = config_read(WRITE_MAT)
     if value == "True":
         return True

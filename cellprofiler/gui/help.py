@@ -251,7 +251,7 @@ in future versions of CellProfiler. For specifying the location of image files, 
 use the <i>Input modules</i> panel starting with the <b>Images</b> module.</p>
 
 <p>The <i>Default Input Folder</i> is enabled only if a legacy pipeline is loaded into
-CellProfiler and is accessible by pressing the "%(VIEW_OUTPUT_SETTINGS_BUTTON_NAME)s"
+CellProfiler and is accessible by pressing the "View output settings"
 button at the botton of the pipeline panel. The folder designated as the 
 <i>Default Input Folder</i> contains the input image or data files
 that you want to analyze. Several File Processing modules (e.g., 
@@ -277,7 +277,7 @@ DEFAULT_OUTPUT_FOLDER_HELP = """
 of files written by the various output modules will be set to an absolute path 
 in future versions of CellProfiler.</p>
 
-<p>The <i>Default Output Folder</i> is accessible by pressing the "%(VIEW_OUTPUT_SETTINGS_BUTTON_NAME)s"
+<p>The <i>Default Output Folder</i> is accessible by pressing the "View output settings"
 button at the botton of the pipeline panel. The Default Output Folder is the folder that CellProfiler uses to
 store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or 
 <b>ExportToSpreadsheet</b>) provide the option of saving analysis results to 
@@ -1479,6 +1479,8 @@ OMERO image planes directly from the server).
 """
 
 EACH_PREFERENCE_HELP = (
+    ( "Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP ),
+    ( "Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP ),
     ( "Title font", TITLE_FONT_HELP ),
     ( "Table font", TABLE_FONT_HELP ),
     ( "Default colormap", DEFAULT_COLORMAP_HELP ),
@@ -1490,7 +1492,7 @@ EACH_PREFERENCE_HELP = (
     ( "Interpolation mode", INTERPOLATION_MODE_HELP),
     ( "CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP ),
     ( "ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
-    ( "ImageJ version", IJ_VERSION_HELP),
+    #( "ImageJ version", IJ_VERSION_HELP),
     ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
     ( "Display welcome text on startup", SHOW_STARTUP_BLURB_HELP ),
     ( "Warn if Java runtime not present", REPORT_JVM_ERROR_HELP),
@@ -1912,7 +1914,7 @@ MAIN_HELP = (
         ("Using the Parameter Sampling Menu",PARAMETER_SAMPLING_MENU_HELP),
         ("Using the Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
     ("Using Module Display Windows", FIGURE_HELP ),
-    ("Setting the Preferences", PREFERENCES_HELP),
+    #("Setting the Preferences", PREFERENCES_HELP),
     ("Creating A Project",(
         ("Introduction to Projects",INTRODUCTION_TO_PROJECTS_HELP),
         ("Selecting Images for Input",SELECTING_IMAGES_HELP),

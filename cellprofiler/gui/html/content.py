@@ -10,75 +10,14 @@ Please see the AUTHORS file for credits.
 
 Website: http://www.cellprofiler.org
 """
-# Icon attributions for welcome screen
-# Help icon: Aha-Soft - http://www.softicons.com/free-icons/toolbar-icons/free-3d-glossy-interface-icons-by-aha-soft/help-icon
-# Manual icon: Double-J Design - http://www.doublejdesign.co.uk (found at http://www.softicons.com/free-icons/toolbar-icons/ravenna-3d-icons-by-double-j-design/book-icon)
-# Tutorial icon: Everaldo Coelho - http://www.softicons.com/free-icons/system-icons/crystal-project-icons-by-everaldo-coelho/apps-tutorials-icon
-# Forum icon: - Aha-Soft - http://www.softicons.com/free-icons/web-icons/free-3d-glossy-icons-by-aha-soft/forum-icon
 
 import urllib
-from cellprofiler.gui.help import LOCATION_MODULE_HELP_BUTTON, LOCATION_MODULE_ADD_BUTTON, MEASUREMENT_NAMING_HELP, USING_YOUR_OUTPUT_REF, TEST_MODE_HELP, RUNNING_YOUR_PIPELINE_HELP
+from cellprofiler.gui.help import LOCATION_MODULE_HELP_BUTTON, LOCATION_MODULE_ADD_BUTTON
+from cellprofiler.gui.help import MEASUREMENT_NAMING_HELP, USING_YOUR_OUTPUT_REF, TEST_MODE_HELP, RUNNING_YOUR_PIPELINE_HELP, SELECTING_IMAGES_HELP, CONFIGURE_IMAGES_HELP
 
 SELECTING_IMAGES_REF = urllib.quote("Selecting images")
-SELECTING_IMAGES_HELP = '''
-<p>Any image analysis project using CellProfiler begins with providing the program with a set of image files
-to be analyzed. You can do this by clicking on
-the <b>Images</b> module to select it (located in the Input modules panel on the left); this module is responsible for collecting
-the names and locations of the files to be processed.</p>
-
-<p>The most straightforward way to provide files to the <b>Images</b> module is 
-to simply drag-and-drop them from your file manager tool (e.g., Windows Explorer, Finder) onto the file list panel 
-(the blank space indicated by the text "Drop files and folders here"). 
-Both individual files and entire folders can be dragged onto this panel, and as many folders and files can be 
-placed onto this panel as needed. As you add files, you will see a listing of the files appear in the panel.</p>
-
-<p>CellProfiler supports a wide variety of image formats, including most of those used in imaging, by using a library called
-Bio-Formats; see <a href="http://loci.wisc.edu/bio-formats/formats">here</a> for the formats available. Some image formats are better 
-than others for image analysis. Some are <a href="http://www.techterms.com/definition/lossy">"lossy"</a> 
-(information is lost in the conversion to the format) like most JPG/JPEG files; others are 
-<a href="http://www.techterms.com/definition/lossless">lossless</a> (no image information is lost). For image analysis purposes, a 
-lossless format like TIF or PNG is recommended.</p>
-
-<p>If you have a subset of files that you want to analyze from the full list shown in the 
-panel, you can also filter the files according to a set of rules that you specify. This is useful when, for example, you
-have dragged a folder of images onto the file list panel, but the folder contains the images
-from one experiment that you want to process along with images from another experiment that you
-want to ignore for now. You may specify as many rules as necessary to define the desired 
-list of images.</p>'''
 
 CONFIGURE_IMAGES_REF = urllib.quote("Configure images")
-CONFIGURE_IMAGES_HELP = '''
-<p>Once you have used the <b>Images</b> module to produce a list of images to be analyzed, you can use the other
-Input modules to define how images are related to one another, give them a memorable name for future reference, 
-attach additional image information about the experiment, among other things.</p>
-
-<p>After <b>Images</b>, you can use the following Input modules:
-<table border="1" cellpadding="10">
-    <tr bgcolor="#555555" align="center">
-    <th><font color="#FFFFFF"><b>Module</b></font></th>
-    <th><font color="#FFFFFF"><b>Description</b></font></th>
-    <th><font color="#FFFFFF"><b>Use required?</b></font></th>
-    <th><font color="#FFFFFF"><b>Usage notes</b></font></th></tr>
-    <tr align="center"><td><b>Metadata</b></td></td><td>Associate image information (metadata) with the images</td><td>No</td>
-    <td>With this module, you can extract metadata from various sources and append it to the measurements that your pipeline
-    will collect, or use it to define how the images are related to each other. The metadata can come from the image
-    filename or location, or from a spreadsheet that you provide. If your assay does not require or have such 
-    information, this module can be safely skipped.</td></tr>
-    <tr align="center"><td><b>NamesAndTypes</b></td><td>Assign names to images and/or channels and define their relationship.</td><td>Yes</td>
-    <td>This module gives each image a meaningful name by which modules in the analysis pipeline will refer to it.
-    The most common usage for this module is to define a collection of channels that represent a single
-    field of view. By using this module, each of these channels will be loaded and processed together for each field of view.</td></tr>
-    <tr align="center"><td><b>Groups</b></td><td>Define sub-divisions between groups of images for processing.</td><td>No</td>
-    <td>For some assays, you will need the option of further sub-dividing an image set into <i>groups</i> that share a 
-    common feature. An example of this is a time-lapse movie that consists of individual files; each group of files that
-    define a single movie needs to be processed independently of the others. This module allows you to specify what
-    distinguishes one group of images from another. If your assay does not require this sort of behavior, this module 
-    can be safely skipped.</td></tr>
-</table>
-</p>
-<p>For more information on these modules and how to configure for best performance, please see the detailed help by selecting the
-module and clicking the <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img>&nbsp;button at the bottom of the pipeline panel.</p>
-'''%globals()
 
 IDENTIFY_FEATUREES_REF = urllib.quote("Identifying features")
 IDENTIFY_FEATUREES_HELP = '''

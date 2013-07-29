@@ -251,7 +251,7 @@ in future versions of CellProfiler. For specifying the location of image files, 
 use the <i>Input modules</i> panel starting with the <b>Images</b> module.</p>
 
 <p>The <i>Default Input Folder</i> is enabled only if a legacy pipeline is loaded into
-CellProfiler and is accessible by pressing the "%(VIEW_OUTPUT_SETTINGS_BUTTON_NAME)s"
+CellProfiler and is accessible by pressing the "View output settings"
 button at the botton of the pipeline panel. The folder designated as the 
 <i>Default Input Folder</i> contains the input image or data files
 that you want to analyze. Several File Processing modules (e.g., 
@@ -277,7 +277,7 @@ DEFAULT_OUTPUT_FOLDER_HELP = """
 of files written by the various output modules will be set to an absolute path 
 in future versions of CellProfiler.</p>
 
-<p>The <i>Default Output Folder</i> is accessible by pressing the "%(VIEW_OUTPUT_SETTINGS_BUTTON_NAME)s"
+<p>The <i>Default Output Folder</i> is accessible by pressing the "View output settings"
 button at the botton of the pipeline panel. The Default Output Folder is the folder that CellProfiler uses to
 store the output file it creates. Also, several File Processing modules (e.g., <b>SaveImages</b> or 
 <b>ExportToSpreadsheet</b>) provide the option of saving analysis results to 
@@ -714,43 +714,12 @@ For databases, a popular freeware access tool is <a href="https://www.webyog.com
 """
 
 MEMORY_AND_SPEED_HELP = """
-<p>CellProfiler includes several options for dealing with out-of-memory
-errors associated with image analysis: </p>
-<ul>
-<li><i>Resize the input images.</i><br>
-If the image is high-resolution, it may be helpful to determine whether the 
-features of interest can be processed (and accurate data obtained) by using a 
-lower-resolution image. If this is the  case, use the <b>Resize</b> module (in the
-<i>Image Processing</i> category) to scale down the image to a more manageable size
-and perform the desired operations on the smaller image.</li>
-
-<li><i>Use the <b>ConserveMemory</b> module.</i><br>                                 
-The <b>ConserveMemory</b> module lets you clear the images stored in memory, 
-with the exception of any you specify. Please see the 
-<b>ConserveMemory</b> module help for more details.</li>
-</ul>
-
-<p>In addition, there are several options in CellProfiler for speeding up processing:
-<ul>
-<li><i>Run without display windows.</i><br>
-Each module is associated with a display window that takes time to render and/or
-update. Closing these windows improves speed somewhat. 
-To the left of each module listed in your pipeline an icon 
-<img src="memory:%(LOCATION_DISPLAYMODE_SHOW_ICON)s"></img>&nbsp;indicates whether
-the module window will be displayed during the analysis run. You can turn off individual module windows by
-clicking on the icon; this icon <img src="memory:%(LOCATION_DISPLAYMODE_HIDE_ICON)s"></img>&nbsp;indicates that the window 
-will not be shown. Select <i>Window > Hide all windows on run</i> to prevent display
-of all module windows.</li>           
-                                                                            
-<li><i>Use care in object identification </i><br>                                   
-If you have a large image which contains many small        
-objects, a good deal of computer time will be spent processing each   
-individual object, many of which you might not need. To avoid this, make 
-sure that you adjust the diameter options in <b>IdentifyPrimaryObjects</b> to   
-exclude small objects in which you are not interested, or use a <b>FilterObjects</b> 
-module to eliminate such objects.</li>               
-</ul>
- </p>
+<p>If you find that you are running into out-of-memory
+errors and/or speed issues associated with your analysis run, we
+have detailed a number of solutions on our forum 
+<a href="http://cellprofiler.org/forum/viewtopic.php?f=14&t=806&p=4490#p4490">FAQ</a>
+on this issue. We will continue to add more tips and tricks to this page
+over time.</p>
 """%globals()
 
 TEST_MODE_HELP = """ 
@@ -1212,7 +1181,7 @@ If there are any open windows, the window titles are listed underneath these opt
 of these window titles to bring that window to the front."""%globals()
 
 PARAMETER_SAMPLING_MENU_HELP = """
-The <i>Sampling</i> menu is an interplace for Paramorama, a plugin for an interactive visualization 
+The <i>Sampling</i> menu is an interface for Paramorama, a plugin for an interactive visualization 
 program for exploring the parameter space of image analysis algorithms.<p>
 
 <p>This menu option is only shown if specified in the Preferences. Note that if this preference setting
@@ -1510,6 +1479,8 @@ OMERO image planes directly from the server).
 """
 
 EACH_PREFERENCE_HELP = (
+    ( "Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP ),
+    ( "Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP ),
     ( "Title font", TITLE_FONT_HELP ),
     ( "Table font", TABLE_FONT_HELP ),
     ( "Default colormap", DEFAULT_COLORMAP_HELP ),
@@ -1521,7 +1492,7 @@ EACH_PREFERENCE_HELP = (
     ( "Interpolation mode", INTERPOLATION_MODE_HELP),
     ( "CellProfiler plugins directory", PLUGINS_DIRECTORY_HELP ),
     ( "ImageJ plugins directory", IJ_PLUGINS_DIRECTORY_HELP),
-    ( "ImageJ version", IJ_VERSION_HELP),
+    #( "ImageJ version", IJ_VERSION_HELP),
     ( "Check for updates", CHECK_FOR_UPDATES_HELP ),
     ( "Display welcome text on startup", SHOW_STARTUP_BLURB_HELP ),
     ( "Warn if Java runtime not present", REPORT_JVM_ERROR_HELP),
@@ -1551,13 +1522,12 @@ INTRODUCTION_TO_PROJECTS_HELP = """
 <ul>
 <li>An <i>image file list</i> which is the list of files and their locations that are selected by the user as 
 candidates for analysis.</li>
+<li>The <i>pipeline</i>, which is a series of modules put together used to analyze a set of images.</li>
 <li>Optionally, the associated information about the images (<i>metadata</i>). This 
 information may be part of the images themselves, or imported externally by the user.</li>
 </ul>
-Note that this is distinct from the <i>pipeline</i>, which is a series of modules put together used to
-analyze a set of images.</p>
+</p>
 
-<h3>Why would I want to use projects?</h3>
 <p>The project is the container for image information associated with a CellProfiler analysis. It stores
 such details as: 
 <ul>
@@ -1569,7 +1539,7 @@ represented?</li>
 <li>Are certain groups of images to be processed differently from other groups?</li>
 </ul>
 By using projects, the above information is stored along with the analysis pipeline and is
-avilable on demand. </p>
+available on demand. </p>
 
 <h3>Working with projects</h3>
 <h4>Creating a project</h4>
@@ -1610,8 +1580,67 @@ of preserving these modules if you load old pipelines into CellProfiler that con
 these pipelines will operate exactly as before.</p>
 <p>Alternately, the user can choose to convert these 
 modules into the project equivalent as closely as possible. Both <b>LoadImages</b> and <b>LoadData</b>
-remain accesible via the "Add module" and <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;
+remain accessible via the "Add module" and <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;
 buttons at the bottom of the pipeline panel.</p>
+"""%globals()
+
+SELECTING_IMAGES_HELP = """
+<p>Any image analysis project using CellProfiler begins with providing the program with a set of image files
+to be analyzed. You can do this by clicking on
+the <b>Images</b> module to select it (located in the Input modules panel on the left); this module is responsible for collecting
+the names and locations of the files to be processed.</p>
+
+<p>The most straightforward way to provide files to the <b>Images</b> module is 
+to simply drag-and-drop them from your file manager tool (e.g., Windows Explorer, Finder) onto the file list panel 
+(the blank space indicated by the text "Drop files and folders here"). 
+Both individual files and entire folders can be dragged onto this panel, and as many folders and files can be 
+placed onto this panel as needed. As you add files, you will see a listing of the files appear in the panel.</p>
+
+<p>CellProfiler supports a wide variety of image formats, including most of those used in imaging, by using a library called
+Bio-Formats; see <a href="http://loci.wisc.edu/bio-formats/formats">here</a> for the formats available. Some image formats are better 
+than others for image analysis. Some are <a href="http://www.techterms.com/definition/lossy">"lossy"</a> 
+(information is lost in the conversion to the format) like most JPG/JPEG files; others are 
+<a href="http://www.techterms.com/definition/lossless">lossless</a> (no image information is lost). For image analysis purposes, a 
+lossless format like TIF or PNG is recommended.</p>
+
+<p>If you have a subset of files that you want to analyze from the full list shown in the 
+panel, you can also filter the files according to a set of rules that you specify. This is useful when, for example, you
+have dragged a folder of images onto the file list panel, but the folder contains the images
+from one experiment that you want to process along with images from another experiment that you
+want to ignore for now. You may specify as many rules as necessary to define the desired 
+list of images.</p>"""
+
+CONFIGURE_IMAGES_HELP = """
+<p>Once you have used the <b>Images</b> module to produce a list of images to be analyzed, you can use the other
+Input modules to define how images are related to one another, give them a memorable name for future reference, 
+attach additional image information about the experiment, among other things.</p>
+
+<p>After <b>Images</b>, you can use the following Input modules:
+<table border="1" cellpadding="10">
+    <tr bgcolor="#555555" align="center">
+    <th><font color="#FFFFFF"><b>Module</b></font></th>
+    <th><font color="#FFFFFF"><b>Description</b></font></th>
+    <th><font color="#FFFFFF"><b>Use required?</b></font></th>
+    <th><font color="#FFFFFF"><b>Usage notes</b></font></th></tr>
+    <tr align="center"><td><b>Metadata</b></td></td><td>Associate image information (metadata) with the images</td><td>No</td>
+    <td>With this module, you can extract metadata from various sources and append it to the measurements that your pipeline
+    will collect, or use it to define how the images are related to each other. The metadata can come from the image
+    filename or location, or from a spreadsheet that you provide. If your assay does not require or have such 
+    information, this module can be safely skipped.</td></tr>
+    <tr align="center"><td><b>NamesAndTypes</b></td><td>Assign names to images and/or channels and define their relationship.</td><td>Yes</td>
+    <td>This module gives each image a meaningful name by which modules in the analysis pipeline will refer to it.
+    The most common usage for this module is to define a collection of channels that represent a single
+    field of view. By using this module, each of these channels will be loaded and processed together for each field of view.</td></tr>
+    <tr align="center"><td><b>Groups</b></td><td>Define sub-divisions between groups of images for processing.</td><td>No</td>
+    <td>For some assays, you will need the option of further sub-dividing an image set into <i>groups</i> that share a 
+    common feature. An example of this is a time-lapse movie that consists of individual files; each group of files that
+    define a single movie needs to be processed independently of the others. This module allows you to specify what
+    distinguishes one group of images from another. If your assay does not require this sort of behavior, this module 
+    can be safely skipped.</td></tr>
+</table>
+</p>
+<p>For more information on these modules and how to configure for best performance, please see the detailed help by selecting the
+module and clicking the <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img>&nbsp;button at the bottom of the pipeline panel.</p>
 """%globals()
 
 LOADING_IMAGE_SEQUENCES_HELP = """
@@ -1875,40 +1904,36 @@ If you have more than one site per well and have site metadata (with the name,
 #########################################################
 
 '''The help menu for CP's main window'''
-from cellprofiler.modules import images, metadata, namesandtypes, groups
-
 MAIN_HELP = (
     ("Why Use CellProfiler?", WHEN_CAN_I_USE_CELLPROFILER_HELP),
     ("Navigating The Menu Bar", (
-        ("Using The File Menu",MENU_BAR_FILE_HELP),
-        ("Using The Edit Menu",MENU_BAR_EDIT_HELP),
-        ("Using The Test Menu",TEST_MODE_HELP),
-        ("Using The Window Menu",MENU_BAR_WINDOW_HELP),
-        ("Using The Parameter Sampling Menu",PARAMETER_SAMPLING_MENU_HELP),
-        ("Using The Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
+        ("Using the File Menu",MENU_BAR_FILE_HELP),
+        ("Using the Edit Menu",MENU_BAR_EDIT_HELP),
+        ("Using the Test Menu",TEST_MODE_HELP),
+        ("Using the Window Menu",MENU_BAR_WINDOW_HELP),
+        ("Using the Parameter Sampling Menu",PARAMETER_SAMPLING_MENU_HELP),
+        ("Using the Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
     ("Using Module Display Windows", FIGURE_HELP ),
-    ("Setting the Preferences", PREFERENCES_HELP),
+    #("Setting the Preferences", PREFERENCES_HELP),
     ("Creating A Project",(
-        ("Introduction To Projects",INTRODUCTION_TO_PROJECTS_HELP),
-        ("Using The Images Module",images.__doc__),
-        ("Using The Metadata Module",metadata.__doc__),
-        ("Using The NamesAndTypes Module",namesandtypes.__doc__),
-        ("Using The Groups Module",groups.__doc__),
+        ("Introduction to Projects",INTRODUCTION_TO_PROJECTS_HELP),
+        ("Selecting Images for Input",SELECTING_IMAGES_HELP),
+        ("Configuring Images for Analysis",CONFIGURE_IMAGES_HELP),
         ("Loading Image Stacks And Movies",LOADING_IMAGE_SEQUENCES_HELP))),
     ("How To Build A Pipeline", BUILDING_A_PIPELINE_HELP),
     ("Testing Your Pipeline",TEST_MODE_HELP),
     ("Running Your Pipeline", RUNNING_YOUR_PIPELINE_HELP),    
     ("Using Your Output", (
-        ("How Measurements Are Named", MEASUREMENT_NOMENCLATURE_HELP),
+        ("How Measurements are Named", MEASUREMENT_NOMENCLATURE_HELP),
         ("Using Spreadsheets and Databases", SPREADSHEETS_DATABASE_HELP),
         ("Using the Output File", USING_THE_OUTPUT_FILE_HELP))),   
     ("Troubleshooting Memory and Speed Issues",MEMORY_AND_SPEED_HELP),
+    ("Legacy Modules and Features",(
+        ("Load Modules", LEGACY_LOAD_MODULES_HELP),
+        ("Setting the Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
+        ("Setting the Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
+        ("Setting the Output Filename", USING_THE_OUTPUT_FILE_HELP))), 
     ("Other Features",(
-        ("Legacy Modules and Features",(
-            ("Load Modules", LEGACY_LOAD_MODULES_HELP),
-            ("Setting The Default Input Folder", DEFAULT_IMAGE_FOLDER_HELP),
-            ("Setting The Default Output Folder", DEFAULT_OUTPUT_FOLDER_HELP),
-            ("Setting The Output Filename", USING_THE_OUTPUT_FILE_HELP))),
         ("Batch Processing", BATCHPROCESSING_HELP),
         ("Running Multiple Pipelines", RUN_MULTIPLE_PIPELINES_HELP),
         ("Configuring Logging", CONFIGURING_LOGGING_HELP),

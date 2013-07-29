@@ -24,11 +24,6 @@ import cellprofiler.cpmath.cpmorphology as morph
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.filter import permutations
 
-# Sam asked me to do this
-class TestFailIfLinux(unittest.TestCase):
-    def test_01_01_sam_asked_me_to_make_the_build_fail(self):
-        import sys
-        self.assertNotEqual(sys.platform, "linux2")
         
 class TestFillLabeledHoles(unittest.TestCase):
     def test_01_00_zeros(self):

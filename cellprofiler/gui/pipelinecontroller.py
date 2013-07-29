@@ -649,11 +649,14 @@ class PipelineController:
                 text = (
 "Your pipeline contains the legacy module LoadImages, and legacy references\n"
 "to the Default Input Folder. CellProfiler can convert this pipeline by:\n\n"
-"(1) Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
-"(2) Using an existing folder instead of the Default Input Folder.\n\n"
-"If you choose to convert the pipeline, you should then make sure to provide\n"
-"your original images to the Images module as input, and confirm that your\n"
-"metadata (if any) is provided to the Metadata module.")
+u"\u2022 Using the new input modules (Images, Metadata, NamesAndTypes, Groups).\n"
+u"\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
+"If you choose to convert the pipeline, you should then make sure of the \n"
+"following:\n"
+u"\u2022 Images module: Provide your original images and/or folders as input.\n"
+u"\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
+u"\u2022 NamesAndTypes: Make sure to select 'Load as Color image' for any color\n"
+"   images under the 'Select the image type' setting.\n")
                 CONVERT = 1
                 DONT_CONVERT = 2
                 

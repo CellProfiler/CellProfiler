@@ -97,7 +97,7 @@ class EditObjectsDialog(wx.Dialog):
         frame_size = [max(frame_size[0], frame_size[1]) / 2] * 2
         style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX
         wx.Dialog.__init__(self, None, -1,
-                           "Choose objects to keep",
+                           "",
                            size=frame_size,
                            style = style)
         self.allow_overlap = allow_overlap

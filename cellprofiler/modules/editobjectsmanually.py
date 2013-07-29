@@ -211,7 +211,7 @@ class EditObjectsManually(I.Identify):
             else:
                 guide_image = None
             filtered_labels = workspace.interaction_request(
-                self, orig_labels, guide_image)
+                self, orig_labels, guide_image, workspace.measurements.image_set_number)
         except workspace.NoInteractionException:
             # Accept the labels as-is
             filtered_labels = orig_labels
@@ -451,12 +451,17 @@ class EditObjectsManually(I.Identify):
                 args = ["User cancelled EditObjectsManually"]
             super(self.__class__, self).__init__(*args)
             
-    def handle_interaction(self, orig_labels, guide_image):
+    def handle_interaction(self, orig_labels, guide_image, image_set_number):
         from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
         from wx import OK
+        title = "%s #%d, image cycle #%d: " % (self.module_name,
+                                             self.module_num,
+                                             image_set_number)
+        title += "Create, remove and edit %s. Click Help for full instructions"%self.object_name.value
         with EditObjectsDialog(
             guide_image, orig_labels,
-            self.allow_overlap, self.object_name.value) as dialog_box:
+            self.allow_overlap, 
+            title) as dialog_box:
             result = dialog_box.ShowModal()
             if result != OK:
                 raise self.InteractionCancelledException()

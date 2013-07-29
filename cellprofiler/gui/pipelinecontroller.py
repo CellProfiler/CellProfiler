@@ -643,6 +643,7 @@ class PipelineController:
                 self.__pipeline.load(pathname)
             self.__pipeline.turn_off_batch_mode()
             self.__clear_errors()
+            self.__pipeline.fix_legacy_pipeline()
             if self.__pipeline.can_convert_legacy_input_modules():
                 # Note: the length of the longest line of text also
                 #       controls the size of the directory entry text box

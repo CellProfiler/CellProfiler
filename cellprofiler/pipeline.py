@@ -1448,6 +1448,27 @@ class Pipeline(object):
                     self.edit_module(module.module_num, True)
             self.notify_listeners(PipelineLoadedEvent())
             
+    def fix_legacy_pipeline(self):
+        '''Perform inter-module fixes needed for some legacy pipelines'''
+        from cellprofiler.modules.loadsingleimage import LoadSingleImage
+        #
+        # LoadSingleImage used to work if placed before LoadImages or
+        # LoadData, but doesn't any more
+        #
+        while(True):
+            for i, module in enumerate(self.modules()):
+                if isinstance(module, LoadSingleImage):
+                    for other_module in self.modules()[(i+1):]:
+                        if other_module.is_load_module():
+                            self.move_module(other_module.module_num,
+                                             DIRECTION_UP)
+                            break
+                    else:
+                        break #rerun from start
+            else:
+                continue # correct more cases
+            break
+            
     def requires_aggregation(self):
         '''Return True if the pipeline requires aggregation across image sets
         

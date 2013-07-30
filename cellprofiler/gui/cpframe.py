@@ -454,6 +454,7 @@ class CPFrame(wx.Frame):
         '''Run the sash layout algorithm on the path/module/imageset panel'''
         wx.LayoutAlgorithm().LayoutWindow(self.__path_module_imageset_panel,
                                           self.__module_panel)
+        self.__right_win.Layout()
 
 
     def OnClose(self, event):

@@ -128,7 +128,8 @@ class TestFormatReader(unittest.TestCase):
         
     def test_03_03_load_using_bioformats_url(self):
         data = F.load_using_bioformats_url(
-            "http://www.cellprofiler.org/linked_files/broad-logo.gif")
+            "http://www.cellprofiler.org/linked_files/broad-logo.gif",
+            rescale=False)
         self.assertSequenceEqual(data.shape, (38, 150, 3))
         expected_0_10_0_10 = np.array([
             [181, 176, 185, 185, 175, 175, 176, 195, 187, 185],

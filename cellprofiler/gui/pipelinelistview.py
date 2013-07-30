@@ -177,7 +177,15 @@ class PipelineListView(object):
         self.drag_time = None
         self.list_ctrl.SetDropTarget(PipelineDropTarget(self))
         self.validation_requests = []
+        self.__allow_editing = True
 
+    def allow_editing(self, allow):
+        '''Allow or disallow pipeline editing
+        
+        allow - true to allow, false to prevent
+        '''
+        self.__allow_editing = allow
+        
     def make_list(self):
         '''Make the list control with the pipeline items in it'''
         self.list_ctrl = PipelineListCtrl(self.__panel)
@@ -623,6 +631,8 @@ class PipelineListView(object):
         the cursor 10 pixels. Drop at drag site is not
         allowed.
         '''
+        if not self.__allow_editing:
+            return False
         index = self.where_to_drop(x,y)
         if index is None:
             self.list_ctrl.end_drop()

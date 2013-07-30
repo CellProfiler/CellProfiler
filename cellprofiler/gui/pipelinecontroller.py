@@ -1753,6 +1753,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
         try:
             self.__module_view.disable()
+            self.__pipeline_list_view.allow_editing(False)
             self.__frame.preferences_view.on_analyze_images()
             clear_old_errors()
             with cpp.Pipeline.PipelineListener(
@@ -2061,6 +2062,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 cpp.M_PIPELINE)
             self.__pipeline.loadtxt(StringIO(pipeline_txt.encode("utf-8")))
             self.__module_view.disable()
+            self.__pipeline_list_view.allow_editing(False)
             self.__frame.preferences_view.on_analyze_images()
             measurements_file_path = None
             if cpprefs.get_write_MAT_files() == cpprefs.WRITE_HDF5:
@@ -2147,6 +2149,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.__analysis = None
         self.__frame.preferences_view.on_stop_analysis()
         self.__module_view.enable()
+        self.__pipeline_list_view.allow_editing(True)
         self.show_launch_controls()
     
     def is_in_debug_mode(self):
@@ -2208,7 +2211,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                       self.__groupings[0][0],
                                       self.__groupings[0][1])
         self.__debug_outlines = {}
-        return self.debug_init_imageset()
+        if not self.debug_init_imageset():
+            self.stop_debugging()
+            return False
+        return True
     
     def close_debug_measurements(self):
         del self.__debug_measurements

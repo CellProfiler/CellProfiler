@@ -101,17 +101,17 @@ from cellprofiler.modules.loadimages import needs_well_metadata
 from cellprofiler.modules.loadimages import well_metadata_tokens
 from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP, METADATA_HELP_REF
 
-X_AUTOMATIC_EXTRACTION = "Automatic"
-X_MANUAL_EXTRACTION = "Manual"
-X_IMPORTED_EXTRACTION = "Import metadata"
+X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
+X_MANUAL_EXTRACTION = "Extract from file/folder names"
+X_IMPORTED_EXTRACTION = "Import from file"
 X_ALL_EXTRACTION_METHODS = [X_AUTOMATIC_EXTRACTION, 
                             X_MANUAL_EXTRACTION,
                             X_IMPORTED_EXTRACTION]
-XM_FILE_NAME = "From file name"
-XM_FOLDER_NAME = "From folder name"
+XM_FILE_NAME = "File name"
+XM_FOLDER_NAME = "Folder name"
 
 F_ALL_IMAGES = "All images"
-F_FILTERED_IMAGES = "Images selected using a filter"
+F_FILTERED_IMAGES = "Images matching a rule"
 COL_PATH = "Path / URL"
 COL_SERIES = "Series"
 COL_INDEX = "Frame"
@@ -125,7 +125,7 @@ LEN_EXTRACTION_METHOD_V1 = 8
 LEN_EXTRACTION_METHOD = 9
 
 class Metadata(cpm.CPModule):
-    variable_revision_number = 2
+    variable_revision_number = 3
     module_name = "Metadata"
     category = "File Processing"
     
@@ -172,7 +172,7 @@ class Metadata(cpm.CPModule):
             group.append("divider", cps.Divider())
             
         group.append("extraction_method", cps.Choice(
-            "Select the metadata extraction method", X_ALL_EXTRACTION_METHODS, doc="""
+            "Metadata extraction method", X_ALL_EXTRACTION_METHODS, doc="""
             <p>Metadata can be stored in either or both of two ways:
             <ul>
             <li><i>Internally:</i> This method is often through the file naming, directory structuring, 
@@ -214,7 +214,7 @@ class Metadata(cpm.CPModule):
             the <b>NamesAndTypes</b> or <b>Groups</b> module, or <i>%(METADATA_HELP_REF)s</i></p>"""%globals()))
         
         group.append("source", cps.Choice(
-            "Select the metadata source", [XM_FILE_NAME, XM_FOLDER_NAME],doc = """
+            "Metadata source", [XM_FILE_NAME, XM_FOLDER_NAME],doc = """
             You can extract the metadata from the image's file
             name or from its folder name."""))
         
@@ -316,7 +316,7 @@ class Metadata(cpm.CPModule):
             </table></p>"""))
  
         group.append("filter_choice", cps.Choice(
-            "Extract metadata from:",
+            "Extract metadata from",
             [F_ALL_IMAGES, F_FILTERED_IMAGES],doc = """
             Select whether you want to extract metadata from all of the images
             chosen by the <b>Images</b> module or a subset of the images.
@@ -343,7 +343,7 @@ class Metadata(cpm.CPModule):
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals()))
         
         group.append("csv_location", cps.Pathname(
-            "Metadata file location:",
+            "Metadata file location",
             wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*"))
         
         group.append("csv_joiner", cps.Joiner(
@@ -368,7 +368,7 @@ class Metadata(cpm.CPModule):
             applied because the case does not match."""))
         
         group.append("update_metadata", cps.DoSomething(
-            "Update", "Update metadata",
+            "", "Update metadata",
             lambda : self.do_update_metadata(group),
             doc = """Press this button to automatically extract metadata from
             your image files."""))
@@ -933,8 +933,23 @@ class Metadata(cpm.CPModule):
                 new_setting_values.append(cps.NO)
             setting_values = new_setting_values
             variable_revision_number = 2
+            
+        if variable_revision_number == 2:
+            # Changed naming of extraction methods, metadata sources and filtering choices
+            n_groups = int(setting_values[IDX_EXTRACTION_METHOD_COUNT])
+            new_setting_values = setting_values[:IDX_EXTRACTION_METHOD]
+            for i in range(n_groups):
+                group = setting_values[
+                    (IDX_EXTRACTION_METHOD + LEN_EXTRACTION_METHOD * i):
+                    (IDX_EXTRACTION_METHOD + LEN_EXTRACTION_METHOD * (i+1))]
+                group[0] = X_AUTOMATIC_EXTRACTION if group[0] == "Automatic" else (X_MANUAL_EXTRACTION if group[0] == "Manual" else X_IMPORTED_EXTRACTION)
+                group[1] = XM_FILE_NAME if group[1] == "From file name" else XM_FOLDER_NAME 
+                group[4] = F_FILTERED_IMAGES if group[4] == "Images selected using a filter" else F_ALL_IMAGES
+                new_setting_values += group
+            setting_values = new_setting_values
+            variable_revision_number = 3
+
         return setting_values, variable_revision_number, from_matlab
-        
     
     class ImportedMetadata(object):
         '''A holder for the metadata from a csv file'''

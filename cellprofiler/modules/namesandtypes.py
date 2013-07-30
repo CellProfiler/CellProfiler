@@ -77,9 +77,9 @@ from bioformats.formatreader import get_omexml_metadata, load_using_bioformats
 import bioformats.omexml as OME
 import cellprofiler.utilities.jutil as J
 
-ASSIGN_ALL = "Assign all images"
+ASSIGN_ALL = "All images"
 ASSIGN_GUESS = "Try to guess image assignment"
-ASSIGN_RULES = "Assign images matching rules"
+ASSIGN_RULES = "Images matching rules"
 
 LOAD_AS_GRAYSCALE_IMAGE = "Grayscale image"
 LOAD_AS_COLOR_IMAGE = "Color image"
@@ -101,7 +101,7 @@ IMAGE_NAMES = ["DNA", "GFP", "Actin"]
 OBJECT_NAMES = ["Cell", "Nucleus", "Cytoplasm", "Speckle"]
 
 class NamesAndTypes(cpm.CPModule):
-    variable_revision_number = 1
+    variable_revision_number = 2
     module_name = "NamesAndTypes"
     category = "File Processing"
     
@@ -118,7 +118,7 @@ class NamesAndTypes(cpm.CPModule):
         self.metadata_keys = []
         
         self.assignment_method = cps.Choice(
-            "Assignment method", [ASSIGN_ALL, ASSIGN_RULES],doc = """
+            "Assign a name to", [ASSIGN_ALL, ASSIGN_RULES],doc = """
             How do you want to assign images to channels?<br>
             This setting controls how different image types (e.g., an image
             of the GFP stain and a brightfield image) are assigned different
@@ -143,7 +143,7 @@ class NamesAndTypes(cpm.CPModule):
                          LOAD_AS_MASK])
         
         self.single_image_provider = cps.FileImageNameProvider(
-            "Name the input image", IMAGE_NAMES[0])
+            "Name to assign these images", IMAGE_NAMES[0])
             
         self.assignments = []
         self.assignments_count = cps.HiddenCount( self.assignments,
@@ -264,7 +264,7 @@ class NamesAndTypes(cpm.CPModule):
                     break
                     
         group.append("image_name", cps.FileImageNameProvider(
-            "Name the input image", unique_image_name, doc = """
+            "Name to assign these images", unique_image_name, doc = """
             Enter the name that you want to call this image.
             After this point, this image will be referred to by this
             name, and can be selected from any drop-down menu that
@@ -285,7 +285,7 @@ class NamesAndTypes(cpm.CPModule):
                     break
 
         group.append("object_name", cps.ObjectNameProvider(
-            "Name the input objects", unique_object_name,  doc = """
+            "Name to assign these objects", unique_object_name,  doc = """
             Enter the name that you want to call this set of objects.
             After this point, this object will be referred to by this
             name, and can be selected from any drop-down menu that
@@ -1099,6 +1099,15 @@ class NamesAndTypes(cpm.CPModule):
                 return [FTR_CENTER_X, FTR_CENTER_Y]
         return []
             
+    def upgrade_settings(self, setting_values, variable_revision_number,
+                         module_name, from_matlab):
+        if variable_revision_number == 1:
+            # Changed naming of assignment methods
+            setting_values[0] = ASSIGN_ALL if setting_values[0] == "Assign all images" else ASSIGN_RULES 
+            variable_revision_number = 2      
+
+        return setting_values, variable_revision_number, from_matlab
+    
     class FakeModpathResolver(object):
         '''Resolve one modpath to one ipd'''
         def __init__(self, modpath, ipd):

@@ -144,7 +144,92 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:1|s
             self.assertEqual(assignment.image_name, image_name)
             self.assertEqual(assignment.object_name, objects_name)
             self.assertEqual(assignment.load_as_choice, load_as)
-            
+    
+    def test_00_02_load_v2(self):
+            data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20130730112304
+ModuleCount:3
+HasImagePlaneDetails:True
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    :{"ShowFiltered"\x3A false}
+    Filter based on rules:Yes
+    Filter:or (extension does istif)
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Extract metadata?:Yes
+    Extraction method count:1
+    Extraction method:Manual
+    Source:From file name
+    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})f(?P<Site>\x5B0-9\x5D{2})d(?P<ChannelNumber>\x5B0-9\x5D)
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Filter images:All images
+    :or (file does contain "")
+    Metadata file location\x3A:
+    Match file and image metadata:\x5B\x5D
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:2|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Assign a name to:Images matching rules
+    Select the image type:Color image
+    Name to assign these images:PI
+    :\x5B{u\'Illum\'\x3A u\'Plate\', u\'DNA\'\x3A u\'Plate\', \'Cells\'\x3A u\'Plate\', u\'Actin\'\x3A u\'Plate\', u\'GFP\'\x3A u\'Plate\'}, {u\'Illum\'\x3A u\'Well\', u\'DNA\'\x3A u\'Well\', \'Cells\'\x3A u\'Well\', u\'Actin\'\x3A u\'Well\', u\'GFP\'\x3A u\'Well\'}, {u\'Illum\'\x3A u\'Site\', u\'DNA\'\x3A u\'Site\', \'Cells\'\x3A u\'Site\', u\'Actin\'\x3A u\'Site\', u\'GFP\'\x3A u\'Site\'}\x5D
+    Channel matching method:Order
+    Assignments count:5
+    Select the rule criteria:or (metadata does ChannelNumber "0")
+    Name to assign these images:DNA
+    Name to assign these objects:Nuclei
+    Select the image type:Grayscale image
+    Select the rule criteria:or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)
+    Name to assign these images:Actin
+    Name to assign these objects:Cells
+    Select the image type:Color image
+    Select the rule criteria:or (metadata does ChannelNumber "2")
+    Name to assign these images:GFP
+    Name to assign these objects:Cells
+    Select the image type:Mask
+    Select the rule criteria:or (metadata does ChannelNumber "2")
+    Name to assign these images:Foo
+    Name to assign these objects:Cells
+    Select the image type:Objects
+    Select the rule criteria:or (metadata does ChannelNumber "2")
+    Name to assign these images:Illum
+    Name to assign these objects:Cells
+    Select the image type:Illumination function
+
+"Version":"1","PlaneCount":"5"
+"URL","Series","Index","Channel","ColorFormat","SizeC","SizeT","SizeZ"
+"file:///C:/trunk/ExampleImages/ExampleHT29/AS_09125_050116030001_D03f00d0.tif",,,,"monochrome","1","1","1"
+"file:///C:/trunk/ExampleImages/ExampleHT29/AS_09125_050116030001_D03f00d1.tif",,,,"monochrome","1","1","1"
+"file:///C:/trunk/ExampleImages/ExampleHT29/AS_09125_050116030001_D03f00d2.tif",,,,"monochrome","1","1","1"
+"file:///C:/trunk/ExampleImages/ExampleHT29/ExampleHT29.cp",,,,,,,
+"file:///C:/trunk/ExampleImages/ExampleHT29/k27IllumCorrControlv1.mat",,,,,,,
+"""
+            pipeline = cpp.Pipeline()
+            def callback(caller, event):
+                self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            pipeline.add_listener(callback)
+            pipeline.load(StringIO(data))
+            self.assertEqual(len(pipeline.modules()), 3)
+            module = pipeline.modules()[2]
+            self.assertTrue(isinstance(module, N.NamesAndTypes))
+            self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
+            self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
+            self.assertEqual(module.single_image_provider.value, "PI")
+            self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
+            self.assertEqual(module.assignments_count.value, 5)
+            aa = module.assignments
+            for assignment, rule, image_name, objects_name, load_as in (
+                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", N.LOAD_AS_GRAYSCALE_IMAGE),
+                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE),
+                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", N.LOAD_AS_MASK),
+                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", N.LOAD_AS_OBJECTS),
+                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION)):
+                self.assertEqual(assignment.rule_filter.value, rule)
+                self.assertEqual(assignment.image_name, image_name)
+                self.assertEqual(assignment.object_name, objects_name)
+                self.assertEqual(assignment.load_as_choice, load_as)
+                            
     def do_teest(self, module, channels, expected_tags, expected_metadata, additional=None):
         '''Ensure that NamesAndTypes recreates the column layout when run
         

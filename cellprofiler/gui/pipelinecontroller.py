@@ -1290,6 +1290,18 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         if len(paths) == 0:
             wx.MessageBox("No image selected.", caption = "No image selected", parent = self.__frame)
             return
+        path = paths[0]
+        ext = os.path.splitext(path)[1]
+        if len(ext) > 1 and ext[1:] in cpp.EXT_PIPELINE_CHOICES:
+            result = wx.MessageBox(
+                'Do you want to import the pipeline, \n'
+                '"%s", into your project?' % os.path.split(path)[1],
+                caption = "Import pipeline",
+                style = wx.YES_NO | wx.ICON_QUESTION,
+                parent = self.__path_list_ctrl)
+            if result == wx.YES:
+                self.do_load_pipeline(path)
+            return
         show_image(paths[0], self.__frame)
                 
     def on_pathlist_file_delete(self, paths):

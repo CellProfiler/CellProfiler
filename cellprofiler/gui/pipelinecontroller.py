@@ -2323,11 +2323,21 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             parent = self.__frame,
             style = wx.PD_APP_MODAL | wx.PD_AUTO_HIDE | wx.PD_CAN_ABORT) as dlg:
             dlg.Show()
+            max_message_width = None
             while True:
                 assert isinstance(dlg, wx.ProgressDialog)
                 module = self.current_debug_module()
                 message = message_format % (
                     index+1, count, module.module_name)
+                message_width = dlg.GetTextExtent(message)[0]
+                if max_message_width is None:
+                    max_message_width = message_width
+                elif max_message_width < message_width:
+                    diff = message_width - max_message_width
+                    max_message_width = message_width
+                    width, height = dlg.GetSize()
+                    width += diff
+                    dlg.SetSize(wx.Size(width, height))
                 wants_continue, wants_skip = dlg.Update(index, message)
                 if not wants_continue:
                     return

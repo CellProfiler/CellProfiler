@@ -1464,10 +1464,10 @@ class Pipeline(object):
                                              DIRECTION_UP)
                             break
                     else:
-                        break #rerun from start
+                        continue
+                    break # Rerun from start
             else:
-                continue # correct more cases
-            break
+                break
             
     def requires_aggregation(self):
         '''Return True if the pipeline requires aggregation across image sets

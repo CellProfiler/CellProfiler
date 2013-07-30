@@ -316,6 +316,18 @@ IJ_1 = "ImageJ 1.x"
 '''Use ImageJ 2.0 with Imglib and new framework'''
 IJ_2 = "ImageJ 2.0"
 
+'''The default extension for a CellProfiler pipeline (without the dot)'''
+EXT_PIPELINE = "cppipe"
+
+'''Possible CellProfiler pipeline extensions'''
+EXT_PIPELINE_CHOICES = [EXT_PIPELINE, "cp", "cpi", "cpproj", "h5", "mat"]
+
+'''Default project extension'''
+EXT_PROJECT = "cpproj"
+
+'''Possible CellProfiler project extensions'''
+EXT_PROJECT_CHOICES = [EXT_PROJECT, "cpi", "h5"]
+
 def recent_file(index, category=""):
     return (FF_RECENTFILES % (index + 1)) + category
 

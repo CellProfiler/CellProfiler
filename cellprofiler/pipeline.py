@@ -193,18 +193,6 @@ C_RUN = "Run"
 F_TIMESTAMP = "Timestamp"
 M_TIMESTAMP = "_".join((C_RUN, F_TIMESTAMP))
 
-'''The default extension for a CellProfiler pipeline (without the dot)'''
-EXT_PIPELINE = "cppipe"
-
-'''Possible CellProfiler pipeline extensions'''
-EXT_PIPELINE_CHOICES = [EXT_PIPELINE, "cp", "cpi", "cpproj", "h5", "mat"]
-
-'''Default project extension'''
-EXT_PROJECT = "cpproj"
-
-'''Possible CellProfiler project extensions'''
-EXT_PROJECT_CHOICES = [EXT_PROJECT, "cpi", "h5"]
-
 def add_all_images(handles,image_set, object_set):
     """ Add all images to the handles structure passed
     

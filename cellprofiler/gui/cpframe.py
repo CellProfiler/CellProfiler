@@ -505,7 +505,7 @@ class CPFrame(wx.Frame):
         self.__menu_file.Append(
             wx.ID_OPEN,
             "Open Project...\tctrl+O",
-            help='Open a project from a .cpi project file')
+            help='Open a project from a .%s project file' % cpprefs.EXT_PROJECT)
         self.recent_workspace_files = wx.Menu()
         self.__menu_file.AppendSubMenu(
             self.recent_workspace_files, 
@@ -526,7 +526,8 @@ class CPFrame(wx.Frame):
         submenu.Append(
             ID_FILE_LOAD_PIPELINE,
             'From file...',
-            'Import a pipeline into the project from a .cp file')
+            'Import a pipeline into the project from a .%s file' % 
+            cpprefs.EXT_PIPELINE)
         submenu.Append(
             ID_FILE_URL_LOAD_PIPELINE, 
             'From URL...', 
@@ -537,7 +538,7 @@ class CPFrame(wx.Frame):
         submenu.Append(
             ID_FILE_SAVE_PIPELINE,
             'Pipeline...',
-            "Save the project's pipeline to a .cp file")
+            "Save the project's pipeline to a .%s file" % cpprefs.EXT_PIPELINE)
         submenu.Append(
             ID_FILE_EXPORT_IMAGE_SETS,
             "Image Set Listing...",

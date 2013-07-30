@@ -1097,11 +1097,11 @@ performing an analysis run.
 <ul>
 <li><b>New project:</b> Clears the current project by removing all the analysis
 modules and resetting the input modules.</li>
-<li><b>Open Project...:</b> Open a previously saved CellProfiler project (<i>.cpi</i> file)
+<li><b>Open Project...:</b> Open a previously saved CellProfiler project (<i>.cpproj</i> file)
 from your hard drive.</li>
 <li><b>Open Recent:</b> Displays a list of the most recent projects used. Select any
 one of these projects to load it.</li>
-<li><b>Save Project:</b> Save the current project to your hard drive as a <i>.cpi</i> file. 
+<li><b>Save Project:</b> Save the current project to your hard drive as a <i>.cpproj</i> file. 
 If it has not been saved previously, you will be asked for a file name to give the 
 project. Thereafter, any changes to the project will be automatically saved to that filename unless
 you choose <b>Save as...</b>.</li>
@@ -1110,10 +1110,10 @@ you choose <b>Save as...</b>.</li>
 it was first opened.</li>
 <li><b>Import Pipeline:</b> Gives you the choice of importing a CellProfiler pipeline file from 
 your hard drive (<i>From file...</i>) or from a web address (<i>From URL...</i>). If importing from
-a file, you can point it to a pipeline (<i>.cp</i>) file or have it extract the pipeline from
-a project (<i>.cpi</i>) file.</li>
+a file, you can point it to a pipeline (<i>.cppipe</i>) file or have it extract the pipeline from
+a project (<i>.cpproj</i>) file.</li>
 <li><b>Export:</b> You have the choice of exporting the pipeline you are currently working on as a 
-CellProfiler <i>.cp</i> pipeline file (<i>Pipeline</i>), or the image set list as a .csv (<i>Image set listing</i>).</li>
+CellProfiler <i>.cppipe</i> pipeline file (<i>Pipeline</i>), or the image set list as a .csv (<i>Image set listing</i>).</li>
 <li><b>Clear Pipeline:</b> Removes all modules from the current pipeline.</li>
 <li><b>View Image:</b> Opens a dialog box prompting you to select an image file for
 display. Images listed in the File list panel in the <b>Images</b> module can be also be displayed by double-clicking 
@@ -1560,10 +1560,10 @@ the bottom of CellProfiler.</p>
 save it unless you are saving the project to a new name or location. You can always save your 
 current work to a new project file by selecting <i>File > Save Project As...</i>, which will
 save your project, complete with the current image file list and pipeline, to a file with 
-with the extension <i>.cpi</i>.</p>
+with the extension <i>.cpproj</i>.</p>
 <p>For those interested, some technical details:
 <ul>
-<li>The <i>.cpi</i> file stores collected information using the HDF5 format. Documentation on
+<li>The <i>.cpproj</i> file stores collected information using the HDF5 format. Documentation on
 how measurements are stored and handled in CellProfiler using this format can be found 
 <a href="https://github.com/CellProfiler/CellProfiler/wiki/Module-Structure-and-Data-Storage-Retrieval#hdf5-measurement-and-workspace-format">here</a>.</li>
 <li>All information is cached in the project file after it is computed. It is either

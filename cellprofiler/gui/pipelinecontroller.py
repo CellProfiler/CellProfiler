@@ -471,10 +471,13 @@ class PipelineController:
         returns a path or None if the user canceled. If it returns a path,
         the workspace file is locked.
         '''
+        wildcard = "CellProfiler project (%s)|%s|All files (*.*)|*.*" % (
+            ",".join(["*.%s" % x for x in cpprefs.EXT_PROJECT_CHOICES]),
+            ";".join(["*.%s" % x for x in cpprefs.EXT_PROJECT_CHOICES]))
         with wx.FileDialog(
             self.__frame,
-            "Choose a workspace file to open",
-            wildcard = "CellProfiler workspace (*.cpi)|*.cpi|All files (*.*)|*.*") as dlg:
+            "Choose a project file to open",
+            wildcard = wildcard) as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
                 return dlg.Path
@@ -566,17 +569,19 @@ class PipelineController:
         self.do_save_as_workspace()
         
     def do_save_as_workspace(self):
+        wildcard = "CellProfiler project (*.%s)|*.%s" % (
+            cpprefs.EXT_PROJECT, cpprefs.EXT_PROJECT)
         with wx.FileDialog(
             self.__frame,
             "Save project file as",
-            wildcard = "CellProfiler project (*.cpi)|*.cpi",
+            wildcard = wildcard,
             style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             dlg.Directory = cpprefs.get_default_output_directory()
             if dlg.ShowModal() == wx.ID_OK:
                 pathname, filename = os.path.split(dlg.Path)
                 fullname = dlg.Path
                 if sys.platform == "darwin" and "." not in filename:
-                    fullname += ".cpi"
+                    fullname += "." + cpprefs.EXT_PROJECT
                 self.do_save_workspace(fullname)
                 cpprefs.set_current_workspace_path(fullname)
                 cpprefs.set_workspace_file(fullname)
@@ -601,9 +606,12 @@ class PipelineController:
         return True
 
     def __on_load_pipeline(self, event):
+        wildcard = "CellProfiler pipeline (%s)|%s" % (
+            ",".join([".%s" % x for x in cpprefs.EXT_PIPELINE_CHOICES]),
+            ";".join([".%s" % x for x in cpprefs.EXT_PIPELINE_CHOICES]))
         dlg = wx.FileDialog(self.__frame,
                             "Choose a pipeline file to open",
-                            wildcard = ("CellProfiler pipeline (*.cp,*.cpi,*.mat,*.h5)|*.cp;*.cpi;*.mat;*.h5"))
+                            wildcard = wildcard)
         dlg.Directory = cpprefs.get_default_output_directory()
         if dlg.ShowModal()==wx.ID_OK:
             pathname = os.path.join(dlg.GetDirectory(),dlg.GetFilename())
@@ -615,7 +623,7 @@ class PipelineController:
                                  "Enter the pipeline's URL\n\n"
                                  "Example: https://svn.broadinstitute.org/"
                                  "CellProfiler/trunk/ExampleImages/"
-                                 "ExampleSBSImages/ExampleSBS.cp",
+                                 "ExampleSBSImages/ExampleSBS.cppipe",
                                  "Load pipeline via URL")
         if dlg.ShowModal() == wx.ID_OK:
             import urllib2
@@ -817,10 +825,12 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
         return True if the user saved the pipeline
         '''
-        wildcard="CellProfiler pipeline (*.cp)|*.cp"
+        wildcard="CellProfiler pipeline (*.%s)|*.%s" % (
+            cpprefs.EXT_PIPELINE, cpprefs.EXT_PIPELINE)
         dlg = wx.FileDialog(self.__frame,
                             "Save pipeline",
                             wildcard=wildcard,
+                            defaultFile="pipeline.%s" % cpprefs.EXT_PIPELINE,
                             style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
         try:
             if dlg.ShowModal() == wx.ID_OK:
@@ -828,7 +838,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 if not sys.platform.startswith("win"):
                     if file_name.find('.') == -1:
                         # on platforms other than Windows, add the default suffix
-                        file_name += ".cp"
+                        file_name += "." + cpprefs.EXT_PIPELINE
                 pathname = os.path.join(dlg.GetDirectory(), file_name)
                 self.__pipeline.save(pathname)
                 return True
@@ -1292,7 +1302,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             return
         path = paths[0]
         ext = os.path.splitext(path)[1]
-        if len(ext) > 1 and ext[1:] in cpp.EXT_PIPELINE_CHOICES:
+        if len(ext) > 1 and ext[1:] in cpprefs.EXT_PIPELINE_CHOICES:
             result = wx.MessageBox(
                 'Do you want to import the pipeline, \n'
                 '"%s", into your project?' % os.path.split(path)[1],

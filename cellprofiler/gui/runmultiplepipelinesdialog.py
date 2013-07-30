@@ -141,8 +141,11 @@ class RunMultplePipelinesDialog(wx.Dialog):
         self.set_file_chooser_path(event.Path)
     
     def set_file_chooser_path(self, path):
-        file_names = [file_name for file_name in os.listdir(path)
-                      if os.path.splitext(file_name)[1].lower() in (".cp", ".mat")]
+        file_names = []
+        for file_name in os.listdir(path):
+            ext = os.path.splitext(file_name)[1].lower()
+            if len(ext) > 0 and ext[1:] in cpprefs.EXT_PIPELINE_CHOICES:
+                file_names.append(file_name)
         self.file_chooser.DeleteAllItems()
         module_count = [ None ]
         def on_pipeline_event(caller, event):

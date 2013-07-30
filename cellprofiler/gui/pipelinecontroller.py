@@ -2582,6 +2582,22 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         button_sizer = wx.StdDialogButtonSizer()
         save_pipeline_button = wx.Button(dlg, -1, "Save project")
         button_sizer.AddButton(save_pipeline_button)
+        if sys.platform in ('darwin', 'win32'):
+            open_default_output_folder_button = wx.Button(
+                dlg, -1, "Open default output folder")
+            button_sizer.SetNegativeButton(open_default_output_folder_button)
+            button_sizer.AddButton(open_default_output_folder_button)
+            def on_open_default_output_folder(event):
+                import subprocess
+                if sys.platform == 'darwin':
+                    subprocess.call([
+                        "open", "-R", cpprefs.get_default_output_directory()])
+                elif sys.platform == 'win32':
+                    subprocess.call([
+                        "cmd", "/C", "start", "explorer",
+                        cpprefs.get_default_output_directory()])
+            open_default_output_folder_button.Bind(
+                wx.EVT_BUTTON, on_open_default_output_folder)
         button_sizer.SetCancelButton(save_pipeline_button)
         button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
         sizer.Add(button_sizer, 0, 
@@ -2593,6 +2609,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 caption = "Saved workspace",
                 parent = self.__frame)
         save_pipeline_button.Bind(wx.EVT_BUTTON, on_save_workspace)
+
+            
         button_sizer.Realize()
         dlg.Fit()
         dlg.CenterOnParent()

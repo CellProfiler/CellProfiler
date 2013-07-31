@@ -260,33 +260,33 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
     Name to assign these images:PI
     :\x5B{u\'Illum\'\x3A u\'Plate\', u\'DNA\'\x3A u\'Plate\', \'Cells\'\x3A u\'Plate\', u\'Actin\'\x3A u\'Plate\', u\'GFP\'\x3A u\'Plate\'}, {u\'Illum\'\x3A u\'Well\', u\'DNA\'\x3A u\'Well\', \'Cells\'\x3A u\'Well\', u\'Actin\'\x3A u\'Well\', u\'GFP\'\x3A u\'Well\'}, {u\'Illum\'\x3A u\'Site\', u\'DNA\'\x3A u\'Site\', \'Cells\'\x3A u\'Site\', u\'Actin\'\x3A u\'Site\', u\'GFP\'\x3A u\'Site\'}\x5D
     Channel matching method:Order
-    Rescale intensities?:False
+    Set intensity range from:Image bit-depth
     Assignments count:5
     Select the rule criteria:or (metadata does ChannelNumber "0")
     Name to assign these images:DNA
     Name to assign these objects:Nuclei
     Select the image type:Grayscale image
-    Rescale intensities?:True
+    Set intensity range from:Image metadata
     Select the rule criteria:or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)
     Name to assign these images:Actin
     Name to assign these objects:Cells
     Select the image type:Color image
-    Rescale intensities?:False
+    Set intensity range from:Image bit-depth
     Select the rule criteria:or (metadata does ChannelNumber "2")
     Name to assign these images:GFP
     Name to assign these objects:Cells
     Select the image type:Mask
-    Rescale intensities?:True
+    Set intensity range from:Image metadata
     Select the rule criteria:or (metadata does ChannelNumber "2")
     Name to assign these images:Foo
     Name to assign these objects:Cells
     Select the image type:Objects
-    Rescale intensities?:False
+    Set intensity range from:Image bit-depth
     Select the rule criteria:or (metadata does ChannelNumber "2")
     Name to assign these images:Illum
     Name to assign these objects:Cells
     Select the image type:Illumination function
-    Rescale intensities?:True
+    Set intensity range from:Image metadata
 """
             pipeline = cpp.Pipeline()
             def callback(caller, event):
@@ -299,16 +299,16 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
             self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
             self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
             self.assertEqual(module.single_image_provider.value, "PI")
-            self.assertFalse(module.single_rescale)
+            self.assertEqual(module.single_rescale, N.INTENSITY_RESCALING_BY_DATATYPE)
             self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
             self.assertEqual(module.assignments_count.value, 5)
             aa = module.assignments
             for assignment, rule, image_name, objects_name, load_as, rescale in (
-                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", N.LOAD_AS_GRAYSCALE_IMAGE, True),
-                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, False),
-                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", N.LOAD_AS_MASK, True),
-                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", N.LOAD_AS_OBJECTS, False),
-                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION, True)):
+                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA),
+                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, N.INTENSITY_RESCALING_BY_DATATYPE),
+                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA),
+                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", N.LOAD_AS_OBJECTS, N.INTENSITY_RESCALING_BY_DATATYPE),
+                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION, N.INTENSITY_RESCALING_BY_METADATA)):
                 self.assertEqual(assignment.rule_filter.value, rule)
                 self.assertEqual(assignment.image_name, image_name)
                 self.assertEqual(assignment.object_name, objects_name)

@@ -1,5 +1,6 @@
 __doc__ = """
-The <b>NamesAndTypes</b> module assigns a user-defined name to a particular images or channel.
+The <b>NamesAndTypes</b> module assigns a user-defined name to a particular image or channel, as
+well as defining the relationships between images to create an image set.
 <hr>
 Once the relevant images have been identified using the <b>Images</b> module (and/or optionally has
 had metadata associated with the images using the <b>Metadata</b> module), <b>NamesAndTypes</b> module 
@@ -27,7 +28,10 @@ channels, you then assign the relationship between channels. </p>
 <p>After this point, for any downstream module which requires an image as input, you can choose  
 any of the names you defined from a drop-down list.</p>
 
-<p>You can also use <b>NamesAndTypes</b> to define the relationships between images by using their 
+<p>You can also use <b>NamesAndTypes</b> to define the relationships between images. For example, 
+if you have acquired multiple wavelengths for your assay, you will need to
+match the channels to each other for each field of view so that they are loaded and processed together. 
+This can be done by using their 
 associated metadata. If you would like to use the metadata-specific settings, please see the <b>Metadata</b> module 
 or <i>Help > General help > Using Metadata in CellProfiler</i> for more details on metadata usage 
 and syntax. </p>
@@ -72,7 +76,7 @@ from cellprofiler.modules.images import ImagePredicate
 from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
-from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
+from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP, USING_METADATA_HELP_REF
 from bioformats.formatreader import get_omexml_metadata, load_using_bioformats
 import bioformats.omexml as OME
 import cellprofiler.utilities.jutil as J
@@ -92,6 +96,28 @@ LOAD_AS_ALL = [ LOAD_AS_GRAYSCALE_IMAGE,
                 LOAD_AS_ILLUMINATION_FUNCTION,
                 LOAD_AS_OBJECTS]
 
+INTENSITY_RESCALING_BY_METADATA = "Image metadata"
+INTENSITY_RESCALING_BY_DATATYPE = "Image bit-depth"
+RESCALING_HELP_TEXT = """
+This option determines how the image intensity should be 
+rescaled from 0 &ndash; 1.0.
+<ul>
+<li><i>%(INTENSITY_RESCALING_BY_METADATA)s:</i> Rescale the image 
+intensity so that saturated values are rescaled to 1.0 by dividing 
+all pixels in the image by the maximum possible intensity value. 
+Some image formats save the maximum possible intensity value along with the pixel data.
+For instance, a microscope might acquire images using a 12-bit
+A/D converter which outputs intensity values between zero and 4095,
+but stores the values in a field that can take values up to 65535.</li>
+<li><i>%(INTENSITY_RESCALING_BY_DATATYPE)s:</i> Ignore the image 
+metadata and rescale the image to 0 &ndash; 1 by dividing by 255 
+or 65535, depending on the number of bits used to store the image.</li>
+</ul>
+Please note that CellProfiler does not provide the option of loading
+the image as the raw, unscaled values. If you wish to make measurements
+on the unscaled image, use the <b>ImageMath</b> module to multiply the 
+scaled image by the actual image bit-depth."""%globals()
+        
 IDX_ASSIGNMENTS_COUNT_V2 = 5
 IDX_ASSIGNMENTS_COUNT = 6
 
@@ -149,20 +175,10 @@ class NamesAndTypes(cpm.CPModule):
         self.single_image_provider = cps.FileImageNameProvider(
             "Name to assign these images", IMAGE_NAMES[0])
         
-        self.single_rescale = cps.Binary(
-            "Rescale intensities?", True, doc = """
-            This option determines whether image metadata should be
-            used to rescale the image's intensities. Some image formats
-            save the maximum possible intensity value along with the pixel data.
-            For instance, a microscope might acquire images using a 12-bit
-            A/D converter which outputs intensity values between zero and 4095,
-            but stores the values in a field that can take values up to 65535.
-            Check this setting to rescale the image intensity so that
-            saturated values are rescaled to 1.0 by dividing all pixels
-            in the image by the maximum possible intensity value. Uncheck this 
-            setting to ignore the image metadata and rescale the image
-            to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
-            of bits used to store the image.""")
+        self.single_rescale = cps.Choice(
+            "Set intensity range from", 
+            [INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE], 
+            INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT)
         
         self.assignments = []
         self.assignments_count = cps.HiddenCount( self.assignments,
@@ -196,7 +212,7 @@ class NamesAndTypes(cpm.CPModule):
             <li><i>%(MATCH_BY_METADATA)s</i>: CellProfiler will match files with
             the same metadata values. This option is more complex to use than 
             <i>%(MATCH_BY_ORDER)s</i> but is more flexible and less prone to inadvertent
-            errors.
+            errors. %(USING_METADATA_HELP_REF)s. 
             <p>As an example, an experiment is run on a single multiwell plate with two 
             image channels (OrigBlue, <i>w1</i> and OrigGreen, <i>w2</i>) containing
             well and site metadata extracted using the <b>Metadata</b> module. A set of
@@ -349,20 +365,11 @@ class NamesAndTypes(cpm.CPModule):
             extract them first. See <b>IdentifyPrimaryObjects</b> for more details. </li>
             </ul>
             """%globals()))
-        group.append("rescale", cps.Binary(
-            "Rescale intensities?", True, doc = """
-            This option determines whether image metadata should be
-            used to rescale the image's intensities. Some image formats
-            save the maximum possible intensity value along with the pixel data.
-            For instance, a microscope might acquire images using a 12-bit
-            A/D converter which outputs intensity values between zero and 4095,
-            but stores the values in a field that can take values up to 65535.
-            Check this setting to rescale the image intensity so that
-            saturated values are rescaled to 1.0 by dividing all pixels
-            in the image by the maximum possible intensity value. Uncheck this 
-            setting to ignore the image metadata and rescale the image
-            to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
-            of bits used to store the image."""))
+        
+        group.append("rescale", cps.Choice(
+            "Set intensity range from", 
+            [INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE], 
+            INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT))
 
         group.can_remove = can_remove
         if can_remove:
@@ -1151,6 +1158,7 @@ class NamesAndTypes(cpm.CPModule):
             # Changed naming of assignment methods
             setting_values[0] = ASSIGN_ALL if setting_values[0] == "Assign all images" else ASSIGN_RULES 
             variable_revision_number = 2      
+        
         if variable_revision_number == 2:
             # Added single rescale and assignment method rescale
             n_assignments = int(setting_values[IDX_ASSIGNMENTS_COUNT_V2])
@@ -1160,7 +1168,7 @@ class NamesAndTypes(cpm.CPModule):
             for i in range(n_assignments):
                 next_idx = idx + NUM_ASSIGNMENT_SETTINGS_V2
                 new_setting_values += setting_values[idx:next_idx]
-                new_setting_values.append("Yes")
+                new_setting_values.append(INTENSITY_RESCALING_BY_METADATA)
                 idx = next_idx
             setting_values = new_setting_values
             variable_revision_number = 3

@@ -151,11 +151,11 @@ class NamesAndTypes(cpm.CPModule):
         self.add_assignment(can_remove = False)
         
         self.add_assignment_button = cps.DoSomething(
-            "", "Add another assignment rule",
+            "", "Add another image",
             self.add_assignment)
         
         self.matching_choice = cps.Choice(
-            "Channel matching method",
+            "Image set matching method",
             [MATCH_BY_ORDER, MATCH_BY_METADATA],doc = """
             Select how you want to match the image from one channel with
             the images from other channels.
@@ -224,7 +224,7 @@ class NamesAndTypes(cpm.CPModule):
             </p></li>
             </ul>"""%globals())
         self.join = cps.Joiner("")
-        self.imageset_setting = cps.ImageSetDisplay("", "Update image name table")
+        self.imageset_setting = cps.ImageSetDisplay("", "Update image set table")
         
     def add_assignment(self, can_remove = True):
         '''Add a rules assignment'''
@@ -336,7 +336,7 @@ class NamesAndTypes(cpm.CPModule):
             group.append(
                 "remover", 
                 cps.RemoveSettingButton(
-                '', "Remove this rule", self.assignments, group))
+                '', "Remove this image", self.assignments, group))
             
     def settings(self):
         result = [self.assignment_method, self.single_load_as_choice,

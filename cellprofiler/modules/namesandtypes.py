@@ -398,6 +398,9 @@ class NamesAndTypes(cpm.CPModule):
                 else:
                     result += [assignment.image_name]
                 result += [assignment.load_as_choice]
+                if assignment.load_as_choice in (LOAD_AS_COLOR_IMAGE,
+                                                 LOAD_AS_GRAYSCALE_IMAGE):
+                    result += [assignment.rescale]
                 if assignment.can_remove:
                     result += [assignment.remover]
             result += [self.add_assignment_button]

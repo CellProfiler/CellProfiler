@@ -92,7 +92,11 @@ LOAD_AS_ALL = [ LOAD_AS_GRAYSCALE_IMAGE,
                 LOAD_AS_ILLUMINATION_FUNCTION,
                 LOAD_AS_OBJECTS]
 
-IDX_ASSIGNMENTS_COUNT = 5
+IDX_ASSIGNMENTS_COUNT_V2 = 5
+IDX_ASSIGNMENTS_COUNT = 6
+
+NUM_ASSIGNMENT_SETTINGS_V2 = 4
+NUM_ASSIGNMENT_SETTINGS = 5
 
 MATCH_BY_ORDER = "Order"
 MATCH_BY_METADATA = "Metadata"
@@ -101,7 +105,7 @@ IMAGE_NAMES = ["DNA", "GFP", "Actin"]
 OBJECT_NAMES = ["Cell", "Nucleus", "Cytoplasm", "Speckle"]
 
 class NamesAndTypes(cpm.CPModule):
-    variable_revision_number = 2
+    variable_revision_number = 3
     module_name = "NamesAndTypes"
     category = "File Processing"
     
@@ -144,7 +148,22 @@ class NamesAndTypes(cpm.CPModule):
         
         self.single_image_provider = cps.FileImageNameProvider(
             "Name to assign these images", IMAGE_NAMES[0])
-            
+        
+        self.single_rescale = cps.Binary(
+            "Rescale intensities?", True, doc = """
+            This option determines whether image metadata should be
+            used to rescale the image's intensities. Some image formats
+            save the maximum possible intensity value along with the pixel data.
+            For instance, a microscope might acquire images using a 12-bit
+            A/D converter which outputs intensity values between zero and 4095,
+            but stores the values in a field that can take values up to 65535.
+            Check this setting to rescale the image intensity so that
+            saturated values are rescaled to 1.0 by dividing all pixels
+            in the image by the maximum possible intensity value. Uncheck this 
+            setting to ignore the image metadata and rescale the image
+            to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
+            of bits used to store the image.""")
+        
         self.assignments = []
         self.assignments_count = cps.HiddenCount( self.assignments,
                                                   "Assignments count")
@@ -330,7 +349,21 @@ class NamesAndTypes(cpm.CPModule):
             extract them first. See <b>IdentifyPrimaryObjects</b> for more details. </li>
             </ul>
             """%globals()))
-        
+        group.append("rescale", cps.Binary(
+            "Rescale intensities?", True, doc = """
+            This option determines whether image metadata should be
+            used to rescale the image's intensities. Some image formats
+            save the maximum possible intensity value along with the pixel data.
+            For instance, a microscope might acquire images using a 12-bit
+            A/D converter which outputs intensity values between zero and 4095,
+            but stores the values in a field that can take values up to 65535.
+            Check this setting to rescale the image intensity so that
+            saturated values are rescaled to 1.0 by dividing all pixels
+            in the image by the maximum possible intensity value. Uncheck this 
+            setting to ignore the image metadata and rescale the image
+            to 0 &ndash; 1.0 by dividing by 255 or 65535, depending on the number
+            of bits used to store the image."""))
+
         group.can_remove = can_remove
         if can_remove:
             group.append(
@@ -341,16 +374,20 @@ class NamesAndTypes(cpm.CPModule):
     def settings(self):
         result = [self.assignment_method, self.single_load_as_choice,
                   self.single_image_provider, self.join, self.matching_choice,
-                  self.assignments_count]
+                  self.single_rescale, self.assignments_count]
         for assignment in self.assignments:
             result += [assignment.rule_filter, assignment.image_name,
-                       assignment.object_name, assignment.load_as_choice]
+                       assignment.object_name, assignment.load_as_choice,
+                       assignment.rescale]
         return result
     
     def visible_settings(self):
         result = [self.assignment_method]
         if self.assignment_method == ASSIGN_ALL:
             result += [self.single_load_as_choice, self.single_image_provider]
+            if self.single_load_as_choice in (LOAD_AS_COLOR_IMAGE,
+                                              LOAD_AS_GRAYSCALE_IMAGE):
+                result += [self.single_rescale]
         elif self.assignment_method == ASSIGN_RULES:
             for assignment in self.assignments:
                 if assignment.can_remove:
@@ -740,23 +777,29 @@ class NamesAndTypes(cpm.CPModule):
         if self.assignment_method == ASSIGN_ALL:
             name = self.single_image_provider.value
             load_choice = self.single_load_as_choice.value
-            self.add_image_provider(workspace, name, load_choice)
+            rescale = self.single_rescale.value
+            self.add_image_provider(workspace, name, load_choice,
+                                    rescale)
         else:
             for group in self.assignments:
                 if group.load_as_choice == LOAD_AS_OBJECTS:
                     self.add_objects(workspace, group.object_name.value)
                 else:
+                    rescale = group.rescale.value
                     self.add_image_provider(workspace, 
                                             group.image_name.value,
-                                            group.load_as_choice.value)
+                                            group.load_as_choice.value,
+                                            rescale)
             
     
-    def add_image_provider(self, workspace, name, load_choice):
+    def add_image_provider(self, workspace, name, load_choice, rescale):
         '''Put an image provider into the image set
         
         workspace - current workspace
         name - name of the image
         load_choice - one of the LOAD_AS_... choices
+        rescale - whether or not to rescale the image intensity (ignored
+                  for mask and illumination function)
         '''
         def fetch_measurement_or_none(category):
             feature = category + "_" + name
@@ -774,10 +817,10 @@ class NamesAndTypes(cpm.CPModule):
         channel = fetch_measurement_or_none(cpmeas.C_CHANNEL)
         
         if load_choice == LOAD_AS_COLOR_IMAGE:
-            provider = ColorImageProvider(name, url, series, index)
+            provider = ColorImageProvider(name, url, series, index, rescale)
         elif load_choice == LOAD_AS_GRAYSCALE_IMAGE:
             provider = MonochromeImageProvider(name, url, series, index,
-                                               channel)
+                                               channel, rescale)
         elif load_choice == LOAD_AS_ILLUMINATION_FUNCTION:
             provider = MonochromeImageProvider(name, url, series, index, 
                                                channel, False)
@@ -1105,6 +1148,19 @@ class NamesAndTypes(cpm.CPModule):
             # Changed naming of assignment methods
             setting_values[0] = ASSIGN_ALL if setting_values[0] == "Assign all images" else ASSIGN_RULES 
             variable_revision_number = 2      
+        if variable_revision_number == 2:
+            # Added single rescale and assignment method rescale
+            n_assignments = int(setting_values[IDX_ASSIGNMENTS_COUNT_V2])
+            new_setting_values = setting_values[:IDX_ASSIGNMENTS_COUNT_V2] + [
+                "Yes", setting_values[IDX_ASSIGNMENTS_COUNT_V2]]
+            idx = IDX_ASSIGNMENTS_COUNT_V2 + 1
+            for i in range(n_assignments):
+                next_idx = idx + NUM_ASSIGNMENT_SETTINGS_V2
+                new_setting_values += setting_values[idx:next_idx]
+                new_setting_values.append("Yes")
+                idx = next_idx
+            setting_values = new_setting_values
+            variable_revision_number = 3
 
         return setting_values, variable_revision_number, from_matlab
     
@@ -1337,9 +1393,9 @@ class MetadataPredicate(cps.Filter.FilterPredicate):
 
 class ColorImageProvider(LoadImagesImageProviderURL):
     '''Provide a color image, tripling a monochrome plane if needed'''
-    def __init__(self, name, url, series, index):
+    def __init__(self, name, url, series, index, rescale=True):
         LoadImagesImageProviderURL.__init__(self, name, url,
-                                            rescale = True,
+                                            rescale = rescale,
                                             series = series,
                                             index = index)
         

@@ -1,20 +1,25 @@
 '''<b>Measure Neurons</b> measures branching information for neurons or
-any skeleton objects with seed points
+any skeleton objects with seed points.
 <hr>
-
 <p>This module measures the number of trunks and branches for each neuron in
 an image. The module takes a skeletonized image of the neuron plus previously 
 identified seed objects (for instance, the neuron soma) and finds the number of 
 axon or dendrite trunks that emerge from the soma and the number of branches along the
-axons and dendrites.  Note that the seed objects must be both smaller than, and touching 
+axons and dendrites. Note that the seed objects must be both smaller than, and touching 
 the skeleton in order to be counted.</p>
 
-<p>The typical use case is to take a seed object, typically a nucleus, and segment it 
-using IdentifyPrimaryObjects.  Then a larger object that touches this seed object, 
-e.g. a neuron cytoplasm, is grown from the initial seed nuclei using IdentifySecondaryObjects. 
-Use the Morph module to skeletonize those IDSecondary objects.  Finally, the nuclear,
-primary objects and the skeletons from IdentifySecondaryObjects are used as inputs to
-MeasureNeurons.</p>
+<p>The typical approach for this module is the following:
+<ul>
+<li>Identify a seed object. This object is typically a nucleus, identified with a 
+module such as <b>IdentifyPrimaryObjects</b>. </li>
+<li>Identify a larger object that touches or encloses this seed object. 
+For example, the neuron cell can be grown outwards from the initial seed nuclei 
+using <b>IdentifySecondaryObjects</b>. </li>
+<li>Use the <b>Morph</b> module to skeletonize the secondary objects.</li>
+<li>Finally, the primary objects and the skeleton objects
+are used as inputs to <b>MeasureNeurons</b>.</li>
+</ul>
+</p>
 
 <p>The module determines distances from the seed objects along the axons and dendrites 
 and assigns branchpoints based on distance to the closest seed object when two seed objects
@@ -76,99 +81,107 @@ class MeasureNeurons(cpm.CPModule):
     def create_settings(self):
         '''Create the UI settings for the module'''
         self.seed_objects_name = cps.ObjectNameSubscriber(
-            "Select the seed objects", "None",
-            doc = """Select the previously identified objects that you want to use as the
+            "Select the seed objects", "None",doc = """
+            Select the previously identified objects that you want to use as the
             seeds for measuring branches and distances. Branches and trunks are assigned
             per seed object. Seed objects are typically not single points/pixels but 
             instead are usually objects of varying sizes.""")
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select the skeletonized image", "None",
-            doc = """Select the skeletonized image of the dendrites
-            and / or axons as produced by the <b>Morph</b> module's
+            "Select the skeletonized image", "None", doc = """
+            Select the skeletonized image of the dendrites
+            and/or axons as produced by the <b>Morph</b> module's
             <i>Skel</i> operation.""")
         
         self.wants_branchpoint_image = cps.Binary(
-            "Retain the branchpoint image?", False,
-            doc="""Check this setting if you want to save the color image of
+            "Retain the branchpoint image?", False,doc="""
+            Check this setting if you want to save the color image of
             branchpoints and trunks. This is the image that is displayed
             in the output window for this module.""")
         
         self.branchpoint_image_name = cps.ImageNameProvider(
-            "Name the branchpoint image","BranchpointImage",
-            doc="""
+            "Name the branchpoint image","BranchpointImage",doc="""
             <i>(Used only if a branchpoint image is to be retained)</i><br>
             Enter a name for the branchpoint image here. You can then 
             use this image in a later module, such as <b>SaveImages</b>.""")
         
         self.wants_to_fill_holes = cps.Binary(
-            "Fill small holes?", True,
-            doc="""The algorithm reskeletonizes the image and this can leave
+            "Fill small holes?", True, doc="""
+            The algorithm reskeletonizes the image and this can leave
             artifacts caused by small holes in the image prior to skeletonizing.
             These holes result in false trunks and branchpoints. Check this
             setting to fill in these small holes prior to skeletonizing.""")
+        
         self.maximum_hole_size = cps.Integer(
-            "Maximum hole size:", 10, minval = 1,
-            doc = """<i>(Used only when filling small holes)</i><br>This is the area of the largest hole to fill, measured
+            "Maximum hole size:", 10, minval = 1,doc = """
+            <i>(Used only when filling small holes)</i><br>
+            This is the area of the largest hole to fill, measured
             in pixels. The algorithm will fill in any hole whose area is
-            this size or smaller""")
+            this size or smaller.""")
+        
         self.wants_neuron_graph = cps.Binary(
-            "Do you want the neuron graph relationship?", False,
-            doc = """Check this setting to produce an edge file and a vertex
+            "Do you want the neuron graph relationship?", False,doc = """
+            Check this setting to produce an edge file and a vertex
             file that give the relationships between trunks, branchpoints
             and vertices""")
+        
         self.intensity_image_name = cps.ImageNameSubscriber(
-            "Intensity image:", "None",
-            doc = """What is the name of the image to be used to calculate
-            the total intensity along the edges between the vertices?""")
+            "Intensity image", "None",doc = """
+            Select the image to be used to calculate
+            the total intensity along the edges between the vertices.""")
+        
         self.directory = cps.DirectoryPath(
-            "File output directory:", 
+            "File output directory", 
             dir_choices = [
                 cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.DEFAULT_INPUT_FOLDER_NAME,
                 cps.ABSOLUTE_FOLDER_NAME, cps.DEFAULT_OUTPUT_SUBFOLDER_NAME,
                 cps.DEFAULT_INPUT_SUBFOLDER_NAME])
+        
         self.vertex_file_name = cps.Text(
-            "Vertex file name: ", "vertices.csv",
-            doc = """Enter the name of the file that will hold the edge information.
-            You can use metadata tags in the file name. Each line of the file
+            "Vertex file name", "vertices.csv",doc = """
+            Enter the name of the file that will hold the edge information.
+            You can use metadata tags in the file name. 
+            <p>Each line of the file
             is a row of comma-separated values. The first row is the header;
             this names the file's columns. Each subsequent row represents
             a vertex in the neuron skeleton graph: either a trunk, 
             a branchpoint or an endpoint.
             The file has the following columns:
             <br><ul>
-            <li><i>image_number</i> : the image number of the associated image</li>
-            <li><i>vertex_number</i> : the number of the vertex within the image</li>
-            <li><i>i</i> : The I coordinate of the vertex.</li>
-            <li><i>j</i> : The J coordinate of the vertex.</li>
-            <li><i>label</i> : The label of the seed object associated with
+            <li><i>image_number:</i> The image number of the associated image</li>
+            <li><i>vertex_number:</i> The number of the vertex within the image</li>
+            <li><i>i:</i> The I coordinate of the vertex.</li>
+            <li><i>j:</i> The J coordinate of the vertex.</li>
+            <li><i>label:</i> The label of the seed object associated with
             the vertex.</li>
-            <li><i>kind</i> : The kind of vertex it is.
-            <ul><li><b>T</b>: trunk</li>
-            <li><b>B</b>: branchpoint</li>
-            <li><b>E</b>: endpoint</li></ul></li></ul>
-            """)
+            <li><i>kind:</i> The vertex type, with the following choices:
+            <ul><li><b>T:</b> Trunk</li>
+            <li><b>B:</b> Branchpoint</li>
+            <li><b>E:</b> Endpoint</li></ul></li></ul>
+            </p>""")
+        
         self.edge_file_name = cps.Text(
-            "Edge file name:", "edges.csv",
-            doc="""Enter the name of the file that will hold the edge information.
+            "Edge file name", "edges.csv",doc="""
+            Enter the name of the file that will hold the edge information.
             You can use metadata tags in the file name. Each line of the file
             is a row of comma-separated values. The first row is the header;
             this names the file's columns. Each subsequent row represents
             an edge or connection between two vertices (including between
             a vertex and itself for certain loops).
-            The file has the following columns:
+            
+            <p>The file has the following columns:
             <br><ul>
-            <li><i>image_number</i> : the image number of the associated image</li>
-            <li><i>v1</i> : The zero-based index into the vertex
+            <li><i>image_number:</i> The image number of the associated image</li>
+            <li><i>v1:</i> The zero-based index into the vertex
             table of the first vertex in the edge.</li>
-            <li><i>v2</i> : The zero-based index into the vertex table of the
+            <li><i>v2:</i> The zero-based index into the vertex table of the
             second vertex in the edge.</li>
-            <li><i>length</i> : The number of pixels in the path connecting the
-            two vertices, including both vertex pixels</li>
-            <li><i>total_intensity</i> : The sum of the intensities of the
+            <li><i>length:</i> The number of pixels in the path connecting the
+            two vertices, including both vertex pixels.</li>
+            <li><i>total_intensity:</i> The sum of the intensities of the
             pixels in the edge, including both vertex pixel intensities.</li>
             </ul>
-            """)
+            </p>""")
     
     def settings(self):
         '''The settings, in the order that they are saved in the pipeline'''

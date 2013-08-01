@@ -1,7 +1,7 @@
 """
-<b>Measure Texture</b> measures the degree and nature of textures within objects (versus smoothness)
+<b>Measure Texture</b> measures the degree and nature of textures within 
+objects (versus smoothness).
 <hr>
-
 This module measures the variations in grayscale images.  An object (or 
 entire image) without much texture has a smooth appearance; an
 object or image with a lot of texture will appear rough and show a wide 
@@ -13,7 +13,6 @@ images specfied, which may lead to image-object texture combinations that are un
 If you do not want this behavior, use multiple <b>MeasureTexture</b> modules to 
 specify the particular image-object measures that you want.</p>
                         
-
 <h4>Available measurements</h4>
 <ul>
 <li><i>Haralick Features:</i> Haralick texture features are derived from the 
@@ -56,54 +55,44 @@ features detect correlated bands of intensities, for instance, images of
 Venetian blinds would have high scores in the horizontal orientation.</li>
 </ul>
 
-<h3>Technical notes</h3> 
-<p><b>MeasureTexture</b> performs the following algorithm to compute a score
+<h4>Technical notes</h4> 
+
+To calculate the Haralick features, <b>MeasureTexture</b> normalizes the 
+co-occurence matrix at the per-object level by basing the intensity levels of the 
+matrix on the maximum and minimum intensity observed within each object. This
+is beneficial for images in which the maximum intensities of the objects vary
+substantially because each object will have the full complement of levels.
+
+<p><b>MeasureTexture</b> performs a vectorized calculation of the Gabor filter, 
+properly scaled to the size of the object being measured and covering all 
+pixels in the object. The Gabor filter can be calculated at a user-selected 
+number of angles by using the following algorithm to compute a score
 at each scale using the Gabor filter:
 <ul>
 <li>Divide the half-circle from 0 to 180&deg; by the number of desired
-angles. For instance, if the user chooses two angles, MeasureTexture
+angles. For instance, if the user chooses two angles, <b>MeasureTexture</b>
 uses 0 and 90 &deg; (horizontal and vertical) for the filter
-orientations. This is the Theta value from the reference paper.</li>
+orientations. This is the &theta; value from the reference paper.</li>
 <li>For each angle, compute the Gabor filter for each object in the image
 at two phases separated by 90&deg; in order to account for texture
 features whose peaks fall on even or odd quarter-wavelengths.</li>
 <li>Multiply the image times each Gabor filter and sum over the pixels
 in each object.</li>
 <li>Take the square root of the sum of the squares of the two filter scores.
-This results in one score per Theta.</li>
-<li>Save the maximum score over all Theta as the score at the desired scale.</li>
+This results in one score per &theta;.</li>
+<li>Save the maximum score over all &theta; as the score at the desired scale.</li>
 </ul>
 </p>
-<h3>Changes from CellProfiler 1.0</h3>
-CellProfiler 2.0 normalizes the co-occurence matrix of the Haralick features
-per object by basing the intensity levels of the matrix on the maximum and
-minimum intensity observed within each object. CellProfiler 1.0 normalizes
-the co-occurrence matrix based on the maximum and minimum intensity observed
-among all objects in each image. CellProfiler 2.0's measurements should be
-more informative especially for objects whose maximum intensities vary
-substantially because each object will have the full complement of levels;
-in CellProfiler 1.0, only the brightest object would have the full dynamic
-range. Measurements of Haralick features may differ substantially between
-CellProfiler 1.0 and 2.0.
 
-CellProfiler 1.0 constructs a single kernel for the Gabor filter operation, with
-a fixed size of slightly less than the median radius of the objects in an image and 
-a single exponential fall-off based on this median radius. The texture of pixels not 
-covered by the kernel is not measured. In contrast, CellProfiler 2.0 performs a 
-vectorized calculation of the Gabor filter, properly scaled to the size of the 
-object being measured and covering all pixels in the object. CellProfiler 2.0's 
-Gabor filter can be calculated at a user-selected number of angles whereas 
-CellProfiler 1.0's Gabor filter is calculated only at angles of 0&deg; and 90&deg;.
-
-References
+<h4>References</h4>
 <ul>
-<li>Haralick RM et al. (1973), "Textural Features for Image
+<li>Haralick RM, Shanmugam K, Dinstein I. (1973), "Textural Features for Image
 Classification" <i>IEEE Transaction on Systems Man, Cybernetics</i>,
 SMC-3(6):610-621. 
-<a href="http://dx.doi.org/10.1109/TSMC.1973.4309314"><(link)</a></li>
+<a href="http://dx.doi.org/10.1109/TSMC.1973.4309314">(link)</a></li>
 <li>Gabor D. (1946). "Theory of communication" 
 <i>Journal of the Institute of Electrical Engineers</i> 93:429-441.
-<a href="http://dx.doi.org/10.1049/ji-3-2.1946.0074"><(link)</a></li>
+<a href="http://dx.doi.org/10.1049/ji-3-2.1946.0074">(link)</a></li>
 </ul>
 """
 

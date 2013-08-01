@@ -102,16 +102,16 @@ LOCATION_PAUSE_ANALYSIS_BUTTON = 'IMG_PAUSE.png'
 ####################################################
 BATCH_PROCESSING_HELP_REF = """Help > Other Features > Batch Processing"""
 TEST_MODE_HELP_REF = """Help > Testing Your Pipeline"""
-METADATA_HELP_REF = """Help > Creating A Project > Using The Metadata Module"""
+METADATA_HELP_REF = """Help > Creating a Project > Using the Metadata Module"""
 IMAGE_TOOLS_HELP_REF = """Help > Using Module Display Windows > How To Use The Image Tools"""
-METADATA_GROUPING_HELP_REF = """Help > Creating A Project > Using The Groups Module"""
+METADATA_GROUPING_HELP_REF = """Help > Creating a Project > Using The Groups Module"""
 DATA_TOOL_HELP_REF = """Help > Data Tool Help"""
 PROJECT_INTRO_HELP = """Help > Creating a Project > Introduction to Projects"""
 USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
-MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements Are Named"""
+MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements are Named"""
 USING_METADATA_HELP_REF = """ 
-Please see <b>LoadImages</b>, <b>LoadData</b>, or <i>%(METADATA_HELP_REF)s</i> 
-for more details on obtaining, extracting, and using metadata tags from your images"""%globals()
+For more details on metadata usage, please see the <b>Metadata</b> module, or 
+<i>%(METADATA_HELP_REF)s</i>"""%globals()
 
 USING_METADATA_TAGS_REF = """
 You can insert a previously defined metadata tag by either using:

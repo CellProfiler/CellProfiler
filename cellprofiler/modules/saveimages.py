@@ -1,6 +1,5 @@
-'''<b>Save Images </b> saves image or movie files
+'''<b>Save Images </b> saves image or movie files.
 <hr>
-
 Because CellProfiler usually performs many image analysis steps on many
 groups of images, it does <i>not</i> save any of the resulting images to the
 hard drive unless you specifically choose to do so with the <b>SaveImages</b> 
@@ -9,12 +8,12 @@ processed images created by CellProfiler during the analysis using this module.
 
 <p>You can choose from many different image formats for saving your files. This
 allows you to use the module as a file format converter, by loading files
-in their original format and then saving them in an alternate format.
+in their original format and then saving them in an alternate format.</p>
 
 <p>Note that saving images in 12-bit format is not supported, and 16-bit format
-is supported for TIFF only.
-<p>
-See also <b>LoadImages</b>, <b>ConserveMemory</b>.
+is supported for TIFF only.</p>
+
+See also <b>NamesAndTypes</b>, <b>ConserveMemory</b>.
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -117,228 +116,241 @@ class SaveImages(cpm.CPModule):
     category = "File Processing"
     
     def create_settings(self):
-        self.save_image_or_figure = cps.Choice("Select the type of image to save",
-                                               IF_ALL,
-                                               IF_IMAGE,doc="""
-                The following types of images can be saved as a file on the hard drive:
-                <ul>
-                <li><i>Image:</i> Any of the images produced upstream of <b>SaveImages</b> can be selected for saving. 
-                Outlines created by <b>Identify</b> modules can also be saved with this option, but you must 
-                select "Retain outlines..." of identified objects within the <b>Identify</b> module. You might
-                also want to use the <b>OverlayOutlines</b> module prior to saving images.</li>
-                <li><i>Crop mask (Relevant only if the Crop module is used):</i> The <b>Crop</b> module 
-                creates a mask of the pixels of interest in the image. Saving the mask will produce a 
-                binary image in which the pixels of interest are set to 1; all other pixels are 
-                set to 0.</li>
-                <li><i>Image's cropping (Relevant only if the Crop module is used):</i> The <b>Crop</b> 
-                module also creates a cropping image which is typically the same size as the original 
-                image. However, since the <b>Crop</b> permits removal of the rows and columns that are left 
-                blank, the cropping can be of a different size than the mask.</li>
-                <li><i>Movie:</i> A sequence of images can be saved as a movie file. Currently only AVIs can be written. 
-                Each image becomes a frame of the movie.</li>
-                <li><i>Objects:</i> Objects can be saved as an image. The image
-                is saved as grayscale unless you select a color map other than 
-                gray. Background pixels appear as black and
-                each object is assigned an intensity level corresponding to
-                its object number. The resulting image can be loaded as objects
-                by the <b>LoadImages</b> module. Objects are best saved as .tif
-                files. <b>SaveImages</b> will use an 8-bit .tif file if there
-                are fewer than 256 objects and will use a 16-bit .tif otherwise.
-                Results may be unpredictable if you save using .png and there
-                are more than 255 objects or if you save using one of the other
-                file formats.</li>
-                <li><i>Module display window:</i> The window associated with a module can be saved, which
-                will include all the panels and text within that window. <b>Currently, this option is not yet available.</b></li>
-                </ul>""")
+        self.save_image_or_figure = cps.Choice(
+            "Select the type of image to save",
+            IF_ALL,
+            IF_IMAGE,doc="""
+            The following types of images can be saved as a file on the hard drive:
+            <ul>
+            <li><i>%(IF_IMAGE)s:</i> Any of the images produced upstream of <b>SaveImages</b> can be selected for saving. 
+            Outlines created by <b>Identify</b> modules can also be saved with this option, but you must 
+            select "Retain outlines..." of identified objects within the <b>Identify</b> module. You might
+            also want to use the <b>OverlayOutlines</b> module prior to saving images.</li>
+            <li><i>%(IF_MASK)s:</i> Relevant only if the <b>Crop</b> module is used. The <b>Crop</b> module 
+            creates a mask of the pixels of interest in the image. Saving the mask will produce a 
+            binary image in which the pixels of interest are set to 1; all other pixels are 
+            set to 0.</li>
+            <li><i>%(IF_CROPPING)s:</i> Relevant only if the <b>Crop</b> module is used. The <b>Crop</b> 
+            module also creates a cropping image which is typically the same size as the original 
+            image. However, since the <b>Crop</b> permits removal of the rows and columns that are left 
+            blank, the cropping can be of a different size than the mask.</li>
+            <li><i>%(IF_MOVIE)s:</i> A sequence of images can be saved as a movie file. Currently only AVIs can be written. 
+            Each image becomes a frame of the movie.</li>
+            <li><i>%(IF_OBJECTS)s:</i> Objects can be saved as an image. The image
+            is saved as grayscale unless you select a color map other than 
+            gray. Background pixels appear as black and
+            each object is assigned an intensity level corresponding to
+            its object number. The resulting image can be loaded as objects
+            by the <b>NamesAndTypes</b> module. Objects are best saved as TIF
+            files. <b>SaveImages</b> will use an 8-bit TIF file if there
+            are fewer than 256 objects and will use a 16-bit TIF otherwise.
+            Results may be unpredictable if you save using PNG and there
+            are more than 255 objects or if you save using one of the other
+            file formats.</li>
+            <li><i>%(IF_FIGURE)s:</i> The window associated with a module can be saved, which
+            will include all the panels and text within that window. <b>Currently, this option is not yet available.</b></li>
+            </ul>"""%globals())
         
-        self.image_name  = cps.ImageNameSubscriber("Select the image to save","None", doc = """
-                <i>(Used only if saving images, crop masks, and image croppings)</i><br>
-                What did you call the images you want to save?""")
+        self.image_name  = cps.ImageNameSubscriber(
+            "Select the image to save","None", doc = """
+            <i>(Used only if "%(IF_IMAGE)s", "%(IF_MASK)s" or "%(IF_CROPPING)s" are selected to save)</i><br>
+            Select the image you want to save."""%globals())
         
         self.objects_name = cps.ObjectNameSubscriber(
-            "Select the objects to save", "None",
-            doc = """<i>(Used only if saving objects)</i><br>
-            This setting chooses which objects should be saved.""")
+            "Select the objects to save", "None",doc = """
+            <i>(Used only if saving "%(IF_OBJECTS)s")</i><br>
+            Select the objects that you want to save."""%globals())
         
-        self.figure_name = cps.FigureSubscriber("Select the module display window to save","None",doc="""
-                <i>(Used only if saving module display windows)</i><br>
-                Enter the module number/name for which you want to save the module display window.""")
+        self.figure_name = cps.FigureSubscriber(
+            "Select the module display window to save","None",doc="""
+            <i>(Used only if saving "%(IF_FIGURE)s")</i><br>
+            Enter the module number/name for which you want to 
+            save the module display window."""%globals())
         
-        self.file_name_method = cps.Choice("Select method for constructing file names",
-                                           [FN_FROM_IMAGE, FN_SEQUENTIAL,
-                                            FN_SINGLE_NAME],
-                                            FN_FROM_IMAGE,doc="""
-                <i>(Used only if saving non-movie files)</i><br>
-                Three choices are available:
-                <ul>
-                <li><i>From image filename:</i> The filename will be constructed based
-                on the original filename of an input image specified in <b>LoadImages</b>
-                or <b>LoadData</b>. You will have the opportunity to prefix or append
-                additional text. <br>
-                If you have metadata associated with your images, you can append an text 
-                to the image filename using a metadata tag. This is especially useful if you 
-                want your output given a unique label according to the metadata corresponding 
-                to an image group. The name of the metadata to substitute can be extracted from
-                the image filename each cycle using <b>LoadImages</b> or provided for each image using 
-                <b>LoadData</b>. %(USING_METADATA_TAGS_REF)s%(USING_METADATA_HELP_REF)s.</li>
-                <li><i>Sequential numbers:</i> Same as above, but in addition, each filename
-                will have a number appended to the end that corresponds to
-                the image cycle number (starting at 1).</li>
-                <li><i>Single name:</i> A single name will be given to the
-                file. Since the filename is fixed, this file will be overwritten with each cycle. 
-                In this case, you would probably want to save the image on the last cycle 
-                (see the <i>Select how often to save</i> setting)<br>
-                The exception to this is to use a metadata tag to provide a unique label, as mentioned 
-                in the <i>From image filename</i> option.</li>
-                </ul>"""%globals())
+        self.file_name_method = cps.Choice(
+            "Select method for constructing file names",
+            [FN_FROM_IMAGE, FN_SEQUENTIAL,
+             FN_SINGLE_NAME],
+             FN_FROM_IMAGE,doc="""
+            <i>(Used only if saving non-movie files)</i><br>
+            Several choices are available for constructing the image file name:
+            <ul>
+            <li><i>%(FN_FROM_IMAGE)s:</i> The filename will be constructed based
+            on the original filename of an input image specified in <b>NamesAndTypes</b>. 
+            You will have the opportunity to prefix or append
+            additional text. 
+            <p>If you have metadata associated with your images, you can append an text 
+            to the image filename using a metadata tag. This is especially useful if you 
+            want your output given a unique label according to the metadata corresponding 
+            to an image group. The name of the metadata to substitute can be provided for 
+            each image for each cycle using the <b>Metadata</b> module. 
+            %(USING_METADATA_TAGS_REF)s%(USING_METADATA_HELP_REF)s.</p></li>
+            <li><i>%(FN_SEQUENTIAL)s:</i> Same as above, but in addition, each filename
+            will have a number appended to the end that corresponds to
+            the image cycle number (starting at 1).</li>
+            <li><i>%(FN_SINGLE_NAME)s:</i> A single name will be given to the
+            file. Since the filename is fixed, this file will be overwritten with each cycle. 
+            In this case, you would probably want to save the image on the last cycle 
+            (see the <i>Select how often to save</i> setting). The exception to this is to 
+            use a metadata tag to provide a unique label, as mentioned 
+            in the <i>%(FN_FROM_IMAGE)s</i> option.</li>
+            </ul>"""%globals())
         
-        self.file_image_name = cps.FileImageNameSubscriber("Select image name for file prefix",
-                                                           "None",doc="""
-                <i>(Used only when constructing the filename from the image filename, with or without metadata)</i><br>
-                Select an image loaded using <b>LoadImages</b> or <b>LoadData</b>. The original filename will be
-                used as the prefix for the output filename.""")
+        self.file_image_name = cps.FileImageNameSubscriber(
+            "Select image name for file prefix",
+            "None",doc="""
+            <i>(Used only when "%(FN_FROM_IMAGE)s" is selected for contructing the filename)</i><br>
+            Select an image loaded using <b>NamesAndTypes</b>. The original filename will be
+            used as the prefix for the output filename.""")
         
-        self.single_file_name = cps.Text(SINGLE_NAME_TEXT, "OrigBlue",
-                                         metadata = True,
-                                         doc="""
-                <i>(Used only when constructing the filename from the image filename, a single name or a name with metadata)</i><br>
-                If you are constructing the filenames using...
-                <ul>
-                <li><i>Single name:</i> Enter the filename text here</li>
-                <li><i>Custom with metadata:</i> If you have metadata 
-                associated with your images, enter the filename text with the metadata tags. %(USING_METADATA_TAGS_REF)s.   
-                For example, if the <i>plate</i>, <i>well_row</i> and <i>well_column</i> tags have the values <i>XG45</i>, <i>A</i>
-                and <i>01</i>, respectively, the string "Illum_\g&lt;plate&gt;_\g&lt;well_row&gt;\g&lt;well_column&gt;"
-                produces the output filename <i>Illum_XG45_A01</i>.</li>
-                </ul>
-                Do not enter the file extension in this setting; it will be appended automatically."""%globals())
+        self.single_file_name = cps.Text(
+            SINGLE_NAME_TEXT, "OrigBlue",
+            metadata = True,  doc="""
+            <i>(Used only when "%(FN_FROM_IMAGE)s" or "%(FN_SINGLE_NAME)s" are selected for contructing the filename)</i><br>
+            If you are constructing the filenames using...
+            <ul>
+            <li><i>Single name:</i> Enter the filename text here</li>
+            <li><i>Custom with metadata:</i> If you have metadata 
+            associated with your images, enter the filename text with the metadata tags. %(USING_METADATA_TAGS_REF)s
+            For example, if the <i>plate</i>, <i>well_row</i> and <i>well_column</i> tags have the values <i>XG45</i>, <i>A</i>
+            and <i>01</i>, respectively, the string "Illum_\g&lt;plate&gt;_\g&lt;well_row&gt;\g&lt;well_column&gt;"
+            produces the output filename <i>Illum_XG45_A01</i>.</li>
+            </ul>
+            Do not enter the file extension in this setting; it will be appended automatically."""%globals())
         
         self.wants_file_name_suffix = cps.Binary(
-            "Do you want to add a suffix to the image file name?", False,
-            doc = """Check this setting to add a suffix to the image's file name.
+            "Append a suffix to the image file name?", False, doc = """
+            Check this setting to add a suffix to the image's file name.
             Leave the setting unchecked to use the image name as-is.""")
         
-        self.file_name_suffix = cps.Text("Text to append to the image name",
-                                         "", metadata = True,
-                                         doc="""
-                <i>(Used only when constructing the filename from the image filename)</i><br>
-                Enter the text that should be appended to the filename specified above.""")
+        self.file_name_suffix = cps.Text(
+            "Text to append to the image name",
+            "", metadata = True, doc="""
+            <i>(Used only when constructing the filename from the image filename)</i><br>
+            Enter the text that should be appended to the filename specified above.""")
         
         self.file_format = cps.Choice(
-            "Select file format to use",
+            "Saved file format",
             [FF_BMP, FF_JPG, FF_JPEG, FF_PNG, FF_TIF, FF_TIFF, FF_MAT],
-            value = FF_TIF,
-            doc="""
+            value = FF_TIF, doc="""
             <i>(Used only when saving non-movie files)</i><br>
             Select the image or movie format to save the image(s). Most common
             image formats are available; MAT-files are readable by MATLAB.""")
         
         self.pathname = SaveImagesDirectoryPath(
-            "Output file location", self.file_image_name,
-            doc = """ 
-                <i>(Used only when saving non-movie files)</i><br>
-                This setting lets you choose the folder for the output
-                files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
-                <p>An additional option is the following:
-                <ul>
-                <li><i>Same folder as image</i>: Place the output file in the same folder
-                that the source image is located.</li>
-                </ul></p>
-                <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
-                For instance, if you have a metadata tag named 
-                "Plate", you can create a per-plate folder by selecting one the subfolder options
-                and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will 
-                substitute the metadata values for the current image set for any metadata tags in the 
-                folder name.%(USING_METADATA_HELP_REF)s.</p>
-                <p>If the subfolder does not exist when the pipeline is run, CellProfiler will
-                create it.</p>
-                <p>If you are creating nested subfolders using the sub-folder options, you can 
-                specify the additional folders separated with slashes. For example, "Outlines/Plate1" will create
-                a "Plate1" folder in the "Outlines" folder, which in turn is under the Default
-                Input/Output Folder. The use of a forward slash ("/") as a folder separator will 
-                avoid ambiguity between the various operating systems.</p>"""%globals())
+            "Output file location", self.file_image_name,doc = """ 
+            <i>(Used only when saving non-movie files)</i><br>
+            This setting lets you choose the folder for the output
+            files. %(IO_FOLDER_CHOICE_HELP_TEXT)s
+            <p>An additional option is the following:
+            <ul>
+            <li><i>Same folder as image</i>: Place the output file in the same folder
+            that the source image is located.</li>
+            </ul></p>
+            <p>%(IO_WITH_METADATA_HELP_TEXT)s %(USING_METADATA_TAGS_REF)s. 
+            For instance, if you have a metadata tag named 
+            "Plate", you can create a per-plate folder by selecting one the subfolder options
+            and then specifying the subfolder name as "\g&lt;Plate&gt;". The module will 
+            substitute the metadata values for the current image set for any metadata tags in the 
+            folder name.%(USING_METADATA_HELP_REF)s.</p>
+            <p>If the subfolder does not exist when the pipeline is run, CellProfiler will
+            create it.</p>
+            <p>If you are creating nested subfolders using the sub-folder options, you can 
+            specify the additional folders separated with slashes. For example, "Outlines/Plate1" will create
+            a "Plate1" folder in the "Outlines" folder, which in turn is under the Default
+            Input/Output Folder. The use of a forward slash ("/") as a folder separator will 
+            avoid ambiguity between the various operating systems.</p>"""%globals())
         
         # TODO: 
-        self.bit_depth = cps.Choice("Image bit depth",
-                [BIT_DEPTH_8, BIT_DEPTH_16],doc="""
-                <i>(Used only when saving files in a non-MAT format)</i><br>
-                What is the bit-depth at which you want to save the images?
-                <b>16-bit images are supported only for TIF formats.
-                Currently, saving images in 12-bit is not supported.</b>""")
+        self.bit_depth = cps.Choice(
+            "Image bit depth",
+            [BIT_DEPTH_8, BIT_DEPTH_16],doc="""
+            <i>(Used only when saving files in a non-MAT format)</i><br>
+            What is the bit-depth at which you want to save the images?
+            <b>16-bit images are supported only for TIF formats.
+            Currently, saving images in 12-bit is not supported.</b>""")
         
-        self.overwrite = cps.Binary("Overwrite existing files without warning?",False,doc="""
-                Check this box to automatically overwrite a file if it already exists. Otherwise, you
-                will be prompted for confirmation first. If you are running the pipeline on a computing cluster,
-                you should uncheck this box since you will not be able to intervene and answer the confirmation prompt.""")
+        self.overwrite = cps.Binary(
+            "Overwrite existing files without warning?",False,doc="""
+            Check this box to automatically overwrite a file if it already exists. Otherwise, you
+            will be prompted for confirmation first. If you are running the pipeline on a computing cluster,
+            you should uncheck this box since you will not be able to intervene and answer the confirmation prompt.""")
         
-        self.when_to_save = cps.Choice("Select how often to save",
-                [WS_EVERY_CYCLE,WS_FIRST_CYCLE,WS_LAST_CYCLE],
-                WS_EVERY_CYCLE,doc="""<a name='when_to_save'>
-                <i>(Used only when saving non-movie files)</i><br>
-                Specify at what point during pipeline execution to save file(s). </a>
-                <ul>
-                <li><i>Every cycle:</i> Useful for when the image of interest is created every cycle and is
-                not dependent on results from a prior cycle.</li>
-                <li><i>First cycle:</i> Useful for when you are saving an aggregate image created 
-                on the first cycle, e.g., <b>CorrectIlluminationCalculate</b> with the <i>All</i>
-                setting used on images obtained directly from <b>LoadImages</b>/<b>LoadData</b></a>.</li>
-                <li><i>Last cycle:</i> Useful for when you are saving an aggregate image completed 
-                on the last cycle, e.g., <b>CorrectIlluminationCalculate</b> with the <i>All</i>
-                setting used on intermediate images generated during each cycle.</li>
-                </ul> """)
+        self.when_to_save = cps.Choice(
+            "When to save",
+            [WS_EVERY_CYCLE,WS_FIRST_CYCLE,WS_LAST_CYCLE],
+            WS_EVERY_CYCLE, doc="""<a name='when_to_save'>
+            <i>(Used only when saving non-movie files)</i><br>
+            Specify at what point during pipeline execution to save file(s). </a>
+            <ul>
+            <li><i>%(WS_EVERY_CYCLE)s:</i> Useful for when the image of interest is created every cycle and is
+            not dependent on results from a prior cycle.</li>
+            <li><i>%(WS_FIRST_CYCLE)s:</i> Useful for when you are saving an aggregate image created 
+            on the first cycle, e.g., <b>CorrectIlluminationCalculate</b> with the <i>All</i>
+            setting used on images obtained directly from <b>NamesAndTypes</b>.</li>
+            <li><i>%(WS_LAST_CYCLE)s</i> Useful for when you are saving an aggregate image completed 
+            on the last cycle, e.g., <b>CorrectIlluminationCalculate</b> with the <i>All</i>
+            setting used on intermediate images generated during each cycle.</li>
+            </ul> """%globals())
         
-        self.rescale = cps.Binary("Rescale the images? ",False,doc="""
-                <i>(Used only when saving non-MAT file images)</i><br>
-                Check this box if you want the image to occupy the full dynamic range of the bit 
-                depth you have chosen. For example, if you save an image to an 8-bit file, the
-                smallest grayscale value will be mapped to 0 and the largest value will be mapped 
-                to 2<sup>8</sup>-1 = 255. 
-                <p>This will increase the contrast of the output image but will also effectively 
-                stretch the image data, which may not be desirable in some 
-                circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>""")
+        self.rescale = cps.Binary(
+            "Rescale the images? ",False,doc="""
+            <i>(Used only when saving non-MAT file images)</i><br>
+            Check this box if you want the image to occupy the full dynamic range of the bit 
+            depth you have chosen. For example, if you save an image to an 8-bit file, the
+            smallest grayscale value will be mapped to 0 and the largest value will be mapped 
+            to 2<sup>8</sup>-1 = 255. 
+            <p>This will increase the contrast of the output image but will also effectively 
+            stretch the image data, which may not be desirable in some 
+            circumstances. See <b>RescaleIntensity</b> for other rescaling options.</p>""")
         
         self.gray_or_color = cps.Choice(
             "Save as grayscale or color image?",
-            [GC_GRAYSCALE, GC_COLOR],
-            doc = """<i>(Used only when saving objects)</i><br>
+            [GC_GRAYSCALE, GC_COLOR],doc = """
+            <i>(Used only when saving "%(IF_OBJECTS)s")</i><br>
             You can save objects as a grayscale image or as a color image.
-            <b>SaveImages</b> uses a pixel's object number as the grayscale
-            intensity in a grayscale image with background pixels being
-            colored black. It assigns different colors to different objects
-            if you choose to save as a color image. Grayscale images are more
+            <ul>
+            <li><i>%(GC_GRAYSCALE)s: </i> Use the pixel's object number 
+            (label) for the grayscale intensity. Background pixels are
+            colored black. Grayscale images are more
             suitable if you are going to load the image as objects using
-            <b>LoadImages</b> or some other program that will be used to
-            relate object measurements to the pixels in the image.<br>
+            <b>NamesAndTypes</b> or some other program that will be used to
+            relate object measurements to the pixels in the image. 
             You should save grayscale images using the .TIF or .MAT formats
             if possible; otherwise you may have problems saving files
-            with more than 255 objects.""")
+            with more than 255 objects.</li>
+            <li><i>%(GC_COLOR)s:</i> Assigns different colors to different 
+            objects.</li>
+            </ul>"""%globals())
         
-        self.colormap = cps.Colormap('Select colormap', 
-                                     value = CM_GRAY,
-                                     doc= """
-                <i>(Used only when saving non-MAT file images)</i><br>
-                This affects how images color intensities are displayed. All available colormaps can be seen 
-                <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
+        self.colormap = cps.Colormap(
+            'Select colormap', 
+            value = CM_GRAY,doc= """
+            <i>(Used only when saving non-MAT file images)</i><br>
+            This affects how images color intensities are displayed. All available colormaps can be seen 
+            <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
         
-        self.update_file_names = cps.Binary("Store file and path information to the saved image?",False,doc="""
-                This setting stores filename and pathname data for each of the new files created 
-                via this module, as a per-image measurement. Instances in which this information may 
-                be useful include:
-                <ul>
-                <li>Exporting measurements to a database, allowing 
-                access to the saved image. If you are using the machine-learning tools or image
-                viewer in CellProfiler Analyst, for example, you will want to check this box if you want
-                the images you are saving via this module to be displayed along with the original images.</li>
-                <li>Allowing downstream modules (e.g., <b>CreateWebPage</b>) to access  
-                the newly saved files.</li>
-                </ul>""")
+        self.update_file_names = cps.Binary(
+            "Record the file and path information to the saved image?",False,doc="""
+            This setting stores filename and pathname data for each of the new files created 
+            via this module, as a per-image measurement. Instances in which this information may 
+            be useful include:
+            <ul>
+            <li>Exporting measurements to a database, allowing 
+            access to the saved image. If you are using the machine-learning tools or image
+            viewer in CellProfiler Analyst, for example, you will want to check this box if you want
+            the images you are saving via this module to be displayed along with the original images.</li>
+            <li>Allowing downstream modules (e.g., <b>CreateWebPage</b>) to access  
+            the newly saved files.</li>
+            </ul>""")
         
         self.create_subdirectories = cps.Binary(
-            "Create subfolders in the output folder?",False,
-            doc = """Subfolders will be created to match the input image folder structure.""")
+            "Create subfolders in the output folder?",False,doc = """
+            Subfolders will be created to match the input image folder structure.""")
+        
         self.root_dir = cps.DirectoryPath(
-            "Image folder", 
-            doc = """<i>Used only if creating subfolders in the output folder</i>
+            "Base image folder", doc = """
+            <i>Used only if creating subfolders in the output folder</i>
             In subfolder mode, <b>SaveImages</b> determines the folder for
             an image file by examining the path of the matching input file.
             The path that SaveImages uses is relative to the image folder

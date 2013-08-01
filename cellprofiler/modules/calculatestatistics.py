@@ -64,7 +64,7 @@ each measurement. These scripts will require MATLAB and the statistics
 toolbox in order to run. See <a href='#wants_save_figure'>
 <i>Create dose/response plots?</i></a> below.</p>
 
-References
+<h4>References</h4>
 <ul>
 <li><i>Z' factor:</i> Zhang JH, Chung TD, et al. (1999) "A
 simple statistical parameter for use in evaluation and validation of high

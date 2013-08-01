@@ -19,9 +19,8 @@ General Help > Using MetaData in CellProfiler for more information. If you are
 only processing a single movie in each analysis 
 run, you do not need to set up image grouping.
 
-
 For an example pipeline using TrackObjects, see the CellProfiler 
-<a href="http://www.cellprofiler.org/examples.htm">Examples</a> webpage.
+<a href="http://www.cellprofiler.org/examples.shtml#Tracking>Examples</a> webpage.
 
 <h4>Available measurements</h4>
 <ul>
@@ -204,8 +203,9 @@ class TrackObjects(cpm.CPModule):
     variable_revision_number = 5
 
     def create_settings(self):
-        self.tracking_method = cps.Choice('Choose a tracking method',
-                                          TM_ALL, doc="""\
+        self.tracking_method = cps.Choice(
+            'Choose a tracking method',
+            TM_ALL, doc="""
             When trying to track an object in an image, 
             <b>TrackObjects</b> will search within a maximum 
             specified distance (see the <i>distance within which to search</i> setting)
@@ -216,13 +216,13 @@ class TrackObjects(cpm.CPModule):
             among these options based on which is most consistent from frame
             to frame of your movie.
             <ul>
-            <li><i>Overlap:</i> Compares the amount of spatial overlap between identified objects in 
+            <li><i>%(TM_OVERLAP)s:</i> Compares the amount of spatial overlap between identified objects in 
             the previous frame with those in the current frame. The object with the
             greatest amount of spatial overlap will be assigned the same number (label). Recommended
             when there is a high degree of overlap of an object from one frame to the next, 
             which is the case for movies with high frame rates relative to object motion.</li>
 
-            <li><i>Distance:</i> Compares the distance between each identified
+            <li><i>%(TM_DISTANCE)s:</i> Compares the distance between each identified
             object in the previous frame with that of the current frame. The 
             closest objects to each other will be assigned the same number (label).
             Distances are measured from the perimeter of each object. Recommended
@@ -230,7 +230,7 @@ class TrackObjects(cpm.CPModule):
             does not work sufficiently well, which is the case
             for movies with low frame rates relative to object motion.</li>
 
-            <li><i>Measurement:</i> Compares each object in the 
+            <li><i>%(TM_MEASUREMENTS)s:</i> Compares each object in the 
             current frame with objects in the previous frame based on a particular 
             feature you have measured for the objects (for example, a particular intensity or shape measurement that can distinguish nearby objects). The object 
             with the closest-matching measurement will be selected as a match and will be 
@@ -238,7 +238,7 @@ class TrackObjects(cpm.CPModule):
             specified <b>Measure</b> module previous to this module in the pipeline so
             that the measurement values can be used to track the objects.</li>
             
-            <li><i>LAP:</i> Uses the linear assignment problem (LAP) framework. The
+            <li><i>%(TM_LAP)s:</i> Uses the linear assignment problem (LAP) framework. The
             linear assignment problem (LAP) algorithm (<i>Jaqaman et al., 2008</i>) 
             addresses the challenges of high object density, motion heterogeneity, 
             temporary disappearances, and object merging and splitting. 
@@ -255,7 +255,7 @@ class TrackObjects(cpm.CPModule):
             between tracked objects and captures merging and splitting events. This step takes
             place at the end of the analysis run.  
             
-            References
+            <b>References</b>
             <ul>
             <li>Jaqaman K, Loerke D, Mettlen M, Kuwata H, Grinstein S, Schmid SL, Danuser G. (2008)
             "Robust single-particle tracking in live-cell time-lapse sequences."
@@ -266,10 +266,11 @@ class TrackObjects(cpm.CPModule):
             <a href="http://dx.doi.org/10.1101/pdb.top65">(link)</a></li>
             </ul>
             </li>
-            </ul>""")
+            </ul>"""%globals())
 
         self.object_name = cps.ObjectNameSubscriber(
-            'Select the objects to track','None', doc="""What did you call the objects you want to track?""")
+            'Select the objects to track','None', doc="""
+            Select the objects to be tracked by this module.""")
 
         self.measurement = cps.Measurement(
             'Select object measurement to use for tracking',
@@ -291,13 +292,14 @@ class TrackObjects(cpm.CPModule):
             use the distance measurement tool. %(HELP_ON_MEASURING_DISTANCES)s"""%globals())
 
         self.model = cps.Choice(
-            "Select the motion model",[M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH,
-            doc = """<i>(Used only if the LAP tracking method is applied)</i><br>
+            "Select the motion model",[M_RANDOM, M_VELOCITY, M_BOTH], value=M_BOTH,doc = """
+            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
             This setting controls how to predict an object's position in
             the next frame, assuming that each object moves randomly with
             a frame-to-frame variance in position that follows a Gaussian
             distribution.<br>
-            <ul><li><i>%(M_RANDOM)s:</i> A model in which objects move due to 
+            <ul>
+            <li><i>%(M_RANDOM)s:</i> A model in which objects move due to 
             Brownian Motion or a similar process where the variance in position
             differs between objects. Use this model if the objects move with some
             random jitter around a stationary location.</li>
@@ -309,22 +311,23 @@ class TrackObjects(cpm.CPModule):
             object's position using both models and use the model with the
             lowest penalty to join an object in one frame with one in another. Use this
             option if both models above are applicable over time.
-            </li></ul>""" % globals())
+            </li>
+            </ul>""" % globals())
         
         self.radius_std = cps.Float(
-            'Number of standard deviations for search radius', 3, minval=1,
-            doc = """<i>(Used only if the LAP tracking method is applied)</i>
+            'Number of standard deviations for search radius', 3, minval=1,doc = """
+            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i>
             <br>
             <b>TrackObjects</b> will estimate the variance of the error
             between the observed and predicted positions of an object for
             each movement model. It will constrain the search for matching
             objects from one frame to the next to the standard deviation
             of the error times the number of standard
-            deviations that you enter here.""")
+            deviations that you enter here."""%globals())
         
         self.radius_limit = cps.FloatRange(
-            'Search radius limit, in pixel units (Min,Max)', (2, 10), minval = 0,
-            doc = """<i>(Used only if the LAP tracking method is applied)</i><br>
+            'Search radius limit, in pixel units (Min,Max)', (2, 10), minval = 0,doc = """
+            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
             <b>Care must be taken to adjust the upper limit appropriate to the data.</b><br>
             <b>TrackObjects</b> derives a search radius based on the error
             estimation. Potentially, the module can make an erroneous assignment
@@ -333,14 +336,15 @@ class TrackObjects(cpm.CPModule):
             at a small estimated error by chance, leading to a maximum radius
             that does not track the object in a subsequent frame. The radius
             limit constrains the maximum radius to reasonable values. 
+            
             <p>The lower limit should be set to a radius (in pixels) that is a
             reasonable displacement for any object from one frame to the next.
             The upper limit should be set to the maximum reasonable 
-            displacement under any circumstances.</p>""")
+            displacement under any circumstances.</p>"""%globals())
         
         self.wants_second_phase = cps.Binary(
             "Run the second phase of the LAP algorithm?", True, doc="""
-            <i>(Used only if the LAP tracking method is applied)</i><br>
+            <i>(Used only if the %(TM_LAP)s tracking method is applied)</i><br>
             Check this box to run the second phase of the LAP algorithm
             after processing all images. Leave the box unchecked to omit the
             second phase or to perform the second phase when running as a data
@@ -350,15 +354,17 @@ class TrackObjects(cpm.CPModule):
             to noise and limitations in imaging, you may want to run the second phase 
             which attempts to close temporal gaps between tracked objects and tries to
             capture merging and splitting events.</p>
+            
             <p>For additional details on optimizing the LAP settings, refer to Jaqaman K, Danuser G. 
             "Computational image analysis of cellular dynamics: a case study based on particle 
             tracking." <i>Cold Spring Harb Protocols</i> 2009(12) 
-            <a href="http://cshprotocols.cshlp.org/cgi/content/full/2009/12/pdb.top65">[link]</a>,
-            in particular the section "Adjustment of control parameters and diagnostics for track evaluation."</p>""")
+            (<a href="http://cshprotocols.cshlp.org/cgi/content/full/2009/12/pdb.top65">link</a>),
+            in particular the section "Adjustment of control parameters and 
+            diagnostics for track evaluation."</p>"""%globals())
         
         self.gap_cost = cps.Integer(
             'Gap cost', 40, minval=1, doc = '''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
+            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
             This setting assigns a cost to keeping a gap caused
             when an object is missing from one of the frames of a track (the
             alternative to keeping the gap is to bridge it by connecting
@@ -372,11 +378,11 @@ class TrackObjects(cpm.CPModule):
             objects in subsequent frames. </li>
             <li>Set the cost lower if tracks
             are not properly joined due to gaps caused by mis-segmentation.</li>
-            </ul></p>''')
+            </ul></p>'''%globals())
         
         self.split_cost = cps.Integer(
             'Split alternative cost', 40, minval=1, doc = '''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
+            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
             This setting is the cost of keeping two tracks distinct
             when the alternative is to make them into one track that
             splits. A split occurs when an object in one frame is assigned
@@ -396,11 +402,11 @@ class TrackObjects(cpm.CPModule):
             that should not be split. </li>
             <li>The split cost should be set higher if objects
             that should be split are not.</li>
-            </ul></p>''')
+            </ul></p>'''%globals())
         
         self.merge_cost = cps.Integer(
             'Merge alternative cost', 40, minval=1,doc = '''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
+            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
             This setting is the cost of keeping two tracks
             distinct when the alternative is to merge them into one.
             A merge occurs when two objects in one frame are assigned to
@@ -421,11 +427,11 @@ class TrackObjects(cpm.CPModule):
             merged when they should otherwise be kept separate. </li>
             <li>Set the merge alternative cost
             higher if objects that are not merged should be merged.</li>
-            </ul></p>''')
+            </ul></p>'''%globals())
         
         self.max_gap_score = cps.Integer(
             'Maximum gap displacement', 50, minval=1, doc = '''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
+            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
             displacements during the second phase. 
             <p><i><b>Recommendations:</b></i>
@@ -437,11 +443,11 @@ class TrackObjects(cpm.CPModule):
             value, since the higher this value, the more objects that must be compared at each step.</li>
             <li>Objects that would have been tracked between successive frames for a lower maximum displacement 
             may not be tracked if the value is set higher.</li>
-            </ul></p>''')
+            </ul></p>'''%globals())
         
         self.max_merge_score = cps.Integer(
             'Maximum merge score', 50, minval=1, doc = '''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
+            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
             merge scores. The merge score has two components: 
             <ul>
@@ -453,11 +459,11 @@ class TrackObjects(cpm.CPModule):
             <ul>
             <li>The LAP algorithm will run more slowly with a higher maximum merge score value. </li>
             <li>Objects that would have been merged at a lower maximum merge score will not be considered for merging.</li>
-            </ul></p>''')
+            </ul></p>'''%globals())
         
         self.max_split_score = cps.Integer(
             'Maximum split score', 50, minval=1, doc = '''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
+            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
             split scores. The split score has two components: 
             <ul>
@@ -470,11 +476,11 @@ class TrackObjects(cpm.CPModule):
             <li>The LAP algorithm will run more slowly with a maximum split score value. </li>
             <li>Objects that would have been split at a lower maximum split score will not be considered for splitting.</li>
             </ul></p>
-            ''')
+            '''%globals())
         
         self.max_frame_distance = cps.Integer(
             'Maximum gap', 5, minval=1, doc = '''
-            <i>(Used only if the LAP tracking method is applied and the second phase is run)</i><br>
+            <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
             <b>Care must be taken to adjust this setting appropriate to the data.</b><br>
             This setting controls the maximum number of frames that can
             be skipped when merging a gap caused by an unsegmented object.
@@ -486,10 +492,10 @@ class TrackObjects(cpm.CPModule):
             erroneously losing the original for a few frames.</li>
             <li>Set the maximum gap lower to reduce the chance of erroneously connecting to the wrong object after
             correctly losing the original object (e.g., if the cell dies or moves off-screen).</li>
-            </ul></p>''')
+            </ul></p>'''%globals())
         
         self.wants_lifetime_filtering = cps.Binary(
-            'Do you want to filter objects by lifetime?', False, doc = '''
+            'Filter objects by lifetime?', False, doc = '''
             Check this setting if you want objects to be filtered by their
             lifetime, i.e., total duration in frames. This is useful for
             marking objects which transiently appear and disappear, such
@@ -524,21 +530,29 @@ class TrackObjects(cpm.CPModule):
         
         self.display_type = cps.Choice(
             'Select display option', DT_ALL, doc="""
-            How do you want to display the tracked objects?
-            The output image can be saved as either a color-labeled image, with each tracked
-            object assigned a unique color, or as a color-labeled image with the tracked object 
-            number superimposed.""")
+            The output image can be saved as:
+            <ul>
+            <li><i>%(DT_COLOR_ONLY)s:</i> A color-labeled image, with each tracked
+            object assigned a unique color</li>
+            <li><i>%(DT_COLOR_AND_NUMBER)s:</i> Same as above but with the tracked object 
+            number superimposed.</li>
+            </ul>"""%globals())
 
         self.wants_image = cps.Binary(
             "Save color-coded image?", False, doc="""
-            Do you want to save the image with tracked, color-coded objects?
-            Specify a name to give the image showing the tracked objects. This image
-            can be saved with a <b>SaveImages</b> module placed after this module.""")
+            Specify whether you want to retain a copy of the image showing the tracked objects. 
+            This image can be retained 
+            for later use in the pipeline. For example, a common use is for quality control purposes 
+            saving the image with the <b>SaveImages</b> module.
+            <p>Please note that if you are using the second phase of the %(TM_LAP)s method,
+            the final labels are not assigned until <i>after</i> the pipeline has
+            completed the analysis run. That means that saving the color-coded image
+            will only show the penultimate result and not the final product.</p>."""%globals())
 
         self.image_name = cps.ImageNameProvider(
             "Name the output image", "TrackedCells", doc = '''
             <i>(Used only if saving the color-coded image)</i><br>
-            What do you want to call the color-coded image, which will be available for downstream modules, such as <b>SaveImages</b>?''')
+            Enter a name to give the color-coded image of tracked labels.''')
 
     def settings(self):
         return [self.tracking_method, self.object_name, self.measurement,

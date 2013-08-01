@@ -61,23 +61,32 @@ class Align(cpm.CPModule):
     variable_revision_number = 3
 
     def create_settings(self):
-        self.first_input_image = cps.ImageNameSubscriber("Select the first input image",
-                                                         "None",doc="""
-                                                         Specify the name of the first image to align.""")
-        self.first_output_image = cps.ImageNameProvider("Name the first output image",
-                                                        "AlignedRed",doc="""
-                                                        Enter the name of the first aligned image.""")
+        self.first_input_image = cps.ImageNameSubscriber(
+            "Select the first input image",
+            "None",doc="""
+            Specify the name of the first image to align.""")
+        
+        self.first_output_image = cps.ImageNameProvider(
+            "Name the first output image",
+            "AlignedRed",doc="""
+            Enter the name of the first aligned image.""")
+        
         self.separator_1 = cps.Divider(line=False)
-        self.second_input_image = cps.ImageNameSubscriber("Select the second input image",
-                                                          "None",doc="""
-                                                         Specify the name of the second image to align.""")
-        self.second_output_image = cps.ImageNameProvider("Name the second output image",
-                                                         "AlignedGreen",doc="""
-                                                         Enter the name of the second aligned image.""")
+        self.second_input_image = cps.ImageNameSubscriber(
+            "Select the second input image",
+            "None",doc="""
+            Specify the name of the second image to align.""")
+        
+        self.second_output_image = cps.ImageNameProvider(
+            "Name the second output image",
+            "AlignedGreen",doc="""
+            Enter the name of the second aligned image.""")
+        
         self.separator_2 = cps.Divider(line=False)
         self.additional_images = []
         self.add_button = cps.DoSomething("", "Add another image",
                                           self.add_image)
+        
         self.alignment_method = cps.Choice("Select the alignment method",
                                            M_ALL, doc='''
              Two options for the alignment method are available:<br>
@@ -101,11 +110,12 @@ class Align(cpm.CPModule):
              varying degrees of brightness.</li>
              </ul>
              <p>
-             References
+             <b>References</b>
              <ul>
              <li>Lewis JP. (1995) "Fast normalized cross-correlation." <i>Vision Interface</i>, 1-7.</li>
              </ul>
              </p>'''%globals())
+        
         self.crop_mode = cps.Choice(
             "Crop mode", [C_CROP, C_PAD, C_SAME_SIZE],
             doc = """The crop mode determines how the output images are either cropped
@@ -151,25 +161,31 @@ class Align(cpm.CPModule):
             group.append("divider", cps.Divider(line=False))
         
         group.append("input_image_name", 
-                     cps.ImageNameSubscriber("Select the additional image?",
-                                            "None",doc="""
-                                            What is the name of the additional image to align?"""))
+                     cps.ImageNameSubscriber(
+                         "Select the additional image?",
+                         "None",doc="""
+                         Select the additional image to align?"""))
+        
         group.append("output_image_name",
-                     cps.ImageNameProvider("Name the output image",
-                                            "AlignedBlue",doc="""
-                                            What is the name of the aligned image?"""))
+                     cps.ImageNameProvider(
+                         "Name the output image",
+                         "AlignedBlue",doc="""
+                         Enter the name of the aligned image?"""))
+        
         group.append("align_choice",
-                     cps.Choice("Select how the alignment is to be applied",
-                                               [A_SIMILARLY, A_SEPARATELY],doc="""
-                                               An additional image can either be aligned similarly to the second one or  
-                                               a separate alignment to the first image can be calculated:<br>
-                                               <ul>
-                                               <li><i>Similarly:</i> The same alignment measurements obtained from
-                                               the first two input images are applied to this additional image.</li>
-                                               <li><i>Separately:</i> A new set of alignment measurements are
-                                               calculated for this additional image using the alignment method
-                                               specified with respect to the first input image.</li>
-                                               </ul>"""))
+                     cps.Choice(
+                         "Select how the alignment is to be applied",
+                         [A_SIMILARLY, A_SEPARATELY],doc="""
+                         An additional image can either be aligned similarly to the second one or 
+                         a separate alignment to the first image can be calculated:
+                         <ul>
+                         <li><i>%(A_SIMILARLY)s:</i> The same alignment measurements obtained from
+                         the first two input images are applied to this additional image.</li>
+                         <li><i>%(A_SEPARATELY)s:</i> A new set of alignment measurements are
+                         calculated for this additional image using the alignment method
+                         specified with respect to the first input image.</li>
+                         </ul>"""%globals()))
+        
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
         self.additional_images.append(group)

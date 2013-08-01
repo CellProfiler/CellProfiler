@@ -1,11 +1,10 @@
 '''<b>SendEmail</b> send emails to a specified address at desired stages
-of processing
+of the analysis run.
 <hr>
-
 This module sends email about the current
 progress of the image processing. You can specify how often emails
 are sent out (for example, after the first cycle, after the last cycle,
-after every N cycles, after N cycles). This module should be placed at
+after every <i>N</i> cycles, after <i>N</i> cycles). This module should be placed at
 the point in the pipeline when you want the emails to be sent. If email
 sending fails for any reason, a warning message will appear but
 processing will continue regardless.'''
@@ -88,21 +87,21 @@ class SendEmail(cpm.CPModule):
             user = os.environ.get("USER","yourname@yourdomain")
             
         self.from_address = cps.Text(
-            "Sender address", user,
-            doc="""Enter the address for the email's "From" field.""")
+            "Sender address", user,doc="""
+            Enter the address for the email's "From" field.""")
         
         self.subject = cps.Text(
             "Subject line","CellProfiler notification",
-            metadata=True,
-            doc="""Enter the text for the email's subject line. If you have metadata 
+            metadata=True,doc="""
+            Enter the text for the email's subject line. If you have metadata 
             associated with your images, you can use metadata tags here. %(USING_METADATA_TAGS_REF)s<br>
             For instance, if you have plate metadata,
             you might use the line, "CellProfiler: processing plate " and insert the metadata tag
             for the plate at the end. %(USING_METADATA_HELP_REF)s."""%globals())
         
         self.smtp_server = cps.Text(
-            "Server name", "mail",
-            doc="""Enter the address of your SMTP server. You can ask your
+            "Server name", "mail",doc="""
+            Enter the address of your SMTP server. You can ask your
             network administrator for your outgoing mail server which is often
             made up of part of your email address, e.g., 
             "Something@university.org". You might be able to find this information
@@ -110,88 +109,89 @@ class SendEmail(cpm.CPModule):
             you use.""")
         
         self.port = cps.Integer(
-            "Port", smtplib.SMTP_PORT, 0, 65535,
-            doc="""Enter your server's SMTP port. The default (25) is the
+            "Port", smtplib.SMTP_PORT, 0, 65535,doc="""
+            Enter your server's SMTP port. The default (25) is the
             port used by most SMTP servers. Your network administrator may
             have set up SMTP to use a different port; also, the connection
             security settings may require a different port.""")
         
         self.connection_security = cps.Choice(
-            "Select connection security", C_ALL,
-            doc="""Select the connection security. Your network administrator 
+            "Select connection security", C_ALL,doc="""
+            Select the connection security. Your network administrator 
             can tell you which setting is appropriate, or you can check the
             settings on your favorite email program.""")
         
         self.use_authentication = cps.Binary(
-            "Username and password required to login?", False,
-            doc="""Check this box if you need to enter a username and password 
+            "Username and password required to login?", False,doc="""
+            Check this box if you need to enter a username and password 
             to authenticate.""")
         
         self.username = cps.Text(
-            "Username", user,
-            doc="""Enter your server's SMTP username.""")
+            "Username", user,doc="""
+            Enter your server's SMTP username.""")
         
         self.password = cps.Text(
-            "Password", "",
-            doc="""Enter your server's SMTP password.""")
+            "Password", "",doc="""
+            Enter your server's SMTP password.""")
         
         self.when = []
         self.when_count = cps.HiddenCount(self.when)
         self.add_when(False)
         
         self.add_when_button = cps.DoSomething(
-            "Add another email event","Add event", self.add_when,
-            doc="""Press this button to add another event or condition.
+            "Add another email event","Add email event", self.add_when,doc="""
+            Press this button to add another event or condition.
             <b>SendEmail</b> will send an email when this event happens""")
         
     def add_recipient(self, can_delete = True):
         '''Add a recipient for the email to the list of emails'''
         group = cps.SettingsGroup()
+        
         group.append("recipient", cps.Text(
-            "Recipient address","recipient@domain",
-            doc="""Enter the address to which the messages will be sent."""))
+            "Recipient address","recipient@domain",doc="""
+            Enter the address to which the messages will be sent."""))
+        
         if can_delete:
             group.append("remover", cps.RemoveSettingButton(
                 "Remove above recipient", "Remove recipient", 
-                self.recipients, group,
-                doc="""Press this button to remove the above recipient from
+                self.recipients, group,doc="""
+                Press this button to remove the above recipient from
                 the list of people to receive the email"""))
         self.recipients.append(group)
             
     def add_when(self, can_delete = True):
         group = cps.SettingsGroup()
         group.append("choice", cps.Choice(
-            "When should the email be sent?", S_ALL,
-            doc="""Select the kind of event that causes
+            "When should the email be sent?", S_ALL, doc="""
+            Select the kind of event that causes
             <b>SendEmail</b> to send an email. You have the following choices:
-            <br><ul><li><i>After first cycle:</i> Send an email during
+            <ul>
+            <li><i>%(S_FIRST)s:</i> Send an email during
             processing of the first image cycle.</li>
-            <li><i>After last cycle:</i> Send an email after all processing
+            <li><i>%(S_LAST)s:</i> Send an email after all processing
             is complete.</li>
-            <li><i>After group start:</i> Send an email during the first
+            <li><i>%(S_GROUP_START)s:</i> Send an email during the first
             cycle of each group of images.</li>
-            <li><i>After group end:</i> Send an email after all processing
+            <li><i>%(S_GROUP_END)s:</i> Send an email after all processing
             for a group is complete.</li>
-            <li><i>Every # of cycles</i> Send an email each time a certain
+            <li><i>%(S_EVERY_N)s</i> Send an email each time a certain
             number of image cycles have been processed. You will be prompted
             for the number of image cycles if you select this choice.</li>
-            <li><i>After cycle #:</i> Send an email after the given number
+            <li><i>%(S_CYCLE_N)s:</i> Send an email after the given number
             of image cycles have been processed. You will be prompted for
             the image cycle number if you select this choice. You can add
             more events if you want emails after more than one image cycle.</li>
-            </ul>"""))
+            </ul>"""%globals()))
         
         group.append("image_set_number", cps.Integer(
-            "Image cycle number", 1, minval = 1,
-            doc='''
+            "Image cycle number", 1, minval = 1,doc='''
             <i>(Used only if sending email after a particular cycle number)</i><br>
             Send an email during processing of the given image cycle.
             For instance, if you enter 4, then <b>SendEmail</b>
             will send an email during processing of the fourth image cycle.'''))
         
         group.append("image_set_count", cps.Integer(
-            "Image cycle count", 1, minval = 1,
-            doc='''
+            "Image cycle count", 1, minval = 1,doc='''
             <i>(Used only if sending email after every N cycles)</i><br>
             Send an email each time this number of image cycles have
             been processed. For instance, if you enter 4,
@@ -200,12 +200,12 @@ class SendEmail(cpm.CPModule):
         
         group.append("message", cps.Text(
             "Message text","Notification from CellProfiler",
-            metadata=True,
-            doc="""The body of the message sent from CellProfiler.
+            metadata=True,doc="""
+            The body of the message sent from CellProfiler.
             Your message can include metadata values. For instance,
             if you group by plate and want to send an email after processing each
             plate, you could use the message  
-            "Finished processing plate \\g<Plate>". """))
+            "Finished processing plate \\g&lt;Plate&gt;". """))
         
         if can_delete:
             group.append("remover", cps.RemoveSettingButton(

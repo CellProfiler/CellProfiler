@@ -1,15 +1,14 @@
-"""<b> Measure Image Area Occupied</b> measures the total area in an image that is occupied by objects
+"""<b> Measure Image Area Occupied</b> measures the total area in an image that is 
+occupied by objects.
 <hr>
-
 This module reports the sum of the areas and perimeters of the objects defined by one
 of the <b>Identify</b> modules, or the area of the foreground in a binary
-image.
-Both the area occupied, perimeter and the total image area will respect
-the masking, if any, of the primary image used by the Identify module.
+image. If the input image has a mask (for example, created by the <b>MaskImage</b> module), the measurements
+made by this module will take the mask into account by ignoring the pixels outside the mask.
 
 <p>You can use this module to measure the number of pixels above a given threshold 
-if you precede it with thresholding performed by <b>ApplyThreshold</b>, and then select the binary image
-output by <b>ApplyThreshold</b> to be measured by this module.</p>
+if you precede it with thresholding performed by <b>ApplyThreshold</b>, and then 
+select the binary image output by <b>ApplyThreshold</b> to be measured by this module.</p>
 
 <h4>Available measurements</h4>
 <ul>
@@ -76,32 +75,44 @@ class MeasureImageAreaOccupied(cpm.CPModule):
         class Operand(object):
             def __init__(self):
                 self.__spacer = cps.Divider(line=True)
-                self.__operand_choice = cps.Choice("Measure the area occupied in a binary image, or in objects?", 
-                                                   [O_BINARY_IMAGE, O_OBJECTS], doc = """
-                                                   You can either measure the area occupied by previously-identified 
-                                                   objects, or the area occupied by the foreground in a binary (black 
-                                                   and white) image.""")
-                self.__operand_objects = cps.ObjectNameSubscriber("Select objects to measure",
-                                                    "None", doc = """
-                                                    <i>(Used only if '%(O_OBJECTS)s' are to be measured)</i> <br>
-                                                    Select the previously identified objects you would like to measure. """%globals())
-                self.__should_save_image = cps.Binary("Retain a binary image of the object regions?", 
-                                                    False, doc="""
-                                                    <i>(Used only if '%(O_OBJECTS)s' are to be measured)</i><br>
-                                                    This setting is helpful if you would like to use a binary image 
-                                                    later in the pipeline, for example in SaveImages.  The image will 
-                                                    display the object area that you have measured as the foreground 
-                                                    in white and the background in black. """%globals())
-                self.__image_name = cps.ImageNameProvider("Name the output binary image", 
-                                                    "Stain",doc="""
-                                                    <i>(Used only if the binary image of the objects is to be retained for later use in the pipeline)</i> <br> 
-                                                    Specify a name that will allow the binary image of the objects to be selected later in the pipeline.""")
-                self.__binary_name = cps.ImageNameSubscriber("Select a binary image to measure", 
-                                                    "None", doc="""
-                                                    <i>(Used only if '%(O_BINARY_IMAGE)s' is to be measured)</i><br>
-                                                    This is a binary image created earlier in the pipeline, 
-                                                    where you would like to measure the area occupied by the foreground 
-                                                    in the image."""%globals())
+                self.__operand_choice = cps.Choice(
+                    "Measure the area occupied in a binary image, or in objects?", 
+                    [O_BINARY_IMAGE, O_OBJECTS], doc = """
+                    The area can be measured in two ways:
+                    <ul>
+                    <li><i>%(O_BINARY_IMAGE)s:</i> The area occupied by the foreground in a binary (black 
+                    and white) image.</li>
+                    <li><i>%(O_OBJECTS)s:</i> The area occupied by previously-identified objects.</li>
+                    </ul>""")
+                
+                self.__operand_objects = cps.ObjectNameSubscriber(
+                    "Select objects to measure",
+                    "None", doc = """
+                    <i>(Used only if '%(O_OBJECTS)s' are to be measured)</i> <br>
+                    Select the previously identified objects you would like to measure."""%globals())
+                
+                self.__should_save_image = cps.Binary(
+                    "Retain a binary image of the object regions?", 
+                    False, doc="""
+                    <i>(Used only if '%(O_OBJECTS)s' are to be measured)</i><br>
+                    This setting is helpful if you would like to use a binary image 
+                    later in the pipeline, for example in <b>SaveImages</b>.  The image will 
+                    display the object area that you have measured as the foreground 
+                    in white and the background in black. """%globals())
+                
+                self.__image_name = cps.ImageNameProvider(
+                    "Name the output binary image", 
+                    "Stain",doc="""
+                    <i>(Used only if the binary image of the objects is to be retained for later use in the pipeline)</i> <br> 
+                    Specify a name that will allow the binary image of the objects to be selected later in the pipeline.""")
+                
+                self.__binary_name = cps.ImageNameSubscriber(
+                    "Select a binary image to measure", 
+                    "None", doc="""
+                    <i>(Used only if '%(O_BINARY_IMAGE)s' is to be measured)</i><br>
+                    This is a binary image created earlier in the pipeline, 
+                    where you would like to measure the area occupied by the foreground 
+                    in the image."""%globals())
             
             @property
             def spacer(self):

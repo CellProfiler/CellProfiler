@@ -1,20 +1,20 @@
 """<b>Measure Object Radial Distribution</b> measures the radial distribution 
-of intensities within each object
+of intensities within each object.
 <hr>
-
 Given an image with objects identified, this module measures the
 intensity distribution from each object's center to its boundary 
 within a user-controlled number of bins, i.e. rings.
 
-The distribution is measured from the center of the object, where 
+<p>The distribution is measured from the center of the object, where 
 the center is defined as the point farthest from any edge.  The numbering
-is from 1 (innermost) to N (outermost), where N is set by 'Number of bins'.
+is from 1 (innermost) to <i>N</i> (outermost), where <i>N</i> is the
+number of bins specified by the user.
 Alternatively, if primary objects exist within the object of interest
 (e.g. nuclei within cells), you can choose the center of the primary
 objects as the center from which to measure the radial distribution.
 This might be useful in cytoplasm-to-nucleus translocation experiments, 
 for example.  Note that the ring widths are normalized per-object, 
-i.e. not necessarily a constant width across objects.
+i.e., not necessarily a constant width across objects.</p>
 
 <h4>Available measurements</h4>
 <ul>
@@ -24,7 +24,7 @@ as fraction of total intensity normalized by fraction of pixels at a given radiu
 <li><i>RadialCV:</i> Coefficient of variation of intensity within a ring, calculated 
 over 8 slices.</li>
 </ul>
-<br>
+
 See also <b>MeasureObjectIntensity</b>.
 """
 
@@ -130,8 +130,9 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("image_name", cps.ImageNameSubscriber(
-                "Select an image to measure", "None",doc="""
-                What did you call the images you want to process?"""))
+                "Select an image to measure", "None", doc="""
+                Select the image that you want to measure the intensity from."""))
+        
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         self.images.append(group)
@@ -143,29 +144,33 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
             group.append("divider", cps.Divider(line=False))
         group.append("object_name", cps.ObjectNameSubscriber(
                 "Select objects to measure", "None",doc="""
-                What did you call the objects you want to measure?"""))
+                Select the objects that you want to measure the intensity from."""))
+        
         group.append("center_choice", cps.Choice(
                 "Object to use as center?", C_ALL,doc="""
                 There are three ways to specify the center of the radial measurement:
                 <ul>
-                <li><i>These objects</i>: Use the centers of these objects for the 
+                <li><i>%(C_SELF)s:</i> Use the centers of these objects for the 
                 radial measurement.</li> 
-                <li><i>Centers of other objects</i>: Use the centers of other objects
+                <li><i>%(C_CENTERS_OF_OTHER)s:</i> Use the centers of other objects
                 for the radial measurement.</li>
-                <li><i>Edges of other objects</i>: Measure distances from the
+                <li><i>%(C_EDGES_OF_OTHER)s:</i> Measure distances from the
                 edge of the other object to each pixel outside of the
                 centering object. Do not include pixels within the centering
                 object in the radial measurement calculations.</li>
                 </ul>
                 For example, if measuring the radial distribution in a Cell
-                object, you can use the center of the Cell objects (<i>These
-                objects</i>) or you can use previously identified Nuclei objects as 
-                the centers (<i>Other objects</i>)."""))
+                object, you can use the center of the Cell objects (<i>%(C_SELF)s</i>) 
+                or you can use previously identified Nuclei objects as 
+                the centers (<i>%(C_CENTERS_OF_OTHER)s</i>)."""%globals()))
+        
         group.append("center_object_name", cps.ObjectNameSubscriber(
-                "Select objects to use as centers", "None",doc="""<i>(Used only if "other objects" are selected for centers)</i><br>
+                "Select objects to use as centers", "None", doc="""
+                <i>(Used only if "%(C_CENTERS_OF_OTHER)s" are selected for centers)</i><br>
                 Select the object to use as the center, or select <i>None</i> to
                 use the input object centers (which is the same as selecting
-                <i>These objects</i> for the object centers)."""))
+                <i>%(C_SELF)s</i> for the object centers)."""%globals()))
+
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.objects, group))
         self.objects.append(group)
@@ -175,35 +180,37 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
+
         group.append("wants_scaled", cps.Binary(
-            "Scale bins?", True,
-            doc ="""Do you want to scale the bins to the size of the cell?
-            <p>If you check this setting, <b>MeasureObjectRadialDistribution</b>
-            will divide the object radially into the number of bins you specify.
-            If you leave the setting unchecked, <b>MeasureObjectRadialDistribution</b>
-            will ask for a maximum radial distance and will divide that distance
-            into the number of bins you specify. It's necessary to specify
-            a maximum distance so that each object will have the same measurements
-            (which might be zero for small objects) and so that the measurements
-            can be taken without knowing the maximum object radius before the
-            run starts"""))
+                "Scale the bins?", True,doc ="""
+                If you check this setting, <b>MeasureObjectRadialDistribution</b>
+                will divide the object radially into the number of bins you specify.
+                If you leave the setting unchecked, <b>MeasureObjectRadialDistribution</b>
+                will ask for a maximum radial distance and will divide that distance
+                into the number of bins you specify. It is necessary to specify
+                a maximum distance so that each object will have the same measurements
+                (which might be zero for small objects) and so that the measurements
+                can be taken without knowing the maximum object radius before the
+                run starts."""))
+
         group.append("bin_count", cps.Integer(
-                    "Number of bins",4, 2, doc="""How many bins do you want to use to measure 
-                        the distribution?
-                        Radial distribution is measured with respect to a series
-                        of concentric rings starting from the object center (or 
-                        more generally, between contours at a normalized distance
-                        from the object center). This number
-                        specifies the number of rings into which the distribution is to
-                        be divided. Additional ring counts can be specified
-                        by clicking the <i>Add another set of bins</i> button."""))
+                "Number of bins", 4, 2, doc="""
+                Specify the number of bins that you want to use to measure 
+                the distribution. Radial distribution is measured with respect to a series
+                of concentric rings starting from the object center (or 
+                more generally, between contours at a normalized distance
+                from the object center). This number
+                specifies the number of rings into which the distribution is to
+                be divided. Additional ring counts can be specified
+                by clicking the <i>Add another set of bins</i> button."""))
+
         group.append("maximum_radius", cps.Integer(
-            "Maximum radius", 100, minval = 1,
-            doc = """What is the maximum radius for the unscaled bins?
-            <p>The unscaled binning method creates the number of bins that you
-            specify and creates equally spaced bin boundaries up to the maximum
-            radius. Parts of the object that are beyond this radius will be
-            counted in an overflow bin. The radius is measured in pixels"""))
+                "Maximum radius", 100, minval = 1,doc = """
+                Specify the maximum radius for the unscaled bins. The unscaled binning 
+                method creates the number of bins that you
+                specify and creates equally spaced bin boundaries up to the maximum
+                radius. Parts of the object that are beyond this radius will be
+                counted in an overflow bin. The radius is measured in pixels."""))
         
         group.can_remove = can_remove
         if can_remove:

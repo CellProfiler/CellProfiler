@@ -53,7 +53,7 @@ representation of the object.</li>
 </li>
 </ul>
 
-<h3>Technical notes</h3>
+<h4>Technical notes</h4>
 
 <p>CellProfiler contains a modular
 three-step strategy to identify objects even if they touch each other. It
@@ -82,7 +82,7 @@ desired, by excluding objects that are a particular size, shape,
 intensity, or texture. </li>
 </ol>
 
-<b>References</b>
+<h4>References</h4>
 <ul>
 <li>Malpica N, de Solorzano CO, Vaquero JJ, Santos, A, Vallcorba I, 
 Garcia-Sagredo JM, del Pozo F (1997) "Applying watershed
@@ -104,7 +104,7 @@ segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.
 (<a href="http://dx.doi.org/10.1111/j.0022-2720.2004.01338.x">link</a>)</li>
 </ul>
 
-<h3>Technical notes</h3> 
+<h4>Technical notes</h4> 
 The initial step of identifying local maxima is
 performed on the user-controlled heavily smoothed image, the
 foreground/background is  on a hard-coded slightly smoothed image,

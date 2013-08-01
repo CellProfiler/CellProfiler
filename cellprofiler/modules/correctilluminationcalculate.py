@@ -289,11 +289,12 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             What is the size of the desired smoothing filter, in pixels?'''%globals())
         
         self.save_average_image = cps.Binary(
-            "Retain the averaged image for use later in the pipeline (for example, in SaveImages)?", False, doc = '''
+            "Retain the averaged image?", False, doc = '''
             The averaged image is the illumination function
             prior to dilation or smoothing. It is an image produced during the calculations, not typically
             needed for downstream modules. It can be helpful to retain it in case you wish to try several 
-            different smoothing methods without taking the time to recalculate the averaged image each time.''')
+            different smoothing methods without taking the time to recalculate the averaged image each time.
+            Use the <b>SaveImages</b> module to save it to your hard drive.''')
         
         self.average_image_name = cps.ImageNameProvider(
             "Name the averaged image","IllumBlueAvg",doc = '''
@@ -301,9 +302,10 @@ class CorrectIlluminationCalculate(cpm.CPModule):
             Enter a name that will allow the averaged image to be selected later in the pipeline.''')
         
         self.save_dilated_image = cps.Binary(
-            "Retain the dilated image for use later in the pipeline (for example, in SaveImages)?", False, doc = '''                                            
+            "Retain the dilated image?", False, doc = '''                                            
             The dilated image is the illumination function after dilation but prior to smoothing. 
-            It is an image produced during the calculations, and is not typically needed for downstream modules.''')
+            It is an image produced during the calculations, and is not typically needed for downstream modules.
+            Use the <b>SaveImages</b> module to save it to your hard drive.''')
         
         self.dilated_image_name = cps.ImageNameProvider(
             "Name the dilated image","IllumBlueDilated",doc='''

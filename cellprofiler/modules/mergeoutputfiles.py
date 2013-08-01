@@ -1,14 +1,15 @@
 '''<b>MergeOutputFiles</b> merges several output .mat files into one.
 <hr>
-
 This data tool lets you collect the output .mat files from several runs, for instance,
 as might be created by running CellProfiler in batch mode.
 
-<b>MergeOutputFiles</b> is a pure data tool - <i>you cannot use it as a module</i>,
+<p><b>MergeOutputFiles</b> is a pure data tool; <i>you cannot use it as a module</i>,
 and it will generate an error if you try to do so. To use it as a data tool,
-choose it from the <i>Data Tools</i> menu to bring up the <b>MergeOutputFiles</b> dialog.
-The dialog has the following parts:
-<ul><li><i>Destination file:</i> This is the name of the file that will be 
+choose it from the <i>Data Tools</i> menu to bring up the <b>MergeOutputFiles</b> dialog.</p>
+
+<p>The dialog has the following parts:
+<ul>
+<li><i>Destination file:</i> This is the name of the file that will be 
 created. The file will contain all merged input data files in MATLAB format.</li>
 <li><i>File list:</i> The file list is the box with the columns, "Folder" and
 "File". It will be empty until you add files using the "Add..." button.
@@ -16,29 +17,31 @@ Measurement files are written out to the destination file in the order they
 appear in this list.
 You can select multiple files in this box to move them up or down or to
 remove them.</li>
-<li><i>Add button:</i> The Add button brings up a file chooser when you press
+<li><i>Add button:</i> Brings up a file chooser when you press
 it. You can select multiple files from the file chooser and they will be
 added in alphabetical order to the bottom of the current list of files.</li>
-<li><i>Remove button:</i> The Remove button removes all currently selected
+<li><i>Remove button:</i> Removes all currently selected
 files from the list.</li>
-<li><i>Up button</i> The Up button moves the currently selected files up in
+<li><i>Up button:</i> Moves the currently selected files up in
 the list.</li>
-<li><i>Down button</i> The Down button moves the currently selected files
+<li><i>Down button:</i> Mves the currently selected files
 down in the list.</li>
-<li><i>OK button</i> The OK button accepts the file list and writes it to
+<li><i>OK button:</i>Accepts the file list and writes it to
 the output.</li>
-<li><i>Cancel button</i> The cancel button closes the dialog without
-performing any operation.</li></ul>
+<li><i>Cancel button:</i> Closes the dialog without
+performing any operation.</li>
+</ul>
+</p>
 
-Once merged, this output file will be compatible with other data tools. 
+<p>Once merged, this output file will be compatible with other data tools. 
 Output files can be quite large, so prior to merging,
 be sure that the total size of the merged output file is of a reasonable
 size to be opened on your computer (based on the amount of memory
 available on your computer). It may be preferable instead to import data
 from individual output files directly into a database using <b>ExportDatabase</b> 
-as a data tool.
+as a data tool.</p>
 
-See also <b>CreateBatchFiles</b>, <b>ExportToDatabase</b>.
+<p>See also <b>CreateBatchFiles</b>, <b>ExportToDatabase</b>.</p>
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -56,6 +59,7 @@ import numpy as np
 import os
 import sys
 
+from cellprofiler.gui.htmldialog import HTMLDialog
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
@@ -132,6 +136,8 @@ class MergeOutputFiles(cpm.CPModule):
         button_sizer = wx.StdDialogButtonSizer()
         button_sizer.AddButton(wx.Button(dlg, wx.ID_OK))
         button_sizer.AddButton(wx.Button(dlg, wx.ID_CANCEL))
+        help_button = wx.Button(dlg, wx.ID_HELP)
+        button_sizer.AddButton(help_button)
         button_sizer.Realize()
         subsizer.Add(button_sizer, 0, wx.ALIGN_RIGHT )
         dlg.Layout()
@@ -151,6 +157,9 @@ class MergeOutputFiles(cpm.CPModule):
                        lambda event: self.on_up(event, list_control, order))
         down_button.Bind(wx.EVT_BUTTON,
                          lambda event: self.on_down(event, list_control, order))
+        help_button.Bind(wx.EVT_BUTTON, 
+                        lambda event: self.on_help(event, list_control))
+        
         if dlg.ShowModal() == wx.ID_OK:
             sources = []
             for i in range(list_control.ItemCount):
@@ -161,6 +170,13 @@ class MergeOutputFiles(cpm.CPModule):
             self.merge_files(dest_file_ctrl.Value, sources)
         dlg.Destroy()
         
+    @staticmethod
+    def on_help(event, list_control):
+        import cellprofiler.modules        
+        dlg = HTMLDialog(
+            list_control, 'Help on module,"%s"'%MergeOutputFiles.module_name, __doc__)
+        dlg.Show()
+            
     @staticmethod
     def on_add(event, list_control, order):
         '''Handle the add button being pressed'''

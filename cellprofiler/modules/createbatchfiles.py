@@ -5,7 +5,7 @@ This module creates files that can be submitted in parallel to a
 cluster for faster processing. It should be placed at the end of
 an image processing pipeline.
 
-If your computer mounts the file system differently than the cluster computers,
+<p>If your computer mounts the file system differently than the cluster computers,
 <b>CreateBatchFiles</b> can replace the necessary parts of the paths to the 
 image and output files. For instance, a Windows machine might 
 access files images by mounting the file system using a drive letter, like this:<br><br>
@@ -14,6 +14,9 @@ and the cluster computers access the same file system like this:<br><br>
 <tt>/server_name/your_name/your_data/images</tt><br><br>
 In this case, the local root path is <tt>Z:\your_data\images</tt> and the cluster 
 root path is <tt>/server_name/your_name/your_data/images</tt>.
+</p>
+
+For more details on batch processing, please see <i>Help > Other Features > Batch Processing</i>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

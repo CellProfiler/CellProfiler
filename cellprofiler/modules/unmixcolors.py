@@ -25,12 +25,12 @@ choose the stain that closest resembles the color you want, or enter a custom va
 Please note that if you are looking to simply split a color image into red, green and blue
 components, use the <b>ColorToGray</b> module rather than <b>UnmixColors</b>.
 
-<h3>Technical notes</h3>
+<h4>Technical notes</h4>
 This code is adapted from the ImageJ plugin, <i>Colour_Deconvolution.java</i>
 (described <a href="http://www.dentistry.bham.ac.uk/landinig/software/cdeconv/cdeconv.html">here</a>)
 written by A.C. Ruifrok, whose paper forms the basis for this code.
 
-References
+<h4>References</h4>
 <ul>
 <li>Ruifrok AC, Johnston DA. (2001) "Quantification of histochemical staining by color 
 deconvolution." <i>Analytical & Quantitative Cytology & Histology</i>, 23: 291-299.</li>
@@ -176,14 +176,14 @@ class UnmixColors(cpm.CPModule):
         self.stain_count = cps.HiddenCount(self.outputs, "Stain count")
         
         self.input_image_name = cps.ImageNameSubscriber(
-            "Color image", "None", doc = """
+            "Select the input color image", "None", doc = """
             Choose the name of the histologically stained color image
             loaded or created by some prior module.""")
         
         self.add_image(False)
         
         self.add_image_button = cps.DoSomething(
-            "Add another stain", "Add stain", self.add_image,doc = """
+            "", "Add another stain", self.add_image,doc = """
             Press this button to add another stain to the list.
             You will be able to name the image produced and to either pick
             the stain from a list of precalibrated stains or to enter
@@ -199,7 +199,7 @@ class UnmixColors(cpm.CPModule):
         default_name = default_name.replace(" ","")
         
         group.append("image_name", cps.ImageNameProvider(
-            "Image name", default_name,doc = """
+            "Name the output name", default_name,doc = """
             Use this setting to name one of the images produced by the
             module for a particular stain. The image can be used in
             subsequent modules in the pipeline."""))
@@ -284,7 +284,7 @@ class UnmixColors(cpm.CPModule):
         
         if can_remove:
             group.append("remover", cps.RemoveSettingButton(
-                "", "Remove image", self.outputs, group))
+                "", "Remove this image", self.outputs, group))
         self.outputs.append(group)
     
     def settings(self):

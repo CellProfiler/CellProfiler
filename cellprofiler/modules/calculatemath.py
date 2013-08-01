@@ -76,23 +76,28 @@ class CalculateMath(cpm.CPModule):
             def __init__(self, index, operation):
                 self.__index = index
                 self.__operation = operation
-                self.__operand_choice = cps.Choice(self.operand_choice_text(), MC_ALL,doc="""
-                                            Indicate whether the operand is an image or object measurement.""")
+                self.__operand_choice = cps.Choice(
+                    self.operand_choice_text(), MC_ALL,doc="""
+                    Indicate whether the operand is an image or object measurement.""")
                 
-                self.__operand_objects = cps.ObjectNameSubscriber(self.operand_objects_text(),"None",doc="""
-                                            Choose the objects you want to measure for this operation.""")
+                self.__operand_objects = cps.ObjectNameSubscriber(
+                    self.operand_objects_text(),"None",doc="""
+                    Choose the objects you want to measure for this operation.""")
                 
-                self.__operand_measurement = cps.Measurement(self.operand_measurement_text(),
-                                            self.object_fn,doc="""
-                                            Enter the category that was used to create the measurement. You
-                                            will be prompted to add additional information depending on 
-                                            the type of measurement that is requested.""")
+                self.__operand_measurement = cps.Measurement(
+                    self.operand_measurement_text(),
+                    self.object_fn,doc="""
+                    Enter the category that was used to create the measurement. You
+                    will be prompted to add additional information depending on 
+                    the type of measurement that is requested.""")
                 
-                self.__multiplicand = cps.Float("Multiply the above operand by",1,doc="""
-                                            Enter the number by which you would like to multiply the above operand.""")
+                self.__multiplicand = cps.Float(
+                    "Multiply the above operand by",1,doc="""
+                    Enter the number by which you would like to multiply the above operand.""")
                 
-                self.__exponent = cps.Float("Raise the power of above operand by",1,doc="""
-                                            Enter the power by which you would like to raise the above operand.""")
+                self.__exponent = cps.Float(
+                    "Raise the power of above operand by",1,doc="""
+                    Enter the power by which you would like to raise the above operand.""")
             
             @property
             def operand_choice(self):
@@ -176,15 +181,17 @@ class CalculateMath(cpm.CPModule):
                 result += [self.operand_measurement, self.multiplicand, self.exponent]
                 return (result)
             
-        self.output_feature_name = cps.Text("Name the output measurement",
-                                            "Measurement",doc="""
-                                            Enter a name for the measurement calculated by this module.""")
+        self.output_feature_name = cps.Text(
+            "Name the output measurement",
+            "Measurement",doc="""
+            Enter a name for the measurement calculated by this module.""")
         
-        self.operation = cps.Choice("Operation",
-                                    O_ALL,doc="""
-                                    Choose the arithmetic operation would you like to perform. <i>None</i> is useful if 
-                                    you simply want to select some of the later options in the module, such as multiplying
-                                    or exponentiating your image by a constant.""")
+        self.operation = cps.Choice(
+            "Operation",
+            O_ALL,doc="""
+            Choose the arithmetic operation would you like to perform. <i>None</i> is useful if 
+            you simply want to select some of the later options in the module, such as multiplying
+            or exponentiating your image by a constant.""")
         
         self.operands = (Operand(0, self.operation), Operand(1, self.operation))
         
@@ -194,33 +201,41 @@ class CalculateMath(cpm.CPModule):
         
         self.spacer_3 = cps.Divider(line=True)
         
-        self.wants_log = cps.Binary("Take log10 of result?", False,doc="""
-                                    Check this box if you want the log (base 10) of the result.""")
+        self.wants_log = cps.Binary(
+            "Take log10 of result?", False,doc="""
+            Check this box if you want the log (base 10) of the result.""")
         
-        self.final_multiplicand = cps.Float("Multiply the result by",1,doc="""
-                                    <i>(Used only for operations other than None)</i><br>
-                                    Enter the number by which you would like to multiply the result.""")
+        self.final_multiplicand = cps.Float(
+            "Multiply the result by",1,doc="""
+            <i>(Used only for operations other than None)</i><br>
+            Enter the number by which you would like to multiply the result.""")
         
-        self.final_exponent = cps.Float("Raise the power of result by",1,doc="""
-                                    <i>(Used only for operations other than None)</i><br>
-                                    Enter the power by which you would like to raise the result.""")
+        self.final_exponent = cps.Float(
+            "Raise the power of result by",1,doc="""
+            <i>(Used only for operations other than None)</i><br>
+            Enter the power by which you would like to raise the result.""")
 
-        self.final_addend = cps.Float("Add to the result",0,doc="""
-                                    What number would you like to add to the result?""")
+        self.final_addend = cps.Float(
+            "Add to the result",0,doc="""
+            Enter the number you like to add to the result.""")
 
-        self.constrain_lower_bound = cps.Binary("Constrain the result to a lower bound?",False,doc="""
-                                    Check this setting if you want the result to be 
-                                    constrained to a lower bound.""")
+        self.constrain_lower_bound = cps.Binary(
+            "Constrain the result to a lower bound?",False,doc="""
+            Check this setting if you want the result to be 
+            constrained to a lower bound.""")
 
-        self.lower_bound = cps.Float("Enter the lower bound",0,doc="""
-                                    Enter the lower bound of the result here.""")
+        self.lower_bound = cps.Float(
+            "Enter the lower bound",0,doc="""
+            Enter the lower bound of the result here.""")
 
-        self.constrain_upper_bound = cps.Binary("Constrain the result to an upper bound?",False,doc="""
-                                    Check this setting if you want the result to be 
-                                    constrained to an upper bound.""")
+        self.constrain_upper_bound = cps.Binary(
+            "Constrain the result to an upper bound?",False,doc="""
+            Check this setting if you want the result to be 
+            constrained to an upper bound.""")
 
-        self.upper_bound = cps.Float("Enter the upper bound",1,doc="""
-                                    Enter the upper bound of the result here.""")
+        self.upper_bound = cps.Float(
+            "Enter the upper bound",1,doc="""
+            Enter the upper bound of the result here.""")
         
     def settings(self):
         result = [self.output_feature_name, self.operation] 

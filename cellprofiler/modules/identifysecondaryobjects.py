@@ -34,7 +34,7 @@ The module window will also show another image where the identified
 objects are displayed with arbitrary colors: the colors themselves do not mean 
 anything but simply help you distingush the various objects. 
 
-<h3>Technical notes</h3>
+<h4>Technical notes</h4>
 The <i>Propagation</i> algorithm creates a set of secondary object labels using 
 each primary object as a "seed", guided by the input image and limited to the 
 foreground region as determined by the chosen thresholding method. &lambda; is 

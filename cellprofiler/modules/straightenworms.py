@@ -1,6 +1,5 @@
 '''<b>StraightenWorms</b> straightens untangled worms.
 <hr>
-
 <b>StraightenWorms</b> uses the objects produced by <b>UntangleWorms</b>
 to create images and objects of straight worms from the angles and control
 points as computed by <b>UntangleWorms</b>. The resulting images can then
@@ -37,7 +36,7 @@ measurements of transverse segments are designated as "L1of1" indicating that
 there is only one longitudinal stripe. Both mean intensity and standard
 deviation of intensity are measured per worm sub-area.
 
-References
+<h4>References</h4>
 <ul>
 <li>Peng H, Long F, Liu X, Kim SK, Myers EW (2008) "Straightening <i>Caenorhabditis elegans</i> images."
 <i>Bioinformatics</i>, 24(2):234-42.<a href="http://dx.doi.org/10.1093/bioinformatics/btm569">(link)</a></li>
@@ -127,8 +126,9 @@ class StraightenWorms(cpm.CPModule):
         self.images = []
 
         self.objects_name = cps.ObjectNameSubscriber(
-            'Select the input untangled worm objects', 'OverlappingWorms',
-            doc = """This is the name of the objects produced by the
+            'Select the input untangled worm objects', 
+            'OverlappingWorms',doc = """
+            This is the name of the objects produced by the
             <b>UntangleWorms</b> module. <b>StraightenWorms</b> can use
             either the overlapping or non-overlapping objects as input. It
             will use the control point measurements associated with the objects
@@ -139,22 +139,23 @@ class StraightenWorms(cpm.CPModule):
             will recalculate the control points for these images.""")
 
         self.straightened_objects_name = cps.ObjectNameProvider(
-            "Name the output straightened worm objects", "StraightenedWorms",
-            doc = """This is the name that will be given to the straightened
+            "Name the output straightened worm objects", 
+            "StraightenedWorms",doc = """
+            This is the name that will be given to the straightened
             worm objects. These objects can then be used in a subsequent
             measurement module.""")
         
         self.width = cps.Integer(
-            "Worm width", 20, minval = 3,
-            doc = """This setting determines the width of the image of each
+            "Worm width", 20, minval = 3,doc = """
+            This setting determines the width of the image of each
             worm. The width should be set to at least the maximum width of
             any untangled worm, but can be set to be larger to include the
             worm's background in the straightened image.""")
         
         self.training_set_directory = cps.DirectoryPath(
             "Training set file location", support_urls = True,
-            allow_metadata = False,
-            doc = """Select the folder containing the training set to be loaded.
+            allow_metadata = False,doc = """
+            Select the folder containing the training set to be loaded.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s
             <p>An additional option is the following:
             <ul>
@@ -165,6 +166,7 @@ class StraightenWorms(cpm.CPModule):
             <i>http://my_institution.edu/server/my_username/</i>
             as the path location.</li>
             </ul></p>"""%globals())
+        
         def get_directory_fn():
             '''Get the directory for the CSV file name'''
             return self.training_set_directory.get_absolute_path()
@@ -182,16 +184,16 @@ class StraightenWorms(cpm.CPModule):
                     ("All files (*.*)", "*.*")])
         
         self.wants_measurements = cps.Binary(
-            "Measure intensity distribution?", True,
-            doc = """<b>StraightenWorms</b> can divide a worm into sections
+            "Measure intensity distribution?", True,doc = """
+            <b>StraightenWorms</b> can divide a worm into sections
             and measure the intensities of each section in each of the
             straightened images. These measurements can help classify
             phenotypes if the staining pattern across the segments differs
             between phenotypes.""")
         
         self.number_of_segments = cps.Integer(
-            "Number of transverse segments", 4, 1,
-            doc = """(<i>Only displayed if intensities are measured</i>)<br>
+            "Number of transverse segments", 4, 1,doc = """
+            (<i>Only used if intensities are measured</i>)<br>
             This setting controls the number of segments measured, dividing
             the worm longitudally into transverse segments starting at the head 
             and ending at the tail.
@@ -202,8 +204,8 @@ class StraightenWorms(cpm.CPModule):
             in the horizontal direction.""")
 
         self.number_of_stripes = cps.Integer(
-            "Number of longitudinal stripes", 3, 1,
-            doc = """(<i>Only displayed if intensities are measured</i>)<br>
+            "Number of longitudinal stripes", 3, 1,doc = """
+            (<i>Only used if intensities are measured</i>)<br>
             This setting controls the number of stripes measured, dividing
             the worm transversely into areas that run longitudally. These
             measurements might be used to identify a phenotype in which a
@@ -214,8 +216,8 @@ class StraightenWorms(cpm.CPModule):
             in the vertical direction.""")
         
         self.flip_worms = cps.Choice(
-            "Align worms?", [FLIP_NONE, FLIP_TOP, FLIP_BOTTOM],
-            doc = """(<i>Only displayed if intensities are measured</i>)<br>
+            "Align worms?", [FLIP_NONE, FLIP_TOP, FLIP_BOTTOM],doc = """
+            (<i>Only used if intensities are measured</i>)<br>
             <b>StraightenWorms</b> can align worms so that the brightest
             half of the worm (the half with the highest mean intensity) is
             at the top of the image or at the bottom of the image. This
@@ -232,19 +234,19 @@ class StraightenWorms(cpm.CPModule):
                      for group in self.images ]
         
         self.flip_image = cps.Choice(
-            "Alignment image", [ "None" ], choices_fn = image_choices_fn,
-            doc = """(<i>Only displayed if aligning worms</i>)<br>
+            "Alignment image", 
+            [ "None" ], choices_fn = image_choices_fn,doc = """
+            (<i>Only used if aligning worms</i>)<br>
             This is the image whose intensity will be used to align the worms.
             You must use one of the straightened images below.""")
-        
         
         self.image_count = cps.HiddenCount(self.images, "Image count")
         
         self.add_image(False)
         
         self.add_image_button = cps.DoSomething(
-            "", "Add another image", self.add_image,
-            doc = """Press this button to add another image to be straightened""")
+            "", "Add another image", self.add_image,doc = """
+            Press this button to add another image to be straightened""")
         
     def add_image(self, can_delete = True):
         '''Add an image to the list of images to be straightened'''
@@ -252,15 +254,17 @@ class StraightenWorms(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("divider", cps.Divider())
         group.append("image_name", cps.ImageNameSubscriber(
-            'Select an input image to straighten', 'None',
-            doc = '''This is the name of an image that will be straightened
+            'Select an input image to straighten', 'None',doc = '''
+            This is the name of an image that will be straightened
             similarly to the worm. The straightened image and objects can
             then be used in subsequent modules such as
             <b>MeasureObjectIntensity</b>.'''))
+        
         group.append("straightened_image_name", cps.ImageNameProvider(
-            'Name the output straightened image', 'StraightenedImage',
-            doc = '''This is the name that will be given to the image
+            'Name the output straightened image', 'StraightenedImage',doc = '''
+            This is the name that will be given to the image
             of the straightened worms.'''))
+        
         if can_delete:
             group.append("remover", cps.RemoveSettingButton(
                 "", "Remove above image", self.images, group))

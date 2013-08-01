@@ -42,12 +42,15 @@ class ConserveMemory(cpm.CPModule):
     variable_revision_number = 1
     
     def create_settings(self):
-        self.how_to_remove = cps.Choice("Specify which images?",
-                                        [C_REMOVE, C_KEEP], 
-                                        doc="""
-            <ul><li>Choose <i>%s</i> to remove some images from memory and keep the rest.</li>
-            <li>Choose <i>%s</i> to keep some images and remove the rest.</li></ul>"""%
-                                (C_REMOVE, C_KEEP))
+        self.how_to_remove = cps.Choice(
+            "Specify which images?",
+            [C_REMOVE, C_KEEP], doc="""
+            You can select from the following options:
+            <ul>
+            <li><i>%(C_REMOVE)s:</i> Remove some images from memory and keep the rest.</li>
+            <li><i>%(C_KEEP)s:</i> Keep some images and remove the rest.</li>
+            </ul>"""%globals())
+        
         self.spacer_top = cps.Divider(line=False)
         self.image_names = []
         self.add_image(can_remove = False)

@@ -1,6 +1,5 @@
-'''<b>Tile</b> tiles images together to form large montage images
+'''<b>Tile</b> tiles images together to form large montage images.
 <hr>
-
 This module allows more than one image to be placed next to each other in a
 grid layout you specify. It might be helpful, for example, to place images adjacent to 
 each other when multiple fields of view have been imaged for the same sample.
@@ -34,8 +33,6 @@ image stitching, you may find the following list of software packages useful:
 <li><a href="http://bigwww.epfl.ch/thevenaz/mosaicj/">ImageJ with the MosaicJ plugin</a></li>
 </ul>
 Other packages are referenced <a href="http://graphicssoft.about.com/od/panorama/Panorama_Creation_and_Stitching_Tools.htm">here</a></p>
-
-This module replaces the functionality of the obsolete module <b>PlaceAdjacent</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -90,40 +87,42 @@ class Tile(cpm.CPModule):
     variable_revision_number = 1
 
     def create_settings(self):
-        self.input_image = cps.ImageNameSubscriber("Select an input image",
-                                                         "None",doc="""
-                                                         What did you call the image to be tiled? 
-                                                         Additional images within the cycle can be added 
-                                                         later by choosing the <i>Across cycles</i> 
-                                                         option.""")
-        self.output_image = cps.ImageNameProvider("Name the output image",
+        self.input_image = cps.ImageNameSubscriber(
+            "Select an input image",
+            "None",doc="""
+            Select the image to be tiled. Additional images within the cycle can be added 
+            later by choosing the "<i>%(T_ACROSS_CYCLES)s</i>"option below."""%globals())
+        
+        self.output_image = cps.ImageNameProvider(
+            "Name the output image",
             "TiledImage",doc="""
-            What do you want to call the final tiled image?""")
+            Enter a name for the final tiled image.""")
         
         self.additional_images = []
         
         self.add_button = cps.DoSomething("", "Add another image",
                                           self.add_image)
         
-        self.tile_method = cps.Choice("Tile within cycles or across cycles?",
-                                           T_ALL, doc='''
-             How would you like to tile images? Two options are available:<br>
-             <ul>
-             <li><i>Tile within cycles:</i> If you have loaded more than one image for each cycle
-             using modules upstream in the pipeline, 
-             the images can be tiled. For example, you may tile three different channels
-             (OrigRed, OrigBlue, and OrigGreen), and a new tiled image will 
-             be created for every image cycle. This option takes the place of the 
-             obsolete <b>PlaceAdjacent</b> module.  </li>
-             <li><i>Tile across cycles:</i> If you want to tile images from multiple 
-             cycles together, select this option. For example, you may tile all the 
-             images of the same type (e.g., OrigBlue) across all fields of view in your  
-             experiment, which will result in one final tiled image 
-             when processing is complete.</li>
-             </ul>''')
+        self.tile_method = cps.Choice(
+            "Tile assembly method",
+            T_ALL, doc='''
+            This setting controls the method by which the final tiled image is asembled:
+            <ul>
+            <li><i>%(T_WITHIN_CYCLES)s:</i> If you have loaded more than one image for each cycle
+            using modules upstream in the pipeline, 
+            the images can be tiled. For example, you may tile three different channels
+            (OrigRed, OrigBlue, and OrigGreen), and a new tiled image will 
+            be created for every image cycle.  </li>
+            <li><i>%(T_ACROSS_CYCLES)s:</i> If you want to tile images from multiple 
+            cycles together, select this option. For example, you may tile all the 
+            images of the same type (e.g., OrigBlue) across all fields of view in your  
+            experiment, which will result in one final tiled image 
+            when processing is complete.</li>
+            </ul>'''%globals())
         
-        self.rows = cps.Integer("Number of rows in final tiled image", 8, doc='''
-            How many rows would you like to have in the tiled image?
+        self.rows = cps.Integer(
+            "Final number of rows", 8, doc='''
+            Specify the number of rows would you like to have in the tiled image.
             For example, if you want to show your images in a 96-well format, 
             enter 8. 
             <p><i>Special cases:</i> Let <i>M</i> be the total number of slots for images
@@ -137,8 +136,10 @@ class Tile(cpm.CPModule):
             to avoid this error.</li>
             </ul></p>''')
         
-        self.columns = cps.Integer("Number of columns in final tiled image",
-            12, doc='''How many columns would you like to have in the tiled image?
+        self.columns = cps.Integer(
+            "Final number of columns",
+            12, doc='''
+            Specify the number of columns you like to have in the tiled image.
             For example, if you want to show your images in a 96-well format, 
             enter 12.
             <p><i>Special cases:</i> Let <i>M</i> be the total number of slots for images
@@ -152,16 +153,20 @@ class Tile(cpm.CPModule):
             to avoid this error.</li>
             </ul></p>''')
         
-        self.place_first = cps.Choice("Begin tiling in which corner of the final image?", P_ALL, doc = '''
+        self.place_first = cps.Choice(
+            "Image corner to begin tiling", P_ALL, doc = '''
             Where do you want the first image to be placed?  Begin in the upper left-hand corner
             for a typical multi-well plate format where the first image is A01.''')
         
-        self.tile_style = cps.Choice("Begin tiling across a row, or down a column?", S_ALL, doc = '''
-            Are the images arranged in rows or columns?  If your images are named A01, A02, etc, 
-            enter <i>row</i>".''')
+        self.tile_style = cps.Choice(
+            "Direction to begin tiling", S_ALL, doc = '''
+            This setting specifies the order that the images are to be arranged.
+            If your images are named A01, A02, etc, 
+            enter <i>%(S_ROW)s</i>".'''%globals())
         
-        self.meander = cps.Binary("Tile in meander mode?", False, doc = '''
-            Meander mode tiles adjacent images in one direction, 
+        self.meander = cps.Binary(
+            "Use meander mode?", False, doc = '''
+            <i>Meander mode</i> tiles adjacent images in one direction, 
             then the next row/column is tiled in the opposite direction.  
             Some microscopes capture images
             in this fashion. The default mode is "comb", or "typewriter"
@@ -170,8 +175,8 @@ class Tile(cpm.CPModule):
             again in the same direction.''')
         
         self.wants_automatic_rows = cps.Binary(
-            "Automatically calculate number of rows?", False,
-            doc = """<b>Tile</b> can automatically calculate the number of rows
+            "Automatically calculate number of rows?", False,doc = """
+            <b>Tile</b> can automatically calculate the number of rows
             in the grid based on the number of image cycles that will be processed.
             Check this box to create a grid that has the number of columns
             that you entered and enough rows to display all of your images.
@@ -180,8 +185,8 @@ class Tile(cpm.CPModule):
             and columns.""")
         
         self.wants_automatic_columns = cps.Binary(
-            "Automatically calculate number of columns?", False,
-            doc = """<b>Tile</b> can automatically calculate the number of columns
+            "Automatically calculate number of columns?", False, doc = """
+            <b>Tile</b> can automatically calculate the number of columns
             in the grid from the number of image cycles that will be processed.
             Check this box to create a grid that has the number of rows
             that you entered and enough columns to display all of your images.
@@ -198,7 +203,7 @@ class Tile(cpm.CPModule):
         group.append("input_image_name", 
                      cps.ImageNameSubscriber("Select an additional image to tile",
                                             "None",doc="""
-                                            What is the name of the additional image to tile?"""))
+                                            Select an additional image to tile?"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))
         self.additional_images.append(group)

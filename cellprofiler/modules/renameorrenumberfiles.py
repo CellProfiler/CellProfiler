@@ -1,6 +1,5 @@
-'''<b>Rename or Renumber Files</b> renames or renumbers files on the hard drive
+'''<b>Rename or Renumber Files</b> renames or renumbers files on the hard drive.
 <hr>
-
 This file-renaming utility adjusts text within image file names. 
 <i><b>Be very careful with this module because its purpose is 
 to rename (and overwrite) files!</b></i>  You will have the opportunity to confirm 
@@ -12,10 +11,10 @@ test mode to ensure that the settings are correct.
 You can use this module to standardize the number of characters in your
 file names and to remove unwanted characters from your file names. This is
 especially useful if you want file names that have numbers in them to appear
-in numerical order when processed by <b>LoadImages</b>.<br>
+in numerical order when processed by <b>NamesAndTypes</b>.<br>
 
 While this module performs basic renaming operations, if you can extract
-metadata from your images using <b>LoadImages</b>, you may find using
+metadata from your images using the <b>Metadata</b> module, you may find using
 metadata substitution in <b>SaveImages</b> to be more flexible. Please
 refer to metadata handling for those modules and in Help for more details.
 
@@ -63,7 +62,7 @@ want to:
 <tr><td>1DrosophilaDAPI_100.tif</td> <td>1DrosDP_100.tif</td></tr>
 </table>
 
-See also: <b>LoadImages</b>, <b>SaveImages</b>
+See also: <b>NamesAndTypes</b>, <b>SaveImages</b>
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -97,16 +96,16 @@ class RenameOrRenumberFiles(cpm.CPModule):
             "see the help for this module for warnings.")
         
         self.image_name = cps.FileImageNameSubscriber(
-            'Select the input image','None',
-            doc="""Select the images associated with the files
-            you want to rename. This should be an image loaded by 
-            <b>LoadImages</b>, <b>LoadData</b>, or <b>LoadSingleImage</b>.
+            'Select the input image','None',doc="""
+            Select the images associated with the files
+            you want to rename. This should be an image loaded by the
+            <b>Input</b> modules.
             Be very careful because you will be renaming these files!""")
         
         self.number_characters_prefix = cps.Integer(
             "Number of characters to retain at start of file name", 6,
-            minval=0,
-            doc="""Number of characters at the start of the old
+            minval=0, doc="""
+            Number of characters at the start of the old
             file name that will be copied over verbatim to the new file name. For
             instance, if this setting is "6" and the file name is 
             "Image-734.tif", the output file name will also start with 
@@ -114,16 +113,16 @@ class RenameOrRenumberFiles(cpm.CPModule):
         
         self.number_characters_suffix = cps.Integer(
             "Number of characters to retain at the end of file name", 4,
-            minval=0,
-            doc="""Number of characters at the end of the old
+            minval=0,doc="""
+            Number of characters at the end of the old
             file name that will be copied over verbatim to the new file name. For
             instance, if this setting is "4" and the file name is
             "Image-734.tif", the output file name will also end with ".tif".""")
         
         self.action = cps.Choice(
             "Handling of remaining characters",
-            [A_RENUMBER, A_DELETE],
-            doc ="""You can either treat the characters between the start and
+            [A_RENUMBER, A_DELETE], doc ="""
+            You can either treat the characters between the start and
             end as numbers or you can delete them. If you treat them as numbers,
             you will be given the opportunity to pad the numbers with zeros
             so that all of your file names will have a uniform length. For
@@ -133,9 +132,8 @@ class RenameOrRenumberFiles(cpm.CPModule):
         
         self.number_digits = cps.Integer(
             "Number of digits for numbers",
-            4, minval=0,
-            doc="""
-            <i>(Used only if Renumber is selected)</i><br>
+            4, minval=0, doc="""
+            <i>(Used only if %(A_RENUMBER)s is selected)</i><br>
             Use this setting to pad numbers with zeros so that they
             all have a uniform number of characters. For instance, padding
             with four digits has the following result:<br>
@@ -145,30 +143,31 @@ class RenameOrRenumberFiles(cpm.CPModule):
             <tr><td>10</td><td>0010</td></tr>
             <tr><td>100</td><td>0100</td></tr>
             <tr><td>1000</td><td>1000</td></tr>
-            </table></code>""")
+            </table></code>"""%globals())
         
         self.wants_text = cps.Binary(
-            "Add text to the file name?", False,
-            doc="""You can check this setting if you want to add text
-            to the file name. If you chose <i>Renumber</i> above,
+            "Add text to the file name?", False,doc="""
+            You can check this setting if you want to add text
+            to the file name. If you chose <i>%(A_RENUMBER)s</i> above,
             the module will add the text after your number.
-            If you chose <i>Delete</i>, the module will replace
-            the deleted text with the text you enter here.""")
+            If you chose <i>%(A_DELETE)s</i>, the module will replace
+            the deleted text with the text you enter here."""%globals())
         
         self.text_to_add = cps.Text(
-            "Replacement text","",
-            doc="""
+            "Replacement text","",doc="""
             <i>(Used only if you chose to add text to the file name)</i><br>
             Enter the text that you want to add to each file name.""")
+        
         self.wants_to_replace_spaces = cps.Binary(
-            "Replace spaces?", False,
-            doc = """Check this setting to replace spaces in the final
+            "Replace spaces?", False,doc = """
+            Check this setting to replace spaces in the final
             version of the file name with some other text. Leave it unchecked
             if the file name can have spaces or if none of the file names
             have spaces.""")
+        
         self.space_replacement = cps.Text(
-            "Space replacement:", "_",
-            doc = """This is the text that will be substituted for spaces
+            "Space replacement", "_",doc = """
+            This is the text that will be substituted for spaces
             in your file name.""")
             
     def settings(self):

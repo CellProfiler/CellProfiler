@@ -1,13 +1,27 @@
-"""<b>Measure Object Intensity</b> measures several intensity features for identified objects
+"""<b>Measure Object Intensity</b> measures several intensity features for 
+identified objects.
 <hr>
-
 Given an image with objects identified (e.g. nuclei or cells), this
 module extracts intensity features for each object based on one or more
 corresponding grayscale images. Measurements are recorded for each object.
 
-Keep in mind that intensity measurements are made for all combinations of the images
+<p>Intensity measurements are made for all combinations of the images
 and objects entered. If you want only specific image/object measurements, you can 
-use multiple MeasureObjectIntensity modules for each group of measurements desired.
+use multiple MeasureObjectIntensity modules for each group of measurements desired.</p>
+
+<p>Note that for publication purposes, the units of
+intensity from microscopy images are usually described as "Intensity
+units" or "Arbitrary intensity units" since microscopes are not 
+calibrated to an absolute scale. Also, it is important to note whether 
+you are reporting either the mean or the integrated intensity, so specify
+"Mean intensity units" or "Integrated intensity units" accordingly.</p>
+
+<p>The default behavior in CellProfiler is to rescale the image intensity 
+from 0 to 1 by dividing all pixels in 
+the image by the maximum possible intensity value. 
+If this is not desired and you prefer to use the number of bits used
+to store the image (e.g., 0-255 or 0-65535), uncheck the "Rescale intensities?"
+setting in <b>NamesAndTypes</b>.</p>
 
 <h4>Available measurements</h4>
 <ul><li><i>IntegratedIntensity:</i> The sum of the pixel intensities within an
@@ -33,27 +47,14 @@ use multiple MeasureObjectIntensity modules for each group of measurements desir
 <li><i>MADIntensity:</i> The median abolsute deviation (MAD) value within the object</li>
 <li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
  of the pixels in the object have lower values.</li>
- <li><i>Location_CenterMassIntensity_X, Location_CenterMassIntensity_Y:</i> The 
+<li><i>Location_CenterMassIntensity_X, Location_CenterMassIntensity_Y:</i> The 
 pixel (X,Y) coordinates of the intensity weighted centroid (= center of mass = first moment) 
 of all pixels within the object.</li>
 <li><i>Location_MaxIntensity_X, Location_MaxIntensity_Y:</i> The pixel (X,Y) coordinates of 
-the pixel with the maximum intensity within the object.</li></ul>
+the pixel with the maximum intensity within the object.</li>
+</ul>
 
-Note that for publication purposes, the units of
-intensity from microscopy images are usually described as "Intensity
-units" or "Arbitrary intensity units" since microscopes are not 
-calibrated to an absolute scale. Also, it is important to note whether 
-you are reporting either the mean or the integrated intensity, so specify
-"Mean intensity units" or "Integrated intensity units" accordingly.
-
-The default behavior in CellProfiler is to rescale the image intensity 
-from 0 to 1 by dividing all pixels in 
-the image by the maximum possible intensity value. 
-If this is not desired and you prefer to use the number of bits used
-to store the image (e.g., 0-255 or 0-65535), uncheck the "Rescale intensities?"
-setting in <b>LoadImages</b>.
-
-See also <b>LoadImages</b>, <b>MeasureImageIntensity</b>.
+See also <b>NamesAndTypes</b>, <b>MeasureImageIntensity</b>.
 """
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -132,8 +133,10 @@ class MeasureObjectIntensity(cpm.CPModule):
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
-        group.append("name", cps.ImageNameSubscriber("Select an image to measure","None", doc = 
-                                                     """What did you call the grayscale images whose intensity you want to measure?"""))
+        group.append("name", cps.ImageNameSubscriber(
+            "Select an image to measure","None", doc = """
+            Select the grayscale images whose intensity you want to measure."""))
+        
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.images, group))
         self.images.append(group)
@@ -147,8 +150,10 @@ class MeasureObjectIntensity(cpm.CPModule):
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
-        group.append("name", cps.ObjectNameSubscriber("Select objects to measure","None", doc = 
-                                                          """What did you call the objects whose intensities you want to measure?"""))
+        group.append("name", cps.ObjectNameSubscriber(
+            "Select objects to measure","None", doc = """
+            Select the objects whose intensities you want to measure."""))
+        
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this object", self.objects, group))
         self.objects.append(group)

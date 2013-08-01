@@ -467,22 +467,26 @@ class Morph(cpm.CPModule):
     variable_revision_number = 4
     
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber("Select the input image","None",doc="""
-            What image do you want to morph?
-            This is the input image to the module. A grayscale image can be
+        self.image_name = cps.ImageNameSubscriber(
+            "Select the input image","None",doc="""
+            Select the image that you want to perform a morphological operation on.
+            A grayscale image can be
             converted to binary using the <b>ApplyThreshold</b> module. Objects can be
             converted to binary using the <b>ConvertToImage</b> module.""")
         
-        self.output_image_name = cps.ImageNameProvider("Name the output image","MorphBlue",doc="""
-        What do you want to call the resulting image?
-            The output of the module. It will be of the same type as the
+        self.output_image_name = cps.ImageNameProvider(
+            "Name the output image","MorphBlue",doc="""
+            Enter the name for the output image It will be of the same type as the
             input image.""")
         
-        self.add_button = cps.DoSomething("", "Add another operation",
-                                          self.add_function,doc="""                                    
+        self.add_button = cps.DoSomething("", 
+            "Add another operation",
+            self.add_function,doc="""                                    
             Press this button to add an operation that will be applied to the
             image resulting from the previous operation(s). The module repeats
-            the previous operation the number of times you select before applying the operation added by this button.""")
+            the previous operation the number of times you select before applying 
+            the operation added by this button.""")
+        
         self.functions = []
         self.add_function(can_remove = False)
     
@@ -493,35 +497,38 @@ class Morph(cpm.CPModule):
         group.can_remove = can_remove
         if can_remove:
             group.append("divider", cps.Divider(line=False))
-        group.append("function", cps.Choice("Select the operation to perform",
-                                           F_ALL, F_OPEN,doc="""
-                                           What operation do you want to perform?
-                    Choose one of the operations described in this module's help."""))
-        group.append("repeats_choice", cps.Choice("Number of times to repeat operation",
-                                                  R_ALL,doc="""
-                    This setting controls the number of times that the same operation is applied
-                    successively to the image.
-                    <ul>
-                    <li><i>Once:</i> Perform the operation once on the image.</li>
-                    <li><i>Forever:</i> Perform the operation on the image until successive
-                    iterations yield the same image.</li>
-                    <li><i>Custom:</i> Perform the operation a custom number of times.</li>
-                    </ul>"""))
+        group.append("function", cps.Choice(
+            "Select the operation to perform",
+            F_ALL, F_OPEN,doc="""
+            Choose one of the operations described in this module's help."""))
+        
+        group.append("repeats_choice", cps.Choice(
+            "Number of times to repeat operation",
+            R_ALL,doc="""
+            This setting controls the number of times that the same operation is applied
+            successively to the image.
+            <ul>
+            <li><i>%(R_ONCE)s:</i> Perform the operation once on the image.</li>
+            <li><i>%(R_FOREVER)s:</i> Perform the operation on the image until successive
+            iterations yield the same image.</li>
+            <li><i>%(R_CUSTOM)s:</i> Perform the operation a custom number of times.</li>
+            </ul>"""%globals()))
+        
         group.append("custom_repeats", cps.Integer(self.CUSTOM_REPEATS_TEXT,2,1,
                      doc=self.CUSTOM_REPEATS_DOC))
         
         group.append("structuring_element", cps.Choice(
-            "Structuring element", SE_ALL, SE_DISK,
-            doc = """<i>(Used only for %(SE_F_TEXT)s)</i><br>
-            What structuring element do you want to use to perform the operation? 
+            "Structuring element", SE_ALL, SE_DISK,doc = """
+            <i>(Used only for %(SE_F_TEXT)s)</i><br>
             The structuring element controls which neighboring pixels participate 
             in the operation. For instance, for the %(F_ERODE)s operation, all 
             pixels in the neighborhood of the pixel must be in the foreground for 
             the pixel to be in the foreground in the output image. If a circular
             structuring element is used, then a pixel will be in the foreground
             only if all neighborhood pixels within a circle surrounding the
-            pixel are in the foreground in the input image.<br>
-            The structuring elements are:<br>
+            pixel are in the foreground in the input image.
+            
+            <p>The structuring elements are:<br>
             <ul>
             <li><i>%(SE_DISK)s</i>: A disk centered on the pixel. The scale
             setting determines the circle's diameter and all pixels that are
@@ -556,49 +563,57 @@ class Morph(cpm.CPModule):
             The rectangle's height and width are given by two settings.</li>
             <li><i>%(SE_SQUARE)s</i>: a square centered on the pixel. The
             scale setting determines the length of the square's side.</li>
-            </ul>""" % globals()))
+            </ul></p>""" % globals()))
+        
         group.append("scale", cps.Float(
-            "Scale",3, minval=3,
-            doc="""Morphological open, close, erode and dialate are performed
+            "Scale",3, minval=3,doc="""
+            Morphological open, close, erode and dialate are performed
             with structuring elements which determine the diameter of the
             circle enclosing the pixels to consider when applying the operation.
             This setting controls the diameter of the structuring element."""))
+        
         group.append("x_offset", cps.Float(
-            "X offset", 1, 
-            doc = """<i>(Used only for the %(SE_PAIR)s and %(SE_PERIODIC_LINE)s
+            "X offset", 1, doc = """
+            <i>(Used only for the %(SE_PAIR)s and %(SE_PERIODIC_LINE)s
             settings)</i>. The X offset to the first neighborhood pixel in
             the structuring element.
             """ % globals()))
+        
         group.append("y_offset", cps.Float(
-            "Y offset", 1, 
-            doc = """<i>(Used only for the %(SE_PAIR)s and %(SE_PERIODIC_LINE)s
+            "Y offset", 1, doc = """
+            <i>(Used only for the %(SE_PAIR)s and %(SE_PERIODIC_LINE)s
             structuring elements)</i>. The Y offset to the first neighborhood
             pixel in the structuring element.
             """ % globals()))
+        
         group.append("angle", cps.Float(
-            "Angle", 0, minval = -180, maxval = 180,
-            doc = """<i>(Used only for the %(SE_LINE)s structuring element).</i>
+            "Angle", 0, minval = -180, maxval = 180,doc = """
+            <i>(Used only for the %(SE_LINE)s structuring element).</i>
             The angle, in degrees counter-clockwise from the horizontal,
             of the line.
             """ % globals()))
+        
         group.append("width", cps.Float(
-            "Width", 3, minval = 1,
-            doc = """<i>(Used only for the %(SE_RECTANGLE)s structuring element).</i>
+            "Width", 3, minval = 1,doc = """
+            <i>(Used only for the %(SE_RECTANGLE)s structuring element).</i>
             The width of the rectangle in pixels.
             """ % globals()))
+        
         group.append("height", cps.Float(
-            "Height", 3, minval = 1,
-            doc = """<i>(Used only for the %(SE_RECTANGLE)s structuring element).</i>
+            "Height", 3, minval = 1,doc = """
+            <i>(Used only for the %(SE_RECTANGLE)s structuring element).</i>
             The height of the rectangle in pixels.
             """ % globals()))
+        
         group.append("strel", cps.BinaryMatrix(
             "Custom",
             doc = """<i>(Used only for the %(SE_ARBITRARY)s structuring element).</i>
             This control lets you specify a custom structuring element.
             """ % globals()))
+        
         group.append("rescale_values", cps.Binary(
-            "Rescale values from 0 to 1?", True,
-            doc = """<i>(Used only for the %(F_DISTANCE)s operation).</i>
+            "Rescale values from 0 to 1?", True,doc = """
+            <i>(Used only for the %(F_DISTANCE)s operation).</i>
             <p>Checking this setting rescales the transformed values to lie between 0 and 1.
             This is the option to use if the distance transformed image is to be used
             for thresholding by an <b>Identify</b> module or the like, which assumes

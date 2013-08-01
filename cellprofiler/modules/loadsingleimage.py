@@ -22,7 +22,7 @@ filename, if requested.</li>
 <li><i>Height, Width:</i> The height and width of the current image.</li> 
 </ul>
 
-<h3>Technical notes</h3>
+<h4>Technical notes</h4>
 
 <p>For most purposes, you will probably want to use the <b>LoadImages</b> module, not 
 <b>LoadSingleImage</b>. The reason is that <b>LoadSingleImage</b> does not actually 

@@ -20,7 +20,7 @@ of the shortest dead worm to be detected. The width is the distance
 in pixels along the short axis of the diamond and should be less than
 the width of the worm.</p>
 
-References
+<h4>References</h4>
 <ul>
 <li>Peng H, Long F, Liu X, Kim SK, Myers EW (2008) "Straightening <i>Caenorhabditis elegans</i> images."
 <i>Bioinformatics</i>, 24(2):234-42.<a href="http://dx.doi.org/10.1093/bioinformatics/btm569">(link)</a></li>

@@ -14,8 +14,6 @@ based on a threshold which can be pre-selected or calculated automatically using
 # 
 # Website: http://www.cellprofiler.org
 
-
-
 from cellprofiler.cpmodule import CPModule
 from cellprofiler import cpimage
 import cellprofiler.settings as cpsetting
@@ -52,46 +50,57 @@ class ApplyThreshold(Identify):
     def create_settings(self):
         threshold_methods = [method for method in TM_METHODS
                              if method != TM_BINARY_IMAGE]
-        self.image_name = cpsetting.ImageNameSubscriber("Select the input image",
-                                doc = '''
-                                Choose the image to be thresholded.''')
+
+        self.image_name = cpsetting.ImageNameSubscriber(
+            "Select the input image",doc = '''
+            Choose the image to be thresholded.''')
         
-        self.thresholded_image_name = cpsetting.ImageNameProvider("Name the output image",
-                                "ThreshBlue", doc = '''
-                                Enter a name for the thresholded image.''')
+        self.thresholded_image_name = cpsetting.ImageNameProvider(
+            "Name the output image",
+            "ThreshBlue", doc = '''
+            Enter a name for the thresholded image.''')
         
-        self.binary = cpsetting.Choice("Select the output image type", [GRAYSCALE, BINARY], doc = '''
-                                Two types of output images can be produced:<br>
-                                <ul>
-                                <li><i>Grayscale:</i> The pixels that are retained after some pixels are set to zero or shifted (based on your selections for thresholding options) will have their original 
-                                intensity values.</li>
-                                <li><i>Binary:</i> The pixels that are retained after some pixels are set to zero (based on your selections for thresholding options) will be white and all other pixels will be black (zeroes).</li>
-                                </ul>''')
+        self.binary = cpsetting.Choice(
+            "Select the output image type", [GRAYSCALE, BINARY], doc = '''
+            Two types of output images can be produced:<br>
+            <ul>
+            <li><i>%(GRAYSCALE)s:</i> The pixels that are retained after some pixels 
+            are set to zero or shifted (based on your selections for thresholding 
+            options) will have their original 
+            intensity values.</li>
+            <li><i>%(BINARY)s:</i> The pixels that are retained after some pixels are 
+            set to zero (based on your selections for thresholding options) will be 
+            white and all other pixels will be black (zeroes).</li>
+            </ul>'''%globals())
+        
         # if not binary:
         self.low_or_high = cpsetting.Choice(
-                                "Set pixels below or above the threshold to zero?",
-                                [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD],
-                                doc="""<i>(Used only when thresholding a grayscale image)</i><br>
-                                For grayscale output, the dim pixels below 
-                                the threshold can be set to zero or the bright pixels above 
-                                the threshold can be set to zero.
-                                Choose <i>Below threshold</i> to threshold dim pixels and
-                                <i>Above threshold</i> to threshold bright pixels.""")
+            "Set pixels below or above the threshold to zero?",
+            [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD], doc="""
+            <i>(Used only when "%(GRAYSCALE)s" thresholding is selected)</i><br>
+            For grayscale output, the dim pixels below 
+            the threshold can be set to zero or the bright pixels above 
+            the threshold can be set to zero.
+            Choose <i>%(TH_BELOW_THRESHOLD)s</i> to threshold dim pixels and
+            <i>%(TH_ABOVE_THRESHOLD)s</i> to threshold bright pixels."""%globals())
         
         # if not binary and below threshold
         
-        self.shift = cpsetting.Binary("Subtract the threshold value from the remaining pixel intensities?", False, doc ='''
-                                <i>(Used only if the image is grayscale and pixels below a given intensity are to be set to zero)</i><br>
-                                Use this setting if the dim pixels are to be shifted in value by the amount of the threshold.''')
+        self.shift = cpsetting.Binary(
+            "Subtract the threshold value from the remaining pixel intensities?", False, doc ='''
+            <i>(Used only if the image is grayscale and pixels below a given intensity are to be set to zero)</i><br>
+            Use this setting if the dim pixels are to be shifted in value by 
+            the amount of the threshold.''')
         
         # if not binary and above threshold
         
-        self.dilation = cpsetting.Float("Number of pixels by which to expand the thresholding around those excluded bright pixels",
-                                0.0, doc = '''
-                                <i>(Used only if the output image is grayscale and pixels above a given intensity are to be set to zero)</i><br>
-                                This setting is useful when attempting to exclude bright artifactual objects: 
-                                first, set the threshold to exclude these bright objects; it may also be desirable to expand the
-                                thresholded region around those bright objects by a certain distance so as to avoid a "halo" effect.''')
+        self.dilation = cpsetting.Float(
+            "Number of pixels by which to expand the thresholding around those excluded bright pixels",
+            0.0, doc = '''
+            <i>(Used only if the output image is grayscale and pixels above a given intensity are to be set to zero)</i><br>
+            This setting is useful when attempting to exclude bright artifactual objects: 
+            first, set the threshold to exclude these bright objects; it may also be desirable to expand the
+            thresholded region around those bright objects by a certain distance so as to avoid a "halo" effect.''')
 
         self.create_threshold_settings(threshold_methods)
         self.threshold_smoothing_choice.value = TSM_NONE

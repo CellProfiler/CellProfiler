@@ -18,11 +18,11 @@ You must press the <i>Continue</i> button to accept the selected objects
 and continue the pipeline.
 
 <h4>Available measurements</h4>
-<i>Image features:</i>
+<b>Image features:</b>
 <ul>
 <li><i>Count:</i> The number of edited objects in the image.</li>
 </ul>
-<i>Object features:</i>
+<b>Object features:</b>
 <ul>
 <li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of mass of the edited objects.</li>
 </ul>

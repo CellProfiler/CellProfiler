@@ -1,39 +1,33 @@
-'''<b>Measure Image Intensity</b> measures the total intensity in an image by summing all of the pixel intensities (excluding masked pixels)
+'''<b>Measure Image Intensity</b> measures the total intensity in an image 
+by summing all of the pixel intensities (excluding masked pixels).
 <hr>
-
 This module will sum all pixel values to measure the total image
 intensity. The user can measure all pixels in the image or can restrict
 the measurement to pixels within objects. If the image has a mask, only
 unmasked pixels will be measured.
-                                     
-<h4>Available measurements</h4>
-<ul>
-<li><i>TotalIntensity:</i> Sum of all pixel intensity values.</li>
-<li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
-<li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation (MAD) of pixel intensity values.</li>
-<li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
-<li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25%
- of the pixels in the object have lower values.</li>
-<li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
- of the pixels in the object have lower values.</li>
-<li><i>TotalArea:</i> Number of pixels measured.</li>
-</ul>
 
-Note that for publication purposes, the units of
+<p>Note that for publication purposes, the units of
 intensity from microscopy images are usually described as "Intensity
 units" or "Arbitrary intensity units" since microscopes are not 
 calibrated to an absolute scale. Also, it is important to note whether 
 you are reporting either the mean or the integrated intensity, so specify
-"Mean intensity units" or "Integrated intensity units" accordingly.
+"Mean intensity units" or "Integrated intensity units" accordingly.</p>
 
-The default behavior in CellProfiler is to rescale the image intensity 
-from 0 to 1 by dividing all pixels in 
-the image by the maximum possible intensity value. 
-If this is not desired and you prefer to use the number of bits used
-to store the image (e.g., 0-255 or 0-65535), uncheck the "Rescale intensities?"
-setting in <b>LoadImages</b>.
+<h4>Available measurements</h4>
+<ul>
+<li><i>TotalIntensity:</i> Sum of all pixel intensity values.</li>
+<li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
+<li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation 
+(MAD) of pixel intensity values.</li>
+<li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
+<li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25%% 
+of the pixels in the object have lower values.</li>
+<li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%% 
+of the pixels in the object have lower values.</li>
+<li><i>TotalArea:</i> Number of pixels measured.</li>
+</ul>
 
-See also <b>LoadImages</b>, <b>MeasureObjectIntensity</b>.
+See also <b>MeasureObjectIntensity</b>, <b>MaskImage</b>.
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -110,17 +104,26 @@ class MeasureImageIntensity(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider())
         
-        group.append("image_name", cps.ImageNameSubscriber("Select the image to measure",
-                                                            "None", doc = '''What did you call the images whose intensity you want to measure? Choose an image name from the drop-down menu to calculate intensity for that
-                                                            image. Use the <i>Add another image</i> button below to add additional images which will be
-                                                            measured. You can add the same image multiple times if you want to measure
-                                                            the intensity within several different objects.'''))
+        group.append("image_name", cps.ImageNameSubscriber(
+            "Select the image to measure",
+            "None", doc = '''
+            Choose an image name from the drop-down menu to calculate intensity for that
+            image. Use the <i>Add another image</i> button below to add additional images which will be
+            measured. You can add the same image multiple times if you want to measure
+            the intensity within several different objects.'''))
         
-        group.append("wants_objects", cps.Binary("Measure the intensity only from areas enclosed by objects?",
-                                                  False, doc = "Check this option to restrict the pixels being measured to those within the boundaries of an object."))
+        group.append("wants_objects", cps.Binary(
+            "Measure the intensity only from areas enclosed by objects?",
+            False, doc = """
+            Check this option to restrict the pixels being measured to those within 
+            the boundaries of an object."""))
         
-        group.append("object_name",cps.ObjectNameSubscriber("Select the input objects","None", 
-                                                           doc = '''<i>(Used only when measuring intensity from area enclosed by objects)</i><br>What is the name of the objects to use? The intensity measurement will be restricted to within these objects.'''))
+        group.append("object_name",cps.ObjectNameSubscriber(
+            "Select the input objects","None", doc = '''
+            <i>(Used only when measuring intensity from area enclosed by objects)</i><br>
+            Select the objects that the intensity will be aggregated within. The intensity measurement will be 
+            restricted to the pixels within these objects.'''))
+        
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", 
                                                             "Remove this image", self.images, group))

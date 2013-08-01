@@ -113,8 +113,8 @@ class ClassifyPixels(cpm.CPModule):
         self.add_probability_map(False)
         
         self.add_probability_button = cps.DoSomething(
-            "Add another probability map", "Add", self.add_probability_map,
-            doc = """Press the <i>Add</i> button to output another
+            "Add another probability map", "Add", self.add_probability_map,doc = """
+            Press the <i>Add</i> button to output another
             probability map image from the classifier. Ilastik can be trained
             to recognize any number of classes of pixels. You can generate
             probability maps for any or all of them simultaneously by adding
@@ -125,8 +125,8 @@ class ClassifyPixels(cpm.CPModule):
             dir_choices = [
                 DEFAULT_OUTPUT_FOLDER_NAME, DEFAULT_INPUT_FOLDER_NAME, 
                 ABSOLUTE_FOLDER_NAME, DEFAULT_INPUT_SUBFOLDER_NAME,
-                DEFAULT_OUTPUT_SUBFOLDER_NAME], allow_metadata = False,
-            doc ="""Select the folder containing the classifier file to be loaded. 
+                DEFAULT_OUTPUT_SUBFOLDER_NAME], allow_metadata = False,doc ="""
+                Select the folder containing the classifier file to be loaded. 
             %(IO_FOLDER_CHOICE_HELP_TEXT)s"""%globals())
         
         def get_directory_fn():
@@ -156,15 +156,17 @@ class ClassifyPixels(cpm.CPModule):
         group.output_image = cps.ImageNameProvider(
             "Name the output probability map", "ProbabilityMap")
         
-        group.class_sel = cps.Integer("Select the class", 
+        group.class_sel = cps.Integer(
+            "Select the class", 
             0, 0, 42, doc=
             '''Select the class you want to use. The class number 
             corresponds to the label-class in ilastik''')
         
         if can_remove:
             group.remover = cps.RemoveSettingButton(
-                "Remove probability map", "Remove", self.probability_maps, group,
-                doc = """Press the <i>Remove</i> button to remove the
+                "Remove probability map", 
+                "Remove", self.probability_maps, group,doc = """
+                Press the <i>Remove</i> button to remove the
                 probability map image from the list of images produced by this
                 module""")
         

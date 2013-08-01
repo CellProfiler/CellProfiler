@@ -9,7 +9,7 @@ operations. The process of averaging or summing a Z-stack (3D image stack) is kn
 The image is not immediately available in subsequent modules because the
 output of this module is not complete until all image processing cycles have completed.
 
-<h3>Technical notes</h3>
+<h4>Technical notes</h4>
 This module will create a projection of all images specified in <b>LoadImages</b>. 
 Previously, the module <b>LoadImageDirectory</b> could be used for the same 
 functionality, but on a per-folder basis; i.e., a projection would be created 
@@ -72,9 +72,9 @@ class MakeProjection(cpm.CPModule):
         self.projection_type = cps.Choice(
             'Type of projection',
             P_ALL, doc = '''
-            What kind of projection would you like to make? The final image can be created
-            by the following methods:
-            <ul><li><i>%(P_AVERAGE)s:</i> Use the average pixel intensity at each pixel position.</li>
+            The final projection image can be created by the following methods:
+            <ul>
+            <li><i>%(P_AVERAGE)s:</i> Use the average pixel intensity at each pixel position.</li>
             <li><i>%(P_MAXIMUM)s:</i> Use the maximum pixel value at each pixel position.</li>
             <li><i>%(P_MINIMUM)s:</i> Use the minimum pixel value at each pixel position.</li>
             <li><i>%(P_SUM)s:</i> Add the pixel values at each pixel position.</li>
@@ -110,15 +110,14 @@ class MakeProjection(cpm.CPModule):
             group similarly.</li>
             </ul>
             <p>
-            References
+            <b>References</b>
             <ul>
             <li>Selinummi J, Ruusuvuori P, Podolsky I, Ozinsky A, Gold E, et al. (2009) 
             "Bright field microscopy as an alternative to whole cell fluorescence in 
             automated analysis of macrophage images", PLoS ONE 4(10): e7497 
             <a href="http://dx.doi.org/10.1371/journal.pone.0007497">(link)</a>.</li>
             </ul>
-            </p>
-            ''' % globals())
+            </p>''' % globals())
         
         self.projection_image_name = cps.ImageNameProvider(
             'Name the output image',

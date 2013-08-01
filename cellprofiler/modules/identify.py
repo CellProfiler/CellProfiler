@@ -343,7 +343,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             of neurites and other images that have sparse foreground densities.</li>
             </ul>
             
-            <p>References
+            <p><b>References</b>
             <ul>
             <li>Sezgin M, Sankur B (2004) "Survey over image thresholding techniques and quantitative 
             performance evaluation." <i>Journal of Electronic Imaging</i>, 13(1), 146-165.

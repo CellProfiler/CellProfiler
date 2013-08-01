@@ -1,6 +1,5 @@
 '''<b>Run ImageJ</b> runs an ImageJ command.
 <hr>
-
 <a href="http://rsbweb.nih.gov/ij/">ImageJ</a> is an image processing and analysis program.
 It operates by processing commands that operate on one or more images,
 possibly modifying the images. ImageJ has a macro language which can
@@ -13,14 +12,14 @@ The <b>RunImageJ</b> module runs one ImageJ command or macro per cycle. It first
 loads the images you want to process into ImageJ, then runs the command, and, if
 desired, retrieves images you want to process further in CellProfiler.
 
-<h3>Technical notes</h3>
+<h4>Technical notes</h4>
 <p>ImageJ runs using Java, and as such, relies on proper handling of the Java memory requirements.
 When ImageJ starts, the Java Virtual Machine (JVM) allocates a portion of memory for its
 own use from the operating system; this memory is called the <i>java heap memory</i>. If you
 encounter JVM memory errors, you can tell CellProfiler to increase the size of the Java heap memory 
 on startup.</p>
 <p>To do this, run CellProfiler from the command line with the following argument:
-<code>--jvm-heap-size=JVM_HEAP_SIZE</code>
+<code>--jvm-heap-size=JVM_HEAP_SIZE</code><br>
 where <code>JVM_HEAP_SIZE</code> is the amount of memory to be reserved for the JVM. Example formats
 for <code>JVM_HEAP_SIZE</code> include <i>512000k</i>, <i>512m</i>, <i>1g</i>, etc. For example,
 to increase the JVM heap memory to 2GB, use <code>--jvm-heap-size=2g</code></p>
@@ -85,22 +84,24 @@ class RunImageJ(cpm.CPModule):
         logger.debug("Creating RunImageJ module settings")
         J.activate_awt()
         logger.debug("Activated AWT")
+        
         self.command_or_macro = cps.Choice(
-            "Run an ImageJ command or macro?", [CM_COMMAND, CM_MACRO],
-            doc = """This setting determines whether <b>RunImageJ</b> runs either a:
+            "Run an ImageJ command or macro?", 
+            [CM_COMMAND, CM_MACRO],doc = """
+            This setting determines whether <b>RunImageJ</b> runs either a:
             <ul>
-            <li><i>Command:</i> Select from a list of available ImageJ commands
+            <li><i>%(CM_COMMAND)s:</i> Select from a list of available ImageJ commands
             (those items contained in the ImageJ menus); or</li>
-            <li><i>Macro:</i> A series of ImageJ commands/plugins that you write yourself.</li>
-            </ul>""")
+            <li><i>%(CM_MACRO)s:</i> A series of ImageJ commands/plugins that you write yourself.</li>
+            </ul>"""%globals())
         #
         # Load the commands in visible_settings so that we don't call
         # ImageJ unless someone tries the module
         #
         self.command = self.make_command_choice(
-            "Command",
-            doc = """<i>(Used only if running a command)</i><br>
-            The command to execute when the module runs.""")
+            "Command",doc = """
+            <i>(Used only if running a %(CM_COMMAND)s)</i><br>
+            The command to execute when the module runs."""%globals())
                                                 
         self.command_settings_dictionary = {}
         self.command_settings = []
@@ -121,13 +122,13 @@ class RunImageJ(cpm.CPModule):
 cmdSvcClass = CommandService.class;
 cmdSvc = ImageJ.getService(cmdSvcClass);
 cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPlanes", true}).get();""",
-            multiline = True,
-            doc="""<i>(Used only if running a macro)</i><br>
+            multiline = True,doc="""
+            <i>(Used only if running a %(CM_MACRO)s)</i><br>
             This is the ImageJ macro to be executed. The syntax for ImageJ
             macros depends on the scripting language engine chosen.
             We suggest that you use the Beanshell scripting language
             <a href="http://www.beanshell.org/manual/contents.html">
-            (Beanshell documentation)</a>.""")
+            (Beanshell documentation)</a>."""%globals())
         
         all_engines = ij2.get_script_service(get_context()).getLanguages()
         self.language_dictionary = dict(
@@ -135,15 +136,15 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             
         self.macro_language = cps.Choice(
             "Macro language",
-            choices = self.language_dictionary.keys(),
-            doc = """This setting chooses the scripting language used to execute
+            choices = self.language_dictionary.keys(),doc = """
+            This setting chooses the scripting language used to execute
             any macros in this module""")
         
         self.wants_to_set_current_image = cps.Binary(
-            "Input the currently active image in ImageJ?", True,
-            doc="""<p>Check this setting if you want to set the currently 
+            "Input the currently active image in ImageJ?", True,doc="""
+            Check this setting if you want to set the currently 
             active ImageJ image using an image from a 
-            prior CellProfiler module.</p>
+            prior CellProfiler module.
             <p>Leave it unchecked to use the currently 
             active image in ImageJ. You may want to do this if you
             have an output image from a prior <b>RunImageJ</b>
@@ -151,8 +152,8 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             before retrieving the final result back to CellProfiler.</p>""")
 
         self.current_input_image_name = cps.ImageNameSubscriber(
-            "Select the input image",
-            doc="""<i>(Used only if setting the currently active image)</i><br>
+            "Select the input image",doc="""
+            <i>(Used only if setting the currently active image)</i><br>
             This is the CellProfiler image that will become 
             ImageJ's currently active image.
             The ImageJ commands and macros in this module will perform 
@@ -160,38 +161,37 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             by a prior CellProfiler module.""")
 
         self.wants_to_get_current_image = cps.Binary(
-            "Retrieve the currently active image from ImageJ?", True,
-            doc="""Check this setting if you want to retrieve ImageJ's
+            "Retrieve the currently active image from ImageJ?", True,doc="""
+            Check this setting if you want to retrieve ImageJ's
             currently active image after running the command or macro. 
-            <p>Leave
-            the setting unchecked if the pipeline does not need to access
+            <p>Leave the setting unchecked if the pipeline does not need to access
             the current ImageJ image. For example, you might want to run
             further ImageJ operations with additional <b>RunImageJ</b>
-            upon the current image
-            prior to retrieving the final image back to CellProfiler.</p>""")
+            upon the current image prior to retrieving the final image 
+            back to CellProfiler.</p>""")
 
         self.current_output_image_name = cps.ImageNameProvider(
-            "Name the current output image", "ImageJImage",
-            doc="""<i>(Used only if retrieving the currently active image)</i><br>
+            "Name the current output image", "ImageJImage",doc="""
+            <i>(Used only if retrieving the currently active image from ImageJ)</i><br>
             This is the CellProfiler name for ImageJ's current image after
             processing by the command or macro. The image will be a
             snapshot of the current image after the command has run, and
             will be available for processing by subsequent CellProfiler modules.""")
         
         self.pause_before_proceeding = cps.Binary(
-            "Wait for ImageJ before continuing?", False,
-            doc = """Some ImageJ commands and macros are interactive; you
+            "Wait for ImageJ before continuing?", False,doc = """
+            Some ImageJ commands and macros are interactive; you
             may want to adjust the image in ImageJ before continuing. Check
             this box to stop CellProfiler while you adjust the image in
             ImageJ. Leave the box unchecked to immediately use the image.
-            <br>
-            This command will not wait if CellProfiler is executed in
+            <p>This command will not wait if CellProfiler is executed in
             batch mode. See <i>%(BATCH_PROCESSING_HELP_REF)s</i> for more
-            details on batch processing."""%globals())
+            details on batch processing.</p>"""%globals())
         
         self.prepare_group_choice = cps.Choice(
-            "Run a command or macro before each group of images?", [CM_NOTHING, CM_COMMAND, CM_MACRO],
-            doc="""You can run an ImageJ macro or a command <i>before</i> each group of
+            "Function to run before each group of images?", 
+            [CM_NOTHING, CM_COMMAND, CM_MACRO],doc="""
+            You can run an ImageJ macro or a command <i>before</i> each group of
             images. This can be useful in order to set up ImageJ before
             processing a stack of images. Choose <i>%(CM_NOTHING)s</i> if
             you do not want to run a command or macro, <i>%(CM_COMMAND)s</i>
@@ -199,22 +199,24 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             """ % globals())
         
         logger.debug("Finding ImageJ commands")
+        
         self.prepare_group_command = self.make_command_choice(
-            "Command", 
-            doc = """<i>(Used only if running a command before an image group)</i><br>
-            The command to execute before processing a group of images.""")
+            "Command", doc = """
+            <i>(Used only if running a command before an image group)</i><br>
+            Select the command to execute before processing a group of images.""")
 
         self.prepare_group_macro = cps.Text(
             "Macro", 'run("Invert");',
-            multiline = True,
-            doc="""<i>(Used only if running a macro before an image group)</i><br>
+            multiline = True,doc="""
+            <i>(Used only if running a macro before an image group)</i><br>
             This is the ImageJ macro to be executed before processing
             a group of images. For help on writing macros, see 
             <a href="http://rsb.info.nih.gov/ij/developer/macro/macros.html">here</a>.""")
         
         self.post_group_choice = cps.Choice(
-            "Run a command or macro after each group of images?", [CM_NOTHING, CM_COMMAND, CM_MACRO],
-            doc="""You can run an ImageJ macro or a command <i>after</i> each group of
+            "Function to run after each group of images?", 
+            [CM_NOTHING, CM_COMMAND, CM_MACRO],doc="""
+            You can run an ImageJ macro or a command <i>after</i> each group of
             images. This can be used to do some sort of operation on a whole
             stack of images that have been accumulated by the group operation.
             Choose <i>%(CM_NOTHING)s</i> if you do not want to run a command or 
@@ -223,22 +225,21 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             """ % globals())
         
         self.post_group_command = self.make_command_choice(
-            "Command", 
-            doc = """
+            "Command", doc = """
             <i>(Used only if running a command after an image group)</i><br>
             The command to execute after processing a group of images.""")
         
         self.post_group_macro = cps.Text(
             "Macro", 'run("Invert");',
-            multiline = True,
-            doc="""<i>(Used only if running a macro after an image group)</i><br>
+            multiline = True,doc="""
+            <i>(Used only if running a macro after an image group)</i><br>
             This is the ImageJ macro to be executed after processing
             a group of images. For help on writing macros, see 
             <a href="http://rsb.info.nih.gov/ij/developer/macro/macros.html">here</a>.""")
         
         self.wants_post_group_image = cps.Binary(
-            "Retrieve the image output by the group operation?", False,
-            doc="""You can retrieve the image that is currently active in ImageJ
+            "Retrieve the image output by the group operation?", False,doc="""
+            You can retrieve the image that is currently active in ImageJ
             at the end of macro processing and use it later in CellProfiler.
             The image will only be available during the last cycle of the
             image group. Check this setting to use the active image in CellProfiler
@@ -246,8 +247,8 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
             """)
         
         self.post_group_output_image = cps.ImageNameProvider(
-            "Name the group output image", "ImageJGroupImage",
-            doc="""<i>(Used only if retrieving an image after an image group operation)</i><br>
+            "Name the group output image", "ImageJGroupImage",doc="""
+            <i>(Used only if retrieving an image after an image group operation)</i><br>
             This setting names the output image produced by the
             ImageJ command or macro that CellProfiler runs after processing
             all images in the group. The image is only available at the
@@ -256,10 +257,11 @@ cmdSvc.run("imagej.core.commands.assign.InvertDataValues", new Object [] {"allPl
                                  cps.AVAILABLE_ON_LAST_ATTRIBUTE: True } )
            
         self.show_imagej_button = cps.DoSomething(
-            "Show ImageJ", "Show", self.on_show_imagej,
-            doc="""Press this button to show the ImageJ user interface.
+            "Show ImageJ", "Show", self.on_show_imagej,doc="""
+            Press this button to show the ImageJ user interface.
             You can use the user interface to run ImageJ commands or
             set up ImageJ before a CellProfiler run.""")
+        
         logger.debug("Finished creating settings")
 
     @staticmethod

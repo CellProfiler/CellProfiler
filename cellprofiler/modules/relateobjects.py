@@ -1,9 +1,8 @@
 '''<b>Relate Objects</b> assigns relationships; all objects (e.g. speckles) within a
-parent object (e.g. nucleus) become its children
+parent object (e.g. nucleus) become its children.
 <hr>
-
-This module allows you to associate <i>child</i> objects with <i>parent</i> objects. This is
-useful for counting the number of children associated with each parent,
+This module allows you to associate <i>child</i> objects with <i>parent</i> objects. 
+This is useful for counting the number of children associated with each parent,
 and for calculating mean measurement values for all children that are
 associated with each parent.
 
@@ -95,33 +94,38 @@ class RelateObjects(cpm.CPModule):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.sub_object_name = cps.ObjectNameSubscriber('Select the input child objects',
-                                                        'None',doc="""
+        self.sub_object_name = cps.ObjectNameSubscriber(
+            'Select the input child objects', 'None',doc="""
             Child objects are defined as those objects contained within the
             parent object. For example, when relating speckles to the
             nuclei that contains them, the speckles are the children.""")
 
-        self.parent_name = cps.ObjectNameSubscriber('Select the input parent objects',
-                                                    'None',doc="""
+        self.parent_name = cps.ObjectNameSubscriber(
+            'Select the input parent objects',
+            'None',doc="""
             Parent objects are defined as those objects which encompass the 
             child object. For example, when relating speckles to the
             nuclei that contains them, the nuclei are the parents.""")
 
         self.find_parent_child_distances = cps.Choice(
-            "Calculate distances?",
+            "Calculate child-parent distances?",
             D_ALL,doc="""
-            Do you want to calculate the distances of each child to its 
-            parent?
-            <br>
-            <ul><li>The <i>minimum distance</i> is the distance from the 
+            Choose the method to calculate distances of each child to its parent.
+            <ul>
+            <li><i>%(D_NONE)s:</i> Do not calculate any distances.</li>
+            <li><i>%(D_MINIMUM)s:</i> The distance from the 
             centroid of the child object to the closest perimeter point on
             the parent object.</li>
-            <li>The <i>centroid distance</i> is the distance from the
-            centroid of the child object to the centroid of the parent.
-            </li></ul>""")
+            <li><i>%(D_CENTROID)s:</i> The distance from the
+            centroid of the child object to the centroid of the parent. </li>
+            <li><i>%(D_BOTH)s:</i> Calculate both the <i>%(D_MINIMUM)s</i> and 
+            <i>%(D_CENTROID)s</i> distances.</li>
+            </ul>"""%globals())
+        
         self.wants_step_parent_distances = cps.Binary(
-            "Calculate distances to other parents?", False,
-            doc = """<i>(Used only if calculating distances)</i><br>You can calculate the distances of the child objects to 
+            "Calculate distances to other parents?", False,doc = """
+            <i>(Used only if calculating distances)</i><br>
+            You can calculate the distances of the child objects to 
             some other objects. These objects must be either parents or
             children of your parent object in order for this module to
             determine the distances. For instance, you might find "Nuclei" using
@@ -139,8 +143,9 @@ class RelateObjects(cpm.CPModule):
         self.add_step_parent_button = cps.DoSomething("","Add another parent",
                                                       self.add_step_parent)
 
-        self.wants_per_parent_means = cps.Binary('Calculate per-parent means for all child measurements?',
-                                                 False,doc="""
+        self.wants_per_parent_means = cps.Binary(
+            'Calculate per-parent means for all child measurements?',
+            False,doc="""
             For every measurement that has been made of
             the children objects upstream in the pipeline, this module calculates the
             mean value of that measurement over all children and stores it as a
@@ -151,14 +156,15 @@ class RelateObjects(cpm.CPModule):
     def add_step_parent(self, can_delete = True):
         group = cps.SettingsGroup()
         group.append("step_parent_name", cps.Choice(
-            "Parent name", ["None"], choices_fn = self.get_step_parents,
-            doc = """
+            "Parent name", ["None"], 
+            choices_fn = self.get_step_parents, doc = """
             <i>(Used only if calculating distances to another parent)</i><br>
             Choose the name of the other parent. The <b>RelateObjects</b> module will 
             measure the distance from this parent to the child objects
             in the same manner as it does to the primary parents.
             You can only choose the parents or children of
             the parent object."""))
+        
         if can_delete:
             group.append("remove", cps.RemoveSettingButton(
                 "", "Remove this object", self.step_parent_names, group))

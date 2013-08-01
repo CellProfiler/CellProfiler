@@ -25,7 +25,7 @@ while a background pixel in the test image that overlaps with foreground in the 
 
 <h4>Available measurements</h4>
 <ul>
-<li><i>For images and objects:</i>
+<li><b>For images and objects:</b>
 <ul>
 <li><i>True positive rate:</i> Total number of true positive pixels / total number of actual positive pixels.</li>
 <li><i>False positive rate:</i> Total number of false positive pixels / total number of actual negative pixels </li>
@@ -36,7 +36,7 @@ while a background pixel in the test image that overlaps with foreground in the 
 <li><i>F-factor:</i> 2 &times; (precision &times; recall)/(precision + recall). Also known as F<sub>1</sub> score, F-score or F-measure.</li>
 </ul>
 </li>
-<li><i>For objects:</i>
+<li><b>For objects:</b>
 <ul>
 <li><i>Rand index:</i> A measure of the similarity between two data clusterings. Perfectly random clustering returns the minimum 
 score of 0, perfect clustering returns the maximum score of 1.</li>
@@ -46,7 +46,7 @@ objects to occupy the same clusters, so the Rand Index will never actually be ze
 </li>
 </ul>
 
-References
+<h4>References</h4>
 <ul>
 <li>Collins LM, Dent CW (1998) "Omega: A general formulation of the Rand Index of cluster 
 recovery suitable for non-disjoint solutions", <i>Multivariate Behavioral

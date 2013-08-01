@@ -12,7 +12,7 @@ as the range of the spectrum is given as input.
 <li><i>Granularity:</i> The module returns one measurement for each instance of the granularity spectrum.</li>
 </ul>
 
-References:
+<h4>References</h4>:
 <ul>
 <li>Serra J. Image Analysis and Mathematical Morphology, Vol. 1. Academic
 Press, London, 1989 Maragos,P. Pattern spectrum and multiscale shape

@@ -1,8 +1,7 @@
 '''<b>Measure Object Neighbors</b> calculates how many neighbors each 
 object has and records various properties about the neighbors' relationships, 
-including the percentage of an object's edge pixels that touch a neighbor
+including the percentage of an object's edge pixels that touch a neighbor.
 <hr>
-
 Given an image with objects identified (e.g., nuclei or cells), this
 module determines how many neighbors each object has. You can specify 
 the distance within which objects should be considered neighbors, or 
@@ -33,13 +32,7 @@ are often many-to-one, they may be saved as a separate file in
 relationships</i> from the list of objects to export.</li>
 </ul>
 
-You can retain the image of objects colored by numbers of neighbors or 
-colored by the percentage of pixels that are touching other objects.
-CellProfiler creates a color image using the color map you choose. Use
-the <b>SaveImages</b> module to save the image to a file. See the settings help 
-for further details on interpreting the output.
-
-<h3>Technical notes</h3> 
+<h4>Technical notes</h4> 
 Objects discarded via modules such as <b>IdentifyPrimaryObjects</b> or 
 <b>IdentifySecondaryObjects</b> will still register as a neighbors for the purposes
 of accurate measurement. For instance, if an object touches a single object and 
@@ -103,90 +96,97 @@ class MeasureObjectNeighbors(cpm.CPModule):
     variable_revision_number = 2
 
     def create_settings(self):
-        self.object_name = cps.ObjectNameSubscriber('Select objects to measure','None')
+        self.object_name = cps.ObjectNameSubscriber(
+            'Select objects to measure','None', doc = """
+            Select the objects whose neighbors you want to measure.""")
         
         self.neighbors_name = cps.ObjectNameSubscriber(
-            'Select neighboring objects to measure', 'None',
-            doc = """This is the name of the objects that are potential
+            'Select neighboring objects to measure', 'None',doc = """
+            This is the name of the objects that are potential
             neighbors of the above objects. You can find the neighbors
             within the same set of objects by selecting the same objects
             as above.""")
         
-        self.distance_method = cps.Choice('Method to determine neighbors',
-                                          D_ALL, D_EXPAND,doc="""
-            How do you want to determine whether objects are neighbors?
+        self.distance_method = cps.Choice(
+            'Method to determine neighbors',
+            D_ALL, D_EXPAND,doc="""
+            There are several methods by which to determine whether objects are neighbors:
             <ul>
-            <li><i>Adjacent</i>: In this mode, two objects must have adjacent 
+            <li><i>%(D_ADJACENT)s:</i> In this mode, two objects must have adjacent 
             boundary pixels to be neighbors. </li>
-            <li><i>Expand until adjacent</i>: The objects are expanded until all
+            <li><i>%(D_EXPAND)s:</i> The objects are expanded until all
             pixels on the object boundaries are touching another. Two objects are 
             neighbors if their any of their boundary pixels are adjacent after 
             expansion.</li>
-            <li><i>Within a specified distance</i>: Each object is expanded by 
+            <li><i>%(D_WITHIN)s:</i> Each object is expanded by 
             the number of pixels you specify. Two objects are  
             neighbors if they have adjacent pixels after expansion. </li>
             </ul>
             
-            <p>For <i>Adjacent</i> and <i>Expand until adjacent</i>, the
-            PercentTouching measurement is the percentage of pixels on the boundary 
-            of an object that touch adjacent objects. For <i>Within a specified 
-            distance</i>, two objects are touching if their any of their boundary 
-            pixels are adjacent after expansion and PercentTouching measures the 
+            <p>For <i>%(D_ADJACENT)s</i> and <i>%(D_EXPAND)s</i>, the
+            <i>%(M_PERCENT_TOUCHING)s</i> measurement is the percentage of pixels on the boundary 
+            of an object that touch adjacent objects. For <i>%(D_WITHIN)s</i>, 
+            two objects are touching if their any of their boundary 
+            pixels are adjacent after expansion and <i>%(M_PERCENT_TOUCHING)s</i> measures the 
             percentage of boundary pixels of an <i>expanded</i> object that 
-            touch adjacent objects.
-            
-            <p></p>""")
+            touch adjacent objects.</p>"""%globals())
         
-        self.distance = cps.Integer('Neighbor distance',
-                                    5,1,doc="""
-            <i>(Used only when "Within a specified distance" is selected)</i> <br>
-            Within what distance are objects considered neighbors (in pixels)?
-            The Neighbor Distance is the number of pixels that each object is 
+        self.distance = cps.Integer(
+            'Neighbor distance', 5,1,doc="""
+            <i>(Used only when "%(D_WITHIN)s" is selected)</i> <br>
+            The Neighbor distance is the number of pixels that each object is 
             expanded for the neighbor calculation. Expanded objects that touch 
             are considered neighbors.""")
         
-        self.wants_count_image = cps.Binary('Retain the image of objects colored by numbers of neighbors for use later in the pipeline (for example, in SaveImages)?',
-                                            False, doc="""
-             An output image showing the input objects 
-             colored by numbers of neighbors may be saved. A colormap of your choice shows 
-             how many neighbors each object has. The background is set 
-             to -1. Objects are colored with an increasing color value 
-             corresponding to the number of neighbors, such that objects with no 
-             neighbors are given a color corresponding to 0.""")
+        self.wants_count_image = cps.Binary(
+            'Retain the image of objects colored by numbers of neighbors?',
+            False, doc="""
+            An output image showing the input objects 
+            colored by numbers of neighbors may be retained. A colormap of your choice shows 
+            how many neighbors each object has. The background is set 
+            to -1. Objects are colored with an increasing color value 
+            corresponding to the number of neighbors, such that objects with no 
+            neighbors are given a color corresponding to 0. Use the <b>SaveImages</b>
+            module to save this image to a file.""")
         
-        self.count_image_name = cps.ImageNameProvider('Name the output image',
-                                                      'ObjectNeighborCount', 
-                                                      doc = """
+        self.count_image_name = cps.ImageNameProvider(
+            'Name the output image',
+            'ObjectNeighborCount', doc = """
             <i>(Used only if the image of objects colored by numbers of neighbors 
-            is to be retained for later use in the pipeline)</i> <br> Specify a name 
+            is to be retained for later use in the pipeline)</i> <br> 
+            Specify a name 
             that will allow the the image of objects colored by numbers of neighbors 
             to be selected later in the pipeline.""")
         
-        self.count_colormap = cps.Colormap('Select colormap', doc = """
+        self.count_colormap = cps.Colormap(
+            'Select colormap', doc = """
             <i>(Used only if the image of objects colored by numbers of neighbors 
             is to be retained for later use in the pipeline)</i> <br>
-            What colormap do you want to use to color the above image? All available colormaps can be seen 
+            Select the colormap to use to color the neighbor number image. All available colormaps can be seen 
             <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
         
-        self.wants_percent_touching_image = cps.Binary('Retain the image of objects colored by percent of touching pixels for use later in the pipeline (for example, in SaveImages)?',
-                                                       False,doc="""
-            An output image may be saved of the image of the input objects 
+        self.wants_percent_touching_image = cps.Binary(
+            'Retain the image of objects colored by percent of touching pixels?',
+            False,doc="""
+            An output image may be retained of the image of the input objects 
             colored by the percentage of the boundary touching their neighbors.
             A colormap of your choice is used to show the touching percentage of 
-            each object.""")
+            each object. Use the <b>SaveImages</b>
+            module to save this image to a file.""")
         
-        self.touching_image_name = cps.ImageNameProvider('Name the output image',
-                                                         'PercentTouching', 
-                                                         doc = """
+        self.touching_image_name = cps.ImageNameProvider(
+            'Name the output image',
+            'PercentTouching', doc = """
             <i>(Used only if the image of objects colored by percent touching 
             is to be retained for later use in the pipeline)</i> <br> 
             Specify a name that will allow the the image of objects colored by percent of touching 
             pixels to be selected later in the pipeline.""")
         
-        self.touching_colormap = cps.Colormap('Select a colormap', doc ="""
+        self.touching_colormap = cps.Colormap(
+            'Select a colormap', doc ="""
             <i>(Used only if the image of objects colored by percent touching 
             is to be retained for later use in the pipeline)</i> <br>
-            What colormap do you want to use to color the above image? All available colormaps can be seen 
+            Select the colormap to use to color the percent touching image. All available colormaps can be seen 
             <a href="http://www.scipy.org/Cookbook/Matplotlib/Show_colormaps">here</a>.""")
 
     def settings(self):

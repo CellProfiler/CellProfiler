@@ -1,6 +1,5 @@
-'''<b>Smooth</b> smooths (i.e., blurs) images
+'''<b>Smooth</b> smooths (i.e., blurs) images.
 <hr>
-
 This module allows you to smooth (blur) images, which can be helpful to 
 remove artifacts of a particular size. 
 Note that smoothing can be a time-consuming process. 
@@ -44,68 +43,69 @@ class Smooth(cpm.CPModule):
      
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber('Select the input image','None')
+
         self.filtered_image_name = cps.ImageNameProvider('Name the output image','FilteredImage')
-        self.smoothing_method = cps.Choice('Select smoothing method',
-                                           [FIT_POLYNOMIAL,
-                                            GAUSSIAN_FILTER,
-                                            MEDIAN_FILTER,
-                                            SMOOTH_KEEPING_EDGES,
-                                            CIRCULAR_AVERAGE_FILTER,
-                                            SM_TO_AVERAGE],doc="""
+
+        self.smoothing_method = cps.Choice(
+            'Select smoothing method',
+            [FIT_POLYNOMIAL, GAUSSIAN_FILTER,MEDIAN_FILTER, SMOOTH_KEEPING_EDGES,CIRCULAR_AVERAGE_FILTER, SM_TO_AVERAGE],doc="""
             This module smooths images using one of several filters. 
             Fitting a polynomial
             is fastest but does not allow a very tight fit compared to the other methods:
             <ul>
-            <li><i>Fit Polynomial:</i> This method treats the intensity of the image pixels
+            <li><i>%(FIT_POLYNOMIAL)s:</i> This method treats the intensity of the image pixels
             as a polynomial function of the x and y position of
             each pixel. It fits the intensity to the polynomial,
-            <i>A x<sup>2</sup> + B y<sup>2</sup> + C x*y + D x + E y + F</i>.
+            <i>A x<sup>2</sup> + B y<sup>2</sup> + C xy + D x + E y + F</i>.
             This will produce a smoothed image with a single peak or trough of intensity 
             that tapers off elsewhere in the image. For many microscopy images (where 
             the illumination of the lamp is brightest in the center of field of view), 
             this method will produce an image with a bright central region and dimmer 
             edges. But, in some cases the peak/trough of the polynomial may actually 
             occur outside of the image itself.</li>
-            <li><i>Gaussian Filter:</i> This method convolves the image with a Gaussian whose
+            <li><i>%(GAUSSIAN_FILTER)s:</i> This method convolves the image with a Gaussian whose
             full width at half maximum is the artifact diameter entered.
             Its effect is to blur and obscure features
             smaller than the artifact diameter and spread bright or
             dim features larger than the artifact diameter.</li>
-            <li><i>Median Filter:</i> This method finds the median pixel value within the
+            <li><i>%(MEDIAN_FILTER)s:</i> This method finds the median pixel value within the
             artifact diameter you specify. It removes bright or dim features that are much smaller
             than the artifact diameter.</li>
-            <li><i>Smooth Keeping Edges:</i> This method uses a bilateral filter which
+            <li><i>%(SMOOTH_KEEPING_EDGES)s:</i> This method uses a bilateral filter which
             limits Gaussian smoothing across an edge while 
             applying smoothing perpendicular to an edge. The effect
             is to respect edges in an image while smoothing other
-            features. <i>Smooth Keeping Edges</i> will filter an image with reasonable
+            features. <i>%(SMOOTH_KEEPING_EDGES)s</i> will filter an image with reasonable
             speed for artifact diameters greater than 10 and for
             intensity differences greater than 0.1. The algorithm
             will consume more memory and operate more slowly as
             you lower these numbers.</li>
-            <li><i>Circular Average Filter:</i> This method convolves the image with
+            <li><i>%(CIRCULAR_AVERAGE_FILTER)s:</i> This method convolves the image with
             a uniform circular averaging filter whose size is the artifact diameter entered. This filter is
             useful for re-creating an out-of-focus blur to an image.</li>
-            <li><i>Smooth to Average:</i> Creates a flat, smooth image where every pixel 
+            <li><i>%(SM_TO_AVERAGE)s:</i> Creates a flat, smooth image where every pixel 
             of the image equals the average value of the original image.</li>
-            </ul>""")
+            </ul>"""%globals())
         
-        self.wants_automatic_object_size = cps.Binary('Calculate artifact diameter automatically?',True,doc="""
-            <i>(Used only if Gaussian, Median, Smooth Keeping Edges or Circular Average Filter is selected)</i><br>
+        self.wants_automatic_object_size = cps.Binary(
+            'Calculate artifact diameter automatically?',True,doc="""
+            <i>(Used only if "%(GAUSSIAN_FILTER)s", "%(MEDIAN_FILTER)s", "%(SMOOTH_KEEPING_EDGES)s" or "%(CIRCULAR_AVERAGE_FILTER)s" is selected)</i><br>
             If this box is checked, the module will choose an artifact diameter based on
             the size of the image. The minimum size it will choose is 30 pixels,
-            otherwise the size is 1/40 of the size of the image.""")
+            otherwise the size is 1/40 of the size of the image."""%globals())
         
-        self.object_size = cps.Float('Typical artifact diameter, in  pixels',16.0,doc="""
+        self.object_size = cps.Float(
+            'Typical artifact diameter',16.0,doc="""
             <i>(Used only if choosing the artifact diameter automatically is unchecked)</i><br>
-            Enter the approximate diameter of the features to be blurred by
+            Enter the approximate diameter (in pixels) of the features to be blurred by
             the smoothing algorithm. This value is used to calculate the size of 
             the spatial filter. %(HELP_ON_MEASURING_DISTANCES)s
             For most smoothing methods, selecting a
             diameter over ~50 will take substantial amounts of time to process."""%globals())
         
-        self.sigma_range = cps.Float('Edge intensity difference', .1,doc="""
-            <i>(Used only if Smooth Keeping Edges is selected)</i><br>
+        self.sigma_range = cps.Float(
+            'Edge intensity difference', 0.1,doc="""
+            <i>(Used only if "%(SMOOTH_KEEPING_EDGES)s" is selected)</i><br>
             What are the differences in intensity in the edges that you want to preserve?
             Enter the intensity step that indicates an edge in an image.
             Edges are locations where the intensity changes precipitously, so this
@@ -114,9 +114,9 @@ class Smooth(cpm.CPModule):
             Values should be between zero and one. %(HELP_ON_PIXEL_INTENSITIES)s"""%globals())
         
         self.clip = cps.Binary(
-            'Clip intensity at 0 and 1', True,
-            doc="""<i>(Used only if Fit Polynomial is selected)</i>
-            The Fit Polynomial is the only smoothing option that can yield
+            'Clip intensities to 0 and 1?', True,doc="""
+            <i>(Used only if %(FIT_POLYNOMIAL)s is selected)</i><br>
+            The <i>%(FIT_POLYNOMIAL)s</i> method is the only smoothing option that can yield
             an output image whose values are outside of the values of the
             input image. This setting controls whether to limit the image
             intensity to the 0 - 1 range used by CellProfiler. Check this
@@ -124,7 +124,7 @@ class Smooth(cpm.CPModule):
             and all pixels greater than one to one. Uncheck the setting to
             allow values less than zero and greater than one in the output
             image.
-            """)
+            """%globals())
 
     def settings(self):
         return [self.image_name, self.filtered_image_name, 

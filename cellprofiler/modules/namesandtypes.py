@@ -178,7 +178,7 @@ class NamesAndTypes(cpm.CPModule):
         self.single_rescale = cps.Choice(
             "Set intensity range from", 
             [INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE], 
-            INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT)
+            value=INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT)
         
         self.assignments = []
         self.assignments_count = cps.HiddenCount( self.assignments,
@@ -369,7 +369,7 @@ class NamesAndTypes(cpm.CPModule):
         group.append("rescale", cps.Choice(
             "Set intensity range from", 
             [INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE], 
-            INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT))
+            value=INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT))
 
         group.can_remove = can_remove
         if can_remove:

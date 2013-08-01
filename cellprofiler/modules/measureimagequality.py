@@ -79,7 +79,7 @@ from cellprofiler.utilities import product
 import cellprofiler.cpmath.radial_power_spectrum as rps
 from identify import O_TWO_CLASS, O_THREE_CLASS, O_WEIGHTED_VARIANCE, O_ENTROPY
 from identify import O_FOREGROUND, O_BACKGROUND
-from cellprofiler.cpmath.threshold import TM_MOG_GLOBAL, TM_OTSU, TM_MOG
+from cellprofiler.cpmath.threshold import TM_MOG, TM_OTSU
 from loadimages import C_FILE_NAME, C_SCALING
 import cellprofiler.preferences as cpprefs
 from cellprofiler.preferences import \
@@ -131,7 +131,7 @@ IMAGE_GROUP_SETTING_OFFSET = 2
 class MeasureImageQuality(cpm.CPModule):
     module_name = "MeasureImageQuality"
     category = "Measurement"
-    variable_revision_number = 4
+    variable_revision_number = 5
 
     def create_settings(self):
         self.images_choice = cps.Choice(
@@ -352,23 +352,23 @@ class MeasureImageQuality(cpm.CPModule):
         group.append("divider", cps.Divider(line=False))
         
         group.append("threshold_method", cps.Choice("Select a thresholding method",
-            cpthresh.TM_GLOBAL_METHODS,
-            cpthresh.TM_OTSU_GLOBAL, doc = """
+            cpthresh.TM_METHODS,
+            cpthresh.TM_OTSU, doc = """
             <i>(Used only if particular thresholds are to be calculated)</i> <br> 
             This setting allows you to apply automatic thresholding 
-            methods used in the <b>Identify</b> modules.
+            methods used in the <b>Identify</b> modules. Only the global methods are applied.
             For more help on thresholding, see the <b>Identify</b> modules."""))
         
         group.append("object_fraction", cps.Float(
             "Typical fraction of the image covered by objects", 0.1,0,1, doc = """
-            <i>(Used only if threshold are calculated and MoG thresholding is chosen)</i> <br> 
+            <i>(Used only if threshold are calculated and %(TM_MOG)s thresholding is chosen)</i> <br> 
             Enter the approximate fraction of the typical image in the set
-            that is covered by objects."""))
+            that is covered by objects."""%globals()))
         
         group.append("two_class_otsu", cps.Choice(
             'Two-class or three-class thresholding?',
             [O_TWO_CLASS, O_THREE_CLASS],doc="""
-            <i>(Used only if thresholds are calculcated and the Otsu thresholding method is used)</i> <br>
+            <i>(Used only if thresholds are calculcated and the %(TM_OTSU)s thresholding method is used)</i> <br>
             Select <i>%(O_TWO_CLASS)s</i> if the grayscale levels are readily distinguishable into foregound 
             (i.e., objects) and background. Select <i>%(O_THREE_CLASS)s</i> if there is a  
             middle set of grayscale levels that belongs to neither the
@@ -423,18 +423,21 @@ class MeasureImageQuality(cpm.CPModule):
         result = [ self.images_choice ]
         result += [ self.image_count ]
         for image_group in self.image_groups:
-            result += [ image_group.scale_count, image_group.threshold_count ]
+            result += [ image_group.scale_count, 
+                        image_group.threshold_count ]
         for image_group in self.image_groups:
             result += [ image_group.image_names ]
             result += [ image_group.include_image_scalings,
                         image_group.check_blur]
             for scale_group in image_group.scale_groups:
                 result += [scale_group.scale]
-            result += [ image_group.check_saturation, image_group.check_intensity]
+            result += [ image_group.check_saturation, 
+                        image_group.check_intensity]
             result += [ image_group.calculate_threshold, 
                         image_group.use_all_threshold_methods]
             for threshold_group in image_group.threshold_groups:
-                result += [ threshold_group.threshold_method, threshold_group.object_fraction,
+                result += [ threshold_group.threshold_method, 
+                            threshold_group.object_fraction,
                             threshold_group.two_class_otsu, 
                             threshold_group.use_weighted_variance, 
                             threshold_group.assign_middle_to_foreground ]
@@ -488,9 +491,9 @@ class MeasureImageQuality(cpm.CPModule):
             if threshold_group.can_remove:
                 result += [threshold_group.divider]
             result += [threshold_group.threshold_method]
-            if threshold_group.threshold_method.value == cpthresh.TM_MOG_GLOBAL:
+            if threshold_group.threshold_method.value == cpthresh.TM_MOG:
                 result += [threshold_group.object_fraction]
-            elif threshold_group.threshold_method.value == cpthresh.TM_OTSU_GLOBAL:
+            elif threshold_group.threshold_method.value == cpthresh.TM_OTSU:
                 result += [threshold_group.use_weighted_variance, 
                            threshold_group.two_class_otsu]
                 if threshold_group.two_class_otsu.value == O_THREE_CLASS:
@@ -1108,14 +1111,14 @@ class MeasureImageQuality(cpm.CPModule):
         threshold_args = []
         object_fraction = [0.05, 0.25, 0.75, 0.95]
         # Produce list of combinations of the special thresholding method parameters: Otsu, MoG
-        z = product([cpthresh.TM_OTSU_GLOBAL],[0], [O_WEIGHTED_VARIANCE, O_ENTROPY],[O_THREE_CLASS],[O_FOREGROUND, O_BACKGROUND])
+        z = product([cpthresh.TM_OTSU],[0], [O_WEIGHTED_VARIANCE, O_ENTROPY],[O_THREE_CLASS],[O_FOREGROUND, O_BACKGROUND])
         threshold_args += [i for i in z]
-        z = product([cpthresh.TM_OTSU_GLOBAL],[0], [O_WEIGHTED_VARIANCE, O_ENTROPY],[O_TWO_CLASS],[O_FOREGROUND])
+        z = product([cpthresh.TM_OTSU],[0], [O_WEIGHTED_VARIANCE, O_ENTROPY],[O_TWO_CLASS],[O_FOREGROUND])
         threshold_args += [i for i in z]
-        z = product([cpthresh.TM_MOG_GLOBAL],object_fraction, [O_WEIGHTED_VARIANCE],[O_TWO_CLASS],[O_FOREGROUND])
+        z = product([cpthresh.TM_MOG],object_fraction, [O_WEIGHTED_VARIANCE],[O_TWO_CLASS],[O_FOREGROUND])
         threshold_args += [i for i in z]
         # Tack on the remaining simpler methods
-        leftover_methods = [i for i in cpthresh.TM_GLOBAL_METHODS if i not in [cpthresh.TM_OTSU_GLOBAL,cpthresh.TM_MOG_GLOBAL]]
+        leftover_methods = [i for i in cpthresh.TM_METHODS if i not in [cpthresh.TM_OTSU,cpthresh.TM_MOG]]
         z = product(leftover_methods,[0],[O_WEIGHTED_VARIANCE],[O_TWO_CLASS],[O_FOREGROUND])
         threshold_args += [i for i in z]
         
@@ -1315,6 +1318,13 @@ class MeasureImageQuality(cpm.CPModule):
             setting_values = new_settings
             variable_revision_number = 4
             
+        if (not from_matlab) and variable_revision_number == 4:
+            # Thresholding method name change: Strip off "Global"
+            thresh_dict = dict(zip(cpthresh.TM_GLOBAL_METHODS,cpthresh.TM_METHODS))
+            # Naturally, this method assumes that the user didn't name their images "Otsu Global" or something similar 
+            setting_values = [thresh_dict[x] if x in cpthresh.TM_GLOBAL_METHODS else x for x in setting_values ]
+            variable_revision_number = 5     
+
         return setting_values, variable_revision_number, from_matlab
 
 

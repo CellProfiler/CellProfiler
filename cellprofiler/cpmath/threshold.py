@@ -70,9 +70,7 @@ TM_PER_OBJECT                   = "PerObject"
 TM_METHODS =  [TM_OTSU, TM_MOG, TM_BACKGROUND, TM_ROBUST_BACKGROUND, 
                TM_RIDLER_CALVARD, TM_KAPUR, TM_MCT]
 
-TM_GLOBAL_METHODS = [TM_OTSU_GLOBAL, TM_MOG_GLOBAL, TM_BACKGROUND_GLOBAL,
-                     TM_ROBUST_BACKGROUND_GLOBAL, TM_RIDLER_CALVARD_GLOBAL, 
-                     TM_KAPUR_GLOBAL, TM_MCT_GLOBAL ]
+TM_GLOBAL_METHODS = [" ".join((x,TM_GLOBAL)) for x in TM_METHODS]
 
 def get_threshold(threshold_method, threshold_modifier, image, 
                   mask=None, labels = None,

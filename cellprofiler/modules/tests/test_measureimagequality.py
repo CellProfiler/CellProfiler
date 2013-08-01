@@ -582,7 +582,7 @@ MeasureImageQuality:[module_num:1|svn_version:\'9143\'|variable_revision_number:
         self.assertEqual(group.scale_groups[0].scale, 25)
         self.assertTrue(group.check_saturation)
         self.assertTrue(group.calculate_threshold)
-        self.assertEqual(thr.threshold_method, miq.cpthresh.TM_OTSU_GLOBAL)
+        self.assertEqual(thr.threshold_method, miq.cpthresh.TM_OTSU)
         self.assertAlmostEqual(thr.object_fraction.value, 0.2)
         self.assertEqual(thr.two_class_otsu, miq.O_THREE_CLASS)
         self.assertEqual(thr.use_weighted_variance, miq.O_WEIGHTED_VARIANCE)
@@ -595,7 +595,7 @@ MeasureImageQuality:[module_num:1|svn_version:\'9143\'|variable_revision_number:
         self.assertEqual(group.scale_groups[0].scale, 15)
         self.assertFalse(group.check_saturation)
         self.assertFalse(group.calculate_threshold)
-        self.assertEqual(thr.threshold_method, miq.cpthresh.TM_MOG_GLOBAL)
+        self.assertEqual(thr.threshold_method, miq.cpthresh.TM_MOG)
         self.assertAlmostEqual(thr.object_fraction.value, 0.3)
         self.assertEqual(thr.two_class_otsu, miq.O_TWO_CLASS)
         self.assertEqual(thr.use_weighted_variance, miq.O_ENTROPY)
@@ -759,7 +759,7 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         self.assertTrue(group.check_intensity)
         self.assertFalse(group.use_all_threshold_methods)
         thr = group.threshold_groups[0]
-        self.assertEqual(thr.threshold_method, miq.cpthresh.TM_OTSU_GLOBAL)
+        self.assertEqual(thr.threshold_method, miq.cpthresh.TM_OTSU)
         self.assertEqual(thr.use_weighted_variance, miq.O_WEIGHTED_VARIANCE)
         self.assertEqual(thr.two_class_otsu, miq.O_TWO_CLASS)
         group = module.image_groups[1]
@@ -772,11 +772,11 @@ MeasureImageQuality:[module_num:5|svn_version:\'10368\'|variable_revision_number
         self.assertEqual(group.image_names, "Zeta")
         self.assertFalse(group.use_all_threshold_methods)
         thr = group.threshold_groups[0]
-        self.assertEqual(thr.threshold_method, miq.cpthresh.TM_OTSU_GLOBAL)
+        self.assertEqual(thr.threshold_method, miq.cpthresh.TM_OTSU)
         self.assertEqual(thr.use_weighted_variance, miq.O_WEIGHTED_VARIANCE)
         self.assertEqual(thr.two_class_otsu, miq.O_TWO_CLASS)
         thr = group.threshold_groups[1]
-        self.assertEqual(thr.threshold_method, miq.cpthresh.TM_OTSU_GLOBAL)
+        self.assertEqual(thr.threshold_method, miq.cpthresh.TM_OTSU)
         self.assertEqual(thr.use_weighted_variance, miq.O_WEIGHTED_VARIANCE)
         self.assertEqual(thr.two_class_otsu, miq.O_THREE_CLASS)
         self.assertEqual(thr.assign_middle_to_foreground, miq.O_FOREGROUND)

@@ -65,7 +65,7 @@ resulted from a split from a parent object in the previous frame.</li>
 resulted from the merging of child objects in the previous frame.</li>
 </ul>
 
-See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>LoadImages</b>.
+See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>Groups</b>.
 """
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

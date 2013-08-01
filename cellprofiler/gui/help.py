@@ -102,16 +102,12 @@ LOCATION_PAUSE_ANALYSIS_BUTTON = 'IMG_PAUSE.png'
 ####################################################
 BATCH_PROCESSING_HELP_REF = """Help > Other Features > Batch Processing"""
 TEST_MODE_HELP_REF = """Help > Testing Your Pipeline"""
-METADATA_HELP_REF = """Help > Creating a Project > Using the Metadata Module"""
 IMAGE_TOOLS_HELP_REF = """Help > Using Module Display Windows > How To Use The Image Tools"""
-METADATA_GROUPING_HELP_REF = """Help > Creating a Project > Using The Groups Module"""
 DATA_TOOL_HELP_REF = """Help > Data Tool Help"""
 PROJECT_INTRO_HELP = """Help > Creating a Project > Introduction to Projects"""
 USING_YOUR_OUTPUT_REF = """Help > Using Your Output"""
 MEASUREMENT_NAMING_HELP = """Help > Using Your Output > How Measurements are Named"""
-USING_METADATA_HELP_REF = """ 
-For more details on metadata usage, please see the <b>Metadata</b> module, or 
-<i>%(METADATA_HELP_REF)s</i>"""%globals()
+USING_METADATA_HELP_REF = """Please see the <b>Metadata</b> module for more details on metadata collection and usage"""
 
 USING_METADATA_TAGS_REF = """
 You can insert a previously defined metadata tag by either using:
@@ -123,8 +119,8 @@ navigate the cursor to just before the tag and either:
 <ul><li>Use the up and down arrows to cycle through possible values.</li>
 <li>Right-click on the tag to display and select the available values.</li></ul>"""
 
-USING_METADATA_GROUPING_HELP_REF = """Please see <i>%(METADATA_GROUPING_HELP_REF)s</i> for more details on the 
-proper use of metadata for grouping"""%globals()
+USING_METADATA_GROUPING_HELP_REF = """Please see the <b>Groups</b> module for more details on the 
+proper use of metadata for grouping"""
 
 RETAINING_OUTLINES_HELP = """The outlines of the new objects can be retained for later use in 
 the pipeline. For example, a common use is for quality control purposes by overlaying them on 

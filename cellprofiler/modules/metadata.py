@@ -99,7 +99,7 @@ from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.images import Images, evaluate_url
 from cellprofiler.modules.loadimages import needs_well_metadata
 from cellprofiler.modules.loadimages import well_metadata_tokens
-from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP, METADATA_HELP_REF
+from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP
 
 X_AUTOMATIC_EXTRACTION = "Extract from image file headers"
 X_MANUAL_EXTRACTION = "Extract from file/folder names"
@@ -211,7 +211,7 @@ class Metadata(cpm.CPModule):
             Additional extraction methods can be added by clicking the "Add" button below.</p>
             
             <p>For more details on how metadata is used downstream from this module, see the help for
-            the <b>NamesAndTypes</b> or <b>Groups</b> module, or <i>%(METADATA_HELP_REF)s</i></p>"""%globals()))
+            the <b>NamesAndTypes</b> or <b>Groups</b> modules.</p>"""%globals()))
         
         group.append("source", cps.Choice(
             "Metadata source", [XM_FILE_NAME, XM_FOLDER_NAME],doc = """

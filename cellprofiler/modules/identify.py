@@ -246,12 +246,12 @@ class Identify(cellprofiler.cpmodule.CPModule):
         self.threshold_method = cps.Choice(
             'Thresholding method',
             methods, doc="""
-            <p>The intensity threshold affects the decision of whether each pixel
+            The intensity threshold affects the decision of whether each pixel
             will be considered foreground (region(s) of interest) or background.
             A stringent threshold will result in only the brightest regions being identified, 
             whereas a lenient threshold will include dim regions. You can have the threshold 
             automatically calculated using several methods, or you can enter an absolute number between 0 
-            and 1 for the threshold. </p>
+            and 1 for the threshold.
             
             <p>To help determine the choice of threshold manually, you
             can inspect the pixel intensities in an image of your choice. 
@@ -427,12 +427,12 @@ class Identify(cellprofiler.cpmodule.CPModule):
             Choose the image measurement that will act as an absolute threshold for the images.""")
         
         self.binary_image = cps.ImageNameSubscriber(
-            "Select binary image", "None", doc = """
+            "Select binary image", cps.NONE, doc = """
             <i>(Used only if Binary image selected for thresholding method)</i><br>
-            What is the binary thresholding image?""")
+            Select the binary image to be used for thresholding.""")
         
         self.masking_objects = MaskObjectNameSubscriber(
-            "Masking objects", "None",doc = """
+            "Masking objects", cps.NONE,doc = """
             <i>(Used only if %(TS_PER_OBJECT)s is selected for the
             thresholding strategy)</i><br>A threshold will be calculated for
             each object and applied to the pixels inside that object. Pixels

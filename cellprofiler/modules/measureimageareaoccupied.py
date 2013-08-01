@@ -87,7 +87,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
                 
                 self.__operand_objects = cps.ObjectNameSubscriber(
                     "Select objects to measure",
-                    "None", doc = """
+                    cps.NONE, doc = """
                     <i>(Used only if '%(O_OBJECTS)s' are to be measured)</i> <br>
                     Select the previously identified objects you would like to measure."""%globals())
                 
@@ -108,7 +108,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
                 
                 self.__binary_name = cps.ImageNameSubscriber(
                     "Select a binary image to measure", 
-                    "None", doc="""
+                    cps.NONE, doc="""
                     <i>(Used only if '%(O_BINARY_IMAGE)s' is to be measured)</i><br>
                     This is a binary image created earlier in the pipeline, 
                     where you would like to measure the area occupied by the foreground 

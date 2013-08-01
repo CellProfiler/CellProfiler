@@ -51,7 +51,7 @@ class EnhanceEdges(cpm.CPModule):
 
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image","None", doc = '''
+            "Select the input image",cps.NONE, doc = '''
             What did you call the image in which you want to enhance the edges?''')
         
         self.output_image_name = cps.ImageNameProvider(

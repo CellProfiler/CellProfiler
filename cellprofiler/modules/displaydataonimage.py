@@ -71,7 +71,7 @@ class DisplayDataOnImage(cpm.CPModule):
             </ul>"""%globals())
         
         self.objects_name = cps.ObjectNameSubscriber(
-            "Select the input objects", "None", doc = """
+            "Select the input objects", cps.NONE, doc = """
             <i>(Used only when displaying object measurements)</i><br>
             Choose the name of objects identified by some previous
             module (such as <b>IdentifyPrimaryObjects</b> or
@@ -90,7 +90,7 @@ class DisplayDataOnImage(cpm.CPModule):
             selected.""")
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select the image on which to display the measurements", "None", doc="""
+            "Select the image on which to display the measurements", cps.NONE, doc="""
             Choose the image to be displayed behind the measurements.
             This can be any image created or loaded by a previous module.""")
         

@@ -176,7 +176,7 @@ class UnmixColors(cpm.CPModule):
         self.stain_count = cps.HiddenCount(self.outputs, "Stain count")
         
         self.input_image_name = cps.ImageNameSubscriber(
-            "Select the input color image", "None", doc = """
+            "Select the input color image", cps.NONE, doc = """
             Choose the name of the histologically stained color image
             loaded or created by some prior module.""")
         

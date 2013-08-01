@@ -1,6 +1,5 @@
-'''<b>Mask Objects</b> removes objects outside of a specified region or regions
+'''<b>Mask Objects</b> removes objects outside of a specified region or regions.
 <hr>
-
 This module allows you to delete the objects or portions of objects that are 
 outside of a region (mask) you specify. For example, after
 identifying nuclei and tissue regions in previous <b>Identify</b> modules, you might
@@ -12,6 +11,19 @@ You can choose to remove only the portion of each object that is outside of
 the region, remove the whole object if it is partially or fully
 outside of the region, or retain the whole object unless it is fully outside
 of the region. </p>
+
+<h4>Available measurements</h4>
+<b>Parent object measurements:</b>
+<ul>
+<li><i>Count:</i> The number of new masked objects created from each parent object.</li>
+</ul>
+
+<b>Masked object measurements:</b>
+<ul>
+<li><i>Parent:</i> The label number of the parent object.</li>
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of 
+mass of the masked objects.</li>
+</ul>
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -77,7 +89,7 @@ class MaskObjects(I.Identify):
     def create_settings(self):
         '''Create the settings that control this module'''
         self.object_name = cps.ObjectNameSubscriber(
-            "Select objects to be masked","None",doc="""
+            "Select objects to be masked",cps.NONE,doc="""
             Select the objects that will be masked (that is, excluded in whole 
             or in part based on the other settings in the module). 
             You can choose from any objects created by
@@ -98,14 +110,14 @@ class MaskObjects(I.Identify):
             region based on the white regions in a binary image (<i>%(MC_IMAGE)s</i>).""")
         
         self.masking_objects = cps.ObjectNameSubscriber(
-            "Select the masking object","None",doc="""
+            "Select the masking object",cps.NONE,doc="""
             Select the objects that will be used to define the
             masking region. You can choose from any objects created
             by a previous object processing module, such as <b>IdentifyPrimaryObjects</b>,
             <b>IdentifySecondaryObjects</b>, or <b>IdentifyTertiaryObjects</b>.""")
         
         self.masking_image = cps.ImageNameSubscriber(
-            "Select the masking image","None", doc="""
+            "Select the masking image",cps.NONE, doc="""
             Select an image that was either loaded or
             created by a previous module. The image should be a binary image where 
             the white portion of the image is the region(s) you will use for masking.
@@ -114,8 +126,8 @@ class MaskObjects(I.Identify):
             image using <b>ApplyThreshold</b>.""")
         
         self.wants_inverted_mask = cps.Binary(
-            "Invert the mask?", False,
-            doc="""This option reverses the foreground/background relationship of
+            "Invert the mask?", False, doc="""
+            This option reverses the foreground/background relationship of
             the mask. 
             <ul>
             <li>If unchecked, the mask will be composed of the foregound 

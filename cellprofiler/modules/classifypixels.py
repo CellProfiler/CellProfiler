@@ -103,7 +103,7 @@ class ClassifyPixels(cpm.CPModule):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image", "None")
+            "Select the input image", cps.NONE)
         
         self.probability_maps = []
         
@@ -139,7 +139,7 @@ class ClassifyPixels(cpm.CPModule):
                 
         self.classifier_file_name = cps.FilenameText(
             "Classfier file name",
-            "None",
+            cps.NONE,
             doc="""This is the name of the Classfier file.""",
             get_directory_fn = get_directory_fn,
             set_directory_fn = set_directory_fn,

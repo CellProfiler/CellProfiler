@@ -7,34 +7,30 @@ by this numbering.  This module
 allows the reassignment of object numbers by either unifying separate objects to share
 the same label, or splitting portions of separate objects that previously had the same label.
 
+<h4>Available measurements</h4>
+<b>Parent object measurements:</b>
+<ul>
+<li><i>Children Count:</i> The number of relabeled objects created from each parent object.</li>
+</ul>
+
+<b>Reassigned object measurements:</b>
+<ul>
+<li><i>Parent:</i>The label number of the parent object.</li>
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of 
+mass of the reassigned objects.</li>
+</ul>
+
 <h4>Technical notes</h4>
-<p>Reassignment means that the numerical value of every pixel within 
+Reassignment means that the numerical value of every pixel within 
 an object (in the label matrix version of the image) gets changed, as specified by 
 the module settings. In order to ensure that objects are labeled consecutively 
 without gaps in the numbering (which other modules may depend on), 
 <b>ReassignObjectNumbers</b> will typically result in most of the objects having 
 their numbers reordered. This reassignment information is stored as a per-object measurement 
 with both the original input and reasigned output objects, in case you need to track the 
-reassignment.</p>
+reassignment.
 
-<h4>Available measurements</h4>
-<ul>
-<li><i>Parent object features:</i>
-<ul>
-<li><i>Children Count:</i> The number of relabeled objects created from each parent object.</li>
-</ul>
-</li>
-<li><i>Reassigned object features:</i>
-<ul>
-<li><i>Parent:</i> The identity of the parent object, as assigned by an <b>Identify</b>
-module.</li>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of 
-mass of the reassigned objects.</li>
-</ul>
-</li>
-</ul>
-
-See also <b>RelateObjects</b>.
+<p>See also <b>RelateObjects</b>.</p>
 '''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

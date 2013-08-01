@@ -134,7 +134,7 @@ class MeasureObjectIntensity(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("name", cps.ImageNameSubscriber(
-            "Select an image to measure","None", doc = """
+            "Select an image to measure",cps.NONE, doc = """
             Select the grayscale images whose intensity you want to measure."""))
         
         if can_remove:
@@ -151,7 +151,7 @@ class MeasureObjectIntensity(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("name", cps.ObjectNameSubscriber(
-            "Select objects to measure","None", doc = """
+            "Select objects to measure",cps.NONE, doc = """
             Select the objects whose intensities you want to measure."""))
         
         if can_remove:

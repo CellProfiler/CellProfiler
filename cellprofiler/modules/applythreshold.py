@@ -16,7 +16,7 @@ based on a threshold which can be pre-selected or calculated automatically using
 
 from cellprofiler.cpmodule import CPModule
 from cellprofiler import cpimage
-import cellprofiler.settings as cpsetting
+import cellprofiler.settings as cps
 from identify import Identify, O_BACKGROUND, O_ENTROPY
 from identify import O_FOREGROUND, O_THREE_CLASS
 from identify import O_TWO_CLASS, O_WEIGHTED_VARIANCE
@@ -51,16 +51,16 @@ class ApplyThreshold(Identify):
         threshold_methods = [method for method in TM_METHODS
                              if method != TM_BINARY_IMAGE]
 
-        self.image_name = cpsetting.ImageNameSubscriber(
+        self.image_name = cps.ImageNameSubscriber(
             "Select the input image",doc = '''
             Choose the image to be thresholded.''')
         
-        self.thresholded_image_name = cpsetting.ImageNameProvider(
+        self.thresholded_image_name = cps.ImageNameProvider(
             "Name the output image",
             "ThreshBlue", doc = '''
             Enter a name for the thresholded image.''')
         
-        self.binary = cpsetting.Choice(
+        self.binary = cps.Choice(
             "Select the output image type", [GRAYSCALE, BINARY], doc = '''
             Two types of output images can be produced:<br>
             <ul>
@@ -74,7 +74,7 @@ class ApplyThreshold(Identify):
             </ul>'''%globals())
         
         # if not binary:
-        self.low_or_high = cpsetting.Choice(
+        self.low_or_high = cps.Choice(
             "Set pixels below or above the threshold to zero?",
             [TH_BELOW_THRESHOLD, TH_ABOVE_THRESHOLD], doc="""
             <i>(Used only when "%(GRAYSCALE)s" thresholding is selected)</i><br>
@@ -86,7 +86,7 @@ class ApplyThreshold(Identify):
         
         # if not binary and below threshold
         
-        self.shift = cpsetting.Binary(
+        self.shift = cps.Binary(
             "Subtract the threshold value from the remaining pixel intensities?", False, doc ='''
             <i>(Used only if the image is grayscale and pixels below a given intensity are to be set to zero)</i><br>
             Use this setting if the dim pixels are to be shifted in value by 
@@ -94,7 +94,7 @@ class ApplyThreshold(Identify):
         
         # if not binary and above threshold
         
-        self.dilation = cpsetting.Float(
+        self.dilation = cps.Float(
             "Number of pixels by which to expand the thresholding around those excluded bright pixels",
             0.0, doc = '''
             <i>(Used only if the output image is grayscale and pixels above a given intensity are to be set to zero)</i><br>
@@ -234,20 +234,20 @@ class ApplyThreshold(Identify):
                                 "0,1",              # Threshold range
                                 "1",                # Threshold correction factor
                                 ".2",               # Object fraction
-                                "None"              # Enclosing objects name
+                                cps.NONE              # Enclosing objects name
                                 ]
             setting_values[2] = (BINARY if float(setting_values[10]) > 0
                                  else GRAYSCALE) # binary flag
-            setting_values[3] = (cpsetting.YES if float(setting_values[5]) > 0
-                                 else cpsetting.NO) # low threshold set
-            setting_values[4] = (cpsetting.YES if float(setting_values[7]) > 0
-                                 else cpsetting.NO) # high threshold set
+            setting_values[3] = (cps.YES if float(setting_values[5]) > 0
+                                 else cps.NO) # low threshold set
+            setting_values[4] = (cps.YES if float(setting_values[7]) > 0
+                                 else cps.NO) # high threshold set
             variable_revision_number = 2
             from_matlab = False
         if (not from_matlab) and variable_revision_number == 1:
             setting_values = (setting_values[:9] + 
                               [TM_MANUAL, setting_values[9], "O,1", "1",
-                               ".2","None"])
+                               ".2",cps.NONE])
             variable_revision_number = 2
         if (not from_matlab) and variable_revision_number == 2:
             # Added Otsu options
@@ -260,7 +260,7 @@ class ApplyThreshold(Identify):
             #
             # Only low or high, not both + removed manual threshold settings
             #
-            if setting_values[3] == cpsetting.YES:
+            if setting_values[3] == cps.YES:
                 th = TH_BELOW_THRESHOLD
             else:
                 th = TH_ABOVE_THRESHOLD
@@ -283,7 +283,7 @@ class ApplyThreshold(Identify):
             
         if (not from_matlab) and variable_revision_number == 4:
             # Added measurements to threshold methods
-            setting_values = setting_values + ["None"]
+            setting_values = setting_values + [cps.NONE]
             variable_revision_number = 5
                               
         if (not from_matlab) and variable_revision_number == 5:
@@ -304,7 +304,7 @@ class ApplyThreshold(Identify):
                 shift, dilation ] + self.upgrade_legacy_threshold_settings(
                     threshold_method, TSM_NONE, threshold_correction_factor, 
                     threshold_range, object_fraction, manual_threshold,
-                    thresholding_measurement, "None", two_class_otsu,
+                    thresholding_measurement, cps.NONE, two_class_otsu,
                     use_weighted_variance, assign_middle_to_foreground,
                     FI_IMAGE_SIZE, "10", masking_objects=enclosing_objects_name)
             variable_revision_number = 7

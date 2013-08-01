@@ -11,21 +11,18 @@ touching a parent object. If an child object is touching multiple parent objects
 the object will be assigned as a child of all parents that it overlaps with.
 
 <h4>Available measurements</h4>
-<ul>
-<li><i>Parent object features:</i>
+<b>Parent object measurements:</b>
 <ul>
 <li><i>Count:</i> The number of child sub-objects for each parent object.</li>
 <li><i>Mean measurements:</i> The mean of the child object measurements,
 calculated for each parent object.</li>
 <li><i>Distances:</i> The distance of each child object to its respective parent.</li>
 </ul>
-</li>
-<li><i>Child object features:</i>
+
+<b>Child object measurements:</b>
 <ul>
 <li><i>Parent:</i> The label number of the parent object, as assigned by an <b>Identify</b>
 module.</li>
-</ul>
-</li>
 </ul>
 
 See also: <b>ReassignObjectNumbers</b>.
@@ -156,7 +153,7 @@ class RelateObjects(cpm.CPModule):
     def add_step_parent(self, can_delete = True):
         group = cps.SettingsGroup()
         group.append("step_parent_name", cps.Choice(
-            "Parent name", ["None"], 
+            "Parent name", [cps.NONE], 
             choices_fn = self.get_step_parents, doc = """
             <i>(Used only if calculating distances to another parent)</i><br>
             Choose the name of the other parent. The <b>RelateObjects</b> module will 

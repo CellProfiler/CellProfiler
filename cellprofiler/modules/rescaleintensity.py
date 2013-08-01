@@ -67,7 +67,7 @@ class RescaleIntensity(cpm.CPModule):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image","None", doc = 
+            "Select the input image",cps.NONE, doc = 
             '''Select the image to be rescaled.''')
         
         self.rescaled_image_name = cps.ImageNameProvider(
@@ -193,7 +193,7 @@ class RescaleIntensity(cpm.CPModule):
             Enter the custom value to be assigned to pixels with values above the upper limit.""")
         
         self.matching_image_name = cps.ImageNameSubscriber(
-            "Select image to match in maximum intensity", "None",doc = """
+            "Select image to match in maximum intensity", cps.NONE,doc = """
             <i>(Used only if "%(M_SCALE_BY_IMAGE_MAXIMUM)s" is selected)</i><br>
             Select the image whose maximum you want the rescaled image to match."""%globals())
         

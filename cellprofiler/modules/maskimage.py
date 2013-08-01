@@ -63,17 +63,17 @@ class MaskImage(cpm.CPModule):
             </ul>"""%globals())
         
         self.object_name = cps.ObjectNameSubscriber(
-            "Select object for mask","None",doc = """
+            "Select object for mask",cps.NONE,doc = """
             <i>(Used only if mask is to be made from objects)</i> <br> 
             Select the objects you would like to use to mask the input image.""")
         
         self.masking_image_name = cps.ImageNameSubscriber(
-            "Select image for mask","None",doc = """
+            "Select image for mask",cps.NONE,doc = """
             <i>(Used only if mask is to be made from an image)</i> <br> 
             Select the image that you like to use to mask the input image.""")
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image","None", doc = """
+            "Select the input image",cps.NONE, doc = """
             Select the image that you want to mask.""")
         
         self.masked_image_name = cps.ImageNameProvider(

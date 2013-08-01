@@ -18,71 +18,55 @@ same second-moments as an object region.
 
 <ul>
 <li><i>Area:</i> The actual number of pixels in the region.</li>
-
 <li><i>Perimeter:</i> The total number of pixels around the boundary of each
 region in the image.</li>
-
 <li><i>FormFactor:</i> Calculated as 4*&pi;*Area/Perimeter<sup>2</sup>. Equals 1 for a 
 perfectly circular object.</li>
-
 <li><i>Solidity:</i> The proportion of the pixels in the convex hull that
 are also in the region. Also known as <i>convexity</i>. Computed as Area/ConvexArea.</li>
-
 <li><i>Extent:</i> The proportion of the pixels in the bounding box that
 are also in the region. Computed as the Area divided by the area of the
 bounding box.</li>
-
 <li><i>EulerNumber:</i> The number of objects in the region
 minus the number of holes in those objects, assuming 8-connectivity.</li>
-
 <li><i>Center_X, Center_Y:</i> The <i>x</i>- and <i>y</i>-coordinates of the
 point farthest away from any object edge. Note that this is not the same as the 
 <i>Location-X</i> and <i>-Y</i> measurements produced by the <b>Identify</b>
 modules.
 </li>
-
 <li><i>Eccentricity:</i> The eccentricity of the ellipse that has the
 same second-moments as the region. The eccentricity is the ratio of the
 distance between the foci of the ellipse and its major axis length. The
 value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
 eccentricity is 0 is actually a circle, while an ellipse whose eccentricity
 is 1 is a line segment.)</li>
-
 <li><i>MajorAxisLength:</i> The length (in pixels) of the major axis of
 the ellipse that has the same normalized second central moments as the
 region.</li>
-
 <li><i>MinorAxisLength:</i> The length (in pixels) of the minor axis of
 the ellipse that has the same normalized second central moments as the
 region.</li>
-
 <li><i>Orientation:</i> The angle (in degrees ranging from -90 to 90
 degrees) between the x-axis and the major axis of the ellipse that has the
 same second-moments as the region.</li>
-
 <li><i>Compactness:</i> The variance of the radial distance of the object's
 pixels from the centroid divided by the area.</li>
-
 <li><i>MaximumRadius:</i> The maximum distance of any pixel in the object
 to the closest pixel outside of the object. For skinny objects, this
 is 1/2 of the maximum width of the object.</li>
-
 <li><i>MedianRadius:</i> The median distance of any pixel in the object 
 to the closest pixel outside of the object.</li>
-
 <li><i>MeanRadius:</i> The mean distance of any pixel in the object
 to the closest pixel outside of the object.</li>
-
 <li><i>MinFeretDiameter, MaxFeretDiameter:</i> The Feret diameter is the
 distance between two parallel lines tangent on either side of the object
 (imagine taking a caliper and measuring the object at various angles).
 The minimum and maximum Feret diameters are the smallest and largest possible
 diameters, rotating the calipers along all possible angles.</li>
-
 <li><i>Zernike shape features:</i> Measure shape by describing a binary object (or
 more precisely, a patch with background and an object in the center) in a
-basis of Zernike polynomials, using the coefficients as features <i>(Boland
-et al., 1998</i>. Currently, Zernike polynomials from order 0 to order 9 are
+basis of Zernike polynomials, using the coefficients as features (<i>Boland
+et al., 1998</i>). Currently, Zernike polynomials from order 0 to order 9 are
 calculated, giving in total 30 measurements. While there is no limit to
 the order which can be calculated (and indeed users could add more by
 adjusting the code), the higher order polynomials carry less information.</li>
@@ -210,7 +194,7 @@ class MeasureObjectSizeShape(cpm.CPModule):
             group.append("divider", cps.Divider(line=False))
         
         group.append("name", cps.ObjectNameSubscriber(
-            "Select objects to measure","None",doc="""
+            "Select objects to measure",cps.NONE,doc="""
             Select the objects that you want to measure."""))
         
         if can_remove:

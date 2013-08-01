@@ -68,7 +68,7 @@ class CorrectIlluminationApply(cpm.CPModule):
         '''Add an image and its settings to the list of images'''
         image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            "None", doc = '''
+            cps.NONE, doc = '''
             Select the image to be corrected.''')
 
         corrected_image_name = cps.ImageNameProvider(
@@ -78,7 +78,7 @@ class CorrectIlluminationApply(cpm.CPModule):
 
         illum_correct_function_image_name = cps.ImageNameSubscriber(
             "Select the illumination function",
-            "None", doc = '''
+            cps.NONE, doc = '''
             Select the illumination correction function image that will be used to 
             carry out the correction. This image is usually produced by another module 
             or loaded as a .mat format image using the <b>Images</b> module or 

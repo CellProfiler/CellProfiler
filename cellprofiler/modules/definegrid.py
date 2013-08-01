@@ -183,7 +183,7 @@ class DefineGrid(cpm.CPModule):
             </ul>"""%globals())
         
         self.object_name = cps.ObjectNameSubscriber(
-            "Select the previously identified objects", "None",doc="""
+            "Select the previously identified objects", cps.NONE,doc="""
             <i>(Used only if you selected %(AM_AUTOMATIC)s to define the grid)</i><br>
             Select the previously identified objects you want to use to 
             define the grid. Use this setting to specify the name of the objects that will
@@ -209,7 +209,7 @@ class DefineGrid(cpm.CPModule):
         
         self.manual_image = cps.ImageNameSubscriber(
             "Select the image to display",
-            "None", doc="""
+            cps.NONE, doc="""
             <i>(Used only if you selected %(AM_MANUAL)s + %(MAN_MOUSE)s to define the grid)</i><br>
             Specify the image you want to display when defining the grid.
             This setting lets you choose the image to display 

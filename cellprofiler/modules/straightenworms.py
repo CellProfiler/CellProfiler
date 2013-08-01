@@ -235,7 +235,7 @@ class StraightenWorms(cpm.CPModule):
         
         self.flip_image = cps.Choice(
             "Alignment image", 
-            [ "None" ], choices_fn = image_choices_fn,doc = """
+            [ cps.NONE ], choices_fn = image_choices_fn,doc = """
             (<i>Only used if aligning worms</i>)<br>
             This is the image whose intensity will be used to align the worms.
             You must use one of the straightened images below.""")

@@ -238,9 +238,10 @@ class MeasureTexture(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append('image_name', 
-                     cps.ImageNameSubscriber("Select an image to measure","None", 
-                                             doc="""
-                                             What did you call the grayscale images whose texture you want to measure?"""))
+                     cps.ImageNameSubscriber(
+                         "Select an image to measure",cps.NONE, doc="""
+                         Select the grayscale images whose texture you want to measure."""))
+        
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
         self.image_groups.append(group)
@@ -255,8 +256,8 @@ class MeasureTexture(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append('object_name', 
-                     cps.ObjectNameSubscriber("Select objects to measure","None", doc="""
-                        What did you call the objects whose texture you want to measure? 
+                     cps.ObjectNameSubscriber("Select objects to measure",cps.NONE, doc="""
+                        Select the objects whose texture you want to measure. 
                         If you only want to measure the texture 
                         for the image overall, you can remove all objects using the "Remove this object" button. 
                         <p>Objects specified here will have their

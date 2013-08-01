@@ -49,7 +49,7 @@ class ColorToGray(cpm.CPModule):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image","None")
+            "Select the input image",cps.NONE)
         
         self.combine_or_split = cps.Choice(
             "Conversion method",
@@ -131,7 +131,7 @@ class ColorToGray(cpm.CPModule):
         self.channels = []
         self.add_channel(False)
         self.channel_button = cps.DoSomething(
-            "" "Add another channel", self.add_channel)
+            "","Add another channel", self.add_channel)
         
         self.channel_count = cps.HiddenCount(self.channels, "Channel count")
         

@@ -12,20 +12,21 @@ as the range of the spectrum is given as input.
 <li><i>Granularity:</i> The module returns one measurement for each instance of the granularity spectrum.</li>
 </ul>
 
-<h4>References</h4>:
+<h4>References</h4>
 <ul>
-<li>Serra J. Image Analysis and Mathematical Morphology, Vol. 1. Academic
-Press, London, 1989 Maragos,P. Pattern spectrum and multiscale shape
-representation, <i>IEEE Transactions on Pattern Analysis and Machine
+<li>Serra J. (1989) <i>Image Analysis and Mathematical Morphology</i>, Vol. 1. Academic
+Press, London </li>
+<li>Maragos P. "Pattern spectrum and multiscale shape
+representation", <i>IEEE Transactions on Pattern Analysis and Machine
 Intelligence</i>, 11, N 7, pp. 701-716, 1989</li>
-<li>Vincent L. Granulometries and Opening Trees, <i>Fundamenta Informaticae</i>,
+<li>Vincent L. (2000) "Granulometries and Opening Trees", <i>Fundamenta Informaticae</i>,
 41, No. 1-2, pp. 57-90, IOS Press, 2000.</li>
-<li>Vincent L. Morphological Area Opening and Closing for Grayscale Images,
+<li>Vincent L. (1992) "Morphological Area Opening and Closing for Grayscale Images",
 <i>Proc. NATO Shape in Picture Workshop</i>, Driebergen, The Netherlands, pp.
-197-208, 1992.</li>
-<li>Ravkin I, Temov V. Bit representation techniques and image processing,
+197-208.</li>
+<li>Ravkin I, Temov V. (1988) "Bit representation techniques and image processing",
 <i>Applied Informatics</i>, v.14, pp. 41-90, Finances and Statistics, Moskow,
-1988 (in Russian)</li>
+(in Russian)</li>
 </ul>
 '''
 
@@ -80,7 +81,7 @@ class MeasureGranularity(cpm.CPModule):
             group.append("divider", cps.Divider(line=True))
         
         group.append("image_name",cps.ImageNameSubscriber(
-            "Select an image to measure","None",doc="""
+            "Select an image to measure",cps.NONE,doc="""
             Select the grayscale images whose granularity you want to measure."""))
         
         group.append("subsample_size",cps.Float(
@@ -430,7 +431,7 @@ class GranularitySettingsGroup(cps.SettingsGroup):
     def add_objects(self):
         og = cps.SettingsGroup()
         og.append("objects_name", cps.ObjectNameSubscriber(
-            "Select objects to measure", "None",
+            "Select objects to measure", cps.NONE,
             doc = """Select the objects whose granualarity
             will be measured. You can select objects from prior modules
             that identify objects, such as <b>IdentifyPrimaryObjects</b>. If you only want to measure the granularity 

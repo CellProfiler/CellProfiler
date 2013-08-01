@@ -15,7 +15,7 @@ can be exported as the "Experiment" set of data.
 <h4>Available measurements</h4>
 
 <ul>
-<li><i>Experiment features:</i> Whereas most CellProfiler measurements are calculated for each object (per-object) 
+<li><b>Experiment features:</b> Whereas most CellProfiler measurements are calculated for each object (per-object) 
 or for each image (per-image), this module produces <i>per-experiment</i> values; 
 for example, one Z' factor is calculated for each measurement, across the entire analysis run.
 <ul>

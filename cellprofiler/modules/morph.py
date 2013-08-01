@@ -468,7 +468,7 @@ class Morph(cpm.CPModule):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image","None",doc="""
+            "Select the input image",cps.NONE,doc="""
             Select the image that you want to perform a morphological operation on.
             A grayscale image can be
             converted to binary using the <b>ApplyThreshold</b> module. Objects can be

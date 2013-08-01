@@ -48,54 +48,66 @@ class Resize(cpm.CPModule):
     module_name = "Resize"
     
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber("Select the input image",
-                                                  "None", doc = '''What did you call the image to be resized?''')
+        self.image_name = cps.ImageNameSubscriber(
+            "Select the input image",cps.NONE, doc = '''
+            Select the image to be resized.''')
 
-        self.resized_image_name = cps.ImageNameProvider("Name the output image",
-                                                        "ResizedBlue", doc = '''What do you want to call the resized image?''')
+        self.resized_image_name = cps.ImageNameProvider(
+            "Name the output image","ResizedBlue", doc = '''
+            Enter the name of the resized image.''')
 
-        self.size_method = cps.Choice("Select resizing method",
-                                      R_ALL, doc = """How do you want to resize the image? 
-                                      <ul><li><i>Resize by a fraction or multiple of the original size:</i> 
-                                      Enter a single value which specifies the scaling. </li>
-                                      <li><i>Resize by specifying desired final dimensions:</i></li> 
-                                      Enter the new height and width of the resized image.</ul>""")
+        self.size_method = cps.Choice(
+            "Resizing method",
+            R_ALL, doc = """
+            The following options are available: 
+            <ul>
+            <li><i>Resize by a fraction or multiple of the original size:</i> 
+            Enter a single value which specifies the scaling. </li>
+            <li><i>Resize by specifying desired final dimensions:</i></li> 
+            Enter the new height and width of the resized image.</ul>""")
 
-        self.resizing_factor = cps.Float("Resizing factor",
-                                         .25, minval=0, doc = '''
-                                         <i>(Used only if resizing by a fraction or multiple of the original size)</i><br>
-                                         Numbers less than one (that is, fractions) will shrink the image; 
-                                         numbers greater than one (that is, multiples) will enlarge the image.''')
+        self.resizing_factor = cps.Float(
+            "Resizing factor",
+            0.25, minval=0, doc = '''
+            <i>(Used only if resizing by a fraction or multiple of the original size)</i><br>
+            Numbers less than one (that is, fractions) will shrink the image; 
+            numbers greater than one (that is, multiples) will enlarge the image.''')
 
-        self.use_manual_or_image = cps.Choice("How do you want to specify the dimensions?",C_ALL, doc = """
-                                        <i>(Used only if resizing by specifying the dimensions)</i><br>
-                                        You have two options on how to resize your image:
-                                        <ul>
-                                        <li><i>Manual:</i> Specify the height and width of the output image.</li>
-                                        <li><i>Image:</i> Specify an image and the input image will be resized
-                                        to the same dimensions.</li>
-                                        </ul>""")
+        self.use_manual_or_image = cps.Choice(
+            "Method to specify the dimensions",C_ALL, doc = """
+            <i>(Used only if resizing by specifying the dimensions)</i><br>
+            You have two options on how to resize your image:
+            <ul>
+            <li><i>%(C_MANUAL)s:</i> Specify the height and width of the output image.</li>
+            <li><i>>%(C_IMAGE)s::</i> Specify an image and the input image will be resized
+            to the same dimensions.</li>
+            </ul>"""%globals())
         
-        self.specific_width = cps.Integer("Width of the final image, in pixels", 100, minval=1, doc = '''
-                                         <i>(Used only if resizing by specifying desired final dimensions)</i><br>
-                                         Enter the desired width of the final image.''')
+        self.specific_width = cps.Integer(
+            "Width of the final image", 100, minval=1, doc = '''
+            <i>(Used only if resizing by specifying desired final dimensions)</i><br>
+            Enter the desired width of the final image, in pixels.''')
 
-        self.specific_height = cps.Integer("Height of the final image, in pixels", 100, minval=1, doc = '''
-                                         <i>(Used only if resizing by specifying desired final dimensions)</i><br>
-                                         Enter the desired height of the final image.''')
+        self.specific_height = cps.Integer(
+            "Height of the final image", 100, minval=1, doc = '''
+            <i>(Used only if resizing by specifying desired final dimensions)</i><br>
+            Enter the desired height of the final image, in pixels.''')
         
-        self.specific_image = cps.ImageNameSubscriber("Select the image with the desired dimensions", "None", doc = """"
-                                        <i>(Used only if resizing by specifying desired final dimensions using an image)</i><br>
-                                        The input image will be resized to the dimensions of the specified image.""")
+        self.specific_image = cps.ImageNameSubscriber(
+            "Select the image with the desired dimensions", cps.NONE, doc = """"
+            <i>(Used only if resizing by specifying desired final dimensions using an image)</i><br>
+            The input image will be resized to the dimensions of the specified image.""")
 
-        self.interpolation = cps.Choice("Interpolation method",
-                                        I_ALL, doc = '''<ul><li><i>Nearest Neighbor:</i> Each output pixel is given the intensity of the nearest
-                                        corresponding pixel in the input image.</li>
-                                        <li><i>Bilinear:</i> Each output pixel is given the intensity of the weighted average
-                                        of the 2x2 neighborhood at the corresponding position in the input image.</li>
-                                        <li><i>Bicubic:</i> Each output pixel is given the intensity of the weighted average
-                                        of the 4x4 neighborhood at the corresponding position in the input image.</li>
-                                        </ul>''')
+        self.interpolation = cps.Choice(
+            "Interpolation method",
+            I_ALL, doc = '''
+            <ul><li><i>Nearest Neighbor:</i> Each output pixel is given the intensity of the nearest
+            corresponding pixel in the input image.</li>
+            <li><i>Bilinear:</i> Each output pixel is given the intensity of the weighted average
+            of the 2x2 neighborhood at the corresponding position in the input image.</li>
+            <li><i>Bicubic:</i> Each output pixel is given the intensity of the weighted average
+            of the 4x4 neighborhood at the corresponding position in the input image.</li>
+            </ul>''')
         
         self.separator = cps.Divider(line=False)
         
@@ -114,8 +126,9 @@ class Resize(cpm.CPModule):
             group.append("divider", cps.Divider(line=False))
         
         group.append("input_image_name", 
-                     cps.ImageNameSubscriber("Select the additional image?",
-                                            "None",doc="""
+                     cps.ImageNameSubscriber(
+                         "Select the additional image?",
+                                            cps.NONE,doc="""
                                             What is the name of the additional image to resize? This image will be
                                             resized with the same settings as the first image."""))
         group.append("output_image_name",

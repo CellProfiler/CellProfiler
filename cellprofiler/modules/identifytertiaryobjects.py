@@ -17,20 +17,17 @@ of the perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
 objects.
 
 <h4>Available measurements</h4>
-<ul>
-<li><i>Image features:</i>
+<b>Image measurements:</b>
 <ul>
 <li><i>Count:</i> The number of tertiary objects identified.</li>
 </ul>
-</li>         
-<li><i>Object features:</i>
+
+<b>Object measurements:</b>
 <ul>
 <li><i>Parent:</i> The identity of the primary object and secondary object associated 
 with each tertiary object.</li>
 <li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of mass of the 
 identified tertiary objects.</li>
-</ul>
-</li>
 </ul>
 
 See also <b>IdentifyPrimaryObject</b> and <b>IdentifySecondaryObject</b> modules.
@@ -73,13 +70,13 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         Create the settings for the module during initialization.
         """
         self.secondary_objects_name = cps.ObjectNameSubscriber(
-            "Select the larger identified objects","None",doc="""
+            "Select the larger identified objects",cps.NONE,doc="""
             Select the larger identified objects. This will usually
             be an object previously identified by a <b>IdentifySecondaryObjects</b>
             module.""")
         
         self.primary_objects_name = cps.ObjectNameSubscriber(
-            "Select the smaller identified objects","None",doc="""
+            "Select the smaller identified objects",cps.NONE,doc="""
             Select the smaller identified objects. This will usually
             be an object previously identified by a <b>IdentifyPrimaryObjects</b>
             module.""")

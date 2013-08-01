@@ -81,14 +81,14 @@ class MeasureNeurons(cpm.CPModule):
     def create_settings(self):
         '''Create the UI settings for the module'''
         self.seed_objects_name = cps.ObjectNameSubscriber(
-            "Select the seed objects", "None",doc = """
+            "Select the seed objects", cps.NONE,doc = """
             Select the previously identified objects that you want to use as the
             seeds for measuring branches and distances. Branches and trunks are assigned
             per seed object. Seed objects are typically not single points/pixels but 
             instead are usually objects of varying sizes.""")
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select the skeletonized image", "None", doc = """
+            "Select the skeletonized image", cps.NONE, doc = """
             Select the skeletonized image of the dendrites
             and/or axons as produced by the <b>Morph</b> module's
             <i>Skel</i> operation.""")
@@ -126,7 +126,7 @@ class MeasureNeurons(cpm.CPModule):
             and vertices""")
         
         self.intensity_image_name = cps.ImageNameSubscriber(
-            "Intensity image", "None",doc = """
+            "Intensity image", cps.NONE,doc = """
             Select the image to be used to calculate
             the total intensity along the edges between the vertices.""")
         

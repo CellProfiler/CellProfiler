@@ -106,8 +106,7 @@ class Smooth(cpm.CPModule):
         self.sigma_range = cps.Float(
             'Edge intensity difference', 0.1,doc="""
             <i>(Used only if "%(SMOOTH_KEEPING_EDGES)s" is selected)</i><br>
-            What are the differences in intensity in the edges that you want to preserve?
-            Enter the intensity step that indicates an edge in an image.
+            Enter the intensity step (which indicates an edge in an image) that you want to preserve.
             Edges are locations where the intensity changes precipitously, so this
             setting is used to adjust the rough magnitude of these changes. A lower
             number will preserve weaker edges. A higher number will preserve only stronger edges.

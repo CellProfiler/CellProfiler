@@ -400,7 +400,7 @@ class ExportToDatabase(cpm.CPModule):
         self.sql_file_prefix = cps.Text(
             "SQL file prefix", "SQL_", doc = """
             <i>(Used if %(DB_MYSQL_CSV)s is selected as the database type)</i><br>
-            What prefix do you want to use to name the SQL file?"""%globals())
+            Enter the prefix to be used to name the SQL file."""%globals())
         
         self.directory = cps.DirectoryPath(
             "Output file location", dir_choices = [
@@ -474,7 +474,8 @@ class ExportToDatabase(cpm.CPModule):
             <p>If you are not using the web to access your files (i.e., they are locally
             aceesible by your computer), leave this setting blank.""")
         
-        self.properties_plate_type = cps.Choice("Select the plate type",
+        self.properties_plate_type = cps.Choice(
+            "Select the plate type",
             PLATE_TYPES,doc="""
             <i>(Used only if creating a properties file)</i><br>
             If you are using a multi-well plate or microarray, you can select the plate 
@@ -482,7 +483,8 @@ class ExportToDatabase(cpm.CPModule):
             as well as 5600-spot microarrays. If you are not using a plate or microarray, select
             <i>None</i>.""")
         
-        self.properties_plate_metadata = cps.Choice("Select the plate metadata",
+        self.properties_plate_metadata = cps.Choice(
+            "Select the plate metadata",
             ["None"],choices_fn = self.get_metadata_choices,doc="""
             <i>(Used only if creating a properties file)</i><br>
             If you are using a multi-well plate or microarray, you can select the metadata corresponding
@@ -490,7 +492,8 @@ class ExportToDatabase(cpm.CPModule):
             <i>None</i>. 
             <p>%(USING_METADATA_HELP_REF)s.</p>"""% globals())
         
-        self.properties_well_metadata = cps.Choice("Select the well metadata",
+        self.properties_well_metadata = cps.Choice(
+            "Select the well metadata",
             ["None"],choices_fn = self.get_metadata_choices,doc="""
             <i>(Used only if creating a properties file)</i><br>
             If you are using a multi-well plate or microarray, you can select the metadata corresponding
@@ -599,7 +602,7 @@ class ExportToDatabase(cpm.CPModule):
             "Name the SQLite database file", 
             "DefaultDB.db", doc = """
             <i>(Used if SQLite selected as database type)</i><br>
-            What is the SQLite database filename to which you want to write?""")
+            Enter the name of the SQLite database filename to which you want to write.""")
         
         self.wants_agg_mean = cps.Binary(
             "Calculate the per-image mean values of object measurements?", True, doc = """
@@ -828,28 +831,30 @@ class ExportToDatabase(cpm.CPModule):
         group.can_remove = can_remove
         
         group.append(
-            "image_cols", cps.Choice("Select an image to include",["None"],choices_fn = self.get_property_file_image_choices, doc="""
-            <i>(Used only if creating a properties file and specifiying the image information)</i><br>
-            Choose image name to include it in the properties file of images.
-            <p>The images in the drop-down correspond to images that have been:
-            <ul>
-            <li>Loaded using one of the <b>Load</b> modules.</li>
-            <li>Saved with the <b>SaveImages</b> module, with the corresponding file and path information stored.</li>
-            </ul>
-            If you do not see your desired image listed, check the settings on these modules.</p>"""))
+            "image_cols", cps.Choice(
+                "Select an image to include",[cps.NONE],
+                choices_fn = self.get_property_file_image_choices, doc="""
+                <i>(Used only if creating a properties file and specifiying the image information)</i><br>
+                Choose image name to include it in the properties file of images.
+                <p>The images in the drop-down correspond to images that have been:
+                <ul>
+                <li>Loaded using one of the <b>Load</b> modules.</li>
+                <li>Saved with the <b>SaveImages</b> module, with the corresponding file and path information stored.</li>
+                </ul>
+                If you do not see your desired image listed, check the settings on these modules.</p>"""))
         
         group.append(
             "wants_automatic_image_name", cps.Binary(
-            "Use the image name for the display?", True, doc=
-            """<i>(Used only if creating a properties file and specifiying the image information)</i><br>
-            Use the image name as given above for the displayed name. You can name
-            the file yourself if you leave this box unchecked."""))
+                "Use the image name for the display?", True, doc=
+                """<i>(Used only if creating a properties file and specifiying the image information)</i><br>
+                Use the image name as given above for the displayed name. You can name
+                the file yourself if you leave this box unchecked."""))
 
         group.append(
             "image_name", cps.Text(
-            "Image name", "Channel%d"%(len(self.image_groups)+1), doc=
-            """<i>(Used only if creating a properties file, specifiying the image information and naming the image)</i><br>
-            Enter a name for the specified image"""))
+                "Image name", "Channel%d"%(len(self.image_groups)+1), doc=
+                """<i>(Used only if creating a properties file, specifiying the image information and naming the image)</i><br>
+                Enter a name for the specified image"""))
         
         default_color = (COLOR_ORDER[len(self.image_groups)]
                      if len(self.image_groups) < len(COLOR_ORDER)
@@ -857,9 +862,9 @@ class ExportToDatabase(cpm.CPModule):
         
         group.append(
             "image_channel_colors", cps.Choice(
-            "Channel color", COLOR_ORDER, default_color, doc="""
-            <i>(Used only if creating a properties file and specifiying the image information)</i><br>
-            Enter a color to display this channel."""))
+                "Channel color", COLOR_ORDER, default_color, doc="""
+                <i>(Used only if creating a properties file and specifiying the image information)</i><br>
+                Enter a color to display this channel."""))
         
         group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.image_groups, group))
         
@@ -991,7 +996,7 @@ class ExportToDatabase(cpm.CPModule):
 
         group.append(
             "x_object_name", cps.ObjectNameSubscriber(
-            "Enter the object name","None",
+            "Enter the object name",cps.NONE,
             doc = object_name_help()))
         
         def object_fn_x():
@@ -1020,7 +1025,7 @@ class ExportToDatabase(cpm.CPModule):
 
         group.append(
             "y_object_name", cps.ObjectNameSubscriber(
-            "Enter the object name","None",
+            "Enter the object name",cps.NONE,
             doc=object_name_help()))
         
         def object_fn_y():

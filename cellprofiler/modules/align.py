@@ -63,7 +63,7 @@ class Align(cpm.CPModule):
     def create_settings(self):
         self.first_input_image = cps.ImageNameSubscriber(
             "Select the first input image",
-            "None",doc="""
+            cps.NONE,doc="""
             Specify the name of the first image to align.""")
         
         self.first_output_image = cps.ImageNameProvider(
@@ -74,7 +74,7 @@ class Align(cpm.CPModule):
         self.separator_1 = cps.Divider(line=False)
         self.second_input_image = cps.ImageNameSubscriber(
             "Select the second input image",
-            "None",doc="""
+            cps.NONE,doc="""
             Specify the name of the second image to align.""")
         
         self.second_output_image = cps.ImageNameProvider(
@@ -162,8 +162,8 @@ class Align(cpm.CPModule):
         
         group.append("input_image_name", 
                      cps.ImageNameSubscriber(
-                         "Select the additional image?",
-                         "None",doc="""
+                         "Select the additional image",
+                         cps.NONE,doc="""
                          Select the additional image to align?"""))
         
         group.append("output_image_name",

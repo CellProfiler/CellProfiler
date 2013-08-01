@@ -68,7 +68,7 @@ Again, using <b>LoadData</b> is useful if the same data is associated with sever
 images (for example, multiple images obtained from a single well).</li>
 </ul>
 
-<h3>Example CSV file:</h3>
+<h5>Example CSV file:</h5>
 <tt><table border="0">
 <tr><td>Image_FileName_FITC,</td><td>Image_PathName_FITC,</td><td>Metadata_Plate,</td><td>Titration_NaCl_uM</td></tr><br>
 <tr><td>"04923_d1.tif",</td><td>"2009-07-08",</td><td>"P-12345",</td><td>750</td></tr>
@@ -85,7 +85,7 @@ titration for the image is available for modules that use numeric metadata,
 such as <b>CalculateStatistics</b>; "Titration" will be the category and "NaCl_uM"
 will be the measurement.
 
-<h2>Using metadata in LoadData</h2>
+<h5>Using metadata in LoadData</h5>
 
 <p>If you would like to use the metadata-specific settings, please see <i>Help > General help > Using
 metadata in CellProfiler</i> for more details on metadata usage and syntax. Briefly, <b>LoadData</b> can
@@ -94,7 +94,7 @@ analysis run and for metadata-specfic options in other modules; see the settings
 <i>Group images by metadata</i> and, if that setting is selected, <i>Select metadata fields for grouping</i>
 for details.</p>
 
-<h3>Using MetaXpress-acquired images in CellProfiler</h3>
+<h6>Using MetaXpress-acquired images in CellProfiler</h6>
 
 <p>To produce a .csv file containing image location and metadata from a <a href=
 "http://www.moleculardevices.com/Products/Software/High-Content-Analysis/MetaXpress.html">MetaXpress</a>
@@ -316,7 +316,7 @@ class LoadData(cpm.CPModule):
                 
         self.csv_file_name = cps.FilenameText(
             "Name of the file",
-            "None", doc="""
+            cps.NONE, doc="""
             Provide the file name of the CSV file containing the data.""",
             get_directory_fn = get_directory_fn,
             set_directory_fn = set_directory_fn,

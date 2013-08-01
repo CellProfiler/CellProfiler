@@ -18,11 +18,12 @@ measurements will be made between the following:
 
 <h4>Available measurements</h4>
 <ul>
-<li><i>Correlation coefficient:</i> The correlation between a pair of images I and J. 
+<li><i>Correlation coefficient:</i> The correlation between a pair of images <i>I</i> and <i>J</i>. 
 Calculated as Pearson's correlation coefficient, for which the formula is
-covariance(I,J)/[std(I) &times; std(J)].</li>
+covariance(<i>I</i> ,<i>J</i>)/[std(<i>I</i> ) &times; std(<i>J</i>)].</li>
 <li><i>Slope:</i> The slope of the least-squares regression between a pair of images
-I and J. Calculated using the model <i>A</i>&times;I + <i>B</i> = J, where <i>A</i> is the slope.</li>
+I and J. Calculated using the model <i>A</i> &times; <i>I</i> + <i>B</i> = <i>J</i>, w
+here <i>A</i> is the slope.</li>
 </ul>
 
 '''

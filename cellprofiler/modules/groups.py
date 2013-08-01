@@ -126,6 +126,7 @@ class Groups(cpm.CPModule):
             choices = get_group_metadata_choices(self.pipeline)
         else:
             choices = ["None"]
+            
         group.append("metadata_choice", cps.Choice(
             "Metadata category", choices,
             choices_fn = get_group_metadata_choices,doc="""

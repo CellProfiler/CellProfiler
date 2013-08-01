@@ -30,7 +30,7 @@ and hence are reflected in the classification percentages.</p>
 
 <h4>Available measurements</h4>
 <ul>
-<li><i>Image features:</i>
+<li><b>Image measurements:</b>
 <ul>
 <li><i>NumObjectsPerBin:</i> The number of objects that are classified 
 into each bin.</li>
@@ -38,7 +38,7 @@ into each bin.</li>
 classified into each bin.</li>
 </ul>
 </li>
-<li><i>Object features:</i>
+<li><b>Object measurements:</b>
 <ul>
 <li>Single measurement: Classification (true/false) of the N<sup>th</sup> 
 bin for the M<sup>th</sup> measurement.</li>
@@ -130,7 +130,7 @@ class ClassifyObjects(cpm.CPModule):
         # The object for the contrasting method
         #
         self.object_name = cps.ObjectNameSubscriber(
-            "Select the object name","None", doc="""
+            "Select the object name",cps.NONE, doc="""
             Choose the object that you want to measure from the list.
             This should be an object created by a previous module such as
             <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
@@ -234,7 +234,7 @@ class ClassifyObjects(cpm.CPModule):
             to be saved by a <b>SaveImages</b> module).""")
         
         self.image_name = cps.ImageNameProvider(
-            "Enter the image name","None",doc="""
+            "Enter the image name",cps.NONE,doc="""
             Enter the name to be given to the classified object
             image.""")
 
@@ -249,7 +249,7 @@ class ClassifyObjects(cpm.CPModule):
             group.append("divider", cps.Divider(line=True))
             
         group.append("object_name",cps.ObjectNameSubscriber(
-            "Select the object to be classified","None",
+            "Select the object to be classified",cps.NONE,
             doc="""The name of the objects to be classified. You can
             choose from objects created by any previous module. See
             <b>IdentifyPrimaryObjects</b>, <b>IdentifySecondaryObjects</b>, or
@@ -328,7 +328,7 @@ class ClassifyObjects(cpm.CPModule):
             assign names based on the measurements and the bin number."""))
         
         group.append("bin_names", cps.Text(
-            "Enter the bin names separated by commas","None",doc="""
+            "Enter the bin names separated by commas",cps.NONE,doc="""
             <i>(Used only if Give each bin a name? is checked)</i><br>
             Enter names for each of the bins, separated by commas.
             An example including three bins might be <i>First,Second,Third</i>."""))
@@ -782,9 +782,9 @@ class ClassifyObjects(cpm.CPModule):
                     separator[i] = TM_CUSTOM
             split_labels = [x.strip() for x in labels.split(',')]
             if len(split_labels) < 4:
-                split_labels += ["None"]*(4-len(split_labels))
+                split_labels += [cps.NONE]*(4-len(split_labels))
             setting_values = [
-                BY_TWO_MEASUREMENTS, "1", "None", "None", BC_EVEN,
+                BY_TWO_MEASUREMENTS, "1", cps.NONE, cps.NONE, BC_EVEN,
                 "1", cps.NO, cps.NO, "0", "1", "0,1",cps.NO,
                 "First,Second,Third", cps.NO, "ClassifiedNuclei",
                 object_name, measurement[0], separator[0], threshold[0],
@@ -830,7 +830,7 @@ class ClassifyObjects(cpm.CPModule):
                 custom_bins, wants_labels, labels,
                 cps.NO if save_colored_objects == cps.DO_NOT_USE else cps.YES,
                 save_colored_objects,
-                object_name, "None", TM_MEAN, ".5", "None", TM_MEAN, ".5", 
+                object_name, cps.NONE, TM_MEAN, ".5", cps.NONE, TM_MEAN, ".5", 
                 cps.NO, "LowLow","HighLow","LowHigh","HighHigh", cps.NO,
                 "ClassifiedNuclei"]
             from_matlab = False

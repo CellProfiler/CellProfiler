@@ -12,9 +12,9 @@ in the nucleus by the intensity in the cytoplasm for each cell).
 
 <h4>Available measurements</h4>
 <ul>
-<li><i>Image features:</i> If both input measurements are whole-image
+<li><b>Image measurements:</b> If both input measurements are whole-image
 measurements, then the result will also be a whole-image measurement. </li>
-<li><i>Object features:</i> Object measurements can be produced in two ways: 
+<li><b>Object measurements:</b> Object measurements can be produced in two ways: 
 <ul>
 <li>If both input measurements are individual object measurements, then the 
 result will also be an object measurement. In these cases, the measurement will 
@@ -81,7 +81,7 @@ class CalculateMath(cpm.CPModule):
                     Indicate whether the operand is an image or object measurement.""")
                 
                 self.__operand_objects = cps.ObjectNameSubscriber(
-                    self.operand_objects_text(),"None",doc="""
+                    self.operand_objects_text(),cps.NONE,doc="""
                     Choose the objects you want to measure for this operation.""")
                 
                 self.__operand_measurement = cps.Measurement(

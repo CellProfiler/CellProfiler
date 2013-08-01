@@ -74,7 +74,7 @@ class ConserveMemory(cpm.CPModule):
         group = cps.SettingsGroup()
         if can_remove:
             group.append("divider", cps.Divider(line=False))
-        group.append("image_name", cps.ImageNameSubscriber(self.query(), "None"))
+        group.append("image_name", cps.ImageNameSubscriber(self.query(), cps.NONE))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("",
                                                         "Remove this image",

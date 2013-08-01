@@ -93,7 +93,7 @@ class CreateWebPage(cpm.CPModule):
     
     def create_settings(self):
         self.orig_image_name = cps.ImageNameSubscriber(
-            "Select the input images", "None", doc="""
+            "Select the input images", cps.NONE, doc="""
             Select the images to display on the web page.""")
         
         self.wants_thumbnails = cps.Binary(
@@ -109,7 +109,7 @@ class CreateWebPage(cpm.CPModule):
             the text "thumb" in the name.</p>""")
         
         self.thumbnail_image_name = cps.ImageNameSubscriber(
-            "Select the thumbnail images", "None",doc="""
+            "Select the thumbnail images", cps.NONE,doc="""
             <i>(Used only if using thumbnails)</i><br>
             Select the name of the images to use for thumbnails.""")
         

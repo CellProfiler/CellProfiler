@@ -58,10 +58,12 @@ class FlipAndRotate(cpm.CPModule):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image", "None")
+            "Select the input image", cps.NONE)
+        
         self.output_name = cps.ImageNameProvider(
             "Name the output image", 
             "FlippedOrigBlue")
+        
         self.flip_choice = cps.Choice(
             "Select method to flip image",
             FLIP_ALL, doc = """

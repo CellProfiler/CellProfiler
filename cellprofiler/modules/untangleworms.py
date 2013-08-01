@@ -11,15 +11,13 @@ can be saved as images using <b>SaveImages</b> to create a multi-page TIF file b
 specifying "Objects" as the type of image to save.
 
 <h4>Available measurements</h4>
-<i>(For "Untangle" mode only)</i>
-<ul>
-<li><b>Object features:</b>
+
+<b>Object measurements (for "Untangle" mode only)</b>:
 <ul>
 <li><i>Length:</i> The length of the worm skeleton. </li>
 <li><i>Angle:</i> The angle at each of the control points</li>
 <li><i>ControlPointX_N, ControlPointY_N:</i> The X,Y coordinate of a control point <i>N</i>.
 A control point is a sampled location along the worm shape used to construct the model.</li>
-</ul></li>
 </ul>
 
 <h4>Technical notes</h4>
@@ -198,7 +196,7 @@ class UntangleWorms(cpm.CPModule):
             %(USING_METADATA_GROUPING_HELP_REF)s""" % globals())
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input binary image", "None",doc = """
+            "Select the input binary image", cps.NONE,doc = """
             A binary image where the foreground indicates the worm
             shapes. The binary image can be produced by the <b>ApplyThreshold</b>
             module.""")

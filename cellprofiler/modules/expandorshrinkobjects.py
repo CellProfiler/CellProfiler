@@ -19,16 +19,17 @@ object processing module <b>ConvertToImage</b> and then save them with the
 <b>SaveImages</b> module.</p>
 
 <h4>Available measurements</h4>
-<i>Image features:</i>
+<b>Image measurements:</b>
 <ul>
 <li><i>Count:</i> Number of expanded/shrunken objects in the image.</li>
 </ul>
-<i>Object features:</i>
+<b>Object measurements:</b>
 <ul>
 <li><i>Location_X, Location_Y:</i> Pixel (<i>X,Y</i>) coordinates of the center of mass of 
 the expanded/shrunken objects.</li>
 </ul>
-See also <b>Identify</b> modules.'''
+
+<p>See also <b>Identify</b> modules.</p>'''
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
 # 
@@ -75,7 +76,7 @@ class ExpandOrShrinkObjects(cpm.CPModule):
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber(
             "Select the input objects",
-            "None", doc = '''
+            cps.NONE, doc = '''
             Select the objects that you want to expand or shrink.''')
         
         self.output_object_name = cps.ObjectNameProvider(

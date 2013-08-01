@@ -23,11 +23,11 @@ to the object processing module <b>ConvertToImage</b> and then save them with th
 <b>SaveImages</b> module.
 
 <h4>Available measurements</h4>
-<i>Image features:</i>
+<b>Image measurements:</b>
 <ul>
 <li><i>Count:</i> The number of objects identified.</li>
 </ul>
-<i>Object features:</i>
+<b>Object measurements:</b>
 <ul>
 <li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of 
 mass of the identified objects.</li>
@@ -88,7 +88,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
         create_settings is called at the end of initialization.
         """
         self.grid_name = cps.GridNameSubscriber(
-            "Select the defined grid","None",doc="""
+            "Select the defined grid",cps.NONE,doc="""
             Select the name of a grid created by a previous <b>DefineGrid</b>
             module.""")
         
@@ -152,7 +152,7 @@ class IdentifyObjectsInGrid(cpm.CPModule):
             %(HELP_ON_MEASURING_DISTANCES)s"""%globals())
         
         self.guiding_object_name = cps.ObjectNameSubscriber(
-            "Select the guiding objects", "None",doc="""
+            "Select the guiding objects", cps.NONE,doc="""
             <i>(Used only if Circle is selected as object shape and diameter is specified 
             automatically, or if Natural Location is selected as the object shape)</i><br>
             Select the names of previously identified objects that

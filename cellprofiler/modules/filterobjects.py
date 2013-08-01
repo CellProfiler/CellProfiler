@@ -13,11 +13,11 @@ not inherit the measurements associated with the original objects. Any measureme
 set will need to be made post-filtering by the desired measurement modules.</p>
 
 <h4>Available measurements</h4>
-<i>Image features:</i>
+<b>Image measurements:</b>
 <ul>
 <li><i>Count:</i> The number of objects remaining after filtering.</li>
 </ul>
-<i>Object features:</i>
+<b>Object measurements:</b>
 <ul>
 <li><i>Parent:</i> The identity of the input object associated with each filtered 
 object.</li>

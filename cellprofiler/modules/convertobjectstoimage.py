@@ -50,7 +50,7 @@ class ConvertObjectsToImage(cpm.CPModule):
     
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber(
-            "Select the input objects","None",doc="""
+            "Select the input objects",cps.NONE,doc="""
             Choose the name of the objects you want to convert to an image.""")
         
         self.image_name = cps.ImageNameProvider(

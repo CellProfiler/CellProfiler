@@ -131,7 +131,7 @@ class LoadSingleImage(cpm.CPModule):
         
         group.append("file_name", cps.FilenameText(
                     FILE_TEXT,
-                    "None",
+                    cps.NONE,
                     metadata=True,
                     get_directory_fn = get_directory_fn,
                     exts = [("TIF - Tagged Image File format (*.tif,*.tiff)","*.tif,*.tiff"),

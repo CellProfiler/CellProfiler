@@ -33,6 +33,21 @@ make adjustments in <i>File > Preferences</i>.
 The module window will also show another image where the identified 
 objects are displayed with arbitrary colors: the colors themselves do not mean 
 anything but simply help you distingush the various objects. 
+        
+<h4>Available measurements</h4>
+
+<b>Image measurements:</b>
+<ul>
+<li><i>Count:</i> The number of secondary objects identified.</li>
+</ul>
+
+<b>Object measurements:</b>
+<ul>
+<li><i>Parent:</i> The identity of the primary object associated with each secondary 
+object.</li>
+<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of 
+mass of the identified secondary objects.</li>
+</ul>
 
 <h4>Technical notes</h4>
 The <i>Propagation</i> algorithm creates a set of secondary object labels using 
@@ -43,25 +58,8 @@ of secondary object labels is by the shortest path to an adjacent primary object
 from the starting ("seeding") primary object. The seed-to-pixel distances are
 calculated as the sum of absolute differences in a 3x3 (8-connected) image 
 neighborhood, combined with &lambda; via sqrt(differences<sup>2</sup> + &lambda;<sup>2</sup>).
-                           
-<h4>Available measurements</h4>
-<ul>
-<li><i>Image features:</i>
-<ul>
-<li><i>Count:</i> The number of secondary objects identified.</li>
-</ul>
-</li>         
-<li><i>Object features:</i>
-<ul>
-<li><i>Parent:</i> The identity of the primary object associated with each secondary 
-object.</li>
-<li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of 
-mass of the identified secondary objects.</li>
-</ul>
-</li>
-</ul>
-
-See also the other <b>Identify</b> modules.
+                   
+<p>See also the other <b>Identify</b> modules.</p>
 '''
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -186,7 +184,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
         
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",
-            "None",doc="""
+            cps.NONE,doc="""
             The selected image will be used to find the edges of the secondary objects.
             For <i>%(M_DISTANCE_N)s</i> this will not affect object identification, 
             only the final display."""%globals())

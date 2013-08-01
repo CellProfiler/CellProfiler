@@ -47,7 +47,7 @@ class IdentifyObjectsManually(I.Identify):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image", "None",doc = """
+            "Select the input image", cps.NONE,doc = """
             Choose the name of the image to display in the object
             selection user interface.""")
         

@@ -88,7 +88,7 @@ class DisplayPlatemap(cpm.CPModule):
             <p>%(USING_METADATA_HELP_REF)s.</p>'''%globals())
         
         self.plate_type = cps.Choice(
-            'What type of plate is the data from?',
+            'Multiwell plate format',
             ['96','384'],doc = 
             '''The module assumes that your data is laid out in a multi-well plate format
             common to high-throughput biological screens. Supported formats are:
@@ -98,7 +98,7 @@ class DisplayPlatemap(cpm.CPModule):
             </ul>''')
         
         self.well_format = cps.Choice(
-            "What form is your well metadata in?",
+            "Well metadata format",
             [WF_NAME, WF_ROWCOL],doc = """
             <ul>
             <li> <i>%(WF_NAME)s</i> allows you to select an image 
@@ -107,7 +107,8 @@ class DisplayPlatemap(cpm.CPModule):
             for each well.</li>
             </ul>"""%globals())
 
-        self.well_name = cps.Measurement('Select your well metadata', 
+        self.well_name = cps.Measurement(
+            'Select your well metadata', 
             lambda:cpmeas.IMAGE, 'Metadata_Well', doc = '''
             Choose the metadata that corresponds to the well identifier. 
             The row-column format of these entries should be an 

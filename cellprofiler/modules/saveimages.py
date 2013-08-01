@@ -152,17 +152,17 @@ class SaveImages(cpm.CPModule):
             </ul>"""%globals())
         
         self.image_name  = cps.ImageNameSubscriber(
-            "Select the image to save","None", doc = """
+            "Select the image to save",cps.NONE, doc = """
             <i>(Used only if "%(IF_IMAGE)s", "%(IF_MASK)s" or "%(IF_CROPPING)s" are selected to save)</i><br>
             Select the image you want to save."""%globals())
         
         self.objects_name = cps.ObjectNameSubscriber(
-            "Select the objects to save", "None",doc = """
+            "Select the objects to save", cps.NONE,doc = """
             <i>(Used only if saving "%(IF_OBJECTS)s")</i><br>
             Select the objects that you want to save."""%globals())
         
         self.figure_name = cps.FigureSubscriber(
-            "Select the module display window to save","None",doc="""
+            "Select the module display window to save",cps.NONE,doc="""
             <i>(Used only if saving "%(IF_FIGURE)s")</i><br>
             Enter the module number/name for which you want to 
             save the module display window."""%globals())
@@ -198,7 +198,7 @@ class SaveImages(cpm.CPModule):
         
         self.file_image_name = cps.FileImageNameSubscriber(
             "Select image name for file prefix",
-            "None",doc="""
+            cps.NONE,doc="""
             <i>(Used only when "%(FN_FROM_IMAGE)s" is selected for contructing the filename)</i><br>
             Select an image loaded using <b>NamesAndTypes</b>. The original filename will be
             used as the prefix for the output filename.""")
@@ -266,7 +266,7 @@ class SaveImages(cpm.CPModule):
             "Image bit depth",
             [BIT_DEPTH_8, BIT_DEPTH_16],doc="""
             <i>(Used only when saving files in a non-MAT format)</i><br>
-            What is the bit-depth at which you want to save the images?
+            Select the bit-depth at which you want to save the images.
             <b>16-bit images are supported only for TIF formats.
             Currently, saving images in 12-bit is not supported.</b>""")
         

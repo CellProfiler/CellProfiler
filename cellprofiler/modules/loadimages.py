@@ -17,7 +17,7 @@ these pipelines will operate exactly as before.</p>
 <p>When used in combination with a <b>SaveImages</b> module, you can load images in one file format and
 save them in another, using CellProfiler as a file format converter.</p>
 
-<h2>Using metadata in LoadImages</h2>
+<h5>Using metadata in LoadImages</h5>
 
 <p>If you would like to use the metadata-specific settings, please see <i>Help > General help > Using
 metadata in CellProfiler</i> for more details on metadata usage and syntax. Briefly, <b>LoadImages</b> can

@@ -57,7 +57,7 @@ class OverlayOutlines(cpm.CPModule):
             outlines on an image of your choosing.""")
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select image on which to display outlines","None", doc="""
+            "Select image on which to display outlines",cps.NONE, doc="""
             <i>(Used only when a blank image has not been selected)</i> <br>
             Choose the image to serve as the background for the outlines.
             You can choose from images that were loaded or created by modules
@@ -113,7 +113,7 @@ class OverlayOutlines(cpm.CPModule):
             
         group.append("outline_name",cps.OutlineNameSubscriber(
             "Select outlines to display",
-            "None", doc="""
+            cps.NONE, doc="""
             Choose outlines to display, from a previous <b>Identify</b>
             module. Each of the <b>Identify</b> modules has a checkbox that
             determines whether the outlines are saved. If you have checked this,

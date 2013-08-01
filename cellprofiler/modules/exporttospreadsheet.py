@@ -226,7 +226,7 @@ class ExportToSpreadsheet(cpm.CPModule):
             %(USING_METADATA_HELP_REF)s."""%globals())
         
         self.use_which_image_for_gene_name = cps.ImageNameSubscriber(
-            "Select the image to use as the identifier","None", doc = """
+            "Select the image to use as the identifier",cps.NONE, doc = """
             <i>(Used only if a GenePattern file is requested and image filename is used to name each row)</i><br>
             Select which image whose filename will be used to identify each sample row.""")
         

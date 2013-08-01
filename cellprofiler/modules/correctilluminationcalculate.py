@@ -84,8 +84,9 @@ class CorrectIlluminationCalculate(cpm.CPModule):
     def create_settings(self):
         """Create the setting variables
         """
-        self.image_name = cps.ImageNameSubscriber("Select the input image","None", doc = '''
-                                           Choose the image to be used to calculate the illumination function.''')
+        self.image_name = cps.ImageNameSubscriber(
+            "Select the input image",cps.NONE, doc = '''
+            Choose the image to be used to calculate the illumination function.''')
         
         self.illumination_image_name = cps.ImageNameProvider(
             "Name the output image","IllumBlue", doc = '''
@@ -281,12 +282,12 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         self.object_width = cps.Integer(
             "Approximate object size",10,doc = '''
             <i>(Used only if %(FI_AUTOMATIC)s is selected for smoothing filter size calculation)</i><br>
-            What is the approximate width of the artifacts to be smoothed, in pixels?'''%globals())
+            Enter the approximate width of the artifacts to be smoothed, in pixels.'''%globals())
         
         self.size_of_smoothing_filter = cps.Integer(
             "Smoothing filter size",10,doc = '''
             <i>(Used only if %(FI_MANUALLY)s is selected for smoothing filter size calculation)</i><br>
-            What is the size of the desired smoothing filter, in pixels?'''%globals())
+            Enter the size of the desired smoothing filter, in pixels.'''%globals())
         
         self.save_average_image = cps.Binary(
             "Retain the averaged image?", False, doc = '''

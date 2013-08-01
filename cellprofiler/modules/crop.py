@@ -105,7 +105,7 @@ class Crop(cpm.CPModule):
     
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image","None",doc = """
+            "Select the input image",cps.NONE,doc = """
             Choose the image to be cropped.""")
         
         self.cropped_image_name = cps.CroppingNameProvider(
@@ -220,17 +220,17 @@ class Crop(cpm.CPModule):
             Specify the radius of the ellipse in the Y direction."""%globals())
         
         self.image_mask_source = cps.ImageNameSubscriber(
-            "Select the masking image","None",doc = """
+            "Select the masking image",cps.NONE,doc = """
             <i>(Used only if %(SH_IMAGE)s selected as cropping shape)</i><br>
             Select the image to be use as a cropping mask."""%globals())
         
         self.cropping_mask_source = cps.CroppingNameSubscriber(
-            "Select the image with a cropping mask","None", doc = """
+            "Select the image with a cropping mask",cps.NONE, doc = """
             <i>(Used only if %(SH_CROPPING)s selected as cropping shape)</i><br>
             Select the image associated with the cropping mask that you want to use."""%globals())
         
         self.objects_source = cps.ObjectNameSubscriber(
-            "Select the objects","None", doc="""
+            "Select the objects",cps.NONE, doc="""
             <i>(Used only if %(SH_OBJECTS)s selected as cropping shape)</i><br>
             Select the objects that are to be used as a cropping mask."""%globals())
         
@@ -859,7 +859,7 @@ class Crop(cpm.CPModule):
             # added image mask source, cropping mask source and reworked
             # the shape to add SH_IMAGE and SH_CROPPING
             new_setting_values = list(setting_values)
-            new_setting_values.extend(["None","None","None"])
+            new_setting_values.extend([cps.NONE,cps.NONE,cps.NONE])
             shape = setting_values[OFF_SHAPE]
             if shape not in (SH_ELLIPSE, SH_RECTANGLE):
                 # the "shape" is the name of some image file. If it
@@ -881,7 +881,7 @@ class Crop(cpm.CPModule):
         if (not from_matlab) and variable_revision_number == 1:
             # Added ability to crop objects
             new_setting_values = list(setting_values)
-            new_setting_values.append("None")
+            new_setting_values.append(cps.NONE)
             variable_revision_number = 2
         
         if variable_revision_number == 2 and not from_matlab:

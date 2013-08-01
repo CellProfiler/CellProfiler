@@ -18,11 +18,11 @@ You must press the <i>Continue</i> button to accept the selected objects
 and continue the pipeline.
 
 <h4>Available measurements</h4>
-<b>Image features:</b>
+<b>Image measurements:</b>
 <ul>
 <li><i>Count:</i> The number of edited objects in the image.</li>
 </ul>
-<b>Object features:</b>
+<b>Object measurements:</b>
 <ul>
 <li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the center of mass of the edited objects.</li>
 </ul>
@@ -94,7 +94,7 @@ class EditObjectsManually(I.Identify):
             self.smoothing_size = cellprofiler.settings.Float(...)
         """
         self.object_name = cps.ObjectNameSubscriber(
-            "Select the objects to be edited", "None",doc="""
+            "Select the objects to be edited", cps.NONE,doc="""
             Choose a set of previously identified objects
             for editing, such as those produced by one of the
             <b>Identify</b> modules.""")
@@ -153,7 +153,7 @@ class EditObjectsManually(I.Identify):
             want a guide image while editing""")
         
         self.image_name = cps.ImageNameSubscriber(
-            "Select the guiding image", "None",doc = """
+            "Select the guiding image", cps.NONE,doc = """
             <i>(Used only if a guiding image is desired)</i><br>
             This is the image that will appear when editing objects.
             Choose an image supplied by a previous module.""")
@@ -538,7 +538,7 @@ class EditObjectsManually(I.Identify):
             
         if (not from_matlab) and variable_revision_number == 1:
             # Added wants image + image
-            setting_values = setting_values + [ cps.NO, "None"]
+            setting_values = setting_values + [ cps.NO, cps.NONE]
             variable_revision_number = 2
             
         if (not from_matlab) and variable_revision_number == 2:

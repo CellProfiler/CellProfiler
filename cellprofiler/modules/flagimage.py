@@ -173,7 +173,7 @@ class FlagImage(cpm.CPModule):
         group.append("object_name",
                      cps.ObjectNameSubscriber(
                         "Select the object to be used for flagging",
-                        "None", doc = '''
+                        cps.NONE, doc = '''
                         <i>(Used only when flag is based on an object measurement)</i><br>
                         Select the objects whose measurements you want to use for flagging.'''))
 

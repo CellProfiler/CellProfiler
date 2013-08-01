@@ -169,7 +169,7 @@ class GrayToColor(cpm.CPModule):
     def add_stack_channel_cb(self, can_remove=True):
         group = cps.SettingsGroup()
         group.append("image_name", cps.ImageNameSubscriber(
-            "Select the input image to add to the stacked image", "None"))
+            "Select the input image to add to the stacked image", cps.NONE))
         
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove this image", self.stack_channels, group))

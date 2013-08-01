@@ -130,7 +130,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("image_name", cps.ImageNameSubscriber(
-                "Select an image to measure", "None", doc="""
+                "Select an image to measure", cps.NONE, doc="""
                 Select the image that you want to measure the intensity from."""))
         
         if can_remove:
@@ -143,7 +143,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
         if can_remove:
             group.append("divider", cps.Divider(line=False))
         group.append("object_name", cps.ObjectNameSubscriber(
-                "Select objects to measure", "None",doc="""
+                "Select objects to measure", cps.NONE,doc="""
                 Select the objects that you want to measure the intensity from."""))
         
         group.append("center_choice", cps.Choice(
@@ -165,7 +165,7 @@ class MeasureObjectRadialDistribution(cpm.CPModule):
                 the centers (<i>%(C_CENTERS_OF_OTHER)s</i>)."""%globals()))
         
         group.append("center_object_name", cps.ObjectNameSubscriber(
-                "Select objects to use as centers", "None", doc="""
+                "Select objects to use as centers", cps.NONE, doc="""
                 <i>(Used only if "%(C_CENTERS_OF_OTHER)s" are selected for centers)</i><br>
                 Select the object to use as the center, or select <i>None</i> to
                 use the input object centers (which is the same as selecting

@@ -20,11 +20,10 @@ only processing a single movie in each analysis
 run, you do not need to set up image grouping.
 
 For an example pipeline using TrackObjects, see the CellProfiler 
-<a href="http://www.cellprofiler.org/examples.shtml#Tracking>Examples</a> webpage.
+<a href="http://www.cellprofiler.org/examples.shtml#Tracking">Examples</a> webpage.
 
 <h4>Available measurements</h4>
-<ul>
-<li><i>Object features</i>
+<b>Object measurements</b>
 <ul>
 <li><i>Label:</i> Each tracked object is assigned a unique identifier (label). 
 Results of splits or merges are seen as new objects and assigned a new
@@ -53,8 +52,8 @@ the final age of the object is output; no values are stored for earlier frames. 
 is useful if you want to plot a histogram of the object lifetimes; all but the final age
 can be ignored or filtered out.</li>
 </ul>
-</li>
-<li><i>Image features</i>
+
+<b>Image measurements</b>
 <ul>
 <li><i>LostObjectCount:</i> Number of objects that appear in the previous frame
 but have no identifiable child in the current frame.</li>
@@ -64,8 +63,6 @@ have no identifiable parent in the previous frame. </li>
 resulted from a split from a parent object in the previous frame.</li>
 <li><i>MergedObjectCount:</i> Number of objects in the current frame that 
 resulted from the merging of child objects in the previous frame.</li>
-</ul>
-</li>
 </ul>
 
 See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>LoadImages</b>.
@@ -276,8 +273,7 @@ class TrackObjects(cpm.CPModule):
             'Select object measurement to use for tracking',
             lambda : self.object_name.value, doc="""
             <i>(Used only if Measurements is the tracking method)</i><br>
-            What measurement do you want to use for tracking?
-            Choose which type of measurement (category) and which specific feature from the
+            Select which type of measurement (category) and which specific feature from the
             <b>Measure</b> module will be used for tracking. Select the feature name from 
             the popup box or see each <b>Measure</b> module's help for the list of
             the features measured by that module. If necessary, you will also be asked 

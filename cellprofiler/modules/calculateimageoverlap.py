@@ -111,20 +111,20 @@ class CalculateImageOverlap(cpm.CPModule):
         
         self.ground_truth = cps.ImageNameSubscriber(
             "Select the image to be used as the ground truth basis for calculating the amount of overlap", 
-            "None", doc = """
+            cps.NONE, doc = """
             <i>(Used only when comparing foreground/background)</i> <br>
             This binary (black and white) image is known as the "ground truth" image.  It can be the product of segmentation performed by hand, or
             the result of another segmentation algorithm whose results you would like to compare.""")
         
         self.test_img = cps.ImageNameSubscriber(
             "Select the image to be used to test for overlap", 
-            "None", doc = """
+            cps.NONE, doc = """
             <i>(Used only when comparing foreground/background)</i> <br>
             This binary (black and white) image is what you will compare with the ground truth image. It is known as the "test image".""")
         
         self.object_name_GT = cps.ObjectNameSubscriber(
             "Select the objects to be used as the ground truth basis for calculating the amount of overlap", 
-            "None", doc ="""
+            cps.NONE, doc ="""
             <i>(Used only when comparing segmented objects)</i> <br>
             Choose which set of objects will used as the "ground truth" objects. It can be the product of segmentation performed by hand, or
             the result of another segmentation algorithm whose results you would like to compare. See the <b>Load</b> modules for more details
@@ -132,20 +132,20 @@ class CalculateImageOverlap(cpm.CPModule):
         
         self.img_obj_found_in_GT = cps.ImageNameSubscriber(
             "Select the image used to identify the objects",
-            "None", doc ="""
+            cps.NONE, doc ="""
             <i>(Used only when comparing segmented objects)</i> <br>
             Choose which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,
             select "None." """)
         
         self.object_name_ID = cps.ObjectNameSubscriber(
             "Select the objects to be tested for overlap against the ground truth", 
-            "None", doc ="""
+            cps.NONE, doc ="""
             <i>(Used only when comparing segmented objects)</i> <br>
             This set of objects is what you will compare with the ground truth objects. It is known as the "test object." """)
         
         self.img_obj_found_in_ID = cps.ImageNameSubscriber(
             "Select the image used to find these objects",
-            "None", doc ="""
+            cps.NONE, doc ="""
             <i>(Used only when comparing segmented objects)</i> <br>
             Choose which image was used to produce these objects. If the objects were produced from other objects or loaded into CellProfiler,
             select "None." """)

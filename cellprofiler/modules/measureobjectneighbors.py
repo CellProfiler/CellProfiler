@@ -8,9 +8,7 @@ the distance within which objects should be considered neighbors, or
 that objects are only considered neighbors if they are directly touching.
 
 <h4>Available measurements</h4>
-<ul>
-<li><i>Per-object measurements</i></li>
-<li>
+<b>Object measurements</b>
 <ul>
 <li><i>NumberOfNeighbors:</i> Number of neighbor objects.</li>
 <li><i>PercentTouching:</i> Percent of the object's boundary pixels that touch 
@@ -24,13 +22,12 @@ for both objects and neighbors.</li>
 <li><i>AngleBetweenNeighbors:</i> The angle formed with the object center as the 
 vertex and the first and second closest object centers along the vectors.</li>
 </ul>
-</li>
-<li><i>Object relationships:</i> The identity of the neighboring objects, for 
+
+<b>Object relationships:</b> The identity of the neighboring objects, for 
 each object. Since per-object output is one-to-one and neighbors relationships 
 are often many-to-one, they may be saved as a separate file in 
 <b>ExportToSpreadsheet</b> by selecting <i>Object
-relationships</i> from the list of objects to export.</li>
-</ul>
+relationships</i> from the list of objects to export.
 
 <h4>Technical notes</h4> 
 Objects discarded via modules such as <b>IdentifyPrimaryObjects</b> or 

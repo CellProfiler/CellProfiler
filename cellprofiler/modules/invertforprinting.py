@@ -49,24 +49,24 @@ class InvertForPrinting(cpm.CPModule):
             Check this box to specify an image to use for the red channel.""")
         
         self.red_input_image = cps.ImageNameSubscriber(
-            "Select the red image","None")
+            "Select the red image",cps.NONE)
         
         self.wants_green_input = cps.Binary(
             "Use a green image?",True, doc = """
             Check this box to specify an image to use for the green channel.""")
         
         self.green_input_image = cps.ImageNameSubscriber(
-            "Select the green image", "None")
+            "Select the green image", cps.NONE)
         
         self.wants_blue_input = cps.Binary(
             "Use a blue image?", True, doc = """
             Check this box to specify an image to use for the blue channel.""")
         
         self.blue_input_image = cps.ImageNameSubscriber(
-            "Select the blue image", "None")
+            "Select the blue image", cps.NONE)
         
         self.color_input_image = cps.ImageNameSubscriber(
-            "Select the color image", "None",doc = '''
+            "Select the color image", cps.NONE,doc = '''
             Select the color image to use.''')
         
         # Output settings

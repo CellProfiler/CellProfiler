@@ -29,8 +29,7 @@ grayscale using the <b>ColorToGray</b> module.</li>
 </ul>
 
 <h4>Available measurements</h4>
-<ul>
-<li><i>Image features:</i>
+<b>Image measurements:</b>
 <ul>
 <li><i>Count:</i> The number of primary objects identified.</li>
 <li><i>OriginalThreshold:</i> The global threshold for the image.</li>
@@ -43,15 +42,14 @@ each distribution.</li>
 <li><i>SumOfEntropies:</i> The sum of entropies computed from the foreground and
 background distributions.</li>
 </ul>
-</li>         
-<li><i>Object features:</i>
+
+<b>Object measurements:</b>
 <ul>
 <li><i>Location_X, Location_Y:</i> The pixel (X,Y) coordinates of the primary 
 object centroids. The centroid is calculated as the center of mass of the binary 
 representation of the object.</li>
 </ul>
-</li>
-</ul>
+
 
 <h4>Technical notes</h4>
 
@@ -67,7 +65,7 @@ More detail can be found in the Settings section below.
 Here are the three steps, using an example 
 where the primary objects to be identified are nuclei:
 <ol>
-<li>CellProfiler determines whether an object is an individual
+<li>CellProfiler determines whether a foreground region is an individual
 nucleus or two or more clumped nuclei.</li>
 <li>The edges of nuclei are identified, using thresholding if the object 
 is a single, isolated nucleus, and using more advanced options if the 
@@ -104,14 +102,7 @@ segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.
 (<a href="http://dx.doi.org/10.1111/j.0022-2720.2004.01338.x">link</a>)</li>
 </ul>
 
-<h4>Technical notes</h4> 
-The initial step of identifying local maxima is
-performed on the user-controlled heavily smoothed image, the
-foreground/background is  on a hard-coded slightly smoothed image,
-and the dividing lines between clumped objects (watershed) are done on the
-non-smoothed image.
-
-See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, and <b>IdentifyPrimManual</b>.
+<p>See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, and <b>IdentifyPrimManual</b>.</p>
 '''
 
 # CellProfiler is distributed under the GNU General Public License.

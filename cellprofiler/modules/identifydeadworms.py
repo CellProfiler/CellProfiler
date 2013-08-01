@@ -78,7 +78,7 @@ class IdentifyDeadWorms(cpm.CPModule):
         Create the settings for the module during initialization.
         """
         self.image_name = cps.ImageNameSubscriber(
-            "Select the input image", "None",doc="""
+            "Select the input image", cps.NONE,doc="""
             The name of a binary image from a previous module.
             <b>IdentifyDeadWorms</b> will use this image to establish the
             foreground and background for the fitting operation. You can use

@@ -89,7 +89,7 @@ class Tile(cpm.CPModule):
     def create_settings(self):
         self.input_image = cps.ImageNameSubscriber(
             "Select an input image",
-            "None",doc="""
+            cps.NONE,doc="""
             Select the image to be tiled. Additional images within the cycle can be added 
             later by choosing the "<i>%(T_ACROSS_CYCLES)s</i>"option below."""%globals())
         
@@ -202,7 +202,7 @@ class Tile(cpm.CPModule):
         
         group.append("input_image_name", 
                      cps.ImageNameSubscriber("Select an additional image to tile",
-                                            "None",doc="""
+                                            cps.NONE,doc="""
                                             Select an additional image to tile?"""))
         if can_remove:
             group.append("remover", cps.RemoveSettingButton("", "Remove above image", self.additional_images, group))

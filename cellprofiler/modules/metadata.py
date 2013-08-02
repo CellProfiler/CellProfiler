@@ -160,10 +160,11 @@ class Metadata(cpm.CPModule):
             "",
             "Add another extraction method", self.add_extraction_method)
         
-        self.table = cps.Table("",use_sash=True)
-        
-        self.update_table_button = cps.DoSomething(
-            "", "Update metadata table", self.update_table)
+        self.table = cps.Table(
+            "",use_sash=True, 
+            corner_button = dict(fn_clicked = self.update_table,
+                                 label = "Update",
+                                 tooltip = "Update the metadata table"))
         
     def add_extraction_method(self, can_remove = True):
         group = cps.SettingsGroup()
@@ -417,13 +418,7 @@ class Metadata(cpm.CPModule):
                     result += [group.update_metadata]
                 if group.can_remove:
                     result += [group.remover]
-            result += [self.add_extraction_method_button,
-                       self.update_table_button]
-            if len(self.table.data) > 0:
-                self.update_table_button.label = "Update metadata table"
-                result += [self.table]
-            else:
-                self.update_table_button.label = "Show metadata table"
+            result += [self.add_extraction_method_button, self.table]
         return result
     
     def example_file_fn(self):

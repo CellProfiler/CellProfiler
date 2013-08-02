@@ -2927,6 +2927,7 @@ class Table(Setting):
                  min_size = (400, 300), 
                  max_field_size=30,
                  use_sash = False,
+                 corner_button = None,
                  **kwargs):
         '''Constructor
         
@@ -2936,6 +2937,9 @@ class Table(Setting):
                          be truncated using an ellipsis.
         use_sash - if True, place the table in the bottom resizable sash.
                    if False, place the table inline
+        corner_button - if defined, consists of keyword arguments for the corner
+                        button mixin: dict(fn_clicked=<function>, label=<label>,
+                        tooltip=<tooltip>)
         '''
         super(self.__class__, self).__init__(text, "", **kwargs)
         self.column_names = []
@@ -2945,6 +2949,7 @@ class Table(Setting):
         self.min_size = min_size
         self.max_field_size = max_field_size
         self.use_sash = use_sash
+        self.corner_button = corner_button
         
     def insert_column(self, index, column_name):
         '''Insert a column at the given index

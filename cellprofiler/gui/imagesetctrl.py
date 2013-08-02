@@ -17,12 +17,12 @@ import urllib
 import wx
 import wx.grid
 from wx.lib.mixins.gridlabelrenderer import GridLabelRenderer
-from wx.lib.mixins.gridlabelrenderer import GridDefaultCornerLabelRenderer
 from wx.combo import BitmapComboBox
 
 import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.modules.images import Images
+from cellprofiler.gui.cornerbuttonmixin import CornerButtonMixin
 
 '''Table column displays metadata'''
 COL_METADATA = "Metadata"
@@ -118,7 +118,7 @@ class ImageSetCache(object):
         # Take 1/2 of the max size
         self.cache = dict(cache_kv[-int(self.max_size / 2):])
 
-class ImageSetCtrl(wx.grid.Grid):
+class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
     class ImageSetGridTable(wx.grid.PyGridTableBase):
         DEFAULT_ATTR = wx.grid.GridCellAttr()
         ERROR_ATTR = wx.grid.GridCellAttr()
@@ -378,6 +378,9 @@ class ImageSetCtrl(wx.grid.Grid):
             display_mode = DISPLAY_MODE_SIMPLE
             
         wx.grid.Grid.__init__(self, *args, **kwargs)
+        CornerButtonMixin.__init__(
+            self, self.on_update, 
+            label = "Update", tooltip="Update and display the image set")
         gclw = self.GetGridColLabelWindow()
         self.SetTable(self.ImageSetGridTable(workspace, display_mode))
         self.AutoSize()
@@ -390,7 +393,6 @@ class ImageSetCtrl(wx.grid.Grid):
         self.GetGridWindow().SetDoubleBuffered(True)
         self.GetGridColLabelWindow().SetDoubleBuffered(True)
         self.GetGridRowLabelWindow().SetDoubleBuffered(True)
-        self.GetGridCornerLabelWindow().SetDoubleBuffered(True)
         self.column_label_editor = wx.TextCtrl(
             gclw,
             validator=ColumnNameValidator(self.Table))
@@ -421,15 +423,6 @@ class ImageSetCtrl(wx.grid.Grid):
         gclw.Bind(wx.EVT_MOTION, self.on_gclw_motion)
         gclw.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.on_gclw_mouse_capture_lost)
         
-        corner = self.GridCornerLabelWindow
-        corner.Bind(wx.EVT_PAINT, self.on_paint_corner)
-        corner.Bind(wx.EVT_LEFT_DOWN, self.on_corner_left_mouse_down)
-        corner.Bind(wx.EVT_LEFT_UP, self.on_corner_left_mouse_up)
-        corner.Bind(wx.EVT_MOTION, self.on_corner_motion)
-        corner.Bind(wx.EVT_MOUSE_CAPTURE_LOST, self.on_corner_capture_lost)
-        self.corner_hitcode = self.CORNER_HIT_NONE
-        self.corner_button_pressed = False
-        
         self.drop_location = None
         self.drop_target = ImageSetCtrlDropTarget(self)
         self.GridWindow.SetDropTarget(self.drop_target)
@@ -437,6 +430,10 @@ class ImageSetCtrl(wx.grid.Grid):
         self.EnableDragCell(True)
         self.Bind(wx.grid.EVT_GRID_CELL_BEGIN_DRAG, self.on_grid_begin_drag)
 
+    def on_update(self):
+        self.Table.workspace.refresh_image_set()
+        self.recompute()
+        
     def set_controller(self, controller):
         '''Set the image set controller
         
@@ -444,160 +441,6 @@ class ImageSetCtrl(wx.grid.Grid):
                      to update the image set.
         '''
         self.Table.controller = controller
-        
-    #######
-    #
-    # Grid corner handling
-    #
-    #######
-    
-    CORNER_HIT_NONE = None
-    CORNER_HIT_DELETE = 0
-    CORNER_HIT_UPDATE = 0
-    CORNER_HIT_UNDO = 1
-    CORNER_HIT_REDO = 2
-    CORNER_ICON_COUNT = 3
-    UPDATE = "Update"
-    BUTTON_PADDING = 4
-
-    CORNER_ICON_PADDING = 2
-    CORNER_ICON_SIZE = 16
-    
-    def get_corner_button_rect(self, idx):
-        crect = self.GridCornerLabelWindow.GetRect()
-        
-        widths = self.CORNER_ICON_COUNT * (
-            self.CORNER_ICON_SIZE + 2 * self.CORNER_ICON_PADDING)
-        n_gaps = self.CORNER_ICON_COUNT + 1
-        gap_size = (crect.Width - widths) / n_gaps
-        x = gap_size * (idx + 1) + self.CORNER_ICON_SIZE * idx
-        y = (crect.Height - self.CORNER_ICON_SIZE) / 2
-        return wx.Rect(x, y, self.CORNER_ICON_SIZE, self.CORNER_ICON_SIZE)
-    
-    def get_corner_update_button_rect(self):
-        crect = self.GridCornerLabelWindow.GetRect()
-        w, h = self.GridCornerLabelWindow.GetTextExtent(self.UPDATE)
-        w += 2 * self.BUTTON_PADDING
-        h += 2 * self.BUTTON_PADDING
-        x = crect.X + (crect.width - w) / 2
-        y = crect.Y + (crect.height - h) / 2
-        return wx.Rect(x, y, w, h)
-    
-    def corner_hit_test(self, x, y):
-        if self.read_only:
-            r = self.get_corner_update_button_rect()
-            if r.ContainsXY(x, y):
-                return self.CORNER_HIT_UPDATE
-            return self.CORNER_HIT_NONE
-        for i in range(self.CORNER_ICON_COUNT):
-            r = self.get_corner_button_rect(i)
-            if r.ContainsXY(x, y):
-                return i
-        return self.CORNER_HIT_NONE
-        
-    def on_paint_corner(self, event):
-        corner = self.GridCornerLabelWindow
-        dc = wx.BufferedPaintDC(corner)
-        dc.SetFont(self.GridCornerLabelWindow.Font)
-        old_brush = dc.Background
-        new_brush = wx.Brush(self.GridCornerLabelWindow.BackgroundColour)
-        dc.Background = new_brush
-        try:
-            dc.Clear()
-            dc.BackgroundMode = wx.TRANSPARENT
-            rn = wx.RendererNative.Get()
-            assert isinstance(rn, wx.RendererNative)
-            cr = GridDefaultCornerLabelRenderer()
-            cr.DrawBorder(self, dc, corner.GetRect())
-            if not self.read_only:
-                for i, art in enumerate(
-                    (wx.ART_DELETE, wx.ART_UNDO, wx.ART_REDO)):
-                    r_icon = self.get_corner_button_rect(i)
-                    r_button = wx.Rect(r_icon.X, r_icon.Y, r_icon.Width, r_icon.Height)
-                    r_button.Inflate(self.CORNER_ICON_PADDING, 
-                                     self.CORNER_ICON_PADDING)
-                    flags = 0
-                    if self.corner_hitcode == i and self.corner_button_pressed:
-                        flags = wx.CONTROL_PRESSED
-                    rn.DrawPushButton(corner, dc, r_button, flags)
-                    bmp = wx.ArtProvider.GetBitmap(
-                        art, wx.ART_BUTTON, 
-                        (self.CORNER_ICON_SIZE, self.CORNER_ICON_SIZE))
-                    dc.DrawBitmap(bmp, r_icon.X, r_icon.Y, useMask=True)
-                    bmp.Destroy()
-            else:
-                r = self.get_corner_update_button_rect()
-                if self.corner_hitcode == self.CORNER_HIT_UPDATE:
-                    if self.corner_button_pressed:
-                        flags = wx.CONTROL_PRESSED | wx.CONTROL_CURRENT | wx.CONTROL_FOCUSED | wx.CONTROL_SELECTED
-                    else:
-                        flags = 0
-                else:
-                    flags = 0
-                rn.DrawPushButton(corner, dc, r, flags)
-                w, h = self.GridCornerLabelWindow.GetTextExtent(self.UPDATE)
-                x = r.X + (r.width - w) / 2
-                y = r.Y + (r.height - h) / 2
-                dc.DrawText(self.UPDATE, x, y)
-                    
-        finally:
-            dc.Background = old_brush
-            new_brush.Destroy()
-    
-    def on_corner_left_mouse_down(self, event):
-        corner = self.GridCornerLabelWindow
-        hit_code = self.corner_hit_test(event.X, event.Y)
-        if hit_code != self.CORNER_HIT_NONE:
-            self.corner_hitcode = hit_code
-            self.corner_button_pressed = True
-            corner.CaptureMouse()
-            corner.Refresh(eraseBackground=False)
-    
-    def on_corner_left_mouse_up(self, event):
-        corner = self.GridCornerLabelWindow
-        if self.corner_hitcode != self.CORNER_HIT_NONE:
-            hit_code = self.corner_hit_test(event.X, event.Y)
-            if hit_code == self.corner_hitcode:
-                if self.read_only:
-                    if hit_code == self.CORNER_HIT_UPDATE:
-                        self.Table.workspace.refresh_image_set()
-                        self.recompute()
-                elif hit_code == self.CORNER_HIT_DELETE:
-                    self.remove_selection()
-                elif hit_code == self.CORNER_HIT_UNDO:
-                    pass
-                elif hit_code == self.CORNER_HIT_REDO:
-                    pass
-            self.corner_hitcode = self.CORNER_HIT_NONE
-            corner.ReleaseMouse()
-            corner.Refresh(eraseBackground=False)
-    
-    def on_corner_motion(self, event):
-        corner = self.GridCornerLabelWindow
-        hit_code = self.corner_hit_test(event.X, event.Y)
-        if self.corner_hitcode == self.CORNER_HIT_NONE:
-            if hit_code == self.CORNER_HIT_NONE:
-                corner.SetToolTipString("")
-            elif self.read_only and hit_code == self.CORNER_HIT_UPDATE:
-                corner.SetToolTipString("Update and display the image set")
-            elif hit_code == self.CORNER_HIT_DELETE:
-                corner.SetToolTipString("Delete selected item")
-            elif hit_code == self.CORNER_HIT_REDO:
-                corner.SetToolTipString("Redo last undone action")
-            elif hit_code == self.CORNER_HIT_UNDO:
-                corner.SetToolTipString("Undo last action")
-        else:
-            was_pressed = self.corner_button_pressed
-            self.corner_button_pressed =  (
-                self.corner_hitcode != self.CORNER_HIT_NONE and
-                self.corner_hitcode == hit_code)
-            if was_pressed != self.corner_button_pressed:
-                corner.RefreshRect(
-                    self.get_corner_button_rect(self.corner_hitcode),
-                    eraseBackground = False)
-    
-    def on_corner_capture_lost(self, event):
-        self.corner_hitcode = self.CORNER_HIT_NONE
         
     #######
     #

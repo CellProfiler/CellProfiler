@@ -40,6 +40,7 @@ from htmldialog import HTMLDialog
 from treecheckboxdialog import TreeCheckboxDialog
 from metadatactrl import MetadataControl
 from namesubscriber import NameSubscriberComboBox
+from cornerbuttonmixin import CornerButtonMixin
 import cellprofiler.utilities.walk_in_background as W
 import cellprofiler.gui.pathlist as PL
 
@@ -416,6 +417,7 @@ class ModuleView:
                 if isinstance(v, cps.ImageSetDisplay):
                     v.on_event_fired = self.__frame.reset_imageset_ctrl
                     imageset_control = v
+                    continue
                 flag = wx.EXPAND
                 border = 0
                 control_name = edit_control_name(v)
@@ -1742,14 +1744,30 @@ class ModuleView:
             dialog.Show()
         control.Bind(wx.EVT_BUTTON, callback, control)
         return control
-    
+
+    class CornerButtonGrid(wx.grid.Grid, CornerButtonMixin):
+        def __init__(self, *args, **kwargs):
+            kwargs = kwargs.copy()
+            if "fn_clicked" in kwargs:
+                fn_clicked = kwargs.pop("fn_clicked")
+            else:
+                fn_clicked = None
+            label = kwargs.pop("label", "Update")
+            tooltip = kwargs.pop("tooltip", "Update this table")
+            wx.grid.Grid.__init__(self, *args, **kwargs)
+            CornerButtonMixin.__init__(self, fn_clicked, label, tooltip)
+            
     def make_table_control(self, v, control):
         if control is None:
             control = wx.lib.resizewidget.ResizeWidget(
                 self.module_panel,
                 name = edit_control_name(v))
-
-            grid = wx.grid.Grid(control, name = grid_control_name(v) )
+            
+            if v.corner_button is None:
+                grid = wx.grid.Grid(control, name = grid_control_name(v) )
+            else:
+                grid = self.CornerButtonGrid(
+                    control, name = grid_control_name(v), **v.corner_button)
             grid.SetTable(TableController(v))
             grid.Table.bind_to_grid(grid)
         else:
@@ -3579,6 +3597,12 @@ class TableController(wx.grid.PyGridTableBase):
         grid.AutoSize()
         grid.EnableEditing(False)
         grid.SetDefaultCellOverflow(False)
+        if self.v.corner_button is None:
+            grid.fn_clicked = None
+        else:
+            grid.fn_clicked = self.v.corner_button["fn_clicked"]
+            grid.label = self.v.corner_button.get("label", "Update")
+            grid.tooltip = self.v.corner_button.get("tooltip", "")
         #
         # Below largely taken from 
         # http://wiki.wxpython.org/wxGrid%20ToolTips

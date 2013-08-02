@@ -284,7 +284,8 @@ class CPFrame(wx.Frame):
         self.__imageset_ctrl = ImageSetCtrl(
             self.__workspace, self.__imageset_panel, read_only=True)
         self.__imageset_panel.Sizer.Add(self.__imageset_ctrl, 1, wx.EXPAND)
-        self.__grid_ctrl = wx.grid.Grid(self.__imageset_panel)
+        self.__grid_ctrl = ModuleView.CornerButtonGrid(
+            self.__imageset_panel)
         self.__imageset_panel.Sizer.Add(self.__grid_ctrl, 1, wx.EXPAND)
 
         self.__right_win.Sizer.AddSpacer(4)

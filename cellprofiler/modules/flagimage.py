@@ -203,7 +203,9 @@ class FlagImage(cpm.CPModule):
                         get_directory_fn = get_directory_fn,
                         set_directory_fn = set_directory_fn,doc="""
                         <i>(Used only when flagging using %(S_RULES)s)</i><br>
-                        The name of the file holding the rules. Each line of
+                        The name of the rules file. This file should be a plain text
+                        file containing the complete set of rules.
+                        <p>Each line of
                         this file should be a rule naming a measurement to be made
                         on an image, for instance:
                         <pre>IF (Image_ImageQuality_PowerLogLogSlope_DNA &lt; -2.5, [0.79, -0.79], [-0.94, 0.94])</pre><br><br>
@@ -211,7 +213,7 @@ class FlagImage(cpm.CPModule):
                         for the negative category for images whose power log slope is less than -2.5
                         pixels and will score the opposite for images whose slope is larger.
                         The filter adds positive and negative and flags the images whose
-                        positive score is higher than the negative score."""%globals()))
+                        positive score is higher than the negative score.</p>"""%globals()))
         
         def get_rules_class_choices(group=group):
             '''Get the available choices from the rules file'''
@@ -226,19 +228,18 @@ class FlagImage(cpm.CPModule):
                      cps.MultiChoice(
                         "Class number",
                         choices = ["1", "2"],doc = """
-                        <i>(Used only when flagging using %(S_RULES)s)</i>
-                        <br>
+                        <i>(Used only when flagging using %(S_RULES)s)</i><br>
                         Select which classes to flag when filtering. The
                         CellProfiler Analyst classifier user interface lists the names of 
                         the classes in order. By default, these are the positive (class 1)
                         and negative (class 2) classes. <b>FlagImage</b> uses the
                         first class from CellProfiler Analyst if you choose "1", etc. 
-                        Please note the following:
+                        <p>Please note the following:
                         <ul>
                         <li>The flag is set if the image falls into the selected class.</li>
                         <li>You can make multiple class selections. If you do so, the module
                         will set the flag if the image falls into any of the selected classes.</li>
-                        </ul>"""%globals()))
+                        </ul></p>"""%globals()))
         
         group.rules_class.get_choices = get_rules_class_choices
 

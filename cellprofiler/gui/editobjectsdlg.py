@@ -54,9 +54,6 @@ class EditObjectsDialog(wx.Dialog):
     '''
     resume_id = wx.NewId()
     cancel_id = wx.NewId()
-    keep_all_id = wx.NewId()
-    remove_all_id = wx.NewId()
-    reverse_select = wx.NewId()
     epsilon = 5 # maximum pixel distance to a vertex for hit test
     FREEHAND_DRAW_MODE = "freehanddrawmode"
     SPLIT_PICK_FIRST_MODE = "split1"
@@ -75,6 +72,27 @@ class EditObjectsDialog(wx.Dialog):
     # or is the border of a hole (False)
     #
     K_OUTSIDE = "outside"
+    #
+    # Intensity scaling mode
+    #
+    SM_RAW = "Raw"
+    SM_NORMALIZED = "Normalized"
+    SM_LOG_NORMALIZED = "Log normalized"
+    
+    ID_CONTRAST_RAW = wx.NewId()
+    ID_CONTRAST_NORMALIZED = wx.NewId()
+    ID_CONTRAST_LOG_NORMALIZED = wx.NewId()
+    
+    ID_MODE_FREEHAND = wx.NewId()
+    ID_MODE_SPLIT = wx.NewId()
+    
+    ID_ACTION_KEEP = wx.NewId()
+    ID_ACTION_REMOVE = wx.NewId()
+    ID_ACTION_TOGGLE = wx.NewId()
+    ID_ACTION_RESET = wx.NewId()
+    ID_ACTION_JOIN = wx.NewId()
+    ID_ACTION_CONVEX_HULL = wx.NewId()
+    
     def __init__(self, guide_image, orig_labels, allow_overlap, title=None):
         '''Initializer
         
@@ -110,6 +128,8 @@ class EditObjectsDialog(wx.Dialog):
         self.active_artist = None
         self.active_index = None
         self.mode = self.NORMAL_MODE
+        self.scaling_mode = self.SM_NORMALIZED
+        self.skip_right_button_up = False
         self.split_artist = None
         self.wants_image_display = guide_image != None
         self.pressed_keys = set()
@@ -292,6 +312,7 @@ class EditObjectsDialog(wx.Dialog):
         to draw a new object outline, then release to complete
         the outline and return to normal editing.</li>
         <li><b>J</b>: Join all the selected objects into one object.</li>
+        <li><b>M</b>: Display the context menu to select a command.</li>
         <li><b>N</b>: Create a new object under the cursor. A new set
         of control points is produced which you can then start 
         manipulating with the mouse.</li>
@@ -342,13 +363,13 @@ class EditObjectsDialog(wx.Dialog):
         #
         #########################################
         
-        keep_button = wx.Button(self, self.keep_all_id, "Keep all")
+        keep_button = wx.Button(self, self.ID_ACTION_KEEP, "Keep all")
         sub_sizer.Add(keep_button, 0, wx.ALIGN_CENTER)
 
-        remove_button = wx.Button(self, self.remove_all_id, "Remove all")
+        remove_button = wx.Button(self, self.ID_ACTION_REMOVE, "Remove all")
         sub_sizer.Add(remove_button,0, wx.ALIGN_CENTER)
 
-        toggle_button = wx.Button(self, self.reverse_select, 
+        toggle_button = wx.Button(self, self.ID_ACTION_TOGGLE, 
                                   "Reverse selection")
         sub_sizer.Add(toggle_button,0, wx.ALIGN_CENTER)
         self.undo_button = wx.Button(self, wx.ID_UNDO)
@@ -360,10 +381,25 @@ class EditObjectsDialog(wx.Dialog):
             "Undo all editing and restore the original objects")
         sub_sizer.Add(reset_button)
         self.Bind(wx.EVT_BUTTON, self.on_toggle, toggle_button)
+        self.Bind(wx.EVT_MENU, self.on_toggle, id= self.ID_ACTION_TOGGLE)
         self.Bind(wx.EVT_BUTTON, self.on_keep, keep_button)
+        self.Bind(wx.EVT_MENU, self.on_keep, id=self.ID_ACTION_KEEP)
         self.Bind(wx.EVT_BUTTON, self.on_remove, remove_button)
+        self.Bind(wx.EVT_MENU, self.on_remove, id=self.ID_ACTION_REMOVE)
         self.Bind(wx.EVT_BUTTON, self.undo, id = wx.ID_UNDO)
         self.Bind(wx.EVT_BUTTON, self.on_reset, reset_button)
+        self.Bind(wx.EVT_MENU, self.on_reset, id=self.ID_ACTION_RESET)
+        self.Bind(wx.EVT_MENU, self.join_objects, id=self.ID_ACTION_JOIN)
+        self.Bind(wx.EVT_MENU, self.convex_hull, id=self.ID_ACTION_CONVEX_HULL)
+        self.Bind(wx.EVT_MENU, self.on_raw_contrast, id=self.ID_CONTRAST_RAW)
+        self.Bind(wx.EVT_MENU, self.on_normalized_contrast,
+                  id=self.ID_CONTRAST_NORMALIZED)
+        self.Bind(wx.EVT_MENU, self.on_log_normalized_contrast,
+                  id=self.ID_CONTRAST_LOG_NORMALIZED)
+        self.Bind(wx.EVT_MENU, self.enter_freehand_draw_mode,
+                  id=self.ID_MODE_FREEHAND)
+        self.Bind(wx.EVT_MENU, self.enter_split_mode,
+                  id=self.ID_MODE_SPLIT)
         self.figure.canvas.Bind(wx.EVT_PAINT, self.on_paint)
 
         ######################################
@@ -389,7 +425,9 @@ class EditObjectsDialog(wx.Dialog):
         button_sizer.SetNegativeButton(cancel_button)
         button_sizer.AddButton(wx.Button(self, wx.ID_HELP))
         self.Bind(wx.EVT_BUTTON, self.on_help, id= wx.ID_HELP)
+        self.Bind(wx.EVT_MENU, self.on_help, id=wx.ID_HELP)
         self.Bind(wx.EVT_CLOSE, self.on_close)
+        self.Bind(wx.EVT_CONTEXT_MENU, self.on_context_menu)
                           
         button_sizer.Realize()
         self.figure.canvas.mpl_connect('button_press_event', 
@@ -536,7 +574,24 @@ class EditObjectsDialog(wx.Dialog):
                                           self.guide_image)
             if image.ndim == 2:
                 image = np.dstack((image, image, image))
-            cimage = image.copy()
+            if self.scaling_mode == self.SM_RAW:
+                cimage = image.copy()
+            elif self.scaling_mode in (self.SM_NORMALIZED, self.SM_LOG_NORMALIZED):
+                min_intensity = np.min(image)
+                max_intensity = np.max(image)
+                if min_intensity == max_intensity:
+                    cimage = image.copy()
+                elif self.scaling_mode == self.SM_NORMALIZED:
+                    cimage = (image - min_intensity) / \
+                        (max_intensity - min_intensity)
+                else:
+                    #
+                    # Scale the image to 1 <= image <= e
+                    # and take log to get numbers between 0 and 1
+                    #
+                    cimage = np.log(
+                        1 + (image - min_intensity) *
+                        ((np.e - 1) / (max_intensity - min_intensity)))
         else:
             cimage = np.zeros(
                 (self.shape[0],
@@ -632,6 +687,8 @@ class EditObjectsDialog(wx.Dialog):
         return best_artist, best_index
             
     def on_click(self, event):
+        if event.button == 3:
+            self.skip_right_button_up = False
         if event.inaxes != self.orig_axes:
             return
         if event.inaxes.get_navigate_mode() is not None:
@@ -657,6 +714,7 @@ class EditObjectsDialog(wx.Dialog):
                 if path.contains_point((event.xdata, event.ydata)):
                     self.close_label(self.artists[artist][self.K_LABEL])
                     self.record_undo()
+                    self.skip_right_button_up = True
                     return
         x = int(event.xdata + .5)
         y = int(event.ydata + .5)
@@ -677,6 +735,7 @@ class EditObjectsDialog(wx.Dialog):
         elif event.button == 3:
             self.make_control_points(lnum)
             self.display()
+            self.skip_right_button_up = True
     
     def on_key_down(self, event):
         self.pressed_keys.add(event.key)
@@ -693,6 +752,8 @@ class EditObjectsDialog(wx.Dialog):
                 self.delete_control_point(event)
             elif event.key == "f":
                 self.enter_freehand_draw_mode(event)
+            elif event.key == "m":
+                self.on_context_menu(event)
             elif event.key == "n":
                 self.new_object(event)
             elif event.key == "s":
@@ -712,8 +773,77 @@ class EditObjectsDialog(wx.Dialog):
     def on_key_up(self, event):
         if event.key in self.pressed_keys:
             self.pressed_keys.remove(event.key)
+            
+    def on_context_menu(self, event):
+        '''Pop up a context menu for the control'''
+        if self.mode == self.FREEHAND_DRAW_MODE:
+            self.exit_freehand_draw_mode(event)
+        elif self.mode in (self.SPLIT_PICK_FIRST_MODE,
+                           self.SPLIT_PICK_SECOND_MODE):
+            self.exit_split_mode(event)
+        menu = wx.Menu()
+        contrast_menu = wx.Menu("Contrast")
+        for mid, state, help in (
+            (self.ID_CONTRAST_RAW, self.SM_RAW, "Display raw intensity image"),
+            (self.ID_CONTRAST_NORMALIZED, self.SM_NORMALIZED,
+            "Display the image intensity using the full range of gray scales"),
+            (self.ID_CONTRAST_LOG_NORMALIZED, self.SM_LOG_NORMALIZED,
+            "Display the image intensity using a logarithmic scale")):
+            contrast_menu.AppendRadioItem(mid, state, help)
+            if self.scaling_mode == state:
+                contrast_menu.Check(mid, True)
+        menu.AppendMenu(-1, "Contrast", contrast_menu)
+        
+        mode_menu = wx.Menu("Mode")
+        mode_menu.Append(self.ID_MODE_FREEHAND, 
+                         "Freehand mode",
+                         "Enter freehand object-drawing mode")
+        mode_menu.Append(self.ID_MODE_SPLIT,
+                         "Split mode",
+                         "Enter object splitting mode")
+        menu.AppendMenu(-1, "Mode", mode_menu)
+        
+        actions_menu = wx.Menu("Actions")
+        actions_menu.Append(
+            self.ID_ACTION_KEEP, "Keep",
+            "Keep all objects (undo all remove object actions)")
+        actions_menu.Append(
+            self.ID_ACTION_REMOVE, "Remove",
+            "Mark all objects for removal")
+        actions_menu.Append(
+            self.ID_ACTION_TOGGLE, "Toggle",
+            "Mark all kept objects for removal and unmark all objects marked for removal")
+        actions_menu.Append(
+            self.ID_ACTION_RESET, "Reset",
+            "Reset the objects to their original state before editing")
+        actions_menu.AppendSeparator()
+        actions_menu.Append(
+            self.ID_ACTION_JOIN, "Join objects",
+            "Join all objects being edited into a single object")
+        actions_menu.Append(
+            self.ID_ACTION_CONVEX_HULL, "Convex hull",
+            "Merge all objects being edited into an object which is the smallest convex hull around them all (can be done to a single object).")
+        menu.AppendMenu(-1, "Actions", actions_menu)
+        menu.Append(wx.ID_HELP)
+        self.PopupMenu(menu)
+        
+    def on_raw_contrast(self, event):
+        self.scaling_mode = self.SM_RAW
+        self.display()
+        
+    def on_normalized_contrast(self, event):
+        self.scaling_mode = self.SM_NORMALIZED
+        self.display()
+        
+    def on_log_normalized_contrast(self, event):
+        self.scaling_mode = self.SM_LOG_NORMALIZED
+        self.display()
     
     def on_mouse_button_up(self, event):
+        if self.skip_right_button_up and event.button == 3:
+            self.skip_right_button_up = False
+            event.guiEvent.Skip(False)
+            event.guiEvent.StopPropagation()
         if (event.inaxes is not None and 
             event.inaxes.get_navigate_mode() is not None):
             return

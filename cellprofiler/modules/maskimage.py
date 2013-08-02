@@ -186,7 +186,7 @@ class MaskImage(cpm.CPModule):
             # Added ability to select an image
             #
             setting_values = setting_values + [IO_IMAGE if setting_values[0] == "Image" else IO_OBJECTS,
-                                               "None"]
+                                               cps.NONE]
             variable_revision_number = 2
             
         if (not from_matlab) and variable_revision_number == 2:

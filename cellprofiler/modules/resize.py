@@ -306,7 +306,7 @@ class Resize(cpm.CPModule):
             
         if (not from_matlab) and variable_revision_number == 3:
             # Add resizing to another image size
-            setting_values = setting_values[:7] + [C_MANUAL, "None"] + setting_values[7:]
+            setting_values = setting_values[:7] + [C_MANUAL, cps.NONE] + setting_values[7:]
             variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab

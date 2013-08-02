@@ -1002,7 +1002,7 @@ Do you want to save it anyway?""" %
             self.use_which_image_for_gene_name,self.gene_name_column 
             '''
             setting_values = (setting_values[:9] +
-                              [cps.NO,GP_NAME_METADATA,"None","None"] + 
+                              [cps.NO,GP_NAME_METADATA,cps.NONE,cps.NONE] + 
                               setting_values[9:])
             variable_revision_number = 7
             

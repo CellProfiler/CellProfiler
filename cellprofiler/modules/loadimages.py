@@ -1165,8 +1165,8 @@ class LoadImages(cpmodule.CPModule):
                                    setting_values[off+1],
                                    setting_values[off+2],
                                    M_NONE,
-                                   "None",
-                                   "None"])
+                                   cps.NONE,
+                                   cps.NONE])
             return (new_values, 2)
 
         def upgrade_new_2_to_3(setting_values):

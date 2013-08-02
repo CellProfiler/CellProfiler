@@ -92,14 +92,14 @@ class RelateObjects(cpm.CPModule):
 
     def create_settings(self):
         self.sub_object_name = cps.ObjectNameSubscriber(
-            'Select the input child objects', 'None',doc="""
+            'Select the input child objects', cps.NONE,doc="""
             Child objects are defined as those objects contained within the
             parent object. For example, when relating speckles to the
             nuclei that contains them, the speckles are the children.""")
 
         self.parent_name = cps.ObjectNameSubscriber(
             'Select the input parent objects',
-            'None',doc="""
+            cps.NONE,doc="""
             Parent objects are defined as those objects which encompass the 
             child object. For example, when relating speckles to the
             nuclei that contains them, the nuclei are the parents.""")

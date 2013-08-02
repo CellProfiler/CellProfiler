@@ -61,14 +61,14 @@ class DisplayScatterPlot(cpm.CPModule):
         
         self.x_object = cps.ObjectNameSubscriber(
             'Select the object to plot on the X-axis',
-            'None',doc = '''<i>(Used only when plotting objects)</i><br>
+            cps.NONE,doc = '''<i>(Used only when plotting objects)</i><br>
             Choose the name of objects identified by some previous 
             module (such as <b>IdentifyPrimaryObjects</b> or 
             <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the X-axis.''')
         
         self.x_axis = cps.Measurement(
             'Select the measurement to plot on the X-axis', 
-            self.get_x_object, 'None',doc = '''
+            self.get_x_object, cps.NONE,doc = '''
             Choose the measurement (made by a previous 
             module) to plot on the X-axis.''')
         
@@ -90,14 +90,14 @@ class DisplayScatterPlot(cpm.CPModule):
         
         self.y_object = cps.ObjectNameSubscriber(
             'Select the object to plot on the Y-axis',
-            'None',doc = '''<i>(Used only when plotting objects)</i><br>
+            cps.NONE,doc = '''<i>(Used only when plotting objects)</i><br>
             Choose the name of objects identified by some previous 
             module (such as <b>IdentifyPrimaryObjects</b> or 
             <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed on the Y-axis.''')
         
         self.y_axis = cps.Measurement(
             'Select the measurement to plot on the Y-axis', 
-            self.get_y_object, 'None', doc = '''
+            self.get_y_object, cps.NONE, doc = '''
             Choose the measurement (made by a previous 
             module) to plot on the Y-axis.''')
         

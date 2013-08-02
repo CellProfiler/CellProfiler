@@ -66,7 +66,7 @@ class MakeProjection(cpm.CPModule):
     variable_revision_number = 2
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
-            'Select the input image','None', doc = '''
+            'Select the input image',cps.NONE, doc = '''
             Select the image to be made into a projection.''')
         
         self.projection_type = cps.Choice(

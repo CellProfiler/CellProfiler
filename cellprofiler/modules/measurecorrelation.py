@@ -104,7 +104,7 @@ class MeasureCorrelation(cpm.CPModule):
         if can_delete:
             group.append("divider", cps.Divider(line=False))
         group.append("image_name", cps.ImageNameSubscriber(
-            'Select an image to measure','None',doc = '''
+            'Select an image to measure',cps.NONE,doc = '''
             Select an image to measure the correlation from.'''))
         
         if len(self.image_groups) == 0: # Insert space between 1st two images for aesthetics
@@ -122,7 +122,7 @@ class MeasureCorrelation(cpm.CPModule):
             group.append("divider", cps.Divider(line=False))
             
         group.append("object_name", cps.ObjectNameSubscriber(
-            'Select an object to measure','None', doc = '''
+            'Select an object to measure',cps.NONE, doc = '''
             Select the objects to be measured.'''))
         
         if can_delete:
@@ -405,7 +405,7 @@ class MeasureCorrelation(cpm.CPModule):
             else:
                 raise ValueError("Must either measure texture over images or over some set of objects")
             if len(object_names) == 0:
-                object_names = ['None']
+                object_names = [cps.NONE]
             setting_values = ([str(len(image_names)), str(len(object_names))] +
                               image_names + [m] + object_names)
             from_matlab = False

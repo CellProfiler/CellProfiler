@@ -627,7 +627,7 @@ class FlagImage(cpm.CPModule):
                               flag_feature,
                               C_ANY, # combination choice
                               S_IMAGE, # measurement source
-                              "None", # object name
+                              cps.NONE, # object name
                               measurement_name,
                               wants_minimum,
                               min_value,
@@ -670,7 +670,7 @@ class FlagImage(cpm.CPModule):
                     measurement_source = setting_values[idx]
                     new_setting_values += [measurement_source]
                     new_setting_values += setting_values[(idx+1):(idx+N_SETTINGS_PER_MEASUREMENT_V2)] + \
-                        [cps.DirectoryPath.static_join_string(cps.DEFAULT_INPUT_FOLDER_NAME,"None"), "rules.txt"]
+                        [cps.DirectoryPath.static_join_string(cps.DEFAULT_INPUT_FOLDER_NAME,cps.NONE), "rules.txt"]
                     idx += N_SETTINGS_PER_MEASUREMENT_V2
             setting_values = new_setting_values
             

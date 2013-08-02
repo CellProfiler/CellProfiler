@@ -52,7 +52,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
     def create_settings(self):
         self.image_name = cps.ImageNameSubscriber(
             'Select the input image',
-            'None',doc="""
+            cps.NONE,doc="""
             Select the image with features to be enhanced or suppressed.""")
         
         self.filtered_image_name = cps.ImageNameProvider(

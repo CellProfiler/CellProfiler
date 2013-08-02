@@ -42,7 +42,7 @@ class Smooth(cpm.CPModule):
     variable_revision_number = 2
      
     def create_settings(self):
-        self.image_name = cps.ImageNameSubscriber('Select the input image','None')
+        self.image_name = cps.ImageNameSubscriber('Select the input image',cps.NONE)
 
         self.filtered_image_name = cps.ImageNameProvider('Name the output image','FilteredImage')
 

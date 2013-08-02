@@ -69,14 +69,14 @@ class DisplayPlatemap(cpm.CPModule):
         
         self.object = cps.ObjectNameSubscriber(
             'Select the object whose measurements will be displayed',
-            'None',doc='''
+            cps.NONE,doc='''
             Choose the name of objects identified by some previous 
             module (such as <b>IdentifyPrimaryObjects</b> or 
             <b>IdentifySecondaryObjects</b>) whose measurements are to be displayed.''')
         
         self.plot_measurement = cps.Measurement(
             'Select the measurement to plot', 
-            self.get_object, 'None', doc='''
+            self.get_object, cps.NONE, doc='''
             Choose the image or object measurement made by a previous module to plot.''')
                 
         self.plate_name = cps.Measurement('Select your plate metadata',

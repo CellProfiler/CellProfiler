@@ -432,7 +432,7 @@ class ExportToDatabase(cpm.CPModule):
             server name, username and password if MySQL is used.""")
         
         self.location_object = cps.ObjectNameSubscriber(
-            "Which objects should be used for locations?", None, doc = """
+            "Which objects should be used for locations?", cps.NONE, doc = """
             <i>(Used only if creating a properties file)</i><br>
             CellProfiler Analyst displays cells during classification. This
             setting determines which object centers will be used as the center
@@ -445,9 +445,9 @@ class ExportToDatabase(cpm.CPModule):
             </p>
             <p>Note that if there are no objects defined in the pipeline (e.g. 
             if only using MeasureImageQuality and/or Illumination Correction modules), 
-            a warning will diplay until you choose 'None' for the subsequent setting:
+            a warning will diplay until you choose <i>'None'</i> for the subsequent setting:
             'Export measurements for all objects to the database?'.</p>
-            """)
+            """%globals())
         
         #
         # Hack: if user is on Broad IP, then plug in the imageweb url prepend
@@ -3870,7 +3870,7 @@ CP version : %d\n""" % version_number
             #
             setting_values = (
                 setting_values[:SETTING_FIXED_SETTING_COUNT_V21] +
-                [ "MyExpt", "None" ] + 
+                [ "MyExpt", cps.NONE ] + 
                 setting_values[SETTING_FIXED_SETTING_COUNT_V21:])
             variable_revision_number = 22
             

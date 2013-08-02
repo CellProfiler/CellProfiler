@@ -94,11 +94,11 @@ class MeasureObjectNeighbors(cpm.CPModule):
 
     def create_settings(self):
         self.object_name = cps.ObjectNameSubscriber(
-            'Select objects to measure','None', doc = """
+            'Select objects to measure',cps.NONE, doc = """
             Select the objects whose neighbors you want to measure.""")
         
         self.neighbors_name = cps.ObjectNameSubscriber(
-            'Select neighboring objects to measure', 'None',doc = """
+            'Select neighboring objects to measure', cps.NONE,doc = """
             This is the name of the objects that are potential
             neighbors of the above objects. You can find the neighbors
             within the same set of objects by selecting the same objects

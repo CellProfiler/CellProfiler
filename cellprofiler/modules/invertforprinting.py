@@ -236,19 +236,19 @@ class InvertForPrinting(cpm.CPModule):
         if from_matlab and variable_revision_number == 1:
             setting_values = [
                 CC_GRAYSCALE,                # input_color_choice
-                setting_values[0] != 'None', # wants_red_input
+                setting_values[0] != cps.NONE, # wants_red_input
                 setting_values[0],           # red_input_image
-                setting_values[1] != 'None',
+                setting_values[1] != cps.NONE,
                 setting_values[1],
-                setting_values[2] != 'None',
+                setting_values[2] != cps.NONE,
                 setting_values[2],
-                'None',                      # color
+                cps.NONE,                      # color
                 CC_GRAYSCALE,                # output_color_choice
-                setting_values[3] != 'None',
+                setting_values[3] != cps.NONE,
                 setting_values[3],
-                setting_values[4] != 'None',
+                setting_values[4] != cps.NONE,
                 setting_values[4],
-                setting_values[5] != 'None',
+                setting_values[5] != cps.NONE,
                 setting_values[5],
                 'InvertedColor']
             from_matlab = False

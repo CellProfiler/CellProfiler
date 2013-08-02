@@ -266,7 +266,7 @@ class TrackObjects(cpm.CPModule):
             </ul>"""%globals())
 
         self.object_name = cps.ObjectNameSubscriber(
-            'Select the objects to track','None', doc="""
+            'Select the objects to track',cps.NONE, doc="""
             Select the objects to be tracked by this module.""")
 
         self.measurement = cps.Measurement(

@@ -385,7 +385,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
             
         if (not from_matlab) and variable_revision_number == 4:
             # Added measurements to threshold methods
-            setting_values = setting_values + ["None"]
+            setting_values = setting_values + [cps.NONE]
             variable_revision_number = 5
             
         if (not from_matlab) and variable_revision_number == 5:

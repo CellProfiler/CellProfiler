@@ -254,7 +254,7 @@ class StraightenWorms(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("divider", cps.Divider())
         group.append("image_name", cps.ImageNameSubscriber(
-            'Select an input image to straighten', 'None',doc = '''
+            'Select an input image to straighten', cps.NONE,doc = '''
             This is the name of an image that will be straightened
             similarly to the worm. The straightened image and objects can
             then be used in subsequent modules such as

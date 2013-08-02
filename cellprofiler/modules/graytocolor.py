@@ -361,13 +361,13 @@ class GrayToColor(cpm.CPModule):
                 #
                 setting_values = (
                     [ SCHEME_RGB ] + image_names[:3] + [rgb_image_name] +
-                    adjustment_factors[:3] + ["None"] * 4 + [1] * 4)
+                    adjustment_factors[:3] + [cps.NONE] * 4 + [1] * 4)
             else:
                 #
                 # CYMK color scheme
                 #
                 setting_values = (
-                    [ SCHEME_CMYK ] + ["None"] * 3 + [rgb_image_name] + 
+                    [ SCHEME_CMYK ] + [cps.NONE] * 3 + [rgb_image_name] + 
                     [1] * 3 + image_names + adjustment_factors)
             from_matlab = False
             variable_revision_number = 2
@@ -377,7 +377,7 @@ class GrayToColor(cpm.CPModule):
             #
             setting_values = (
                 [ SCHEME_CMYK ] + setting_values + 
-                ["None"] * 4 + [1] * 4)
+                [cps.NONE] * 4 + [1] * 4)
             variable_revision_number = 2
         return setting_values, variable_revision_number, from_matlab
 

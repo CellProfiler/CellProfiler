@@ -539,7 +539,7 @@ class RescaleIntensity(cpm.CPModule):
             #
             # Added load text name at the end
             #
-            setting_values = setting_values + ["None"]
+            setting_values = setting_values + [cps.NONE]
             variable_revision_number = 4
         if from_matlab and variable_revision_number == 4:
             new_setting_values = (setting_values[:2] +
@@ -554,9 +554,9 @@ class RescaleIntensity(cpm.CPModule):
                                    "0",       # 10: custom_low_truncation
                                    R_MASK,    # 11: high_truncation_choice
                                    "1",       # 12: custom_high_truncation
-                                   "None",    # 13: matching_image_name
+                                   cps.NONE,    # 13: matching_image_name
                                    "1",       # 14: divisor_value
-                                   "None"     # 15: divisor_measurement
+                                   cps.NONE     # 15: divisor_measurement
                                    ])
             code = setting_values[2][0]
             if code.upper() == 'S':

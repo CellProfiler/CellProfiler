@@ -339,7 +339,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
             count = len(setting_values) / 3
             new_setting_values = [str(count)]
             for i in range(0, count):
-                new_setting_values += ['Objects', setting_values[(i*3)], setting_values[(i*3)+1], setting_values[(i*3)+2], 'None']
+                new_setting_values += ['Objects', setting_values[(i*3)], setting_values[(i*3)+1], setting_values[(i*3)+2], cps.NONE]
             setting_values = new_setting_values
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab

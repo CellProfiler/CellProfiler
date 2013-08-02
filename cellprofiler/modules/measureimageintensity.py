@@ -331,7 +331,7 @@ class MeasureImageIntensity(cpm.CPModule):
         if from_matlab and variable_revision_number == 2:
             setting_values = [setting_values[0], # image name
                               cps.NO,            # wants objects
-                              "None" ]           # object name
+                              cps.NONE ]           # object name
             variable_revision_number = 1
             from_matlab = False
         if variable_revision_number == 1:

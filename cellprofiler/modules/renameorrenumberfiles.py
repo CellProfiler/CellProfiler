@@ -96,7 +96,7 @@ class RenameOrRenumberFiles(cpm.CPModule):
             "see the help for this module for warnings.")
         
         self.image_name = cps.FileImageNameSubscriber(
-            'Select the input image','None',doc="""
+            'Select the input image',cps.NONE,doc="""
             Select the images associated with the files
             you want to rename. This should be an image loaded by the
             <b>Input</b> modules.

@@ -579,7 +579,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             #
             if new_setting_values[SAVE_OUTLINES_VAR] == cps.DO_NOT_USE:
                 new_setting_values += [ cps.NO ]
-                new_setting_values[SAVE_OUTLINES_VAR] = "None"
+                new_setting_values[SAVE_OUTLINES_VAR] = cps.NONE
             else:
                 new_setting_values += [ cps.YES ]
             setting_values = new_setting_values
@@ -620,7 +620,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             
         if (not from_matlab) and variable_revision_number == 6:
             # Added measurements to threshold method
-            setting_values = setting_values + ["None"]
+            setting_values = setting_values + [cps.NONE]
             variable_revision_number = 7
         if (not from_matlab) and variable_revision_number == 7:
             # changed DISTANCE to SHAPE

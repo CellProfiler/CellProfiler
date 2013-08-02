@@ -112,7 +112,7 @@ class FilterObjects(cpm.CPModule):
             Enter a name for the collection of objects that are retained after applying the filter(s).""")
         
         self.object_name = cps.ObjectNameSubscriber(
-            'Select the object to filter','None', doc = """
+            'Select the object to filter',cps.NONE, doc = """
             Select the set of objects that you want to filter. This setting 
             also controls which measurement choices appear for filtering:
             you can only filter based on measurements made on the object you select.
@@ -168,7 +168,7 @@ class FilterObjects(cpm.CPModule):
             </ul>"""%globals())
      
         self.enclosing_object_name = cps.ObjectNameSubscriber(
-            'Select the objects that contain the filtered objects','None', doc = """
+            'Select the objects that contain the filtered objects',cps.NONE, doc = """
             <i>(Used only if a per-object filtering method is selected)</i><br>
             This setting selects the container (i.e., parent) objects for the <i>%(FI_MAXIMAL_PER_OBJECT)s</i> 
             and <i>%(FI_MINIMAL_PER_OBJECT)s</i> filtering choices."""%globals())
@@ -283,7 +283,7 @@ class FilterObjects(cpm.CPModule):
         group = cps.SettingsGroup()
         group.append("object_name",
                      cps.ObjectNameSubscriber('Select additional object to relabel',
-                                              'None'))
+                                              cps.NONE))
         group.append("target_name",
                      cps.ObjectNameProvider('Name the relabeled objects','FilteredGreen'))
         
@@ -845,7 +845,7 @@ class FilterObjects(cpm.CPModule):
                               FI_MAXIMAL_PER_OBJECT,
                               setting_values[0],
                               cps.YES, "0", cps.YES, "1",
-                              cps.NO, "None" ]
+                              cps.NO, cps.NONE ]
             from_matlab = False
             variable_revision_number = 1
             module_name = self.module_name
@@ -878,13 +878,13 @@ class FilterObjects(cpm.CPModule):
                 max_limit = setting_values[7]
             if setting_values[8] == cps.DO_NOT_USE:
                 wants_outlines = cps.NO
-                outlines_name = "None"
+                outlines_name = cps.NONE
             else:
                 wants_outlines = cps.YES
                 outlines_name = setting_values[8]
                 
             setting_values = [setting_values[0], setting_values[1],
-                              measurement, FI_LIMITS, "None", 
+                              measurement, FI_LIMITS, cps.NONE, 
                               wants_minimum, min_limit,
                               wants_maximum, max_limit,
                               wants_outlines, outlines_name]
@@ -931,7 +931,7 @@ class FilterObjects(cpm.CPModule):
                 max_limit = max_value1
             if save_outlines == cps.DO_NOT_USE:
                 wants_outlines = cps.NO
-                outlines_name = "None"
+                outlines_name = cps.NONE
             else:
                 wants_outlines = cps.YES
                 outlines_name = save_outlines
@@ -939,7 +939,7 @@ class FilterObjects(cpm.CPModule):
                                object_name,
                                measurement,
                                FI_LIMITS,
-                               "None", # enclosing object name
+                               cps.NONE, # enclosing object name
                                wants_minimum,
                                min_limit,
                                wants_maximum,

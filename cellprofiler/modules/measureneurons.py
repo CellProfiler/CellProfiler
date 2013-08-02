@@ -595,9 +595,9 @@ class MeasureNeurons(cpm.CPModule):
             # Added graph stuff
             #
             setting_values = setting_values + [ 
-                cps.NO, "None", 
-                cps.DirectoryPath.static_join_string(cps.DEFAULT_OUTPUT_FOLDER_NAME, "None"),
-                "None", "None"]
+                cps.NO, cps.NONE, 
+                cps.DirectoryPath.static_join_string(cps.DEFAULT_OUTPUT_FOLDER_NAME, cps.NONE),
+                cps.NONE, cps.NONE]
             variable_revision_number = 3
         return setting_values, variable_revision_number, from_matlab
     

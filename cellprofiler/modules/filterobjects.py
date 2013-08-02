@@ -179,6 +179,7 @@ class FilterObjects(cpm.CPModule):
             <br>
             Select the location of the rules file that will be used for filtering.
             %(IO_FOLDER_CHOICE_HELP_TEXT)s""" % globals())
+        
         self.rules_class = cps.Choice(
             "Class number",
             choices = ["1", "2"],
@@ -186,9 +187,14 @@ class FilterObjects(cpm.CPModule):
             <i>(Used only when filtering using %(MODE_RULES)s)</i><br>
             Select which of the classes to keep when filtering. The
             CellProfiler Analyst classifier user interface lists the names of 
-            the classes in order. By default, these are the positive (class 1)
-            and negative (class 2) classes. <b>FilterObjects</b> uses the
-            first class from CellProfiler Analyst if you choose "1", etc."""%globals())
+            the classes in left-to-right order. <b>FilterObjects</b> uses the
+            first class from CellProfiler Analyst if you choose "1", etc.
+            <p>Please note the following:
+            <ul>
+            <li>The object is retained if the object falls into the selected class.</li>
+            <li>You can make multiple class selections. If you do so, the module
+            will retain the object if the object falls into any of the selected classes.</li>
+            </ul></p>"""%globals())
  
         def get_directory_fn():
             '''Get the directory for the rules file name'''
@@ -202,8 +208,10 @@ class FilterObjects(cpm.CPModule):
             "Rules file name","rules.txt",
             get_directory_fn = get_directory_fn,
             set_directory_fn = set_directory_fn,doc="""
-            <i>(Used only when filtering using %(MODE_RULES)s)</i>
-            <br>The name of the file holding the rules. Each line of
+            <i>(Used only when filtering using %(MODE_RULES)s)</i><br>
+            The name of the rules file. This file should be a plain text
+            file containing the complete set of rules.
+            <p>Each line of
             this file should be a rule naming a measurement to be made
             on the object you selected, for instance:
             <pre>IF (Nuclei_AreaShape_Area &lt; 351.3, [0.79, -0.79], [-0.94, 0.94])</pre>
@@ -212,9 +220,7 @@ class FilterObjects(cpm.CPModule):
             for the negative category for nuclei whose area is less than 351.3 
             pixels and will score the opposite for nuclei whose area is larger.
             The filter adds positive and negative and keeps only objects whose
-            positive score is higher than the negative score.
-            <p>Note that if the rules are obtained from CellProfiler Analyst, the objects
-            that are removed are those represented by the second number between the brackets.</p>"""%globals())
+            positive score is higher than the negative score.</p>"""%globals())
         
         self.wants_outlines = cps.Binary(
             'Retain outlines of the identified objects?', False, doc="""

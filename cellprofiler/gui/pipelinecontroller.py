@@ -608,7 +608,7 @@ class PipelineController:
     def __on_load_pipeline(self, event):
         wildcard = "CellProfiler pipeline (%s)|%s" % (
             ",".join([".%s" % x for x in cpprefs.EXT_PIPELINE_CHOICES]),
-            ";".join([".%s" % x for x in cpprefs.EXT_PIPELINE_CHOICES]))
+            ";".join(["*.%s" % x for x in cpprefs.EXT_PIPELINE_CHOICES]))
         dlg = wx.FileDialog(self.__frame,
                             "Choose a pipeline file to open",
                             wildcard = wildcard)

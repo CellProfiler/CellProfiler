@@ -388,8 +388,18 @@ class ExportToDatabase(cpm.CPModule):
         
         self.want_table_prefix = cps.Binary(
             "Add a prefix to table names?", True, doc = """
-            Select whether you want to add a prefix to your table names 
-            (<i>Per_Image</i> and <i>Per_Object</i>).  CellProfiler will warn 
+            Select whether you want to add a prefix to your table names. The 
+            default table names are <i>Per_Image</i> for the per-image table and 
+            <i>Per_Object</i> for the per-object table. Adding a prefix can be useful
+            for bookkeeping purposes.
+            <ul>
+            <li>Uncheck this box to use the default table names. For a one-time export of 
+            data, this option is fine. </li>
+            <li>Check this box to add a user-specified prefix to the default table names.
+            If you want to distinguish multiple sets of data written to the same 
+            database, you probably want to use a prefix.</li>
+            </ul>
+            Whether you chose to use a prefix or not, CellProfiler will warn 
             you if your choice entails overwriting an existing table.""")
         
         self.table_prefix = cps.Text(
@@ -522,8 +532,11 @@ class ExportToDatabase(cpm.CPModule):
         self.properties_wants_groups = cps.Binary(
             "Do you want to add group fields?", False,doc = """
             <i>(Used only if creating a properties file)</i><br>
-            You can define ways of grouping your image data (for example, when several images represent the same experimental 
-            sample), by providing column(s) that identify unique images (the <i>image key</i>) to another set of columns (the <i>group key</i>).
+            <b>Please note that "groups" as defined by CellProfiler Analyst has nothing to do with "grouping" as defined by 
+            CellProfiler in the Groups module.</b>
+            <p>You can define ways of grouping your image data (for example, when several images represent the same experimental 
+            sample), by providing column(s) that identify unique images (the <i>image key</i>) to another set of columns 
+            (the <i>group key</i>).</p>
             <p>Grouping is useful, for example, when you want to aggregate counts for each class of object and their scores 
             on a per-group basis (e.g.: per-well) instead of on a per-image basis when scoring with Classifier. It will 
             also provide new options in the Classifier fetch menu so you can fetch objects from images with specific 

@@ -91,7 +91,8 @@ class IdentifyObjectsManually(I.Identify):
         image         = workspace.image_set.get_image(image_name)
         pixel_data    = image.pixel_data
         
-        labels = workspace.interaction_request(self, pixel_data)
+        labels = workspace.interaction_request(
+            self, pixel_data, workspace.measurements.image_set_number)
         objects = cpo.Objects()
         objects.segmented = labels
         workspace.object_set.add_objects(objects, objects_name)
@@ -168,222 +169,23 @@ class IdentifyObjectsManually(I.Identify):
         image[outlines > 0,:] = outlines_image[outlines > 0,:]
         return image
         
-    def handle_interaction(self, pixel_data):
+    def handle_interaction(self, pixel_data, image_set_number):
         '''Display a UI for editing'''
-        import matplotlib
-        from matplotlib.widgets import Lasso, RectangleSelector
-        from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
-        import wx
-
-        labels = np.zeros(pixel_data.shape[:2], int)
-        style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER
-        dialog_box = wx.Dialog(wx.GetApp().TopWindow, -1,
-                               "Identify objects manually",
-                               style = style)
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        dialog_box.SetSizer(sizer)
-        sub_sizer = wx.BoxSizer(wx.HORIZONTAL)
-        sizer.Add(sub_sizer, 1, wx.EXPAND)
-        figure = matplotlib.figure.Figure()
-        axes = figure.add_subplot(1,1,1)
-        panel = FigureCanvasWxAgg(dialog_box, -1, figure)
-        sub_sizer.Add(panel, 1, wx.EXPAND)
-        #
-        # The controls are the radio buttons for tool selection and
-        # a zoom out button
-        #
-        controls_sizer = wx.BoxSizer(wx.VERTICAL)
-        sub_sizer.Add(controls_sizer, 0, 
-                      wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_TOP | 
-                      wx.EXPAND|wx.ALL, 10)
-        
-        tool_choice = wx.RadioBox(dialog_box, -1, "Active tool",
-                                  style = wx.RA_VERTICAL,
-                                  choices = [TOOL_OUTLINE, TOOL_ZOOM_IN, 
-                                             TOOL_ERASE])
-        tool_choice.SetSelection(0)
-        controls_sizer.Add(tool_choice, 0, wx.ALIGN_LEFT | wx.ALIGN_TOP)
-        zoom_out_button = wx.Button(dialog_box, -1, "Zoom out")
-        zoom_out_button.Disable()
-        controls_sizer.Add(zoom_out_button, 0, wx.ALIGN_CENTER_HORIZONTAL)
-        erase_last_button = wx.Button(dialog_box, -1, "Erase last")
-        erase_last_button.Disable()
-        controls_sizer.Add(erase_last_button, 0, wx.ALIGN_CENTER_HORIZONTAL)
-        erase_all_button = wx.Button(dialog_box, -1, "Erase all")
-        erase_all_button.Disable()
-        controls_sizer.Add(erase_all_button, 0, wx.ALIGN_CENTER_HORIZONTAL)
-        
-        zoom_stack = []
-        
-        ########################
-        #
-        # The drawing function
-        #
-        ########################
-        def draw():
-            '''Draw the current display'''
-            assert isinstance(axes, matplotlib.axes.Axes)
-            if len(axes.images) > 0:
-                del axes.images[0]
-            image = self.draw_outlines(pixel_data, labels)
-            axes.imshow(image)
-            if len(zoom_stack) > 0:
-                axes.set_xlim(zoom_stack[-1][0][0], zoom_stack[-1][1][0])
-                axes.set_ylim(zoom_stack[-1][0][1], zoom_stack[-1][1][1])
-            else:
-                axes.set_xlim(0, pixel_data.shape[1])
-                axes.set_ylim(0, pixel_data.shape[0])
-            figure.canvas.draw()
-            panel.Refresh()
-
-        ##################################
-        #
-        # The erase last button
-        #
-        ##################################
-        def on_erase_last(event):
-            erase_label = labels.max()
-            if erase_label > 0:
-                labels[labels == erase_label] = 0
-                labels[labels > erase_label] -= 1
-                draw()
-                if labels.max() == 0:
-                    erase_last_button.Disable()
-                    erase_all_button.Disable()
-            else:
-                erase_last_button.Disable()
-                erase_all_button.Disable()
-               
-        dialog_box.Bind(wx.EVT_BUTTON, on_erase_last, erase_last_button)
-
-        ##################################
-        #
-        # The erase all button
-        #
-        ##################################
-        def on_erase_all(event):
-            labels[labels > 0] = 0
-            draw()
-            erase_all_button.Disable()
-            erase_last_button.Disable()
-            
-        dialog_box.Bind(wx.EVT_BUTTON, on_erase_all, erase_all_button)
-
-        ##################################
-        #
-        # The zoom-out button
-        #
-        ##################################
-        def on_zoom_out(event):
-            zoom_stack.pop()
-            if len(zoom_stack) == 0:
-                zoom_out_button.Disable()
-            draw()
-            
-        dialog_box.Bind(wx.EVT_BUTTON, on_zoom_out, zoom_out_button)
-
-        ##################################
-        #
-        # Zoom selector callback
-        #
-        ##################################
-        
-        def on_zoom_in(event_click, event_release):
-            xmin = min(event_click.xdata, event_release.xdata)
-            xmax = max(event_click.xdata, event_release.xdata)
-            ymin = min(event_click.ydata, event_release.ydata)
-            ymax = max(event_click.ydata, event_release.ydata)
-            zoom_stack.append(((xmin, ymin), (xmax, ymax)))
-            draw()
-            zoom_out_button.Enable()
-        
-        zoom_selector = RectangleSelector(axes, on_zoom_in, drawtype='box',
-                                          rectprops = dict(edgecolor='red', 
-                                                           fill=False),
-                                          useblit=True,
-                                          minspanx=2, minspany=2,
-                                          spancoords='data')
-        zoom_selector.set_active(False)
-        
-        ##################################
-        #
-        # Lasso selector callback
-        #
-        ##################################
-        
-        current_lasso = []
-        def on_lasso(vertices):
-            lasso = current_lasso.pop()
-            figure.canvas.widgetlock.release(lasso)
-            mask = np.zeros(pixel_data.shape[:2], int)
-            new_label = np.max(labels) + 1
-            vertices = [x for x in vertices 
-                        if x[0] is not None and x[1] is not None]
-            for i in range(len(vertices)):
-                v0 = (int(vertices[i][1]), int(vertices[i][0]))
-                i_next = (i+1) % len(vertices)
-                v1 = (int(vertices[i_next][1]), int(vertices[i_next][0]))
-                draw_line(mask, v0, v1, new_label)
-            mask = fill_labeled_holes(mask)
-            labels[mask != 0] = new_label
-            draw()
-            if labels.max() > 0:
-                erase_all_button.Enable()
-                erase_last_button.Enable()
-            
-        ##################################
-        #
-        # Left mouse button down
-        #
-        ##################################
-        
-        def on_left_mouse_down(event):
-            if figure.canvas.widgetlock.locked():
-                return
-            if event.inaxes != axes:
-                return
-            
-            idx = tool_choice.GetSelection()
-            tool = tool_choice.GetItemLabel(idx)
-            if tool == TOOL_OUTLINE:
-                lasso = Lasso(axes, (event.xdata, event.ydata), on_lasso)
-                lasso.line.set_color('red')
-                current_lasso.append(lasso)
-                figure.canvas.widgetlock(lasso)
-            elif tool == TOOL_ERASE:
-                erase_label = labels[int(event.ydata), int(event.xdata)]
-                if erase_label > 0:
-                    labels[labels == erase_label] = 0
-                    labels[labels > erase_label] -= 1
-                draw()
-                if labels.max() == 0:
-                    erase_all_button.Disable()
-                    erase_last_button.Disable()
-            
-        figure.canvas.mpl_connect('button_press_event', on_left_mouse_down)
-        
-        ######################################
-        #
-        # Radio box change
-        #
-        ######################################
-        def on_radio(event):
-            idx = tool_choice.GetSelection()
-            tool = tool_choice.GetItemLabel(idx)
-            if tool == TOOL_ZOOM_IN:
-                zoom_selector.set_active(True)
-        
-        tool_choice.Bind(wx.EVT_RADIOBOX, on_radio)
-        
-        button_sizer = wx.StdDialogButtonSizer()
-        sizer.Add(button_sizer, 0, wx.ALIGN_RIGHT | wx.EXPAND | wx.ALL, 10)
-        button_sizer.AddButton(wx.Button(dialog_box, wx.ID_OK))
-        button_sizer.Realize()
-        draw()
-        dialog_box.Fit()
-        dialog_box.ShowModal()
-        dialog_box.Destroy()
-        return labels
+        from cellprofiler.gui.editobjectsdlg import EditObjectsDialog
+        from wx import OK
+        title = "%s #%d, image cycle #%d: " % (self.module_name,
+                                             self.module_num,
+                                             image_set_number)
+        title += "Create, remove and edit %s. \n" % self.objects_name.value
+        title += 'Press "F" to being freehand drawing.\n'
+        title += "Click Help for full instructions."
+        with EditObjectsDialog(
+            pixel_data, [np.zeros(pixel_data.shape[:2], np.uint32)], False,
+            title) as dialog_box:
+            result = dialog_box.ShowModal()
+            if result != OK:
+                raise self.InteractionCancelledException()
+            return dialog_box.labels[0]
         
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):

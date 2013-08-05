@@ -59,6 +59,7 @@ class EditObjectsDialog(wx.Dialog):
     SPLIT_PICK_FIRST_MODE = "split1"
     SPLIT_PICK_SECOND_MODE = "split2"
     NORMAL_MODE = "normal"
+    DELETE_MODE = "delete"
     #
     # The object_number for an artist
     #
@@ -83,8 +84,12 @@ class EditObjectsDialog(wx.Dialog):
     ID_CONTRAST_NORMALIZED = wx.NewId()
     ID_CONTRAST_LOG_NORMALIZED = wx.NewId()
     
+    ID_LABELS_OUTLINES = wx.NewId()
+    ID_LABELS_FILL = wx.NewId()
+    
     ID_MODE_FREEHAND = wx.NewId()
     ID_MODE_SPLIT = wx.NewId()
+    ID_MODE_DELETE = wx.NewId()
     
     ID_ACTION_KEEP = wx.NewId()
     ID_ACTION_REMOVE = wx.NewId()
@@ -92,6 +97,7 @@ class EditObjectsDialog(wx.Dialog):
     ID_ACTION_RESET = wx.NewId()
     ID_ACTION_JOIN = wx.NewId()
     ID_ACTION_CONVEX_HULL = wx.NewId()
+    ID_ACTION_DELETE = wx.NewId()
     
     def __init__(self, guide_image, orig_labels, allow_overlap, title=None):
         '''Initializer
@@ -129,8 +135,11 @@ class EditObjectsDialog(wx.Dialog):
         self.active_index = None
         self.mode = self.NORMAL_MODE
         self.scaling_mode = self.SM_NORMALIZED
+        self.label_display_mode = self.ID_LABELS_OUTLINES
         self.skip_right_button_up = False
         self.split_artist = None
+        self.delete_mode_artist = None
+        self.delete_mode_rect_artist = None
         self.wants_image_display = guide_image != None
         self.pressed_keys = set()
         self.build_ui()
@@ -216,7 +225,7 @@ class EditObjectsDialog(wx.Dialog):
         for (x, y), d in artist_save:
             object_number = d[self.K_LABEL]
             artist = Line2D(x, y,
-                            marker='o', markerfacecolor='r',
+                            marker=['o']*len(x), markerfacecolor=['r']*len(x),
                             markersize=6,
                             color=self.colormap[object_number, :],
                             animated = True)
@@ -327,6 +336,11 @@ class EditObjectsDialog(wx.Dialog):
         has a hole in it. This split creates a channel from the hole 
         to the outside of the object.</li>
         </ul>
+        <li><b>X</b>: Delete mode. Press down on the %(LEFT_MOUSE)s to
+        start defining the delete region. Drag to define a rectangle. All
+        control points within the rectangle (shown as blue diamonds) will be
+        deleted when you release the %(LEFT_MOUSE)s. Press the escape key
+        to cancel.
         </li>
         </ul>
         <p><b>Note:</b> Editing is disabled in zoom or pan mode. The
@@ -400,6 +414,16 @@ class EditObjectsDialog(wx.Dialog):
                   id=self.ID_MODE_FREEHAND)
         self.Bind(wx.EVT_MENU, self.enter_split_mode,
                   id=self.ID_MODE_SPLIT)
+        self.Bind(wx.EVT_MENU, self.enter_delete_mode,
+                  id=self.ID_MODE_DELETE)
+        self.Bind(
+            wx.EVT_MENU,
+            (lambda event: self.set_label_display_mode(self.ID_LABELS_OUTLINES)),
+            id = self.ID_LABELS_OUTLINES)
+        self.Bind(
+            wx.EVT_MENU, 
+            (lambda event: self.set_label_display_mode(self.ID_LABELS_FILL)),
+            id = self.ID_LABELS_FILL)
         self.figure.canvas.Bind(wx.EVT_PAINT, self.on_paint)
 
         ######################################
@@ -456,6 +480,9 @@ class EditObjectsDialog(wx.Dialog):
         self.oi = np.zeros(0, int)
         self.oj = np.zeros(0, int)
         self.ol = np.zeros(0, int)
+        self.li = np.zeros(0, int)
+        self.lj = np.zeros(0, int)
+        self.ll = np.zeros(0, int)
         for label in self.labels:
             # drive each successive matrix's labels away
             # from all others.
@@ -466,34 +493,38 @@ class EditObjectsDialog(wx.Dialog):
             clabels[clabels != 0] += lstart
             lstart += distinct_label_count
             label_map[label.flatten()] = clabels.flatten()
-            if False:
-                outlines = outline(clabels)
-                oi, oj = np.argwhere(outlines != 0).transpose()
-            else:
-                l, ct = scipy.ndimage.label(label != 0, 
-                                            structure=np.ones((3,3), bool))
-                coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
-                oi, oj = coords.transpose()
-                l, ct = scipy.ndimage.label(label == 0) # 4-connected
-                #
-                # Have to remove the label that touches the edge, if any
-                #
-                ledge = np.hstack([l[0, :][label[0, :] == 0],
-                                   l[-1, :][label[-1, :] == 0],
-                                   l[:, 0][label[:, 0] == 0],
-                                   l[:, -1][label[:, -1] == 0]])
-                if len(ledge) > 0:
-                    l[l == ledge[0]] = 0
+            l, ct = scipy.ndimage.label(label != 0, 
+                                        structure=np.ones((3,3), bool))
+            coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
+            oi, oj = coords.transpose()
+            l, ct = scipy.ndimage.label(label == 0) # 4-connected
+            #
+            # Have to remove the label that touches the edge, if any
+            #
+            ledge = np.hstack([l[0, :][label[0, :] == 0],
+                               l[-1, :][label[-1, :] == 0],
+                               l[:, 0][label[:, 0] == 0],
+                               l[:, -1][label[:, -1] == 0]])
+            if len(ledge) > 0:
+                l[l == ledge[0]] = 0
 
-                coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
-                if coords.shape[0] > 0:
-                    oi, oj = [np.hstack((o, coords[:,i]))
-                              for i, o in enumerate((oi, oj))]
+            coords, offsets, counts = get_outline_pts(l, np.arange(1, ct+1))
+            if coords.shape[0] > 0:
+                oi, oj = [np.hstack((o, coords[:,i]))
+                          for i, o in enumerate((oi, oj))]
                 
             ol = label[oi, oj]
             self.oi = np.hstack((self.oi, oi))
             self.oj = np.hstack((self.oj, oj))
             self.ol = np.hstack((self.ol, ol))
+            #
+            # compile the filled labels
+            #
+            li, lj = np.argwhere(label != 0).transpose()
+            ll = label[li, lj]
+            self.li = np.hstack((self.li, li))
+            self.lj = np.hstack((self.lj, lj))
+            self.ll = np.hstack((self.ll, ll))
         cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
         cm.set_bad((0,0,0))
     
@@ -502,6 +533,7 @@ class EditObjectsDialog(wx.Dialog):
         self.colormap = mappable.to_rgba(np.arange(nlabels + 1))[:, :3]
         self.colormap = self.colormap[label_map, :]
         self.oc = self.colormap[self.ol, :]
+        self.lc = self.colormap[self.ll, :]
         
     def on_close(self, event):
         '''Fix up the labels as we close'''
@@ -546,6 +578,14 @@ class EditObjectsDialog(wx.Dialog):
         self.to_keep = temp
         self.labels.append(mask.astype(self.labels[0].dtype) * object_number)
         self.restructure_labels()
+        
+    def set_label_display_mode(self, mode):
+        '''Set label display to either outlines or fill
+        
+        mode - one of ID_LABELS_FILL or ID_LABELS_OUTLINE
+        '''
+        self.label_display_mode = mode
+        self.display()
         
     ################### d i s p l a y #######
     #
@@ -598,40 +638,55 @@ class EditObjectsDialog(wx.Dialog):
                  self.shape[1],
                  3), np.float)
         if len(self.to_keep) > 1:
-            i, j = np.mgrid[0:self.shape[0], 0:self.shape[1]]
-            for k, stipple in ((self.to_keep, False), (~self.to_keep, True)):
-                k = k.copy()
-                # Don't show outlines for labels being edited
-                for d in self.artists.values():
-                    k[d[self.K_LABEL]] = False
-                if not np.any(k):
-                    continue
-                mask = k[self.ol]
-                intensity = np.zeros(self.shape, float)
-                intensity[self.oi[mask], self.oj[mask]] = 1
-                color = np.zeros((self.shape[0], self.shape[1], 3), float)
-                if stipple:
-                    # Make dashed outlines by throwing away the first 4
-                    # border pixels and keeping the next 4. This also makes
-                    # small objects disappear when clicked-on.
-                    lmap = np.zeros(len(k), int)
-                    lmap[k] = np.arange(np.sum(k))
-                    counts = np.bincount(lmap[self.ol[mask]])
-                    indexer = Indexes((counts,))
-                    e = 1 + 3 * (counts[indexer.rev_idx] >= 16)
-                    dash_mask = (indexer.idx[0] & (2**e - 1)) >= 2**(e-1)
-                    color[self.oi[mask], self.oj[mask]] = \
-                        self.oc[mask] * dash_mask[:, np.newaxis]
-                else:
-                    color[self.oi[mask], self.oj[mask]] = self.oc[mask]
-                sigma = 1
-                intensity = gaussian_filter(intensity, sigma)
-                eps = intensity > np.finfo(intensity.dtype).eps
-                color = gaussian_filter(color, (sigma, sigma,0))[eps, :]
-                intensity = intensity[eps]
-                cimage[eps, :] = \
-                    cimage[eps, :] * (1 - intensity[:, np.newaxis]) + color
-                
+            in_artist = np.zeros(len(self.to_keep), bool)
+            for d in self.artists.values():
+                in_artist[d[self.K_LABEL]] = True
+            if self.label_display_mode == self.ID_LABELS_OUTLINES:
+                for k, stipple in ((self.to_keep, False), (~self.to_keep, True)):
+                    k = k & ~ in_artist
+                    if not np.any(k):
+                        continue
+                    mask = k[self.ol]
+                    intensity = np.zeros(self.shape, float)
+                    intensity[self.oi[mask], self.oj[mask]] = 1
+                    color = np.zeros((self.shape[0], self.shape[1], 3), float)
+                    if stipple:
+                        # Make dashed outlines by throwing away the first 4
+                        # border pixels and keeping the next 4. This also makes
+                        # small objects disappear when clicked-on.
+                        lmap = np.zeros(len(k), int)
+                        lmap[k] = np.arange(np.sum(k))
+                        counts = np.bincount(lmap[self.ol[mask]])
+                        indexer = Indexes((counts,))
+                        e = 1 + 3 * (counts[indexer.rev_idx] >= 16)
+                        dash_mask = (indexer.idx[0] & (2**e - 1)) >= 2**(e-1)
+                        color[self.oi[mask], self.oj[mask]] = \
+                            self.oc[mask] * dash_mask[:, np.newaxis]
+                    else:
+                        color[self.oi[mask], self.oj[mask]] = self.oc[mask]
+                    sigma = 1
+                    intensity = gaussian_filter(intensity, sigma)
+                    eps = intensity > np.finfo(intensity.dtype).eps
+                    color = gaussian_filter(color, (sigma, sigma,0))[eps, :]
+                    intensity = intensity[eps]
+                    cimage[eps, :] = \
+                        cimage[eps, :] * (1 - intensity[:, np.newaxis]) + color
+            else:
+                # Show all pixels of kept labels not in artists
+                # Show every other pixel of not-kept labels
+                mask = (~ in_artist[self.ll]) & (
+                    self.to_keep[self.ll] | 
+                    (((self.li & 1) == 0) & ((self.lj & 1) == 0)))
+                npts = np.sum(mask)
+                has_color = scipy.sparse.coo_matrix(
+                    (np.ones(npts), (self.li[mask], self.lj[mask])),
+                    shape = cimage.shape[:2]).toarray()
+                for i in range(3):
+                    rgbval = scipy.sparse.coo_matrix(
+                        (self.lc[mask, i], (self.li[mask], self.lj[mask])),
+                        shape = cimage.shape[:2]).toarray()
+                    cimage[has_color > 0, i] = (
+                        rgbval[has_color > 0] / has_color[has_color > 0])
         self.orig_axes.imshow(cimage)
         self.set_orig_axes_title()
         if set_lim:
@@ -702,6 +757,9 @@ class EditObjectsDialog(wx.Dialog):
         elif self.mode == self.FREEHAND_DRAW_MODE:
             self.on_freehand_draw_click(event)
             return
+        elif self.mode == self.DELETE_MODE:
+            self.on_delete_click(event)
+            return
         if event.inaxes == self.orig_axes and event.button == 1:
             best_artist, best_index = self.get_control_point(event)
             if best_artist is not None:
@@ -758,6 +816,8 @@ class EditObjectsDialog(wx.Dialog):
                 self.new_object(event)
             elif event.key == "s":
                 self.enter_split_mode(event)
+            elif event.key == "x":
+                self.enter_delete_mode(event)
             elif event.key =="z":
                 if len(self.undo_stack) > 0:
                     self.undo()
@@ -767,6 +827,9 @@ class EditObjectsDialog(wx.Dialog):
                            self.SPLIT_PICK_SECOND_MODE):
             if event.key == "escape":
                 self.exit_split_mode(event)
+        elif self.mode == self.DELETE_MODE:
+            if event.key == "escape":
+                self.exit_delete_mode(event)
         elif self.mode == self.FREEHAND_DRAW_MODE:
             self.exit_freehand_draw_mode(event)
     
@@ -794,6 +857,14 @@ class EditObjectsDialog(wx.Dialog):
                 contrast_menu.Check(mid, True)
         menu.AppendMenu(-1, "Contrast", contrast_menu)
         
+        label_menu = wx.Menu("Label appearance")
+        for mid, label, help in (
+            (self.ID_LABELS_OUTLINES, "Outlines", "Show the outlines of objects"),
+            (self.ID_LABELS_FILL, "Fill", "Show objects with a solid fill color")):
+            label_menu.AppendRadioItem(mid, label, help)
+        label_menu.Check(self.label_display_mode, True)
+        menu.AppendMenu(-1, "Label appearance", label_menu)
+        
         mode_menu = wx.Menu("Mode")
         mode_menu.Append(self.ID_MODE_FREEHAND, 
                          "Freehand mode",
@@ -801,6 +872,9 @@ class EditObjectsDialog(wx.Dialog):
         mode_menu.Append(self.ID_MODE_SPLIT,
                          "Split mode",
                          "Enter object splitting mode")
+        mode_menu.Append(self.ID_MODE_DELETE,
+                         "Delete mode",
+                         "Select points to delete")
         menu.AppendMenu(-1, "Mode", mode_menu)
         
         actions_menu = wx.Menu("Actions")
@@ -849,6 +923,8 @@ class EditObjectsDialog(wx.Dialog):
             return
         if self.mode == self.FREEHAND_DRAW_MODE:
             self.on_mouse_button_up_freehand_draw_mode(event)
+        elif self.mode == self.DELETE_MODE:
+            self.on_mouse_button_up_delete_mode(event)
         else:
             self.active_artist = None
             self.active_index = None
@@ -860,6 +936,8 @@ class EditObjectsDialog(wx.Dialog):
             self.handle_mouse_moved_active_mode(event)
         elif self.mode == self.SPLIT_PICK_SECOND_MODE:
             self.handle_mouse_moved_pick_second_mode(event)
+        elif self.mode == self.DELETE_MODE:
+            self.on_mouse_moved_delete_mode(event)
             
     def handle_mouse_moved_active_mode(self, event):
         if event.inaxes != self.orig_axes:
@@ -937,6 +1015,10 @@ class EditObjectsDialog(wx.Dialog):
             self.orig_axes.draw_artist(artist)
         if self.split_artist is not None:
             self.orig_axes.draw_artist(self.split_artist)
+        if self.delete_mode_artist is not None:
+            self.orig_axes.draw_artist(self.delete_mode_artist)
+        if self.delete_mode_rect_artist is not None:
+            self.orig_axes.draw_artist(self.delete_mode_rect_artist)
         if (self.mode == self.FREEHAND_DRAW_MODE and 
             self.active_artist is not None):
             self.orig_axes.draw_artist(self.active_artist)
@@ -1078,21 +1160,7 @@ class EditObjectsDialog(wx.Dialog):
         if best_artist is not None:
             l = best_artist.get_xydata()
             if len(l) < 4:
-                object_number = self.artists[best_artist][self.K_LABEL]
-                best_artist.remove()
-                del self.artists[best_artist]
-                if not any([d[self.K_LABEL] == object_number
-                            for d in self.artists.values()]):
-                    self.remove_label(object_number)
-                    self.init_labels()
-                    self.display()
-                    self.record_undo()
-                    return
-                else:
-                    # Mark some other artist as edited.
-                    for artist, d in self.artists.iteritems():
-                        if d[self.K_LABEL] == object_number:
-                            d[self.K_EDITED] = True
+                self.delete_artist(best_artist)
             else:
                 l = np.vstack((
                     l[:best_index, :], 
@@ -1100,8 +1168,27 @@ class EditObjectsDialog(wx.Dialog):
                 l = np.vstack((l, l[:1, :]))
                 best_artist.set_data((l[:, 0], l[:, 1]))
                 self.artists[best_artist][self.K_EDITED] = True
-                self.record_undo()
+            self.record_undo()
             self.update_artists()
+            
+    def delete_artist(self, artist):
+        '''Delete an artist and remove its object
+        
+        artist to delete
+        '''
+        object_number = self.artists[artist][self.K_LABEL]
+        artist.remove()
+        del self.artists[artist]
+        if not any([d[self.K_LABEL] == object_number
+                    for d in self.artists.values()]):
+            self.remove_label(object_number)
+            self.init_labels()
+            self.display()
+        else:
+            # Mark some other artist as edited.
+            for artist, d in self.artists.iteritems():
+                if d[self.K_LABEL] == object_number:
+                    d[self.K_EDITED] = True
             
     def new_object(self, event):
         object_number = len(self.to_keep)
@@ -1116,7 +1203,8 @@ class EditObjectsDialog(wx.Dialog):
         y[y >= self.shape[0]] = self.shape[0]-1
         self.init_labels()
         new_artist = Line2D(x, y,
-                            marker='o', markerfacecolor='r',
+                            marker=['o']*len(x), 
+                            markerfacecolor=['r']*len(x),
                             markersize=6,
                             color=self.colormap[object_number, :],
                             animated = True)
@@ -1147,6 +1235,8 @@ class EditObjectsDialog(wx.Dialog):
             title = self.SPLIT_PICK_FIRST_TITLE 
         elif self.mode == self.SPLIT_PICK_SECOND_MODE:
             title = self.SPLIT_PICK_SECOND_TITLE
+        elif self.mode == self.DELETE_MODE:
+            title = self.DELETE_MODE_TITLE
         elif self.mode == self.FREEHAND_DRAW_MODE:
             if self.active_artist is None:
                 title = "Click the mouse to begin to draw or hit Esc"
@@ -1471,6 +1561,126 @@ class EditObjectsDialog(wx.Dialog):
         self.init_labels()
         self.display()
         self.record_undo()
+        
+    ################################
+    #
+    # Delete mode
+    #
+    ################################
+    
+    DELETE_MODE_TITLE = (
+        "Press the mouse button and drag to select points to delete.\n"
+        "Hit Esc to exit without deleting.\n")
+    def enter_delete_mode(self, event):
+        self.mode = self.DELETE_MODE
+        self.delete_mode_start = None
+        self.delete_mode_filter = None
+        self.panel.SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
+        self.set_orig_axes_title()
+        self.figure.canvas.draw()
+                       
+    def on_delete_click(self, event):
+        if event.button == 1:
+            if event.inaxes == self.orig_axes:
+                self.delete_mode_start = (event.xdata, event.ydata)
+                self.delete_mode_rect_artist = Line2D(
+                    [event.xdata] * 5, [event.ydata] * 5,
+                    linestyle = "-",
+                    color = "w",
+                    marker = " ")
+                self.orig_axes.add_line(self.delete_mode_rect_artist)
+                logger.info("Starting delete at %f, %f" % self.delete_mode_start)
+            else:
+                self.on_exit_delete_mode(event)
+                
+    def on_mouse_moved_delete_mode(self, event):
+        if self.delete_mode_start is not None:
+            (xmin, xmax), (ymin, ymax) = [
+                [fn(a, b) for fn in min, max]
+                for a, b in 
+                (self.delete_mode_start[0], event.xdata),
+                (self.delete_mode_start[1], event.ydata)]
+            logger.info("Selected from %f, %f to %f, %f" % (
+                xmin, ymin, xmax, ymax))
+            self.delete_mode_rect_artist.set_data([
+                [xmin, xmin, xmax, xmax, xmin],
+                [ymin, ymax, ymax, ymin, ymin]])
+            def delete_mode_filter(x,y):
+                return (x >= xmin) & (x < xmax) & (y >= ymin) & (y < ymax)
+            self.delete_mode_filter = delete_mode_filter
+            points = []
+            for artist in self.artists:
+                x, y = artist.get_data()
+                f = delete_mode_filter(x, y)
+                if np.any(f):
+                    points += [np.column_stack((x[f], y[f]))]
+                
+            if len(points) > 0:
+                points = np.vstack(points)
+                if self.delete_mode_artist is None:
+                    self.delete_mode_artist = Line2D(
+                        points[:, 0], points[:, 1],
+                        marker = "o",
+                        markeredgecolor="black",
+                        markerfacecolor="white",
+                        linestyle=" ")
+                    self.orig_axes.add_line(self.delete_mode_artist)
+                else:
+                    old_points = self.delete_mode_artist.get_xydata()
+                    if len(old_points) != len(points) or np.any(
+                        old_points != points):
+                        self.delete_mode_artist.set_data(points.transpose())
+            self.update_artists()
+    
+    def on_mouse_button_up_delete_mode(self, event):
+        to_delete = []
+        if self.delete_mode_filter is not None:
+            for artist in self.artists:
+                x, y = artist.get_data()
+                f = ~ self.delete_mode_filter(x, y)
+                if np.all(f):
+                    continue
+                xy = np.column_stack((x[f], y[f]))
+                if len(xy) < 3 or len(xy)==3 and np.all(xy[0]==xy[-1]):
+                    to_delete.append(artist)
+                else:
+                    if np.all(xy[0] != xy[-1]):
+                        xy = np.vstack((xy, xy[:1]))
+                    artist.set_data(xy.transpose())
+                    self.artists[artist][self.K_EDITED] = True
+        object_numbers = set()
+        for artist in to_delete:
+            object_numbers.add(self.artists[artist][self.K_LABEL])
+            artist.remove()
+            del self.artists[artist]
+        for artist, d in self.artists.iteritems():
+            if d[self.K_LABEL] in object_numbers:
+                d[self.K_EDITED] = True
+                object_numbers.remove(d[self.K_LABEL])
+        if len(object_numbers) > 0:
+            # Exit delete mode here because self.display() wipes artists
+            self.exit_delete_mode(event) 
+            for object_number in object_numbers:
+                self.remove_label(object_number)
+            self.init_labels()
+            self.display()
+        else:
+            self.exit_delete_mode(event)
+        self.record_undo()
+    
+    def exit_delete_mode(self, event):
+        logger.info("Exiting delete mode")
+        if self.delete_mode_artist is not None:
+            self.delete_mode_artist.remove()
+            self.delete_mode_artist = None
+        if self.delete_mode_rect_artist is not None:
+            self.delete_mode_rect_artist.remove()
+            self.delete_mode_rect_artist = None
+        self.delete_mode_start = None
+        self.mode = self.NORMAL_MODE
+        self.set_orig_axes_title()
+        self.update_artists()
+        self.panel.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
     
     ################################
     #
@@ -1579,7 +1789,8 @@ class EditObjectsDialog(wx.Dialog):
                         accepted[idx] = True
                     chain = chain[accepted]
                 artist = Line2D(chain[:, 1], chain[:, 0],
-                                marker='o', markerfacecolor='r',
+                                marker='o', 
+                                markerfacecolor='r',
                                 markersize=6,
                                 color=self.colormap[object_number, :],
                                 animated = True)

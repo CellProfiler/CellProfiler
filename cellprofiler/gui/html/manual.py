@@ -62,7 +62,7 @@ def generate_html(webpage_path = None):
 <div style="page-break-after:always"> 
 <table width="100%%">
 <tr><td align="center">
-<img src="%(LOCATION_COVERPAGE)s" align="middle" style="border-style: none"></img>
+<img src="%(LOCATION_COVERPAGE)s" align="middle" style="border-style: none">
 </tr></td>
 </table>
 </div>
@@ -71,10 +71,10 @@ def generate_html(webpage_path = None):
 <tr><td align="middle"><b>CellProfiler</b> cell image analysis software</td></tr>
 <tr><td align="middle"><b>Created by</b><br>Anne E. Carpenter and Thouis R. Jones</td></tr>
 <tr><td align="middle"><b>In the laboratories of</b><br>David M. Sabatini and Polina Golland at</td></tr>
-<tr><td align="middle"><img src="%(LOCATION_WHITEHEADLOGO)s" style="border-style: none"></img>
-<img src="%(LOCATION_CSAILLOGO)s" style="border-style: none"></img></td></tr>
+<tr><td align="middle"><img src="%(LOCATION_WHITEHEADLOGO)s" style="border-style: none">
+<img src="%(LOCATION_CSAILLOGO)s" style="border-style: none"></td></tr>
 <tr><td align="middle">And now based at</td></tr>
-<tr><td align="middle"><img src="%(LOCATION_IMAGINGPLATFORMBANNER)s" style="border-style: none"></img></td></tr>
+<tr><td align="middle"><img src="%(LOCATION_IMAGINGPLATFORMBANNER)s" style="border-style: none"></td></tr>
 <tr><td align="middle">
 <b>CellProfiler is free and open-source!</b>
 
@@ -182,7 +182,7 @@ def output_module_html(webpage_path):
             result = result.replace('</body>','').replace('</html>','')
             # Include images specific to the module, relative to html files ('images' dir)
             LOCATION_MODULE_IMAGES = '/'.join(['images','%s.png'%(module_name)])
-            result += '\n\n<div><p><img src="%s", width="50%%"></img></p></div>\n'%LOCATION_MODULE_IMAGES
+            result += '\n\n<div><p><img src="%s", width="50%%"></p></div>\n'%LOCATION_MODULE_IMAGES
             # Now end the help text
             result += '</body></html>'
         fd = open(os.path.join(module_path,"%s.html" % module_name), "w")

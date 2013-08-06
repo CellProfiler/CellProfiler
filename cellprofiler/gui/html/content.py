@@ -12,7 +12,7 @@ Website: http://www.cellprofiler.org
 """
 
 import urllib
-from cellprofiler.gui.help import LOCATION_MODULE_HELP_BUTTON, LOCATION_MODULE_ADD_BUTTON
+from cellprofiler.gui.help import MODULE_HELP_BUTTON, MODULE_ADD_BUTTON
 from cellprofiler.gui.help import MEASUREMENT_NAMING_HELP, USING_YOUR_OUTPUT_REF, TEST_MODE_HELP, RUNNING_YOUR_PIPELINE_HELP, SELECTING_IMAGES_HELP, CONFIGURE_IMAGES_HELP
 
 SELECTING_IMAGES_REF = urllib.quote("Selecting images")
@@ -58,7 +58,7 @@ as a means of extracting other features.</p>
 </p>
 
 <p>For more information on these identification modules work and how to configure them for best performance, please see 
-the detailed help by selecting the <b>IdentifyPrimaryObjects</b> module and clicking the <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img>&nbsp;
+the detailed help by selecting the <b>IdentifyPrimaryObjects</b> module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;
 button at the bottom of the pipeline panel.</p>
 '''%globals()
 
@@ -66,7 +66,7 @@ MAKING_MEASUREMENTS_REF = urllib.quote("Making measurements")
 MAKING_MEASUREMENTS_HELP = '''
 <p>In most cases, the reason for identifying image features is to make measurements on them. CellProfiler has a number
 of modules dedicated to calculating measurements of various types, on both images and objects; these
-are accessible by clicking the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s"></img>&nbsp;button
+are accessible by clicking the <img src="memory:%(MODULE_ADD_BUTTON)s">&nbsp;button
 (located underneath the pipeline panel) </p>
 
 <p>Below is a list of measurement categories; these is not meant to be comprehensive, but are sufficient for most assays:
@@ -92,7 +92,7 @@ are accessible by clicking the <img src="memory:%(LOCATION_MODULE_ADD_BUTTON)s">
 </p>
 
 <p>For more information on these modules and how to configure them for best performance, please see 
-the detailed help by selecting the module and clicking the <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img>&nbsp;
+the detailed help by selecting the module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">&nbsp;
 button at the bottom of the pipeline panel. You can also find details on measurement nomenclature when exporting under 
 <i>%(MEASUREMENT_NAMING_HELP)s</i></p>
 '''%globals()
@@ -115,7 +115,7 @@ purposes. The <b>SaveImages</b> module is used for saving images to a variety of
 nomenclature specified by the user.</p>
 
 <p>For more information on these modules and how to configure them for best performance, please see 
-the detailed help by selecting the module and clicking the <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img>
+the detailed help by selecting the module and clicking the <img src="memory:%(MODULE_HELP_BUTTON)s">
 button at the bottom of the pipeline panel. You can also find details on various exporting options under 
 <i>%(USING_YOUR_OUTPUT_REF)s</i></p>
 '''%globals()
@@ -125,10 +125,10 @@ RUNNING_YOUR_PIPELINE_REF = urllib.quote("Analyzing your images")
 
 IN_APP_HELP_REF = urllib.quote("Using the help")
 IN_APP_HELP_HELP = '''
-In addition to the Help menu in the main CellProfiler window, there are <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img> 
+In addition to the Help menu in the main CellProfiler window, there are <img src="memory:%(MODULE_HELP_BUTTON)s"> 
 buttons containing more specific documentation for using 
 CellProfiler. Clicking the "?" button near the pipeline window will show information about the selected module within the pipeline, 
-whereas clicking the <img src="memory:%(LOCATION_MODULE_HELP_BUTTON)s"></img> button to the right of each of the module setting 
+whereas clicking the <img src="memory:%(MODULE_HELP_BUTTON)s"> button to the right of each of the module setting 
 displays help for that particular setting. 
 '''%globals()
 
@@ -225,7 +225,7 @@ startup_interface = '''<html>
 The CellProfiler interface has tools for managing images, pipelines and modules. The interface is divided into four main parts, as shown in the following illustration:
 <p>
 <center>
-<img src="memory:cp_panel_schematic.png"></img>
+<img src="memory:cp_panel_schematic.png">
 </center>
 <p>
 <table cellspacing="0" class="body" cellpadding="4" border="2">

@@ -1036,7 +1036,7 @@ All rights reserved."""
                 ## If so, strip out end html tags so I can add more stuff
                 #result = result.replace('</body>','').replace('</html>','')
                 ## Include images specific to the module
-                #result += '\n\n<div><p><img src="%s", width="50%%"></img></p></div>\n'%absolute_image_path
+                #result += '\n\n<div><p><img src="%s", width="50%%"></p></div>\n'%absolute_image_path
                 ## Now end the help text
                 #result += '</body></html>'
             #self.do_help_module(module.module_name, result)

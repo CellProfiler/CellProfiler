@@ -1,26 +1,38 @@
-'''<b>Identify Primary Objects</b> identifies objects in an image
+import cellprofiler.icons 
+PROTIP_RECOMEND_ICON = "thumb-up.png"
+PROTIP_AVOID_ICON = "thumb-down.png"
+TECH_NOTE_ICON = "gear.png"
+__doc__ = '''
+<b>Identify Primary Objects</b> identifies cellular features in grayscale images
+containing bright objects on a dark background.
 <hr>
-This module identifies primary objects in grayscale images
-containing bright objects on a dark background. Primary objects (e.g., nuclei) 
-are those that can be found in an image without using any corresponding reference 
-image. By contrast, secondary objects are those that are found using 
-previously-identified primary objects as a reference.
-
-After processing, the module display window for this module will
-show a panel with objects outlined in three colors (these are the defaults):
+<h4>What is a primary object?</h4>
+In CellProfiler, we use the term <i>object</i> as a generic term to refer to an identifed
+feature in an image, usually a cellular subcompartment of some kind. 
+We define an object as <i>primary</i> when it can be found in an image without needing 
+the asistance of another image as a reference. For example:
 <ul>
-<li>Green: Acceptable; passed all criteria</li>
-<li>Magenta: Discarded based on size</li>
-<li>Yellow: Discarded due to touching the border</li>
+<li>The nuclei of cells are usually more easily identifiable due to their more uniform 
+morphology,high contrast relative to the background when stained, and good separation
+between adjacent nuclei. These qualities make them candidates for primary object 
+identification.</li>
+<li>In contrast, cells are often heterogeneous and lower-contrast with more diffuse 
+staining, making them more challenging to identify than nuclei. In addition, cells often 
+touch their neighbors making it harder to delineate the cell borders. For these reasons, 
+cell bodies are candidates for <i>secondary object</i> identification, since they are 
+best identified by using a previously-identified primary object (i.e, the nuclei) as 
+a reference. See the <b>IdentifySecondaryObjects</b> module for details on how to 
+do this.</li>
 </ul>
-If you need to change the outline colors, you can 
-make adjustments in <i>File > Preferences</i>.
 
-The module window will also show another image where the identified 
-objects are displayed with arbitrary colors: the colors themselves do not mean 
-anything but simply help you distingush the various objects. 
-
-Steps to prepare images for this module:
+<h4>What do I need as input?</h4>
+To use this module, you will need to make sure that your input image have the following qualities:
+<ul>
+<li>The image should be grayscale. </li>
+<li>The foreground (i.e, regions of interest) are lighter than the background. </li>
+</ul>
+If this is not the case, other modules can be used to pre-process the images to ensure they are in 
+the proper form:
 <ul>
 <li>If the objects in your images are dark on a light background, you 
 should invert the images using the Invert operation in the <b>ImageMath</b> module.</li>
@@ -28,6 +40,44 @@ should invert the images using the Invert operation in the <b>ImageMath</b> modu
 grayscale using the <b>ColorToGray</b> module.</li>
 </ul>
 
+<h4>How do I optimize the settings?</h4>
+See below for help on the individual settings. The following icons are used to call attention to
+key items:
+<ul>
+<li><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Our recommendation or example use case
+for which a particular setting is best used.</li>
+<li><img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;Indicates a condition under which 
+a particular setting may not work well.</li>
+<li><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;Techincal note. Provides more
+detailed information on the setting, if interested.</li>
+</ul>
+
+<h4>What do I get as output?</h4>
+See the section <a href="#Available_measurements">"Available measurements"</a> below for 
+the measurements that are produced by this module.
+
+Once the module has finished processing, the module display window 
+will show the following panels:
+<ul>
+<li><i>Upper left:</i> The raw, original image.</li>
+<li><i>Upper right:</i> The identified objects shown as a color
+image wher connected pixels that belong to the same object are assigned the same
+color (<i>label image</i>). It is important to note that assigned colors are 
+arbitrary; they are used simply to help you distingush the various objects. </li>
+<li><i>Lower left:</i> The raw image overlaid with the colored outlines of the 
+identified objects. Each object is assigned one of three (default) colors:
+<ul>
+<li>Green: Acceptable; passed all criteria</li>
+<li>Magenta: Discarded based on size</li>
+<li>Yellow: Discarded due to touching the border</li>
+</ul>
+If you need to change the color defaults, you can 
+make adjustments in <i>File > Preferences</i>.</li>
+<li><i>Lower right:</i> A table showing some of the settings selected by the user, as well as
+those calculated by the module in order to produce the objects shown.</li>
+</ul>
+
+<a name="Available_measurements">
 <h4>Available measurements</h4>
 <b>Image measurements:</b>
 <ul>
@@ -49,7 +99,6 @@ background distributions.</li>
 object centroids. The centroid is calculated as the center of mass of the binary 
 representation of the object.</li>
 </ul>
-
 
 <h4>Technical notes</h4>
 
@@ -102,8 +151,9 @@ segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.
 (<a href="http://dx.doi.org/10.1111/j.0022-2720.2004.01338.x">link</a>)</li>
 </ul>
 
-<p>See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, and <b>IdentifyPrimManual</b>.</p>
-'''
+<p>See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, and 
+<b>IdentifyObjectsManually</b>.</p>
+'''%globals()
 
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -211,6 +261,18 @@ LIMIT_NONE = "Continue"
 LIMIT_TRUNCATE = "Truncate"
 LIMIT_ERASE = "Erase"
 
+# Settings text which is referenced in various places in the help
+SIZE_RANGE_SETTING_TEXT = "Typical diameter of objects, in pixel units (Min,Max)"
+EXCLUDE_SIZE_SETTING_TEXT = "Discard objects outside the diameter range?"
+AUTOMATIC_SMOOTHING_SETTING_TEXT = "Automatically calculate size of smoothing filter for declumping?"
+SMOOTHING_FILTER_SIZE_SETTING_TEXT  = "Size of smoothing filter"
+AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT = "Automatically calculate minimum allowed distance between local maxima?"
+WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT = "Automatically calculate the size of objects for the Laplacian of Gaussian filter?"
+
+# Icons for use in the help
+INTENSITY_DECLUMPING_ICON = "IdentifyPrimaryObjects_IntensityDeclumping.png"
+SHAPE_DECLUMPING_ICON = "IdentifyPrimaryObjects_ShapeDeclumping.png"
+
 class IdentifyPrimaryObjects(cpmi.Identify):
             
     variable_revision_number = 10
@@ -218,9 +280,10 @@ class IdentifyPrimaryObjects(cpmi.Identify):
     module_name = "IdentifyPrimaryObjects"
     
     def create_settings(self):
+        
         self.image_name = cps.ImageNameSubscriber(
             "Select the input image",doc="""
-            Select the images from which you want to use to identify objects.""")
+            Select the image that you want to use to identify objects.""")
         
         self.object_name = cps.ObjectNameProvider(
             "Name the primary objects to be identified",
@@ -228,26 +291,46 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             Enter the name that you want to call the objects identified by this module.""")
         
         self.size_range = cps.IntegerRange(
-            "Typical diameter of objects, in pixel units (Min,Max)", 
+            SIZE_RANGE_SETTING_TEXT,
             (10,40), minval=1, doc='''
-            Most options within this module use this estimate of the
-            size range of the objects in order to distinguish them from noise in the
-            image. For example, for some of the identification methods, the smoothing
-            applied to the image is based on the minimum size of the objects. The units
-            here are pixels so that it is easy to zoom in on objects and determine
-            typical diameters. %(HELP_ON_MEASURING_DISTANCES)s Note that for non-round objects, the 
-            diameter here is actually the "equivalent diameter", i.e.,
-            the diameter of a circle with the same area as the object.'''%globals())
-        
+            This setting allows the user to make a distinction on the basis of size, which can
+            be used in conjunction with the <i>%(EXCLUDE_SIZE_SETTING_TEXT)s</i> setting
+            below to remove objects that fail this criteria.
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            The units used here are pixels so that it is easy to zoom in on objects and determine
+            typical diameters. %(HELP_ON_MEASURING_DISTANCES)s</dd>
+            </dl>
+            <p>A few important notes:
+            <ul>
+            <li>Several other settings make use of the minimum object size entered here, 
+            whether the <i>%(EXCLUDE_SIZE_SETTING_TEXT)s</i> setting is used or not: 
+            <ul>
+            <li><i>%(AUTOMATIC_SMOOTHING_SETTING_TEXT)s</i></li>
+            <li><i>%(AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT)s</i></li>
+            <li><i>%(WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT)s</i> (shown only if Laplacian of 
+            Gaussian is selected as the declumping method)</li>
+            </ul>
+            </li>
+            <li>For non-round objects, the diameter here is actually the "equivalent diameter", i.e.,
+            the diameter of a circle with the same area as the object.</li>
+            </ul>
+            </p>'''%globals())
+
         self.exclude_size = cps.Binary(
-            "Discard objects outside the diameter range?",
+            EXCLUDE_SIZE_SETTING_TEXT,
             True, doc='''
-            You can choose to discard objects outside the range you specified. 
-            This allows you to exclude small objects (e.g., dust, noise,
-            and debris) or large objects (e.g., large clumps) if desired. Objects discarded 
-            based on size are outlined in red in the module's display. See also the
+            You can choose to discard objects outside the range you specified in the
+            <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting. 
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            Checking this box allows you to exclude small objects (e.g., dust, noise,
+            and debris) or large objects (e.g., large clumps) if desired. </dd>
+            </dl>
+            <p>Objects discarded 
+            based on size are outlined in magenta in the module's display. See also the
             <b>FilterObjects</b> module to further discard objects based on some
-            other measurement.''')
+            other measurement.'''%globals())
         
         self.merge_objects = cps.Binary(
             "Try to merge too small objects with nearby larger objects?", 
@@ -267,14 +350,18 @@ class IdentifyPrimaryObjects(cpmi.Identify):
         self.exclude_border_objects = cps.Binary(
             "Discard objects touching the border of the image?", 
             True, doc='''
-            You can choose to discard objects that touch the border of the image.
-            This is useful in cases when you do not want to make measurements of
-            objects that are not fully within the field of view (because, for
-            example, the morphological measurements would not be accurate).  Objects 
-            discarded due to border touching are outlined in yellow in the module's display.
+            Check this box to discard objects that touch the border of the image.
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            Removing objects that touch the image border is useful when you do 
+            not want to make downstream measurements of objects that are not fully within the 
+            field of view. For example, morphological measurements obtained from
+            a portion of an object would not be accurate.</dd>
+            </dl>
+            <p>Objects discarded due to border touching are outlined in yellow in the module's display.
             Note that if a per-object thresholding method is used, objects that touch the 
             border of the cropped region will be discarded with this setting
-            checked.''')
+            checked.</p>'''%globals())
         
         self.create_threshold_settings()
         
@@ -285,30 +372,52 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             objects, i.e., "declump" a large, merged object into the appropriate number of  
             objects of interest. To decide between these methods, you can run Test mode to see the results of each.
             <ul>
-            <li><i>%(UN_INTENSITY)s:</i> For objects that tend to have only one peak of brightness
+            <li>
+            <table cellpadding="0"><tr><td>
+            <i>%(UN_INTENSITY)s:</i> For objects that tend to have only one peak of brightness
             per object (e.g. objects that are brighter towards their interiors and 
-            dimmer towards their edges), this
-            option counts each intensity peak as a separate object. The objects can
+            dimmer towards their edges), this option counts each intensity peak as a separate object. 
+            The objects can
             be any shape, so they need not be round and uniform in size as would be
-            required for the <i>%(UN_SHAPE)s</i> option. The module is more successful when
+            required for the <i>%(UN_SHAPE)s</i> option. 
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            This choice is more successful when
             the objects have a smooth texture. By default, the image is automatically
             blurred to attempt to achieve appropriate smoothness (see <i>Smoothing filter</i> options),
             but overriding the default value can improve the outcome on
-            lumpy-textured objects.<br>
-            <p><b>Technical description:</b> Object centers are defined
-            as local intensity maxima in the smoothed image.</p></li>
-            <li><i>%(UN_SHAPE)s:</i> For cases when there are definite indentations separating
-            objects. This works best for objects that are round. The intensity
-            patterns in the original image are largely irrelevant: the image is converted to
+            lumpy-textured objects.</dd>
+            </dl></td>
+            <td><img src="memory:%(INTENSITY_DECLUMPING_ICON)s"></td>
+            </tr></table>
+            <dl>
+            <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
+            The object centers are defined as local intensity maxima in the smoothed image.</dd></dl></li>
+            
+            <li>
+            <table cellpadding="0"><tr><td>
+            <i>%(UN_SHAPE)s:</i> For cases when there are definite indentations separating
+            objects. The image is converted to
             black and white (binary) and the shape determines whether clumped
-            objects will be distinguished. Therefore, the cells need not be brighter
-            towards the interior as is required for the <i>%(UN_INTENSITY)s</i> option. The
+            objects will be distinguished. The
             declumping results of this method are affected by the thresholding
             method you choose. 
-            <p><b>Technical description:</b> The binary thresholded image is
+            <dl>
+            <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
+            This choice works best for objects that are round. In this case, the intensity
+            patterns in the original image are largely irrelevant. Therefore, the cells need not be brighter
+            towards the interior as is required for the <i>%(UN_INTENSITY)s</i> option.</dd>
+            </dl></td>
+            <td><img src="memory:%(SHAPE_DECLUMPING_ICON)s"></td>
+            </tr></table>
+            <dl>
+            <dd><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;
+            The binary thresholded image is
             distance-transformed and object centers are defined as peaks in this
             image. A distance-transform gives each pixel a value equal to the distance 
-            to the nearest pixel below a certain threshold, so it indicates the <i>%(UN_SHAPE)s</i> of the object.</p></li>
+            to the nearest pixel below a certain threshold, so it indicates the <i>%(UN_SHAPE)s</i> 
+            of the object.</dd>
+            </dl></li>
             <li><i>%(UN_LOG)s:</i> For objects that have an increasing intensity
             gradient toward their center, this option performs a Laplacian of Gaussian (or Mexican hat)
             transform on the image, which accentuates pixels that are local maxima of a desired size. It
@@ -357,31 +466,31 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             </ul>"""%globals())
         
         self.automatic_smoothing = cps.Binary(
-            'Automatically calculate size of smoothing filter for declumping?', 
+            AUTOMATIC_SMOOTHING_SETTING_TEXT, 
             True, doc="""
-            <p><i>(Used only when distinguishing between clumped objects)</i><br>
+            <i>(Used only when distinguishing between clumped objects)</i><br>
             This setting, along with the <i>Minimum allowed distance between local maxima</i> 
             setting, affects whether objects
             close to each other are considered a single object or multiple objects.
             It does not affect the dividing lines between an object and the
-            background.</p>
+            background.
             
             <p>Please note that this smoothing setting is applied after thresholding,
             and is therefore distinct from the threshold smoothing method setting above, 
             which is applied <i>before</i> thresholding.</p>
             
             <p>The size of the smoothing filter is automatically 
-            calculated based on the specified minimum object diameter
-            that you have entered. If you see too many objects merged that ought to be separate
+            calculated based on the <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting above. 
+            If you see too many objects merged that ought to be separate
             or too many objects split up that
             ought to be merged, you may want to override the automatically
-            calculated value.</p>""")
+            calculated value.</p>"""%globals())
         
         self.smoothing_filter_size = cps.Integer(
-            'Size of smoothing filter', 10, doc="""
+            SMOOTHING_FILTER_SIZE_SETTING_TEXT, 10, doc="""
             <i>(Used only when distinguishing between clumped objects)</i> <br>
             If you see too many objects merged that ought to be separated
-            (under-segmentation), the <i>Size of smoothing filter</i> value 
+            (under-segmentation), this value 
             should be lower. If you see too many 
             objects split up that ought to be merged (over-segmentation), the 
             value should be higher. Enter 0 to prevent any image smoothing in certain 
@@ -395,19 +504,20 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             size of the smoothing filter increases the processing time exponentially.</p>""")
 
         self.automatic_suppression = cps.Binary(
-            'Automatically calculate minimum allowed distance between local maxima?', 
+            AUTOMATIC_MAXIMA_SUPPRESSION_SETTING_TEXT, 
             True, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
-            This setting, along with the <i>Size of the smoothing filter</i> setting,
+            This setting, along with the <i>%(SMOOTHING_FILTER_SIZE_SETTING_TEXT)s</i> setting,
             affects whether objects close to each other are considered a single object
             or multiple objects. It does not affect the dividing lines between an object and the
             background. Local maxima that are closer together than the minimum 
             allowed distance will be suppressed (the local intensity histogram is smoothed to 
             remove the peaks within that distance). The distance can be automatically 
-            calculated based on the minimum object diameter that you have entered,
+            calculated based on the minimum entered for the 
+            <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting above,
             but if you see too many objects merged that ought to be separate, or
             too many objects split up that ought to be merged, you may want to override the
-            automatically calculated value.""")
+            automatically calculated value."""%globals())
         
         self.maxima_suppression_size = cps.Integer(
             'Suppress local maxima that are closer than this minimum allowed distance', 
@@ -450,8 +560,7 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             'Enter Laplacian of Gaussian threshold', .5, 0, 1)
         
         self.wants_automatic_log_diameter = cps.Binary(
-            'Automatically calculate the size of objects '
-            'for the Laplacian of Gaussian filter?', True,doc="""
+            WANTS_AUTOMATIC_LOG_DIAMETER_SETTING_TEXT, True,doc="""
             <i>(Used only when applying the LoG thresholding method)</i><br>
             Check this box to use the filtering diameter range above 
             when constructing the LoG filter. Uncheck the

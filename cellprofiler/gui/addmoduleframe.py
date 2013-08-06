@@ -20,7 +20,6 @@ import cellprofiler.preferences
 import cellprofiler.modules
 import cellprofiler.cpmodule
 from cellprofiler.gui import get_cp_icon
-from cellprofiler.gui.help import BUILDING_A_PIPELINE_HELP
 from cellprofiler.gui.html.manual import search_module_help
 import cpframe
 
@@ -205,13 +204,16 @@ class AddModuleFrame(wx.Frame):
             self.display_helpframe(html, "Help matching %s" % self.search_text)
             
     def __on_getting_started(self,event):
+        from cellprofiler.gui.help import BUILDING_A_PIPELINE_HELP
         self.display_helpframe(BUILDING_A_PIPELINE_HELP,
                                'Add modules: Getting Started')
+        
     def display_helpframe(self, help, title):
+        from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
         helpframe = wx.Frame(self, -1,title, size=(640,480))
         sizer = wx.BoxSizer()
         helpframe.SetSizer(sizer)
-        window = wx.html.HtmlWindow(helpframe)
+        window = HtmlClickableWindow(helpframe)
         sizer.Add(window,1,wx.EXPAND)
         window.AppendToPage(help)
         helpframe.SetIcon(get_cp_icon())

@@ -467,3 +467,53 @@ class TestCreateBatchFiles(unittest.TestCase):
                 if os.path.exists(hfile):
                     os.unlink(hfile)
                 os.rmdir(bpath)
+    
+    def test_04_01_alter_path(self):
+        module = C.CreateBatchFiles()
+        module.mappings[0].local_directory.value = "foo"
+        module.mappings[0].remote_directory.value = "bar"
+        
+        self.assertEqual(module.alter_path("foo/bar"), "bar/bar")
+        self.assertEqual(module.alter_path("baz/bar"), "baz/bar")
+        
+    def test_04_02_alter_path_regexp(self):
+        module = C.CreateBatchFiles()
+        module.mappings[0].local_directory.value = "foo"
+        module.mappings[0].remote_directory.value = "bar"
+        
+        self.assertEqual(
+            module.alter_path("foo/bar", regexp_substitution=True), "bar/bar")
+        self.assertEqual(
+            module.alter_path("baz/bar", regexp_substitution=True), "baz/bar")
+        
+        module.mappings[0].local_directory.value = r"\foo\baz"
+        module.remote_host_is_windows.value = True
+        self.assertEqual(
+            module.alter_path(r"\\foo\\baz\\bar", regexp_substitution=True),
+            r"bar\\bar")
+        
+    if sys.platform == 'win32':
+        def test_04_03_alter_path_windows(self):
+            module = C.CreateBatchFiles()
+            module.mappings[0].local_directory.value = "\\foo"
+            module.mappings[0].remote_directory.value = "\\bar"
+            
+            self.assertEqual(
+                module.alter_path("\\foo\\bar"), "/bar/bar")
+            self.assertEqual(
+                module.alter_path("\\FOO\\bar"), "/bar/bar")
+            self.assertEqual(
+                module.alter_path("\\baz\\bar"), "/baz/bar")
+            
+        def test_04_04_alter_path_windows_regexp(self):
+            module = C.CreateBatchFiles()
+            module.mappings[0].local_directory.value = "foo"
+            module.mappings[0].remote_directory.value = "bar"
+            
+            self.assertEqual(
+                module.alter_path("\\\\foo\\\\bar", regexp_substitution=True), 
+                "/foo/bar")
+            self.assertEqual(
+                module.alter_path("\\\\foo\\g<bar>", regexp_substitution=True), 
+                "/foo\\g<bar>")
+        

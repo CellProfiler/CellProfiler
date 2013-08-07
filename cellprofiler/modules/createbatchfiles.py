@@ -348,20 +348,26 @@ class CreateBatchFiles(cpm.CPModule):
         path = path to modify
         regexp_substitution - if true, exclude \g<...> from substitution
         '''
+        regexp_substitution = varargs.get("regexp_substitution", False)
         for mapping in self.mappings:
+            local_directory = mapping.local_directory.value
+            remote_directory = mapping.remote_directory.value
+            if regexp_substitution:
+                local_directory = local_directory.replace("\\", "\\\\")
+                remote_directory = remote_directory.replace("\\", "\\\\")
+            
             if sys.platform.startswith('win'):
                 # Windows is case-insentitve so do case-insensitve mapping
-                if path.upper().startswith(mapping.local_directory.value.upper()):
-                    path = (mapping.remote_directory.value +
-                            path[len(mapping.local_directory.value):])
+                if path.upper().startswith(local_directory.upper()):
+                    path = (remote_directory +
+                            path[len(local_directory):])
             else:
-                if path.startswith(mapping.local_directory.value):
-                    path = (mapping.remote_directory.value +
-                            path[len(mapping.local_directory.value):])
+                if path.startswith(local_directory):
+                    path = (remote_directory +
+                            path[len(local_directory):])
         if self.remote_host_is_windows.value:
             path = path.replace('/','\\')
-        elif (varargs.has_key("regexp_substitution") and
-                 varargs["regexp_substitution"]):
+        elif (regexp_substitution):
             path = re.subn('\\\\\\\\','/',path)[0]
             path = re.subn('\\\\(?!g\\<[^>]*\\>)','/',path)[0]
         else:

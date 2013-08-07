@@ -398,7 +398,6 @@ class DirectoryPath(Text):
     def alter_for_create_batch_files(self, fn_alter_path):
         '''Call this to alter the setting appropriately for batch execution'''
         custom_path = self.custom_path
-        regexp_substitution =custom_path.find(r"\g<") != -1
         if custom_path.startswith("\g<") and sys.platform.startswith("win"):
             # So ugly, the "\" sets us up for the root directory during
             # os.path.join, so we need r".\\" at start to fake everyone out
@@ -412,17 +411,17 @@ class DirectoryPath(Text):
             self.custom_path = fn_alter_path(get_default_output_directory())
         elif self.dir_choice == ABSOLUTE_FOLDER_NAME:
             self.custom_path = fn_alter_path(
-                self.custom_path, regexp_substitution = regexp_substitution)
+                self.custom_path, regexp_substitution = self.allow_metadata)
         elif self.dir_choice == DEFAULT_INPUT_SUBFOLDER_NAME:
             self.dir_choice = ABSOLUTE_FOLDER_NAME
             self.custom_path = fn_alter_path(
                 os.path.join(get_default_image_directory(), custom_path),
-                regexp_substitution=regexp_substitution)
+                regexp_substitution=self.allow_metadata)
         elif self.dir_choice == DEFAULT_OUTPUT_SUBFOLDER_NAME:
             self.dir_choice = ABSOLUTE_FOLDER_NAME
             self.custom_path = fn_alter_path(
                 os.path.join(get_default_output_directory(), custom_path), 
-                regexp_substitution = regexp_substitution)
+                regexp_substitution = self.allow_metadata)
         
     def test_valid(self, pipeline):
         if self.dir_choice not in self.dir_choices + [NO_FOLDER_NAME]:

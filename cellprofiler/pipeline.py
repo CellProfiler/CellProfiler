@@ -645,6 +645,7 @@ class Pipeline(object):
         self.__measurement_columns = {}
         self.__measurement_column_hash = None
         self.__test_mode = False
+        self.message_for_user = None
         self.__settings = []
         self.__undo_stack = []
         self.__undo_start = None

@@ -405,7 +405,10 @@ class ExportToDatabase(cpm.CPModule):
         self.table_prefix = cps.Text(
             "Table prefix", "MyExpt_" , doc = """
             <i>(Used if Add a prefix to table names?</i> is selected)<br>
-            Enter the table prefix you want to use.""")
+            Enter the table prefix you want to use. 
+            <p>MySQL has a 64 character limit on the full name of the table.
+            If the combination of the table name and prefix exceeds this
+            limit, you will receive an error associated with this setting.</p>""")
         
         self.sql_file_prefix = cps.Text(
             "SQL file prefix", "SQL_", doc = """
@@ -920,6 +923,7 @@ class ExportToDatabase(cpm.CPModule):
             "Enter the name of the filter",'',doc="""
             <i>(Used only if creating a properties file and specifiying an image data filter)</i><br>
             Enter a name for the filter. Only alphanumeric characters and underscores are permitted."""))
+        
         group.append(
             "filter_statement", cps.Text(
             "Enter the MySQL WHERE clause to define a filter",'',doc="""
@@ -1361,6 +1365,17 @@ class ExportToDatabase(cpm.CPModule):
             if not self.thumbnail_image_names.get_selections():
                 raise cps.ValidationError("Please choose at least one image", self.thumbnail_image_names)
             
+        if self.want_table_prefix:
+            max_char = 64   
+            table_name_lengths = [len(self.table_prefix.value + "Per_Image")]
+            table_name_lengths += [len(self.table_prefix.value + "Per_Object")] if self.objects_choice != O_NONE and self.separate_object_tables.value in (OT_COMBINE, OT_VIEW) else []
+            table_name_lengths += [len(self.table_prefix.value+"Per_"+x) for x in (self.objects_list.value).split(',')] if self.objects_choice != O_NONE and self.separate_object_tables == OT_PER_OBJECT else []
+            if np.any(np.array(table_name_lengths) > max_char):
+                msg = "A table name exceeds the %d character allowed by MySQL.\n"%max_char
+                msg += "Please shorten the prefix if using a single object table,\n"
+                msg += "and/or the object name if using separate tables."
+                raise cps.ValidationError(msg,self.table_prefix)            
+            
     def validate_module_warnings(self, pipeline):
         '''Warn user re: Test mode '''
         if pipeline.test_mode:
@@ -1371,9 +1386,9 @@ class ExportToDatabase(cpm.CPModule):
         if self.objects_choice != O_NONE and self.separate_object_tables == OT_PER_OBJECT:
             raise cps.ValidationError(
                 ("You will have to merge the separate object tables in order\n"
-                 "to use CellProfiler Analyst fully, or you will be restricted \n"
-                 "to only one object's data at a time in CPA. Choose %s to write a single\n"
-                 "object table.") % ("'%s' or '%s'"%(OT_COMBINE,OT_VIEW)), self.separate_object_tables)
+                 "to use CellProfiler Analyst fully, or you will be restricted\n"
+                 "to only one object's data at a time in CPA. Choose\n"
+                 "%s to write a single object table.") % ("'%s' or '%s'"%(OT_COMBINE,OT_VIEW)), self.separate_object_tables)
                 
         '''Warn user re: bad characters in object used for center, filter/group names and class_table name'''
         if self.save_cpa_properties:

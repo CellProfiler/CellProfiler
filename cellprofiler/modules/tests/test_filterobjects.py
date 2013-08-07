@@ -142,7 +142,7 @@ class TestFilterObjects(unittest.TestCase):
         module.run(workspace)
         labels = workspace.object_set.get_objects("my_result")
         self.assertTrue(np.all(labels.segmented==expected))
-    
+        
     def test_02_01_keep_one_min(self):
         '''Keep two sub-objects (min) from among four enclosed by two'''
         sub_labels = np.zeros((20,20), int)
@@ -185,6 +185,52 @@ class TestFilterObjects(unittest.TestCase):
         module.filter_choice.value = F.FI_MAXIMAL_PER_OBJECT
         m = workspace.measurements
         m.add_measurement("my_objects","my_measurement",np.array([1,2,4,3]))
+        module.run(workspace)
+        labels = workspace.object_set.get_objects("my_result")
+        self.assertTrue(np.all(labels.segmented==expected))
+    
+    def test_02_03_keep_maximal_most_overlap(self):
+        labels = np.zeros((10, 20), int)
+        labels[:, :10] = 1
+        labels[:, 10:] = 2
+        sub_labels = np.zeros((10, 20), int)
+        sub_labels[2, 4] = 1
+        sub_labels[4:6, 8:15] = 2
+        sub_labels[8, 15] = 3
+        expected = sub_labels * (sub_labels != 3)
+        workspace, module = self.make_workspace({ "my_objects": sub_labels,
+                                                 "my_enclosing_objects": labels })
+        module.object_name.value = "my_objects"
+        module.target_name.value = "my_result"
+        module.enclosing_object_name.value = 'my_enclosing_objects'
+        module.measurements[0].measurement.value = "my_measurement"
+        module.filter_choice.value = F.FI_MAXIMAL_PER_OBJECT
+        module.per_object_assignment.value = F.PO_PARENT_WITH_MOST_OVERLAP
+        m = workspace.measurements
+        m.add_measurement("my_objects","my_measurement",np.array([1,4,2]))
+        module.run(workspace)
+        labels = workspace.object_set.get_objects("my_result")
+        self.assertTrue(np.all(labels.segmented==expected))
+    
+    def test_02_04_keep_minimal_most_overlap(self):
+        labels = np.zeros((10, 20), int)
+        labels[:, :10] = 1
+        labels[:, 10:] = 2
+        sub_labels = np.zeros((10, 20), int)
+        sub_labels[2, 4] = 1
+        sub_labels[4:6, 8:15] = 2
+        sub_labels[8, 15] = 3
+        expected = sub_labels * (sub_labels != 3)
+        workspace, module = self.make_workspace({ "my_objects": sub_labels,
+                                                 "my_enclosing_objects": labels })
+        module.object_name.value = "my_objects"
+        module.target_name.value = "my_result"
+        module.enclosing_object_name.value = 'my_enclosing_objects'
+        module.measurements[0].measurement.value = "my_measurement"
+        module.filter_choice.value = F.FI_MINIMAL_PER_OBJECT
+        module.per_object_assignment.value = F.PO_PARENT_WITH_MOST_OVERLAP
+        m = workspace.measurements
+        m.add_measurement("my_objects","my_measurement",np.array([4,2,3]))
         module.run(workspace)
         labels = workspace.object_set.get_objects("my_result")
         self.assertTrue(np.all(labels.segmented==expected))
@@ -1273,6 +1319,82 @@ FilterObjects:[module_num:6|svn_version:\'9000\'|variable_revision_number:5|show
             self.assertEqual(module.object_name, "MyObjects")
             self.assertEqual(module.mode, F.MODE_MEASUREMENTS)
             self.assertEqual(module.filter_choice, F.FI_LIMITS)
+            self.assertEqual(module.per_object_assignment, F.PO_BOTH)
+            self.assertEqual(module.rules_directory.dir_choice, cpprefs.DEFAULT_INPUT_FOLDER_NAME)
+            self.assertEqual(module.rules_directory.custom_path, "./rules")
+            self.assertEqual(module.rules_file_name, "myrules.txt")
+            self.assertEqual(module.rules_class, "1")
+            self.assertEqual(module.measurement_count.value, 2)
+            self.assertEqual(module.additional_object_count.value, 2)
+            self.assertEqual(module.measurements[0].measurement, 
+                             "Intensity_LowerQuartileIntensity_DNA")
+            self.assertTrue(module.measurements[0].wants_minimum)
+            self.assertFalse(module.measurements[0].wants_maximum)
+            self.assertAlmostEqual(module.measurements[0].min_limit.value, 0.2)
+            self.assertAlmostEqual(module.measurements[0].max_limit.value, 1.5)
+            self.assertEqual(module.measurements[1].measurement,
+                             "Intensity_UpperQuartileIntensity_DNA")
+            self.assertFalse(module.measurements[1].wants_minimum)
+            self.assertTrue(module.measurements[1].wants_maximum)
+            self.assertAlmostEqual(module.measurements[1].min_limit.value, 0.9)
+            self.assertAlmostEqual(module.measurements[1].max_limit.value, 1.8)
+            for group, name in zip(module.additional_objects,('Cells','Cytoplasm')):
+                self.assertEqual(group.object_name, name)
+                self.assertEqual(group.target_name, "Filtered%s" % name)
+                self.assertEqual(group.outlines_name, "OutlinesFiltered%s" % name)
+                self.assertFalse(group.wants_outlines) 
+                
+    def test_05_09_load_v7(self):
+            data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+    Version:1
+    SVNRevision:9025
+    
+    FilterObjects:[module_num:1|svn_version:\'9000\'|variable_revision_number:7|show_window:True|notes:\x5B\x5D]
+        Name the output objects:MyFilteredObjects
+        Select the object to filter:MyObjects
+        Filter using classifier rules or measurements?:Measurements
+        Select the filtering method:Limits
+        What did you call the objects that contain the filtered objects?:None
+        Retain the outlines of filtered objects for use later in the pipeline (for example, in SaveImages)?:No
+        Name the outline image:FilteredObjects
+        Rules file location:Default input folder\x7C./rules
+        Rules file name:myrules.txt
+        Rules class:1
+        Hidden:2
+        Hidden:2
+        Assign overlapping child to:Parent with most overlap
+        Select the measurement to filter by:Intensity_LowerQuartileIntensity_DNA
+        Filter using a minimum measurement value?:Yes
+        Minimum value:0.2
+        Filter using a maximum measurement value?:No
+        Maximum value:1.5
+        Select the measurement to filter by:Intensity_UpperQuartileIntensity_DNA
+        Filter using a minimum measurement value?:No
+        Minimum value:0.9
+        Filter using a maximum measurement value?:Yes
+        Maximum value:1.8
+        Select additional object to relabel:Cells
+        Name the relabeled objects:FilteredCells
+        Save outlines of relabeled objects?:No
+        Name the outline image:OutlinesFilteredCells
+        Select additional object to relabel:Cytoplasm
+        Name the relabeled objects:FilteredCytoplasm
+        Save outlines of relabeled objects?:No
+        Name the outline image:OutlinesFilteredCytoplasm
+    """
+            pipeline = cpp.Pipeline()
+            def callback(caller,event):
+                self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            pipeline.add_listener(callback)
+            pipeline.load(StringIO.StringIO(data))
+            self.assertEqual(len(pipeline.modules()), 1)
+            module = pipeline.modules()[-1]
+            self.assertTrue(isinstance(module, F.FilterObjects))
+            self.assertEqual(module.target_name, "MyFilteredObjects")
+            self.assertEqual(module.object_name, "MyObjects")
+            self.assertEqual(module.mode, F.MODE_MEASUREMENTS)
+            self.assertEqual(module.filter_choice, F.FI_LIMITS)
+            self.assertEqual(module.per_object_assignment, F.PO_PARENT_WITH_MOST_OVERLAP)
             self.assertEqual(module.rules_directory.dir_choice, cpprefs.DEFAULT_INPUT_FOLDER_NAME)
             self.assertEqual(module.rules_directory.custom_path, "./rules")
             self.assertEqual(module.rules_file_name, "myrules.txt")

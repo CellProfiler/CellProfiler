@@ -45,6 +45,7 @@ import numpy as np
 import os
 import scipy as sp
 import scipy.ndimage as scind
+from scipy.sparse import coo_matrix
 import traceback
 
 from cellprofiler.modules.identify import FF_PARENT, FF_CHILDREN_COUNT
@@ -82,7 +83,9 @@ FI_ALL = [ FI_MINIMAL, FI_MAXIMAL, FI_MINIMAL_PER_OBJECT,
           FI_MAXIMAL_PER_OBJECT, FI_LIMITS ]
 
 '''The number of settings for this module in the pipeline if no additional objects'''
-FIXED_SETTING_COUNT = 15
+FIXED_SETTING_COUNT = 13
+
+FIXED_SETTING_COUNT_V6 = 12
 
 '''The number of settings per additional object'''
 ADDITIONAL_OBJECT_SETTING_COUNT = 4
@@ -99,11 +102,15 @@ MODE_BORDER = "Image or mask border"
 
 DIR_CUSTOM = "Custom folder"
 
+PO_BOTH = "Both parents"
+PO_PARENT_WITH_MOST_OVERLAP = "Parent with most overlap"
+PO_ALL = [PO_BOTH, PO_PARENT_WITH_MOST_OVERLAP]
+
 class FilterObjects(cpm.CPModule):
 
     module_name = 'FilterObjects'
     category = "Object Processing"
-    variable_revision_number = 6
+    variable_revision_number = 7
     
     def create_settings(self):
         '''Create the initial settings and name the module'''
@@ -166,6 +173,33 @@ class FilterObjects(cpm.CPModule):
             in each cell).  You do not have to explicitly relate objects before using this module.</li>
             <li><i>%(FI_MINIMAL_PER_OBJECT)s:</i> Same as <i>Maximal per object</i>, except filtering is based on the minimum value.</li>
             </ul>"""%globals())
+        
+        self.per_object_assignment = cps.Choice(
+            "Assign overlapping child to", PO_ALL,
+            doc = """
+            <i>(Used only if filtering per object)</i>
+            <br>A child object can overlap two parent objects and can have
+            the maximal/minimal measurement of all child objects in both parents.
+            This option controls how an overlapping maximal/minimal child
+            affects filtering of other children of its parents and to which
+            parent the maximal child is assigned. The choices are:
+            <br><ul>
+            <li><i>%(PO_BOTH)s</i>: The child will be assigned to both parents
+            and all other children of both parents will be filtered. Only the
+            maximal child per parent will be left, but if <b>RelateObjects</b>
+            is used to relate the maximal child to its parent, one or the other
+            of the overlapping parents will not have a child even though the
+            excluded parent may have other child objects. The maximal child
+            can still be assigned to both parents using a database join
+            via the relationships table if you are using <b>ExportToDatabase</b>
+            and separate object tables.</li>
+            <li><i>%(PO_PARENT_WITH_MOST_OVERLAP)s</i>: The child will be
+            assigned to the parent with the most overlap and a child with a
+            less maximal/minimal measurement, if available, will be assigned
+            to other parents. Use this option to ensure that parents with
+            an alternate non-overlapping child object are assigned some child
+            object by a subseequent <b>RelateObjects</b> module.</li></ul>
+            """ % globals())
      
         self.enclosing_object_name = cps.ObjectNameSubscriber(
             'Select the objects that contain the filtered objects',cps.NONE, doc = """
@@ -325,7 +359,8 @@ class FilterObjects(cpm.CPModule):
                   self.rules_directory, 
                   self.rules_file_name,
                   self.rules_class,
-                  self.measurement_count, self.additional_object_count]
+                  self.measurement_count, self.additional_object_count,
+                  self.per_object_assignment]
         for x in self.measurements:
             result += x.pipeline_settings()
         for x in self.additional_objects:
@@ -334,7 +369,8 @@ class FilterObjects(cpm.CPModule):
 
     def help_settings(self):
         return [self.target_name, self.object_name, self.mode,
-                self.filter_choice, self.rules_directory, 
+                self.filter_choice, self.per_object_assignment,
+                self.rules_directory, 
                 self.rules_file_name, self.rules_class,
                 self.enclosing_object_name,
                 self.wants_outlines, self.outlines_name]
@@ -357,7 +393,8 @@ class FilterObjects(cpm.CPModule):
                            self.measurements[0].divider]
             elif self.filter_choice in (FI_MINIMAL_PER_OBJECT, 
                                         FI_MAXIMAL_PER_OBJECT):
-                result += [self.measurements[0].measurement,
+                result += [self.per_object_assignment,
+                           self.measurements[0].measurement,
                            self.enclosing_object_name,
                            self.measurements[0].divider]
             elif self.filter_choice == FI_LIMITS:
@@ -591,8 +628,9 @@ class FilterObjects(cpm.CPModule):
         src_name = self.object_name.value
         enclosing_name = self.enclosing_object_name.value
         src_objects = workspace.get_objects(src_name)
-        enclosing_labels = workspace.get_objects(enclosing_name).segmented
-        enclosing_max = np.max(enclosing_labels)
+        enclosing_objects = workspace.get_objects(enclosing_name)
+        enclosing_labels = enclosing_objects.segmented
+        enclosing_max = enclosing_objects.count
         if enclosing_max == 0:
             return np.array([],int)
         enclosing_range = np.arange(1, enclosing_max+1)
@@ -605,31 +643,85 @@ class FilterObjects(cpm.CPModule):
         #
         values = workspace.measurements.get_current_measurement(src_name,
                                                                 measurement)
-        tricky_values = np.zeros((len(values)+1,))
-        tricky_values[1:]=values
         wants_max = self.filter_choice == FI_MAXIMAL_PER_OBJECT
-        if wants_max:
-            tricky_values[0] = -np.Inf
-        else:
-            tricky_values[0] = np.Inf
         src_labels = src_objects.segmented
-        src_values = tricky_values[src_labels]
-        #
-        # Now find the location of the best for each of the enclosing objects
-        #
-        fn = scind.maximum_position if wants_max else scind.minimum_position
-        best_pos = fn(src_values, enclosing_labels, enclosing_range)
-        best_pos = np.array((best_pos,) if isinstance(best_pos, tuple)
-                            else best_pos)
-        best_pos = best_pos.astype(np.uint32)
-        #
-        # Get the label of the pixel at each location
-        #
-        indexes = src_labels[best_pos[:,0], best_pos[:,1]]
-        indexes = set(indexes)
-        indexes = list(indexes)
-        indexes.sort()
-        return indexes[1:] if len(indexes)>0 and indexes[0] == 0 else indexes
+        src_count = src_objects.count
+        if self.per_object_assignment == PO_PARENT_WITH_MOST_OVERLAP:
+            #
+            # Find the number of overlapping pixels in enclosing
+            # and source objects
+            #
+            mask = enclosing_labels * src_labels != 0
+            enclosing_labels = enclosing_labels[mask]
+            src_labels = src_labels[mask]
+            order = np.lexsort((enclosing_labels, src_labels))
+            src_labels = src_labels[order]
+            enclosing_labels = enclosing_labels[order]
+            firsts = np.hstack(
+                ([0], 
+                 np.where((src_labels[:-1] != src_labels[1:]) |
+                          (enclosing_labels[:-1] != enclosing_labels[1:]))[0]+1,
+                 [len(src_labels)]))
+            areas = firsts[1:] - firsts[:-1]
+            enclosing_labels = enclosing_labels[firsts[:-1]]
+            src_labels = src_labels[firsts[:-1]]
+            #
+            # Re-sort by source label value and area descending
+            #
+            if wants_max:
+                svalues = -values
+            else:
+                svalues = values
+            order = np.lexsort((-areas, svalues[src_labels-1]))
+            src_labels, enclosing_labels, areas = [
+                x[order] for x in src_labels, enclosing_labels, areas]
+            firsts = np.hstack((
+                [0], np.where(src_labels[:-1] != src_labels[1:])[0]+1,
+                src_labels.shape[:1]))
+            counts = firsts[1:] - firsts[:-1]
+            #
+            # Process them in order. The maximal or minimal child
+            # will be assigned to the most overlapping parent and that
+            # parent will be excluded.
+            #
+            best_src_label = np.zeros(enclosing_max+1, int)
+            for idx, count in zip(firsts[:-1], counts):
+                for i in range(count):
+                    enclosing_object_number = enclosing_labels[idx + i]
+                    if best_src_label[enclosing_object_number] == 0:
+                        best_src_label[enclosing_object_number] = \
+                            src_labels[idx]
+                        break
+            #
+            # Remove best source labels = 0 and sort to get the list
+            #
+            best_src_label = best_src_label[best_src_label!=0]
+            best_src_label.sort()
+            return best_src_label
+        else:
+            tricky_values = np.zeros((len(values)+1,))
+            tricky_values[1:]=values
+            if wants_max:
+                tricky_values[0] = -np.Inf
+            else:
+                tricky_values[0] = np.Inf
+            src_values = tricky_values[src_labels]
+            #
+            # Now find the location of the best for each of the enclosing objects
+            #
+            fn = scind.maximum_position if wants_max else scind.minimum_position
+            best_pos = fn(src_values, enclosing_labels, enclosing_range)
+            best_pos = np.array((best_pos,) if isinstance(best_pos, tuple)
+                                else best_pos)
+            best_pos = best_pos.astype(np.uint32)
+            #
+            # Get the label of the pixel at each location
+            #
+            indexes = src_labels[best_pos[:,0], best_pos[:,1]]
+            indexes = set(indexes)
+            indexes = list(indexes)
+            indexes.sort()
+            return indexes[1:] if len(indexes)>0 and indexes[0] == 0 else indexes
     
     def keep_within_limits(self, workspace, src_objects):
         '''Return an array containing the indices of objects to keep
@@ -1022,6 +1114,14 @@ class FilterObjects(cpm.CPModule):
             #
             setting_values = setting_values[:9] + ["1"] + setting_values[9:]
             variable_revision_number = 6
+            
+        if (not from_matlab) and variable_revision_number == 6:
+            #
+            # Added per-object assignment
+            #
+            setting_values = setting_values[:FIXED_SETTING_COUNT_V6] +\
+                [PO_BOTH] + setting_values[FIXED_SETTING_COUNT_V6:]
+            variable_revision_number = 7
             
         SLOT_DIRECTORY = 7
         setting_values[SLOT_DIRECTORY] = cps.DirectoryPath.upgrade_setting(

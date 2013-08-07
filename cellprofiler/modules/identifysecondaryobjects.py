@@ -662,6 +662,8 @@ class IdentifySecondaryObjects(cpmi.Identify):
             workspace.display_data.object_count = object_count
 
     def display(self, workspace, figure):
+        from identify import TS_BINARY_IMAGE
+        
         object_pct = workspace.display_data.object_pct
         img = workspace.display_data.img
         primary_outline = workspace.display_data.primary_outline
@@ -686,7 +688,7 @@ class IdentifySecondaryObjects(cpmi.Identify):
                                "%.1f pixels" % (median_diameter)])
             statistics.append(["90th pctile diameter",
                                "%.1f pixels" % (high_diameter)])
-            if self.method != M_DISTANCE_N:
+            if self.method != M_DISTANCE_N and self.threshold_scope != TS_BINARY_IMAGE:
                 statistics.append(["Thresholding filter size",
                                 "%.1f"%(workspace.display_data.threshold_sigma)])            
             statistics.append(["Area covered by objects", "%.1f %%" % object_pct])

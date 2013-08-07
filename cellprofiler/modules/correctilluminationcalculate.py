@@ -539,7 +539,7 @@ class CorrectIlluminationCalculate(cpm.CPModule):
         if self.save_dilated_image.value:
             workspace.image_set.add(self.dilated_image_name.value, 
                                     dilated_image)
-        if workspace.display:
+        if self.show_window:
             # store images for potential display
             workspace.display_data.avg_image = avg_image.pixel_data
             workspace.display_data.dilated_image = dilated_image.pixel_data

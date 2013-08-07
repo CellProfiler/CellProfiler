@@ -432,6 +432,14 @@ class ImageSetCtrl(wx.grid.Grid, CornerButtonMixin):
 
     def on_update(self):
         self.Table.workspace.refresh_image_set()
+        if self.Table.workspace.measurements.image_set_count == 0:
+            wx.MessageBox(
+                "Sorry, your pipeline doesn't produce any valid image sets "
+                "as currently configured. Check Help > Creating a Project for "
+                "more help using the input modules.",
+                caption = "No image sets available",
+                style=wx.OK | wx.ICON_INFORMATION,
+                parent = self)
         self.recompute()
         
     def set_controller(self, controller):

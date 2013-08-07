@@ -85,7 +85,7 @@ class Images(cpm.CPModule):
                       ExtensionPredicate()]
         
         self.wants_filter = cps.Binary(
-            "Filter images based on matching rules?", False, doc = """
+            "Filter images based on matching rules?", True, doc = """
             Check this setting to display and use rules to filter files for processing. 
             <p>By default, <b>Images</b> will pass all the files specified in the file list
             panel downstream to have a meaningful name assigned to it (so other modules can access it) or optionally, to 
@@ -95,7 +95,8 @@ class Images(cpm.CPModule):
             which contains a mixture of images that you want to analyze and other files that you want to ignore.</p>""")
             
         self.filter = cps.Filter("Select the rule criteria", predicates, 
-            'and (extension does isimage)',doc = """
+            'and (extension does isimage) (directory doesnot startwith ".")',
+            doc = """
             Specify filter of rules to narrow down the files to be analyzed. 
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals())
         

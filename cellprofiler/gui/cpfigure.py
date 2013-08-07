@@ -451,18 +451,7 @@ class CPFigureFrame(wx.Frame):
         if (sys.platform.lower().startswith('win') and 
             evt.inaxes and
             'zoom rect' in self.navtoolbar.mode.lower()):  # NOTE: There are no constants for the navbar modes
-            #
-            # Build the crosshair cursor image as a numpy array.
-            #
-            buf = np.ones((16,16,3), dtype='uint8') * 255
-            buf[7,1:-1,:] = buf[1:-1,7,:] = 0
-            abuf = np.ones((16,16), dtype='uint8') * 255
-            abuf[:6,:6] = abuf[9:,:6] = abuf[9:,9:] = abuf[:6,9:] = 0
-            im = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
-            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
-            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
-            cursor = wx.CursorFromImage(im)
-            self.figure.canvas.SetCursor(cursor)
+            self.figure.canvas.SetCursor(get_crosshair_cursor())
             
         if self.mouse_down is None:
             x0 = evt.xdata
@@ -1682,6 +1671,26 @@ def get_matplotlib_interpolation_preference():
         return matplotlib.image.BICUBIC
     return matplotlib.image.NEAREST
 
+__crosshair_cursor = None
+def get_crosshair_cursor():
+    global __crosshair_cursor
+    if __crosshair_cursor is None:
+        if sys.platform.lower().startswith('win'):
+            #
+            # Build the crosshair cursor image as a numpy array.
+            #
+            buf = np.ones((16,16,3), dtype='uint8') * 255
+            buf[7,1:-1,:] = buf[1:-1,7,:] = 0
+            abuf = np.ones((16,16), dtype='uint8') * 255
+            abuf[:6,:6] = abuf[9:,:6] = abuf[9:,9:] = abuf[:6,9:] = 0
+            im = wx.ImageFromBuffer(16, 16, buf.tostring(), abuf.tostring())
+            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_X, 7)
+            im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
+            __crosshair_cursor = wx.CursorFromImage(im)
+        else:
+            __crosshair_cursor = wx.StockCursor(wx.CROSS_CURSOR)
+    return __crosshair_cursor
+    
 if __name__ == "__main__":
     import numpy as np
 

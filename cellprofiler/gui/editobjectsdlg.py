@@ -26,6 +26,7 @@ import matplotlib.figure
 from matplotlib.lines import Line2D
 from matplotlib.path import Path
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, NavigationToolbar2WxAgg
+import matplotlib.backend_bases
 import numpy as np
 import scipy.ndimage
 from scipy.ndimage import gaussian_filter, binary_dilation, grey_dilation
@@ -41,6 +42,7 @@ from cellprofiler.cpmath.cpmorphology import polygon_lines_to_mask
 from cellprofiler.cpmath.cpmorphology import get_outline_pts, thicken
 from cellprofiler.cpmath.index import Indexes
 from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
+from cellprofiler.gui.cpfigure import get_crosshair_cursor
 
 class EditObjectsDialog(wx.Dialog):
     '''This dialog can be invoked as an objects editor
@@ -338,7 +340,7 @@ class EditObjectsDialog(wx.Dialog):
         </ul>
         <li><b>X</b>: Delete mode. Press down on the %(LEFT_MOUSE)s to
         start defining the delete region. Drag to define a rectangle. All
-        control points within the rectangle (shown as blue diamonds) will be
+        control points within the rectangle (shown as white circles) will be
         deleted when you release the %(LEFT_MOUSE)s. Press the escape key
         to cancel.
         </li>
@@ -352,8 +354,8 @@ class EditObjectsDialog(wx.Dialog):
         self.html_frame.Show(False)
         self.html_frame.Bind(wx.EVT_CLOSE, self.on_help_close)
 
-        toolbar = NavigationToolbar2WxAgg(self.panel)
-        sizer.Add(toolbar, 0, wx.EXPAND)
+        self.toolbar = EODNavigationToolbar(self.panel)
+        sizer.Add(self.toolbar, 0, wx.EXPAND)
         #
         # Make 3 axes
         #
@@ -1251,6 +1253,7 @@ class EditObjectsDialog(wx.Dialog):
             fontsize=cpprefs.get_title_font_size())
         
     def enter_split_mode(self, event):
+        self.toolbar.cancel_mode()
         self.mode = self.SPLIT_PICK_FIRST_MODE
         self.set_orig_axes_title()
         self.figure.canvas.draw()
@@ -1507,6 +1510,7 @@ class EditObjectsDialog(wx.Dialog):
     #
     ################################
     def enter_freehand_draw_mode(self, event):
+        self.toolbar.cancel_mode()
         self.mode = self.FREEHAND_DRAW_MODE
         self.active_artist = None
         self.set_orig_axes_title()
@@ -1572,10 +1576,11 @@ class EditObjectsDialog(wx.Dialog):
         "Press the mouse button and drag to select points to delete.\n"
         "Hit Esc to exit without deleting.\n")
     def enter_delete_mode(self, event):
+        self.toolbar.cancel_mode()
         self.mode = self.DELETE_MODE
         self.delete_mode_start = None
         self.delete_mode_filter = None
-        self.panel.SetCursor(wx.StockCursor(wx.CURSOR_CROSS))
+        self.toolbar.set_cursor(matplotlib.backend_bases.cursors.SELECT_REGION)
         self.set_orig_axes_title()
         self.figure.canvas.draw()
                        
@@ -1594,14 +1599,13 @@ class EditObjectsDialog(wx.Dialog):
                 self.on_exit_delete_mode(event)
                 
     def on_mouse_moved_delete_mode(self, event):
-        if self.delete_mode_start is not None:
+        if (self.delete_mode_start is not None and
+            event.inaxes == self.orig_axes):
             (xmin, xmax), (ymin, ymax) = [
                 [fn(a, b) for fn in min, max]
                 for a, b in 
                 (self.delete_mode_start[0], event.xdata),
                 (self.delete_mode_start[1], event.ydata)]
-            logger.info("Selected from %f, %f to %f, %f" % (
-                xmin, ymin, xmax, ymax))
             self.delete_mode_rect_artist.set_data([
                 [xmin, xmin, xmax, xmax, xmin],
                 [ymin, ymax, ymax, ymin, ymin]])
@@ -1680,7 +1684,8 @@ class EditObjectsDialog(wx.Dialog):
         self.mode = self.NORMAL_MODE
         self.set_orig_axes_title()
         self.update_artists()
-        self.panel.SetCursor(wx.StockCursor(wx.CURSOR_ARROW))
+        self.toolbar.set_cursor(matplotlib.backend_bases.cursors.POINTER)
+        self.figure.canvas.draw()
     
     ################################
     #
@@ -1837,6 +1842,23 @@ class EditObjectsDialog(wx.Dialog):
                 del self.artists[artist]
             if display:
                 self.display()
+                
+class EODNavigationToolbar(NavigationToolbar2WxAgg):
+    '''Navigation toolbar for EditObjectsDialog'''
+    def set_cursor(self, cursor):
+        '''Set the cursor based on the mode'''
+        if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:
+            self.canvas.SetCursor(get_crosshair_cursor())
+        else:
+            NavigationToolbar2WxAgg.set_cursor(self, cursor)
+            
+    def cancel_mode(self):
+        '''Toggle the current mode to off'''
+        if self.mode == 'zoom rect':
+            self.zoom()
+        elif self.mode == 'pan/zoom':
+            self.pan()
+        
 
 if __name__== "__main__":
     import libtiff

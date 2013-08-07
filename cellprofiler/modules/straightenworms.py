@@ -100,6 +100,7 @@ SCALE_VERTICAL = "L"
 FLIP_NONE = "Do not align"
 FLIP_TOP = "Top brightest"
 FLIP_BOTTOM = "Bottom brightest"
+FLIP_MANUAL = "Flip manually"
 
 '''The index of the image count setting (# of images to process)'''
 IDX_IMAGE_COUNT_V1 = 5
@@ -216,7 +217,8 @@ class StraightenWorms(cpm.CPModule):
             in the vertical direction.""")
         
         self.flip_worms = cps.Choice(
-            "Align worms?", [FLIP_NONE, FLIP_TOP, FLIP_BOTTOM],doc = """
+            "Align worms?", [FLIP_NONE, FLIP_TOP, FLIP_BOTTOM, FLIP_MANUAL],
+            doc = """
             (<i>Only used if intensities are measured</i>)<br>
             <b>StraightenWorms</b> can align worms so that the brightest
             half of the worm (the half with the highest mean intensity) is
@@ -226,7 +228,9 @@ class StraightenWorms(cpm.CPModule):
             of the worm. Choose <i>%(FLIP_TOP)s</i> if the brightest part of the
             worm should be at the top of the image, <i>%(FLIP_BOTTOM)s</i> if the
             brightest part of the worm should be at the bottom or
-            <i>%(FLIP_NONE)s</i> if the worm should not be aligned."""%globals())
+            <i>%(FLIP_NONE)s</i> if the worm should not be aligned.
+            Choose <i>%(FLIP_MANUAL)s</i> to bring up an editor for every
+            cycle that allows you to choose the orientation of each worm."""%globals())
         
         def image_choices_fn(pipeline):
             '''Return the image choices for the alignment image'''
@@ -307,6 +311,18 @@ class StraightenWorms(cpm.CPModule):
         del self.images[1:]
         for i in range(1,nimages):
             self.add_image()
+            
+    K_PIXEL_DATA = "pixel_data"
+    K_MASK = "mask"
+    K_NAME = "name"
+    K_PARENT_IMAGE = "__parent_image"
+    K_PARENT_IMAGE_NAME = "__parent_image_name"
+    
+    class InteractionCancelledException(RuntimeError):
+        def __init__(self, *args):
+            if len(args) == 0:
+                args = ["User cancelled StraightenWorms"]
+            super(self.__class__, self).__init__(*args)
             
     def run(self, workspace):
         '''Process one image set'''
@@ -430,7 +446,7 @@ class StraightenWorms(cpm.CPModule):
             #
             # We may need to flip the worm
             #
-            if self.flip_worms != FLIP_NONE:
+            if self.flip_worms in (FLIP_TOP, FLIP_BOTTOM):
                 ixs = ix[islice,jslice]
                 jxs = jx[islice,jslice]
                 image_name = self.flip_image.value
@@ -459,11 +475,10 @@ class StraightenWorms(cpm.CPModule):
             mask = map_coordinates((orig_labels == i+1).astype(np.float32), 
                                    [ix[islice, jslice], jx[islice,jslice]]) > .5
             labels[islice, jslice][mask] = i+1
-        if self.show_window:
-            workspace.display_data.image_pairs = []
         #
         # Now create one straightened image for each input image
         #
+        straightened_images = []
         for group in self.images:
             image_name = group.image_name.value
             straightened_image_name = group.straightened_image_name.value
@@ -478,8 +493,29 @@ class StraightenWorms(cpm.CPModule):
                     straightened_pixel_data[:,:,d] = map_coordinates(
                         image.pixel_data[:,:,d], [ix, jx])
             straightened_mask = map_coordinates(image.mask, [ix, jx]) > .5
-            straightened_image = cpi.Image(straightened_pixel_data,
-                                           straightened_mask,
+            straightened_images.append({
+                self.K_NAME:straightened_image_name,
+                self.K_PIXEL_DATA:straightened_pixel_data,
+                self.K_MASK:straightened_mask,
+                self.K_PARENT_IMAGE:image,
+                self.K_PARENT_IMAGE_NAME:image_name})
+        if self.flip_worms == FLIP_MANUAL:
+            result, labels = workspace.interaction_request(
+                self, straightened_images, labels,
+                m.image_set_number)
+            for dorig, dedited in zip(straightened_images, result):
+                dorig[self.K_PIXEL_DATA] = dedited[self.K_PIXEL_DATA]
+                dorig[self.K_MASK] = dedited[self.K_MASK]
+            
+        if self.show_window:
+            workspace.display_data.image_pairs = []
+        for d in straightened_images:
+            image = d[self.K_PARENT_IMAGE]
+            image_name = d[self.K_PARENT_IMAGE_NAME]
+            straightened_image_name = d[self.K_NAME]
+            straightened_pixel_data = d[self.K_PIXEL_DATA]
+            straightened_image = cpi.Image(d[self.K_PIXEL_DATA],
+                                           d[self.K_MASK],
                                            parent_image = image)
             image_set.add(straightened_image_name, straightened_image)
             if self.show_window:
@@ -496,6 +532,7 @@ class StraightenWorms(cpm.CPModule):
         #
         self.make_objects(workspace, labels, nworms)
             
+           
     def read_params(self, workspace):
         '''Read the training params or use the cached value'''
         if not hasattr(self, "training_params"):
@@ -1051,3 +1088,178 @@ class StraightenWorms(cpm.CPModule):
                         pathname stored in the settings or legacy fields.
         '''
         self.training_set_directory.alter_for_create_batch_files(fn_alter_path)
+
+    def handle_interaction(self, straightened_images, labels, image_set_number):
+        '''Show a UI for flipping worms
+        
+        straightened_images - a tuple of dictionaries, one per image to be
+                              straightened. The keys are "pixel_data",
+                              "mask" and "name".
+        
+        labels - a labels matrix with one worm per label
+        
+        image_set_number - the cycle #
+        
+        returns a tuple of flipped worm images and the flipped labels matrix
+        '''
+        import wx
+        import matplotlib
+        import matplotlib.cm
+        import matplotlib.backends.backend_wxagg
+        
+        frame_size = wx.GetDisplaySize()
+        frame_size = [max(frame_size[0], frame_size[1]) / 2] * 2
+        style = wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER | wx.MAXIMIZE_BOX
+        with wx.Dialog(None, -1, 
+                           "Straighten worms: cycle #%d" % image_set_number,
+                           size=frame_size,
+                           style = style) as dlg:
+            assert isinstance(dlg, wx.Dialog)
+            dlg.Sizer = wx.BoxSizer(wx.VERTICAL)
+            figure = matplotlib.figure.Figure()
+            axes = figure.add_axes((.05, .1, .9, .85))
+            axes.set_title("Click on a worm to flip it.\n"
+                           "Hit OK when done")
+            panel = matplotlib.backends.backend_wxagg.FigureCanvasWxAgg(
+                dlg, -1, figure)
+            toolbar = matplotlib.backends.backend_wxagg.NavigationToolbar2WxAgg(
+                panel)
+            dlg.Sizer.Add(toolbar, 0, wx.EXPAND)
+            dlg.Sizer.Add(panel, 1, wx.EXPAND)
+            
+            ok_button = wx.Button(dlg, wx.ID_OK)
+            cancel_button = wx.Button(dlg, wx.ID_CANCEL)
+            button_sizer = wx.StdDialogButtonSizer()
+            dlg.Sizer.Add(button_sizer, 0, wx.ALIGN_RIGHT)
+            button_sizer.AddButton(ok_button)
+            button_sizer.AddButton(cancel_button)
+            button_sizer.Realize()
+            
+            big_labels = np.zeros((labels.shape[0] + 2, labels.shape[1]+2),
+                                  dtype = labels.dtype)
+            big_labels[1:-1, 1:-1] = labels
+            outline_ij = np.argwhere(
+                (labels != 0) & (
+                    (big_labels[:-2, 1:-1] != big_labels[1:-1, 1:-1]) |
+                    (big_labels[2:, 1:-1] != big_labels[1:-1, 1:-1]) |
+                    (big_labels[1:-1, :-2] != big_labels[1:-1, 1:-1]) |
+                    (big_labels[1:-1, 2:] != big_labels[1:-1, 1:-1])))
+            outline_l = labels[outline_ij[:, 0], outline_ij[:, 1]]
+            order = np.lexsort([outline_ij[:, 0], outline_ij[:, 1],
+                                outline_l])
+            outline_ij = outline_ij[order, :]
+            outline_l = outline_l[order]
+            outline_indexes = np.hstack(([0], np.cumsum(np.bincount(outline_l))))
+            ii, jj = np.mgrid[0:labels.shape[0], 0:labels.shape[1]]
+            half_width = self.width.value / 2
+            width = 2*half_width + 1
+            
+            active_worm = [ None]
+            needs_draw = [True]
+            def refresh():
+                object_number = active_worm[0]
+                if len(straightened_images) == 1:
+                    image = straightened_images[0][self.K_PIXEL_DATA]
+                    imax = np.max(image)
+                    imin = np.min(image)
+                    if imax == imin:
+                        image = np.zeros(image.shape)
+                    else:
+                        image = (image - imin) / (imax - imin)
+                    image[labels == 0] = 1
+                    image = np.vstack([image] * 3)
+                else:
+                    shape = (labels.shape[0], labels.shape[1], 3)
+                    image = np.zeros(shape)
+                    image[labels == 0, :] = 1
+                    for i, straightened_image in enumerate(straightened_images[:3]):
+                        pixel_data = straightened_image[self.K_PIXEL_DATA]
+                        imin, imax = [fn(pixel_data[labels !=0])
+                                      for fn in np.min, np.max]
+                        if imin == imax:
+                            pixel_data = np.zeros(labels.shape)
+                        else:
+                            pixel_data = (pixel_data - imin) / imax
+                        image[labels != 0, i] = pixel_data[labels != 0]
+                if object_number is not None:
+                    color = np.array(
+                        cpprefs.get_primary_outline_color().asTuple(),
+                        dtype = np.float) / 255
+                    s = slice(outline_indexes[object_number],
+                              outline_indexes[object_number+1])
+                    image[outline_ij[s, 0],
+                          outline_ij[s, 1], :] = color[np.newaxis, :]
+                axes.imshow(image, origin="upper")
+                needs_draw[0] = True
+                panel.Refresh()
+                
+            def on_mouse_over(event):
+                object_number = active_worm[0]
+                new_object_number = None
+                if event.inaxes == axes:
+                    new_object_number = labels[
+                        max(0, min(labels.shape[0]-1, int(event.ydata+.5))),
+                        max(0, min(labels.shape[1]-1, int(event.xdata+.5)))]
+                    if new_object_number == 0:
+                        new_object_number = None
+                    if object_number != new_object_number:
+                        active_worm[0] = new_object_number
+                        refresh()
+                        
+            def on_mouse_click(event):
+                object_number = active_worm[0]
+                if event.inaxes == axes and\
+                   object_number is not None and\
+                   event.button == 1:
+                    imax = np.max(ii[labels == object_number]) + half_width
+                    mask = ((jj >= width * (object_number - 1)) &
+                            (jj < width * object_number) &
+                            (ii <= imax))
+                    isrc = ii[mask]
+                    jsrc = jj[mask]
+                    idest = imax - isrc
+                    jdest = (object_number * 2 - 1) * width - jj[mask] - 1
+                    
+                    for d in straightened_images:
+                        for key in self.K_PIXEL_DATA, self.K_MASK:
+                            src = d[key]
+                            dest = src.copy()
+                            dest[idest, jdest] = src[isrc, jsrc]
+                            d[key] = dest
+                    labels[isrc, jsrc] = labels[idest, jdest]
+                    s = slice(outline_indexes[object_number],
+                              outline_indexes[object_number+1])
+                    outline_ij[s, 0] = imax - outline_ij[s, 0]
+                    outline_ij[s, 1] = (object_number * 2 - 1) * width -\
+                        outline_ij[s, 1] - 1
+                    refresh()
+                    
+            def on_paint(event):
+                dc = wx.PaintDC(panel)
+                if needs_draw[0]:
+                    panel.draw(dc)
+                    needs_draw[0] = False
+                else:
+                    panel.gui_repaint(dc)
+                dc.Destroy()
+                event.Skip()
+                
+            def on_ok(event):
+                dlg.EndModal(wx.OK)
+                
+            def on_cancel(event):
+                dlg.EndModal(wx.CANCEL)
+                
+            dlg.Bind(wx.EVT_BUTTON, on_ok, ok_button)
+            dlg.Bind(wx.EVT_BUTTON, on_cancel, cancel_button)
+            
+            refresh()
+            panel.mpl_connect('button_press_event',
+                              on_mouse_click)
+            panel.mpl_connect('motion_notify_event',
+                              on_mouse_over)
+            panel.Bind(wx.EVT_PAINT, on_paint)
+            result = dlg.ShowModal()
+            if result != wx.OK:
+                raise self.InteractionCancelledException()
+            return straightened_images, labels

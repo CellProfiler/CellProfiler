@@ -150,12 +150,12 @@ def main(args):
             wx.Log.EnableLogging(False)
             from cellprofiler.cellprofilerapp import CellProfilerApp
             show_splashbox = (options.pipeline_filename is None and
-                              options.workspace_filename is None and
-                              (not options.new_workspace) and
+                              options.project_filename is None and
+                              (not options.new_project) and
                               options.show_splashbox)
-            if options.workspace_filename:
-                workspace_path = os.path.expanduser(options.workspace_filename)
-            elif options.new_workspace:
+            if options.project_filename:
+                workspace_path = os.path.expanduser(options.project_filename)
+            elif options.new_project:
                 workspace_path = False
             else:
                 workspace_path = None
@@ -257,13 +257,13 @@ def parse_args(args):
                       dest="pipeline_filename",
                       help="Load this pipeline file on startup",
                       default=None)
-    parser.add_option("-w", "--workspace",
-                      dest="workspace_filename",
-                      help="Load this workspace on startup",
+    parser.add_option("-w", "--project",
+                      dest="project_filename",
+                      help="Load this project on startup",
                       default=None)
-    parser.add_option("-n", "--new-workspace",
-                      dest="new_workspace",
-                      help="Open a new workspace, prompting for its name using a file dialog",
+    parser.add_option("-n", "--new-project",
+                      dest="new_project",
+                      help="Open a new project, prompting for its name using a file dialog",
                       action="store_true",
                       default=False)
     parser.add_option("-c", "--run-headless",

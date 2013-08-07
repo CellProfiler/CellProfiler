@@ -3600,7 +3600,12 @@ class TableController(wx.grid.PyGridTableBase):
         if self.v.corner_button is None:
             grid.fn_clicked = None
         else:
-            grid.fn_clicked = self.v.corner_button["fn_clicked"]
+            fn_clicked = self.v.corner_button["fn_clicked"]
+            def on_corner_button_clicked():
+                fn_clicked()
+                self.update_grid()
+                grid.ForceRefresh()
+            grid.fn_clicked = on_corner_button_clicked
             grid.label = self.v.corner_button.get("label", "Update")
             grid.tooltip = self.v.corner_button.get("tooltip", "")
         #

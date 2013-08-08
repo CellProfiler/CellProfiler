@@ -1319,6 +1319,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             [ cpp.ImagePlaneDetails(url, None, None, None)
               for url in paths])
         self.__workspace.file_list.remove_files_from_filelist(paths)
+        self.__workspace.invalidate_image_set()        
         
     def on_pathlist_clear(self, event):
         '''Remove all files from the path list'''
@@ -1333,6 +1334,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         if result == wx.YES:
             self.__pipeline.clear_image_plane_details()
             self.__workspace.file_list.clear_filelist()
+            self.__workspace.invalidate_image_set()
             
     def on_pathlist_drop_files(self, x, y, filenames):
         self.add_paths_to_pathlist(filenames)
@@ -1406,6 +1408,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 dlg.Fit()
                 interrupt[0] = not keep_going
             interrupt[0] = True
+        self.__workspace.invalidate_image_set()
     
     def on_pathlist_drop_text(self, x, y, text):
         pathnames = [p.strip() for p in text.split("\n")]

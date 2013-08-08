@@ -13,6 +13,7 @@ Website: http://www.cellprofiler.org
 """
 
 import csv
+import datetime
 import h5py
 import logging
 import math
@@ -1340,11 +1341,15 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.add_paths_to_pathlist(filenames)
         
     def add_paths_to_pathlist(self, filenames):
+        t0 = datetime.datetime.now()
         with wx.ProgressDialog("Processing files",
-                               "Initializing",
+                               "Initializing\n\n",
                                parent = self.__frame,
                                style = wx.PD_APP_MODAL | wx.PD_CAN_ABORT) as dlg:
             assert isinstance(dlg, wx.ProgressDialog)
+            h, w = dlg.GetSizeTuple()
+            if w < 480:
+                dlg.SetSize((max(w, 480), h))
             queue = Queue.Queue()
             interrupt = [False]
             message = ["Initializing"]
@@ -1387,6 +1392,16 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             thread = threading.Thread(target=fn)
             thread.setDaemon(True)
             thread.start()
+            def update_pulse(msg):
+                waiting_for = int((datetime.datetime.now() - t0).total_seconds())
+                if waiting_for > 60:
+                    minutes = int(waiting_for) / 60
+                    seconds = waiting_for % 60
+                    msg += "\nElapsed time: %d minutes, %d seconds" % (minutes, seconds)
+                    msg += "\nConsider using the LoadData module for loading large numbers of images."
+                keep_going, skip = dlg.UpdatePulse(msg)
+                return keep_going
+                
             while not interrupt[0]:
                 try:
                     urls = queue.get(block=True, timeout=0.1)
@@ -1394,7 +1409,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                         while True:
                             urls += queue.get(block=False)
                     except:
-                        keep_going, skip = dlg.UpdatePulse(
+                        keep_going = update_pulse(
                             "Adding %d files to file list" %len(urls))
                         self.add_urls(urls)
                 except:
@@ -1404,8 +1419,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                         except:
                             pass
                         break
-                    keep_going, skip = dlg.UpdatePulse(message[0])
-                dlg.Fit()
+                    keep_going = update_pulse(message[0])
                 interrupt[0] = not keep_going
             interrupt[0] = True
         self.__workspace.invalidate_image_set()

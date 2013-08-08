@@ -220,6 +220,26 @@ class MeasureObjectNeighbors(cpm.CPModule):
         neighbor_objects = workspace.object_set.get_objects(self.neighbors_name.value)
         assert isinstance(neighbor_objects, cpo.Objects)
         neighbor_labels = neighbor_objects.small_removed_segmented
+        #
+        # Need to add in labels touching border.
+        #
+        unedited_segmented = neighbor_objects.unedited_segmented
+        touching_border = np.zeros(np.max(unedited_segmented) + 1, bool)
+        touching_border[unedited_segmented[0, :]] = True
+        touching_border[unedited_segmented[-1, :]] = True
+        touching_border[unedited_segmented[:, 0]] = True
+        touching_border[unedited_segmented[:, -1]] = True
+        touching_border[0] = False
+        touching_border_mask = touching_border[unedited_segmented]
+        if np.any(touching_border) and \
+           np.all(~ touching_border_mask[neighbor_labels]):
+            # Add the border labels if any were excluded
+            touching_border_object_number = np.cumsum(touching_border) + \
+                np.max(neighbor_labels)
+            touching_border_mask = touching_border_mask & neighbor_labels == 0
+            neighbor_labels[touching_border_mask] = touching_border_object_number[
+                unedited_segmented[touching_border_mask]]
+        
         nobjects = np.max(labels)
         nneighbors = np.max(neighbor_labels)
         nkept_objects = objects.count

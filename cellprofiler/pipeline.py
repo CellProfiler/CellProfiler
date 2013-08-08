@@ -1414,6 +1414,7 @@ class Pipeline(object):
         with self.undoable_action("Legacy modules converted"):
             images, metadata, namesandtypes, groups = (
                 Images(), Metadata(), NamesAndTypes(), Groups())
+            images.wants_filter.value = False
             for i, module in enumerate((images, metadata, namesandtypes, groups)):
                 module.set_module_num(i + 1)
                 module.show_window = cpprefs.get_headless()

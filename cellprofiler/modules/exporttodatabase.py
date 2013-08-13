@@ -540,8 +540,13 @@ class ExportToDatabase(cpm.CPModule):
             <p>You can define ways of grouping your image data (for example, when several images represent the same experimental 
             sample), by providing column(s) that identify unique images (the <i>image key</i>) to another set of columns 
             (the <i>group key</i>).</p>
+            <p>The format for a group in CPA is:<br>
+            <code>group_SQL_&lt;XXX&gt; = &lt;MySQL SELECT statement that returns image-key columns followed by group-key columns&gt;</code>
+            For example, if you wanted to be able to group your data by unique plate names, you could define a group called 
+            <i>SQL_Plate</i> as follows:<br>
+            <code>group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate FROM Per_Image</code></p>
             <p>Grouping is useful, for example, when you want to aggregate counts for each class of object and their scores 
-            on a per-group basis (e.g.: per-well) instead of on a per-image basis when scoring with Classifier. It will 
+            on a per-group basis (e.g., per-well) instead of on a per-image basis when scoring with Classifier. It will 
             also provide new options in the Classifier fetch menu so you can fetch objects from images with specific 
             values for the group columns.</p>""")
         
@@ -904,8 +909,10 @@ class ExportToDatabase(cpm.CPModule):
             <p>In CellProfiler, the image key column is always given the name as <i>ImageNumber</i>; group keys
             are typically metadata columns which are always prefixed with <i>Image_Metadata_</i>. For example, if you 
             wanted to be able to group your data by unique plate names and well identifiers, you could define a 
-            group as follows:<br>
-            <code>ImageNumber, Image_Metadata_Plate, Image_Metadata_Well</code><br>
+            group with the following MySQL statement:<br>
+            <code>group_SQL_Plate = SELECT ImageNumber, Image_Metadata_Plate, Image_Metadata_Well FROM Per_Image</code><br>
+            For this example, the columns to enter in this setting would be:<br>
+            <code>ImageNumber, Image_Metadata_Plate, Image_Metadata_Well</code></p>
             <p>Groups are specified as MySQL statements in the properties file, but please note that the full SELECT and  
             FROM clauses will be added automatically, so there is no need to enter them here.</p>"""))
         group.append("remover", cps.RemoveSettingButton("", "Remove this group", self.group_field_groups, group))

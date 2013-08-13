@@ -8,9 +8,11 @@ intensities in one channel based on objects identified in another channel,
 for example. Alignment is often needed when the microscope is not perfectly 
 calibrated. It can also be useful to align images in a time-lapse series of 
 images.  The module stores the amount of shift between images as a
-measurement, which can be useful for quality control purposes.  Note that 
-none of the images is used as a template (see Crop Mode below for more information
-on how each image is transformed).  
+measurement, which can be useful for quality control purposes. 
+
+<p>Note that the second image (and others following) is always aligned 
+with respect to the first image. That is, the X/Y offsets indicate how much
+the second image needs to be shifted by to match the first.</p>
 
 <h4>Available measurements</h4>
 <ul> 
@@ -117,23 +119,23 @@ class Align(cpm.CPModule):
              </p>'''%globals())
         
         self.crop_mode = cps.Choice(
-            "Crop mode", [C_CROP, C_PAD, C_SAME_SIZE],
-            doc = """The crop mode determines how the output images are either cropped
+            "Crop mode", [C_CROP, C_PAD, C_SAME_SIZE],doc = """
+            The crop mode determines how the output images are either cropped
             or padded after alignment. The alignment phase calculates the
             areas in each image that are found to be overlapping. In almost
             all cases, there will be portions of some or all of the images
             that don't overlap with any other aligned image. These portions
             have no counterpart and will be excluded from analysis. There
             are three choices for cropping:
-            <br>
             <ul>
             <li><i>%(C_CROP)s:</i> Crop every image to the region that overlaps 
             in all images. This makes downstream
-            analysis simpler and more accurate because all of the output images
+            analysis simpler because all of the output images
             have authentic pixel data at all positions, however it discards
             parts of images. Also, the output images may not be the same size
             as the input images which may cause problems if downstream modules
-            use aligned and unaligned images in combination.</li>
+            use aligned and unaligned images (which may be of differing sizes)
+            in combination.</li>
             <li><i>%(C_PAD)s:</i> Align every image and pad with masked black
             pixels to make each image the same size. This results in larger
             images, but preserves all information in each of the images. This

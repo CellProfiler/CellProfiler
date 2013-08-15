@@ -6,6 +6,7 @@ had metadata associated with the images using the <b>Metadata</b> module), and b
 a name by the <b>NamesAndTypes</b> module, you have the option of further sub-dividing
 an image set into <i>groups</i> that share a common feature.
 
+<h4>What is a "group"?</h4>
 <p>The key to understanding why grouping may be necessary is that CellProfiler processes
 the input images sequentially and in the order given. If you have multiple collections of images
 that are meant to be conceptually distinct from each other, CellProfiler will simply 

@@ -1,35 +1,34 @@
 import cellprofiler.icons 
-PROTIP_RECOMEND_ICON = "thumb-up.png"
-PROTIP_AVOID_ICON = "thumb-down.png"
-TECH_NOTE_ICON = "gear.png"
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
 __doc__ = '''
-<b>Identify Primary Objects</b> identifies cellular features in grayscale images
+<b>Identify Primary Objects</b> identifies biological components of interest in grayscale images
 containing bright objects on a dark background.
 <hr>
 <h4>What is a primary object?</h4>
 In CellProfiler, we use the term <i>object</i> as a generic term to refer to an identifed
-feature in an image, usually a cellular subcompartment of some kind. 
+feature in an image, usually a cellular subcompartment of some kind (for example,
+nuclei, cells, colonies, worms). 
 We define an object as <i>primary</i> when it can be found in an image without needing 
-the asistance of another image as a reference. For example:
+the assistance of another cellular feature as a reference. For example:
 <ul>
 <li>The nuclei of cells are usually more easily identifiable due to their more uniform 
-morphology,high contrast relative to the background when stained, and good separation
-between adjacent nuclei. These qualities make them candidates for primary object 
+morphology, high contrast relative to the background when stained, and good separation
+between adjacent nuclei. These qualities typically make them appropriate candidates for primary object 
 identification.</li>
 <li>In contrast, cells are often heterogeneous and lower-contrast with more diffuse 
 staining, making them more challenging to identify than nuclei. In addition, cells often 
 touch their neighbors making it harder to delineate the cell borders. For these reasons, 
-cell bodies are candidates for <i>secondary object</i> identification, since they are 
+cell bodies are often good candidates for <i>secondary object</i> identification, since they are 
 best identified by using a previously-identified primary object (i.e, the nuclei) as 
 a reference. See the <b>IdentifySecondaryObjects</b> module for details on how to 
 do this.</li>
 </ul>
 
 <h4>What do I need as input?</h4>
-To use this module, you will need to make sure that your input image have the following qualities:
+To use this module, you will need to make sure that your input image has the following qualities:
 <ul>
-<li>The image should be grayscale. </li>
-<li>The foreground (i.e, regions of interest) are lighter than the background. </li>
+<li>The image should be grayscale.</li>
+<li>The foreground (i.e, regions of interest) are lighter than the background.</li>
 </ul>
 If this is not the case, other modules can be used to pre-process the images to ensure they are in 
 the proper form:
@@ -39,8 +38,17 @@ should invert the images using the Invert operation in the <b>ImageMath</b> modu
 <li>If you are working with color images, they must first be converted to
 grayscale using the <b>ColorToGray</b> module.</li>
 </ul>
+<p>If you have images in which the foreground and background cannot be distinguished by intensity alone
+(e.g, brightfield or DIC images), you can use the <a href="http://www.ilastik.org/">ilastik</a> package
+bundled with CellProfiler to perform pixel-based classification (Windows only). You first train a classifier 
+by identifying areas of images that fall into one of several classes, such as cell body, nucleus, 
+background, etc. Then, the <b>ClassifyPixels</b> module takes the classifier and applies it to each image 
+to identify areas that correspond to the trained classes. The result of <b>ClassifyPixels</b> is 
+an image in which the region that falls into the class of interest is light on a dark background. Since 
+this new image satisfies the constraints abov, it can be used as input in <b>IdentifyPrimaryObjects</b>. 
+See the <b>ClassifyPixels</b> module for more information.</p>
 
-<h4>How do I optimize the settings?</h4>
+<h4>What do the settings mean?</h4>
 See below for help on the individual settings. The following icons are used to call attention to
 key items:
 <ul>
@@ -48,7 +56,7 @@ key items:
 for which a particular setting is best used.</li>
 <li><img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;Indicates a condition under which 
 a particular setting may not work well.</li>
-<li><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;Techincal note. Provides more
+<li><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;Technical note. Provides more
 detailed information on the setting, if interested.</li>
 </ul>
 
@@ -61,7 +69,7 @@ will show the following panels:
 <ul>
 <li><i>Upper left:</i> The raw, original image.</li>
 <li><i>Upper right:</i> The identified objects shown as a color
-image wher connected pixels that belong to the same object are assigned the same
+image where connected pixels that belong to the same object are assigned the same
 color (<i>label image</i>). It is important to note that assigned colors are 
 arbitrary; they are used simply to help you distingush the various objects. </li>
 <li><i>Lower left:</i> The raw image overlaid with the colored outlines of the 
@@ -151,8 +159,8 @@ segmentation of cell nuclei in tissue sections." <i>J Microsc</i> 215, 67-76.
 (<a href="http://dx.doi.org/10.1111/j.0022-2720.2004.01338.x">link</a>)</li>
 </ul>
 
-<p>See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, and 
-<b>IdentifyObjectsManually</b>.</p>
+<p>See also <b>IdentifySecondaryObjects</b>, <b>IdentifyTertiaryObjects</b>, 
+<b>IdentifyObjectsManually</b> and <b>ClassifyPixels</b> </p>
 '''%globals()
 
 # CellProfiler is distributed under the GNU General Public License.
@@ -321,16 +329,16 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             EXCLUDE_SIZE_SETTING_TEXT,
             True, doc='''
             You can choose to discard objects outside the range you specified in the
-            <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting. 
+            <i>%(SIZE_RANGE_SETTING_TEXT)s</i> setting. Objects discarded 
+            based on size are outlined in magenta in the module's display. See also the
+            <b>FilterObjects</b> module to further discard objects based on some
+            other measurement.
             <dl>
             <dd><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;
             Checking this box allows you to exclude small objects (e.g., dust, noise,
             and debris) or large objects (e.g., large clumps) if desired. </dd>
             </dl>
-            <p>Objects discarded 
-            based on size are outlined in magenta in the module's display. See also the
-            <b>FilterObjects</b> module to further discard objects based on some
-            other measurement.'''%globals())
+            '''%globals())
         
         self.merge_objects = cps.Binary(
             "Try to merge too small objects with nearby larger objects?", 

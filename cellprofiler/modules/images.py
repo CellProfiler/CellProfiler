@@ -1,3 +1,5 @@
+import cellprofiler.icons 
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON, IMAGES_FILELIST_BLANK, IMAGES_FILELIST_FILLED
 __doc__ = """
 The <b>Images</b> module helps you specify which image are to be processed in your pipeline.
 <hr>
@@ -8,10 +10,30 @@ the files theselves (for example, because
 the number of files to analyze is too large to deal with individually), you can provide rules to specify only those
 files that you want analyzed from a larger set.
 
-<p>The most straightforward way to provide files to the <b>Images</b> module is to simply drag-and-drop
+<h4>What is an "image"?</h4>
+An <i>image</i> typically refers to a set of numbers arranged into a two-dimensional format; 
+a <i>pixel</i> refers to the row/column location in the image. Pixels in <i>grayscale</i> or
+<i>monochrome</i> images contain a single intensity value, whereas in <i>color</i> images, 
+each pixel contains a red, green and blue (RGB) triplet of intensity values.
+Additionally, an image can be short-hand for an <i>image sequence</i>, such as movie or some other 
+image collection derived from assays such as time-lapse (2-D + <i>t</i>), confocal Z-stacks (3-D), etc.
+
+<p>CellProfiler supports a wide variety of image formats by using a library called Bio-Formats; 
+see <a href="http://loci.wisc.edu/bio-formats/formats">here</a> 
+for the formats available. Some image formats are better than others for use in image analysis. Some are 
+<a href="http://www.techterms.com/definition/lossy">"lossy"</a> (information is lost in the conversion 
+to the format) like most JPG/JPEG files; others are 
+<a href="http://www.techterms.com/definition/lossless">lossless</a> (no image information is lost). 
+For image analysis purposes, a lossless format like TIF or PNG is recommended.</p>
+
+<h4>What do I need as input?</h4>
+The most straightforward way to provide image files to the <b>Images</b> module is to simply drag-and-drop
 them on the file list panel (the blank space indicated by the text "Drop files and folders here"). 
 Both individual files and entire folders can be dragged onto this panel, and as many folders and files can be 
-placed onto this panel as needed. </p>
+placed onto this panel as needed.
+<table cellpadding="0" width="100%%">
+<tr align="center"><td><img src="memory:%(IMAGES_FILELIST_BLANK)s"></td></tr>
+</table>
 
 <p>Right-clicking on the file list panel will provide a context menu with options to modify the file list:
 <ul>
@@ -27,14 +49,34 @@ manually removed from the list for that folder are restored.</li>
 <li><i>Clear File List:</i> Remove all files/folders in the file list panel. You will be prompted for 
 confirmation beforehand.</li>
 </ul></p>
+<table cellpadding="0" width="100%%">
+<tr align="center"><td><img src="memory:%(IMAGES_FILELIST_FILLED)s"></td></tr>
+</table>
 
-<p>If you have a subset of files that you want to analyze from the full listing shown in the 
+<h4>What do the settings mean?</h4>
+If you have a subset of files that you want to analyze from the full listing shown in the 
 panel, you can filter the files according to a set of rules. This is useful when, for example, you
 have dragged a folder of images onto the file list panel, but the folder contains the images
 from one experiment that you want to process along with images from another experiment that you
 want to ignore for now. You may specify as many rules as neccesary to define the desired 
-list of images.</p>
-"""
+list of images.
+
+<p>After you have filtered the file list, press the "Update file list" button to update the view of the 
+file list. You can also toggle the "Show file excluded by filters" box to modify the display of the files:
+<ul>
+<li>Checking this box will show all the files in the list, with the files that have been filtered out
+shown as grayed-out entries.</li>
+<li>Not checking this box will only show the files in the list that pass the filter(s).</li>
+</ul></p>
+
+<h4>What do I get as output?</h4>
+The <b>Images</b> module yields a file list, in which any files that are not intended 
+for further processing have been removed, whether manually or using filtering. This list is the one that will be used when 
+collecting metadata (if desired) and when assembling the image sets in <b>NamesAndTypes</b>. This list
+can be filtered further in <b>NamesAndTypes</b>, for example, to specify that a subset of these images 
+represents a particular wavelength.
+"""%globals()
+
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
 # 
@@ -97,7 +139,7 @@ class Images(cpm.CPModule):
         self.filter = cps.Filter("Select the rule criteria", predicates, 
             'and (extension does isimage) (directory doesnot startwith ".")',
             doc = """
-            Specify filter of rules to narrow down the files to be analyzed. 
+            Specify a set of rules to narrow down the files to be analyzed. 
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals())
         
         self.update_button = cps.PathListRefreshButton(

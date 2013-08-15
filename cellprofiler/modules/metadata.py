@@ -2,8 +2,14 @@ __doc__ = """
 The <b>Metadata</b> module associates information about the images (i.e., metadata)
 with the images themselves. 
 <hr>
-The general term <i>metadata</i> refers to "data about data." In this context,
-image metadata can include such items as the following (which is not an exhaustive list):
+The <b>Metadata</b> module allows you incorporate the metadata that is particular to the image 
+format, assigned as part of the file name or location (by a vendor microscope, for example),
+contained in a text file filled out by the user, or any of the above.
+
+<h4>What is "metadata"?</h4>
+The general term <i>metadata</i> refers to "data about data." For many assays, metadata
+appears in the context of tagging images with various attributes, which 
+can include (but is not limited to) items such as the following:
 <ul>
 <li>The height and width of an image, in pixels.</li>
 <li>Is the image RGB, indexed or separate channels?</li>
@@ -16,42 +22,42 @@ It can be helpful to inform CellProfiler about certain types of metadata either 
 in the image files and/or specified elsewhere from another source, in order to define
 a specific relationship between the images and the associated metadata. For instance:
 <ul>
-<li>You want images with a common identifiers to be grouped together so they are
-processed in a particular way during the pipeline run;</li>
+<li>You want images with a common identifier to be matched together so they are
+processed together during the pipeline run;</li>
 <li>You want certain information attached to the output measurements and filenames 
 for annotation or sample-tracking purposes.</li>
 </ul>
-
-<p>The <b>Metadata</b> module allows you extract the metadata that is particular to the image 
-format, assigned as part of the file name or location (by a vendor microscope, for example),
-contained in a text file filled out by the user, or any of the above.</p>
 
 <p>The underlying assumption in matching metadata values to image sets is that there is an
 exact pairing (i.e., a one-to-one match) for a given metadata tag combination. A common example is that for
 a two-channel microtiter plate assay, each plate, well and site metadata from one channel
 gets matched uniquely to the plate, well and site metadata from the other channel.</p>
 
-<p>There are two special cases in metadata handling worth mentioning:
+<h4>What are the inputs?</h4>
+The <b>Metadata</b> module receives the file list produced by the <b>Images</b> module. It then
+tags (or attaches) information that can be obtained from several sources:
 <ul>
-<li><i>Missing metadata:</i> For a particular metadata tag, one image from a given
-image set has metadata values defined but another image does not. An example is when a microscope
-aborts acquisition prematurely in the middle of scanning two channels for a site, and captures 
-one channel but not the other. In this case, plate, well and site metadata value exists for one
-image but not for the other since it was never acquired. </li>
-<li><i>Duplicate metadata:</i> For a particular metadata tag, the same metadata values exist
-for multiple image sets such that they are not uniquely defined. An example is when a microscope
-re-scans a site in order to recover from a prior error. In this case, there may be one image from
-one channel but <i>two</i> images for the other channel, for the same site. Therefore, multiple instances
-of the same plate, well and site metadata values exist for the same image set.</li>
-</ul> 
-In both of these cases, the exact pairing between channels no longer exists. For missing metadata, the pairing is one-to-none,
-and for duplicate metadata, the pairing is one-to-two. In these instances where a match cannot be
-made, <b>NamesAndTypes</b> will simply omit the confounding metadata values from consideration. In the above
-example, an image set will not be created for the plate, well and site combination in question. 
-</p>
+<li>The metadata may be part of the image file name or location (e.g., as assigned by a vendor 
+microscope). In this case, the user provides the text search pattern to obtain this information. </li>
+<li>Alternately (or concurrently), the metadata may be contained in a text file created and 
+filled out by the user or laboratory. If this is the case, the user will point the module to the 
+location of this file.</li>
+</ul>
 
-<p>Once the metadata has been obtained, you can use <i>metadata tags</i> to reference them
-in later modules. Several modules are capable of using metadata tags for various purposes. Examples include:
+<h4>What do the settings mean?</h4>
+See below for help on the individual settings. In general, the settings serve in various forms of 
+metadata extraction. You can extract metadata from all images from <b>Images</b> modules or a subset
+of them by using rules to filter the list.
+
+<h4>What do I get as output?</h4>
+The <b>Metadata</b> module will take the metadata from the source(s) provided and attach them as additional
+data for each image. If the metadata originates from an external source such as a CSV, there are some caveats
+in the cases when metadata is either missing or duplicated for the referenced images; see the <b>NamesAndTypes</b>
+for more details.
+
+<p>If the metadata establishes how channels are related to one another, you can use them in <b>NamesAndTypes</b> 
+to aid in creating an image set. You can also use <i>metadata tags</i> in your pipeline to reference the metadata 
+values in later modules. Several modules are capable of using metadata tags for various purposes. Examples include:
 <ul>
 <li>You would like to create and apply an illumination correction function to all images from a particular
 plate. You can use metadata tags to save each illumination correction function with a plate-specific
@@ -348,19 +354,18 @@ class Metadata(cpm.CPModule):
             wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*"))
         
         group.append("csv_joiner", cps.Joiner(
-            "Match file and image metadata", allow_none = False,
-            doc="""Match columns in your .csv file to image metadata items
-            <hr>
-            This setting controls how rows in your .csv file are matched to
+            "Match file and image metadata", allow_none = False,doc="""
+            Match columns in your .csv file to image metadata items
+            <p>This setting controls how rows in your .csv file are matched to
             different images. The setting displays the columns in your
             .csv file in one of its columns and the metadata in your images
             in the other, including the metadata extracted by previous
-            metadata extractors in this module.
+            metadata extractors in this module.</p>
             """))
         
         group.append("wants_case_insensitive", cps.Binary(
-            "Case insensitive matching", False,
-            doc = """This setting controls whether row matching takes the
+            "Use case insensitive matching?", False, doc = """
+            This setting controls whether row matching takes the
             metadata case into account when matching. If this setting is 
             not checked, metadata entries that only differ by case 
             (for instance, "A01" and "a01") will not match. If this setting
@@ -370,8 +375,8 @@ class Metadata(cpm.CPModule):
         
         group.append("update_metadata", cps.DoSomething(
             "", "Update metadata",
-            lambda : self.do_update_metadata(group),
-            doc = """Press this button to automatically extract metadata from
+            lambda : self.do_update_metadata(group),doc = """
+            Press this button to automatically extract metadata from
             your image files."""))
                  
         group.can_remove = can_remove

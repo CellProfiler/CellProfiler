@@ -6,27 +6,33 @@ Once the relevant images have been identified using the <b>Images</b> module (an
 had metadata associated with the images using the <b>Metadata</b> module), <b>NamesAndTypes</b> module 
 gives each image a meaningful name by which modules in the analysis pipeline will refer to it. 
 
-<p>The most common usage for this module is to define a collection of channels that represent a single
+<h4>What is an "image set"?</h4>
+An <i>image set</i> is the collection of channels that represent a single
 field of view. For example, a fluorescent assay may have samples stained with DAPI and GFP to label
 separate cellular sub-compartments, and for each site imaged, one DAPI and one GFP image is acquired
-by the microscope. Furthermore, these images are named in such a way that it is apparent to the 
-researcher which is which, e.g., "_w1" is contained in the file for the DAPI images, and "_w1" in 
-the file name for the GFP images. For the purposes of analysis, each DAPI and GFP image for a given site 
-should be loaded and processed together.</p>
+by the microscope. For the purposes of analysis, you want the DAPI and GFP image for a given site 
+to be loaded and processed together. Therefore, the DAPI and GFP image for a given site comprise an
+image set for that site.
 
-<p>In this example, the <b>NamesAndTypes</b> allows you to assign each of these channels a unique name,
+<h4>What do I need as input?</h4>
+The <b>NamesAndTypes</b> module receives the file list produced by the <b>Images</b> module. If you
+used the <b>Metadata</b> module to attach metadata to the images, this information is also received by 
+<b>NamesAndTypes</b> and available for its use.
+
+<h4>What do the settings mean?</h4>
+In the above example, the <b>NamesAndTypes</b> module allows you to assign each of these channels a unique name,
 provided by you. All files of a given channel will be referred to by the chosen name, and the output
 will also be labeled according to this name. This simplifies the book-keeping of your pipeline and 
 results by making the input and output data more inituitive: a large number of images are referred 
-to by a small collection of names which are readily memorable to the researcher.</p>
+to by a small collection of names which are readily memorable to the researcher.
 
 <p>The most common way to perform this assignment is by specifying the pattern in the filename which
 the channel(s) of interest have in common. This is done using user-defined rules in a similar manner 
 to that of the <b>Images</b> module; other attributes of the file may also be used. If you have multiple
-channels, you then assign the relationship between channels. </p>
-
-<p>After this point, for any downstream module which requires an image as input, you can choose  
-any of the names you defined from a drop-down list.</p>
+channels, you then assign the relationship between channels. 
+For example, in the case mentioned above, the DAPI and GFP images are named in such a way that it 
+is apparent to the researcher which is which, e.g., "_w1" is contained in the file for the DAPI images, 
+and "_w1" in the file name for the GFP images.</p>
 
 <p>You can also use <b>NamesAndTypes</b> to define the relationships between images. For example, 
 if you have acquired multiple wavelengths for your assay, you will need to
@@ -35,6 +41,12 @@ This can be done by using their
 associated metadata. If you would like to use the metadata-specific settings, please see the <b>Metadata</b> module 
 or <i>Help > General help > Using Metadata in CellProfiler</i> for more details on metadata usage 
 and syntax. </p>
+
+<h4>What do I get as output?</h4>
+The <b>NamesAndTypes</b> module is the last of the input modules. After this module, you can choose  
+any of the names you defined from a drop-down list in any downstream analysis module which requires an 
+image as input. If you defined a set of objects using this module, those names are also available for analysis
+modules that require an object as input.
 
 <h4>Available measurements</h4>
 <ul> 
@@ -100,7 +112,7 @@ INTENSITY_RESCALING_BY_METADATA = "Image metadata"
 INTENSITY_RESCALING_BY_DATATYPE = "Image bit-depth"
 RESCALING_HELP_TEXT = """
 This option determines how the image intensity should be 
-rescaled from 0 &ndash; 1.0.
+rescaled from 0.0 &ndash; 1.0.
 <ul>
 <li><i>%(INTENSITY_RESCALING_BY_METADATA)s:</i> Rescale the image 
 intensity so that saturated values are rescaled to 1.0 by dividing 
@@ -149,7 +161,6 @@ class NamesAndTypes(cpm.CPModule):
         
         self.assignment_method = cps.Choice(
             "Assign a name to", [ASSIGN_ALL, ASSIGN_RULES],doc = """
-            How do you want to assign images to channels?<br>
             This setting controls how different image types (e.g., an image
             of the GFP stain and a brightfield image) are assigned different
             names so that each type can be treated differently by
@@ -256,7 +267,26 @@ class NamesAndTypes(cpm.CPModule):
             <tr><td>Well</td><td>(None)</td></tr>
             <tr><td>Site</td><td>(None)</td></tr>
             </table>
-            </p></li>
+            </p>
+            <p>There are two special cases in metadata handling worth mentioning:
+            <ul>
+            <li><i>Missing metadata:</i> For a particular metadata tag, one image from a given
+            image set has metadata values defined but another image does not. An example is when a microscope
+            aborts acquisition prematurely in the middle of scanning two channels for a site, and captures 
+            one channel but not the other. In this case, plate, well and site metadata value exists for one
+            image but not for the other since it was never acquired. </li>
+            <li><i>Duplicate metadata:</i> For a particular metadata tag, the same metadata values exist
+            for multiple image sets such that they are not uniquely defined. An example is when a microscope
+            re-scans a site in order to recover from a prior error. In this case, there may be one image from
+            one channel but <i>two</i> images for the other channel, for the same site. Therefore, multiple instances
+            of the same plate, well and site metadata values exist for the same image set.</li>
+            </ul> 
+            In both of these cases, the exact pairing between channels no longer exists. For missing metadata, the pairing is one-to-none,
+            and for duplicate metadata, the pairing is one-to-two. In these instances where a match cannot be
+            made, <b>NamesAndTypes</b> will simply omit the confounding metadata values from consideration. In the above
+            example, an image set will not be created for the plate, well and site combination in question. 
+            </p>
+            </li>
             </ul>"""%globals())
         self.join = cps.Joiner("")
         self.imageset_setting = cps.ImageSetDisplay("", "Update image set table")
@@ -332,13 +362,18 @@ class NamesAndTypes(cpm.CPModule):
             <ul>
             <li><i>%(LOAD_AS_GRAYSCALE_IMAGE)s:</i> An image in which each pixel 
             represents a single intensity value. Most of the modules in CellProfiler
-            operate on images of this type.</li>
+            operate on images of this type. <br>
+            If this option is applied to a color image, the red, green and blue 
+            pixel intensities will be averaged to produce a single intensity value.</li>
             <li><i>%(LOAD_AS_COLOR_IMAGE)s:</i> An image in which each pixel
             repesents a red, green and blue (RGB) triplet of intensity values.
             Please note that the object detection modules such as <b>IdentifyPrimaryObjects</b>
             expect a grayscale image, so if you want to identify objects, you
             should use the <b>ColorToGray</b> module in the analysis pipeline
-            to split the color image into its component channels.</li>
+            to split the color image into its component channels.<br>
+            You can use the <i>%(LOAD_AS_GRAYSCALE_IMAGE)s</i> option to collapse the
+            color channels to a single grayscale value if you don't need CellProfiler
+            to treat the image as color.</li>
             <li><i>%(LOAD_AS_MASK)s:</i> A <i>mask</i> is an image where some of the 
             pixel intensity values are zero, and others are non-zero. The most common
             use for a mask is to exclude particular image regions from consideration. By 
@@ -347,7 +382,8 @@ class NamesAndTypes(cpm.CPModule):
             zeroed region are "hidden" and not included in downstream calculations.
             For this option, the input image should be a binary image, i.e, foreground is 
             white, background is black. The module will convert any nonzero values 
-            to 1, if needed.</li>
+            to 1, if needed. You can use this option to load a foreground/background 
+            segmentation produced by one of the <b>Identify</b> modules.</li>
             <li><i>%(LOAD_AS_ILLUMINATION_FUNCTION)s:</i> An <i>illumination correction function</i>
             is an image which has been generated for the purpose of correcting uneven 
             illumination/lighting/shading or to reduce uneven background in images. Typically,
@@ -362,7 +398,16 @@ class NamesAndTypes(cpm.CPModule):
             equal to 1 make up one object, the elements equal to 2 make up a second 
             object, and so on. This option allows you to use the objects 
             immediately without needing to insert an <b>Identify</b> module to 
-            extract them first. See <b>IdentifyPrimaryObjects</b> for more details. </li>
+            extract them first. See <b>IdentifyPrimaryObjects</b> for more details. <br>
+            This option can load objects created by the <b>SaveImages</b> module. These objects 
+            can take two forms, with different considerations for each:
+            <ul>
+            <li><i>Non-overalapping</i> objects are stored as a label matrix. This matrix should be 
+            saved as grayscale, rather than color.</li>
+            <li><i>Overlapping objects</i> are stored in a multi-frame TIF, each frame of whichc consists of a 
+            grayscale label matrix. The frames are constructed so that objects that overlap are placed
+            in different frames.</li> 
+            </ul></li>
             </ul>
             """%globals()))
         

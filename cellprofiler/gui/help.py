@@ -60,6 +60,14 @@ except:
              "relative paths.\n") % drive)
     path = os.path.abspath(cellprofiler.icons.get_builtin_images_path())
 
+####################################################
+#
+# Module icon references
+#
+####################################################
+
+# General help references
+
 REFRESH_BUTTON = 'folder_refresh.png'
 BROWSE_BUTTON = 'folder_browse.png'
 CREATE_BUTTON = 'folder_create.png'
@@ -94,6 +102,15 @@ WINDOW_SAVE_BUTTON  = 'window_filesave.png'
 ANALYZE_IMAGE_BUTTON = 'IMG_ANALYZE_16.png'
 STOP_ANALYSIS_BUTTON = 'IMG_STOP.png'
 PAUSE_ANALYSIS_BUTTON = 'IMG_PAUSE.png'
+
+# Module specific help
+PROTIP_RECOMEND_ICON = "thumb-up.png"
+PROTIP_AVOID_ICON = "thumb-down.png"
+TECH_NOTE_ICON = "gear.png"
+IMAGES_FILELIST_BLANK = "Images_FilelistPanel_Blank.png"
+IMAGES_FILELIST_FILLED = "Images_FilelistPanel_Filled.png"
+
+IMAGES_USING_RULES_ICON = 'Images_UsingRules.png'
 
 ####################################################
 #
@@ -624,12 +641,20 @@ data in a format you prefer. See <i>%(USING_YOUR_OUTPUT_REF)s</i> for more detai
 REGEXP_HELP_REF = """
 Patterns are specified using
 combinations of metacharacters and literal characters. There are a few
-classes of metacharacters, partially listed below. A more extensive
-explanation of regular expressions can be found <a href="http://www.python.org/doc/2.3/lib/re-syntax.html">here</a>
-and a helpful quick reference can be found <a href="http://www.addedbytes.com/cheat-sheets/regular-expressions-cheat-sheet/">here</a>.
+classes of metacharacters, partially listed below. Some helpful links follow:
+<ul>
+<li>A more extensive explanation of regular expressions can be found 
+<a href="http://www.python.org/doc/2.3/lib/re-syntax.html">here</a></li>
+<li>A helpful quick reference can be found <a href="http://www.addedbytes.com/cheat-sheets/regular-expressions-cheat-sheet/">here</a></li>
+<li><a href="http://pythex.org/">Pythex</a> provides quick way to test your regular expressions. Here is an 
+<a href="http://pythex.org/?regex=Channel%5B1-2%5D-%5B0-9%5D%7B2%7D-(%3FP%3CWellRow%3E%5BA-H%5D)-(%3FP%3CWellColumn%3E%5B0-9%5D%7B2%7D)%5C.tif&test_string=Channel1-01-A-01.tif&ignorecase=0&multiline=0&dotall=0&verbose=0">example</a>
+to capture information from a common microscope nomenclature.</li>
+<li></li>
+</ul>
+
 <p>The following metacharacters match exactly one character from its respective set of characters:<br><br>
 <table border="1">
-<tr><th>Metacharacter</th><th>Meaning</th></tr>
+<tr bgcolor="#555555"><th><font color="#FFFFFF"><b>Metacharacter</b></font></th><th><font color="#FFFFFF"><b>Meaning</b></font></th></tr>
 <tr><td>.</td><td>Any character</td></tr>
 <tr><td>[]</td><td>Any character contained within the brackets</td></tr>
 <tr><td>[^]</td><td>Any character not contained within the brackets</td></tr>
@@ -645,7 +670,7 @@ and a helpful quick reference can be found <a href="http://www.addedbytes.com/ch
 or to specify context for a position in the match. These metacharacters
 do not match any characters in the string:<br><br>
 <table border="1">
-<tr><th>Metacharacter</th><th>Meaning</th></tr>
+<tr bgcolor="#555555"><th><font color="#FFFFFF"><b>Metacharacter</b></font></th><th><font color="#FFFFFF"><b>Meaning</b></font></th></tr>
 <tr><td>( )</td><td>Group subexpression</td></tr>
 <tr><td>|</td><td>Match subexpression before or after the |</td></tr>
 <tr><td>^</td><td>Match expression at the start of string</td></tr>
@@ -657,7 +682,7 @@ do not match any characters in the string:<br><br>
 <p>The following metacharacters specify the number of times the previous
 metacharacter or grouped subexpression may be matched:<br><br>
 <table border="1">
-<tr><th>Metacharacter</th><th>Meaning</th></tr>
+<tr bgcolor="#555555"><th><font color="#FFFFFF"><b>Metacharacter</b></font></th><th><font color="#FFFFFF"><b>Meaning</b></font></th></tr>
 <tr><td>*</td><td>Match zero or more occurrences</td></tr>
 <tr><td>+</td><td>Match one or more occurrences</td></tr>
 <tr><td>?</td><td>Match zero or one occurrence</td></tr>
@@ -671,16 +696,16 @@ match a '.' specifically, use '\.' in your pattern.
 
 Examples:
 <ul>
-<li>[trm]ail matches 'tail' or 'rail' or 'mail'</li>
-<li>[0-9] matches any digit between 0 to 9</li>
-<li>[^Q-S] matches any character other than 'Q' or 'R' or 'S'</li>
-<li>[[]A-Z] matches any upper case alphabet along with square brackets</li>
-<li>[ag-i-9] matches characters 'a' or 'g' or 'h' or 'i' or '-' or '9'</li>
-<li>[a-p]* matches '' or 'a' or 'aab' or 'p' etc.</li>
-<li>[a-p]+ matches  'a' or 'abc' or 'p' etc.</li>
-<li>[^0-9] matches any string that is not a number</li>
-<li>^[0-9]*$ matches any string that is a natural number or ''</li>
-<li>^-[0-9]+$|^\+?[0-9]+$ matches any integer</li>
+<li><code>[trm]ail</code> matches 'tail' or 'rail' or 'mail'</li>
+<li><code>[0-9]</code> matches any digit between 0 to 9</li>
+<li><code>[^Q-S]</code> matches any character other than 'Q' or 'R' or 'S'</li>
+<li><code>[[]A-Z]</code> matches any upper case alphabet along with square brackets</li>
+<li><code>[ag-i-9]</code> matches characters 'a' or 'g' or 'h' or 'i' or '-' or '9'</li>
+<li><code>[a-p]*</code> matches '' or 'a' or 'aab' or 'p' etc.</li>
+<li><code>[a-p]+</code> matches  'a' or 'abc' or 'p' etc.</li>
+<li><code>[^0-9]</code> matches any string that is not a number</li>
+<li><code>^[0-9]*$</code> matches any string that is a natural number or ''</li>
+<li><code>^-[0-9]+$|^\+?[0-9]+$</code> matches any integer</li>
 </ul>
 """
 
@@ -1854,6 +1879,9 @@ you type, the more specific the condition is.
 the filter finds all files that include the text "Channel", such as "Channel1.tif" "Channel2.jpg", "1-Channel-A01.BMP" and so on.</li>
 <li>If you select <i>Does</i> and <i>Start with</i> as the operators and <i>Channel1</i> in the Condition box, 
 the rule will includes such files as "Channel1.tif" "Channel1-A01.png", and so on.</li></ul>
+<table cellpadding="0" width="100%%">
+<tr align="center"><td><img src="memory:%(IMAGES_USING_RULES_ICON)s"></td></tr>
+</table>
 </li>
 You can also create regular expressions (an advanced syntax for pattern matching; see <a href="#regexp">below</a>) in order to select particular files.
 </ol>
@@ -1867,7 +1895,7 @@ you can create sets of rules, by clicking the ellipsis button (to the right of t
 Repeat the above steps to add more rules to the filter until you have
 all the conditions you want to include.</p>
 
-<a name="regexp"><h4>Details on regular expressions</h4></a>
+<a name="regexp"><h5>Details on regular expressions</h5></a>
 <p>A <i>regular expression</i> is a general term refering to a method of searching for pattern matches in text. There is a high
 learning curve to using them, but are quite powerful once you understand the basics.</p>
 <p>%(REGEXP_HELP_REF)s</p>

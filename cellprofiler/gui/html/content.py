@@ -24,17 +24,19 @@ IDENTIFY_FEATUREES_HELP = '''
 <p>A hallmark of most CellProfiler pipelines is the identification of cellular features in your images, whether they are 
 nuclei, organelles or something else. </p>
 
-<table width="75%%"><tr>
-<td width="50%%" valign="top">
-<p>A number of modules are dedicated to the purpose of detecting these features; the <b>IdentifyPrimaryObjects</b> module is the
+<table width="75%%" cellpadding="0">
+<tr>
+<td width="75%%" valign="top">
+A number of modules are dedicated to the purpose of detecting these features; the <b>IdentifyPrimaryObjects</b> module is the
 one that is most commonly used. The result of this module is a set of labeled <i>objects</i>; we define an object as a collection of connected pixels 
 in an image which share the same label. The challenge here is to find a combination of settings that best identify the objects from 
 the image, a task called <i>segmentation</i>. The typical expectation is to end up with one object for each cellular feature of interest 
 (for example, each nucleus is assigned to a single object in a DNA stained image). If this is not the
 case, the module settings can be adjusted to make it so (or as close as possible). In some cases, image processing modules must be used beforehand
-to transform the image so it is more amenable to object detection.</p></td>
-<td align="center"><img src="memory:image_to_object_dataflow.png" width="254" height="225"></td>
-</tr></table>
+to transform the image so it is more amenable to object detection.</td>
+<td width="25%%" align="center"><img src="memory:image_to_object_dataflow.png" width="254" height="225"></td>
+</tr>
+</table>
 
 <p>In brief, the workflow of finding objects using this module is to do the following:
 <ul>
@@ -145,26 +147,27 @@ WELCOME_HELP = {
 
 startup_main = '''<html>
 <body>
-<center><h1>Welcome to CellProfiler!</h1></center>
-<br>
-<p>CellProfiler is automated image analysis software to measure biological phenotypes in images.</p>
-<br>
-<br>
-<table border="0" cellpadding="5" width="100%%">
+<table border="0" cellpadding="4" width="100%%">
+<tr>
+<td colspan="3" align="center"><b><font size="+3">Welcome to CellProfiler!</font></b></td>
+</tr>
+<tr>
+<td colspan="3">CellProfiler is automated image analysis software to measure biological phenotypes in images.</td>
+</tr>
 <tr>
     <td colspan="3"><b><font size="+2">See how it works</font></b></td>
 </tr>
 <tr>
-    <td>&nbsp;</td>
+    <td width="1">&nbsp;</td>
     <td colspan="2"><a href="loadexample:http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cp">Load a simple pipeline</a> from our website, then click on the "Analyze images" button.</td>
 </tr>
 <tr>
     <td colspan="3"><b><font size="+2">Build your own pipeline</font></b></td>
 </tr>
 <tr>
-    <td width="10">&nbsp;</td>
-    <td width="110"><font size="+2">1: Start</font></td>
-    <td >Download an <a href="http://www.cellprofiler.org/examples.shtml">example pipeline</a> that suits your application and load it with <i>File &gt; Open Project</i>.</td>
+    <td>&nbsp;</td>
+    <td width="100"><font size="+2">1: Start</font></td>
+    <td>Download an <a href="http://www.cellprofiler.org/examples.shtml">example pipeline</a> that suits your application and load it with <i>File &gt; Open Project</i>.</td>
 </tr>
 <tr>
     <td>&nbsp;</td>

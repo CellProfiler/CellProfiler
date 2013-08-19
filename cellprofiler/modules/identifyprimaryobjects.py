@@ -199,7 +199,7 @@ import cellprofiler.cpmath.outline
 import cellprofiler.objects
 from cellprofiler.settings import AUTOMATIC
 import cellprofiler.cpmath.threshold as cpthresh
-from identify import TSM_AUTOMATIC
+from identify import TSM_AUTOMATIC, TS_BINARY_IMAGE
 from identify import draw_outline
 from identify import FI_IMAGE_SIZE
 from cellprofiler.gui.help import HELP_ON_MEASURING_DISTANCES, RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
@@ -927,8 +927,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
                 statistics.append(["Area covered by objects",
                                    "%.1f %%" % (100.0 * float(object_area) /
                                               float(total_area))])
-                statistics.append(["Thresholding filter size",
-                    "%.1f"%(workspace.display_data.threshold_sigma)])            
+                if self.threshold_scope != TS_BINARY_IMAGE:
+                    statistics.append(["Thresholding filter size",
+                        "%.1f"%(workspace.display_data.threshold_sigma)])            
                 if self.unclump_method != UN_NONE:
                     if self.unclump_method == UN_LOG:
                         statistics.append(["LoG threshold",

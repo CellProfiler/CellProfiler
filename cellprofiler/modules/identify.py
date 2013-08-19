@@ -460,7 +460,7 @@ class Identify(cellprofiler.cpmodule.CPModule):
             the size of the artifacts to be eliminated by smoothing. A Gaussian
             is used with a sigma adjusted so that 1/2 of the Gaussian's
             distribution falls within the diameter given by the scale
-            (sigma = scale / .674)""")
+            (sigma = scale / 0.674)""")
 
         self.threshold_correction_factor = cps.Float(
             "Threshold correction factor", 1, doc ="""

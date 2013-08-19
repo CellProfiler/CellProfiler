@@ -108,11 +108,11 @@ GC_GRAYSCALE = "Grayscale"
 GC_COLOR = "Color"
 
 '''Offset to the directory path setting'''
-OFFSET_DIRECTORY_PATH = 10
+OFFSET_DIRECTORY_PATH = 11
 class SaveImages(cpm.CPModule):
 
     module_name = "SaveImages"
-    variable_revision_number = 9
+    variable_revision_number = 10
     category = "File Processing"
     
     def create_settings(self):
@@ -206,17 +206,17 @@ class SaveImages(cpm.CPModule):
         self.single_file_name = cps.Text(
             SINGLE_NAME_TEXT, "OrigBlue",
             metadata = True,  doc="""
-            <i>(Used only when "%(FN_FROM_IMAGE)s" or "%(FN_SINGLE_NAME)s" are selected for contructing the filename)</i><br>
-            If you are constructing the filenames using...
-            <ul>
-            <li><i>Single name:</i> Enter the filename text here</li>
-            <li><i>Custom with metadata:</i> If you have metadata 
-            associated with your images, enter the filename text with the metadata tags. %(USING_METADATA_TAGS_REF)s
-            For example, if the <i>plate</i>, <i>well_row</i> and <i>well_column</i> tags have the values <i>XG45</i>, <i>A</i>
-            and <i>01</i>, respectively, the string "Illum_\g&lt;plate&gt;_\g&lt;well_row&gt;\g&lt;well_column&gt;"
-            produces the output filename <i>Illum_XG45_A01</i>.</li>
-            </ul>
+            <i>(Used only when "%(FN_SEQUENTIAL)s" or "%(FN_SINGLE_NAME)s" are selected for contructing the filename)</i><br>
+            Specify the filename text here. If you have metadata 
+            associated with your images, enter the filename text with the metadata tags. %(USING_METADATA_TAGS_REF)s<br>
             Do not enter the file extension in this setting; it will be appended automatically."""%globals())
+        
+        self.number_of_digits = cps.Integer(
+            "Number of digits", 4, doc="""
+            <i>(Used only when "%(FN_SEQUENTIAL)s" is selected for contructing the filename)</i><br>
+            Specify the number of digits to be used for the sequential numbering. Zeros will be
+            used to left-pad the digits. If the number specified here is less than that needed to
+            contain the number of image sets, the latter will override the value entered."""%globals())
         
         self.wants_file_name_suffix = cps.Binary(
             "Append a suffix to the image file name?", False, doc = """
@@ -369,7 +369,8 @@ class SaveImages(cpm.CPModule):
         return [self.save_image_or_figure, self.image_name, 
                 self.objects_name, self.figure_name,
                 self.file_name_method, self.file_image_name,
-                self.single_file_name, self.wants_file_name_suffix, 
+                self.single_file_name, self.number_of_digits,
+                self.wants_file_name_suffix, 
                 self.file_name_suffix, self.file_format,
                 self.pathname, self.bit_depth,
                 self.overwrite, self.when_to_save,
@@ -396,6 +397,7 @@ class SaveImages(cpm.CPModule):
             self.single_file_name.text = SEQUENTIAL_NUMBER_TEXT
             # XXX - Change doc, as well!
             result.append(self.single_file_name)
+            result.append(self.number_of_digits)
         elif self.file_name_method == FN_SINGLE_NAME:
             self.single_file_name.text = SINGLE_NAME_TEXT
             result.append(self.single_file_name)
@@ -791,6 +793,7 @@ class SaveImages(cpm.CPModule):
             filename = workspace.measurements.apply_metadata(filename)
             n_image_sets = workspace.measurements.image_set_count
             ndigits = int(np.ceil(np.log10(n_image_sets+1)))
+            ndigits = max((ndigits,self.number_of_digits.value))
             padded_num_string = str(measurements.image_set_number).zfill(ndigits)
             filename = '%s%s'%(filename, padded_num_string)
         else:
@@ -1019,7 +1022,18 @@ class SaveImages(cpm.CPModule):
             if setting_values[9] == FF_TIF:
                 setting_values = setting_values[:9] + [FF_TIFF] + \
                     setting_values[10:]
-                variable_revision_number = 9
+            variable_revision_number = 9
+        
+        ######################
+        #
+        # Version 10 - Add number of digits for sequential numbering
+        #
+        ######################   
+        if (not from_matlab) and (variable_revision_number == 9):
+            setting_values = setting_values[:7] + ["4"] + \
+                    setting_values[7:]
+            variable_revision_number = 10     
+
         setting_values[OFFSET_DIRECTORY_PATH] = \
             SaveImagesDirectoryPath.upgrade_setting(setting_values[OFFSET_DIRECTORY_PATH])
         

@@ -1280,9 +1280,9 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
         img1_filename = os.path.join(img_path1, 'img1.tif')
         img2_filename = os.path.join(img_path2, 'img2.tif')
         img1_out_filename = os.path.join(self.new_output_directory, "test1", 
-                                         'TEST1.tif')
+                                         'TEST0001.tif')
         img2_out_filename = os.path.join(self.new_output_directory, "test2", 
-                                         'TEST2.tif')
+                                         'TEST0002.tif')
         os.mkdir(img_path1)
         os.mkdir(img_path2)
         make_file(img1_filename, cpmt.tif_8_1)

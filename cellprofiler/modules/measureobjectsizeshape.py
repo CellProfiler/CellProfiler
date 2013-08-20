@@ -23,7 +23,9 @@ region in the image.</li>
 <li><i>FormFactor:</i> Calculated as 4*&pi;*Area/Perimeter<sup>2</sup>. Equals 1 for a 
 perfectly circular object.</li>
 <li><i>Solidity:</i> The proportion of the pixels in the convex hull that
-are also in the region. Also known as <i>convexity</i>. Computed as Area/ConvexArea.</li>
+are also in the object, i.e. <i>ObjectArea/ConvexHullArea</i>. Equals 1 for a solid object 
+(i.e., one with no holes or has a concave boundary), or &lt;1 for an object 
+with holes or possessing a convex/irregular boundary.</li>
 <li><i>Extent:</i> The proportion of the pixels in the bounding box that
 are also in the region. Computed as the Area divided by the area of the
 bounding box.</li>

@@ -36,11 +36,14 @@ the child will have the label of the closest parent.</li>
 object from the previous frame to the current frame.</li>
 <li><i>DistanceTraveled:</i> The distance traveled by the object from the 
 previous frame to the current frame (calculated as the magnitude of 
-the distance traveled vector).</li>
+the trajectory vectors).</li>
+<li><i>Displacement:</i> The shortest distance traveled by the object from its
+initial starting position to the position in the current frame. That is, it is 
+the straight-line path between the two points.</li>
 <li><i>IntegratedDistance:</i> The total distance traveled by the object during
 the lifetime of the object.</li>
 <li><i>Linearity:</i> A measure of how linear the object trajectity is during the
-object lifetime. Calculated as (distance from initial to final 
+object lifetime. Calculated as (displacement from initial to final 
 location)/(integrated object distance). Value is in range of [0,1].</li>
 <li><i>Lifetime:</i> The number of frames an objects has existed. The lifetime starts
 at 1 at the frame when an object appears, and is incremented with each frame that the
@@ -122,6 +125,7 @@ F_PARENT_IMAGE_NUMBER = "ParentImageNumber"
 F_TRAJECTORY_X = "TrajectoryX"
 F_TRAJECTORY_Y = "TrajectoryY"
 F_DISTANCE_TRAVELED = "DistanceTraveled"
+F_DISPLACEMENT = "Displacement"
 F_INTEGRATED_DISTANCE = "IntegratedDistance"
 F_LINEARITY = "Linearity"
 F_LIFETIME = "Lifetime"
@@ -172,6 +176,7 @@ F_ALL_COLTYPE_ALL = [(F_LABEL, cpmeas.COLTYPE_INTEGER),
                      (F_TRAJECTORY_X, cpmeas.COLTYPE_INTEGER),
                      (F_TRAJECTORY_Y, cpmeas.COLTYPE_INTEGER),
                      (F_DISTANCE_TRAVELED, cpmeas.COLTYPE_FLOAT),
+                     (F_DISPLACEMENT, cpmeas.COLTYPE_FLOAT),
                      (F_INTEGRATED_DISTANCE, cpmeas.COLTYPE_FLOAT),
                      (F_LINEARITY, cpmeas.COLTYPE_FLOAT),
                      (F_LIFETIME, cpmeas.COLTYPE_INTEGER),
@@ -1828,6 +1833,7 @@ class TrackObjects(cpm.CPModule):
         trajectory_y = wrapped(self.measurement_name(F_TRAJECTORY_Y))
         integrated = wrapped(self.measurement_name(F_INTEGRATED_DISTANCE))
         dists = wrapped(self.measurement_name(F_DISTANCE_TRAVELED))
+        displ = wrapped(self.measurement_name(F_DISPLACEMENT))
         linearity = wrapped(self.measurement_name(F_LINEARITY))
         lifetimes = wrapped(self.measurement_name(F_LIFETIME))
         label = wrapped(self.measurement_name(F_LABEL))
@@ -1839,9 +1845,6 @@ class TrackObjects(cpm.CPModule):
             maximum_lifetime = self.max_lifetime.value if self.wants_maximum_lifetime.value else np.Inf
             
         for image_number in image_numbers:
-            #
-            # Distances traveled from step to step
-            #
             index = image_index[image_number]
             this_x = x[index]
             if len(this_x) == 0:
@@ -1851,23 +1854,29 @@ class TrackObjects(cpm.CPModule):
             last_y = y.get_parent(index, no_parent=this_y)
             x_diff = this_x - last_x
             y_diff = this_y - last_y
+            #
+            # TrajectoryX,Y = X,Y distances traveled from step to step
+            #
             trajectory_x[index] = x_diff
             trajectory_y[index] = y_diff
             #
+            # DistanceTraveled = Distance traveled from step to step
+            #
+            dists[index] = np.sqrt(x_diff * x_diff + y_diff * y_diff)
+            #
             # Integrated distance = accumulated distance for lineage
             #
-            integrated[index] = integrated.get_parent(index, no_parent=0) + \
-                np.sqrt(x_diff * x_diff + y_diff * y_diff)
+            integrated[index] = integrated.get_parent(index, no_parent=0) + dists[index]
             #
-            # Total distance = crow-fly distance from initial ancestor
+            # Displacement = crow-fly distance from initial ancestor
             #
             x_tot_diff = this_x - x.get_ancestor(index)
             y_tot_diff = this_y - y.get_ancestor(index)
             tot_distance = np.sqrt(x_tot_diff * x_tot_diff +
                                    y_tot_diff * y_tot_diff)
-            dists[index] = tot_distance
+            displ[index] = tot_distance
             #
-            # Linearity = ratio of crow-fly distance and integrated
+            # Linearity = ratio of displacement and integrated
             # distance. NaN for new cells is ok.
             #
             linearity[index] = tot_distance / integrated[index]
@@ -1961,9 +1970,8 @@ class TrackObjects(cpm.CPModule):
         diff_i = np.zeros(new_count)
         diff_j = np.zeros(new_count)
         distance = np.zeros(new_count)
-        idistance = np.zeros(new_count)
-        odistance = np.zeros(new_count)
-        distance = np.zeros(new_count)
+        integrated_distance = np.zeros(new_count)
+        displacement = np.zeros(new_count)
         linearity = np.ones(new_count)
         orig_i = i.copy()
         orig_j = j.copy()
@@ -1978,17 +1986,16 @@ class TrackObjects(cpm.CPModule):
             diff_i[has_old] = i[has_old] - old_i[old_indexes]
             diff_j[has_old] = j[has_old] - old_j[old_indexes]
             distance[has_old] = np.sqrt(diff_i[has_old]**2 + diff_j[has_old]**2)
-
-            idistance[has_old] = (old_distance[old_indexes] + 
-                                  distance[has_old])
-            odistance = np.sqrt((i-orig_i)**2 + (j-orig_j)**2)
-            linearity[has_old] = odistance[has_old] / idistance[has_old]
+            integrated_distance[has_old] = (old_distance[old_indexes] + distance[has_old])
+            displacement[has_old] = np.sqrt((i[has_old]-orig_i[has_old])**2 + (j[has_old]-orig_j[has_old])**2)
+            linearity[has_old] = displacement[has_old] / integrated_distance[has_old]
         self.add_measurement(workspace, F_TRAJECTORY_X, diff_j)
         self.add_measurement(workspace, F_TRAJECTORY_Y, diff_i)
         self.add_measurement(workspace, F_DISTANCE_TRAVELED, distance)
-        self.add_measurement(workspace, F_INTEGRATED_DISTANCE, idistance)
+        self.add_measurement(workspace, F_DISPLACEMENT, displacement)
+        self.add_measurement(workspace, F_INTEGRATED_DISTANCE, integrated_distance)
         self.add_measurement(workspace, F_LINEARITY, linearity)
-        self.set_saved_distances(workspace, idistance)
+        self.set_saved_distances(workspace, integrated_distance)
         self.set_orig_coordinates(workspace, (orig_i, orig_j))
         self.set_saved_coordinates(workspace, (i,j))
         #

@@ -1,4 +1,7 @@
-'''<b>Measure Object Size Shape </b> measures several area and shape 
+import cellprofiler.icons 
+from cellprofiler.gui.help import MEASUREOBJSIZESHAPE_ECCENTRICITY
+__doc__ = '''
+<b>Measure Object Size Shape </b> measures several area and shape 
 features of identified objects.
 <hr>
 Given an image with identified objects (e.g. nuclei or cells), this
@@ -41,7 +44,10 @@ same second-moments as the region. The eccentricity is the ratio of the
 distance between the foci of the ellipse and its major axis length. The
 value is between 0 and 1. (0 and 1 are degenerate cases; an ellipse whose
 eccentricity is 0 is actually a circle, while an ellipse whose eccentricity
-is 1 is a line segment.)</li>
+is 1 is a line segment.)
+<table cellpadding="0" width="100%%">
+<tr align="center"><td><img src="memory:%(MEASUREOBJSIZESHAPE_ECCENTRICITY)s"></td></tr>
+</table></li>
 <li><i>MajorAxisLength:</i> The length (in pixels) of the major axis of
 the ellipse that has the same normalized second central moments as the
 region.</li>
@@ -99,7 +105,7 @@ vol 3, p. 30 </li>
 </ul>
 
 See also <b>MeasureImageAreaOccupied</b>.
-'''
+'''%globals()
 
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.

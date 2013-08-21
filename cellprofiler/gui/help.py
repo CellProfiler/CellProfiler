@@ -109,7 +109,7 @@ PROTIP_AVOID_ICON = "thumb-down.png"
 TECH_NOTE_ICON = "gear.png"
 IMAGES_FILELIST_BLANK = "Images_FilelistPanel_Blank.png"
 IMAGES_FILELIST_FILLED = "Images_FilelistPanel_Filled.png"
-
+MEASUREOBJSIZESHAPE_ECCENTRICITY = 'MeasureObjectSizeShape_Eccentricity.png'
 IMAGES_USING_RULES_ICON = 'Images_UsingRules.png'
 
 ####################################################

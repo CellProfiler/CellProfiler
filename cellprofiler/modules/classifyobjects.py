@@ -522,7 +522,7 @@ class ClassifyObjects(cpm.CPModule):
              self.second_threshold)):
             values = measurements.get_current_measurement(
                 self.object_name.value, feature.value)
-            saved_values.append(values[~np.isnan(values)])
+            saved_values.append(values)
             if threshold_method == TM_CUSTOM:
                 t = threshold.value
             elif len(values) == 0:
@@ -534,7 +534,7 @@ class ClassifyObjects(cpm.CPModule):
             else:
                 raise ValueError("Unknown threshold method: %s" %
                                  threshold_method.value)
-            in_high_class.append(values[~np.isnan(values)] >= t)
+            in_high_class.append(values >= t)
         feature_names = self.get_feature_name_matrix()
         num_values = len(values)
         for i in range(2):
@@ -558,7 +558,12 @@ class ClassifyObjects(cpm.CPModule):
             object_codes = class_1.astype(int)+class_2.astype(int)*2 + 1
             object_codes = np.hstack(([0], object_codes))
             object_codes[np.hstack((False,np.isnan(values)))] = 0
-            labels = object_codes[objects.segmented]
+            nobjects = len(class_1)
+            mapping = np.zeros(nobjects+1, int)
+            mapping[1:] = np.arange(1, nobjects+1)
+            for i in range(2): 
+                mapping[np.isnan(saved_values[i])] = 0  
+            labels = object_codes[mapping[objects.segmented]]
             colors = self.get_colors(4)
             image = colors[labels,:3]
             image = cpi.Image(image,parent_image = objects.parent_image)
@@ -575,13 +580,20 @@ class ClassifyObjects(cpm.CPModule):
         for i, feature_name in ((0, self.first_measurement.value),
                                 (1, self.second_measurement.value)):
             axes = figure.subplot(i,0)
-            axes.hist(workspace.display_data.saved_values[i])
+            saved_values = workspace.display_data.saved_values[i]
+            axes.hist(saved_values[~np.isnan(saved_values)])
             axes.set_xlabel(feature_name)
             axes.set_ylabel("# of %s"%object_name)
         class_1, class_2 = workspace.display_data.in_high_class
         object_codes = class_1.astype(int)+class_2.astype(int)*2 + 1
         object_codes = np.hstack(([0], object_codes))
-        labels = object_codes[workspace.display_data.labels]
+        nobjects = len(class_1)
+        mapping = np.zeros(nobjects+1, int)
+        mapping[1:] = np.arange(1, nobjects+1)
+        for i in range(2): 
+            saved_values = workspace.display_data.saved_values[i]
+            mapping[np.isnan(saved_values)] = 0
+        labels = object_codes[mapping[workspace.display_data.labels]]
         figure.subplot_imshow_labels(0,1, labels, title = object_name,
                                      renumber=False)
         #

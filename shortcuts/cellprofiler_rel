@@ -1,0 +1,84 @@
+#!/bin/bash
+
+function runcp {
+    export JAVA_HOME=../../../../../usr/CellProfiler/src/CellProfiler/jdk1.7.0_21
+    export LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64/server:/usr/CellProfiler/lib/:$LD_LIBRARY_PATH
+    export PATH=../../../../../usr/CellProfiler/bin:$JAVA_HOME/bin:$PATH
+    export HOSTTYPE=amd64
+    cd ../../../../../usr/CellProfiler/src/CellProfiler
+    export MAVEN_OPTS="-Xmx1024m"
+    ../../../../../usr/CellProfiler/bin/python2.7 CellProfiler.py
+}
+
+function runnose {
+    export JAVA_HOME=../../../../../usr/CellProfiler/src/CellProfiler/jdk1.7.0_21
+    export LD_LIBRARY_PATH=$JAVA_HOME/jre/lib/amd64/server:/usr/CellProfiler/lib/:$LD_LIBRARY_PATH
+    export HOSTTYPE=amd64
+    export PATH=../../../../../usr/CellProfiler/bin/:$JAVA_HOME/bin:$PATH
+    export MAVEN_OPTS="-Xmx1024m"
+    cd ../../../../../usr/CellProfiler/src/CellProfiler
+    ../../../../../usr/CellProfiler/bin/python2.7 killjavabridge/setup.py install
+    export CP_TESTIMAGES=$HOME/CellProfiler/TestImages/
+    svn co https://svn.broadinstitute.org/CellProfiler/trunk/TestImages/
+    export CP_EXAMPLEIMAGES=$HOME/CellProfiler/ExampleImages/
+    svn co https://svn.broadinstitute.org/CellProfiler/trunk/ExampleImages/
+    #set up X->xvfb
+    export DISPLAY=:0
+    tmp=/tmp/scratch/CellProfilerXVFB.$RANDOM.$RANDOM
+    echo "Xvfb directory = $tmp"
+    mkdir -p $tmp
+    Xvfb $DISPLAY -fbdir $tmp &
+    XVFVPID=$!
+    echo "Xvfb PID = $XVFBPID"
+    ../../../../../usr/CellProfiler/bin/python2.7 -m nose.core --exe -m --with-xunit --wxunit-file="(?:^)test_.*" -v --with-kill-vm
+    kill $XVFBPID
+    sleep 5 #This probably isn't best practice.  I know.  
+    rm -rf $tmp
+    
+
+}
+
+usage()
+{
+cat << EOF
+usage: $0 options
+
+This script runs CellProfiler (or its tests)
+
+OPTIONS:
+ -h   Show this message
+ -t   Run nose tests
+ -r   Run CellProfiler 
+EOF
+}
+
+TEST=
+SERVER=
+PASSWD=
+VERBOSE=
+while getopts "htr" OPTION
+do
+    case $OPTION in
+      h)
+        usage
+        exit 1
+        ;;
+      t)
+        runnose
+        ;;
+      r)
+        runcp
+        exit
+        ;;
+    esac
+done
+
+#if [[ -z $TEST ]] || [[ -z $SERVER ]] || [[ -z $PASSWD ]]
+#then
+    #usage
+#    exit 1
+#fi
+
+
+#runcp
+

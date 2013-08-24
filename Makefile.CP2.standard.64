@@ -1299,7 +1299,7 @@ $(SRCDIR)/$(PYTHONVERSION).tar.bz2:
 
 $(SRCDIR)/$(MATPLOTLIBVERSION).tar.gz:
 					mkdir -p "$(SRCDIR)" && cd "$(SRCDIR)" && \
-					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(MATPLOTLIBVERSION)/$(MATPLOTLIBVERSION).tar.gz" && \
+					wget $(WGETFLAGS) "$(PACKAGEHOST)/$(MATPLOTLIBVERSION).tar.gz" && \
 					touch "$@"
 
 $(SRCDIR)/wxPython-src-$(WXPYTHONVERSION).tar.bz2:

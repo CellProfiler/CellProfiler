@@ -294,7 +294,6 @@ gtk:					precheck libgtk
 
 #Identify host type and set relevant variables
 sethost:				
-					@echo "this is a test"
 					@if echo $${HOSTTYPE} | grep -q 64; then \
 						echo "using 64 bit version" ; \
 					fi

@@ -7,7 +7,7 @@ function runcp {
     export HOSTTYPE=amd64
     cd /usr/CellProfiler/src/CellProfiler
     export MAVEN_OPTS="-Xmx1024m"
-    /usr/CellProfiler/bin/python2.7 CellProfiler.py
+    /usr/CellProfiler/bin/python2.7 CellProfiler.py --no-splash-box
 }
 
 function runnose {

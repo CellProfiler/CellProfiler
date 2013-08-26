@@ -3150,6 +3150,7 @@ class LoadImagesImageProvider(LoadImagesImageProviderBase):
             img, self.scale = bioformats.load_using_bioformats(
                 url,
                 c = self.channel,
+                series=self.series,
                 index = self.index,
                 rescale = self.rescale,
                 wants_max_intensity=True,

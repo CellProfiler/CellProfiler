@@ -632,6 +632,7 @@ def __load_using_bioformats(path, c, z, t, series, index, rescale,
     with GetImageReader(path) as rdr:
         mdoptions = metadatatools.get_metadata_options(metadatatools.ALL)
         rdr.setMetadataOptions(mdoptions)
+        rdr.setGroupFiles(False)
         metadata = metadatatools.createOMEXMLMetadata()
         rdr.setMetadataStore(metadata)
         rdr.setId(path)

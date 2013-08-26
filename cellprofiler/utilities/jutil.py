@@ -1163,7 +1163,7 @@ def get_nice_arg(arg, sig):
     if (sig in ('Ljava/lang/String;','Ljava/lang/Object;') and not
          isinstance(arg, javabridge.JB_Object)):
         if isinstance(arg, unicode):
-            arg, _ = codecs.utf_8_encode(arg)
+            return env.new_string(arg)
         elif arg is None:
             return None
         else:

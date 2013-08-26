@@ -35,9 +35,23 @@ class TestJavabridge(unittest.TestCase):
         string_class = self.env.find_class('java/lang/String')
         self.assertTrue(isinstance(string_class, jb.JB_Class))
 
-    def test_01_03_new_string_utf(self):
+    def test_01_03_00_new_string_utf(self):
         jstring = self.env.new_string_utf("Hello, world")
         self.assertTrue(isinstance(jstring, jb.JB_Object))
+        
+    def test_01_03_01_new_string_unicode(self):
+        s = u"Hola ni\u00F1os"
+        jstring = self.env.new_string(s)
+        self.assertEqual(self.env.get_string_utf(jstring).decode("utf-8"), s)
+        
+    def test_01_03_02_new_string_string(self):
+        s = "Hello, world"
+        jstring = self.env.new_string(s)
+        self.assertEqual(self.env.get_string_utf(jstring), s)
+        
+    def test_01_03_03_new_string_zero_length(self):
+        jstring = self.env.new_string(u"")
+        self.assertEqual(self.env.get_string_utf(jstring), "")
         
     def test_01_04_get_string_utf(self):
         jstring = self.env.new_string_utf("Hello, world")

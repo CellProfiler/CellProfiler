@@ -534,7 +534,7 @@ class Metadata(cpm.CPModule):
                     if_has_metadata = False
                 xmlmetadata = file_list.get_metadata(ipd.url)
                 if xmlmetadata is not None:
-                    xmlmetadata = env.new_string_utf(xmlmetadata)
+                    xmlmetadata = env.new_string(xmlmetadata)
                     if_has_metadata = True
                 metadata = env.call_method(extractor, extract_metadata_id,
                                            env.new_string_utf(ipd.url),

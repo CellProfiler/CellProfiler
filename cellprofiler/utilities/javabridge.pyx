@@ -230,6 +230,7 @@ cdef extern from "jni.h":
         # Methods for handling strings
         #
         jobject (* NewStringUTF)(JNIEnv *env, char *utf) nogil
+        jobject (* NewString)(JNIEnv *env, jchar *unicode, jsize len) nogil
         char *(* GetStringUTFChars)(JNIEnv *env, jobject str, jboolean *is_copy) nogil
         void (* ReleaseStringUTFChars)(JNIEnv *env, jobject str, char *chars) nogil
         #
@@ -1328,6 +1329,27 @@ cdef class JB_Env:
             raise e
         return result
 
+    def new_string(self, u):
+        '''Turn a unicode string into a Java string object
+        
+        u - a unicode string (ideally) or a string that can be
+            encoded in utf-16 like this: u.encode("utf-16")
+        '''
+        cdef:
+            char *s
+            jsize nchars
+            jobject o
+        u16 = u.encode("utf-16")
+        nchars = len(u16) / 2 - 1
+        s = u16
+        o = self.env[0].NewString(self.env, <jchar *>s+1, nchars)
+        if o == NULL:
+            raise MemoryError("Failed to allocate string")
+        jbo, e = make_jb_object(self, o)
+        if e is not None:
+             raise e
+        return jbo
+        
     def new_string_utf(self, char *s):
         '''Turn a Python string into a Java string object'''
         cdef:

@@ -28,7 +28,8 @@ For more details on batch processing, please see <i>Help > Other Features > Batc
 # 
 # Website: http://www.cellprofiler.org
 
-
+import logging
+logger = logging.getLogger(__name__)
 import httplib
 import numpy as np
 import os
@@ -300,8 +301,20 @@ class CreateBatchFiles(cpm.CPModule):
         pipeline = workspace.pipeline
         assert isinstance(pipeline, cpp.Pipeline)
         assert not self.distributed_mode, "Distributed mode no longer supported"
-        cpprefs.set_default_output_directory(self.custom_output_directory.value)
-        cpprefs.set_default_image_directory(self.default_image_directory.value)
+        default_output_directory = self.custom_output_directory.value
+        default_image_directory = self.default_image_directory.value
+        if os.path.isdir(default_output_directory):
+            cpprefs.set_default_output_directory(default_output_directory)
+        else:
+            logger.info(
+                "Batch file default output directory, \"%s\", does not exist" %
+                default_output_directory)
+        if os.path.isdir(default_image_directory):
+            cpprefs.set_default_image_directory(default_image_directory)
+        else:
+            logger.info(
+                "Batch file default input directory \"%s\", does not exist" %
+                default_image_directory)
     
     def turn_off_batch_mode(self):
         '''Remove any indications that we are in batch mode

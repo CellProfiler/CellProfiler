@@ -6,7 +6,7 @@
 # in the -H parameter. Example: fab -H 192.168.194.177 build
 #
 
-from fabric.api import env, settings, run, put, get
+from fabric.api import env, settings, run, put, get, local
 from fabric.decorators import with_settings
 
 env.user = "cpbuild"

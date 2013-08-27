@@ -40,5 +40,5 @@ def test():
     with settings(user="root"):
         run("yum -y install gtk2-devel mesa-libGL mesa-libGL-devel blas atlas lapack blas-devel atlas-devel lapack-devel xorg-x11-xauth* xorg-x11-xkb-utils* qt-devel openssl openssl-devel xclock *Xvfb* svn")
         put("cellprofiler.tar.gz")
-        run("tar xzf cellprofiler.tar.gz -C /")
+        run("tar -C / -xzf cellprofiler.tar.gz")
     run("/usr/CellProfiler/src/CellProfiler/shortcuts/cellprofiler -t")

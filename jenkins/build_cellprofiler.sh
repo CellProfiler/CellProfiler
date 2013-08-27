@@ -59,7 +59,8 @@ sudo yum -q -y install python-setuptools gcc gcc-c++ wget vim gtk2-devel git svn
 sudo mkdir /usr/CellProfiler
 sudo chown cpbuild:cpbuild /usr/CellProfiler
 mkdir /usr/CellProfiler/src
-tar -C /usr/CellProfiler/src -xpf workspace.tar
+mkdir /usr/CellProfiler/src/CellProfiler
+tar -C /usr/CellProfiler/src/CellProfiler -xpf workspace.tar
 
 downloadjava
 installjava

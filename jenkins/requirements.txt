@@ -1,0 +1,5 @@
+# Required for vcloud.py
+py-dom-xpath
+requests
+# Required for the rest
+fabric

@@ -30,6 +30,7 @@ import loci.common.services.ServiceFactory;
 import loci.formats.services.OMEXMLService;
 
 import ome.xml.model.OME;
+import ome.xml.model.OMEModelObject;
 
 import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
@@ -136,7 +137,7 @@ public class ImageFile {
 	 */
 	public void setXMLDocument(String omexml) throws ParserConfigurationException, SAXException, IOException, DependencyException, ServiceException {
 		OMEXMLService svc = new ServiceFactory().getInstance(OMEXMLService.class);
-		Object root = svc.createOMEXMLRoot(omexml);
+		OMEModelObject root = svc.createOMEXMLRoot(omexml);
 		if (! (root instanceof OME))
 			throw new ServiceException("Root of XML document wasn't OME");
 		this.omexml = (OME)root;

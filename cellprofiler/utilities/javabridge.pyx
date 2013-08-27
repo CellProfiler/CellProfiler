@@ -35,8 +35,9 @@ cimport cython
 cdef extern from "Python.h":
     ctypedef int Py_intptr_t
     ctypedef short Py_UNICODE
+    ctypedef unsigned long Py_ssize_t
     Py_UNICODE *PyUnicode_AS_UNICODE(object)
-
+    object PyUnicode_DecodeUTF16(char *s, Py_ssize_t size, char *errors, int *byteorder)
 cdef extern from "stdlib.h":
     ctypedef unsigned long size_t
     void free(void *ptr)
@@ -233,6 +234,9 @@ cdef extern from "jni.h":
         jobject (* NewString)(JNIEnv *env, jchar *unicode, jsize len) nogil
         char *(* GetStringUTFChars)(JNIEnv *env, jobject str, jboolean *is_copy) nogil
         void (* ReleaseStringUTFChars)(JNIEnv *env, jobject str, char *chars) nogil
+        jsize (* GetStringLength)(JNIEnv *env, jobject str) nogil
+        jchar *(* GetStringChars)(JNIEnv *env, jobject str, jboolean *isCopy) nogil
+        void (* ReleaseStringChars)(JNIEnv *env, jobject str, jchar *chars) nogil
         #
         # Methods for making arrays (which I am not distinguishing from jobjects here) nogil
         #
@@ -1362,6 +1366,20 @@ cdef class JB_Env:
              raise e
         return jbo
 
+    def get_string(self, JB_Object s):
+        '''Turn a Java string object into a Python unicode string'''
+        cdef:
+            jsize nchars = self.env[0].GetStringLength(self.env, s.o)
+            jchar *chars
+            int byteorder = 0
+        if <int>s.o == 0:
+            return None
+        chars = self.env[0].GetStringChars(self.env, s.o, NULL)
+        result = PyUnicode_DecodeUTF16(
+            <char *>chars, nchars*2, "ignore", &byteorder)
+        self.env[0].ReleaseStringChars(self.env, s.o, chars)
+        return result
+        
     def get_string_utf(self, JB_Object s):
         '''Turn a Java string object into a Python string'''
         cdef:

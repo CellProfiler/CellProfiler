@@ -53,10 +53,15 @@ class TestJavabridge(unittest.TestCase):
         jstring = self.env.new_string(u"")
         self.assertEqual(self.env.get_string_utf(jstring), "")
         
-    def test_01_04_get_string_utf(self):
+    def test_01_04_00_get_string_utf(self):
         jstring = self.env.new_string_utf("Hello, world")
         pstring = self.env.get_string_utf(jstring)
         self.assertEqual(pstring, "Hello, world")
+        
+    def test_01_04_01_get_string(self):
+        s = u"Hola ni\u00F1os"
+        jstring = self.env.new_string(s)
+        self.assertTrue(self.env.get_string(jstring), s)
         
     def test_01_05_get_object_class(self):
         jstring = self.env.new_string_utf("Hello, world")

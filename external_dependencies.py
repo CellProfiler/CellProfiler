@@ -132,6 +132,10 @@ def fetch_external_dependencies(overwrite=False):
                 # Tell run_maven to update aggressively
                 aggressive_update = True
     
+            if overwrite:
+                run_maven(pom_dir,
+                          goal="clean",
+                          aggressive_update = aggressive_update)
             run_maven(pom_dir, 
                       quiet = not overwrite,
                       run_tests = overwrite,

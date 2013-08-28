@@ -40,7 +40,7 @@ function installjava {
 
 function tarup {
     cd $HOME
-    tar cvzf cellprofiler.tar.gz --exclude=/usr/CellProfiler/src /usr/CellProfiler
+    tar cvzf cellprofiler.tar.gz /usr/CellProfiler
 }
 
 function clean {
@@ -53,7 +53,7 @@ echo This is inside "$0"
 
 # Install dependencies as RPM packages. These are the build dependencies;
 # not all of them are required to run the finished software.
-sudo yum -q -y install python-setuptools gcc gcc-c++ wget vim gtk2-devel git svn gcc-gfortran cmake mesa-libGL mesa-libGL-devel blas atlas lapack blas-devel atlas-devel lapack-devel xorg-x11-xauth* xorg-x11-xkb-utils* unzip dejavu-lgc-sans-fonts qt-devel openssl openssl-devel xclock bzip2 bzip2-devel bzip2-libs libXtst make
+sudo yum -q -y install python-setuptools gcc gcc-c++ wget vim gtk2-devel git svn gcc-gfortran cmake mesa-libGL mesa-libGL-devel blas atlas lapack blas-devel atlas-devel lapack-devel xorg-x11-xauth* xorg-x11-xkb-utils* unzip dejavu-lgc-sans-fonts qt-devel openssl openssl-devel xclock bzip2 bzip2-devel bzip2-libs libXtst make libpng-devel
 
 # Create directories.
 sudo mkdir /usr/CellProfiler

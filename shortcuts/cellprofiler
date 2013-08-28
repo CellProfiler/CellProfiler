@@ -30,7 +30,7 @@ function runnose {
     Xvfb $DISPLAY -fbdir $tmp &
     XVFVPID=$!
     echo "Xvfb PID = $XVFBPID"
-    /usr/CellProfiler/bin/python2.7 -m nose.core --exe -m --with-xunit --wxunit-file="(?:^)test_.*" -v --with-kill-vm
+    /usr/CellProfiler/bin/python2.7 -m nose.core --exe -m --with-xunit --xunit-file="(?:^)test_.*" -v --with-kill-vm
     kill $XVFBPID
     sleep 5 #This probably isn't best practice.  I know.  
     rm -rf $tmp

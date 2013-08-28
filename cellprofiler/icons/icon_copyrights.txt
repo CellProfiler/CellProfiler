@@ -41,7 +41,7 @@ CollapseTree.png and ExpandTree.png
 Covered by the following license: https://wiki.trin.org.au/Mangroves/TermsOfUse
 Author: Emma Clifton, https://wiki.trin.org.au/Main/EmmaClifton
 
-welcomescreen_tutorials.png
+welcomescreen_tutorials.png previous.png, next.png
 Covered by the following license: http://files.softicons.com/download/system-icons/crystal-project-icons-by-everaldo-coelho/readme.txt
 Author:  Everaldo Coelho, http://www.softicons.com/free-icons/system-icons/crystal-project-icons-by-everaldo-coelho/apps-tutorials-icon
 

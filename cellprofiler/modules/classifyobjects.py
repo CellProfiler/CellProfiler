@@ -201,27 +201,27 @@ class ClassifyObjects(cpm.CPModule):
             the module generates measurements such as
             "Classify_Intensity_MeanIntensity_Green_High_Intensity_TotalIntensity_Low").""")
         
-        self.low_low_custom_name = cps.Text(
+        self.low_low_custom_name = cps.AlphanumericText(
             "Enter the low-low bin name","low_low",doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects that
             fall below the threshold for both measurements.""")
         
-        self.low_high_custom_name = cps.Text(
+        self.low_high_custom_name = cps.AlphanumericText(
             "Enter the low-high bin name","low_high",doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects whose
             first measurement is below threshold and whose second measurement
             is above threshold.""")
         
-        self.high_low_custom_name = cps.Text(
+        self.high_low_custom_name = cps.AlphanumericText(
             "Enter the high-low bin name","high_low",doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects whose
             first measurement is above threshold and whose second measurement
             is below threshold.""")
         
-        self.high_high_custom_name = cps.Text(
+        self.high_high_custom_name = cps.AlphanumericText(
             "Enter the high-high bin name","high_high",doc="""
             <i>(Used only if using a pair of measurements)</i><br>
             Name of the measurement for objects that

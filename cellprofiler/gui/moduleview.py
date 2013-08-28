@@ -731,7 +731,8 @@ class ModuleView:
                 #
                 # Populate the tree
                 #
-                for choice in v.choices:
+                choices = set(v.choices)
+                for choice in choices:
                     object_name, feature = v.split_choice(choice)
                     pieces = [object_name] + feature.split('_')
                     d1 = d
@@ -745,6 +746,8 @@ class ModuleView:
                 # Mark selected leaf states as true
                 #
                 for selection in v.selections:
+                    if selection not in choices:
+                        continue
                     object_name, feature = v.split_choice(selection)
                     pieces = [object_name] + feature.split('_')
                     d1 = d
@@ -768,7 +771,6 @@ class ModuleView:
                     return leaf_state
                 get_state(d)
                 dlg = TreeCheckboxDialog(self.module_panel, d, size=(320,480))
-                choices = set(v.choices)
                 dlg.Title = "Select measurements"
                 if dlg.ShowModal() == wx.ID_OK:
                     def collect_state(object_name, prefix, d):

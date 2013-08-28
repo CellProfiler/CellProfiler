@@ -498,6 +498,45 @@ class ImageFileSpecifier(Text):
             del kwargs['default_dir']
         super(ImageFileSpecifier,self).__init__(text, value, *args, **kwargs)
 
+class AlphanumericText(Text):
+    '''A setting for entering text values limited to alphanumeric + _ values
+    
+    This can be used for measurement names, object names, etc.
+    '''
+
+    def __init__(self, text, value, *args, **kwargs):
+        '''Initializer
+        
+        text - the explanatory text for the setting UI
+        
+        value - the default / initial value
+        
+        first_must_be_alpha - True if the first character of the value must
+                              be a letter or underbar.
+        '''
+        kwargs = kwargs.copy()
+        self.first_must_be_alpha = kwargs.pop("first_must_be_alpha", False)
+        super(AlphanumericText, self).__init__(text, value, *args, **kwargs)
+        
+    def test_valid(self, pipeline):
+        '''Restrict names to legal ascii C variables
+        
+        First letter = a-zA-Z and underbar, second is that + digit.
+        '''
+        if self.first_must_be_alpha:
+            pattern = "^[A-Za-z_][A-Za-z_0-9]*$"
+            error = (
+                'Names must start with an ASCII letter or underbar ("_")'
+                ' optionally followed by ASCII letters, underbars or digits.')
+        else:
+            pattern = "^[A-Za-z_0-9]+$"
+            error = ('Only ASCII letters, digits and underbars ("_") can be '
+                     'used here')
+            
+        match = re.match(pattern, self.value)
+        if match is None:
+            raise ValidationError(error, self)
+    
 class Integer(Text):
     """A setting that allows only integer input
     
@@ -959,15 +998,16 @@ class BinaryMatrix(Setting):
         return int(hs), int(ws)
     
 PROVIDED_ATTRIBUTES = "provided_attributes"
-class NameProvider(Text):
+class NameProvider(AlphanumericText):
     """A setting that provides a named object
     """
     def __init__(self, text, group, value=DO_NOT_USE, *args, **kwargs):
         self.__provided_attributes = { "group":group }
+        kwargs = kwargs.copy()
         if kwargs.has_key("provided_attributes"):
             self.__provided_attributes.update(kwargs["provided_attributes"])
-            kwargs = kwargs.copy()
             del kwargs[PROVIDED_ATTRIBUTES]
+        kwargs["first_must_be_alpha"] = True
         super(NameProvider,self).__init__(text, value, *args, **kwargs)
     
     def get_group(self):
@@ -989,19 +1029,6 @@ class NameProvider(Text):
         '''
         return self.__provided_attributes
     
-    def test_valid(self, pipeline):
-        '''Restrict names to legal ascii C variables
-        
-        First letter = a-zA-Z and underbar, second is that + digit.
-        '''
-        pattern = "^[A-Za-z_][A-Za-z_0-9]*$"
-        match = re.match(pattern, self.value)
-        if match is None:
-            raise ValidationError(
-                'Names must start with an ASCII letter or underbar ("_")'
-                ' optionally followed by ASCII letters, underbars or digits.',
-                self)
-
 class ImageNameProvider(NameProvider):
     """A setting that provides an image name
     """
@@ -1428,6 +1455,9 @@ class MultiChoice(Setting):
             if selection not in self.choices:
                 if len(self.choices) == 0:
                     raise ValidationError("No available choices", self)
+                elif len(self.choices) > 25:
+                    raise ValidationError(
+                        "%s is not one of the choices" % selection, self)
                 raise ValidationError("%s is not one of %s" % 
                                       (selection, 
                                        reduce(lambda x,y: "%s,%s" % 
@@ -1516,7 +1546,8 @@ class MeasurementMultiChoice(MultiChoice):
         '''Split object and feature within a choice'''
         subst_choice = choice.replace('||','++')
         loc = subst_choice.find('|')
-        assert loc != -1
+        if loc == -1:
+            return subst_choice, "Invalid"
         return (choice[:loc], choice[(loc+1):])
     
     def get_measurement_object(self, choice):
@@ -1550,8 +1581,12 @@ class MeasurementMultiChoice(MultiChoice):
                 if id(setting) == id(self):
                     break
         columns = pipeline.get_measurement_columns(module)
+        def valid_mc(c):
+            '''Disallow any measurement column with "," or "|" in its names'''
+            return not any([any([bad in f for f in c[:2]]) for bad in ",", "|"])
+        
         self.set_choices([self.make_measurement_choice(c[0], c[1])
-                          for c in columns])
+                          for c in columns if valid_mc(c)])
         
         
 class SubdirectoryFilter(MultiChoice):

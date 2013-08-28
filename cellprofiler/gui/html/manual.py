@@ -230,9 +230,12 @@ def search_module_help(text):
     """ % ("1 match" if len(matching_help) == 1 else "%d matches" % len(matching_help))
     body = "<br>"
     match_num = 1
-    prev_link = '<a href="#match%d" title="Previous match">&lt;</a>'
+    prev_link = (
+        '<a href="#match%d" title="Previous match">'
+        '<img src="memory:previous.png" alt="previous match"></a>')
     anchor = '<a name="match%d"><u>%s</u></a>'
-    next_link = '<a href="#match%d" title="Next match">&gt;</a>'
+    next_link = ('<a href="#match%d" title="Next match">'
+                 '<img src="memory:next.png" alt="next match"></a>')
     for title, help_text, pairs in matching_help:
         top += """<li><a href="#match%d">%s</a></li>\n""" % (
             match_num, title)

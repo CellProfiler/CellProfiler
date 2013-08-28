@@ -1244,7 +1244,7 @@ All rights reserved."""
         sizer.AddSpacer(2)
         sizer.Add(search_button, 0, wx.EXPAND)
 
-        html_window = wx.html.HtmlWindow(self.search_frame)
+        html_window = HtmlClickableWindow(self.search_frame)
         self.search_frame.Sizer.Add(html_window, 1, wx.EXPAND | wx.ALL, 4)
         def on_search(event):
             from cellprofiler.gui.html.manual import search_module_help

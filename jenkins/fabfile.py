@@ -29,7 +29,7 @@ def set_up_user(username):
 def build():
     disable_ipv6()
     set_up_user("cpbuild")
-    local("tar cpf workspace.tar --exclude workspace.tar .")
+    local("tar cpf workspace.tar --exclude workspace.tar ..")
     put("workspace.tar")
     put("build_cellprofiler.sh", "~", mode=0755)
     run("./build_cellprofiler.sh")

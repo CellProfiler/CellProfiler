@@ -147,14 +147,14 @@ class PlateViewer(object):
         self.frame = frame
         self.plate_bitmap = None
         self.frame.Sizer = wx.BoxSizer(wx.VERTICAL)
-        self.toolbar = wx.ToolBar(self.frame)
-        self.frame.Sizer.Add(self.toolbar, 0, wx.EXPAND)
-        self.plate_choice = wx.Choice(self.toolbar)
-        self.toolbar.AddControl(self.plate_choice)
-        self.toolbar.Realize()
         self.splitter = wx.SplitterWindow(self.frame)
         self.frame.Sizer.Add(self.splitter, 1, wx.EXPAND)
-        self.plate_panel = wx.Panel(self.splitter)
+        self.sr_panel = wx.Panel(self.splitter)
+        self.sr_panel.Sizer = wx.BoxSizer(wx.VERTICAL)
+        self.plate_choice = wx.Choice(self.sr_panel)
+        self.sr_panel.Sizer.Add(self.plate_choice, 0, wx.LEFT | wx.ALL, 4)
+        self.plate_panel = wx.Panel(self.sr_panel)
+        self.sr_panel.Sizer.Add(self.plate_panel, 1, wx.EXPAND)
         rows, cols = data.plate_layout
         w, h = self.plate_panel.GetTextExtent("".join(["00"] * cols))
         h *= rows
@@ -184,8 +184,9 @@ class PlateViewer(object):
                           wx.ALIGN_RIGHT | wx.ALIGN_TOP | wx.ALL, 5)
         self.figure = matplotlib.figure.Figure()
         self.axes = self.figure.add_axes((0.05, 0.05, .9, .9))
-        self.canvas = FigureCanvasWxAgg(self.canvas_panel, -1, self.figure)
-        self.canvas_panel.Sizer.Add(self.canvas, 1, wx.EXPAND)
+        self.subcanvaspanel = wx.Panel(self.canvas_panel)
+        self.canvas = FigureCanvasWxAgg(self.subcanvaspanel, -1, self.figure)
+        self.canvas_panel.Sizer.Add(self.subcanvaspanel, 1, wx.EXPAND)
         #
         # The following is largely taken from the matplotlib examples:
         # http://matplotlib.sourceforge.net/examples/user_interfaces/embedding_in_wx2.html
@@ -196,23 +197,13 @@ class PlateViewer(object):
             # Mac platform (OSX 10.3, MacPython) does not seem to cope with
             # having a toolbar in a sizer. This work-around gets the buttons
             # back, but at the expense of having the toolbar at the top
-            self.frame.SetToolBar(self.toolbar)
-        else:
-            # On Windows platform, default window size is incorrect, so set
-            # toolbar width to figure width.
-            tw, th = self.navtoolbar.GetSizeTuple()
-            fw, fh = self.canvas.GetSizeTuple()
-            # By adding toolbar in sizer, we are able to put it at the bottom
-            # of the frame - so appearance is closer to GTK version.
-            # As noted above, doesn't work for Mac.
-            self.navtoolbar.SetSize(wx.Size(fw, th))
-        self.canvas_panel.Sizer.Add(self.navtoolbar, 0, wx.LEFT | wx.EXPAND)
+            self.frame.SetToolBar(self.navtoolbar)
         # update the axes menu on the toolbar
         self.navtoolbar.update()
         self.image_dict = None
         self.image_dict_lock = multiprocessing.RLock()
         self.image_dict_generation = 0
-        self.splitter.SplitVertically(self.plate_panel, self.canvas_panel)
+        self.splitter.SplitVertically(self.sr_panel, self.canvas_panel)
         self.plate_panel.Bind(wx.EVT_PAINT, self.on_paint_plate)
         self.plate_panel.Bind(wx.EVT_ERASE_BACKGROUND, self.on_erase_background)
         self.plate_panel.Bind(wx.EVT_SIZE, self.on_plate_size)
@@ -224,6 +215,7 @@ class PlateViewer(object):
         self.channel_grid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
                                lambda event: self.update_figure())
         self.frame.Bind(wx.EVT_CLOSE, self.on_close)
+        self.subcanvaspanel.Bind(wx.EVT_SIZE, self.on_subcanvaspanel_size)
         self.on_update()
         self.frame.Layout()
         
@@ -242,6 +234,16 @@ class PlateViewer(object):
         
     def on_plate_size(self, event):
         self.draw_plate()
+        
+    def on_subcanvaspanel_size(self, event):
+        assert isinstance(event, wx.SizeEvent)
+        tw, th = self.navtoolbar.GetSizeTuple()
+        scw, sch = event.GetSize()
+        ch = sch - th
+        self.canvas.SetSize(wx.Size(scw, ch))
+        self.canvas.Move(wx.Point(0, 0))
+        self.navtoolbar.SetSize(wx.Size(scw, th))
+        self.navtoolbar.Move(wx.Point(0, ch))
         
     def on_plate_click(self, event):
         assert isinstance(event, wx.MouseEvent)

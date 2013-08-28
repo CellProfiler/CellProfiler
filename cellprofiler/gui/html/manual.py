@@ -236,6 +236,8 @@ def search_module_help(text):
     for title, help_text, pairs in matching_help:
         top += """<li><a href="#match%d">%s</a></li>\n""" % (
             match_num, title)
+        if help_text.find("<h1>") == -1:
+            body += "<h1>%s</h1>" % title
         start_match = re.search(r"<\s*body[^>]*?>", help_text, re.IGNORECASE)
         if start_match is None:
             start = 0

@@ -346,10 +346,12 @@ class CreateBatchFiles(cpm.CPModule):
             if not check(path):
                 wx.MessageBox("Cannot find %s on the server." % path)
                 all_ok = False
-        for path in (cpprefs.get_default_image_directory(),
-                     cpprefs.get_default_output_directory()):
+        for path, name in (
+            (cpprefs.get_default_image_directory(), "default image folder"),
+            (cpprefs.get_default_output_directory(), "default output folder")):
             if not check(self.alter_path(path)):
-                wx.MessageBox("Cannot find %s on the server." % path)
+                wx.MessageBox("Cannot find the %s, \"%s\", on the server." % 
+                              (name, path))
                 all_ok = False
             
         if all_ok:

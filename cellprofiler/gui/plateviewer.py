@@ -190,8 +190,8 @@ class PlateViewer(object):
         # The following is largely taken from the matplotlib examples:
         # http://matplotlib.sourceforge.net/examples/user_interfaces/embedding_in_wx2.html
         #
-        self.toolbar = NavigationToolbar2Wx(self.canvas)
-        self.toolbar.Realize()
+        self.navtoolbar = NavigationToolbar2Wx(self.canvas)
+        self.navtoolbar.Realize()
         if wx.Platform == '__WXMAC__':
             # Mac platform (OSX 10.3, MacPython) does not seem to cope with
             # having a toolbar in a sizer. This work-around gets the buttons
@@ -200,15 +200,15 @@ class PlateViewer(object):
         else:
             # On Windows platform, default window size is incorrect, so set
             # toolbar width to figure width.
-            tw, th = self.toolbar.GetSizeTuple()
+            tw, th = self.navtoolbar.GetSizeTuple()
             fw, fh = self.canvas.GetSizeTuple()
             # By adding toolbar in sizer, we are able to put it at the bottom
             # of the frame - so appearance is closer to GTK version.
             # As noted above, doesn't work for Mac.
-            self.toolbar.SetSize(wx.Size(fw, th))
-            self.canvas_panel.Sizer.Add(self.toolbar, 0, wx.LEFT | wx.EXPAND)
+            self.navtoolbar.SetSize(wx.Size(fw, th))
+        self.canvas_panel.Sizer.Add(self.navtoolbar, 0, wx.LEFT | wx.EXPAND)
         # update the axes menu on the toolbar
-        self.toolbar.update()
+        self.navtoolbar.update()
         self.image_dict = None
         self.image_dict_lock = multiprocessing.RLock()
         self.image_dict_generation = 0
@@ -223,6 +223,7 @@ class PlateViewer(object):
                             lambda event: self.update_figure())
         self.channel_grid.Bind(wx.grid.EVT_GRID_CELL_CHANGE,
                                lambda event: self.update_figure())
+        self.frame.Bind(wx.EVT_CLOSE, self.on_close)
         self.on_update()
         self.frame.Layout()
         
@@ -233,6 +234,9 @@ class PlateViewer(object):
     def get_border_width(self):
         return 30
     
+    def on_close(self, event):
+        self.frame.Hide()
+        
     def on_plate_choice_evt(self, event):
         self.on_update()
         
@@ -326,8 +330,9 @@ class PlateViewer(object):
                     numRows = self.channel_grid.GetNumberRows() - len(channel_names))
             for i, channel_name in enumerate(sorted(channel_names)):
                 self.channel_grid.SetRowLabelValue(i, channel_name)
-                if update_values:
-                    for j in range(4):
+                for j in range(4):
+                    if update_values or not \
+                       self.channel_grid.GetCellValue(i, j).isdigit():
                         self.channel_grid.SetCellValue(
                             i, j, 
                             str(255 if j == 3 or i == j else 0))
@@ -501,7 +506,8 @@ class PlateViewer(object):
             # TO_DO - handle images that aren't scaled from 0 to 255
             for channel, image in sd.iteritems():
                 imgmax = np.max(image)
-                scale = 255 if imgmax < 256 else 4095 if imgmax < 4096 else 65535
+                scale = 1 if imgmax <= 1 else 255 if imgmax < 256 \
+                    else 4095 if imgmax < 4096 else 65535
                 a = channel_dict[channel][3]
                 rgb = channel_dict[channel][:3] / 255.
                 image = image * a / scale
@@ -517,7 +523,7 @@ class PlateViewer(object):
         self.axes.cla()
         self.axes.imshow(megapicture)
         self.canvas.draw()
-        self.toolbar.update()
+        self.navtoolbar.update()
 
 if __name__=="__main__":
     import os

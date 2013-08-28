@@ -277,8 +277,14 @@ class HDF5Dict(object):
                                     compression = None, shuffle=True, 
                                     chunks=(self.chunksize, 3), 
                                     maxshape=(None, 3))
+                                src_chunk = src_dataset[src_off:src_stop]
+                                # Saw this on my computer - dtype of src_dataset
+                                # was special_dtype, but slice was not
+                                if (h5py.check_dtype(vlen=src_chunk.dtype) != 
+                                    h5py.check_dtype(vlen=src_dataset.dtype)):
+                                    src_chunk = src_chunk.astype(src_dataset.dtype)
                                 dest_feature_group.create_dataset(
-                                    'data', data = src_dataset[src_off:src_stop],
+                                    'data', data = src_chunk,
                                     compression = 'gzip', shuffle=True,
                                     chunks = (self.chunksize, ), 
                                     maxshape = (None, ))                                

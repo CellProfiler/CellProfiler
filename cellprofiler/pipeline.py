@@ -1597,21 +1597,31 @@ class Pipeline(object):
             if grouping is not None and set(keys) != set(grouping.keys()):
                 raise ValueError("The grouping keys specified on the command line (%s) must be the same as those defined by the modules in the pipeline (%s)"%(
                         ", ".join(grouping.keys()), ", ".join(keys)))
-            for group_number, (grouping_keys, image_numbers) in enumerate(groupings):
+            for gn, (grouping_keys, image_numbers) in enumerate(groupings):
                 if grouping is not None and grouping != grouping_keys:
                     continue
                 need_to_run_prepare_group = True
-                for group_index, image_number in enumerate(image_numbers):
+                for gi, image_number in enumerate(image_numbers):
                     if image_number < image_set_start:
                         continue
                     if image_set_end is not None and image_number > image_set_end:
                         continue
+                    if initial_measurements is not None and all(
+                        [initial_measurements.has_feature(cpmeas.IMAGE, f)
+                         for f in GROUP_NUMBER, GROUP_INDEX]):
+                        group_number, group_index = [
+                            initial_measurements[cpmeas.IMAGE, f, image_number]
+                            for f in GROUP_NUMBER, GROUP_INDEX]
+                    else:
+                        group_number = gn+1
+                        group_index = gi+1
                     if need_to_run_prepare_group:
-                        yield group_number+1, group_index+1, image_number,\
+                        yield group_number, group_index, image_number,\
                               lambda: self.prepare_group(
                                   workspace, grouping_keys, image_numbers)
                     else:
-                        yield group_number+1, group_index+1, image_number, lambda: True
+                        yield group_number, group_index, image_number, \
+                              lambda: True
                     need_to_run_prepare_group = False
                 if not need_to_run_prepare_group:
                     yield None, None, None, lambda workspace: self.post_group(

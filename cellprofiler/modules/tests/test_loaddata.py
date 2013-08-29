@@ -21,6 +21,7 @@ import tempfile
 import unittest
 import zlib
 import PIL.Image
+import hashlib
 
 from cellprofiler.preferences import set_headless
 set_headless()
@@ -33,7 +34,8 @@ import cellprofiler.objects as cpo
 import cellprofiler.workspace as cpw
 import cellprofiler.settings as cps
 import cellprofiler.modules.loaddata as L
-from cellprofiler.modules.tests import example_images_directory
+from cellprofiler.modules.loadimages import pathname2url
+from cellprofiler.modules.tests import example_images_directory, testimages_directory
 
 OBJECTS_NAME = "objects"
 
@@ -426,6 +428,48 @@ LoadData:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:6|show_w
             module.wants_images.value = False
             pipeline.run()
             self.assertTrue(c0_ran[0])
+        finally:
+            os.remove(filename)
+            
+    def test_04_03_load_planes(self):
+        file_name = "RLM1 SSN3 300308 008015000.flex"
+        path = testimages_directory()
+        pathname = os.path.join(path, file_name)
+        url = pathname2url(pathname)
+        ftrs = (cpmeas.C_URL, cpmeas.C_SERIES, cpmeas.C_FRAME)
+        channels = ("Channel1", "Channel2")
+        header = ",".join([",".join(["_".join((ftr, channel)) for ftr in ftrs])
+                           for channel in channels])
+                                     
+        csv_lines = [header]
+        for series in range(4):
+            csv_lines.append(",".join(['"%s","%d","%d"' % (url, series, frame)
+                                       for frame in range(2)]))
+        csv_text = "\n".join(csv_lines)
+        pipeline, module, filename = self.make_pipeline(csv_text)
+        assert isinstance(module, L.LoadData)
+        m = cpmeas.Measurements()
+        image_set_list = cpi.ImageSetList()
+        try:
+            workspace = cpw.Workspace(pipeline, module, m, None, m, 
+                                      image_set_list)
+            self.assertTrue(module.prepare_run(workspace))
+            pixel_hashes = []
+            for i in range(4):
+                m.next_image_set(i+1)
+                module.run(workspace)
+                chashes = []
+                for channel in channels:
+                    pixel_data = m.get_image(channel).pixel_data
+                    h = hashlib.md5()
+                    h.update(pixel_data)
+                    chashes.append(h.digest())
+                self.assertNotEqual(chashes[0], chashes[1])
+                for j, ph in enumerate(pixel_hashes):
+                    for k, phh in enumerate(ph):
+                        for l, phd in enumerate(chashes):
+                            self.assertNotEqual(phh, phd)
+                pixel_hashes.append(chashes)
         finally:
             os.remove(filename)
     

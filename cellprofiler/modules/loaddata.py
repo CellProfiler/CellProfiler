@@ -167,9 +167,11 @@ import cellprofiler.preferences as cpprefs
 import identify as I
 from cellprofiler.modules.loadimages import LoadImagesImageProvider
 from cellprofiler.modules.loadimages import C_FILE_NAME, C_PATH_NAME, C_URL
+from cellprofiler.modules.loadimages import C_SERIES, C_FRAME
 from cellprofiler.modules.loadimages import C_OBJECTS_FILE_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_PATH_NAME
 from cellprofiler.modules.loadimages import C_OBJECTS_URL
+from cellprofiler.measurements import C_OBJECTS_SERIES, C_OBJECTS_FRAME
 from cellprofiler.modules.loadimages import C_MD5_DIGEST, C_SCALING
 from cellprofiler.modules.loadimages import C_HEIGHT, C_WIDTH
 from cellprofiler.modules.loadimages import bad_sizes_warning
@@ -976,14 +978,29 @@ class LoadData(cpm.CPModule):
         path_base = self.image_path
         if is_image_name:
             url_feature = C_URL + "_" + name
+            series_feature = C_SERIES + "_" + name
+            frame_feature = C_FRAME + "_" + name
         else:
             url_feature = C_OBJECTS_URL + "_" + name
+            series_feature = C_OBJECTS_SERIES + "_" + name
+            frame_feature = C_OBJECTS_FRAME + "_" + name
         url = measurements.get_measurement(cpmeas.IMAGE, url_feature)
         url = url.encode('utf-8')
         full_filename = url2pathname(url)
         path, filename = os.path.split(full_filename)
+        if measurements.has_feature(cpmeas.IMAGE, series_feature):
+            series = measurements[cpmeas.IMAGE, series_feature]
+        else:
+            series = None
+        if measurements.has_feature(cpmeas.IMAGE, frame_feature):
+            frame = measurements[cpmeas.IMAGE, frame_feature]
+        else:
+            frame = None
         return LoadImagesImageProvider(
-            name, path, filename, self.rescale.value and is_image_name)
+            name, path, filename, 
+            rescale=self.rescale.value and is_image_name,
+            series=series,
+            index=frame)
         
     def run(self, workspace):
         '''Populate the images and objects'''

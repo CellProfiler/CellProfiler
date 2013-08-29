@@ -180,7 +180,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
 opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
                               "matplotlib", "matplotlib.numerix.random_array",
-                              "h5py", "h5py.*",
+                              "h5py", "h5py.*", "pyreadline",
                               "email.iterators",
                               "cellprofiler.modules.*"],
                 'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],
@@ -204,7 +204,7 @@ try:
     opts['py2exe']['includes'] += [
         "vigra", "vigra.impex",
         "h5py", "h5py._stub", "h5py._conv", "h5py.utils", "h5py._proxy",
-        "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip", "readline",
+        "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip",
         "zmq", "zmq.utils", "zmq.utils.jsonapi", "zmq.utils.strtypes"]
     opts['py2exe']['excludes'] += ["ilastik"]
     #

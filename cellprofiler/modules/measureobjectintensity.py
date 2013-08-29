@@ -16,12 +16,11 @@ calibrated to an absolute scale. Also, it is important to note whether
 you are reporting either the mean or the integrated intensity, so specify
 "Mean intensity units" or "Integrated intensity units" accordingly.</p>
 
-<p>The default behavior in CellProfiler is to rescale the image intensity 
-from 0 to 1 by dividing all pixels in 
-the image by the maximum possible intensity value. 
-If this is not desired and you prefer to use the number of bits used
-to store the image (e.g., 0-255 or 0-65535), uncheck the "Rescale intensities?"
-setting in <b>NamesAndTypes</b>.</p>
+<p>Keep in mind that the default behavior in CellProfiler is to rescale the 
+image intensity from 0 to 1 by dividing all pixels in the image by the 
+maximum possible intensity value. This "maxmimum possible" value
+is defined by the "Set intensity range from" setting in <b>NamesAndTypes</b>;
+see the help for that setting for more details.</p>
 
 <h4>Available measurements</h4>
 <ul><li><i>IntegratedIntensity:</i> The sum of the pixel intensities within an
@@ -44,7 +43,8 @@ setting in <b>NamesAndTypes</b>.</p>
 <li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25%
  of the pixels in the object have lower values.</li>
 <li><i>MedianIntensity:</i> The median intensity value within the object</li>
-<li><i>MADIntensity:</i> The median abolsute deviation (MAD) value within the object</li>
+<li><i>MADIntensity:</i> The median absolute deviation (MAD) value of the
+intensities within the object. The MAD is defined as the median(|x<sub>i</sub> - median(x)|).</li>
 <li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%
  of the pixels in the object have lower values.</li>
 <li><i>Location_CenterMassIntensity_X, Location_CenterMassIntensity_Y:</i> The 

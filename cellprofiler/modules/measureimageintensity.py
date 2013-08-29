@@ -13,18 +13,24 @@ calibrated to an absolute scale. Also, it is important to note whether
 you are reporting either the mean or the integrated intensity, so specify
 "Mean intensity units" or "Integrated intensity units" accordingly.</p>
 
+<p>Keep in mind that the default behavior in CellProfiler is to rescale the 
+image intensity from 0 to 1 by dividing all pixels in the image by the 
+maximum possible intensity value. This "maxmimum possible" value
+is defined by the "Set intensity range from" setting in <b>NamesAndTypes</b>;
+see the help for that setting for more details.</p>
+
 <h4>Available measurements</h4>
 <ul>
 <li><i>TotalIntensity:</i> Sum of all pixel intensity values.</li>
 <li><i>MeanIntensity, MedianIntensity:</i> Mean and median of pixel intensity values.</li>
 <li><i>StdIntensity, MADIntensity:</i> Standard deviation and median absolute deviation 
-(MAD) of pixel intensity values.</li>
+(MAD) of pixel intensity values. The MAD is defined as the median(|x<sub>i</sub> - median(x)|).</li>
 <li><i>MinIntensity, MaxIntensity:</i> Minimum and maximum of pixel intensity values.</li>
 <li><i>LowerQuartileIntensity:</i> The intensity value of the pixel for which 25%% 
 of the pixels in the object have lower values.</li>
 <li><i>UpperQuartileIntensity:</i> The intensity value of the pixel for which 75%% 
 of the pixels in the object have lower values.</li>
-<li><i>TotalArea:</i> Number of pixels measured.</li>
+<li><i>TotalArea:</i> Number of pixels measured, e.g., the area of the image.</li>
 </ul>
 
 See also <b>MeasureObjectIntensity</b>, <b>MaskImage</b>.

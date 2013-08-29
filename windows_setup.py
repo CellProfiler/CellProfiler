@@ -204,7 +204,7 @@ try:
     opts['py2exe']['includes'] += [
         "vigra", "vigra.impex",
         "h5py", "h5py._stub", "h5py._conv", "h5py.utils", "h5py._proxy",
-        "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip",
+        "PyQt4", "PyQt4.QtOpenGL", "PyQt4.uic", "sip", "readline",
         "zmq", "zmq.utils", "zmq.utils.jsonapi", "zmq.utils.strtypes"]
     opts['py2exe']['excludes'] += ["ilastik"]
     #

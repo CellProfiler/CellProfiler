@@ -116,7 +116,7 @@ class Images(cpm.CPModule):
     def create_settings(self):
         self.workspace = None
         module_explanation = [
-            "To begin creating your workspace, use the %s module to compile" %self.module_name,
+            "To begin creating your project, use the %s module to compile" %self.module_name,
             "a list of files and/or folders that you want to analyze. You can also specify a set of rules",
             "to include only the desired files in your selected folders."]
         self.set_notes([" ".join(module_explanation)])

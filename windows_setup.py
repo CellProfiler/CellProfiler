@@ -73,6 +73,7 @@ class CellProfilerMSI(distutils.core.Command):
     def run(self):
         revision = str(version_number)
         if is_2_6 and do_modify:
+            self.modify_manifest("analysis_worker.exe")
             self.modify_manifest("CellProfiler.exe")
             self.modify_manifest("python26.dll;#2")
             self.modify_manifest("_imaging.pyd;#2")
@@ -84,7 +85,6 @@ class CellProfilerMSI(distutils.core.Command):
             self.modify_manifest("wx._gdi_.pyd;#2")
             self.modify_manifest("wx._html.pyd;#2")
             self.modify_manifest("wx._grid.pyd;#2")
-            self.modify_manifest("PIL._imaging.pyd;#2")
             self.modify_manifest("wx._core_.pyd;#2")
         fd = open("version.iss", "w")
         fd.write("""

@@ -1768,6 +1768,43 @@ supported files, see this <a href="http://loci.wisc.edu/bio-formats/formats">web
 general, we recommend saving stacks and movies in an open format such as .TIF.
 </p>
 
+<p><i>Example:</i>You have an image stack in STK format, in the form of ten frames at a single 
+wavelength for DAPI.</p>
+<p>In this case, the procedure to set up the input modules to handle these this file is as follows
+(please note that this procedure is basically identical whether the file is for a time-lapse assay
+or a Z-stack assay):
+<ul>
+<li>In the <b>Images</b> module, drag-and-drop your folders of images into the file list panel. If 
+neccesary, set your rules accordingly in order to filter out any files that are not part of a movie 
+sequence.<br>
+In the above example, you would drag-and-drop the STK files into the file list panel.</li>
+<li>In the <b>Metadata</b> module, check the "Extract metadata?" box. The key step here is to
+obtain the identifiers neccesary to do two things:
+<ul>
+<li>Distinguish the movies from each other. This information may be encapsulated in the filename 
+and/or the folder name.</li>
+<li>For each stack, distinguish the frames from each other. This information is usually contained
+in the image's internal metadata, in contrast to the image sequences described above.</li>
+</ul> 
+To accomplish this, do the following:
+<ul>
+<li>Select "%(X_AUTOMATIC_EXTRACTION)s" as the metadata extraction method. In this case, CellProfiler will
+extract the requisite information from the metadata stored in the image headers.</li>
+<li>Click the "Update metadata" button.</li>
+<li>Click the "Show table" button.</li>
+<li>The resultant table should show the various metadata contained in the file. In this case, the 
+relevant information may be contained in the <i>T</i> column. <i>T</i> shows values from 0 to 9.</li>
+</ul>
+</li>
+<li>In the <b>NamesAndTypes</b> module, assign the channel to a name of your choice. 
+For the above example, you could do the following:
+<ul>
+<li>Select "Assign images matching rules".</li>
+<li>Make a new rule <code>[Image][Is][Stack frame]</code> and name it <i>OrigDAPI</i>. This
+combination tells CellProfiler not to treat the image as a single file, but rather as a series of frames.</li>
+</ul>
+</ul>
+
 <p><i>Example:</i>You have a single Z-stack in Zeiss' LSM format, in the form of six slices
 with two channels (DAPI, GFP) at each slice.</p>
 <p>In this case, the procedure to set up the input modules to handle these this file is as follows

@@ -1537,6 +1537,8 @@ PREFERENCES_HELP += """</ul>"""
 # Help re: projects
 #
 #########################################################
+CREATING_A_PROJECT_CAPTION = "Creating A Project"
+
 INTRODUCTION_TO_PROJECTS_HELP = """
 <h3>What is a project?</h3>
 <p>In CellProfiler, a <i>project</i> is comprised of two elements:
@@ -1976,7 +1978,7 @@ MAIN_HELP = (
         ("Using the Data Tools Menu",MENU_BAR_DATATOOLS_HELP)) ),
     ("Using Module Display Windows", FIGURE_HELP ),
     #("Setting the Preferences", PREFERENCES_HELP),
-    ("Creating A Project",(
+    (CREATING_A_PROJECT_CAPTION,(
         ("Introduction to Projects",INTRODUCTION_TO_PROJECTS_HELP),
         ("Selecting Images for Input",SELECTING_IMAGES_HELP),
         ("Configuring Images for Analysis",CONFIGURE_IMAGES_HELP),

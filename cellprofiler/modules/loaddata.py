@@ -58,6 +58,20 @@ their corresponding illumination correction functions based on matching
 "Metadata_Date" fields. This is useful if the same data is associated with several
 images (for example, multiple images obtained from a single well).</li>
 
+<li><i>Columns whose name begins with Series or Frame:</i> A columns whose name begins
+with "Series" or "Frame" refers to CSVs containing information about image stacks or movies.
+The name of the image within CellProfiler appears afterward an underscore character. For
+example, "Frame_DNA" would supply the frame number for the movie/image stack file specified
+by the "Image_FileName_DNA" and "Image_PathName_DNA" columns.
+<p>Using a .csv for loading frames and/or series from an movie/image stack allows you more
+flexibility in assembling image sets for operations that would difficult or impossible
+using the Input modules alone. For example, if you wanted to analyze a movie of 1,000 frames 
+by computing the difference between frames, you could create two 
+image columns in a .csv, one for loading frames 1,2,...,999, and the other for loading
+frames 2,3,...,1000. In this case, CellProfiler would load the frame and its predecessor
+for each cycle and <b>ImageMath</b> could be used to create the differece image for downstream use.</p>
+</li>
+
 <li><i>Columns that contain dose-response or positive/negative control information:</i> 
 The <b>CalculateStatistics</b> module can calculate metrics of assay quality for 
 an experiment if provided with information about which images represent positive

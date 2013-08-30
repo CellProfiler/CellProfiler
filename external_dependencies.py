@@ -113,6 +113,8 @@ def fetch_external_dependencies(overwrite=False):
             except:
                 sys.stderr.write(traceback.format_exc())
                 sys.stderr.write("Could not fetch external binary dependency %s from %s.  Some functionality may be missing.  You might try installing it by hand.\n"%(path, url))
+    if overwrite == 'fail':
+        return
                 
     logging.info("Updating Java dependencies using Maven.")
     for pom_folder in pom_folders:

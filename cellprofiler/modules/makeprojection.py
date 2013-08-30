@@ -11,11 +11,9 @@ output of this module is not complete until all image processing cycles have com
 
 <h4>Technical notes</h4>
 This module will create a projection of all images specified in <b>LoadImages</b>. 
-Previously, the module <b>LoadImageDirectory</b> could be used for the same 
-functionality, but on a per-folder basis; i.e., a projection would be created 
-for each set of images in a folder, for all input folders. The
-functionality of <b>LoadImageDirectory</b> can be achieved using image grouping with
-metadata, with the following setting specifications in <b>LoadImages</b>:
+To acheive per-folder projections
+i.e., creating a projection for each set of images in a folder, for all input folders, 
+make the following setting specifications in <b>LoadImages</b>:
 <ol>
 <li>Specify that all subfolders under the Default input folder are to be analyzed.</li>
 <li>Extract metadata from the input image path by using a regular expression to capture
@@ -23,9 +21,8 @@ the subfolder name.</li>
 <li>Enable grouping of image sets by metadata and specify the subfolder metadata token
 as the field by which to group.</li>
 </ol>
-However, unlike <b>LoadImageDirectory</b>, this per-folder projection is also not 
-immediately available in subsequent modules until all image processing cycles for 
-the given subfolder have completed.
+Keep in mind that this per-folder projection is not available for use in subsequent 
+modules; the projection should be created with a dedicated pipeline.
 
 See also the help for the <b>Input</b> modules.
 '''

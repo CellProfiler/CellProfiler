@@ -441,7 +441,17 @@ def parse_args(args):
                           default = False,
                           help = "Print the number of modules, settings and lines of code")
                                   
-    return parser.parse_args(args[1:])
+    options, result_args = parser.parse_args(args[1:])
+    if sys.platform == 'darwin' and len(args) == 2:
+        if args[1].lower().endswith(".cpproj"):
+            # Assume fakey open of .cpproj and OS can't be configured to
+            # add the switch as it can in Windows.
+            options.project_filename = args[1]
+            result_args = []
+        elif args[1].lower().endswith(".cpproj"):
+            options.pipeline_filename = args[1]
+            result_args = []
+    return options, result_args
 
 def set_log_level(options):
     '''Set the logging package's log level based on command-line options'''

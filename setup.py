@@ -59,7 +59,22 @@ OPTIONS = {'argv_emulation': True,
            'resources': ['CellProfilerIcon.png'],
            'iconfile' : 'CellProfilerIcon.icns',
            'frameworks' : [tiff_dylib, jpeg_dylib],
-           'plist': { "LSArchitecturePriority": ["i386"] }
+           'plist': { 
+               "LSArchitecturePriority": ["i386"],
+               "CFBundleName": "CellProfiler",
+               "CFBundleShortVersionString": cellprofiler.utilities.version.dotted_version,
+               "CFBundleDocumentTypes": [{
+                   "CFBundleTypeExtensions":["cpproj"],
+                   "CFBundleTypeIconFile":"CellProfilerIcon.icns",
+                   "CFBundleTypeName":"CellProfiler project",
+                   "CFBundleTypeRole":"Editor"
+                   }, {
+                       "CFBundleTypeExtensions":["cppipe"],
+                       "CFBundleTypeIconFile":"CellProfilerIcon.icns",
+                       "CFBundleTypeName":"CellProfiler pipeline",
+                       "CFBundleTypeRole":"Editor"
+                       }]
+           }
            }
 
 if sys.argv[-1] == 'py2app':

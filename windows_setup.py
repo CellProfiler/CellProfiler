@@ -180,7 +180,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
 opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
                               "matplotlib", "matplotlib.numerix.random_array",
-                              "h5py", "h5py.*", "pyreadline",
+                              "h5py", "h5py.*", "pyreadline", "pyreadline.*",
                               "email.iterators",
                               "cellprofiler.modules.*"],
                 'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],

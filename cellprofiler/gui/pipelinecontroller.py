@@ -1296,13 +1296,24 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def on_pathlist_show(self, event=None):
         '''Show the focused item's image'''
         from cellprofiler.gui.cpfigure import show_image
+        from cellprofiler.modules.loadimages import url2pathname
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY)
         if len(paths) == 0:
             wx.MessageBox("No image selected.", caption = "No image selected", parent = self.__frame)
             return
-        path = paths[0]
+        path = url2pathname(paths[0])
         ext = os.path.splitext(path)[1]
+        if ext.lower() == ".mat":
+            # Maybe it's an image?
+            from scipy.io.matlab.mio import loadmat
+            try:
+                maybe_image = loadmat(os.path.abspath(path))
+                if "Image" in maybe_image.keys():
+                    show_image(paths[0], self.__frame)
+                    return
+            except:
+                pass
         if len(ext) > 1 and ext[1:] in cpprefs.EXT_PIPELINE_CHOICES:
             result = wx.MessageBox(
                 'Do you want to import the pipeline, \n'

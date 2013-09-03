@@ -2229,9 +2229,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 parent = self.__frame)
     
     def start_debugging(self):
+        self.__pipeline.test_mode = True
         self.__pipeline_list_view.set_debug_mode(True)
         self.__test_controls_panel.GetParent().GetSizer().Layout()
-        self.__pipeline.test_mode = True
         self.show_test_controls()
         with cpp.Pipeline.PipelineListener(
             self.__pipeline, self.on_prepare_run_error_event):
@@ -2274,6 +2274,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.stop_debugging()
 
     def stop_debugging(self):
+        self.__pipeline.test_mode = False
         self.__pipeline_list_view.set_debug_mode(False)
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.__frame.enable_launch_commands()
@@ -2283,7 +2284,6 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__debug_outlines = None
         self.__debug_grids = None
         self.__pipeline_list_view.on_stop_debugging()
-        self.__pipeline.test_mode = False
         self.__pipeline.end_run()
         self.show_launch_controls()
 

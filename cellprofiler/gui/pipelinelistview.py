@@ -848,7 +848,8 @@ class PipelineListView(object):
                     break
             else:
                 for module in reversed(self.__pipeline.modules()):
-                    if module.module_num < event.module.module_num:
+                    if module.module_num < event.module.module_num and\
+                       not module.is_input_module():
                         self.set_current_debug_module(module)
                         break
                 else:

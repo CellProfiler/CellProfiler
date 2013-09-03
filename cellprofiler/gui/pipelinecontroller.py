@@ -2187,10 +2187,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                         return
                 self.__pipeline.save_measurements(path, event.measurements)
         finally:
-            event.measurements.close()
             self.stop_running()
             if cpprefs.get_show_analysis_complete_dlg():
                 self.show_analysis_complete()
+            event.measurements.close()
             self.run_next_pipeline(None)
         
     def stop_running(self):

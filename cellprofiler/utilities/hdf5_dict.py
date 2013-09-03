@@ -1066,6 +1066,35 @@ class HDF5FileList(object):
             self.hdf5_file.flush()
         self.notify()
         
+    def has_files(self):
+        '''Return True if there are files in the file list'''
+        if any([len(ce.urls) > 0 for ce in self.__cache.values()]):
+            return True
+        group_list = [self.get_filelist_group()]
+        path_list = [ [] ]
+        while len(group_list) > 0:
+            g = group_list.pop()
+            path = path_list.pop()
+            if VStringArray.has_vstring_array(g):
+                self.cache_urls(g, tuple(path))
+                return True
+            for k in g.keys():
+                g0 = g[k]
+                path0 = path + [self.decode(k)]
+                if self.is_dir(g0):
+                    group_list.append(g0)
+                    path_list.append(path0)
+        return False
+                
+    @staticmethod
+    def is_dir(g):
+        '''Return True if a group is a directory
+        
+        g - an hdf5 object which may be a group marked as a file list group
+        '''
+        return isinstance(g, h5py.Group) and A_CLASS in g.attrs and \
+               g.attrs[A_CLASS] == CLASS_DIRECTORY
+    
     def get_filelist(self, root_url = None):
         '''Retrieve all URLs from a filelist
         
@@ -1077,7 +1106,7 @@ class HDF5FileList(object):
         with self.lock:
             if root_url is None:
                 schemas = [ k for k in group.keys()
-                            if group[k].attrs[A_CLASS] == CLASS_DIRECTORY]
+                            if HDF5FileList.is_dir(group[k])]
                 roots = [(s+":", group[s], [s]) for s in schemas]
             else:
                 schema, path = self.split_url(root_url, is_directory=True)
@@ -1098,8 +1127,7 @@ class HDF5FileList(object):
                     urls += [ root + x for x in a]
                 for k in sorted(g.keys()):
                     g0 = g[k]
-                    if (isinstance(g0, h5py.Group) and 
-                        g0.attrs.get(A_CLASS, None) == CLASS_DIRECTORY):
+                    if self.is_dir(g0):
                         decoded_key = self.decode(k)
                         if decoded_key.endswith("/"):
                             # Special case - root of "file://foo.jpg" is
@@ -1174,7 +1202,7 @@ class HDF5FileList(object):
                     return []
                 group = group[encoded_part]
         return [self.decode(x) for x in group.keys()
-                if group[x].attrs.get(A_CLASS, None) == CLASS_DIRECTORY]
+                if self.is_dir(group[x])]
     
     '''URL is a file'''
     TYPE_FILE = "File"
@@ -1203,7 +1231,7 @@ class HDF5FileList(object):
                 group = group[encoded_part]
             last_encoded_part = self.encode(parts[-1])
             if (last_encoded_part in group and 
-                group[last_encoded_part].attrs.get(A_CLASS, None) == CLASS_DIRECTORY):
+                self.is_dir(group[last_encoded_part])):
                 return self.TYPE_DIRECTORY
             else:
                 if VStringArray.has_vstring_array(group):
@@ -1312,9 +1340,7 @@ class HDF5FileList(object):
         '''
         with self.lock:
             group = self.get_filelist_group()
-            stack = [ 
-                [k for k in group
-                 if group[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY ] ]
+            stack = [ [k for k in group if self.is_dir(group[k]) ] ]
             groups = [ group ]
             roots = [ None ]
             path = [ None ]
@@ -1335,8 +1361,7 @@ class HDF5FileList(object):
                     else:
                         root += "/" + kd
                     directories = [
-                        self.decode(k) for k in g1
-                        if g1[k].attrs.get(A_CLASS, None) == CLASS_DIRECTORY]
+                        self.decode(k) for k in g1 if self.is_dir(g1[k])]
                     path_tuple = tuple(path[1:] + [kd])
                     filenames = self.cache_urls(g1, path_tuple)
                     callback(root, directories, filenames)

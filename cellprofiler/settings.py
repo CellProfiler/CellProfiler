@@ -163,6 +163,16 @@ class Setting(object):
         """Throw a ValidationError if the value of this setting is inappropriate for the context"""
         pass
     
+    def test_setting_warnings(self, pipeline):
+        """Throw a ValidationError to warn the user about a setting value issue
+        
+        A setting should raise ValidationError if a setting's value is
+        likely to be in error, but could possibly be correct. An example is
+        a field that can be left blank, but is filled in, except for rare
+        cases.
+        """
+        pass
+    
     def __str__(self):
         '''Return value as a string. 
         
@@ -2593,6 +2603,22 @@ class Filter(Setting):
             tokens[0].test_valid(pipeline, *tokens[1:])
         except Exception, e:
             raise ValidationError(str(e), self)
+        
+    def test_setting_warnings(self, pipeline):
+        '''Warn on empty literal token
+        '''
+        super(Filter, self).test_setting_warnings(pipeline)
+        self.__warn_if_blank(self.parse())
+        
+    def __warn_if_blank(self, l):
+        for x in l:
+            if isinstance(x, (list, tuple)):
+                self.__warn_if_blank(x)
+            elif x == "":
+                raise ValidationError(
+                    "The text entry for an expression in this filter is blank",
+                    self)
+        
         
 class FileCollectionDisplay(Setting):
     '''A setting to be used to display directories and their files

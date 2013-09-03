@@ -1940,7 +1940,7 @@ class ModuleView:
                 visible_settings[setting_idx].test_valid(self.__pipeline)
                 self.__module.test_valid(self.__pipeline)
                 level = logging.WARNING
-                self.__module.validate_module_warnings(self.__pipeline)
+                self.__module.test_module_warnings(self.__pipeline)
             except cps.ValidationError, instance:
                 message = instance.message
                 bad_setting = instance.get_setting()
@@ -1972,9 +1972,9 @@ class ModuleView:
                             desired_fg = cpprefs.get_error_color()
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
-                if (static_text.SetForegroundColour(desired_fg) or
-                    static_text.SetBackgroundColour(desired_bg)):
-                    static_text.Refresh()
+                    if (static_text.SetForegroundColour(desired_fg) or
+                        static_text.SetBackgroundColour(desired_bg)):
+                        static_text.Refresh()
         except Exception:
             logger.debug("Caught bare exception in ModuleView.on_validate()", exc_info=True)
             pass
@@ -4007,7 +4007,7 @@ def validate_module(pipeline, module_num, test_mode, callback):
         module.test_valid(pipeline)  # this method validates each visible
                                      # setting first, then the module itself.
         level = logging.WARNING
-        module.validate_module_warnings(pipeline)
+        module.test_module_warnings(pipeline)
         level = logging.INFO
     except cps.ValidationError, instance:
         message = instance.message

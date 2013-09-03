@@ -36,10 +36,11 @@ def delete_vm(vapp):
         vapp.undeploy()
     vapp.delete()
 
-parser = OptionParser("""usage: %prog TEMPLATE COMMAND...
-Runs COMMAND with the IP address as an additional argument.""")
+parser = OptionParser("""usage: %prog TEMPLATE [COMMAND...]
+Runs COMMAND with the IP address as an additional argument.
+If COMMAND is not given, just start the VM and print the IP address.""")
 options, args = parser.parse_args()
-if len(args) < 2:
+if len(args) < 1:
     parser.print_usage()
     sys.exit(1)
 template_name = args[0]
@@ -49,8 +50,9 @@ session = login_to_vcloud()
 vapp = deploy_vm(session, template_name)
 ip_address = get_ip_address(vapp)
 
-return_code = subprocess.call(command + [ip_address])
-
-delete_vm(vapp)
-
-sys.exit(return_code)
+if len(command) == 0:
+    print ip_address
+else:
+    return_code = subprocess.call(command + [ip_address])
+    delete_vm(vapp)
+    sys.exit(return_code)

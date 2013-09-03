@@ -35,12 +35,15 @@ def build():
     run("./build_cellprofiler.sh")
     get("cellprofiler.tar.gz", "cellprofiler.tar.gz")
 
-def test():
-    set_up_user("johndoe")
+def deploy():
     with settings(user="root"):
         run("yum -y install gtk2-devel mesa-libGL mesa-libGL-devel blas atlas lapack blas-devel atlas-devel lapack-devel xorg-x11-xauth* xorg-x11-xkb-utils* qt-devel openssl openssl-devel xclock *Xvfb* svn libXtst")
         put("cellprofiler.tar.gz")
         run("tar -C / -xzf cellprofiler.tar.gz")
+
+def test():
+    set_up_user("johndoe")
+    deploy()
     with settings(user="johndoe"):
         run("/usr/CellProfiler/CellProfiler/shortcuts/cellprofiler -t")
 

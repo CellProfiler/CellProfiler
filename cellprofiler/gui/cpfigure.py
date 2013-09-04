@@ -1100,7 +1100,12 @@ class CPFigureFrame(wx.Frame):
         cm.set_bad((0,0,0))
         labels = numpy.ma.array(labels, mask=labels==0)
         mappable = matplotlib.cm.ScalarMappable(cmap = cm)
-        if not np.all(labels == 0):
+        
+        if all([c0x == 0 for c0x in cm(0)[:3]]):
+            # Set the lower limit to 0 if the color for index 0 is already black.
+            mappable.set_clim(0, labels.max())
+            cm = None
+        elif np.any(labels != 0):
             mappable.set_clim(1, labels.max())
             cm = None
         image = mappable.to_rgba(labels)[:,:,:3]

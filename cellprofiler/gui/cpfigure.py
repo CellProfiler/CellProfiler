@@ -187,6 +187,13 @@ MENU_FILE_SAVE_TABLE = wx.NewId()
 MENU_CLOSE_WINDOW = wx.NewId()
 MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
 MENU_CLOSE_ALL = wx.NewId()
+MENU_CONTRAST_RAW = wx.NewId()
+MENU_CONTRAST_NORMALIZED = wx.NewId()
+MENU_CONTRAST_LOG = wx.NewId()
+MENU_INTERPOLATION_NEAREST = wx.NewId()
+MENU_INTERPOLATION_BILINEAR = wx.NewId()
+MENU_INTERPOLATION_BICUBIC = wx.NewId()
+MENU_SAVE_SUBPLOT = {}
 
 '''mouse tool mode - do nothing'''
 MODE_NONE = 0
@@ -326,6 +333,7 @@ class CPFigureFrame(wx.Frame):
         self.SetAcceleratorTable(accelerators)
         wx.EVT_MENU(self, MENU_CLOSE_WINDOW, self.on_close)
         self.MenuBar.Append(make_help_menu(FIGURE_HELP, self), "&Help")
+    
     
     def create_toolbar(self):
         self.navtoolbar = NavigationToolbar(self.figure.canvas)
@@ -613,6 +621,39 @@ class CPFigureFrame(wx.Frame):
                 with open(path, "wb") as fd:
                     csv.writer(fd).writerows(self.table)
 
+    def on_file_save_subplot(self, event, x, y):
+        '''Save just the contents of a subplot w/o decorations
+        
+        event - event generating the request
+        
+        x, y - the placement of the subplot
+        '''
+        # 
+        # Thank you Joe Kington
+        # http://stackoverflow.com/questions/4325733/save-a-subplot-in-matplotlib
+        #
+        ax = self.subplots[x, y]
+        extent = ax.get_window_extent().transformed(
+            self.figure.dpi_scale_trans.inverted())
+        with wx.FileDialog(self, "Save axes", 
+                           wildcard = ("PDF file (*.pdf)|*.pdf|"
+                                       "Png image (*.png)|*.png|"
+                                       "Postscript file (*.ps)|*.ps"),
+                           style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                if dlg.FilterIndex == 1:
+                    format = "png"
+                elif dlg.FilterIndex == 0:
+                    format = "pdf"
+                elif dlg.FilterIndex == 2:
+                    format = "ps"
+                else:
+                    format = "pdf"
+                self.figure.savefig(path, 
+                                    format = format,
+                                    bbox_inches=extent)
+        
     def set_subplots(self, subplots):
         self.clf()  # get rid of any existing subplots, menus, etc.
         if subplots is None:
@@ -682,12 +723,6 @@ class CPFigureFrame(wx.Frame):
         params = self.subplot_params[(x,y)]
             
         # If no popup has been built for this subplot yet, then create one 
-        MENU_CONTRAST_RAW = wx.NewId()
-        MENU_CONTRAST_NORMALIZED = wx.NewId()
-        MENU_CONTRAST_LOG = wx.NewId()
-        MENU_INTERPOLATION_NEAREST = wx.NewId()
-        MENU_INTERPOLATION_BILINEAR = wx.NewId()
-        MENU_INTERPOLATION_BICUBIC = wx.NewId()
         popup = wx.Menu()
         self.popup_menus[(x,y)] = popup
         open_in_new_figure_item = wx.MenuItem(popup, -1, 
@@ -741,6 +776,12 @@ class CPFigureFrame(wx.Frame):
             "the most visually appealing image but is the least faithful to "
             "the image pixel values.", wx.ITEM_RADIO)
         popup.AppendMenu(-1, "Interpolation", submenu)
+        if (x, y) not in MENU_SAVE_SUBPLOT:
+            MENU_SAVE_SUBPLOT[(x, y)] = wx.NewId()
+        popup.Append(MENU_SAVE_SUBPLOT[(x, y)],
+                     "Save subplot", 
+                     "Save just the display portion of this subplot")
+        
         if params['interpolation'] == matplotlib.image.BILINEAR:
             item_bilinear.Check()
         elif params['interpolation'] == matplotlib.image.BICUBIC:
@@ -852,6 +893,9 @@ class CPFigureFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_NEAREST)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BICUBIC)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BILINEAR)
+        self.Bind(wx.EVT_MENU, 
+                  lambda event: self.on_file_save_subplot(event, x, y),
+                  id = MENU_SAVE_SUBPLOT[(x, y)])
         return popup
 
     @allow_sharexy

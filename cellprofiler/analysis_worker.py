@@ -246,9 +246,9 @@ class AnalysisWorker(object):
         
     def run(self):
         t0 = 0
-        try:
-            with self.AnalysisWorkerThreadObject(self):
-                while not self.cancelled:
+        with self.AnalysisWorkerThreadObject(self):
+            while not self.cancelled:
+                try:
                     self.current_analysis_id, \
                         self.work_request_address = self.get_announcement()
                     if t0 is None or time.time() - t0 > 30:
@@ -257,20 +257,18 @@ class AnalysisWorker(object):
                         t0 = time.time()
                     self.work_socket = the_zmq_context.socket(zmq.REQ)
                     self.work_socket.connect(self.work_request_address)
-                    try:
-                        # fetch a job 
-                        job = self.send(WorkRequest(self.current_analysis_id))
-            
-                        if isinstance(job, NoWorkReply):
-                            time.sleep(0.25)  # avoid hammering server
-                            # no work, currently.
-                            continue
-                        self.do_job(job)
-                        
-                    finally:
-                        self.work_socket.close()
-        except CancelledException:
-            pass
+                    # fetch a job 
+                    job = self.send(WorkRequest(self.current_analysis_id))
+        
+                    if isinstance(job, NoWorkReply):
+                        time.sleep(0.25)  # avoid hammering server
+                        # no work, currently.
+                        continue
+                    self.do_job(job)
+                except CancelledException:
+                    break
+                finally:
+                    self.work_socket.close()
     
     def do_job(self, job):
         '''Handle a work request to its completion

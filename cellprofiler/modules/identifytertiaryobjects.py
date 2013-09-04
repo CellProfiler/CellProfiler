@@ -225,12 +225,21 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             child_count_of_primary, primary_parents = \
                 primary_objects.relate_children(tertiary_objects)
         else:
-            # Primary and tertiary don't overlap. If tertiary object
-            # disappeared, have primary disavow knowledge of it.
-            child_count_of_primary = np.zeros(primary_objects.count)
-            child_count_of_primary[tertiary_objects.areas > 0] = 1
-            primary_parents = np.arange(1, tertiary_objects.count+1)
-        
+            # Primary and tertiary don't overlap.
+            # Establish overlap between primary and secondary and commute
+            _, secondary_of_primary = \
+                secondary_objects.relate_children(primary_objects)
+            mask = secondary_of_primary != 0
+            child_count_of_primary = np.zeros(mask.shape, int)
+            child_count_of_primary[mask] = child_count_of_secondary[
+                secondary_of_primary[mask] - 1]
+            primary_parents = np.zeros(secondary_parents.shape, 
+                                       secondary_parents.dtype)
+            primary_of_secondary = np.zeros(secondary_objects.count+1, int)
+            primary_of_secondary[secondary_of_primary] = \
+                np.arange(1, len(secondary_of_primary)+1)
+            primary_of_secondary[0] = 0
+            primary_parents = primary_of_secondary[secondary_parents]
         #
         # Write out the objects
         #

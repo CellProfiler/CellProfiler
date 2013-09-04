@@ -104,6 +104,7 @@ import traceback
 from weakref import WeakSet
 
 import cellprofiler.pipeline as cpp
+from cellprofiler.pipeline import CancelledException
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
@@ -245,27 +246,31 @@ class AnalysisWorker(object):
         
     def run(self):
         t0 = 0
-        with self.AnalysisWorkerThreadObject(self):
-            while not self.cancelled:
-                self.current_analysis_id, \
-                    self.work_request_address = self.get_announcement()
-                if t0 is None or time.time() - t0 > 30:
-                    logger.debug("Connecting at address %s" % self.work_request_address)
-                    t0 = time.time()
-                self.work_socket = the_zmq_context.socket(zmq.REQ)
-                self.work_socket.connect(self.work_request_address)
-                try:
-                    # fetch a job 
-                    job = self.send(WorkRequest(self.current_analysis_id))
-        
-                    if isinstance(job, NoWorkReply):
-                        time.sleep(0.25)  # avoid hammering server
-                        # no work, currently.
-                        continue
-                    self.do_job(job)
-                    
-                finally:
-                    self.work_socket.close()
+        try:
+            with self.AnalysisWorkerThreadObject(self):
+                while not self.cancelled:
+                    self.current_analysis_id, \
+                        self.work_request_address = self.get_announcement()
+                    if t0 is None or time.time() - t0 > 30:
+                        logger.debug("Connecting at address %s" % 
+                                     self.work_request_address)
+                        t0 = time.time()
+                    self.work_socket = the_zmq_context.socket(zmq.REQ)
+                    self.work_socket.connect(self.work_request_address)
+                    try:
+                        # fetch a job 
+                        job = self.send(WorkRequest(self.current_analysis_id))
+            
+                        if isinstance(job, NoWorkReply):
+                            time.sleep(0.25)  # avoid hammering server
+                            # no work, currently.
+                            continue
+                        self.do_job(job)
+                        
+                    finally:
+                        self.work_socket.close()
+        except CancelledException:
+            pass
     
     def do_job(self, job):
         '''Handle a work request to its completion
@@ -522,7 +527,7 @@ class AnalysisWorker(object):
         cancellation of analysis: either UpstreamExit or a stop notification
         from the deadman thread.
         '''
-        logger.info(msg)
+        logger.debug(msg)
         self.cancelled = True
         if self.current_analysis_id in self.initial_measurements:
             self.initial_measurements[self.current_analysis_id].close()
@@ -688,10 +693,6 @@ def start_daemon_thread(target=None, args=(), name=None):
     thread = threading.Thread(target=target, args=args, name=name)
     thread.daemon = True
     thread.start()
-
-
-class CancelledException(Exception):
-    pass
 
 if __name__ == "__main__":
     main()

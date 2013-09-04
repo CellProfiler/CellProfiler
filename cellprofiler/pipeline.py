@@ -1840,7 +1840,6 @@ class Pipeline(object):
 
              self.prepare_run() and self.prepare_group() must have already been called.
         """
-
         measurements.next_image_set(image_set_number)
         measurements.group_number = measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER]
         measurements.group_index = measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX]
@@ -1874,6 +1873,10 @@ class Pipeline(object):
                 module.run(workspace)
                 if module.show_window:
                     display_handler(module, workspace.display_data, image_set_number)
+            except CancelledException:
+                # Analysis worker interaction handler is telling us that
+                # the UI has cancelled the run. Forward exception upward.
+                raise
             except Exception, exception:
                 logger.error("Error detected during run of module %s#%d",
                              module.module_name, module.module_num, exc_info=True)
@@ -3471,6 +3474,13 @@ class IPDLoadExceptionEvent(AbstractPipelineEvent):
     def event_type(self):
         return "Image load exception"
     
+class CancelledException(Exception):
+    '''Exception issued by the analysis worker indicating cancellation by UI
+    
+    This is here in order to solve some import dependency problems
+    '''
+    pass
+
     
 class EndRunEvent(AbstractPipelineEvent):
     """A run ended"""

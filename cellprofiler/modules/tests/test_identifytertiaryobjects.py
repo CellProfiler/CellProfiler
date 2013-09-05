@@ -49,6 +49,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         """
         isl = cpi.ImageSetList()
         module = cpmit.IdentifyTertiarySubregion()
+        module.module_num = 1
         module.primary_objects_name.value = PRIMARY
         module.secondary_objects_name.value = SECONDARY
         module.subregion_objects_name.value = TERTIARY
@@ -58,6 +59,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                                   cpo.ObjectSet(),
                                   cpm.Measurements(),
                                   isl)
+        workspace.pipeline.add_module(module)
         
         for labels, name in ((primary_labels,PRIMARY),
                              (secondary_labels, SECONDARY)):
@@ -467,3 +469,40 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                 children = m[secondary_name, ftr]
                 self.assertEqual(len(children), 3 if missing_primary else 2)
                 self.assertTrue(np.all(children == 1))
+                
+    def test_05_00_no_relationships(self):
+        workspace = self.make_workspace(np.zeros((10, 10), int),
+                                        np.zeros((10, 10), int))
+        workspace.module.run(workspace)
+        m = workspace.measurements
+        for parent, relationship in (
+            (PRIMARY, cpmit.R_REMOVED),
+            (SECONDARY, cpmit.R_PARENT)):
+            result = m.get_relationships(
+                workspace.module.module_num, relationship,
+                parent, TERTIARY)
+            self.assertEqual(len(result), 0)
+            
+    def test_05_01_relationships(self):
+        primary = np.zeros((10, 30), int)
+        secondary = np.zeros((10, 30), int)
+        for i in range(3):
+            center_j = 5 + i * 10
+            primary[3:6, (center_j-1):(center_j+2)] = i+1
+            secondary[2:7, (center_j-2):(center_j+3)] = i+1
+        workspace = self.make_workspace(primary, secondary)
+        workspace.module.run(workspace)
+        m = workspace.measurements
+        for parent, relationship in (
+            (PRIMARY, cpmit.R_REMOVED),
+            (SECONDARY, cpmit.R_PARENT)):
+            result = m.get_relationships(
+                workspace.module.module_num, relationship,
+                parent, TERTIARY)
+            self.assertEqual(len(result), 3)
+            for i in range(3):
+                self.assertEqual(result[cpm.R_FIRST_IMAGE_NUMBER][i], 1)
+                self.assertEqual(result[cpm.R_SECOND_IMAGE_NUMBER][i], 1)
+                self.assertEqual(result[cpm.R_FIRST_OBJECT_NUMBER][i], i+1)
+                self.assertEqual(result[cpm.R_SECOND_OBJECT_NUMBER][i], i+1)
+        

@@ -58,6 +58,11 @@ import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
+'''The parent object relationship points to the secondary / larger objects'''
+R_PARENT = "Parent"
+'''The removed object relationship points to the primary / smaller objects'''
+R_REMOVED = "Removed"
+
 class IdentifyTertiaryObjects(cpm.CPModule):
 
     module_name = "IdentifyTertiaryObjects"
@@ -252,15 +257,27 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         #
         # The parent/child associations
         #
-        for parent_objects_name, parents_of, child_count\
-         in ((self.primary_objects_name, primary_parents,child_count_of_primary),
-             (self.secondary_objects_name, secondary_parents, child_count_of_secondary)):
+        for parent_objects_name, parents_of, child_count, relationship in (
+            (self.primary_objects_name, primary_parents, 
+             child_count_of_primary, R_REMOVED),
+            (self.secondary_objects_name, secondary_parents, 
+             child_count_of_secondary, R_PARENT)):
             m.add_measurement(self.subregion_objects_name.value,
                               cpmi.FF_PARENT%(parent_objects_name.value),
                               parents_of)
             m.add_measurement(parent_objects_name.value,
                               cpmi.FF_CHILDREN_COUNT%(self.subregion_objects_name.value),
                               child_count)
+            mask = parents_of != 0
+            image_number = np.ones(np.sum(mask), int) * m.image_set_number
+            child_object_number = np.argwhere(mask).flatten() + 1
+            parent_object_number = parents_of[mask]
+            m.add_relate_measurement(
+                self.module_num, relationship,
+                parent_objects_name.value, self.subregion_objects_name.value,
+                image_number, parent_object_number,
+                image_number, child_object_number)
+            
         object_count = tertiary_objects.count
         #
         # The object count

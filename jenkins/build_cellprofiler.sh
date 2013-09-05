@@ -40,7 +40,7 @@ function installjava {
 
 function tarup {
     cd $HOME
-    tar cvzf cellprofiler.tar.gz /usr/CellProfiler
+    tar -czf cellprofiler.tar.gz --exclude=/usr/CellProfiler/src/CellProfiler/tmp /usr/CellProfiler
 }
 
 function clean {

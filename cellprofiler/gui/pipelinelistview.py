@@ -1155,6 +1155,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 if r.ContainsXY(x, y):
                     return None, PLV_HITTEST_SLIDER, None
                 return None, wx.LIST_HITTEST_NOWHERE, None
+        elif x < x0:
+            return None, wx.LIST_HITTEST_NOWHERE, None
         column = int((x - x0) / self.column_width)
         if not (self.show_go_pause and self.test_mode) and column == PAUSE_COLUMN:
             return None, wx.LIST_HITTEST_NOWHERE, None

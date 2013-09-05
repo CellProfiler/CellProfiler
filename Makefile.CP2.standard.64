@@ -355,9 +355,9 @@ $(PYTHONPREFIX)/bin/python:		$(SRCDIR)/$(PYTHONVERSION).tar.bz2 $(SQLITEPREFIX)/
 					./configure \
 						--prefix="$(PYTHONPREFIX)" \
 						--enable-shared \
-				                --enable-unicode=ucs4 && \
-				        make altinstall prefix="$(PYTHONPREFIX)" exec-prefix="$(PYTHONPREFIX)" && \
-					ln -sf "$(PYTHONPREFIX)/bin/python2.7" "$(PYTHONPREFIX)/bin/python"
+				                --enable-unicode=ucs4 \
+                                                LDFLAGS="-Wl,-rpath /root/tmp/lib" && \
+                                        make install
 
 cython:					$(CYTHONPREFIX)/bin/cython
 $(CYTHONPREFIX)/bin/cython:		$(SRCDIR)/$(CYTHONVERSION).tar.gz $(PYTHONPREFIX)/bin/python $(PYPIPREFIX)/bin/easy_install

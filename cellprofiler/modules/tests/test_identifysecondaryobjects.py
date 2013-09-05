@@ -410,6 +410,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.image_name.value = IMAGE_NAME
         module.use_outlines.value = False
         module.outlines_name.value = "my_outlines"
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         return workspace, module
         
@@ -517,6 +519,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.regularization_factor.value = 1000 # propagate by distance
         module.threshold_scope.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .2
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -581,6 +585,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_WATERSHED_G
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -614,6 +620,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.method.value = cpmi2.M_WATERSHED_G
         module.threshold_scope.value = cpmi.TS_GLOBAL
         module.threshold_method.value = cpmi.TM_OTSU
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -663,6 +671,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.method.value = cpmi2.M_WATERSHED_G
         module.threshold_scope.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .2
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -727,6 +737,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_WATERSHED_I
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -761,6 +773,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.threshold_scope.value = cpmi.TS_GLOBAL
         module.threshold_method.value = cpmi.TM_OTSU
+        module.module_num = 1
+        p.add_module(module)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
         self.assertTrue("Image" in m.get_object_names())
@@ -802,6 +816,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.method.value = cpmi2.M_WATERSHED_I
         module.threshold_scope.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .01
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -858,6 +874,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.objects_name.value=OUTPUT_OBJECTS_NAME
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_DISTANCE_N
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -889,6 +907,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_DISTANCE_N
         module.distance_to_dilate.value = 1
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -928,6 +948,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.image_name.value = IMAGE_NAME
         module.method.value = cpmi2.M_DISTANCE_N
         module.distance_to_dilate.value = 100
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -992,6 +1014,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.method.value = cpmi2.M_WATERSHED_I
         module.threshold_scope.value = cpmi.TS_GLOBAL
         module.threshold_method.value = cpmi.TM_OTSU
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -1042,6 +1066,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.method.value = cpmi2.M_WATERSHED_I
         module.threshold_scope.value = cpmi.TS_GLOBAL
         module.threshold_method.value = cpmi.TM_OTSU
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         self.assertTrue(OUTPUT_OBJECTS_NAME in m.get_object_names())
@@ -1261,6 +1287,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.wants_discard_edge.value = True
         module.wants_discard_primary.value = True
         module.new_primary_objects_name.value = NEW_OBJECTS_NAME
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.threshold_scope.value = cpmi.TS_GLOBAL
         module.threshold_method.value = cpmi.TM_OTSU
@@ -1323,6 +1351,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.new_primary_objects_name.value = NEW_OBJECTS_NAME
         module.threshold_scope.value = cpmi.TS_GLOBAL
         module.threshold_method.value = cpmi.TM_OTSU
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
@@ -1381,6 +1411,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.method.value = cpmi2.M_PROPAGATION
         module.threshold_scope.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .5
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
@@ -1433,6 +1465,8 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
         module.method.value = cpmi2.M_PROPAGATION
         module.threshold_scope.value = cpmi.TM_MANUAL
         module.manual_threshold.value = .5
+        module.module_num = 1
+        p.add_module(module)
         workspace = cpw.Workspace(p,module,i_s,o_s,m,i_l)
         module.run(workspace)
         object_out = workspace.object_set.get_objects(OUTPUT_OBJECTS_NAME)
@@ -1512,3 +1546,72 @@ IdentifySecondaryObjects:[module_num:5|svn_version:\'Unknown\'|variable_revision
                 indexes = np.hstack(([0], indexes))
                 self.assertTrue(np.all(indexes[labels_out] == expected))
                 
+    def test_11_00_relationships_zero(self):
+        workspace, module = self.make_workspace(
+            np.zeros((10, 10)), np.zeros((10, 10), int))
+        self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpm.Measurements))
+        result = m.get_relationships(
+            module.module_num, cpmi2.R_PARENT,
+            module.primary_objects.value, module.objects_name.value)
+        self.assertEqual(len(result), 0)
+        
+    def test_11_01_relationships_one(self):
+        img = np.zeros((10,10))
+        img[2:7,2:7] = .5
+        labels = np.zeros((10,10),int)
+        labels[3:6,3:6] = 1
+        workspace, module = self.make_workspace(img, labels)
+        module.method.value = cpmi2.M_PROPAGATION
+        module.threshold_scope.value = cpmi.TS_MANUAL
+        module.manual_threshold.value = .25
+        module.run(workspace)
+        m = workspace.measurements
+        self.assertTrue(isinstance(m, cpm.Measurements))
+        result = m.get_relationships(
+            module.module_num, cpmi2.R_PARENT,
+            module.primary_objects.value, module.objects_name.value)
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result[cpm.R_FIRST_IMAGE_NUMBER][0], 1)
+        self.assertEqual(result[cpm.R_SECOND_IMAGE_NUMBER][0], 1)
+        self.assertEqual(result[cpm.R_FIRST_OBJECT_NUMBER][0], 1)
+        self.assertEqual(result[cpm.R_SECOND_OBJECT_NUMBER][0], 1)
+
+    def test_11_02_relationships_missing(self):
+        for missing in range(1, 4):
+            img = np.zeros((10,30))
+            labels = np.zeros((10,30),int)
+            for i in range(3):
+                object_number = i+1
+                center_j = i*10 + 4
+                labels[3:6, (center_j-1):(center_j+2)] = object_number
+                if object_number != missing:
+                    img[2:7, (center_j-2):(center_j+3)] = .5
+                else:
+                    img[0:7, (center_j-2):(center_j+3)] = .5
+            workspace, module = self.make_workspace(img, labels)
+            self.assertTrue(isinstance(module, cpmi2.IdentifySecondary))
+            module.method.value = cpmi2.M_PROPAGATION
+            module.threshold_scope.value = cpmi.TS_MANUAL
+            module.wants_discard_edge.value = True
+            module.wants_discard_primary.value = False
+            module.manual_threshold.value = .25
+            module.run(workspace)
+            m = workspace.measurements
+            self.assertTrue(isinstance(m, cpm.Measurements))
+            result = m.get_relationships(
+                module.module_num, cpmi2.R_PARENT,
+                module.primary_objects.value, module.objects_name.value)
+            self.assertEqual(len(result), 2)
+            for i in range(2):
+                object_number = i+1
+                if object_number >= missing:
+                    object_number += 1
+                self.assertEqual(result[cpm.R_FIRST_IMAGE_NUMBER][i], 1)
+                self.assertEqual(result[cpm.R_SECOND_IMAGE_NUMBER][i], 1)
+                self.assertEqual(result[cpm.R_FIRST_OBJECT_NUMBER][i],
+                                 object_number)
+                self.assertEqual(result[cpm.R_SECOND_OBJECT_NUMBER][i], 
+                                 object_number)

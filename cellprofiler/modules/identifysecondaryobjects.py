@@ -105,6 +105,9 @@ M_DISTANCE_B = "Distance - B"
 '''# of setting values other than thresholding ones'''
 N_SETTING_VALUES = 14
 
+'''Parent (seed) relationship of input objects to output objects'''
+R_PARENT = "Parent"
+
 class IdentifySecondaryObjects(cpmi.Identify):
 
     module_name = "IdentifySecondaryObjects"
@@ -625,6 +628,15 @@ class IdentifySecondaryObjects(cpmi.Identify):
         measurements.add_measurement(objname,
                                      cpmi.FF_PARENT%self.primary_objects.value,
                                      parents_of_children)
+        image_numbers = np.ones(len(parents_of_children), int) *\
+            measurements.image_set_number
+        mask = parents_of_children > 0
+        measurements.add_relate_measurement(
+            self.module_num, R_PARENT,
+            self.primary_objects.value, self.objects_name.value,
+            image_numbers[mask], parents_of_children[mask],
+            image_numbers[mask], 
+            np.arange(1, len(parents_of_children) + 1)[mask])
         #
         # If primary objects were created, add them
         #

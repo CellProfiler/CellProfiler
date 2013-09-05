@@ -626,6 +626,8 @@ class Measurements(object):
             grp = self.get_relationship_hdf5_group(
                 module_number, relationship, object_name1, object_name2)
             n_records = grp[R_FIRST_IMAGE_NUMBER].shape[0]
+            if n_records == 0:
+                return np.zeros(0, dt).view(np.recarray)
             if image_numbers is None:
                 temp = np.zeros(n_records, dt)
                 for feature in features:

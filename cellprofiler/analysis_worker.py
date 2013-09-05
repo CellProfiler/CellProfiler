@@ -139,8 +139,19 @@ stdin_monitor_cv = threading.Condition(stdin_monitor_lock)
 stdin_monitor_started = False
 
 def main():
-    # XXX - move all this to a class
-    
+    #
+    # For Windows build with Ilastik, look for site-packages
+    # in order to find Ilastik sources.
+    #
+    if hasattr(sys, 'frozen') and sys.platform == "win32":
+        root = os.path.split(sys.argv[0])[0]
+        if len(root) == 0:
+            root = os.curdir
+        root = os.path.abspath(root)
+        site_packages = os.path.join(root, 'site-packages').encode('utf-8')
+        if os.path.exists(site_packages) and os.path.isdir(site_packages):
+            import site
+            site.addsitedir(site_packages)
     #
     # For OS/X set up the UI elements that users expect from
     # an app.

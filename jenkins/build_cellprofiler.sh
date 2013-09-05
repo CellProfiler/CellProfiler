@@ -28,7 +28,7 @@ function downloadjava {
     javajdkrpm='jdk-7u21-linux-x64.rpm'
     javajrerpm='jre-7u21-linux-x64.rpm'
     cd /usr/CellProfiler/src/CellProfiler
-    wget $url/$javajdk
+    curl -o - $url/$javajdk | 
 }
 
 function installjava {

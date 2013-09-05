@@ -1318,6 +1318,16 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                     return
             except:
                 pass
+        if len(ext) > 1 and ext[1:] in cpprefs.EXT_PROJECT_CHOICES:
+            result = wx.MessageBox(
+                'Do you want to load the project, \n'
+                '"%s", into your project?' % os.path.split(path)[1],
+                caption = "Load project",
+                style = wx.YES_NO | wx.ICON_QUESTION,
+                parent = self.__path_list_ctrl)
+            if result == wx.YES:
+                self.do_open_workspace(path)
+            
         if len(ext) > 1 and ext[1:] in cpprefs.EXT_PIPELINE_CHOICES:
             result = wx.MessageBox(
                 'Do you want to import the pipeline, \n'

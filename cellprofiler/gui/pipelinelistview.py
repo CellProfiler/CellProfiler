@@ -24,6 +24,7 @@ import numpy as np
 import time
 import base64
 import math
+import os
 import zlib
 import wx
 import sys
@@ -31,6 +32,7 @@ if __name__ == "__main__":
     app = wx.PySimpleApp(False)
 
 import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_item_selection_rect
 import cellprofiler.gui.movieslider as cpgmov
 from cellprofiler.gui.cpfigure import window_name, find_fig
@@ -703,7 +705,17 @@ class PipelineListView(object):
     def on_filelist_data(self, x, y, action, filenames):
         for filename in filenames:
             logger.info("Processing %s" % filename)
-            if filename.endswith(".cp"):
+            _, ext = os.path.splitext(filename)
+            if len(ext) > 1 and ext[1:] in cpprefs.EXT_PROJECT_CHOICES:
+                self.__frame.Raise()
+                if wx.MessageBox(
+                    "Do you want to load the project, ""%s""?" % filename,
+                    caption = "Load project",
+                    style = wx.YES_NO | wx.ICON_QUESTION,
+                    parent = self.__frame) == wx.YES:
+                    self.__frame.pipeline_controller.do_open_workspace(filename)
+                    break
+            elif len(ext) > 1 and ext[1:] in cpprefs.EXT_PIPELINE_CHOICES:
                 self.__frame.Raise()
                 if wx.MessageBox(
                     "Do you want to import the pipeline, ""%s""?" % filename,

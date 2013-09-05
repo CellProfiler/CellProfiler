@@ -693,12 +693,7 @@ def __load_using_bioformats(path, c, z, t, series, index, rescale,
             image.shape = (height, width)
         elif rdr.getRGBChannelCount() > 1:
             n_planes = rdr.getRGBChannelCount()
-            rdr.close()
-            rdr = ImageReader()
-            rdr.allowOpenToCheckType(False)
             rdr = ChannelSeparator(rdr)
-            rdr.setGroupFiles(False)
-            rdr.setId(path)
             planes = [
                 np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)),dtype)
                 for i in range(n_planes)]

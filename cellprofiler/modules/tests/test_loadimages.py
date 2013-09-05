@@ -2370,6 +2370,34 @@ LoadImages:[module_num:3|svn_version:\'10807\'|variable_revision_number:11|show_
                                 image_set_list)
         module.prepare_run(workspace)
         self.assertEqual(m.image_set_count, 7)
+        
+    def test_09_02_02_load_stk(self):
+        # Regression test of issue #783 - color STK.
+        path = T.testimages_directory()
+        if not os.path.exists(os.path.join(path, "C1.stk")):
+            sys.stderr.write("Warning, could not find C1.stk test file")
+            return
+        module = LI.LoadImages()
+        module.file_types.value = LI.FF_STK_MOVIES
+        module.images[0].common_text.value = 'C0.stk'
+        module.images[0].channels[0].image_name.value = 'MyImage'
+        module.location.dir_choice = LI.ABSOLUTE_FOLDER_NAME
+        module.location.custom_path = path
+        module.module_num = 1
+        pipeline = P.Pipeline()
+        pipeline.add_module(module)
+        pipeline.add_listener(self.error_callback)
+        image_set_list = I.ImageSetList()
+        m = measurements.Measurements()
+        workspace = W.Workspace(pipeline, module, None, None, m,
+                                image_set_list)
+        module.prepare_run(workspace)
+        workspace = W.Workspace(pipeline, module, m, cpo.ObjectSet(), m,
+                                image_set_list)
+        module.run(workspace)
+        image = m.get_image("MyImage")
+        pixel_data = image.pixel_data
+        self.assertEqual(tuple(pixel_data.shape), (800, 800, 3))
     
     def test_09_03_load_flex(self):
         flex_path = T.testimages_directory()

@@ -27,6 +27,30 @@ import sys
 import traceback
 import zipfile
 
+#From https://gist.github.com/edufelipe/1027906
+def check_output(*popenargs, **kwargs):
+    r"""Run command with arguments and return its output as a byte string.
+ 
+    Backported from Python 2.7 as it's implemented as pure python on stdlib.
+ 
+    >>> check_output(['/usr/bin/python', '--version'])
+    Python 2.6.2
+
+    """
+    if 'check_output' in subprocess:
+        return subprocess.check_output(*popenargs, **kwargs)
+    process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
+    output, unused_err = process.communicate()
+    retcode = process.poll()
+    if retcode:
+        cmd = kwargs.get("args")
+        if cmd is None:
+            cmd = popenargs[0]
+        error = subprocess.CalledProcessError(retcode, cmd)
+        error.output = output
+        raise error
+    return output
+
 ACTION_MAVEN = "Maven"
 
 CELLPROFILER_DEPENDENCIES_URL = \
@@ -226,7 +250,7 @@ def run_maven(pom_path, goal="package",
     args.append(goal)
     logging.debug("Running %s" % (" ".join(args)))
     if return_stdout:
-        return subprocess.check_output(args, cwd = pom_path, env=env)
+        return check_output(args, cwd = pom_path, env=env)
     else:
         subprocess.check_call(args, cwd = pom_path, env=env)
             

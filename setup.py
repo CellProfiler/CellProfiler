@@ -19,6 +19,9 @@ import glob
 from subprocess import call
 import ctypes.util
 
+sys.path.append('.')
+import cellprofiler.utilities.version
+
 # fix from
 #  http://mail.python.org/pipermail/pythonmac-sig/2008-June/020111.html
 import pytz

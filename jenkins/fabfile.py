@@ -12,11 +12,6 @@ from fabric.decorators import with_settings
 env.user = "cpbuild"
 
 @with_settings(user="root")
-def disable_ipv6():
-    run("""echo 1 > /proc/sys/net/ipv6/conf/all/disable_ipv6""")
-    run("""echo 1 > /proc/sys/net/ipv6/conf/default/disable_ipv6""")
-
-@with_settings(user="root")
 def set_up_user(username):
     home = '/home/' + username
     d = dict(home=home, username=username)
@@ -27,7 +22,6 @@ def set_up_user(username):
     run("""echo '{username}	ALL=(ALL) NOPASSWD: ALL' >> /etc/sudoers""".format(**d))
 
 def build():
-    disable_ipv6()
     set_up_user("cpbuild")
     local("tar cpf workspace.tar --exclude workspace.tar ..")
     put("workspace.tar")

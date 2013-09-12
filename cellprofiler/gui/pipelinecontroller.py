@@ -1516,6 +1516,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             (cpframe.ID_EDIT_MOVE_UP, self.__mcp_module_up_button, enable_up),
             (cpframe.ID_EDIT_DELETE, self.__mcp_remove_module_button, enable_delete),
             (cpframe.ID_EDIT_DUPLICATE, None, enable_duplicate)):
+            state = state and not self.is_running()
             if control is not None:
                 control.Enable(state)
             menu_item = self.__frame.menu_edit.FindItemById(menu_id)
@@ -1592,10 +1593,27 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         return filter(lambda x: not x.is_input_module(),
                       self.__pipeline_list_view.get_selected_modules())
     
+    def ok_to_edit_pipeline(self):
+        '''Return True if ok to edit pipeline
+        
+        Warns user if not OK (is_running)
+        '''
+        if self.is_running():
+            wx.MessageBox(
+                "Pipeline modification is disabled during analysis.\n"
+                "Please stop the analysis before editing your pipeline.",
+                caption = "Error: Pipeline editing disabled during analysis",
+                style = wx.OK | wx.ICON_INFORMATION,
+                parent = self.__frame)
+            return False
+        return True
+                
     def on_remove_module(self,event):
         self.remove_selected_modules()
     
     def remove_selected_modules(self):
+        if not self.ok_to_edit_pipeline():
+            return
         with self.__pipeline.undoable_action("Remove modules"):
             selected_modules = self.__get_selected_modules()
             for module in selected_modules:
@@ -1628,6 +1646,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.duplicate_modules(self.__get_selected_modules())
         
     def duplicate_modules(self, modules):
+        if not self.ok_to_edit_pipeline():
+            return
+        
         selected_modules = self.__get_selected_modules()
         if len(selected_modules):
             module_num=selected_modules[-1].module_num+1
@@ -1647,6 +1668,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             
     def on_module_up(self,event):
         """Move the currently selected modules up"""
+        if not self.ok_to_edit_pipeline():
+            return
         active_module = self.__pipeline_list_view.get_active_module()
         if active_module is not None:
             self.__pipeline.move_module(
@@ -1661,6 +1684,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         
     def on_module_down(self,event):
         """Move the currently selected modules down"""
+        if not self.ok_to_edit_pipeline():
+            return
         active_module = self.__pipeline_list_view.get_active_module()
         if active_module is not None:
             self.__pipeline.move_module(
@@ -1682,8 +1707,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             wx.EndBusyCursor()
             
     def on_update_undo_ui(self, event):
-        event.Enable(self.__pipeline.has_undo())
-    
+        event.Enable(self.__pipeline.has_undo() and not self.is_running())
+        
     def on_add_to_pipeline(self, caller, event):
         """Add a module to the pipeline using the event's module loader
         
@@ -1691,6 +1716,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         
         event - an AddToPipeline event
         """
+        if not self.ok_to_edit_pipeline():
+            return
         active_module = self.__pipeline_list_view.get_active_module()
         if active_module is None:
             # insert module last if nothing selected
@@ -1839,6 +1866,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 initial_measurements=self.__workspace.measurements)
             self.__analysis.start(self.analysis_event_handler,
                                   num_workers)
+            self.enable_module_controls_panel_buttons()
 
         except Exception, e:
             # Catastrophic failure
@@ -1965,6 +1993,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         assert wx.Thread_IsMain(), "PipelineController.module_display_request() must be called from main thread!"
 
         module_num = evt.module_num
+        if module_num <= 0 or module_num > len(self.__pipeline.modules()):
+            # Defensive coding: module was deleted?
+            logger.warning(
+                "Failed to display module # %d. The pipeline may have been edited during analysis" % module_num)
+            evt.reply(cpanalysis.Ack())
+            return
+            
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)
         try:
@@ -2216,6 +2251,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__module_view.enable()
         self.__pipeline_list_view.allow_editing(True)
         self.show_launch_controls()
+        self.enable_module_controls_panel_buttons()
     
     def is_in_debug_mode(self):
         """True if there's some sort of debugging in progress"""

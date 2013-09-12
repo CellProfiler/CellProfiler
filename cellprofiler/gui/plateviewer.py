@@ -25,6 +25,12 @@ import multiprocessing
 from bioformats.formatreader import load_using_bioformats_url
 import cellprofiler.utilities.jutil
 
+def well_row_name(x):
+    '''Return a well row name for the given zero-based index'''
+    if x < 26:
+        return chr(ord('A') + x)
+    return chr(ord('A') + int(x/26) - 1) + chr(ord('A') + x % 26)
+
 class PlateData(object):
     '''The plate data is the data store for the image files
     
@@ -124,13 +130,28 @@ class PlateData(object):
     
     def get_plate(self, name):
         pd = self.plate_well_site[name]
-        a = np.zeros(self.plate_layout, object)
+        n_rows = 8
+        n_cols = 12
+        a = np.zeros((n_rows, n_cols), object)
         a[:,:] = None
         for wellname, wd in pd.iteritems():
-            row = ord(wellname[0].lower()) - ord('a')
-            col = int(wellname[1:])-1
-            if row < a.shape[0] and col < a.shape[1]:
-                a[row, col] = wd
+            wellname = wellname.lower()
+            if wellname[:2].isalpha():
+                row = ord(wellname[0]) * 26 + ord(wellname[1]) -\
+                    ord('a') * 27 + 26
+                col = int(wellname[2:]) - 1
+            else:
+                row = ord(wellname[0]) - ord('a')
+                col = int(wellname[1:])-1
+            while row >= a.shape[0] or col >= a.shape[1]:
+                temp = np.zeros((n_rows * 2, n_cols * 2), object)
+                temp[:, :] = None
+                temp[:n_rows, :n_cols] = a
+                a = temp
+                n_rows = n_rows * 2
+                n_cols = n_cols * 2
+            a[row, col] = wd
+        self.plate_layout = (n_rows, n_cols)
         return a
                 
 class PlateViewer(object):
@@ -264,7 +285,7 @@ class PlateViewer(object):
             self.plate_panel.SetToolTipString("")
         else:
             row, col = hit
-            well_name = "%s%02d" % (chr(ord("A") + row), col+1)
+            well_name = "%s%02d" % (well_row_name(row), col+1)
             well = self.plate_data[row, col]
             if well is None:
                 self.plate_panel.SetToolTipString("%s: no data" % well_name)
@@ -409,7 +430,7 @@ class PlateViewer(object):
         radius = self.get_radius()
         gc.SetPen(wx.BLACK_PEN)
         for row in range(self.data.plate_layout[0]):
-            text = chr(ord('A') + row)
+            text = well_row_name(row)
             w, h = gc.GetTextExtent(text)
             y = self.get_center(row, 0, side)[1] - int(h / 2)
             gc.DrawText(text, 3, y)

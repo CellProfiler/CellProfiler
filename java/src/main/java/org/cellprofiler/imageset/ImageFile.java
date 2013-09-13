@@ -99,6 +99,10 @@ public class ImageFile {
 					pathName = file.getParentFile().getAbsolutePath();
 				} else {
 					String path = uri.getPath();
+					if (path == null) {
+						pathName = "";
+						return pathName;
+					}
 					int lastSepIndex = path.lastIndexOf("/");
 					if (lastSepIndex <= 0) {
 						final URI uriOut = new URI(uri.getScheme(), uri.getHost(), null, null);

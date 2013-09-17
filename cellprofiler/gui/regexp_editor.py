@@ -17,7 +17,7 @@ import wx
 import wx.stc
 
 def edit_regexp(parent, regexp, test_text):
-    frame = RegexpDialog(parent, size=(300,200),
+    frame = RegexpDialog(parent, size=(500,200),
                          style=wx.DEFAULT_DIALOG_STYLE | wx.RESIZE_BORDER)
     frame.value = regexp
     frame.test_text = test_text
@@ -64,6 +64,10 @@ class RegexpDialog(wx.Dialog):
         hsizer.Add(wx.StaticText(self,label="Regex:"),0,wx.ALIGN_CENTER|wx.ALL, 5)
         
         self.regexp_display = wx.stc.StyledTextCtrl(self, -1, style = wx.BORDER_SIMPLE)
+        self.regexp_display.SetBufferedDraw(True)
+        w, h = self.regexp_display.ClientToWindowSize(
+            self.regexp_display.GetTextExtent("".join(["M"]*50)))
+        self.regexp_display.SetMinSize(wx.Size(w, h))
         self.regexp_display.Text = self.value
         self.regexp_display.SetLexer(wx.stc.STC_LEX_CONTAINER)
         for key in range(31):
@@ -96,9 +100,6 @@ class RegexpDialog(wx.Dialog):
         self.test_text_ctl.Font = self.font
         hsizer.Add(self.test_text_ctl,1,wx.ALIGN_CENTER|wx.ALL, 5)
         sizer.Add(hsizer,0, wx.GROW|wx.ALIGN_CENTER_VERTICAL|wx.ALL, 5)
-
-        text_extent = self.test_text_ctl.GetTextExtent(self.value)
-        self.regexp_display.SetSizeHints(100,text_extent[1]*1.5,maxH = int(text_extent[1]*1.5))
 
         style = wx.NO_BORDER
         self.test_display = wx.stc.StyledTextCtrl(self, -1, style = style)
@@ -145,9 +146,18 @@ class RegexpDialog(wx.Dialog):
         self.Bind(wx.EVT_TEXT, self.on_test_text_text_change, self.test_text_ctl)
         self.Bind(wx.stc.EVT_STC_CHANGE, self.on_editor_text_change, self.regexp_display)
         self.Bind(wx.stc.EVT_STC_STYLENEEDED, self.on_style_needed, self.regexp_display)
+        self.regexp_display.Bind(wx.EVT_KEY_DOWN, self.on_regexp_key)
         self.SetSizer(sizer)
         self.Fit()
     
+    def on_regexp_key(self, event):
+        #
+        # On Mac, very bad things (infinite recursion through OnPaint
+        # followed by segfault) happen if you type carriage return
+        #
+        if event.GetKeyCode() != wx.stc.STC_KEY_RETURN:
+            event.Skip()
+            
     def get_color_db(self):
         color_db = ["BLACK", "RED", "GREEN", "BLUE", "CYAN","MAGENTA","SIENNA","PURPLE"]
         color_db = [wx.TheColourDatabase.FindColour(x) for x in color_db]

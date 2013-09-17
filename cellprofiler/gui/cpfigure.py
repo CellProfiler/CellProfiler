@@ -1742,7 +1742,7 @@ def get_crosshair_cursor():
             im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
             __crosshair_cursor = wx.CursorFromImage(im)
         else:
-            __crosshair_cursor = wx.StockCursor(wx.CROSS_CURSOR)
+            __crosshair_cursor = wx.CROSS_CURSOR
     return __crosshair_cursor
     
 if __name__ == "__main__":

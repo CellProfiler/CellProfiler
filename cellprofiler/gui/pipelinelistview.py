@@ -414,9 +414,14 @@ class PipelineListView(object):
                     break
             else:
                 self.select_one_module(event.module_num)
-            for module in self.__pipeline.modules():
-                if module.module_num == event.module_num:
-                    self.request_validation(module)
+                for module in self.__pipeline.modules():
+                    if module.module_num == event.module_num:
+                        self.request_validation(module)
+                        debug_module = self.get_current_debug_module()
+                        if debug_module is not None and \
+                           debug_module.module_num > event.module_num:
+                            self.set_current_debug_module(module)
+                        break
             
         elif isinstance(event, cpp.ModuleEnabledEvent):
             self.__on_module_enabled(event)

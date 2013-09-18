@@ -826,26 +826,29 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
         return True if the user saved the pipeline
         '''
-        wildcard="CellProfiler pipeline (*.%s)|*.%s" % (
+        wildcard = ("CellProfiler pipeline (*.%s)|*.%s|"
+                    "CellProfiler pipeline and file list(*.%s)|*.%s") % (
+            cpprefs.EXT_PIPELINE, cpprefs.EXT_PIPELINE, 
             cpprefs.EXT_PIPELINE, cpprefs.EXT_PIPELINE)
-        dlg = wx.FileDialog(self.__frame,
-                            "Save pipeline",
-                            wildcard=wildcard,
-                            defaultFile="pipeline.%s" % cpprefs.EXT_PIPELINE,
-                            style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
-        try:
+        with wx.FileDialog(self.__frame,
+                           "Save pipeline",
+                           wildcard=wildcard,
+                           defaultFile="pipeline.%s" % cpprefs.EXT_PIPELINE,
+                           style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT) as dlg:
+            assert isinstance(dlg, wx.FileDialog)
             if dlg.ShowModal() == wx.ID_OK:
+                save_image_plane_details = (dlg.GetFilterIndex() == 1)
                 file_name = dlg.GetFilename()
                 if not sys.platform.startswith("win"):
                     if file_name.find('.') == -1:
                         # on platforms other than Windows, add the default suffix
                         file_name += "." + cpprefs.EXT_PIPELINE
                 pathname = os.path.join(dlg.GetDirectory(), file_name)
-                self.__pipeline.save(pathname)
+                self.__pipeline.save(
+                    pathname,
+                    save_image_plane_details=save_image_plane_details)
                 return True
             return False
-        finally:
-            dlg.Destroy()
     
     def __on_export_image_sets(self, event):
         '''Export the pipeline's image sets to a .csv file'''

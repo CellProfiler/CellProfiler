@@ -560,7 +560,7 @@ class PipelineListView(object):
             
     def __on_error_column_clicked(self, event):
         module = self.get_event_module(event)
-        if not module.is_input_module():
+        if not module.is_input_module() and self.__allow_editing:
             if module.enabled:
                 self.__pipeline.disable_module(module)
             else:
@@ -1616,6 +1616,10 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 code = EVT_PLV_PAUSE_COLUMN_CLICKED
             else:
                 code = EVT_PLV_EYE_COLUMN_CLICKED
+            r = self.get_button_rect(self.pressed_column,
+                                     self.pressed_row or 0)
+            r.Inflate(2, 2)
+            self.RefreshRect(r)
             self.button_is_active = False
             self.pressed_column = None
             plv_event = self.make_event(code, self.pressed_row)

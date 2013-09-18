@@ -3777,6 +3777,7 @@ class TableController(wx.grid.PyGridTableBase):
                 fn_clicked()
                 self.update_grid()
                 grid.ForceRefresh()
+                grid.Parent.Layout()
             grid.fn_clicked = on_corner_button_clicked
             grid.label = self.v.corner_button.get("label", "Update")
             grid.tooltip = self.v.corner_button.get("tooltip", "")

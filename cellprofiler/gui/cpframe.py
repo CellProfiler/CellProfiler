@@ -379,12 +379,14 @@ class CPFrame(wx.Frame):
         if table is not None:
             self.__grid_ctrl.SetTable(table)
         sizer = self.__imageset_panel.Sizer
-        if (sizer.IsShown(self.__imageset_ctrl) == False or
+        if (sizer.IsShown(self.__imageset_ctrl) == True or
             self.__imageset_sash.IsShown() == False):
             sizer.Show(self.__imageset_ctrl, False)
             sizer.Show(self.__grid_ctrl, True)
             self.show_imageset_sash(True)
+            self.__imageset_sash.Layout()
             self.__imageset_panel.Layout()
+            self.__grid_ctrl.Layout()
         
     def get_grid_ctrl(self):
         return self.__grid_ctrl

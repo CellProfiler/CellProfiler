@@ -628,9 +628,16 @@ class NamesAndTypes(cpm.CPModule):
         # Populate the metadata measurements
         #
         env = J.get_env()
+        mc = workspace.pipeline.get_measurement_columns(self)
+        type_dict = dict([(c[1], c[2]) for c in mc if c[0] == cpmeas.IMAGE])
         for name in J.iterate_collection(md_dict.keySet(), env.get_string_utf):
             feature_name = "_".join((cpmeas.C_METADATA, name))
             values = J.iterate_collection(md_dict[name], env.get_string_utf)
+            data_type = type_dict.get(feature_name, cpmeas.COLTYPE_VARCHAR_FILE_NAME)
+            if data_type == cpmeas.COLTYPE_INTEGER:
+                values = [int(v) for v in values]
+            elif data_type == cpmeas.COLTYPE_FLOAT:
+                values = [float(v) for v in values]
             m.add_all_measurements(cpmeas.IMAGE,
                                    feature_name,
                                    values)

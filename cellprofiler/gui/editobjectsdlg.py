@@ -25,7 +25,7 @@ import matplotlib
 import matplotlib.figure
 from matplotlib.lines import Line2D
 from matplotlib.path import Path
-from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg, NavigationToolbar2WxAgg
+from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 import matplotlib.backend_bases
 import numpy as np
 import scipy.ndimage
@@ -42,7 +42,7 @@ from cellprofiler.cpmath.cpmorphology import polygon_lines_to_mask
 from cellprofiler.cpmath.cpmorphology import get_outline_pts, thicken
 from cellprofiler.cpmath.index import Indexes
 from cellprofiler.gui.cpfigure_tools import renumber_labels_for_display
-from cellprofiler.gui.cpfigure import get_crosshair_cursor
+from cellprofiler.gui.cpfigure import CPNavigationToolbar
 
 class EditObjectsDialog(wx.Dialog):
     '''This dialog can be invoked as an objects editor
@@ -354,7 +354,7 @@ class EditObjectsDialog(wx.Dialog):
         self.html_frame.Show(False)
         self.html_frame.Bind(wx.EVT_CLOSE, self.on_help_close)
 
-        self.toolbar = EODNavigationToolbar(self.panel)
+        self.toolbar = CPNavigationToolbar(self.panel)
         sizer.Add(self.toolbar, 0, wx.EXPAND)
         #
         # Make 3 axes
@@ -1203,10 +1203,16 @@ class EditObjectsDialog(wx.Dialog):
         x[x < 0] = 0
         x[x >= self.shape[1]] = self.shape[1]-1
         y[y >= self.shape[0]] = self.shape[0]-1
+        lnew = np.zeros(self.labels[0].shape, 
+                        self.labels[0].dtype)
+        i, j = np.mgrid[0:lnew.shape[0], 0:lnew.shape[1]]
+        lnew[(i - event.ydata)**2 + (j - event.xdata) **2 <= 400] = object_number
+        self.labels.append(lnew)
+        self.restructure_labels()
         self.init_labels()
         new_artist = Line2D(x, y,
-                            marker=['o']*len(x), 
-                            markerfacecolor=['r']*len(x),
+                            marker='o', 
+                            markerfacecolor='r',
                             markersize=6,
                             color=self.colormap[object_number, :],
                             animated = True)
@@ -1843,23 +1849,6 @@ class EditObjectsDialog(wx.Dialog):
             if display:
                 self.display()
                 
-class EODNavigationToolbar(NavigationToolbar2WxAgg):
-    '''Navigation toolbar for EditObjectsDialog'''
-    def set_cursor(self, cursor):
-        '''Set the cursor based on the mode'''
-        if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:
-            self.canvas.SetCursor(get_crosshair_cursor())
-        else:
-            NavigationToolbar2WxAgg.set_cursor(self, cursor)
-            
-    def cancel_mode(self):
-        '''Toggle the current mode to off'''
-        if self.mode == 'zoom rect':
-            self.zoom()
-        elif self.mode == 'pan/zoom':
-            self.pan()
-        
-
 if __name__== "__main__":
     import libtiff
     

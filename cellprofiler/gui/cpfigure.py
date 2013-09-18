@@ -26,7 +26,7 @@ import numpy.ma
 import matplotlib.patches
 import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
-from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
+from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
 from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position, reset_cpfigure_position
 from scipy.sparse import coo_matrix
 import functools
@@ -336,15 +336,12 @@ class CPFigureFrame(wx.Frame):
     
     
     def create_toolbar(self):
-        self.navtoolbar = NavigationToolbar(self.figure.canvas)
+        self.navtoolbar = CPNavigationToolbar(self.figure.canvas)
         self.SetToolBar(self.navtoolbar)
         if wx.VERSION != (2, 9, 1, 1, ''):
             # avoid crash on latest wx 2.9
             self.navtoolbar.DeleteToolByPos(6)
-#        ID_LASSO_TOOL = wx.NewId()
-#        lasso = self.navtoolbar.InsertSimpleTool(5, ID_LASSO_TOOL, lasso_tool.ConvertToBitmap(), '', '', isToggle=True)
-#        self.navtoolbar.Realize()
-#        self.Bind(wx.EVT_TOOL, self.toggle_lasso_tool, id=ID_LASSO_TOOL)
+        self.navtoolbar.Bind(EVT_NAV_MODE_CHANGE, self.on_navtool_changed)
 
     def clf(self):
         '''Clear the figure window, resetting the display'''
@@ -432,10 +429,17 @@ class CPFigureFrame(wx.Frame):
             menu.Delete(menu_id)
         self.Destroy()
 
+    def on_navtool_changed(self, event):
+        if event.EventObject.mode != NAV_MODE_NONE and \
+           self.mouse_mode == MODE_MEASURE_LENGTH:
+            self.mouse_mode = MODE_NONE
+            self.__menu_item_measure_length.Check(False)
+            
     def on_measure_length(self, event):
         '''Measure length menu item selected.'''
         if self.__menu_item_measure_length.IsChecked():
             self.mouse_mode = MODE_MEASURE_LENGTH
+            self.navtoolbar.cancel_mode()
             self.Layout()
         elif self.mouse_mode == MODE_MEASURE_LENGTH:
             self.mouse_mode = MODE_NONE
@@ -452,15 +456,6 @@ class CPFigureFrame(wx.Frame):
         pass
 
     def on_mouse_move(self, evt):
-        #
-        # LAAAME SAUCE -- Crosshair cursor is all black on Windows making it
-        #    virtually invisible on dark images. Use custom cursor instead.
-        #
-        if (sys.platform.lower().startswith('win') and 
-            evt.inaxes and
-            'zoom rect' in self.navtoolbar.mode.lower()):  # NOTE: There are no constants for the navbar modes
-            self.figure.canvas.SetCursor(get_crosshair_cursor())
-            
         if self.mouse_down is None:
             x0 = evt.xdata
             x1 = evt.xdata
@@ -1744,7 +1739,44 @@ def get_crosshair_cursor():
         else:
             __crosshair_cursor = wx.CROSS_CURSOR
     return __crosshair_cursor
-    
+
+EVT_NAV_MODE_CHANGE = wx.PyEventBinder(wx.NewEventType())
+NAV_MODE_ZOOM = 'zoom rect'
+NAV_MODE_PAN = 'pan/zoom'
+NAV_MODE_NONE = ''
+
+class CPNavigationToolbar(NavigationToolbar2WxAgg):
+    '''Navigation toolbar for EditObjectsDialog'''
+    def set_cursor(self, cursor):
+        '''Set the cursor based on the mode'''
+        if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:
+            self.canvas.SetCursor(get_crosshair_cursor())
+        else:
+            NavigationToolbar2WxAgg.set_cursor(self, cursor)
+            
+    def cancel_mode(self):
+        '''Toggle the current mode to off'''
+        if self.mode == NAV_MODE_ZOOM:
+            self.zoom()
+            self.ToggleTool(self._NTB2_ZOOM, False)
+        elif self.mode == NAV_MODE_PAN:
+            self.pan()
+            self.ToggleTool(self._NTB2_PAN, False)
+            
+    def zoom(self, *args):
+        NavigationToolbar2WxAgg.zoom(self, *args)
+        self.__send_mode_change_event()
+        
+    def pan(self, *args):
+        NavigationToolbar2WxAgg.pan(self, *args)
+        self.__send_mode_change_event()
+        
+    def __send_mode_change_event(self):
+        event = wx.NotifyEvent(EVT_NAV_MODE_CHANGE.evtType[0])
+        event.EventObject = self
+        self.GetEventHandler().ProcessEvent(event)
+        
+        
 if __name__ == "__main__":
     import numpy as np
 

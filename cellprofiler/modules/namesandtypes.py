@@ -532,14 +532,19 @@ class NamesAndTypes(cpm.CPModule):
         we can harvest in a reasonable amount of time.
         '''
         column_names = self.get_column_names()
+        result = []
         if (self.matching_method == MATCH_BY_METADATA):
             md_keys = self.join.parse()
             for column_name in column_names:
                 if all([k[column_name] is not None for k in md_keys]):
-                    return [
-                        '_'.join((cpmeas.C_METADATA, k[column_name]))
-                        for k in md_keys]
-        return []
+                    for k in md_keys:
+                        if k[column_name] in (cpmeas.C_FRAME, cpmeas.C_SERIES):
+                            result.append(
+                                '_'.join((k[column_name], column_name)))
+                        else:
+                            result.append(
+                                '_'.join((cpmeas.C_METADATA, k[column_name])))
+        return result
     
     def prepare_run(self, workspace):
         '''Write the image set to the measurements'''

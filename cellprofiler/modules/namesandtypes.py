@@ -544,6 +544,7 @@ class NamesAndTypes(cpm.CPModule):
                         else:
                             result.append(
                                 '_'.join((cpmeas.C_METADATA, k[column_name])))
+                    break;
         return result
     
     def prepare_run(self, workspace):

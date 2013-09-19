@@ -1356,6 +1356,20 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
         module.pathname.dir_choice = cps.ABSOLUTE_FOLDER_NAME
         module.prepare_to_create_batch(None, cmodule.alter_path)
         self.assertEqual(module.pathname.custom_path, './\\g<Test>Outlines/g<Run>_\\g<Plate>')
+        
+    def test_02_03_create_batch_root_dir(self):
+        # regression test of issue #813 - root_dir needs conversion
+        orig_path = '/foo/bar'
+        def fn_alter_path(path, **varargs):
+            if path == orig_path:
+                return '/imaging/analysis'
+        module = cpm_si.SaveImages()
+        module.root_dir.dir_choice = cps.ABSOLUTE_FOLDER_NAME
+        module.root_dir.custom_path = orig_path
+        module.create_subdirectories.value = True
+        module.prepare_to_create_batch(None, fn_alter_path)
+        self.assertEqual(module.root_dir.custom_path, '/imaging/analysis')
+        
     
     def test_03_01_get_measurement_columns(self):
         module = cpm_si.SaveImages()

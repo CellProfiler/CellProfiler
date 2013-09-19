@@ -442,6 +442,8 @@ class SaveImages(cpm.CPModule):
     
     def prepare_to_create_batch(self, workspace, fn_alter_path):
         self.pathname.alter_for_create_batch_files(fn_alter_path)
+        if self.create_subdirectories:
+            self.root_dir.alter_for_create_batch_files(fn_alter_path)
         
     def run(self,workspace):
         """Run the module

@@ -26,6 +26,10 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
+[Dirs]
+Name: "{userappdata}\CellProfiler\plugins"; Flags: uninsneveruninstall
+Name: "{userappdata}\CellProfiler\ijplugins"; Flags: uninsneveruninstall
+
 [Files]
 Source: ".\dist\CellProfiler.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: ".\dist\analysis_worker.exe"; DestDir: "{app}"; Flags: ignoreversion
@@ -51,9 +55,33 @@ Root: HKCR; Subkey: ".cppipe"; ValueType: string; ValueName: ""; ValueData: "Cel
 Root: HKCR; Subkey: "CellProfilerPipeline"; ValueType: string; ValueName: ""; ValueData: "CellProfiler pipeline"; Flags: uninsdeletekey
 Root: HKCR; Subkey: "CellProfilerPipeline\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\CellProfiler.exe,0"
 Root: HKCR; Subkey: "CellProfilerPipeline\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\CellProfiler.exe"" --pipeline ""%1"""
+; default plugins directories
+Root: HKCU; Subkey: "Software\CellProfilerLocal.cfg"; ValueType: string; ValueName: "PluginDirectory"; ValueData: {code:EscapeString|%7Buserappdata%7D\CellProfiler\plugins}; Flags: createvalueifdoesntexist
+Root: HKCU; Subkey: "Software\CellProfilerLocal.cfg"; ValueType: string; ValueName: "IJPluginDirectory"; ValueData: {code:EscapeString|%7Buserappdata%7D\CellProfiler\ijplugins}; Flags: createvalueifdoesntexist
 
 [Run]
 Filename: "{tmp}\vcredist_x64.exe"; Parameters: "/q"
 Filename: "{app}\CellProfiler.exe"; Description: "{cm:LaunchProgram,CellProfiler}"; Flags: nowait postinstall skipifsilent
 
+[Code]
 
+function EscapeString(Input: String): String;
+Var
+  Path: String;
+Begin
+  Path := ExpandConstant(Input);
+  StringChangeEx(Path, '\', '\\', True);
+  Result := Path;
+End;
+
+function IJPluginsRegistryValue(): String;
+Begin
+  Result := EscapeString('{userappdata}\CellProfiler\ijplugins');
+End;
+
+function PluginsRegistryValue(): String;
+Begin
+  Result := EscapeString('{userappdata}\CellProfiler\plugins');
+End;
+
+    

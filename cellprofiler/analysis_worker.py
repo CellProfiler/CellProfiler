@@ -112,6 +112,7 @@ from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
      PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
      NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
+     DisplayPostGroupRequest, \
      ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, \
      ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
      SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE,  \
@@ -380,10 +381,11 @@ class AnalysisWorker(object):
                     gc.collect()
                     try:
                         self.pipeline_listener.image_set_number = image_set_number
-                        current_pipeline.run_image_set(current_measurements,
-                                                       image_set_number,
-                                                       self.interaction_handler,
-                                                       self.display_handler)
+                        current_pipeline.run_image_set(
+                            current_measurements,
+                            image_set_number,
+                            self.interaction_handler,
+                            self.display_handler)
                         if self.pipeline_listener.should_abort:
                             abort = True
                             break
@@ -436,6 +438,8 @@ class AnalysisWorker(object):
                     workspace = cpw.Workspace(current_pipeline, None, 
                                               current_measurements, None,
                                               current_measurements, None, None)
+                    workspace.post_group_display_handler = \
+                        self.post_group_display_handler
                     # There might be an exception in this call, but it will be
                     # handled elsewhere, and there's nothing we can do for it
                     # here.
@@ -483,6 +487,12 @@ class AnalysisWorker(object):
                              module_num=module.module_num,
                              display_data_dict=display_data.__dict__,
                              image_set_number=image_set_number)
+        rep = self.send(req)
+        
+    def post_group_display_handler(self, module, display_data, image_set_number):
+        req = DisplayPostGroupRequest(
+            self.current_analysis_id,
+            module.module_num, display_data.__dict__, image_set_number)
         rep = self.send(req)
         
     def omero_login_handler(self):

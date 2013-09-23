@@ -92,6 +92,7 @@ class Workspace(object):
 
         self.interaction_handler = None
         self.post_run_display_handler = None
+        self.post_group_display_handler = None
 
         class DisplayData(object):
             pass
@@ -324,6 +325,21 @@ class Workspace(object):
                 return module.handle_interaction(*args, **kwargs)
         else:
             return self.interaction_handler(module, *args, **kwargs)
+        
+    def post_group_display(self, module):
+        '''Perform whatever post-group module display is necessary
+        
+        module - module being run
+        '''
+        if self.post_group_display_handler is not None:
+            self.post_group_display_handler(
+                module, self.display_data, self.measurements.image_set_number)
+        elif self.frame is not None:
+            figure = self.get_module_figure(
+                module,
+                self.measurements.image_set_number,
+                self.frame)
+            module.display_post_group(self, figure)
         
     def post_run_display(self, module):
         '''Perform whatever post-run module display is necessary

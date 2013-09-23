@@ -2232,12 +2232,19 @@ class Pipeline(object):
                 module.post_group(workspace, grouping)
             except Exception, instance:
                 logging.error(
-                    "Failed during post-group processing for module %s",
+                    "Failed during post-group processing for module %s" %
                     module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
+            if module.show_window:
+                try:
+                    workspace.post_group_display(module)
+                except:
+                    logging.warn(
+                        "Failed during post group display for module %s" %
+                        module.module_name, exc_info=True)
         return True
     
     def in_batch_mode(self):

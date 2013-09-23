@@ -1935,6 +1935,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             wx.CallAfter(self.module_display_request, evt)
         elif isinstance(evt, cpanalysis.DisplayPostRunRequest):
             wx.CallAfter(self.module_display_post_run_request, evt)
+        elif isinstance(evt, cpanalysis.DisplayPostGroupRequest):
+            wx.CallAfter(self.module_display_post_group_request, evt)
         elif isinstance(evt, cpanalysis.InteractionRequest):
             self.interaction_request_queue.put((PRI_INTERACTION, self.module_interaction_request, evt))
             wx.CallAfter(self.handle_analysis_feedback)
@@ -2044,6 +2046,27 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                  message="Exception in handling display request for module %s #%d" \
                                      % (module.module_name, module_num))
         
+    def module_display_post_group_request(self, evt):
+        assert wx.Thread_IsMain(), "PipelineController.module_post_group_display_request() must be called from main thread!"
+        module_num = evt.module_num
+        # use our shared workspace
+        self.__workspace.display_data.__dict__.update(evt.display_data)
+        try:
+            module = self.__pipeline.modules()[module_num - 1]
+            if module.display_post_group != cpmodule.CPModule.display_post_group:
+                image_number = evt.image_set_number
+                fig = self.__workspace.get_module_figure(module,
+                                                         image_number,
+                                                         self.__frame)
+                module.display_post_group(self.__workspace, fig)
+                fig.Refresh()
+        except:
+            _, exc, tb = sys.exc_info()
+            display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
+                                 message="Exception in handling display request for module %s #%d" \
+                                     % (module.module_name, module_num))
+        finally:
+            evt.reply(cpanalysis.Ack())
 
     def module_interaction_request(self, evt):
         '''forward a module interaction request from the running pipeline to

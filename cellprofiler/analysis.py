@@ -296,7 +296,7 @@ class AnalysisRunner(object):
         event = DisplayPostRunRequest(module.module_num,
                                       workspace.display_data)
         self.event_listener(event)
-
+        
     # XXX - catch and deal with exceptions in interface() and jobserver() threads
     def interface(self, 
                   start_signal,
@@ -588,6 +588,7 @@ class AnalysisRunner(object):
                                                  req.buf)
                 req.reply(Ack())
             elif isinstance(req, (InteractionRequest, DisplayRequest, 
+                                  DisplayPostGroupRequest,
                                   ExceptionReport, DebugWaiting, DebugComplete,
                                   OmeroLoginRequest)):
                 # bump upward
@@ -868,6 +869,17 @@ class DisplayPostRunRequest(object):
     def __init__(self, module_num, display_data):
         self.module_num = module_num
         self.display_data = display_data
+
+class DisplayPostGroupRequest(AnalysisRequest):
+    '''Request a post-group display
+    
+    This is a message sent to the UI from the analysis worker'''
+    def __init__(self, analysis_id, module_num, display_data, image_set_number):
+        AnalysisRequest.__init__(
+            self, analysis_id, 
+            module_num = module_num,
+            image_set_number = image_set_number,
+            display_data = display_data)
 
 class SharedDictionaryRequest(AnalysisRequest):
     def __init__(self, analysis_id, module_num=-1):

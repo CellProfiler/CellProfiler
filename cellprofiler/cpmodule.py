@@ -590,6 +590,20 @@ class CPModule(object):
         figure.Close()  # modules that don't override display() shouldn't
                         # display anything
                         
+    def display_post_group(self, workspace, figure):
+        """Display the results of work done post-group
+        
+        This method is only called if self.show_window is True
+        
+        workspace - the current workspace. workspace.display_data should have
+                    whatever information is needed for the display. Numpy arrays
+                    lists, tuples, dictionaries and Python builtin objects are
+                    allowed.
+                    
+        figure - the figure to use for the display.
+        """
+        pass
+    
     def display_post_run(self, workspace, figure):
         """Display results after post_run completes
         

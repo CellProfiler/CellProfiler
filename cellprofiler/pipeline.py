@@ -2105,12 +2105,20 @@ class Pipeline(object):
                 module.post_run(workspace)
             except Exception, instance:
                 logging.error(
-                    "Failed to complete post_run processing for module %s.",
+                    "Failed to complete post_run processing for module %s." %
                     module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return "Failure"
+            if module.show_window:
+                try:
+                    workspace.post_run_display(module)
+                except Exception, instance:
+                    # Warn about display failure but keep going.
+                    logging.warn(
+                        "Caught exception during post_run_display for module %s." %
+                        module.module_name, exc_info=True)
         return "Complete"
     
     def prepare_to_create_batch(self, workspace, fn_alter_path):

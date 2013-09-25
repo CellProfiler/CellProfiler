@@ -3725,7 +3725,7 @@ class DataTypeController(object):
     
     def on_choice_changed(self, event):
         result = {}
-        for i in range(self.n_items):
+        for i in range(1, self.n_items+1):
             label = self.panel.FindWindowByName(self.get_label_control_name(i))
             choice = self.panel.FindWindowByName(
                 self.get_choice_control_name(i))

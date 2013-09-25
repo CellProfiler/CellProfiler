@@ -182,27 +182,33 @@ class Metadata(cpm.CPModule):
             tooltips=dict(DTC_TEXT="Save all metadata as text",
                           DTC_CHOOSE="Choose the data type (text or numeric) for each metadata category"),
             doc="""
-            Metadata can be saved as either a text or numeric measurement.
-            Choose %(DTC_TEXT)s to save every metadata item as text.
-            Choose %(DTC_CHOOSE)s to choose the data type separately for each 
-            metadata entry.
+            Metadata can be saved as either a text or numeric measurement:
+            <ul>
+            <li><i>%(DTC_TEXT)s:</i> Save all metadata item as text.</li>
+            <li><i>%(DTC_CHOOSE)s:</i> Choose the data type separately for each 
+            metadata entry. An example of when this approach would be necessary 
+            would be if a whole filename is captured as metadata but the file name is
+            numeric, e.g., "0001101.tif". In this situation, if the file name needs to be used for an
+            arithmetic calculation or index, the name would need to be converted to a number.
+            On the other hand, if the file name has leading zeros which would 
+            be removed if converted to a number, capturing the metdata values as text would be more
+            appropriate.</li>
+            </ul>
             """ % globals())
+        
         self.data_types = cps.DataTypes(
             "Metadata types",
-            name_fn = self.get_dt_metadata_keys,
-            doc = """
-            <i>(Used only when choosing the metadata type for each)</i><br>
+            name_fn = self.get_dt_metadata_keys, doc = """
+            <i>(Used only when %(DTC_CHOOSE)s is selected for the metadata data type)</i><br>
             This setting determines the data type of each metadata field
-            when stored as a measurement. There are situations where metadata
-            values composed of digits should be captured as text, for instance,
-            if a whole filename is captured as metadata and the file name is
-            numeric. In this situation, the file name might have leading
-            zeros which would be removed if converted to a number. Choose "Text"
-            to save the metadata as text. Choose "Integer" to save the metadata
-            as an integer. Choose "Float" to save the metadata as a decimal
-            number. Choose "None" if the metadata should not be saved as
-            a measurement.
-            """)
+            when stored as a measurement. 
+            <ul>
+            <li><i>Text:</i> Save the metadata as text.</li>
+            <li><i>Integer:</i> Save the metadata as an integer.</li>
+            <li><i>Float:</i> Save the metadata as a decimal number.</i>
+            <li><i>None:</i> Do not save the metadata as a measurement.</li>
+            </ul>"""%globals())
+        
         self.table = cps.Table(
             "",use_sash=True, 
             corner_button = dict(fn_clicked = self.update_table,

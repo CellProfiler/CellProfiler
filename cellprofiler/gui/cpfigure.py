@@ -754,7 +754,7 @@ class CPFigureFrame(wx.Frame):
             "Nearest neighbor",
             "Use the intensity of the nearest image pixel when displaying "
             "screen pixels at sub-pixel resolution. This produces a blocky "
-            "image, but the image accurately reflects the data",
+            "image, but the image accurately reflects the data.",
             wx.ITEM_RADIO)
         item_bilinear = submenu.Append(
             MENU_INTERPOLATION_BILINEAR,

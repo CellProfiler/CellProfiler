@@ -1256,8 +1256,7 @@ From the menu bar of each module display window, you have the following options:
 <ul>
 <li><b>File</b>
 <ul>
-<li><i>Save:</i> You can save the figure window to a file (currently,
-Postscript (.PS), PNGs and PDFs are supported). Note that this will save the entire
+<li><i>Save:</i> You can save the figure window to an image file. Note that this will save the entire
 contents of the window, not just the individual subplot(s) or images.</li>
 <li><i>Save table:</i> This option is only enabled on windows which are displaying
 tabular output, such as that from a <b>Measure</b> module. This allows you to
@@ -1319,8 +1318,7 @@ the image is re-drawn to display the specified area. Remember that you can alway
 button to reset the window to the initial view.</li>
 
 <li><b>Save:</b> Click this button <img src="memory:%(WINDOW_SAVE_BUTTON)s">&nbsp;
-to launch a file save dialog. You can save the 
-figure window to a file (currently, Postscript (.PS), PNGs and PDFs are supported). 
+to launch a file save dialog. You can save the figure window to an image file. 
 Note that this will save the entire contents of the window, not just the individual 
 subplot(s) or images.</li>
 </ul>

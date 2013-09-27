@@ -393,7 +393,7 @@ class DefineGrid(cpm.CPModule):
         # update background image
         background_image = self.get_background_image(workspace, gridding)
 
-        workspace.display_data.gridding = gridding
+        workspace.display_data.gridding = gridding.serialize()
         workspace.display_data.background_image = background_image
         workspace.display_data.image_set_number = workspace.measurements.image_set_number
 
@@ -540,7 +540,6 @@ class DefineGrid(cpm.CPModule):
         #    status bar
         #
         figure = matplotlib.figure.Figure()
-        axes = figure.add_subplot(1,1,1)
         frame = wx.Dialog(wx.GetApp().TopWindow, title="Select grid cells")
         top_sizer = wx.BoxSizer(wx.VERTICAL)
         frame.SetSizer(top_sizer)
@@ -623,6 +622,9 @@ class DefineGrid(cpm.CPModule):
             image_shape = background_image.shape[:2]
 
         def redisplay(event):
+            figure.clf()
+            axes = figure.add_subplot(1,1,1)
+            
             if (event is not None) or (gridding[0] is None):
                 do_gridding(first_x.Value, first_y.Value,
                             second_x.Value, second_y.Value)
@@ -662,7 +664,7 @@ class DefineGrid(cpm.CPModule):
             return True
             
         def button_release(event):
-            if event.inaxes == axes:
+            if event.inaxes == figure.axes[0]:
                 if cell_choice.Selection == 0:
                     new_first_x = str(int(event.xdata))
                     new_first_y = str(int(event.ydata))
@@ -818,8 +820,10 @@ class DefineGrid(cpm.CPModule):
             figure.set_subplots((1, 1))
             figure.clf()
             ax = figure.subplot(0, 0)
+            gridding = cpg.CPGridInfo()
+            gridding.deserialize(workspace.display_data.gridding)
             self.display_grid(workspace.display_data.background_image,
-                              workspace.display_data.gridding,
+                              gridding,
                               workspace.display_data.image_set_number,
                               ax)
 

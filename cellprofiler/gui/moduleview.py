@@ -2147,6 +2147,7 @@ class FilterPanelController(object):
             self.populate_subpanel(structure, [])
             for key, value in self.hide_show_dict.iteritems():
                 self.panel.FindWindowByName(key).Show(value)
+            self.panel.Layout()
         except:
             logger.exception("Threw exception while updating filter")
         finally:

@@ -672,8 +672,8 @@ class CPFrame(wx.Frame):
             self.__menu_sample = wx.Menu()
             self.__menu_sample.Append(ID_SAMPLE_INIT, 'Initialize Sampling', 'Initialize sampling up to current module')
             self.__menu_bar.Append(self.__menu_sample, '&Sample')
-        self.__menu_bar.Append(self.__menu_window, "&Window")
         self.__menu_bar.Append(self.data_tools_menu(), '&Data Tools')
+        self.__menu_bar.Append(self.__menu_window, "&Window")
         if wx.VERSION <= (2, 8, 10, 1, '') and wx.Platform == '__WXMAC__':
             self.__menu_bar.Append(self.__menu_help, 'CellProfiler Help')
         else:

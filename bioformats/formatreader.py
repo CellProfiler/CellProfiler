@@ -599,6 +599,11 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
                 logger.warn(e.message)
                 for line in traceback.format_exc().split("\n"):
                     logger.warn(line)
+                if jutil.is_instance_of(je, "java/io/FileNotFoundException"):
+                                raise exceptions.IOError(
+                                    errno.ENOENT, 
+                                    "The file, \"%s\", does not exist." % path,
+                                    path)
                 e2 = exceptions.IOError(
                     errno.EINVAL, "Could not load the file as an image (see log for details)", path.encode('utf-8'))
                 raise e2

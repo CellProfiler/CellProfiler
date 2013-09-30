@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 
 import csv
 import datetime
+import exceptions
 import h5py
 import logging
 import math
@@ -1093,7 +1094,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             except:
                 pass
             if error_msg is None:
-                error_msg = str(event.error)
+                if isinstance(event.error, exceptions.EnvironmentError):
+                    error_msg = event.error.strerror
+                else:
+                    error_msg = str(event.error)
             message = (("Error while processing %s:\n"
                         "%s\n\nDo you want to stop processing?") %
                        (event.module.module_name,error_msg))

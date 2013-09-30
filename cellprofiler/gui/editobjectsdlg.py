@@ -251,7 +251,19 @@ class EditObjectsDialog(wx.Dialog):
         sizer = wx.BoxSizer(wx.VERTICAL)
         self.SetSizer(sizer)
         self.figure = matplotlib.figure.Figure()
-        self.panel = FigureCanvasWxAgg(self, -1, self.figure)
+        #
+        # The following is a patch that tells the draw event handler not
+        # to do anything during printing (causes segfault on Windows)
+        #
+        self.inside_print = False
+        class CanvasPatch(FigureCanvasWxAgg):
+            def print_figure(self, *args, **kwargs):
+                self.Parent.inside_print = True
+                try:
+                    super(CanvasPatch, self).print_figure(*args, **kwargs)
+                finally:
+                    self.Parent.inside_print = False
+        self.panel = CanvasPatch(self, -1, self.figure)
         sizer.Add(self.panel, 1, wx.EXPAND)
         self.html_frame = wx.MiniFrame(
             self, style = wx.DEFAULT_MINIFRAME_STYLE | 
@@ -712,7 +724,8 @@ class EditObjectsDialog(wx.Dialog):
         
     def draw_callback(self, event):
         '''Decorate the drawing with the animated artists'''
-        self.background = self.figure.canvas.copy_from_bbox(self.orig_axes.bbox)
+        if not self.inside_print:
+            self.background = self.figure.canvas.copy_from_bbox(self.orig_axes.bbox)
         for artist in self.artists:
             self.orig_axes.draw_artist(artist)
         if self.split_artist is not None:
@@ -720,7 +733,8 @@ class EditObjectsDialog(wx.Dialog):
         if (self.mode == self.FREEHAND_DRAW_MODE and 
             self.active_artist is not None):
             self.orig_axes.draw_artist(self.active_artist)
-        self.figure.canvas.blit(self.orig_axes.bbox)
+        if not self.inside_print:
+            self.figure.canvas.blit(self.orig_axes.bbox)
         
     def get_control_point(self, event):
         '''Find the artist and control point under the cursor

@@ -590,8 +590,7 @@ class CPFigureFrame(wx.Frame):
     def on_file_save(self, event):
         with wx.FileDialog(self, "Save figure", 
                            wildcard = ("PDF file (*.pdf)|*.pdf|"
-                                       "Png image (*.png)|*.png|"
-                                       "Postscript file (*.ps)|*.ps"),
+                                       "PNG image (*.png)|*.png|"),
                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
@@ -600,7 +599,9 @@ class CPFigureFrame(wx.Frame):
                 elif dlg.FilterIndex == 0:
                     format = "pdf"
                 elif dlg.FilterIndex == 2:
-                    format = "ps"
+                    format = "tif"
+                elif dlg.FilterIndex == 3:
+                    format = "jpg"
                 else:
                     format = "pdf"
                 self.figure.savefig(path, format = format)
@@ -1770,6 +1771,18 @@ class CPNavigationToolbar(NavigationToolbar2WxAgg):
     def pan(self, *args):
         NavigationToolbar2WxAgg.pan(self, *args)
         self.__send_mode_change_event()
+        
+    def save(self, event):
+        #
+        # Capture any file save event and redirect it to CPFigureFrame
+        # Fixes issue #829 - Mac & PC display invalid save options when
+        #                    you save using the icon.
+        #
+        parent = self.GetTopLevelParent()
+        if isinstance(parent, CPFigureFrame):
+            parent.on_file_save(event)
+        else:
+            super(CPNavigationToolbar, self).save(event)
         
     def __send_mode_change_event(self):
         event = wx.NotifyEvent(EVT_NAV_MODE_CHANGE.evtType[0])

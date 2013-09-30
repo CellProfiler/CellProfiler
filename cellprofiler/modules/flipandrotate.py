@@ -283,13 +283,13 @@ class FlipAndRotate(cpm.CPModule):
             vmin = 0
             vmax = 1
         if output_image_pixel_data.ndim == 2:
-            figure.subplot_imshow_grayscale(0, 0, image_pixel_data,
-                                            title = self.image_name.value,
-                                            vmin = vmin, vmax=vmax)
-            figure.subplot_imshow_grayscale(1, 0, output_image_pixel_data,
-                                            title = self.output_name.value,
-                                            vmin=vmin, vmax = vmax,
-                                            sharexy = figure.subplot(0, 0))
+            figure.subplot_imshow_grayscale(
+                0, 0, image_pixel_data, title = self.image_name.value,
+                vmin = vmin, vmax=vmax, normalize = False)
+            figure.subplot_imshow_grayscale(
+                1, 0, output_image_pixel_data, title = self.output_name.value,
+                vmin=vmin, vmax = vmax, normalize = False,
+                sharexy = figure.subplot(0, 0))
         else:
             figure.subplot_imshow(0, 0, image_pixel_data,
                                   title = self.image_name.value,

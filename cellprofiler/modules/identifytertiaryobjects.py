@@ -1,20 +1,40 @@
 '''<b>Identify Tertiary Objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
 objects (e.g. nuclei) from larger secondary objects (e.g., cells), leaving a ring shape.
 <hr>
+<h4>What is a tertiary object?</h4>
+In CellProfiler, we use the term <i>object</i> as a generic term to refer to an identifed
+feature in an image, usually a cellular subcompartment of some kind (for example,
+nuclei, cells, colonies, worms). 
+We define an object as <i>tertiary</i> when it is identified by using a prior primary and 
+secondary objects for reference. A common use case is when nuclei have been found using
+<b>IdentifyPrimaryObjects</b> and the cell body has been found using <b>IdentifySecondaryObjects</b> 
+but measurements from the cytoplasm, the region outside the nucleus but within the cell body, 
+are desired. This module may be used to define the cytoplasm as an new object.
+
+<h4>What do I need as input?</h4>
 This module will take the smaller identified objects and remove them from
 the larger identified objects. For example, "subtracting" the nuclei from
 the cells will leave just the cytoplasm, the properties of which can then
-be measured by <b>Measure</b> modules. The larger objects should therefore be
+be measured by downstream <b>Measure</b> modules. The larger objects should therefore be
 equal in size or larger than the smaller objects and must completely
-contain the smaller objects.  Both inputs should be objects produced by
-<b>Identify</b> modules, not grayscale images.
+contain the smaller objects; <b>IdentifySecondaryObjects</b> will produce objects that
+satisfy this constraint. Ideally, both inputs should be objects produced by prior
+<b>Identify</b> modules.
 
-<p><i>Note:</i> Creating subregions using this module can result in objects that
-are not contiguous, which does not cause problems when running the
-<b>MeasureImageIntensity</b> and <b>MeasureTexture</b> modules, but does cause 
-problems when running the <b>MeasureObjectSizeShape</b> module because calculations 
-of the perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
-objects.
+<h4>What do I get as output?</h4>
+A set of tertiary objects are produced by this module, which can be used in 
+downstream modules for measurement purposes or other operations. Because each 
+tertiary object is produced from primary and secondary objects, there will 
+always be at most one secondary object for each primary object.
+See the section <a href="#Available_measurements">"Available measurements"</a> below for 
+the measurements that are produced by this module.
+
+<p>Note that creating subregions using this module can result in objects with 
+a single label that nonetheless are not contiguous. This may lead to unexpected
+results when running measurment modules such as <b>MeasureObjectSizeShape</b> 
+because calculations of the perimeter, aspect ratio, solidity, etc. typically
+make sense only for contiguous objects. Other modules, such as <b>MeasureImageIntensity</b> and 
+<b>MeasureTexture</b> modules, are not affected and will yield expected results.
 
 <h4>Available measurements</h4>
 <b>Image measurements:</b>

@@ -484,12 +484,12 @@ class ModuleView:
                     control = self.make_callback_control(v, control_name,
                                                          control)
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, cps.IntegerRange) or\
-                     isinstance(v, cps.FloatRange):
-                    control = self.make_range_control(v, control)
                 elif isinstance(v,
                                 cps.IntegerOrUnboundedRange):
                     control = self.make_unbounded_range_control(v, control)
+                elif isinstance(v, cps.IntegerRange) or\
+                     isinstance(v, cps.FloatRange):
+                    control = self.make_range_control(v, control)
                 elif isinstance(v, cps.Coordinates):
                     control = self.make_coordinates_control(v,control)
                 elif isinstance(v, cps.RegexpText):
@@ -1361,7 +1361,7 @@ class ModuleView:
                 if getattr(v, "multiline_display", False):
                     style = wx.TE_MULTILINE|wx.TE_PROCESS_ENTER
     
-                text = v.value
+                text = v.get_value_text()
                 if not isinstance(text, (unicode, str)):
                     text = str(text)
                 control = wx.TextCtrl(self.__module_panel,
@@ -1372,8 +1372,8 @@ class ModuleView:
             def on_cell_change(event, setting = v, control=control):
                 self.__on_cell_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
-        elif not (v == control.Value):
-            text = v.value
+        elif not (v.get_value_text() == control.Value):
+            text = v.get_value_text()
             if not isinstance(text, (unicode, str)):
                 text = str(text)
             control.Value = text
@@ -1385,26 +1385,26 @@ class ModuleView:
             panel = wx.Panel(self.__module_panel,-1,name=edit_control_name(v))
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             panel.SetSizer(sizer)
-            min_ctrl = wx.TextCtrl(panel,-1,str(v.min),
-                                   name=min_control_name(v))
+            min_ctrl = wx.TextCtrl(
+                panel, -1, v.min_text, name=min_control_name(v))
             sizer.Add(min_ctrl,0,wx.EXPAND|wx.RIGHT,1)
-            max_ctrl = wx.TextCtrl(panel,-1,str(v.max),
-                                   name=max_control_name(v))
+            max_ctrl = wx.TextCtrl(
+                panel, -1, v.max_text, name=max_control_name(v))
             #max_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(max_ctrl,0,wx.EXPAND)
             def on_min_change(event, setting = v, control=min_ctrl):
-                self.__on_min_change(event, setting,control)
+                self.__on_min_change(event, setting, control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_min_change,min_ctrl)
             def on_max_change(event, setting = v, control=max_ctrl):
-                self.__on_max_change(event, setting,control)
+                self.__on_max_change(event, setting, control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_max_change,max_ctrl)
         else:
             min_ctrl = panel.FindWindowByName(min_control_name(v))
-            if min_ctrl.Value != str(v.min):
-                min_ctrl.Value = str(v.min)
+            if min_ctrl.Value != v.min_text:
+                min_ctrl.Value = v.min_text
             max_ctrl = panel.FindWindowByName(max_control_name(v))
-            if max_ctrl.Value != str(v.max):
-                max_ctrl.Value = str(v.max)
+            if max_ctrl.Value != v.max_text:
+                max_ctrl.Value = v.max_text
         
         for ctrl in (min_ctrl, max_ctrl):
             self.fit_ctrl(ctrl)
@@ -1444,12 +1444,7 @@ class ModuleView:
             def on_min_change(event, setting = v, control=min_ctrl):
                 if not self.__handle_change:
                     return
-                old_value = str(setting)
-                if setting.unbounded_max:
-                    max_value = cps.END
-                else:
-                    max_value = str(setting.max)
-                proposed_value="%s,%s"%(str(control.Value),max_value)
+                proposed_value = setting.compose_min_text(control.Value)
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
@@ -1460,14 +1455,7 @@ class ModuleView:
                               absrel_ctrl=absrel_ctrl):
                 if not self.__handle_change:
                     return
-                old_value = str(setting)
-                if (absrel_ctrl.Value == ABSOLUTE):
-                    max_value = str(control.Value)
-                elif control.Value == '0':
-                    max_value = cps.END
-                else:
-                    max_value = "-"+str(control.Value)
-                proposed_value="%s,%s"%(setting.display_min,max_value)
+                proposed_value = setting.compose_display_max_text(control.Value)
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
@@ -1478,22 +1466,10 @@ class ModuleView:
                 if not self.__handle_change:
                     return
                 
-                if not v.unbounded_max:
-                    old_value = str(setting)
-                    
-                    if control.Value == ABSOLUTE:
-                        proposed_value="%s,%s"%(setting.display_min,
-                                                abs(setting.max))
-                    else:
-                        setting_max = setting.max
-                        if setting_max is not None:
-                            proposed_value="%s,%d"%(setting.display_min,
-                                                    -abs(setting.max))
-                        else:
-                            proposed_value = None
+                if control.Value == ABSOLUTE:
+                    proposed_value = setting.compose_abs()
                 else:
-                    proposed_value="%s,%s"%(setting.display_min,
-                                            cps.END)
+                    proposed_value = setting.compose_rel()
                 if proposed_value is not None:
                     setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                               proposed_value,event)
@@ -1508,9 +1484,7 @@ class ModuleView:
             if max_ctrl.Value != v.display_max:
                 min_ctrl.Value = v.display_max
             absrel_ctrl = panel.FindWindowByName(absrel_control_name(v))
-            absrel_value = ABSOLUTE
-            if v.unbounded_max or v.max < 0:
-                absrel_value = FROM_EDGE
+            absrel_value = ABSOLUTE if v.is_abs() else FROM_EDGE
             if absrel_ctrl.Value != absrel_value:
                 absrel_ctrl.Value = absrel_value
             
@@ -1523,14 +1497,14 @@ class ModuleView:
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             panel.SetSizer(sizer)
             sizer.Add(wx.StaticText(panel,-1,"X:"),0,wx.EXPAND|wx.RIGHT,1)
-            x_ctrl = wx.TextCtrl(panel,-1,str(v.x),
-                                   name=x_control_name(v))
+            x_ctrl = wx.TextCtrl(
+                panel, -1, v.get_x_text(), name=x_control_name(v))
             best_width = x_ctrl.GetCharWidth()*5
             x_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(x_ctrl,0,wx.EXPAND|wx.RIGHT,1)
             sizer.Add(wx.StaticText(panel,-1,"Y:"),0,wx.EXPAND|wx.RIGHT,1)
-            y_ctrl = wx.TextCtrl(panel,-1,str(v.y),
-                                 name=y_control_name(v))
+            y_ctrl = wx.TextCtrl(
+                panel, -1, v.get_y_text(), name=y_control_name(v))
             y_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(y_ctrl,0,wx.EXPAND)
             def on_x_change(event, setting = v, control=x_ctrl):
@@ -1553,11 +1527,11 @@ class ModuleView:
             self.__module_panel.Bind(wx.EVT_TEXT,on_y_change,y_ctrl)
         else:
             x_ctrl = panel.FindWindowByName(x_control_name(v))
-            if x_ctrl.Value != str(v.x):
-                x_ctrl.Value = str(v.x)
+            if x_ctrl.Value != v.get_x_text():
+                x_ctrl.Value = v.get_x_text()
             y_ctrl = panel.FindWindowByName(y_control_name(v))
-            if y_ctrl.Value != str(v.y):
-                y_ctrl.Value = str(v.y)
+            if y_ctrl.Value != v.get_y_text():
+                y_ctrl.Value = v.get_y_text()
             
         return panel
     
@@ -1857,23 +1831,23 @@ class ModuleView:
         ctrl.SetSizeHintsSz(wx.Size(width, -1))
         ctrl.Parent.Fit()
         
-    def __on_min_change(self,event,setting,control):
+    def __on_min_change(self, event, setting, control):
         if not self.__handle_change:
             return
         old_value = str(setting)
-        proposed_value="%s,%s"%(str(control.Value),str(setting.max))
-        setting_edited_event = SettingEditedEvent(setting,self.__module, 
-                                                  proposed_value,event)
+        proposed_value = setting.compose_min_text(control.Value)
+        setting_edited_event = SettingEditedEvent(
+            setting, self.__module, proposed_value, event)
         self.notify(setting_edited_event)
         self.fit_ctrl(control)
         
-    def __on_max_change(self,event,setting,control):
+    def __on_max_change(self, event, setting, control):
         if not self.__handle_change:
             return
         old_value = str(setting)
-        proposed_value="%s,%s"%(str(setting.min),str(control.Value))
-        setting_edited_event = SettingEditedEvent(setting,self.__module, 
-                                                  proposed_value,event)
+        proposed_value = setting.compose_max_text(control.Value)
+        setting_edited_event = SettingEditedEvent(
+            setting, self.__module, proposed_value, event)
         self.notify(setting_edited_event)
         self.fit_ctrl(control)
     

@@ -607,8 +607,8 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.size_range.value = (2,10)
         x.fill_holes.value = False
         x.smoothing_filter_size.value = 0
-        x.automatic_smoothing.value = 0
-        x.maxima_suppression_size.value = 3.6
+        x.automatic_smoothing.value = False
+        x.maxima_suppression_size.value = 7.1
         x.automatic_suppression.value = False
         x.unclump_method.value = ID.UN_INTENSITY
         x.watershed_method.value = ID.WA_SHAPE
@@ -770,7 +770,7 @@ class test_IdentifyPrimaryObjects(unittest.TestCase):
         x.fill_holes.value = False
         x.smoothing_filter_size.value = 0
         x.automatic_smoothing.value = 0
-        x.maxima_suppression_size.value = 3.6
+        x.maxima_suppression_size.value = 7
         x.automatic_suppression.value = False
         x.manual_threshold.value = .3
         x.unclump_method.value = ID.UN_INTENSITY

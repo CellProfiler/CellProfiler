@@ -673,7 +673,20 @@ class Range(Setting):
     def value_to_str(self, value):
         '''Convert a string to a min/max value in the native type'''
         raise NotImplementedError("value_to_str must be implemented in derived class")
-        
+    
+    def get_value(self):
+        '''Return the value of this range as a min/max tuple'''
+        return self.min, self.max
+    
+    def set_value(self, value):
+        '''Set the value of this range using either a string or a two-tuple'''
+        if isinstance(value, basestring):
+            self.set_value_text(value)
+        elif hasattr(value, "__getitem__") and len(value) == 2:
+            self.set_value_text(",".join([self.value_to_str(v) for v in value]))
+        else:
+            raise ValueError("Value for range must be a string or two-tuple")
+            
     def get_min_text(self):
         """Get the minimum of the range as a text value"""
         return self.get_value_text().split(",")[0]
@@ -762,6 +775,13 @@ class Range(Setting):
         if v_min > v_max:
             raise ValidationError("%s is greater than %s" % 
                                   (self.min_text, self.max_text), self)
+    
+    def __eq__(self, x):
+        if super(Range, self).__eq__(x):
+            return True
+        if hasattr(x, "__getitem__") and len(x) == 2:
+            return x[0] == self.min and x[1] == self.max
+        return False
         
 class IntegerRange(Range):
     """A setting that allows only integer input between two constrained values
@@ -870,6 +890,11 @@ class IntegerOrUnboundedRange(IntegerRange):
             return END
         return super(IntegerOrUnboundedRange, self).str_to_value(str_value)
                      
+    def value_to_str(self, value):
+        if value in (BEGIN, END):
+            return value
+        return super(IntegerOrUnboundedRange, self).value_to_str(value)
+    
     def get_unbounded_min(self):
         """True if there is no minimum"""
         return self.get_min() == 0

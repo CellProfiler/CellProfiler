@@ -249,7 +249,7 @@ class TestApplyThreshold(unittest.TestCase):
             Smoothing for threshold:Automatic
             Threshold smoothing scale:1.5
             Threshold correction factor:1.1
-            Lower and upper bounds on threshold:0.07,1.01
+            Lower and upper bounds on threshold:0.07,0.99
             Approximate fraction of image covered by objects?:0.02
             Manual threshold:0.1
             Select the measurement to threshold with:Pony_Perimeter
@@ -278,7 +278,7 @@ class TestApplyThreshold(unittest.TestCase):
         self.assertEqual(module.threshold_smoothing_scale, 1.5)
         self.assertEqual(module.threshold_correction_factor, 1.1)
         self.assertEqual(module.threshold_range.min, .07)
-        self.assertEqual(module.threshold_range.max, 1.01)
+        self.assertEqual(module.threshold_range.max, .99)
         self.assertEqual(module.object_fraction, 0.02)
         self.assertEqual(module.manual_threshold, 0.1)
         self.assertEqual(module.thresholding_measurement, "Pony_Perimeter")

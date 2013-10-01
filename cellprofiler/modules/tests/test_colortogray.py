@@ -153,7 +153,7 @@ class TestColorToGray(unittest.TestCase):
         expected = np.zeros((20,10))
         for i, channel_index in enumerate(channel_indexes):
             module.channels[i].channel_choice.value = module.channel_names[channel_index]
-            module.channels[i].contribution.value = factors[i]
+            module.channels[i].contribution.value_text = "%.10f" % factors[i]
             expected += image[:,:, channel_index] * factors[i] / divisor
         
         pipeline = cpp.Pipeline()

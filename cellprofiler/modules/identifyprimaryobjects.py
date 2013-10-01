@@ -529,9 +529,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             too many objects split up that ought to be merged, you may want to override the
             automatically calculated value."""%globals())
         
-        self.maxima_suppression_size = cps.Integer(
+        self.maxima_suppression_size = cps.Float(
             'Suppress local maxima that are closer than this minimum allowed distance', 
-            7, doc="""
+            7, minval=0, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
             Enter a positive integer, in pixel units. If you see too many objects 
             merged that ought to be separated (under-segmentation), the value 

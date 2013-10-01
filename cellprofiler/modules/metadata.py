@@ -205,7 +205,7 @@ class Metadata(cpm.CPModule):
             <ul>
             <li><i>Text:</i> Save the metadata as text.</li>
             <li><i>Integer:</i> Save the metadata as an integer.</li>
-            <li><i>Float:</i> Save the metadata as a decimal number.</i>
+            <li><i>Float:</i> Save the metadata as a decimal number.</li>
             <li><i>None:</i> Do not save the metadata as a measurement.</li>
             </ul>"""%globals())
         

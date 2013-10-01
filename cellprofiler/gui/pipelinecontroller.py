@@ -1776,12 +1776,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         #if self.is_in_debug_mode():
         #    self.stop_debugging()
         
-    def __on_module_view_event(self,caller,event):
+    def __on_module_view_event(self, caller, event):
         assert isinstance(event,cellprofiler.gui.moduleview.SettingEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent'%(str(event))
         setting = event.get_setting()
         proposed_value = event.get_proposed_value()
         setting.set_value_text(proposed_value)
         module = event.get_module()
+        module.on_setting_changed(setting, self.__pipeline)
         is_image_set_modification = module.change_causes_prepare_run(setting)
         self.__pipeline.edit_module(event.get_module().module_num,
                                     is_image_set_modification)

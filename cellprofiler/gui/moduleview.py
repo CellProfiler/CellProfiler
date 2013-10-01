@@ -1818,8 +1818,6 @@ class ModuleView:
                                                   proposed_value,
                                                   event)
         self.notify(setting_edited_event)
-        if self.__module is not None:
-            self.__module.on_setting_changed(setting, self.__pipeline)
         if timeout is None:
             self.reset_view() # use the default timeout
         elif timeout is not False:

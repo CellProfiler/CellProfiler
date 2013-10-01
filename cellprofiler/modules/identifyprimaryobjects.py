@@ -61,6 +61,8 @@ detailed information on the setting, if interested.</li>
 </ul>
 
 <h4>What do I get as output?</h4>
+A set of primary objects are produced by this module, which can be used in downstream modules
+for measurement purposes or other operations. 
 See the section <a href="#Available_measurements">"Available measurements"</a> below for 
 the measurements that are produced by this module.
 

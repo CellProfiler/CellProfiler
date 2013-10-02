@@ -1221,6 +1221,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     PATHLIST_CMD_BROWSE = "Browse For Images"
     PATHLIST_CMD_REMOVE = "Remove From File List"
     PATHLIST_CMD_REFRESH = "Refresh"
+    PATHLIST_TEXT_REFRESH = "Remove unavailable files"
     PATHLIST_CMD_EXPAND_ALL = "Expand All Folders"
     PATHLIST_CMD_COLLAPSE_ALL = "Collapse All Folders"
     PATHLIST_CMD_CLEAR = "Clear File List"
@@ -1228,7 +1229,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def get_pathlist_file_context_menu(self, paths):
         return ((self.PATHLIST_CMD_SHOW, self.PATHLIST_CMD_SHOW),
                 (self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
-                (self.PATHLIST_CMD_REFRESH, self.PATHLIST_CMD_REFRESH),
+                (self.PATHLIST_CMD_REFRESH, self.PATHLIST_TEXT_REFRESH),
                 (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
                 (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
                 (self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
@@ -1264,7 +1265,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
     def get_pathlist_folder_context_menu(self, path):
         return ((self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
-                (self.PATHLIST_CMD_REFRESH, self.PATHLIST_CMD_REFRESH),
+                (self.PATHLIST_CMD_REFRESH, self.PATHLIST_TEXT_REFRESH),
                 (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
                 (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
                 (self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),

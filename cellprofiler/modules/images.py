@@ -143,7 +143,7 @@ class Images(cpm.CPModule):
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals())
         
         self.update_button = cps.PathListRefreshButton(
-            "", "Update file list", doc = """
+            "", "Apply filters to the file list", doc = """
             <i>(Only displayed if filtering based on rules)</i><br>
             Re-display the file list, removing or graying out the files
             that do not pass the current filter.

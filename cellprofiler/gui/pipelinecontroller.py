@@ -1242,7 +1242,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         elif cmd == self.PATHLIST_CMD_REMOVE:
             self.on_pathlist_file_delete(paths)
         elif cmd == self.PATHLIST_CMD_REFRESH:
-            self.on_pathlist_file_refresh(paths)
+            self.on_pathlist_refresh(paths)
         elif cmd == self.PATHLIST_CMD_BROWSE:
             if len(paths) == 0 or not paths[0].startswith("file:"):
                 self.on_pathlist_browse(None)
@@ -1276,9 +1276,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 path, self.__path_list_ctrl.FLAG_RECURSE)
             self.on_pathlist_file_delete(paths)
         elif cmd == self.PATHLIST_CMD_REFRESH:
-            W.walk_in_background(path, 
-                                 self.on_walk_callback, 
-                                 self.on_walk_completed)
+            paths = self.__path_list_ctrl.get_folder(
+                path, self.__path_list_ctrl.FLAG_RECURSE)
+            self.on_pathlist_refresh(paths)
         elif cmd == self.PATHLIST_CMD_BROWSE:
             if path.startswith("file:"):
                 path = urllib.url2pathname(path[5:])
@@ -1358,7 +1358,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__workspace.file_list.remove_files_from_filelist(paths)
         self.__workspace.invalidate_image_set()        
         
-    def on_pathlist_file_refresh(self, urls):
+    def on_pathlist_refresh(self, urls):
         """Refresh the pathlist by checking for existence of file URLs"""
 
         urls = filter((lambda url: url.startswith("file:")), urls)

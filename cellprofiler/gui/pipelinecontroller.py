@@ -1228,6 +1228,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def get_pathlist_file_context_menu(self, paths):
         return ((self.PATHLIST_CMD_SHOW, self.PATHLIST_CMD_SHOW),
                 (self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
+                (self.PATHLIST_CMD_REFRESH, self.PATHLIST_CMD_REFRESH),
                 (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
                 (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
                 (self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
@@ -1240,6 +1241,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.on_pathlist_show()
         elif cmd == self.PATHLIST_CMD_REMOVE:
             self.on_pathlist_file_delete(paths)
+        elif cmd == self.PATHLIST_CMD_REFRESH:
+            self.on_pathlist_file_refresh(paths)
         elif cmd == self.PATHLIST_CMD_BROWSE:
             if len(paths) == 0 or not paths[0].startswith("file:"):
                 self.on_pathlist_browse(None)
@@ -1355,6 +1358,33 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__workspace.file_list.remove_files_from_filelist(paths)
         self.__workspace.invalidate_image_set()        
         
+    def on_pathlist_file_refresh(self, urls):
+        """Refresh the pathlist by checking for existence of file URLs"""
+
+        urls = filter((lambda url: url.startswith("file:")), urls)
+        def refresh_msg(idx):
+            return "Checked %d of %d" % (idx, len(urls))
+        with wx.ProgressDialog(
+            parent = self.__frame,
+            title = "Refreshing file list",
+            message = refresh_msg(0),
+            maximum = len(urls) + 1,
+            style = wx.PD_CAN_ABORT|wx.PD_APP_MODAL) as dlg:
+            assert isinstance(dlg, wx.ProgressDialog)
+            to_remove = []
+            for idx, url in enumerate(urls):
+                path = urllib.url2pathname(url[5:])                
+                if not os.path.isfile(path):
+                    to_remove.append(cpp.ImagePlaneDetails(url, None, None, None))
+                if idx % 100 == 0:
+                    keep_going, skip = dlg.Update(idx, refresh_msg(idx))
+                    if not keep_going:
+                        return
+            if len(to_remove) > 0:
+                dlg.Update(
+                    len(urls), "Removing %d missing files" % len(to_remove))
+                self.__pipeline.remove_image_plane_details(to_remove)
+                
     def on_pathlist_clear(self, event):
         '''Remove all files from the path list'''
         result = wx.MessageBox(

@@ -141,6 +141,7 @@ def walk_in_background(path, callback_fn, completed_fn=None, metadata_fn=None):
                 import wx
                 wx.CallAfter(complete)
     thread = threading.Thread(target = fn)
+    thread.setDaemon(True)
     thread.start()
     return checkpoint.set_state
 

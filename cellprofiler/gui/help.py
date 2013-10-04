@@ -1897,7 +1897,7 @@ HELP_ON_PIXEL_INTENSITIES = """To view pixel intensities in an open image, use t
 pixel intensity tool which is available in any open display window. When you move 
 your mouse over the image, the pixel intensities will appear in the bottom bar of the display window."""
 
-HELP_ON_PATH_LIST = """The image file path list displays the image files
+HELP_ON_FILE_LIST = """The <i>File List</i> panel displays the image files
 that are managed by the <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
 and <b>Groups</b> modules. You can drop files and directories into this window
 or use the <i>Browse...</i> button to add files to the list. The context menu

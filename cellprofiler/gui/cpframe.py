@@ -28,7 +28,7 @@ from cellprofiler.gui import get_cp_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
 from cellprofiler.gui.cpfigure import close_all
 from cellprofiler.gui.help import MAIN_HELP, make_help_menu, \
-     HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_PATH_LIST, PLATEVIEWER_HELP
+     HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_FILE_LIST, PLATEVIEWER_HELP
 from cellprofiler.pipeline import Pipeline
 from cellprofiler.gui.pipelinecontroller import PipelineController
 from cellprofiler.gui.moduleview import ModuleView, stop_validation_queue_thread
@@ -922,7 +922,7 @@ class CPFrame(wx.Frame):
         
     def __on_help_path_list(self, event):
         import htmldialog
-        dlg = htmldialog.HTMLDialog(self, "Help on path list", HELP_ON_PATH_LIST)
+        dlg = htmldialog.HTMLDialog(self, "Help on file list", HELP_ON_FILE_LIST)
         dlg.Show()
 
     def __on_help_about(self, event):

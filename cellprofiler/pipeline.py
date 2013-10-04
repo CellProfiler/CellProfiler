@@ -193,6 +193,13 @@ C_RUN = "Run"
 F_TIMESTAMP = "Timestamp"
 M_TIMESTAMP = "_".join((C_RUN, F_TIMESTAMP))
 
+"""Default input folder measurement"""
+M_DEFAULT_INPUT_FOLDER = "Default_InputFolder"
+
+"""Default output folder measurement"""
+M_DEFAULT_OUTPUT_FOLDER = "Default_OutputFolder"
+
+
 def add_all_images(handles,image_set, object_set):
     """ Add all images to the handles structure passed
     

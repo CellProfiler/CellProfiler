@@ -86,6 +86,7 @@ class Workspace(object):
         self.__in_background = False # controls checks for calls to create_or_find_figure()
         self.__filename = None
         self.__file_list = None
+        self.__loading = False
         if measurements is not None:
             self.set_file_list(HDF5FileList(measurements.hdf5_dict.hdf5_file))
         self.__notification_callbacks = []
@@ -395,38 +396,54 @@ class Workspace(object):
                         use the current pipeline.
         '''
         import shutil
-        from .pipeline import M_PIPELINE
+        from .pipeline import M_PIPELINE, M_DEFAULT_INPUT_FOLDER, \
+             M_DEFAULT_OUTPUT_FOLDER
         import cellprofiler.measurements as cpmeas
+        from cellprofiler.preferences import set_default_image_directory, \
+             set_default_output_directory
         
         if self.__measurements is not None:
             self.close()
-        #
-        # Copy the file to a temporary location before opening
-        #
-        fd, self.__filename = cpmeas.make_temporary_file()
-        os.close(fd)
-        
-        shutil.copyfile(filename, self.__filename)
+        self.__loading = True
+        try:
+            #
+            # Copy the file to a temporary location before opening
+            #
+            fd, self.__filename = cpmeas.make_temporary_file()
+            os.close(fd)
             
-        self.__measurements = cpmeas.Measurements(
-            filename = self.__filename, mode = "r+")
-        if self.__file_list is not None:
-            self.__file_list.remove_notification_callback(
-                self.__on_file_list_changed)
-        self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
-        self.__file_list.add_notification_callback(self.__on_file_list_changed)
-        if load_pipeline and self.__measurements.has_feature(
-            cpmeas.EXPERIMENT, M_PIPELINE):
-            pipeline_txt = self.__measurements.get_experiment_measurement(
-                M_PIPELINE).encode("utf-8")
-            self.pipeline.load(StringIO(pipeline_txt))
-        elif load_pipeline:
-            self.pipeline.clear()
-        else:
-            fd = StringIO()
-            self.pipeline.savetxt(fd, save_image_plane_details = False)
-            self.__measurements.add_experiment_measurement(
-                M_PIPELINE, fd.getvalue())
+            shutil.copyfile(filename, self.__filename)
+                
+            self.__measurements = cpmeas.Measurements(
+                filename = self.__filename, mode = "r+")
+            if self.__file_list is not None:
+                self.__file_list.remove_notification_callback(
+                    self.__on_file_list_changed)
+            self.__file_list = HDF5FileList(self.measurements.hdf5_dict.hdf5_file)
+            self.__file_list.add_notification_callback(self.__on_file_list_changed)
+            if load_pipeline and self.__measurements.has_feature(
+                cpmeas.EXPERIMENT, M_PIPELINE):
+                pipeline_txt = self.__measurements.get_experiment_measurement(
+                    M_PIPELINE).encode("utf-8")
+                self.pipeline.load(StringIO(pipeline_txt))
+            elif load_pipeline:
+                self.pipeline.clear()
+            else:
+                fd = StringIO()
+                self.pipeline.savetxt(fd, save_image_plane_details = False)
+                self.__measurements.add_experiment_measurement(
+                    M_PIPELINE, fd.getvalue())
+
+            for feature, function in (
+                (M_DEFAULT_INPUT_FOLDER, set_default_image_directory),
+                (M_DEFAULT_OUTPUT_FOLDER, set_default_output_directory)):
+                if self.measurements.has_feature(cpmeas.EXPERIMENT, feature):
+                    path = self.measurements[cpmeas.EXPERIMENT, feature]
+                    if os.path.isdir(path):
+                        function(path)
+                
+        finally:
+            self.__loading = False
         self.notify(self.WorkspaceLoadedEvent(self))
         
     def create(self):
@@ -456,6 +473,7 @@ class Workspace(object):
         
         Note: "saving" means copying the temporary workspace file
         '''
+        self.save_default_folders_to_measurements()
         self.measurements.flush()
         #
         # Note: shutil.copy and similar don't seem to work under Windows.
@@ -489,10 +507,22 @@ class Workspace(object):
         self.pipeline.savetxt(fd, save_image_plane_details=False)
         self.measurements.add_experiment_measurement(M_PIPELINE, fd.getvalue())
         self.measurements.flush()
+    
+    def save_default_folders_to_measurements(self):
+        from cellprofiler.pipeline import M_DEFAULT_INPUT_FOLDER
+        from cellprofiler.pipeline import M_DEFAULT_OUTPUT_FOLDER
+        from cellprofiler.preferences import get_default_image_directory
+        from cellprofiler.preferences import get_default_output_directory
+        
+        self.measurements.add_experiment_measurement(
+            M_DEFAULT_INPUT_FOLDER, get_default_image_directory())
+        self.measurements.add_experiment_measurement(
+            M_DEFAULT_OUTPUT_FOLDER, get_default_output_directory())
         
     def invalidate_image_set(self):
-        self.measurements.clear()
-        self.save_pipeline_to_measurements()
+        if not self.__loading:
+            self.measurements.clear()
+            self.save_pipeline_to_measurements()
         
     def refresh_image_set(self, force=False):
         '''Refresh the image set if not present

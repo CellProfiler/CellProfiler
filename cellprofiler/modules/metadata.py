@@ -92,6 +92,8 @@ logger = logging.getLogger(__name__)
 import csv
 import re
 import os
+import time
+import urllib
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -392,7 +394,7 @@ class Metadata(cpm.CPModule):
             Check this setting to display and use rules to select files for metadata extraction.
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals()))
         
-        group.append("csv_location", cps.Pathname(
+        group.append("csv_location", cps.PathnameOrURL(
             "Metadata file location",
             wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*"))
         
@@ -684,18 +686,28 @@ class Metadata(cpm.CPModule):
                     key_pairs, 
                     "[Lorg/cellprofiler/imageset/ImportedMetadataExtractor$KeyPair;")
                 #
-                # Open the CSV file for reading, make an ImportedMetadataExtractor
+                # Open the CSV file for reading
+                #
+                path = group.csv_location.value
+                if group.csv_location.is_url():
+                    stream = J.run_script(
+                        """var url = new java.net.URL(path);
+                           url.openStream();""", dict(path=path))
+                else:
+                    stream = J.run_script(
+                        "new java.io.FileInputStream(path);", dict(path=path))
+                #
+                # Make an ImportedMetadataExtractor
                 # and install it in the big extractor
                 #
                 script = """
                 importPackage(Packages.org.cellprofiler.imageset);
-                var inputStream = new java.io.FileInputStream(csv_path);
                 var rdr = new java.io.InputStreamReader(inputStream);
                 var iextractor = new ImportedMetadataExtractor(rdr, key_pairs, case_insensitive);
                 extractor.addImagePlaneDetailsExtractor(iextractor, fltr);
                 """
                 J.run_script(script, dict(
-                    csv_path=group.csv_location.value,
+                    inputStream = stream,
                     key_pairs=key_pairs,
                     case_insensitive = group.wants_case_insensitive.value,
                     extractor = extractor,
@@ -840,7 +852,8 @@ class Metadata(cpm.CPModule):
             elif group.extraction_method == X_IMPORTED_EXTRACTION:
                 joiner = group.csv_joiner
                 csv_path = group.csv_location.value
-                if not os.path.isfile(csv_path):
+                if ((not group.csv_location.is_url()) and
+                    not os.path.isfile(csv_path)):
                     continue
                 found = False
                 best_match = None
@@ -863,7 +876,8 @@ class Metadata(cpm.CPModule):
                         del self.imported_metadata[i]
                     else:
                         try:
-                            imported_metadata = self.ImportedMetadata(csv_path)
+                            imported_metadata = self.ImportedMetadata(
+                                csv_path, group.csv_location.is_url())
                         except:
                             logger.debug("Failed to load csv file: %s" % csv_path)
                             continue
@@ -1053,11 +1067,16 @@ class Metadata(cpm.CPModule):
     
     class ImportedMetadata(object):
         '''A holder for the metadata from a csv file'''
-        def __init__(self, path):
+        def __init__(self, path, is_url):
             self.joiner_initialized = False
             self.path = path
-            self.path_timestamp = os.stat(path).st_mtime
-            fd = open(path, "rb")
+            self.is_url = is_url
+            if is_url:
+                self.path_timestamp = time.time()
+                fd = urllib.urlopen(path)
+            else:
+                self.path_timestamp = os.stat(path).st_mtime
+                fd = open(path, "rb")
             rdr = csv.reader(fd)
             header = rdr.next()
             columns = [[] for  c in header]
@@ -1134,11 +1153,14 @@ class Metadata(cpm.CPModule):
             csv_join_name - the join name in the joiner of the csv_file
             
             ipd_join_name - the join name in the joiner of the ipd metadata
+            
+            is_url - True if the CSV path is a URL
             '''
             if csv_path != self.path:
                 return False
             
-            if os.stat(self.path).st_mtime != self.path_timestamp:
+            if (not self.is_url) and \
+               os.stat(self.path).st_mtime != self.path_timestamp:
                 return False
             
             if not self.joiner_initialized:

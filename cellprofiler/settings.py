@@ -497,7 +497,7 @@ class Pathname(Text):
             del kwargs["wildcard"]
         else:
             self.wildcard = "All files (*.*)|*.*"
-        super(self.__class__, self).__init__(text, value, *args, **kwargs)
+        super(Pathname, self).__init__(text, value, *args, **kwargs)
         
     def test_valid(self, pipeline):
         if not os.path.isfile(self.value):
@@ -506,6 +506,18 @@ class Pathname(Text):
     def alter_for_create_batch(self, fn_alter):
         self.value = fn_alter(self.value)
 
+class PathnameOrURL(Pathname):
+    """A setting that displays a path name or URL
+    
+    """
+    def is_url(self):
+        return any([self.value_text.lower().startswith(scheme)
+                    for scheme in ("http:", "https:", "ftp:")])
+    
+    def test_valid(self, pipeline):
+        if not self.is_url():
+            super(PathnameOrURL, self).test_valid(pipeline)
+            
 class ImageFileSpecifier(Text):
     """A setting for choosing an image file, including switching between substring, file globbing, and regular expressions,
     and choosing different directories (or common defaults).

@@ -58,7 +58,8 @@ Root: HKCR; Subkey: "CellProfilerPipeline\shell\open\command"; ValueType: string
 ; default plugins directories
 Root: HKCU; Subkey: "Software\CellProfilerLocal.cfg"; ValueType: string; ValueName: "PluginDirectory"; ValueData: {code:EscapeString|%7Buserappdata%7D\CellProfiler\plugins}; Flags: createvalueifdoesntexist
 Root: HKCU; Subkey: "Software\CellProfilerLocal.cfg"; ValueType: string; ValueName: "IJPluginDirectory"; ValueData: {code:EscapeString|%7Buserappdata%7D\CellProfiler\ijplugins}; Flags: createvalueifdoesntexist
-
+; Turn on the startup blurb again
+Root: HKCU; Subkey: "Software\CellProfilerLocal.cfg"; ValueType: dword; ValueName: "StartupBlurb"; ValueData: "1"
 [Run]
 Filename: "{tmp}\vcredist_x64.exe"; Parameters: "/q"
 Filename: "{app}\CellProfiler.exe"; Description: "{cm:LaunchProgram,CellProfiler}"; Flags: nowait postinstall skipifsilent

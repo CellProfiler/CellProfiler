@@ -38,6 +38,20 @@ Name: "{group}\{cm:ProgramOnTheWeb,CellProfiler}"; Filename: "http://www.cellpro
 Name: "{group}\{cm:UninstallProgram,CellProfiler}"; Filename: "{uninstallexe}"
 Name: "{commondesktop}\CellProfiler"; Filename: "{app}\CellProfiler.exe"; WorkingDir: "{app}"; Tasks: desktopicon
 
+[Registry]
+; CellProfiler project file association
+Root: HKCR; Subkey: ".cpproj"; ValueType: string; ValueName: ""; ValueData: "CellProfilerProject"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "CellProfilerProject"; ValueType: string; ValueName: ""; ValueData: "CellProfiler project file"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "CellProfilerProject\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\CellProfiler.exe,0"
+Root: HKCR; Subkey: "CellProfilerProject\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\CellProfiler.exe"" --project ""%1"""
+; CellProfiler pipeline file association
+Root: HKCR; Subkey: ".cppipe"; ValueType: string; ValueName: ""; ValueData: "CellProfilerPipeline"; Flags: uninsdeletevalue
+Root: HKCR; Subkey: "CellProfilerPipeline"; ValueType: string; ValueName: ""; ValueData: "CellProfiler pipeline"; Flags: uninsdeletekey
+Root: HKCR; Subkey: "CellProfilerPipeline\DefaultIcon"; ValueType: string; ValueName: ""; ValueData: "{app}\CellProfiler.exe,0"
+Root: HKCR; Subkey: "CellProfilerPipeline\shell\open\command"; ValueType: string; ValueName: ""; ValueData: """{app}\CellProfiler.exe"" --pipeline ""%1"""
+; Turn on the startup blurb again
+Root: HKCU; Subkey: "Software\CellProfilerLocal.cfg"; ValueType: dword; ValueName: "StartupBlurb"; ValueData: "1"
+
 [Run]
 Filename: "{tmp}\vcredist_x86.exe"; Parameters: "/q"
 Filename: "{app}\CellProfiler.exe"; Description: "{cm:LaunchProgram,CellProfiler}"; Flags: nowait postinstall skipifsilent; WorkingDir: "{app}"

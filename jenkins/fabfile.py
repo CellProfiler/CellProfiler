@@ -41,3 +41,13 @@ def test():
     with settings(user="johndoe"):
         run("/usr/CellProfiler/CellProfiler/shortcuts/cellprofiler -t")
 
+def build_wxpython_rpm():
+    put("wxPython2.8-2.8.12.1-1.src.rpm", "~")
+    put("wxpython_rpm.diff", "~")
+    put("build_wxpython_rpm.sh", "~", mode=0755)
+    run("./build_wxpython_rpm.sh")
+    for fn in ['wxPython2.8-devel-gtk2-unicode-2.8.12.1-1_py2.6.x86_64.rpm',
+               'wxPython2.8-gtk2-unicode-2.8.12.1-1_py2.6.x86_64.rpm',
+               'wxPython-common-gtk2-unicode-2.8.12.1-1_py2.6.x86_64.rpm']:
+        get("~/rpmbuild/RPMS/x86_64/%s" % fn, fn)
+

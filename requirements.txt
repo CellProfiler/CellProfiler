@@ -1,0 +1,8 @@
+# This file includes only dependencies that can be installed with
+# pip. CellProfiler also has other dependencies.
+#
+# pip install -r requirements.txt
+#
+Cython==0.12.1
+# Sam's Linux build and Broad's cluster has 1.5.1. homebrew uses 1.7.1
+numpy==1.5.1

@@ -1,0 +1,19 @@
+--- wxPython.spec.orig	2013-09-05 13:22:39.252741273 -0400
++++ wxPython.spec	2013-09-05 13:35:57.860740427 -0400
+@@ -18,7 +18,7 @@
+ # Which version of Python to build with.  Used to assemble python
+ # binary name so use '2.3', '2.4', etc.
+ %if %{?pyver:0}%{!?pyver:1}
+-%define pyver 2.4
++%define pyver 2.6
+ %endif
+ 
+ 
+@@ -444,6 +444,7 @@
+ %defattr(-,root,root)
+ %{pref}/lib*/python%{pyver}/site-packages/wxversion.*
+ %{pref}/lib*/python%{pyver}/site-packages/wx.pth
++%{pref}/lib*/python%{pyver}/site-packages/wxPython_common-%{ver2}*-py%{pyver}.egg-info
+ %{_bindir}/*
+ %{_datadir}/applnk/Development/*
+ %{_datadir}/applications/*

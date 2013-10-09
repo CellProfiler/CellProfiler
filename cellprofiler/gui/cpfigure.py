@@ -26,7 +26,7 @@ import numpy.ma
 import matplotlib.patches
 import matplotlib.colorbar
 import matplotlib.backends.backend_wxagg
-from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg as NavigationToolbar
+from matplotlib.backends.backend_wxagg import NavigationToolbar2WxAgg
 from cellprofiler.preferences import update_cpfigure_position, get_next_cpfigure_position, reset_cpfigure_position
 from scipy.sparse import coo_matrix
 import functools
@@ -155,7 +155,7 @@ def close_all(parent):
         if isinstance(window, CPFigureFrame):
             window.on_close(None)
         else:
-            window.Destroy()
+            window.Close()
         
     reset_cpfigure_position()
     try:
@@ -187,6 +187,13 @@ MENU_FILE_SAVE_TABLE = wx.NewId()
 MENU_CLOSE_WINDOW = wx.NewId()
 MENU_TOOLS_MEASURE_LENGTH = wx.NewId()
 MENU_CLOSE_ALL = wx.NewId()
+MENU_CONTRAST_RAW = wx.NewId()
+MENU_CONTRAST_NORMALIZED = wx.NewId()
+MENU_CONTRAST_LOG = wx.NewId()
+MENU_INTERPOLATION_NEAREST = wx.NewId()
+MENU_INTERPOLATION_BILINEAR = wx.NewId()
+MENU_INTERPOLATION_BICUBIC = wx.NewId()
+MENU_SAVE_SUBPLOT = {}
 
 '''mouse tool mode - do nothing'''
 MODE_NONE = 0
@@ -327,16 +334,14 @@ class CPFigureFrame(wx.Frame):
         wx.EVT_MENU(self, MENU_CLOSE_WINDOW, self.on_close)
         self.MenuBar.Append(make_help_menu(FIGURE_HELP, self), "&Help")
     
+    
     def create_toolbar(self):
-        self.navtoolbar = NavigationToolbar(self.figure.canvas)
+        self.navtoolbar = CPNavigationToolbar(self.figure.canvas)
         self.SetToolBar(self.navtoolbar)
         if wx.VERSION != (2, 9, 1, 1, ''):
             # avoid crash on latest wx 2.9
             self.navtoolbar.DeleteToolByPos(6)
-#        ID_LASSO_TOOL = wx.NewId()
-#        lasso = self.navtoolbar.InsertSimpleTool(5, ID_LASSO_TOOL, lasso_tool.ConvertToBitmap(), '', '', isToggle=True)
-#        self.navtoolbar.Realize()
-#        self.Bind(wx.EVT_TOOL, self.toggle_lasso_tool, id=ID_LASSO_TOOL)
+        self.navtoolbar.Bind(EVT_NAV_MODE_CHANGE, self.on_navtool_changed)
 
     def clf(self):
         '''Clear the figure window, resetting the display'''
@@ -424,10 +429,17 @@ class CPFigureFrame(wx.Frame):
             menu.Delete(menu_id)
         self.Destroy()
 
+    def on_navtool_changed(self, event):
+        if event.EventObject.mode != NAV_MODE_NONE and \
+           self.mouse_mode == MODE_MEASURE_LENGTH:
+            self.mouse_mode = MODE_NONE
+            self.__menu_item_measure_length.Check(False)
+            
     def on_measure_length(self, event):
         '''Measure length menu item selected.'''
         if self.__menu_item_measure_length.IsChecked():
             self.mouse_mode = MODE_MEASURE_LENGTH
+            self.navtoolbar.cancel_mode()
             self.Layout()
         elif self.mouse_mode == MODE_MEASURE_LENGTH:
             self.mouse_mode = MODE_NONE
@@ -444,15 +456,6 @@ class CPFigureFrame(wx.Frame):
         pass
 
     def on_mouse_move(self, evt):
-        #
-        # LAAAME SAUCE -- Crosshair cursor is all black on Windows making it
-        #    virtually invisible on dark images. Use custom cursor instead.
-        #
-        if (sys.platform.lower().startswith('win') and 
-            evt.inaxes and
-            'zoom rect' in self.navtoolbar.mode.lower()):  # NOTE: There are no constants for the navbar modes
-            self.figure.canvas.SetCursor(get_crosshair_cursor())
-            
         if self.mouse_down is None:
             x0 = evt.xdata
             x1 = evt.xdata
@@ -587,8 +590,7 @@ class CPFigureFrame(wx.Frame):
     def on_file_save(self, event):
         with wx.FileDialog(self, "Save figure", 
                            wildcard = ("PDF file (*.pdf)|*.pdf|"
-                                       "Png image (*.png)|*.png|"
-                                       "Postscript file (*.ps)|*.ps"),
+                                       "PNG image (*.png)|*.png|"),
                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
@@ -597,7 +599,9 @@ class CPFigureFrame(wx.Frame):
                 elif dlg.FilterIndex == 0:
                     format = "pdf"
                 elif dlg.FilterIndex == 2:
-                    format = "ps"
+                    format = "tif"
+                elif dlg.FilterIndex == 3:
+                    format = "jpg"
                 else:
                     format = "pdf"
                 self.figure.savefig(path, format = format)
@@ -613,6 +617,39 @@ class CPFigureFrame(wx.Frame):
                 with open(path, "wb") as fd:
                     csv.writer(fd).writerows(self.table)
 
+    def on_file_save_subplot(self, event, x, y):
+        '''Save just the contents of a subplot w/o decorations
+        
+        event - event generating the request
+        
+        x, y - the placement of the subplot
+        '''
+        # 
+        # Thank you Joe Kington
+        # http://stackoverflow.com/questions/4325733/save-a-subplot-in-matplotlib
+        #
+        ax = self.subplots[x, y]
+        extent = ax.get_window_extent().transformed(
+            self.figure.dpi_scale_trans.inverted())
+        with wx.FileDialog(self, "Save axes", 
+                           wildcard = ("PDF file (*.pdf)|*.pdf|"
+                                       "Png image (*.png)|*.png|"
+                                       "Postscript file (*.ps)|*.ps"),
+                           style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
+            if dlg.ShowModal() == wx.ID_OK:
+                path = dlg.GetPath()
+                if dlg.FilterIndex == 1:
+                    format = "png"
+                elif dlg.FilterIndex == 0:
+                    format = "pdf"
+                elif dlg.FilterIndex == 2:
+                    format = "ps"
+                else:
+                    format = "pdf"
+                self.figure.savefig(path, 
+                                    format = format,
+                                    bbox_inches=extent)
+        
     def set_subplots(self, subplots):
         self.clf()  # get rid of any existing subplots, menus, etc.
         if subplots is None:
@@ -682,12 +719,6 @@ class CPFigureFrame(wx.Frame):
         params = self.subplot_params[(x,y)]
             
         # If no popup has been built for this subplot yet, then create one 
-        MENU_CONTRAST_RAW = wx.NewId()
-        MENU_CONTRAST_NORMALIZED = wx.NewId()
-        MENU_CONTRAST_LOG = wx.NewId()
-        MENU_INTERPOLATION_NEAREST = wx.NewId()
-        MENU_INTERPOLATION_BILINEAR = wx.NewId()
-        MENU_INTERPOLATION_BICUBIC = wx.NewId()
         popup = wx.Menu()
         self.popup_menus[(x,y)] = popup
         open_in_new_figure_item = wx.MenuItem(popup, -1, 
@@ -724,7 +755,7 @@ class CPFigureFrame(wx.Frame):
             "Nearest neighbor",
             "Use the intensity of the nearest image pixel when displaying "
             "screen pixels at sub-pixel resolution. This produces a blocky "
-            "image, but the image accurately reflects the data",
+            "image, but the image accurately reflects the data.",
             wx.ITEM_RADIO)
         item_bilinear = submenu.Append(
             MENU_INTERPOLATION_BILINEAR,
@@ -741,6 +772,12 @@ class CPFigureFrame(wx.Frame):
             "the most visually appealing image but is the least faithful to "
             "the image pixel values.", wx.ITEM_RADIO)
         popup.AppendMenu(-1, "Interpolation", submenu)
+        if (x, y) not in MENU_SAVE_SUBPLOT:
+            MENU_SAVE_SUBPLOT[(x, y)] = wx.NewId()
+        popup.Append(MENU_SAVE_SUBPLOT[(x, y)],
+                     "Save subplot", 
+                     "Save just the display portion of this subplot")
+        
         if params['interpolation'] == matplotlib.image.BILINEAR:
             item_bilinear.Check()
         elif params['interpolation'] == matplotlib.image.BICUBIC:
@@ -852,6 +889,9 @@ class CPFigureFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_NEAREST)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BICUBIC)
         self.Bind(wx.EVT_MENU, change_interpolation, id=MENU_INTERPOLATION_BILINEAR)
+        self.Bind(wx.EVT_MENU, 
+                  lambda event: self.on_file_save_subplot(event, x, y),
+                  id = MENU_SAVE_SUBPLOT[(x, y)])
         return popup
 
     @allow_sharexy
@@ -1056,7 +1096,12 @@ class CPFigureFrame(wx.Frame):
         cm.set_bad((0,0,0))
         labels = numpy.ma.array(labels, mask=labels==0)
         mappable = matplotlib.cm.ScalarMappable(cmap = cm)
-        if not np.all(labels == 0):
+        
+        if all([c0x == 0 for c0x in cm(0)[:3]]):
+            # Set the lower limit to 0 if the color for index 0 is already black.
+            mappable.set_clim(0, labels.max())
+            cm = None
+        elif np.any(labels != 0):
             mappable.set_clim(1, labels.max())
             cm = None
         image = mappable.to_rgba(labels)[:,:,:3]
@@ -1550,10 +1595,15 @@ def show_image(url, parent = None, needs_raise_after = True):
     url - url of the image
     parent - parent frame to this one.
     '''
-    from bioformats.formatreader import load_using_bioformats_url
     filename = url[(url.rfind("/")+1):]
     try:
-        image = load_using_bioformats_url(url)
+        if url.lower().endswith(".mat"):
+            from scipy.io.matlab.mio import loadmat
+            from cellprofiler.modules.loadimages import url2pathname
+            image = loadmat(url2pathname(url), struct_as_record=True)["Image"]
+        else:
+            from bioformats.formatreader import load_using_bioformats_url
+            image = load_using_bioformats_url(url)
     except Exception, e:
         from cellprofiler.gui.errordialog import display_error_dialog
         display_error_dialog(None, e, None, 
@@ -1688,9 +1738,58 @@ def get_crosshair_cursor():
             im.SetOptionInt(wx.IMAGE_OPTION_CUR_HOTSPOT_Y, 7)
             __crosshair_cursor = wx.CursorFromImage(im)
         else:
-            __crosshair_cursor = wx.StockCursor(wx.CROSS_CURSOR)
+            __crosshair_cursor = wx.CROSS_CURSOR
     return __crosshair_cursor
-    
+
+EVT_NAV_MODE_CHANGE = wx.PyEventBinder(wx.NewEventType())
+NAV_MODE_ZOOM = 'zoom rect'
+NAV_MODE_PAN = 'pan/zoom'
+NAV_MODE_NONE = ''
+
+class CPNavigationToolbar(NavigationToolbar2WxAgg):
+    '''Navigation toolbar for EditObjectsDialog'''
+    def set_cursor(self, cursor):
+        '''Set the cursor based on the mode'''
+        if cursor == matplotlib.backend_bases.cursors.SELECT_REGION:
+            self.canvas.SetCursor(get_crosshair_cursor())
+        else:
+            NavigationToolbar2WxAgg.set_cursor(self, cursor)
+            
+    def cancel_mode(self):
+        '''Toggle the current mode to off'''
+        if self.mode == NAV_MODE_ZOOM:
+            self.zoom()
+            self.ToggleTool(self._NTB2_ZOOM, False)
+        elif self.mode == NAV_MODE_PAN:
+            self.pan()
+            self.ToggleTool(self._NTB2_PAN, False)
+            
+    def zoom(self, *args):
+        NavigationToolbar2WxAgg.zoom(self, *args)
+        self.__send_mode_change_event()
+        
+    def pan(self, *args):
+        NavigationToolbar2WxAgg.pan(self, *args)
+        self.__send_mode_change_event()
+        
+    def save(self, event):
+        #
+        # Capture any file save event and redirect it to CPFigureFrame
+        # Fixes issue #829 - Mac & PC display invalid save options when
+        #                    you save using the icon.
+        #
+        parent = self.GetTopLevelParent()
+        if isinstance(parent, CPFigureFrame):
+            parent.on_file_save(event)
+        else:
+            super(CPNavigationToolbar, self).save(event)
+        
+    def __send_mode_change_event(self):
+        event = wx.NotifyEvent(EVT_NAV_MODE_CHANGE.evtType[0])
+        event.EventObject = self
+        self.GetEventHandler().ProcessEvent(event)
+        
+        
 if __name__ == "__main__":
     import numpy as np
 

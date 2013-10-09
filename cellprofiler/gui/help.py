@@ -1256,8 +1256,7 @@ From the menu bar of each module display window, you have the following options:
 <ul>
 <li><b>File</b>
 <ul>
-<li><i>Save:</i> You can save the figure window to a file (currently,
-Postscript (.PS), PNGs and PDFs are supported). Note that this will save the entire
+<li><i>Save:</i> You can save the figure window to an image file. Note that this will save the entire
 contents of the window, not just the individual subplot(s) or images.</li>
 <li><i>Save table:</i> This option is only enabled on windows which are displaying
 tabular output, such as that from a <b>Measure</b> module. This allows you to
@@ -1319,8 +1318,7 @@ the image is re-drawn to display the specified area. Remember that you can alway
 button to reset the window to the initial view.</li>
 
 <li><b>Save:</b> Click this button <img src="memory:%(WINDOW_SAVE_BUTTON)s">&nbsp;
-to launch a file save dialog. You can save the 
-figure window to a file (currently, Postscript (.PS), PNGs and PDFs are supported). 
+to launch a file save dialog. You can save the figure window to an image file. 
 Note that this will save the entire contents of the window, not just the individual 
 subplot(s) or images.</li>
 </ul>
@@ -1336,7 +1334,8 @@ for getting a closer look at a window subplot that has a small image.</li>
 of the pixel intensities in the image. This is useful for qualitatively examining
 whether a threshold value determined by <b>IdentifyPrimaryObjects</b> seems 
 reasonable, for example. Image intensities in CellProfiler typically range from
-zero (dark) to one (bright).</li>
+zero (dark) to one (bright). If you have an RGB image, the histogram shows the intensity values 
+for all three channels combined, even if one or more channels is turned off for viewing.</li>
 <li><i>Image contrast:</i> Presents three options for displaying the color/intensity values in 
 the images:
 <ul>
@@ -1355,6 +1354,23 @@ interesting information is located at the dim values). Using this option
 increases the effective contrast.</li>
 </ul>
 </li>
+<li><i>Interpolation:</i> Presents three options for displaying the resolution in 
+the images. This is useful for specifying the amount of detail that you want to be 
+visible if you zoom in:
+<ul>
+<li><i>Nearest neighbor:</i> Use the intensity of the nearest image pixel when 
+displaying screen pixels at sub-pixel resolution. This produces a blocky image, 
+but the image accurately reflects the data.</li>
+<li><i>Linear:</i> Use the weighted average of the four nearest image pixels when 
+displaying screen pixels at sub-pixel resolution. This produces a smoother, more
+visually-appealing image, but makes it more difficult to find pixel borders.</li>
+<li><i>Cubic: </i> Perform a bicubic interpolation of the nearby image pixels when
+displaying screen pixels at sub-pixel resolution. This produces the most 
+visually-appealing image but is the least faithful to the image pixel values.</li>
+</ul>
+</li>
+<li><i>Save subplot:</i> Save the clicked subplot as an image file. If there is only one p
+lot in the figure, this option will save that one.</li>
 <li><i>Channels:</i> For color images only. You can show any combination of the red, 
 green, and blue color channels.</li>
 </ul>
@@ -1881,7 +1897,7 @@ HELP_ON_PIXEL_INTENSITIES = """To view pixel intensities in an open image, use t
 pixel intensity tool which is available in any open display window. When you move 
 your mouse over the image, the pixel intensities will appear in the bottom bar of the display window."""
 
-HELP_ON_PATH_LIST = """The image file path list displays the image files
+HELP_ON_FILE_LIST = """The <i>File List</i> panel displays the image files
 that are managed by the <b>Images</b>, <b>Metadata</b>, <b>NamesAndTypes</b>
 and <b>Groups</b> modules. You can drop files and directories into this window
 or use the <i>Browse...</i> button to add files to the list. The context menu

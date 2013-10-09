@@ -49,6 +49,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
         """
         isl = cpi.ImageSetList()
         module = cpmit.IdentifyTertiarySubregion()
+        module.module_num = 1
         module.primary_objects_name.value = PRIMARY
         module.secondary_objects_name.value = SECONDARY
         module.subregion_objects_name.value = TERTIARY
@@ -58,6 +59,7 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
                                   cpo.ObjectSet(),
                                   cpm.Measurements(),
                                   isl)
+        workspace.pipeline.add_module(module)
         
         for labels, name in ((primary_labels,PRIMARY),
                              (secondary_labels, SECONDARY)):
@@ -410,4 +412,97 @@ class TestIdentifyTertiaryObjects(unittest.TestCase):
             values = measurements.get_current_measurement(
                 TERTIARY, location_feature)
             self.assertTrue(np.all(np.isnan(values) == [False, True, False]))
+            
+    def test_04_03_do_not_shrink_missing(self):
+        # Regression test of 705
+        
+        for missing in range(1, 3):
+            for missing_primary in False, True:
+                primary_labels = np.zeros((20, 20), int)
+                secondary_labels = np.zeros((20, 20), int)
+                expected_labels = np.zeros((20, 20), int)
+                centers = ((5, 5), (15, 5), (5, 15))
+                pidx = 1
+                sidx = 1
+                for idx, (i, j) in enumerate(centers):
+                    if (idx+1 != missing) or not missing_primary:
+                        primary_labels[(i-1):(i+2), (j-1):(j+2)] = pidx
+                        pidx += 1
+                    if (idx+1 != missing) or missing_primary:
+                        secondary_labels[(i-2):(i+3), (j-2):(j+3)] = sidx
+                        sidx += 1
+                expected_labels = secondary_labels * (primary_labels == 0)
+                workspace = self.make_workspace(primary_labels, secondary_labels)
+        
+                module = workspace.module
+                module.shrink_primary.value = False
+                module.run(workspace)
+                output_objects = workspace.object_set.get_objects(TERTIARY)
+                self.assertTrue(np.all(output_objects.segmented == expected_labels))
+        
+                m = workspace.measurements
                 
+                child_name = module.subregion_objects_name.value
+                primary_name = module.primary_objects_name.value
+                ftr = cpmi.FF_PARENT % primary_name
+                pparents = m[child_name, ftr]
+                self.assertEqual(len(pparents), 3 if missing_primary else 2)
+                if missing_primary:
+                    self.assertEqual(pparents[missing-1], 0)
+                
+                secondary_name = module.secondary_objects_name.value
+                ftr = cpmi.FF_PARENT % secondary_name
+                pparents = m[child_name, ftr]
+                self.assertEqual(len(pparents), 3 if missing_primary else 2)
+                if not missing_primary:
+                    self.assertTrue(all([x in pparents for x in range(1, 3)]))
+                    
+                ftr = cpmi.FF_CHILDREN_COUNT % child_name
+                children = m[primary_name, ftr]
+                self.assertEqual(len(children), 2 if missing_primary else 3)
+                if not missing_primary:
+                    self.assertEqual(children[missing-1], 0)
+                    self.assertTrue(np.all(np.delete(children, missing-1) == 1))
+                else:
+                    self.assertTrue(np.all(children == 1))
+                
+                children = m[secondary_name, ftr]
+                self.assertEqual(len(children), 3 if missing_primary else 2)
+                self.assertTrue(np.all(children == 1))
+                
+    def test_05_00_no_relationships(self):
+        workspace = self.make_workspace(np.zeros((10, 10), int),
+                                        np.zeros((10, 10), int))
+        workspace.module.run(workspace)
+        m = workspace.measurements
+        for parent, relationship in (
+            (PRIMARY, cpmit.R_REMOVED),
+            (SECONDARY, cpmit.R_PARENT)):
+            result = m.get_relationships(
+                workspace.module.module_num, relationship,
+                parent, TERTIARY)
+            self.assertEqual(len(result), 0)
+            
+    def test_05_01_relationships(self):
+        primary = np.zeros((10, 30), int)
+        secondary = np.zeros((10, 30), int)
+        for i in range(3):
+            center_j = 5 + i * 10
+            primary[3:6, (center_j-1):(center_j+2)] = i+1
+            secondary[2:7, (center_j-2):(center_j+3)] = i+1
+        workspace = self.make_workspace(primary, secondary)
+        workspace.module.run(workspace)
+        m = workspace.measurements
+        for parent, relationship in (
+            (PRIMARY, cpmit.R_REMOVED),
+            (SECONDARY, cpmit.R_PARENT)):
+            result = m.get_relationships(
+                workspace.module.module_num, relationship,
+                parent, TERTIARY)
+            self.assertEqual(len(result), 3)
+            for i in range(3):
+                self.assertEqual(result[cpm.R_FIRST_IMAGE_NUMBER][i], 1)
+                self.assertEqual(result[cpm.R_SECOND_IMAGE_NUMBER][i], 1)
+                self.assertEqual(result[cpm.R_FIRST_OBJECT_NUMBER][i], i+1)
+                self.assertEqual(result[cpm.R_SECOND_OBJECT_NUMBER][i], i+1)
+        

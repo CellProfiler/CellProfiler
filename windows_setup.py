@@ -41,6 +41,7 @@ import re
 import os
 import _winreg
 import matplotlib
+import pyreadline
 import tempfile
 import xml.dom.minidom
 
@@ -182,6 +183,7 @@ opts = {
                               "matplotlib", "matplotlib.numerix.random_array",
                               "h5py", "h5py.*", "pdb", "readline",
                               "pyreadline", "pyreadline.console",
+                              "pyreadline.console.console",
                               "email.iterators",
                               "cellprofiler.modules.*"],
                 'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],

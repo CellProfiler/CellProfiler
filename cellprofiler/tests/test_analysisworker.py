@@ -613,6 +613,13 @@ class TestAnalysisWorker(unittest.TestCase):
             self.assertEqual(req.image_set_number, image_number)
             req.reply(cpanalysis.Ack())
         #
+        # The worker sends a DisplayPostGroup request for FlipAndRotate
+        #
+        req = self.awthread.recv(self.work_socket)
+        self.assertIsInstance(req, cpanalysis.DisplayPostGroupRequest)
+        self.assertEqual(req.image_set_number, 3)
+        req.reply(cpanalysis.Ack())
+        #
         # The worker sends a measurement report for image sets 2 and 3
         #
         req = self.awthread.recv(self.work_socket)

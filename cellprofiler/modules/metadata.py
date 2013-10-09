@@ -92,6 +92,8 @@ logger = logging.getLogger(__name__)
 import csv
 import re
 import os
+import time
+import urllib
 
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
@@ -116,6 +118,10 @@ X_ALL_EXTRACTION_METHODS = [X_AUTOMATIC_EXTRACTION,
 XM_FILE_NAME = "File name"
 XM_FOLDER_NAME = "Folder name"
 
+DTC_TEXT = "Text"
+DTC_CHOOSE = "Choose for each"
+DTC_ALL = [DTC_TEXT, DTC_CHOOSE]
+
 F_ALL_IMAGES = "All images"
 F_FILTERED_IMAGES = "Images matching a rule"
 COL_PATH = "Path / URL"
@@ -123,15 +129,21 @@ COL_SERIES = "Series"
 COL_INDEX = "Frame"
 
 '''Index of the extraction method count in the settings'''
-IDX_EXTRACTION_METHOD_COUNT = 1
+IDX_EXTRACTION_METHOD_COUNT = 3
+IDX_EXTRACTION_METHOD_COUNT_V1 = 1
+IDX_EXTRACTION_METHOD_COUNT_V2 = 1
+IDX_EXTRACTION_METHOD_COUNT_V3 = 1
 '''Index of the first extraction method block in the settings'''
-IDX_EXTRACTION_METHOD = 2
+IDX_EXTRACTION_METHOD = 4
+IDX_EXTRACTION_METHOD_V1 = 2
+IDX_EXTRACTION_METHOD_V2 = 2
+IDX_EXTRACTION_METHOD_V3 = 2
 '''# of settings in an extraction method block'''
 LEN_EXTRACTION_METHOD_V1 = 8
 LEN_EXTRACTION_METHOD = 9
 
 class Metadata(cpm.CPModule):
-    variable_revision_number = 3
+    variable_revision_number = 4
     module_name = "Metadata"
     category = "File Processing"
     
@@ -165,6 +177,39 @@ class Metadata(cpm.CPModule):
         self.add_extraction_method_button = cps.DoSomething(
             "",
             "Add another extraction method", self.add_extraction_method)
+        
+        self.dtc_divider = cps.Divider()
+        self.data_type_choice = cps.Choice(
+            "Metadata data type", DTC_ALL,
+            tooltips=dict(DTC_TEXT="Save all metadata as text",
+                          DTC_CHOOSE="Choose the data type (text or numeric) for each metadata category"),
+            doc="""
+            Metadata can be saved as either a text or numeric measurement:
+            <ul>
+            <li><i>%(DTC_TEXT)s:</i> Save all metadata item as text.</li>
+            <li><i>%(DTC_CHOOSE)s:</i> Choose the data type separately for each 
+            metadata entry. An example of when this approach would be necessary 
+            would be if a whole filename is captured as metadata but the file name is
+            numeric, e.g., "0001101.tif". In this situation, if the file name needs to be used for an
+            arithmetic calculation or index, the name would need to be converted to a number.
+            On the other hand, if the file name has leading zeros which would 
+            be removed if converted to a number, capturing the metdata values as text would be more
+            appropriate.</li>
+            </ul>
+            """ % globals())
+        
+        self.data_types = cps.DataTypes(
+            "Metadata types",
+            name_fn = self.get_dt_metadata_keys, doc = """
+            <i>(Used only when %(DTC_CHOOSE)s is selected for the metadata data type)</i><br>
+            This setting determines the data type of each metadata field
+            when stored as a measurement. 
+            <ul>
+            <li><i>Text:</i> Save the metadata as text.</li>
+            <li><i>Integer:</i> Save the metadata as an integer.</li>
+            <li><i>Float:</i> Save the metadata as a decimal number.</li>
+            <li><i>None:</i> Do not save the metadata as a measurement.</li>
+            </ul>"""%globals())
         
         self.table = cps.Table(
             "",use_sash=True, 
@@ -349,7 +394,7 @@ class Metadata(cpm.CPModule):
             Check this setting to display and use rules to select files for metadata extraction.
             <p>%(FILTER_RULES_BUTTONS_HELP)s</p>"""%globals()))
         
-        group.append("csv_location", cps.Pathname(
+        group.append("csv_location", cps.PathnameOrURL(
             "Metadata file location",
             wildcard="Metadata files (*.csv)|*.csv|All files (*.*)|*.*"))
         
@@ -385,8 +430,35 @@ class Metadata(cpm.CPModule):
                 'Remove above extraction method', 'Remove',
                 self.extraction_methods, group))
             
+    def get_dt_metadata_keys(self):
+        '''Get the list of data-type metadata keys
+        
+        Get the metadata keys captured by file and folder metadata extraction
+        and by metadata import.
+        '''
+        if not self.wants_metadata:
+            return []
+        keys = set()
+        self.update_imported_metadata()
+        for group in self.extraction_methods:
+            if group.extraction_method == X_MANUAL_EXTRACTION:
+                if group.source == XM_FILE_NAME:
+                    regexp = group.file_regexp
+                else:
+                    regexp = group.folder_regexp
+                keys.update(cpmeas.find_metadata_tokens(regexp.value))
+            elif group.extraction_method == X_IMPORTED_EXTRACTION:
+                imported_metadata = self.get_imported_metadata_for_group(group)
+                if imported_metadata is None:
+                    logger.warn("Unable to import metadata from %s" %
+                                group.csv_location.value)
+                else:
+                    keys.update(imported_metadata.get_csv_metadata_keys())
+        return sorted(keys)
+    
     def settings(self):
-        result = [self.wants_metadata, self.extraction_method_count]
+        result = [self.wants_metadata, self.data_type_choice, self.data_types,
+                  self.extraction_method_count]
         for group in self.extraction_methods:
             result += [
                 group.extraction_method, group.source, group.file_regexp,
@@ -423,7 +495,12 @@ class Metadata(cpm.CPModule):
                     result += [group.update_metadata]
                 if group.can_remove:
                     result += [group.remover]
-            result += [self.add_extraction_method_button, self.table]
+            result += [self.add_extraction_method_button]
+            if len(self.get_dt_metadata_keys()) > 0:
+                result += [self.dtc_divider, self.data_type_choice]
+                if self.data_type_choice == DTC_CHOOSE:
+                    result.append(self.data_types)
+            result += [self.table]
         return result
     
     def example_file_fn(self):
@@ -609,18 +686,28 @@ class Metadata(cpm.CPModule):
                     key_pairs, 
                     "[Lorg/cellprofiler/imageset/ImportedMetadataExtractor$KeyPair;")
                 #
-                # Open the CSV file for reading, make an ImportedMetadataExtractor
+                # Open the CSV file for reading
+                #
+                path = group.csv_location.value
+                if group.csv_location.is_url():
+                    stream = J.run_script(
+                        """var url = new java.net.URL(path);
+                           url.openStream();""", dict(path=path))
+                else:
+                    stream = J.run_script(
+                        "new java.io.FileInputStream(path);", dict(path=path))
+                #
+                # Make an ImportedMetadataExtractor
                 # and install it in the big extractor
                 #
                 script = """
                 importPackage(Packages.org.cellprofiler.imageset);
-                var inputStream = new java.io.FileInputStream(csv_path);
                 var rdr = new java.io.InputStreamReader(inputStream);
                 var iextractor = new ImportedMetadataExtractor(rdr, key_pairs, case_insensitive);
                 extractor.addImagePlaneDetailsExtractor(iextractor, fltr);
                 """
                 J.run_script(script, dict(
-                    csv_path=group.csv_location.value,
+                    inputStream = stream,
                     key_pairs=key_pairs,
                     case_insensitive = group.wants_case_insensitive.value,
                     extractor = extractor,
@@ -765,7 +852,8 @@ class Metadata(cpm.CPModule):
             elif group.extraction_method == X_IMPORTED_EXTRACTION:
                 joiner = group.csv_joiner
                 csv_path = group.csv_location.value
-                if not os.path.isfile(csv_path):
+                if ((not group.csv_location.is_url()) and
+                    not os.path.isfile(csv_path)):
                     continue
                 found = False
                 best_match = None
@@ -788,7 +876,8 @@ class Metadata(cpm.CPModule):
                         del self.imported_metadata[i]
                     else:
                         try:
-                            imported_metadata = self.ImportedMetadata(csv_path)
+                            imported_metadata = self.ImportedMetadata(
+                                csv_path, group.csv_location.is_url())
                         except:
                             logger.debug("Failed to load csv file: %s" % csv_path)
                             continue
@@ -898,10 +987,25 @@ class Metadata(cpm.CPModule):
     def get_measurement_columns(self, pipeline):
         '''Get the metadata measurements collected by this module'''
         keys = self.get_metadata_keys()
-        result = [ (cpmeas.IMAGE, 
-                    '_'.join((cpmeas.C_METADATA, key)),
-                    cpmeas.COLTYPE_VARCHAR_FILE_NAME)
-                   for key in keys]
+        data_types = self.data_types.get_data_types()
+        data_types[cpp.ImagePlaneDetails.MD_T] = cps.DataTypes.DT_INTEGER
+        data_types[cpp.ImagePlaneDetails.MD_Z] = cps.DataTypes.DT_INTEGER
+        result = []
+        for key in keys:
+            if self.data_type_choice == DTC_CHOOSE:
+                data_type = data_types.get(key, cps.DataTypes.DT_TEXT)
+                if data_type == cps.DataTypes.DT_NONE:
+                    continue
+                elif data_type == cps.DataTypes.DT_INTEGER:
+                    data_type = cpmeas.COLTYPE_INTEGER
+                elif data_type == cps.DataTypes.DT_FLOAT:
+                    data_type = cpmeas.COLTYPE_FLOAT
+                else:
+                    data_type = cpmeas.COLTYPE_VARCHAR_FILE_NAME
+            else:
+                data_type = cpmeas.COLTYPE_VARCHAR_FILE_NAME
+            result.append((
+                cpmeas.IMAGE,  '_'.join((cpmeas.C_METADATA, key)), data_type))
         if needs_well_metadata(keys):
             result.append((cpmeas.IMAGE, cpmeas.M_WELL, 
                            cpmeas.COLTYPE_VARCHAR_FORMAT % 4))
@@ -924,40 +1028,55 @@ class Metadata(cpm.CPModule):
     def upgrade_settings(self, setting_values, variable_revision_number,
                          module_name, from_matlab):
         if variable_revision_number == 1:
-            n_groups = int(setting_values[IDX_EXTRACTION_METHOD_COUNT])
-            new_setting_values = setting_values[:IDX_EXTRACTION_METHOD]
+            n_groups = int(setting_values[IDX_EXTRACTION_METHOD_COUNT_V1])
+            new_setting_values = setting_values[:IDX_EXTRACTION_METHOD_V1]
             for i in range(n_groups):
                 new_setting_values += setting_values[
-                    (IDX_EXTRACTION_METHOD + LEN_EXTRACTION_METHOD_V1 * i):
-                    (IDX_EXTRACTION_METHOD + LEN_EXTRACTION_METHOD_V1 * (i+1))]
+                    (IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * i):
+                    (IDX_EXTRACTION_METHOD_V1 + LEN_EXTRACTION_METHOD_V1 * (i+1))]
                 new_setting_values.append(cps.NO)
             setting_values = new_setting_values
             variable_revision_number = 2
             
         if variable_revision_number == 2:
             # Changed naming of extraction methods, metadata sources and filtering choices
-            n_groups = int(setting_values[IDX_EXTRACTION_METHOD_COUNT])
-            new_setting_values = setting_values[:IDX_EXTRACTION_METHOD]
+            n_groups = int(setting_values[IDX_EXTRACTION_METHOD_COUNT_V2])
+            new_setting_values = setting_values[:IDX_EXTRACTION_METHOD_V2]
             for i in range(n_groups):
                 group = setting_values[
-                    (IDX_EXTRACTION_METHOD + LEN_EXTRACTION_METHOD * i):
-                    (IDX_EXTRACTION_METHOD + LEN_EXTRACTION_METHOD * (i+1))]
-                group[0] = X_AUTOMATIC_EXTRACTION if group[0] == "Automatic" else (X_MANUAL_EXTRACTION if group[0] == "Manual" else X_IMPORTED_EXTRACTION)
-                group[1] = XM_FILE_NAME if group[1] == "From file name" else XM_FOLDER_NAME 
-                group[4] = F_FILTERED_IMAGES if group[4] == "Images selected using a filter" else F_ALL_IMAGES
+                    (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * i):
+                    (IDX_EXTRACTION_METHOD_V2 + LEN_EXTRACTION_METHOD * (i+1))]
+                group[0] = X_AUTOMATIC_EXTRACTION if group[0] == "Automatic" \
+                    else (X_MANUAL_EXTRACTION if group[0] == "Manual" \
+                          else X_IMPORTED_EXTRACTION)
+                group[1] = XM_FILE_NAME if group[1] == "From file name" \
+                    else XM_FOLDER_NAME 
+                group[4] = F_FILTERED_IMAGES if group[4] == "Images selected using a filter" \
+                    else F_ALL_IMAGES
                 new_setting_values += group
             setting_values = new_setting_values
             variable_revision_number = 3
+            
+        if variable_revision_number == 3:
+            # Added data types
+            setting_values = setting_values[:IDX_EXTRACTION_METHOD_COUNT_V3] + \
+                [DTC_TEXT, "{}"] + setting_values[IDX_EXTRACTION_METHOD_COUNT_V3:]
+            variable_revision_number = 4
 
         return setting_values, variable_revision_number, from_matlab
     
     class ImportedMetadata(object):
         '''A holder for the metadata from a csv file'''
-        def __init__(self, path):
+        def __init__(self, path, is_url):
             self.joiner_initialized = False
             self.path = path
-            self.path_timestamp = os.stat(path).st_mtime
-            fd = open(path, "r")
+            self.is_url = is_url
+            if is_url:
+                self.path_timestamp = time.time()
+                fd = urllib.urlopen(path)
+            else:
+                self.path_timestamp = os.stat(path).st_mtime
+                fd = open(path, "rb")
             rdr = csv.reader(fd)
             header = rdr.next()
             columns = [[] for  c in header]
@@ -1034,11 +1153,14 @@ class Metadata(cpm.CPModule):
             csv_join_name - the join name in the joiner of the csv_file
             
             ipd_join_name - the join name in the joiner of the ipd metadata
+            
+            is_url - True if the CSV path is a URL
             '''
             if csv_path != self.path:
                 return False
             
-            if os.stat(self.path).st_mtime != self.path_timestamp:
+            if (not self.is_url) and \
+               os.stat(self.path).st_mtime != self.path_timestamp:
                 return False
             
             if not self.joiner_initialized:

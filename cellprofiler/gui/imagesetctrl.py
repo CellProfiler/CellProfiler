@@ -23,6 +23,7 @@ import cellprofiler.measurements as cpmeas
 import cellprofiler.settings as cps
 from cellprofiler.modules.images import Images
 from cellprofiler.gui.cornerbuttonmixin import CornerButtonMixin
+from cellprofiler.gui import draw_item_selection_rect
 
 '''Table column displays metadata'''
 COL_METADATA = "Metadata"
@@ -1017,10 +1018,8 @@ class EllipsisGridCellRenderer(wx.grid.PyGridCellRenderer):
                 grid, grid.GetGridWindow(), grid.GetGridColLabelWindow(),
                 grid.GetGridRowLabelWindow(), grid.GetGridCornerLabelWindow()):
                 flags += wx.CONTROL_FOCUSED
-            self.renderer.DrawItemSelectionRect(grid.GetGridWindow(),
-                                                dc,
-                                                rect,
-                                                flags)
+            draw_item_selection_rect(
+                grid.GetGridWindow(), dc, rect, flags)
             dc.SetBackgroundMode(wx.TRANSPARENT)
             if attr.HasTextColour():
                 dc.SetTextForeground(attr.TextColour)

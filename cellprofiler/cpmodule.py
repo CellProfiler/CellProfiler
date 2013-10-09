@@ -314,6 +314,23 @@ class CPModule(object):
         except Exception, e:
             raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e, 
                                       self.visible_settings()[0])
+        
+    def test_module_warnings(self, pipeline):
+        """Test to see if there are any troublesome setting values in the module
+        
+        Throw a ValidationError exception with an explanation if a module
+        is likely to be misconfigured. An example is if ExportToDatabase is
+        not the last module.
+        """
+        try:
+            for setting in self.visible_settings():
+                setting.test_setting_warnings(pipeline)
+            self.validate_module_warnings(pipeline)
+        except cps.ValidationError, instance:
+            raise instance
+        except Exception, e:
+            raise cps.ValidationError("Exception in cpmodule.test_valid %s" % e, 
+                                      self.visible_settings()[0])
     
     def validate_module(self,pipeline):
         '''Implement this to validate module settings
@@ -573,6 +590,20 @@ class CPModule(object):
         figure.Close()  # modules that don't override display() shouldn't
                         # display anything
                         
+    def display_post_group(self, workspace, figure):
+        """Display the results of work done post-group
+        
+        This method is only called if self.show_window is True
+        
+        workspace - the current workspace. workspace.display_data should have
+                    whatever information is needed for the display. Numpy arrays
+                    lists, tuples, dictionaries and Python builtin objects are
+                    allowed.
+                    
+        figure - the figure to use for the display.
+        """
+        pass
+    
     def display_post_run(self, workspace, figure):
         """Display results after post_run completes
         

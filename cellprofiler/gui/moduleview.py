@@ -484,12 +484,12 @@ class ModuleView:
                     control = self.make_callback_control(v, control_name,
                                                          control)
                     flag = wx.ALIGN_LEFT
-                elif isinstance(v, cps.IntegerRange) or\
-                     isinstance(v, cps.FloatRange):
-                    control = self.make_range_control(v, control)
                 elif isinstance(v,
                                 cps.IntegerOrUnboundedRange):
                     control = self.make_unbounded_range_control(v, control)
+                elif isinstance(v, cps.IntegerRange) or\
+                     isinstance(v, cps.FloatRange):
+                    control = self.make_range_control(v, control)
                 elif isinstance(v, cps.Coordinates):
                     control = self.make_coordinates_control(v,control)
                 elif isinstance(v, cps.RegexpText):
@@ -558,6 +558,9 @@ class ModuleView:
                     flag = wx.ALIGN_LEFT
                 elif isinstance(v, cps.BinaryMatrix):
                     control = BinaryMatrixController.update_control(self, v)
+                    flag = wx.ALIGN_LEFT
+                elif isinstance(v, cps.DataTypes):
+                    control = DataTypeController.update_control(self, v)
                     flag = wx.ALIGN_LEFT
                 else:
                     control = self.make_text_control(v, control_name, control)
@@ -1358,7 +1361,7 @@ class ModuleView:
                 if getattr(v, "multiline_display", False):
                     style = wx.TE_MULTILINE|wx.TE_PROCESS_ENTER
     
-                text = v.value
+                text = v.get_value_text()
                 if not isinstance(text, (unicode, str)):
                     text = str(text)
                 control = wx.TextCtrl(self.__module_panel,
@@ -1369,8 +1372,8 @@ class ModuleView:
             def on_cell_change(event, setting = v, control=control):
                 self.__on_cell_change(event, setting,control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_cell_change,control)
-        elif not (v == control.Value):
-            text = v.value
+        elif not (v.get_value_text() == control.Value):
+            text = v.get_value_text()
             if not isinstance(text, (unicode, str)):
                 text = str(text)
             control.Value = text
@@ -1382,26 +1385,26 @@ class ModuleView:
             panel = wx.Panel(self.__module_panel,-1,name=edit_control_name(v))
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             panel.SetSizer(sizer)
-            min_ctrl = wx.TextCtrl(panel,-1,str(v.min),
-                                   name=min_control_name(v))
+            min_ctrl = wx.TextCtrl(
+                panel, -1, v.min_text, name=min_control_name(v))
             sizer.Add(min_ctrl,0,wx.EXPAND|wx.RIGHT,1)
-            max_ctrl = wx.TextCtrl(panel,-1,str(v.max),
-                                   name=max_control_name(v))
+            max_ctrl = wx.TextCtrl(
+                panel, -1, v.max_text, name=max_control_name(v))
             #max_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(max_ctrl,0,wx.EXPAND)
             def on_min_change(event, setting = v, control=min_ctrl):
-                self.__on_min_change(event, setting,control)
+                self.__on_min_change(event, setting, control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_min_change,min_ctrl)
             def on_max_change(event, setting = v, control=max_ctrl):
-                self.__on_max_change(event, setting,control)
+                self.__on_max_change(event, setting, control)
             self.__module_panel.Bind(wx.EVT_TEXT,on_max_change,max_ctrl)
         else:
             min_ctrl = panel.FindWindowByName(min_control_name(v))
-            if min_ctrl.Value != str(v.min):
-                min_ctrl.Value = str(v.min)
+            if min_ctrl.Value != v.min_text:
+                min_ctrl.Value = v.min_text
             max_ctrl = panel.FindWindowByName(max_control_name(v))
-            if max_ctrl.Value != str(v.max):
-                max_ctrl.Value = str(v.max)
+            if max_ctrl.Value != v.max_text:
+                max_ctrl.Value = v.max_text
         
         for ctrl in (min_ctrl, max_ctrl):
             self.fit_ctrl(ctrl)
@@ -1441,12 +1444,7 @@ class ModuleView:
             def on_min_change(event, setting = v, control=min_ctrl):
                 if not self.__handle_change:
                     return
-                old_value = str(setting)
-                if setting.unbounded_max:
-                    max_value = cps.END
-                else:
-                    max_value = str(setting.max)
-                proposed_value="%s,%s"%(str(control.Value),max_value)
+                proposed_value = setting.compose_min_text(control.Value)
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
@@ -1457,14 +1455,7 @@ class ModuleView:
                               absrel_ctrl=absrel_ctrl):
                 if not self.__handle_change:
                     return
-                old_value = str(setting)
-                if (absrel_ctrl.Value == ABSOLUTE):
-                    max_value = str(control.Value)
-                elif control.Value == '0':
-                    max_value = cps.END
-                else:
-                    max_value = "-"+str(control.Value)
-                proposed_value="%s,%s"%(setting.display_min,max_value)
+                proposed_value = setting.compose_display_max_text(control.Value)
                 setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                           proposed_value,event)
                 self.notify(setting_edited_event)
@@ -1475,22 +1466,10 @@ class ModuleView:
                 if not self.__handle_change:
                     return
                 
-                if not v.unbounded_max:
-                    old_value = str(setting)
-                    
-                    if control.Value == ABSOLUTE:
-                        proposed_value="%s,%s"%(setting.display_min,
-                                                abs(setting.max))
-                    else:
-                        setting_max = setting.max
-                        if setting_max is not None:
-                            proposed_value="%s,%d"%(setting.display_min,
-                                                    -abs(setting.max))
-                        else:
-                            proposed_value = None
+                if control.Value == ABSOLUTE:
+                    proposed_value = setting.compose_abs()
                 else:
-                    proposed_value="%s,%s"%(setting.display_min,
-                                            cps.END)
+                    proposed_value = setting.compose_rel()
                 if proposed_value is not None:
                     setting_edited_event = SettingEditedEvent(setting, self.__module,
                                                               proposed_value,event)
@@ -1505,9 +1484,7 @@ class ModuleView:
             if max_ctrl.Value != v.display_max:
                 min_ctrl.Value = v.display_max
             absrel_ctrl = panel.FindWindowByName(absrel_control_name(v))
-            absrel_value = ABSOLUTE
-            if v.unbounded_max or v.max < 0:
-                absrel_value = FROM_EDGE
+            absrel_value = ABSOLUTE if v.is_abs() else FROM_EDGE
             if absrel_ctrl.Value != absrel_value:
                 absrel_ctrl.Value = absrel_value
             
@@ -1520,14 +1497,14 @@ class ModuleView:
             sizer = wx.BoxSizer(wx.HORIZONTAL)
             panel.SetSizer(sizer)
             sizer.Add(wx.StaticText(panel,-1,"X:"),0,wx.EXPAND|wx.RIGHT,1)
-            x_ctrl = wx.TextCtrl(panel,-1,str(v.x),
-                                   name=x_control_name(v))
+            x_ctrl = wx.TextCtrl(
+                panel, -1, v.get_x_text(), name=x_control_name(v))
             best_width = x_ctrl.GetCharWidth()*5
             x_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(x_ctrl,0,wx.EXPAND|wx.RIGHT,1)
             sizer.Add(wx.StaticText(panel,-1,"Y:"),0,wx.EXPAND|wx.RIGHT,1)
-            y_ctrl = wx.TextCtrl(panel,-1,str(v.y),
-                                 name=y_control_name(v))
+            y_ctrl = wx.TextCtrl(
+                panel, -1, v.get_y_text(), name=y_control_name(v))
             y_ctrl.SetInitialSize(wx.Size(best_width,-1))
             sizer.Add(y_ctrl,0,wx.EXPAND)
             def on_x_change(event, setting = v, control=x_ctrl):
@@ -1550,11 +1527,11 @@ class ModuleView:
             self.__module_panel.Bind(wx.EVT_TEXT,on_y_change,y_ctrl)
         else:
             x_ctrl = panel.FindWindowByName(x_control_name(v))
-            if x_ctrl.Value != str(v.x):
-                x_ctrl.Value = str(v.x)
+            if x_ctrl.Value != v.get_x_text():
+                x_ctrl.Value = v.get_x_text()
             y_ctrl = panel.FindWindowByName(y_control_name(v))
-            if y_ctrl.Value != str(v.y):
-                y_ctrl.Value = str(v.y)
+            if y_ctrl.Value != v.get_y_text():
+                y_ctrl.Value = v.get_y_text()
             
         return panel
     
@@ -1841,8 +1818,6 @@ class ModuleView:
                                                   proposed_value,
                                                   event)
         self.notify(setting_edited_event)
-        if self.__module is not None:
-            self.__module.on_setting_changed(setting, self.__pipeline)
         if timeout is None:
             self.reset_view() # use the default timeout
         elif timeout is not False:
@@ -1854,23 +1829,23 @@ class ModuleView:
         ctrl.SetSizeHintsSz(wx.Size(width, -1))
         ctrl.Parent.Fit()
         
-    def __on_min_change(self,event,setting,control):
+    def __on_min_change(self, event, setting, control):
         if not self.__handle_change:
             return
         old_value = str(setting)
-        proposed_value="%s,%s"%(str(control.Value),str(setting.max))
-        setting_edited_event = SettingEditedEvent(setting,self.__module, 
-                                                  proposed_value,event)
+        proposed_value = setting.compose_min_text(control.Value)
+        setting_edited_event = SettingEditedEvent(
+            setting, self.__module, proposed_value, event)
         self.notify(setting_edited_event)
         self.fit_ctrl(control)
         
-    def __on_max_change(self,event,setting,control):
+    def __on_max_change(self, event, setting, control):
         if not self.__handle_change:
             return
         old_value = str(setting)
-        proposed_value="%s,%s"%(str(setting.min),str(control.Value))
-        setting_edited_event = SettingEditedEvent(setting,self.__module, 
-                                                  proposed_value,event)
+        proposed_value = setting.compose_max_text(control.Value)
+        setting_edited_event = SettingEditedEvent(
+            setting, self.__module, proposed_value, event)
         self.notify(setting_edited_event)
         self.fit_ctrl(control)
     
@@ -1940,7 +1915,7 @@ class ModuleView:
                 visible_settings[setting_idx].test_valid(self.__pipeline)
                 self.__module.test_valid(self.__pipeline)
                 level = logging.WARNING
-                self.__module.validate_module_warnings(self.__pipeline)
+                self.__module.test_module_warnings(self.__pipeline)
             except cps.ValidationError, instance:
                 message = instance.message
                 bad_setting = instance.get_setting()
@@ -1972,9 +1947,9 @@ class ModuleView:
                             desired_fg = cpprefs.get_error_color()
                         elif level == logging.WARNING:
                             desired_bg = WARNING_COLOR
-                if (static_text.SetForegroundColour(desired_fg) or
-                    static_text.SetBackgroundColour(desired_bg)):
-                    static_text.Refresh()
+                    if (static_text.SetForegroundColour(desired_fg) or
+                        static_text.SetBackgroundColour(desired_bg)):
+                        static_text.Refresh()
         except Exception:
             logger.debug("Caught bare exception in ModuleView.on_validate()", exc_info=True)
             pass
@@ -2144,6 +2119,7 @@ class FilterPanelController(object):
             self.populate_subpanel(structure, [])
             for key, value in self.hide_show_dict.iteritems():
                 self.panel.FindWindowByName(key).Show(value)
+            self.panel.Layout()
         except:
             logger.exception("Threw exception while updating filter")
         finally:
@@ -3311,8 +3287,8 @@ class JoinerController(object):
                 ctrl.Bind(wx.EVT_BUTTON, 
                           lambda event, position=i+1: 
                           self.on_insert_row(event, position))
-            self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names),
-                                 flag = wx.ALIGN_BOTTOM)
+                self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names),
+                                     flag = wx.ALIGN_BOTTOM)
             all_subcontrols[add_button_name] = True
                   
             if len(joins) > 1:                   
@@ -3325,8 +3301,8 @@ class JoinerController(object):
                     ctrl.Bind(wx.EVT_BUTTON, 
                               lambda event, position=i: 
                               self.on_delete_row(event, position))
-                self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+1,
-                                     flag = wx.ALIGN_BOTTOM)
+                    self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+1,
+                                         flag = wx.ALIGN_BOTTOM)
                 all_subcontrols[delete_button_name] = True
                                      
             if i > 0:
@@ -3341,8 +3317,8 @@ class JoinerController(object):
                     ctrl.Bind(wx.EVT_BUTTON,
                               lambda event, position=i:
                               self.on_move_row_up(event, position))
-                self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+2,
-                                     flag = wx.ALIGN_BOTTOM)
+                    self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+2,
+                                         flag = wx.ALIGN_BOTTOM)
                 all_subcontrols[move_up_button_name] = True
             
             if i < len(joins) - 1:
@@ -3357,8 +3333,8 @@ class JoinerController(object):
                     ctrl.Bind(wx.EVT_BUTTON,
                               lambda event, position=i:
                               self.on_move_row_down(event, position))
-                self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+3,
-                                     flag = wx.ALIGN_BOTTOM)
+                    self.panel.Sizer.Add(ctrl, row=i+1, col=len(column_names)+3,
+                                         flag = wx.ALIGN_BOTTOM)
                 all_subcontrols[move_down_button_name] = True
                 
         for key, value in all_subcontrols.iteritems():
@@ -3578,7 +3554,174 @@ class BinaryMatrixController(object):
         else:
             control.controller.update()
             return control
+
+class DataTypeController(object):
+    '''The DataTypeController manages a DataType setting'''
+    DTC_NONE = "None"
+    DTC_TEXT = "Text"
+    DTC_INTEGER = "Integer"
+    DTC_FLOAT = "Float"
+    DTC_TO_DT = {
+        DTC_NONE: cps.DataTypes.DT_NONE,
+        DTC_TEXT: cps.DataTypes.DT_TEXT,
+        DTC_INTEGER: cps.DataTypes.DT_INTEGER,
+        DTC_FLOAT: cps.DataTypes.DT_FLOAT,
+        None:cps.DataTypes.DT_TEXT }
+    DT_TO_DTC = {
+        cps.DataTypes.DT_NONE: DTC_NONE,
+        cps.DataTypes.DT_TEXT: DTC_TEXT,
+        cps.DataTypes.DT_INTEGER: DTC_INTEGER,
+        cps.DataTypes.DT_FLOAT: DTC_FLOAT}
     
+    def __init__(self, module_view, v):
+        assert isinstance(v, cps.DataTypes)
+        self.module_view = module_view
+        self.v = v
+        self.panel = module_view.module_panel.FindWindowByName(
+            edit_control_name(v))
+        if self.panel is None:
+            class DoesntInheritBackgroundColor(wx.Panel):
+                def InheritsBackgroundColour(self):
+                    return False
+            self.panel = DoesntInheritBackgroundColor(
+                module_view.module_panel, -1,
+                name = edit_control_name(v))
+            self.panel.BackgroundColour = wx.SystemSettings.GetColour(
+                wx.SYS_COLOUR_WINDOW)
+            self.panel.Sizer = wx.lib.rcsizer.RowColSizer()
+            self.panel.Bind(wx.EVT_PAINT, self.on_paint)
+        self.panel.controller = self
+        self.n_items = 0
+        self.update()
+        
+    def on_paint(self, event):
+        dc = wx.BufferedPaintDC(self.panel)
+        dc.BeginDrawing()
+        dc.Background = wx.Brush(wx.SystemSettings.GetColour(
+            wx.SYS_COLOUR_WINDOW))
+        dc.Clear()
+        dc.Pen = wx.Pen(wx.SystemSettings.GetColour(
+            wx.SYS_COLOUR_GRAYTEXT))
+        sizer = self.panel.Sizer
+        _, panel_width = self.panel.GetClientSize()
+        assert isinstance(sizer, wx.lib.rcsizer.RowColSizer)
+        bottom_choice_name = self.get_choice_control_name(self.n_items)
+        bottom_choice = self.panel.FindWindowByName(bottom_choice_name)
+        if bottom_choice is not None:
+            r = bottom_choice.GetRect()
+            dc.DrawLine(r.Left-2, 1, r.Left-2, r.Bottom)
+        for i in range(1, self.n_items+1):
+            choice_name = self.get_choice_control_name(i)
+            choice = self.panel.FindWindowByName(choice_name)
+            if choice is not None:
+                r = choice.GetRect()
+                dc.DrawLine(1, r.Top - 2, panel_width - 1, r.Top - 2)
+        dc.EndDrawing()
+        event.Skip()
+        
+    def get_label_control_name(self, rowidx):
+        '''The name of the label control that holds the feature name'''
+        return "label_control_%d_%s" % (rowidx, str(self.v.key()))
+    
+    def get_choice_control_name(self, rowidx):
+        '''The name of the choice control holding the data type choices'''
+        return "choice_control_%d_%s" % (rowidx, str(self.v.key()))
+    
+    def update(self):
+        '''Change the UI state to match that of the DataTypes setting'''
+        d = self.v.get_data_types()
+        needs_bind = []
+        sizer = self.panel.Sizer
+        assert isinstance(sizer, wx.lib.rcsizer.RowColSizer)
+        for child in self.panel.GetChildren():
+            sizer.Hide(child)
+        
+        label_header_name = self.get_label_control_name(0)
+        choice_header_name = self.get_choice_control_name(0)
+        for header_name, column, text in (
+            (label_header_name, 0, "Key"),
+            (choice_header_name, 1, "Data type")):
+            ctrl = self.panel.FindWindowByName(header_name)
+            if ctrl is None:
+                ctrl = wx.StaticText(self.panel,
+                                     label = text,
+                                     name = header_name)
+                ctrl.Font = wx.Font(
+                    ctrl.Font.GetPointSize(),
+                    ctrl.Font.GetFamily(),
+                    ctrl.Font.GetStyle(),
+                    wx.FONTWEIGHT_BOLD, False,
+                    ctrl.Font.GetFaceName())
+                sizer.Add(ctrl,
+                          flag = wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL | wx.BOTTOM,
+                          border = 1,
+                          row = 0, col = column)
+            else:
+                sizer.Show(ctrl)
+        for i, feature in enumerate(sorted(d.keys())):
+            label_name = self.get_label_control_name(i+1)
+            choice_name = self.get_choice_control_name(i+1)
+            label = self.panel.FindWindowByName(label_name)
+            if label is None:
+                label = wx.StaticText(
+                    self.panel,
+                    label = feature,
+                    name = label_name)
+                sizer.Add(label,
+                          flag = wx.ALIGN_LEFT | wx.BOTTOM | wx.LEFT | wx.RIGHT,
+                          border=3,
+                          row = i+1, col = 0)
+            else:
+                sizer.Show(label)
+                if label.Label != feature:
+                    label.Label = feature
+            choice = self.panel.FindWindowByName(choice_name)
+            if choice is None:
+                choice = wx.Choice(
+                    self.panel,
+                    choices = [self.DTC_TEXT, self.DTC_INTEGER, self.DTC_FLOAT,
+                               self.DTC_NONE],
+                    name = choice_name)
+                sizer.Add(choice,
+                          flag = wx.EXPAND | wx.BOTTOM | wx.RIGHT,
+                          border = 3,
+                          row = i+1, col = 1)
+                needs_bind.append(choice)
+            else:
+                sizer.Show(choice)
+            value = self.DT_TO_DTC.get(d[feature], self.DTC_TEXT)
+            if choice.GetStringSelection() != value:
+                choice.SetStringSelection(value)
+        self.n_items = len(d.keys())
+        for choice in needs_bind:
+            choice.Bind(wx.EVT_CHOICE, self.on_choice_changed)
+    
+    def on_choice_changed(self, event):
+        result = {}
+        for i in range(1, self.n_items+1):
+            label = self.panel.FindWindowByName(self.get_label_control_name(i))
+            choice = self.panel.FindWindowByName(
+                self.get_choice_control_name(i))
+            result[label.Label] = self.DTC_TO_DT[choice.GetStringSelection()]
+        result = cps.DataTypes.encode_data_types(result)
+        if self.v.value != result:
+            self.module_view.on_value_change(self.v, self.panel, result, event)
+    
+    @classmethod
+    def update_control(cls, module_view, v):
+        '''Update the Joiner setting's control
+        
+        returns the control
+        '''
+        assert isinstance(module_view, ModuleView)
+        control = module_view.module_panel.FindWindowByName(edit_control_name(v))
+        if control is None:
+            controller = DataTypeController(module_view, v)
+            return controller.panel
+        else:
+            control.controller.update()
+            return control
+        
 class TableController(wx.grid.PyGridTableBase):
     DEFAULT_ATTR = wx.grid.GridCellAttr()
     ERROR_ATTR = wx.grid.GridCellAttr()
@@ -3607,6 +3750,7 @@ class TableController(wx.grid.PyGridTableBase):
                 fn_clicked()
                 self.update_grid()
                 grid.ForceRefresh()
+                grid.Parent.Layout()
             grid.fn_clicked = on_corner_button_clicked
             grid.label = self.v.corner_button.get("label", "Update")
             grid.tooltip = self.v.corner_button.get("tooltip", "")
@@ -4007,7 +4151,7 @@ def validate_module(pipeline, module_num, test_mode, callback):
         module.test_valid(pipeline)  # this method validates each visible
                                      # setting first, then the module itself.
         level = logging.WARNING
-        module.validate_module_warnings(pipeline)
+        module.test_module_warnings(pipeline)
         level = logging.INFO
     except cps.ValidationError, instance:
         message = instance.message

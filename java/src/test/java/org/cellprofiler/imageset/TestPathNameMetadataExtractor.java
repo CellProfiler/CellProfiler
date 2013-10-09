@@ -62,6 +62,24 @@ public class TestPathNameMetadataExtractor {
 		}
 	}
 	@Test
+	public void testOMEROURL() {
+		ImageFile imageFile;
+		try {
+			imageFile = new ImageFile(new URI("omero:iid=58038"));
+			PathNameMetadataExtractor extractor = new PathNameMetadataExtractor(
+					new MetadataExtractor<String>() {
+	
+				public Map<String, String> extract(String source) {
+					assertEquals(source, "");
+					return emptyMap;
+				}
+			});
+			extractor.extract(imageFile);
+		} catch (URISyntaxException e) {
+			fail();
+		}
+	}
+	@Test
 	public void testURLWithoutPath() {
 		ImageFile imageFile;
 		try {

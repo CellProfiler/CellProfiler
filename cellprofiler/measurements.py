@@ -335,7 +335,8 @@ class Measurements(object):
             self.add_measurement(key[0], key[1], value, image_set_number=key[2])
 
     def flush(self):
-        self.hdf5_dict.flush()
+        if self.hdf5_dict is not None:
+            self.hdf5_dict.flush()
 
     def file_contents(self):
         return self.hdf5_dict.file_contents()
@@ -626,6 +627,8 @@ class Measurements(object):
             grp = self.get_relationship_hdf5_group(
                 module_number, relationship, object_name1, object_name2)
             n_records = grp[R_FIRST_IMAGE_NUMBER].shape[0]
+            if n_records == 0:
+                return np.zeros(0, dt).view(np.recarray)
             if image_numbers is None:
                 temp = np.zeros(n_records, dt)
                 for feature in features:

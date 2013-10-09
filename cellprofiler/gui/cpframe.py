@@ -28,7 +28,7 @@ from cellprofiler.gui import get_cp_icon, get_cp_bitmap
 from cellprofiler.gui.pipelinelistview import PipelineListView
 from cellprofiler.gui.cpfigure import close_all
 from cellprofiler.gui.help import MAIN_HELP, make_help_menu, \
-     HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_PATH_LIST, PLATEVIEWER_HELP
+     HELP_ON_MODULE_BUT_NONE_SELECTED, HELP_ON_FILE_LIST, PLATEVIEWER_HELP
 from cellprofiler.pipeline import Pipeline
 from cellprofiler.gui.pipelinecontroller import PipelineController
 from cellprofiler.gui.moduleview import ModuleView, stop_validation_queue_thread
@@ -379,12 +379,14 @@ class CPFrame(wx.Frame):
         if table is not None:
             self.__grid_ctrl.SetTable(table)
         sizer = self.__imageset_panel.Sizer
-        if (sizer.IsShown(self.__imageset_ctrl) == False or
+        if (sizer.IsShown(self.__imageset_ctrl) == True or
             self.__imageset_sash.IsShown() == False):
             sizer.Show(self.__imageset_ctrl, False)
             sizer.Show(self.__grid_ctrl, True)
             self.show_imageset_sash(True)
+            self.__imageset_sash.Layout()
             self.__imageset_panel.Layout()
+            self.__grid_ctrl.Layout()
         
     def get_grid_ctrl(self):
         return self.__grid_ctrl
@@ -670,8 +672,8 @@ class CPFrame(wx.Frame):
             self.__menu_sample = wx.Menu()
             self.__menu_sample.Append(ID_SAMPLE_INIT, 'Initialize Sampling', 'Initialize sampling up to current module')
             self.__menu_bar.Append(self.__menu_sample, '&Sample')
-        self.__menu_bar.Append(self.__menu_window, "&Window")
         self.__menu_bar.Append(self.data_tools_menu(), '&Data Tools')
+        self.__menu_bar.Append(self.__menu_window, "&Window")
         if wx.VERSION <= (2, 8, 10, 1, '') and wx.Platform == '__WXMAC__':
             self.__menu_bar.Append(self.__menu_help, 'CellProfiler Help')
         else:
@@ -920,7 +922,7 @@ class CPFrame(wx.Frame):
         
     def __on_help_path_list(self, event):
         import htmldialog
-        dlg = htmldialog.HTMLDialog(self, "Help on path list", HELP_ON_PATH_LIST)
+        dlg = htmldialog.HTMLDialog(self, "Help on file list", HELP_ON_FILE_LIST)
         dlg.Show()
 
     def __on_help_about(self, event):

@@ -299,16 +299,7 @@ public class Filter {
 			final Matcher literalMatch = literalPattern.matcher(rest[0]);
 			if (literalMatch.lookingAt()) {
 				final String literal = literalMatch.group(1);
-				final Matcher quoteEscapeMatch = quoteEscapePattern.matcher(literal);
-				String decodedLiteral = "";
-				int start = 0;
-				while(quoteEscapeMatch.find()) {
-					final int qeStart = quoteEscapeMatch.start();
-					final String qeChar = quoteEscapeMatch.group(1);
-					decodedLiteral += literal.substring(start, qeStart) + qeChar;
-					start = quoteEscapeMatch.end();
-				}
-				decodedLiteral += literal.substring(start);
+				String decodedLiteral = escapeDecode(literal);
 				p.setLiteral(decodedLiteral);
 				rest[0] = rest[0].substring(literalMatch.end());
 				if (rest[0].length() == 0) return p;
@@ -324,12 +315,33 @@ public class Filter {
 		}
 		return p;
 	}
+	/**
+	 * Escape decode (remove first backslash of backslash + character)
+	 * a string. Note that this does not convert \n to LF, etc.
+	 * 
+	 * @param literal input string
+	 * @return escape decoded string
+	 */
+	private static String escapeDecode(final String literal) {
+		final Matcher quoteEscapeMatch = quoteEscapePattern.matcher(literal);
+		String decodedLiteral = "";
+		int start = 0;
+		while(quoteEscapeMatch.find()) {
+			final int qeStart = quoteEscapeMatch.start();
+			final String qeChar = quoteEscapeMatch.group(1);
+			decodedLiteral += literal.substring(start, qeStart) + qeChar;
+			start = quoteEscapeMatch.end();
+		}
+		decodedLiteral += literal.substring(start);
+		return decodedLiteral;
+	}
+	
 	static String getToken(String expression, String [] rest) throws BadFilterExpressionException{
 		final Matcher match = tokenPattern.matcher(expression);
 		if (! match.lookingAt()) {
 			throw new BadFilterExpressionException("Failed to parse the next token");
 		}
-		final String token = match.group(1);
+		final String token = escapeDecode(match.group(1));
 		rest[0] = expression.substring(match.end());
 		return token;
 	}

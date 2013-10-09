@@ -24,6 +24,7 @@ import numpy as np
 import time
 import base64
 import math
+import os
 import zlib
 import wx
 import sys
@@ -31,6 +32,7 @@ if __name__ == "__main__":
     app = wx.PySimpleApp(False)
 
 import cellprofiler.pipeline as cpp
+import cellprofiler.preferences as cpprefs
 from cellprofiler.gui import draw_item_selection_rect
 import cellprofiler.gui.movieslider as cpgmov
 from cellprofiler.gui.cpfigure import window_name, find_fig
@@ -85,6 +87,8 @@ PLV_STATE_ERROR = 2048
 PLV_STATE_ERROR_MASK = PLV_STATE_ERROR + PLV_STATE_WARNING
 '''Bit is set if the module is unavailable = not in pipeline'''
 PLV_STATE_UNAVAILABLE = 4096
+'''Bit is clear if the pipeline can't proceeed past this module'''
+PLV_STATE_PROCEED = 8192
 '''Report that the slider has moved'''
 EVT_PLV_SLIDER_MOTION = wx.PyEventBinder(wx.NewEventType())
 EVT_PLV_PAUSE_COLUMN_CLICKED = wx.PyEventBinder(wx.NewEventType())
@@ -178,6 +182,7 @@ class PipelineListView(object):
         self.list_ctrl.SetDropTarget(PipelineDropTarget(self))
         self.validation_requests = []
         self.__allow_editing = True
+        self.__has_file_list = False
 
     def allow_editing(self, allow):
         '''Allow or disallow pipeline editing
@@ -409,9 +414,14 @@ class PipelineListView(object):
                     break
             else:
                 self.select_one_module(event.module_num)
-            for module in self.__pipeline.modules():
-                if module.module_num == event.module_num:
-                    self.request_validation(module)
+                for module in self.__pipeline.modules():
+                    if module.module_num == event.module_num:
+                        self.request_validation(module)
+                        debug_module = self.get_current_debug_module()
+                        if debug_module is not None and \
+                           debug_module.module_num > event.module_num:
+                            self.set_current_debug_module(module)
+                        break
             
         elif isinstance(event, cpp.ModuleEnabledEvent):
             self.__on_module_enabled(event)
@@ -423,6 +433,21 @@ class PipelineListView(object):
     def notify_directory_change(self):
         # we can't know which modules use this information
         self.request_validation()
+        
+    def notify_has_file_list(self, has_files):
+        '''Tell the pipeline list view that the workspace has images
+        
+        has_files - True if there are files in the workspace file list
+        
+        We indicate that the pipeline can't proceed past "Images" if
+        there are no files.
+        '''
+        modules = self.__pipeline.modules()
+        self.__has_file_list = has_files
+        if len(modules) > 0 and modules[0].is_input_module():
+            state = PLV_STATE_PROCEED if has_files else 0
+            self.input_list_ctrl.SetItemState(
+                0, state, PLV_STATE_PROCEED)
         
     def iter_list_items(self):
         '''Iterate over the list items in all list controls
@@ -540,7 +565,7 @@ class PipelineListView(object):
             
     def __on_error_column_clicked(self, event):
         module = self.get_event_module(event)
-        if not module.is_input_module():
+        if not module.is_input_module() and self.__allow_editing:
             if module.enabled:
                 self.__pipeline.disable_module(module)
             else:
@@ -685,7 +710,17 @@ class PipelineListView(object):
     def on_filelist_data(self, x, y, action, filenames):
         for filename in filenames:
             logger.info("Processing %s" % filename)
-            if filename.endswith(".cp"):
+            _, ext = os.path.splitext(filename)
+            if len(ext) > 1 and ext[1:] in cpprefs.EXT_PROJECT_CHOICES:
+                self.__frame.Raise()
+                if wx.MessageBox(
+                    "Do you want to load the project, ""%s""?" % filename,
+                    caption = "Load project",
+                    style = wx.YES_NO | wx.ICON_QUESTION,
+                    parent = self.__frame) == wx.YES:
+                    self.__frame.pipeline_controller.do_open_workspace(filename)
+                    break
+            elif len(ext) > 1 and ext[1:] in cpprefs.EXT_PIPELINE_CHOICES:
                 self.__frame.Raise()
                 if wx.MessageBox(
                     "Do you want to import the pipeline, ""%s""?" % filename,
@@ -767,6 +802,7 @@ class PipelineListView(object):
         if len(self.__pipeline.modules()) > 0:
             self.select_one_module(1)
             self.__frame.show_module_ui(True)
+        self.notify_has_file_list(self.__has_file_list)
         
     def __on_module_added(self,pipeline, event):
         module = pipeline.modules(False)[event.module_num - 1]
@@ -774,6 +810,7 @@ class PipelineListView(object):
         self.__adjust_rows()
         self.select_one_module(event.module_num)
         self.request_validation(module)
+        self.notify_has_file_list(self.__has_file_list)
 
     def __on_module_removed(self, pipeline, event):
         pipeline_module_ids = [module.id for module in pipeline.modules(False)]
@@ -826,6 +863,7 @@ class PipelineListView(object):
     def __on_module_enabled(self, event):
         self.refresh_module_display(event.module)
         self.request_validation(event.module)
+        self.notify_has_file_list(self.__has_file_list)
         
     def refresh_module_display(self, module):
         '''Refresh the display of a module'''
@@ -848,13 +886,15 @@ class PipelineListView(object):
                     break
             else:
                 for module in reversed(self.__pipeline.modules()):
-                    if module.module_num < event.module.module_num:
+                    if module.module_num < event.module.module_num and\
+                       not module.is_input_module():
                         self.set_current_debug_module(module)
                         break
                 else:
                     self.__controller.stop_debugging()
         self.refresh_module_display(event.module)
         self.request_validation()
+        self.notify_has_file_list(self.__has_file_list)
     
     def __on_item_selected(self, event):
         self.__controller.enable_module_controls_panel_buttons()
@@ -958,7 +998,7 @@ class PipelineListCtrl(wx.PyScrolledWindow):
         '''An item in a pipeline list control'''
         def __init__(self, module):
             self.module = module
-            self.__state = 0
+            self.__state = PLV_STATE_PROCEED
             self.tooltip = ""
             
         @property
@@ -992,6 +1032,15 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             if self.__state & PLV_STATE_WARNING:
                 return WARNING
             return OK
+        
+        def can_proceed(self):
+            '''Return True if the pipeline can proceed past this module
+            
+            This is the state of the PLV_STATE_PROCEED flag. The pipeline
+            might not be able to proceed because of an error or warning as
+            well.
+            '''
+            return (self.__state & PLV_STATE_PROCEED) == PLV_STATE_PROCEED
         
         error_state = property(get_error_state)
         
@@ -1111,6 +1160,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 if r.ContainsXY(x, y):
                     return None, PLV_HITTEST_SLIDER, None
                 return None, wx.LIST_HITTEST_NOWHERE, None
+        elif x < x0:
+            return None, wx.LIST_HITTEST_NOWHERE, None
         column = int((x - x0) / self.column_width)
         if not (self.show_go_pause and self.test_mode) and column == PAUSE_COLUMN:
             return None, wx.LIST_HITTEST_NOWHERE, None
@@ -1398,7 +1449,8 @@ class PipelineListCtrl(wx.PyScrolledWindow):
             # Draw a green arrow indicating how much of the pipeline is good
             #
             for i in range(len(self.items)):
-                if self.items[i].get_error_state() == ERROR:
+                if self.items[i].get_error_state() == ERROR or\
+                   not self.items[i].can_proceed():
                     break
             else:
                 i = len(self.items)
@@ -1569,6 +1621,10 @@ class PipelineListCtrl(wx.PyScrolledWindow):
                 code = EVT_PLV_PAUSE_COLUMN_CLICKED
             else:
                 code = EVT_PLV_EYE_COLUMN_CLICKED
+            r = self.get_button_rect(self.pressed_column,
+                                     self.pressed_row or 0)
+            r.Inflate(2, 2)
+            self.RefreshRect(r)
             self.button_is_active = False
             self.pressed_column = None
             plv_event = self.make_event(code, self.pressed_row)

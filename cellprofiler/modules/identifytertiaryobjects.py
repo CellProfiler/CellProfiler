@@ -1,20 +1,40 @@
 '''<b>Identify Tertiary Objects</b> identifies tertiary objects (e.g., cytoplasm) by removing smaller primary
 objects (e.g. nuclei) from larger secondary objects (e.g., cells), leaving a ring shape.
 <hr>
+<h4>What is a tertiary object?</h4>
+In CellProfiler, we use the term <i>object</i> as a generic term to refer to an identifed
+feature in an image, usually a cellular subcompartment of some kind (for example,
+nuclei, cells, colonies, worms). 
+We define an object as <i>tertiary</i> when it is identified by using a prior primary and 
+secondary objects for reference. A common use case is when nuclei have been found using
+<b>IdentifyPrimaryObjects</b> and the cell body has been found using <b>IdentifySecondaryObjects</b> 
+but measurements from the cytoplasm, the region outside the nucleus but within the cell body, 
+are desired. This module may be used to define the cytoplasm as an new object.
+
+<h4>What do I need as input?</h4>
 This module will take the smaller identified objects and remove them from
 the larger identified objects. For example, "subtracting" the nuclei from
 the cells will leave just the cytoplasm, the properties of which can then
-be measured by <b>Measure</b> modules. The larger objects should therefore be
+be measured by downstream <b>Measure</b> modules. The larger objects should therefore be
 equal in size or larger than the smaller objects and must completely
-contain the smaller objects.  Both inputs should be objects produced by
-<b>Identify</b> modules, not grayscale images.
+contain the smaller objects; <b>IdentifySecondaryObjects</b> will produce objects that
+satisfy this constraint. Ideally, both inputs should be objects produced by prior
+<b>Identify</b> modules.
 
-<p><i>Note:</i> Creating subregions using this module can result in objects that
-are not contiguous, which does not cause problems when running the
-<b>MeasureImageIntensity</b> and <b>MeasureTexture</b> modules, but does cause 
-problems when running the <b>MeasureObjectSizeShape</b> module because calculations 
-of the perimeter, aspect ratio, solidity, etc. cannot be made for noncontiguous
-objects.
+<h4>What do I get as output?</h4>
+A set of tertiary objects are produced by this module, which can be used in 
+downstream modules for measurement purposes or other operations. Because each 
+tertiary object is produced from primary and secondary objects, there will 
+always be at most one secondary object for each primary object.
+See the section <a href="#Available_measurements">"Available measurements"</a> below for 
+the measurements that are produced by this module.
+
+<p>Note that creating subregions using this module can result in objects with 
+a single label that nonetheless are not contiguous. This may lead to unexpected
+results when running measurment modules such as <b>MeasureObjectSizeShape</b> 
+because calculations of the perimeter, aspect ratio, solidity, etc. typically
+make sense only for contiguous objects. Other modules, such as <b>MeasureImageIntensity</b> and 
+<b>MeasureTexture</b> modules, are not affected and will yield expected results.
 
 <h4>Available measurements</h4>
 <b>Image measurements:</b>
@@ -57,6 +77,11 @@ import cellprofiler.settings as cps
 import cellprofiler.preferences as cpprefs
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
+
+'''The parent object relationship points to the secondary / larger objects'''
+R_PARENT = "Parent"
+'''The removed object relationship points to the primary / smaller objects'''
+R_REMOVED = "Removed"
 
 class IdentifyTertiaryObjects(cpm.CPModule):
 
@@ -225,12 +250,21 @@ class IdentifyTertiaryObjects(cpm.CPModule):
             child_count_of_primary, primary_parents = \
                 primary_objects.relate_children(tertiary_objects)
         else:
-            # Primary and tertiary don't overlap. If tertiary object
-            # disappeared, have primary disavow knowledge of it.
-            child_count_of_primary = np.zeros(primary_objects.count)
-            child_count_of_primary[tertiary_objects.areas > 0] = 1
-            primary_parents = np.arange(1, tertiary_objects.count+1)
-        
+            # Primary and tertiary don't overlap.
+            # Establish overlap between primary and secondary and commute
+            _, secondary_of_primary = \
+                secondary_objects.relate_children(primary_objects)
+            mask = secondary_of_primary != 0
+            child_count_of_primary = np.zeros(mask.shape, int)
+            child_count_of_primary[mask] = child_count_of_secondary[
+                secondary_of_primary[mask] - 1]
+            primary_parents = np.zeros(secondary_parents.shape, 
+                                       secondary_parents.dtype)
+            primary_of_secondary = np.zeros(secondary_objects.count+1, int)
+            primary_of_secondary[secondary_of_primary] = \
+                np.arange(1, len(secondary_of_primary)+1)
+            primary_of_secondary[0] = 0
+            primary_parents = primary_of_secondary[secondary_parents]
         #
         # Write out the objects
         #
@@ -243,15 +277,27 @@ class IdentifyTertiaryObjects(cpm.CPModule):
         #
         # The parent/child associations
         #
-        for parent_objects_name, parents_of, child_count\
-         in ((self.primary_objects_name, primary_parents,child_count_of_primary),
-             (self.secondary_objects_name, secondary_parents, child_count_of_secondary)):
+        for parent_objects_name, parents_of, child_count, relationship in (
+            (self.primary_objects_name, primary_parents, 
+             child_count_of_primary, R_REMOVED),
+            (self.secondary_objects_name, secondary_parents, 
+             child_count_of_secondary, R_PARENT)):
             m.add_measurement(self.subregion_objects_name.value,
                               cpmi.FF_PARENT%(parent_objects_name.value),
                               parents_of)
             m.add_measurement(parent_objects_name.value,
                               cpmi.FF_CHILDREN_COUNT%(self.subregion_objects_name.value),
                               child_count)
+            mask = parents_of != 0
+            image_number = np.ones(np.sum(mask), int) * m.image_set_number
+            child_object_number = np.argwhere(mask).flatten() + 1
+            parent_object_number = parents_of[mask]
+            m.add_relate_measurement(
+                self.module_num, relationship,
+                parent_objects_name.value, self.subregion_objects_name.value,
+                image_number, parent_object_number,
+                image_number, child_object_number)
+            
         object_count = tertiary_objects.count
         #
         # The object count

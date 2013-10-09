@@ -479,6 +479,74 @@ OutputExternal:[module_num:2|svn_version:\'9859\'|variable_revision_number:1|sho
         measurements = pipeline.run(grouping = {'foo':'foo-B', 'bar':'bar-B'})
         self.assertEqual(expects[0], 'Done')
     
+    def test_10_03_display(self):
+        # Test that the individual pipeline methods do appropriate display.
+        
+        pipeline = exploding_pipeline(self)
+        module = GroupModule()
+        module.show_window = True
+        callbacks_called = set()
+        
+        def prepare_run(workspace):
+            workspace.measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER, 1] = 1
+            workspace.measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX, 1] = 1
+            return True
+        
+        def prepare_group(workspace, grouping,*args):
+            return True
+        
+        def run(workspace):
+            workspace.display_data.foo = "Bar"
+            
+        def display_handler(module1, display_data, image_set_number):
+            self.assertIs(module1, module)
+            self.assertEqual(display_data.foo, "Bar")
+            self.assertEqual(image_set_number, 1)
+            callbacks_called.add("display_handler")
+
+        def post_group(workspace, grouping):
+            workspace.display_data.bar = "Baz"
+            
+        def post_group_display_handler(module1, display_data, image_set_number):
+            self.assertIs(module1, module)
+            self.assertEqual(display_data.bar, "Baz")
+            self.assertEqual(image_set_number, 1)
+            callbacks_called.add("post_group_display_handler")
+            
+        def post_run(workspace):
+            workspace.display_data.baz = "Foo"
+            
+        def post_run_display_handler(workspace, module1):
+            self.assertIs(module1, module)
+            self.assertEqual(workspace.display_data.baz, "Foo")
+            callbacks_called.add("post_run_display_handler")
+            
+        def get_measurement_columns(pipeline):
+            return [(cpmeas.IMAGE, "mymeasurement", 
+                     cpmeas.COLTYPE_INTEGER)]
+        
+        module.setup(((), (({}, (1,)))), 
+                     prepare_run_callback=prepare_run, 
+                     prepare_group_callback = prepare_group,
+                     run_callback = run, 
+                     post_group_callback=post_group, 
+                     post_run_callback = post_run)
+        module.module_num = 1
+        pipeline.add_module(module)
+        m = cpmeas.Measurements()
+        workspace = cpw.Workspace(pipeline, module, m, None, m, 
+                                  cpi.ImageSetList)
+        workspace.post_group_display_handler = post_group_display_handler
+        workspace.post_run_display_handler = post_run_display_handler
+        self.assertTrue(pipeline.prepare_run(workspace))
+        pipeline.prepare_group(workspace, {}, (1,))
+        pipeline.run_image_set(m, 1, None, display_handler)
+        self.assertIn("display_handler", callbacks_called)
+        pipeline.post_group(workspace, {})
+        self.assertIn("post_group_display_handler", callbacks_called)
+        pipeline.post_run(workspace)
+        self.assertIn("post_run_display_handler", callbacks_called)
+    
     def test_11_01_catch_operational_error(self):
         '''Make sure that a pipeline can catch an operational error
         
@@ -1285,7 +1353,10 @@ class GroupModule(cpm.CPModule):
                  run_callback = None,
                  post_group_callback = None,
                  post_run_callback = None,
-                 get_measurement_columns_callback = None):
+                 get_measurement_columns_callback = None,
+                 display_callback = None,
+                 display_post_group_callback = None,
+                 display_post_run_callback = None):
         self.prepare_run_callback = prepare_run_callback
         self.prepare_group_callback = prepare_group_callback
         self.run_callback = run_callback
@@ -1293,6 +1364,9 @@ class GroupModule(cpm.CPModule):
         self.post_run_callback = post_run_callback
         self.groupings = groupings
         self.get_measurement_columns_callback = get_measurement_columns_callback
+        self.display_callback = None
+        self.display_post_group_callback = None
+        self.display_post_run_callback = None
     def settings(self):
         return []
     def get_groupings(self, workspace):
@@ -1318,7 +1392,20 @@ class GroupModule(cpm.CPModule):
         if self.get_measurement_columns_callback is not None:
             return self.get_measurement_columns_callback(*args)
         return []
+    def display(self, workspace, figure):
+        if self.display_callback is not None:
+            return self.display_callback(workspace, figure)
+        return super(GroupModule, self).display(workspace, figure)
+        
+    def display_post_group(self, workspace, figure):
+        if self.display_post_group_callback is not None:
+            return self.display_post_group_callback(workspace, figure)
+        return super(GroupModule, self).display_post_group(workspace, figure)
 
+    def display_post_run(self, workspace, figure):
+        if self.display_post_run is not None:
+            return self.display_post_run_callback(workspace, figure)
+        return super(GroupModule, self).display_post_run(workspace, figure)
 
 # Global declarations
 

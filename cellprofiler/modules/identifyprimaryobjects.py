@@ -61,6 +61,8 @@ detailed information on the setting, if interested.</li>
 </ul>
 
 <h4>What do I get as output?</h4>
+A set of primary objects are produced by this module, which can be used in downstream modules
+for measurement purposes or other operations. 
 See the section <a href="#Available_measurements">"Available measurements"</a> below for 
 the measurements that are produced by this module.
 
@@ -527,9 +529,9 @@ class IdentifyPrimaryObjects(cpmi.Identify):
             too many objects split up that ought to be merged, you may want to override the
             automatically calculated value."""%globals())
         
-        self.maxima_suppression_size = cps.Integer(
+        self.maxima_suppression_size = cps.Float(
             'Suppress local maxima that are closer than this minimum allowed distance', 
-            7, doc="""
+            7, minval=0, doc="""
             <i>(Used only when distinguishing between clumped objects)</i><br>
             Enter a positive integer, in pixel units. If you see too many objects 
             merged that ought to be separated (under-segmentation), the value 

@@ -775,33 +775,11 @@ class UntangleWorms(cpm.CPModule):
             doc.writexml(fd, addindent="  ", newl="\n")
             fd.close()
             if self.show_window:
-                assert False, "Needs update for use with multiprocessing"
-                from matplotlib.transforms import Bbox
-                figure = workspace.create_or_find_figure(
-                    subplots = (4,1),
-                    window_name = "UntangleWorms_PostGroup")
-                f = figure.figure
-                f.clf()
-                a = f.add_subplot(1,4,1)
-                a.set_position((Bbox([[.1, .1],[.15, .9]])))
-                a.boxplot(angle_costs)
-                a.set_title("Costs")
-                a = f.add_subplot(1,4,2)
-                a.set_position((Bbox([[.2, .1],[.25, .9]])))
-                a.boxplot(feat_vectors[-1,:])
-                a.set_title("Lengths")
-                a = f.add_subplot(1,4,3)
-                a.set_position((Bbox([[.30, .1],[.60, .9]])))
-                a.boxplot(feat_vectors[:-1,:].transpose() * 180 / np.pi)
-                a.set_title("Angles")
-                a = f.add_subplot(1,4,4)
-                a.set_position((Bbox([[.65, .1],[1, .45]])))
-                a.imshow(angles_covariance_matrix[:-1,:-1], 
-                         interpolation="nearest")
-                a.set_title("Covariance")
-                f.canvas.draw()
-                figure.Refresh()
-            
+                workspace.display_data.angle_costs = angle_costs
+                workspace.display_data.feat_vectors = feat_vectors
+                workspace.display_data.angles_covariance_matrix = \
+                    angles_covariance_matrix
+                
     def run_untangle(self, workspace):
         '''Untangle based on the current image set'''
         params = self.read_params()
@@ -968,6 +946,44 @@ class UntangleWorms(cpm.CPModule):
                 axes.plot(control_points[:,1],
                           control_points[:,0], "ro-",
                           markersize = 4)
+    
+    def display_post_group(self, workspace, figure):
+        """Display some statistical information about training, post-group
+        
+        workspace - holds the display data used to create the display
+        
+        figure - the module's figure.
+        """
+        if self.mode == MODE_TRAIN:
+            from matplotlib.transforms import Bbox
+            
+            angle_costs = workspace.display_data.angle_costs
+            feat_vectors = workspace.display_data.feat_vectors
+            angles_covariance_matrix = workspace.display_data.angles_covariance_matrix
+            figure = workspace.create_or_find_figure(
+                subplots = (4,1),
+                window_name = "UntangleWorms_PostGroup")
+            f = figure.figure
+            f.clf()
+            a = f.add_subplot(1,4,1)
+            a.set_position((Bbox([[.1, .1],[.15, .9]])))
+            a.boxplot(angle_costs)
+            a.set_title("Costs")
+            a = f.add_subplot(1,4,2)
+            a.set_position((Bbox([[.2, .1],[.25, .9]])))
+            a.boxplot(feat_vectors[-1,:])
+            a.set_title("Lengths")
+            a = f.add_subplot(1,4,3)
+            a.set_position((Bbox([[.30, .1],[.60, .9]])))
+            a.boxplot(feat_vectors[:-1,:].transpose() * 180 / np.pi)
+            a.set_title("Angles")
+            a = f.add_subplot(1,4,4)
+            a.set_position((Bbox([[.65, .1],[1, .45]])))
+            a.imshow(angles_covariance_matrix[:-1,:-1], 
+                     interpolation="nearest")
+            a.set_title("Covariance")
+            f.canvas.draw()
+            figure.Refresh()
     
     def single_worm_find_path(self, workspace, labels, i, skeleton, params):
         '''Finds the worm's skeleton  as a path.

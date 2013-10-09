@@ -193,6 +193,13 @@ C_RUN = "Run"
 F_TIMESTAMP = "Timestamp"
 M_TIMESTAMP = "_".join((C_RUN, F_TIMESTAMP))
 
+"""Default input folder measurement"""
+M_DEFAULT_INPUT_FOLDER = "Default_InputFolder"
+
+"""Default output folder measurement"""
+M_DEFAULT_OUTPUT_FOLDER = "Default_OutputFolder"
+
+
 def add_all_images(handles,image_set, object_set):
     """ Add all images to the handles structure passed
     
@@ -1840,7 +1847,6 @@ class Pipeline(object):
 
              self.prepare_run() and self.prepare_group() must have already been called.
         """
-
         measurements.next_image_set(image_set_number)
         measurements.group_number = measurements[cpmeas.IMAGE, cpmeas.GROUP_NUMBER]
         measurements.group_index = measurements[cpmeas.IMAGE, cpmeas.GROUP_INDEX]
@@ -1874,6 +1880,10 @@ class Pipeline(object):
                 module.run(workspace)
                 if module.show_window:
                     display_handler(module, workspace.display_data, image_set_number)
+            except CancelledException:
+                # Analysis worker interaction handler is telling us that
+                # the UI has cancelled the run. Forward exception upward.
+                raise
             except Exception, exception:
                 logger.error("Error detected during run of module %s#%d",
                              module.module_name, module.module_num, exc_info=True)
@@ -2102,12 +2112,20 @@ class Pipeline(object):
                 module.post_run(workspace)
             except Exception, instance:
                 logging.error(
-                    "Failed to complete post_run processing for module %s.",
+                    "Failed to complete post_run processing for module %s." %
                     module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return "Failure"
+            if module.show_window:
+                try:
+                    workspace.post_run_display(module)
+                except Exception, instance:
+                    # Warn about display failure but keep going.
+                    logging.warn(
+                        "Caught exception during post_run_display for module %s." %
+                        module.module_name, exc_info=True)
         return "Complete"
     
     def prepare_to_create_batch(self, workspace, fn_alter_path):
@@ -2229,12 +2247,19 @@ class Pipeline(object):
                 module.post_group(workspace, grouping)
             except Exception, instance:
                 logging.error(
-                    "Failed during post-group processing for module %s",
+                    "Failed during post-group processing for module %s" %
                     module.module_name, exc_info=True)
                 event = RunExceptionEvent(instance, module, sys.exc_info()[2])
                 self.notify_listeners(event)
                 if event.cancel_run:
                     return False
+            if module.show_window:
+                try:
+                    workspace.post_group_display(module)
+                except:
+                    logging.warn(
+                        "Failed during post group display for module %s" %
+                        module.module_name, exc_info=True)
         return True
     
     def in_batch_mode(self):
@@ -3471,6 +3496,13 @@ class IPDLoadExceptionEvent(AbstractPipelineEvent):
     def event_type(self):
         return "Image load exception"
     
+class CancelledException(Exception):
+    '''Exception issued by the analysis worker indicating cancellation by UI
+    
+    This is here in order to solve some import dependency problems
+    '''
+    pass
+
     
 class EndRunEvent(AbstractPipelineEvent):
     """A run ended"""

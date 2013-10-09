@@ -283,10 +283,8 @@ class TestAnalysis(unittest.TestCase):
     def check_display_post_run_requests(self, pipeline):
         '''Read the DisplayPostRunRequest messages during the post_run phase'''
         
-        m0_func_code = pipeline.modules()[0].display_post_run.im_func.func_code
         for module in pipeline.modules():
-            if (module.show_window and 
-                module.display_post_run.im_func.func_code != m0_func_code):
+            if module.show_window:
                 result = self.event_queue.get()
                 self.assertIsInstance(
                     result, cpanalysis.DisplayPostRunRequest)
@@ -458,7 +456,7 @@ class TestAnalysis(unittest.TestCase):
             self.assertEqual(reply.hello, "world")
         logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
         
-    def test_04_04_display(self):
+    def test_04_04_01_display(self):
         logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
         pipeline, m = self.make_pipeline_and_measurements_and_start()
         with self.FakeWorker() as worker:
@@ -473,6 +471,28 @@ class TestAnalysis(unittest.TestCase):
             request = self.event_queue.get()
             self.assertIsInstance(request, cpanalysis.DisplayRequest)
             self.assertEqual(request.foo, "bar")
+            request.reply(cpanalysis.Ack(message = "Gimme Pony"))
+            reply = fn_interaction_reply()
+            self.assertIsInstance(reply, cpanalysis.Ack)
+            self.assertEqual(reply.message, "Gimme Pony")
+        logger.debug("Exiting %s" % inspect.getframeinfo(inspect.currentframe()).function)
+        
+    def test_04_04_02_display_post_group(self):
+        logger.debug("Entering %s" % inspect.getframeinfo(inspect.currentframe()).function)
+        pipeline, m = self.make_pipeline_and_measurements_and_start()
+        with self.FakeWorker() as worker:
+            worker.connect(self.analysis.runner.work_announce_address)
+            fn_interaction_reply = worker.send(
+                cpanalysis.DisplayPostGroupRequest(
+                    worker.analysis_id, 1,
+                    dict(foo = "bar"), 3))
+            #
+            # The event queue should be hooked up to the interaction callback
+            #
+            request = self.event_queue.get()
+            self.assertIsInstance(request, cpanalysis.DisplayPostGroupRequest)
+            display_data = request.display_data
+            self.assertEqual(display_data["foo"], "bar")
             request.reply(cpanalysis.Ack(message = "Gimme Pony"))
             reply = fn_interaction_reply()
             self.assertIsInstance(reply, cpanalysis.Ack)

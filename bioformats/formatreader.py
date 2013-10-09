@@ -599,6 +599,11 @@ def load_using_bioformats(path, c=None, z=0, t=0, series=None, index=None,
                 logger.warn(e.message)
                 for line in traceback.format_exc().split("\n"):
                     logger.warn(line)
+                if jutil.is_instance_of(je, "java/io/FileNotFoundException"):
+                                raise exceptions.IOError(
+                                    errno.ENOENT, 
+                                    "The file, \"%s\", does not exist." % path,
+                                    path)
                 e2 = exceptions.IOError(
                     errno.EINVAL, "Could not load the file as an image (see log for details)", path.encode('utf-8'))
                 raise e2
@@ -692,16 +697,18 @@ def __load_using_bioformats(path, c, z, t, series, index, rescale,
             image = np.frombuffer(rdr.openBytes(index), dtype)
             image.shape = (height, width)
         elif rdr.getRGBChannelCount() > 1:
-            rdr.close()
-            rdr = ImageReader()
-            rdr.allowOpenToCheckType(False)
+            n_planes = rdr.getRGBChannelCount()
             rdr = ChannelSeparator(rdr)
-            rdr.setGroupFiles(False)
-            rdr.setId(path)
-            red_image, green_image, blue_image = [
+            planes = [
                 np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)),dtype)
-                for i in range(3)]
-            image = np.dstack((red_image, green_image, blue_image))
+                for i in range(n_planes)]
+            if len(planes) > 3:
+                planes = planes[:3]
+            elif len(planes) < 3:
+                # > 1 and < 3 means must be 2
+                # see issue #775
+                planes.append(np.zeros(planes[0].shape, planes[0].dtype))
+            image = np.dstack(planes)
             image.shape=(height,width,3)
         elif rdr.getSizeC() > 1:
             images = [np.frombuffer(rdr.openBytes(rdr.getIndex(z,i,t)), dtype)

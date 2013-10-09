@@ -132,6 +132,7 @@ public class TestFilter {
 		testSomething("file does contain \"\\\"foo\\\".\"", "\"foo\".bar", true);
 		testSomething("file does contain \"\\\"foo\\\".\"", "\"foo.bar", false);
 		testSomething("file does contain \"\\\"foo\\\".\"", "\"foo\"bar", false);
+		testSomething("metadata does SBS\\_Controls \"0\"", new String [][] {{"SBS_Controls", "0"}}, true);
 	}
 	@Test
 	public void testTokenParser() {

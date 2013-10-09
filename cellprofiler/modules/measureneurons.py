@@ -442,6 +442,7 @@ class MeasureNeurons(cpm.CPModule):
             if self.show_window:
                 workspace.display_data.edge_graph = edge_graph
                 workspace.display_data.vertex_graph = vertex_graph
+                workspace.display_data.intensity_image = intensity_image.pixel_data
         #
         # Make the display image
         #
@@ -497,9 +498,8 @@ class MeasureNeurons(cpm.CPModule):
         figure.subplot_imshow(0, 0, workspace.display_data.branchpoint_image,
                               title)
         if self.wants_neuron_graph:
-            image_name = self.intensity_image_name.value
-            image = workspace.image_set.get_image(image_name)
-            figure.subplot_imshow_grayscale(1, 0, image.pixel_data,
+            image = workspace.display_data.intensity_image
+            figure.subplot_imshow_grayscale(1, 0, image,
                                             title = "Neuron graph",
                                             sharexy = figure.subplot(0,0))
             axes = figure.subplot(1, 0)
@@ -515,7 +515,7 @@ class MeasureNeurons(cpm.CPModule):
             cm = matplotlib.cm.get_cmap(cpprefs.get_default_colormap())
             cmap = matplotlib.cm.ScalarMappable(cmap = cm)
             edge_color = cmap.to_rgba(brightness)
-            for idx in range(len(edge_graph)):
+            for idx in range(len(edge_graph["v1"])):
                 v = np.array([edge_graph["v1"][idx] - 1,
                               edge_graph["v2"][idx] - 1])
                 line = Line2D(j[v],i[v], color=edge_color[idx])

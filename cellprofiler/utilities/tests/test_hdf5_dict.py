@@ -774,6 +774,35 @@ class TestHDF5FileList(unittest.TestCase):
                 else:
                     expected = fn_metadata(url)
                     self.assertEqual(expected, filelist.get_metadata(url))
+                    
+    def test_11_01_hasnt_files(self):
+        self.assertFalse(self.filelist.has_files())
+        
+    def test_11_02_has_files(self):
+        self.filelist.add_files_to_filelist(["file://foo/bar/baz.jpg"])
+        self.assertTrue(self.filelist.has_files())
+        self.filelist.clear_cache()
+        self.assertTrue(self.filelist.has_files())
+        #
+        # Make sure cache wasn't screwed up
+        #
+        roots = []
+        directories = []
+        urls = []
+        def fn(r, d, u):
+            roots.append(r)
+            directories.append(d)
+            urls.extend(u)
+        self.filelist.walk(fn)
+        self.assertEqual(len(urls), 1)
+        
+    def test_11_03_hasnt_files_after_remove(self):
+        url = "file://foo/bar/baz.jpg"
+        self.filelist.add_files_to_filelist([url])
+        self.filelist.remove_files_from_filelist([url])
+        self.assertFalse(self.filelist.has_files())
+        self.filelist.clear_cache()
+        self.assertFalse(self.filelist.has_files())
         
 class TestHDFCSV(unittest.TestCase):
     def setUp(self):

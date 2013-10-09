@@ -532,14 +532,20 @@ class NamesAndTypes(cpm.CPModule):
         we can harvest in a reasonable amount of time.
         '''
         column_names = self.get_column_names()
+        result = []
         if (self.matching_method == MATCH_BY_METADATA):
             md_keys = self.join.parse()
             for column_name in column_names:
                 if all([k[column_name] is not None for k in md_keys]):
-                    return [
-                        '_'.join((cpmeas.C_METADATA, k[column_name]))
-                        for k in md_keys]
-        return []
+                    for k in md_keys:
+                        if k[column_name] in (cpmeas.C_FRAME, cpmeas.C_SERIES):
+                            result.append(
+                                '_'.join((k[column_name], column_name)))
+                        else:
+                            result.append(
+                                '_'.join((cpmeas.C_METADATA, k[column_name])))
+                    break;
+        return result
     
     def prepare_run(self, workspace):
         '''Write the image set to the measurements'''
@@ -628,9 +634,16 @@ class NamesAndTypes(cpm.CPModule):
         # Populate the metadata measurements
         #
         env = J.get_env()
+        mc = workspace.pipeline.get_measurement_columns(self)
+        type_dict = dict([(c[1], c[2]) for c in mc if c[0] == cpmeas.IMAGE])
         for name in J.iterate_collection(md_dict.keySet(), env.get_string_utf):
             feature_name = "_".join((cpmeas.C_METADATA, name))
             values = J.iterate_collection(md_dict[name], env.get_string_utf)
+            data_type = type_dict.get(feature_name, cpmeas.COLTYPE_VARCHAR_FILE_NAME)
+            if data_type == cpmeas.COLTYPE_INTEGER:
+                values = [int(v) for v in values]
+            elif data_type == cpmeas.COLTYPE_FLOAT:
+                values = [float(v) for v in values]
             m.add_all_measurements(cpmeas.IMAGE,
                                    feature_name,
                                    values)

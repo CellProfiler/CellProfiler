@@ -1,44 +1,104 @@
-'''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using "seed" objects identified by
-an <b>IdentifyPrimaryObjects</b> module (e.g., nuclei).
+import cellprofiler.icons 
+from cellprofiler.gui.help import PROTIP_RECOMEND_ICON, PROTIP_AVOID_ICON, TECH_NOTE_ICON
+__doc__ = '''<b>Identify Secondary Objects</b> identifies objects (e.g., cell edges) using 
+objects identified by another module (e.g., nuclei) as a starting point.
 <hr>
-This module identifies secondary objects (e.g., cell edges) based on two
-inputs: 
-<ol>
-<li>A previous module's identification of primary objects (e.g.,
-nuclei)</li>
-<li>An image stained for the secondary objects (not required
-for the <i>Distance - N</i> option).</li>
-</ol>
-<p>Each primary object is assumed to be completely contained 
-within a secondary object (e.g., nuclei are completely contained within cells
-stained for actin).
+<h4>What is a secondary object?</h4>
+In CellProfiler, we use the term <i>object</i> as a generic term to refer to an identifed
+feature in an image, usually a cellular subcompartment of some kind (for example,
+nuclei, cells, colonies, worms). We define an object as <i>secondary</i> when it can be 
+found in an image by using another cellular feature as a reference for guiding detection. 
+
+<p>For densely-packed cells
+(such as those in a confluent monolayer), determining the cell borders using a cell body stain
+can be quite difficult since they are often heterogeneous and lower-contrast with more diffuse 
+staining. In addition, cells often touch their neighbors making it harder to delineate the cell 
+borders. It is often easier to identify an organelle which is well separated spatially (such 
+as the nucleus) as an object first and then use that object to guide the detection of the cell
+borders. See the <b>IdentifyPrimaryObjects</b> module for details on how to identify a primary
+object.</p>
 
 In order to identify the edges of secondary objects, this module performs two tasks: 
 <ol>
-<li>Finding the dividing lines between secondary objects which touch each other.</li> 
-<li>Finding the dividing lines between the secondary objects and the
-background of the image. This is done by thresholding the image stained
-for secondary objects, except when using the <i>Distance - N</i> option.</li>
+<li>Finds the dividing lines between secondary objects which touch each other.</li> 
+<li>Finds the dividing lines between the secondary objects and the
+background of the image. In most cases, this is done by thresholding the image stained
+for the secondary objects.</li>
 </ol>
 
-After processing, the module display window for this module will
-show panels with objects outlined in two colors (these are the defaults):
+<h4>What do I need as input?</h4>
+This module identifies secondary objects based on two types of input:
+<ol>
+<li>An <i>object</i> (e.g., nuclei) identified from a prior module. These are typically produced
+by an <b>IdentifyPrimaryObjects</b> module, but any object produced by another module may be
+selected for this purpose.</li>
+<li>An <i>image</i> highlighting the image features defining the cell edges. This is typically
+a fluorescent stain for the cell body, membrane or cytoskeleton (e.g., phalloidin staining for actin). 
+However, any image which produces these features can be used for this purpose. For example, an image
+processing module might be used to transform a brightfield image into one which captures the characteristics of a cell 
+body flourescent stain.</li>
+</ol>
+
+<h4>What do the settings mean?</h4>
+See below for help on the individual settings. The following icons are used to call attention to
+key items:
 <ul>
-<li>Green: Primary objects</li>
-<li>Magenta: Secondary objects</li>
+<li><img src="memory:%(PROTIP_RECOMEND_ICON)s">&nbsp;Our recommendation or example use case
+for which a particular setting is best used.</li>
+<li><img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;Indicates a condition under which 
+a particular setting may not work well.</li>
+<li><img src="memory:%(TECH_NOTE_ICON)s">&nbsp;Technical note. Provides more
+detailed information on the setting, if interested.</li>
 </ul>
-If you need to change the outline colors, you can 
-make adjustments in <i>File > Preferences</i>.
 
-The module window will also show another image where the identified 
-objects are displayed with arbitrary colors: the colors themselves do not mean 
-anything but simply help you distingush the various objects. 
-        
+<h4>What do I get as output?</h4>
+A set of secondary objects are produced by this module, which can be used in downstream modules
+for measurement purposes or other operations. Because each primary object is used as the starting point 
+for producing a corresponding secondary object, keep in mind the following points:
+<ul>
+<li>The primary object will always be completely contained 
+within a secondary object. For example, nuclei are completely enclosed within identified cells
+stained for actin.</li>
+<li>There will always be at most one secondary object for each primary object.</li>
+</ul>
+See the section <a href="#Available_measurements">"Available measurements"</a> below for 
+the measurements that are produced by this module.
+
+Once the module has finished processing, the module display window 
+will show the following panels:
+<ul>
+<li><i>Upper left:</i> The raw, original image.</li>
+<li><i>Upper right:</i> The identified objects shown as a color
+image where connected pixels that belong to the same object are assigned the same
+color (<i>label image</i>). It is important to note that assigned colors are 
+arbitrary; they are used simply to help you distingush the various objects. </li>
+<li><i>Lower left:</i> The raw image overlaid with the colored outlines of the 
+identified secondary objects. The objects are shown with the following colors:
+<ul>
+<li>Magenta: Secondary objects</li>
+<li>Green: Primary objects</li>
+</ul>
+If you need to change the color defaults, you can 
+make adjustments in <i>File > Preferences</i>.</li>
+<li><i>Lower right:</i> A table showing some of the settings selected by the user, as well as
+those calculated by the module in order to produce the objects shown.</li>
+</ul>
+      
+      
+<a name="Available_measurements">
 <h4>Available measurements</h4>
-
 <b>Image measurements:</b>
 <ul>
 <li><i>Count:</i> The number of secondary objects identified.</li>
+<li><i>OriginalThreshold:</i> The global threshold for the image.</li>
+<li><i>FinalThreshold:</i> For the global threshold methods, this value is the
+same as <i>OriginalThreshold</i>. For the adaptive or per-object methods, this
+value is the mean of the local thresholds.</li>
+<li><i>WeightedVariance:</i> The sum of the log-transformed variances of the 
+foreground and background pixels, weighted by the number of pixels in 
+each distribution.</li>
+<li><i>SumOfEntropies:</i> The sum of entropies computed from the foreground and
+background distributions.</li>
 </ul>
 
 <b>Object measurements:</b>
@@ -50,8 +110,8 @@ mass of the identified secondary objects.</li>
 </ul>
 
 <h4>Technical notes</h4>
-The <i>Propagation</i> algorithm creates a set of secondary object labels using 
-each primary object as a "seed", guided by the input image and limited to the 
+The <i>Propagation</i> algorithm is the default approach for secondary object creation, 
+creating each primary object as a "seed" guided by the input image and limited to the 
 foreground region as determined by the chosen thresholding method. &lambda; is 
 a regularization parameter; see the help for the setting for more details. Propagation
 of secondary object labels is by the shortest path to an adjacent primary object 
@@ -60,7 +120,7 @@ calculated as the sum of absolute differences in a 3x3 (8-connected) image
 neighborhood, combined with &lambda; via sqrt(differences<sup>2</sup> + &lambda;<sup>2</sup>).
                    
 <p>See also the other <b>Identify</b> modules.</p>
-'''
+'''%globals()
 
 # CellProfiler is distributed under the GNU General Public License.
 # See the accompanying file LICENSE for details.
@@ -93,6 +153,7 @@ from cellprofiler.cpmath.propagate import propagate
 from cellprofiler.cpmath.cpmorphology import fill_labeled_holes
 from cellprofiler.cpmath.cpmorphology import fixup_scipy_ndimage_result as fix
 from cellprofiler.cpmath.watershed import fast_watershed as watershed
+from cellprofiler.cpmath.filter import stretch
 from cellprofiler.cpmath.outline import outline
 from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 
@@ -104,6 +165,9 @@ M_DISTANCE_B = "Distance - B"
 
 '''# of setting values other than thresholding ones'''
 N_SETTING_VALUES = 14
+
+'''Parent (seed) relationship of input objects to output objects'''
+R_PARENT = "Parent"
 
 class IdentifySecondaryObjects(cpmi.Identify):
 
@@ -625,6 +689,15 @@ class IdentifySecondaryObjects(cpmi.Identify):
         measurements.add_measurement(objname,
                                      cpmi.FF_PARENT%self.primary_objects.value,
                                      parents_of_children)
+        image_numbers = np.ones(len(parents_of_children), int) *\
+            measurements.image_set_number
+        mask = parents_of_children > 0
+        measurements.add_relate_measurement(
+            self.module_num, R_PARENT,
+            self.primary_objects.value, self.objects_name.value,
+            image_numbers[mask], parents_of_children[mask],
+            image_numbers[mask], 
+            np.arange(1, len(parents_of_children) + 1)[mask])
         #
         # If primary objects were created, add them
         #
@@ -701,8 +774,14 @@ class IdentifySecondaryObjects(cpmi.Identify):
                                        sharexy = figure.subplot(0, 0))
 
         primary_img = np.dstack((img, img, img))
+        #
+        # Stretch the outline image to the full scale
+        #
+        primary_img = stretch(primary_img)        
+        # Outline the primary objects
         cpmi.draw_outline(primary_img, primary_outline > 0,
                           cpprefs.get_primary_outline_color())
+        # Outline the secondary objects
         cpmi.draw_outline(primary_img, secondary_outline > 0,
                           cpprefs.get_secondary_outline_color())
         figure.subplot_imshow(0, 1, primary_img,

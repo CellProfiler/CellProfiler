@@ -411,6 +411,8 @@ class PathListCtrl(wx.PyScrolledWindow):
                     for idx in range(len(item.filenames)):
                         yield item, idx
         for item, idx in fn_iter():
+            if idx is None:
+                continue
             if flags & PathListCtrl.FLAG_ENABLED_ONLY:
                 if not item.enabled[idx]:
                     continue
@@ -642,6 +644,8 @@ class PathListCtrl(wx.PyScrolledWindow):
             # It's the slightly bogus directory at the top
             self.recalc()
             folder_idx = bisect.bisect_right(self.folder_idxs, idx)-1
+            if folder_idx == -1:
+                return -1
             idx = self.folder_idxs[folder_idx]
         return idx
 

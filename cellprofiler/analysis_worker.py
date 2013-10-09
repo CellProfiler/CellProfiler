@@ -104,6 +104,7 @@ import traceback
 from weakref import WeakSet
 
 import cellprofiler.pipeline as cpp
+from cellprofiler.pipeline import CancelledException
 import cellprofiler.workspace as cpw
 import cellprofiler.measurements as cpmeas
 import cellprofiler.preferences as cpprefs
@@ -111,6 +112,7 @@ from cellprofiler.gui.errordialog import ED_STOP, ED_SKIP
 from cellprofiler.analysis import \
      PipelinePreferencesRequest, InitialMeasurementsRequest, WorkRequest, \
      NoWorkReply, MeasurementsReport, InteractionRequest, DisplayRequest, \
+     DisplayPostGroupRequest, \
      ExceptionReport, DebugWaiting, DebugComplete, InteractionReply, \
      ServerExited, ImageSetSuccess, ImageSetSuccessWithDictionary, \
      SharedDictionaryRequest, Ack, UpstreamExit, ANNOUNCE_DONE,  \
@@ -138,8 +140,19 @@ stdin_monitor_cv = threading.Condition(stdin_monitor_lock)
 stdin_monitor_started = False
 
 def main():
-    # XXX - move all this to a class
-    
+    #
+    # For Windows build with Ilastik, look for site-packages
+    # in order to find Ilastik sources.
+    #
+    if hasattr(sys, 'frozen') and sys.platform == "win32":
+        root = os.path.split(sys.argv[0])[0]
+        if len(root) == 0:
+            root = os.curdir
+        root = os.path.abspath(root)
+        site_packages = os.path.join(root, 'site-packages').encode('utf-8')
+        if os.path.exists(site_packages) and os.path.isdir(site_packages):
+            import site
+            site.addsitedir(site_packages)
     #
     # For OS/X set up the UI elements that users expect from
     # an app.
@@ -247,14 +260,15 @@ class AnalysisWorker(object):
         t0 = 0
         with self.AnalysisWorkerThreadObject(self):
             while not self.cancelled:
-                self.current_analysis_id, \
-                    self.work_request_address = self.get_announcement()
-                if t0 is None or time.time() - t0 > 30:
-                    logger.debug("Connecting at address %s" % self.work_request_address)
-                    t0 = time.time()
-                self.work_socket = the_zmq_context.socket(zmq.REQ)
-                self.work_socket.connect(self.work_request_address)
                 try:
+                    self.current_analysis_id, \
+                        self.work_request_address = self.get_announcement()
+                    if t0 is None or time.time() - t0 > 30:
+                        logger.debug("Connecting at address %s" % 
+                                     self.work_request_address)
+                        t0 = time.time()
+                    self.work_socket = the_zmq_context.socket(zmq.REQ)
+                    self.work_socket.connect(self.work_request_address)
                     # fetch a job 
                     job = self.send(WorkRequest(self.current_analysis_id))
         
@@ -263,7 +277,8 @@ class AnalysisWorker(object):
                         # no work, currently.
                         continue
                     self.do_job(job)
-                    
+                except CancelledException:
+                    break
                 finally:
                     self.work_socket.close()
     
@@ -366,10 +381,11 @@ class AnalysisWorker(object):
                     gc.collect()
                     try:
                         self.pipeline_listener.image_set_number = image_set_number
-                        current_pipeline.run_image_set(current_measurements,
-                                                       image_set_number,
-                                                       self.interaction_handler,
-                                                       self.display_handler)
+                        current_pipeline.run_image_set(
+                            current_measurements,
+                            image_set_number,
+                            self.interaction_handler,
+                            self.display_handler)
                         if self.pipeline_listener.should_abort:
                             abort = True
                             break
@@ -422,6 +438,8 @@ class AnalysisWorker(object):
                     workspace = cpw.Workspace(current_pipeline, None, 
                                               current_measurements, None,
                                               current_measurements, None, None)
+                    workspace.post_group_display_handler = \
+                        self.post_group_display_handler
                     # There might be an exception in this call, but it will be
                     # handled elsewhere, and there's nothing we can do for it
                     # here.
@@ -469,6 +487,12 @@ class AnalysisWorker(object):
                              module_num=module.module_num,
                              display_data_dict=display_data.__dict__,
                              image_set_number=image_set_number)
+        rep = self.send(req)
+        
+    def post_group_display_handler(self, module, display_data, image_set_number):
+        req = DisplayPostGroupRequest(
+            self.current_analysis_id,
+            module.module_num, display_data.__dict__, image_set_number)
         rep = self.send(req)
         
     def omero_login_handler(self):
@@ -522,7 +546,7 @@ class AnalysisWorker(object):
         cancellation of analysis: either UpstreamExit or a stop notification
         from the deadman thread.
         '''
-        logger.info(msg)
+        logger.debug(msg)
         self.cancelled = True
         if self.current_analysis_id in self.initial_measurements:
             self.initial_measurements[self.current_analysis_id].close()
@@ -688,10 +712,6 @@ def start_daemon_thread(target=None, args=(), name=None):
     thread = threading.Thread(target=target, args=args, name=name)
     thread.daemon = True
     thread.start()
-
-
-class CancelledException(Exception):
-    pass
 
 if __name__ == "__main__":
     main()

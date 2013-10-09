@@ -715,11 +715,14 @@ class ExportToDatabase(cpm.CPModule):
         
         self.wants_relationship_table_setting = cps.Binary(
             "Export object relationships?", True, doc = """
-            <i>(Used only for pipelines which relate objects: see
-            the <b>TrackObjects</b>, <b>RelateObjects</b> and
-            <b>MeasureObjectNeighbors</b> modules)</i>
+            <i>(Used only for pipelines which relate objects to each other)</i><br>
             Check this setting to export object relationships to the
-            RelationshipsView view. This view has the following columns:
+            RelationshipsView view. Only certain modules produce 
+            relationships that can be exported by this setting; see  
+            the <b>TrackObjects</b>, <b>RelateObjects</b>,
+            <b>MeasureObjectNeighbors</b> and the <b>Identify</b> modules
+            for more details.
+            <p>This view has the following columns:
             <ul><li><i>%(COL_MODULE_NUMBER)s</i>: the module number of the
             module that produced the relationship. The first module in the
             pipeline is module #1, etc.</li>
@@ -733,7 +736,8 @@ class ExportToDatabase(cpm.CPModule):
             <li><i>%(COL_IMAGE_NUMBER2)s, %(COL_OBJECT_NUMBER2)s</i>:
             the image number and object number of the second object in the
             relationship</li>
-            </ul>""" % globals())
+            </ul>
+            </p>""" % globals())
         
         self.max_column_size = cps.Integer(
             "Maximum # of characters in a column name", 64, 

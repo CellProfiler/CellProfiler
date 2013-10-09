@@ -58,6 +58,20 @@ their corresponding illumination correction functions based on matching
 "Metadata_Date" fields. This is useful if the same data is associated with several
 images (for example, multiple images obtained from a single well).</li>
 
+<li><i>Columns whose name begins with Series or Frame:</i> A columns whose name begins
+with "Series" or "Frame" refers to CSVs containing information about image stacks or movies.
+The name of the image within CellProfiler appears afterward an underscore character. For
+example, "Frame_DNA" would supply the frame number for the movie/image stack file specified
+by the "Image_FileName_DNA" and "Image_PathName_DNA" columns.
+<p>Using a .csv for loading frames and/or series from an movie/image stack allows you more
+flexibility in assembling image sets for operations that would difficult or impossible
+using the Input modules alone. For example, if you wanted to analyze a movie of 1,000 frames 
+by computing the difference between frames, you could create two 
+image columns in a .csv, one for loading frames 1,2,...,999, and the other for loading
+frames 2,3,...,1000. In this case, CellProfiler would load the frame and its predecessor
+for each cycle and <b>ImageMath</b> could be used to create the differece image for downstream use.</p>
+</li>
+
 <li><i>Columns that contain dose-response or positive/negative control information:</i> 
 The <b>CalculateStatistics</b> module can calculate metrics of assay quality for 
 an experiment if provided with information about which images represent positive
@@ -209,7 +223,8 @@ def header_to_column(field):
     Image_PathName to PathName so that the output column names
     in the database will be Image_FileName and Image_PathName
     '''
-    for name in (C_PATH_NAME, C_FILE_NAME, C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME):
+    for name in (C_PATH_NAME, C_FILE_NAME, C_URL,
+                 C_OBJECTS_FILE_NAME, C_OBJECTS_PATH_NAME, C_OBJECTS_URL):
         if field.startswith(cpmeas.IMAGE+'_'+name+'_'):
             return field[len(cpmeas.IMAGE)+1:]
     return field
@@ -857,15 +872,39 @@ class LoadData(cpm.CPModule):
                                                         row[file_name_column])
                             url = pathname2url(fullname)
                             row.append(url)
-                    if path_name_column is None:
+                        if path_name_column is None:
+                            #
+                            # Add path column
+                            #
+                            d[name].append(len(header))
+                            path_feature = "_".join((path_name_category, name))
+                            header.append(path_feature)
+                            for row in rows:
+                                row.append(path_base)
+                    elif path_name_column is None and file_name_column is None:
                         #
-                        # Add path column
+                        # If the .csv just has URLs, break the URL into
+                        # path and file names
                         #
-                        d[name].append(len(header))
                         path_feature = "_".join((path_name_category, name))
+                        path_name_column = len(header)
                         header.append(path_feature)
+                        
+                        file_name_feature = "_".join((file_name_category, name))
+                        file_name_column = len(header)
+                        header.append(file_name_feature)
                         for row in rows:
-                            row.append(path_base)
+                            url = row[url_column]
+                            idx = url.rfind("/")
+                            if idx == -1:
+                                idx = url.rfind(":")
+                                if idx == -1:
+                                    row += ["", url]
+                                else:
+                                    row += [url[:(idx+1)], url[(idx+1):]]
+                            else:
+                                row += [url[:idx], url[(idx+1):]]
+                            
         column_type = {}
         for column in self.get_measurement_columns(pipeline):
             column_type[column[1]] = column[2]
@@ -1177,6 +1216,7 @@ class LoadData(cpm.CPModule):
             for feature, coltype in (
                 (C_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
                 (C_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                (C_FILE_NAME, cpmeas.COLTYPE_VARCHAR_FILE_NAME),
                 (C_MD5_DIGEST, cpmeas.COLTYPE_VARCHAR_FORMAT % 32),
                 (C_SCALING, cpmeas.COLTYPE_FLOAT),
                 (C_HEIGHT, cpmeas.COLTYPE_INTEGER),
@@ -1190,9 +1230,12 @@ class LoadData(cpm.CPModule):
             #
             for object_name in self.get_object_names():
                 result += I.get_object_measurement_columns(object_name)
-                url_feature = C_OBJECTS_URL + "_" + object_name
-                result.append((cpmeas.IMAGE, url_feature, 
-                               cpmeas.COLTYPE_VARCHAR_PATH_NAME))
+                for feature, coltype in (
+                    (C_OBJECTS_URL, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                    (C_OBJECTS_PATH_NAME, cpmeas.COLTYPE_VARCHAR_PATH_NAME),
+                    (C_OBJECTS_FILE_NAME, cpmeas.COLTYPE_VARCHAR_FILE_NAME)):
+                    mname = C_OBJECTS_URL + "_" + object_name
+                    result.append((cpmeas.IMAGE, mname,  coltype))
         #
         # Try to make a well column out of well row and well column
         #

@@ -14,6 +14,7 @@ Website: http://www.cellprofiler.org
 
 import csv
 import datetime
+import exceptions
 import h5py
 import logging
 import math
@@ -519,6 +520,7 @@ class PipelineController:
                 if not load_pipeline:
                     self.__workspace.measurements.clear()
                     self.__workspace.save_pipeline_to_measurements()
+                                
                 self.__dirty_workspace = False
                 self.set_title()
                 if self.__pipeline.message_for_user is not None:
@@ -826,26 +828,29 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
         return True if the user saved the pipeline
         '''
-        wildcard="CellProfiler pipeline (*.%s)|*.%s" % (
+        wildcard = ("CellProfiler pipeline (*.%s)|*.%s|"
+                    "CellProfiler pipeline and file list(*.%s)|*.%s") % (
+            cpprefs.EXT_PIPELINE, cpprefs.EXT_PIPELINE, 
             cpprefs.EXT_PIPELINE, cpprefs.EXT_PIPELINE)
-        dlg = wx.FileDialog(self.__frame,
-                            "Save pipeline",
-                            wildcard=wildcard,
-                            defaultFile="pipeline.%s" % cpprefs.EXT_PIPELINE,
-                            style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT)
-        try:
+        with wx.FileDialog(self.__frame,
+                           "Save pipeline",
+                           wildcard=wildcard,
+                           defaultFile="pipeline.%s" % cpprefs.EXT_PIPELINE,
+                           style=wx.FD_SAVE|wx.FD_OVERWRITE_PROMPT) as dlg:
+            assert isinstance(dlg, wx.FileDialog)
             if dlg.ShowModal() == wx.ID_OK:
+                save_image_plane_details = (dlg.GetFilterIndex() == 1)
                 file_name = dlg.GetFilename()
                 if not sys.platform.startswith("win"):
                     if file_name.find('.') == -1:
                         # on platforms other than Windows, add the default suffix
                         file_name += "." + cpprefs.EXT_PIPELINE
                 pathname = os.path.join(dlg.GetDirectory(), file_name)
-                self.__pipeline.save(pathname)
+                self.__pipeline.save(
+                    pathname,
+                    save_image_plane_details=save_image_plane_details)
                 return True
             return False
-        finally:
-            dlg.Destroy()
     
     def __on_export_image_sets(self, event):
         '''Export the pipeline's image sets to a .csv file'''
@@ -1090,7 +1095,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             except:
                 pass
             if error_msg is None:
-                error_msg = str(event.error)
+                if isinstance(event.error, exceptions.EnvironmentError):
+                    error_msg = event.error.strerror
+                else:
+                    error_msg = str(event.error)
             message = (("Error while processing %s:\n"
                         "%s\n\nDo you want to stop processing?") %
                        (event.module.module_name,error_msg))
@@ -1162,12 +1170,16 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         urls = [ipd.url for ipd in event.image_plane_details]
         self.__path_list_ctrl.add_paths(urls)
         self.__workspace.file_list.add_files_to_filelist(urls)
+        self.__pipeline_list_view.notify_has_file_list(
+            len(self.__pipeline.image_plane_details) > 0)
         
     def on_image_plane_details_removed(self, event):
         '''Callback from pipeline when paths are removed from the pipeline'''
         urls = [ipd.url for ipd in event.image_plane_details]
         self.__path_list_ctrl.remove_paths(urls)
         self.__workspace.file_list.remove_files_from_filelist(urls)
+        self.__pipeline_list_view.notify_has_file_list(
+            len(self.__pipeline.image_plane_details) > 0)
         
     def on_update_pathlist(self, event=None):
         ipds = self.__pipeline.get_filtered_image_plane_details(self.__workspace)
@@ -1210,6 +1222,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     PATHLIST_CMD_BROWSE = "Browse For Images"
     PATHLIST_CMD_REMOVE = "Remove From File List"
     PATHLIST_CMD_REFRESH = "Refresh"
+    PATHLIST_TEXT_REFRESH = "Remove unavailable files"
     PATHLIST_CMD_EXPAND_ALL = "Expand All Folders"
     PATHLIST_CMD_COLLAPSE_ALL = "Collapse All Folders"
     PATHLIST_CMD_CLEAR = "Clear File List"
@@ -1217,6 +1230,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def get_pathlist_file_context_menu(self, paths):
         return ((self.PATHLIST_CMD_SHOW, self.PATHLIST_CMD_SHOW),
                 (self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
+                (self.PATHLIST_CMD_REFRESH, self.PATHLIST_TEXT_REFRESH),
                 (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
                 (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
                 (self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
@@ -1229,6 +1243,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             self.on_pathlist_show()
         elif cmd == self.PATHLIST_CMD_REMOVE:
             self.on_pathlist_file_delete(paths)
+        elif cmd == self.PATHLIST_CMD_REFRESH:
+            self.on_pathlist_refresh(paths)
         elif cmd == self.PATHLIST_CMD_BROWSE:
             if len(paths) == 0 or not paths[0].startswith("file:"):
                 self.on_pathlist_browse(None)
@@ -1250,7 +1266,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
 
     def get_pathlist_folder_context_menu(self, path):
         return ((self.PATHLIST_CMD_REMOVE, self.PATHLIST_CMD_REMOVE),
-                (self.PATHLIST_CMD_REFRESH, self.PATHLIST_CMD_REFRESH),
+                (self.PATHLIST_CMD_REFRESH, self.PATHLIST_TEXT_REFRESH),
                 (self.PATHLIST_CMD_BROWSE, self.PATHLIST_CMD_BROWSE),
                 (self.PATHLIST_CMD_EXPAND_ALL, self.PATHLIST_CMD_EXPAND_ALL),
                 (self.PATHLIST_CMD_COLLAPSE_ALL, self.PATHLIST_CMD_COLLAPSE_ALL),
@@ -1262,9 +1278,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 path, self.__path_list_ctrl.FLAG_RECURSE)
             self.on_pathlist_file_delete(paths)
         elif cmd == self.PATHLIST_CMD_REFRESH:
-            W.walk_in_background(path, 
-                                 self.on_walk_callback, 
-                                 self.on_walk_completed)
+            paths = self.__path_list_ctrl.get_folder(
+                path, self.__path_list_ctrl.FLAG_RECURSE)
+            self.on_pathlist_refresh(paths)
         elif cmd == self.PATHLIST_CMD_BROWSE:
             if path.startswith("file:"):
                 path = urllib.url2pathname(path[5:])
@@ -1296,13 +1312,35 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
     def on_pathlist_show(self, event=None):
         '''Show the focused item's image'''
         from cellprofiler.gui.cpfigure import show_image
+        from cellprofiler.modules.loadimages import url2pathname
         paths = self.__path_list_ctrl.get_paths(
             self.__path_list_ctrl.FLAG_FOCUS_ITEM_ONLY)
         if len(paths) == 0:
             wx.MessageBox("No image selected.", caption = "No image selected", parent = self.__frame)
             return
-        path = paths[0]
+        path = url2pathname(paths[0])
         ext = os.path.splitext(path)[1]
+        if ext.lower() == ".mat":
+            # Maybe it's an image?
+            from scipy.io.matlab.mio import loadmat
+            try:
+                maybe_image = loadmat(os.path.abspath(path))
+                if "Image" in maybe_image.keys():
+                    show_image(paths[0], self.__frame)
+                    return
+            except:
+                pass
+        if len(ext) > 1 and ext[1:] in cpprefs.EXT_PROJECT_CHOICES:
+            result = wx.MessageBox(
+                'Do you want to load the project, \n'
+                '"%s", into your project?' % os.path.split(path)[1],
+                caption = "Load project",
+                style = wx.YES_NO | wx.ICON_QUESTION,
+                parent = self.__path_list_ctrl)
+            if result == wx.YES:
+                self.do_open_workspace(path)
+            return
+            
         if len(ext) > 1 and ext[1:] in cpprefs.EXT_PIPELINE_CHOICES:
             result = wx.MessageBox(
                 'Do you want to import the pipeline, \n'
@@ -1322,6 +1360,33 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__workspace.file_list.remove_files_from_filelist(paths)
         self.__workspace.invalidate_image_set()        
         
+    def on_pathlist_refresh(self, urls):
+        """Refresh the pathlist by checking for existence of file URLs"""
+
+        urls = filter((lambda url: url.startswith("file:")), urls)
+        def refresh_msg(idx):
+            return "Checked %d of %d" % (idx, len(urls))
+        with wx.ProgressDialog(
+            parent = self.__frame,
+            title = "Refreshing file list",
+            message = refresh_msg(0),
+            maximum = len(urls) + 1,
+            style = wx.PD_CAN_ABORT|wx.PD_APP_MODAL) as dlg:
+            assert isinstance(dlg, wx.ProgressDialog)
+            to_remove = []
+            for idx, url in enumerate(urls):
+                path = urllib.url2pathname(url[5:])                
+                if not os.path.isfile(path):
+                    to_remove.append(cpp.ImagePlaneDetails(url, None, None, None))
+                if idx % 100 == 0:
+                    keep_going, skip = dlg.Update(idx, refresh_msg(idx))
+                    if not keep_going:
+                        return
+            if len(to_remove) > 0:
+                dlg.Update(
+                    len(urls), "Removing %d missing files" % len(to_remove))
+                self.__pipeline.remove_image_plane_details(to_remove)
+                
     def on_pathlist_clear(self, event):
         '''Remove all files from the path list'''
         result = wx.MessageBox(
@@ -1490,6 +1555,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             (cpframe.ID_EDIT_MOVE_UP, self.__mcp_module_up_button, enable_up),
             (cpframe.ID_EDIT_DELETE, self.__mcp_remove_module_button, enable_delete),
             (cpframe.ID_EDIT_DUPLICATE, None, enable_duplicate)):
+            state = state and not self.is_running()
             if control is not None:
                 control.Enable(state)
             menu_item = self.__frame.menu_edit.FindItemById(menu_id)
@@ -1566,10 +1632,27 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         return filter(lambda x: not x.is_input_module(),
                       self.__pipeline_list_view.get_selected_modules())
     
+    def ok_to_edit_pipeline(self):
+        '''Return True if ok to edit pipeline
+        
+        Warns user if not OK (is_running)
+        '''
+        if self.is_running():
+            wx.MessageBox(
+                "Pipeline modification is disabled during analysis.\n"
+                "Please stop the analysis before editing your pipeline.",
+                caption = "Error: Pipeline editing disabled during analysis",
+                style = wx.OK | wx.ICON_INFORMATION,
+                parent = self.__frame)
+            return False
+        return True
+                
     def on_remove_module(self,event):
         self.remove_selected_modules()
     
     def remove_selected_modules(self):
+        if not self.ok_to_edit_pipeline():
+            return
         with self.__pipeline.undoable_action("Remove modules"):
             selected_modules = self.__get_selected_modules()
             for module in selected_modules:
@@ -1602,6 +1685,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.duplicate_modules(self.__get_selected_modules())
         
     def duplicate_modules(self, modules):
+        if not self.ok_to_edit_pipeline():
+            return
+        
         selected_modules = self.__get_selected_modules()
         if len(selected_modules):
             module_num=selected_modules[-1].module_num+1
@@ -1621,6 +1707,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             
     def on_module_up(self,event):
         """Move the currently selected modules up"""
+        if not self.ok_to_edit_pipeline():
+            return
         active_module = self.__pipeline_list_view.get_active_module()
         if active_module is not None:
             self.__pipeline.move_module(
@@ -1635,6 +1723,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         
     def on_module_down(self,event):
         """Move the currently selected modules down"""
+        if not self.ok_to_edit_pipeline():
+            return
         active_module = self.__pipeline_list_view.get_active_module()
         if active_module is not None:
             self.__pipeline.move_module(
@@ -1656,8 +1746,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             wx.EndBusyCursor()
             
     def on_update_undo_ui(self, event):
-        event.Enable(self.__pipeline.has_undo())
-    
+        event.Enable(self.__pipeline.has_undo() and not self.is_running())
+        
     def on_add_to_pipeline(self, caller, event):
         """Add a module to the pipeline using the event's module loader
         
@@ -1665,6 +1755,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         
         event - an AddToPipeline event
         """
+        if not self.ok_to_edit_pipeline():
+            return
         active_module = self.__pipeline_list_view.get_active_module()
         if active_module is None:
             # insert module last if nothing selected
@@ -1716,12 +1808,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         #if self.is_in_debug_mode():
         #    self.stop_debugging()
         
-    def __on_module_view_event(self,caller,event):
+    def __on_module_view_event(self, caller, event):
         assert isinstance(event,cellprofiler.gui.moduleview.SettingEditedEvent), '%s is not an instance of CellProfiler.CellProfilerGUI.ModuleView.SettingEditedEvent'%(str(event))
         setting = event.get_setting()
         proposed_value = event.get_proposed_value()
-        setting.value = proposed_value
+        setting.set_value_text(proposed_value)
         module = event.get_module()
+        module.on_setting_changed(setting, self.__pipeline)
         is_image_set_modification = module.change_causes_prepare_run(setting)
         self.__pipeline.edit_module(event.get_module().module_num,
                                     is_image_set_modification)
@@ -1813,6 +1906,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 initial_measurements=self.__workspace.measurements)
             self.__analysis.start(self.analysis_event_handler,
                                   num_workers)
+            self.enable_module_controls_panel_buttons()
 
         except Exception, e:
             # Catastrophic failure
@@ -1878,6 +1972,8 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
             wx.CallAfter(self.module_display_request, evt)
         elif isinstance(evt, cpanalysis.DisplayPostRunRequest):
             wx.CallAfter(self.module_display_post_run_request, evt)
+        elif isinstance(evt, cpanalysis.DisplayPostGroupRequest):
+            wx.CallAfter(self.module_display_post_group_request, evt)
         elif isinstance(evt, cpanalysis.InteractionRequest):
             self.interaction_request_queue.put((PRI_INTERACTION, self.module_interaction_request, evt))
             wx.CallAfter(self.handle_analysis_feedback)
@@ -1939,6 +2035,13 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         assert wx.Thread_IsMain(), "PipelineController.module_display_request() must be called from main thread!"
 
         module_num = evt.module_num
+        if module_num <= 0 or module_num > len(self.__pipeline.modules()):
+            # Defensive coding: module was deleted?
+            logger.warning(
+                "Failed to display module # %d. The pipeline may have been edited during analysis" % module_num)
+            evt.reply(cpanalysis.Ack())
+            return
+            
         # use our shared workspace
         self.__workspace.display_data.__dict__.update(evt.display_data_dict)
         try:
@@ -1980,6 +2083,27 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                                  message="Exception in handling display request for module %s #%d" \
                                      % (module.module_name, module_num))
         
+    def module_display_post_group_request(self, evt):
+        assert wx.Thread_IsMain(), "PipelineController.module_post_group_display_request() must be called from main thread!"
+        module_num = evt.module_num
+        # use our shared workspace
+        self.__workspace.display_data.__dict__.update(evt.display_data)
+        try:
+            module = self.__pipeline.modules()[module_num - 1]
+            if module.display_post_group != cpmodule.CPModule.display_post_group:
+                image_number = evt.image_set_number
+                fig = self.__workspace.get_module_figure(module,
+                                                         image_number,
+                                                         self.__frame)
+                module.display_post_group(self.__workspace, fig)
+                fig.Refresh()
+        except:
+            _, exc, tb = sys.exc_info()
+            display_error_dialog(None, exc, self.__pipeline, tb=tb, continue_only=True,
+                                 message="Exception in handling display request for module %s #%d" \
+                                     % (module.module_name, module_num))
+        finally:
+            evt.reply(cpanalysis.Ack())
 
     def module_interaction_request(self, evt):
         '''forward a module interaction request from the running pipeline to
@@ -2176,10 +2300,10 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                         return
                 self.__pipeline.save_measurements(path, event.measurements)
         finally:
-            event.measurements.close()
             self.stop_running()
             if cpprefs.get_show_analysis_complete_dlg():
                 self.show_analysis_complete()
+            event.measurements.close()
             self.run_next_pipeline(None)
         
     def stop_running(self):
@@ -2190,6 +2314,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__module_view.enable()
         self.__pipeline_list_view.allow_editing(True)
         self.show_launch_controls()
+        self.enable_module_controls_panel_buttons()
     
     def is_in_debug_mode(self):
         """True if there's some sort of debugging in progress"""
@@ -2218,9 +2343,9 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
                 parent = self.__frame)
     
     def start_debugging(self):
+        self.__pipeline.test_mode = True
         self.__pipeline_list_view.set_debug_mode(True)
         self.__test_controls_panel.GetParent().GetSizer().Layout()
-        self.__pipeline.test_mode = True
         self.show_test_controls()
         with cpp.Pipeline.PipelineListener(
             self.__pipeline, self.on_prepare_run_error_event):
@@ -2263,6 +2388,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.stop_debugging()
 
     def stop_debugging(self):
+        self.__pipeline.test_mode = False
         self.__pipeline_list_view.set_debug_mode(False)
         self.__test_controls_panel.GetParent().GetSizer().Layout()
         self.__frame.enable_launch_commands()
@@ -2272,7 +2398,6 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         self.__debug_outlines = None
         self.__debug_grids = None
         self.__pipeline_list_view.on_stop_debugging()
-        self.__pipeline.test_mode = False
         self.__pipeline.end_run()
         self.show_launch_controls()
 

@@ -28,7 +28,7 @@ from cellprofiler.cpmath.cpmorphology import opening, closing, white_tophat
 from cellprofiler.cpmath.filter import enhance_dark_holes, circular_hough
 from cellprofiler.cpmath.filter import variance_transform, line_integration
 from cellprofiler.cpmath.filter import hessian
-from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES
+from cellprofiler.gui.help import HELP_ON_PIXEL_INTENSITIES, PROTIP_AVOID_ICON
 
 ENHANCE = 'Enhance'
 SUPPRESS = 'Suppress'
@@ -137,7 +137,7 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             values."""%globals())
 
         self.smoothing = cps.Float(
-            'Smoothing scale', value = 2.0, minval = 0.1,doc = """
+            'Smoothing scale', value = 2.0, minval = 0, doc = """
             <i>(Used only for the %(E_TEXTURE)s, %(E_DIC)s or %(E_NEURITES)s methods)</i><br>
             <ul>
             <li><i>%(E_TEXTURE)s</i>: This is the scale of the texture features, roughly
@@ -156,7 +156,10 @@ class EnhanceOrSuppressFeatures(cpm.CPModule):
             <li><i>%(E_NEURITES)s:</i> The <i>%(N_TUBENESS)s</i> option uses this scale
             as the sigma of the Gaussian used to smooth the image prior to
             gradient detection.</li>
-            </ul>""" % globals())
+            </ul>
+            <img src="memory:%(PROTIP_AVOID_ICON)s">&nbsp;
+            Smoothing can be turned off by entering a value of zero, but this
+            is not recommended.""" % globals())
         
         self.angle = cps.Float(
             'Shear angle', value = 0,doc = """

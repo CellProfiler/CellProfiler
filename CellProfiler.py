@@ -28,10 +28,8 @@ if sys.platform.startswith('win'):
         here = os.path.split(sys.argv[0])[0]
 
         import ctypes
-        print "here = %s" % here
         libzmq = os.path.join(here, 'libzmq.dll')
         if os.path.exists(libzmq):
-            print "loading %s" % libzmq
             ctypes.cdll.LoadLibrary(libzmq)
 import zmq
 #

@@ -187,7 +187,8 @@ opts = {
                               "email.iterators",
                               "cellprofiler.modules.*"],
                 'excludes': ['pylab', 'Tkinter', 'Cython', 'IPython'],
-                'dll_excludes': ["jvm.dll"]
+                'dll_excludes': ["jvm.dll", "iphlpapi.dll", "nsi.dll",
+                                 "winnsi.dll"]
               },
     'msi': {}
        }

@@ -155,11 +155,11 @@ startup_main = '''<html>
 <td colspan="3">CellProfiler is automated image analysis software to measure biological phenotypes in images.</td>
 </tr>
 <tr>
-    <td colspan="3"><b><font size="+2">See how it works</font></b></td>
+    <td colspan="3"><b><font size="+2">See a pipeline in action</font></b></td>
 </tr>
 <tr>
     <td width="1">&nbsp;</td>
-    <td colspan="2"><a href="loadexample:http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cp">Load a simple pipeline</a> from our website, then click on the "Analyze images" button.</td>
+    <td colspan="2"><a href="loadexample:http://cellprofiler.org/ExampleFlyImages/ExampleFlyURL.cp">Load</a> an example pipeline, then click on the "Analyze Images" button.</td>
 </tr>
 <tr>
     <td colspan="3"><b><font size="+2">Build your own pipeline</font></b></td>
@@ -167,7 +167,7 @@ startup_main = '''<html>
 <tr>
     <td>&nbsp;</td>
     <td width="100"><font size="+2">1: Start</font></td>
-    <td>Download an <a href="http://www.cellprofiler.org/examples.shtml">example pipeline</a> that suits your application and load it with <i>File &gt; Open Project</i>.</td>
+    <td><a href="http://www.cellprofiler.org/examples.shtml">Download</a> a pipeline template from our website of examples. Load it with <i>File &gt; Open Project</i> and modify it to suit your assay.</td>
 </tr>
 <tr>
     <td>&nbsp;</td>

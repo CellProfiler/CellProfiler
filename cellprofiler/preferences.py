@@ -66,6 +66,13 @@ class HeadlessConfig(object):
     
     def Exists(self, kwd):
         return self.__preferences.has_key(kwd)
+    
+    def GetEntryType(self, kwd):
+        '''Get the data type of the registry key.
+        
+        Returns wx.Config.Type_String = 1
+        '''
+        return 1
 
 __is_headless = False
 __headless_config = HeadlessConfig()
@@ -185,7 +192,11 @@ def config_exists(key):
     global __cached_values
     if key in __cached_values and __cached_values[key] is not None:
         return True
-    return get_config().Exists(key) and get_config().Read(key) is not None
+    if not get_config().Exists(key):
+        return False
+    if get_config().GetEntryType(key) == 1:
+        return get_config().Read(key) is not None
+    return True
     
 def cell_profiler_root_directory():
     if __cp_root:

@@ -163,6 +163,16 @@ def config_read(key):
     if __cached_values.has_key(key):
         return __cached_values[key]
     if get_config().Exists(key):
+        if not __is_headless:
+            # Fix problems with some 32-bit
+            import wx
+            entry_type = get_config().GetEntryType(key)
+            if entry_type == wx.Config.Type_Boolean:
+                return get_config().ReadBool(key)
+            elif entry_type == wx.Config.Type_Integer:
+                return get_config().ReadInt(key)
+            elif entry_type == wx.Config.Type_Float:
+                return get_config().ReadFloat(key)
         value = get_config().Read(key)
     else:
         value = None

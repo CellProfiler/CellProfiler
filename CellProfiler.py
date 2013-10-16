@@ -481,14 +481,25 @@ def print_code_statistics():
             continue
         module_instance = instantiate_module(module.module_name)
         setting_count += len(module_instance.help_settings())
-    print "# of settings: %d" % setting_count
-    filelist = subprocess.Popen(["git", "ls-files"], stdout=subprocess.PIPE).communicate()[0].split("\n")
+    directory = os.path.abspath(os.path.split(sys.argv[0])[0])
+    try:
+        filelist = subprocess.Popen(
+            ["git", "ls-files"], 
+            stdout=subprocess.PIPE,
+            cwd = directory).communicate()[0].split("\n")
+    except:
+        filelist = []
+        for root, dirs, files in os.walk(directory):
+            filelist += [os.path.join(root, f) for f in files]
     linecount = 0
     for filename in filelist:
         if (os.path.exists(filename) and 
             any([filename.endswith(x) for x in ".py", ".c", ".pyx", ".java"])):
+            if filename.endswith(".c") and os.path.exists(filename[:-1]+"pyx"):
+                continue
             with open(filename, "r") as fd:
                 linecount += len(fd.readlines())
+    print "# of settings: %d" % setting_count
     print "# of lines of code: %d" % linecount
 
 def print_measurements(options):

@@ -196,6 +196,7 @@ class NamesAndTypes(cpm.CPModule):
                                                   "Assignments count")
         self.add_assignment(can_remove = False)
         
+        self.add_assignment_divider = cps.Divider()
         self.add_assignment_button = cps.DoSomething(
             "", "Add another image",
             self.add_assignment)
@@ -455,7 +456,7 @@ class NamesAndTypes(cpm.CPModule):
                     result += [assignment.rescale]
                 if assignment.can_remove:
                     result += [assignment.remover]
-            result += [self.add_assignment_button]
+            result += [self.add_assignment_divider, self.add_assignment_button]
             if len(self.assignments) > 1:
                 result += [self.matching_choice]
                 if self.matching_method == MATCH_BY_METADATA:

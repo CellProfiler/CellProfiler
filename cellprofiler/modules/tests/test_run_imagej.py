@@ -32,11 +32,6 @@ OUTPUT_IMAGE_NAME = "outputimage"
 
 class TestRunImageJ(unittest.TestCase):
     
-    @classmethod
-    def tearDownClass(cls):
-        from cellprofiler.utilities.jutil import deactivate_awt
-        deactivate_awt()
-        
     def test_01_01_load_v1(self):
         data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
 Version:1

@@ -560,12 +560,17 @@ class AnalysisRunner(object):
                 continue
             
             if isinstance(req, PipelinePreferencesRequest):
+                logger.debug("Received pipeline preferences request")
                 req.reply(Reply(pipeline_blob=np.array(self.pipeline_as_string()),
                                 preferences=cpprefs.preferences_as_dict()))
+                logger.debug("Replied to pipeline preferences request")
             elif isinstance(req, InitialMeasurementsRequest):
+                logger.debug("Received initial measurements request")
                 req.reply(Reply(buf=self.initial_measurements_buf))
+                logger.debug("Replied to initial measurements request")
             elif isinstance(req, WorkRequest):
                 if not self.work_queue.empty():
+                    logger.debug("Received work request")
                     job, worker_runs_post_group, wants_dictionary = \
                         self.work_queue.get()
                     req.reply(WorkReply(
@@ -573,6 +578,8 @@ class AnalysisRunner(object):
                         worker_runs_post_group=worker_runs_post_group,
                         wants_dictionary = wants_dictionary))
                     self.queue_dispatched_job(job)
+                    logger.debug("Dispatched job: image sets=%s" % 
+                                 ",".join([str(i) for i in job]))
                 else:
                     # there may be no work available, currently, but there
                     # may be some later.
@@ -580,21 +587,31 @@ class AnalysisRunner(object):
             elif isinstance(req, ImageSetSuccess):
                 # interface() is responsible for replying, to allow it to
                 # request the shared_state dictionary if needed.
+                logger.debug("Received ImageSetSuccess")
                 self.queue_imageset_finished(req)
+                logger.debug("Enqueued ImageSetSuccess")
             elif isinstance(req, SharedDictionaryRequest):
+                logger.debug("Received shared dictionary request")
                 req.reply(SharedDictionaryReply(dictionaries=self.shared_dicts))
+                logger.debug("Sent shared dictionary reply")
             elif isinstance(req, MeasurementsReport):
+                logger.debug("Received measurements report")
                 self.queue_received_measurements(req.image_set_numbers,
                                                  req.buf)
                 req.reply(Ack())
+                logger.debug("Acknowledged measurements report")
             elif isinstance(req, (InteractionRequest, DisplayRequest, 
                                   DisplayPostGroupRequest,
                                   ExceptionReport, DebugWaiting, DebugComplete,
                                   OmeroLoginRequest)):
+                logger.debug("Enqueueing interactive request")
                 # bump upward
                 self.post_event(req)
+                logger.debug("Interactive request enqueued")
             else:
-                raise ValueError("Unknown request from worker: %s of type %s" % (req, type(req)))
+                msg = "Unknown request from worker: %s of type %s" % (req, type(req))
+                logger.error(msg)
+                raise ValueError(msg)
 
         # stop the ZMQ-boundary thread - will also deal with any requests waiting on replies
         boundary.cancel(analysis_id)

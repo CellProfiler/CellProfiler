@@ -711,7 +711,7 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
         pipeline.add_module(n)
         url = pathname2url(path)
         pathname, filename = os.path.split(path)
-        m = cpmeas.Measurements(mode="memory")
+        m = cpmeas.Measurements()
         if load_as_type == N.LOAD_AS_OBJECTS:
             url_feature = cpmeas.C_OBJECTS_URL + "_" + OBJECTS_NAME
             path_feature = cpmeas.C_OBJECTS_PATH_NAME + "_" + OBJECTS_NAME

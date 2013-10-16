@@ -33,6 +33,9 @@ import os
 import logging
 logger = logging.getLogger(__name__)
 
+'''Set the log level through the environment by specifying AW_LOG_LEVEL'''
+AW_LOG_LEVEL = "AW_LOG_LEVEL"
+
 work_announce_address = None
 def aw_parse_args():
     '''Parse the application arguments into setup parameters'''
@@ -49,7 +52,7 @@ def aw_parse_args():
     parser.add_option("--log-level",
                       dest="log_level",
                       help="Logging level for logger: DEBUG, INFO, WARNING, ERROR",
-                      default=logging.INFO)
+                      default=os.environ.get(AW_LOG_LEVEL, logging.INFO))
     parser.add_option("--plugins-directory",
                       dest="plugins_directory",
                       help="Folder containing the CellProfiler plugin modules needed by client pipelines",

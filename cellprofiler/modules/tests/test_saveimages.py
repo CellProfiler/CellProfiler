@@ -701,8 +701,8 @@ SaveImages:[module_num:1|svn_version:\'10581\'|variable_revision_number:9|show_w
         pathnames = measurements.get_all_measurements('Image','PathName_Derived')
         self.assertEqual(filenames[0],fn)
         self.assertEqual(pathnames[0],pn)
-        data = matplotlib.image.imread(img1_out_filename)
-        expected_data = matplotlib.image.imread(img1_filename) 
+        data = load_using_bioformats(img1_out_filename, rescale=False)
+        expected_data = load_using_bioformats(img1_filename, rescale=False) 
         self.assertTrue(np.all(data[expected_data < 255] ==
                                   expected_data[expected_data < 255]))
         self.assertTrue(np.all(data[expected_data == 255] == 0))

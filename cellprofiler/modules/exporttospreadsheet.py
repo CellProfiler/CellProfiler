@@ -395,7 +395,7 @@ class ExportToSpreadsheet(cpm.CPModule):
         elif self.delimiter == DELIMITER_COMMA:
             return ","
         else:
-            return self.delimiter.value
+            return self.delimiter.value.encode("ascii")
     
     def run(self, workspace):
         # all of the work is done in post_run()

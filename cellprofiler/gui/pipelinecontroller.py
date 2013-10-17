@@ -2071,7 +2071,7 @@ u"\u2022 Groups: Confirm that that the expected number of images per group are p
         try:
             module = self.__pipeline.modules()[module_num - 1]
             if module.display_post_run != cpmodule.CPModule.display_post_run:
-                image_number = self.__workspace.measurements.image_set_count+1
+                image_number = self.__workspace.measurements.image_set_count
                 fig = self.__workspace.get_module_figure(module,
                                                          image_number,
                                                          self.__frame)

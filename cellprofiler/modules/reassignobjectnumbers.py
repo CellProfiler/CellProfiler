@@ -194,7 +194,7 @@ class ReassignObjectNumbers(cpm.CPModule):
             An example of a feature that satisfies the above constraints is a line of
             pixels that connect two neighboring objects and is roughly the same intensity 
             as the boundary pixels of both (such as an axon connecting two neurons).</li>
-            </ul>""")
+            </ul>"""%globals())
         
         self.wants_outlines = cps.Binary(
             "Retain outlines of the relabeled objects?", False, doc="""

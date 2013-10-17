@@ -20,6 +20,7 @@ import matplotlib.cm
 from matplotlib.backends.backend_wxagg import FigureCanvasWxAgg
 from matplotlib.backends.backend_wx import NavigationToolbar2Wx
 import threading
+import traceback
 import multiprocessing
 
 from bioformats.formatreader import load_using_bioformats_url
@@ -476,11 +477,15 @@ class PlateViewer(object):
                         channel = fd[PlateData.D_CHANNEL]
                     else:
                         channel = str(c+1)
-                    img = load_using_bioformats_url(fd[PlateData.D_FILENAME])
-                    with self.image_dict_lock:
-                        if self.image_dict_generation > generation:
-                            return
-                        sd[channel] = img
+                    try:
+                        img = load_using_bioformats_url(fd[PlateData.D_FILENAME])
+                        with self.image_dict_lock:
+                            if self.image_dict_generation > generation:
+                                return
+                            sd[channel] = img
+                    except:
+                        traceback.print_exc()
+                        pass
             wx.CallAfter(self.update_figure)
             cellprofiler.utilities.jutil.detach()
         t = threading.Thread(target = fn)
@@ -518,6 +523,8 @@ class PlateViewer(object):
             for channel in sd:
                 img_size = [max(i0, i1) for i0, i1 in zip(
                     sd[channel].shape, img_size)]
+        if all([iii == 0 for iii in image_size]):
+            return
         img_size = np.array(img_size)
         tile_dims = np.array(tile_dims)+1
         for k in site_dict:

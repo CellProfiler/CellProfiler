@@ -389,7 +389,8 @@ class ModuleView:
                 self.hide_settings()
             else:
                 self.__module.on_activated(self.__workspace)
-                self.notes_panel.Show(True)
+                if self.notes_panel is not None:
+                    self.notes_panel.Show(True)
             settings            = self.check_settings(self.__module.module_name, 
                                                       self.__module.visible_settings())
             self.__sizer.Reset(len(settings), 3, False)

@@ -24,6 +24,7 @@ from cellprofiler.icons import get_builtin_images_path
 from cellprofiler.gui.html.content import WELCOME_HELP
 
 MEMORY_SCHEME = "memory:"
+WELCOME_SCREEN_FRAME = "WelcomeScreenFrame"
 class HtmlClickableWindow(wx.html.HtmlWindow):
     def __init__(self, *args, **kwargs):
         wx.html.HtmlWindow.__init__(self, *args, **kwargs)
@@ -41,8 +42,15 @@ class HtmlClickableWindow(wx.html.HtmlWindow):
         elif href.startswith('pref:'):
             if 'no_display' in href:
                 cpprefs.set_startup_blurb(False)
-                self.SetPage('')
-                self.BackgroundColour = cpprefs.get_background_color()
+                # Find the parent frame and, if it's the welcome screen frame,
+                # "close" it (= hide it)
+                #
+                parent = self.Parent
+                while parent != None:
+                    if parent.Name == WELCOME_SCREEN_FRAME:
+                        parent.Close()
+                        break
+                    parent = parent.Parent
         elif href.startswith('help:'):
             href = linkinfo.Href[7:]
             html_str = WELCOME_HELP[href]

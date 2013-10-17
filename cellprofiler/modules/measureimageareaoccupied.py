@@ -83,7 +83,7 @@ class MeasureImageAreaOccupied(cpm.CPModule):
                     <li><i>%(O_BINARY_IMAGE)s:</i> The area occupied by the foreground in a binary (black 
                     and white) image.</li>
                     <li><i>%(O_OBJECTS)s:</i> The area occupied by previously-identified objects.</li>
-                    </ul>""")
+                    </ul>"""%globals())
                 
                 self.__operand_objects = cps.ObjectNameSubscriber(
                     "Select objects to measure",

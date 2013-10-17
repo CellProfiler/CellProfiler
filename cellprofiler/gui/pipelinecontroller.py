@@ -667,7 +667,7 @@ u"\u2022 Using an existing folder instead of the Default Input Folder.\n\n"
 "following:\n"
 u"\u2022 Images module: Provide your original images and/or folders as input.\n"
 u"\u2022 Metadata module: Confirm that your metadata (if any) is provided.\n"
-u"\u2022 NamesAndTypes: Confirm that 'Load as Color image' is selected for any\n"
+u"\u2022 NamesAndTypes: Confirm that 'Color image' is selected for any\n"
 "   color images under the 'Select the image type' setting.\n"
 u"\u2022 Groups: Confirm that that the expected number of images per group are present.")
                 CONVERT = 1

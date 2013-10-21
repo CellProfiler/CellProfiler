@@ -622,14 +622,14 @@ def build_extensions():
         if not needs_build:
             continue
         if use_mingw:
-            p = subprocess.Popen(["python",
+            p = subprocess.Popen([sys.executable,
                                   script_file,
                                   "build_ext", "-i",
                                   "--compiler=mingw32"],
                                  cwd=script_path,
                                  env=env)
         else:
-            p = subprocess.Popen(["python",
+            p = subprocess.Popen([sys.executable,
                                   script_file,
                                   "build_ext", "-i"],
                                  cwd=script_path,

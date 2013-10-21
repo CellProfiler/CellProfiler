@@ -431,7 +431,7 @@ class TrackObjects(cpm.CPModule):
             </ul></p>'''%globals())
         
         self.max_gap_score = cps.Integer(
-            'Maximum gap displacement', 50, minval=1, doc = '''
+            'Maximum gap displacement, in frames', 5, minval=1, doc = '''
             <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
             displacements during the second phase. 

@@ -198,9 +198,12 @@ Resize:[module_num:2|svn_version:\'10104\'|variable_revision_number:3|show_windo
                                                 R.I_NEAREST_NEIGHBOR)
         module.resizing_factor.value = 3.0
         module.run(workspace)
-        result = workspace.image_set.get_image(OUTPUT_IMAGE_NAME).pixel_data
+        result_image = workspace.image_set.get_image(OUTPUT_IMAGE_NAME)
+        result = result_image.pixel_data
         self.assertTrue(np.all(np.abs(result-expected) <=
                                np.finfo(float).eps))
+        self.assertTrue(result_image.parent_image is 
+                        workspace.image_set.get_image(INPUT_IMAGE_NAME))
 
     def test_02_02_rescale_triple_bw(self):
         i,j = np.mgrid[0:10,0:10]

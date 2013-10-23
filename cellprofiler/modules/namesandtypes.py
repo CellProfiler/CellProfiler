@@ -82,6 +82,7 @@ import cellprofiler.cpimage as cpi
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
 import cellprofiler.settings as cps
+import cellprofiler.cpmath.outline
 from cellprofiler.modules.images import FilePredicate
 from cellprofiler.modules.images import ExtensionPredicate
 from cellprofiler.modules.images import ImagePredicate
@@ -89,6 +90,7 @@ from cellprofiler.modules.images import DirectoryPredicate
 from cellprofiler.modules.loadimages import LoadImagesImageProviderURL
 from cellprofiler.modules.loadimages import convert_image_to_objects
 from cellprofiler.gui.help import FILTER_RULES_BUTTONS_HELP, USING_METADATA_HELP_REF
+from cellprofiler.gui.help import RETAINING_OUTLINES_HELP, NAMING_OUTLINES_HELP
 from bioformats.formatreader import get_omexml_metadata, load_using_bioformats
 import bioformats.omexml as OME
 import cellprofiler.utilities.jutil as J
@@ -131,10 +133,14 @@ on the unscaled image, use the <b>ImageMath</b> module to multiply the
 scaled image by the actual image bit-depth."""%globals()
         
 IDX_ASSIGNMENTS_COUNT_V2 = 5
+IDX_ASSIGNMENTS_COUNT_V3 = 6
 IDX_ASSIGNMENTS_COUNT = 6
 
+IDX_FIRST_ASSIGNMENT_V3 = 7
+
 NUM_ASSIGNMENT_SETTINGS_V2 = 4
-NUM_ASSIGNMENT_SETTINGS = 5
+NUM_ASSIGNMENT_SETTINGS_V3 = 5
+NUM_ASSIGNMENT_SETTINGS = 7
 
 MATCH_BY_ORDER = "Order"
 MATCH_BY_METADATA = "Metadata"
@@ -143,7 +149,7 @@ IMAGE_NAMES = ["DNA", "GFP", "Actin"]
 OBJECT_NAMES = ["Cell", "Nucleus", "Cytoplasm", "Speckle"]
 
 class NamesAndTypes(cpm.CPModule):
-    variable_revision_number = 3
+    variable_revision_number = 4
     module_name = "NamesAndTypes"
     category = "File Processing"
     
@@ -416,6 +422,14 @@ class NamesAndTypes(cpm.CPModule):
             "Set intensity range from", 
             [INTENSITY_RESCALING_BY_METADATA, INTENSITY_RESCALING_BY_DATATYPE], 
             value=INTENSITY_RESCALING_BY_METADATA, doc = RESCALING_HELP_TEXT))
+        
+        group.append("should_save_outlines", cps.Binary(
+            "Retain object outlines?", False, doc="""
+            %(RETAINING_OUTLINES_HELP)s""" % globals()))
+        
+        group.append("save_outlines", cps.OutlineNameProvider(
+            "Name the outline image", "LoadedOutlines", doc = 
+            """%(NAMING_OUTLINES_HELP)s""" % globals()))
 
         group.can_remove = can_remove
         if can_remove:
@@ -431,7 +445,8 @@ class NamesAndTypes(cpm.CPModule):
         for assignment in self.assignments:
             result += [assignment.rule_filter, assignment.image_name,
                        assignment.object_name, assignment.load_as_choice,
-                       assignment.rescale]
+                       assignment.rescale, assignment.should_save_outlines,
+                       assignment.save_outlines]
         return result
     
     def visible_settings(self):
@@ -454,6 +469,9 @@ class NamesAndTypes(cpm.CPModule):
                 if assignment.load_as_choice in (LOAD_AS_COLOR_IMAGE,
                                                  LOAD_AS_GRAYSCALE_IMAGE):
                     result += [assignment.rescale]
+                elif assignment.load_as_choice == LOAD_AS_OBJECTS:
+                    result += [assignment.should_save_outlines, 
+                               assignment.save_outlines]
                 if assignment.can_remove:
                     result += [assignment.remover]
             result += [self.add_assignment_divider, self.add_assignment_button]
@@ -852,7 +870,10 @@ class NamesAndTypes(cpm.CPModule):
         else:
             for group in self.assignments:
                 if group.load_as_choice == LOAD_AS_OBJECTS:
-                    self.add_objects(workspace, group.object_name.value)
+                    self.add_objects(workspace, 
+                                     group.object_name.value,
+                                     group.should_save_outlines.value,
+                                     group.save_outlines.value)
                 else:
                     rescale = group.rescale.value
                     self.add_image_provider(workspace, 
@@ -940,7 +961,7 @@ class NamesAndTypes(cpm.CPModule):
                     hasher.update(buf)
         return hasher.hexdigest()
     
-    def add_objects(self, workspace, name):
+    def add_objects(self, workspace, name, should_save_outlines, outlines_name):
         '''Add objects loaded from a file to the object set'''
         from cellprofiler.modules.identify import add_object_count_measurements
         from cellprofiler.modules.identify import add_object_location_measurements
@@ -982,6 +1003,13 @@ class NamesAndTypes(cpm.CPModule):
                                                  name, o.ijv, o.count)
         add_object_count_measurements(workspace.measurements, name, o.count)
         workspace.object_set.add_objects(o, name)
+        if should_save_outlines:
+            outline_image = np.zeros(image.pixel_data.shape[:2], bool)
+            for labeled_image, indices in o.get_labels():
+                plane = cellprofiler.cpmath.outline.outline(labeled_image)
+                outline_image |= plane
+            out_img = cpi.Image(outline_image)
+            workspace.image_set.add(outlines_name, out_img)
                      
     def on_activated(self, workspace):
         self.workspace = workspace
@@ -1231,7 +1259,18 @@ class NamesAndTypes(cpm.CPModule):
                 idx = next_idx
             setting_values = new_setting_values
             variable_revision_number = 3
-
+        if variable_revision_number == 3:
+            # Added object outlines
+            n_assignments = int(setting_values[IDX_ASSIGNMENTS_COUNT_V3])
+            new_setting_values = setting_values[:IDX_FIRST_ASSIGNMENT_V3]
+            for i in range(n_assignments):
+                idx = IDX_FIRST_ASSIGNMENT_V3 + NUM_ASSIGNMENT_SETTINGS_V3 * i
+                new_setting_values += setting_values[
+                    idx:(idx + NUM_ASSIGNMENT_SETTINGS_V3)]
+                new_setting_values += [cps.NO, "LoadedObjects"]
+            setting_values = new_setting_values
+            variable_revision_number = 4
+            
         return setting_values, variable_revision_number, from_matlab
     
     class FakeModpathResolver(object):

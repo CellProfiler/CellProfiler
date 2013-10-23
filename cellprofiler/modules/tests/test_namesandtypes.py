@@ -41,6 +41,7 @@ IMAGE_NAME = "imagename"
 ALT_IMAGE_NAME = "altimagename"
 OBJECTS_NAME = "objectsname"
 ALT_OBJECTS_NAME = "altobjectsname"
+OUTLINES_NAME = "outlines"
 
 def md(keys_and_counts):
     '''Generate metadata dictionaries for the given metadata shape
@@ -313,6 +314,104 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
                 self.assertEqual(assignment.image_name, image_name)
                 self.assertEqual(assignment.object_name, objects_name)
                 self.assertEqual(assignment.load_as_choice, load_as)
+                self.assertFalse(assignment.should_save_outlines)
+                            
+    def test_00_04_load_v4(self):
+            data = r"""CellProfiler Pipeline: http://www.cellprofiler.org
+Version:3
+DateRevision:20130730112304
+ModuleCount:3
+HasImagePlaneDetails:False
+
+Images:[module_num:1|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    :{"ShowFiltered"\x3A false}
+    Filter based on rules:Yes
+    Filter:or (extension does istif)
+
+Metadata:[module_num:2|svn_version:\'Unknown\'|variable_revision_number:1|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Extract metadata?:Yes
+    Extraction method count:1
+    Extraction method:Manual
+    Source:From file name
+    Regular expression:^(?P<Plate>.*)_(?P<Well>\x5BA-P\x5D\x5B0-9\x5D{2})f(?P<Site>\x5B0-9\x5D{2})d(?P<ChannelNumber>\x5B0-9\x5D)
+    Regular expression:(?P<Date>\x5B0-9\x5D{4}_\x5B0-9\x5D{2}_\x5B0-9\x5D{2})$
+    Filter images:All images
+    :or (file does contain "")
+    Metadata file location\x3A:
+    Match file and image metadata:\x5B\x5D
+
+NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:4|show_window:True|notes:\x5B\x5D|batch_state:array(\x5B\x5D, dtype=uint8)]
+    Assign a name to:Images matching rules
+    Select the image type:Color image
+    Name to assign these images:PI
+    :\x5B{u\'Illum\'\x3A u\'Plate\', u\'DNA\'\x3A u\'Plate\', \'Cells\'\x3A u\'Plate\', u\'Actin\'\x3A u\'Plate\', u\'GFP\'\x3A u\'Plate\'}, {u\'Illum\'\x3A u\'Well\', u\'DNA\'\x3A u\'Well\', \'Cells\'\x3A u\'Well\', u\'Actin\'\x3A u\'Well\', u\'GFP\'\x3A u\'Well\'}, {u\'Illum\'\x3A u\'Site\', u\'DNA\'\x3A u\'Site\', \'Cells\'\x3A u\'Site\', u\'Actin\'\x3A u\'Site\', u\'GFP\'\x3A u\'Site\'}\x5D
+    Channel matching method:Order
+    Set intensity range from:Image bit-depth
+    Assignments count:5
+    Select the rule criteria:or (metadata does ChannelNumber "0")
+    Name to assign these images:DNA
+    Name to assign these objects:Nuclei
+    Select the image type:Grayscale image
+    Set intensity range from:Image metadata
+    Retain object outlines?:No
+    Name the outline image:LoadedOutlines
+    Select the rule criteria:or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)
+    Name to assign these images:Actin
+    Name to assign these objects:Cells
+    Select the image type:Color image
+    Set intensity range from:Image bit-depth
+    Retain object outlines?:No
+    Name the outline image:LoadedOutlines
+    Select the rule criteria:or (metadata does ChannelNumber "2")
+    Name to assign these images:GFP
+    Name to assign these objects:Cells
+    Select the image type:Mask
+    Set intensity range from:Image metadata
+    Retain object outlines?:No
+    Name the outline image:LoadedOutlines
+    Select the rule criteria:or (metadata does ChannelNumber "2")
+    Name to assign these images:Foo
+    Name to assign these objects:Cells
+    Select the image type:Objects
+    Set intensity range from:Image bit-depth
+    Retain object outlines?:Yes
+    Name the outline image:MyCellOutlines
+    Select the rule criteria:or (metadata does ChannelNumber "2")
+    Name to assign these images:Illum
+    Name to assign these objects:Cells
+    Select the image type:Illumination function
+    Set intensity range from:Image metadata
+    Retain object outlines?:No
+    Name the outline image:LoadedOutlines
+"""
+            pipeline = cpp.Pipeline()
+            def callback(caller, event):
+                self.assertFalse(isinstance(event, cpp.LoadExceptionEvent))
+            pipeline.add_listener(callback)
+            pipeline.load(StringIO(data))
+            self.assertEqual(len(pipeline.modules()), 3)
+            module = pipeline.modules()[2]
+            self.assertTrue(isinstance(module, N.NamesAndTypes))
+            self.assertEqual(module.assignment_method, N.ASSIGN_RULES)
+            self.assertEqual(module.single_load_as_choice, N.LOAD_AS_COLOR_IMAGE)
+            self.assertEqual(module.single_image_provider.value, "PI")
+            self.assertEqual(module.single_rescale, N.INTENSITY_RESCALING_BY_DATATYPE)
+            self.assertEqual(module.matching_choice, N.MATCH_BY_ORDER)
+            self.assertEqual(module.assignments_count.value, 5)
+            aa = module.assignments
+            for assignment, rule, image_name, objects_name, load_as, \
+                rescale, should_save_outlines, outlines_name in (
+                (aa[0], 'or (metadata does ChannelNumber "0")', "DNA", "Nuclei", N.LOAD_AS_GRAYSCALE_IMAGE, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
+                (aa[1], 'or (image does ismonochrome) (metadata does ChannelNumber "1") (extension does istif)', "Actin", "Cells", N.LOAD_AS_COLOR_IMAGE, N.INTENSITY_RESCALING_BY_DATATYPE, False, "LoadedOutlines"),
+                (aa[2], 'or (metadata does ChannelNumber "2")', "GFP", "Cells", N.LOAD_AS_MASK, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines"),
+                (aa[3], 'or (metadata does ChannelNumber "2")', "Foo", "Cells", N.LOAD_AS_OBJECTS, N.INTENSITY_RESCALING_BY_DATATYPE, True, "MyCellOutlines"),
+                (aa[4], 'or (metadata does ChannelNumber "2")', "Illum", "Cells", N.LOAD_AS_ILLUMINATION_FUNCTION, N.INTENSITY_RESCALING_BY_METADATA, False, "LoadedOutlines")):
+                self.assertEqual(assignment.rule_filter.value, rule)
+                self.assertEqual(assignment.image_name, image_name)
+                self.assertEqual(assignment.object_name, objects_name)
+                self.assertEqual(assignment.load_as_choice, load_as)
+                self.assertEqual(assignment.should_save_outlines, should_save_outlines)
+                self.assertEqual(assignment.save_outlines, outlines_name)
                             
     def do_teest(self, module, channels, expected_tags, expected_metadata, additional=None):
         '''Ensure that NamesAndTypes recreates the column layout when run
@@ -706,6 +805,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
         n.assignments[0].object_name.value = OBJECTS_NAME
         n.assignments[0].load_as_choice.value = load_as_type
         n.assignments[0].rescale.value = rescaled
+        n.assignments[0].should_save_outlines.value = True
+        n.assignments[0].save_outlines.value = OUTLINES_NAME
         n.module_num = 1
         pipeline = cpp.Pipeline()
         pipeline.add_module(n)
@@ -861,6 +962,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
         self.assertEqual(m[cpmeas.IMAGE, C_MD5_DIGEST + "_" + OBJECTS_NAME],
                          "67880f6269fbf438d4b9c92256aa1d8f")
         self.assertEqual(m[cpmeas.IMAGE, C_WIDTH + "_" + OBJECTS_NAME], 640)
+        outlines = workspace.image_set.get_image(OUTLINES_NAME)
+        self.assertEqual(o.shape, outlines.pixel_data.shape)
         
     def test_03_10_load_overlapped_objects(self):
         from .test_loadimages import overlapped_objects_data
@@ -883,6 +986,8 @@ NamesAndTypes:[module_num:3|svn_version:\'Unknown\'|variable_revision_number:3|s
                 self.assertTrue(np.all(expected[i, j]))
                 mask[i, j] = True
             self.assertFalse(np.any(mask[~ expected_mask]))
+            outlines = workspace.image_set.get_image(OUTLINES_NAME)
+            self.assertEqual(o.shape, outlines.pixel_data.shape)
         finally:
             try:
                 os.unlink(path)

@@ -64,6 +64,7 @@ OPTIONS = {'argv_emulation': True,
            'frameworks' : [tiff_dylib, jpeg_dylib],
            'plist': { 
                "LSArchitecturePriority": ["i386"],
+               "LSMinimumSystemVersion": "10.6.8", # See #871
                "CFBundleName": "CellProfiler",
                "CFBundleShortVersionString": cellprofiler.utilities.version.dotted_version,
                "CFBundleDocumentTypes": [{

@@ -232,7 +232,7 @@ class Resize(cpm.CPModule):
             output_pixels = affine_transform(image_pixels, transform,
                                              output_shape = shape,
                                              order = order)
-        output_image = cpi.Image(output_pixels)
+        output_image = cpi.Image(output_pixels, parent_image=image)
         workspace.image_set.add(output_image_name, output_image)
 
         if self.show_window:

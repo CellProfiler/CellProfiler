@@ -35,7 +35,7 @@ from cellprofiler.gui.moduleview import ModuleView, stop_validation_queue_thread
 from cellprofiler.gui.preferencesview import PreferencesView
 from cellprofiler.gui.directoryview import DirectoryView
 from cellprofiler.gui.datatoolframe import DataToolFrame
-from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow
+from cellprofiler.gui.html.htmlwindow import HtmlClickableWindow, WELCOME_SCREEN_FRAME
 from cellprofiler.gui.errordialog import display_error_message
 from cellprofiler.gui.pathlist import PathListCtrl
 from cellprofiler.gui.imagesetctrl import ImageSetCtrl
@@ -1293,7 +1293,8 @@ All rights reserved."""
         background_color = cpprefs.get_background_color()
         frame = self.startup_blurb_frame = wx.Frame(
             self, title = "Welcome to CellProfiler",
-            size = (640, 480))
+            size = (640, 480),
+            name=WELCOME_SCREEN_FRAME)
         frame.BackgroundColour = background_color
         frame.Sizer = wx.BoxSizer()
         content = HtmlClickableWindow(frame)

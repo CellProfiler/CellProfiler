@@ -5,6 +5,7 @@
 *.so
 *.dll
 *.properties
+**/Thumbs.db
 *\#
 build
 dist

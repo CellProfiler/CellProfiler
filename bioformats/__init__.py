@@ -129,6 +129,10 @@ def start_cellprofiler_jvm():
         init_logger = False
     else:
         init_logger = True
+        
+    if plugin_directory is not None and os.path.isdir(plugin_directory):
+        # For IJ1 compatibility
+        args += [r"-Dplugins.dir=%s" % plugin_directory]
     
     if get_headless():
         # We're running silently, so don't change the Java preferences

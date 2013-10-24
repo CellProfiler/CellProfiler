@@ -31,6 +31,10 @@ WRITE_MAT_FILE = "MATLAB"
 WRITE_HDF_FILE = "HDF5"
 DO_NOT_WRITE_MEASUREMENTS = "Do not write measurements"
 
+WRITE_MAT_FILE_TEXT = WRITE_MAT_FILE
+WRITE_HDF_FILE_TEXT = WRITE_HDF_FILE
+DO_NOT_WRITE_MEASUREMENTS_TEXT = "Do not write MATLAB or HDF5 files"
+
 class PreferencesView:
     """View / controller for the preferences that get displayed in the main window
     
@@ -193,7 +197,8 @@ class PreferencesView:
             cpprefs.get_allow_output_file_overwrite()
         write_measurements_combo_box = wx.Choice(
             panel, choices = 
-            [WRITE_HDF_FILE, WRITE_MAT_FILE, DO_NOT_WRITE_MEASUREMENTS])
+            [WRITE_HDF_FILE_TEXT, WRITE_MAT_FILE_TEXT,
+             DO_NOT_WRITE_MEASUREMENTS_TEXT])
         # set measurements mode, then fake an event to update output
         # filename and which controls are shown.
         measurements_mode_idx = [cpprefs.WRITE_HDF5, True, False].index(
@@ -226,11 +231,11 @@ class PreferencesView:
             #
             sel = write_measurements_combo_box.GetStringSelection()
             output_filename = output_filename_edit_box.Value
-            if sel == WRITE_HDF_FILE:
+            if sel == WRITE_HDF_FILE_TEXT:
                 cpprefs.set_write_MAT_files(cpprefs.WRITE_HDF5)
                 if output_filename.lower().endswith('.mat'):
                     output_filename = output_filename[:-4] + u".h5"
-            elif sel == WRITE_MAT_FILE:
+            elif sel == WRITE_MAT_FILE_TEXT:
                 cpprefs.set_write_MAT_files(True)
                 if output_filename.lower().endswith('.h5'):
                     output_filename = output_filename[:-3] + u".mat"
@@ -244,7 +249,7 @@ class PreferencesView:
             #
             # Reconstruct the sizers depending on whether we have one or two rows
             #
-            if sel == DO_NOT_WRITE_MEASUREMENTS:
+            if sel == DO_NOT_WRITE_MEASUREMENTS_TEXT:
                 show = False
                 output_sizer = wx.BoxSizer(wx.HORIZONTAL)
                 output_sizer.Add(output_filename_help_button, 0, wx.EXPAND)

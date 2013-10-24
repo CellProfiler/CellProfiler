@@ -83,9 +83,6 @@ See also: Any of the <b>Measure</b> modules, <b>IdentifyPrimaryObjects</b>, <b>G
 
 import numpy as np
 import numpy.ma
-import matplotlib.figure
-import matplotlib.axes
-import matplotlib.backends.backend_agg
 from scipy.ndimage import distance_transform_edt
 import scipy.ndimage
 import scipy.sparse
@@ -431,7 +428,7 @@ class TrackObjects(cpm.CPModule):
             </ul></p>'''%globals())
         
         self.max_gap_score = cps.Integer(
-            'Maximum gap displacement', 50, minval=1, doc = '''
+            'Maximum gap displacement, in frames', 5, minval=1, doc = '''
             <i>(Used only if the %(TM_LAP)s tracking method is applied and the second phase is run)</i><br>
             This setting acts as a filter for unreasonably large
             displacements during the second phase. 
@@ -745,6 +742,9 @@ class TrackObjects(cpm.CPModule):
             raise NotImplementedError("Unimplemented tracking method: %s" %
                                       self.tracking_method.value)
         if self.wants_image.value:
+            import matplotlib.figure
+            import matplotlib.axes
+            import matplotlib.backends.backend_agg
             import matplotlib.transforms
             from cellprofiler.gui.cpfigure_tools import figure_to_image, only_display_image
             
@@ -779,6 +779,7 @@ class TrackObjects(cpm.CPModule):
                                ha="center", va="center")
 
     def draw(self, labels, ax, object_numbers):
+        import matplotlib
         indexer = np.zeros(len(object_numbers)+1,int)
         indexer[1:] = object_numbers
         #

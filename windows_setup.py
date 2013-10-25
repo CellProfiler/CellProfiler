@@ -66,6 +66,7 @@ if is_win64:
     cell_profiler_setup = "CellProfiler_%s_win64_r%s.exe" % (dotted_version, revision)
 else:
     cell_profiler_setup = "CellProfiler_%s_win32_r%s.exe" % (dotted_version, revision)
+cell_profiler_setup_path = os.path.join("Output", cell_profiler_setup)
     
 
 class CellProfilerMSI(distutils.core.Command):
@@ -106,7 +107,7 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
         required_files = ["dist\\CellProfiler.exe",cell_profiler_iss]
         compile_command = self.__compile_command()
         compile_command = compile_command.replace("%1",cell_profiler_iss)
-        self.make_file(required_files, "Output\\"+cell_profiler_setup, 
+        self.make_file(required_files, cell_profiler_setup_path, 
                        subprocess.check_call,([compile_command]),
                        "Compiling %s" % cell_profiler_iss)
         os.remove("version.iss")
@@ -193,7 +194,7 @@ class CellProfilerCodesign(distutils.core.Command):
         pass
     
     def run(self):
-        required_files = [cell_profiler_setup]
+        required_files = [cell_profiler_setup_path]
         try:
             key = _winreg.OpenKey(
                 _winreg.HKEY_LOCAL_MACHINE,
@@ -213,7 +214,7 @@ class CellProfilerCodesign(distutils.core.Command):
             subprocess.check_call,
             ([signtool, "sign", "/a", "/du", "http://www.cellprofiler.org/", 
               "/t", "http://timestamp.comodoca.com/authenticode", 
-              cell_profiler_setup], ), "Signing %s" % cell_profiler_setup)
+              cell_profiler_setup_path], ), "Signing %s" % cell_profiler_setup)
         
 opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",

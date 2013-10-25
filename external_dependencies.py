@@ -37,8 +37,6 @@ def check_output(*popenargs, **kwargs):
     Python 2.6.2
 
     """
-    if 'check_output' in subprocess:
-        return subprocess.check_output(*popenargs, **kwargs)
     process = subprocess.Popen(stdout=subprocess.PIPE, *popenargs, **kwargs)
     output, unused_err = process.communicate()
     retcode = process.poll()

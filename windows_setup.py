@@ -50,6 +50,7 @@ import external_dependencies
 external_dependencies.fetch_external_dependencies('fail')
 
 from cellprofiler.utilities.version import version_number, dotted_version, version_string
+revision = str(version_number)
 f = open("cellprofiler/frozen_version.py", "w")
 f.write("# MACHINE_GENERATED\nversion_string = '%s'" % version_string)
 f.close()
@@ -60,6 +61,12 @@ vcredist = os.path.join("windows",
                         "vcredist_x64.exe" if is_win64
                         else "vcredist_x86.exe")
 do_modify = is_2_6 and not os.path.exists(vcredist)
+
+if is_win64:
+    cell_profiler_setup = "CellProfiler_%s_win64_r%s.exe" % (dotted_version, revision)
+else:
+    cell_profiler_setup = "CellProfiler_%s_win32_r%s.exe" % (dotted_version, revision)
+    
 
 class CellProfilerMSI(distutils.core.Command):
     description = "Make CellProfiler.msi using the CellProfiler.iss InnoSetup compiler"
@@ -72,7 +79,6 @@ class CellProfilerMSI(distutils.core.Command):
         pass
     
     def run(self):
-        revision = str(version_number)
         if is_2_6 and do_modify:
             self.modify_manifest("analysis_worker.exe")
             self.modify_manifest("CellProfiler.exe")
@@ -95,14 +101,12 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
         fd.close()
         if is_win64:
             cell_profiler_iss = "CellProfiler64.iss"
-            cell_profiler_setup = "CellProfiler_%s_win64_r%s.exe" % (dotted_version, revision)
         else:
             cell_profiler_iss = "CellProfiler.iss"
-            cell_profiler_setup = "CellProfiler_%s_win32_r%s.exe" % (dotted_version, revision)
         required_files = ["dist\\CellProfiler.exe",cell_profiler_iss]
         compile_command = self.__compile_command()
         compile_command = compile_command.replace("%1",cell_profiler_iss)
-        self.make_file(required_files,"Output\\"+cell_profiler_setup, 
+        self.make_file(required_files, "Output\\"+cell_profiler_setup, 
                        subprocess.check_call,([compile_command]),
                        "Compiling %s" % cell_profiler_iss)
         os.remove("version.iss")
@@ -178,6 +182,39 @@ OutputBaseFilename=CellProfiler_%s_win%d_r%s
                 key.Close()
             raise distutils.errors.DistutilsFileError, "Inno Setup does not seem to be installed properly. Specifically, there is no entry in the HKEY_CLASSES_ROOT for InnoSetupScriptFile\\shell\\Compile\\command"
 
+class CellProfilerCodesign(distutils.core.Command):
+    description = "Sign the .msi package"
+    user_options = []
+    
+    def initialize_options(self):
+        pass
+    
+    def finalize_options(self):
+        pass
+    
+    def run(self):
+        required_files = [cell_profiler_setup]
+        try:
+            key = _winreg.OpenKey(
+                _winreg.HKEY_LOCAL_MACHINE,
+                "SOFTWARE\Microsoft\Microsoft SDKs\Windows")
+            best_sdk = _winreg.EnumKey(key, _winreg.QueryInfoKey(key)[0]-1)
+            sdk_key = _winreg.OpenKey(key, best_sdk)
+            key.Close()
+            signtool = os.path.join(
+                _winreg.QueryValueEx(sdk_key, "InstallationFolder")[0],
+                "Bin", "signtool.exe")
+            sdk_key.Close()
+            assert(os.path.isfile(signtool))
+        except:
+            raise distutils.errors.DistutilsExecError, \
+                  "The Microsoft Windows SDK does not seem to be properly installed"
+        self.execute(
+            subprocess.check_call,
+            ([signtool, "sign", "/a", "/du", "http://www.cellprofiler.org/", 
+              "/t", "http://timestamp.comodoca.com/authenticode", 
+              cell_profiler_setup], ), "Signing %s" % cell_profiler_setup)
+        
 opts = {
     'py2exe': { "includes" : ["numpy", "scipy","PIL","wx",
                               "matplotlib", "matplotlib.numerix.random_array",
@@ -190,7 +227,8 @@ opts = {
                 'dll_excludes': ["jvm.dll", "iphlpapi.dll", "nsi.dll",
                                  "winnsi.dll"]
               },
-    'msi': {}
+    'msi': {},
+    'codesign': {}
        }
 
 data_files = []
@@ -360,7 +398,8 @@ try:
                    {'script':'cellprofiler\\analysis_worker.py'}],
           name='Cell Profiler',
           data_files = data_files,
-          cmdclass={'msi':CellProfilerMSI
+          cmdclass={'msi':CellProfilerMSI,
+                    'codesign':CellProfilerCodesign
                     },
           options=opts)
 finally:

@@ -59,7 +59,6 @@ import numpy as np
 import os
 import sys
 
-from cellprofiler.gui.htmldialog import HTMLDialog
 import cellprofiler.cpmodule as cpm
 import cellprofiler.measurements as cpmeas
 import cellprofiler.pipeline as cpp
@@ -173,6 +172,7 @@ class MergeOutputFiles(cpm.CPModule):
     @staticmethod
     def on_help(event, list_control):
         import cellprofiler.modules        
+        from cellprofiler.gui.htmldialog import HTMLDialog
         dlg = HTMLDialog(
             list_control, 'Help on module,"%s"'%MergeOutputFiles.module_name, __doc__)
         dlg.Show()

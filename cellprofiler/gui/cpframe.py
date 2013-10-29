@@ -1282,6 +1282,7 @@ All rights reserved."""
 
         self.search_frame.Bind(wx.EVT_CLOSE, on_close)
         self.search_frame.Layout()
+        self.search_frame.SetIcon(get_cp_icon())
 
     def __on_search_help(self, event):
         if self.search_frame is not None:
@@ -1300,6 +1301,7 @@ All rights reserved."""
         content = HtmlClickableWindow(frame)
         content.load_startup_blurb()
         frame.Sizer.Add(content, 1, wx.EXPAND)
+        frame.SetIcon(get_cp_icon())
         
         def on_close(event):
             assert isinstance(event, wx.CloseEvent)

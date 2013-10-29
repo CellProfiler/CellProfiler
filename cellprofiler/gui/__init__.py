@@ -43,7 +43,7 @@ def get_cp_icon(size=None):
     import wx
     icon = wx.EmptyIcon()
     if size == None and sys.platform.startswith('win'):
-        size = 32
+        size = wx.SystemSettings.GetMetric(wx.SYS_ICON_X)
     icon.CopyFromBitmap(get_cp_bitmap(size))
     return icon
 

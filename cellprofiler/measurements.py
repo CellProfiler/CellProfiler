@@ -427,6 +427,7 @@ class Measurements(object):
         m = handles["handles"][0, 0][MEASUREMENTS_GROUP_NAME][0, 0]
         for object_name in m.dtype.fields.keys():
             omeas = m[object_name][0, 0]
+            object_counts = np.zeros(0, int)
             for feature_name in omeas.dtype.fields.keys():
                 if object_name == IMAGE:
                     values = [None if len(x) == 0 else x.flatten()[0] 
@@ -438,9 +439,24 @@ class Measurements(object):
                 else:
                     values = [x.flatten()
                               for x in omeas[feature_name][0].tolist()]
+                    #
+                    # Keep track of # of objects
+                    #
+                    if len(object_counts) < len(values):
+                        temp, object_counts = object_counts, np.zeros(len(values), int)
+                        if len(temp) > 0:
+                            object_counts[:len(temp)] = temp
+                    object_counts[:len(values)] = np.maximum(
+                        object_counts[:len(values)], 
+                        np.array([len(x) for x in values]))
                 self.add_all_measurements(object_name,
                                           feature_name,
                                           values)
+            if object_name not in (EXPERIMENT, IMAGE) and not self.has_feature(
+                object_name, OBJECT_NUMBER):
+                self.add_all_measurements(
+                    object_name, OBJECT_NUMBER,
+                    [np.arange(1, x+1) for x in object_counts])
         #
         # Set the image set number to beyond the last in the handles
         #

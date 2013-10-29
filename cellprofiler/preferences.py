@@ -99,7 +99,7 @@ def get_config():
         config = wx.Config.Get()
         if not config.Exists(PREFERENCES_VERSION):
             for key in ALL_KEYS:
-                if config.Exists(key):
+                if config.Exists(key) and config.GetEntryType(key) == 1:
                     v = config.Read(key)
                     config_write(key, v)
             config_write(PREFERENCES_VERSION, str(PREFERENCES_VERSION_NUMBER))

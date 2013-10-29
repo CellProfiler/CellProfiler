@@ -3225,15 +3225,14 @@ class JoinerController(object):
         Each row is a dictionary of key / value where key is the entity name
         and value is the column or metadata value for the join row.
         '''
-        joins = self.v.parse()
-        if len(joins) == 0:
-            joins = self.v.default()
-        return joins
+        return self.v.parse()
         
     def update(self):
         '''Update the control to match the setting'''
         column_names = self.column_names
         joins = self.joins
+        if len(joins) == 0:
+            joins = [dict([(cn, "") for cn in column_names])]
         
         all_subcontrols = {}
         for ctrl in self.panel.GetChildren():
@@ -3347,6 +3346,8 @@ class JoinerController(object):
         if new_value == self.DISPLAY_NONE:
             new_value = None
         joins = list(self.joins)
+        while len(joins) <= row:
+            joins.append(dict([(cn, "") for cn in self.column_names]))
         join = joins[row].copy()
         join[self.column_names[column]] = new_value
         joins[row] = join

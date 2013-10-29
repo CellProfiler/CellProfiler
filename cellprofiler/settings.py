@@ -3304,6 +3304,22 @@ class Joiner(Setting):
     def build_string(cls, dictionary_list):
         return str(dictionary_list)
     
+    def test_valid(self, pipeline):
+        '''Test the joiner setting to ensure that the join is supported
+        
+        '''
+        join = self.parse()
+        if len(join) == 0:
+            raise ValidationError(
+                "This setting needs to be initialized by choosing items from each column",
+                self)
+        for d in join:
+            for column_name, value in d.items():
+                if column_name in self.entities and value not in entities[column_name]:
+                    raise ValidationError(
+                        "%s is not a valid choice for %s" %
+                        (value, column_name), self)
+    
 class DataTypes(Setting):
     '''The DataTypes setting assigns data types to measurement names
     

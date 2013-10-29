@@ -295,7 +295,7 @@ class NamesAndTypes(cpm.CPModule):
             </p>
             </li>
             </ul>"""%globals())
-        self.join = cps.Joiner("")
+        self.join = cps.Joiner("Match metadata")
         self.imageset_setting = cps.ImageSetDisplay("", "Update image set table")
         
     def add_assignment(self, can_remove = True):

@@ -19,8 +19,6 @@ SetupIconFile=.\CellProfilerIcon.ico
 Compression=lzma
 SolidCompression=yes
 ChangesAssociations=yes
-ArchitecturesInstallIn64BitMode=x64
-ArchitecturesAllowed=x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

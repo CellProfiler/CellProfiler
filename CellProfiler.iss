@@ -18,7 +18,6 @@ OutputDir=.\output
 SetupIconFile=.\CellProfilerIcon.ico
 Compression=lzma
 SolidCompression=yes
-ArchitecturesAllowed=x86
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

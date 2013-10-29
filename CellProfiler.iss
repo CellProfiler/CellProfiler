@@ -18,6 +18,7 @@ OutputDir=.\output
 SetupIconFile=.\CellProfilerIcon.ico
 Compression=lzma
 SolidCompression=yes
+ArchitecturesAllowed=x86
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -56,3 +57,24 @@ Root: HKCU; Subkey: "Software\CellProfilerLocal.cfg"; ValueType: dword; ValueNam
 Filename: "{tmp}\vcredist_x86.exe"; Parameters: "/q"
 Filename: "{app}\CellProfiler.exe"; Description: "{cm:LaunchProgram,CellProfiler}"; Flags: nowait postinstall skipifsilent; WorkingDir: "{app}"
 
+[Code]
+function InitializeSetup(): Boolean;
+Var
+  Message: String;
+Begin
+Message := 'This build can only run on a 32-bit operating system, but yours is 64-bit. '+
+           'Please download the Windows 64-bit version of CellProfiler from the '+
+           'downloads page at cellprofiler.org.';
+  if IsWin64 then Begin
+    MsgBox(Message, mbInformation, MB_OK);
+    Result := False;
+    End
+  else if (GetWindowsVersion < $06000000) then Begin
+    Message := 'Windows XP 32-bit operation is not supported in this release. CellProfiler 2.0 '+
+               'is compatible with Windows XP and is available at '+
+               'http://cellprofiler.org/previousReleases.shtml';
+    MsgBox(Message, mbInformation, MB_OK);
+    Result := False;
+  End else
+    Result := True;
+End;

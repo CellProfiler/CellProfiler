@@ -19,6 +19,8 @@ SetupIconFile=.\CellProfilerIcon.ico
 Compression=lzma
 SolidCompression=yes
 ChangesAssociations=yes
+ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -65,7 +67,6 @@ Filename: "{tmp}\vcredist_x64.exe"; Parameters: "/q"
 Filename: "{app}\CellProfiler.exe"; Description: "{cm:LaunchProgram,CellProfiler}"; Flags: nowait postinstall skipifsilent
 
 [Code]
-
 function EscapeString(Input: String): String;
 Var
   Path: String;
@@ -85,4 +86,18 @@ Begin
   Result := EscapeString('{userappdata}\CellProfiler\plugins');
 End;
 
-    
+function InitializeSetup(): Boolean;
+Var
+  Message: String;
+Begin
+Message := 'This build can only run on a 64-bit operating system, but yours is 32-bit. '+
+           'Please download the Windows 32-bit version of CellProfiler from the '+
+           'downloads page at cellprofiler.org.';
+  if IsWin64 then Begin
+    Result := True;
+    End
+  else Begin
+    MsgBox(Message, mbInformation, MB_OK);
+    Result := False;
+  End;
+End;

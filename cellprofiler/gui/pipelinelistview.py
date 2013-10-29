@@ -411,6 +411,7 @@ class PipelineListView(object):
                 active_item = list_ctrl.get_active_item()
                 if (active_item is not None and 
                     active_item.module.module_num == event.module_num):
+                    self.request_validation(active_item.module)
                     break
             else:
                 self.select_one_module(event.module_num)

@@ -126,7 +126,10 @@ class PreferencesView:
         sizer.AddSpacer(2)
         text_static = wx.StaticText(panel,-1,text+':')
         sizer.Add(text_static, 0, wx.ALIGN_CENTER)
-        edit_box = wx.ComboBox(panel, -1, value, choices=list_fn())
+        choices = list_fn()
+        if value not in choices:
+            choices.insert(0, value)
+        edit_box = wx.ComboBox(panel, -1, value, choices=choices)
         sizer.Add(edit_box, 1, wx.ALIGN_CENTER)
         sizer.AddSpacer(2)
         browse_bmp = wx.ArtProvider.GetBitmap(wx.ART_FOLDER_OPEN,

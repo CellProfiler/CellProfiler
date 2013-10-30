@@ -92,7 +92,15 @@ Message := 'This build can only run on a 64-bit operating system, but yours is 3
            'Please download the Windows 32-bit version of CellProfiler from the '+
            'downloads page at cellprofiler.org.';
   if IsWin64 then Begin
-    Result := True;
+    if (GetWindowsVersion < $06000000) then Begin
+      Message := 'Windows XP 64-bit operation is not supported in this release. CellProfiler 2.0 '+
+               'is compatible with Windows XP and is available at '+
+               'http://cellprofiler.org/previousReleases.shtml';
+      MsgBox(Message, mbInformation, MB_OK);
+      Result := False;
+      End
+    else
+      Result := True;
     End
   else Begin
     MsgBox(Message, mbInformation, MB_OK);

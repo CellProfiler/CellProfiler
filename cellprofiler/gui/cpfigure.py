@@ -590,7 +590,7 @@ class CPFigureFrame(wx.Frame):
     def on_file_save(self, event):
         with wx.FileDialog(self, "Save figure", 
                            wildcard = ("PDF file (*.pdf)|*.pdf|"
-                                       "PNG image (*.png)|*.png|"),
+                                       "PNG image (*.png)|*.png"),
                            style = wx.FD_SAVE | wx.FD_OVERWRITE_PROMPT) as dlg:
             if dlg.ShowModal() == wx.ID_OK:
                 path = dlg.GetPath()
@@ -604,6 +604,8 @@ class CPFigureFrame(wx.Frame):
                     format = "jpg"
                 else:
                     format = "pdf"
+                if "." not in os.path.split(path)[1]:
+                    path += "."+format
                 self.figure.savefig(path, format = format)
             
     def on_file_save_table(self, event):

@@ -740,7 +740,7 @@ class AnalysisRunner(object):
                            "Did not find CellProfiler in its expected place: %s" % cp_executable
                     assert os.access(cp_executable, os.EX_OK), \
                            "%s is not executable" % cp_executable
-                    args = ["arch", "-x86_64", cp_executable, 
+                    args = ["arch", "-x86_64", "-i386", cp_executable, 
                             "--work-announce", cls.work_announce_address,
                             "--plugins-directory", cpprefs.get_plugin_directory(),
                             "--ij-plugins-directory", cpprefs.get_ij_plugin_directory()]
